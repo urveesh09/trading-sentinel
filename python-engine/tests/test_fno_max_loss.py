@@ -117,12 +117,18 @@ def test_validate_no_override_parameter_exists():
 
 
 def test_validate_rejects_over_structural_cap():
-    # [ROADMAP-3.1 2026-07-12] cap scaled with the 250k pool: 30,000.
-    # 5 lots @ 100 = Rs 37,500 structural > 30,000 default cap.
-    ok, reason, ml = validate_position([_ce(25000, 5, 100.0)], LOT)
+    # The structural cap (FNO_MAX_STRUCTURAL_LOSS_PER_TRADE; 40,000 since the
+    # 2026-10-04 growth slice) refuses the first lot count whose whole-premium
+    # loss exceeds it, and admits the largest count under it.
+    from config import settings
+    cap = settings.FNO_MAX_STRUCTURAL_LOSS_PER_TRADE
+    over = int(cap // (100.0 * LOT)) + 1
+    ok, reason, ml = validate_position([_ce(25000, over, 100.0)], LOT)
     assert not ok
     assert reason == "max_loss_over_cap"
-    assert ml == pytest.approx(37500.0)
+    assert ml == pytest.approx(over * 100.0 * LOT)
+    ok, _reason, _ml = validate_position([_ce(25000, over - 1, 100.0)], LOT)
+    assert ok
 
 
 def test_validate_accepts_normal_long():

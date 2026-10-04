@@ -99,7 +99,10 @@ async def test_edge_live_partial_settles_only_confirmed_quantity(tmp_path, monke
             "SELECT status,shares,exit_date,realised_pnl FROM positions"
         ).fetchone()
     assert row[0:3] == ("OPEN", 6, None)
-    assert row[3] > 0
+    # Only the 4 confirmed shares settle: Rs 8 gross less real delivery costs
+    # (the flat DP charge makes this tiny sale a net loss).
+    from penny_risk import calc_penny_costs
+    assert row[3] == pytest.approx(4 * (102.0 - 100.0) - calc_penny_costs(100.0, 102.0, 4, False), abs=0.01)
     assert summary["closed_live"] == []
     assert summary["partial_live"][0]["confirmed_qty"] == 4
     assert summary["partial_live"][0]["remaining_qty"] == 6

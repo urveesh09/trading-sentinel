@@ -1,0 +1,44 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "swing",
+  "metrics": {
+    "avg_r": null,
+    "decision_count": 15,
+    "entry_decisions": 0,
+    "max_drawdown_pct": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "evaluator replay has no portfolio result"
+    },
+    "profit_factor": null,
+    "reject_reasons": {
+      "nifty_below_ema20_regime2": 12,
+      "price_too_low": 2,
+      "volume_ratio_low": 1
+    },
+    "scope": "EVALUATOR",
+    "skips": {},
+    "trade_count": null,
+    "win_rate_pct": null
+  },
+  "module": "swing",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\swing-report.json",
+  "report_sha256": "sha256:598c64ddb7fb4e0e51269fefcb94c57425144e0f61580e3d53551680c611ea5b",
+  "scope": "EVALUATOR",
+  "state": "SUCCEEDED",
+  "strategy_id": "swing_regime_daily_evaluator",
+  "warnings": [
+    "EVALUATOR scope only: it does not simulate Telegram approval, live admission, fills, exits or portfolio cash.",
+    "The historical scheduler clock is not persisted; one pre-open regime update per session is declared.",
+    "Constituent breadth ranks are not archived, so the evaluator receives no fabricated breadth value."
+  ],
+  "window_kind": "primary"
+}

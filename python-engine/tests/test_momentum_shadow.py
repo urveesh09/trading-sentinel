@@ -120,10 +120,40 @@ def test_registry_is_immutable_and_shadow_evaluation_has_no_side_effect(tmp_path
         "TEST", intra, 100, 100000, 100000,
         df_daily=daily, trading_date="2026-08-10", bar_ts="2026-08-10T11:00:00",
     )
-    assert len(rows) == 2
+    assert len(rows) == 3
     assert not untouched.exists()
-    assert rows[0]["config"]["name"] == "MOM_BASE"
-    assert rows[1]["config"]["name"] == "MOM_RECENCY_5"
+    assert [row["config"]["name"] for row in rows] == ["MOM_BASE", "MOM_RECENCY_5", "MOM_SELECTIVE"]
+    assert "selective" not in rows[0]["config"] and rows[2]["config"]["selective"] is True
+
+
+def _selective_frames():
+    idx = pd.date_range("2026-08-10 09:15", periods=6, freq="15min", tz="Asia/Kolkata")
+    intra = pd.DataFrame({
+        "open": [99.0] * 5 + [100.0], "high": [100.0] * 5 + [104.0], "low": [98.0] * 5 + [99.0],
+        "close": [99.0] * 5 + [103.0], "volume": [100.0] * 5 + [1000.0],
+    }, index=idx)
+    index_up = pd.DataFrame({
+        "open": [100.0] * 6, "high": [101.0] * 6, "low": [99.0] * 6,
+        "close": [100.0, 100.1, 100.2, 100.3, 100.4, 100.5], "volume": [0.0] * 6,
+    }, index=idx)
+    _, daily = _recency_frames()
+    return intra, daily, index_up
+
+
+@pytest.mark.parametrize("index_kind,prev_high,expected", [
+    ("up", 100.0, (True, None)),
+    ("missing", 100.0, (False, "selective_index_bar_unavailable")),
+    ("down", 100.0, (False, "selective_market_not_up")),
+    ("up", 120.0, (False, "selective_below_prev_day_high")),
+])
+def test_selective_variant_gates_the_shipped_signal_on_market_context(index_kind, prev_high, expected):
+    intra, daily, index_up = _selective_frames()
+    index = {"up": index_up, "missing": None,
+             "down": index_up.assign(close=[100.0, 99.9, 99.8, 99.7, 99.6, 99.5])}[index_kind]
+    base, _, selective = evaluate_momentum_shadows(
+        "TEST", intra, prev_high, 100000, 100000, df_daily=daily, index_today=index)
+    assert base["accepted"] is True
+    assert (selective["accepted"], selective["reject_reason"]) == expected
 
 
 @pytest.mark.asyncio

@@ -92,7 +92,7 @@ def test_refresh_from_kite_writes_static_json(tmp_path):
     fake_kite.instrument_cache = {"AAA": 1001, "BBB": 1002}
 
     fake_kite.get_instruments_nse_eq = AsyncMock(return_value=[
-        {"tradingsymbol": "AAA", "instrument_token": 1001, "series": "EQ", "exchange": "NSE"},
+        {"tradingsymbol": "AAA", "instrument_token": 1001, "series": "EQ", "exchange": "NSE", "tick_size": 0.01},
         {"tradingsymbol": "BBB", "instrument_token": 1002, "series": "EQ", "exchange": "NSE"},
     ])
     fake_kite.get_quote = AsyncMock(return_value={
@@ -121,6 +121,10 @@ def test_refresh_from_kite_writes_static_json(tmp_path):
     assert data["universe_size_target"] == 10
     symbols = [t["symbol"] for t in data["tickers"]]
     assert "AAA" in symbols and "BBB" in symbols
+    from zoneinfo import ZoneInfo
+    aaa = next(row for row in data["tickers"] if row["symbol"] == "AAA")
+    assert aaa["tick_size"] == 0.01
+    assert aaa["tick_size_as_of"] == datetime.now(ZoneInfo("Asia/Kolkata")).date().isoformat()
 
 
 def test_refresh_handles_kite_failure_gracefully(tmp_path):

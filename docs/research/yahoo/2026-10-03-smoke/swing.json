@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "swing",
+  "metrics": null,
+  "module": "swing",
+  "qualification": "NOT_ASSESSED",
+  "reason": "missing/invalid market context: NIFTY 50, NIFTY BANK",
+  "report_file": "_local\\swing-report.json",
+  "report_sha256": "sha256:43b03bc112c2dd077d00b180f8701f125d40dfebaa7957298a25cc21d573c245",
+  "scope": "EVALUATOR",
+  "state": "UNAVAILABLE",
+  "strategy_id": "swing_regime_daily_evaluator",
+  "window_kind": "primary"
+}

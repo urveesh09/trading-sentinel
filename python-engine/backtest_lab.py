@@ -8,6 +8,7 @@ one explicit registry entry.
 from __future__ import annotations
 
 import asyncio
+from collections import Counter
 import dataclasses
 import hashlib
 import json
@@ -19,7 +20,7 @@ import traceback
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum
 from typing import Any
 
@@ -107,6 +108,11 @@ class StrategyMetadata:
     parameter_schema: dict[str, Any]
     research_only: bool = True
     can_place_orders: bool = False
+    # [B0/B2 2026-10-03] Honest fidelity label: EVALUATOR (entry decisions
+    # only), LIFECYCLE (entries plus the shipped exits/capacity),
+    # FULL_PORTFOLIO, PROXY (a research stand-in, not the shipped strategy)
+    # or UNAVAILABLE. backtest_catalogue.validate_catalogue rejects others.
+    scope: str = "UNSPECIFIED"
 
 
 @dataclass(frozen=True)
@@ -212,7 +218,7 @@ class SwingDailyAdapter(BacktestAdapter):
         name="Swing Regime (daily)",
         version="1.0.0",
         description="Walk-forward replay of the existing regime-aware swing engine on cached daily bars.",
-        engine="backtest.run_backtest",
+        engine="backtest.run_backtest", scope="PROXY",
         timeframe="1 day",
         capabilities=("single_ticker", "walk_forward", "risk_metrics"),
         data_requirements=("ohlcv_cache daily bars", "at least 200 pre/end rows for the ticker"),
@@ -286,13 +292,452 @@ class SwingDailyAdapter(BacktestAdapter):
         return summary, warnings
 
 
+class SwingDecisionParityAdapter(BacktestAdapter):
+    """Point-in-time calls to the shipped Swing evaluator, not its legacy proxy."""
+    metadata = StrategyMetadata(
+        strategy_id="swing_regime_daily_evaluator", name="Swing Regime (daily evaluator replay)",
+        version="1.0.0",
+        description="Calls engine.evaluate_signal with frozen stock/NIFTY/BankNIFTY history and a declared daily regime clock.",
+        engine="research_daily_decision_replay.swing_evaluator_replay", timeframe="1 day", scope="EVALUATOR",
+        capabilities=("universe", "point_in_time_market_context", "gate_funnel", "shipped_evaluator"),
+        data_requirements=("explicit stock universe", "NIFTY and NIFTY BANK daily history", "200+ prior stock bars and 214+ prior NIFTY bars"),
+        limitations=(
+            "EVALUATOR scope only: it does not simulate Telegram approval, live admission, fills, exits or portfolio cash.",
+            "The historical scheduler clock is not persisted; one pre-open regime update per session is declared.",
+            "Constituent breadth ranks are not archived, so the evaluator receives no fabricated breadth value.",
+        ),
+        default_config={"tickers": [], "nifty_ticker": "NIFTY 50", "banknifty_ticker": "NIFTY BANK", "bankroll": 4500.0},
+        default_assumptions={"bar_visibility": "D_daily_bar_available_only_after_D_session", "regime_clock": "one_before_open_update_per_session"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "nifty_ticker": {"type": "string"}, "banknifty_ticker": {"type": "string"},
+                          "bankroll": {"type": "number", "minimum": 0.01}},
+    )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("Swing evaluator replay requires an explicit ticker universe")
+        indices = {key: str(merged[key]).strip().upper() for key in ("nifty_ticker", "banknifty_ticker")}
+        if not all(indices.values()):
+            raise ValueError("Swing evaluator index tickers must be non-empty")
+        bankroll = float(merged["bankroll"])
+        if not math.isfinite(bankroll) or bankroll <= 0:
+            raise ValueError("bankroll must be a positive finite number")
+        if set(tickers) & set(indices.values()):
+            raise ValueError("stock universe must not include a market-context index")
+        return {"tickers": list(tickers), **indices, "bankroll": bankroll}
+
+    def prepare(self, db_path, request):
+        from datetime import timedelta
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset
+        names = [*request.config["tickers"], request.config["nifty_ticker"], request.config["banknifty_ticker"]]
+        try:
+            data = load_daily_dataset(db_path, tickers=names,
+                                      before=(date.fromisoformat(request.end_date) + timedelta(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        invalid = sorted(data.invalid)
+        if invalid:
+            raise BacktestUnavailable("invalid daily history for: " + ", ".join(invalid))
+        missing = sorted(name for name in names if not data.bars.get(name))
+        if missing:
+            raise BacktestUnavailable("missing required daily history: " + ", ".join(missing))
+        rows = [(bar.ticker, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume)
+                for name in names for bar in data.bars[name]]
+        columns = ["ticker", "date", "open", "high", "low", "close", "volume"]
+        return PreparedDataset(_fingerprint_rows(columns, rows), len(rows),
+                               {"daily": data.manifest, "market_context": names[-2:]}, rows)
+
+    def execute(self, prepared, request):
+        from research_daily_decision_replay import DailyReplayUnavailable, swing_evaluator_replay
+        try:
+            return swing_evaluator_replay(prepared.payload, start=request.start_date, end=request.end_date,
+                                          tickers=tuple(request.config["tickers"]), bankroll=request.config["bankroll"],
+                                          nifty_ticker=request.config["nifty_ticker"], banknifty_ticker=request.config["banknifty_ticker"])
+        except DailyReplayUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+
+    def normalize(self, result, request):
+        decisions = result["decisions"]
+        reject_reasons = Counter(str(row["detail"].get("reject_reason", "accepted")) for row in decisions)
+        return ({"trade_count": None, "net_pnl": None, "net_return_pct": None, "win_rate_pct": None,
+                 "profit_factor": None, "max_drawdown_pct": None, "avg_r": None, "scope": result["scope"],
+                 "decision_count": len(decisions), "entry_decisions": result["fired"], "reject_reasons": dict(reject_reasons),
+                 "skips": result["skips"], "oos": {"available": False, "reason": "evaluator replay has no portfolio result"}},
+                list(self.metadata.limitations))
+
+
+class EdgeDecisionParityAdapter(BacktestAdapter):
+    """Frozen calls to the exact daily EDGE scanner used by the orchestrator."""
+    metadata = StrategyMetadata(
+        strategy_id="penny_edge_daily_evaluator", name="Adaptive Penny EDGE (daily evaluator replay)",
+        version="1.0.0", description="Calls penny_edge_live.scan_today on a frozen explicit-universe cache.",
+        engine="research_daily_decision_replay.edge_evaluator_replay", timeframe="1 day", scope="EVALUATOR",
+        capabilities=("universe", "shipped_scanner", "shipped_ranking", "gate_funnel"),
+        data_requirements=("explicit EDGE universe", "NIFTYBEES (or configured live scanner proxy) daily history", "21+ daily rows per evaluated ticker"),
+        limitations=(
+            "EVALUATOR scope only: no next-session fill, paper executor, exit, cash reservation or historical event-calendar snapshot is simulated.",
+            "A daily bar is evaluated only after its session; this cannot prove the live scheduler had that completed bar at 09:30.",
+            "Universe membership is exactly the supplied list; historical production universe membership is not inferred.",
+        ),
+        default_config={"tickers": [], "nifty_ticker": "NIFTYBEES", "bankroll": 100000.0, "max_positions": 3, "min_strength": 0.45},
+        default_assumptions={"scanner": "penny_edge_live.scan_today", "bar_visibility": "D_daily_bar_available_only_after_D_session"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "nifty_ticker": {"type": "string"}, "bankroll": {"type": "number", "minimum": 0.01},
+                          "max_positions": {"type": "integer", "minimum": 1}, "min_strength": {"type": "number", "minimum": 0, "maximum": 1}},
+    )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("EDGE evaluator replay requires an explicit ticker universe")
+        nifty = str(merged["nifty_ticker"]).strip().upper()
+        if not nifty or nifty in tickers:
+            raise ValueError("EDGE NIFTY proxy must be non-empty and outside the stock universe")
+        bankroll, strength = float(merged["bankroll"]), float(merged["min_strength"])
+        positions = merged["max_positions"]
+        if not math.isfinite(bankroll) or bankroll <= 0 or not math.isfinite(strength) or not 0 <= strength <= 1:
+            raise ValueError("EDGE bankroll/min_strength are invalid")
+        if isinstance(positions, bool) or not isinstance(positions, int) or positions < 1:
+            raise ValueError("EDGE max_positions must be a positive integer")
+        return {"tickers": list(tickers), "nifty_ticker": nifty, "bankroll": bankroll,
+                "max_positions": positions, "min_strength": strength}
+
+    def prepare(self, db_path, request):
+        from datetime import timedelta
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset
+        names = [*request.config["tickers"], request.config["nifty_ticker"]]
+        try:
+            data = load_daily_dataset(db_path, tickers=names,
+                                      before=(date.fromisoformat(request.end_date) + timedelta(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        invalid = sorted(data.invalid)
+        if invalid:
+            raise BacktestUnavailable("invalid daily history for: " + ", ".join(invalid))
+        missing = sorted(name for name in names if not data.bars.get(name))
+        if missing:
+            raise BacktestUnavailable("missing required daily history: " + ", ".join(missing))
+        rows = [(bar.ticker, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume)
+                for name in names for bar in data.bars[name]]
+        columns = ["ticker", "date", "open", "high", "low", "close", "volume"]
+        return PreparedDataset(_fingerprint_rows(columns, rows), len(rows),
+                               {"daily": data.manifest, "universe": request.config["tickers"]}, rows)
+
+    def execute(self, prepared, request):
+        from research_daily_decision_replay import DailyReplayUnavailable, edge_evaluator_replay
+        try:
+            return edge_evaluator_replay(prepared.payload, start=request.start_date, end=request.end_date,
+                                         tickers=tuple(request.config["tickers"]), nifty_ticker=request.config["nifty_ticker"],
+                                         bankroll=request.config["bankroll"], max_positions=request.config["max_positions"],
+                                         min_strength=request.config["min_strength"])
+        except DailyReplayUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+
+    def normalize(self, result, request):
+        return ({"trade_count": None, "net_pnl": None, "net_return_pct": None, "win_rate_pct": None,
+                 "profit_factor": None, "max_drawdown_pct": None, "avg_r": None, "scope": result["scope"],
+                 "scan_count": len(result["scans"]), "candidate_count": result["candidates"], "selected_count": result["selected"],
+                 "oos": {"available": False, "reason": "evaluator replay has no portfolio result"}},
+                list(self.metadata.limitations))
+
+
+class RangeReversionEvaluatorAdapter(BacktestAdapter):
+    """Point-in-time verdict archive for the shipped Range Reversion profile."""
+    metadata = StrategyMetadata(
+        strategy_id="range_reversion_daily_evaluator", name="Range Reversion (daily evaluator replay)",
+        version="1.0.0", description="Calls range_reversion_entry for each completed daily decision bar.",
+        engine="range_reversion.range_reversion_entry", timeframe="1 day", scope="EVALUATOR",
+        capabilities=("universe", "point_in_time_decisions", "gate_funnel", "shipped_evaluator"),
+        data_requirements=("explicit ticker universe", "15+ validated daily bars per decision",),
+        limitations=(
+            "EVALUATOR scope only: historical proposals, decision cutoffs, advisory/news context, entry fills, exits and allocation are not reconstructed.",
+            "Each verdict is made after that daily bar completes; it is not evidence of an intraday or live order.",
+            "The current profile constants are frozen in the run manifest; no parameter search is performed.",
+        ),
+        default_config={"tickers": [], "window_size": 14, "max_range_pct": 0.06,
+                        "expansion_limit": 1.5, "touch_tolerance_pct": 0.005,
+                        "strict_stop_epsilon": 0.001},
+        default_assumptions={"decision_clock": "completed_daily_bar", "execution": "not_modelled"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "window_size": {"type": "integer", "minimum": 2},
+                          "max_range_pct": {"type": "number", "minimum": 0},
+                          "expansion_limit": {"type": "number", "minimum": 0},
+                          "touch_tolerance_pct": {"type": "number", "minimum": 0},
+                          "strict_stop_epsilon": {"type": "number", "minimum": 0}},
+    )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("Range evaluator replay requires an explicit ticker universe")
+        window = merged["window_size"]
+        if isinstance(window, bool) or not isinstance(window, int) or window < 2:
+            raise ValueError("Range window_size must be an integer of at least 2")
+        fields = {key: float(merged[key]) for key in ("max_range_pct", "expansion_limit", "touch_tolerance_pct", "strict_stop_epsilon")}
+        if any(not math.isfinite(value) or value < 0 for value in fields.values()):
+            raise ValueError("Range thresholds must be finite non-negative numbers")
+        return {"tickers": list(tickers), "window_size": window, **fields}
+
+    def prepare(self, db_path, request):
+        from datetime import timedelta
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset
+        try:
+            data = load_daily_dataset(db_path, tickers=request.config["tickers"],
+                                      before=(date.fromisoformat(request.end_date) + timedelta(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        invalid = sorted(data.invalid)
+        if invalid:
+            raise BacktestUnavailable("invalid daily history for: " + ", ".join(invalid))
+        missing = sorted(t for t in request.config["tickers"] if not data.bars.get(t))
+        if missing:
+            raise BacktestUnavailable("missing required daily history: " + ", ".join(missing))
+        rows = [(bar.ticker, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume)
+                for ticker in request.config["tickers"] for bar in data.bars[ticker]]
+        return PreparedDataset(_fingerprint_rows(["ticker", "date", "open", "high", "low", "close", "volume"], rows),
+                               len(rows), {"daily": data.manifest}, data)
+
+    def execute(self, prepared, request):
+        from range_reversion import range_reversion_entry
+        start, end = date.fromisoformat(request.start_date), date.fromisoformat(request.end_date)
+        config = {key: request.config[key] for key in ("window_size", "max_range_pct", "expansion_limit", "touch_tolerance_pct", "strict_stop_epsilon")}
+        verdicts = []
+        for ticker in request.config["tickers"]:
+            history = []
+            for bar in prepared.payload.bars[ticker]:
+                history.append({"date": bar.day.isoformat(), "open": bar.open, "high": bar.high,
+                                "low": bar.low, "close": bar.close, "volume": bar.volume})
+                if start <= bar.day <= end:
+                    verdict = range_reversion_entry(history, **config)
+                    verdicts.append({"ticker": ticker, "decision_date": bar.day.isoformat(),
+                                     "verdict": verdict.to_dict()})
+        if not verdicts:
+            raise BacktestUnavailable("no completed daily decision bars in requested window")
+        accepted = sum(row["verdict"]["signal"] == "ENTER" for row in verdicts)
+        reasons = Counter(row["verdict"]["signal"] for row in verdicts)
+        return {"scope": "EVALUATOR", "clock": "completed_daily_bar", "verdicts": verdicts,
+                "accepted": accepted, "reasons": dict(sorted(reasons.items()))}
+
+    def normalize(self, result, request):
+        return ({"trade_count": None, "net_pnl": None, "net_return_pct": None, "win_rate_pct": None,
+                 "profit_factor": None, "max_drawdown_pct": None, "avg_r": None, "scope": result["scope"],
+                 "decision_count": len(result["verdicts"]), "entry_decisions": result["accepted"],
+                 "verdict_reasons": result["reasons"],
+                 "oos": {"available": False, "reason": "evaluator replay has no portfolio result"}},
+                list(self.metadata.limitations))
+
+
+class DailyPortfolioAdapter(BacktestAdapter):
+    """Shared Lab plumbing for own-cash ``daily_portfolio`` replays.
+
+    Subclasses declare metadata, the context tickers that must exist, how to
+    validate their config and which replay to call. Tickers with no history
+    before the window ends were not tradeable then; they are excluded with a
+    receipt instead of failing the window. Invalid history and missing context
+    tickers still make the run unavailable.
+    """
+    policies: tuple[str, ...] = ("BASELINE",)
+    tail_days = 30          # post-window daily bars so held positions can resolve
+
+    def context_tickers(self, config: dict) -> list[str]:
+        raise NotImplementedError
+
+    def replay(self, rows: list[tuple], universe: tuple[str, ...], request: BacktestRequest) -> dict:
+        raise NotImplementedError
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError(f"{self.metadata.strategy_id} requires an explicit ticker universe")
+        if merged["policy"] not in self.policies:
+            raise ValueError(f"policy must be one of {self.policies}")
+        bankroll = float(merged["bankroll"])
+        if not math.isfinite(bankroll) or bankroll <= 0:
+            raise ValueError("bankroll must be a positive finite number")
+        context = {name: str(merged[name]).strip().upper() for name in merged if name.endswith("_ticker")}
+        if any(not value or value in tickers for value in context.values()):
+            raise ValueError("context tickers must be non-empty and outside the stock universe")
+        return {**merged, **context, "tickers": list(tickers), "bankroll": bankroll}
+
+    def prepare(self, db_path, request):
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset
+        context = self.context_tickers(request.config)
+        names = [*request.config["tickers"], *context]
+        try:
+            data = load_daily_dataset(
+                db_path, tickers=names,
+                before=(date.fromisoformat(request.end_date) + timedelta(days=self.tail_days)).isoformat(),
+            )
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        invalid = sorted(data.invalid)
+        if invalid:
+            raise BacktestUnavailable("invalid daily history for: " + ", ".join(invalid))
+        missing_context = sorted(name for name in context if not data.bars.get(name))
+        if missing_context:
+            raise BacktestUnavailable("missing required daily history: " + ", ".join(missing_context))
+        absent = sorted(name for name in request.config["tickers"] if not data.bars.get(name))
+        universe = [name for name in request.config["tickers"] if name not in absent]
+        if not universe:
+            raise BacktestUnavailable("no universe ticker has history in this window")
+        rows = [(bar.ticker, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume)
+                for name in [*universe, *context] for bar in data.bars[name]]
+        return PreparedDataset(_fingerprint_rows(["ticker", "date", "open", "high", "low", "close", "volume"], rows),
+                               len(rows), {"daily": data.manifest, "universe": universe,
+                                           "not_listed_in_window": absent, "post_window_tail_days": self.tail_days},
+                               rows)
+
+    def execute(self, prepared, request):
+        from daily_portfolio import PortfolioUnavailable
+        from research_daily_decision_replay import DailyReplayUnavailable
+        try:
+            return self.replay(prepared.payload, tuple(prepared.details["universe"]), request)
+        except (PortfolioUnavailable, DailyReplayUnavailable) as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+
+    def normalize(self, result, request):
+        s = result["summary"]
+        return ({"trade_count": s["closed"], "net_pnl": s["net_pnl"], "net_return_pct": s["marked_return_pct"],
+                 "win_rate_pct": s["win_rate_pct"], "profit_factor": s["profit_factor"],
+                 "max_drawdown_pct": s["max_marked_drawdown_pct"], "avg_r": None, "scope": result["scope"],
+                 "open_marked": s["open_marked"], "net_excluding_best_winner": s["net_excluding_best_winner"],
+                 "admission_outcomes": result["admission_outcomes"],
+                 "oos": {"available": False, "reason": "single retrospective window; qualification needs a frozen untouched window"}},
+                list(self.metadata.limitations))
+
+
+_PORTFOLIO_LIMITS = (
+    "Daily bars only: the next open stands in for the live entry time and the close for close-time exits; intraday high/low order is unknown (stop wins ties).",
+    "Own cash only, one position per ticker; universe membership is the supplied current list, not historical membership.",
+)
+
+
+class EdgePortfolioReplayAdapter(DailyPortfolioAdapter):
+    """R2 own-cash EDGE portfolio replay (BASELINE live clocks or EDGE_TRADER_V1)."""
+    policies = ("BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT")
+    tail_days = 10
+    metadata = StrategyMetadata(
+        strategy_id="penny_edge_portfolio_replay", name="Adaptive Penny EDGE (own-cash portfolio replay)",
+        version="1.2.0", description="Shipped EDGE scan with causal next-session entries, persistent cash/positions, CNC costs and marked equity.",
+        engine="edge_portfolio_replay.run_edge_portfolio", timeframe="1 day", scope="PROXY",
+        capabilities=("universe", "shipped_scanner", "shipped_ranking", "next_session_open", "costs",
+                      "own_cash_portfolio", "marked_equity", "candidate_policy"),
+        data_requirements=("explicit EDGE universe", "NIFTYBEES daily history", "post-window daily tail for open positions"),
+        limitations=(
+            *_PORTFOLIO_LIMITS,
+            "The operator event calendar is the current file, not a point-in-time snapshot; scheduler misfires and broker admission are not replayed.",
+            "Runtime EDGE_PAPER also passes through the daily OHLC position tracker; that mixed paper bookkeeping is not reproduced.",
+        ),
+        default_config={"tickers": [], "nifty_ticker": "NIFTYBEES", "bankroll": 100000.0, "max_positions": 3,
+                        "min_strength": 0.45, "policy": "BASELINE"},
+        default_assumptions={"signal_clock": "D_close", "entry_clock": "D_plus_1_open_as_0930_proxy",
+                             "exit_clock": "stop_before_target_intraday; time_exit_at_close", "cash": "own_cash_no_margin"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "nifty_ticker": {"type": "string"}, "bankroll": {"type": "number", "minimum": 0.01},
+                          "max_positions": {"type": "integer", "minimum": 1}, "min_strength": {"type": "number", "minimum": 0, "maximum": 1},
+                          "policy": {"enum": ["BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT"]}},
+    )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        positions, strength = merged["max_positions"], float(merged["min_strength"])
+        if isinstance(positions, bool) or not isinstance(positions, int) or positions < 1:
+            raise ValueError("EDGE max_positions must be a positive integer")
+        if not math.isfinite(strength) or not 0 <= strength <= 1:
+            raise ValueError("EDGE min_strength must be within [0, 1]")
+        return {**merged, "min_strength": strength}
+
+    def context_tickers(self, config):
+        return [config["nifty_ticker"]]
+
+    def replay(self, rows, universe, request):
+        from edge_portfolio_replay import EdgeReplayConfig, run_edge_portfolio
+        cfg = request.config
+        return run_edge_portfolio(rows, start=request.start_date, end=request.end_date, config=EdgeReplayConfig(
+            tickers=universe, nifty_ticker=cfg["nifty_ticker"], bankroll=cfg["bankroll"],
+            max_positions=cfg["max_positions"], min_strength=cfg["min_strength"], policy=cfg["policy"]))
+
+
+class RangePortfolioReplayAdapter(DailyPortfolioAdapter):
+    """T2 own-cash Range Reversion lifecycle (declared BASELINE or trader candidates)."""
+    policies = ("BASELINE", "RANGE_RECLAIM_ENTRY", "RANGE_TRADER_V1")
+    metadata = StrategyMetadata(
+        strategy_id="range_reversion_portfolio_replay", name="Range Reversion (own-cash portfolio replay)",
+        version="1.0.0", description="Shipped range_reversion_entry verdicts executed next session with persistent cash, SYSTEM costs and marked equity.",
+        engine="range_portfolio_replay.run_range_portfolio", timeframe="1 day", scope="PROXY",
+        capabilities=("universe", "shipped_evaluator", "next_session_open", "costs", "own_cash_portfolio",
+                      "marked_equity", "candidate_policy"),
+        data_requirements=("explicit ticker universe", "NIFTY 50 daily calendar", "post-window daily tail"),
+        limitations=(
+            *_PORTFOLIO_LIMITS,
+            "Range Reversion is SHADOW with no shipped daily horizon; BASELINE declares a 5-session time exit and 1% equity risk.",
+        ),
+        default_config={"tickers": [], "calendar_ticker": "NIFTY 50", "bankroll": 100000.0, "policy": "BASELINE"},
+        default_assumptions={"signal_clock": "D_close", "entry_clock": "D_plus_1_open", "cash": "own_cash_no_margin"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "calendar_ticker": {"type": "string"}, "bankroll": {"type": "number", "minimum": 0.01},
+                          "policy": {"enum": ["BASELINE", "RANGE_RECLAIM_ENTRY", "RANGE_TRADER_V1"]}},
+    )
+
+    def context_tickers(self, config):
+        return [config["calendar_ticker"]]
+
+    def replay(self, rows, universe, request):
+        from range_portfolio_replay import RangeReplayConfig, run_range_portfolio
+        cfg = request.config
+        return run_range_portfolio(rows, start=request.start_date, end=request.end_date, config=RangeReplayConfig(
+            tickers=universe, calendar_ticker=cfg["calendar_ticker"], bankroll=cfg["bankroll"], policy=cfg["policy"]))
+
+
+class SwingPortfolioReplayAdapter(DailyPortfolioAdapter):
+    """T2 own-cash Swing lifecycle over the shipped evaluator (tracker exits or candidates)."""
+    policies = ("BASELINE", "SWING_PULLBACK_ENTRY", "SWING_TRADER_V1")
+    metadata = StrategyMetadata(
+        strategy_id="swing_regime_portfolio_replay", name="Swing Regime (own-cash portfolio replay)",
+        version="1.0.0", description="Shipped evaluate_signal decisions with tracker-parity exits, persistent cash, SYSTEM costs and marked equity.",
+        engine="swing_portfolio_replay.run_swing_portfolio", timeframe="1 day", scope="PROXY",
+        capabilities=("universe", "shipped_evaluator", "next_session_open", "costs", "own_cash_portfolio",
+                      "marked_equity", "candidate_policy", "partial_exits"),
+        data_requirements=("explicit ticker universe", "NIFTY 50 and NIFTY BANK daily history", "200+ prior bars per stock"),
+        limitations=(
+            *_PORTFOLIO_LIMITS,
+            "Manual EXEC approval is modelled as an immediate market buy at the decision session's open.",
+            "One before-open regime update per session; constituent breadth is not reconstructed.",
+            "Stop/target ties resolve stop-first and the Chandelier trail applies from the next bar (the runtime tracker is more optimistic on both).",
+        ),
+        default_config={"tickers": [], "nifty_ticker": "NIFTY 50", "banknifty_ticker": "NIFTY BANK",
+                        "bankroll": 4500.0, "policy": "BASELINE"},
+        default_assumptions={"signal_clock": "before_open_from_prior_bars", "entry_clock": "decision_session_open",
+                             "cash": "own_cash_no_margin"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "nifty_ticker": {"type": "string"}, "banknifty_ticker": {"type": "string"},
+                          "bankroll": {"type": "number", "minimum": 0.01},
+                          "policy": {"enum": ["BASELINE", "SWING_PULLBACK_ENTRY", "SWING_TRADER_V1"]}},
+    )
+
+    def context_tickers(self, config):
+        return [config["nifty_ticker"], config["banknifty_ticker"]]
+
+    def replay(self, rows, universe, request):
+        from swing_portfolio_replay import SwingReplayConfig, run_swing_portfolio
+        cfg = request.config
+        return run_swing_portfolio(rows, start=request.start_date, end=request.end_date, config=SwingReplayConfig(
+            tickers=universe, nifty_ticker=cfg["nifty_ticker"], banknifty_ticker=cfg["banknifty_ticker"],
+            bankroll=cfg["bankroll"], policy=cfg["policy"]))
+
+
 class PennyDailyProxyAdapter(BacktestAdapter):
     metadata = StrategyMetadata(
         strategy_id="penny_breakout_daily_proxy",
         name="Penny Breakout (daily proxy)",
         version="2.0.0",
         description="Executable daily-bar proxy for the existing penny MIS breakout engine.",
-        engine="penny_backtest_v2.run_backtest",
+        engine="penny_backtest_v2.run_backtest", scope="PROXY",
         timeframe="1 day proxy for intraday",
         capabilities=("universe", "gate_funnel", "risk_metrics"),
         data_requirements=("ohlcv_cache daily bars in the selected range",),
@@ -422,7 +867,7 @@ class PennyDailyProxyWalkForwardAdapter(BacktestAdapter):
             "Chronological train-only selection among baseline, relaxed, and phase3, "
             "followed by strictly later non-overlapping daily-proxy OOS folds."
         ),
-        engine="walk_forward + penny_backtest_v2.run_backtest",
+        engine="walk_forward + penny_backtest_v2.run_backtest", scope="PROXY",
         timeframe="1 day proxy for intraday",
         capabilities=("universe", "walk_forward", "strict_oos", "train_only_selection"),
         data_requirements=(
@@ -656,6 +1101,7 @@ class PennyMinuteReplayAdapter(BacktestAdapter):
             "test_days": {"type": "integer", "minimum": 1}, "step_days": {"type": "integer", "minimum": 1},
             "anchored": {"type": "boolean"},
         },
+        scope="EVALUATOR",
     )
 
     def snapshot_config(self, supplied):
@@ -731,22 +1177,306 @@ class PennyMinuteReplayAdapter(BacktestAdapter):
         }, warnings)
 
 
+class PennyMisLifecycleAdapter(BacktestAdapter):
+    """[B2 2026-10-03] Exact classic Penny MIS lifecycle over B1-validated bars."""
+    metadata = StrategyMetadata(
+        strategy_id="penny_breakout_mis_lifecycle_1m",
+        name="Penny Breakout MIS (exact lifecycle, 1-minute)", version="1.3.0",
+        description=("Replays the shipped classic Penny MIS book: live completed-bar clock, real "
+                     "PennyRiskEngine sizing, circuit filter, capacity, executor drift/stop checks, "
+                     "paper LTP or broker stop, 14:30 smart-EOD/time stop and 15:00 force close."),
+        engine="penny_lifecycle_replay", timeframe="1 minute",
+        capabilities=("true_intraday", "gate_funnel", "costs", "risk_metrics", "lifecycle_exits",
+                      "capacity", "coverage_contract"),
+        data_requirements=(
+            "intraday_cache rows labelled interval='minute' passing the B1 bar contract",
+            "strictly prior ohlcv_cache daily history (point-in-time)",
+        ),
+        limitations=(
+            "LIFECYCLE scope: universe ranking, historical regime, sector filter, event calendar, "
+            "broker rejections/partial fills and CNC occupancy are not replayed.",
+            "Historical regime is a declared constant; the runtime regime is not reconstructed.",
+            "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
+        ),
+        default_config={"tickers": [], "book": "PENNY_PAPER", "regime": "PR1_CALM",
+                        "session_policy": "complete_only", "candidate_policy": "BASELINE",
+                        "stop_policy": "RUNTIME", "bankroll": None,"benchmark_ticker":None},
+        default_assumptions={
+            "clock": "bar_k_minus_1_evaluated_at_boundary_k", "fills": "ltp_on_traded_bar_only",
+            "costs": "frozen_real_equity_MIS", "target_exit": "none_smart_eod_only",
+        },
+        parameter_schema={
+            "tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+            "book": {"enum": ["PENNY_PAPER", "PENNY"]},
+            "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
+            "session_policy": {"enum": ["complete_only", "allow_gaps"]},
+            "stop_policy": {"enum": ["RUNTIME", "BAR_LOW", "NOISE_FLOOR"]},
+            "bankroll": {"type": ["number", "null"], "exclusiveMinimum": 0},
+            "benchmark_ticker": {"type":["string","null"]},
+            "candidate_policy": {"enum": ["BASELINE", "PEN_CONTEXT", "PEN_TRADER_V1", "PEN_TRADER_V1_THESIS", "PEN_BASE_THESIS", "PEN_TRADER_V2",
+                                          "PEN_NOISE_STOP", "PEN_NOISE_STOP_BE", "PEN_STRENGTH_RANK",
+                                          "PEN_SMART_ENTRY", "PEN_SMART_EXIT", "PEN_SMART_TRADER"]},
+        },
+        scope="LIFECYCLE",
+    )
+
+    def _config(self, values):
+        from penny_lifecycle_replay import PennyLifecycleConfig
+        return PennyLifecycleConfig(
+            tickers=tuple(values["tickers"]), book=values["book"], regime=values["regime"],
+            session_policy=values["session_policy"], candidate_policy=values["candidate_policy"],
+            stop_policy=values.get("stop_policy", "RUNTIME"), bankroll=values.get("bankroll"),
+            benchmark_ticker=values.get("benchmark_ticker"),
+        )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("the lifecycle replay requires an explicit ticker list")
+        cfg = self._config({**merged, "tickers": tickers})
+        return {"tickers": list(cfg.tickers), "book": cfg.book, "regime": cfg.regime,
+                "session_policy": cfg.session_policy, "candidate_policy": cfg.candidate_policy,
+                "stop_policy": cfg.stop_policy, "bankroll": cfg.bankroll,"benchmark_ticker":cfg.benchmark_ticker}
+
+    def prepare(self, db_path, request):
+        from research_data_contracts import (
+            COVERAGE_REQUIREMENTS, DatasetUnavailable, load_daily_dataset, load_intraday_dataset,
+        )
+        tickers = request.config["tickers"]
+        try:
+            profile_start = (date.fromisoformat(request.start_date) - timedelta(days=10)).isoformat()
+            intraday = load_intraday_dataset(
+                db_path, interval="minute", start=profile_start, end=request.end_date,
+                tickers=sorted(set(tickers)|({request.config['benchmark_ticker']} if request.config.get('benchmark_ticker') else set())),
+            )
+            daily = load_daily_dataset(db_path, tickers=tickers, before=request.end_date)
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        requirement = COVERAGE_REQUIREMENTS[request.config["session_policy"]]
+        requested_usable = [item for item in intraday.usable_days(requirement)
+                            if item[0] in tickers and request.start_date <= item[1] <= request.end_date]
+        if not requested_usable:
+            raise BacktestUnavailable(
+                f"no ticker-day satisfies session_policy={requirement.name}: "
+                f"{intraday.manifest['status_counts']}"
+            )
+        fingerprint = "sha256:" + hashlib.sha256(
+            (intraday.manifest["dataset_sha256"] + daily.manifest["dataset_sha256"]).encode()
+        ).hexdigest()
+        details = {"intraday": intraday.manifest, "daily": daily.manifest,
+                   "volume_profile_warmup_start": profile_start}
+        rows = sum(len(bars) for bars in intraday.bars.values())
+        return PreparedDataset(fingerprint, rows, details, (intraday, daily))
+
+    def execute(self, prepared, request):
+        from penny_lifecycle_replay import run_penny_lifecycle
+        intraday, daily = prepared.payload
+        return run_penny_lifecycle(intraday, daily, self._config(request.config),
+                                   start=request.start_date, end=request.end_date)
+
+    def normalize(self, result, request):
+        summary = result["summary"]
+        warnings = list(self.metadata.limitations) + list(result.get("warnings", []))
+        return ({
+            "trade_count": summary["closed_trades"], "net_pnl": summary["net_pnl"],
+            "net_return_pct": None, "win_rate_pct": summary["win_rate_pct"],
+            "profit_factor": summary["profit_factor"], "max_drawdown_pct": None,
+            "avg_r": summary["avg_r"], "scope": result["scope"], "status": result["status"],
+            "unresolved_trades": summary["unresolved_trades"],
+            "max_drawdown": summary["max_drawdown"],
+            "net_excluding_best_winner": summary["net_excluding_best_winner"],
+            "adverse_fill_bound_net": summary["adverse_fill_bound_net"],
+            "funnel": result["funnel"],
+            "coverage": {k: v for k, v in result["coverage"].items() if k != "exclusions"},
+            "oos": {"available": False, "reason": "single retrospective lifecycle run"},
+        }, warnings)
+
+
+class PennyCncConnorsLifecycleAdapter(BacktestAdapter):
+    """[B2 2026-10-03] Exact classic Penny CNC Connors paper lifecycle."""
+    metadata = StrategyMetadata(
+        strategy_id="penny_cnc_connors_lifecycle_1d",
+        name="Penny CNC Connors (exact paper lifecycle)", version="1.0.0",
+        description=("09:30 scan with today's in-progress candle rebuilt from minute bars, real "
+                     "evaluate_connors_entry + PennyRiskEngine sizing, CNC caps and executor checks; "
+                     "exits by the 15:45 daily tracker (stop/T1 50%/T2/15-day time)."),
+        engine="research_penny_cnc_lifecycle", timeframe="1 day (+ 09:15-09:30 minutes)",
+        capabilities=("lifecycle_exits", "costs", "capacity", "coverage_contract", "gate_funnel"),
+        data_requirements=(
+            "ohlcv_cache daily history (>=250 bars, point-in-time) through the end date",
+            "intraday_cache interval='minute' bars 09:15-09:30 on each entry day",
+        ),
+        limitations=(
+            "LIFECYCLE scope: universe ranking, historical regime, MIS capacity and broker "
+            "rejections are not replayed.",
+            "Paper book only: live PENNY CNC rows have no shipped exit management.",
+            "Daily-bar exits cannot order intraday events; the tracker's own branch order is used.",
+        ),
+        default_config={"tickers": [], "regime": "PR1_CALM"},
+        default_assumptions={"entry": "0930_partial_candle_ltp_fill", "exits": "1545_daily_tracker",
+                             "costs": "engine_calc_zerodha_costs_cnc"},
+        parameter_schema={
+            "tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+            "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
+        },
+        scope="LIFECYCLE",
+    )
+
+    def snapshot_config(self, supplied):
+        from research_penny_cnc_lifecycle import PennyCncConfig
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("the CNC lifecycle replay requires an explicit ticker list")
+        cfg = PennyCncConfig(tickers=tickers, regime=merged["regime"])
+        return {"tickers": list(cfg.tickers), "regime": cfg.regime}
+
+    def prepare(self, db_path, request):
+        from datetime import date as _date, timedelta as _td
+        from research_data_contracts import (
+            DatasetUnavailable, load_daily_dataset, load_intraday_dataset,
+        )
+        tickers = request.config["tickers"]
+        try:
+            intraday = load_intraday_dataset(db_path, interval="minute", start=request.start_date,
+                                             end=request.end_date, tickers=tickers)
+            daily = load_daily_dataset(db_path, tickers=tickers, before=(
+                _date.fromisoformat(request.end_date) + _td(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        if not intraday.bars:
+            raise BacktestUnavailable("no validated minute bars for the 09:30 partial candle")
+        fingerprint = "sha256:" + hashlib.sha256(
+            (intraday.manifest["dataset_sha256"] + daily.manifest["dataset_sha256"]).encode()
+        ).hexdigest()
+        return PreparedDataset(fingerprint, sum(len(b) for b in daily.bars.values()),
+                               {"intraday": intraday.manifest, "daily": daily.manifest},
+                               (intraday, daily))
+
+    def execute(self, prepared, request):
+        from research_penny_cnc_lifecycle import PennyCncConfig, run_penny_cnc_lifecycle
+        intraday, daily = prepared.payload
+        return run_penny_cnc_lifecycle(
+            intraday, daily, PennyCncConfig(tickers=tuple(request.config["tickers"]),
+                                            regime=request.config["regime"]),
+            start=request.start_date, end=request.end_date)
+
+    def normalize(self, result, request):
+        summary = result["summary"]
+        warnings = list(self.metadata.limitations) + list(result.get("warnings", []))
+        return ({
+            "trade_count": summary["closed_trades"], "net_pnl": summary["net_pnl"],
+            "net_return_pct": None, "win_rate_pct": summary["win_rate_pct"],
+            "profit_factor": summary["profit_factor"], "max_drawdown_pct": None, "avg_r": None,
+            "scope": result["scope"], "status": result["status"],
+            "unresolved_trades": summary["unresolved_trades"],
+            "net_excluding_best_winner": summary["net_excluding_best_winner"],
+            "funnel": result["funnel"],
+            "oos": {"available": False, "reason": "single retrospective lifecycle run"},
+        }, warnings)
+
+
+class PennyJointPortfolioAdapter(BacktestAdapter):
+    """P3 shared-cash reconciliation over the two shipped Penny lifecycles.
+
+    This deliberately remains PORTFOLIO_PARTIAL: it reconciles recorded
+    candidates/fills/exits, but cannot restore historical universe, sector,
+    event and scheduler evidence which neither runtime persisted.
+    """
+    metadata = StrategyMetadata(
+        strategy_id="penny_joint_lifecycle_portfolio", name="Penny MIS + CNC shared-cash portfolio",
+        version="1.0.0", engine="penny_lifecycle_replay + research_penny_cnc_lifecycle + portfolio_parity",
+        timeframe="1 minute + daily", scope="PORTFOLIO_PARTIAL",
+        description="Reconciles explicit MIS and CNC lifecycle trade streams against one conservative own-cash ledger.",
+        capabilities=("shared_cash", "lifecycle_exits", "costs", "partial_exit_evidence", "coverage_contract"),
+        data_requirements=("B1-validated minute and daily evidence for explicit MIS/CNC tickers",),
+        limitations=("Historical universe/regime/sector/event context and scheduler priority are not archived.",
+                     "CNC date-only exits hold cash until end of session; no broker partial-fill/rejection evidence exists."),
+        default_config={"mis_tickers": [], "cnc_tickers": [], "regime": "PR1_CALM",
+                        "session_policy": "complete_only", "initial_cash": 2000.0},
+        default_assumptions={"cash": "full entry notional, timestamp order, exits before entries only on identical known clocks",
+                             "scope": "partial; does not reconstruct unarchived runtime context"},
+        parameter_schema={
+            "mis_tickers": {"type": "array", "items": {"type": "string"}},
+            "cnc_tickers": {"type": "array", "items": {"type": "string"}},
+            "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
+            "session_policy": {"enum": ["complete_only", "allow_gaps"]},
+            "initial_cash": {"type": "number", "minimum": 0.01},
+        },
+    )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        mis, cnc = _ticker_list(merged["mis_tickers"]), _ticker_list(merged["cnc_tickers"])
+        if not mis and not cnc:
+            raise ValueError("the joint Penny portfolio requires mis_tickers and/or cnc_tickers")
+        cash = merged["initial_cash"]
+        if isinstance(cash, bool) or not isinstance(cash, (int, float)) or not math.isfinite(float(cash)) or cash <= 0:
+            raise ValueError("initial_cash must be positive and finite")
+        return {**merged, "mis_tickers": list(mis), "cnc_tickers": list(cnc), "initial_cash": float(cash)}
+
+    def prepare(self, db_path, request):
+        from datetime import date as _date, timedelta as _td
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset, load_intraday_dataset
+        tickers = sorted(set(request.config["mis_tickers"] + request.config["cnc_tickers"]))
+        try:
+            intraday = load_intraday_dataset(db_path, interval="minute", start=request.start_date,
+                                             end=request.end_date, tickers=tickers)
+            daily = load_daily_dataset(db_path, tickers=tickers, before=(
+                _date.fromisoformat(request.end_date) + _td(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        if not intraday.bars:
+            raise BacktestUnavailable("no validated minute evidence for joint portfolio")
+        fingerprint = "sha256:" + hashlib.sha256(
+            (intraday.manifest["dataset_sha256"] + daily.manifest["dataset_sha256"]).encode()).hexdigest()
+        return PreparedDataset(fingerprint, sum(len(v) for v in intraday.bars.values()),
+                               {"intraday": intraday.manifest, "daily": daily.manifest}, (intraday, daily))
+
+    def execute(self, prepared, request):
+        from penny_lifecycle_replay import PennyLifecycleConfig, run_penny_lifecycle
+        from research_penny_cnc_lifecycle import PennyCncConfig, run_penny_cnc_lifecycle
+        from portfolio_parity import reconcile_shared_cash
+        intraday, daily = prepared.payload
+        cfg = request.config
+        mis = run_penny_lifecycle(intraday, daily, PennyLifecycleConfig(
+            tickers=tuple(cfg["mis_tickers"]), book="PENNY_PAPER", regime=cfg["regime"],
+            session_policy=cfg["session_policy"]), start=request.start_date, end=request.end_date) if cfg["mis_tickers"] else {"trades": [], "status": "NOT_REQUESTED"}
+        cnc = run_penny_cnc_lifecycle(intraday, daily, PennyCncConfig(
+            tickers=tuple(cfg["cnc_tickers"]), regime=cfg["regime"]),
+            start=request.start_date, end=request.end_date) if cfg["cnc_tickers"] else {"trades": [], "status": "NOT_REQUESTED"}
+        ledger = reconcile_shared_cash((("penny_mis", mis.get("trades", [])),
+                                        ("penny_cnc", cnc.get("trades", []))), initial_cash=cfg["initial_cash"])
+        return {"scope": "PORTFOLIO_PARTIAL", "status": "PARTIAL", "mis": mis, "cnc": cnc,
+                "portfolio": asdict(ledger), "warnings": list(self.metadata.limitations)}
+
+    def normalize(self, result, request):
+        ledger = result["portfolio"]
+        return ({"trade_count": ledger["admitted"], "net_pnl": ledger["realized_pnl"], "net_return_pct": None,
+                 "win_rate_pct": None, "profit_factor": None, "max_drawdown_pct": None, "avg_r": None,
+                 "shared_cash": {k: ledger[k] for k in ("initial_cash", "final_cash", "locked_cash", "cash_rejected", "unresolved")},
+                 "status": result["status"], "oos": {"available": False, "reason": "PORTFOLIO_PARTIAL"}},
+                list(self.metadata.limitations) + list(result.get("warnings", [])))
+
+
 class Momentum15MinuteReplayAdapter(BacktestAdapter):
     metadata = StrategyMetadata(
         strategy_id="momentum_intraday_15m_replay", name="Momentum (true 15-minute replay)",
-        version="1.0.0", description="Chronological production-evaluator replay using explicit 15-minute cache provenance.",
-        engine="momentum_replay", timeframe="15 minute",
+        version="1.1.0", description="Chronological production-evaluator replay using explicit 15-minute cache provenance.",
+        engine="momentum_replay", timeframe="15 minute", scope="EVALUATOR",
         capabilities=("universe", "true_intraday", "gate_funnel", "costs", "risk_metrics", "chronological_oos"),
         data_requirements=("intraday_cache interval='15minute'", "strictly prior ohlcv_cache daily history"),
-        limitations=("15-minute OHLC assumes stop before target.", "Full quantity exits at T1; partial runners and trailing stops are not modelled."),
+        limitations=("15-minute OHLC assumes protective stop before a favourable high and cannot prove quote-level order timing.", "TARGET_1_PROXY exits the full quantity at T1; LIVE_EXIT_LIFECYCLE calls the shipped exit evaluator; THESIS_EXIT and RUNNER_EXIT are research candidates; none has a broker receipt.", "MOM_SELECTIVE also needs the index_ticker's 15-minute bars in the snapshot (market and relative-strength context).", "ACCEPTED_CLOSE (legacy default) fills at a bar close known only at bar end; NEXT_BAR_OPEN is the executable clock.", "Historical Swing-derived regime, Telegram approval, broker admission and shared capital are not archived; configured context is declared, not inferred."),
         default_config={
             "tickers": [], "bankroll": 4500.0, "momentum_pool": 2500.0,
             "min_candles": 4, "daily_lookback_rows": 30, "market_regime": "BULL",
             "regime": "REGIME_1_NORMAL", "normal_volume_threshold": 1.5,
             "lunchtime_volume_threshold": 1.75, "lunchtime_start": "11:30",
-            "lunchtime_end": "13:15", "variants": ["MOM_BASE", "MOM_RECENCY_5"], "oos_folds": 3,
+            "lunchtime_end": "13:15", "variants": ["MOM_BASE"], "exit_model": "TARGET_1_PROXY",
+            "entry_clock": "ACCEPTED_CLOSE", "oos_folds": 3, "index_ticker": "NIFTY 50",
         },
-        default_assumptions={"execution": "frozen_momentum_shadow_slippage_and_MIS_costs", "same_bar_rule": "stop_before_target", "position_lifecycle": "full_quantity_target_1"},
+        default_assumptions={"execution": "frozen_momentum_shadow_slippage_and_MIS_costs", "same_bar_rule": "stop_before_target", "position_lifecycle": "selected_by_exit_model; actual assumptions recorded in result"},
         parameter_schema={
             "tickers": {"type": "array", "items": {"type": "string"}},
             "bankroll": {"type": "number", "minimum": 0.01},
@@ -759,8 +1489,12 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
             "lunchtime_volume_threshold": {"type": "number", "minimum": 0},
             "lunchtime_start": {"type": "string", "format": "HH:MM"},
             "lunchtime_end": {"type": "string", "format": "HH:MM"},
-            "variants": {"type": "array", "items": {"enum": ["MOM_BASE", "MOM_RECENCY_5"]}},
+            "variants": {"type": "array", "items": {"enum": ["MOM_BASE", "MOM_RECENCY_5", "MOM_SELECTIVE"]}},
+            "exit_model": {"type": "string", "enum": ["TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE", "THESIS_EXIT",
+                                                      "RUNNER_EXIT"]},
+            "entry_clock": {"type": "string", "enum": ["ACCEPTED_CLOSE", "NEXT_BAR_OPEN"]},
             "oos_folds": {"type": "integer", "minimum": 3},
+            "index_ticker": {"type": "string"},
         },
     )
 
@@ -795,8 +1529,11 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
 
     def prepare(self, db_path, request):
         from momentum_replay import ReplayDataError, _read_cache, _validate_frame
+        typed = self._typed(request.config)
+        index_ticker = typed.index_ticker.strip().upper() if typed.needs_index else None
         try:
-            intra, daily, provenance = _read_cache(db_path, request.config["tickers"] or None, request.start_date, request.end_date)
+            intra, daily, provenance = _read_cache(db_path, request.config["tickers"] or None, request.start_date,
+                                                   request.end_date, index_ticker)
             validated = _validate_frame(intra)
         except ReplayDataError as exc:
             raise BacktestUnavailable(str(exc)) from exc
@@ -833,7 +1570,7 @@ class FnoUnavailableAdapter(BacktestAdapter):
         strategy_id="fno_momentum_5m",
         name="F&O Momentum (5-minute)", version="1.0.0",
         description="Existing F&O replay engine; registered but unavailable until verified futures bars are persisted.",
-        engine="fno_backtest.run_fno_backtest", timeframe="5 minute futures",
+        engine="fno_backtest.run_fno_backtest", timeframe="5 minute futures", scope="UNAVAILABLE",
         capabilities=("modelled_options", "costs", "risk_metrics"),
         data_requirements=("verified NIFTY futures 5-minute OHLCV with interval and instrument provenance",),
         limitations=("Current cache does not establish the required futures instrument/timeframe provenance.",),
@@ -855,9 +1592,10 @@ class FnoUnavailableAdapter(BacktestAdapter):
 STRATEGY_REGISTRY: dict[str, BacktestAdapter] = {
     adapter.metadata.strategy_id: adapter
     for adapter in (
-        SwingDailyAdapter(), PennyDailyProxyAdapter(),
+        SwingDailyAdapter(), SwingDecisionParityAdapter(), EdgeDecisionParityAdapter(), EdgePortfolioReplayAdapter(), RangePortfolioReplayAdapter(), SwingPortfolioReplayAdapter(), PennyDailyProxyAdapter(),
         PennyDailyProxyWalkForwardAdapter(), PennyMinuteReplayAdapter(),
-        Momentum15MinuteReplayAdapter(), FnoUnavailableAdapter(),
+        PennyMisLifecycleAdapter(), PennyCncConnorsLifecycleAdapter(), PennyJointPortfolioAdapter(),
+        Momentum15MinuteReplayAdapter(), RangeReversionEvaluatorAdapter(), FnoUnavailableAdapter(),
     )
 }
 
@@ -963,9 +1701,11 @@ async def list_strategies(db_path: str) -> list[dict[str, Any]]:
                     "SELECT name FROM sqlite_master WHERE type='table'"
                 )}
                 daily_count = conn.execute("SELECT count(*) FROM ohlcv_cache").fetchone()[0] if "ohlcv_cache" in tables else 0
-                if isinstance(adapter, (PennyMinuteReplayAdapter, Momentum15MinuteReplayAdapter)):
+                if isinstance(adapter, (PennyMinuteReplayAdapter, PennyMisLifecycleAdapter,
+                                        PennyCncConnorsLifecycleAdapter,
+                                        Momentum15MinuteReplayAdapter)):
                     columns = {row[1] for row in conn.execute("PRAGMA table_info(intraday_cache)")} if "intraday_cache" in tables else set()
-                    interval = "minute" if isinstance(adapter, PennyMinuteReplayAdapter) else "15minute"
+                    interval = "15minute" if isinstance(adapter, Momentum15MinuteReplayAdapter) else "minute"
                     intraday_count = conn.execute(
                         "SELECT count(*) FROM intraday_cache WHERE interval=?", (interval,)
                     ).fetchone()[0] if "interval" in columns else 0

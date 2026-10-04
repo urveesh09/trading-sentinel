@@ -1,0 +1,49 @@
+{
+  "checked_at_utc": "2026-10-03T14:59:32.000754+00:00",
+  "current_policy_manifests_verified": [
+    "penny-mis-final",
+    "penny-cnc-final",
+    "penny-joint-final",
+    "edge-retry",
+    "range-final",
+    "swing-final",
+    "momentum-final",
+    "fno-full-final",
+    "penny-mis-gaps",
+    "penny-joint-gaps",
+    "momentum-covered"
+  ],
+  "engine_state_readonly": "stopped; no restart",
+  "evidence_db_hash_verified": true,
+  "focused_tests": "28 passed; 1 existing HTTPX deprecation",
+  "operational_count_preservation_verified": [
+    "penny_signals",
+    "momentum_signals",
+    "fno_signals"
+  ],
+  "orchestration_sha256": "sha256:c5281d69ce4bbae5c22cc36674d894711571884069c86deb830f6eeb54085386",
+  "original_final_unchanged": [
+    "penny-mis-final",
+    "penny-cnc-final",
+    "penny-joint-final",
+    "range-final",
+    "swing-final",
+    "momentum-final",
+    "fno-full-final"
+  ],
+  "qualification": "NOT_ASSESSED",
+  "quote_files_verified": 19,
+  "raw_collection_hash_verified": true,
+  "receipt_report_hashes_verified": 19,
+  "schema": "sentinel_current_system_integrity_receipt_v1",
+  "snapshot_row_counts": {
+    "daily": 213184,
+    "intraday": 873285
+  },
+  "snapshot_rows_sha256": "sha256:5a1a8b2c22d96fed2698cce5e43202279418c79a0d590ec64fb8850cd9e621ad",
+  "stopped_copy_files_verified": 4,
+  "utc_normalized_actual_ledger_metrics_agree": [
+    "penny-joint-final",
+    "penny-joint-gaps"
+  ]
+}

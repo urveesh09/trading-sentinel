@@ -1,0 +1,43 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "error": null,
+  "id": "momentum-live-exit-diagnostic",
+  "interpretation": "Exit measurement difference, not deployed alpha; OHLC path/clock limits remain.",
+  "metrics": {
+    "avg_r": -0.40717545,
+    "max_drawdown_pct": null,
+    "net_pnl": -19.007674,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "folds": [],
+      "required_folds": 3,
+      "scored_folds": 0,
+      "status": "insufficient_data"
+    },
+    "profit_factor": 0.0,
+    "trade_count": 2,
+    "variant_comparison": {
+      "avg_r": -0.40717545,
+      "closed_trades": 2,
+      "entries": 2,
+      "expectancy": -9.503837,
+      "max_drawdown": 19.007674,
+      "net_pnl": -19.007674,
+      "open_trades": 0,
+      "profit_factor": 0.0
+    },
+    "win_rate_pct": null
+  },
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local/momentum-live-exit-diagnostic-report.json",
+  "report_sha256": "3844cb14fd5cab0c4207e2ad8fc9e28b7d1ae9054389a43085c3b0874a6b1498",
+  "scope": "EVALUATOR",
+  "state": "SUCCEEDED",
+  "trades": null,
+  "warnings": null
+}

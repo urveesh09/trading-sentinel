@@ -38,17 +38,24 @@ import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_shadow
 from config import settings
-from fno_chain import ChainSnapshot, select_strike_by_delta, take_chain_snapshot
+from fno_chain import ChainSnapshot, take_chain_snapshot
 from fno_costs import calc_fno_costs
 from fno_engine_mom import MomSignal, evaluate_fno_mom
+from fno_adaptive_risk import policy_from_settings as adaptive_policy, read_book_closes, risk_stance
+from fno_entry_plan import EntryState, plan_single_leg_entry
 from fno_executor import FnoExecutor
-from fno_gates import GateContext, evaluate_entry_gates_with_trace
+from fno_gates import evaluate_entry_gates_with_trace
 from fno_instruments import get_fno_instruments
-from fno_models import FnoDirection, FnoSource, Leg, OptionType
-from fno_risk import (
-    kill_switch_status, lots_for_pool, min_viable_pool, validate_position,
+from fno_models import FnoSource
+from fno_risk import kill_switch_status
+from fno_shared_risk import (
+    DISPATCH_RELEASE_OUTCOMES, DISPATCH_RETAIN_OUTCOMES, EntryOccupancy,
+    claim_shared_fno_entry_dispatch,
+    init_shared_fno_risk_db, policy_from_settings, reserve_shared_fno_risk,
+    resolve_shared_fno_entry_dispatch, shared_fno_entry_policy,
 )
 from fno_signal_log import log_fno_signal
+from fno_underlyings import SPECS, get_instruments_for, trading_underlyings
 
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
@@ -222,11 +229,10 @@ def _fno_pool_live() -> float:
     return float(settings.FNO_LIVE_BANKROLL)
 
 
-# A book that has surrendered this share of its pool stops trading. The
-# directional F&O leg ran 2W/10L to -15,474 without anything noticing,
-# because sizing read a constant and the ledger was posting the damage
-# against an unrelated pool.
-FNO_MAX_DRAWDOWN_PCT = 0.25
+# A book that has surrendered ``settings.FNO_MAX_DRAWDOWN_PCT`` of its pool
+# stops trading. The directional F&O leg ran 2W/10L to -15,474 without
+# anything noticing, because sizing read a constant and the ledger was posting
+# the damage against an unrelated pool.
 
 
 async def _load_dr_entry_inputs(
@@ -298,12 +304,13 @@ def _fno_halted(equity: float, allocation: float, source: str) -> bool:
             source, equity,
         )
         return True
-    if equity < allocation * (1.0 - FNO_MAX_DRAWDOWN_PCT):
+    limit = float(settings.FNO_MAX_DRAWDOWN_PCT)
+    if equity < allocation * (1.0 - limit):
         logger.critical(
             "fno_leg_halted source=%s equity=%.2f allocation=%.2f "
             "drawdown=%.1f%% limit=%.0f%%",
             source, equity, allocation,
-            (1 - equity / allocation) * 100, FNO_MAX_DRAWDOWN_PCT * 100,
+            (1 - equity / allocation) * 100, limit * 100,
         )
         return True
     return False
@@ -369,9 +376,15 @@ async def _manage_open_positions(
     now_ist: datetime, fut_price: Optional[float], *, read_observations: Optional[dict] = None,
     db_timing: Optional[dict] = None,
     action_clock: Optional[Callable[[], datetime]] = None,
+    fut_prices: Optional[dict] = None,
 ) -> List[dict]:
     """Check every OPEN position for this leg against the §8.4/§8.5 exit
-    ladder. Returns records of closed positions."""
+    ladder. Returns records of closed positions.
+
+    ``fut_prices`` maps underlying -> its front-future price; a position is
+    never priced with another index's future (a missing entry means no
+    futures quote this tick). Without it every position uses ``fut_price``.
+    """
     evaluation_started_at = datetime.now(pytz.UTC)
     positions = await _timed_database_operation(
         db_timing, f"open_positions:{source}", fpos.open_positions(db_path, source),
@@ -456,15 +469,17 @@ async def _manage_open_positions(
         # persistence remain here.  Rationale for the time-stop premium
         # deferral (8 time-stop exits, -Rs 7,010, two cut in profit) is
         # retained in that module and in config.FNO_TIME_STOP_RESPECTS_PREMIUM.
+        position_fut = (fut_prices.get((p.underlying or "NIFTY").upper()) if fut_prices is not None
+                        else fut_price)
         decision = evaluate_single_leg_exit(
-            p, now_ist=now_ist, fut_price=fut_price, exit_px_basis=exit_px_basis,
+            p, now_ist=now_ist, fut_price=position_fut, exit_px_basis=exit_px_basis,
             hard_flat=hard_flat, params=live_single_leg_exit_params(settings),
         )
         exit_reason = decision.exit_reason
         if decision.trail_newly_armed:
             logger.info(
                 "fno_trail_armed id=%d symbol=%s fut=%.1f target=%.1f",
-                p.id, p.tradingsymbol, fut_price, p.target_underlying,
+                p.id, p.tradingsymbol, position_fut, p.target_underlying,
             )
         if decision.entry_time_unparseable:
             # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking.
@@ -535,10 +550,13 @@ async def _manage_open_positions(
             logger.critical("fno_exit_reconciliation_required id=%s source=%s", p.id, source)
             continue
         try:
+            spec = SPECS.get((p.underlying or "NIFTY").upper())
+            exchange_kw = {} if spec is None or spec.segment == "NFO" else {"exchange": spec.segment}
             result = await executor.execute_exit(
                 p.tradingsymbol, p.qty, exit_px_basis,
                 tick_size=settings.FNO_TICK_SIZE,
                 hard_flat=exit_reason.startswith("hard_flat"),
+                **exchange_kw,
             )
         except Exception:
             logger.exception("fno_exit_dispatch_ambiguous id=%s; reconcile before retry", p.id)
@@ -561,7 +579,7 @@ async def _manage_open_positions(
                 db_timing, f"exit_receipt_write:{source}", fpos.record_exit_execution_receipt(
                     db_path, p.id,
                     exit_time_ist=now_ist, exit_premium=fill,
-                    exit_underlying=fut_price or 0.0, exit_reason=exit_reason,
+                    exit_underlying=position_fut or 0.0, exit_reason=exit_reason,
                     gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
                     exit_order_id=result.get("order_id"),
                     source=source, ticker=p.tradingsymbol,
@@ -598,17 +616,20 @@ async def _try_entry_for_leg(
     sig: MomSignal, snap: ChainSnapshot, regime: str,
     now_ist: datetime, scan_id: str, is_trading_day: bool,
     *, action_clock: Optional[Callable[[], datetime]] = None,
+    shared_pool_rs: Optional[float] = None,
+    underlying: Optional[str] = None, underlying_book=None,
 ) -> Optional[dict]:
     """Run the §7 gate ladder + §4 constitution + sizing for ONE leg and,
     if everything passes, place the entry. Logs the evaluation either way."""
-    instruments = get_fno_instruments()
+    underlying = (underlying or settings.FNO_UNDERLYING).upper()
+    instruments = underlying_book or get_fno_instruments()
     today_iso = now_ist.date().isoformat()
 
     async def _log(accepted: bool, reason: str, **extra):
         await log_fno_signal(
             db_path, scan_id=scan_id, leg=source, accepted=accepted,
             reject_reason=reason, bar_ts=sig.bar_ts,
-            underlying=settings.FNO_UNDERLYING,
+            underlying=underlying,
             direction=sig.direction.value if sig.direction else None,
             regime=regime, fut_price=snap.forward,
             or_high=sig.or_high, or_low=sig.or_low, atr=sig.atr,
@@ -616,171 +637,93 @@ async def _try_entry_for_leg(
             **extra,
         )
 
-    # Strike selection (§8.3): |delta| closest to 0.55, ATM-or-ITM only.
-    opt_type = OptionType.CE if sig.direction == FnoDirection.LONG else OptionType.PE
-    picked = select_strike_by_delta(snap, opt_type, now_ist)
-    if picked is None:
-        await _log(False, "no_strike_solves_delta")
-        return None
-    quote, iv, delta_val = picked
-    contract = quote.contract
-    ask = quote.ask
-    lot_size = snap.lot_size or contract.lot_size
+    # One vehicle per directional idea (FNO_VEHICLE_BY_IV): when premium is
+    # rich the capped-loss book expresses it as a debit spread, so the naked
+    # leg stands aside -- unless a structure is already open (one at a time),
+    # in which case the spread cannot be taken and the naked leg may trade.
+    if source == FnoSource.FNO_PAPER.value:
+        import fno_dr_book as _dr
+        if (_dr.vehicle_by_iv_active()
+                and _dr.choose_directional_vehicle(snap, now_ist) == _dr.VEHICLE_SPREAD
+                and not await _dr.open_structures(db_path, source)):
+            await _log(False, "vehicle_spread_preferred")
+            return None
 
-    quote_age = (
-        (now_ist - quote.last_trade_time).total_seconds()
-        if quote.last_trade_time else float("inf")
-    )
+    # Book state is read here; the decision itself is the pure, shared
+    # ``fno_entry_plan.plan_single_leg_entry`` (strike pick, §7 gates,
+    # no-pyramid, sizing, §4 max loss, net reward/risk) so research replays
+    # evaluate exactly this logic.
     open_prem = await fpos.open_premium_committed(db_path, source)
-    n_open = len(await fpos.open_positions(db_path, source))
+    open_rows = await fpos.open_positions(db_path, source)
     n_today = await fpos.trades_today(db_path, source, today_iso)
-    switches = await kill_switch_status(db_path, source, pool, now_ist.date())
+    # F0-C makes the paper books share one ledger-bound entry-policy receipt.
+    # Initialise only the additive local evidence schemas; exits/management do
+    # not depend on this branch and remain available when an entry is halted.
+    shared_policy = None
+    if shared_pool_rs is not None and source == FnoSource.FNO_PAPER.value:
+        from performance import init_ledger
+        import fno_dr_book as _dr
+        await init_ledger(db_path)
+        await fpos.init_fno_positions_db(db_path)
+        await _dr.init_dr_db(db_path)
+        await init_shared_fno_risk_db(db_path)
+        shared_policy = policy_from_settings()
+        shared_decision = await shared_fno_entry_policy(
+            db_path, source=source, pool_rs=shared_pool_rs,
+            today_ist=now_ist.date(), policy=shared_policy,
+        )
+        switches = list(shared_decision.active_halts)
+    else:
+        switches = await kill_switch_status(db_path, source, pool, now_ist.date())
+    # Adaptive risk: size shrinks in a drawdown, grows only on proven evidence,
+    # and two losing single-leg closes end the day's single-leg entries.
+    stance = risk_stance(await read_book_closes(db_path, source), allocation=shared_pool_rs or pool,
+                         now=now_ist, policy=adaptive_policy())
+    if stance.single_leg_halted_today:
+        switches = [*switches, f"two_strike_day_halt losses={stance.single_leg_losses_today}"]
     if switches:
         # Rule 72: a halted leg is a WARNING, never an INFO.
         logger.warning("fno_kill_switch_active source=%s switches=%s", source, switches)
+    if stance.multiplier != 1.0:
+        logger.info("fno_adaptive_risk source=%s multiplier=%.2f reason=%s drawdown=%.4f trades=%d pf=%s",
+                    source, stance.multiplier, stance.reason, stance.drawdown_pct, stance.closed_trades,
+                    stance.profit_factor)
 
-    ctx = GateContext(
-        now_min=_now_min(now_ist),
-        is_trading_day=is_trading_day,
-        is_expiry_day=instruments.is_expiry_day(now_ist.date()),
-        regime=regime,
-        oi=quote.oi, volume=quote.volume,
-        bid=quote.bid, ask=quote.ask, ltp=quote.ltp,
-        quote_age_sec=quote_age,
-        forward=snap.forward, strike=contract.strike,
-        is_call=(opt_type == OptionType.CE), iv=iv,
-        pool=pool, premium=ask, lot_size=lot_size,
-        open_premium=open_prem, open_positions=n_open, trades_today=n_today,
-        active_kill_switches=switches,
-        chain_age_sec=snap.age_sec(now_ist),
-    )
-    contract_fields = dict(
-        tradingsymbol=contract.tradingsymbol, strike=contract.strike,
-        opt_type=opt_type.value, expiry=contract.expiry.isoformat(),
-        premium=ask, iv=iv, delta=delta_val, spread_pct=quote.spread_pct,
-        oi=quote.oi, volume=quote.volume,
-        min_pool_required=min_viable_pool(
-            ask, lot_size, settings.FNO_STOP_PREMIUM_PCT, settings.FNO_MAX_RISK_PCT,
-        ),
-        # [POOL-AUDIT 2026-08-04] Log the pool the gate was actually evaluated
-        # against, not just the threshold it had to clear.
-        #
-        # Without this the row is unfalsifiable. The 2026-08-03 audit read
-        # min_pool_required=24,821 next to a bankroll_ledger showing FNO_PAPER
-        # at -10,329 and concluded the gate had been bypassed. It had not: the
-        # ledger column omitted the division's allocation, while sizing used
-        # the full 250,000 pool. The two numbers were describing different
-        # things and nothing in the signal row said which one the gate saw.
-        pool_at_eval=round(float(pool), 2),
-    )
-
-    # The evaluator keeps the first-failure decision semantics unchanged while
-    # exposing its already-passed prefix for the append-only audit row.  This
-    # lets an operator distinguish "blocked by a switch after prior gates"
-    # from a hypothetical viable order without weakening any gate.
-    ok, reject, passed_gates = evaluate_entry_gates_with_trace(ctx)
-    gate_audit_fields = {
-        "passed_gates": passed_gates,
-        "active_kill_switches": switches,
-    }
-    if not ok:
-        await _log(False, reject, **contract_fields, **gate_audit_fields)
+    plan = plan_single_leg_entry(sig, snap, regime, now_ist, EntryState(
+        pool=pool, open_premium=open_prem, open_positions=len(open_rows), trades_today=n_today,
+        active_kill_switches=tuple(switches),
+        held_symbols=frozenset(p.tradingsymbol for p in open_rows),
+        correlated_open_directions=frozenset(
+            p.direction for p in open_rows if (p.underlying or "NIFTY").upper() != underlying),
+        is_trading_day=is_trading_day, is_expiry_day=instruments.is_expiry_day(now_ist.date()),
+        risk_multiplier=stance.multiplier,
+    ))
+    if not plan.accepted:
+        await _log(False, plan.reject_reason, **plan.log_fields)
+        if plan.reject_reason == "already_holding_this_contract":
+            logger.info(
+                "fno_entry_skip source=%s reason=already_holding_this_contract symbol=%s open_lots=%d",
+                source, plan.quote.contract.tradingsymbol,
+                sum(p.lots for p in open_rows if p.tradingsymbol == plan.quote.contract.tradingsymbol),
+            )
+        elif plan.reject_reason == "reward_risk_below_min":
+            terms = plan.rr_terms
+            logger.info(
+                "fno_entry_skip source=%s reason=reward_risk_below_min symbol=%s "
+                "rr=%.2f min=%.2f reward=%.0f risk=%.0f spread=%.0f "
+                "stop_pts=%.1f target_pts=%.1f delta=%.2f",
+                source, plan.quote.contract.tradingsymbol, plan.reward_risk, settings.FNO_MIN_REWARD_RISK,
+                terms["reward"], terms["risk"], terms["spread"], terms["stop_pts"], terms["target_pts"],
+                terms["delta"],
+            )
         return None
-
-    # [NO-PYRAMID 2026-07-26] Refuse a second position on a contract this leg is
-    # already holding. The existing caps are count-based (FNO_MAX_CONCURRENT) and
-    # premium-based (FNO_MAX_OPEN_PREMIUM_PCT), and already_entered_bar() only
-    # blocks a repeat within the SAME 5-min bar -- so nothing stopped the book
-    # from re-entering the identical strike on a later bar.
-    #
-    # 2026-07-24 is what that looks like: FNO_PAPER opened NIFTY26JUL23700PE at
-    # 10:05 (1 lot, -Rs 1,280), again at 10:35 (1 lot, -Rs 1,926), then again at
-    # 11:00 with 2 lots while the 10:35 leg was still open and already losing
-    # (-Rs 2,512). ~Rs 30k of premium concentrated on one strike, and the third
-    # entry was averaging into a loser the ORB signal had already been wrong
-    # about twice. Same-day re-entry on a DIFFERENT strike stays allowed.
-    held = [p for p in await fpos.open_positions(db_path, source)
-            if p.tradingsymbol == contract.tradingsymbol]
-    if held:
-        await _log(
-            False, "already_holding_this_contract", **contract_fields,
-            **gate_audit_fields,
-        )
-        logger.info(
-            "fno_entry_skip source=%s reason=already_holding_this_contract symbol=%s open_lots=%d",
-            source, contract.tradingsymbol, sum(p.lots for p in held),
-        )
-        return None
-
-    # Sizing (§3): decline rather than oversize.
-    lots = lots_for_pool(
-        pool, ask, lot_size,
-        settings.FNO_STOP_PREMIUM_PCT, settings.FNO_MAX_RISK_PCT,
-        settings.FNO_MAX_LOTS,
-    )
-    # Respect the open-premium cap on the marginal lot too.
-    while lots > 0 and open_prem + lots * ask * lot_size > settings.FNO_MAX_OPEN_PREMIUM_PCT * pool:
-        lots -= 1
-    if lots < 1:
-        await _log(
-            False, "pool_below_min_viable", **contract_fields, lots=0,
-            **gate_audit_fields,
-        )
-        return None
-
-    # §4 constitution -- the order path runs through validate_position.
-    legs = [Leg(opt_type=opt_type, strike=contract.strike, quantity=lots, premium=ask)]
-    ok_ml, reject_ml, ml = validate_position(legs, lot_size)
-    if not ok_ml:
-        await _log(
-            False, reject_ml, **contract_fields, lots=lots,
-            max_loss_rupees=ml, **gate_audit_fields,
-        )
-        return None
-
-    # [NAKED-LEG-EXPECTANCY 2026-07-31] A long option is only a trade if its
-    # payoff at target beats its loss at stop AFTER the spread. Measured on the
-    # premium, this book's geometry was upside down and its record says so:
-    # 12 naked legs, 2 winners, -Rs 15,474 since 2026-07-16. The defined-risk
-    # spreads over the same period ran ~flat on a 1.7:1 structure.
-    #
-    # Two things invert it. First the premium backstop: risk is
-    # min(delta-implied loss at the underlying stop, FNO_STOP_PREMIUM_PCT of
-    # premium), so a -25% backstop can cap the loss BELOW the stop distance --
-    # which sounds protective but means the position is stopped by decay rather
-    # than by the thesis being wrong. Second the spread, paid twice, on an
-    # instrument whose whole edge is a fraction of one underlying point.
-    #
-    # 2026-07-30 is the worked example: risk ~Rs 3,503 against a reward of
-    # ~Rs 2,717 -- 0.78:1 before costs, i.e. negative expectancy at ANY win
-    # rate below 56%, on a book running 17%. This gate refuses that trade.
-    # It does not touch the defined-risk book, which trades earlier in the tick.
-    entry_u = float(snap.forward)
-    stop_pts = abs(entry_u - float(sig.stop_underlying))
-    target_pts = abs(float(sig.target_underlying) - entry_u)
-    abs_delta = abs(float(delta_val)) or 0.0
-    # Premium moves ~delta per underlying point over a short intraday hold.
-    reward_rs = abs_delta * target_pts * (lots * lot_size)
-    risk_prem_pts = min(abs_delta * stop_pts, ask * settings.FNO_STOP_PREMIUM_PCT)
-    risk_rs = risk_prem_pts * (lots * lot_size)
-    # Round-trip spread, paid on entry and exit.
-    spread_rs = (quote.spread_pct or 0.0) * ask * (lots * lot_size)
-    net_reward = reward_rs - spread_rs
-    net_risk = risk_rs + spread_rs
-    rr = (net_reward / net_risk) if net_risk > 0 else 0.0
-    if rr < settings.FNO_MIN_REWARD_RISK:
-        await _log(
-            False, "reward_risk_below_min", **contract_fields,
-            lots=lots, max_loss_rupees=ml, **gate_audit_fields,
-        )
-        logger.info(
-            "fno_entry_skip source=%s reason=reward_risk_below_min symbol=%s "
-            "rr=%.2f min=%.2f reward=%.0f risk=%.0f spread=%.0f "
-            "stop_pts=%.1f target_pts=%.1f delta=%.2f",
-            source, contract.tradingsymbol, rr, settings.FNO_MIN_REWARD_RISK,
-            net_reward, net_risk, spread_rs, stop_pts, target_pts, abs_delta,
-        )
-        return None
+    quote, iv, delta_val = plan.quote, plan.iv, plan.delta
+    contract, opt_type = quote.contract, plan.opt_type
+    ask, lot_size, lots, ml = quote.ask, plan.lot_size, plan.lots, plan.max_loss_rupees
+    ctx = plan.gate_context
+    contract_fields = {key: value for key, value in plan.log_fields.items()
+                       if key not in ("lots", "max_loss_rupees", "passed_gates", "active_kill_switches")}
+    gate_audit_fields = {"passed_gates": plan.log_fields["passed_gates"], "active_kill_switches": switches}
 
     # Database/limiter waits must not turn an earlier valid evaluation into
     # authority to enter after cutoff or with a now-stale quote. Replay callers
@@ -800,22 +743,106 @@ async def _try_entry_for_leg(
             return None
         today_iso = now_ist.date().isoformat()
     qty = lots * lot_size
-    result = await executor.execute_entry(contract.tradingsymbol, qty, ask)
+    # F0-B: reserve the full structural premium loss plus a zero-premium exit
+    # cost before dispatch.  This preserves feasible admissions: it uses the
+    # existing per-trade sizing and adds no arbitrary threshold, but prevents
+    # the DR and directional books from spending the same worst-case cash.
+    reservation_key = None
+    if shared_pool_rs is not None:
+        from performance import init_ledger
+        await init_ledger(db_path)
+        await fpos.init_fno_positions_db(db_path)
+        import fno_dr_book as _dr
+        await _dr.init_dr_db(db_path)
+        reservation_key = f"single:{source}:{contract.token}:{sig.bar_ts}"
+        worst_case_cash = ml + calc_fno_costs(ask, 0.0, qty)
+        admission = await reserve_shared_fno_risk(
+            db_path, source=source, pool_rs=shared_pool_rs,
+            reservation_key=reservation_key, book="SINGLE_LEG",
+            worst_case_cash_rs=worst_case_cash,
+            entry_day_ist=now_ist.date() if shared_policy is not None else None,
+            policy=shared_policy,
+        )
+        if not admission.allowed:
+            await _log(False, admission.reason, **contract_fields, lots=lots,
+                       max_loss_rupees=ml, **gate_audit_fields)
+            logger.warning("fno_entry_skip source=%s reason=%s", source, admission.reason)
+            return None
+        # F0-R2: a reservation (even an identical retry's) is not authority
+        # to dispatch. Exactly one claim per reservation is granted, after the
+        # same entry policy is re-read; a now-halted retry never dispatches.
+        # F0-R5: the existing concurrency, trades/day, open-premium and
+        # no-pyramid limits are re-applied atomically here, counting in-flight
+        # claims, so concurrent admissions cannot each pass a stale pre-read.
+        claim = await claim_shared_fno_entry_dispatch(
+            db_path, reservation_key=reservation_key, source=source, book="SINGLE_LEG",
+            pool_rs=shared_pool_rs,
+            entry_day_ist=now_ist.date() if shared_policy is not None else None,
+            policy=shared_policy,
+            occupancy=EntryOccupancy(
+                entry_day=now_ist.date(), max_open=int(settings.FNO_MAX_CONCURRENT),
+                tradingsymbol=contract.tradingsymbol, planned_premium_rs=ask * qty,
+                max_trades_per_day=int(settings.FNO_MAX_TRADES_PER_DAY),
+                max_open_premium_rs=float(settings.FNO_MAX_OPEN_PREMIUM_PCT) * pool,
+                no_pyramid=True,
+            ),
+        )
+        if not claim.granted:
+            await _log(False, f"dispatch_claim_denied:{claim.reason}", **contract_fields,
+                       lots=lots, max_loss_rupees=ml, **gate_audit_fields)
+            logger.warning("fno_entry_skip source=%s reason=dispatch_claim_denied:%s",
+                           source, claim.reason)
+            return None
+        # F0-R5: the claim was the last DB wait before dispatch; a live caller
+        # re-reads the real clock so a delay cannot carry a stale admission
+        # past the entry cutoff or quote/chain freshness.
+        if action_clock is not None:
+            late = post_admission_entry_reject(action_clock(), quote, snap)
+            if late:
+                await resolve_shared_fno_entry_dispatch(
+                    db_path, reservation_key=reservation_key, owner=claim.owner,
+                    outcome="no_dispatch",
+                    evidence={"dispatch_certainty": "NOT_SENT", "order_id": None,
+                              "reason": f"post_admission_{late}"},
+                )
+                await _log(False, f"post_admission_{late}", **contract_fields, lots=lots,
+                           max_loss_rupees=ml, **gate_audit_fields)
+                logger.warning("fno_entry_skip source=%s reason=post_admission_%s", source, late)
+                return None
+    # NFO orders keep the original call; another segment names its exchange.
+    exchange_kw = {} if instruments.segment == "NFO" else {"exchange": instruments.segment}
+    result = await executor.execute_entry(contract.tradingsymbol, qty, ask, **exchange_kw)
     if result["status"] not in ("paper", "filled"):
+        status = result["status"]
+        if reservation_key:
+            outcome = status if status in DISPATCH_RELEASE_OUTCOMES | DISPATCH_RETAIN_OUTCOMES \
+                else "unknown"
+            applied = await resolve_shared_fno_entry_dispatch(
+                db_path, reservation_key=reservation_key, owner=claim.owner,
+                outcome=outcome, evidence=result.get("evidence") or {"status": status},
+            )
+            if applied not in DISPATCH_RELEASE_OUTCOMES:
+                logger.critical(
+                    "fno_entry_outcome_unresolved source=%s symbol=%s status=%s applied=%s "
+                    "reservation=%s -- reserved capital retained; reconcile with "
+                    "reconcile_shared_fno_entry_dispatch or record the fill",
+                    source, contract.tradingsymbol, status, applied, reservation_key,
+                )
         await _log(
-            False, f"entry_{result['status']}", **contract_fields, lots=lots,
+            False, f"entry_{status}", **contract_fields, lots=lots,
             **gate_audit_fields,
         )
         return None
     fill = float(result["fill_price"])
 
     premium_stop = round((1.0 - settings.FNO_STOP_PREMIUM_PCT) * fill, 2)
-    await fpos.insert_position(
-        db_path,
+    inserter = fpos.insert_position_with_risk_reservation if reservation_key else fpos.insert_position
+    try:
+        await _insert_entry_position(inserter, db_path, reservation_key, dict(
         source=source,
         tradingsymbol=contract.tradingsymbol,
         token=contract.token,
-        underlying=settings.FNO_UNDERLYING,
+        underlying=underlying,
         expiry=contract.expiry.isoformat(),
         strike=contract.strike,
         opt_type=opt_type.value,
@@ -835,7 +862,21 @@ async def _try_entry_for_leg(
         status="OPEN",
         entry_order_id=result.get("order_id"),
         bar_ts=sig.bar_ts,
-    )
+    ))
+    except Exception:
+        if reservation_key:
+            # Paper fills exist only in this process: a failed receipt means no
+            # exposure. A live fill without its receipt keeps the reservation.
+            paper = result["status"] == "paper"
+            await resolve_shared_fno_entry_dispatch(
+                db_path, reservation_key=reservation_key, owner=claim.owner,
+                outcome="no_dispatch" if paper else "filled_unrecorded",
+                evidence={**(result.get("evidence") or {}),
+                          "dispatch_certainty": "NOT_SENT" if paper else "ACCEPTED",
+                          "order_id": None if paper else result.get("order_id"),
+                          "receipt": "position_insert_failed"},
+            )
+        raise
     await _log(
         True, "", **contract_fields, lots=lots, max_loss_rupees=ml,
         **gate_audit_fields,
@@ -854,9 +895,133 @@ async def _try_entry_for_leg(
     }
 
 
+def post_admission_entry_reject(now_ist: datetime, quote, snap) -> Optional[str]:
+    """[F0-R5] Re-check the real clock after the admission DB waits.
+
+    Same thresholds as the entry gates (entry window, contract quote and chain
+    freshness); returns the first failing gate name, or ``None``.
+    """
+    now_min = _now_min(now_ist)
+    if not settings.FNO_ENTRY_START_MIN <= now_min < settings.FNO_ENTRY_END_MIN:
+        return "entry_window"
+    age = ((now_ist - quote.last_trade_time).total_seconds()
+           if quote.last_trade_time else float("inf"))
+    if age > settings.FNO_MAX_QUOTE_AGE_SEC:
+        return "quote_freshness"
+    if snap.age_sec(now_ist) > settings.FNO_MAX_CHAIN_AGE_SEC:
+        return "chain_freshness"
+    return None
+
+
+async def _insert_entry_position(inserter, db_path: str, reservation_key, fields: dict) -> int:
+    """Insert the filled entry, consuming its reservation and claim when bound."""
+    if reservation_key:
+        return await inserter(db_path, reservation_key=reservation_key, **fields)
+    return await inserter(db_path, **fields)
+
+
 # ---------------------------------------------------------------------------
 # the tick
 # ---------------------------------------------------------------------------
+
+async def _manage_single_leg_books(
+    kite, db_path: str, fut, summary: dict, paper_exec: FnoExecutor, live_exec: FnoExecutor, *,
+    now_ist: datetime, supplied_now_ist: Optional[datetime], tick_started: float,
+    action_clock: Optional[Callable[[], datetime]],
+) -> tuple[Optional[float], datetime]:
+    """Futures quote, then the single-leg exit ladder for every enabled leg.
+
+    Shared by the scheduled tick and the fast exit loop so both manage open
+    positions through exactly the same reads, ladder and settlement path.
+    Returns the futures price (None when unavailable) and the action clock.
+    """
+    # ---- futures price for exit management ---------------------------
+    stage_started = monotonic()
+    fut_quote = {}
+    fut_quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
+    try:
+        fut_quote, provider_timing = await asyncio.wait_for(
+            _management_quote(kite, [fut.token]), timeout=fut_quote_cap,
+        )
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "COMPLETED",
+            stage_started, fut_quote_cap, provider_timing=provider_timing,
+        )
+    except asyncio.TimeoutError:
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "DEADLINE_EXCEEDED",
+            stage_started, fut_quote_cap, timeout_partial=True,
+        )
+        logger.warning("fno_futures_quote_deadline_exceeded cap_sec=%.3f", fut_quote_cap)
+    except Exception as exc:
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "FAILED",
+            stage_started, fut_quote_cap,
+        )
+        logger.error("fno_futures_quote_failed err=%s", str(exc))
+    summary["stage_durations_sec"]["futures_quote"] = round(
+        monotonic() - stage_started, 3
+    )
+    fut_price = None
+    fq = fut_quote.get(fut.token)
+    if fq and fq.get("last_price"):
+        fut_price = float(fq["last_price"])
+
+    # A real scheduler tick can cross hard-flat while queued on a provider.
+    # The completed-bar/signal timestamp remains frozen in ``sig`` later, but
+    # management, session cutoffs and admission decisions use a fresh action
+    # clock. Explicit caller clocks are retained for deterministic replay/tests.
+    if supplied_now_ist is None:
+        now_ist = datetime.now(IST)
+    summary["action_clock_ist"] = now_ist.isoformat()
+    summary["management_lag_sec"] = round(monotonic() - tick_started, 3)
+
+    # Other underlyings' futures are quoted only when a position on them is
+    # open (per-underlying batches: mixed NFO+BFO batches are unverified).
+    fut_prices = {"NIFTY": fut_price}
+    held = set()
+    for source in ([] if settings.FNO_DISABLE_PAPER else [FnoSource.FNO_PAPER.value]) + \
+            ([] if settings.FNO_DISABLE_LIVE else [FnoSource.FNO_LIVE.value]):
+        held |= {(p.underlying or "NIFTY").upper() for p in await fpos.open_positions(db_path, source)}
+    for name in sorted(held - {"NIFTY"}):
+        other = get_instruments_for(name).front_future(now_ist.date()) if name in SPECS else None
+        if other is None:
+            fut_prices[name] = None
+            continue
+        try:
+            quote, _timing = await asyncio.wait_for(_management_quote(kite, [other.token]),
+                                                    timeout=fut_quote_cap)
+            fut_prices[name] = float((quote.get(other.token) or {}).get("last_price") or 0.0) or None
+        except Exception as exc:
+            logger.error("fno_futures_quote_failed underlying=%s err=%s", name, str(exc))
+            fut_prices[name] = None
+
+    # ---- 1) exits first ----------------------------------------------
+    stage_started = monotonic()
+    try:
+        if not settings.FNO_DISABLE_PAPER:
+            summary["exits"] += await _manage_open_positions(
+                kite, db_path, FnoSource.FNO_PAPER.value, paper_exec, now_ist, fut_price,
+                read_observations=summary["management_read_outcomes"],
+                db_timing=summary["database_stage_timing"],
+                action_clock=action_clock, fut_prices=fut_prices,
+            )
+        if not settings.FNO_DISABLE_LIVE:
+            summary["exits"] += await _manage_open_positions(
+                kite, db_path, FnoSource.FNO_LIVE.value, live_exec, now_ist, fut_price,
+                read_observations=summary["management_read_outcomes"],
+                db_timing=summary["database_stage_timing"],
+                action_clock=action_clock, fut_prices=fut_prices,
+            )
+    except Exception as exc:
+        logger.error("fno_exit_management_failed err=%s", str(exc), exc_info=True)
+    finally:
+        summary["stage_durations_sec"]["exit_management"] = round(
+            monotonic() - stage_started, 3
+        )
+
+    return fut_price, now_ist
+
 
 async def run_fno_tick(
     kite, db_path: Optional[str] = None,
@@ -924,70 +1089,10 @@ async def run_fno_tick(
     sig = None
     snap = None
 
-    # ---- futures price for exit management ---------------------------
-    stage_started = monotonic()
-    fut_quote = {}
-    fut_quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
-    try:
-        fut_quote, provider_timing = await asyncio.wait_for(
-            _management_quote(kite, [fut.token]), timeout=fut_quote_cap,
-        )
-        _record_management_read(
-            summary["management_read_outcomes"], "futures_quote", "COMPLETED",
-            stage_started, fut_quote_cap, provider_timing=provider_timing,
-        )
-    except asyncio.TimeoutError:
-        _record_management_read(
-            summary["management_read_outcomes"], "futures_quote", "DEADLINE_EXCEEDED",
-            stage_started, fut_quote_cap, timeout_partial=True,
-        )
-        logger.warning("fno_futures_quote_deadline_exceeded cap_sec=%.3f", fut_quote_cap)
-    except Exception as exc:
-        _record_management_read(
-            summary["management_read_outcomes"], "futures_quote", "FAILED",
-            stage_started, fut_quote_cap,
-        )
-        logger.error("fno_futures_quote_failed err=%s", str(exc))
-    summary["stage_durations_sec"]["futures_quote"] = round(
-        monotonic() - stage_started, 3
+    fut_price, now_ist = await _manage_single_leg_books(
+        kite, db_path, fut, summary, paper_exec, live_exec, now_ist=now_ist,
+        supplied_now_ist=supplied_now_ist, tick_started=tick_started, action_clock=action_clock,
     )
-    fut_price = None
-    fq = fut_quote.get(fut.token)
-    if fq and fq.get("last_price"):
-        fut_price = float(fq["last_price"])
-
-    # A real scheduler tick can cross hard-flat while queued on a provider.
-    # The completed-bar/signal timestamp remains frozen in ``sig`` later, but
-    # management, session cutoffs and admission decisions use a fresh action
-    # clock. Explicit caller clocks are retained for deterministic replay/tests.
-    if supplied_now_ist is None:
-        now_ist = datetime.now(IST)
-    summary["action_clock_ist"] = now_ist.isoformat()
-    summary["management_lag_sec"] = round(monotonic() - tick_started, 3)
-
-    # ---- 1) exits first ----------------------------------------------
-    stage_started = monotonic()
-    try:
-        if not settings.FNO_DISABLE_PAPER:
-            summary["exits"] += await _manage_open_positions(
-                kite, db_path, FnoSource.FNO_PAPER.value, paper_exec, now_ist, fut_price,
-                read_observations=summary["management_read_outcomes"],
-                db_timing=summary["database_stage_timing"],
-                action_clock=action_clock,
-            )
-        if not settings.FNO_DISABLE_LIVE:
-            summary["exits"] += await _manage_open_positions(
-                kite, db_path, FnoSource.FNO_LIVE.value, live_exec, now_ist, fut_price,
-                read_observations=summary["management_read_outcomes"],
-                db_timing=summary["database_stage_timing"],
-                action_clock=action_clock,
-            )
-    except Exception as exc:
-        logger.error("fno_exit_management_failed err=%s", str(exc), exc_info=True)
-    finally:
-        summary["stage_durations_sec"]["exit_management"] = round(
-            monotonic() - stage_started, 3
-        )
 
     # ---- 1b) defined-risk paper book (Phase 2) -----------------------
     # Rides this same tick: manage any open structure to current mids, then
@@ -1134,82 +1239,132 @@ async def run_fno_tick(
         summary["note"] = "outside_entry_window"
         return summary
 
+    nifty_bars = bars
+    for spec in trading_underlyings():
+        name = spec.name
+        if name == settings.FNO_UNDERLYING.upper():
+            note, nifty_bars = await _single_leg_entries(
+                kite, db_path, name, instruments, fut, summary, bars=bars, sig=sig, snap=snap, rvol_bars=None,
+                regime=regime, now_ist=now_ist, evaluation_now_ist=evaluation_now_ist, scan_id=scan_id,
+                is_trading_day=is_trading_day, action_clock=action_clock,
+                paper_exec=paper_exec, live_exec=live_exec,
+            )
+            summary["note"] = note
+            continue
+        book = get_instruments_for(name)
+        other_fut = book.front_future(now_ist.date()) if book.ready(now_ist.date()) else None
+        if other_fut is None:
+            summary.setdefault("notes_by_underlying", {})[name] = "instruments_not_ready"
+            continue
+        rvol_bars = None
+        if spec.rvol_source:
+            if nifty_bars is None:
+                try:
+                    nifty_bars = await _fetch_futures_bars(kite, fut.token, evaluation_now_ist)
+                except Exception as exc:
+                    logger.error("fno_futures_bars_failed underlying=NIFTY err=%s", str(exc))
+                    summary.setdefault("notes_by_underlying", {})[name] = "rvol_source_unavailable"
+                    continue
+            rvol_bars = nifty_bars
+        note, _ = await _single_leg_entries(
+            kite, db_path, name, book, other_fut, summary, bars=None, sig=None, snap=None, rvol_bars=rvol_bars,
+            regime=regime, now_ist=now_ist, evaluation_now_ist=evaluation_now_ist, scan_id=scan_id,
+            is_trading_day=is_trading_day, action_clock=action_clock, paper_exec=paper_exec, live_exec=live_exec,
+        )
+        summary.setdefault("notes_by_underlying", {})[name] = note
+    return summary
+
+
+async def _single_leg_entries(
+    kite, db_path: str, name: str, book, fut, summary: dict, *, bars, sig, snap, rvol_bars,
+    regime: str, now_ist: datetime, evaluation_now_ist: datetime, scan_id: str, is_trading_day: bool,
+    action_clock: Optional[Callable[[], datetime]], paper_exec: FnoExecutor, live_exec: FnoExecutor,
+) -> tuple[str, object]:
+    """One underlying's single-leg entry pass; returns (note, futures bars).
+
+    ``bars``/``sig``/``snap`` may arrive tick-local (NIFTY shares them with the
+    capped-loss book). ``rvol_bars`` is the participation frame for an
+    underlying whose own futures volume is unusable (SENSEX -> NIFTY).
+    """
+    stages = (summary["stage_durations_sec"] if name == settings.FNO_UNDERLYING.upper()
+              else summary.setdefault("stage_durations_by_underlying", {}).setdefault(name, {}))
+    shadow = _schedule_shadow_observation if name == settings.FNO_UNDERLYING.upper() else (lambda *a, **k: None)
     if bars is None:
         stage_started = monotonic()
         try:
             bars = await _fetch_futures_bars(kite, fut.token, evaluation_now_ist)
         except Exception as exc:
             logger.error("fno_futures_bars_failed err=%s", str(exc))
-            summary["note"] = "futures_bars_failed"
-            return summary
+            return "futures_bars_failed", bars
         finally:
-            summary["stage_durations_sec"]["futures_history"] = round(
+            stages["futures_history"] = round(
                 monotonic() - stage_started, 3
             )
 
     if sig is None:
         stage_started = monotonic()
-        sig = evaluate_fno_mom(bars, regime, evaluation_now_ist)
-        summary["stage_durations_sec"]["entry_evaluation"] = round(
+        # The NIFTY call is unchanged; only a borrowed participation frame
+        # (SENSEX -> NIFTY) adds the keyword.
+        sig = (evaluate_fno_mom(bars, regime, evaluation_now_ist) if rvol_bars is None
+               else evaluate_fno_mom(bars, regime, evaluation_now_ist, rvol_bars=rvol_bars))
+        stages["entry_evaluation"] = round(
             monotonic() - stage_started, 3
         )
     if not sig.bar_ts:
-        summary["note"] = f"engine:{sig.reject_reason}"
-        return summary
+        return f"engine:{sig.reject_reason}", bars
 
     # One evaluation per closed bar per leg (restart-safe): if this leg
     # already recorded an entry for the bar, or the engine says no signal,
     # log at most one no-signal row per bar.
     if sig.direction is None:
-        _schedule_shadow_observation(db_path, bars, regime, now_ist)
+        shadow(db_path, bars, regime, now_ist)
         # Only log the no-signal outcome once per bar (the tick fires
         # every 60s; a 5-min bar would otherwise produce 5 duplicates).
-        if not await _bar_already_logged(db_path, sig.bar_ts):
+        if not await _bar_already_logged(db_path, sig.bar_ts, underlying=name):
             await log_fno_signal(
                 db_path, scan_id=scan_id, leg="ENGINE", accepted=False,
                 reject_reason=sig.reject_reason, bar_ts=sig.bar_ts,
-                underlying=settings.FNO_UNDERLYING, regime=regime,
+                underlying=name, regime=regime,
                 fut_price=sig.close, or_high=sig.or_high, or_low=sig.or_low,
                 atr=sig.atr, rvol=sig.rvol,
                 ema_fast=sig.ema_fast, ema_slow=sig.ema_slow,
             )
-        summary["note"] = f"no_signal:{sig.reject_reason}"
-        return summary
+        return f"no_signal:{sig.reject_reason}", bars
 
     # Signal fired: snapshot the chain once, then run both legs off it.
     if snap is None:
-        snap = await take_chain_snapshot(kite, instruments, now_ist)
+        snap = await take_chain_snapshot(kite, book, now_ist)
     if snap is None:
-        _schedule_shadow_observation(db_path, bars, regime, now_ist)
+        shadow(db_path, bars, regime, now_ist)
         await log_fno_signal(
             db_path, scan_id=scan_id, leg="ENGINE", accepted=False,
             reject_reason="chain_unavailable", bar_ts=sig.bar_ts,
-            underlying=settings.FNO_UNDERLYING,
+            underlying=name,
             direction=sig.direction.value, regime=regime,
         )
-        summary["note"] = "chain_unavailable"
-        return summary
+        return "chain_unavailable", bars
 
     stage_started = monotonic()
     if not settings.FNO_DISABLE_PAPER:
         paper_equity = await _fno_equity(db_path, FnoSource.FNO_PAPER.value)
-        if _fno_halted(paper_equity, _fno_pool_paper(), FnoSource.FNO_PAPER.value):
-            logger.info("fno_entry_skip source=FNO_PAPER reason=drawdown_halt")
-        elif await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts):
+        if await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts, underlying=name):
             logger.info("fno_entry_skip source=FNO_PAPER reason=bar_already_entered")
         else:
             try:
                 entry = await _try_entry_for_leg(
                     kite, db_path, FnoSource.FNO_PAPER.value, paper_equity,
                     paper_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
-                    action_clock=action_clock,
+                    action_clock=action_clock, shared_pool_rs=_fno_pool_paper(),
+                    underlying=name, underlying_book=book,
                 )
                 if entry:
                     summary["entries"].append(entry)
             except Exception as exc:
                 logger.error("fno_paper_entry_failed err=%s", str(exc), exc_info=True)
 
-    if not settings.FNO_DISABLE_LIVE:
+    if not settings.FNO_DISABLE_LIVE and book.segment == "NFO":
+        # Live exit evidence/recovery accept NFO packets only, so the live
+        # leg trades NFO underlyings only.
         # The live leg refuses to arm unless the go-live function returns
         # clean (spec §11) -- and it runs paper-forced unless the master
         # switch is on.
@@ -1230,7 +1385,7 @@ async def run_fno_tick(
         _pending_live_growth_inr = 0.0
         if _pending_live_growth_inr > 0:
             try:
-                from affordability import assert_live_entry_safety
+                from affordability import AffordabilityRefusal, assert_live_entry_safety
                 await assert_live_entry_safety(
                     db_path=db_path,
                     live_source=FnoSource.FNO_LIVE.value,
@@ -1248,31 +1403,80 @@ async def run_fno_tick(
             logger.warning("fno_live_leg_refused_to_arm unmet=%s", unmet)
         elif _fno_halted(live_equity, _fno_pool_live(), FnoSource.FNO_LIVE.value):
             logger.info("fno_entry_skip source=FNO_LIVE reason=drawdown_halt")
-        elif await fpos.already_entered_bar(db_path, FnoSource.FNO_LIVE.value, sig.bar_ts):
+        elif await fpos.already_entered_bar(db_path, FnoSource.FNO_LIVE.value, sig.bar_ts, underlying=name):
             logger.info("fno_entry_skip source=FNO_LIVE reason=bar_already_entered")
         else:
             try:
                 entry = await _try_entry_for_leg(
                     kite, db_path, FnoSource.FNO_LIVE.value, live_equity,
                     live_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
-                    action_clock=action_clock,
+                    action_clock=action_clock, shared_pool_rs=_fno_pool_live(),
+                    underlying=name, underlying_book=book,
                 )
                 if entry:
                     summary["entries"].append(entry)
             except Exception as exc:
                 logger.error("fno_live_entry_failed err=%s", str(exc), exc_info=True)
-    summary["stage_durations_sec"]["entry_management"] = round(
+    stages["entry_management"] = round(
         monotonic() - stage_started, 3
     )
 
     # Only after both trading legs have completed, and never awaited: a
     # slow/locked research DB cannot delay quote selection, sizing, an entry,
     # or the tick return. Reuse the baseline's already-resolved chain.
-    _schedule_shadow_observation(db_path, bars, regime, now_ist, snap)
+    shadow(db_path, bars, regime, now_ist, snap)
+    return "", bars
+
+
+async def run_fno_fast_exit(kite, db_path: Optional[str] = None, now_ist: Optional[datetime] = None) -> dict:
+    """[FAST-EXIT 2026-10-04] Manage open single-leg positions between ticks.
+
+    Options cannot carry an exchange stop order, so the underlying/premium
+    stops are only as fast as the loop that checks them. This entry point does
+    nothing but the shared single-leg management (no entries, no defined-risk
+    work) and returns after one database read when no position is open. It is
+    scheduled only when FNO_FAST_EXIT_ENABLED is on and is serialised with the
+    regular tick by the scheduler's F&O lock.
+    """
+    db_path = db_path or settings.DB_PATH
+    supplied_now_ist = now_ist
+    now_ist = now_ist or datetime.now(IST)
+    action_clock = (lambda: datetime.now(IST)) if supplied_now_ist is None else None
+    tick_started = monotonic()
+    summary: dict = {"scan_id": f"FNOX-{now_ist.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:6]}",
+                     "entries": [], "exits": [], "note": "", "stage_durations_sec": {},
+                     "management_read_outcomes": {},
+                     "database_stage_timing": {"measurement": "operation_elapsed_includes_sqlite_lock_wait",
+                                               "stages": {}}}
+    sources = [] if settings.FNO_DISABLE_PAPER else [FnoSource.FNO_PAPER.value]
+    if not settings.FNO_DISABLE_LIVE:
+        sources.append(FnoSource.FNO_LIVE.value)
+    open_count = 0
+    for source in sources:
+        open_count += len(await fpos.open_positions(db_path, source))
+    if not open_count:
+        summary["note"] = "no_open_positions"
+        return summary
+    instruments = get_fno_instruments()
+    if not instruments.ready(now_ist.date()) and not instruments.load_from_disk():
+        summary["note"] = "instruments_not_ready"
+        return summary
+    fut = instruments.front_future(now_ist.date())
+    if fut is None:
+        summary["note"] = "no_front_future"
+        return summary
+    paper_exec = FnoExecutor(kite, paper_mode=True, source_tag=FnoSource.FNO_PAPER.value)
+    live_exec = FnoExecutor(kite, paper_mode=not bool(settings.FNO_LIVE_TRADING),
+                            source_tag=FnoSource.FNO_LIVE.value)
+    await _manage_single_leg_books(
+        kite, db_path, fut, summary, paper_exec, live_exec, now_ist=now_ist,
+        supplied_now_ist=supplied_now_ist, tick_started=tick_started, action_clock=action_clock,
+    )
+    summary["note"] = "managed"
     return summary
 
 
-async def _bar_already_logged(db_path: str, bar_ts: str) -> bool:
+async def _bar_already_logged(db_path: str, bar_ts: str, underlying: Optional[str] = None) -> bool:
     import aiosqlite
     try:
         async with aiosqlite.connect(db_path) as db:
@@ -1281,9 +1485,10 @@ async def _bar_already_logged(db_path: str, bar_ts: str) -> bool:
             ) as cur:
                 if await cur.fetchone() is None:
                     return False
-            async with db.execute(
-                "SELECT 1 FROM fno_signals WHERE bar_ts=? LIMIT 1", (bar_ts,),
-            ) as cur:
+            sql, params = "SELECT 1 FROM fno_signals WHERE bar_ts=?", [bar_ts]
+            if underlying is not None:
+                sql, params = sql + " AND underlying=?", params + [underlying]
+            async with db.execute(sql + " LIMIT 1", params) as cur:
                 return (await cur.fetchone()) is not None
     except Exception:
         return False

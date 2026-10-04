@@ -1,0 +1,414 @@
+{
+  "can_place_orders": false,
+  "decision": {
+    "checks": {
+      "max_drawdown <= max(1.5 * BASELINE max_drawdown, 50.0)": false,
+      "net_excluding_best_winner > 0": false,
+      "net_pnl > 0": false,
+      "net_pnl > BASELINE net_pnl": false
+    },
+    "qualification": "NOT_ASSESSED",
+    "verdict": "NOT_SUPPORTED_STAYS_OFF"
+  },
+  "freeze_sha256": "cf9686b42caeabfa41e7412add721893ac2a9deb2a29a21b1662b665baf287b2",
+  "results": {
+    "development": {
+      "BASELINE": {
+        "adverse_fill_bound_net": -115.8338,
+        "baseline_status": {
+          "None": 18
+        },
+        "closed": 18,
+        "costs": 9.2835,
+        "entries": 18,
+        "entry_kinds": {
+          "None": 18
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 1,
+          "PAPER_STOP_LTP": 13,
+          "SMART_EOD:within_0_5R_of_target": 4
+        },
+        "gross_pnl": 24.46,
+        "max_drawdown": 45.0962,
+        "net_excluding_best_winner": -27.7362,
+        "net_pnl": 15.1765,
+        "per_day": {
+          "2026-09-24": -12.4108,
+          "2026-09-25": 46.0297,
+          "2026-09-28": -38.4877,
+          "2026-09-29": 20.0453
+        },
+        "positive_sessions": 2,
+        "profit_factor": 1.187,
+        "sessions_with_trades": 4,
+        "unresolved": 0,
+        "win_rate_pct": 27.78
+      },
+      "PEN_BASE_THESIS": {
+        "adverse_fill_bound_net": -154.9873,
+        "baseline_status": {
+          "baseline_accepted": 19
+        },
+        "closed": 19,
+        "costs": 9.775,
+        "entries": 19,
+        "entry_kinds": {
+          "SHIPPED_BREAKOUT": 19
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 3,
+          "PAPER_STOP_LTP": 14,
+          "THESIS_FAILED_BREAKOUT": 1,
+          "THESIS_STALLED": 1
+        },
+        "gross_pnl": -7.3,
+        "max_drawdown": 46.9583,
+        "net_excluding_best_winner": -32.6152,
+        "net_pnl": -17.075,
+        "per_day": {
+          "2026-09-24": -4.226,
+          "2026-09-25": 6.3131,
+          "2026-09-28": -31.6521,
+          "2026-09-29": 12.49
+        },
+        "positive_sessions": 2,
+        "profit_factor": 0.683,
+        "sessions_with_trades": 4,
+        "unresolved": 0,
+        "win_rate_pct": 21.05
+      },
+      "PEN_TRADER_V1": {
+        "adverse_fill_bound_net": -535.3233,
+        "baseline_status": {
+          "baseline_rejected": 47
+        },
+        "closed": 47,
+        "costs": 24.2903,
+        "entries": 47,
+        "entry_kinds": {
+          "CONTINUATION": 16,
+          "FAST_BREAKOUT": 12,
+          "RETEST_RECLAIM": 19
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 5,
+          "PAPER_STOP_LTP": 37,
+          "SMART_EOD:time_stop_30min_in_loss": 1,
+          "SMART_EOD:within_0_5R_of_target": 4
+        },
+        "gross_pnl": -168.47,
+        "max_drawdown": 195.4478,
+        "net_excluding_best_winner": -235.6779,
+        "net_pnl": -192.7603,
+        "per_day": {
+          "2026-09-24": -44.3535,
+          "2026-09-25": -5.4846,
+          "2026-09-28": -64.6271,
+          "2026-09-29": -8.753,
+          "2026-09-30": -69.5421
+        },
+        "positive_sessions": 0,
+        "profit_factor": 0.2974,
+        "sessions_with_trades": 5,
+        "unresolved": 0,
+        "win_rate_pct": 17.02
+      },
+      "PEN_TRADER_V1_THESIS": {
+        "adverse_fill_bound_net": -1110.2931,
+        "baseline_status": {
+          "baseline_accepted": 1,
+          "baseline_rejected": 122
+        },
+        "closed": 123,
+        "costs": 63.5327,
+        "entries": 123,
+        "entry_kinds": {
+          "CONTINUATION": 48,
+          "FAST_BREAKOUT": 28,
+          "RETEST_RECLAIM": 47
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 4,
+          "PAPER_STOP_LTP": 49,
+          "THESIS_EOD_LOSS_CUT": 3,
+          "THESIS_FAILED_BREAKOUT": 59,
+          "THESIS_STALLED": 8
+        },
+        "gross_pnl": -150.5,
+        "max_drawdown": 216.8411,
+        "net_excluding_best_winner": -233.07,
+        "net_pnl": -214.0327,
+        "per_day": {
+          "2026-09-24": -82.322,
+          "2026-09-25": -36.9705,
+          "2026-09-28": -48.9306,
+          "2026-09-29": 8.9405,
+          "2026-09-30": -54.7501
+        },
+        "positive_sessions": 1,
+        "profit_factor": 0.3841,
+        "sessions_with_trades": 5,
+        "unresolved": 0,
+        "win_rate_pct": 20.33
+      },
+      "PEN_TRADER_V2": {
+        "adverse_fill_bound_net": -136.4773,
+        "baseline_status": {
+          "baseline_accepted": 4,
+          "baseline_rejected": 20
+        },
+        "closed": 24,
+        "costs": 12.4841,
+        "entries": 24,
+        "entry_kinds": {
+          "CONTINUATION": 10,
+          "FAST_BREAKOUT": 8,
+          "RETEST_RECLAIM": 6
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 3,
+          "PAPER_STOP_LTP": 14,
+          "THESIS_FAILED_BREAKOUT": 6,
+          "THESIS_STALLED": 1
+        },
+        "gross_pnl": 52.2,
+        "max_drawdown": 21.2468,
+        "net_excluding_best_winner": 12.4471,
+        "net_pnl": 39.7159,
+        "per_day": {
+          "2026-09-24": -3.9077,
+          "2026-09-25": 27.3162,
+          "2026-09-28": -5.0798,
+          "2026-09-29": 24.5991,
+          "2026-09-30": -3.2119
+        },
+        "positive_sessions": 2,
+        "profit_factor": 1.6637,
+        "sessions_with_trades": 5,
+        "unresolved": 0,
+        "win_rate_pct": 45.83
+      }
+    },
+    "untouched": {
+      "BASELINE": {
+        "adverse_fill_bound_net": -111.0241,
+        "baseline_status": {
+          "None": 24
+        },
+        "closed": 24,
+        "costs": 12.341,
+        "entries": 24,
+        "entry_kinds": {
+          "None": 24
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 5,
+          "PAPER_STOP_LTP": 11,
+          "SMART_EOD:time_stop_30min_in_loss": 2,
+          "SMART_EOD:within_0_5R_of_target": 6
+        },
+        "gross_pnl": 75.51,
+        "max_drawdown": 32.4687,
+        "net_excluding_best_winner": 30.5334,
+        "net_pnl": 63.169,
+        "per_day": {
+          "2026-09-07": 1.8713,
+          "2026-09-09": -14.8371,
+          "2026-09-10": 0.4583,
+          "2026-09-11": 45.8188,
+          "2026-09-15": 19.1043,
+          "2026-09-16": -12.0067,
+          "2026-09-17": 5.7102,
+          "2026-09-18": -2.1825,
+          "2026-09-21": -11.0007,
+          "2026-09-22": -2.9417,
+          "2026-09-23": 33.1748
+        },
+        "positive_sessions": 6,
+        "profit_factor": 1.621,
+        "sessions_with_trades": 11,
+        "unresolved": 0,
+        "win_rate_pct": 50.0
+      },
+      "PEN_BASE_THESIS": {
+        "adverse_fill_bound_net": -212.1822,
+        "baseline_status": {
+          "baseline_accepted": 28
+        },
+        "closed": 27,
+        "costs": 13.8568,
+        "entries": 28,
+        "entry_kinds": {
+          "SHIPPED_BREAKOUT": 28
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 1,
+          "PAPER_STOP_LTP": 23,
+          "THESIS_FAILED_BREAKOUT": 2,
+          "THESIS_STALLED": 1,
+          "UNRESOLVED_NO_EXIT_EVIDENCE:MIS_TIME_STOP_1500": 1
+        },
+        "gross_pnl": -2.82,
+        "max_drawdown": 76.1035,
+        "net_excluding_best_winner": -52.1376,
+        "net_pnl": -16.6768,
+        "per_day": {
+          "2026-09-07": 21.059,
+          "2026-09-09": -9.5205,
+          "2026-09-10": -11.7626,
+          "2026-09-11": -2.5433,
+          "2026-09-15": 16.4959,
+          "2026-09-16": -16.3239,
+          "2026-09-17": -1.4852,
+          "2026-09-18": 2.9143,
+          "2026-09-21": -53.8782,
+          "2026-09-22": 3.4341,
+          "2026-09-23": 34.9336
+        },
+        "positive_sessions": 5,
+        "profit_factor": 0.8709,
+        "sessions_with_trades": 11,
+        "unresolved": 1,
+        "win_rate_pct": 37.04
+      },
+      "PEN_TRADER_V1": {
+        "adverse_fill_bound_net": -765.1628,
+        "baseline_status": {
+          "baseline_rejected": 91
+        },
+        "closed": 91,
+        "costs": 46.9388,
+        "entries": 91,
+        "entry_kinds": {
+          "CONTINUATION": 26,
+          "FAST_BREAKOUT": 35,
+          "RETEST_RECLAIM": 30
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 17,
+          "PAPER_STOP_LTP": 58,
+          "SMART_EOD:time_stop_30min_in_loss": 5,
+          "SMART_EOD:within_0_5R_of_target": 11
+        },
+        "gross_pnl": -56.0,
+        "max_drawdown": 152.6444,
+        "net_excluding_best_winner": -140.726,
+        "net_pnl": -102.9388,
+        "per_day": {
+          "2026-09-07": 46.2352,
+          "2026-09-08": -75.8573,
+          "2026-09-09": 14.7881,
+          "2026-09-10": -25.3614,
+          "2026-09-11": 34.3628,
+          "2026-09-15": -22.1405,
+          "2026-09-16": -3.4167,
+          "2026-09-17": -22.0242,
+          "2026-09-18": -10.7383,
+          "2026-09-21": -23.4689,
+          "2026-09-22": 3.6073,
+          "2026-09-23": -5.0059,
+          "2026-10-01": -13.919
+        },
+        "positive_sessions": 4,
+        "profit_factor": 0.7041,
+        "sessions_with_trades": 13,
+        "unresolved": 0,
+        "win_rate_pct": 26.37
+      },
+      "PEN_TRADER_V1_THESIS": {
+        "adverse_fill_bound_net": -2168.1775,
+        "baseline_status": {
+          "baseline_accepted": 3,
+          "baseline_rejected": 280
+        },
+        "closed": 283,
+        "costs": 146.2317,
+        "entries": 283,
+        "entry_kinds": {
+          "CONTINUATION": 114,
+          "FAST_BREAKOUT": 78,
+          "RETEST_RECLAIM": 91
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 13,
+          "PAPER_STOP_LTP": 121,
+          "THESIS_EOD_LOSS_CUT": 7,
+          "THESIS_FAILED_BREAKOUT": 130,
+          "THESIS_STALLED": 12
+        },
+        "gross_pnl": 41.34,
+        "max_drawdown": 160.1902,
+        "net_excluding_best_winner": -146.9817,
+        "net_pnl": -104.8917,
+        "per_day": {
+          "2026-09-07": 1.8232,
+          "2026-09-08": 22.1623,
+          "2026-09-09": 25.365,
+          "2026-09-10": -61.4185,
+          "2026-09-11": -0.5013,
+          "2026-09-15": 13.1284,
+          "2026-09-16": -17.3517,
+          "2026-09-17": -20.7541,
+          "2026-09-18": -0.6589,
+          "2026-09-21": -26.326,
+          "2026-09-22": -6.7615,
+          "2026-09-23": 22.3934,
+          "2026-10-01": -55.992
+        },
+        "positive_sessions": 5,
+        "profit_factor": 0.8408,
+        "sessions_with_trades": 13,
+        "unresolved": 0,
+        "win_rate_pct": 26.15
+      },
+      "PEN_TRADER_V2": {
+        "adverse_fill_bound_net": -600.256,
+        "baseline_status": {
+          "baseline_accepted": 5,
+          "baseline_rejected": 75
+        },
+        "closed": 80,
+        "costs": 41.3348,
+        "entries": 80,
+        "entry_kinds": {
+          "CONTINUATION": 42,
+          "FAST_BREAKOUT": 20,
+          "RETEST_RECLAIM": 18
+        },
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 9,
+          "PAPER_STOP_LTP": 41,
+          "THESIS_EOD_LOSS_CUT": 1,
+          "THESIS_FAILED_BREAKOUT": 21,
+          "THESIS_STALLED": 8
+        },
+        "gross_pnl": 24.31,
+        "max_drawdown": 76.7298,
+        "net_excluding_best_winner": -39.5887,
+        "net_pnl": -17.0248,
+        "per_day": {
+          "2026-09-07": -2.2545,
+          "2026-09-08": 50.2793,
+          "2026-09-09": -23.7423,
+          "2026-09-10": -24.9492,
+          "2026-09-11": 28.9336,
+          "2026-09-15": -4.0042,
+          "2026-09-16": -4.3618,
+          "2026-09-17": -2.2006,
+          "2026-09-18": 13.51,
+          "2026-09-21": -17.9197,
+          "2026-09-22": -4.7196,
+          "2026-09-23": -5.6426,
+          "2026-10-01": -19.9532
+        },
+        "positive_sessions": 3,
+        "profit_factor": 0.9305,
+        "sessions_with_trades": 13,
+        "unresolved": 0,
+        "win_rate_pct": 36.25
+      }
+    }
+  },
+  "schema": "penny_trader_oos_results_v1"
+}

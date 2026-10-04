@@ -1211,7 +1211,16 @@ async def run_penny_paper_stop_monitor() -> dict:
     """
     scanner = _get_penny_scanner()
     executor = getattr(scanner, "executor", None) if scanner is not None else None
+    async def observe_smart_exits():
+        if settings.PENNY_SMART_SHADOW_ENABLED and scanner is not None:
+            try:
+                from penny_smart_shadow import monitor_smart_shadow, smart_db_path
+                await asyncio.wait_for(monitor_smart_shadow(
+                    smart_db_path(settings.DB_PATH), scanner.kite, now=datetime.now(IST)), timeout=2.0)
+            except Exception as exc:
+                logger.error("penny_smart_shadow_monitor_failed error=%s", str(exc))
     if executor is None or not bool(getattr(executor, "paper_mode", False)):
+        await observe_smart_exits()
         return {"checked": 0, "stopped": []}
 
     from position_tracker import get_open_positions
@@ -1256,6 +1265,7 @@ async def run_penny_paper_stop_monitor() -> dict:
     except Exception as exc:
         # Paper bookkeeping must never prevent the live/paper signal scan.
         logger.error("penny_paper_stop_monitor_failed error=%s", str(exc))
+    await observe_smart_exits()
     return {"checked": checked, "stopped": stopped}
 
 
@@ -2997,6 +3007,15 @@ async def _run_momentum_screener_impl(t0):
         else settings.MOMENTUM_VOL_SURGE_PCT
     )
 
+    # One NIFTY 50 fetch per scan feeds the MOM_SELECTIVE shadow variant only;
+    # a failure leaves it failing closed and never touches the live funnel.
+    index_today = None
+    if getattr(settings, "MOMENTUM_SHADOW_ENABLED", True):
+        try:
+            index_today = await kite.get_intraday("NIFTY 50", from_dt, to_dt)
+        except Exception as index_exc:
+            logger.warning("momentum_shadow_index_unavailable", error=type(index_exc).__name__)
+
     # [MOMENTUM-PARALLEL 2026-06-30] Parallel per-ticker evaluation.
     # The earlier serial loop took 15+ min per scan for 500 tickers
     # at ~3 Kite calls each (intraday + daily + prev_trading_day).
@@ -3088,6 +3107,7 @@ async def _run_momentum_screener_impl(t0):
                         regime=today_regime,
                         trading_date=today,
                         bar_ts=df_intra.index[-1],
+                        index_today=index_today,
                     )
                 except Exception as shadow_exc:
                     logger.warning(

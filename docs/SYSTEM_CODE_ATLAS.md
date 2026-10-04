@@ -16,7 +16,7 @@ Related tests: `agent/tests/test_advisory.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_usable_classifications` (line 148), `_effective_classification_expiry` (line 167), `_attach_classification_context` (line 186), `_attach_provenance` (line 225), `register_approved_snapshot` (line 304), `_build_classifier_client` (line 350), `_today_str` (line 404), `_load_dedup_state` (line 409), `_save_dedup_state` (line 460), `mark_processed` (line 475), `clear_memory` (line 481), `touch_heartbeat` (line 498), `_is_market_hours` (line 525), `read_scheduler_tick_age` (line 536), `check_engine_liveness` (line 548), `SignalOutput` (line 586), `NewsItem` (line 602), `fetch_signals` (line 617), `fetch_rss_feed` (line 644), `fetch_news_items` (line 661), `_parse_rss_pubdate` (line 724), `_hostname_from_url` (line 747), `_age_label` (line 757), `_fetch_news_bundle_for_ticker` (line 792), `_render_news_bundle` (line 820), `scrape_sentiment` (line 844), `_extract_json_object` (line 861), `_fetch_news_items_for_ticker` (line 915), `_maybe_classify_news` (line 928), `_collect_news_context` (line 981), `_render_classified_section` (line 1014), `analyze_with_minimax` (line 1058), `_optional_review_key` (line 1401), `_get_optional_ai_queue` (line 1429), `optional_ai_status` (line 1449), `publish_optional_ai_status` (line 1495), `queue_optional_ai_review` (line 1515), `queue_optional_ai_review_with_key` (line 1527), `_review_completion_tracker` (line 1591), `_completion_annotation` (line 1599), `_edit_telegram_message` (line 1612), `deliver_review_completions` (line 1640), `send_telegram_alert` (line 1653), `system_health_check` (line 1702), `run_momentum_pipeline` (line 1731), `send_conviction_veto_notice` (line 1846), `send_momentum_telegram_alert` (line 1864), `_register_pending_completion` (line 1967), `_raise_redacted_delivery_error` (line 1984), `run_pipeline` (line 2002), `main` (line 2063)
+Top-level declarations: `_usable_classifications` (line 148), `_effective_classification_expiry` (line 167), `_attach_classification_context` (line 186), `_attach_provenance` (line 225), `register_approved_snapshot` (line 304), `_build_classifier_client` (line 350), `_today_str` (line 404), `_load_dedup_state` (line 409), `_save_dedup_state` (line 460), `mark_processed` (line 475), `clear_memory` (line 481), `touch_heartbeat` (line 498), `_is_market_hours` (line 525), `read_scheduler_tick_age` (line 536), `check_engine_liveness` (line 548), `SignalOutput` (line 586), `NewsItem` (line 602), `fetch_signals` (line 617), `fetch_rss_feed` (line 644), `fetch_news_items` (line 661), `_parse_rss_pubdate` (line 724), `_hostname_from_url` (line 747), `_age_label` (line 757), `_fetch_news_bundle_for_ticker` (line 792), `_render_news_bundle` (line 820), `scrape_sentiment` (line 844), `_extract_json_object` (line 861), `_fetch_news_items_for_ticker` (line 915), `_maybe_classify_news` (line 928), `_collect_news_context` (line 981), `_render_classified_section` (line 1014), `analyze_with_minimax` (line 1058), `_optional_review_key` (line 1401), `_get_optional_ai_queue` (line 1429), `optional_ai_status` (line 1449), `publish_optional_ai_status` (line 1495), `queue_optional_ai_review` (line 1515), `queue_optional_ai_review_with_key` (line 1527), `_review_completion_tracker` (line 1591), `_completion_annotation` (line 1599), `_edit_telegram_message` (line 1612), `deliver_review_completions` (line 1640), `send_telegram_alert` (line 1653), `system_health_check` (line 1702), `run_momentum_pipeline` (line 1731), `send_conviction_veto_notice` (line 1846), `send_momentum_telegram_alert` (line 1864), `request_momentum_auto_execute` (line 1971), `momentum_auto_execute_note` (line 1994), `momentum_buttons_needed` (line 2007), `_register_pending_completion` (line 2016), `_raise_redacted_delivery_error` (line 2033), `run_pipeline` (line 2051), `main` (line 2112)
 
 Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_schedule.py`, `agent/tests/test_agent_watchdog.py`
 
@@ -66,6 +66,26 @@ Once-only delivery of a completed optional-AI review to its original alert. [S10
 
 Top-level declarations: `_iso` (line 41), `CompletionTracker` (line 47)
 
+## `python-engine/account_cash_reservations.py`
+
+Durable, cross-runtime own-cash reservations for live *entry* orders. The gateway and engine share ``/data/cache.db``. Broker balances are a snapshot, so the snapshot alone cannot safely admit two concurrent callers. This module records the amount which the broker has not yet made visible as a pending order or position. It deliberately never releases an ambiguous order.
+
+Top-level declarations: `estimate_entry_charges` (line 25), `required_reservation` (line 42), `_broker_represents` (line 49), `Reservation` (line 72), `ReservationRefused` (line 80), `AccountCashReservations` (line 84)
+
+Related tests: `python-engine/tests/test_account_cash_reservations.py`
+
+Declared tables: `account_cash_reservations`
+
+## `python-engine/adaptive_penny_policy.py`
+
+Pure, restartable `PEN_TRADER_V1` Penny MIS trader policy (research only). The module is deliberately outside the Penny runtime. It turns complete, already-available minute bars into setup states, entry intents and position management decisions. No function here can fetch a quote, reserve cash, submit an order, write a database row, or touch F&O. Research adapters apply the shipped Penny risk/executor contracts before an intent becomes a simulated fill. What makes it different from the shipped breakout evaluator: * Structure: the anchor is the high of a declared prior base, frozen before the confirmation bar. It is not the whole-day high plus a fixed buffer. * Context instead of a conjunctio
+
+Top-level declarations: `SetupState` (line 45), `TraderParams` (line 72), `_finite_positive` (line 130), `_aware` (line 140), `_floor_tick` (line 146), `_ceil_tick` (line 150), `CompletedBar` (line 155), `compute_context` (line 186), `structural_stop` (line 238), `score_breakout` (line 244), `PennySetup` (line 293), `EntryIntent` (line 355), `EntryPlan` (line 367), `SetupOutcome` (line 380), `_thesis_id` (line 388), `begin_watch` (line 393), `watch_from_prior_bars` (line 434), `_transition` (line 455), `_intent_outcome` (line 478), `detect_breakout` (line 486), `advance_setup` (line 530), `plan_entry` (line 595), `mark_open` (line 628), `mark_exit_pending` (line 632), `mark_closed` (line 636), `begin_new_thesis` (line 640), `TickerMemory` (line 651), `ThesisPosition` (line 677), `ManageOutcome` (line 704), `open_thesis_position` (line 712), `resting_partial` (line 722), `manage_position` (line 736)
+
+Engine dependencies: `penny_engine_breakout`
+
+Related tests: `python-engine/tests/test_adaptive_penny_policy.py`
+
 ## `python-engine/affordability.py`
 
 [WORKFLOW-F 2026-09-13] Paper-vs-live affordability guard (Phase 2). Implements plan section 10.3 — *"Audit true cost per trade relative to expected edge for INR 8k capital. Prevent a large configured paper bankroll from implying owner live affordability."* This module is the F-side seam the promotion-bridge contract (see ``docs/2026-09-13-workflow-g-promotion-bridge.md`` sections 3.3 and 4) depends on for ``APPROVED_LIVE_BUDGET`` decisions. Concretely: * ``evaluate_paper_to_live_affordability(...)`` returns a structured result describing whether a proposed *live* delta is affordable from the *live* bank's current state, the *paper* P&L earned over the same period, and the operator-tunable m
@@ -104,19 +124,53 @@ Top-level declarations: `_simulate_trade` (line 29), `_compute_stats` (line 123)
 
 Engine dependencies: `config`, `engine`, `models`, `regime`
 
-Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test_backtest_gap_fills.py`, `python-engine/tests/test_backtest_lab.py`
+Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test_backtest_cli.py`, `python-engine/tests/test_backtest_gap_fills.py`, `python-engine/tests/test_backtest_lab.py`, `python-engine/tests/test_backtest_qualification.py`, `python-engine/tests/test_backtest_reporting.py`
+
+## `python-engine/backtest_catalogue.py`
+
+[B0 2026-10-03] Honest catalogue of shipped strategies and their backtests. Every shipped strategy appears once with the fidelity of the backtest that exists for it today. ``validate_catalogue`` keeps this list and the Backtest Lab registry in agreement, so an adapter cannot be added (or removed) without the catalogue saying what it really replays.
+
+Top-level declarations: `catalogue` (line 61), `validate_catalogue` (line 76), `family_prefixes` (line 101)
+
+Engine dependencies: `backtest_lab`
+
+## `python-engine/backtest_cli.py`
+
+[B0 2026-10-03] One offline entry point for shipped-strategy backtests. python backtest_cli.py catalogue python backtest_cli.py snapshot --db PATH | --container NAME --from D --to D --tickers A,B --out NEW.sqlite python backtest_cli.py coverage --snapshot S --strategy ID python backtest_cli.py run --snapshot S --strategy ID --from D --to D [--config JSON] --out NEW.json python backtest_cli.py compare A.json B.json python backtest_cli.py report R.json Only registered Backtest Lab adapters can run (no arbitrary code or callbacks); only their documented default assumptions are accepted. Every run binds the code release, a secret-free settings hash and the frozen snapshot hash. Nothing here call
+
+Top-level declarations: `CliError` (line 45), `_new_file` (line 49), `_publish_new_file` (line 57), `_atomic_json_new` (line 72), `_rows_sha256` (line 90), `write_snapshot` (line 104), `snapshot` (line 135), `verify_snapshot` (line 153), `_git` (line 170), `policy_manifest` (line 178), `_adapter` (line 221), `run` (line 228), `freeze_holdout` (line 293), `coverage` (line 319), `_load_report` (line 339), `compare` (line 346), `report` (line 370), `main` (line 381)
+
+Engine dependencies: `backtest_catalogue`, `backtest_lab`, `backtest_qualification`, `backtest_reporting`, `config`, `research_data_contracts`
+
+Related tests: `python-engine/tests/test_backtest_cli.py`
 
 ## `python-engine/backtest_lab.py`
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 36), `_json_default` (line 40), `_finite_json_value` (line 54), `_json` (line 78), `_decode` (line 85), `StrategyMetadata` (line 95), `BacktestRequest` (line 113), `PreparedDataset` (line 122), `BacktestUnavailable` (line 129), `BacktestAdapter` (line 133), `_fingerprint_rows` (line 171), `_daily_rows` (line 177), `SwingDailyAdapter` (line 209), `PennyDailyProxyAdapter` (line 289), `PennyWalkForwardConfig` (line 385), `PennyDailyProxyWalkForwardAdapter` (line 416), `_ticker_list` (line 604), `_write_replay_cache` (line 613), `PennyMinuteReplayAdapter` (line 633), `Momentum15MinuteReplayAdapter` (line 734), `FnoUnavailableAdapter` (line 831), `init_backtest_lab_db` (line 865), `_validate_dates` (line 939), `list_strategies` (line 950), `submit_run` (line 988), `_run_background` (line 1024), `_row_to_run` (line 1060), `list_runs` (line 1085), `get_run` (line 1104)
+Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `RangeReversionEvaluatorAdapter` (line 447), `DailyPortfolioAdapter` (line 534), `EdgePortfolioReplayAdapter` (line 620), `RangePortfolioReplayAdapter` (line 666), `SwingPortfolioReplayAdapter` (line 697), `PennyDailyProxyAdapter` (line 734), `PennyWalkForwardConfig` (line 830), `PennyDailyProxyWalkForwardAdapter` (line 861), `_ticker_list` (line 1049), `_write_replay_cache` (line 1058), `PennyMinuteReplayAdapter` (line 1078), `PennyMisLifecycleAdapter` (line 1180), `PennyCncConnorsLifecycleAdapter` (line 1296), `PennyJointPortfolioAdapter` (line 1380), `Momentum15MinuteReplayAdapter` (line 1463), `FnoUnavailableAdapter` (line 1568), `init_backtest_lab_db` (line 1603), `_validate_dates` (line 1677), `list_strategies` (line 1688), `submit_run` (line 1728), `_run_background` (line 1764), `_row_to_run` (line 1800), `list_runs` (line 1825), `get_run` (line 1844)
 
-Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `walk_forward`
+Engine dependencies: `backtest`, `daily_portfolio`, `edge_portfolio_replay`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `portfolio_parity`, `range_portfolio_replay`, `range_reversion`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `swing_portfolio_replay`, `walk_forward`
 
 Related tests: `python-engine/tests/test_backtest_lab.py`
 
 Declared tables: `backtest_experiments`, `backtest_runs`
+
+## `python-engine/backtest_qualification.py`
+
+Append-only prospective holdout protocol for Backtest Lab (P4). Dates are not evidence of non-observation. A qualification is therefore only created before its holdout begins, freezes exact policy/snapshot fingerprints, and receives a new immutable evaluation event whenever it is run.
+
+Top-level declarations: `QualificationError` (line 18), `canonical_sha256` (line 22), `_read` (line 26), `_lock` (line 43), `_append` (line 53), `freeze` (line 64), `frozen_record` (line 99), `validate_run` (line 108), `record_evaluation` (line 125)
+
+Related tests: `python-engine/tests/test_backtest_qualification.py`
+
+## `python-engine/backtest_reporting.py`
+
+Pure, conservative standard metrics for archived backtest reports.
+
+Top-level declarations: `validate_holdout` (line 12), `_number` (line 30), `report_holdout` (line 34), `_bootstrap` (line 43), `standard_metrics` (line 54)
+
+Related tests: `python-engine/tests/test_backtest_reporting.py`
 
 ## `python-engine/boundary_safety.py`
 
@@ -352,6 +406,16 @@ Engine dependencies: `fno_audit_report`, `momentum_paper_audit`
 
 Related tests: `python-engine/tests/test_daily_decision_quality.py`
 
+## `python-engine/daily_portfolio.py`
+
+Shared own-cash daily portfolio book for research replays (EDGE, Swing, Range). Research only: no fetch, order, database or runtime import. A module supplies two things — the signals it would have produced after each session's close, and an exit policy — and this book owns everything that must be identical across strategies so their results are comparable: * Clock: signals are decided after session D's close; orders work from D+1. A market order fills at D+1's open (the declared 09:30 proxy for daily data). A limit order rests for ``entry_valid_sessions`` sessions and fills at the open if it gaps through the limit, otherwise at the limit when the low reaches it. A missing or zero-volume sess
+
+Top-level declarations: `PortfolioUnavailable` (line 38), `DailySignal` (line 43), `OpenPosition` (line 67), `RestingLevel` (line 90), `ExitPolicy` (line 96), `BookConfig` (line 112), `run_daily_book` (line 126), `_trade_record` (line 273), `summarize` (line 294), `bars_by_ticker` (line 327), `calendar_from` (line 335), `penny_cnc_costs` (line 341), `system_cnc_costs` (line 350)
+
+Engine dependencies: `config`, `engine`, `penny_risk`
+
+Related tests: `python-engine/tests/test_daily_portfolio_book.py`
+
 ## `python-engine/decision_clocks_extensions.py`
 
 [WORKFLOW-A.1 2026-09-17] Decision-clock extension helpers. The base ``DecisionClock`` lives in ``partner_decision_clock`` and is the canonical clock contract. This module adds the bounded extension helpers the Workstream A plan calls for without touching the canonical dataclass: - ``build_clock_for_test(...)`` -- deterministic factory that returns a DecisionClock with sensible defaults derived from a single tick instant. - ``validate_clocks(clock) -> list[str]`` -- returns ALL clock problems (instead of raising the first one). - ``has_required_stages(clock) -> bool`` -- asserts the clock has at least public_received, chain_received, and candidate_constructed (the minimum required to support
@@ -402,6 +466,28 @@ Top-level declarations: `GateOutcome` (line 49), `DispatchGateStatus` (line 59),
 
 Related tests: `python-engine/tests/test_dispatch_independence.py`
 
+## `python-engine/edge_overnight_paper.py`
+
+EDGE overnight paper book: buy the EDGE scan near the close, sell at the next open. Broker-free. It never imports an executor or places an order. Research basis: docs/2026-10-05-edge-overnight-study.md. The shipped EDGE candidates earn their move overnight, while the runtime EDGE buys the following morning. * 15:20 IST (``run_overnight_entry``): one quote batch gives today's provisional bar (open/high/low from the session so far, LTP as the close, volume so far) for every cached ticker in or near the EDGE price band. The shipped ``scan_today`` ranks them on a temporary copy of recent history plus that bar. Each pick is bought on paper at LTP + ``ENTRY_SLIPPAGE_BPS``, capped by 1% of today's
+
+Top-level declarations: `overnight_db_path` (line 64), `_store` (line 69), `_read_only` (line 78), `_finite_positive` (line 82), `book_state` (line 89), `_already_ran` (line 101), `_record_run` (line 107), `universe_from_cache` (line 112), `provisional_bar` (line 127), `build_scan_db` (line 143), `_quotes` (line 161), `run_overnight_entry` (line 173), `run_overnight_exit` (line 240), `format_entry_telegram` (line 294), `format_exit_telegram` (line 302)
+
+Engine dependencies: `config`, `penny_edge_live`, `penny_risk`
+
+Related tests: `python-engine/tests/test_edge_overnight_paper.py`
+
+Declared tables: `edge_overnight_paper_runs`, `edge_overnight_paper_trades`
+
+## `python-engine/edge_portfolio_replay.py`
+
+R2: causal, own-cash EDGE portfolio replay and the EDGE_TRADER_V1 candidate. Research only. Signals come from the shipped ``penny_edge_live.scan_today`` over a frozen daily cache; execution, cash and costs come from the shared ``daily_portfolio`` book. Nothing here fetches, orders or edits EDGE runtime. BASELINE follows the live orchestrator as closely as daily bars allow: market entry at the next open (09:30 proxy) behind the executor's 2% drift check, protective stop, resting target, and the 15:15 time exit (close proxy) on the first session whose calendar age reaches ``PENNY_EDGE_MAX_HOLD_DAYS``. EDGE_TRADER_V1 treats MR and MO as different theses (declared before scoring): * MO (momentum
+
+Top-level declarations: `EdgeReplayConfig` (line 60), `EdgeBaselinePolicy` (line 84), `EdgeTraderPolicy` (line 104), `run_edge_portfolio` (line 129), `run_overnight_book` (line 186)
+
+Engine dependencies: `daily_portfolio`, `penny_edge_live`
+
+Related tests: `python-engine/tests/test_edge_portfolio_replay.py`
+
 ## `python-engine/edge_stats.py`
 
 [ROADMAP-5.1 2026-07-13] Real edge statistics. analytics.py already does the hard, unfashionable part right: it gates on sample size and labels its confidence instead of quoting a number from four trades as if it meant something. What it computes, though, is only win rate and average R -- and those two can describe a losing system perfectly happily. A 90%-win-rate strategy that gives it all back on the tenth trade has a fine win rate and a fine average R per winner, and still bleeds money. This module adds the statistics that can actually say "there is an edge here": expectancy -- what one trade is worth, on average (R and rupees) profit_factor -- gross profit / gross loss; <= 1.0 means no e
@@ -414,7 +500,7 @@ Related tests: `python-engine/tests/test_edge_stats.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `calc_ema` (line 18), `calc_atr` (line 22), `calc_volume_ratio` (line 33), `calc_rsi` (line 44), `calc_rsi_series` (line 82), `calc_slope` (line 147), `evaluate_signal` (line 168), `calc_zerodha_costs` (line 524), `is_cost_viable` (line 587), `calc_relative_strength` (line 610), `calc_vwap` (line 632), `calc_volume_consistency` (line 647), `resolve_momentum_regime_params` (line 658), `_momentum_variant_evidence` (line 713), `evaluate_momentum_signal` (line 743), `_evaluate_momentum_signal_impl` (line 790), `evaluate_mc8_rsi_trim` (line 1206)
+Top-level declarations: `calc_ema` (line 18), `calc_atr` (line 22), `calc_volume_ratio` (line 33), `calc_rsi` (line 44), `calc_rsi_series` (line 82), `calc_slope` (line 152), `evaluate_signal` (line 173), `calc_zerodha_costs` (line 529), `is_cost_viable` (line 592), `calc_relative_strength` (line 615), `calc_vwap` (line 637), `calc_volume_consistency` (line 652), `resolve_momentum_regime_params` (line 663), `_momentum_variant_evidence` (line 718), `evaluate_momentum_signal` (line 748), `_evaluate_momentum_signal_impl` (line 795), `evaluate_mc8_rsi_trim` (line 1211)
 
 Engine dependencies: `config`, `indicators_adaptive`, `models`
 
@@ -457,6 +543,16 @@ Related tests: `python-engine/tests/test_exit_quality.py`
 Top-level declarations: `zero_accept_scan` (line 38), `format_zero_accept_alert` (line 113)
 
 Engine dependencies: `config`
+
+## `python-engine/fno_adaptive_risk.py`
+
+Evidence-driven F&O position sizing: shrink fast when losing, grow slowly when proven. Pure (no I/O), shared by the live tick and the research replay. The owner's rule is that a loss shrinks the capital that earns, so the book must not keep paying full size into a losing streak, and it may only press harder after it has shown, on enough closed trades, that it is winning: * Drawdown from the equity peak: >= ``cut1`` halves the risk budget, >= ``cut2`` quarters it. (The 15% drawdown halt in the entry brakes stops entries.) * Proven edge: with >= ``up1_trades`` closed trades at profit factor >= ``up1_pf`` and equity within ``near_peak`` of its high, size steps to 1.25x; with >= ``up2_trades`` a
+
+Top-level declarations: `AdaptiveRiskPolicy` (line 32), `RiskStance` (line 45), `Close` (line 56), `read_book_closes` (line 63), `policy_from_settings` (line 89), `_profit_factor` (line 102), `risk_stance` (line 110)
+
+Engine dependencies: `config`
+
+Related tests: `python-engine/tests/test_fno_adaptive_risk.py`
 
 ## `python-engine/fno_analytics.py`
 
@@ -512,7 +608,7 @@ Related tests: `python-engine/tests/test_fno_costs.py`
 
 [FNO-DEFINED-RISK 2026-07-20] Defined-risk multi-leg structures for the F&O paper book (Phase 2 of the strategy-activation plan). Why this exists --------------- The P1 F&O engine buys a naked option off a directional ORB signal. On real data that book is -Rs 4,274 over 3 paper trades: buying weekly ATM premium is structurally theta-negative, and SEBI's own data (93% of individual F&O traders lose, FY22-24) says naked long-option punting is exactly where retail bleeds. This module replaces it with two *defined-risk* structures whose loss is capped and whose cost is modelled honestly: A. DEBIT_SPREAD -- directional, on a trend day + a directional signal. Buy ATM, sell the OTM strike `width` s
 
-Top-level declarations: `StructureKind` (line 47), `Structure` (line 59), `RouterParams` (line 83), `select_structure` (line 91), `_profile` (line 126), `_breakevens` (line 144), `build_debit_spread` (line 164), `build_iron_condor` (line 200), `structure_round_trip_cost` (line 243), `net_entry_credit_rs` (line 256)
+Top-level declarations: `StructureKind` (line 47), `Structure` (line 59), `RouterParams` (line 83), `select_structure` (line 91), `_profile` (line 126), `_breakevens` (line 144), `build_debit_spread` (line 164), `build_iron_condor` (line 201), `structure_round_trip_cost` (line 245), `net_entry_credit_rs` (line 259)
 
 Engine dependencies: `fno_costs`, `fno_models`
 
@@ -522,9 +618,9 @@ Related tests: `python-engine/tests/test_fno_defined_risk.py`
 
 [FNO-DR-BOOK 2026-07-20] Paper book that trades the defined-risk structures from fno_defined_risk (Phase 2 wiring). It rides the EXISTING run_fno_tick: that tick already builds the directional signal and the chain snapshot, so this book reuses both -- no second scheduler job, no duplicate market data. Scope (P1, paper only): - One structure open at a time per source (FNO_PAPER). Simple, auditable. - 1-lot unit; a structure whose 1-lot max-loss exceeds FNO_DR_MAX_LOSS_RS is skipped rather than force-sized. Multi-lot pool sizing is a later refinement (fno_risk.lots_for_pool) and gated behind the promotion bar anyway. - Mark-to-mid P&L; exit on target / stop (fractions of the structure's own ma
 
-Top-level declarations: `_enabled` (line 53), `_strike_step` (line 57), `_debit_width` (line 61), `_condor_offset` (line 65), `_condor_wing` (line 69), `_max_loss_ceiling` (line 73), `_target_frac` (line 77), `_stop_frac` (line 81), `_entry_lo_min` (line 85), `_entry_hi_min` (line 89), `_squareoff_min` (line 93), `_iv_low` (line 97), `_iv_high` (line 101), `premium_lookup_from_snapshot` (line 109), `_nearest_strike` (line 122), `expected_move_pct_from_snapshot` (line 126), `iv_rank_proxy` (line 139), `PlannedStructure` (line 157), `_contract_leg_snapshot` (line 166), `_selected_contract_legs` (line 208), `plan_structure` (line 230), `_legs_from_json` (line 315), `_legs_to_json` (line 323), `_bound_legs_to_json` (line 331), `_bound_legs_from_row` (line 339), `_matching_quote` (line 380), `_bound_price_functions` (line 400), `exact_open_leg_tokens` (line 427), `exact_leg_snapshot_from_quotes` (line 438), `structure_mtm_rs` (line 492), `structure_executable_pnl_rs` (line 504), `evaluate_dr_exit` (line 515), `init_dr_db` (line 569), `open_structures` (line 588), `insert_structure` (line 598), `_mark_unresolved` (line 618), `_settle_structure_atomically` (line 632), `manage_dr_structures` (line 696), `maybe_open_dr_structure` (line 736)
+Top-level declarations: `_enabled` (line 53), `_strike_step` (line 57), `_debit_width` (line 61), `_condor_offset` (line 65), `_condor_wing` (line 69), `_max_lots` (line 73), `_margin_per_lot` (line 77), `_max_capital_pct` (line 81), `dr_lots` (line 85), `_max_loss_ceiling` (line 102), `_target_frac` (line 106), `_stop_frac` (line 110), `_entry_lo_min` (line 114), `_entry_hi_min` (line 118), `_squareoff_min` (line 122), `_iv_low` (line 126), `_iv_high` (line 130), `premium_lookup_from_snapshot` (line 138), `_nearest_strike` (line 151), `expected_move_pct_from_snapshot` (line 155), `iv_rank_proxy` (line 168), `vehicle_by_iv_active` (line 185), `choose_directional_vehicle` (line 190), `PlannedStructure` (line 207), `_contract_leg_snapshot` (line 217), `_selected_contract_legs` (line 259), `plan_structure` (line 281), `_legs_from_json` (line 378), `_legs_to_json` (line 386), `_bound_legs_to_json` (line 394), `_bound_legs_from_row` (line 402), `_matching_quote` (line 443), `_bound_price_functions` (line 463), `exact_open_leg_tokens` (line 490), `exact_leg_snapshot_from_quotes` (line 501), `structure_mtm_rs` (line 555), `structure_executable_pnl_rs` (line 567), `evaluate_dr_exit` (line 578), `init_dr_db` (line 648), `open_structures` (line 668), `insert_structure` (line 678), `_mark_unresolved` (line 712), `_settle_structure_atomically` (line 726), `manage_dr_structures` (line 790), `dr_post_admission_reject` (line 830), `maybe_open_dr_structure` (line 847)
 
-Engine dependencies: `config`, `fno_analytics`, `fno_chain`, `fno_defined_risk`, `fno_models`, `performance`
+Engine dependencies: `config`, `fno_adaptive_risk`, `fno_analytics`, `fno_chain`, `fno_defined_risk`, `fno_models`, `fno_positions`, `fno_shared_risk`, `performance`
 
 Related tests: `python-engine/tests/test_fno_dr_book.py`
 
@@ -550,6 +646,16 @@ Engine dependencies: `config`, `fno_models`
 
 Related tests: `python-engine/tests/test_fno_engine_mom.py`
 
+## `python-engine/fno_entry_plan.py`
+
+Pure single-leg F&O entry planning shared by the live tick and research replay. Extracted from ``fno_orchestrator._try_entry_for_leg`` so the replay evaluates *the same* decision instead of a copy that could drift. Given a fired signal, a chain snapshot and the book's current state, it performs, in the shipped order: strike selection (|delta| closest to FNO_TARGET_DELTA, ATM-or-ITM), the §7 gate ladder, the no-pyramid same-contract refusal, pool sizing under the risk and open-premium caps, the §4 max-loss constitution and the net reward/ risk check. No I/O: the caller reads state, logs the outcome and performs any reservation and dispatch.
+
+Top-level declarations: `EntryState` (line 27), `EntryPlan` (line 48), `quote_age_sec` (line 65), `plan_single_leg_entry` (line 69)
+
+Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_gates`, `fno_models`, `fno_risk`
+
+Related tests: `python-engine/tests/test_fno_entry_plan.py`
+
 ## `python-engine/fno_executor.py`
 
 [FNO-EXECUTOR 2026-07-10] Order path for the F&O subsystem (spec §10.1). LIMIT orders only. Never market. The bid-ask spread on an option is the single largest controllable cost. Entry: LIMIT at ask, FNO_FILL_TIMEOUT_SEC then cancel. NEVER chase -- a missed fill is free; a chased fill is not. Exit: LIMIT at bid, escalating to bid - 3 ticks after 15s. Hard flat (15:10): a marketable limit wide enough to guarantee the fill -- the position MUST close. Paper mode fills honestly against the REAL book: entry at ask, exit at bid. Paying the spread in paper is deliberate -- it is the cost model's first-order term and pretending mid-fills would make the paper leg lie (same reasoning as the missing FN
@@ -557,6 +663,14 @@ Related tests: `python-engine/tests/test_fno_engine_mom.py`
 Top-level declarations: `FnoExecutor` (line 45)
 
 Engine dependencies: `config`, `kite_client`
+
+## `python-engine/fno_exit_evidence.py`
+
+[F0-R4 2026-10-03] One pure interpretation of a broker exit packet. ``verify_broker_exit`` (live, operator-authorised recovery) and the shared F&O risk reader (which must never call the broker) both derive the exit's facts from the same order/trades/net-position packet through ``derive_exit_facts``. The reader additionally binds the retained packet to its immutable receipt, the position's entry economics and the frozen cost schedule with ``validate_retained_exit_receipt``. A matching digest proves only that the stored packet was not changed apart from its digest; it is not broker authenticity. These checks remove the empty-payload and inconsistent-edit paths, not a determined rewrite of rece
+
+Top-level declarations: `RecoveryConflict` (line 33), `_positive_int` (line 37), `_price` (line 43), `broker_time` (line 53), `derive_exit_facts` (line 63), `encode_evidence` (line 142), `valid_cost_snapshot` (line 150), `_aware` (line 165), `validate_retained_exit_receipt` (line 173)
+
+Engine dependencies: `fno_costs`
 
 ## `python-engine/fno_exit_experiment.py`
 
@@ -572,9 +686,9 @@ Related tests: `python-engine/tests/test_fno_exit_experiment.py`
 
 Evidence-backed, operator-authorized reconciliation of one F&O exit intent. Broker order/trade/position reads are deliberately required on every resolve. The broker's daily order book cannot prove an older unknown dispatch; those intents remain blocked for statement-level manual reconciliation.
 
-Top-level declarations: `RecoveryConflict` (line 26), `pending_exit_intents` (line 30), `_positive_int` (line 54), `_price` (line 60), `_broker_time` (line 70), `verify_broker_exit` (line 80), `resolve_exit_intent` (line 191)
+Top-level declarations: `pending_exit_intents` (line 31), `verify_broker_exit` (line 55), `resolve_exit_intent` (line 119)
 
-Engine dependencies: `fno_costs`, `fno_positions`, `performance`
+Engine dependencies: `cost_schedules`, `fno_costs`, `fno_exit_evidence`, `fno_positions`, `performance`
 
 Related tests: `python-engine/tests/test_fno_exit_recovery.py`, `python-engine/tests/test_fno_exit_recovery_boundary.py`
 
@@ -634,19 +748,29 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 61), `_read_cap` (line 65), `_record_management_read` (line 70), `_timed_database_operation` (line 100), `_management_quote` (line 121), `_oldest_quote_age_sec` (line 137), `_settle_exit_receipt` (line 154), `_fno_pool_paper` (line 215), `_fno_pool_live` (line 220), `_load_dr_entry_inputs` (line 232), `_fno_equity` (line 285), `_fno_halted` (line 291), `_fetch_futures_bars` (line 312), `_record_shadow_observation` (line 320), `_schedule_shadow_observation` (line 337), `_manage_open_positions` (line 367), `_try_entry_for_leg` (line 596), `run_fno_tick` (line 861), `_bar_already_logged` (line 1275), `format_fno_telegram` (line 1296)
+Top-level declarations: `_now_min` (line 68), `_read_cap` (line 72), `_record_management_read` (line 77), `_timed_database_operation` (line 107), `_management_quote` (line 128), `_oldest_quote_age_sec` (line 144), `_settle_exit_receipt` (line 161), `_fno_pool_paper` (line 222), `_fno_pool_live` (line 227), `_load_dr_entry_inputs` (line 238), `_fno_equity` (line 291), `_fno_halted` (line 297), `_fetch_futures_bars` (line 319), `_record_shadow_observation` (line 327), `_schedule_shadow_observation` (line 344), `_manage_open_positions` (line 374), `_try_entry_for_leg` (line 614), `post_admission_entry_reject` (line 898), `_insert_entry_position` (line 916), `_manage_single_leg_books` (line 927), `run_fno_tick` (line 1026), `_single_leg_entries` (line 1278), `run_fno_fast_exit` (line 1431), `_bar_already_logged` (line 1479), `format_fno_telegram` (line 1501)
 
-Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_signal_log`, `operator_alert`, `performance`
+Engine dependencies: `affordability`, `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `fno_underlyings`, `operator_alert`, `performance`
 
 Related tests: `python-engine/tests/test_fno_orchestrator.py`
+
+## `python-engine/fno_policy_replay.py`
+
+Full-policy single-leg F&O replay over archived quotes (research only). The replay re-runs the *shipped* NIFTY single-leg paper book tick by tick on evidence the live system actually had: * futures 5-minute candles (``fut_candles``) for the day's front future, * every archived NIFTY quote batch (front future + ATM±5 calls/puts for two expiries, raw provider packets verified by ``verify_archive_event``), * the live ``fno_signals`` regime per bar (point-in-time, never re-derived). Decisions call the production code: ``evaluate_fno_mom`` (signal), ``fno_chain._parse_quote_entry`` + ``ChainSnapshot`` (chain view), ``fno_entry_plan.plan_single_leg_entry`` (strike, gates, sizing, max loss, reward/
+
+Top-level declarations: `FnoReplayError` (line 56), `ReplayPolicy` (line 63), `Observation` (line 87), `ReplayData` (line 95), `_last_closed_bar` (line 215), `_aware` (line 222), `OpenLeg` (line 230), `Book` (line 260), `_close_record` (line 271), `SingleLegReplay` (line 294), `summarize` (line 550), `parity_report` (line 566), `run_replay` (line 583)
+
+Engine dependencies: `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_exit_experiment`, `fno_exit_rules`, `fno_models`, `fno_risk`, `fno_shared_risk`, `intraday_spread_archive_adapter`
+
+Related tests: `python-engine/tests/test_fno_policy_replay.py`
 
 ## `python-engine/fno_positions.py`
 
 [FNO-POSITIONS 2026-07-10] Position store for the F&O subsystem. Options positions don't fit the equity `positions` table (premium vs price, lots vs shares, underlying-level stops next to premium backstops), so they get their own table. Pool accounting still flows into the shared bankroll_ledger via performance.record_trade_close(source=FNO_PAPER/ FNO_LIVE) at close time -- purely additive next to the existing source tags (spec §10.3). All dates/times stored in IST (the exchange's clock), ISO format. Kill switches and day-queries key off entry_date / exit_date, so the module's "day" can never drift against the trading session the way UTC dates do. Rule 57: every reader preflights the table a
 
-Top-level declarations: `FnoPosition` (line 135), `_row_to_position` (line 178), `init_fno_positions_db` (line 182), `_table_exists` (line 250), `insert_position` (line 257), `open_positions` (line 274), `open_premium_committed` (line 288), `trades_today` (line 302), `already_entered_bar` (line 314), `update_trail` (line 326), `close_position` (line 340), `exit_execution_receipt` (line 372), `claim_exit_intent` (line 391), `record_exit_execution_receipt` (line 417), `SettlementError` (line 528), `PositionNotOpen` (line 532), `SettlementConflict` (line 542), `settle_position_close` (line 567), `settle_position_close_idempotent` (line 798), `closed_today` (line 851)
+Top-level declarations: `FnoPosition` (line 205), `_row_to_position` (line 248), `init_fno_positions_db` (line 252), `_table_exists` (line 337), `_with_entry_baselines` (line 344), `insert_position` (line 364), `insert_position_with_risk_reservation` (line 379), `open_positions` (line 411), `open_premium_committed` (line 425), `trades_today` (line 439), `already_entered_bar` (line 451), `update_trail` (line 464), `close_position` (line 478), `exit_execution_receipt` (line 510), `claim_exit_intent` (line 529), `record_exit_execution_receipt` (line 555), `SettlementError` (line 666), `PositionNotOpen` (line 670), `SettlementConflict` (line 680), `settle_position_close` (line 705), `settle_position_close_idempotent` (line 936), `closed_today` (line 989)
 
-Engine dependencies: `performance`
+Engine dependencies: `fno_costs`, `fno_shared_risk`, `performance`
 
 Declared tables: `fno_exit_execution_receipts`, `fno_exit_intents`, `fno_exit_recoveries`, `fno_positions`
 
@@ -672,6 +796,18 @@ Related tests: `python-engine/tests/test_fno_shadow.py`
 
 Declared tables: `fno_shadow_evaluations`
 
+## `python-engine/fno_shared_risk.py`
+
+Shared, fail-closed F&O paper-risk evidence and reservations. This module is intentionally the only place that may combine the directional ``fno_positions`` and defined-risk ``fno_dr_positions`` books for an F&O admission decision. The books retain their own lifecycle/settlement writers; this module does not invent a fill, close a position, or release exposure on a timer. In particular, an ``UNRESOLVED`` structure and an interrupted entry reservation remain unavailable capital until an explicit, durable resolution. F0-A/B provide the typed snapshot and atomic reservation primitive; the paper position writers consume the reservation with their position insert. F0-C adds the common entry-polic
+
+Top-level declarations: `SharedFnoRiskPolicy` (line 159), `SharedFnoEntryPolicyDecision` (line 176), `SharedFnoRiskView` (line 198), `SharedFnoAdmission` (line 230), `EntryOccupancy` (line 243), `SharedFnoDispatchClaim` (line 262), `_finite_non_negative` (line 271), `_unavailable` (line 279), `init_shared_fno_risk_db` (line 296), `_table_exists` (line 315), `_whole_non_negative` (line 322), `_finite_number` (line 329), `_recovery_evidence_is_intact` (line 337), `_validate_open_partial_exit_evidence` (line 351), `_CashEvent` (line 489), `_CashLedger` (line 499), `_observation_instant` (line 507), `_read_cash_ledger` (line 514), `_settlement_cash_gap` (line 570), `_completed_trades` (line 603), `_read_view` (line 628), `_invalid_policy` (line 744), `policy_from_settings` (line 758), `_policy_unavailable` (line 770), `_read_entry_policy` (line 780), `EntryHalts` (line 823), `entry_halts` (line 832), `shared_fno_entry_policy` (line 889), `shared_fno_risk_view` (line 915), `reserve_shared_fno_risk` (line 939), `resolve_shared_fno_risk_reservation` (line 1014), `consume_shared_fno_risk_reservation_in_transaction` (line 1065), `_encode_evidence` (line 1100), `_zero_fill_evidence_ok` (line 1114), `dispatch_release_evidence_ok` (line 1121), `_reconcile_evidence_ok` (line 1135), `_occupancy_denial` (line 1151), `claim_shared_fno_entry_dispatch` (line 1202), `resolve_shared_fno_entry_dispatch` (line 1306), `reconcile_shared_fno_entry_dispatch` (line 1364)
+
+Engine dependencies: `config`, `fno_exit_evidence`
+
+Related tests: `python-engine/tests/test_fno_shared_risk.py`
+
+Declared tables: `fno_entry_dispatches`, `fno_risk_reservations`
+
 ## `python-engine/fno_signal_log.py`
 
 [FNO-LOG 2026-07-10] Append-only signal log for the F&O subsystem (spec §9.2). Every evaluation -- accepted or rejected, including "engine said no signal" ticks where a bar was actually evaluated -- writes one row to: 1. CSV at settings.FNO_SIGNAL_LOG_PATH (default /data/fno_signals.csv) 2. SQLite table `fno_signals` in settings.DB_PATH Ops rule 75: the CSV, not docker logs, is the ground truth for "is it really doing nothing?". The zero-accept watchdog reads the SQLite table. Schema is a stable contract -- never rename columns, only add. Best-effort writes: failures here must NOT crash the scan tick.
@@ -696,7 +832,7 @@ Related tests: `python-engine/tests/test_fno_signal_scan.py`
 
 [PARTNER-TIPS 2026-07-18] Multi-underlying registry for F&O analytics (partner tips bot, plan feat/partner-tips-bot WS1). The trading path stays single-underlying (FNO_UNDERLYING=NIFTY, spec "NIFTY only in P1") and is NOT routed through this module. This registry exists for the read-only analytics/signal-generation side: NIFTY + BANKNIFTY on NFO, SENSEX on BFO (BSE F&O). Hard rules: - ONE instruments-dump fetch per SEGMENT per refresh (an NFO dump is 60-90k rows; fetching it twice for NIFTY and BANKNIFTY would double the 38-minute cold-start pathology ops rule 61 exists to prevent). - A BANKNIFTY/SENSEX failure must NEVER sink the NIFTY refresh: the NIFTY book feeds the live paper-trading pa
 
-Top-level declarations: `UnderlyingSpec` (line 40), `analytics_underlyings` (line 62), `instruments_path` (line 78), `get_instruments_for` (line 93), `_persist_underlying_names` (line 117), `load_underlying_names` (line 146), `refresh_all` (line 154)
+Top-level declarations: `UnderlyingSpec` (line 40), `trading_underlyings` (line 65), `analytics_underlyings` (line 82), `instruments_path` (line 98), `get_instruments_for` (line 113), `_persist_underlying_names` (line 137), `load_underlying_names` (line 166), `refresh_all` (line 174)
 
 Engine dependencies: `config`, `fno_instruments`, `research_archive`
 
@@ -894,9 +1030,9 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 36), `_intraday_cache_gate_evaluate` (line 72), `provider_lane` (line 192), `RateLimiter` (line 209), `KiteClient` (line 294), `latest_order_state` (line 1874)
+Top-level declarations: `_interval_minutes` (line 39), `_intraday_cache_gate_evaluate` (line 75), `provider_lane` (line 195), `RateLimiter` (line 212), `KiteClient` (line 297), `_finite` (line 2021), `own_uncommitted_cash` (line 2030), `latest_order_state` (line 2080)
 
-Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
+Engine dependencies: `account_cash_reservations`, `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
 Related tests: `python-engine/tests/test_kite_client.py`, `python-engine/tests/test_kite_client_cache_miss_reason_f3.py`, `python-engine/tests/test_kite_client_methods.py`
 
@@ -920,9 +1056,9 @@ Related tests: `python-engine/tests/test_macro_events.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_is_intraday_from_product_type` (line 137), `_classic_penny_source` (line 211), `_make_penny_ledger_writer` (line 225), `_get_penny_universe` (line 236), `_get_penny_scanner` (line 253), `_within_penny_market_hours` (line 295), `run_penny_scanner_once` (line 303), `run_penny_connors_scan` (line 437), `run_penny_universe_refresh` (line 731), `run_penny_regime_compute` (line 803), `run_penny_regime_refresh` (line 828), `_penny_ltp` (line 848), `_penny_exit_event_context` (line 877), `_append_penny_exit_event` (line 912), `_settle_confirmed_penny_exit` (line 930), `_execute_scheduled_penny_exit` (line 1006), `run_penny_paper_stop_monitor` (line 1202), `run_penny_eod_check` (line 1262), `run_penny_force_close_mis` (line 1358), `_run_penny_daily_attribution` (line 1441), `_run_penny_eod_digest` (line 1479), `_run_penny_heatmap` (line 1526), `run_penny_hourly_report` (line 1575), `build_breadth_engine` (line 1745), `build_breadth_kwargs` (line 1791), `_filter_by_liquidity` (line 1810), `snap_to_tick` (line 1869), `_momentum_exit_clock` (line 1894), `_fno_regime_str` (line 1988), `lifespan` (line 2002), `post_login_initialization` (line 2374), `_load_universe_with_fallback` (line 2445), `run_screener` (line 2502), `daily_post_market` (line 2819), `run_momentum_screener` (line 2898), `_run_momentum_screener_impl` (line 2917), `_momentum_initial_risk` (line 3352), `_aggregate_momentum_close` (line 3363), `_close_momentum_position` (line 3370), `_record_momentum_scale_out` (line 3424), `_square_off_fill_evidence` (line 3482), `_cancel_order_truth` (line 3508), `_momentum_square_off_key` (line 3538), `_record_confirmed_momentum_partial` (line 3550), `_page_unconfirmed_square_off` (line 3589), `_post_square_off_with_reconcile` (line 3600), `_rearm_momentum_residual_stop` (line 3630), `momentum_intraday_monitor` (line 3656), `_momentum_intraday_monitor_owned` (line 3676), `_restore_momentum_protection_after_eod_abort` (line 3957), `auto_square_momentum` (line 3996), `_auto_square_momentum_owned` (line 4028), `_paper_ltp` (line 4304), `_run_momentum_paper_monitor` (line 4324), `_run_momentum_paper_square_off` (line 4339), `momentum_eod_warning` (line 4349), `_notify_telegram_square_off_failure` (line 4381), `_notify_momentum_heartbeat` (line 4397), `compute_performance_report` (line 4468), `notify_screener_results` (line 4530)
+Top-level declarations: `_is_intraday_from_product_type` (line 137), `_classic_penny_source` (line 211), `_make_penny_ledger_writer` (line 225), `_get_penny_universe` (line 236), `_get_penny_scanner` (line 253), `_within_penny_market_hours` (line 295), `run_penny_scanner_once` (line 303), `run_penny_connors_scan` (line 437), `run_penny_universe_refresh` (line 731), `run_penny_regime_compute` (line 803), `run_penny_regime_refresh` (line 828), `_penny_ltp` (line 848), `_penny_exit_event_context` (line 877), `_append_penny_exit_event` (line 912), `_settle_confirmed_penny_exit` (line 930), `_execute_scheduled_penny_exit` (line 1006), `run_penny_paper_stop_monitor` (line 1202), `run_penny_eod_check` (line 1272), `run_penny_force_close_mis` (line 1368), `_run_penny_daily_attribution` (line 1451), `_run_penny_eod_digest` (line 1489), `_run_penny_heatmap` (line 1536), `run_penny_hourly_report` (line 1585), `build_breadth_engine` (line 1755), `build_breadth_kwargs` (line 1801), `_filter_by_liquidity` (line 1820), `snap_to_tick` (line 1879), `_momentum_exit_clock` (line 1904), `_fno_regime_str` (line 1998), `lifespan` (line 2012), `post_login_initialization` (line 2384), `_load_universe_with_fallback` (line 2455), `run_screener` (line 2512), `daily_post_market` (line 2829), `run_momentum_screener` (line 2908), `_run_momentum_screener_impl` (line 2927), `_momentum_initial_risk` (line 3372), `_aggregate_momentum_close` (line 3383), `_close_momentum_position` (line 3390), `_record_momentum_scale_out` (line 3444), `_square_off_fill_evidence` (line 3502), `_cancel_order_truth` (line 3528), `_momentum_square_off_key` (line 3558), `_record_confirmed_momentum_partial` (line 3570), `_page_unconfirmed_square_off` (line 3609), `_post_square_off_with_reconcile` (line 3620), `_rearm_momentum_residual_stop` (line 3650), `momentum_intraday_monitor` (line 3676), `_momentum_intraday_monitor_owned` (line 3696), `_restore_momentum_protection_after_eod_abort` (line 3977), `auto_square_momentum` (line 4016), `_auto_square_momentum_owned` (line 4048), `_paper_ltp` (line 4324), `_run_momentum_paper_monitor` (line 4344), `_run_momentum_paper_square_off` (line 4359), `momentum_eod_warning` (line 4369), `_notify_telegram_square_off_failure` (line 4401), `_notify_momentum_heartbeat` (line 4417), `compute_performance_report` (line 4488), `notify_screener_results` (line 4550)
 
-Engine dependencies: `analytics`, `backtest`, `breadth`, `config`, `engine`, `engine_auth`, `fno_oi_store`, `fno_positions`, `fno_signal_log`, `hedge_advisory`, `kite_client`, `logging_setup`, `mark_to_market`, `market_calendar`, `memory_metrics`, `models`, `momentum_exits`, `momentum_paper`, `momentum_shadow`, `operator_alert`, `operator_status`, `ops_metrics`, `ops_watchdogs`, `partner_orchestrator`, `penny_daily_attribution`, `penny_engine_breakout`, `penny_execution_journal`, `penny_executor`, `penny_heatmap`, `penny_hourly_report`, `penny_models`, `penny_position_reservations`, `penny_regime`, `penny_risk`, `penny_scanner`, `penny_shadow`, `penny_signal_log`, `penny_universe`, `performance`, `portfolio`, `position_tracker`, `regime`, `risk_engine`, `routes_backtest`, `routes_commands`, `routes_fno_experiments`, `routes_hedge`, `routes_holidays`, `routes_market_session`, `routes_ops`, `routes_penny_experiments`, `routes_portfolio`, `routes_promotion_readiness`, `scheduler_setup`, `scheduler_telemetry`, `signal_log`, `token_lifecycle`, `universe`
+Engine dependencies: `analytics`, `backtest`, `breadth`, `config`, `engine`, `engine_auth`, `fno_oi_store`, `fno_positions`, `fno_signal_log`, `hedge_advisory`, `kite_client`, `logging_setup`, `mark_to_market`, `market_calendar`, `memory_metrics`, `models`, `momentum_exits`, `momentum_paper`, `momentum_shadow`, `operator_alert`, `operator_status`, `ops_metrics`, `ops_watchdogs`, `partner_orchestrator`, `penny_daily_attribution`, `penny_engine_breakout`, `penny_execution_journal`, `penny_executor`, `penny_heatmap`, `penny_hourly_report`, `penny_models`, `penny_position_reservations`, `penny_regime`, `penny_risk`, `penny_scanner`, `penny_shadow`, `penny_signal_log`, `penny_smart_shadow`, `penny_universe`, `performance`, `portfolio`, `position_tracker`, `regime`, `risk_engine`, `routes_backtest`, `routes_commands`, `routes_fno_experiments`, `routes_hedge`, `routes_holidays`, `routes_market_session`, `routes_ops`, `routes_penny_experiments`, `routes_portfolio`, `routes_promotion_readiness`, `scheduler_setup`, `scheduler_telemetry`, `signal_log`, `token_lifecycle`, `universe`
 
 Related tests: `python-engine/tests/test_main_api.py`, `python-engine/tests/test_main_breadth_helpers.py`, `python-engine/tests/test_main_breadth_integration.py`, `python-engine/tests/test_main_surface_characterization.py`
 
@@ -1064,19 +1200,27 @@ Top-level declarations: `PathEnvelopeError` (line 23), `encode_path_quote_envelo
 
 Decision-grade, broker-free replay of the production 15-minute Momentum evaluator. The module is intentionally library-only: it has no API, scheduler, broker, order, or persistence side effects. Cache access is SQLite read-only and fails closed on ambiguous intraday provenance.
 
-Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 44), `_settings_snapshot` (line 72), `_read_cache` (line 90), `_validate_frame` (line 160), `_daily_frame` (line 183), `_volume_threshold` (line 191), `_exit` (line 198), `_costs` (line 216), `_simulate` (line 228), `_summary` (line 260), `chronological_oos` (line 281), `run_momentum_replay` (line 324)
+Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 67), `_settings_snapshot` (line 119), `_read_cache` (line 137), `_validate_frame` (line 210), `_daily_frame` (line 233), `_volume_threshold` (line 241), `_exit` (line 248), `_costs` (line 266), `_simulate` (line 278), `_multi_order_costs` (line 310), `_simulate_live_exit_lifecycle` (line 334), `_finish_lifecycle` (line 442), `_simulate_thesis_exit` (line 462), `_simulate_runner_exit` (line 543), `_next_bar_entry` (line 605), `_summary` (line 631), `chronological_oos` (line 653), `run_momentum_replay` (line 696)
 
-Engine dependencies: `config`, `engine`, `models`, `momentum_shadow`
+Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `momentum_selective`, `momentum_shadow`
 
 Related tests: `python-engine/tests/test_momentum_replay.py`
+
+## `python-engine/momentum_selective.py`
+
+Selective Momentum: take a shipped Momentum signal only when the context agrees. Pure (no I/O), shared by the research replay and, once promoted, the live scanner. A smart intraday trader does not buy every VWAP reclaim: the development evidence (Aug–Oct 2026, docs/2026-10-04-momentum-penny-smarter-slice.md) showed ordinary breakouts on 15-minute bars do not beat costs. This gate keeps only breakouts that line up with three classic conditions: * the market is up on the day (NIFTY 50 above its session open), * the stock is clearly stronger than the market since the open (relative strength >= ``min_relative_strength``), * the stock is through yesterday's high (a real breakout, not a bounce). E
+
+Top-level declarations: `SelectivePolicy` (line 27), `_session_return` (line 36), `selective_gate` (line 45)
+
+Related tests: `python-engine/tests/test_momentum_selective.py`
 
 ## `python-engine/momentum_shadow.py`
 
 Broker-free paper-shadow evaluation for declared Momentum variants. This module deliberately imports only the pure strategy evaluator plus storage and serialization libraries. It has no Kite, executor, order, or scheduler dependency. Evaluation and persistence are separate operations so callers can test the same immutable frames before choosing where to record the evidence.
 
-Top-level declarations: `MomentumShadowVariant` (line 30), `MomentumShadowExecution` (line 46), `momentum_shadow_execution_config` (line 79), `_json_safe` (line 84), `_normalise_timestamp` (line 100), `_frame_fingerprint` (line 106), `_bars` (line 116), `_identity` (line 134), `_ticker` (line 162), `_selected_variants` (line 169), `evaluate_momentum_shadows` (line 181), `init_momentum_shadow_db` (line 253), `_exit_for_bar` (line 333), `_declared_costs` (line 355), `_advance_and_open` (line 377), `persist_momentum_shadow_results` (line 469), `momentum_shadow_comparison` (line 509), `momentum_shadow_near_misses` (line 629)
+Top-level declarations: `MomentumShadowVariant` (line 31), `MomentumShadowExecution` (line 51), `momentum_shadow_execution_config` (line 84), `_json_safe` (line 89), `_normalise_timestamp` (line 105), `_frame_fingerprint` (line 111), `_bars` (line 121), `_identity` (line 139), `_ticker` (line 167), `_selected_variants` (line 174), `evaluate_momentum_shadows` (line 186), `_selective_decision` (line 273), `init_momentum_shadow_db` (line 284), `_exit_for_bar` (line 364), `_declared_costs` (line 386), `_advance_and_open` (line 408), `persist_momentum_shadow_results` (line 500), `momentum_shadow_comparison` (line 540), `momentum_shadow_near_misses` (line 660)
 
-Engine dependencies: `config`, `cost_schedules`, `engine`
+Engine dependencies: `config`, `cost_schedules`, `engine`, `momentum_selective`
 
 Related tests: `python-engine/tests/test_momentum_shadow.py`, `python-engine/tests/test_momentum_shadow_integration.py`
 
@@ -1091,6 +1235,14 @@ Top-level declarations: `_get_globals` (line 39), `_format_pnl` (line 46), `_tod
 Engine dependencies: `performance`, `position_tracker`
 
 Related tests: `python-engine/tests/test_nifty_commands.py`
+
+## `python-engine/non_fno_research.py`
+
+PEN_CONTEXT research gate (N2), retained for its archived receipts. Not wired into live scanners. The other N2/N3 subset-only helpers and the independent-trial EDGE proxy were removed after T1/T2 replaced them with complete trader candidates (``adaptive_penny_policy``, ``daily_portfolio`` replays). The gate consumes supplied, already-visible evidence and returns a named reason instead of inventing unavailable market context.
+
+Top-level declarations: `_number` (line 16), `penny_context_gate` (line 24)
+
+Related tests: `python-engine/tests/test_non_fno_research.py`
 
 ## `python-engine/operational_coverage.py`
 
@@ -1462,7 +1614,7 @@ Related tests: `python-engine/tests/test_penny_edge_engine.py`
 
 [PENNY-EDGE-LIVE 2026-07-01] Live signal scanner that wires penny_edge_engine to the live ohlcv_cache and produces a list of candidate trades for the day. This is the integration layer. It: 1. Loads today's bars from cache.db 2. Computes signal features for every (date, ticker) pair 3. Filters to candidates with strength >= min_strength 4. Sorts by regime-adjusted strength 5. Outputs the top N for execution (paper or live) The actual ORDER PLACEMENT is NOT in this module. The orchestrator (a new penny_edge_orchestrator.py -- to be written) takes the candidates and decides whether to enter paper trades or live trades via the existing penny_executor. The HARD problem we don't solve here: live
 
-Top-level declarations: `scan_today` (line 46), `_rank_for_leg` (line 251), `format_positions_report` (line 274)
+Top-level declarations: `scan_today` (line 47), `_rank_for_leg` (line 250), `format_positions_report` (line 273)
 
 Engine dependencies: `event_calendar`, `penny_edge_backtest`
 
@@ -1480,9 +1632,9 @@ Related tests: `python-engine/tests/test_penny_edge_orchestrator.py`
 
 [PENNY-BREAKOUT 2026-06-21] Volume Breakout MIS signal evaluator + 14:30 smart-EOD rule for the penny subsystem. Spec section 5 covers the full signal flow and the smart-EOD exit logic. Hard architectural rule (enforced by tests/test_penny_isolation.py): this module MUST NOT import from engine, regime, risk_engine, portfolio, evaluate_signal, or evaluate_momentum_signal. Public API: evaluate_breakout_entry(ticker, cum_vol_today, median_vol_20d, breakout_bar, day_high, rsi_14, as_of, risk_engine) -> dict smart_eod_check(pos, current_price, now) -> dict mis_time_stop_active(now) -> bool [PENNY-RSI-CONTRACT 2026-06-25, G3 audit note] The penny subsystem deliberately uses TWO RSI periods, one pe
 
-Top-level declarations: `_rsi_14_wilder` (line 50), `_vwap_from_intraday` (line 78), `_atr_20_from_intraday` (line 120), `_adaptive_threshold_scale` (line 152), `_to_minutes_since_midnight` (line 203), `_regime_from_pct` (line 207), `evaluate_breakout_entry` (line 219), `smart_eod_check` (line 405), `mis_time_stop_active` (line 453), `time_stop_triggered` (line 463)
+Top-level declarations: `_rsi_14_wilder` (line 50), `_vwap_from_intraday` (line 78), `_atr_20_from_intraday` (line 120), `_adaptive_threshold_scale` (line 152), `_to_minutes_since_midnight` (line 203), `_regime_from_pct` (line 207), `evaluate_breakout_entry` (line 219), `smart_eod_check` (line 425), `noise_floor_stop` (line 475), `mis_time_stop_active` (line 502), `time_stop_triggered` (line 512)
 
-Engine dependencies: `config`, `penny_models`
+Engine dependencies: `config`, `penny_models`, `penny_prices`
 
 Related tests: `python-engine/tests/test_penny_engine_breakout.py`
 
@@ -1510,9 +1662,9 @@ Declared tables: `penny_execution_events`
 
 [PENNY-EXECUTOR 2026-06-21] Order execution flow for the penny subsystem. Spec §7.2: MANDATORY broker-level protective stop for every entry. If the stop cannot be placed (broker rejection, network error, unsupported order type), the executor MUST immediately exit the position. No in-engine stop fallback -- gap-down protection only works when the broker holds the trigger. [2026-07-31] Three corrections after the 2026-07-30 SIGMA incident, where the buy filled, the stop was rejected, the unwind was ALSO rejected, and the caller was told the entry had succeeded: * the stop is an SL (stop-loss LIMIT), never SL-M. Zerodha refuses MARKET orders over the API without market protection, so every SL-M
 
-Top-level declarations: `_is_non_retryable` (line 99), `note_entry_failure` (line 104), `entry_blocked` (line 127), `note_entry_success` (line 132), `reset_entry_blocks` (line 137), `snap_to_tick` (line 146), `PennyExecutor` (line 158)
+Top-level declarations: `_is_non_retryable` (line 99), `note_entry_failure` (line 104), `entry_blocked` (line 127), `note_entry_success` (line 132), `reset_entry_blocks` (line 137), `snap_to_tick` (line 146), `PennyExecutor` (line 151)
 
-Engine dependencies: `kite_client`, `operator_alert`, `penny_models`
+Engine dependencies: `kite_client`, `operator_alert`, `penny_models`, `penny_prices`
 
 Related tests: `python-engine/tests/test_penny_executor.py`
 
@@ -1548,11 +1700,21 @@ Related tests: `python-engine/tests/test_penny_hourly_report.py`
 
 Decision-grade, broker-free replay of classic Penny one-minute evidence. The loader is intentionally strict: only explicitly labelled ``minute`` cache rows are admissible. A requested ticker/day with unknown or mixed interval provenance invalidates the run instead of silently manufacturing confidence.
 
-Top-level declarations: `PennyReplayConfig` (line 34), `_OneShareRisk` (line 52), `_iso_day` (line 57), `_schema_columns` (line 64), `_fingerprint` (line 68), `load_penny_minute_snapshot` (line 77), `_variant_config` (line 202), `_run_fingerprint` (line 221), `_summarize` (line 233), `_run_snapshot` (line 262), `run_penny_intraday_replay` (line 375), `run_penny_intraday_walk_forward` (line 388)
+Top-level declarations: `PennyReplayConfig` (line 35), `_OneShareRisk` (line 53), `_iso_day` (line 58), `_schema_columns` (line 65), `_fingerprint` (line 69), `load_penny_minute_snapshot` (line 78), `_variant_config` (line 203), `_run_fingerprint` (line 222), `_summarize` (line 234), `_run_snapshot` (line 263), `run_penny_intraday_replay` (line 376), `run_penny_intraday_walk_forward` (line 389)
 
 Engine dependencies: `config`, `penny_engine_breakout`, `penny_shadow`, `walk_forward`
 
 Related tests: `python-engine/tests/test_penny_intraday_replay.py`
+
+## `python-engine/penny_lifecycle_replay.py`
+
+[B2 2026-10-03] Exact classic Penny MIS breakout lifecycle replay (offline). Replays the shipped classic Penny MIS book over B1-validated minute bars, calling the same functions the runtime calls, in the runtime's order: * entry: ``PennyScanner._evaluate_ticker_breakout`` input construction -> ``evaluate_breakout_entry`` (with a real ``PennyRiskEngine`` for sizing) -> per-ticker reservation and MIS capacity -> ``PennyExecutor.execute_entry`` drift / stop-breach checks -> fill at the LTP; * exits: the 60-second paper LTP stop monitor (``PENNY_PAPER``) or a broker stop (``PENNY``), the 14:30 ``run_penny_eod_check`` branch order (``time_stop_triggered`` then ``smart_eod_check``) and the 15:00 `
+
+Top-level declarations: `noise_floored_decision` (line 60), `trader_policy` (line 77), `reject_code` (line 122), `PennyLifecycleConfig` (line 132), `settings_snapshot` (line 169), `_TickerDay` (line 198), `_aware` (line 243), `_round` (line 247), `_Replay` (line 251), `_summary` (line 969), `_trader_breakdown` (line 1019), `run_penny_lifecycle` (line 1035)
+
+Engine dependencies: `adaptive_penny_policy`, `config`, `non_fno_research`, `penny_engine_breakout`, `penny_executor`, `penny_models`, `penny_risk`, `penny_shadow`, `penny_smart_book`, `penny_smart_policy`, `research_data_contracts`
+
+Related tests: `python-engine/tests/test_penny_lifecycle_replay.py`
 
 ## `python-engine/penny_models.py`
 
@@ -1582,6 +1744,14 @@ Engine dependencies: `config`, `penny_hourly_report`
 
 Related tests: `python-engine/tests/test_penny_premarket_report.py`
 
+## `python-engine/penny_prices.py`
+
+Exact Penny price quantization and locally cached instrument tick metadata. No broker calls. New live entries require dated metadata; exits may retain the previous conservative tick when metadata is missing so recovery stays usable.
+
+Top-level declarations: `decimal_price` (line 16), `quantize_price` (line 23), `_tick_rows` (line 30), `instrument_tick_size` (line 39)
+
+Engine dependencies: `config`
+
 ## `python-engine/penny_regime.py`
 
 [PENNY-REGIME 2026-06-21] Per-stock regime classifier for penny subsystem. Spec §6. Three regimes (PR1_CALM, PR2_ELEVATED, PR3_HOT) computed each day at 09:20 IST (and refreshed at 13:00 IST). Inputs: 1. Per-stock realized volatility rank (40% weight) -- over a 60-day rolling distribution 2. India VIX proxy: Nifty 50 close vs Nifty 50 EMA50 ratio (40% weight) 3. Breadth fallback: 0.5 (placeholder, matches Nifty engine) (20% weight) Hard architectural rule (enforced by tests/test_penny_isolation.py): this module MUST NOT import from engine, regime, risk_engine, portfolio, evaluate_signal, or evaluate_momentum_signal. The state (_today_regime, _as_of) lives on the singleton instance so the sca
@@ -1608,7 +1778,7 @@ Related tests: `python-engine/tests/test_penny_risk.py`
 
 Top-level declarations: `_scan_summary` (line 51), `_event_block_safe` (line 60), `PennyScanner` (line 71)
 
-Engine dependencies: `config`, `event_calendar`, `penny_engine_breakout`, `penny_engine_connors`, `penny_execution_journal`, `penny_executor`, `penny_models`, `penny_position_reservations`, `penny_regime`, `penny_risk`, `penny_sector_filter`, `penny_shadow`, `penny_signal_log`, `penny_universe`, `position_tracker`
+Engine dependencies: `config`, `event_calendar`, `penny_engine_breakout`, `penny_engine_connors`, `penny_execution_journal`, `penny_executor`, `penny_models`, `penny_position_reservations`, `penny_regime`, `penny_risk`, `penny_sector_filter`, `penny_shadow`, `penny_signal_log`, `penny_smart_shadow`, `penny_universe`, `position_tracker`
 
 Related tests: `python-engine/tests/test_penny_scanner.py`
 
@@ -1644,11 +1814,39 @@ Related tests: `python-engine/tests/test_penny_signal_log.py`
 
 Declared tables: `penny_signals`
 
+## `python-engine/penny_smart_book.py`
+
+Restartable, own-cash simulated Penny book. Never submits a broker order. All fills are explicitly paper quote assumptions. This book has its own durable cash, risk, costs and entry halt, separate from incumbent positions and F&O.
+
+Top-level declarations: `new_book` (line 29), `_memory` (line 46), `_position` (line 53), `_serialize` (line 59), `step_book` (line 63)
+
+Engine dependencies: `adaptive_penny_policy`, `penny_engine_breakout`, `penny_smart_policy`
+
+## `python-engine/penny_smart_policy.py`
+
+Causal Penny strength, setup timing and winner management; no I/O or orders. Reuses the shipped adaptive setup machine. Evidence scores rank opportunities, never represent calibrated probabilities. The paper controller and replay call these same functions. No benchmark is invented when its observations are absent.
+
+Top-level declarations: `visible_bars` (line 37), `strength_evidence` (line 56), `smart_setup` (line 106), `affordable_intent` (line 145), `manage_smart` (line 154)
+
+Engine dependencies: `adaptive_penny_policy`, `penny_prices`
+
+Related tests: `python-engine/tests/test_penny_smart_policy.py`
+
+## `python-engine/penny_smart_shadow.py`
+
+Durable broker-free smart Penny paper twin, using existing scanner inputs. Separate tables and virtual allocation; cannot reserve actual capital or order. The existing stop-monitor cadence observes at most three held paper symbols in one quote batch. No extra historical fetch, subscription or scheduler job.
+
+Top-level declarations: `smart_db_path` (line 27), `_policy_digest` (line 33), `completed_frame` (line 46), `quote_evidence` (line 66), `_schema` (line 101), `_convert_observations` (line 113), `_exit_observations` (line 126), `observe_smart_shadow` (line 165), `monitor_smart_shadow` (line 269)
+
+Engine dependencies: `adaptive_penny_policy`, `penny_shadow`, `penny_smart_book`, `penny_smart_policy`
+
+Declared tables: `penny_smart_paper_events`, `penny_smart_paper_state`
+
 ## `python-engine/penny_universe.py`
 
 [PENNY-UNIVERSE 2026-06-21] Penny-stock universe loader + eligibility filter. Mirrors the structure of universe.py but is owned by the penny subsystem. Loads a JSON file of penny candidates, validates each ticker against the spec §2.3 eligibility gates, resolves to Kite instrument tokens via an injected instrument_cache dict, and exposes the eligible set. Hard architectural rule (enforced by tests/test_penny_isolation.py): this module MUST NOT import from engine, regime, risk_engine, portfolio, evaluate_signal, or evaluate_momentum_signal. Allowed shared imports: kite_client, models (base only), config, position_tracker, performance, analytics, stdlib.
 
-Top-level declarations: `_is_non_equity_symbol` (line 67), `UniverseError` (line 103), `PennyUniverse` (line 107), `_compute_one_history_metric` (line 480), `compute_metrics_from_history` (line 545), `_repo_seed_path` (line 688), `_universe_audit_is_degraded` (line 703), `refresh_from_kite` (line 735)
+Top-level declarations: `_is_non_equity_symbol` (line 68), `UniverseError` (line 104), `PennyUniverse` (line 108), `_compute_one_history_metric` (line 481), `compute_metrics_from_history` (line 546), `_repo_seed_path` (line 689), `_universe_audit_is_degraded` (line 704), `refresh_from_kite` (line 736)
 
 Engine dependencies: `config`
 
@@ -1692,7 +1890,15 @@ Top-level declarations: `filter_momentum_signals` (line 9), `filter_and_allocate
 
 Engine dependencies: `config`, `models`
 
-Related tests: `python-engine/tests/test_portfolio.py`
+Related tests: `python-engine/tests/test_portfolio.py`, `python-engine/tests/test_portfolio_parity.py`
+
+## `python-engine/portfolio_parity.py`
+
+Evidence-labelled shared-cash portfolio reconciliation for P3 research. It consumes already archived lifecycle trades. The routine does not invent an entry that a source lifecycle did not expose and retains unresolved exposure; callers must therefore label the output PARTIAL unless every upstream runtime context and fill event is archived.
+
+Top-level declarations: `PortfolioResult` (line 15), `_stamp` (line 26), `reconcile_shared_cash` (line 30)
+
+Related tests: `python-engine/tests/test_portfolio_parity.py`
 
 ## `python-engine/position_tracker.py`
 
@@ -1826,6 +2032,14 @@ Top-level declarations: `QualificationReason` (line 53), `QualificationVerdict` 
 
 Related tests: `python-engine/tests/test_qualification_verifier.py`
 
+## `python-engine/range_portfolio_replay.py`
+
+T2: own-cash Range Reversion portfolio replay and trader candidates (research). Range Reversion is a SHADOW profile with no shipped daily execution horizon, so BASELINE declares the most literal lifecycle of the shipped verdict: ``range_reversion_entry`` returns ENTER on day D's completed bar → market buy at D+1's open, strict stop and mean target from the verdict, time exit at the close once ``BASELINE_HOLD_SESSIONS`` sessions have passed since entry. Candidates (declared before scoring; at most two per round): * ``RANGE_RECLAIM_ENTRY`` — a touch only ARMS a thesis on the frozen range (low, mean, stop). Entry needs a stabilization close within ``ARM_SESSIONS``: close above the prior close a
+
+Top-level declarations: `RangeReplayConfig` (line 47), `RangeBaselinePolicy` (line 70), `RangeTraderPolicy` (line 86), `_signal` (line 102), `run_range_portfolio` (line 113)
+
+Engine dependencies: `config`, `daily_portfolio`, `range_reversion`
+
 ## `python-engine/range_reversion.py`
 
 [WORKFLOW-G.3 2026-09-17] Range mean-reversion entry profile. Per Workstream G in NEXT_AGENT_PLAN.md: > Range mean reversion with strict invalidation. Stable > range/no expansion. Comparison: No-trade baseline and > existing range logic. Main risk: Regime shift produces > tail losses. G.3 introduces a DEDICATED entry semantics for ``RANGE_REVERSION_V1`` proposals. Previously the proactive-intelligence dispatcher routed these proposals through the ``COMPLETED_BAR_CONFIRMATION_V1`` fallback, which is the plan note: > RANGE_REVERSION_V1 dispatcher still routes through > completed-bar-confirmation fallback. This module implements the range-specific entry: 1. **Range detection**: a window of N ba
@@ -1890,6 +2104,34 @@ Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spre
 
 Related tests: `python-engine/tests/test_research_cli_qualification.py`, `python-engine/tests/test_research_cli_strategy_comparison.py`
 
+## `python-engine/research_daily_decision_replay.py`
+
+Daily decision replays that call the shipped Swing and EDGE code paths. This is deliberately an evaluator study, not a fill or portfolio simulator. Daily cache bars are only visible after their session, so each decision for session D is made from bars strictly before D. Missing market context is a data failure, never a reason to substitute the traded ticker as an index.
+
+Top-level declarations: `DailyReplayUnavailable` (line 22), `_frame` (line 26), `_by_ticker` (line 34), `SwingDecisionClock` (line 41), `swing_evaluator_replay` (line 122), `edge_evaluator_replay` (line 145)
+
+Engine dependencies: `engine`, `penny_edge_live`, `regime`
+
+## `python-engine/research_data_contracts.py`
+
+[B1 2026-10-03] Immutable, offline bar-data contracts for research replays. Backtests must never confuse one bar interval for another, fill from a bar on which nothing traded, forward-fill a missing session or treat an unverifiable calendar day as a trading day. This module is the single place that decides which cached bars a research replay may use and records why every other row or ticker-day was excluded. Contracts (see docs/2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md): * A run selects exactly one registered interval label. Other labels on the same ticker-day (for example 15-minute rows next to minute rows) are counted and reported, never merged and never fatal. ``legacy_unknow
+
+Top-level declarations: `DatasetUnavailable` (line 64), `IntervalSpec` (line 69), `interval_spec` (line 93), `TradingCalendar` (line 105), `default_calendar` (line 127), `iso_day` (line 140), `parse_bar_start` (line 148), `_finite` (line 162), `_read_only_connection` (line 172), `_canonical_hash` (line 179), `Bar` (line 190), `CoverageRequirement` (line 211), `IntradayDataset` (line 232), `_row_problem` (line 251), `validate_intraday_rows` (line 271), `load_intraday_dataset` (line 425), `DailyBar` (line 455), `DailyDataset` (line 466), `validate_daily_rows` (line 489), `load_daily_dataset` (line 581)
+
+Engine dependencies: `market_calendar`
+
+Related tests: `python-engine/tests/test_research_data_contracts.py`
+
+## `python-engine/research_future_candles.py`
+
+End-of-day index-futures candle recording for research (NIFTY, SENSEX). The F&O replay needs each session's front-future candles. Until now they were retained only as a side effect of the trading tick fetching bars, so an underlying the tick did not evaluate (SENSEX before the growth slice) has no history. This job asks for the whole session once after the close; the broker client's by-token cache (``intraday_cache_by_token``, never aged out) stores it. Read-only market data: no order, sizing or trading-state path.
+
+Top-level declarations: `recorded_underlyings` (line 23), `record_index_future_candles` (line 29)
+
+Engine dependencies: `config`, `fno_underlyings`
+
+Related tests: `python-engine/tests/test_research_future_candles.py`
+
 ## `python-engine/research_leg_subscriptions.py`
 
 Durable, bounded selected-leg retention for intraday research. The rolling ATM collector is useful for discovery but cannot stand in for a contract that a policy actually selected. This small SQLite journal pins the exact dated token/master identity through its declared intraday management deadline. It is research evidence only: it has no order, delivery, profile, or qualification imports.
@@ -1901,6 +2143,16 @@ Engine dependencies: `fno_models`
 Related tests: `python-engine/tests/test_research_leg_subscriptions.py`
 
 Declared tables: `selected_leg_collection_gaps`, `selected_leg_subscriptions`
+
+## `python-engine/research_penny_cnc_lifecycle.py`
+
+[B2 2026-10-03] Exact classic Penny CNC Connors lifecycle replay (offline). Replays what the shipped ``PENNY_PAPER`` CNC book does, not what the Connors spec describes: * 09:30 IST entry scan (``run_penny_connors_scan``): the scanner fetches Kite day candles *up to today*, so the last bar is today's in-progress candle (~09:15-09:30). It is rebuilt here from validated minute bars; the real ``evaluate_connors_entry`` then runs with the scanner's exact inputs and a real ``PennyRiskEngine``; admission applies the per-ticker reservation, CNC/total caps and the executor's drift / stop checks; paper fills at LTP. * 15:45 IST ``position_tracker.update_daily_positions`` on each final daily bar: stop
+
+Top-level declarations: `PennyCncConfig` (line 54), `partial_candle` (line 72), `scanner_daily_frame` (line 82), `connors_decision` (line 93), `tracker_step` (line 114), `_ltp_at` (line 182), `run_penny_cnc_lifecycle` (line 192)
+
+Engine dependencies: `config`, `engine`, `penny_engine_connors`, `penny_executor`, `penny_models`, `penny_regime`, `penny_risk`, `research_data_contracts`
+
+Related tests: `python-engine/tests/test_research_penny_cnc_lifecycle.py`
 
 ## `python-engine/research_quote_collector.py`
 
@@ -1980,7 +2232,7 @@ Engine dependencies: `config`, `engine_auth`, `market_calendar`, `owner_entry_ha
 
 [ROADMAP-4.1 stage 3, 2026-07-13] Ops, token and circuit-breaker endpoints. Extracted verbatim from main.py. Registered on the app via `app.include_router(router)`, so the route table -- paths, methods, endpoint names, response models -- is byte-identical; the 24-route characterization golden proves it. EVERY business name is reached through `_main` at CALL time, not imported. That is not stylistic. Two independent reasons, both load-bearing: 1. Eight of main's globals are REBOUND at runtime via `global` statements (current_signals, market_regime, momentum_signals_today, last_run, rejected_signals, current_momentum_signals, last_momentum_date, _last_regime_state). `from main import current_s
 
-Top-level declarations: `FnoExitRecoveryRequest` (line 44), `get_fno_exit_intents` (line 54), `post_fno_exit_resolution` (line 63), `OptionalAiStatusPayload` (line 78), `get_momentum_experiment` (line 97), `post_optional_ai_status` (line 139), `get_optional_ai_status` (line 149), `inject_token` (line 158), `get_current_token` (line 206), `invalidate_token` (line 227), `get_ops_metrics` (line 252), `get_circuit_breaker` (line 270), `reset_circuit_breaker` (line 278), `health_check` (line 295), `test_momentum_screener` (line 395)
+Top-level declarations: `FnoExitRecoveryRequest` (line 44), `get_fno_exit_intents` (line 54), `post_fno_exit_resolution` (line 63), `OptionalAiStatusPayload` (line 78), `get_momentum_experiment` (line 97), `post_optional_ai_status` (line 140), `get_optional_ai_status` (line 150), `inject_token` (line 159), `get_current_token` (line 207), `invalidate_token` (line 228), `get_ops_metrics` (line 253), `get_circuit_breaker` (line 271), `reset_circuit_breaker` (line 279), `health_check` (line 296), `test_momentum_screener` (line 396)
 
 Engine dependencies: `config`, `fno_exit_recovery`, `halt_switch`, `ops_metrics`, `optional_ai_status`, `order_execution_readiness`, `penny_health`, `performance`, `release_identity`, `token_lifecycle`
 
@@ -2020,9 +2272,9 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 277), `register_partner_scheduler_jobs` (line 950)
+Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 1061)
 
-Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_quote_collector`, `scheduler_telemetry`
+Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 
 ## `python-engine/scheduler_telemetry.py`
 
@@ -2084,6 +2336,14 @@ Top-level declarations: `Health` (line 52), `Status` (line 61), `Thresholds` (li
 
 Related tests: `python-engine/tests/test_strategy_health.py`
 
+## `python-engine/swing_portfolio_replay.py`
+
+T2: own-cash Swing portfolio replay and trader candidates (research only). Signals are the shipped ``engine.evaluate_signal`` decisions from ``SwingDecisionClock`` (one before-open regime update per session, bars strictly before the decision session). Execution, cash and costs come from the shared ``daily_portfolio`` book; Swing's manual EXEC is modelled as a market buy at the decision session's open. BASELINE mirrors the daily position tracker's exits, with two declared, conservative differences: a stop and a target touched on the same daily bar resolve stop-first (the tracker books the target), and the Chandelier trail is raised at the close and applies from the next bar (the tracker raise
+
+Top-level declarations: `SwingReplayConfig` (line 53), `_chandelier_multiple` (line 68), `_target_2` (line 77), `SwingBaselinePolicy` (line 86), `SwingTraderPolicy` (line 113), `_entry_limit` (line 133), `run_swing_portfolio` (line 142)
+
+Engine dependencies: `config`, `daily_portfolio`, `research_daily_decision_replay`
+
 ## `python-engine/token_lifecycle.py`
 
 [ROADMAP-4.1 2026-07-13] Kite access-token lifecycle. Extracted verbatim from main.py. The roadmap named token_lifecycle.py as a natural seam; 2026-07-13 promoted it to the FIRST seam. The whole-day outage that day lived entirely in this code: - _persist_kite_token() opens the cache file with "w", which TRUNCATES before writing. When the disk was full the write failed, leaving a ZERO-BYTE token file where a valid one had been. - The failure is swallowed as best-effort ("the in-memory token still works") -- true until the host rebooted 38 minutes later. - _load_persisted_kite_token_if_fresh() then hit the 0-byte file, raised JSONDecodeError, returned None, and the engine came up unarmed and n
@@ -2136,7 +2396,7 @@ Dependencies: none extracted
 
 ## `node-gateway/server/index.js`
 
-Dependencies: `./app`, `./config`, `./db/index`, `./middleware/logger`, `./services/cas-eligibility`, `./services/executor`, `./services/telegram`, `./services/token-restore`, `./utils/market-hours`, `http`
+Dependencies: `./app`, `./config`, `./db/index`, `./middleware/logger`, `./services/approved-snapshots`, `./services/cas-eligibility`, `./services/executor`, `./services/momentum-execution`, `./services/telegram`, `./services/token-restore`, `./utils/market-hours`, `http`
 
 ## `node-gateway/server/jest.config.js`
 
@@ -2176,9 +2436,9 @@ Local routes: `GET /`
 
 ## `node-gateway/server/routes/internal.js`
 
-Dependencies: `../db`, `../middleware/auth`, `../middleware/validate`, `../services/telegram`, `../utils/market-hours`, `express`, `pino`, `zod`
+Dependencies: `../config`, `../db`, `../middleware/auth`, `../middleware/validate`, `../services/cas-eligibility`, `../services/momentum-execution`, `../services/telegram`, `../utils/market-hours`, `express`, `pino`, `zod`
 
-Local routes: `POST /notify`, `POST /register-signal`
+Local routes: `POST /notify`, `POST /register-signal`, `POST /momentum-auto-execute`
 
 ## `node-gateway/server/routes/orders.js`
 
@@ -2208,6 +2468,14 @@ Local routes: `GET /`, `POST /invalidate`
 
 Dependencies: `../services/backlog-reconciliation`, `better-sqlite3`, `fs`
 
+## `node-gateway/server/services/account-cash-reservations.js`
+
+Dependencies: `../config`, `better-sqlite3`, `path`
+
+## `node-gateway/server/services/approved-snapshots.js`
+
+Dependencies: `../db/index`, `../middleware/logger`
+
 ## `node-gateway/server/services/backlog-reconciliation.js`
 
 Dependencies: `crypto`, `fs`
@@ -2218,7 +2486,7 @@ Dependencies: `../config`, `../utils/market-hours`, `crypto`
 
 ## `node-gateway/server/services/executor.js`
 
-Dependencies: `../config`, `../db/index`, `../middleware/logger`, `../utils/errors`, `../utils/market-hours`, `../utils/retry`, `./cas-eligibility`, `./kite`, `./risk-geometry`, `./telegram`, `./token-store`, `already
+Dependencies: `../config`, `../db/index`, `../middleware/logger`, `../utils/errors`, `../utils/market-hours`, `../utils/retry`, `./account-cash-reservations`, `./cas-eligibility`, `./kite`, `./risk-geometry`, `./telegram`, `./token-store`, `already
   // breached`, `crypto`, `the engine rejected this payload`
 
 ## `node-gateway/server/services/halt-switch.js`
@@ -2228,6 +2496,10 @@ Dependencies: `../middleware/logger`, `fs`, `path`
 ## `node-gateway/server/services/kite.js`
 
 Dependencies: `../config`, `../middleware/logger`, `../utils/errors`, `./halt-switch`, `./telegram`, `./token-store`, `axios`, `kiteconnect`
+
+## `node-gateway/server/services/momentum-execution.js`
+
+Dependencies: `../config`, `../db/index`, `../middleware/logger`, `./approved-snapshots`, `./executor`
 
 ## `node-gateway/server/services/risk-geometry.js`
 

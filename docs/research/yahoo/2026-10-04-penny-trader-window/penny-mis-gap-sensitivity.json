@@ -1,0 +1,76 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+  "dates": [
+    "2026-09-07",
+    "2026-10-03"
+  ],
+  "job": "penny-mis-gap-sensitivity",
+  "metrics": {
+    "adverse_fill_bound_net": -226.8579,
+    "avg_r": -0.006987,
+    "coverage": {
+      "requested_ticker_days": 1710,
+      "status_counts": {
+        "COMPLETE": 7,
+        "PARTIAL": 1699,
+        "UNAVAILABLE": 4
+      },
+      "usable_ticker_days": 1706
+    },
+    "funnel": {
+      "accepted_signals": 114,
+      "admission_outcomes": {
+        "CAPACITY_REJECTED": 3,
+        "DRIFT_REJECTED": 7,
+        "FILLED": 42,
+        "NO_EXECUTABLE_EVIDENCE": 10,
+        "OCCUPIED_SAME_TICKER": 28,
+        "STOP_ALREADY_BREACHED": 24
+      },
+      "evaluations": 352764,
+      "reject_codes": {
+        "BREAKOUT_NOT_CONFIRMED": 67127,
+        "CIRCUIT_BLOCKED": 8711,
+        "INSUFFICIENT_INTRADAY_BARS": 179,
+        "NO_PRIOR_BARS": 1089,
+        "NO_QUOTE_EVIDENCE": 514,
+        "RSI_OVERBOUGHT": 255,
+        "TIME_WINDOW": 134228,
+        "VOLUME_BELOW_PACE": 140547
+      }
+    },
+    "max_drawdown": 45.0962,
+    "max_drawdown_pct": null,
+    "net_excluding_best_winner": 35.4328,
+    "net_pnl": 78.3455,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "single retrospective lifecycle run"
+    },
+    "profit_factor": 1.42838,
+    "scope": "LIFECYCLE",
+    "status": "PARTIAL",
+    "trade_count": 42,
+    "unresolved_trades": 0,
+    "win_rate_pct": 40.4762
+  },
+  "module": "penny-mis",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\penny-mis-gap-sensitivity-report.json",
+  "report_sha256": "sha256:628173c21ce471778b350cf64709a68228ea7a989aae711fc60429c47086d154",
+  "scope": "LIFECYCLE",
+  "state": "SUCCEEDED",
+  "strategy_id": "penny_breakout_mis_lifecycle_1m",
+  "warnings": [
+    "LIFECYCLE scope: universe ranking, historical regime, sector filter, event calendar, broker rejections/partial fills and CNC occupancy are not replayed.",
+    "Historical regime is a declared constant; the runtime regime is not reconstructed.",
+    "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
+    "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+    "Retrospective, coverage-selected, exploratory evidence; no holdout, funding or tuning authority.",
+    "One-minute bars cannot show the order of trades inside a minute.",
+    "Coverage assumption MISSING_MINUTES_TREATED_AS_NO_TRADE_UNVERIFIED applies to this run."
+  ],
+  "window_kind": "primary"
+}

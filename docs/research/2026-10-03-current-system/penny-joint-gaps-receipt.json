@@ -1,0 +1,31 @@
+{
+  "dataset_fingerprint": "sha256:85aa42b323207367556102958f0ef9cf751f32b1a0e33906ae793944de80951d",
+  "job": "penny-joint-gaps",
+  "metrics": {
+    "avg_r": null,
+    "max_drawdown_pct": null,
+    "net_pnl": 79.5913,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "PORTFOLIO_PARTIAL"
+    },
+    "profit_factor": null,
+    "shared_cash": {
+      "cash_rejected": 7,
+      "final_cash": 118.0313,
+      "initial_cash": 2000.0,
+      "locked_cash": 1961.56,
+      "unresolved": 4
+    },
+    "status": "PARTIAL",
+    "trade_count": 7,
+    "win_rate_pct": null
+  },
+  "reason": null,
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\penny-joint-gaps-report.json",
+  "report_sha256": "sha256:cb2e3fec39ff70ffdb2e2016ba4533f162fc4817ce9c1b9e71cf4e4d0616f3f1",
+  "result_status": "PARTIAL",
+  "scope": "PORTFOLIO_PARTIAL",
+  "state": "SUCCEEDED"
+}

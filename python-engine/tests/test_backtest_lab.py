@@ -41,6 +41,20 @@ def _seed_daily(db_path: str, ticker: str = "RELIANCE", count: int = 230,
     conn.commit(); conn.close()
 
 
+def _seed_daily_symbol(db_path: str, ticker: str, count: int = 250) -> None:
+    """Add deterministic index-like daily history to an existing lab fixture."""
+    conn = sqlite3.connect(db_path)
+    start = date(2025, 1, 1)
+    rows = []
+    for i in range(count):
+        day = start + timedelta(days=i)
+        close = 100.0 + i * 0.12
+        rows.append((ticker, day.isoformat(), close - 0.2, close + 1,
+                     close - 1, close, 200_000 + (i % 20) * 1000))
+    conn.executemany("INSERT INTO ohlcv_cache VALUES (?,?,?,?,?,?,?)", rows)
+    conn.commit(); conn.close()
+
+
 async def _wait_terminal(db_path: str, run_id: str):
     for _ in range(150):
         run = await get_run(db_path, run_id)
@@ -95,6 +109,77 @@ async def test_swing_summary_net_pnl_is_derived_from_complete_trade_results(db_p
     }, request)
     assert summary["net_pnl"] == 100.0
     assert summary["net_return_pct"] == 10.0
+
+
+def test_swing_evaluator_replay_uses_prior_daily_bars_and_never_returns_portfolio_pnl(db_path, monkeypatch):
+    _seed_daily(db_path, count=250)
+    _seed_daily_symbol(db_path, "NIFTY 50")
+    _seed_daily_symbol(db_path, "NIFTY BANK")
+    adapter = backtest_lab.STRATEGY_REGISTRY["swing_regime_daily_evaluator"]
+    config = adapter.snapshot_config({"tickers": ["RELIANCE"]})
+    request = backtest_lab.BacktestRequest(adapter.metadata.strategy_id, "2025-08-25", "2025-09-05",
+                                            config, adapter.metadata.default_assumptions)
+    prepared = adapter.prepare(db_path, request)
+    seen = []
+
+    def evaluator(ticker, frame, *args, **kwargs):
+        seen.append(frame.index.max().date().isoformat())
+        return False, {"reject_reason": "spy"}
+
+    monkeypatch.setattr("engine.evaluate_signal", evaluator)
+    result = adapter.execute(prepared, request)
+    summary, _ = adapter.normalize(result, request)
+    assert result["decisions"]
+    assert len(seen) == len(result["decisions"])
+    assert all(prior < row["decision_date"] for prior, row in zip(seen, result["decisions"]))
+    assert summary["net_pnl"] is None and summary["trade_count"] is None
+
+
+def test_edge_evaluator_replay_calls_shipped_scanner_with_frozen_config(db_path, monkeypatch):
+    _seed_daily(db_path, count=100)
+    _seed_daily_symbol(db_path, "NIFTYBEES", count=100)
+    adapter = backtest_lab.STRATEGY_REGISTRY["penny_edge_daily_evaluator"]
+    config = adapter.snapshot_config({"tickers": ["RELIANCE"], "bankroll": 1234.0,
+                                      "max_positions": 3, "min_strength": 0.45})
+    request = backtest_lab.BacktestRequest(adapter.metadata.strategy_id, "2025-03-15", "2025-03-17",
+                                            config, adapter.metadata.default_assumptions)
+    prepared = adapter.prepare(db_path, request)
+    calls = []
+
+    def scanner(**kwargs):
+        from penny_edge_engine import compute_regime
+        calls.append(kwargs)
+        return {"eligible_tickers": 1, "n_candidates": 0, "n_positions": 0,
+                "rejected_below_threshold": 0, "no_signal_reasons": {},
+                "regime": compute_regime(0.0, 0.5), "positions": []}
+
+    monkeypatch.setattr("penny_edge_live.scan_today", scanner)
+    result = adapter.execute(prepared, request)
+    summary, _ = adapter.normalize(result, request)
+    assert calls and all(c["bankroll"] == 1234.0 and c["max_positions"] == 3 and c["min_strength"] == 0.45 for c in calls)
+    assert all(c["nifty_ticker"] == "NIFTYBEES" and c["db_path"] != db_path for c in calls)
+    assert summary["net_pnl"] is None and summary["selected_count"] == 0
+
+
+def test_range_evaluator_replay_calls_shipped_profile_only_after_completed_bar(db_path, monkeypatch):
+    _seed_daily(db_path, count=40)
+    adapter = backtest_lab.STRATEGY_REGISTRY["range_reversion_daily_evaluator"]
+    config = adapter.snapshot_config({"tickers": ["RELIANCE"]})
+    request = backtest_lab.BacktestRequest(adapter.metadata.strategy_id, "2025-01-20", "2025-01-23",
+                                            config, adapter.metadata.default_assumptions)
+    prepared = adapter.prepare(db_path, request)
+    seen = []
+    real = __import__("range_reversion").range_reversion_entry
+
+    def entry(bars, **kwargs):
+        seen.append(bars[-1]["date"])
+        return real(bars, **kwargs)
+
+    monkeypatch.setattr("range_reversion.range_reversion_entry", entry)
+    result = adapter.execute(prepared, request)
+    summary, _ = adapter.normalize(result, request)
+    assert seen == [item["decision_date"] for item in result["verdicts"]]
+    assert summary["net_pnl"] is None and summary["trade_count"] is None
 
 
 @pytest.mark.asyncio

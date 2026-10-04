@@ -10,10 +10,12 @@ const {
 } = require('./cas-eligibility');
 const {
   TokenExpiredError, ValidationError, PriceDriftError,
-  MarketClosedError, CasPhaseError, OrderExecutionError, InsufficientMarginError
+  MarketClosedError, CasPhaseError, OrderExecutionError, InsufficientMarginError,
+  OwnCashInsufficientError,
 } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
 const { resolveRiskDistance, anchorLevels, sizeToRisk } = require('./risk-geometry');
+const { shared: accountCashReservations } = require('./account-cash-reservations');
 const crypto = require('crypto');
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -41,6 +43,53 @@ function usableEntryMargin(margins) {
   return finiteNonNegative(available.cash);
 }
 
+// [F1-A 2026-10-03] Owner rule "no extra margin": a new BUY must be fully
+// paid from the owner's own cash that is not already committed today. Broker
+// leverage (MIS margin), collateral and adhoc limits never fund an entry.
+const OPEN_ORDER_STATUSES = new Set([
+  'OPEN', 'TRIGGER PENDING', 'AMO REQ RECEIVED', 'OPEN PENDING', 'VALIDATION PENDING',
+  'PUT ORDER REQ RECEIVED', 'MODIFY PENDING', 'MODIFY VALIDATION PENDING',
+]);
+
+function finiteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function ownUncommittedCash(margins, positions, orders) {
+  const equity = margins?.equity;
+  if (!equity || equity.enabled === false) return null;
+  const ownCash = finiteNonNegative(equity.available?.cash);
+  if (ownCash === null) return null;
+  let realisedLoss = 0;
+  if (equity.utilised && Object.prototype.hasOwnProperty.call(equity.utilised, 'm2m_realised')) {
+    const realised = finiteNumber(equity.utilised.m2m_realised);
+    if (realised === null) return null;
+    realisedLoss = Math.max(0, -realised);
+  }
+  const net = positions?.net;
+  if (!Array.isArray(net) || !Array.isArray(orders)) return null;
+  let committed = 0;
+  for (const row of net) {
+    const qty = finiteNumber(row?.quantity);
+    if (qty === null) return null;
+    if (qty < 0) return null; // a short position means margin is in use: never "own cash"
+    if (qty === 0) continue;
+    const avg = finiteNonNegative(row?.average_price);
+    if (avg === null || avg === 0) return null;
+    committed += qty * avg;
+  }
+  let pending = 0;
+  for (const order of orders) {
+    if (!OPEN_ORDER_STATUSES.has(String(order?.status || '').toUpperCase())) continue;
+    if (String(order?.transaction_type || '').toUpperCase() !== 'BUY') continue;
+    const qty = finiteNonNegative(order?.pending_quantity ?? order?.quantity);
+    const price = finiteNonNegative(order?.price);
+    if (qty === null || price === null || price === 0) return null;
+    pending += qty * price;
+  }
+  return Math.max(0, ownCash - committed - pending - realisedLoss);
+}
+
 function requiredOrderMargin(orderMargins) {
   const row = Array.isArray(orderMargins) ? orderMargins[0] : orderMargins;
   const value = row?.initial?.total ?? row?.total;
@@ -58,6 +107,25 @@ async function preflightEntryMargin(notional, context) {
   if (available === null) {
     throw new OrderExecutionError('MARGIN_EVIDENCE_UNAVAILABLE: broker returned no usable cash balance');
   }
+  let positions;
+  let orders;
+  try {
+    [positions, orders] = await Promise.all([kite.getPositions(), kite.getOrders()]);
+  } catch (err) {
+    throw new OrderExecutionError(`MARGIN_EVIDENCE_UNAVAILABLE: positions/orders: ${err.message}`);
+  }
+  const ownCash = ownUncommittedCash(margins, positions, orders);
+  if (ownCash === null) {
+    throw new OrderExecutionError('MARGIN_EVIDENCE_UNAVAILABLE: own-cash evidence missing or invalid');
+  }
+  if (!(Number.isFinite(notional) && notional > 0)) {
+    throw new OrderExecutionError('MARGIN_EVIDENCE_UNAVAILABLE: invalid order value');
+  }
+  logger.info({
+    event_type: 'entry_own_cash_preflight', ticker: context.ticker,
+    order_value: notional, own_uncommitted_cash: ownCash, product: context.product,
+  });
+  if (notional > ownCash) throw new OwnCashInsufficientError(notional, ownCash);
   let required = notional;
   let requirementBasis = 'conservative_notional_policy';
   if (typeof kite.getOrderMargins === 'function') {
@@ -68,7 +136,9 @@ async function preflightEntryMargin(notional, context) {
         quantity: context.quantity, price: context.price,
       }]);
       const brokerRequired = requiredOrderMargin(calculated);
-      if (brokerRequired !== null) {
+      if (brokerRequired !== null && brokerRequired > required) {
+        // Never lower the requirement below the full order value: a smaller
+        // broker (leveraged) margin is not the owner's funding rule.
         required = brokerRequired;
         requirementBasis = 'broker_order_margin';
       }
@@ -82,7 +152,7 @@ async function preflightEntryMargin(notional, context) {
     product: context.product, requirement_basis: requirementBasis,
   });
   if (available < required) throw new InsufficientMarginError(required, available);
-  return { required, available, requirementBasis, observedAt: new Date().toISOString() };
+  return { required, available, requirementBasis, observedAt: new Date().toISOString(), ownCash, orders };
 }
 
 function entryTag(signalId) {
@@ -549,15 +619,35 @@ async function executeSignal(signal, action, isIntraday = false) {
   // This evidence is deliberately immediately before a new entry. It is not a
   // promise that the broker will still accept the order, so later rejection
   // handling remains in place and no exit path consults this function.
-  await preflightEntryMargin(limitPrice * signal.shares, {
+  const idempotencyTag = entryTag(signal.signal_id);
+  const preflight = await preflightEntryMargin(limitPrice * signal.shares, {
     ticker: signal.ticker, product, quantity: signal.shares, price: limitPrice,
   });
+  let accountReservation;
+  try {
+    accountReservation = accountCashReservations.reserve({
+      reservationId: `GW:${idempotencyTag}`,
+      accountId: config.ACCOUNT_CASH_ACCOUNT_ID,
+      book: 'momentum', brokerTag: idempotencyTag,
+      notional: limitPrice * signal.shares,
+      ownUncommittedCash: preflight.ownCash, brokerOrders: preflight.orders,
+    });
+  } catch (err) {
+    const refusal = new OrderExecutionError(err.message);
+    refusal.retryable = false;
+    refusal.code = String(err.message || '').startsWith('ACCOUNT_OWN_CASH_INSUFFICIENT')
+      ? 'OWN_CASH_INSUFFICIENT' : 'ACCOUNT_RESERVATION_EVIDENCE_UNAVAILABLE';
+    throw refusal;
+  }
+  logger.info({ event_type: 'entry_account_cash_reserved', ticker: signal.ticker,
+    reservation_id: accountReservation.reservationId, amount: accountReservation.amount,
+    charge_reserve: accountReservation.chargeReserve, fill_buffer: accountReservation.fillBuffer,
+    available_after: accountReservation.availableAfter, book: 'momentum' });
   // Margin preflight is a broker-network wait. Re-read the owner halt and
   // session clock after that wait so a 15:14:59 entry cannot cross into CAS
   // and dispatch on the earlier verdict.
   await assertOwnerEntrySession(signal.ticker, { refreshClockAfterResolve: true });
   let orderResponse;
-  const idempotencyTag = entryTag(signal.signal_id);
   const entryParams = {
     exchange: "NSE",
     tradingsymbol: signal.ticker,
@@ -575,10 +665,12 @@ async function executeSignal(signal, action, isIntraday = false) {
     orderResponse = await kite.placeOrder(entryParams, { intent: "entry", channel: "momentum" });
   } catch (err) {
     if (err.retryable === false || ['OrderExecutionError', 'TokenExpiredError', 'ValidationError'].includes(err.name)) {
+      accountCashReservations.releaseNotSent(`GW:${idempotencyTag}`, `known_not_sent:${err.name}`);
       throw new OrderExecutionError(`Order Placement Failed: ${err.message}`);
     }
     orderResponse = await recoverAmbiguousPlacement(entryParams, idempotencyTag);
     if (!orderResponse) {
+      accountCashReservations.markDispatch(`GW:${idempotencyTag}`, { ambiguous: true });
       const unknown = new OrderExecutionError(
         `Order placement outcome UNKNOWN for ${signal.ticker}; no resubmission was made. Reconcile broker orders manually.`
       );
@@ -590,6 +682,7 @@ async function executeSignal(signal, action, isIntraday = false) {
 
   const orderId = orderResponse?.order_id;
   if (!orderId) {
+    accountCashReservations.markDispatch(`GW:${idempotencyTag}`, { ambiguous: true });
     const unknown = new OrderExecutionError(
       `Broker returned no order id for ${signal.ticker}; placement outcome is UNKNOWN and was not retried.`
     );
@@ -597,6 +690,7 @@ async function executeSignal(signal, action, isIntraday = false) {
     unknown.outcomeUnknown = true;
     throw unknown;
   }
+  accountCashReservations.markDispatch(`GW:${idempotencyTag}`, { brokerOrderId: orderId });
   
   // Layer 2 Idempotency: Insert into DB immediately
   try {
@@ -622,11 +716,17 @@ async function executeSignal(signal, action, isIntraday = false) {
     ticker: signal.ticker, product: isIntraday ? 'MIS' : 'CNC',
   });
   if (fill.state === 'REJECTED') {
+    accountCashReservations.releaseZeroFill(`GW:${idempotencyTag}`, {
+      brokerOrderId: orderId, terminalStatus: 'REJECTED', filledQuantity: fill.filledQuantity || 0,
+    });
     signalsDb.prepare(`UPDATE executed_orders SET status = 'REJECTED', execution_state = 'REJECTED', notes = ? WHERE order_id = ?`)
       .run(fill.reason, orderId);
     throw new OrderExecutionError(`Order rejected by broker: ${fill.reason}`);
   }
   if (fill.state === 'CANCELLED') {
+    accountCashReservations.releaseZeroFill(`GW:${idempotencyTag}`, {
+      brokerOrderId: orderId, terminalStatus: 'CANCELLED', filledQuantity: fill.filledQuantity || 0,
+    });
     signalsDb.prepare(`UPDATE executed_orders SET status = 'CANCELLED', execution_state = 'CANCELLED_UNFILLED', notes = ? WHERE order_id = ?`)
       .run('entry_cancelled_unfilled', orderId);
     throw new OrderExecutionError(`Order ${orderId} was cancelled without a fill.`);
@@ -894,6 +994,7 @@ async function executeSignal(signal, action, isIntraday = false) {
 module.exports = {
   executeSignal, syncToEngine, snapToTick,
   finiteNonNegative, usableEntryMargin, requiredOrderMargin, preflightEntryMargin,
+  ownUncommittedCash,
   entryTag, exitTag, orderFillState, reconcilePlacedOrder, recoverAmbiguousPlacement,
   gttMatches, recoverAmbiguousGTT, placeProtectiveStop, marketUnwind,
 };

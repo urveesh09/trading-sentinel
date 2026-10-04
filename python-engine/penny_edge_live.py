@@ -30,6 +30,7 @@ from __future__ import annotations
 import logging
 import os
 import sqlite3
+from contextlib import closing
 from dataclasses import asdict
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -62,10 +63,9 @@ def scan_today(
       - 'eligible_tickers': count
       - 'rejected_signal_count': signals dropped due to min_strength
     """
-    # [PENNY-FD-LEAK 2026-07-01] Use `with` so the connection is
-    # closed even if any intermediate query raises. The previous bare
-    # sqlite3.connect() leaked an FD on every exception path.
-    with sqlite3.connect(db_path) as conn:
+    # SQLite's transaction context does not close the connection. Close the
+    # read handle explicitly on every return/exception path, including Windows.
+    with closing(sqlite3.connect(db_path)) as conn:
         # [PENNY-EDGE-ENGINE-GRACEFUL 2026-07-06] Verify ohlcv_cache
         # table exists BEFORE running any queries. A fresh deploy (or
         # a partial-restore from backup) can leave the DB without the
@@ -154,8 +154,7 @@ def scan_today(
             ORDER BY date
         """, (nifty_ticker, as_of_date))
         nifty_rows = [{"date": r[0], "close": r[1]} for r in cur.fetchall()]
-    # [PENNY-FD-LEAK 2026-07-01] The connection is closed by the
-    # `with` block above; this comment marks the boundary.
+    # The read handle is closed before computing signals.
 
     # Compute regime from Nifty proxy
     nifty_idx = len(nifty_rows) - 1

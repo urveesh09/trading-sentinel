@@ -1,0 +1,57 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "PARTIAL_UNIVERSE",
+  "dates": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "job": "swing",
+  "metrics": {
+    "avg_r": null,
+    "decision_count": 31749,
+    "entry_decisions": 171,
+    "max_drawdown_pct": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "evaluator replay has no portfolio result"
+    },
+    "profit_factor": null,
+    "reject_reasons": {
+      "accepted": 171,
+      "avg_volume_low": 25,
+      "ema21_proximity_failed": 8,
+      "insufficient_bankroll": 150,
+      "negative_slope": 93,
+      "nifty_below_ema20_regime2": 13292,
+      "price_too_low": 14,
+      "rs_vs_nifty_insufficient": 471,
+      "rsi_out_of_range": 105,
+      "rsi_percentile_too_low": 2647,
+      "trend_filter_failed": 791,
+      "volume_ratio_low": 152,
+      "volume_zscore_low": 13803,
+      "zero_shares_calculated": 27
+    },
+    "scope": "EVALUATOR",
+    "skips": {
+      "stock_warmup": 686
+    },
+    "trade_count": null,
+    "win_rate_pct": null
+  },
+  "module": "swing",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\swing-report.json",
+  "report_sha256": "sha256:ba64ef16fa6d16d68a72dea9ae98d61088b23ef3becfd1fe3a58010e04136788",
+  "scope": "EVALUATOR",
+  "state": "SUCCEEDED",
+  "strategy_id": "swing_regime_daily_evaluator",
+  "warnings": [
+    "EVALUATOR scope only: it does not simulate Telegram approval, live admission, fills, exits or portfolio cash.",
+    "The historical scheduler clock is not persisted; one pre-open regime update per session is declared.",
+    "Constituent breadth ranks are not archived, so the evaluator receives no fabricated breadth value."
+  ],
+  "window_kind": "primary"
+}

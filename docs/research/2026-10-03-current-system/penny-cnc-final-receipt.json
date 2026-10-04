@@ -1,0 +1,39 @@
+{
+  "dataset_fingerprint": "sha256:85aa42b323207367556102958f0ef9cf751f32b1a0e33906ae793944de80951d",
+  "job": "penny-cnc-final",
+  "metrics": {
+    "avg_r": null,
+    "funnel": {
+      "NO_PARTIAL_CANDLE_EVIDENCE": 5013,
+      "admission_outcomes": {},
+      "evaluations": 1487,
+      "reject_reasons": {
+        "RSI not rising for 2 bars": 149,
+        "RSI(2) not below buy threshold": 535,
+        "below 200 SMA": 439,
+        "below 50 SMA": 261,
+        "insufficient_history": 103
+      }
+    },
+    "max_drawdown_pct": null,
+    "net_excluding_best_winner": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "single retrospective lifecycle run"
+    },
+    "profit_factor": null,
+    "scope": "LIFECYCLE",
+    "status": "PARTIAL",
+    "trade_count": 0,
+    "unresolved_trades": 0,
+    "win_rate_pct": null
+  },
+  "reason": null,
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\penny-cnc-final-report.json",
+  "report_sha256": "sha256:1c0c89a3abb2b1bdeac7a0ff4157b2042ff406084ca403bc24f8e00bd4caaf93",
+  "result_status": "PARTIAL",
+  "scope": "LIFECYCLE",
+  "state": "SUCCEEDED"
+}

@@ -1,0 +1,60 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "error": null,
+  "funnel": null,
+  "id": "penny-context",
+  "interpretation": "Same scored dates/cash/context; prior volume coverage can block this study. No holdout.",
+  "metrics": {
+    "adverse_fill_bound_net": null,
+    "avg_r": null,
+    "coverage": {
+      "requested_ticker_days": 475,
+      "status_counts": {
+        "PARTIAL": 404,
+        "UNAVAILABLE": 71
+      },
+      "usable_ticker_days": 404
+    },
+    "funnel": {
+      "accepted_signals": 0,
+      "admission_outcomes": {},
+      "evaluations": 87623,
+      "reject_codes": {
+        "BREAKOUT_NOT_CONFIRMED": 15697,
+        "CIRCUIT_BLOCKED": 2193,
+        "INSUFFICIENT_INTRADAY_BARS": 28,
+        "NO_PRIOR_BARS": 263,
+        "NO_QUOTE_EVIDENCE": 146,
+        "OTHER": 46,
+        "RSI_OVERBOUGHT": 45,
+        "TIME_WINDOW": 33190,
+        "VOLUME_BELOW_PACE": 36015
+      }
+    },
+    "max_drawdown": null,
+    "max_drawdown_pct": null,
+    "net_excluding_best_winner": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "single retrospective lifecycle run"
+    },
+    "profit_factor": null,
+    "scope": "LIFECYCLE",
+    "status": "PARTIAL",
+    "trade_count": 0,
+    "unresolved_trades": 0,
+    "win_rate_pct": null
+  },
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local/penny-context-report.json",
+  "report_sha256": "5e74f460326a77d870f0725850c541a26b1bccecf5bba880f7855e1d2cef3043",
+  "scope": "LIFECYCLE",
+  "state": "SUCCEEDED",
+  "warnings": null
+}

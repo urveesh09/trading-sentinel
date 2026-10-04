@@ -1,0 +1,35 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "error": null,
+  "id": "edge-next-open-proxy",
+  "interpretation": "Independent signal simulator trials, not cash-backed portfolio profit; holding clock unvalidated.",
+  "metrics": {
+    "avg_r": null,
+    "max_drawdown_pct": null,
+    "net_pnl": -60813.839964,
+    "net_return_pct": null,
+    "no_fill": 35,
+    "oos": {
+      "available": false,
+      "reason": "partial lifecycle has no portfolio/context evidence"
+    },
+    "open_marked": 0,
+    "profit_factor": 0.468406,
+    "scan_count": 65,
+    "scope": "PROXY",
+    "selected_count": 167,
+    "trade_count": 129,
+    "unresolved": 3,
+    "win_rate_pct": 46.5116
+  },
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local/edge-next-open-proxy-report.json",
+  "report_sha256": "470c31b655e59be4ab11be7b5f60bf355f07e6ae14d121d6444952236e18aa63",
+  "scope": "PROXY",
+  "state": "SUCCEEDED",
+  "warnings": null
+}

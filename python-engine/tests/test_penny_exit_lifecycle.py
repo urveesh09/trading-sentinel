@@ -97,6 +97,7 @@ async def test_entry_timeout_open_order_is_unverified_not_dead():
     )
     executor = PennyExecutor(
         kite, paper_mode=False, fill_timeout_sec=0.001, poll_interval_sec=0.001,
+        tick_size_lookup=lambda ticker: 0.05,
     )
     executor._page_operator = AsyncMock()
 

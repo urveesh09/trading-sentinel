@@ -1,0 +1,2133 @@
+{
+  "can_place_orders": false,
+  "freeze_sha256": "5f167f40932286a9003d3d7f84cf18a3d627849cb8aedbdcfc597f5a32023ce9",
+  "qualification": "NOT_ASSESSED",
+  "schema": "penny_smart_daily_diagnostic_v1",
+  "windows": {
+    "seen_broader": {
+      "BASELINE": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": 0.093565,
+            "date": "2026-09-07",
+            "entries": 1,
+            "net_pnl": 1.8713,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.0,
+            "date": "2026-09-08",
+            "entries": 0,
+            "net_pnl": 0,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.075325,
+            "date": "2026-09-09",
+            "entries": 2,
+            "net_pnl": -1.5065,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.17985,
+            "date": "2026-09-10",
+            "entries": 3,
+            "net_pnl": -3.597,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.8368849999999999,
+            "date": "2026-09-11",
+            "entries": 3,
+            "net_pnl": 36.7377,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.902145,
+            "date": "2026-09-15",
+            "entries": 1,
+            "net_pnl": 18.0429,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.377795,
+            "date": "2026-09-16",
+            "entries": 2,
+            "net_pnl": -7.5559,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.05380000000000001,
+            "date": "2026-09-17",
+            "entries": 2,
+            "net_pnl": 1.076,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.038135,
+            "date": "2026-09-18",
+            "entries": 1,
+            "net_pnl": 0.7627,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.69272,
+            "date": "2026-09-21",
+            "entries": 4,
+            "net_pnl": -13.8544,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.136625,
+            "date": "2026-09-22",
+            "entries": 1,
+            "net_pnl": -2.7325,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.3976250000000001,
+            "date": "2026-09-23",
+            "entries": 2,
+            "net_pnl": 27.9525,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.653975,
+            "date": "2026-09-24",
+            "entries": 2,
+            "net_pnl": -13.0795,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 2.88383,
+            "date": "2026-09-25",
+            "entries": 4,
+            "net_pnl": 57.6766,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -1.237845,
+            "date": "2026-09-28",
+            "entries": 6,
+            "net_pnl": -24.7569,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.8304199999999999,
+            "date": "2026-09-29",
+            "entries": 3,
+            "net_pnl": 16.6084,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.0,
+            "date": "2026-09-30",
+            "entries": 0,
+            "net_pnl": 0,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.09642500000000001,
+            "date": "2026-10-01",
+            "entries": 1,
+            "net_pnl": -1.9285,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 3,
+        "losing_days": 8,
+        "positive_days": 8,
+        "report_sha256": "ca1afd31272966e822dcc34fb5365f0ce7cd5982f4a19f48540f360acf638729",
+        "smart_daily_marks": [],
+        "summary": {
+          "adverse_fill_bound_net": -91.8522,
+          "avg_r": 0.2253,
+          "closed_trades": 38,
+          "costs": 13.0031,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 13,
+            "PAPER_STOP_LTP": 16,
+            "SMART_EOD:time_stop_30min_in_loss": 1,
+            "SMART_EOD:within_0_5R_of_target": 8
+          },
+          "expectancy": 2.4136,
+          "gross_pnl": 104.72,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 30.856,
+          "net_excluding_best_winner": 50.3936,
+          "net_pnl": 91.7169,
+          "paper_entries": 38,
+          "per_day": [
+            {
+              "closed": 1,
+              "net_pnl": 1.8713,
+              "trading_date": "2026-09-07",
+              "wins": 1
+            },
+            {
+              "closed": 2,
+              "net_pnl": -1.5065,
+              "trading_date": "2026-09-09",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": -3.597,
+              "trading_date": "2026-09-10",
+              "wins": 2
+            },
+            {
+              "closed": 3,
+              "net_pnl": 36.7377,
+              "trading_date": "2026-09-11",
+              "wins": 2
+            },
+            {
+              "closed": 1,
+              "net_pnl": 18.0429,
+              "trading_date": "2026-09-15",
+              "wins": 1
+            },
+            {
+              "closed": 2,
+              "net_pnl": -7.5559,
+              "trading_date": "2026-09-16",
+              "wins": 1
+            },
+            {
+              "closed": 2,
+              "net_pnl": 1.076,
+              "trading_date": "2026-09-17",
+              "wins": 1
+            },
+            {
+              "closed": 1,
+              "net_pnl": 0.7627,
+              "trading_date": "2026-09-18",
+              "wins": 1
+            },
+            {
+              "closed": 4,
+              "net_pnl": -13.8544,
+              "trading_date": "2026-09-21",
+              "wins": 1
+            },
+            {
+              "closed": 1,
+              "net_pnl": -2.7325,
+              "trading_date": "2026-09-22",
+              "wins": 0
+            },
+            {
+              "closed": 2,
+              "net_pnl": 27.9525,
+              "trading_date": "2026-09-23",
+              "wins": 2
+            },
+            {
+              "closed": 2,
+              "net_pnl": -13.0795,
+              "trading_date": "2026-09-24",
+              "wins": 0
+            },
+            {
+              "closed": 4,
+              "net_pnl": 57.6766,
+              "trading_date": "2026-09-25",
+              "wins": 2
+            },
+            {
+              "closed": 6,
+              "net_pnl": -24.7569,
+              "trading_date": "2026-09-28",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": 16.6084,
+              "trading_date": "2026-09-29",
+              "wins": 2
+            },
+            {
+              "closed": 1,
+              "net_pnl": -1.9285,
+              "trading_date": "2026-10-01",
+              "wins": 0
+            }
+          ],
+          "profit_factor": 1.698923,
+          "unresolved_trades": 0,
+          "win_rate_pct": 47.3684
+        },
+        "usable_days": 18,
+        "zero_trade_days": 2
+      },
+      "PEN_SMART_ENTRY": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": -0.978025,
+            "date": "2026-09-07",
+            "entries": 6,
+            "net_pnl": -19.5605,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.98078,
+            "date": "2026-09-08",
+            "entries": 3,
+            "net_pnl": 19.6156,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.22599999999999998,
+            "date": "2026-09-09",
+            "entries": 4,
+            "net_pnl": -4.52,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.122095,
+            "date": "2026-09-10",
+            "entries": 4,
+            "net_pnl": 2.4419,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.13098,
+            "date": "2026-09-11",
+            "entries": 5,
+            "net_pnl": 2.6196,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.567205,
+            "date": "2026-09-15",
+            "entries": 3,
+            "net_pnl": -11.3441,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.53121,
+            "date": "2026-09-16",
+            "entries": 5,
+            "net_pnl": -10.6242,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.06142999999999999,
+            "date": "2026-09-17",
+            "entries": 3,
+            "net_pnl": 1.2286,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.572575,
+            "date": "2026-09-18",
+            "entries": 3,
+            "net_pnl": 11.4515,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -1.3575100000000002,
+            "date": "2026-09-21",
+            "entries": 7,
+            "net_pnl": -27.1502,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -1.12154,
+            "date": "2026-09-22",
+            "entries": 4,
+            "net_pnl": -22.4308,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.18179,
+            "date": "2026-09-23",
+            "entries": 4,
+            "net_pnl": 3.6358,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.47522500000000006,
+            "date": "2026-09-24",
+            "entries": 3,
+            "net_pnl": 9.5045,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.04429,
+            "date": "2026-09-25",
+            "entries": 5,
+            "net_pnl": 0.8858,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.91742,
+            "date": "2026-09-28",
+            "entries": 4,
+            "net_pnl": 18.3484,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.0574400000000002,
+            "date": "2026-09-29",
+            "entries": 4,
+            "net_pnl": 21.1488,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.90811,
+            "date": "2026-09-30",
+            "entries": 6,
+            "net_pnl": -18.1622,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -1.2418200000000001,
+            "date": "2026-10-01",
+            "entries": 6,
+            "net_pnl": -24.8364,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 1,
+        "losing_days": 8,
+        "positive_days": 10,
+        "report_sha256": "d3ca35f7340f5463d5f73b2c146b790397f168b1bf70458fb273936953c9127e",
+        "smart_daily_marks": [
+          {
+            "daily_loss_latched": true,
+            "date": "2026-09-07",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -19.560485389709473,
+            "max_intraday_marked_drawdown": 23.37120602722168
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-08",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 19.615594735717774,
+            "max_intraday_marked_drawdown": 18.098492027282717
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-09",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -4.520006942749023,
+            "max_intraday_marked_drawdown": 26.48312574920654
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-10",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 2.4418909210205078,
+            "max_intraday_marked_drawdown": 10.683206256103514
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-11",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 2.6195593353271485,
+            "max_intraday_marked_drawdown": 23.171732043457034
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-15",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -11.344099723434448,
+            "max_intraday_marked_drawdown": 12.615385847473144
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-16",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -10.62421272201538,
+            "max_intraday_marked_drawdown": 19.543204959106447
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-17",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 1.2286105285644524,
+            "max_intraday_marked_drawdown": 10.173373125457765
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-18",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 11.451478485107423,
+            "max_intraday_marked_drawdown": 7.495292370605468
+          },
+          {
+            "daily_loss_latched": true,
+            "date": "2026-09-21",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -27.150160708618166,
+            "max_intraday_marked_drawdown": 28.119484817504887
+          },
+          {
+            "daily_loss_latched": true,
+            "date": "2026-09-22",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -22.43080518798828,
+            "max_intraday_marked_drawdown": 22.43080518798828
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-23",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 3.6357811935424795,
+            "max_intraday_marked_drawdown": 10.421817700195314
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-24",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 9.504559051513672,
+            "max_intraday_marked_drawdown": 26.822688708496095
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-25",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 0.8857967575073236,
+            "max_intraday_marked_drawdown": 12.083090081787109
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-28",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 18.348375595474245,
+            "max_intraday_marked_drawdown": 12.825171075057982
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-29",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 21.148785580444333,
+            "max_intraday_marked_drawdown": 13.115038659667968
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-30",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -18.162246691894534,
+            "max_intraday_marked_drawdown": 18.681917585754395
+          },
+          {
+            "daily_loss_latched": true,
+            "date": "2026-10-01",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -24.83637314453125,
+            "max_intraday_marked_drawdown": 26.174586648559572
+          }
+        ],
+        "summary": {
+          "adverse_fill_bound_net": -512.043,
+          "avg_r": -0.09796,
+          "closed_trades": 79,
+          "costs": 32.9079,
+          "exit_reasons": {
+            "INCUMBENT_EOD:within_0_5R_of_target": 17,
+            "INCUMBENT_TIME_STOP_IN_LOSS": 9,
+            "SMART_PAPER_STOP": 41,
+            "SMART_SESSION_DEADLINE": 12
+          },
+          "expectancy": -0.6044,
+          "gross_pnl": -14.84,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 71.7711,
+          "net_excluding_best_winner": -65.6878,
+          "net_pnl": -47.7479,
+          "paper_entries": 79,
+          "per_day": [
+            {
+              "closed": 6,
+              "net_pnl": -19.5605,
+              "trading_date": "2026-09-07",
+              "wins": 0
+            },
+            {
+              "closed": 3,
+              "net_pnl": 19.6156,
+              "trading_date": "2026-09-08",
+              "wins": 2
+            },
+            {
+              "closed": 4,
+              "net_pnl": -4.52,
+              "trading_date": "2026-09-09",
+              "wins": 2
+            },
+            {
+              "closed": 4,
+              "net_pnl": 2.4419,
+              "trading_date": "2026-09-10",
+              "wins": 2
+            },
+            {
+              "closed": 5,
+              "net_pnl": 2.6196,
+              "trading_date": "2026-09-11",
+              "wins": 2
+            },
+            {
+              "closed": 3,
+              "net_pnl": -11.3441,
+              "trading_date": "2026-09-15",
+              "wins": 0
+            },
+            {
+              "closed": 5,
+              "net_pnl": -10.6242,
+              "trading_date": "2026-09-16",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": 1.2286,
+              "trading_date": "2026-09-17",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": 11.4515,
+              "trading_date": "2026-09-18",
+              "wins": 3
+            },
+            {
+              "closed": 7,
+              "net_pnl": -27.1502,
+              "trading_date": "2026-09-21",
+              "wins": 2
+            },
+            {
+              "closed": 4,
+              "net_pnl": -22.4308,
+              "trading_date": "2026-09-22",
+              "wins": 0
+            },
+            {
+              "closed": 4,
+              "net_pnl": 3.6358,
+              "trading_date": "2026-09-23",
+              "wins": 2
+            },
+            {
+              "closed": 3,
+              "net_pnl": 9.5045,
+              "trading_date": "2026-09-24",
+              "wins": 2
+            },
+            {
+              "closed": 5,
+              "net_pnl": 0.8858,
+              "trading_date": "2026-09-25",
+              "wins": 2
+            },
+            {
+              "closed": 4,
+              "net_pnl": 18.3484,
+              "trading_date": "2026-09-28",
+              "wins": 3
+            },
+            {
+              "closed": 4,
+              "net_pnl": 21.1488,
+              "trading_date": "2026-09-29",
+              "wins": 3
+            },
+            {
+              "closed": 6,
+              "net_pnl": -18.1622,
+              "trading_date": "2026-09-30",
+              "wins": 0
+            },
+            {
+              "closed": 6,
+              "net_pnl": -24.8364,
+              "trading_date": "2026-10-01",
+              "wins": 0
+            }
+          ],
+          "profit_factor": 0.777665,
+          "unresolved_trades": 0,
+          "win_rate_pct": 34.1772
+        },
+        "usable_days": 18,
+        "zero_trade_days": 0
+      },
+      "PEN_SMART_EXIT": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": 1.05295,
+            "date": "2026-09-07",
+            "entries": 1,
+            "net_pnl": 21.059,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.0,
+            "date": "2026-09-08",
+            "entries": 0,
+            "net_pnl": 0,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.37585,
+            "date": "2026-09-09",
+            "entries": 3,
+            "net_pnl": -7.517,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.17985,
+            "date": "2026-09-10",
+            "entries": 3,
+            "net_pnl": -3.597,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.2985749999999998,
+            "date": "2026-09-11",
+            "entries": 4,
+            "net_pnl": 25.9715,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.902145,
+            "date": "2026-09-15",
+            "entries": 1,
+            "net_pnl": 18.0429,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.522695,
+            "date": "2026-09-16",
+            "entries": 3,
+            "net_pnl": -10.4539,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.001335,
+            "date": "2026-09-17",
+            "entries": 2,
+            "net_pnl": 0.0267,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.00516,
+            "date": "2026-09-18",
+            "entries": 1,
+            "net_pnl": 0.1032,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -2.78347,
+            "date": "2026-09-21",
+            "entries": 6,
+            "net_pnl": -55.6694,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.04326,
+            "date": "2026-09-22",
+            "entries": 1,
+            "net_pnl": 0.8652,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.5895,
+            "date": "2026-09-23",
+            "entries": 2,
+            "net_pnl": 31.79,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.653975,
+            "date": "2026-09-24",
+            "entries": 2,
+            "net_pnl": -13.0795,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.083615,
+            "date": "2026-09-25",
+            "entries": 8,
+            "net_pnl": 1.6723,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.75761,
+            "date": "2026-09-28",
+            "entries": 7,
+            "net_pnl": -15.1522,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.27977500000000005,
+            "date": "2026-09-29",
+            "entries": 3,
+            "net_pnl": 5.5955,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.0,
+            "date": "2026-09-30",
+            "entries": 0,
+            "net_pnl": 0,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.09642500000000001,
+            "date": "2026-10-01",
+            "entries": 1,
+            "net_pnl": -1.9285,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 3,
+        "losing_days": 7,
+        "positive_days": 9,
+        "report_sha256": "ed2087fdc19e7b9a3aa7164218f733f1d6ad63000a2742390b7b74e39a2fed21",
+        "smart_daily_marks": [],
+        "summary": {
+          "adverse_fill_bound_net": -229.6086,
+          "avg_r": -0.100244,
+          "closed_trades": 48,
+          "costs": 16.1112,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 3,
+            "PAPER_STOP_LTP": 24,
+            "SMART_EOD_LOSS_CUT": 2,
+            "SMART_SESSION_DEADLINE": 6,
+            "SMART_THESIS_FAILED": 9,
+            "SMART_THESIS_STALLED": 4
+          },
+          "expectancy": -0.0473,
+          "gross_pnl": 13.84,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 66.188,
+          "net_excluding_best_winner": -32.7811,
+          "net_pnl": -2.2712,
+          "paper_entries": 48,
+          "per_day": [
+            {
+              "closed": 1,
+              "net_pnl": 21.059,
+              "trading_date": "2026-09-07",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": -7.517,
+              "trading_date": "2026-09-09",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": -3.597,
+              "trading_date": "2026-09-10",
+              "wins": 2
+            },
+            {
+              "closed": 4,
+              "net_pnl": 25.9715,
+              "trading_date": "2026-09-11",
+              "wins": 3
+            },
+            {
+              "closed": 1,
+              "net_pnl": 18.0429,
+              "trading_date": "2026-09-15",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": -10.4539,
+              "trading_date": "2026-09-16",
+              "wins": 1
+            },
+            {
+              "closed": 2,
+              "net_pnl": 0.0267,
+              "trading_date": "2026-09-17",
+              "wins": 1
+            },
+            {
+              "closed": 1,
+              "net_pnl": 0.1032,
+              "trading_date": "2026-09-18",
+              "wins": 1
+            },
+            {
+              "closed": 6,
+              "net_pnl": -55.6694,
+              "trading_date": "2026-09-21",
+              "wins": 1
+            },
+            {
+              "closed": 1,
+              "net_pnl": 0.8652,
+              "trading_date": "2026-09-22",
+              "wins": 1
+            },
+            {
+              "closed": 2,
+              "net_pnl": 31.79,
+              "trading_date": "2026-09-23",
+              "wins": 2
+            },
+            {
+              "closed": 2,
+              "net_pnl": -13.0795,
+              "trading_date": "2026-09-24",
+              "wins": 0
+            },
+            {
+              "closed": 8,
+              "net_pnl": 1.6723,
+              "trading_date": "2026-09-25",
+              "wins": 1
+            },
+            {
+              "closed": 7,
+              "net_pnl": -15.1522,
+              "trading_date": "2026-09-28",
+              "wins": 2
+            },
+            {
+              "closed": 3,
+              "net_pnl": 5.5955,
+              "trading_date": "2026-09-29",
+              "wins": 2
+            },
+            {
+              "closed": 1,
+              "net_pnl": -1.9285,
+              "trading_date": "2026-10-01",
+              "wins": 0
+            }
+          ],
+          "profit_factor": 0.985771,
+          "unresolved_trades": 0,
+          "win_rate_pct": 41.6667
+        },
+        "usable_days": 18,
+        "zero_trade_days": 2
+      },
+      "PEN_SMART_TRADER": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": 0.19514499999999999,
+            "date": "2026-09-07",
+            "entries": 11,
+            "net_pnl": 3.9029,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.046535,
+            "date": "2026-09-08",
+            "entries": 10,
+            "net_pnl": 20.9307,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.8642799999999999,
+            "date": "2026-09-09",
+            "entries": 13,
+            "net_pnl": 17.2856,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.596095,
+            "date": "2026-09-10",
+            "entries": 9,
+            "net_pnl": -11.9219,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.60743,
+            "date": "2026-09-11",
+            "entries": 13,
+            "net_pnl": -12.1486,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.532725,
+            "date": "2026-09-15",
+            "entries": 3,
+            "net_pnl": -10.6545,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.563655,
+            "date": "2026-09-16",
+            "entries": 7,
+            "net_pnl": -11.2731,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.841075,
+            "date": "2026-09-17",
+            "entries": 12,
+            "net_pnl": -16.8215,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.30458,
+            "date": "2026-09-18",
+            "entries": 5,
+            "net_pnl": 6.0916,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.15528,
+            "date": "2026-09-21",
+            "entries": 5,
+            "net_pnl": -3.1056,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -1.21749,
+            "date": "2026-09-22",
+            "entries": 14,
+            "net_pnl": -24.3498,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.0195299999999998,
+            "date": "2026-09-23",
+            "entries": 11,
+            "net_pnl": 20.3906,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.42932499999999996,
+            "date": "2026-09-24",
+            "entries": 8,
+            "net_pnl": 8.5865,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.29568,
+            "date": "2026-09-25",
+            "entries": 7,
+            "net_pnl": -5.9136,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.17973,
+            "date": "2026-09-28",
+            "entries": 5,
+            "net_pnl": 3.5946,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.089445,
+            "date": "2026-09-29",
+            "entries": 8,
+            "net_pnl": -1.7889,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.540725,
+            "date": "2026-09-30",
+            "entries": 5,
+            "net_pnl": -10.8145,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.97462,
+            "date": "2026-10-01",
+            "entries": 7,
+            "net_pnl": -19.4924,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 2,
+        "losing_days": 11,
+        "positive_days": 7,
+        "report_sha256": "1dd5eaf9ad748aca8583b479a7b743112b7c3202ea190076b122152dced1536d",
+        "smart_daily_marks": [
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-07",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 3.90292420425415,
+            "max_intraday_marked_drawdown": 12.76289481201172
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-08",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 20.93068924255371,
+            "max_intraday_marked_drawdown": 12.893375509643553
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-09",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 17.285542741394043,
+            "max_intraday_marked_drawdown": 19.245516708374026
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-10",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -11.921901220703123,
+            "max_intraday_marked_drawdown": 13.944114038085937
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-11",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -12.148518937683102,
+            "max_intraday_marked_drawdown": 25.46845292663574
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-15",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -10.65448393058777,
+            "max_intraday_marked_drawdown": 11.276166382980348
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-16",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -11.273130117034912,
+            "max_intraday_marked_drawdown": 16.8942154876709
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-17",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -16.82147325897217,
+            "max_intraday_marked_drawdown": 21.657654833984374
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-18",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 6.09160503540039,
+            "max_intraday_marked_drawdown": 4.305735018920899
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-21",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -3.1055875259399413,
+            "max_intraday_marked_drawdown": 7.023097138977051
+          },
+          {
+            "daily_loss_latched": true,
+            "date": "2026-09-22",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -24.349830479431148,
+            "max_intraday_marked_drawdown": 24.84436111145019
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-23",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 20.390588174438474,
+            "max_intraday_marked_drawdown": 12.78723219604492
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-24",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 8.586549781799317,
+            "max_intraday_marked_drawdown": 14.982111444091796
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-25",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -5.913653787231446,
+            "max_intraday_marked_drawdown": 9.13071392364502
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-28",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 3.594562816238403,
+            "max_intraday_marked_drawdown": 11.655872190856932
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-29",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -1.7888613189697242,
+            "max_intraday_marked_drawdown": 13.234964294433594
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-30",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -10.814528343200681,
+            "max_intraday_marked_drawdown": 12.013727198791502
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-10-01",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -19.492338201904296,
+            "max_intraday_marked_drawdown": 20.830551705932617
+          }
+        ],
+        "summary": {
+          "adverse_fill_bound_net": -957.0363,
+          "avg_r": -0.133624,
+          "closed_trades": 153,
+          "costs": 64.4619,
+          "exit_reasons": {
+            "SMART_EOD_LOSS_CUT": 8,
+            "SMART_PAPER_STOP": 44,
+            "SMART_PAPER_TRAIL": 1,
+            "SMART_SESSION_DEADLINE": 12,
+            "SMART_THESIS_FAILED": 74,
+            "SMART_THESIS_STALLED": 14
+          },
+          "expectancy": -0.3105,
+          "gross_pnl": 16.96,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 97.1379,
+          "net_excluding_best_winner": -66.3592,
+          "net_pnl": -47.5019,
+          "paper_entries": 153,
+          "per_day": [
+            {
+              "closed": 11,
+              "net_pnl": 3.9029,
+              "trading_date": "2026-09-07",
+              "wins": 6
+            },
+            {
+              "closed": 10,
+              "net_pnl": 20.9307,
+              "trading_date": "2026-09-08",
+              "wins": 5
+            },
+            {
+              "closed": 13,
+              "net_pnl": 17.2856,
+              "trading_date": "2026-09-09",
+              "wins": 5
+            },
+            {
+              "closed": 9,
+              "net_pnl": -11.9219,
+              "trading_date": "2026-09-10",
+              "wins": 1
+            },
+            {
+              "closed": 13,
+              "net_pnl": -12.1486,
+              "trading_date": "2026-09-11",
+              "wins": 3
+            },
+            {
+              "closed": 3,
+              "net_pnl": -10.6545,
+              "trading_date": "2026-09-15",
+              "wins": 0
+            },
+            {
+              "closed": 7,
+              "net_pnl": -11.2731,
+              "trading_date": "2026-09-16",
+              "wins": 0
+            },
+            {
+              "closed": 12,
+              "net_pnl": -16.8215,
+              "trading_date": "2026-09-17",
+              "wins": 1
+            },
+            {
+              "closed": 5,
+              "net_pnl": 6.0916,
+              "trading_date": "2026-09-18",
+              "wins": 3
+            },
+            {
+              "closed": 5,
+              "net_pnl": -3.1056,
+              "trading_date": "2026-09-21",
+              "wins": 1
+            },
+            {
+              "closed": 14,
+              "net_pnl": -24.3498,
+              "trading_date": "2026-09-22",
+              "wins": 2
+            },
+            {
+              "closed": 11,
+              "net_pnl": 20.3906,
+              "trading_date": "2026-09-23",
+              "wins": 5
+            },
+            {
+              "closed": 8,
+              "net_pnl": 8.5865,
+              "trading_date": "2026-09-24",
+              "wins": 3
+            },
+            {
+              "closed": 7,
+              "net_pnl": -5.9136,
+              "trading_date": "2026-09-25",
+              "wins": 1
+            },
+            {
+              "closed": 5,
+              "net_pnl": 3.5946,
+              "trading_date": "2026-09-28",
+              "wins": 2
+            },
+            {
+              "closed": 8,
+              "net_pnl": -1.7889,
+              "trading_date": "2026-09-29",
+              "wins": 3
+            },
+            {
+              "closed": 5,
+              "net_pnl": -10.8145,
+              "trading_date": "2026-09-30",
+              "wins": 1
+            },
+            {
+              "closed": 7,
+              "net_pnl": -19.4924,
+              "trading_date": "2026-10-01",
+              "wins": 0
+            }
+          ],
+          "profit_factor": 0.815451,
+          "unresolved_trades": 0,
+          "win_rate_pct": 27.451
+        },
+        "usable_days": 18,
+        "zero_trade_days": 0
+      },
+      "PEN_STRENGTH_RANK": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": 0.093565,
+            "date": "2026-09-07",
+            "entries": 1,
+            "net_pnl": 1.8713,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.0,
+            "date": "2026-09-08",
+            "entries": 0,
+            "net_pnl": 0,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.075325,
+            "date": "2026-09-09",
+            "entries": 2,
+            "net_pnl": -1.5065,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.17985,
+            "date": "2026-09-10",
+            "entries": 3,
+            "net_pnl": -3.597,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.8368849999999999,
+            "date": "2026-09-11",
+            "entries": 3,
+            "net_pnl": 36.7377,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.902145,
+            "date": "2026-09-15",
+            "entries": 1,
+            "net_pnl": 18.0429,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.377795,
+            "date": "2026-09-16",
+            "entries": 2,
+            "net_pnl": -7.5559,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.05380000000000001,
+            "date": "2026-09-17",
+            "entries": 2,
+            "net_pnl": 1.076,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.038135,
+            "date": "2026-09-18",
+            "entries": 1,
+            "net_pnl": 0.7627,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.69272,
+            "date": "2026-09-21",
+            "entries": 4,
+            "net_pnl": -13.8544,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.136625,
+            "date": "2026-09-22",
+            "entries": 1,
+            "net_pnl": -2.7325,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.3976250000000001,
+            "date": "2026-09-23",
+            "entries": 2,
+            "net_pnl": 27.9525,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.653975,
+            "date": "2026-09-24",
+            "entries": 2,
+            "net_pnl": -13.0795,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 2.88383,
+            "date": "2026-09-25",
+            "entries": 4,
+            "net_pnl": 57.6766,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -1.237845,
+            "date": "2026-09-28",
+            "entries": 6,
+            "net_pnl": -24.7569,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.8304199999999999,
+            "date": "2026-09-29",
+            "entries": 3,
+            "net_pnl": 16.6084,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.0,
+            "date": "2026-09-30",
+            "entries": 0,
+            "net_pnl": 0,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.09642500000000001,
+            "date": "2026-10-01",
+            "entries": 1,
+            "net_pnl": -1.9285,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 3,
+        "losing_days": 8,
+        "positive_days": 8,
+        "report_sha256": "26d8aa4d8ee0325c318141c2236310c26fbd78e7b3134da62837838d06004ee2",
+        "smart_daily_marks": [],
+        "summary": {
+          "adverse_fill_bound_net": -91.8522,
+          "avg_r": 0.2253,
+          "closed_trades": 38,
+          "costs": 13.0031,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 13,
+            "PAPER_STOP_LTP": 16,
+            "SMART_EOD:time_stop_30min_in_loss": 1,
+            "SMART_EOD:within_0_5R_of_target": 8
+          },
+          "expectancy": 2.4136,
+          "gross_pnl": 104.72,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 30.856,
+          "net_excluding_best_winner": 50.3936,
+          "net_pnl": 91.7169,
+          "paper_entries": 38,
+          "per_day": [
+            {
+              "closed": 1,
+              "net_pnl": 1.8713,
+              "trading_date": "2026-09-07",
+              "wins": 1
+            },
+            {
+              "closed": 2,
+              "net_pnl": -1.5065,
+              "trading_date": "2026-09-09",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": -3.597,
+              "trading_date": "2026-09-10",
+              "wins": 2
+            },
+            {
+              "closed": 3,
+              "net_pnl": 36.7377,
+              "trading_date": "2026-09-11",
+              "wins": 2
+            },
+            {
+              "closed": 1,
+              "net_pnl": 18.0429,
+              "trading_date": "2026-09-15",
+              "wins": 1
+            },
+            {
+              "closed": 2,
+              "net_pnl": -7.5559,
+              "trading_date": "2026-09-16",
+              "wins": 1
+            },
+            {
+              "closed": 2,
+              "net_pnl": 1.076,
+              "trading_date": "2026-09-17",
+              "wins": 1
+            },
+            {
+              "closed": 1,
+              "net_pnl": 0.7627,
+              "trading_date": "2026-09-18",
+              "wins": 1
+            },
+            {
+              "closed": 4,
+              "net_pnl": -13.8544,
+              "trading_date": "2026-09-21",
+              "wins": 1
+            },
+            {
+              "closed": 1,
+              "net_pnl": -2.7325,
+              "trading_date": "2026-09-22",
+              "wins": 0
+            },
+            {
+              "closed": 2,
+              "net_pnl": 27.9525,
+              "trading_date": "2026-09-23",
+              "wins": 2
+            },
+            {
+              "closed": 2,
+              "net_pnl": -13.0795,
+              "trading_date": "2026-09-24",
+              "wins": 0
+            },
+            {
+              "closed": 4,
+              "net_pnl": 57.6766,
+              "trading_date": "2026-09-25",
+              "wins": 2
+            },
+            {
+              "closed": 6,
+              "net_pnl": -24.7569,
+              "trading_date": "2026-09-28",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": 16.6084,
+              "trading_date": "2026-09-29",
+              "wins": 2
+            },
+            {
+              "closed": 1,
+              "net_pnl": -1.9285,
+              "trading_date": "2026-10-01",
+              "wins": 0
+            }
+          ],
+          "profit_factor": 1.698923,
+          "unresolved_trades": 0,
+          "win_rate_pct": 47.3684
+        },
+        "usable_days": 18,
+        "zero_trade_days": 2
+      }
+    },
+    "seen_short": {
+      "BASELINE": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": -0.653975,
+            "date": "2026-09-24",
+            "entries": 2,
+            "net_pnl": -13.0795,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 2.88383,
+            "date": "2026-09-25",
+            "entries": 4,
+            "net_pnl": 57.6766,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -1.237845,
+            "date": "2026-09-28",
+            "entries": 6,
+            "net_pnl": -24.7569,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.8304199999999999,
+            "date": "2026-09-29",
+            "entries": 3,
+            "net_pnl": 16.6084,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.0,
+            "date": "2026-09-30",
+            "entries": 0,
+            "net_pnl": 0,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 1,
+        "losing_days": 2,
+        "positive_days": 2,
+        "report_sha256": "0e1e59bc891dda2982ea4dbf8e6e4542fb51a8f9bbe98f18729babecececb5e3",
+        "smart_daily_marks": [],
+        "summary": {
+          "adverse_fill_bound_net": -41.0747,
+          "avg_r": -0.21141,
+          "closed_trades": 15,
+          "costs": 5.4914,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 3,
+            "PAPER_STOP_LTP": 8,
+            "SMART_EOD:within_0_5R_of_target": 4
+          },
+          "expectancy": 2.4299,
+          "gross_pnl": 41.94,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 30.856,
+          "net_excluding_best_winner": -4.8747,
+          "net_pnl": 36.4486,
+          "paper_entries": 15,
+          "per_day": [
+            {
+              "closed": 2,
+              "net_pnl": -13.0795,
+              "trading_date": "2026-09-24",
+              "wins": 0
+            },
+            {
+              "closed": 4,
+              "net_pnl": 57.6766,
+              "trading_date": "2026-09-25",
+              "wins": 2
+            },
+            {
+              "closed": 6,
+              "net_pnl": -24.7569,
+              "trading_date": "2026-09-28",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": 16.6084,
+              "trading_date": "2026-09-29",
+              "wins": 2
+            }
+          ],
+          "profit_factor": 1.722414,
+          "unresolved_trades": 0,
+          "win_rate_pct": 33.3333
+        },
+        "usable_days": 5,
+        "zero_trade_days": 1
+      },
+      "PEN_SMART_ENTRY": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": 0.47522500000000006,
+            "date": "2026-09-24",
+            "entries": 3,
+            "net_pnl": 9.5045,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.04429,
+            "date": "2026-09-25",
+            "entries": 5,
+            "net_pnl": 0.8858,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.91742,
+            "date": "2026-09-28",
+            "entries": 4,
+            "net_pnl": 18.3484,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 1.0574400000000002,
+            "date": "2026-09-29",
+            "entries": 4,
+            "net_pnl": 21.1488,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.90811,
+            "date": "2026-09-30",
+            "entries": 6,
+            "net_pnl": -18.1622,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 1,
+        "losing_days": 1,
+        "positive_days": 4,
+        "report_sha256": "edc4a8b4b65d3fd124c86a80a626c8d99334da3b61ad4ed25ec86305e6d2b016",
+        "smart_daily_marks": [
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-24",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 9.504559051513672,
+            "max_intraday_marked_drawdown": 26.822688708496095
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-25",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 0.8857967575073236,
+            "max_intraday_marked_drawdown": 12.083090081787109
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-28",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 18.348375595474245,
+            "max_intraday_marked_drawdown": 12.825171075057982
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-29",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 21.148785580444333,
+            "max_intraday_marked_drawdown": 13.115038659667968
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-30",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -18.162246691894534,
+            "max_intraday_marked_drawdown": 18.681917585754395
+          }
+        ],
+        "summary": {
+          "adverse_fill_bound_net": -108.345,
+          "avg_r": 0.418663,
+          "closed_trades": 22,
+          "costs": 9.9247,
+          "exit_reasons": {
+            "INCUMBENT_EOD:within_0_5R_of_target": 8,
+            "INCUMBENT_TIME_STOP_IN_LOSS": 2,
+            "SMART_PAPER_STOP": 10,
+            "SMART_SESSION_DEADLINE": 2
+          },
+          "expectancy": 1.4421,
+          "gross_pnl": 41.65,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 18.1622,
+          "net_excluding_best_winner": 19.406,
+          "net_pnl": 31.7253,
+          "paper_entries": 22,
+          "per_day": [
+            {
+              "closed": 3,
+              "net_pnl": 9.5045,
+              "trading_date": "2026-09-24",
+              "wins": 2
+            },
+            {
+              "closed": 5,
+              "net_pnl": 0.8858,
+              "trading_date": "2026-09-25",
+              "wins": 2
+            },
+            {
+              "closed": 4,
+              "net_pnl": 18.3484,
+              "trading_date": "2026-09-28",
+              "wins": 3
+            },
+            {
+              "closed": 4,
+              "net_pnl": 21.1488,
+              "trading_date": "2026-09-29",
+              "wins": 3
+            },
+            {
+              "closed": 6,
+              "net_pnl": -18.1622,
+              "trading_date": "2026-09-30",
+              "wins": 0
+            }
+          ],
+          "profit_factor": 1.682558,
+          "unresolved_trades": 0,
+          "win_rate_pct": 45.4545
+        },
+        "usable_days": 5,
+        "zero_trade_days": 0
+      },
+      "PEN_SMART_EXIT": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": -0.653975,
+            "date": "2026-09-24",
+            "entries": 2,
+            "net_pnl": -13.0795,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.083615,
+            "date": "2026-09-25",
+            "entries": 8,
+            "net_pnl": 1.6723,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.75761,
+            "date": "2026-09-28",
+            "entries": 7,
+            "net_pnl": -15.1522,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.27977500000000005,
+            "date": "2026-09-29",
+            "entries": 3,
+            "net_pnl": 5.5955,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.0,
+            "date": "2026-09-30",
+            "entries": 0,
+            "net_pnl": 0,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 0,
+        "losing_days": 2,
+        "positive_days": 2,
+        "report_sha256": "9734cb98b083e1b4dec21c4a03d5f2387b3e7ff2a805138b76d34df3df16803d",
+        "smart_daily_marks": [],
+        "summary": {
+          "adverse_fill_bound_net": -118.6465,
+          "avg_r": -0.479577,
+          "closed_trades": 20,
+          "costs": 6.9239,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 2,
+            "PAPER_STOP_LTP": 10,
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_SESSION_DEADLINE": 1,
+            "SMART_THESIS_FAILED": 3,
+            "SMART_THESIS_STALLED": 3
+          },
+          "expectancy": -1.0482,
+          "gross_pnl": -14.04,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 32.8498,
+          "net_excluding_best_winner": -34.4933,
+          "net_pnl": -20.9639,
+          "paper_entries": 20,
+          "per_day": [
+            {
+              "closed": 2,
+              "net_pnl": -13.0795,
+              "trading_date": "2026-09-24",
+              "wins": 0
+            },
+            {
+              "closed": 8,
+              "net_pnl": 1.6723,
+              "trading_date": "2026-09-25",
+              "wins": 1
+            },
+            {
+              "closed": 7,
+              "net_pnl": -15.1522,
+              "trading_date": "2026-09-28",
+              "wins": 2
+            },
+            {
+              "closed": 3,
+              "net_pnl": 5.5955,
+              "trading_date": "2026-09-29",
+              "wins": 2
+            }
+          ],
+          "profit_factor": 0.57412,
+          "unresolved_trades": 0,
+          "win_rate_pct": 25.0
+        },
+        "usable_days": 5,
+        "zero_trade_days": 1
+      },
+      "PEN_SMART_TRADER": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": 0.42932499999999996,
+            "date": "2026-09-24",
+            "entries": 8,
+            "net_pnl": 8.5865,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.29568,
+            "date": "2026-09-25",
+            "entries": 7,
+            "net_pnl": -5.9136,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.17973,
+            "date": "2026-09-28",
+            "entries": 5,
+            "net_pnl": 3.5946,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.089445,
+            "date": "2026-09-29",
+            "entries": 8,
+            "net_pnl": -1.7889,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -0.540725,
+            "date": "2026-09-30",
+            "entries": 5,
+            "net_pnl": -10.8145,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 0,
+        "losing_days": 3,
+        "positive_days": 2,
+        "report_sha256": "36873818c385938ee3381d4a02d8bf6d2d3cf1344ee5255cc25929793c1fb217",
+        "smart_daily_marks": [
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-24",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 8.586549781799317,
+            "max_intraday_marked_drawdown": 14.982111444091796
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-25",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -5.913653787231446,
+            "max_intraday_marked_drawdown": 9.13071392364502
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-28",
+            "mark_status": "OBSERVED",
+            "marked_pnl": 3.594562816238403,
+            "max_intraday_marked_drawdown": 11.655872190856932
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-29",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -1.7888613189697242,
+            "max_intraday_marked_drawdown": 13.234964294433594
+          },
+          {
+            "daily_loss_latched": false,
+            "date": "2026-09-30",
+            "mark_status": "OBSERVED",
+            "marked_pnl": -10.814528343200681,
+            "max_intraday_marked_drawdown": 12.013727198791502
+          }
+        ],
+        "summary": {
+          "adverse_fill_bound_net": -202.9714,
+          "avg_r": -0.092571,
+          "closed_trades": 33,
+          "costs": 13.9359,
+          "exit_reasons": {
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_PAPER_STOP": 12,
+            "SMART_SESSION_DEADLINE": 3,
+            "SMART_THESIS_FAILED": 17
+          },
+          "expectancy": -0.192,
+          "gross_pnl": 7.6,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 23.5086,
+          "net_excluding_best_winner": -20.3183,
+          "net_pnl": -6.3359,
+          "paper_entries": 33,
+          "per_day": [
+            {
+              "closed": 8,
+              "net_pnl": 8.5865,
+              "trading_date": "2026-09-24",
+              "wins": 3
+            },
+            {
+              "closed": 7,
+              "net_pnl": -5.9136,
+              "trading_date": "2026-09-25",
+              "wins": 1
+            },
+            {
+              "closed": 5,
+              "net_pnl": 3.5946,
+              "trading_date": "2026-09-28",
+              "wins": 2
+            },
+            {
+              "closed": 8,
+              "net_pnl": -1.7889,
+              "trading_date": "2026-09-29",
+              "wins": 3
+            },
+            {
+              "closed": 5,
+              "net_pnl": -10.8145,
+              "trading_date": "2026-09-30",
+              "wins": 1
+            }
+          ],
+          "profit_factor": 0.889252,
+          "unresolved_trades": 0,
+          "win_rate_pct": 30.303
+        },
+        "usable_days": 5,
+        "zero_trade_days": 0
+      },
+      "PEN_STRENGTH_RANK": {
+        "daily_returns": [
+          {
+            "allocated_return_pct": -0.653975,
+            "date": "2026-09-24",
+            "entries": 2,
+            "net_pnl": -13.0795,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 2.88383,
+            "date": "2026-09-25",
+            "entries": 4,
+            "net_pnl": 57.6766,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": -1.237845,
+            "date": "2026-09-28",
+            "entries": 6,
+            "net_pnl": -24.7569,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.8304199999999999,
+            "date": "2026-09-29",
+            "entries": 3,
+            "net_pnl": 16.6084,
+            "status": "ALL_FLAT"
+          },
+          {
+            "allocated_return_pct": 0.0,
+            "date": "2026-09-30",
+            "entries": 0,
+            "net_pnl": 0,
+            "status": "ALL_FLAT"
+          }
+        ],
+        "days_ge_1pct": 1,
+        "losing_days": 2,
+        "positive_days": 2,
+        "report_sha256": "c541a12ccb8b5aefe158e404bfe00285842ac9c5815f4eed41611ab34e9d6ce4",
+        "smart_daily_marks": [],
+        "summary": {
+          "adverse_fill_bound_net": -41.0747,
+          "avg_r": -0.21141,
+          "closed_trades": 15,
+          "costs": 5.4914,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 3,
+            "PAPER_STOP_LTP": 8,
+            "SMART_EOD:within_0_5R_of_target": 4
+          },
+          "expectancy": 2.4299,
+          "gross_pnl": 41.94,
+          "kill_switch_threshold_breached_days": [],
+          "max_drawdown": 30.856,
+          "net_excluding_best_winner": -4.8747,
+          "net_pnl": 36.4486,
+          "paper_entries": 15,
+          "per_day": [
+            {
+              "closed": 2,
+              "net_pnl": -13.0795,
+              "trading_date": "2026-09-24",
+              "wins": 0
+            },
+            {
+              "closed": 4,
+              "net_pnl": 57.6766,
+              "trading_date": "2026-09-25",
+              "wins": 2
+            },
+            {
+              "closed": 6,
+              "net_pnl": -24.7569,
+              "trading_date": "2026-09-28",
+              "wins": 1
+            },
+            {
+              "closed": 3,
+              "net_pnl": 16.6084,
+              "trading_date": "2026-09-29",
+              "wins": 2
+            }
+          ],
+          "profit_factor": 1.722414,
+          "unresolved_trades": 0,
+          "win_rate_pct": 33.3333
+        },
+        "usable_days": 5,
+        "zero_trade_days": 1
+      }
+    }
+  }
+}

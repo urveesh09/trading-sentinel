@@ -1,0 +1,13 @@
+{
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "partner",
+  "metrics": null,
+  "module": "partner",
+  "reason": "Partner advisory/protection is not an OHLCV money-book replay; no adapter exists.",
+  "scope": "ADVISORY_ONLY",
+  "state": "NOT_ADAPTED",
+  "window_kind": "primary"
+}

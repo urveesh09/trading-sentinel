@@ -1,0 +1,865 @@
+{
+  "assessment": "CURRENT_POLICY_PROFITABILITY_NOT_ESTABLISHED",
+  "books": {
+    "fno_dr_positions:FNO_LIVE": {
+      "closed_lifetime_outcomes": {
+        "breakeven": 0,
+        "count": 0,
+        "losses": 0,
+        "mean_net_rs": null,
+        "net_rs": 0,
+        "net_without_best_winner_rs": 0,
+        "profit_factor": null,
+        "realized_cash_drawdown_rs": null,
+        "win_rate": null,
+        "wins": 0
+      },
+      "closed_rows": [],
+      "evidence_status": "RETAINED_OPERATIONAL_HISTORY",
+      "monthly_realized_cash": {},
+      "open_or_unresolved": 0,
+      "partial_cash_events": 0,
+      "reported_terminal_monthly_NOT_FULLY_RECONCILED": {},
+      "reported_terminal_position_pnl_NOT_FULLY_RECONCILED": {
+        "breakeven": 0,
+        "count": 0,
+        "losses": 0,
+        "mean_net_rs": null,
+        "net_rs": 0,
+        "net_without_best_winner_rs": 0,
+        "profit_factor": null,
+        "realized_cash_drawdown_rs": null,
+        "win_rate": null,
+        "wins": 0
+      },
+      "retained_positions": 0,
+      "window_cash": {
+        "breakeven": 0,
+        "count": 0,
+        "losses": 0,
+        "mean_net_rs": null,
+        "net_rs": 0,
+        "net_without_best_winner_rs": 0,
+        "profit_factor": null,
+        "realized_cash_drawdown_rs": null,
+        "win_rate": null,
+        "wins": 0
+      }
+    },
+    "fno_dr_positions:FNO_PAPER": {
+      "closed_lifetime_outcomes": {
+        "breakeven": 0,
+        "count": 7,
+        "losses": 2,
+        "mean_net_rs": 455.37,
+        "net_rs": 3187.6,
+        "net_without_best_winner_rs": 1527.03,
+        "profit_factor": 3.7001202839378586,
+        "realized_cash_drawdown_rs": 850.66,
+        "win_rate": 0.7142857142857143,
+        "wins": 5
+      },
+      "closed_rows": [
+        {
+          "costs_terminal_rs": 123.16,
+          "entry_at": "2026-09-17T12:10:38.870683+05:30",
+          "exit_reason": "squareoff",
+          "lifetime_net_rs": -850.66,
+          "ref": "fno_dr_structure:22",
+          "terminal_at": "2026-09-17T09:40:39.689998+00:00",
+          "terminal_net_rs": -850.66
+        },
+        {
+          "costs_terminal_rs": 106.66,
+          "entry_at": "2026-09-21T11:55:24.367373+05:30",
+          "exit_reason": "squareoff",
+          "lifetime_net_rs": 429.59,
+          "ref": "fno_dr_structure:23",
+          "terminal_at": "2026-09-21T09:40:25.184782+00:00",
+          "terminal_net_rs": 429.59
+        },
+        {
+          "costs_terminal_rs": 127.38,
+          "entry_at": "2026-09-23T11:36:29.843339+05:30",
+          "exit_reason": "squareoff",
+          "lifetime_net_rs": -329.88,
+          "ref": "fno_dr_structure:24",
+          "terminal_at": "2026-09-23T09:41:00.654459+00:00",
+          "terminal_net_rs": -329.88
+        },
+        {
+          "costs_terminal_rs": 124.45,
+          "entry_at": "2026-09-24T11:36:09.982265+05:30",
+          "exit_reason": "squareoff",
+          "lifetime_net_rs": 873.05,
+          "ref": "fno_dr_structure:25",
+          "terminal_at": "2026-09-24T09:40:40.830271+00:00",
+          "terminal_net_rs": 873.05
+        },
+        {
+          "costs_terminal_rs": 123.04,
+          "entry_at": "2026-09-28T10:25:23.473354+05:30",
+          "exit_reason": "squareoff",
+          "lifetime_net_rs": 883.83,
+          "ref": "fno_dr_structure:26",
+          "terminal_at": "2026-09-28T09:40:24.270751+00:00",
+          "terminal_net_rs": 883.83
+        },
+        {
+          "costs_terminal_rs": 152.03,
+          "entry_at": "2026-09-30T11:20:06.059924+05:30",
+          "exit_reason": "squareoff",
+          "lifetime_net_rs": 521.1,
+          "ref": "fno_dr_structure:27",
+          "terminal_at": "2026-09-30T09:41:06.887280+00:00",
+          "terminal_net_rs": 521.1
+        },
+        {
+          "costs_terminal_rs": 145.05,
+          "entry_at": "2026-10-01T12:20:53.853879+05:30",
+          "exit_reason": "target",
+          "lifetime_net_rs": 1660.57,
+          "ref": "fno_dr_structure:28",
+          "terminal_at": "2026-10-01T08:25:24.670012+00:00",
+          "terminal_net_rs": 1660.57
+        }
+      ],
+      "evidence_status": "RETAINED_OPERATIONAL_HISTORY",
+      "monthly_realized_cash": {
+        "2026-09": {
+          "breakeven": 0,
+          "count": 6,
+          "losses": 2,
+          "mean_net_rs": 254.5,
+          "net_rs": 1527.03,
+          "net_without_best_winner_rs": 643.2,
+          "profit_factor": 2.2935012790756772,
+          "realized_cash_drawdown_rs": 850.66,
+          "win_rate": 0.6666666666666666,
+          "wins": 4
+        },
+        "2026-10": {
+          "breakeven": 0,
+          "count": 1,
+          "losses": 0,
+          "mean_net_rs": 1660.57,
+          "net_rs": 1660.57,
+          "net_without_best_winner_rs": 0.0,
+          "profit_factor": null,
+          "realized_cash_drawdown_rs": 0.0,
+          "win_rate": 1.0,
+          "wins": 1
+        }
+      },
+      "open_or_unresolved": 0,
+      "partial_cash_events": 0,
+      "reported_terminal_monthly_NOT_FULLY_RECONCILED": {
+        "2026-07": {
+          "breakeven": 0,
+          "count": 4,
+          "losses": 3,
+          "mean_net_rs": -39.76,
+          "net_rs": -159.03,
+          "net_without_best_winner_rs": -664.74,
+          "profit_factor": 0.7607636068237205,
+          "realized_cash_drawdown_rs": 664.74,
+          "win_rate": 0.25,
+          "wins": 1
+        },
+        "2026-08": {
+          "breakeven": 0,
+          "count": 12,
+          "losses": 10,
+          "mean_net_rs": -605.78,
+          "net_rs": -7269.33,
+          "net_without_best_winner_rs": -7422.73,
+          "profit_factor": 0.030886507283685798,
+          "realized_cash_drawdown_rs": 7269.33,
+          "win_rate": 0.16666666666666666,
+          "wins": 2
+        },
+        "2026-09": {
+          "breakeven": 0,
+          "count": 11,
+          "losses": 4,
+          "mean_net_rs": 186.01,
+          "net_rs": 2046.08,
+          "net_without_best_winner_rs": 1162.25,
+          "profit_factor": 2.3704946582270003,
+          "realized_cash_drawdown_rs": 850.66,
+          "win_rate": 0.6363636363636364,
+          "wins": 7
+        },
+        "2026-10": {
+          "breakeven": 0,
+          "count": 1,
+          "losses": 0,
+          "mean_net_rs": 1660.57,
+          "net_rs": 1660.57,
+          "net_without_best_winner_rs": 0.0,
+          "profit_factor": null,
+          "realized_cash_drawdown_rs": 0.0,
+          "win_rate": 1.0,
+          "wins": 1
+        }
+      },
+      "reported_terminal_position_pnl_NOT_FULLY_RECONCILED": {
+        "breakeven": 0,
+        "count": 28,
+        "losses": 17,
+        "mean_net_rs": -132.92,
+        "net_rs": -3721.71,
+        "net_without_best_winner_rs": -5382.28,
+        "profit_factor": 0.6146779587315063,
+        "realized_cash_drawdown_rs": 8265.68,
+        "win_rate": 0.39285714285714285,
+        "wins": 11
+      },
+      "retained_positions": 28,
+      "window_cash": {
+        "breakeven": 0,
+        "count": 7,
+        "losses": 2,
+        "mean_net_rs": 455.37,
+        "net_rs": 3187.6,
+        "net_without_best_winner_rs": 1527.03,
+        "profit_factor": 3.7001202839378586,
+        "realized_cash_drawdown_rs": 850.66,
+        "win_rate": 0.7142857142857143,
+        "wins": 5
+      }
+    },
+    "fno_positions:FNO_LIVE": {
+      "closed_lifetime_outcomes": {
+        "breakeven": 0,
+        "count": 0,
+        "losses": 0,
+        "mean_net_rs": null,
+        "net_rs": 0,
+        "net_without_best_winner_rs": 0,
+        "profit_factor": null,
+        "realized_cash_drawdown_rs": null,
+        "win_rate": null,
+        "wins": 0
+      },
+      "closed_rows": [],
+      "evidence_status": "RETAINED_OPERATIONAL_HISTORY",
+      "monthly_realized_cash": {},
+      "open_or_unresolved": 0,
+      "partial_cash_events": 0,
+      "reported_terminal_monthly_NOT_FULLY_RECONCILED": {},
+      "reported_terminal_position_pnl_NOT_FULLY_RECONCILED": {
+        "breakeven": 0,
+        "count": 0,
+        "losses": 0,
+        "mean_net_rs": null,
+        "net_rs": 0,
+        "net_without_best_winner_rs": 0,
+        "profit_factor": null,
+        "realized_cash_drawdown_rs": null,
+        "win_rate": null,
+        "wins": 0
+      },
+      "retained_positions": 0,
+      "window_cash": {
+        "breakeven": 0,
+        "count": 0,
+        "losses": 0,
+        "mean_net_rs": null,
+        "net_rs": 0,
+        "net_without_best_winner_rs": 0,
+        "profit_factor": null,
+        "realized_cash_drawdown_rs": null,
+        "win_rate": null,
+        "wins": 0
+      }
+    },
+    "fno_positions:FNO_PAPER": {
+      "closed_lifetime_outcomes": {
+        "breakeven": 0,
+        "count": 9,
+        "losses": 4,
+        "mean_net_rs": 1195.07,
+        "net_rs": 10755.67,
+        "net_without_best_winner_rs": 3321.13,
+        "profit_factor": 4.232931144038836,
+        "realized_cash_drawdown_rs": 2056.25,
+        "win_rate": 0.5555555555555556,
+        "wins": 5
+      },
+      "closed_rows": [
+        {
+          "costs_terminal_rs": 85.96257089887003,
+          "entry_at": "2026-09-17T12:10:38.870683+05:30",
+          "exit_reason": "time_stop",
+          "lifetime_net_rs": -404.46257089887035,
+          "ref": "fno_position:30",
+          "terminal_at": "2026-09-17T07:25:39.327274+00:00",
+          "terminal_net_rs": -404.46257089887035
+        },
+        {
+          "costs_terminal_rs": 68.79539545423,
+          "entry_at": "2026-09-21T11:55:24.367373+05:30",
+          "exit_reason": "time_stop",
+          "lifetime_net_rs": -764.2953954542311,
+          "ref": "fno_position:31",
+          "terminal_at": "2026-09-21T07:11:55.183709+00:00",
+          "terminal_net_rs": -764.2953954542311
+        },
+        {
+          "costs_terminal_rs": 69.39828038428,
+          "entry_at": "2026-09-23T11:36:29.843339+05:30",
+          "exit_reason": "time_stop",
+          "lifetime_net_rs": -101.89828038428,
+          "ref": "fno_position:32",
+          "terminal_at": "2026-09-23T08:01:04.333024+00:00",
+          "terminal_net_rs": -101.89828038428
+        },
+        {
+          "costs_terminal_rs": 79.23244589311,
+          "entry_at": "2026-09-28T10:25:23.473354+05:30",
+          "exit_reason": "time_stop",
+          "lifetime_net_rs": 174.26755410689037,
+          "ref": "fno_position:33",
+          "terminal_at": "2026-09-28T05:40:23.934724+00:00",
+          "terminal_net_rs": 174.26755410689037
+        },
+        {
+          "costs_terminal_rs": 79.67858344198001,
+          "entry_at": "2026-09-28T11:55:23.477717+05:30",
+          "exit_reason": "time_stop",
+          "lifetime_net_rs": 141.32141655802036,
+          "ref": "fno_position:34",
+          "terminal_at": "2026-09-28T07:37:23.893484+00:00",
+          "terminal_net_rs": 141.32141655802036
+        },
+        {
+          "costs_terminal_rs": 86.46310937146,
+          "entry_at": "2026-09-28T13:35:53.499375+05:30",
+          "exit_reason": "trail_stop",
+          "lifetime_net_rs": 4710.536890628541,
+          "ref": "fno_position:35",
+          "terminal_at": "2026-09-28T09:16:57.924680+00:00",
+          "terminal_net_rs": 4710.536890628541
+        },
+        {
+          "costs_terminal_rs": 77.001916999855,
+          "entry_at": "2026-09-30T11:20:06.059924+05:30",
+          "exit_reason": "underlying_stop",
+          "lifetime_net_rs": -2056.2519169998563,
+          "ref": "fno_position:36",
+          "terminal_at": "2026-09-30T06:21:37.568643+00:00",
+          "terminal_net_rs": -2056.2519169998563
+        },
+        {
+          "costs_terminal_rs": 84.333956701855,
+          "entry_at": "2026-09-30T14:26:06.053681+05:30",
+          "exit_reason": "trail_stop",
+          "lifetime_net_rs": 1621.916043298145,
+          "ref": "fno_position:37",
+          "terminal_at": "2026-09-30T09:18:36.518561+00:00",
+          "terminal_net_rs": 1621.916043298145
+        },
+        {
+          "costs_terminal_rs": 92.46872495118998,
+          "entry_at": "2026-10-01T12:20:53.853879+05:30",
+          "exit_reason": "trail_stop",
+          "lifetime_net_rs": 7434.531275048811,
+          "ref": "fno_position:38",
+          "terminal_at": "2026-10-01T07:32:20.942856+00:00",
+          "terminal_net_rs": 7434.531275048811
+        }
+      ],
+      "evidence_status": "RETAINED_OPERATIONAL_HISTORY",
+      "monthly_realized_cash": {
+        "2026-09": {
+          "breakeven": 0,
+          "count": 8,
+          "losses": 4,
+          "mean_net_rs": 415.14,
+          "net_rs": 3321.13,
+          "net_without_best_winner_rs": -1389.4,
+          "profit_factor": 1.998264327538157,
+          "realized_cash_drawdown_rs": 2056.25,
+          "win_rate": 0.5,
+          "wins": 4
+        },
+        "2026-10": {
+          "breakeven": 0,
+          "count": 1,
+          "losses": 0,
+          "mean_net_rs": 7434.53,
+          "net_rs": 7434.53,
+          "net_without_best_winner_rs": 0.0,
+          "profit_factor": null,
+          "realized_cash_drawdown_rs": 0.0,
+          "win_rate": 1.0,
+          "wins": 1
+        }
+      },
+      "open_or_unresolved": 0,
+      "partial_cash_events": 0,
+      "reported_terminal_monthly_NOT_FULLY_RECONCILED": {
+        "2026-07": {
+          "breakeven": 0,
+          "count": 13,
+          "losses": 10,
+          "mean_net_rs": -1089.22,
+          "net_rs": -14159.83,
+          "net_without_best_winner_rs": -15714.62,
+          "profit_factor": 0.18225162303841524,
+          "realized_cash_drawdown_rs": 15474.35,
+          "win_rate": 0.23076923076923078,
+          "wins": 3
+        },
+        "2026-08": {
+          "breakeven": 0,
+          "count": 14,
+          "losses": 11,
+          "mean_net_rs": -901.24,
+          "net_rs": -12617.34,
+          "net_without_best_winner_rs": -14198.41,
+          "profit_factor": 0.1453194373844324,
+          "realized_cash_drawdown_rs": 13146.88,
+          "win_rate": 0.21428571428571427,
+          "wins": 3
+        },
+        "2026-09": {
+          "breakeven": 0,
+          "count": 10,
+          "losses": 6,
+          "mean_net_rs": 97.54,
+          "net_rs": 975.41,
+          "net_without_best_winner_rs": -3735.13,
+          "profit_factor": 1.1719498366979897,
+          "realized_cash_drawdown_rs": 3616.38,
+          "win_rate": 0.4,
+          "wins": 4
+        },
+        "2026-10": {
+          "breakeven": 0,
+          "count": 1,
+          "losses": 0,
+          "mean_net_rs": 7434.53,
+          "net_rs": 7434.53,
+          "net_without_best_winner_rs": 0.0,
+          "profit_factor": null,
+          "realized_cash_drawdown_rs": 0.0,
+          "win_rate": 1.0,
+          "wins": 1
+        }
+      },
+      "reported_terminal_position_pnl_NOT_FULLY_RECONCILED": {
+        "breakeven": 0,
+        "count": 38,
+        "losses": 27,
+        "mean_net_rs": -483.35,
+        "net_rs": -18367.22,
+        "net_without_best_winner_rs": -25801.75,
+        "profit_factor": 0.5134625941494482,
+        "realized_cash_drawdown_rs": 30393.54,
+        "win_rate": 0.2894736842105263,
+        "wins": 11
+      },
+      "retained_positions": 38,
+      "window_cash": {
+        "breakeven": 0,
+        "count": 9,
+        "losses": 4,
+        "mean_net_rs": 1195.07,
+        "net_rs": 10755.67,
+        "net_without_best_winner_rs": 3321.13,
+        "profit_factor": 4.232931144038836,
+        "realized_cash_drawdown_rs": 2056.25,
+        "win_rate": 0.5555555555555556,
+        "wins": 5
+      }
+    }
+  },
+  "can_place_orders": false,
+  "can_qualify": false,
+  "collected_at_utc": "2026-10-02T14:22:31.870534+00:00",
+  "coverage": {
+    "full_quote_path_completeness": "NOT_VERIFIED",
+    "quote_archive_directory_days": [
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-25",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01"
+    ],
+    "token_candle_coverage": [
+      {
+        "first": "2026-09-30 09:15:00",
+        "instrument_token": 12466946,
+        "interval": "5minute",
+        "last": "2026-10-01 15:35:00",
+        "rows": 154
+      },
+      {
+        "first": "2026-09-09 09:15:00",
+        "instrument_token": 12468226,
+        "interval": "5minute",
+        "last": "2026-10-01 15:35:00",
+        "rows": 1232
+      },
+      {
+        "first": "2026-09-15 09:15:00",
+        "instrument_token": 17507842,
+        "interval": "5minute",
+        "last": "2026-09-29 15:35:00",
+        "rows": 770
+      },
+      {
+        "first": "2026-08-25 09:15:00",
+        "instrument_token": 17512194,
+        "interval": "5minute",
+        "last": "2026-09-29 15:35:00",
+        "rows": 1925
+      },
+      {
+        "first": "2026-08-25 09:15:00",
+        "instrument_token": 216221445,
+        "interval": "5minute",
+        "last": "2026-09-24 15:35:00",
+        "rows": 1694
+      },
+      {
+        "first": "2026-09-04 09:15:00",
+        "instrument_token": 221330181,
+        "interval": "5minute",
+        "last": "2026-10-01 15:35:00",
+        "rows": 1462
+      }
+    ]
+  },
+  "end_ist": "2026-10-01",
+  "evidence_sha256": "2c3020f2982fb0d79c36818acb14955e5e21ae63a5254a81fb0c7f3ede17cdda",
+  "is_historical_backtest": false,
+  "limitations": [
+    "Operational history spans changing policies/settings; not today's policy replayed backward.",
+    "Reconciliation validates retained arithmetic, not execution realism or market-price provenance.",
+    "Paper settlements are not live fills; legacy spread rows can contain modeled economics.",
+    "Realized cash drawdown excludes intratrade/open-position drawdown; no capital return or Sharpe claimed.",
+    "Closed lifetime outcomes and window cash differ when partial cash crosses window boundaries.",
+    "Empty trade samples are not zero-risk or profitable evidence; no current-policy version attribution."
+  ],
+  "reconciliation": {
+    "problems": [
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:1"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:2"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:3"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:4"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:5"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:6"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:7"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:8"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:9"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:10"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:11"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:12"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:13"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:14"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:15"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:16"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:17"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:18"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:19"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:20"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:21"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:22"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:23"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:24"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:25"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:26"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:27"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:28"
+      },
+      {
+        "book": "fno_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_position:29"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:1"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:2"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:3"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:4"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:5"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:6"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:7"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:8"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:9"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:10"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:11"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:12"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:13"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:14"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:15"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:16"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:17"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:18"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:19"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:20"
+      },
+      {
+        "book": "fno_dr_positions:FNO_PAPER",
+        "reason": "missing_or_duplicate_terminal_cash",
+        "ref": "fno_dr_structure:21"
+      }
+    ],
+    "status": "UNAVAILABLE",
+    "unmatched_cash_ids": [
+      25,
+      26,
+      27,
+      35,
+      38,
+      41,
+      42,
+      43,
+      56,
+      58,
+      59,
+      63,
+      65,
+      67,
+      69,
+      73,
+      75,
+      76,
+      78,
+      79,
+      82,
+      85,
+      87,
+      95,
+      98,
+      100,
+      101,
+      105,
+      106,
+      108,
+      109,
+      112,
+      113,
+      114,
+      115,
+      118,
+      119,
+      120,
+      124,
+      125,
+      127,
+      128,
+      130,
+      140,
+      148,
+      152,
+      160,
+      161,
+      166,
+      169
+    ]
+  },
+  "schema": "fno_operational_profitability_v1",
+  "start_ist": "2026-07-01"
+}

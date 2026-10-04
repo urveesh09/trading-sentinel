@@ -96,6 +96,17 @@ class ReplayAttackError extends AppError {
   }
 }
 
+// [F1-A 2026-10-03] Owner rule: every live entry is fully paid from own cash.
+class OwnCashInsufficientError extends InsufficientMarginError {
+  constructor(required, available) {
+    super(required, available);
+    this.message = `OWN_CASH_INSUFFICIENT: order value ${Number(required).toFixed(2)}, ` +
+      `own uncommitted cash ${Number(available).toFixed(2)}`;
+    this.userMessage = 'This entry would need borrowed/leveraged funds. No order was submitted.';
+    this.code = 'OWN_CASH_INSUFFICIENT';
+  }
+}
+
 module.exports = {
   AppError,
   TokenExpiredError,
@@ -108,5 +119,6 @@ module.exports = {
   MarketClosedError,
   CasPhaseError,
   DuplicateSignalError,
-  ReplayAttackError
+  ReplayAttackError,
+  OwnCashInsufficientError,
 };

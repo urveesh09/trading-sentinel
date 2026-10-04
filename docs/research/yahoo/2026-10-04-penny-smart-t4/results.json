@@ -1,0 +1,210 @@
+{
+  "bound_verified_after_scoring": true,
+  "decision": {
+    "checks": {
+      "max_drawdown <= max(1.5 * BASELINE max_drawdown, 20.0)": false,
+      "net_excluding_best_winner > 0": false,
+      "net_pnl > 0": false,
+      "net_pnl > BASELINE net_pnl": false
+    },
+    "qualification": "NOT_ASSESSED",
+    "verdict": "NOT_SUPPORTED_STAYS_OFF"
+  },
+  "freeze_sha256": "5f167f40932286a9003d3d7f84cf18a3d627849cb8aedbdcfc597f5a32023ce9",
+  "results": {
+    "seen_broader": {
+      "owner_2000": {
+        "BASELINE": {
+          "closed": 38,
+          "entries": 38,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 13,
+            "PAPER_STOP_LTP": 16,
+            "SMART_EOD:time_stop_30min_in_loss": 1,
+            "SMART_EOD:within_0_5R_of_target": 8
+          },
+          "max_drawdown": 30.856,
+          "net_excluding_best_winner": 50.3936,
+          "net_pnl": 91.7169,
+          "positive_sessions": 8,
+          "profit_factor": 1.6989,
+          "sessions_with_trades": 16,
+          "unresolved": 0,
+          "win_rate_pct": 47.37
+        },
+        "PEN_SMART_ENTRY": {
+          "closed": 79,
+          "entries": 79,
+          "exit_reasons": {
+            "INCUMBENT_EOD:within_0_5R_of_target": 17,
+            "INCUMBENT_TIME_STOP_IN_LOSS": 9,
+            "SMART_PAPER_STOP": 41,
+            "SMART_SESSION_DEADLINE": 12
+          },
+          "max_drawdown": 71.7711,
+          "net_excluding_best_winner": -65.6878,
+          "net_pnl": -47.7479,
+          "positive_sessions": 10,
+          "profit_factor": 0.7777,
+          "sessions_with_trades": 18,
+          "unresolved": 0,
+          "win_rate_pct": 34.18
+        },
+        "PEN_SMART_EXIT": {
+          "closed": 48,
+          "entries": 48,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 3,
+            "PAPER_STOP_LTP": 24,
+            "SMART_EOD_LOSS_CUT": 2,
+            "SMART_SESSION_DEADLINE": 6,
+            "SMART_THESIS_FAILED": 9,
+            "SMART_THESIS_STALLED": 4
+          },
+          "max_drawdown": 66.188,
+          "net_excluding_best_winner": -32.7811,
+          "net_pnl": -2.2712,
+          "positive_sessions": 9,
+          "profit_factor": 0.9858,
+          "sessions_with_trades": 16,
+          "unresolved": 0,
+          "win_rate_pct": 41.67
+        },
+        "PEN_SMART_TRADER": {
+          "closed": 153,
+          "entries": 153,
+          "exit_reasons": {
+            "SMART_EOD_LOSS_CUT": 8,
+            "SMART_PAPER_STOP": 44,
+            "SMART_PAPER_TRAIL": 1,
+            "SMART_SESSION_DEADLINE": 12,
+            "SMART_THESIS_FAILED": 74,
+            "SMART_THESIS_STALLED": 14
+          },
+          "max_drawdown": 97.1379,
+          "net_excluding_best_winner": -66.3592,
+          "net_pnl": -47.5019,
+          "positive_sessions": 7,
+          "profit_factor": 0.8155,
+          "sessions_with_trades": 18,
+          "unresolved": 0,
+          "win_rate_pct": 27.45
+        },
+        "PEN_STRENGTH_RANK": {
+          "closed": 38,
+          "entries": 38,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 13,
+            "PAPER_STOP_LTP": 16,
+            "SMART_EOD:time_stop_30min_in_loss": 1,
+            "SMART_EOD:within_0_5R_of_target": 8
+          },
+          "max_drawdown": 30.856,
+          "net_excluding_best_winner": 50.3936,
+          "net_pnl": 91.7169,
+          "positive_sessions": 8,
+          "profit_factor": 1.6989,
+          "sessions_with_trades": 16,
+          "unresolved": 0,
+          "win_rate_pct": 47.37
+        }
+      }
+    },
+    "seen_short": {
+      "owner_2000": {
+        "BASELINE": {
+          "closed": 15,
+          "entries": 15,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 3,
+            "PAPER_STOP_LTP": 8,
+            "SMART_EOD:within_0_5R_of_target": 4
+          },
+          "max_drawdown": 30.856,
+          "net_excluding_best_winner": -4.8747,
+          "net_pnl": 36.4486,
+          "positive_sessions": 2,
+          "profit_factor": 1.7224,
+          "sessions_with_trades": 4,
+          "unresolved": 0,
+          "win_rate_pct": 33.33
+        },
+        "PEN_SMART_ENTRY": {
+          "closed": 22,
+          "entries": 22,
+          "exit_reasons": {
+            "INCUMBENT_EOD:within_0_5R_of_target": 8,
+            "INCUMBENT_TIME_STOP_IN_LOSS": 2,
+            "SMART_PAPER_STOP": 10,
+            "SMART_SESSION_DEADLINE": 2
+          },
+          "max_drawdown": 18.1622,
+          "net_excluding_best_winner": 19.406,
+          "net_pnl": 31.7253,
+          "positive_sessions": 4,
+          "profit_factor": 1.6826,
+          "sessions_with_trades": 5,
+          "unresolved": 0,
+          "win_rate_pct": 45.45
+        },
+        "PEN_SMART_EXIT": {
+          "closed": 20,
+          "entries": 20,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 2,
+            "PAPER_STOP_LTP": 10,
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_SESSION_DEADLINE": 1,
+            "SMART_THESIS_FAILED": 3,
+            "SMART_THESIS_STALLED": 3
+          },
+          "max_drawdown": 32.8498,
+          "net_excluding_best_winner": -34.4933,
+          "net_pnl": -20.9639,
+          "positive_sessions": 2,
+          "profit_factor": 0.5741,
+          "sessions_with_trades": 4,
+          "unresolved": 0,
+          "win_rate_pct": 25.0
+        },
+        "PEN_SMART_TRADER": {
+          "closed": 33,
+          "entries": 33,
+          "exit_reasons": {
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_PAPER_STOP": 12,
+            "SMART_SESSION_DEADLINE": 3,
+            "SMART_THESIS_FAILED": 17
+          },
+          "max_drawdown": 23.5086,
+          "net_excluding_best_winner": -20.3183,
+          "net_pnl": -6.3359,
+          "positive_sessions": 2,
+          "profit_factor": 0.8893,
+          "sessions_with_trades": 5,
+          "unresolved": 0,
+          "win_rate_pct": 30.3
+        },
+        "PEN_STRENGTH_RANK": {
+          "closed": 15,
+          "entries": 15,
+          "exit_reasons": {
+            "MIS_TIME_STOP_1500": 3,
+            "PAPER_STOP_LTP": 8,
+            "SMART_EOD:within_0_5R_of_target": 4
+          },
+          "max_drawdown": 30.856,
+          "net_excluding_best_winner": -4.8747,
+          "net_pnl": 36.4486,
+          "positive_sessions": 2,
+          "profit_factor": 1.7224,
+          "sessions_with_trades": 4,
+          "unresolved": 0,
+          "win_rate_pct": 33.33
+        }
+      }
+    }
+  },
+  "schema": "preregistered_study_results_v1",
+  "study": "penny-smart-t4"
+}

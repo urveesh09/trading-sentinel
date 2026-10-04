@@ -1,0 +1,145 @@
+{
+  "full_system_profit_available": false,
+  "qualification": "NOT_ASSESSED",
+  "snapshot_sha256": "sha256:c9a19427a6305a759e36257239d9fa245c0e23ab8b317179669e97946d0d5739",
+  "studies": [
+    {
+      "can_place_orders": false,
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "error": null,
+      "funnel": null,
+      "id": "penny-context",
+      "interpretation": "Same scored dates/cash/context; prior volume coverage can block this study. No holdout.",
+      "metrics": {
+        "adverse_fill_bound_net": null,
+        "avg_r": null,
+        "coverage": {
+          "requested_ticker_days": 475,
+          "status_counts": {
+            "PARTIAL": 404,
+            "UNAVAILABLE": 71
+          },
+          "usable_ticker_days": 404
+        },
+        "funnel": {
+          "accepted_signals": 0,
+          "admission_outcomes": {},
+          "evaluations": 87623,
+          "reject_codes": {
+            "BREAKOUT_NOT_CONFIRMED": 15697,
+            "CIRCUIT_BLOCKED": 2193,
+            "INSUFFICIENT_INTRADAY_BARS": 28,
+            "NO_PRIOR_BARS": 263,
+            "NO_QUOTE_EVIDENCE": 146,
+            "OTHER": 46,
+            "RSI_OVERBOUGHT": 45,
+            "TIME_WINDOW": 33190,
+            "VOLUME_BELOW_PACE": 36015
+          }
+        },
+        "max_drawdown": null,
+        "max_drawdown_pct": null,
+        "net_excluding_best_winner": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "single retrospective lifecycle run"
+        },
+        "profit_factor": null,
+        "scope": "LIFECYCLE",
+        "status": "PARTIAL",
+        "trade_count": 0,
+        "unresolved_trades": 0,
+        "win_rate_pct": null
+      },
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local/penny-context-report.json",
+      "report_sha256": "5e74f460326a77d870f0725850c541a26b1bccecf5bba880f7855e1d2cef3043",
+      "scope": "LIFECYCLE",
+      "state": "SUCCEEDED",
+      "warnings": null
+    },
+    {
+      "can_place_orders": false,
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "error": null,
+      "id": "momentum-live-exit-diagnostic",
+      "interpretation": "Exit measurement difference, not deployed alpha; OHLC path/clock limits remain.",
+      "metrics": {
+        "avg_r": -0.40717545,
+        "max_drawdown_pct": null,
+        "net_pnl": -19.007674,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "folds": [],
+          "required_folds": 3,
+          "scored_folds": 0,
+          "status": "insufficient_data"
+        },
+        "profit_factor": 0.0,
+        "trade_count": 2,
+        "variant_comparison": {
+          "avg_r": -0.40717545,
+          "closed_trades": 2,
+          "entries": 2,
+          "expectancy": -9.503837,
+          "max_drawdown": 19.007674,
+          "net_pnl": -19.007674,
+          "open_trades": 0,
+          "profit_factor": 0.0
+        },
+        "win_rate_pct": null
+      },
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local/momentum-live-exit-diagnostic-report.json",
+      "report_sha256": "3844cb14fd5cab0c4207e2ad8fc9e28b7d1ae9054389a43085c3b0874a6b1498",
+      "scope": "EVALUATOR",
+      "state": "SUCCEEDED",
+      "trades": null,
+      "warnings": null
+    },
+    {
+      "can_place_orders": false,
+      "dates": [
+        "2026-07-01",
+        "2026-09-30"
+      ],
+      "error": null,
+      "id": "edge-next-open-proxy",
+      "interpretation": "Independent signal simulator trials, not cash-backed portfolio profit; holding clock unvalidated.",
+      "metrics": {
+        "avg_r": null,
+        "max_drawdown_pct": null,
+        "net_pnl": -60813.839964,
+        "net_return_pct": null,
+        "no_fill": 35,
+        "oos": {
+          "available": false,
+          "reason": "partial lifecycle has no portfolio/context evidence"
+        },
+        "open_marked": 0,
+        "profit_factor": 0.468406,
+        "scan_count": 65,
+        "scope": "PROXY",
+        "selected_count": 167,
+        "trade_count": 129,
+        "unresolved": 3,
+        "win_rate_pct": 46.5116
+      },
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local/edge-next-open-proxy-report.json",
+      "report_sha256": "470c31b655e59be4ab11be7b5f60bf355f07e6ae14d121d6444952236e18aa63",
+      "scope": "PROXY",
+      "state": "SUCCEEDED",
+      "warnings": null
+    }
+  ]
+}

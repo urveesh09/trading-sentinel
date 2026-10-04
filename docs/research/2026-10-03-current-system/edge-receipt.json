@@ -1,0 +1,11 @@
+{
+  "dataset_fingerprint": null,
+  "job": "edge",
+  "metrics": null,
+  "reason": "PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\Urveesh\\\\AppData\\\\Local\\\\Temp\\\\sentinel-edge-evaluator-w6dyn97j.sqlite'",
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\edge-report.json",
+  "report_sha256": "sha256:0fb687f70bfe6b1c0777eadab52db9881681741ed536f4e8a9c0f4499f2a8fa7",
+  "result_status": null,
+  "scope": "EVALUATOR",
+  "state": "FAILED"
+}

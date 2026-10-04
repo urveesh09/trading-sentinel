@@ -6,6 +6,41 @@ import pytest
 import momentum_replay as replay
 
 
+@pytest.mark.parametrize("stamp,volume,reason", [
+    ("2026-08-04T10:00:00", 100, "missing_intraday_exit_evidence_before_next_session"),
+    ("2026-08-03T15:30:00", 100, "missing_exact_square_off_bar"),
+    ("2026-08-03T15:15:00", 0, "no_executable_exit_or_square_off_evidence"),
+])
+def test_live_exit_does_not_invent_next_session_late_or_zero_volume_fills(stamp, volume, reason):
+    candidate = {"variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+                 "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "test",
+                 "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 104, "shares": 2}}
+    future = pd.DataFrame({"open": [103], "high": [105], "low": [102], "close": [104], "volume": [volume]},
+                          index=pd.to_datetime([stamp]))
+    trade = replay._simulate_live_exit_lifecycle(candidate, future, replay.momentum_shadow_execution_config())
+    assert trade["status"] == "UNRESOLVED"
+    assert trade["unresolved_reason"] == reason
+    assert trade["fills"] == [] and trade["remaining_quantity"] == 2
+
+
+def test_live_exit_forwards_actual_atr_and_declared_regime(monkeypatch):
+    import momentum_exits
+    seen = []
+    def inspect(pos, ltp, now):
+        seen.append((pos["atr_14_at_entry"], pos["regime_at_entry"]))
+        return {"action": "hold", "reason": "fixture", "new_stop": None}
+    monkeypatch.setattr(momentum_exits, "evaluate_momentum_exit", inspect)
+    candidate = {"variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+                 "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "test",
+                 "regime_at_entry": "REGIME_2_ELEVATED",
+                 "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 104,
+                              "shares": 2, "atr_at_entry": .75}}
+    future = pd.DataFrame({"open": [100], "high": [101], "low": [99.5], "close": [100.5], "volume": [10]},
+                          index=pd.to_datetime(["2026-08-03T11:00:00"]))
+    replay._simulate_live_exit_lifecycle(candidate, future, replay.momentum_shadow_execution_config())
+    assert seen and all(row == (.75, "REGIME_2_ELEVATED") for row in seen)
+
+
 def _cache(path, *, days=5, provenance="15minute"):
     connection = sqlite3.connect(path)
     connection.executescript("""
@@ -59,8 +94,9 @@ def test_replay_is_prefix_only_first_candidate_idempotent_and_three_fold_oos(tmp
     _cache(path)
     calls = []
     monkeypatch.setattr(replay, "evaluate_momentum_signal", _accept_on_four(calls))
-    first = replay.run_momentum_replay(path)
-    second = replay.run_momentum_replay(path)
+    comparison = replay.MomentumReplayConfig(variants=("MOM_BASE", "MOM_RECENCY_5"))
+    first = replay.run_momentum_replay(path, comparison)
+    second = replay.run_momentum_replay(path, comparison)
     assert first == second
     assert first["coverage"]["selected_interval"] == "15minute"
     assert first["summary"]["entries"] == 10  # 5 days x 2 variants, once each
@@ -81,7 +117,8 @@ def test_variant_arguments_have_production_parity_contract(tmp_path, monkeypatch
     _cache(path, days=1)
     calls = []
     monkeypatch.setattr(replay, "evaluate_momentum_signal", _accept_on_four(calls))
-    result = replay.run_momentum_replay(path)
+    result = replay.run_momentum_replay(path, replay.MomentumReplayConfig(
+        variants=("MOM_BASE", "MOM_RECENCY_5")))
     base = next(item for item in calls if item["kwargs"]["crossover_lookback"] == 3)
     recency = next(item for item in calls if item["kwargs"]["crossover_lookback"] == 5)
     assert base["kwargs"]["max_vwap_distance_atr"] is None
@@ -103,7 +140,8 @@ def test_baseline_replay_decisions_are_the_actual_production_evaluator_outputs(t
         return outcome
 
     monkeypatch.setattr(replay, "evaluate_momentum_signal", capture)
-    result = replay.run_momentum_replay(path)
+    result = replay.run_momentum_replay(path, replay.MomentumReplayConfig(
+        variants=("MOM_BASE", "MOM_RECENCY_5")))
     for variant, lookback in (("MOM_BASE", 3), ("MOM_RECENCY_5", 5)):
         outcomes = [outcome for seen_lookback, outcome in observed if seen_lookback == lookback]
         assert result["funnel"][variant]["evaluations"] == len(outcomes)
@@ -114,6 +152,15 @@ def test_baseline_replay_decisions_are_the_actual_production_evaluator_outputs(t
                 reason = decision.get("reject_reason", "unknown")
                 expected_rejects[reason] = expected_rejects.get(reason, 0) + 1
         assert result["funnel"][variant]["rejects"] == expected_rejects
+
+
+def test_default_replay_variant_is_the_shipped_momentum_evaluator(tmp_path, monkeypatch):
+    path = str(tmp_path / "cache.db")
+    _cache(path, days=1)
+    monkeypatch.setattr(replay, "evaluate_momentum_signal", _accept_on_four([]))
+    result = replay.run_momentum_replay(path)
+    assert result["config"]["variants"] == ["MOM_BASE"]
+    assert set(result["funnel"]) == {"MOM_BASE"}
 
 
 @pytest.mark.parametrize("provenance", ["legacy_unknown", ""])
@@ -152,6 +199,51 @@ def test_fill_model_is_stop_first_cost_aware_and_full_quantity():
     assert trade["net_pnl"] == pytest.approx(trade["gross_pnl"] - trade["costs"])
 
 
+def test_live_exit_lifecycle_calls_shipped_exit_and_keeps_partial_runner(monkeypatch):
+    execution = replay.momentum_shadow_execution_config()
+    candidate = {
+        "variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+        "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "sha256:test",
+        "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 104, "shares": 4},
+    }
+    # The first bar reaches the real evaluator's scale threshold.  The second
+    # bar reaches the runner target; a proxy would have sold all four at T1.
+    future = pd.DataFrame({
+        "open": [100, 101], "high": [101.2, 105], "low": [100.2, 101],
+        "close": [101, 104.5], "volume": [1, 1],
+    }, index=pd.to_datetime(["2026-08-03T11:00:00", "2026-08-03T11:15:00"]))
+    import momentum_exits
+    real = momentum_exits.evaluate_momentum_exit
+    calls = []
+
+    def tracked(position, ltp, now):
+        calls.append((position["shares"], ltp))
+        return real(position, ltp, now)
+
+    monkeypatch.setattr(momentum_exits, "evaluate_momentum_exit", tracked)
+    trade = replay._simulate_live_exit_lifecycle(candidate, future, execution)
+    assert calls
+    assert trade["status"] == "CLOSED"
+    assert sum(fill["quantity"] for fill in trade["fills"]) == 4
+    assert len(trade["fills"]) == 2
+    assert trade["costs"] > 0
+
+
+def test_live_exit_lifecycle_gives_resting_stop_priority_over_favourable_high():
+    execution = replay.momentum_shadow_execution_config()
+    candidate = {
+        "variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+        "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "sha256:test",
+        "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 103, "shares": 2},
+    }
+    future = pd.DataFrame({"open": [100], "high": [104], "low": [98], "close": [101], "volume": [1]},
+                          index=pd.to_datetime(["2026-08-03T11:00:00"]))
+    trade = replay._simulate_live_exit_lifecycle(candidate, future, execution)
+    assert trade["status"] == "CLOSED"
+    assert trade["exit_reason"] == "broker_stop"
+    assert len(trade["fills"]) == 1
+
+
 def test_oos_selection_never_uses_test_fold_outcomes():
     trades = []
     for day in range(1, 6):
@@ -187,3 +279,42 @@ def test_oos_fold_requires_a_close_for_the_train_selected_variant():
     assert result["status"] == "insufficient_data"
     assert result["scored_folds"] < 3
     assert any(fold["reason"] == "selected_variant_has_no_oos_close" for fold in result["folds"])
+
+
+def _thesis_candidate(shares=4):
+    return {"variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+            "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "test",
+            "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 102, "shares": shares, "vwap": 99.5}}
+
+
+def _frame(rows):
+    stamps = [row[0] for row in rows]
+    return pd.DataFrame([row[1:] for row in rows], columns=["open", "high", "low", "close", "volume"],
+                        index=pd.to_datetime(stamps))
+
+
+def test_next_bar_entry_uses_open_and_keeps_rupee_risk():
+    candidate = _thesis_candidate()
+    future = _frame([("2026-08-03T11:00:00", 100.5, 101, 100.2, 100.8, 10),
+                     ("2026-08-03T11:15:00", 100.8, 101, 100.5, 100.9, 10)])
+    moved, rest, refusal = replay._next_bar_entry(candidate, future)
+    assert refusal is None and moved["decision"]["entry_price"] == 100.5
+    assert moved["decision"]["shares"] == int(4 * 1 // 1.5) and len(rest) == 2
+    gap = _frame([("2026-08-03T11:00:00", 98.9, 99.2, 98.5, 99.0, 10)])
+    assert replay._next_bar_entry(candidate, gap)[2] == "next_open_at_or_below_stop"
+
+
+def test_thesis_exit_banks_half_then_trails_and_cuts_failed_momentum():
+    execution = replay.momentum_shadow_execution_config()
+    run = _frame([("2026-08-03T11:00:00", 100.2, 102.2, 100.1, 102.0, 10),   # T1 half, breakeven
+                  ("2026-08-03T11:15:00", 102.0, 103.0, 101.9, 102.8, 10),   # +3R high: trail
+                  ("2026-08-03T11:30:00", 102.5, 102.6, 101.5, 101.6, 10)])  # trail hit
+    trade = replay._simulate_thesis_exit(_thesis_candidate(), run, execution)
+    assert [f["reason"] for f in trade["fills"]] == ["thesis_t1_half", "stop"]
+    assert trade["fills"][0]["quantity"] == 2 and trade["status"] == "CLOSED"
+    trail = 102.8 - (trade["entry_fill"] - 99)          # one R under the highest close
+    assert trade["fills"][1]["price"] == pytest.approx(trail * (1 - execution["exit_slippage_bps"] / 10000))
+    fail = _frame([("2026-08-03T11:00:00", 100.0, 100.2, 99.3, 99.4, 10),
+                   ("2026-08-03T11:15:00", 99.4, 99.6, 99.2, 99.3, 10)])
+    trade = replay._simulate_thesis_exit(_thesis_candidate(), fail, execution)
+    assert trade["exit_reason"] == "thesis_momentum_failed_vwap"

@@ -1,0 +1,4989 @@
+{
+  "schema": "sentinel_penny_lifecycle_research_v1",
+  "strategy_id": "penny_breakout_mis_lifecycle_1m",
+  "policy_scope": "CURRENT_DEV_CLASSIC_PENNY_MIS_LIFECYCLE_NOT_FULL_PORTFOLIO",
+  "sample": {
+    "requested_start": "2026-07-30",
+    "requested_end": "2026-09-03",
+    "tickers": [
+      "3IINFOLTD",
+      "AARNAV",
+      "ABINFRA",
+      "AKI",
+      "ALLCARGO",
+      "ASIANTILES",
+      "ATLANTAA",
+      "BAJAJHIND",
+      "BCLIND",
+      "BESTAGRO",
+      "CCAVENUE",
+      "CENTEXT",
+      "DCMSRIND",
+      "DWARKESH",
+      "EMPOWER",
+      "GANGAFORGE",
+      "GOLDADD",
+      "GOLDCASE",
+      "GROWWGOLD",
+      "GROWWPOWER",
+      "GROWWSLVR",
+      "IBULLSLTD",
+      "KMSUGAR",
+      "KOHINOOR",
+      "MCLEODRUSS",
+      "MEDICO",
+      "METAL",
+      "METALIETF",
+      "MIRZAINT",
+      "MUKKA",
+      "NSLNISP",
+      "OLAELEC",
+      "ONIDA",
+      "PCJEWELLER",
+      "SAGILITY",
+      "SHAH",
+      "SIGACHI",
+      "SIGMA",
+      "SILVER1",
+      "SILVERADD"
+    ],
+    "selection_rule": "ALPHABETICAL_AT_LEAST_ONE_COMPLETE_375_BAR_MINUTE_SESSION_AND_PRIOR_20_DAILY_COUNTS_AND_TIMESTAMPS_ONLY",
+    "strategy": "lifecycle"
+  },
+  "source_sha256": {
+    "penny_lifecycle_replay.py": "54440c1d1c2ef5aa2e7dcce1c48255befd41ccc940d982dd5167e3924acf1166",
+    "research_data_contracts.py": "38905b3dfe52184d24ebe44ab5c03a3cb02657e7863ff7355931c53b9de2562f",
+    "penny_engine_breakout.py": "a709e60b5ea0a0e66b55639c2aced3873e50c2f6a1d0acfbe8acd3b9a6c867a5",
+    "penny_scanner.py": "3fd71f3b462accf03984834cd3ed3931edfbd37b5a77f85ca6dfe04f5ba41678",
+    "penny_executor.py": "e45e12d31e18b4e47c3d1d613a3d038c8b910c2e48bbc0feb7c4af5df2e44d30",
+    "penny_risk.py": "fca4764cf3bb5565fbb12c0de5493fd75ae53d77e44a8beca7899e7684c12ac7",
+    "penny_shadow.py": "5e6a44021052e026399f9e4179eb3f7e1d7cb60b66e02bce768b45188133cda6",
+    "cost_schedules.py": "b6465b6aca1cbb7fa6739a0a326aeae15bba4c9f71e58453873df03f49f9d4ac",
+    "market_calendar.py": "924b06b58f0698b87d749ad8485d40363f51431f5eb3c69014b80bd81773bf87",
+    "config.py": "b3fb397a51e53b491977069340806ba38ec904f2a0a3067fa80df304b3f1d1b7",
+    "main.py": "c9f933fb6d1f12a305cde3b7bde948489a83de259173aa73a0d4be5b921aecf4"
+  },
+  "status": "PARTIAL",
+  "summary": {
+    "paper_entries": 3,
+    "closed_trades": 3,
+    "unresolved_trades": 0,
+    "gross_pnl": 33.09,
+    "costs": 1.5725,
+    "net_pnl": 31.5175,
+    "win_rate_pct": 33.3333,
+    "profit_factor": 6.332459,
+    "expectancy": 10.5058,
+    "avg_r": 3.265973,
+    "max_drawdown": 5.9105,
+    "net_excluding_best_winner": -5.9105,
+    "adverse_fill_bound_net": 9.2999,
+    "exit_reasons": {
+      "PAPER_STOP_LTP": 2,
+      "SMART_EOD:within_0_5R_of_target": 1
+    },
+    "per_day": [
+      {
+        "trading_date": "2026-08-18",
+        "closed": 1,
+        "net_pnl": 37.428,
+        "wins": 1
+      },
+      {
+        "trading_date": "2026-08-20",
+        "closed": 1,
+        "net_pnl": -3.3741,
+        "wins": 0
+      },
+      {
+        "trading_date": "2026-08-25",
+        "closed": 1,
+        "net_pnl": -2.5364,
+        "wins": 0
+      }
+    ],
+    "kill_switch_threshold_breached_days": []
+  },
+  "result": {
+    "schema": "sentinel_penny_lifecycle_replay_v1",
+    "scope": "LIFECYCLE",
+    "status": "PARTIAL",
+    "strategy": "classic_penny_mis_breakout",
+    "run_fingerprint": "sha256:d07a58f66bfa57bdbbf78a49346a21f1abd217c97ed836af4076f6444ca91342",
+    "config": {
+      "tickers": [
+        "3IINFOLTD",
+        "AARNAV",
+        "ABINFRA",
+        "AKI",
+        "ALLCARGO",
+        "ASIANTILES",
+        "ATLANTAA",
+        "BAJAJHIND",
+        "BCLIND",
+        "BESTAGRO",
+        "CCAVENUE",
+        "CENTEXT",
+        "DCMSRIND",
+        "DWARKESH",
+        "EMPOWER",
+        "GANGAFORGE",
+        "GOLDADD",
+        "GOLDCASE",
+        "GROWWGOLD",
+        "GROWWPOWER",
+        "GROWWSLVR",
+        "IBULLSLTD",
+        "KMSUGAR",
+        "KOHINOOR",
+        "MCLEODRUSS",
+        "MEDICO",
+        "METAL",
+        "METALIETF",
+        "MIRZAINT",
+        "MUKKA",
+        "NSLNISP",
+        "OLAELEC",
+        "ONIDA",
+        "PCJEWELLER",
+        "SAGILITY",
+        "SHAH",
+        "SIGACHI",
+        "SIGMA",
+        "SILVER1",
+        "SILVERADD"
+      ],
+      "book": "PENNY_PAPER",
+      "regime": "PR1_CALM",
+      "session_policy": "complete_only"
+    },
+    "settings": {
+      "PENNY_BREAKOUT_TIME_START": 630,
+      "PENNY_BREAKOUT_TIME_END": 870,
+      "PENNY_BREAKOUT_TIME_EXIT": 900,
+      "PENNY_BREAKOUT_VOL_MULT": 1.8,
+      "PENNY_BREAKOUT_TARGET_R": 2.0,
+      "PENNY_BREAKOUT_BUFFER_PCT": 0.003,
+      "PENNY_BREAKOUT_RSI_MAX": 70.0,
+      "PENNY_BREAKOUT_USE_VWAP": false,
+      "PENNY_BREAKOUT_ADAPTIVE_THRESHOLD": false,
+      "PENNY_BREAKOUT_RVOL_TIME_ADJUSTED": true,
+      "PENNY_TIME_STOP_MIN": 30,
+      "PENNY_MIS_SMART_EOD_TIME": 870,
+      "PENNY_MIS_SMART_EOD_WITHIN_R": 0.5,
+      "PENNY_MIS_SMART_EOD_LOSS_MIN": 30,
+      "PENNY_MAX_POSITIONS_TOTAL": 5,
+      "PENNY_MAX_POSITIONS_MIS": 3,
+      "PENNY_PER_STOCK_CAP": 500.0,
+      "PENNY_RISK_PCT_PR1": 0.05,
+      "PENNY_RISK_PCT_PR2": 0.025,
+      "PENNY_RISK_PCT_PR3": 0.01,
+      "PENNY_DAILY_KILL_SWITCH_PCT": 0.2,
+      "PENNY_DISABLE_TICKERS": "",
+      "PENNY_CIRCUIT_SKIP_DISTANCE": 0.005,
+      "PENNY_CIRCUIT_FROM_HIGH_PCT": 0.03,
+      "bankroll": 100000.0,
+      "bankroll_setting": "PENNY_PAPER_BANKROLL",
+      "executor": {
+        "MAX_ENTRY_DRIFT_PCT": 0.02,
+        "STOP_LIMIT_SLIP_PCT": 0.01,
+        "UNWIND_LIMIT_SLIP_PCT": 0.01,
+        "LIVE_ENTRY_LIMIT_MULTIPLIER": 1.005
+      }
+    },
+    "assumptions": {
+      "clock": "bar k-1 evaluated at minute boundary k (forming bar dropped, as the live scanner does)",
+      "ltp": "open of bar k if it traded, else last traded close (mark only)",
+      "entry_fill": "LTP at k after executor drift/stop checks; requires a traded bar k",
+      "exit_fill": "paper stop and scheduled exits fill at the first traded bar at/after the decision",
+      "stop_model": "PAPER_LTP_POLL_60S",
+      "target_exit": "none (live book never exits at target; target feeds smart-EOD only)",
+      "sizing": "PennyRiskEngine.position_size with fixed PENNY_PAPER_BANKROLL",
+      "regime": "declared constant PR1_CALM; historical regime not reconstructed",
+      "costs": "frozen real equity MIS schedule (brokerage bypass never honoured)",
+      "kill_switch": "replicated inert: runtime settlements never feed PennyRiskEngine.daily_pnl",
+      "session_policy": "complete_only",
+      "coverage_assumption": null,
+      "adverse_fill_bound": "entry at LTP*1.005 (live entry limit), exits 1% worse (shipped stop/unwind limits)"
+    },
+    "not_replayed": [
+      "point_in_time_universe_ranking (explicit tickers, alphabetical admission order)",
+      "historical_penny_regime (one declared constant regime per run)",
+      "sector_filter (live fail-open sector ETF gate)",
+      "operator_event_calendar (no point-in-time event file)",
+      "broker_mis_blocks_order_rejections_and_partial_fills",
+      "cnc_positions_occupying_total_capacity",
+      "scheduler_jitter (one scan per minute boundary assumed)",
+      "re-evaluation_of_an_unchanged_last_bar (each completed bar is evaluated once; gaps are not forward-filled)",
+      "intraday_volume_of_forming_bar (cumulative volume uses completed bars only)",
+      "todays_partial_daily_candle_in_median_volume (strictly prior days used)"
+    ],
+    "datasets": {
+      "intraday": {
+        "contract_version": "sentinel_bar_data_contract_v1",
+        "interval": "minute",
+        "clock": "IST_WALL_CLOCK_BAR_START",
+        "requested": {
+          "start": "2026-07-30",
+          "end": "2026-09-03",
+          "tickers": [
+            "3IINFOLTD",
+            "AARNAV",
+            "ABINFRA",
+            "AKI",
+            "ALLCARGO",
+            "ASIANTILES",
+            "ATLANTAA",
+            "BAJAJHIND",
+            "BCLIND",
+            "BESTAGRO",
+            "CCAVENUE",
+            "CENTEXT",
+            "DCMSRIND",
+            "DWARKESH",
+            "EMPOWER",
+            "GANGAFORGE",
+            "GOLDADD",
+            "GOLDCASE",
+            "GROWWGOLD",
+            "GROWWPOWER",
+            "GROWWSLVR",
+            "IBULLSLTD",
+            "KMSUGAR",
+            "KOHINOOR",
+            "MCLEODRUSS",
+            "MEDICO",
+            "METAL",
+            "METALIETF",
+            "MIRZAINT",
+            "MUKKA",
+            "NSLNISP",
+            "OLAELEC",
+            "ONIDA",
+            "PCJEWELLER",
+            "SAGILITY",
+            "SHAH",
+            "SIGACHI",
+            "SIGMA",
+            "SILVER1",
+            "SILVERADD"
+          ]
+        },
+        "kind": "intraday",
+        "source": "sqlite:intraday_cache(read-only collector)",
+        "calendar": {
+          "source": "market_calendar.NSE_HOLIDAYS_STATIC",
+          "valid_from": "2026-01-01",
+          "valid_through": "2026-12-31",
+          "holidays": [
+            "2026-01-15",
+            "2026-01-26",
+            "2026-02-15",
+            "2026-03-03",
+            "2026-03-21",
+            "2026-03-26",
+            "2026-03-31",
+            "2026-04-03",
+            "2026-04-14",
+            "2026-05-01",
+            "2026-05-28",
+            "2026-06-26",
+            "2026-08-15",
+            "2026-09-14",
+            "2026-10-02",
+            "2026-10-20",
+            "2026-11-08",
+            "2026-11-10",
+            "2026-11-24",
+            "2026-12-25"
+          ]
+        },
+        "row_counts": {
+          "selected_interval_accepted": 154834,
+          "by_label": {
+            "15minute": 1041,
+            "legacy_unknown": 154,
+            "minute": 154834
+          },
+          "outside_request": 0
+        },
+        "status_counts": {
+          "COMPLETE": 161,
+          "PARTIAL": 296,
+          "UNAVAILABLE": 583
+        },
+        "dataset_sha256": "sha256:bf5c30bff77895645a681218deedad9bf86a53ce26005c36640cf93d2712b722"
+      },
+      "daily": {
+        "contract_version": "sentinel_bar_data_contract_v1",
+        "interval": "day",
+        "requested": {
+          "before": "2026-09-03",
+          "tickers": [
+            "3IINFOLTD",
+            "AARNAV",
+            "ABINFRA",
+            "AKI",
+            "ALLCARGO",
+            "ASIANTILES",
+            "ATLANTAA",
+            "BAJAJHIND",
+            "BCLIND",
+            "BESTAGRO",
+            "CCAVENUE",
+            "CENTEXT",
+            "DCMSRIND",
+            "DWARKESH",
+            "EMPOWER",
+            "GANGAFORGE",
+            "GOLDADD",
+            "GOLDCASE",
+            "GROWWGOLD",
+            "GROWWPOWER",
+            "GROWWSLVR",
+            "IBULLSLTD",
+            "KMSUGAR",
+            "KOHINOOR",
+            "MCLEODRUSS",
+            "MEDICO",
+            "METAL",
+            "METALIETF",
+            "MIRZAINT",
+            "MUKKA",
+            "NSLNISP",
+            "OLAELEC",
+            "ONIDA",
+            "PCJEWELLER",
+            "SAGILITY",
+            "SHAH",
+            "SIGACHI",
+            "SIGMA",
+            "SILVER1",
+            "SILVERADD"
+          ]
+        },
+        "kind": "daily",
+        "source": "sqlite:ohlcv_cache(read-only collector)",
+        "point_in_time_rule": "bar dated D informs decisions only after D",
+        "adjustment_basis": "UNKNOWN_AS_CACHED",
+        "corporate_action_rule": "abs move > 40% reported as suspected, never repaired",
+        "accepted_rows": 25737,
+        "zero_volume_days": 0,
+        "invalid": {},
+        "suspected_corporate_actions": {
+          "ALLCARGO": [
+            "2025-11-12"
+          ],
+          "DCMSRIND": [
+            "2025-12-26"
+          ]
+        },
+        "off_calendar_dates": {
+          "2026-02-01": 38
+        },
+        "calendar": {
+          "source": "market_calendar.NSE_HOLIDAYS_STATIC",
+          "valid_from": "2026-01-01",
+          "valid_through": "2026-12-31",
+          "holidays": [
+            "2026-01-15",
+            "2026-01-26",
+            "2026-02-15",
+            "2026-03-03",
+            "2026-03-21",
+            "2026-03-26",
+            "2026-03-31",
+            "2026-04-03",
+            "2026-04-14",
+            "2026-05-01",
+            "2026-05-28",
+            "2026-06-26",
+            "2026-08-15",
+            "2026-09-14",
+            "2026-10-02",
+            "2026-10-20",
+            "2026-11-08",
+            "2026-11-10",
+            "2026-11-24",
+            "2026-12-25"
+          ]
+        },
+        "dataset_sha256": "sha256:f714f5baba737cc6acb2163008d980699d9cafdc8eef6775dcc5abc868f262ae"
+      }
+    },
+    "coverage": {
+      "requested_ticker_days": 1040,
+      "usable_ticker_days": 161,
+      "status_counts": {
+        "PARTIAL": 296,
+        "UNAVAILABLE": 583,
+        "COMPLETE": 161
+      },
+      "exclusions": [
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-07-30",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-07-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-04",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-05",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-06",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-07",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-10",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_partial:late_start,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-11",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-12",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-13",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-14",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,zero_volume_with_range"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,missing_bars"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end,missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-17",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-18",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-19",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-20",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-21",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BAJAJHIND",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDCASE",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "IBULLSLTD",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "OLAELEC",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-24",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ALLCARGO",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:early_end"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-25",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-26",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-08-27",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "NSLNISP",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-28",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-08-31",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "SILVER1",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "SILVERADD",
+          "trading_date": "2026-09-01",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AKI",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BESTAGRO",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-09-02",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "3IINFOLTD",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "AARNAV",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ABINFRA",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ASIANTILES",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "ATLANTAA",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "BCLIND",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CCAVENUE",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "CENTEXT",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "DCMSRIND",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "DWARKESH",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "EMPOWER",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:missing_bars"
+        },
+        {
+          "ticker": "GANGAFORGE",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GOLDADD",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWGOLD",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWPOWER",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "GROWWSLVR",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "KMSUGAR",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "KOHINOOR",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "MCLEODRUSS",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "MEDICO",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METAL",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "METALIETF",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MIRZAINT",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        },
+        {
+          "ticker": "MUKKA",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "ONIDA",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SAGILITY",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval,only_other_interval_labels"
+        },
+        {
+          "ticker": "SHAH",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:missing_bars,zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGACHI",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_partial:zero_volume_with_range"
+        },
+        {
+          "ticker": "SIGMA",
+          "trading_date": "2026-09-03",
+          "reason": "coverage_unavailable:no_rows_for_interval"
+        }
+      ]
+    },
+    "funnel": {
+      "evaluations": 60375,
+      "reject_codes": {
+        "BREAKOUT_NOT_CONFIRMED": 15560,
+        "CIRCUIT_BLOCKED": 863,
+        "NO_PRIOR_BARS": 161,
+        "RSI_OVERBOUGHT": 38,
+        "TIME_WINDOW": 21289,
+        "VOLUME_BELOW_PACE": 22461
+      },
+      "accepted_signals": 3,
+      "admission_outcomes": {
+        "FILLED": 3
+      }
+    },
+    "summary": {
+      "paper_entries": 3,
+      "closed_trades": 3,
+      "unresolved_trades": 0,
+      "gross_pnl": 33.09,
+      "costs": 1.5725,
+      "net_pnl": 31.5175,
+      "win_rate_pct": 33.3333,
+      "profit_factor": 6.332459,
+      "expectancy": 10.5058,
+      "avg_r": 3.265973,
+      "max_drawdown": 5.9105,
+      "net_excluding_best_winner": -5.9105,
+      "adverse_fill_bound_net": 9.2999,
+      "exit_reasons": {
+        "PAPER_STOP_LTP": 2,
+        "SMART_EOD:within_0_5R_of_target": 1
+      },
+      "per_day": [
+        {
+          "trading_date": "2026-08-18",
+          "closed": 1,
+          "net_pnl": 37.428,
+          "wins": 1
+        },
+        {
+          "trading_date": "2026-08-20",
+          "closed": 1,
+          "net_pnl": -3.3741,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-08-25",
+          "closed": 1,
+          "net_pnl": -2.5364,
+          "wins": 0
+        }
+      ],
+      "kill_switch_threshold_breached_days": []
+    },
+    "trades": [
+      {
+        "ticker": "SIGACHI",
+        "trading_date": "2026-08-18",
+        "book": "PENNY_PAPER",
+        "decision_bar_ts": "2026-08-18T11:29:00+05:30",
+        "as_of": "2026-08-18T11:30:00+05:30",
+        "signal_entry": 27.66,
+        "stop_price": 27.41,
+        "target_price": 28.16,
+        "shares": 18,
+        "entry_fill_ts": "2026-08-18T11:30:00+05:30",
+        "entry_fill_price": 27.58,
+        "entry_time_utc": "2026-08-18T06:00:00+00:00",
+        "rsi_14": 69.98,
+        "median_vol_20d": 840882,
+        "cum_vol_today": 966543,
+        "status": "CLOSED",
+        "smart_eod": {
+          "action": "exit_now",
+          "reason": "within_0_5R_of_target",
+          "ltp": 29.69
+        },
+        "exit_reason": "SMART_EOD:within_0_5R_of_target",
+        "exit_decided_at": "2026-08-18T14:30:00+05:30",
+        "exit_fill_ts": "2026-08-18T14:30:00+05:30",
+        "exit_fill_price": 29.69,
+        "gross_pnl": 37.98,
+        "costs": 0.552,
+        "net_pnl": 37.428,
+        "r_multiple": 12.231373,
+        "mfe_r": 14.352941,
+        "mae_r": 0.0,
+        "holding_minutes": 180,
+        "adverse_fill_bound_net": 29.604
+      },
+      {
+        "ticker": "DWARKESH",
+        "trading_date": "2026-08-20",
+        "book": "PENNY_PAPER",
+        "decision_bar_ts": "2026-08-20T10:36:00+05:30",
+        "as_of": "2026-08-20T10:37:00+05:30",
+        "signal_entry": 52.06,
+        "stop_price": 51.53,
+        "target_price": 53.12,
+        "shares": 9,
+        "entry_fill_ts": "2026-08-20T10:37:00+05:30",
+        "entry_fill_price": 51.85,
+        "entry_time_utc": "2026-08-20T05:07:00+00:00",
+        "rsi_14": 69.92,
+        "median_vol_20d": 1312726,
+        "cum_vol_today": 5712364,
+        "status": "CLOSED",
+        "exit_reason": "PAPER_STOP_LTP",
+        "exit_decided_at": "2026-08-20T10:43:00+05:30",
+        "exit_fill_ts": "2026-08-20T10:43:00+05:30",
+        "exit_fill_price": 51.53,
+        "gross_pnl": -2.88,
+        "costs": 0.4941,
+        "net_pnl": -3.3741,
+        "r_multiple": -1.171562,
+        "mfe_r": 0.0,
+        "mae_r": 1.25,
+        "holding_minutes": 6,
+        "adverse_fill_bound_net": -10.343
+      },
+      {
+        "ticker": "EMPOWER",
+        "trading_date": "2026-08-25",
+        "book": "PENNY_PAPER",
+        "decision_bar_ts": "2026-08-25T12:19:00+05:30",
+        "as_of": "2026-08-25T12:20:00+05:30",
+        "signal_entry": 2.48,
+        "stop_price": 2.46,
+        "target_price": 2.52,
+        "shares": 201,
+        "entry_fill_ts": "2026-08-25T12:20:00+05:30",
+        "entry_fill_price": 2.47,
+        "entry_time_utc": "2026-08-25T06:50:00+00:00",
+        "rsi_14": 67.05,
+        "median_vol_20d": 4078050,
+        "cum_vol_today": 5020957,
+        "status": "CLOSED",
+        "exit_reason": "PAPER_STOP_LTP",
+        "exit_decided_at": "2026-08-25T12:24:00+05:30",
+        "exit_fill_ts": "2026-08-25T12:24:00+05:30",
+        "exit_fill_price": 2.46,
+        "gross_pnl": -2.01,
+        "costs": 0.5264,
+        "net_pnl": -2.5364,
+        "r_multiple": -1.261891,
+        "mfe_r": 0.0,
+        "mae_r": 2.0,
+        "holding_minutes": 4,
+        "adverse_fill_bound_net": -9.9611
+      }
+    ],
+    "warnings": [
+      "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+      "Retrospective, coverage-selected, exploratory evidence; no holdout, funding or tuning authority.",
+      "One-minute bars cannot show the order of trades inside a minute."
+    ],
+    "can_place_orders": false,
+    "can_qualify": false
+  },
+  "warnings": [
+    "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+    "Retrospective, coverage-selected, exploratory evidence; no holdout, funding or tuning authority.",
+    "One-minute bars cannot show the order of trades inside a minute.",
+    "Coverage-selected sample is not a point-in-time Penny universe or portfolio return.",
+    "Retrospective exploratory run; no prospective HOLDOUT, tuning or funding authority."
+  ],
+  "can_place_orders": false,
+  "can_qualify": false
+}

@@ -1,0 +1,16 @@
+{
+  "locally_retained_not_in_git": [
+    {
+      "bytes": 5153933,
+      "file": "provider-manifest.json",
+      "sha256": "sha256:23e35d17bc4788d6ad66d1f5ae1945bcaf8caaf89ff7839848677d483068a473"
+    },
+    {
+      "bytes": 25173910,
+      "file": "coverage.json",
+      "sha256": "sha256:ee7966d2bdc97d498388be96f4665874f7dba51a161bed96154bc6ea1dc83976"
+    }
+  ],
+  "offline_requires_whole_run_folder": true,
+  "raw_archives": "_local/"
+}

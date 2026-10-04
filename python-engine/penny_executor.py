@@ -37,11 +37,11 @@ position_tracker, stdlib.
 import asyncio
 import hashlib
 import logging
-import math
 from typing import Optional
 
 from kite_client import latest_order_state
 from penny_models import PennyLeg
+from penny_prices import decimal_price, instrument_tick_size, quantize_price
 
 logger = logging.getLogger(__name__)
 
@@ -143,16 +143,9 @@ def reset_entry_blocks() -> None:
         logger.info("penny_entry_blocks_reset cleared=%d", n)
 
 
-def snap_to_tick(price: float, direction: int = -1) -> float:
-    """Snap a price to a valid NSE tick (0.10 rupee -- the LCM of the 0.05
-    and 0.10 tick sizes). direction=-1 rounds DOWN (sell side), +1 rounds UP
-    (buy side). Integer arithmetic avoids IEEE-754 drift.
-
-    Mirrors main.snap_to_tick; duplicated rather than imported because this
-    module must not import the Nifty-side modules (see the header rule)."""
-    in_tenths = round(price * 10 * 100) / 100
-    fn = math.ceil if direction >= 0 else math.floor
-    return fn(in_tenths) / 10
+def snap_to_tick(price: float, direction: int = -1, tick_size: float = 0.10) -> float:
+    """Exact instrument-tick prices; 0.10 is the legacy exit fallback only."""
+    return quantize_price(price, direction, tick_size)
 
 
 class PennyExecutor:
@@ -163,12 +156,22 @@ class PennyExecutor:
         fill_timeout_sec: float = 60.0,
         poll_interval_sec: float = 2.0,
         event_sink=None,
+        tick_size_lookup=None,
     ):
         self.kite = kite
         self.paper_mode = paper_mode
         self.fill_timeout_sec = fill_timeout_sec
         self.poll_interval_sec = poll_interval_sec
         self.event_sink = event_sink
+        self.tick_size_lookup = tick_size_lookup
+
+    def _tick_size(self, ticker: str) -> float | None:
+        if self.tick_size_lookup is not None:
+            try:
+                return float(decimal_price(self.tick_size_lookup(ticker)))
+            except (ValueError, TypeError, ArithmeticError):
+                return None
+        return instrument_tick_size(ticker, require_today=True)
 
     async def _emit(self, event_type: str, payload: dict, context: dict | None) -> None:
         """Best-effort observability: journal failure can never alter orders."""
@@ -222,6 +225,13 @@ class PennyExecutor:
             return result
 
         # ---- step 0b: price reality check -----------------------------
+        tick_size = self._tick_size(ticker)
+        if not self.paper_mode and tick_size is None:
+            result.update(entry_status="tick_metadata_missing",
+                          reject_reason="current instrument tick metadata required before live entry")
+            await self._emit("VALIDATION_REJECTED", {"status": result["entry_status"],
+                             "reason": result["reject_reason"]}, attempt_context)
+            return result
         # [EDGE-DRIFT 2026-07-31] Runs for paper AND live. The paper book is
         # supposed to be a forecast of the live book; letting it enter at a
         # price the market has left makes it a fiction that flatters itself
@@ -295,7 +305,7 @@ class PennyExecutor:
         # Marketable buy limit at LTP + 0.5%, snapped UP to a valid tick --
         # the same route node-gateway's momentum path uses. Priced off the
         # LIVE quote, never off the signal's stale close.
-        limit_price = snap_to_tick(ltp * 1.005, 1)
+        limit_price = snap_to_tick(ltp * 1.005, 1, tick_size)
         try:
             entry_resp = await self.kite.place_order(
                 variety="regular", exchange="NSE",
@@ -612,8 +622,9 @@ class PennyExecutor:
         stop-market while capping worst-case slippage at ~1%. This is the
         identical route node-gateway's momentum path has used since
         2026-07-15. Returns order_id or None."""
-        trigger = snap_to_tick(stop_loss, -1)
-        limit = snap_to_tick(stop_loss * (1.0 - STOP_LIMIT_SLIP_PCT), -1)
+        tick_size = self._tick_size(ticker) or 0.10
+        trigger = snap_to_tick(stop_loss, -1, tick_size)
+        limit = snap_to_tick(stop_loss * (1.0 - STOP_LIMIT_SLIP_PCT), -1, tick_size)
         for attempt in range(1, max_attempts + 1):
             try:
                 resp = await self.kite.place_order(
@@ -681,7 +692,8 @@ class PennyExecutor:
                 ticker, shares,
             )
             return None
-        limit = snap_to_tick(ref * (1.0 - UNWIND_LIMIT_SLIP_PCT), -1)
+        limit = snap_to_tick(ref * (1.0 - UNWIND_LIMIT_SLIP_PCT), -1,
+                             self._tick_size(ticker) or 0.10)
         try:
             resp = await self.kite.place_order(
                 variety="regular", exchange="NSE",
@@ -812,7 +824,8 @@ class PennyExecutor:
                 return result
             # Deterministic adverse fill at the same protected-limit boundary
             # used by live unwinds.  Costs are applied by the settlement layer.
-            fill = snap_to_tick(ref * (1.0 - UNWIND_LIMIT_SLIP_PCT), -1)
+            fill = snap_to_tick(ref * (1.0 - UNWIND_LIMIT_SLIP_PCT), -1,
+                                self._tick_size(ticker) or 0.10)
             identity = f"{ticker.upper()}|{leg.value}|{quantity}|{fill:.4f}"
             digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:12]
             result.update(

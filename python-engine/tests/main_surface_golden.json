@@ -7,6 +7,18 @@
       "trigger": "interval[0:02:00]"
     },
     {
+      "func": "_run_edge_overnight_entry_safe",
+      "id": "edge_overnight_entry",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='20']"
+    },
+    {
+      "func": "_run_edge_overnight_exit_safe",
+      "id": "edge_overnight_exit",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='17']"
+    },
+    {
       "func": "_run_fno_accept_watchdog_safe",
       "id": "fno_accept_watchdog",
       "kwargs": [],
@@ -155,6 +167,12 @@
       "id": "proactive_shadow_workflow",
       "kwargs": [],
       "trigger": "cron[minute='*/5', second='55']"
+    },
+    {
+      "func": "_run_research_future_candles_safe",
+      "id": "research_future_candles",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='40']"
     },
     {
       "func": "_run_research_quote_collection_safe",

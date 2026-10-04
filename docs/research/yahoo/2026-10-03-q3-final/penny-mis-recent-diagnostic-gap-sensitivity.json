@@ -1,0 +1,74 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "PARTIAL_UNIVERSE",
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "penny-mis-recent-diagnostic-gap-sensitivity",
+  "metrics": {
+    "adverse_fill_bound_net": -115.8338,
+    "avg_r": -2.321613,
+    "coverage": {
+      "requested_ticker_days": 475,
+      "status_counts": {
+        "PARTIAL": 404,
+        "UNAVAILABLE": 71
+      },
+      "usable_ticker_days": 404
+    },
+    "funnel": {
+      "accepted_signals": 46,
+      "admission_outcomes": {
+        "DRIFT_REJECTED": 2,
+        "FILLED": 18,
+        "NO_EXECUTABLE_EVIDENCE": 4,
+        "OCCUPIED_SAME_TICKER": 12,
+        "STOP_ALREADY_BREACHED": 10
+      },
+      "evaluations": 87623,
+      "reject_codes": {
+        "BREAKOUT_NOT_CONFIRMED": 15697,
+        "CIRCUIT_BLOCKED": 2193,
+        "INSUFFICIENT_INTRADAY_BARS": 28,
+        "NO_PRIOR_BARS": 263,
+        "NO_QUOTE_EVIDENCE": 146,
+        "RSI_OVERBOUGHT": 45,
+        "TIME_WINDOW": 33190,
+        "VOLUME_BELOW_PACE": 36015
+      }
+    },
+    "max_drawdown": 45.0962,
+    "max_drawdown_pct": null,
+    "net_excluding_best_winner": -27.7362,
+    "net_pnl": 15.1765,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "single retrospective lifecycle run"
+    },
+    "profit_factor": 1.186994,
+    "scope": "LIFECYCLE",
+    "status": "PARTIAL",
+    "trade_count": 18,
+    "unresolved_trades": 0,
+    "win_rate_pct": 27.7778
+  },
+  "module": "penny-mis",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\penny-mis-recent-diagnostic-gap-sensitivity-report.json",
+  "report_sha256": "sha256:047e5ca35295390481345df2446bb56ef976223a77096624766a41de8f5073d8",
+  "scope": "LIFECYCLE",
+  "state": "SUCCEEDED",
+  "strategy_id": "penny_breakout_mis_lifecycle_1m",
+  "warnings": [
+    "LIFECYCLE scope: universe ranking, historical regime, sector filter, event calendar, broker rejections/partial fills and CNC occupancy are not replayed.",
+    "Historical regime is a declared constant; the runtime regime is not reconstructed.",
+    "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
+    "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+    "Retrospective, coverage-selected, exploratory evidence; no holdout, funding or tuning authority.",
+    "One-minute bars cannot show the order of trades inside a minute.",
+    "Coverage assumption MISSING_MINUTES_TREATED_AS_NO_TRADE_UNVERIFIED applies to this run."
+  ],
+  "window_kind": "recent-diagnostic"
+}

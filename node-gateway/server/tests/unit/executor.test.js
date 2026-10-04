@@ -58,6 +58,17 @@ jest.mock('../../db/index', () => ({
   appDb: { prepare: mockDbPrepare },
 }));
 
+// P1 ledger has its own native SQLite handle in production. Keep executor
+// flow tests isolated; protocol behavior is covered by the Python-compatible
+// ledger tests and the gateway uses this exact public surface.
+const mockAccountCashReservations = {
+  reserve: jest.fn(() => ({ reservationId: 'GW:test', amount: 5106, chargeReserve: 3, fillBuffer: 50, availableAfter: 4894 })),
+  markDispatch: jest.fn(),
+  releaseNotSent: jest.fn(),
+  releaseZeroFill: jest.fn(),
+};
+jest.mock('../../services/account-cash-reservations', () => ({ shared: mockAccountCashReservations }));
+
 // Mock fetch for syncToEngine
 global.fetch = jest.fn();
 
@@ -68,7 +79,7 @@ const {
   entrySessionVerdict,
   resolveOwnerEntryHalt,
 } = require('../../services/cas-eligibility');
-const { executeSignal, usableEntryMargin, requiredOrderMargin } = require('../../services/executor');
+const { executeSignal, usableEntryMargin, requiredOrderMargin, ownUncommittedCash } = require('../../services/executor');
 const {
   TokenExpiredError,
   MarketClosedError,
@@ -95,6 +106,12 @@ const makeSignal = (overrides = {}) => ({
 });
 
 function setupHappyPath() {
+  mockAccountCashReservations.reserve.mockReset().mockReturnValue({
+    reservationId: 'GW:test', amount: 5106, chargeReserve: 3, fillBuffer: 50, availableAfter: 4894,
+  });
+  mockAccountCashReservations.markDispatch.mockReset();
+  mockAccountCashReservations.releaseNotSent.mockReset();
+  mockAccountCashReservations.releaseZeroFill.mockReset();
   resolveOwnerEntryHalt.mockReset().mockResolvedValue({
     resolved: true, allowed: true, reason: 'allowed',
   });
@@ -388,12 +405,30 @@ describe('executeSignal()', () => {
     await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(OrderExecutionError);
   });
 
-  test('records INSUFFICIENT_MARGIN and does not submit a new entry', async () => {
+  test('records OWN_CASH_INSUFFICIENT when own cash cannot pay for the order (F1-A)', async () => {
     kite.getMargins.mockResolvedValue({ equity: { available: { cash: 1 } } });
     let caught;
     await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
-    expect(caught.code).toBe('INSUFFICIENT_MARGIN');
+    expect(caught.code).toBe('OWN_CASH_INSUFFICIENT');
     expect(caught.type).toBe('insufficient_margin');
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('P1: shared reservation refusal blocks dispatch after a valid local snapshot', async () => {
+    mockAccountCashReservations.reserve.mockImplementationOnce(() => {
+      throw new Error('ACCOUNT_OWN_CASH_INSUFFICIENT: concurrent reservation retained cash');
+    });
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
+    expect(caught.code).toBe('OWN_CASH_INSUFFICIENT');
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('records INSUFFICIENT_MARGIN when own cash is fine but the broker balance is not', async () => {
+    kite.getMargins.mockResolvedValue({ equity: { available: { cash: 100000, live_balance: 1 } } });
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
+    expect(caught.code).toBe('INSUFFICIENT_MARGIN');
     expect(kite.placeOrder).not.toHaveBeenCalled();
   });
 
@@ -421,14 +456,69 @@ describe('executeSignal()', () => {
     expect(requiredOrderMargin([{ initial: { total: 900 } }])).toBe(900);
   });
 
-  test('uses broker product-specific order margin when available', async () => {
-    kite.getMargins.mockResolvedValue({ equity: { available: { live_balance: 1000 } } });
+  test('consults broker product-specific order margin but never below the order value', async () => {
+    kite.getMargins.mockResolvedValue({ equity: { available: { cash: 100000, live_balance: 100000 } } });
     kite.getOrderMargins.mockResolvedValue([{ initial: { total: 900 } }]);
     await executeSignal(makeSignal(), 'EXEC', true);
     expect(kite.getOrderMargins).toHaveBeenCalledWith([expect.objectContaining({
       product: 'MIS', quantity: 5,
     })]);
     expect(kite.placeOrder).toHaveBeenCalled();
+  });
+
+  test('F1-A: a leveraged MIS buy is refused even when broker margin would allow it', async () => {
+    // Pre-F1-A this passed: MIS margin 900 <= live balance 1000 for a ~5,050 order.
+    kite.getMargins.mockResolvedValue({ equity: { available: { cash: 1000, live_balance: 1000 } } });
+    kite.getOrderMargins.mockResolvedValue([{ initial: { total: 900 } }]);
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC', true).catch(err => { caught = err; });
+    expect(caught.code).toBe('OWN_CASH_INSUFFICIENT');
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('F1-A: open positions, pending buys and realised losses consume own cash', async () => {
+    kite.getMargins.mockResolvedValue({ equity: {
+      available: { cash: 20000, live_balance: 20000 }, utilised: { m2m_realised: -2000 },
+    } });
+    kite.getOrderMargins.mockResolvedValue([{ initial: { total: 1010 } }]);
+    kite.getPositions.mockResolvedValue({ net: [
+      { tradingsymbol: 'TCS', quantity: 2, average_price: 4000 },      // 8,000 committed
+      { tradingsymbol: 'INFY', quantity: 0, average_price: 1500 },     // closed: ignored
+    ], day: [] });
+    kite.getOrders.mockResolvedValue([
+      { status: 'OPEN', transaction_type: 'BUY', pending_quantity: 3, price: 1000 },  // 3,000
+      { status: 'TRIGGER PENDING', transaction_type: 'SELL', pending_quantity: 2, price: 3900 },
+      { status: 'COMPLETE', transaction_type: 'BUY', pending_quantity: 0, price: 1 },
+    ]);
+    let caught;
+    // ~5,050 order vs 20,000 - 8,000 - 3,000 - 2,000 = 7,000 own uncommitted cash: allowed
+    await executeSignal(makeSignal(), 'EXEC', true).catch(err => { caught = err; });
+    expect(caught).toBeUndefined();
+    expect(ownUncommittedCash(
+      { equity: { available: { cash: 20000 }, utilised: { m2m_realised: -2000 } } },
+      { net: [{ quantity: 2, average_price: 4000 }] },
+      [{ status: 'OPEN', transaction_type: 'BUY', pending_quantity: 3, price: 1000 }],
+    )).toBe(7000);
+  });
+
+  test('F1-A: short positions and malformed evidence fail closed', () => {
+    const margins = { equity: { available: { cash: 10000 } } };
+    expect(ownUncommittedCash(margins, { net: [{ quantity: -1, average_price: 10 }] }, [])).toBeNull();
+    expect(ownUncommittedCash(margins, { net: [{ quantity: 1, average_price: null }] }, [])).toBeNull();
+    expect(ownUncommittedCash(margins, null, [])).toBeNull();
+    expect(ownUncommittedCash(margins, { net: [] }, null)).toBeNull();
+    expect(ownUncommittedCash(margins, { net: [] },
+      [{ status: 'OPEN', transaction_type: 'BUY', pending_quantity: 1, price: 0 }])).toBeNull();
+    expect(ownUncommittedCash({ equity: { available: { collateral: 50000 } } }, { net: [] }, [])).toBeNull();
+    expect(ownUncommittedCash({ equity: { available: { cash: 100 }, utilised: { m2m_realised: 'x' } } },
+      { net: [] }, [])).toBeNull();
+    expect(ownUncommittedCash({ equity: { available: { cash: 100 } } }, { net: [] }, [])).toBe(100);
+  });
+
+  test('F1-A: positions/orders evidence failure refuses the entry', async () => {
+    kite.getPositions.mockRejectedValue(new Error('positions timeout'));
+    await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(/MARGIN_EVIDENCE_UNAVAILABLE/);
+    expect(kite.placeOrder).not.toHaveBeenCalled();
   });
 
   test('OPEN timeout is cancelled and never treated as filled or protected', async () => {
@@ -542,14 +632,16 @@ describe('executeSignal()', () => {
     expect(caught).toBeInstanceOf(OrderExecutionError);
     expect(caught.outcomeUnknown).toBe(true);
     expect(kite.placeOrder).toHaveBeenCalledTimes(1);
-    expect(kite.getOrders).toHaveBeenCalledTimes(1);
+    // one F1-A own-cash preflight read + one tag-lookup reconciliation read
+    expect(kite.getOrders).toHaveBeenCalledTimes(2);
   });
 
   test('definitive placement rejection fails immediately without reconciliation or retry', async () => {
     kite.placeOrder.mockRejectedValue(new OrderExecutionError('Insufficient funds'));
     await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(/Insufficient funds/);
     expect(kite.placeOrder).toHaveBeenCalledTimes(1);
-    expect(kite.getOrders).not.toHaveBeenCalled();
+    // only the F1-A own-cash preflight read; no reconciliation lookup
+    expect(kite.getOrders).toHaveBeenCalledTimes(1);
   });
 
   test('ambiguous placement recovers the uniquely tagged broker order without resubmitting', async () => {

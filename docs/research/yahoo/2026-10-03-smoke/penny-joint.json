@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "penny-joint",
+  "metrics": null,
+  "module": "penny-joint",
+  "qualification": "NOT_ASSESSED",
+  "reason": "joint cash requires successful same-window MIS and CNC lifecycle reports",
+  "report_file": "_local\\penny-joint-report.json",
+  "report_sha256": "sha256:b442cfa4cad96df8749a170618abfe47f20d98e07895c762b7a63e9057db71eb",
+  "scope": "PORTFOLIO_PARTIAL",
+  "state": "UNAVAILABLE",
+  "strategy_id": "penny_joint_lifecycle_portfolio",
+  "window_kind": "primary"
+}

@@ -75,6 +75,7 @@ async def fno_db():
 async def _insert_open_position(
     path: str, *, source: str = "FNO_PAPER", tradingsymbol: str = "NIFTY26SEP19500CE",
     entry_premium: float = 100.0, qty: int = 75, settlement_generation: int = 0,
+    max_loss_rupees: float = 1500.0,
 ):
     """Insert one OPEN row and return its ``id``."""
     from fno_positions import insert_position
@@ -89,7 +90,7 @@ async def _insert_open_position(
         entry_date="2026-09-13", entry_premium=entry_premium,
         entry_underlying=19500.0, delta_at_entry=0.5, iv_at_entry=0.15,
         atr_at_entry=50.0, stop_underlying=19450.0, target_underlying=19550.0,
-        premium_stop=80.0, max_loss_rupees=1500.0,
+        premium_stop=80.0, max_loss_rupees=max_loss_rupees,
         bar_ts="2026-09-13T10:00:00+00:00",
     )
 

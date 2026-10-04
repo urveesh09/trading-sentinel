@@ -1,0 +1,241 @@
+{
+  "notes": [
+    "Original compact run() return contains metrics only; full warnings/funnel/trades are extracted here from verified reports.",
+    "All losing/unavailable diagnostics retained; no full-system qualification."
+  ],
+  "studies": [
+    {
+      "funnel": {
+        "accepted_signals": 0,
+        "admission_outcomes": {},
+        "evaluations": 87623,
+        "reject_codes": {
+          "BREAKOUT_NOT_CONFIRMED": 15697,
+          "CIRCUIT_BLOCKED": 2193,
+          "INSUFFICIENT_INTRADAY_BARS": 28,
+          "NO_PRIOR_BARS": 263,
+          "NO_QUOTE_EVIDENCE": 146,
+          "OTHER": 46,
+          "RSI_OVERBOUGHT": 45,
+          "TIME_WINDOW": 33190,
+          "VOLUME_BELOW_PACE": 36015
+        }
+      },
+      "id": "penny-context",
+      "metrics": {
+        "adverse_fill_bound_net": null,
+        "avg_r": null,
+        "coverage": {
+          "requested_ticker_days": 475,
+          "status_counts": {
+            "PARTIAL": 404,
+            "UNAVAILABLE": 71
+          },
+          "usable_ticker_days": 404
+        },
+        "funnel": {
+          "accepted_signals": 0,
+          "admission_outcomes": {},
+          "evaluations": 87623,
+          "reject_codes": {
+            "BREAKOUT_NOT_CONFIRMED": 15697,
+            "CIRCUIT_BLOCKED": 2193,
+            "INSUFFICIENT_INTRADAY_BARS": 28,
+            "NO_PRIOR_BARS": 263,
+            "NO_QUOTE_EVIDENCE": 146,
+            "OTHER": 46,
+            "RSI_OVERBOUGHT": 45,
+            "TIME_WINDOW": 33190,
+            "VOLUME_BELOW_PACE": 36015
+          }
+        },
+        "max_drawdown": null,
+        "max_drawdown_pct": null,
+        "net_excluding_best_winner": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "single retrospective lifecycle run"
+        },
+        "profit_factor": null,
+        "scope": "LIFECYCLE",
+        "status": "PARTIAL",
+        "trade_count": 0,
+        "unresolved_trades": 0,
+        "win_rate_pct": null
+      },
+      "qualification": "NOT_ASSESSED",
+      "scope": "LIFECYCLE",
+      "state": "SUCCEEDED",
+      "trades": null,
+      "warnings": [
+        "LIFECYCLE scope: universe ranking, historical regime, sector filter, event calendar, broker rejections/partial fills and CNC occupancy are not replayed.",
+        "Historical regime is a declared constant; the runtime regime is not reconstructed.",
+        "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
+        "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+        "Retrospective, coverage-selected, exploratory evidence; no holdout, funding or tuning authority.",
+        "One-minute bars cannot show the order of trades inside a minute.",
+        "Coverage assumption MISSING_MINUTES_TREATED_AS_NO_TRADE_UNVERIFIED applies to this run."
+      ]
+    },
+    {
+      "funnel": {
+        "MOM_BASE": {
+          "accepted_prefixes": 2,
+          "distinct_candidates": 2,
+          "evaluations": 52530,
+          "rejects": {
+            "MC0_too_late": 8199,
+            "MC3_volume_surge_insufficient": 5357,
+            "MC5_atr_fuel_exhausted": 204,
+            "MC6_shooting_star": 54,
+            "crossed_but_failed_holding_vwap": 2502,
+            "insufficient_pool_for_one_share": 46,
+            "min_candles_not_met": 6333,
+            "no_recent_vwap_crossover": 28944,
+            "not_in_top_20pct_intraday_range": 885,
+            "zero_shares_momentum": 4
+          }
+        }
+      },
+      "id": "momentum-live-exit-diagnostic",
+      "metrics": {
+        "avg_r": -0.40717545,
+        "max_drawdown_pct": null,
+        "net_pnl": -19.007674,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "folds": [],
+          "required_folds": 3,
+          "scored_folds": 0,
+          "status": "insufficient_data"
+        },
+        "profit_factor": 0.0,
+        "trade_count": 2,
+        "variant_comparison": {
+          "avg_r": -0.40717545,
+          "closed_trades": 2,
+          "entries": 2,
+          "expectancy": -9.503837,
+          "max_drawdown": 19.007674,
+          "net_pnl": -19.007674,
+          "open_trades": 0,
+          "profit_factor": 0.0
+        },
+        "win_rate_pct": null
+      },
+      "qualification": "NOT_ASSESSED",
+      "scope": "EVALUATOR",
+      "state": "SUCCEEDED",
+      "trades": [
+        {
+          "costs": 1.6938,
+          "dataset_fingerprint": "sha256:8a595f32cc98054d1869c5cffaeb71a45987f0f92567a47354f823ef1632c20e",
+          "entry_bar_ts": "2026-09-24T10:30:00+05:30",
+          "entry_fill": 1596.89805,
+          "exit_bar_ts": "2026-09-24T12:00:00+05:30",
+          "exit_fill": 1591.603824,
+          "exit_model": "LIVE_EXIT_LIFECYCLE",
+          "exit_reason": "time_stop_90min_at_0.01R",
+          "fills": [
+            {
+              "bar_ts": "2026-09-24T12:00:00+05:30",
+              "price": 1591.603824,
+              "quantity": 1,
+              "reason": "time_stop_90min_at_0.01R"
+            }
+          ],
+          "gross_pnl": -5.294226,
+          "initial_risk": 20.23805,
+          "net_pnl": -6.988026,
+          "quantity": 1,
+          "r_multiple": -0.34529147,
+          "raw_entry": 1596.1,
+          "remaining_quantity": 0,
+          "status": "CLOSED",
+          "stop_price": 1576.66,
+          "target_price": 1627.2,
+          "ticker": "ONESOURCE",
+          "trading_date": "2026-09-24",
+          "variant": "MOM_BASE"
+        },
+        {
+          "costs": 2.1735,
+          "dataset_fingerprint": "sha256:8a595f32cc98054d1869c5cffaeb71a45987f0f92567a47354f823ef1632c20e",
+          "entry_bar_ts": "2026-09-25T10:30:00+05:30",
+          "entry_fill": 512.75625,
+          "exit_bar_ts": "2026-09-25T11:00:00+05:30",
+          "exit_fill": 510.294713,
+          "exit_model": "LIVE_EXIT_LIFECYCLE",
+          "exit_reason": "time_stop_fast_30min_at_-0.34R",
+          "fills": [
+            {
+              "bar_ts": "2026-09-25T11:00:00+05:30",
+              "price": 510.294713,
+              "quantity": 4,
+              "reason": "time_stop_fast_30min_at_-0.34R"
+            }
+          ],
+          "gross_pnl": -9.846148,
+          "initial_risk": 25.625,
+          "net_pnl": -12.019648,
+          "quantity": 4,
+          "r_multiple": -0.46905943,
+          "raw_entry": 512.5,
+          "remaining_quantity": 0,
+          "status": "CLOSED",
+          "stop_price": 506.35,
+          "target_price": 522.34,
+          "ticker": "TENNIND",
+          "trading_date": "2026-09-25",
+          "variant": "MOM_BASE"
+        }
+      ],
+      "warnings": [
+        "15-minute OHLC assumes protective stop before a favourable high and cannot prove quote-level order timing.",
+        "TARGET_1_PROXY exits the full quantity at T1; LIVE_EXIT_LIFECYCLE calls the shipped exit evaluator but still has no broker receipt.",
+        "Historical Swing-derived regime, Telegram approval, broker admission and shared capital are not archived; configured context is declared, not inferred.",
+        "Research replay only; it never calls Kite, an executor, or an order path.",
+        "15-minute OHLC cannot reveal intrabar path; simultaneous stop/target resolves stop first.",
+        "LIVE_EXIT_LIFECYCLE is a shipped-exit OHLC diagnostic, not exact path replay: partial/target order, high-driven ratchets and completed-bar execution clocks remain ambiguous; broker receipts are unavailable.",
+        "Entry and exit fills use frozen Momentum shadow slippage and equity MIS cost assumptions."
+      ]
+    },
+    {
+      "funnel": null,
+      "id": "edge-next-open-proxy",
+      "metrics": {
+        "avg_r": null,
+        "max_drawdown_pct": null,
+        "net_pnl": -60813.839964,
+        "net_return_pct": null,
+        "no_fill": 35,
+        "oos": {
+          "available": false,
+          "reason": "partial lifecycle has no portfolio/context evidence"
+        },
+        "open_marked": 0,
+        "profit_factor": 0.468406,
+        "scan_count": 65,
+        "scope": "PROXY",
+        "selected_count": 167,
+        "trade_count": 129,
+        "unresolved": 3,
+        "win_rate_pct": 46.5116
+      },
+      "qualification": "NOT_ASSESSED",
+      "scope": "PROXY",
+      "state": "SUCCEEDED",
+      "trades": null,
+      "warnings": [
+        "Partial lifecycle only: historical event calendar, scheduler timing, approval, broker admission, protective-stop confirmation and portfolio cash are not reconstructed.",
+        "Daily OHLC cannot prove intraday order sequence; a next-open geometry gap is a no-fill and an unfinished trade is marked, not silently closed.",
+        "This is research only and never submits an order or changes EDGE_LIVE/EDGE_PAPER policy.",
+        "Independent trials reuse discovery-sized shares without shared cash/deduplication or entry slippage; aggregate trial P&L is not bankroll profit.",
+        "Entry-day bars are passed to a simulator designed for days after entry; time-stop versus daily high/low ordering is unvalidated and can use future prices before an open-time exit."
+      ]
+    }
+  ]
+}

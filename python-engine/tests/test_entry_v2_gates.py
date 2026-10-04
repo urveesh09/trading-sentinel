@@ -310,12 +310,7 @@ class TestMC8RSITrim:
         monkeypatch.setattr(settings, "MOMENTUM_RSI_TRIM_LENGTH", 7)
         monkeypatch.setattr(settings, "MOMENTUM_RSI_TRIM_THRESHOLD", 70.0)
         from engine import evaluate_mc8_rsi_trim
-        # 8 bars (length+1) of strong uptrend. RSI(7) seed runs once.
-        # calc_rsi_series has a pre-existing off-by-one that OOBs at n=length+2
-        # (gains has size n-1 but loop tries index n-1). With exactly length+1
-        # bars the seed-only path runs and avoids the bug. For real production
-        # the engine should be patched, but that's out of scope for this PR --
-        # MC8 just needs length+1 to fire.
+        # Eight bars (length+1) are enough to seed RSI(7) and fire the trim.
         idx = pd.date_range("2026-06-16 10:00", periods=8, freq="15min")
         close = [100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0]
         df = pd.DataFrame({

@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "penny-mis",
+  "metrics": null,
+  "module": "penny-mis",
+  "qualification": "NOT_ASSESSED",
+  "reason": "no ticker-day satisfies session_policy=complete_only: {'INVALID': 1, 'PARTIAL': 14}",
+  "report_file": "_local\\penny-mis-report.json",
+  "report_sha256": "sha256:005045b32c1d73a869dae0ce92cd359c380459d1f8a2ae5d2a83a88f06fed72d",
+  "scope": "LIFECYCLE",
+  "state": "UNAVAILABLE",
+  "strategy_id": "penny_breakout_mis_lifecycle_1m",
+  "window_kind": "primary"
+}

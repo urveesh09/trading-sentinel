@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-08-10",
+    "2026-10-01"
+  ],
+  "job": "momentum",
+  "metrics": null,
+  "module": "momentum",
+  "qualification": "NOT_ASSESSED",
+  "reason": "source/settings changed during this run; freeze a new run",
+  "report_file": "_local\\momentum-report.json",
+  "report_sha256": "sha256:c974756a4eef66bda62d44dda4a04dc46a991b2c5560a9ed0d856e78171b8c95",
+  "scope": "EVALUATOR",
+  "state": "UNAVAILABLE",
+  "strategy_id": "momentum_intraday_15m_replay",
+  "window_kind": "primary"
+}

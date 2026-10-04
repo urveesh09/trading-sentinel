@@ -1,0 +1,39 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "edge",
+  "metrics": {
+    "avg_r": null,
+    "candidate_count": 2,
+    "max_drawdown_pct": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "evaluator replay has no portfolio result"
+    },
+    "profit_factor": null,
+    "scan_count": 5,
+    "scope": "EVALUATOR",
+    "selected_count": 1,
+    "trade_count": null,
+    "win_rate_pct": null
+  },
+  "module": "edge",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\edge-report.json",
+  "report_sha256": "sha256:b2d4e3607cc09382b2a8ae77568a807eea860ab5255b8e75a17192e6531108da",
+  "scope": "EVALUATOR",
+  "state": "SUCCEEDED",
+  "strategy_id": "penny_edge_daily_evaluator",
+  "warnings": [
+    "EVALUATOR scope only: no next-session fill, paper executor, exit, cash reservation or historical event-calendar snapshot is simulated.",
+    "A daily bar is evaluated only after its session; this cannot prove the live scheduler had that completed bar at 09:30.",
+    "Universe membership is exactly the supplied list; historical production universe membership is not inferred."
+  ],
+  "window_kind": "primary"
+}

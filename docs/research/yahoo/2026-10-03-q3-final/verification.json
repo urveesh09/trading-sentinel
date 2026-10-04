@@ -1,0 +1,35 @@
+{
+  "all_16_original_final_outcomes_agree": true,
+  "can_place_orders": false,
+  "current_policy_importer_hashes_match": true,
+  "focused_tests": "70 passed; 1 existing HTTPX deprecation",
+  "imported_rows_sha256": "sha256:8dbff5e70d5d0ae1c7c25193424146303932ad5d015057e4eae75d7df0e30951",
+  "module_reports_verified": [
+    "penny-mis",
+    "penny-mis-gap-sensitivity",
+    "penny-cnc",
+    "penny-joint",
+    "penny-joint-gap-sensitivity",
+    "edge",
+    "swing",
+    "momentum",
+    "range",
+    "partner",
+    "penny-mis-recent-diagnostic",
+    "penny-mis-recent-diagnostic-gap-sensitivity",
+    "penny-cnc-recent-diagnostic",
+    "penny-joint-recent-diagnostic",
+    "penny-joint-recent-diagnostic-gap-sensitivity",
+    "momentum-recent-diagnostic"
+  ],
+  "native_raw_responses_verified": 1203,
+  "offline_edge_range_independent_repeat_agrees": true,
+  "qualification": "NOT_ASSESSED",
+  "source": "YAHOO_FINANCE_CHART_ONLY",
+  "state_counts": {
+    "NOT_ADAPTED": 1,
+    "SUCCEEDED": 7,
+    "UNAVAILABLE": 8
+  },
+  "validated_rows_sha256": "sha256:c9a19427a6305a759e36257239d9fa245c0e23ab8b317179669e97946d0d5739"
+}

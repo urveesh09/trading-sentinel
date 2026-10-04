@@ -7,33 +7,10 @@ const executor = require('./services/executor');
 const telegram = require('./services/telegram');
 const { isMarketOpen, currentSessionPhase } = require('./utils/market-hours');
 const { entrySessionVerdict } = require('./services/cas-eligibility');
+const { getApprovedSnapshot } = require('./services/approved-snapshots');
+const { executeMomentum } = require('./services/momentum-execution');
 
 const server = http.createServer(app);
-
-// ─────────────────────────────────────────────────────────────────────────────
-// APPROVED SNAPSHOT LOOKUP  [HIGH-007 / ROADMAP-4.5 2026-07-13]
-// ─────────────────────────────────────────────────────────────────────────────
-// Returns the exact payload that was DISPLAYED to the operator for this
-// callback id, or null if the sender never registered one.
-//
-// The `action` is matched too, so an EXEC id can never resolve to an EM
-// snapshot (they carry different sizing and a different product type -- CNC
-// vs MIS -- and confusing them would place the wrong kind of order).
-//
-// Never throws: a corrupt row must degrade to the live-fetch fallback, not
-// kill the operator's button press.
-function getApprovedSnapshot(signalId, action) {
-  try {
-    const snap = signalsDb.prepare(
-      `SELECT payload_json FROM approved_snapshots WHERE signal_id = ? AND action = ?`
-    ).get(signalId, action);
-    if (!snap) return null;
-    return JSON.parse(snap.payload_json);
-  } catch (err) {
-    logger.error({ event_type: 'approved_snapshot_read_failed', signalId, action, err: err.message });
-    return null;
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TELEGRAM CALLBACK QUERY HANDLER (INLINE KEYBOARD)
@@ -203,7 +180,8 @@ telegram.bot.on('callback_query', async (query) => {
       return;
     }
 
-    // 8. Execute Action (Momentum) — with atomic idempotency lock
+    // 8. Execute Action (Momentum) -- shared with the automatic route
+    // (services/momentum-execution.js): same lock, snapshot and executor.
     if (action === 'EM') {
       const sessionVerdict = await entrySessionVerdict(cleanId, new Date());
       if (!sessionVerdict.allowed) {
@@ -214,123 +192,32 @@ telegram.bot.on('callback_query', async (query) => {
         });
         return;
       }
-      const today         = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-      const momentumLockId = `${cleanId}_MOM_${today}`;
-
-      // Atomic lock:
-      //   - First press: INSERT with EXECUTING status.
-      //   - Retry after failure (PENDING): UPDATE to EXECUTING — allow the user to retry.
-      //   - In-flight (EXECUTING) or done (EXECUTED): block — no double orders.
-      const lockTx = signalsDb.transaction(() => {
-        const existing = signalsDb.prepare(
-          `SELECT status FROM received_signals WHERE signal_id = ?`
-        ).get(momentumLockId);
-
-        if (!existing) {
-          signalsDb.prepare(`
-            INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status, execution_state)
-            VALUES (?, ?, ?, ?, '{}', 'EXECUTING', 'SUBMITTING')
-          `).run(momentumLockId, cleanId, new Date().toISOString(), new Date().toISOString());
-          return { locked: false };
-        }
-
-        if (existing.status === 'PENDING') {
-          // [FIX] A previous attempt failed and was reset to PENDING.
-          // Allow the user to retry by flipping back to EXECUTING.
-          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'SUBMITTING' WHERE signal_id = ?`)
-            .run(momentumLockId);
-          return { locked: false };
-        }
-
-        // EXECUTING (in-flight) or EXECUTED (already done) — block duplicate
-        return { locked: true, status: existing.status };
+      const outcome = await executeMomentum({
+        signalId: signal_id, cleanId, allowLiveFetch: true,
+        onStart: (fromSnapshot) => telegram.bot.answerCallbackQuery(query.id, {
+          text: fromSnapshot ? 'Executing Momentum Trade...' : 'Fetching Momentum Data...',
+        }),
       });
+      if (outcome.outcome === 'LOCKED') {
+        await telegram.bot.answerCallbackQuery(query.id, { text: `Already ${outcome.status}. No double orders.`, show_alert: true });
+      } else if (outcome.outcome === 'EXECUTED') {
+        await telegram.bot.editMessageText(query.message.text + `
 
-      const lockResult = lockTx();
-      if (lockResult.locked) {
-        await telegram.bot.answerCallbackQuery(query.id, { text: `Already ${lockResult.status}. No double orders.`, show_alert: true });
-        return;
-      }
-
-      try {
-        // [HIGH-007 / ROADMAP-4.5 2026-07-13] Approved snapshot first.
-        // The engine's momentum list is IN-MEMORY, so a restart wipes it --
-        // exactly what happened on 2026-07-13 at 09:44. Pre-fix, a press
-        // after that restart died with "Momentum signal not found in Engine
-        // state" and the approved trade was simply lost. The snapshot is on
-        // disk, so it survives.
-        let signalData = getApprovedSnapshot(signal_id, 'EM');
-
-        if (!signalData) {
-          logger.warn({ event_type: 'approved_snapshot_missing', signal_id, action });
-          await telegram.bot.answerCallbackQuery(query.id, { text: 'Fetching Momentum Data...' });
-
-          const controller = new AbortController();
-          const timeout    = setTimeout(() => controller.abort(), config.PYTHON_ENGINE_TIMEOUT_MS);
-          const resp       = await fetch(`${config.PYTHON_ENGINE_URL}/momentum-signals`, {
-            headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET },
-            signal: controller.signal
-          });
-          clearTimeout(timeout);
-          const data       = await resp.json();
-          signalData       = data.signals?.find(s => s.ticker === cleanId);
-        } else {
-          await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Momentum Trade...' });
-        }
-
-        if (!signalData) {
-          signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(momentumLockId);
-          throw new Error('Momentum signal not found in Engine state.');
-        }
-
-        // [FIX] MomentumSignal model has no signal_id field; without this the executor's
-        // INSERT into executed_orders gets NULL for signal_id and fails the NOT NULL
-        // constraint, which was being mislabelled as "Order tracking collision detected."
-        signalData.signal_id = momentumLockId;
-
-        const result = await executor.executeSignal(signalData, 'EM', true);
-
-        // Persist full payload now that we have it, mark EXECUTED.
-        // [FILL-ANCHOR 2026-08-04] Overlay what was actually armed. The signal's
-        // stop/target were priced off a close that is minutes old by the time
-        // EXEC is pressed; storing them here is what made every reconstructed
-        // R-multiple wrong.
-        const executedPayload = {
-          ...signalData,
-          shares:         result.shares,
-          stop_loss:      result.stop_loss,
-          target_1:       result.target_1,
-          target_2:       result.target_2,
-          entry_price:    result.fillPrice,
-          risk_per_share: result.risk_per_share,
-          signal_close:   signalData.close,
-        };
-        signalsDb.prepare(`
-          UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED', payload_json = ? WHERE signal_id = ?
-        `).run(JSON.stringify(executedPayload), momentumLockId);
-
-        await telegram.bot.editMessageText(query.message.text + `\n\n⚡ EXECUTED (MIS): ${result.orderId}`, {
+⚡ EXECUTED (MIS): ${outcome.result.orderId}`, {
           chat_id: query.message.chat.id,
           message_id: query.message.message_id
         });
-      } catch (err) {
-        // [FIX 2026-07-15] When the buy filled but both the protective stop and
-        // the unwind failed, shares are still held. Do NOT reset to PENDING — a
-        // retry would place a SECOND naked buy and stack the position. Leave the
-        // signal blocked (status enforces PENDING-only execution) and tell the
-        // operator to flatten manually rather than inviting a retry.
-        if (err && err.positionHeld) {
-          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'HELD_UNPROTECTED' WHERE signal_id = ?`).run(momentumLockId);
-          logger.error({ event_type: 'momentum_execution_failed', held: true, err: err.message });
-          await telegram.sendAlert(`❌ Momentum buy FAILED for ${cleanId}:\n${err.message}`);
-        } else {
-          // Release lock so user can retry — the position is flat.
-          signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING', execution_state = 'IDLE' WHERE signal_id = ?`).run(momentumLockId);
-          logger.error({ event_type: 'momentum_execution_failed', err: err.message });
-          // [FIX] callback was already answered with 'Fetching Momentum Data...' — second call silently fails.
-          // sendAlert ensures the user sees the failure and knows to retry.
-          await telegram.sendAlert(`❌ Momentum buy FAILED for ${cleanId}:\n${err.message}\n\nSignal reset to PENDING — retry the button.`);
-        }
+      } else if (outcome.held) {
+        await telegram.sendAlert(`❌ Momentum buy FAILED for ${cleanId}:
+${outcome.error.message}
+
+Outcome locked for broker reconciliation. Do NOT retry.`);
+      } else {
+        // The callback was already answered; sendAlert makes the failure visible.
+        await telegram.sendAlert(`❌ Momentum buy FAILED for ${cleanId}:
+${outcome.error.message}
+
+Signal reset to PENDING — retry the button.`);
       }
       return;
     }

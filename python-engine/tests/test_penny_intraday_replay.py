@@ -13,6 +13,30 @@ from penny_intraday_replay import (
 from penny_shadow import _costs_from_snapshot
 
 
+@pytest.mark.parametrize("valid", [False, True])
+def test_read_only_loader_closes_connection_even_on_early_return(tmp_path, monkeypatch, valid):
+    import penny_intraday_replay as replay_module
+    path = tmp_path / "read-close.db"
+    if valid:
+        _make_db(path, ["2026-08-10"])
+    else:
+        with sqlite3.connect(path) as db:
+            db.execute("CREATE TABLE unrelated(id INTEGER)")
+    original = sqlite3.connect
+    opened = []
+
+    def tracked(*args, **kwargs):
+        connection = original(*args, **kwargs)
+        opened.append(connection)
+        return connection
+
+    monkeypatch.setattr(replay_module.sqlite3, "connect", tracked)
+    replay_module.load_penny_minute_snapshot(str(path), "2026-08-10", "2026-08-10")
+    assert len(opened) == 1
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        opened[0].execute("SELECT 1")
+
+
 def _make_db(path, days, *, exit_kind="target"):
     with sqlite3.connect(path) as db:
         db.execute("""CREATE TABLE intraday_cache (

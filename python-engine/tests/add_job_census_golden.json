@@ -20,13 +20,33 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_edge_overnight_entry_safe",
+    "id": "'edge_overnight_entry'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_edge_overnight_exit_safe",
+    "id": "'edge_overnight_exit'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_fno_accept_watchdog_safe",
     "id": "'fno_accept_watchdog'",
     "trigger": "'cron'"
   },
   {
+    "func": "_run_fno_fast_exit_safe",
+    "id": "'fno_fast_exit'",
+    "trigger": "'interval'"
+  },
+  {
     "func": "_run_fno_hourly_report_safe",
     "id": "'fno_hourly_report'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_fno_tick_safe",
+    "id": "'fno_bar_close_tick'",
     "trigger": "'cron'"
   },
   {
@@ -152,6 +172,11 @@
   {
     "func": "_run_proactive_shadow_workflow_safe",
     "id": "'proactive_shadow_workflow'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_research_future_candles_safe",
+    "id": "'research_future_candles'",
     "trigger": "'cron'"
   },
   {

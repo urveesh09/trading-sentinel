@@ -84,6 +84,14 @@ def test_permission_rejection_halts_entries_and_reports_blocked(
     monkeypatch.setattr(operator_alert, "notify_operator", fake_alert)
 
     async def rejected(request):
+        # F1-A funds evidence is read before an entry; only the order POST is rejected.
+        if request.method == "GET" and request.url.path == "/user/margins":
+            return httpx.Response(200, request=request,
+                                  json={"data": {"equity": {"available": {"cash": 1e7}}}})
+        if request.method == "GET" and request.url.path == "/portfolio/positions":
+            return httpx.Response(200, request=request, json={"data": {"net": [], "day": []}})
+        if request.method == "GET" and request.url.path == "/orders":
+            return httpx.Response(200, request=request, json={"data": []})
         requests.append({"method": request.method, "url": str(request.url), "content": request.content.decode()})
         return httpx.Response(
             403, request=request,
@@ -95,7 +103,8 @@ def test_permission_rejection_halts_entries_and_reports_blocked(
         base_url="https://api.kite.test", transport=httpx.MockTransport(rejected)
     )
     result = asyncio.run(client.place_order(
-        tradingsymbol="AAA", quantity=1, intent="entry", channel="penny",
+        tradingsymbol="AAA", quantity=1, order_type="LIMIT", price=10.0,
+        intent="entry", channel="penny",
     ))
     asyncio.run(client.client.aclose())
 

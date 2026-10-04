@@ -1,0 +1,54 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "PARTIAL_UNIVERSE",
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "penny-cnc-recent-diagnostic",
+  "metrics": {
+    "avg_r": null,
+    "funnel": {
+      "NO_PARTIAL_CANDLE_EVIDENCE": 77,
+      "admission_outcomes": {},
+      "evaluations": 398,
+      "reject_reasons": {
+        "RSI not rising for 2 bars": 39,
+        "RSI(2) not below buy threshold": 123,
+        "below 200 SMA": 131,
+        "below 50 SMA": 55,
+        "insufficient_history": 50
+      }
+    },
+    "max_drawdown_pct": null,
+    "net_excluding_best_winner": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "single retrospective lifecycle run"
+    },
+    "profit_factor": null,
+    "scope": "LIFECYCLE",
+    "status": "PARTIAL",
+    "trade_count": 0,
+    "unresolved_trades": 0,
+    "win_rate_pct": null
+  },
+  "module": "penny-cnc",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\penny-cnc-recent-diagnostic-report.json",
+  "report_sha256": "sha256:e098a834ffaa7d67c477d6c4d2421f9847b77e3b78c19712c6bd09b3cf5d64af",
+  "scope": "LIFECYCLE",
+  "state": "SUCCEEDED",
+  "strategy_id": "penny_cnc_connors_lifecycle_1d",
+  "warnings": [
+    "LIFECYCLE scope: universe ranking, historical regime, MIS capacity and broker rejections are not replayed.",
+    "Paper book only: live PENNY CNC rows have no shipped exit management.",
+    "Daily-bar exits cannot order intraday events; the tracker's own branch order is used.",
+    "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+    "Retrospective exploratory evidence; no holdout, tuning, funding or partner authority.",
+    "Entry-day exits use the whole day's range, including trading before the 09:30 fill (shipped)."
+  ],
+  "window_kind": "recent-diagnostic"
+}

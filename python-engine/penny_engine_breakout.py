@@ -230,6 +230,8 @@ def evaluate_breakout_entry(
     regime=None,                   # [FIX-PHASE1-AUDIT 2026-07-09] PennyRegime | None
     time_start_min: int | None = None,
     volume_multiplier: float | None = None,
+    noise_stop_enabled: bool | None = None,
+    stop_tick_size: float | None = None,
 ) -> dict:
     """
     Spec section 5.2: volume + breakout + time + RSI gates. On accept, returns
@@ -251,6 +253,13 @@ def evaluate_breakout_entry(
       behaviour is preserved.
     """
     from config import settings
+    if noise_stop_enabled is not None and not isinstance(noise_stop_enabled, bool):
+        raise ValueError("noise_stop_enabled must be bool or None")
+    if stop_tick_size is not None:
+        from penny_prices import decimal_price
+        if isinstance(stop_tick_size, bool):
+            raise ValueError("stop_tick_size must be positive and finite")
+        decimal_price(stop_tick_size)
     if time_start_min is not None:
         if isinstance(time_start_min, bool) or not isinstance(time_start_min, int):
             raise ValueError("time_start_min must be an integer minute")
@@ -375,6 +384,17 @@ def evaluate_breakout_entry(
     shares = risk_engine.position_size(entry, stop_loss, sizing_regime)
     if shares <= 0:
         return {"accept": False, "reject_reason": "position size = 0 (regime/cap blocked)"}
+    use_noise_stop = settings.PENNY_NOISE_STOP_ENABLED if noise_stop_enabled is None else noise_stop_enabled
+    if use_noise_stop:
+        from penny_prices import instrument_tick_size
+        # Runtime uses the same dated instrument tick as the executor. Historical
+        # replay supplies its declared tick, never today's instrument metadata.
+        tick = stop_tick_size if stop_tick_size is not None else (
+            instrument_tick_size(ticker, require_today=True) or 0.01)
+        stop_loss, shares = noise_floor_stop(entry, stop_loss, shares, tick_size=tick)
+        if shares <= 0:
+            return {"accept": False, "reject_reason": "position size = 0 (noise-floor stop)"}
+        target = round(entry + settings.PENNY_BREAKOUT_TARGET_R * (entry - stop_loss), 2)
 
     return {
         "accept": True,
@@ -446,6 +466,35 @@ def smart_eod_check(pos: dict, current_price: float, now: datetime) -> dict:
     if elapsed_in_loss > timedelta(minutes=settings.PENNY_MIS_SMART_EOD_LOSS_MIN):
         return {"action": "exit_now", "reason": "loss_over_30_min"}
     return {"action": "hold", "reason": "fresh_loss"}
+
+
+NOISE_STOP_MIN_PCT = 0.015
+NOISE_STOP_MIN_RUPEES = 0.03          # three ₹0.01 ticks
+
+
+def noise_floor_stop(entry: float, stop: float, shares: int, *, tick_size: float = 0.01) -> tuple[float, int]:
+    """Move a stop out of one-minute noise at the same rupee risk.
+
+    Distance becomes max(entry - stop, 1.5% of entry, ₹0.03); shares shrink so
+    shares x distance never exceeds the original risk. Returns (stop, shares);
+    0 shares means the trade is too small to take.
+    """
+    from decimal import Decimal, ROUND_FLOOR
+    from penny_prices import decimal_price, quantize_price
+    entry_d, stop_d = decimal_price(entry), decimal_price(stop)
+    if entry_d <= stop_d or shares <= 0:
+        return stop, 0
+    distance = max(entry_d - stop_d, entry_d * Decimal(str(NOISE_STOP_MIN_PCT)),
+                   Decimal(str(NOISE_STOP_MIN_RUPEES)))
+    if distance >= entry_d:
+        return stop, 0
+    final_stop = quantize_price(entry_d - distance, -1, tick_size)
+    if final_stop <= 0:
+        return stop, 0
+    final_distance = entry_d - Decimal(str(final_stop))
+    budget = Decimal(int(shares)) * (entry_d - stop_d)
+    quantity = int((budget / final_distance).to_integral_value(rounding=ROUND_FLOOR))
+    return final_stop, min(int(shares), quantity)
 
 
 # ---- 15:00 time-stop -------------------------------------------------

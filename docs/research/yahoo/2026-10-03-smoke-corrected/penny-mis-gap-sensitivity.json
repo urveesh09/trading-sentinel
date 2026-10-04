@@ -1,0 +1,59 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "penny-mis-gap-sensitivity",
+  "metrics": {
+    "adverse_fill_bound_net": null,
+    "avg_r": null,
+    "coverage": {
+      "requested_ticker_days": 15,
+      "status_counts": {
+        "INVALID": 1,
+        "PARTIAL": 14
+      },
+      "usable_ticker_days": 0
+    },
+    "funnel": {
+      "accepted_signals": 0,
+      "admission_outcomes": {},
+      "evaluations": 0,
+      "reject_codes": {}
+    },
+    "max_drawdown": null,
+    "max_drawdown_pct": null,
+    "net_excluding_best_winner": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "single retrospective lifecycle run"
+    },
+    "profit_factor": null,
+    "scope": "LIFECYCLE",
+    "status": "UNAVAILABLE",
+    "trade_count": 0,
+    "unresolved_trades": 0,
+    "win_rate_pct": null
+  },
+  "module": "penny-mis",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\penny-mis-gap-sensitivity-report.json",
+  "report_sha256": "sha256:30d7c3fd7ccd7ccf781ce8d5170e5ca42f53eddf60461533f3110eca426c2684",
+  "scope": "LIFECYCLE",
+  "state": "SUCCEEDED",
+  "strategy_id": "penny_breakout_mis_lifecycle_1m",
+  "warnings": [
+    "LIFECYCLE scope: universe ranking, historical regime, sector filter, event calendar, broker rejections/partial fills and CNC occupancy are not replayed.",
+    "Historical regime is a declared constant; the runtime regime is not reconstructed.",
+    "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
+    "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+    "Retrospective, coverage-selected, exploratory evidence; no holdout, funding or tuning authority.",
+    "One-minute bars cannot show the order of trades inside a minute.",
+    "Coverage assumption MISSING_MINUTES_TREATED_AS_NO_TRADE_UNVERIFIED applies to this run."
+  ],
+  "window_kind": "primary"
+}

@@ -16,7 +16,10 @@ import pytest
 
 
 @pytest.fixture
-def fake_kite():
+def fake_kite(monkeypatch):
+    # Legacy order-flow fixtures declare their tick explicitly. Separate
+    # contract tests exercise absent, stale and instrument-specific metadata.
+    monkeypatch.setattr("penny_executor.instrument_tick_size", lambda *args, **kwargs: 0.10)
     k = MagicMock()
     k.place_order = AsyncMock(return_value={"order_id": "ENT-001"})
     k.cancel_order = AsyncMock(return_value={"status": "cancelled"})
@@ -63,7 +66,7 @@ def test_executor_places_limit_then_stop_limit(fake_kite):
     # Buy is a marketable LIMIT priced off the LIVE quote (10.05 * 1.005
     # snapped up), not off the signal's possibly-stale close.
     assert first_call.kwargs["order_type"] == "LIMIT"
-    assert first_call.kwargs["price"] == pytest.approx(10.1)
+    assert first_call.kwargs["price"] == pytest.approx(10.2)
     assert second_call.kwargs["order_type"] == "SL"
     assert second_call.kwargs["transaction_type"] == "SELL"
     assert second_call.kwargs["trigger_price"] == pytest.approx(9.7)

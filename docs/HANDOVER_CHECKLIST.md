@@ -1,5 +1,480 @@
 # Handover receipt and operator checklist
 
+
+
+## October 5 — EDGE overnight study
+
+- [x] Event study on seen Jan–Sep 2026; 1-minute fill and liquidity checks.
+- [x] `EDGE_OVERNIGHT` and `CNC_FULL` costs implemented with tests (4 new; EDGE,
+  daily-book and Lab suites: 42 pass).
+- [x] Code `2298e77`; freeze `1e5c904` committed and pushed before scoring;
+  scored once.
+- [x] Verdict `NOT_SUPPORTED_STAYS_OFF` (drawdown vs starting capital);
+  the results are recorded in full.
+- [x] Windows task `Sentinel-Round3-KiteScoring` registered for Oct 5, 17:07.
+- [x] The owner approved E1: `edge_overnight_paper.py` (₹25k) with 15:20 and
+  09:17 jobs, a separate store and no order capability (5 tests; scheduler
+  goldens add exactly the two jobs).
+- [x] E2: runtime delivery costs corrected; the EDGE partial-settlement test now
+  asserts the exact cost-inclusive P&L.
+- [x] Verification: full engine suite 4,930 pass / 4 skip, with the 4 pre-existing
+  failures plus the cron-gating guard. After the gating fix, the gating, golden
+  and paper tests give 11 pass.
+
+## October 5 — everything on paper, forward evidence
+
+- [x] Slice doc [2026-10-05-forward-paper-evidence.md](2026-10-05-forward-paper-evidence.md)
+  (insights from `penny-smart-t4`; no new thresholds).
+- [x] `MOM_SELECTIVE` Momentum shadow variant with one NIFTY 50 fetch per scan;
+  the funnel and existing variants are unchanged (tests: 4 selective cases,
+  integration on/off parity plus exactly one index call).
+- [x] `PENNY_SMART_SHADOW_ENABLED=True` (paper only, separate DB).
+- [x] Owner's smart-Penny controller and tick corrections committed as verified.
+- [x] Live switches verified OFF by default; the Production `.env` overrides none
+  (read-only).
+- [x] Verification: full engine suite 4,918 pass / 4 skip / 4 pre-existing failures (dev harness, integrated demo, F&O DR fixture, proactive demo); penny/momentum/ops selection with new defaults 1,348 pass.
+- [x] Commit `9c5becb`, pushed to `codex/production-correction-hedge-p0`; not merged or deployed (owner merges to `main` on GitHub).
+- [ ] Kite January–July acquisition, then freeze and score of the round-3
+  studies (October 5, after the owner's login).
+
+## October 4 — smart Penny paper controller and frozen ablations
+
+- [x] Explicit [implementation slice and receipt](2026-10-04-penny-smart-trader-implementation.md)
+  maintained before implementation; prior Dev edits preserved.
+- [x] Reused adaptive setup state transitions; persistent strength ranking,
+  one-shot quote budgets and confirmed-close management. No automatic
+  breakeven/partial, widened stop, averaging down or forced trade quota.
+- [x] Durable separate paper store, entry risk/cost/cash checks, daily marked-loss
+  latch, cross-day equity carry, restart/concurrent dedup and independent exits.
+- [x] Default OFF, no real orders/funding; reuse scanner history, bound optional
+  held-symbol quote batch and CPU/time/DB impact. F&O AST and adapter isolation.
+- [x] Broad regression: 1,410 pass / one skip / one unchanged F&O fixture failure;
+  final policy/scanner/lifecycle 74 pass (28 new-policy), runner two pass.
+  Compilation, diff check, final bound/hash verification and stable atlas passed.
+- [x] [Frozen five-arm owner-budget diagnostic](research/yahoo/2026-10-04-penny-smart-t4/freeze.json)
+  distinguishes ranking, entry/risk, exit and combined policies. Both windows
+  are already examined; zero-trade days and losing arms retained.
+- [x] T4 complete with stable bound inputs: incumbent +₹91.7169 / 38 versus
+  combined −₹47.5019 / 153; every improvement check fails, stays OFF. Other new
+  entry/exit arms also trail incumbent. Daily/stress results preserved.
+- [ ] Prospective quote/fill evidence, explicit D1–D4 follow-up slices; untouched
+  T3 data/freeze/score remains unavailable. No qualifying profitability claim.
+- [ ] Actual live settlement/risk contract, broader exit evidence, point-in-time
+  universe/regime/portfolio fidelity and GitHub promotion.
+- [x] Dev-local/uncommitted at `a674740`, no push/merge/deployment or Production
+  edit. The new DB is opt-in and separate; runtime dependencies unchanged.
+
+## October 4 — authorized Penny corrections and researched strategy
+
+- [x] [Correction contracts and receipt](2026-10-04-penny-corrections-and-relative-strength-slice.md):
+  explicit exactly-once old/new stop comparison, effective setting/cost/source
+  binding, rounded decision-risk arithmetic, current-date instrument ticks.
+- [x] Unknown tick metadata refuses new live orders; existing stop/unwind/exit
+  recovery remains available with the legacy fallback. Future promotion needs
+  a successful normal universe refresh before any live entry.
+- [x] 830 selected tests passed (one skip, existing dependency warnings); final
+  price/executor/lifecycle 55 passed, source compile/diff checks and stable atlas.
+- [x] Stable five-day source/data freeze and baseline parity: old 18 / +₹15.1765,
+  corrected noise 15 / +₹36.4486; seen paper-book evidence only. The first drifted
+  run is preserved as invalid and untouched Kite scoring remains unavailable.
+- [x] [Primary research and R0–R4 development plan](2026-10-04-penny-consistent-returns-strategy.md)
+  separates possible 1% days from unproved daily consistency; preserves F&O.
+- [ ] Untouched T3 data/freeze/score; proposed selection and exit ablations.
+- [ ] Actual-fill/cost/open-risk budget and settlement-fed daily brake before
+  live activation or increased admitted risk; qualification and GitHub promotion.
+- [x] Dev-local/uncommitted at base `a674740`; no push/merge/deployment, funding
+  or live-flag change, broker call or Production edit. No DB/dependency migration.
+
+## October 4 — independent Penny review and further-development discussion
+
+- [x] [Source/evidence review and primary web research](2026-10-04-penny-efficiency-independent-review.md)
+  at pushed Dev `a674740`; required docs revalidated. Production Git metadata
+  only read (`044c016`); no new operational performance claim.
+- [x] 45 focused tests passed; in-memory counterexamples confirm risk-rounding,
+  coarse live snapping, capital shrinkage and the contaminated pending baseline.
+  Historical suite totals remain historical; not every branch path was audited.
+- [x] Saved proposed sequence with files/contracts, acceptance, rollout/rollback,
+  owner-budget daily metrics and F&O noninterference. No 1–2% daily guarantee.
+- [ ] Explicit exactly-once stop policies/effective-settings freeze, final-price
+  risk arithmetic, instrument-aware execution review and untouched Kite study.
+- [ ] Further stop/selection/execution experiments, qualification and any
+  separately authorized GitHub promotion/paper observation/live decision.
+- [x] Documentation only in this task, Dev-local/uncommitted; no source/config,
+  schema/dependency change, broker call, new historical scoring, merge/deployment.
+
+## October 4 — Penny noise-floor stop ON (owner selection) and push
+
+- [x] `PENNY_NOISE_STOP_ENABLED=True` in runtime Penny; tests updated (794 Penny, 4873 engine pass; 4 pre-existing failures).
+- [x] Pushed branch `codex/production-correction-hedge-p0` on owner instruction; promotion to Production via PR merge.
+- Rollback: `PENNY_NOISE_STOP_ENABLED=false`.
+
+## October 4 — Momentum direct trading + round-3 candidates (Dev only)
+
+- [x] Gateway shared Momentum execution path + auto route (default OFF) + agent wiring.
+- [x] Momentum `MOM_SELECTIVE` / `RUNNER_EXIT`, Penny `PEN_NOISE_STOP(_BE)`, Kite history tool,
+  parallel study runner, [module testing guide](MODULE_TESTING_GUIDE.md).
+- [ ] Kite data (owner login) → freeze → score `momentum-smart-t3`, `penny-noise-t3`.
+- [ ] Owner: set `MOMENTUM_AUTO_EXECUTE=true` only after promotion and a passing study.
+- Commit `a4f1a54`: engine 4872 passed / 4 pre-existing failures; gateway 465 passed / 18 Windows
+  better-sqlite3 binding failures (pre-existing); agent 387 passed.
+- Not pushed, not deployed.
+
+## October 4 — SENSEX/NIFTY future-candle recording (Dev only)
+
+- [x] `research_future_candles` job (15:40 IST) + exporter includes SENSEX futures.
+- [x] Census/surface goldens regenerated (one job added); new tests 3.
+- [ ] Promote via GitHub so Production records from the next session.
+- Not pushed, not deployed.
+
+## October 4 — F&O growth slice (Dev only)
+
+- [x] Adaptive risk multiplier + two-strike day halt (live tick, capped-loss book, replay).
+- [x] Brakes 3/6/10/15%; cap ₹40,000; lots 2 (3 only when proven).
+- [x] Capped-loss book multi-lot within ₹10k × multiplier and 40% pool capital; cost fix.
+- [x] SENSEX paper single-leg: NIFTY RVOL proxy, correlation guard, per-underlying
+  management, exchange routing, traded-book refresh.
+- [x] Vehicle-by-IV implemented, OFF.
+- [x] Owner window test Sep 17–Oct 1: drawdown-cut silent-halt bug fixed (one-lot floor);
+  live test minimum revised ₹1.5L → ₹2L. Flaky under load: `test_s5_provider_lanes` (passes alone 3/3).
+- [ ] SENSEX replay export; BFO live exit evidence/recovery; forward scoring.
+- [ ] Owner: review and approve promotion via GitHub.
+- Commit `e8d93c3`: full suite 4854 passed, 4 skipped, 4 failed (pre-existing, listed in the slice).
+- Not pushed, not deployed; Production only read.
+
+## October 4 — F&O replay, candidates and speed (Dev only)
+
+- [x] Read-only export of the Production research archive (14 sessions, 166 MB, local only).
+- [x] `fno_entry_plan` / `entry_halts` extracted (behaviour-neutral: 520 → 534 F&O tests pass).
+- [x] Full-policy replay; parity 8 of 9 live paper trades.
+- [x] `fno-trader-v1` frozen (`d973f05`) then scored: shipped baseline best; candidates OFF.
+- [x] Fast exit loop + bar-close trigger implemented, serialised by one lock, default OFF.
+- [ ] Owner: decide whether to paper-enable `FNO_FAST_EXIT_ENABLED` after promotion.
+- [ ] Production must be running for the archive to grow; re-export weekly.
+- Not pushed, not deployed; Production data volume only read.
+
+## October 4 — T2 Range/Swing/Momentum + CNC audit (Dev only)
+
+- [x] Shared own-cash daily book; EDGE refactor reproduces frozen equity/trades.
+- [x] Range, Swing portfolio replays; Momentum next-bar entry + thesis exit.
+- [x] Generic pre-registration tool; T2 freezes committed (`68e0754`) before scoring.
+- [x] [T2 results](2026-10-04-t2-range-swing-momentum-slice.md): all candidates
+  NOT_SUPPORTED_STAYS_OFF; CNC conjunction fired 0 times Jan–Sep 2026.
+- [x] Removed superseded gates and the EDGE independent-trial proxy.
+- [x] [Testing method guide](RESEARCH_TESTING_METHOD.md) and
+  [improvement options + F&O review](2026-10-04-improvement-options-and-fno-review.md).
+- [ ] Owner: choose next rounds (Swing round 2, EDGE/Range geometry, F&O archive/replay/tick exits).
+- Not pushed, not deployed; no Production edit, settings, schema or F&O change.
+
+## October 4 — T1 Penny/EDGE trader candidates (Dev only)
+
+- [x] Review corrections committed separately (`00fd560`).
+- [x] Penny trader policy + replay candidates, pre-registered freeze (`22a7ce6`).
+- [x] EDGE own-cash portfolio replay + `EDGE_TRADER_V1`, freeze (`684de3d`).
+- [x] Untouched windows scored once; [results](2026-10-04-t1-penny-edge-trader-slice.md):
+  Penny V2 and EDGE V1 **NOT_SUPPORTED_STAYS_OFF**; shipped Penny baseline
+  +₹63.17 untouched; shipped EDGE −40.17% marked (Jan–Jun, own cash).
+- [ ] Owner: decide whether to pause EDGE paper; keep EDGE live disabled.
+- [ ] EDGE round-2 geometry hypothesis on 2024–2025 untouched data.
+- [ ] Weekly Penny minute archive (Yahoo ~30-day retention).
+- [ ] T2 Range/Swing/Momentum adapters; R5/T3 F&O noninterference.
+- Not pushed, not deployed; no Production access, broker action, settings,
+  schema, dependency or F&O change.
+
+## October 4 — revised adaptive trader plan (latest direction)
+
+- [x] [Adaptive non-F&O trader plan](2026-10-04-adaptive-non-fno-trader-development-plan.md)
+  supersedes prior design/order while preserving R1–R5 fidelity requirements.
+  Current subset-only helpers, mixed activity/economic evidence and source
+  limitations reviewed; primary research and transfer limits recorded.
+- [x] Complete module candidates, persistent setup/execution states, alternative
+  timing, thesis exits, rejected-opportunity evidence and matched-risk tests
+  specified with files/contracts, acceptance, rollout/rollback and remaining work.
+- [x] F&O excluded and protected through cash, shared resources and exit authority;
+  no strategy/funding/risk/approval change authorized by this plan-only revision.
+- [x] Required docs reviewed; documentation link/scope and diff checks recorded;
+  source diff preserved from prior review. No fresh test/backtest or profit claim.
+- [x] Dev-local/uncommitted at HEAD `434c4cc`, prior corrections/results preserved;
+  no Production access, broker action, runtime/configuration/dependency/schema
+  change, implementation commit, push or deployment in this task.
+- [ ] T0–T3 implementation, data, economics, untouched qualification and F&O
+  operational compatibility; any separately authorized GitHub promotion/canary.
+
+## October 4 — independent review and identical Yahoo comparison
+
+- [x] Required docs/source/new commits reviewed at Dev `434c4cc`; explicit
+  [correction and R1–R5 plan](2026-10-04-non-fno-independent-review-and-repeat-plan.md)
+  recorded before edits. Original plan is partial; source-only research is not
+  an active-policy improvement or operational F&O compatibility proof.
+- [x] Initial repeat reproduces all 16 old states/windows/metrics exactly.
+- [x] Minor Penny retest/profile and Momentum ATR/regime/exit-evidence corrections;
+  EDGE independent trials downgraded to PROXY with unvalidated clock/cash limits.
+- [x] 130 focused tests passed (existing HTTPX warning), compilation/diff and
+  atlas regeneration (241 modules) passed; shipped/F&O/shared runtime untouched.
+- [x] Final same-data repeat matches all 16 previous outcomes; three candidate/
+  measurement studies and raw/report/source integrity receipts retained. See
+  [results](2026-10-04-non-fno-review-and-backtest-results.md): no demonstrated
+  improvement; losing/unavailable diagnostics remain visible.
+- [ ] R1–R5, sufficient native coverage, qualification and any separate rollout.
+- [x] Dev-local uncommitted corrections/docs/results; no Production access,
+  broker action, funding/configuration/dependency/schema change, push/deployment.
+
+## October 3 — researched non-F&O development plan
+
+- [x] [Smart-entry/exit plan](2026-10-03-non-fno-smart-entry-exit-development-plan.md)
+  records module priority, shipped contracts, primary web sources and transfer
+  limits, acceptance, rollout/rollback and remaining work.
+- [x] F&O excluded; no interference through capital, shared code/configuration,
+  scheduler, DB, quote/broker capacity or exit authority is a release contract.
+- [x] Required docs/AGENTS and relevant source reviewed at Dev `4be033a`;
+  Yahoo counts distinguish verdicts/selections/fills and five-session sensitivity.
+- [x] Documentation-only link/scope/diff verification recorded on delivery;
+  no new strategy tests/profit claims, source/configuration/schema changes,
+  Production access, broker actions, push or deployment. Updates are uncommitted.
+- [x] N1–N3 source slice: named Momentum partial/runner exit lifecycle, EDGE
+  next-open lifecycle, default-off Penny context candidate and pure Range/Swing
+  candidate gates. See [implementation receipt](2026-10-04-n1-n3-implementation-slice.md).
+- [x] F&O isolation held: no F&O source/configuration, shared reservation,
+  scheduler, database schema, broker action, Production edit, push or deploy.
+- [x] Source commit `65e050a`; 109 focused tests passed (one existing HTTPX
+  deprecation), affected modules compiled, diff check passed and atlas was
+  regenerated to 241 modules. Dev only.
+- [ ] N0 operational F&O compatibility baseline; candidate data coverage,
+  matched-cash evidence and all-failure trial ledger; N4 untouched
+  qualification and separately authorized observation/GitHub rollout.
+
+## October 3 Yahoo non-F&O interface — latest research receipt
+
+- [x] One script with inclusive dates, current shipped Lab paths and all-module
+  reports; no Sentinel candle/trade history or F&O/broker/Production access.
+- [x] Yahoo native intervals, 900-day daily warm-up, raw/import/validated hashes,
+  no fabricated volume/candles, whole-invalid-day exclusion and visible partial
+  universes. Explicit current Penny symbol fallback, no live universe change.
+- [x] Requested Q3 primaries preserved; recent intraday/sensitivity studies
+  labelled separately. EDGE/Swing/Range evaluator scope remains explicit.
+- [x] Current Penny activity demonstrated: 18 recent sensitivity closes;
+  Momentum two virtual same-day time exits. No qualification/system return.
+- [x] 70 focused tests passed; no overwrite, offline tampering, clock/identity,
+  session/interval, isolation and drift contracts checked. Final repeated
+  results, compilation/diff and deterministic atlas recorded in the receipt.
+- [x] [Usage guide](YAHOO_BACKTEST_GUIDE.md), [plan](2026-10-03-yahoo-all-module-backtest-plan.md)
+  and [results](2026-10-03-yahoo-backtest-results.md) are consistent. Source commit
+  `df0c379`; all 16 repeat outcomes and 1,203 raw hashes agree. Immediate
+  documentation/atlas/clean-worktree verification passed.
+- [ ] Complete entry/exit/portfolio fidelity and prospective qualification;
+  downloading Yahoo daily data does not close these gaps.
+- [ ] Owner-controlled promotion. Dev only, no new dependency, runtime schema/
+  configuration change, Production edit, broker orders, push or deployment.
+
+## October 3 current-system test receipt — latest Dev research status
+
+- [x] Frozen dates/current universes before scoring; baseline `556209c`.
+- [x] Stopped Production `044c016` stable DB/WAL/universe copied into Dev;
+  one read-only collection, raw BLOB preservation, immutable data hashes.
+- [x] All 19 module jobs finished; 11 delivered runs match current source;
+  7 original/final outcomes agree. Failed and unavailable attempts retained.
+- [x] Penny MIS/CNC/joint lifecycle, EDGE/Range evaluator and covered-window
+  Momentum diagnostic; full-quarter Momentum and Swing unavailability recorded.
+- [x] F&O full-policy/exit evidence rejects preserved; exactly linked recorded
+  cash explicitly distinguished from a new current-policy backtest.
+- [x] EDGE handle-only cleanup; 28 focused tests passed (existing HTTPX warning).
+  Source/data/report hashes, raw-to-compact counts, UTC-normalized actual cash
+  checks, compile/diff and regenerated atlas verified.
+- [x] [Comprehensive results](2026-10-03-current-system-backtest-results.md),
+  [plan](2026-10-03-current-system-backtest-plan.md), machine summary and integrity
+  receipt retained. Source commit `4929bea`; immediate documentation consistency,
+  deterministic atlas and clean-worktree checks passed; see completion receipt.
+- [ ] Owner discussion of improvements; no strategy tuning undertaken.
+- [ ] Complete historical context/coverage, Momentum real EOD/partial lifecycle,
+  Penny mixed-offset clock normalization, other-book lifecycle/portfolio fidelity,
+  exact executable F&O input/exit evidence and prospective qualification.
+- [ ] Runtime acceptance and owner-controlled GitHub promotion. This task is
+  Dev-local, no schema/configuration impact, push, orders or deployment;
+  Production engine remains stopped and was not restarted/edited.
+
+## October 3 P1–P4 receipt (Dev only)
+
+- [x] Recursive local dependency hashes and exclusive snapshot/report publication.
+- [x] CLI/Lab regression: 26 passed; one existing httpx deprecation warning.
+- [x] Owner account/division ceilings approved: Swing ₹1,000, Penny ₹2,000,
+  Momentum ₹3,000, EDGE ₹3,000; transfers allowed.
+- [x] P1 shared account-cash reservation: full entry value + calculated entry
+  charges + 1% fill buffer, durable across Python/gateway and never applied to exits.
+- [x] P3 shared-cash Penny joint lifecycle adapter, correctly labelled
+  `PORTFOLIO_PARTIAL`; unresolved exposure remains locked.
+- [x] P4 append-only future holdout registry; policy/data/config drift and
+  retroactive/reused-as-untouched qualification are rejected.
+- [ ] Paper observation of the P1 ledger and FULL_PORTFOLIO evidence for any
+  actual qualification remain required before owner-controlled promotion.
+- [x] Source commit `919e042` is Dev-only; Python 90-test focused regression,
+  gateway 59-test executor regression, compile/diff checks and 240-module atlas
+  regeneration passed. The gateway's local native SQLite test ABI mismatch is
+  documented; container-native protocol validation remains a release gate.
+
+## October 3 independent post-implementation review — current status
+
+- [x] Audited Dev `4481af0` against the original plan and actual contracts;
+  baseline checks: 422 Python and 58 gateway tests passed.
+- [x] Recorded small-correction scope and larger follow-ups before editing:
+  [independent review](2026-10-03-post-implementation-independent-review.md).
+- [x] Corrected known-order reconciliation, unresolved single-leg occupancy,
+  malformed order evidence, partial report aggregates/winner exclusion and
+  unsupported untouched-holdout certification in Dev.
+- [x] Final affected regression: 294 passed, two existing deprecations; atlas,
+  compile, review links and diff consistency passed.
+- [x] Source commit `284bb4a`; immediate guide/plan/checklist/review consistency,
+  atlas reproducibility and clean worktree verified. Receipt is Dev-local only.
+- [ ] F1-B common account cash reservation, charges/book budgets and catastrophe acceptance.
+- [ ] B0/B1 complete dependency/data/context manifests and point-in-time evidence.
+- [ ] B2/B3/B4 full historical lifecycle/portfolio scope; CNC real-data run.
+- [ ] B6 prospective freeze/reuse audit, marked equity and session uncertainty.
+- [ ] Dev release operational acceptance and GitHub promotion. Production
+  resumed after the owner's power cut; read-only declared engine identity
+  remains `044c016` and healthy. This review did not restart/edit it. B5 stays excluded.
+
+Older receipts below are historical at their commit. Checked evaluator/lifecycle
+slices do not close missing full-system requirements; older open F0 R1-R5 and
+CNC adapter tasks were subsequently implemented and independently reviewed.
+
+## October 3 B3 Swing/EDGE evaluator receipt (Dev only)
+
+- [x] Added separate shipped-function evaluator adapters; retained the old
+  Swing proxy label.
+- [x] Bound daily bar visibility and explicit index/universe requirements;
+  incomplete evidence does not become a proxy fill.
+- [x] Fixed the shared RSI-history out-of-bounds defect found by B3 binding.
+- [x] Focused B3/engine tests passed (149); one existing httpx deprecation
+  warning remains.
+- [x] Source commit `e349b0b` is Dev-only; no configuration, migration, push
+  or deployment occurred.
+- [x] B4: Momentum baseline is `MOM_BASE`; Range has an independent
+  completed-bar evaluator (70 focused tests, one existing httpx deprecation).
+- [x] B4 source commit `3e03916` is Dev-only; no configuration, migration,
+  push or deployment occurred. Catalogue consistency was verified after commit.
+- [x] B6 evidence-only standard reports, deterministic uncertainty and
+  non-overlapping holdout declaration/comparison guard (37 focused tests).
+- [x] B6 source commit `60bd989` is Dev-only; no configuration, migration,
+  push or deployment occurred.
+- [ ] Real-data/Production read-only checks only after Production is restored;
+  GitHub promotion remains owner-controlled.
+
+## October 3 B2 CNC receipt (Dev only)
+
+- [x] Exact CNC Connors paper lifecycle replay, with tracker and scanner
+  parity ([B2 CNC](2026-10-03-b2-penny-cnc-connors-lifecycle.md); 14 + 7 tests).
+  This completes the declared paper lifecycle slice, not historical portfolio context.
+- [ ] Predeclared CNC real-data run once Production is running again
+  (read-only collector).
+- [x] B0 and B3; [ ] B4 and B6 (B5 excluded by the owner).
+
+## October 3 F1-A receipt (Dev only)
+
+- [x] Owner's "no extra margin" definition recorded; read-only audit of every live entry path.
+- [x] Own-cash entry guard in the gateway and the Python broker client
+  ([F1-A](2026-10-03-f1a-own-cash-no-leverage-guard.md)); gateway 58 / Python 16 tests; full Python suite 4733 passed
+  (4 pre-existing failures).
+- [ ] Owner decisions: Penny live caps (2,500 against 2,000), Swing/Momentum
+  book-level allocation, EDGE notional cap.
+- [ ] GitHub promotion; the first live EXEC after deployment should show an
+  `entry_own_cash_preflight` log line.
+
+## October 3 B1/B2 receipt (Dev only)
+
+- [x] Plan slice before source changes: [2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md).
+- [x] B1 bar data contracts (`research_data_contracts.py`): 29 warnings-fatal tests.
+- [x] B2 exact classic Penny MIS lifecycle (`penny_lifecycle_replay.py`):
+  22 warnings-fatal tests, including live-scanner parity at every minute and
+  a mutation check on the clock.
+- [x] Lab `penny_breakout_mis_lifecycle_1m` (`LIFECYCLE`) and CLI
+  `--strategy lifecycle`: 6 CLI tests; existing baseline path unchanged.
+- [x] Broad regression: 809 passed, 1 skipped (known Starlette/HTTPX
+  deprecations only).
+- [x] Predeclared read-only Production-data runs archived. Primary: 3 trades,
+  +₹31.52. Sensitivity: 5 trades, +₹81.12. No profitability claim.
+- [ ] Owner decisions: classic Penny kill-switch wiring (currently inert);
+  minute capture through 15:00 for open positions.
+- [ ] CNC Connors exact adapter; B3–B6; point-in-time universe and regime.
+- [ ] F0 R1–R5 (independent review) and F1 remain open; GitHub promotion of
+  these Dev commits.
+
+## October 3 independent F0 review (supersedes source-complete receipt)
+
+- [x] Review F0-A–E against actual source and isolated adversarial fixtures:
+  baseline 111 passed, one known Starlette deprecation, normal exit.
+- [x] Correct missing-DB creation by shared readers and false unavailability
+  after verified terminal zero-fill recovery; three new regressions pass
+  warnings-fatal, preserving all exposure and existing exit authority.
+- [x] Final six-file selection: 114 passed, one known Starlette warning,
+  normal exit; compilation/atlas (229 modules)/whitespace checks passed.
+- [x] F0-R1: fee-inclusive exposure conservation after reservation consumption
+  ([R1 slice](2026-10-03-fno-f0-r1-fee-inclusive-exposure.md); 11 warnings-fatal tests; Dev only).
+- [x] F0-R2: single dispatch ownership, halt-safe retries and ambiguous-entry
+  recovery retaining capital until verified resolution ([R2 slice](2026-10-03-fno-f0-r2-dispatch-ownership.md); 37 tests).
+- [x] F0-R3: partial cash, future-clock rejection and completed-trade loss streak
+  ([R3 slice](2026-10-03-fno-f0-r3-cash-clock-completion.md); 20 tests). Run its Production pre-deployment SQL check first.
+- [x] F0-R4: broker payload contents and immutable entry/cost evidence binding
+  ([R4 slice](2026-10-03-fno-f0-r4-broker-payload-binding.md); 18 tests).
+- [x] F0-R5: transactional existing caps and post-admission-wait action clocks
+  ([R5 slice](2026-10-03-fno-f0-r5-occupancy-and-clocks.md); 12 tests; DR race 2 -> 1 structure).
+- [ ] GitHub promotion and actual paper/recovery observation; Production
+  remains `044c016` and has no shared-risk module at inspection.
+
+Full files/contracts/acceptance/rollout/rollback and final verification:
+[independent review](2026-10-03-fno-f0-independent-review.md). B1/B2 remains
+pending; tests and source commits do not establish profitability or deployment.
+
+## October 3 continuation receipt
+
+- [x] Deep successor inheritance and shipped-module/F&O safety plan.
+- [x] Existing Penny baseline executed: zero trades on a valid two-stock sample;
+  earlier unavailable samples preserved; no strategy profitability claim.
+- [x] Inert offline CLI and research-only SQLite reader closure; 4 CLI + 11
+  replay warnings-fatal; combined 82 passed with one HTTPX deprecation warning.
+- [x] F0-A Dev foundation: fail-closed cross-book cash/exposure view and
+  transactional one-way reservations; 49 focused F&O checks warnings-fatal;
+  source commit `7b86d85` (Dev, pushed; Production untouched).
+- [x] F0-B paper admission binding: both books reserve fee-inclusive worst-case
+  cash, then atomically consume their receipt with the position insert; exits
+  remain allowed. Source commit `0ba2d29` (Dev; pushed). Shared
+  loss/drawdown and partial-settlement work remains.
+- [x] F0-C shared day/week/month/drawdown (and existing consecutive-loss)
+  entry decisions for both paper books: all exact F&O terminal/partial cash is
+  common, invalid evidence fails closed and exits remain outside entry halts.
+  Dev-only verification: 24 warnings-fatal focused; 79 normal wider F&O tests;
+  implementation commit `bc666fe` (local only, not pushed or deployed).
+- [x] F0-D verified single-leg partial-settlement residual exposure: recovery
+  quantity/generation, exact ledger cash and pro-rata max loss are bound by
+  the shared view; mismatches fail new entries closed. Dev-only verification:
+  10 warnings-fatal shared-risk tests; 32 shared-risk/recovery tests with the
+  known warning-producing ASGI route test deselected; 80 broader F&O
+  risk/DR/orchestrator tests passed normally. Source commit `7b77341` is
+  Dev-local, not pushed or deployed.
+- [x] F0-E receipt-backed partial cash integrity: immutable recovery receipts
+  retain entry/fill/gross/cost/net economics; the shared view verifies their
+  broker-evidence digest, ledger cash/generation and residual exposure before
+  release. Missing legacy partial economics fail entry closed, never guessed.
+  Dev verification: 32 focused warnings-fatal; 150 broader F&O tests normally;
+  the warnings-fatal wider selection surfaced one existing socket warning.
+  Source commit `a9fef57`; Dev-only, not pushed or deployed.
+- [ ] F0 operational acceptance: observe paper admissions and recovery evidence
+  after GitHub promotion. F1 cash-only broker/margin preflight still precedes
+  live funding.
+- [ ] F1 owner cash-only funding semantics, broker initial/final margin and
+  catastrophe acceptance before live allocation; no live spread authorisation.
+- [ ] B1/B2 interval/zero-volume/session data contracts and full classic Penny
+  lifecycle; remaining B0–B6 adapters/provenance/portfolio/holdout work.
+- [ ] R6 deployed evidence and separate partner qualification/canary.
+
+## October 2 F&O profitability assessment
+
+- [x] Dev-only read-only history CLI; 12 focused warnings-fatal tests; executed
+  against Production SQLite without edits/restarts/provider/order/message calls.
+- [x] Recent linked positive paper and older unreconciled negative results
+  reported separately; no current-policy profitability or allocation claim.
+- [ ] Obtain licensed historical executable option quotes and contract masters.
+- [ ] Full current-policy causal replay, shared capital/cost stress, independent
+  holdout and prospective paper acceptance per the profitability assessment.
+- [ ] Any live pilot/funding requires separate owner authorization.
+
 ## October 2 release checklist
 
 - [x] R1–R5 source completed and pushed (R4 `c118598`, R5 `addf46b`).

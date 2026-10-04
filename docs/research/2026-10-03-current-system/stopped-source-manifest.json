@@ -1,0 +1,26 @@
+{
+  "container_was_stopped": true,
+  "files": [
+    {
+      "bytes": 2466689024,
+      "file": "cache.db",
+      "sha256": "sha256:ec9d10da33a5be30e007858d019755ac335796b1fc7a4c2d74c8686b1193d97f"
+    },
+    {
+      "bytes": 0,
+      "file": "cache.db-wal",
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 37875,
+      "file": "nifty500.json",
+      "sha256": "sha256:4d5d05b379243c38a2b50b11a3def5ad7047a5c43a3655b90a0eadb29344d15f"
+    },
+    {
+      "bytes": 39678,
+      "file": "penny_static.json",
+      "sha256": "sha256:791cf43282c358993b7914343fe0832328666902b52c8c85740a3311a1355b83"
+    }
+  ],
+  "first_copy_note": "Engine verified stopped before and after copy; first local serialization failed on retained BLOB values."
+}

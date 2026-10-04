@@ -1,0 +1,426 @@
+{
+  "can_place_orders": false,
+  "daily_exclusions": {},
+  "full_system_profit_available": false,
+  "limitations": [
+    "Yahoo OHLCV cannot supply historical manual/broker/context evidence.",
+    "Recent diagnostics do not replace the requested date window.",
+    "Evaluator candidates are not trades; partial books must not be summed into system profit.",
+    "Current universe/defaults, not point-in-time historical membership/configuration."
+  ],
+  "modules": [
+    {
+      "can_place_orders": false,
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "job": "penny-mis",
+      "metrics": null,
+      "module": "penny-mis",
+      "qualification": "NOT_ASSESSED",
+      "reason": "no ticker-day satisfies session_policy=complete_only: {'INVALID': 1, 'PARTIAL': 14}",
+      "report_file": "_local\\penny-mis-report.json",
+      "report_sha256": "sha256:005045b32c1d73a869dae0ce92cd359c380459d1f8a2ae5d2a83a88f06fed72d",
+      "scope": "LIFECYCLE",
+      "state": "UNAVAILABLE",
+      "strategy_id": "penny_breakout_mis_lifecycle_1m",
+      "window_kind": "primary"
+    },
+    {
+      "can_place_orders": false,
+      "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "job": "penny-mis-gap-sensitivity",
+      "metrics": {
+        "adverse_fill_bound_net": null,
+        "avg_r": null,
+        "coverage": {
+          "requested_ticker_days": 15,
+          "status_counts": {
+            "INVALID": 1,
+            "PARTIAL": 14
+          },
+          "usable_ticker_days": 0
+        },
+        "funnel": {
+          "accepted_signals": 0,
+          "admission_outcomes": {},
+          "evaluations": 0,
+          "reject_codes": {}
+        },
+        "max_drawdown": null,
+        "max_drawdown_pct": null,
+        "net_excluding_best_winner": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "single retrospective lifecycle run"
+        },
+        "profit_factor": null,
+        "scope": "LIFECYCLE",
+        "status": "UNAVAILABLE",
+        "trade_count": 0,
+        "unresolved_trades": 0,
+        "win_rate_pct": null
+      },
+      "module": "penny-mis",
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local\\penny-mis-gap-sensitivity-report.json",
+      "report_sha256": "sha256:30d7c3fd7ccd7ccf781ce8d5170e5ca42f53eddf60461533f3110eca426c2684",
+      "scope": "LIFECYCLE",
+      "state": "SUCCEEDED",
+      "strategy_id": "penny_breakout_mis_lifecycle_1m",
+      "warnings": [
+        "LIFECYCLE scope: universe ranking, historical regime, sector filter, event calendar, broker rejections/partial fills and CNC occupancy are not replayed.",
+        "Historical regime is a declared constant; the runtime regime is not reconstructed.",
+        "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
+        "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+        "Retrospective, coverage-selected, exploratory evidence; no holdout, funding or tuning authority.",
+        "One-minute bars cannot show the order of trades inside a minute.",
+        "Coverage assumption MISSING_MINUTES_TREATED_AS_NO_TRADE_UNVERIFIED applies to this run."
+      ],
+      "window_kind": "primary"
+    },
+    {
+      "can_place_orders": false,
+      "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "job": "penny-cnc",
+      "metrics": {
+        "avg_r": null,
+        "funnel": {
+          "NO_PARTIAL_CANDLE_EVIDENCE": 1,
+          "admission_outcomes": {},
+          "evaluations": 14,
+          "reject_reasons": {
+            "RSI not rising for 2 bars": 4,
+            "RSI(2) not below buy threshold": 6,
+            "below 200 SMA": 4
+          }
+        },
+        "max_drawdown_pct": null,
+        "net_excluding_best_winner": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "single retrospective lifecycle run"
+        },
+        "profit_factor": null,
+        "scope": "LIFECYCLE",
+        "status": "PARTIAL",
+        "trade_count": 0,
+        "unresolved_trades": 0,
+        "win_rate_pct": null
+      },
+      "module": "penny-cnc",
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local\\penny-cnc-report.json",
+      "report_sha256": "sha256:8fa0eaa3e6335b06c1b69420ad2a8658ae8015bd478cc1754a1edeeb33ec393a",
+      "scope": "LIFECYCLE",
+      "state": "SUCCEEDED",
+      "strategy_id": "penny_cnc_connors_lifecycle_1d",
+      "warnings": [
+        "LIFECYCLE scope: universe ranking, historical regime, MIS capacity and broker rejections are not replayed.",
+        "Paper book only: live PENNY CNC rows have no shipped exit management.",
+        "Daily-bar exits cannot order intraday events; the tracker's own branch order is used.",
+        "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+        "Retrospective exploratory evidence; no holdout, tuning, funding or partner authority.",
+        "Entry-day exits use the whole day's range, including trading before the 09:30 fill (shipped)."
+      ],
+      "window_kind": "primary"
+    },
+    {
+      "can_place_orders": false,
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "job": "penny-joint",
+      "metrics": null,
+      "module": "penny-joint",
+      "qualification": "NOT_ASSESSED",
+      "reason": "joint cash requires successful same-window MIS and CNC lifecycle reports",
+      "report_file": "_local\\penny-joint-report.json",
+      "report_sha256": "sha256:da1ae41d86570a1ad3e100edaf00aedfa3d8747c43651bcb61e608c53b42a473",
+      "scope": "PORTFOLIO_PARTIAL",
+      "state": "UNAVAILABLE",
+      "strategy_id": "penny_joint_lifecycle_portfolio",
+      "window_kind": "primary"
+    },
+    {
+      "can_place_orders": false,
+      "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "job": "penny-joint-gap-sensitivity",
+      "metrics": {
+        "avg_r": null,
+        "max_drawdown_pct": null,
+        "net_pnl": 0.0,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "PORTFOLIO_PARTIAL"
+        },
+        "profit_factor": null,
+        "shared_cash": {
+          "cash_rejected": 0,
+          "final_cash": 2000.0,
+          "initial_cash": 2000.0,
+          "locked_cash": 0.0,
+          "unresolved": 0
+        },
+        "status": "PARTIAL",
+        "trade_count": 0,
+        "win_rate_pct": null
+      },
+      "module": "penny-joint",
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local\\penny-joint-gap-sensitivity-report.json",
+      "report_sha256": "sha256:d8c94ac3454cdf97172ef3af653c54f4432e215c8b2b0c59a209274dbfb15acc",
+      "scope": "PORTFOLIO_PARTIAL",
+      "state": "SUCCEEDED",
+      "strategy_id": "penny_joint_lifecycle_portfolio",
+      "warnings": [
+        "Historical universe/regime/sector/event context and scheduler priority are not archived.",
+        "CNC date-only exits hold cash until end of session; no broker partial-fill/rejection evidence exists.",
+        "Reuses same-window shipped lifecycles with UTC-normalized clocks; not live P1 fee/buffer admission."
+      ],
+      "window_kind": "primary"
+    },
+    {
+      "can_place_orders": false,
+      "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "job": "edge",
+      "metrics": {
+        "avg_r": null,
+        "candidate_count": 2,
+        "max_drawdown_pct": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "evaluator replay has no portfolio result"
+        },
+        "profit_factor": null,
+        "scan_count": 5,
+        "scope": "EVALUATOR",
+        "selected_count": 1,
+        "trade_count": null,
+        "win_rate_pct": null
+      },
+      "module": "edge",
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local\\edge-report.json",
+      "report_sha256": "sha256:b2d4e3607cc09382b2a8ae77568a807eea860ab5255b8e75a17192e6531108da",
+      "scope": "EVALUATOR",
+      "state": "SUCCEEDED",
+      "strategy_id": "penny_edge_daily_evaluator",
+      "warnings": [
+        "EVALUATOR scope only: no next-session fill, paper executor, exit, cash reservation or historical event-calendar snapshot is simulated.",
+        "A daily bar is evaluated only after its session; this cannot prove the live scheduler had that completed bar at 09:30.",
+        "Universe membership is exactly the supplied list; historical production universe membership is not inferred."
+      ],
+      "window_kind": "primary"
+    },
+    {
+      "can_place_orders": false,
+      "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "job": "swing",
+      "metrics": {
+        "avg_r": null,
+        "decision_count": 15,
+        "entry_decisions": 0,
+        "max_drawdown_pct": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "evaluator replay has no portfolio result"
+        },
+        "profit_factor": null,
+        "reject_reasons": {
+          "nifty_below_ema20_regime2": 12,
+          "price_too_low": 2,
+          "volume_ratio_low": 1
+        },
+        "scope": "EVALUATOR",
+        "skips": {},
+        "trade_count": null,
+        "win_rate_pct": null
+      },
+      "module": "swing",
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local\\swing-report.json",
+      "report_sha256": "sha256:598c64ddb7fb4e0e51269fefcb94c57425144e0f61580e3d53551680c611ea5b",
+      "scope": "EVALUATOR",
+      "state": "SUCCEEDED",
+      "strategy_id": "swing_regime_daily_evaluator",
+      "warnings": [
+        "EVALUATOR scope only: it does not simulate Telegram approval, live admission, fills, exits or portfolio cash.",
+        "The historical scheduler clock is not persisted; one pre-open regime update per session is declared.",
+        "Constituent breadth ranks are not archived, so the evaluator receives no fabricated breadth value."
+      ],
+      "window_kind": "primary"
+    },
+    {
+      "can_place_orders": false,
+      "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "exit_fidelity": {
+        "not_live_lifecycle": true,
+        "reasons": {}
+      },
+      "job": "momentum",
+      "metrics": {
+        "avg_r": null,
+        "max_drawdown_pct": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "folds": [],
+          "required_folds": 3,
+          "scored_folds": 0,
+          "status": "insufficient_data"
+        },
+        "profit_factor": null,
+        "trade_count": 0,
+        "variant_comparison": {
+          "avg_r": null,
+          "closed_trades": 0,
+          "entries": 0,
+          "expectancy": null,
+          "max_drawdown": null,
+          "net_pnl": null,
+          "open_trades": 0,
+          "profit_factor": null
+        },
+        "win_rate_pct": null
+      },
+      "module": "momentum",
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local\\momentum-report.json",
+      "report_sha256": "sha256:62c57acb32d0c5b2c22164f407f32a325cd6c76cfa27a2706d3cfa9313e7ca98",
+      "scope": "EVALUATOR",
+      "state": "SUCCEEDED",
+      "strategy_id": "momentum_intraday_15m_replay",
+      "warnings": [
+        "15-minute OHLC assumes stop before target.",
+        "Full quantity exits at T1; partial runners and trailing stops are not modelled.",
+        "Historical Swing-derived regime, Telegram approval, broker admission and shared capital are not archived; configured context is declared, not inferred.",
+        "Research replay only; it never calls Kite, an executor, or an order path.",
+        "15-minute OHLC cannot reveal intrabar path; simultaneous stop/target resolves stop first.",
+        "Virtual lifecycle exits the full quantity at T1 and cannot model the production partial-T1 runner/trail.",
+        "Entry and exit fills use frozen Momentum shadow slippage and equity MIS cost assumptions."
+      ],
+      "window_kind": "primary"
+    },
+    {
+      "can_place_orders": false,
+      "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "job": "range",
+      "metrics": {
+        "avg_r": null,
+        "decision_count": 15,
+        "entry_decisions": 0,
+        "max_drawdown_pct": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "evaluator replay has no portfolio result"
+        },
+        "profit_factor": null,
+        "scope": "EVALUATOR",
+        "trade_count": null,
+        "verdict_reasons": {
+          "WAIT_RANGE_NOT_INTACT": 15
+        },
+        "win_rate_pct": null
+      },
+      "module": "range",
+      "qualification": "NOT_ASSESSED",
+      "report_file": "_local\\range-report.json",
+      "report_sha256": "sha256:c4e9fe53af63d2db2af09ac55acc7ce178a337f902d2240ac2a707901887e317",
+      "scope": "EVALUATOR",
+      "state": "SUCCEEDED",
+      "strategy_id": "range_reversion_daily_evaluator",
+      "warnings": [
+        "EVALUATOR scope only: historical proposals, decision cutoffs, advisory/news context, entry fills, exits and allocation are not reconstructed.",
+        "Each verdict is made after that daily bar completes; it is not evidence of an intraday or live order.",
+        "The current profile constants are frozen in the run manifest; no parameter search is performed."
+      ],
+      "window_kind": "primary"
+    },
+    {
+      "dates": [
+        "2026-09-24",
+        "2026-09-30"
+      ],
+      "job": "partner",
+      "metrics": null,
+      "module": "partner",
+      "reason": "Partner advisory/protection is not an OHLCV money-book replay; no adapter exists.",
+      "scope": "ADVISORY_ONLY",
+      "state": "NOT_ADAPTED",
+      "window_kind": "primary"
+    }
+  ],
+  "qualification": "NOT_ASSESSED",
+  "requested_dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "snapshot": {
+    "created_at": "2026-10-03T15:28:01.041947+00:00",
+    "request": {
+      "end": "2026-09-30",
+      "history_days": 900,
+      "history_start": "2024-04-07",
+      "start": "2026-09-24",
+      "tickers": [
+        "NIFTY 50",
+        "NIFTY BANK",
+        "NIFTYBEES",
+        "PCJEWELLER",
+        "RELIANCE",
+        "SOUTHBANK"
+      ]
+    },
+    "row_counts": {
+      "daily": 3702,
+      "intraday": 5930
+    },
+    "rows_sha256": "sha256:01f5c19dd7c6126707ffbce102501d8ccea578f68efa4f0cf41e85e06107d3b7",
+    "schema": "sentinel_backtest_snapshot_v1",
+    "source": "YAHOO_FINANCE_CHART_ONLY"
+  },
+  "source": "YAHOO_FINANCE_CHART_ONLY"
+}

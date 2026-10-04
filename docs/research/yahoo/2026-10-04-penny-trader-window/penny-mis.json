@@ -1,0 +1,66 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "DATA_PRESENT_NOT_FULL_SYSTEM",
+  "dates": [
+    "2026-09-07",
+    "2026-10-03"
+  ],
+  "job": "penny-mis",
+  "metrics": {
+    "adverse_fill_bound_net": null,
+    "avg_r": null,
+    "coverage": {
+      "requested_ticker_days": 1710,
+      "status_counts": {
+        "COMPLETE": 7,
+        "PARTIAL": 1699,
+        "UNAVAILABLE": 4
+      },
+      "usable_ticker_days": 7
+    },
+    "funnel": {
+      "accepted_signals": 0,
+      "admission_outcomes": {},
+      "evaluations": 2625,
+      "reject_codes": {
+        "BREAKOUT_NOT_CONFIRMED": 1243,
+        "CIRCUIT_BLOCKED": 117,
+        "NO_PRIOR_BARS": 7,
+        "RSI_OVERBOUGHT": 7,
+        "TIME_WINDOW": 876,
+        "VOLUME_BELOW_PACE": 375
+      }
+    },
+    "max_drawdown": null,
+    "max_drawdown_pct": null,
+    "net_excluding_best_winner": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "single retrospective lifecycle run"
+    },
+    "profit_factor": null,
+    "scope": "LIFECYCLE",
+    "status": "PARTIAL",
+    "trade_count": 0,
+    "unresolved_trades": 0,
+    "win_rate_pct": null
+  },
+  "module": "penny-mis",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\penny-mis-report.json",
+  "report_sha256": "sha256:4950ed36767c9b90e683f29a44241e9e87a1165b4c47c7b35898f72d809e0332",
+  "scope": "LIFECYCLE",
+  "state": "SUCCEEDED",
+  "strategy_id": "penny_breakout_mis_lifecycle_1m",
+  "warnings": [
+    "LIFECYCLE scope: universe ranking, historical regime, sector filter, event calendar, broker rejections/partial fills and CNC occupancy are not replayed.",
+    "Historical regime is a declared constant; the runtime regime is not reconstructed.",
+    "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
+    "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
+    "Retrospective, coverage-selected, exploratory evidence; no holdout, funding or tuning authority.",
+    "One-minute bars cannot show the order of trades inside a minute."
+  ],
+  "window_kind": "primary"
+}

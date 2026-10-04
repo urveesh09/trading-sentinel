@@ -1,0 +1,1352 @@
+{
+  "aggregation": "Numeric rejection values replaced by #; counts preserved; distinct-ticker counts are not summed.",
+  "fno_signals": [
+    {
+      "accepted": 0,
+      "category": "ENGINE",
+      "month": null,
+      "n": 3,
+      "reason_template": "ema_trend_disagreement"
+    },
+    {
+      "accepted": 0,
+      "category": "ENGINE",
+      "month": null,
+      "n": 10,
+      "reason_template": "inside_opening_range_window"
+    },
+    {
+      "accepted": 0,
+      "category": "ENGINE",
+      "month": null,
+      "n": 326,
+      "reason_template": "no_or_break"
+    },
+    {
+      "accepted": 0,
+      "category": "ENGINE",
+      "month": null,
+      "n": 237,
+      "reason_template": "not_fresh_break"
+    },
+    {
+      "accepted": 0,
+      "category": "ENGINE",
+      "month": null,
+      "n": 11,
+      "reason_template": "rvol_below_min"
+    },
+    {
+      "accepted": 0,
+      "category": "FNO_PAPER",
+      "month": null,
+      "n": 4,
+      "reason_template": "already_holding_this_contract"
+    },
+    {
+      "accepted": 0,
+      "category": "FNO_PAPER",
+      "month": null,
+      "n": 6,
+      "reason_template": "kill_switches_clear"
+    },
+    {
+      "accepted": 1,
+      "category": "FNO_PAPER",
+      "month": null,
+      "n": 9,
+      "reason_template": ""
+    }
+  ],
+  "momentum_signals": [
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 667,
+      "reason_template": "MC#_atr_fuel_exhausted"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 228,
+      "reason_template": "MC#_shooting_star"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 5,
+      "reason_template": "MC#_too_early"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 22275,
+      "reason_template": "MC#_volume_surge_insufficient"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 1,
+      "reason_template": "MOMENTUM_ALREADY_OPEN"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 130,
+      "reason_template": "MOMENTUM_POOL_EXHAUSTED"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 8685,
+      "reason_template": "crossed_but_failed_holding_vwap"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 52,
+      "reason_template": "exception: unable to open database file"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 993,
+      "reason_template": "insufficient_intraday_candles"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 142,
+      "reason_template": "insufficient_pool_for_one_share"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 135716,
+      "reason_template": "no_recent_vwap_crossover"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 3180,
+      "reason_template": "not_in_top_#pct_intraday_range"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 29,
+      "reason_template": "swing_position_exists"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 11,
+      "reason_template": "zero_shares_momentum"
+    },
+    {
+      "accepted": 1,
+      "category": "1.0.0",
+      "month": "2026-07",
+      "n": 148,
+      "reason_template": ""
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 748,
+      "reason_template": "MC#_atr_fuel_exhausted"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 173,
+      "reason_template": "MC#_shooting_star"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 7487,
+      "reason_template": "MC#_too_late"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 18774,
+      "reason_template": "MC#_volume_surge_insufficient"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 4,
+      "reason_template": "MOMENTUM_POOL_EXHAUSTED"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 7683,
+      "reason_template": "crossed_but_failed_holding_vwap"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 6,
+      "reason_template": "exception: database is locked"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 173,
+      "reason_template": "insufficient_pool_for_one_share"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 123722,
+      "reason_template": "no_recent_vwap_crossover"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 2762,
+      "reason_template": "not_in_top_#pct_intraday_range"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 77,
+      "reason_template": "swing_position_exists"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 26,
+      "reason_template": "zero_shares_momentum"
+    },
+    {
+      "accepted": 1,
+      "category": "1.0.0",
+      "month": "2026-08",
+      "n": 22,
+      "reason_template": ""
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 799,
+      "reason_template": "MC#_atr_fuel_exhausted"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 202,
+      "reason_template": "MC#_shooting_star"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 9935,
+      "reason_template": "MC#_too_late"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 23706,
+      "reason_template": "MC#_volume_surge_insufficient"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 8,
+      "reason_template": "MOMENTUM_POOL_EXHAUSTED"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 9162,
+      "reason_template": "crossed_but_failed_holding_vwap"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 2,
+      "reason_template": "exception: database is locked"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 2981,
+      "reason_template": "insufficient_intraday_candles"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 151,
+      "reason_template": "insufficient_pool_for_one_share"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 141467,
+      "reason_template": "no_recent_vwap_crossover"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 3309,
+      "reason_template": "not_in_top_#pct_intraday_range"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 134,
+      "reason_template": "swing_position_exists"
+    },
+    {
+      "accepted": 0,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 32,
+      "reason_template": "zero_shares_momentum"
+    },
+    {
+      "accepted": 1,
+      "category": "1.0.0",
+      "month": "2026-09",
+      "n": 48,
+      "reason_template": ""
+    }
+  ],
+  "penny_accepted": [
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:04:20.821201+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:04:50.754955+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:05:21.507320+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:05:50.748967+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:06:21.329212+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:06:50.765200+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:07:22.193374+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:07:50.743795+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:08:21.358265+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:08:50.758006+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:09:21.758466+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:09:50.799491+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:10:21.411352+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:10:50.710727+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:11:22.360224+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:11:51.889580+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:12:21.381279+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:12:50.677121+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:13:21.712494+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:13:50.705764+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:14:21.698806+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:14:50.824870+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:15:38.133412+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:16:57.394517+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-07-29T06:17:57.478753+00:00",
+      "ticker": "KCPSUGIND"
+    },
+    {
+      "leg": "EDGE",
+      "regime": "MR_mid",
+      "scanned_at": "2026-07-30T04:00:05.244423+00:00",
+      "ticker": "SIGMA"
+    },
+    {
+      "leg": "EDGE",
+      "regime": "MO_strong",
+      "scanned_at": "2026-07-30T04:00:05.246763+00:00",
+      "ticker": "SIGMA"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:00:57.301459+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:01:59.330175+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:03:00.348076+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:03:33.853603+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:03:52.921590+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:04:23.697806+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:04:53.145904+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:05:23.515834+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:05:52.979101+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:06:23.628674+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:06:52.876180+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:07:23.062847+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:07:52.958193+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:08:23.719839+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:08:52.896889+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:09:23.253044+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:09:52.914286+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:10:23.192171+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:10:52.979396+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:11:23.105574+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-07T05:11:53.168427+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-10T08:55:19.902104+00:00",
+      "ticker": "MOL"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-10T08:55:45.287348+00:00",
+      "ticker": "MOL"
+    },
+    {
+      "leg": "EDGE",
+      "regime": "MO_mid",
+      "scanned_at": "2026-08-11T04:00:07.515494+00:00",
+      "ticker": "ATLANTAA"
+    },
+    {
+      "leg": "EDGE",
+      "regime": "MR_mid",
+      "scanned_at": "2026-08-11T04:00:07.519717+00:00",
+      "ticker": "VPRPL"
+    },
+    {
+      "leg": "EDGE",
+      "regime": "MO_strong",
+      "scanned_at": "2026-08-11T04:00:07.523760+00:00",
+      "ticker": "VPRPL"
+    },
+    {
+      "leg": "EDGE",
+      "regime": "MR_soft",
+      "scanned_at": "2026-08-14T04:00:06.742506+00:00",
+      "ticker": "UGARSUGAR"
+    },
+    {
+      "leg": "EDGE",
+      "regime": "MO_strong",
+      "scanned_at": "2026-08-14T04:00:06.746459+00:00",
+      "ticker": "UGARSUGAR"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-17T05:37:05.900278+00:00",
+      "ticker": "ONIDA"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-17T05:38:06.121111+00:00",
+      "ticker": "ONIDA"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-18T06:01:13.660858+00:00",
+      "ticker": "SIGACHI"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR2_ELEVATED",
+      "scanned_at": "2026-08-19T05:21:40.382155+00:00",
+      "ticker": "CENTEXT"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR2_ELEVATED",
+      "scanned_at": "2026-08-19T05:34:14.867010+00:00",
+      "ticker": "KOHINOOR"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR2_ELEVATED",
+      "scanned_at": "2026-08-19T05:42:40.362360+00:00",
+      "ticker": "KOHINOOR"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-20T05:07:38.582418+00:00",
+      "ticker": "DWARKESH"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-25T06:50:42.098235+00:00",
+      "ticker": "EMPOWER"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-26T06:38:53.961850+00:00",
+      "ticker": "TIJARIA"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-27T05:07:53.476037+00:00",
+      "ticker": "PARASPETRO"
+    },
+    {
+      "leg": "EDGE",
+      "regime": "MR_mid",
+      "scanned_at": "2026-08-28T04:00:12.643890+00:00",
+      "ticker": "TTML"
+    },
+    {
+      "leg": "EDGE",
+      "regime": "MO_strong",
+      "scanned_at": "2026-08-28T04:00:12.647078+00:00",
+      "ticker": "TTML"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-31T06:12:32.861905+00:00",
+      "ticker": "RANASUG"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-31T06:22:32.721440+00:00",
+      "ticker": "SAKHTISUG"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-31T06:24:33.176339+00:00",
+      "ticker": "SAKHTISUG"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-31T06:28:33.112227+00:00",
+      "ticker": "RAJSREESUG"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-31T06:54:33.190914+00:00",
+      "ticker": "AMDIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-08-31T07:08:34.242993+00:00",
+      "ticker": "AMDIND"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-03T06:03:52.230030+00:00",
+      "ticker": "BIRLAPREC"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-03T06:44:19.134851+00:00",
+      "ticker": "BIRLAPREC"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-04T06:53:57.664599+00:00",
+      "ticker": "LANCORHOL"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-04T08:48:40.761749+00:00",
+      "ticker": "KSR"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-07T05:37:07.031681+00:00",
+      "ticker": "ALMONDZ"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-09T05:45:04.916376+00:00",
+      "ticker": "TEXMOPIPES"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-16T06:31:08.830951+00:00",
+      "ticker": "KOHINOOR"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-17T05:06:31.329448+00:00",
+      "ticker": "ZEELEARN"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-17T08:01:08.438658+00:00",
+      "ticker": "GEEKAYWIRE"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-17T08:51:32.130562+00:00",
+      "ticker": "EMPOWER"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-21T08:45:19.651082+00:00",
+      "ticker": "SIGACHI"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-22T06:27:51.566757+00:00",
+      "ticker": "JETFREIGHT"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR2_ELEVATED",
+      "scanned_at": "2026-09-24T05:12:33.413392+00:00",
+      "ticker": "VAISHALI"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-25T05:09:42.520730+00:00",
+      "ticker": "MGEL"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-25T06:10:43.093494+00:00",
+      "ticker": "DAVANGERE"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-25T06:31:35.859965+00:00",
+      "ticker": "DAVANGERE"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-25T06:42:43.445418+00:00",
+      "ticker": "PRAENG"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-25T07:11:43.183423+00:00",
+      "ticker": "PRIMO"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-25T07:46:36.093297+00:00",
+      "ticker": "UNITEDPOLY"
+    },
+    {
+      "leg": "MIS",
+      "regime": "PR1_CALM",
+      "scanned_at": "2026-09-28T05:24:18.523077+00:00",
+      "ticker": "PATINTLOG"
+    }
+  ],
+  "penny_execution_events": [
+    {
+      "event_type": "CANDIDATE_ACCEPTED",
+      "n": 35,
+      "source": "PENNY_PAPER"
+    },
+    {
+      "event_type": "ENTRY_FILLED",
+      "n": 27,
+      "source": "PENNY_PAPER"
+    },
+    {
+      "event_type": "EXECUTION_RESULT",
+      "n": 33,
+      "source": "PENNY_PAPER"
+    },
+    {
+      "event_type": "EXIT_CONFIRMED",
+      "n": 16,
+      "source": "PENNY_PAPER"
+    },
+    {
+      "event_type": "EXIT_SIMULATED",
+      "n": 16,
+      "source": "PENNY_PAPER"
+    },
+    {
+      "event_type": "POSITION_CREATED",
+      "n": 27,
+      "source": "PENNY_PAPER"
+    },
+    {
+      "event_type": "POSITION_EXIT_SETTLED",
+      "n": 16,
+      "source": "PENNY_PAPER"
+    },
+    {
+      "event_type": "SL_PLACED",
+      "n": 27,
+      "source": "PENNY_PAPER"
+    },
+    {
+      "event_type": "VALIDATION_REJECTED",
+      "n": 8,
+      "source": "PENNY_PAPER"
+    }
+  ],
+  "penny_signals": [
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-07",
+      "n": 54,
+      "reason_template": "RSI not rising for # bars (falling knife)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-07",
+      "n": 136,
+      "reason_template": "RSI(#) not below buy threshold (rsi=#)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-07",
+      "n": 133,
+      "reason_template": "RSI(#)=# not below threshold"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-07",
+      "n": 539,
+      "reason_template": "below # SMA (trend fail)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-07",
+      "n": 93,
+      "reason_template": "evaluator returned None (see prior warn/error)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-07",
+      "n": 58,
+      "reason_template": "insufficient_history"
+    },
+    {
+      "accepted": 0,
+      "category": "EDGE",
+      "month": "2026-07",
+      "n": 4,
+      "reason_template": "entry_status=timeout"
+    },
+    {
+      "accepted": 0,
+      "category": "EDGE",
+      "month": "2026-07",
+      "n": 3,
+      "reason_template": "not_selected_by_live_leg"
+    },
+    {
+      "accepted": 1,
+      "category": "EDGE",
+      "month": "2026-07",
+      "n": 2,
+      "reason_template": ""
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 18,
+      "reason_template": "RSI(#) overbought (rsi=#)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 1,
+      "reason_template": "RSI(#)=# overbought"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 75127,
+      "reason_template": "breakout not confirmed (close # <= #)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 2782,
+      "reason_template": "circuit_blocked: circuit: within #% of band and #% below day high"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 140108,
+      "reason_template": "evaluator returned None (see prior warn/error)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 1544,
+      "reason_template": "insufficient_intraday_bars"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 94,
+      "reason_template": "no #-day median volume baseline"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 1554,
+      "reason_template": "no prior bars to anchor breakout"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 268741,
+      "reason_template": "outside breakout time window (# min)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 93876,
+      "reason_template": "regime PR#_HOT (no new entries)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 82985,
+      "reason_template": "volume # < # (#x pace-adjusted median #)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 191835,
+      "reason_template": "volume # < #x median (#)"
+    },
+    {
+      "accepted": 1,
+      "category": "MIS",
+      "month": "2026-07",
+      "n": 25,
+      "reason_template": ""
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-08",
+      "n": 116,
+      "reason_template": "RSI not rising for # bars (falling knife)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-08",
+      "n": 495,
+      "reason_template": "RSI(#) not below buy threshold (rsi=#)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-08",
+      "n": 475,
+      "reason_template": "below # SMA (trend fail)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-08",
+      "n": 131,
+      "reason_template": "insufficient_history"
+    },
+    {
+      "accepted": 0,
+      "category": "EDGE",
+      "month": "2026-08",
+      "n": 2,
+      "reason_template": "entry_status=rejected"
+    },
+    {
+      "accepted": 0,
+      "category": "EDGE",
+      "month": "2026-08",
+      "n": 3,
+      "reason_template": "not_selected_by_live_leg"
+    },
+    {
+      "accepted": 1,
+      "category": "EDGE",
+      "month": "2026-08",
+      "n": 7,
+      "reason_template": ""
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 192,
+      "reason_template": "RSI(#) overbought (rsi=#)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 127826,
+      "reason_template": "breakout not confirmed (close # <= #)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 3928,
+      "reason_template": "circuit_blocked: circuit: within #% of band and #% below day high"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 2564,
+      "reason_template": "insufficient_intraday_bars"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 77,
+      "reason_template": "intraday_fetch_failed"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 1515,
+      "reason_template": "no prior bars to anchor breakout"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 207024,
+      "reason_template": "outside breakout time window (# min)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 2,
+      "reason_template": "quote_unavailable"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 197701,
+      "reason_template": "volume # < # (#x pace-adjusted median #)"
+    },
+    {
+      "accepted": 1,
+      "category": "MIS",
+      "month": "2026-08",
+      "n": 39,
+      "reason_template": ""
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-09",
+      "n": 162,
+      "reason_template": "RSI not rising for # bars (falling knife)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-09",
+      "n": 523,
+      "reason_template": "RSI(#) not below buy threshold (rsi=#)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-09",
+      "n": 542,
+      "reason_template": "below # SMA (trend fail)"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-09",
+      "n": 2,
+      "reason_template": "circuit_blocked: circuit: within #% of band and #% below day high"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-09",
+      "n": 139,
+      "reason_template": "insufficient_history"
+    },
+    {
+      "accepted": 0,
+      "category": "CNC",
+      "month": "2026-09",
+      "n": 1,
+      "reason_template": "volume too low (dead stock)"
+    },
+    {
+      "accepted": 0,
+      "category": "EDGE",
+      "month": "2026-09",
+      "n": 16,
+      "reason_template": "not_selected_by_live_leg"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-09",
+      "n": 164,
+      "reason_template": "RSI(#) overbought (rsi=#)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-09",
+      "n": 91833,
+      "reason_template": "breakout not confirmed (close # <= #)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-09",
+      "n": 3873,
+      "reason_template": "circuit_blocked: circuit: within #% of band and #% below day high"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-09",
+      "n": 356,
+      "reason_template": "insufficient_intraday_bars"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-09",
+      "n": 1,
+      "reason_template": "intraday_fetch_failed"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-09",
+      "n": 204,
+      "reason_template": "no prior bars to anchor breakout"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-09",
+      "n": 26465,
+      "reason_template": "outside breakout time window (# min)"
+    },
+    {
+      "accepted": 0,
+      "category": "MIS",
+      "month": "2026-09",
+      "n": 200940,
+      "reason_template": "volume # < # (#x pace-adjusted median #)"
+    },
+    {
+      "accepted": 1,
+      "category": "MIS",
+      "month": "2026-09",
+      "n": 20,
+      "reason_template": ""
+    }
+  ],
+  "raw_sha256": "sha256:d5187af87c53fc2531644850c7e7b474701bc617570d62e4bc93c667227c3a50"
+}

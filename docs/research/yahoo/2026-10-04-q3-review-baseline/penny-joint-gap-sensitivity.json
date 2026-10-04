@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "job": "penny-joint-gap-sensitivity",
+  "metrics": null,
+  "module": "penny-joint",
+  "qualification": "NOT_ASSESSED",
+  "reason": "Yahoo rejected requested 1m window: YahooDataError: Unprocessable Entity: 1m data not available for startTime=1782844200 and endTime=1783449000. The requested range must be within the last 30 days.",
+  "report_file": "_local\\penny-joint-gap-sensitivity-report.json",
+  "report_sha256": "sha256:d7505c384e6768b5f3333b24bd325162a3dc04d755a045b5542ad14bfb5794be",
+  "scope": "PORTFOLIO_PARTIAL",
+  "state": "UNAVAILABLE",
+  "strategy_id": "penny_joint_lifecycle_portfolio",
+  "window_kind": "primary"
+}

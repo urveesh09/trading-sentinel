@@ -70,6 +70,35 @@ def _condor_wing() -> int:
     return int(getattr(settings, "FNO_DR_CONDOR_WING_WIDTH", 2))
 
 
+def _max_lots() -> int:
+    return int(getattr(settings, "FNO_DR_MAX_LOTS", 3))
+
+
+def _margin_per_lot() -> float:
+    return float(getattr(settings, "FNO_DR_MARGIN_PER_LOT_RS", 50000.0))
+
+
+def _max_capital_pct() -> float:
+    return float(getattr(settings, "FNO_DR_MAX_CAPITAL_PCT", 0.40))
+
+
+def dr_lots(kind: StructureKind, per_lot_max_loss: float, *, pool: float, risk_multiplier: float) -> int:
+    """Lots for one structure: the ₹ max-loss budget (x adaptive multiplier),
+    the lot ceiling, and own-cash capital — a debit spread ties up its debit
+    (= max loss), a credit structure ties up broker margin, reserved here
+    conservatively per lot. 0 means stand aside. A drawdown cut
+    (multiplier < 1) shrinks to one lot, never below, if that lot fits the
+    normal budget (stopping is the entry brakes' job)."""
+    if per_lot_max_loss <= 0 or pool <= 0 or risk_multiplier <= 0:
+        return 0
+    by_risk = int((_max_loss_ceiling() * risk_multiplier) // per_lot_max_loss)
+    if by_risk < 1 and risk_multiplier < 1.0:
+        by_risk = min(1, int(_max_loss_ceiling() // per_lot_max_loss))
+    capital_per_lot = per_lot_max_loss if kind == StructureKind.DEBIT_SPREAD else _margin_per_lot()
+    by_capital = int((_max_capital_pct() * pool) // capital_per_lot) if capital_per_lot > 0 else 0
+    return max(0, min(by_risk, by_capital, _max_lots()))
+
+
 def _max_loss_ceiling() -> float:
     return float(getattr(settings, "FNO_DR_MAX_LOSS_RS", 10000.0))
 
@@ -149,6 +178,27 @@ def iv_rank_proxy(iv: Optional[float]) -> Optional[float]:
     return max(0.0, min(1.0, (iv - lo) / (hi - lo)))
 
 
+VEHICLE_NAKED = "NAKED"
+VEHICLE_SPREAD = "SPREAD"
+
+
+def vehicle_by_iv_active() -> bool:
+    """The rule needs both books: without the capped-loss book there is no spread."""
+    return bool(getattr(settings, "FNO_VEHICLE_BY_IV", False)) and _enabled() and not settings.FNO_DR_DISABLE_PAPER
+
+
+def choose_directional_vehicle(snap: Optional[ChainSnapshot], now_ist: datetime) -> str:
+    """One vehicle per directional idea: rich premium -> debit spread (sell
+    expensive premium against the long leg); otherwise -> the naked option.
+
+    Uses the same snapshot IV-rank proxy as the condor router. A missing IV
+    defaults to the naked option, the shipped behaviour.
+    """
+    rank = iv_rank_proxy(atm_iv(snap, now_ist)) if snap is not None else None
+    threshold = float(getattr(settings, "FNO_VEHICLE_SPREAD_IV_RANK", 0.6))
+    return VEHICLE_SPREAD if rank is not None and rank >= threshold else VEHICLE_NAKED
+
+
 # ---------------------------------------------------------------------------
 # planning
 # ---------------------------------------------------------------------------
@@ -161,6 +211,7 @@ class PlannedStructure:
     # does not infer this later from a same-strike quote: expiry/token/lot can
     # change while a paper structure is open.
     contract_legs: tuple[dict, ...]
+    lots: int = 1
 
 
 def _contract_leg_snapshot(leg: Leg, quote: Optional[ContractQuote]) -> Optional[dict]:
@@ -232,6 +283,9 @@ def plan_structure(
     has_directional_signal: bool,
     direction: Optional[FnoDirection],
     now_ist: datetime,
+    *,
+    pool: Optional[float] = None,
+    risk_multiplier: float = 1.0,
 ) -> Optional[PlannedStructure]:
     """Pure-ish: from the snapshot + the tick's directional signal, pick and
     build a defined-risk structure, or None (stand aside). No DB, no orders."""
@@ -291,20 +345,29 @@ def plan_structure(
         logger.info("fno_dr_stand_aside reason=missing_or_inconsistent_contract_identity")
         return None
     lot = int(contract_legs[0]["contract"]["lot_size"])
-    if kind == StructureKind.DEBIT_SPREAD:
-        structure = build_debit_spread(direction, atm, step, _debit_width(), prem, lot)
-    else:
-        structure = build_iron_condor(atm, step, _condor_offset(), _condor_wing(), prem, lot)
-    if structure is None or not structure.is_defined_risk:
+
+    def build(lots: int):
+        if kind == StructureKind.DEBIT_SPREAD:
+            return build_debit_spread(direction, atm, step, _debit_width(), prem, lot, lots)
+        return build_iron_condor(atm, step, _condor_offset(), _condor_wing(), prem, lot, lots)
+
+    one_lot = build(1)
+    if one_lot is None or not one_lot.is_defined_risk:
         return None
-    if structure.max_loss_rs > _max_loss_ceiling():
+    lots = dr_lots(kind, one_lot.max_loss_rs, pool=float(pool or settings.FNO_PAPER_BANKROLL),
+                   risk_multiplier=risk_multiplier)
+    if lots < 1:
         logger.info(
-            "fno_dr_skip reason=max_loss_over_ceiling kind=%s max_loss=%.0f ceiling=%.0f",
-            kind.value, structure.max_loss_rs, _max_loss_ceiling(),
+            "fno_dr_skip reason=max_loss_or_capital_over_ceiling kind=%s per_lot_max_loss=%.0f "
+            "ceiling=%.0f multiplier=%.2f", kind.value, one_lot.max_loss_rs, _max_loss_ceiling(), risk_multiplier,
         )
         return None
+    structure = build(lots)
+    contract_legs = _selected_contract_legs(snap, structure.legs) if lots > 1 else contract_legs
+    if structure is None or not structure.is_defined_risk or contract_legs is None:
+        return None
     return PlannedStructure(
-        structure=structure, entry_underlying=float(snap.forward), contract_legs=contract_legs,
+        structure=structure, entry_underlying=float(snap.forward), contract_legs=contract_legs, lots=lots,
     )
 
 
@@ -566,9 +629,26 @@ CREATE TABLE IF NOT EXISTS fno_dr_positions (
 """
 
 
+# [F0-R1 2026-10-03] Structural loss and the frozen entry fee reserve are the
+# structure's shared worst-case cash until its terminal close. No writer
+# updates them; once populated they cannot be rewritten.
+_DR_RISK_EVIDENCE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_dr_positions_risk_evidence_immutable
+BEFORE UPDATE OF max_loss_rs, entry_cost_rs
+ON fno_dr_positions
+FOR EACH ROW WHEN
+    (OLD.max_loss_rs IS NOT NULL AND NEW.max_loss_rs IS NOT OLD.max_loss_rs)
+    OR (OLD.entry_cost_rs IS NOT NULL AND NEW.entry_cost_rs IS NOT OLD.entry_cost_rs)
+BEGIN
+    SELECT RAISE(ABORT, 'fno defined-risk exposure evidence is immutable');
+END
+"""
+
+
 async def init_dr_db(db_path: str) -> None:
     async with aiosqlite.connect(db_path) as db:
         await db.execute(_DDL)
+        await db.execute(_DR_RISK_EVIDENCE_IMMUTABLE_DDL)
         # Additive migration: legacy positions never gain guessed contract
         # identity or valuation.  They remain readable and explicitly
         # unverified by the report/management path.
@@ -597,22 +677,36 @@ async def open_structures(db_path: str, source: str = SOURCE_PAPER) -> List[dict
 
 async def insert_structure(
     db_path: str, source: str, planned: PlannedStructure, now_ist: datetime,
+    *, reservation_key: Optional[str] = None,
 ) -> int:
     s = planned.structure
     cost = structure_round_trip_cost(s)
     async with aiosqlite.connect(db_path) as db:
+        if reservation_key:
+            await db.execute("BEGIN IMMEDIATE")
         cur = await db.execute(
             """INSERT INTO fno_dr_positions
                (source, kind, legs_json, lot_size, lots, entry_underlying,
                 net_premium_rs, max_profit_rs, max_loss_rs, entry_cost_rs,
                 status, opened_at)
                VALUES (?,?,?,?,?,?,?,?,?,?, 'OPEN', ?)""",
-            (source, s.kind.value, _bound_legs_to_json(planned.contract_legs), s.lot_size, 1,
+            (source, s.kind.value, _bound_legs_to_json(planned.contract_legs), s.lot_size, planned.lots,
              planned.entry_underlying, round(s.net_premium * s.lot_size, 2),
              s.max_profit_rs, s.max_loss_rs, cost, now_ist.isoformat()),
         )
+        row_id = int(cur.lastrowid)
+        if reservation_key:
+            from fno_shared_risk import consume_shared_fno_risk_reservation_in_transaction
+            consumed = await consume_shared_fno_risk_reservation_in_transaction(
+                db, reservation_key=reservation_key, source=source,
+                book="DEFINED_RISK", position_ref=f"fno_dr_position:{row_id}",
+                resolved_at=now_ist,
+            )
+            if not consumed:
+                await db.rollback()
+                raise RuntimeError("shared_risk_reservation_not_consumed")
         await db.commit()
-        return int(cur.lastrowid)
+        return row_id
 
 
 async def _mark_unresolved(
@@ -733,6 +827,23 @@ async def manage_dr_structures(
     return closed
 
 
+def dr_post_admission_reject(now_ist: datetime, snap: ChainSnapshot, planned) -> Optional[str]:
+    """[F0-R5] Entry window plus chain and every leg's quote freshness, re-read
+    after the admission DB waits. Returns the failing check, or ``None``."""
+    nm = now_ist.hour * 60 + now_ist.minute
+    if not (_entry_lo_min() <= nm <= _entry_hi_min()):
+        return "entry_window"
+    if not 0 <= snap.age_sec(now_ist) <= settings.FNO_MAX_CHAIN_AGE_SEC:
+        return "chain_freshness"
+    for leg in planned.structure.legs:
+        quote = snap.quote(leg.strike, leg.opt_type)
+        if (quote is None or quote.last_trade_time is None
+                or not 0 <= (now_ist - quote.last_trade_time).total_seconds()
+                <= settings.FNO_MAX_QUOTE_AGE_SEC):
+            return "quote_freshness"
+    return None
+
+
 async def maybe_open_dr_structure(
     db_path: str,
     snap: ChainSnapshot,
@@ -752,6 +863,10 @@ async def maybe_open_dr_structure(
             return None
         if await open_structures(db_path, source):
             return None  # one at a time
+        if (has_directional_signal and vehicle_by_iv_active()
+                and choose_directional_vehicle(snap, now_ist) == VEHICLE_NAKED):
+            logger.info("fno_dr_skip reason=vehicle_naked_preferred")
+            return None
         await init_dr_db(db_path)
         if action_clock is not None:
             now_ist = action_clock()
@@ -761,7 +876,12 @@ async def maybe_open_dr_structure(
             if not 0 <= snap.age_sec(now_ist) <= settings.FNO_MAX_CHAIN_AGE_SEC:
                 logger.info("fno_dr_entry_skipped reason=chain_freshness")
                 return None
-        planned = plan_structure(snap, has_directional_signal, direction, now_ist)
+        from fno_adaptive_risk import policy_from_settings as adaptive_policy, read_book_closes, risk_stance
+        from performance import division_equity
+        stance = risk_stance(await read_book_closes(db_path, source),
+                             allocation=float(settings.FNO_PAPER_BANKROLL), now=now_ist, policy=adaptive_policy())
+        planned = plan_structure(snap, has_directional_signal, direction, now_ist,
+                                 pool=await division_equity(db_path, source), risk_multiplier=stance.multiplier)
         if planned is None:
             return None
         if action_clock is not None:
@@ -772,13 +892,83 @@ async def maybe_open_dr_structure(
                         <= settings.FNO_MAX_QUOTE_AGE_SEC):
                     logger.info("fno_dr_entry_skipped reason=quote_freshness")
                     return None
-        row_id = await insert_structure(db_path, source, planned, now_ist)
+        # F0-B uses the same fee-inclusive catastrophe reservation as the
+        # directional book.  Initialise only durable local schemas; no quote,
+        # order, message or exit path is touched here.
+        from fno_shared_risk import (
+            EntryOccupancy, claim_shared_fno_entry_dispatch, init_shared_fno_risk_db,
+            policy_from_settings,
+            reserve_shared_fno_risk, resolve_shared_fno_entry_dispatch, shared_fno_entry_policy,
+        )
+        from fno_positions import init_fno_positions_db
+        from performance import init_ledger
+        await init_ledger(db_path)
+        await init_fno_positions_db(db_path)
+        await init_shared_fno_risk_db(db_path)
+        shared_policy = policy_from_settings()
+        shared_decision = await shared_fno_entry_policy(
+            db_path, source=source, pool_rs=float(settings.FNO_PAPER_BANKROLL),
+            today_ist=now_ist.date(), policy=shared_policy,
+        )
+        if not shared_decision.allowed:
+            logger.warning("fno_dr_entry_skipped reason=%s", shared_decision.reason)
+            return None
         s = planned.structure
+        reservation_key = "dr:%s:%s:%s" % (
+            source, now_ist.isoformat(),
+            ",".join(str(leg["contract"]["token"]) for leg in planned.contract_legs),
+        )
+        admission = await reserve_shared_fno_risk(
+            db_path, source=source, pool_rs=float(settings.FNO_PAPER_BANKROLL),
+            reservation_key=reservation_key, book="DEFINED_RISK",
+            worst_case_cash_rs=s.max_loss_rs + structure_round_trip_cost(s),
+            entry_day_ist=now_ist.date(), policy=shared_policy,
+        )
+        if not admission.allowed:
+            logger.warning("fno_dr_entry_skipped reason=%s", admission.reason)
+            return None
+        # F0-R2: one claim per reservation, after re-reading the entry policy.
+        # F0-R5: "one structure at a time" is enforced inside the claim
+        # transaction, counting in-flight claims; the earlier open_structures()
+        # read is only a cheap early filter.
+        claim = await claim_shared_fno_entry_dispatch(
+            db_path, reservation_key=reservation_key, source=source, book="DEFINED_RISK",
+            pool_rs=float(settings.FNO_PAPER_BANKROLL), entry_day_ist=now_ist.date(),
+            policy=shared_policy,
+            occupancy=EntryOccupancy(entry_day=now_ist.date(), max_open=1),
+        )
+        if not claim.granted:
+            logger.warning("fno_dr_entry_skipped reason=dispatch_claim_denied:%s", claim.reason)
+            return None
+        if action_clock is not None:
+            late = dr_post_admission_reject(action_clock(), snap, planned)
+            if late:
+                await resolve_shared_fno_entry_dispatch(
+                    db_path, reservation_key=reservation_key, owner=claim.owner,
+                    outcome="no_dispatch",
+                    evidence={"dispatch_certainty": "NOT_SENT", "order_id": None,
+                              "reason": f"post_admission_{late}"},
+                )
+                logger.warning("fno_dr_entry_skipped reason=post_admission_%s", late)
+                return None
+        try:
+            row_id = await insert_structure(
+                db_path, source, planned, now_ist, reservation_key=reservation_key,
+            )
+        except Exception:
+            # Paper DR has no broker leg: a failed local insert created nothing.
+            await resolve_shared_fno_entry_dispatch(
+                db_path, reservation_key=reservation_key, owner=claim.owner,
+                outcome="no_dispatch",
+                evidence={"dispatch_certainty": "NOT_SENT", "order_id": None,
+                          "receipt": "paper_structure_insert_failed"},
+            )
+            raise
         logger.info(
-            "fno_dr_opened id=%d kind=%s legs=%d max_loss=%.0f max_profit=%.0f "
-            "net_premium_rs=%.0f spot=%.1f",
-            row_id, s.kind.value, len(s.legs), s.max_loss_rs, s.max_profit_rs,
-            s.net_premium * s.lot_size, planned.entry_underlying,
+            "fno_dr_opened id=%d kind=%s lots=%d legs=%d max_loss=%.0f max_profit=%.0f "
+            "net_premium_rs=%.0f spot=%.1f multiplier=%.2f",
+            row_id, s.kind.value, planned.lots, len(s.legs), s.max_loss_rs, s.max_profit_rs,
+            s.net_premium * s.lot_size, planned.entry_underlying, stance.multiplier,
         )
         return row_id
     except Exception as exc:

@@ -1,0 +1,51 @@
+{
+  "availability": {
+    "primary:15m": {
+      "end": "2026-09-30",
+      "reason": null,
+      "start": "2026-09-24",
+      "state": "AVAILABLE"
+    },
+    "primary:1m": {
+      "end": "2026-09-30",
+      "reason": null,
+      "start": "2026-09-24",
+      "state": "AVAILABLE"
+    }
+  },
+  "errors": [],
+  "full_manifest_sha256": "sha256:a4ea5df2e32a0da6cc8e693e7529a37dc52e62b0f8568e7aec2ea3fbeb1dc925",
+  "requested": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "response_count": 14,
+  "snapshot": {
+    "created_at": "2026-10-03T15:28:01.041947+00:00",
+    "request": {
+      "end": "2026-09-30",
+      "history_days": 900,
+      "history_start": "2024-04-07",
+      "start": "2026-09-24",
+      "tickers": [
+        "NIFTY 50",
+        "NIFTY BANK",
+        "NIFTYBEES",
+        "PCJEWELLER",
+        "RELIANCE",
+        "SOUTHBANK"
+      ]
+    },
+    "row_counts": {
+      "daily": 3702,
+      "intraday": 5930
+    },
+    "rows_sha256": "sha256:01f5c19dd7c6126707ffbce102501d8ccea578f68efa4f0cf41e85e06107d3b7",
+    "schema": "sentinel_backtest_snapshot_v1",
+    "source": "YAHOO_FINANCE_CHART_ONLY"
+  },
+  "source": "YAHOO_FINANCE_CHART_ONLY",
+  "states": {
+    "AVAILABLE": 14
+  }
+}

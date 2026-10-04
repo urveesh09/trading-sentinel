@@ -1,5 +1,925 @@
 # Trading Sentinel — next-agent execution plan
 
+
+
+## October 5 — EDGE overnight result and next steps
+
+`edge-overnight-t1` is complete ([study](2026-10-05-edge-overnight-study.md)).
+The candidate failed only the frozen drawdown check (measured against starting
+capital); the S60 attribution arm passed all four.
+
+Next, if the owner approves:
+
+1. **E1 (done):** the `edge_overnight_paper.py` ₹25k paper book. After 10 or more
+   sessions, compare it with the EDGE_PAPER book on the corrected costs. Watch
+   for exits waiting on circuit-locked names (`OPEN_DELAYED`).
+2. **E2 (done):** delivery costs fixed in `calc_penny_costs`. EDGE_PAPER rows
+   recorded before Oct 5 used the old schedule and were not migrated, so compare
+   from Oct 5 onwards.
+3. **E3:** a future study must declare a peak-relative drawdown metric before
+   freezing. Do not re-score `edge-overnight-t1`.
+
+Capital floor: at least about ₹25,000 for this idea, because of the DP charge.
+
+## October 5 — forward paper evidence and the Kite untouched scoring
+
+Read [the slice](2026-10-05-forward-paper-evidence.md). Every module runs on paper
+with live money off. New forward evidence comes from the `MOM_SELECTIVE` shadow
+variant and the smart-Penny paper shadow.
+
+Next:
+1. After the owner's same-day Kite login (owner authorised ~16:30–17:00 IST,
+   October 5), acquire January–July 2026 history with
+   `scripts/acquire_kite_history.py`, checking coverage only. Then freeze, commit,
+   push and score `momentum-smart-t3` and `penny-noise-t3` once.
+2. After 5 or more sessions, compare forward `MOM_SELECTIVE` against `MOM_BASE`
+   (`/api/experiments/momentum`, decision-quality report), and the smart-Penny
+   shadow against the Penny paper book. Read forward data only after a
+   predeclared count of sessions; do not tune on it.
+3. Open items carried forward: fix the three Penny paper `exit_price` blob rows;
+   Penny D1 live-risk reconciliation; momentum auto-execute stays the owner's call.
+
+## October 4 — smart Penny implementation and matched diagnostics
+
+Read [the current implementation receipt](2026-10-04-penny-smart-trader-implementation.md)
+first. R1 strength ranking and R2 stateful affordable entry / confirmed-close
+management are implemented as default-OFF paper/replay variants. The separate
+paper book also owns its simulated cash, fees, working risk and daily brake;
+this completes paper accounting, not R3's actual live fill/settlement contract.
+T4 compares five arms on the ₹2,000 budget over two already examined windows;
+do not label either an untouched holdout or optimize exits until it looks good.
+Keep all losing arms and execution stress results.
+
+T4 is complete and `NOT_SUPPORTED_STAYS_OFF`: incumbent broader net +₹91.7169
+(38 trades), combined −₹47.5019 (153), entry/risk −₹47.7479 (79), exit −₹2.2712
+(48), ranking unchanged. Do not promote any new trading arm. Follow the explicit
+D1–D4 material slices in the receipt: reconcile live risk; independent data and
+decision context; small calibrated entry utility under matched risk; exit tests
+on fixed cohorts before whole-book replay. No September outcome-driven retuning.
+
+Remaining sequence:
+1. Review the frozen T4 results and failure paths. Select further work from
+   stable evidence; no activation from a positive seen-window PnL.
+2. R0/T3 still needs absent January–July Kite history. Acquire only through the
+   existing owner-login/data-contract process; commit the freeze before any
+   actual untouched scoring. No present task generated or invented that data.
+3. Develop a separate exit hypothesis only after isolating selection/entry
+   economics. Preserve the incumbent exit policy if thesis exits do not help.
+4. R3 must reconcile actual fills, costs, open risk and classic daily settlements
+   before live activation/increased risk. Candle replay cannot prove depth,
+   intraminute fills or runtime sampled-quote management.
+5. R4 requires genuine point-in-time universe/regime/eligibility, continuous
+   portfolio capital and untouched data, then prospective paper execution
+   observations. GitHub promotion is separate; Production/F&O stay protected.
+
+Current changes remain uncommitted Dev at `a674740`; no push/deployment, funding
+change or broker order. The broad regression's unchanged F&O fixture failure is
+recorded in the receipt; do not silently call that run completely green.
+
+## October 4 — authorized corrections completed; next Penny hypotheses
+
+[Implementation and verification receipt](2026-10-04-penny-corrections-and-relative-strength-slice.md)
+closes the explicit stop-arm/effective-freeze and decision-stop rounding findings
+from the earlier review below. Current cached instrument ticks now control
+Penny execution; dated metadata is required for new live entries. Final fill
+risk, complete settlement-driven daily brakes and marked exposure remain open.
+830 selected tests and a final 55-test source check passed; atlas regenerated.
+Changes are uncommitted in Dev at base `a674740`, not pushed/promoted. No new
+live flags, funding, F&O operational or Production changes.
+
+Read [the researched strategy and explicit R0–R4 slices](2026-10-04-penny-consistent-returns-strategy.md).
+Next: finish R0 once independently validated untouched Kite history exists and
+a corrected source freeze is committed before scoring; then R1 tests persistent
+positive stock-specific strength ranking while keeping entries/exits fixed.
+Test broader reclaim entries and winner trails separately after selection has
+evidence. R3 reconciled owner risk/daily cash accounting is required before any
+live activation or increased admitted risk. Preserve all failed hypotheses,
+unknown/missing-data status, costs and F&O resource priority. A daily 1% goal is
+measured on allocated equity and never becomes a mandatory entry quota.
+
+Pending T3 now distinguishes BAR_LOW/NOISE_FLOOR and ₹100,000/₹2,000 books;
+its January–July snapshot path is absent. The earlier review remains a historical
+receipt; its statement that no source changes were made refers to that stage.
+
+## October 4 — Penny independent-review findings before the next study
+
+Read [Penny efficiency review and discussion](2026-10-04-penny-efficiency-independent-review.md)
+before the older round-3 sequence below. Current `penny-noise-t3` BASELINE calls
+the default-ON runtime noise stop, so it cannot isolate the old-to-new stop
+hypothesis. Add explicit, exactly-once stop-policy inputs and bind effective
+settings before freezing/scoring. Correct rounded-distance quantity arithmetic;
+review actual-instrument tick and fill/protection risk before any live promotion.
+Preserve previous frozen results; do not relabel them as current-policy results.
+
+Then complete the untouched Kite comparison with distinct old/current policies,
+owner-budget economics and daily marked returns. Further hypotheses should
+isolate a stop or execution/selection change on shipped entries. Research a
+larger admitted risk allocation only after an edge survives; this is a material
+change, not a rounding fix. Existing caps/own cash/exit recovery and F&O capacity
+remain protected. The owner's daily target is an aspiration, not a trade quota.
+
+This task is review/discussion only: findings and proposals remain open, no
+source/flag change or new scoring. 45 focused tests passed; reproductions reveal
+gaps those tests do not cover. `a674740` is confirmed pushed; no merge/deployment
+by this task. Review docs are Dev-local/uncommitted. Tomorrow's Production/paper
+decision is separate; Penny live and Momentum auto-execute remain default OFF.
+
+## October 4 — round 3: smarter Momentum/Penny candidates; Momentum direct trading built (OFF)
+
+Development (seen windows):
+- `MOM_SELECTIVE` sat out the falling Aug–Oct market (0 trades vs shipped −₹3,110).
+- The runner exit was worse on shipped entries.
+- `PEN_NOISE_STOP` beat the Penny baseline (+₹93 vs +₹78; DD ₹32 vs ₹45).
+
+Next, in order:
+1. With a same-day Kite session (owner login; run after 15:45 IST), acquire Kite
+   history Jan–Jul 2026 for Momentum (15-minute + NIFTY 50) and Penny (minute)
+   into `docs/research/kite/2026-10-05-*`. Check coverage only.
+2. Freeze `momentum-smart-t3` and `penny-noise-t3`, commit, then
+   `run --jobs 3`, once each. Record the verdicts.
+3. Port only a promising candidate to the runtime (paper twin first).
+4. Owner decides `MOMENTUM_AUTO_EXECUTE` after promotion; recommended together
+   with a passing selective entry.
+5. Fix the `PENNY_PAPER` exit_price blob rows (3 rows, Aug 31).
+
+## October 4 — owner direction: Momentum, then Penny; F&O only records SENSEX history
+
+F&O: no further development except SENSEX/NIFTY future-candle recording
+(`research_future_candles`, from the first Production run after promotion).
+Next: smarter Momentum entries/exits plus direct (no-approval) execution, then
+Penny, each tested with the freeze-then-score method.
+
+## October 4 — F&O growth slice implemented (paper, Dev only)
+
+[Growth slice](2026-10-04-fno-growth-slice.md): adaptive risk (shrink in drawdown,
+grow only when proven, two-strike day halt), tighter brakes (3/6/10/15%), cap
+₹40k, multi-lot capped-loss book, SENSEX on the paper single-leg book with a
+NIFTY-participation proxy and a correlation guard. Vehicle-by-IV ships OFF.
+
+Owner test Sep 17–Oct 1 (see slice): found and fixed the drawdown-cut
+"silent halt"; fresh ₹2L = +₹11,821 on 10 sessions; minimum live test revised to
+₹2L. Since July the paper book is −₹22k; risk rules trim drawdown only.
+
+Remaining, in order:
+1. Promote through GitHub after owner review; watch paper logs for
+   `fno_adaptive_risk`, `two_strike_day_halt`, `correlated_exposure_open` and
+   SENSEX entries.
+2. SENSEX replay: a second read-only export with SENSEX futures candles
+   (leave the frozen `2026-10-04-archive/_local` untouched), underlying-aware
+   replay, frozen round on sessions from October 5, 2026.
+3. BFO support in `fno_exit_evidence`/`fno_exit_recovery` before any live SENSEX.
+4. Score vehicle-by-IV and the fast exit loop as frozen candidates on forward data.
+5. Redesign the stale `test_mark_to_market` DR writer-row test.
+6. Entry quality in losing stretches (e.g. an equity-curve pause): freeze first,
+   score only on sessions from October 5.
+
+Do not loosen F&O hard limits beyond owner approval. Nothing pushed or deployed.
+
+## October 4 — F&O replay built; shipped book still best; speed features OFF
+
+[F&O replay and speed slice](2026-10-04-fno-replay-and-speed-slice.md): read-only
+export of the archived NIFTY quote batches, a full-policy single-leg replay
+(8 of 9 live paper trades reproduced), the pure entry planner / entry brakes
+now shared by live and research, and two default-OFF speed features (fast exit
+loop, bar-close trigger) under one F&O lock. Pre-registered `fno-trader-v1`:
+shipped baseline +₹13,306 on Sep 24–Oct 1; FNO_TRADER_V1 +₹7,128 →
+NOT_SUPPORTED_STAYS_OFF (pyramid blocked by the ₹30k structural cap, trend
+filter skipped winners, partial/fast exit neutral).
+
+Next: keep the archive growing and re-export weekly; score new frozen F&O
+rounds only on sessions from Oct 5, 2026 (IV-aware vehicle, time-stop variant,
+BANKNIFTY); paper-enable the fast exit loop for protection after promotion.
+Do not loosen F&O hard limits. Dev only; nothing pushed/deployed.
+
+## October 4 — T2 scored; improvement options and F&O review written
+
+[T2 receipt](2026-10-04-t2-range-swing-momentum-slice.md): shared own-cash
+`daily_portfolio` book (EDGE moved onto it, regression-identical), Range and
+Swing portfolio replays, Momentum `NEXT_BAR_OPEN` clock + `THESIS_EXIT`, one
+pre-registration tool (`scripts/run_preregistered_study.py`) and the
+[testing method guide](RESEARCH_TESTING_METHOD.md). All T2 verdicts
+**NOT_SUPPORTED_STAYS_OFF**; Range reclaim (−30% loss) and SWING_TRADER_V1
+(−80% loss vs baseline) are the best leads. Penny CNC fired 0 times in 9
+months (rule conjunction is effectively unsatisfiable).
+
+Owner direction: running modules (including EDGE) stay on as they are.
+Next per [improvement options and F&O review](2026-10-04-improvement-options-and-fno-review.md):
+Swing round 2 (market-weather switch + affordable universe) on 2024–2025;
+EDGE/Range geometry rounds; F&O chain-archive retention → F&O replay →
+tick-driven exit monitor → frozen F&O candidates. Windows Jan–Jun 2026 (daily)
+and Aug 10–Oct 1 (Momentum) are now seen. Dev only; nothing pushed/deployed.
+
+## October 4 — T1 Penny/EDGE trader candidates scored; none beat baseline
+
+[T1 slice receipt](2026-10-04-t1-penny-edge-trader-slice.md). The T0 prototype
+was corrected (WATCH invalidation, expiry clock, volatility stop, participation)
+and completed into `PEN_TRADER_V1/V2` with thesis exits, wired into the exact
+Penny replay; EDGE gained a causal own-cash portfolio replay
+(`penny_edge_portfolio_replay`) and `EDGE_TRADER_V1`. Freezes were committed
+before untouched windows were scored. Verdicts: **NOT_SUPPORTED_STAYS_OFF** for
+both. Penny untouched (13 sessions): shipped baseline +₹63.17, V2 −₹17.02.
+EDGE untouched Jan–Jun, ₹100k own cash: shipped baseline −40.17% marked, V1
+−44.78%; stop/target geometry (≈+2.8% targets vs −5.2% stops at ~50% hits) is
+structurally negative.
+
+Next: (1) owner decision on pausing EDGE paper and keeping EDGE live disabled;
+(2) EDGE round 2 on geometry, judged on 2024–2025 untouched daily data;
+(3) weekly Penny minute archive for future untouched windows; (4) T2 Range/
+Swing/Momentum adapters. Do not re-tune on Sep 7–23/Oct 1 or Jan–Jun 2026; they
+are now seen. Dev commits only; nothing pushed or deployed; F&O untouched.
+
+## October 4 — active next direction: complete adaptive trader candidates
+
+Follow the [revised adaptive non-F&O plan](2026-10-04-adaptive-non-fno-trader-development-plan.md).
+The owner wants opportunity recognition and timely thesis-based management,
+not another layer of subset-only filters. T0 couples candidate selection,
+complete condition evidence, native warm-up and causal cash/clock fixes with
+runnable Penny/EDGE stateful prototypes. T1 completes those policies; T2 adds
+Range/Swing/Momentum using existing research and audits CNC; T3 qualifies on
+untouched data at matched cash/risk and proves F&O noninterference.
+
+Preserve R1–R5 acceptance and immutable earlier results. Strategy quality cues
+may change only in explicitly named research versions; hard cash/risk/approval,
+execution evidence, protective stops/recovery and deadlines remain constraints.
+Keep baseline reproducible, all failed trials visible and new candidates OFF.
+F&O is excluded and must remain unhindered, including shared cash/resources/exits.
+No live activation or promotion follows from this plan revision.
+
+Plan-only revision at `434c4cc`, Dev-local/uncommitted, preserving earlier dirty
+source/evidence. No source/configuration/schema/dependency change, new test or
+backtest, Production access, broker action, commit, push or deployment. Prior
+130 test passes belong to the preceding review. All T0–T3 work remains open.
+
+## October 4 — latest independent review; finish fidelity before tuning
+
+The owner requested minor fixes, a plan for larger gaps and an identical-parameter
+Yahoo comparison. [Review and R1–R5 follow-up](2026-10-04-non-fno-independent-review-and-repeat-plan.md)
+is the active next slice. **The original plan is partial**, despite N1–N3 helpers
+being present. Default policies did not change; first repeat matches all 16 prior
+outcomes. Candidate filters/measurement cannot imply improved live performance.
+
+Minor corrections cover Penny retest/profile validity and Momentum ATR/regime,
+same-session positive-volume/deadline evidence and settings receipts. EDGE is
+PROXY until causal holding/entry/cash semantics are established. 130 focused
+tests passed; compilation/diff and 241-module atlas checks passed. Final repeat
+and separately named candidate evidence remain distinct in the review receipt.
+
+Next major work: explicit candidate interface and historical context/warm-up;
+causal EDGE/Momentum lifecycle with marked/partial equity; real Range/Swing
+adapters and bounded hypotheses; untouched trial qualification and F&O cash/
+resource compatibility. Keep F&O excluded and unhindered. No new runtime gates,
+funding, shared defaults, orders or canary are authorized by this review.
+Baseline `434c4cc`; Dev-local uncommitted work, no Production access/edit,
+configuration/schema/dependency change, push or deployment.
+
+[Completed comparison](2026-10-04-non-fno-review-and-backtest-results.md): both
+all-module repeats reproduce all 16 original outcomes; PEN_CONTEXT zero entries
+with missing profiles, Momentum exit diagnostic −₹19.01 and EDGE independent-
+trial PROXY sum −₹60,813.84. None proves improvement; R1–R5 stay open. Integrity
+receipts bind snapshots/raw responses, current source/settings and trial freezes.
+
+## October 4 — active N1–N3 implementation slice (Dev only)
+
+The owner authorized N1, N2 and N3 from the researched non-F&O plan.  The
+current implementation contract is [N1–N3 implementation slice](2026-10-04-n1-n3-implementation-slice.md): first replace known optimistic research
+shortcuts with deterministic lifecycle measurement, then add named,
+broker-free candidates.  F&O and shared live infrastructure remain out of
+scope; baseline policy stays active unless a separate rollout is approved.
+
+**Source completion boundary.** N1–N3 code is now present: Momentum has a
+named shipped-exit lifecycle, EDGE has next-open lifecycle evidence, Penny has
+default-off `PEN_CONTEXT`, and Range/Swing gates are pure research helpers.
+No candidate has earned a policy change. Next: freeze candidate manifests,
+compare equal cash/risk with coverage and all failures retained, then pursue N4
+only if full-system context can be recorded. F&O operational compatibility and
+any broker/paper observation remain separate, unapproved work.
+
+Source implementation commit `65e050a`; 109 focused tests passed (one existing
+HTTPX deprecation), affected modules compiled, `git diff --check` passed and
+the atlas was regenerated to 241 Python modules. Dev only: no push, deployment,
+Production edit, broker action, configuration or schema migration.
+
+## October 3 — active next direction: smarter non-F&O entries/exits
+
+The owner requested a researched development plan after the Yahoo results.
+[Smart entry/exit plan](2026-10-03-non-fno-smart-entry-exit-development-plan.md)
+is the latest direction: N0 baseline/F&O isolation and N1 lifecycle economics,
+then Penny MIS/EDGE experiments, followed by Range/Swing and existing Momentum
+research/parity. Activity counts are setup/selection/fill-specific; ₹15.18 is
+five-session Penny sensitivity, not full-system/live earnings.
+
+**F&O development is excluded and must not be hindered**, including shared cash,
+regime/configuration, scheduler/DB/broker resources and exit authority. New
+variants stay broker-free/default OFF until separate qualification and rollout.
+No guaranteed daily profit, capital increase or gate weakening to force activity.
+Reuse existing shipped VWAP/ATR/regime/ranking/exit and S7/proactive functions.
+
+The plan is documentation only against Dev `4be033a`; all N0–N4 source work,
+data coverage, qualification and promotion remain open. Required docs/source
+and primary research reviewed; delivery link/scope/diff checks recorded in the
+plan. Dev-local uncommitted documentation, no source/configuration/schema change,
+Production access, broker actions, push or deployment in this planning task.
+Earlier instructions to await this discussion are superseded by this plan;
+older F&O/S6 priorities are historical for this non-F&O development request.
+
+## October 3 — Yahoo interface delivered; historical fidelity limits remain
+
+The owner superseded reliance on Sentinel's retained price history for these
+non-F&O tests. [Yahoo plan](2026-10-03-yahoo-all-module-backtest-plan.md),
+[usage](YAHOO_BACKTEST_GUIDE.md) and [real results](2026-10-03-yahoo-backtest-results.md)
+record the delivered one-script date-argument interface. Native Yahoo OHLCV,
+900-day daily warm-up, immutable raw/import/validated archives and current
+shipped functions are used. No strategy tuning or F&O/broker/Production path.
+70 focused tests passed; final offline repeats and documentation/atlas checks
+are recorded with the source commit receipt.
+Source/research commit `df0c379` is Dev-local; all 16 repeated outcomes agree,
+and immediate documentation/atlas/clean-worktree checks passed.
+
+Q3 daily evaluator outputs are available, including Swing's missing index warm-up.
+Yahoo does not supply expired Q3 minute/15-minute history; primaries stay
+unavailable and Sep 24–30 studies stay separate. Current Penny finds 18 closes
+in that partial-session sensitivity, with fragile +₹15.18 and negative adverse
+fill/winner-exclusion diagnostics. Do not relax entry gates simply to trade more.
+
+Before full-system profit claims, bind real EDGE/Swing/Range execution/exit
+lifecycles, live Momentum partial/trail behavior, historical context/admission
+and marked shared portfolio equity. Current membership/adjusted prices and
+prospective qualification remain limitations. Discuss improvements after the
+owner reviews these new Yahoo results. Dev-only artifacts; no promotion.
+
+## October 3 — testing finished; discuss improvements before implementing
+
+The owner's latest request is tests first, improvement discussion afterward.
+[Results](2026-10-03-current-system-backtest-results.md) and
+[test plan / remaining evidence defects](2026-10-03-current-system-backtest-plan.md)
+supersede a claim of complete multi-module profitability testing. All 19 archived
+jobs finished, including preserved unavailable/failed attempts; 11 delivered
+runs bind current source after the EDGE handle-only cleanup. No strategy tuning.
+28 focused tests passed; immutable evidence/source checks, repeat outcomes,
+compile/diff and atlas verification passed. Source/research commit `4929bea`;
+immediate consistency, deterministic atlas and clean-worktree checks passed.
+See [completion receipt](2026-10-03-current-system-test-completion.md).
+
+The quarter is not fully covered. F&O full-policy/exit replay is unavailable;
+recorded cash is distinct. Penny has actual historical activity, but complete
+minute coverage is 189/6,500 stock-days. Its partial shared-cash sensitivity
+locks four unresolved entries and cash-rejects seven candidates. Momentum has
+16 later-day fallback closes, so its negative diagnostic cannot estimate live
+intraday profitability. Swing lacks index warm-up; EDGE/Range remain evaluators.
+
+Discuss evidence-led priorities with the owner before changing entries/exits:
+historical coverage and context; Penny unresolved exits and CNC gate overlap;
+EDGE/Range/Swing lifecycle contracts; exact Momentum partial/trail/EOD behavior;
+verified executable F&O capture and winner concentration. Normalize mixed UTC/
+IST ledger clocks and retain date-only CNC conservatism before broader portfolio
+claims; independently normalized actual streams agree on this study's metrics.
+No full-system qualification is available. P1/P2/P4 delivered source slices do
+not remove P3 historical fidelity or operational acceptance requirements.
+
+Production `044c016` is currently stopped and was only read/copied into Dev.
+No restart, Production edit, orders, push or promotion occurred. Test artifacts
+and correction are Dev-local; original large snapshots remain locally retained.
+
+## October 3 — P1/P2/P4 delivered; P3 partial evidence boundary remains (Dev only)
+
+P2 now recursively binds local transitive source dependencies in the policy
+manifest and exclusively publishes completed snapshot/report artifacts without
+an exists/write race. Focused CLI/Lab verification: 26 passed, one existing
+httpx deprecation warning. Dev-only; no source data, runtime configuration,
+broker, Production, push or deployment action occurred.
+
+The owner approved P1 nominal book allocations: Swing ₹1,000, Penny ₹2,000,
+Momentum ₹3,000 and EDGE ₹3,000. Unused allocation may transfer, so the ledger
+must protect the account-wide own-cash limit and record book attribution; it
+must not turn the four nominal allocations into isolated, stranded pools.
+
+The owner delegated the outstanding contingency decision: P1 uses full bounded
+entry exposure + calculated charges + a 1% executable-notional reserve. This
+is recorded with P1–P4 contracts, acceptance and rollback in
+[the completion slice](2026-10-03-p1-p4-completion-slice.md). P2 source commit
+`28876be` is Dev-only; its focused CLI/Lab verification passed (26 passed,
+one existing httpx deprecation warning). No source data, runtime configuration,
+broker, Production, push or deployment action occurred.
+
+P1 source admission is now shared across Python and Node through the durable
+`account_cash_reservations` protocol. Its immediate source acceptance covers
+concurrent snapshot overcommitment, visible broker pending-order
+de-duplication, ambiguity/partial retention, zero-fill release and exit
+exemption. The owner-approved book allocation is recorded as attribution and
+the account-wide own-cash invariant supports allowed transfers. Paper
+observation and owner-controlled promotion remain required.
+
+P3 now includes a joint Penny MIS/CNC cash reconciler and a declared
+`PORTFOLIO_PARTIAL` adapter. It improves shared-cash/fill/exit accounting but
+cannot become FULL_PORTFOLIO until the runtime has archived point-in-time
+universe, regime, event, broker and scheduler evidence; Momentum, Swing, EDGE
+and Range have the same evidence boundary. P4 has an append-only prospective
+registry and rejects qualification of this partial scope. Do not bypass that
+block or relabel prior/historical date declarations as untouched holdouts.
+P1/P3/P4 source commit `919e042` is Dev-local. No push, deployment or
+Production runtime action occurred. The native Node SQLite ABI limitation is
+recorded in the slice; run its real ledger protocol suite inside the matching
+gateway container before paper observation/promotion.
+
+## October 3 — authoritative post-implementation review (Dev only)
+
+[Review, correction slice and follow-up acceptance plan](2026-10-03-post-implementation-independent-review.md)
+supersedes the earlier blanket B0-B6 completion claims. The small correction
+slice covers order-bound F0 reconciliation, unresolved occupancy, malformed
+order-book evidence and truthful report/holdout semantics. No migration/config
+change or Production/push/deployment action is authorized by this review.
+
+Remaining implementation order: **P1 F1-B account-wide atomic own-cash admission**
+and catastrophe acceptance; **P2 B0/B1 complete manifests and point-in-time
+evidence**; **P3 B2/B3/B4 historical lifecycle/portfolio parity**; **P4 B6
+prospective holdout and session-block uncertainty**. The linked slice defines
+files/contracts, adversarial acceptance and rollout/rollback for each.
+B5 remains excluded in the recorded current scope. CNC real-data collection
+and Dev release operational acceptance remain pending. Production resumed after
+the owner's power cut and reports the older declared engine `044c016`; this
+review did not restart it. Final affected regression: 294 passed, two existing
+deprecations; atlas/compile/diff checks passed.
+Correction source commit `284bb4a` is Dev-local; immediate documentation/plan
+consistency and atlas reproducibility passed. The authorized review is complete;
+implement P1-P4 only in their defined follow-up slices.
+Older receipts below describe delivery at their commit, not current completion
+of the full original plan.
+
+## October 3 — B3 evaluator slice delivered: shipped Swing/EDGE daily decision parity (Dev only)
+
+**Problem.** The registered `swing_regime_daily` runner is explicitly a
+single-ticker proxy (it substitutes the tested ticker for NIFTY and supplies
+neutral market context). `penny_edge_backtest.py` has older hard-coded
+thresholds, database and fill assumptions. Neither result may be relabelled as
+a replay of the deployed daily decision path.
+
+**Delivered.** Distinct research-only adapters call the shipped Swing evaluator
+and EDGE scanner. They freeze current defaults, retain the old proxy adapter's
+label, and fail unavailable when index/history evidence is absent. This is an
+**EVALUATOR** replay: it reports decisions/candidates and rejects, not a live
+portfolio, fill, broker admission or historical breadth/universe reconstruction.
+
+**Files/contracts.** `python-engine/backtest_lab.py` registry/adapter contract;
+new pure daily replay helper and unit/differential tests; `backtest_catalogue.py`
+family declaration; this plan, the system guide and checklist. Inputs are a
+frozen `ohlcv_cache` snapshot with explicit stock and index symbols; all source
+reads remain read-only.
+
+**Acceptance completed.** Fixtures call the same shipped functions and prove:
+no bar dated D informs a Swing D decision; configured EDGE rank/strength values
+reach the exact scanner through a temporary frozen cache; and the catalogue
+states evaluator-only scope. Binding found and fixed the RSI-history delta
+off-by-one which could abort live Swing scans. No strategy thresholds, capital,
+broker, runtime scheduling or Production file changed. Focused verification:
+149 passed, one existing httpx deprecation warning.
+
+**Rollout/rollback/remaining work.** Offline Dev tests only; archive manifests
+through the existing CLI. Rollback removes only the new research adapters and
+does not alter archived runs. Next: B6 held-out reporting, then owner review of
+the separately listed live cross-book allocation
+decisions. GitHub push/promotion and Production read-only checks remain pending.
+
+## October 3 — B4 evaluator slice delivered: Momentum and Range shipped-policy replays (Dev only)
+
+**Problem.** The existing Momentum 15-minute adapter correctly reuses the
+evaluator but models a shadow full-quantity target and has no evidence of the
+manual EXEC/admission path. Range Reversion is a pure entry profile reached
+through the proactive dispatcher and has no Backtest Lab adapter at all. A
+daily Swing result must not be relabelled as Range performance.
+
+**Delivered.** The Momentum replay retains its evaluator scope but defaults to
+the shipped `MOM_BASE`; `MOM_RECENCY_5` is explicit research only. The Range
+evaluator invokes `range_reversion_entry` on completed point-in-time bars,
+records every verdict/reason and reports no P&L. Where
+historical manual approval, archived advisory context, broker admission,
+reservation or exit evidence is missing, declare it unavailable rather than
+construct a counterfactual portfolio. If a pure exact Momentum admission/exit
+kernel is already shared by runtime, bind it with parity tests; otherwise
+document the boundary and do not claim lifecycle completion.
+
+**Files/contracts.** `range_reversion.py`, its dispatcher call site,
+`momentum_replay.py`, Backtest Lab/catalogue, existing B1 data contracts and
+focused tests. Frozen snapshots are read-only; no live/order modules may be
+called. Update guide/checklist/atlas on source changes.
+
+**Acceptance completed.** Range decisions use only completed, prior-known bars and are
+catalogued separately from Swing. Momentum retains its actual evaluator/exit
+assumptions and rejects unverifiable interval/context input. Tests prove
+decision parity/clock behavior and no adapter can place orders. No settings,
+capital policy, Telegram action, broker call, Production edit or deployment.
+Focused verification: 70 passed, one existing httpx deprecation warning.
+
+**Rollout/rollback/remaining work.** Dev-only offline tests and archived
+manifests. Rollback removes research code only. Next B6 adds holdout/report
+requirements. B5 stays excluded by the owner; the unresolved cross-book live
+allocation decisions remain owner decisions.
+
+## October 3 — B6 reporting slice delivered: standard reports and date comparison guard (Dev only)
+
+**Problem.** `backtest_cli report` currently only echoes a run's summary;
+`compare` checks snapshot/window equality but does not protect an untouched
+holdout boundary or explain whether a metric has an adequate equity clock.
+This can encourage false comparability and selection leakage.
+
+**Delivered.** A deterministic report formatter over archived Backtest Lab
+reports retains policy/code/settings/data manifests,
+separate unavailable/evaluator results from cash-return results, show the
+metrics actually evidenced (gross/net/costs/exposure/turnover/distributions/
+MFE-MAE/holding/drawdown only when present), and label every unavailable field.
+adds an archived holdout date declaration with no overlap; comparisons require
+identical snapshot, scope and holdout
+declaration. Bootstrap uncertainty is allowed only for actual closed-trade
+samples and must be deterministically seeded; it is never a profitability or
+deployment verdict.
+
+**Files/contracts.** `backtest_cli.py`, a pure reporting helper, CLI tests and
+docs/catalogue as needed. Reports remain read-only JSON; secrets stay excluded.
+No strategy adapter, broker, cache source, live setting or Production file is
+changed.
+
+**Acceptance completed for this slice.** Snapshot/window/scope/date-declaration
+compatibility and non-overlap are enforced; missing/invalid equity clocks yield
+`null` risk-adjusted fields. Tests cover overlap, incompatible comparison,
+deterministic IID uncertainty and unavailable metrics. They do not establish
+prospective policy freezing or reject repeated selection/prior holdout use.
+New declarations explicitly say `DECLARED_UNVERIFIED`.
+
+**Rollout/rollback/remaining work.** Dev-only generated reports; rollback
+removes report helpers without deleting archived reports. The original B0-B6
+plan remains incomplete as listed in the authoritative review above.
+B5 remains excluded; Production recovery/read-only checks, GitHub push
+and promotion remain separate authorized steps.
+
+## October 3 — B0/B2 complete: exact classic Penny CNC Connors paper lifecycle (Dev only)
+
+[B2 CNC slice](2026-10-03-b2-penny-cnc-connors-lifecycle.md).
+- **Entry.** The replay reproduces the 09:30 scan with today's in-progress
+  candle, rebuilt from minute bars, and calls the real
+  `evaluate_connors_entry` with real sizing, caps and executor checks.
+- **Exits.** It reproduces the 15:45 `update_daily_positions` tracker
+  (stop, T1 50% to breakeven, T2, 15 days), proved equal to the real
+  tracker and scanner by parity tests (14 tests).
+- **Lab and CLI.** `penny_cnc_connors_lifecycle_1d` and `--strategy cnc`.
+
+Runtime findings, not changed:
+- `evaluate_connors_exit` has no caller.
+- Live CNC rows have no exit management besides a broker SL-M.
+- The 09:30 volume gate compares about 15 minutes of volume with a daily
+  median.
+- Partial day candles are cached until replaced.
+- The entry-day stop uses the pre-entry low.
+
+**Real-data run pending:** Production is stopped.
+
+The CNC paper lifecycle slice is delivered under declared assumptions. The
+original full-system plan is incomplete; see the authoritative review above.
+B5 is excluded in the current recorded scope; promotion is separate.
+
+## October 3 — F1-A owner rule "no extra margin" enforced at both broker boundaries (Dev only)
+
+[F1-A slice](2026-10-03-f1a-own-cash-no-leverage-guard.md).
+
+**Owner's definition:** invest only one's own money. No leverage, and
+losses are bounded by the cash put in.
+
+**What is now enforced (gateway Momentum/Swing EXEC, and Python
+Penny/EDGE/F&O live).** Every BUY entry must satisfy:
+
+> full order value ≤ broker `available.cash` − open long cost − pending buys − today's realised loss
+
+- Missing evidence or short positions fail closed. Exits are never checked.
+- Before this change, the gateway accepted leveraged MIS buys by comparing
+  only the broker's roughly-20% MIS margin.
+
+**Tests.** 58 gateway executor tests and 16 Python F1-A tests. The full
+Python suite gave 4733 passed, plus 4 pre-existing baseline failures.
+
+**Owner decisions on book-level over-allocation are listed in the slice.**
+F1 is still open beyond this: broker statement authenticity, any short or
+multi-leg live path, and catastrophe drills.
+
+## October 3 — F0-R5 implemented in Dev; F0 R1–R5 source work complete
+
+[R5 slice and verification](2026-10-03-fno-f0-r5-occupancy-and-clocks.md).
+- **Occupancy at the claim.** The existing single-leg limits (concurrency,
+  trades/day, open-premium cap, no-pyramid) and "one DR structure at a time"
+  are enforced inside the claim transaction, counting in-flight claims.
+- **Clocks after the claim.** Live callers re-check the cutoff and quote/
+  chain freshness after the claim. A failure releases the entry auditably
+  without dispatch.
+- **Proof.** The review's DR race went from 2 open structures to 1.
+- **Tests.** 12 new; 865 regression passed, plus the known unrelated
+  mark-to-market failure.
+- **Harness note.** A pre-existing pytest-asyncio/`asyncio.run` socket
+  warning appears under `-W error`.
+
+Remaining after F0:
+1. Promote R1–R5 through GitHub.
+2. Run the R3 Production SQL check once the stack is back up.
+3. Observe paper claims and recoveries.
+4. F1 (owner cash-only semantics plus broker margin preflight).
+5. B2 CNC Connors adapter, then B0 and B3–B6.
+
+Commit `6d41192` (Dev-local). Dev only, not pushed or deployed.
+
+## October 3 — F0-R4 implemented in Dev (broker payload binding)
+
+[R4 slice and verification](2026-10-03-fno-f0-r4-broker-payload-binding.md).
+- **Shared check.** `fno_exit_evidence.derive_exit_facts` is now the single
+  interpretation of an exit packet. The live verifier and the shared-risk
+  reader both use it; the reader never calls the broker.
+- **Binding.** Every open partial's receipt must match its retained packet:
+  account, order, symbol, tag, status, quantities and weighted price. It
+  must also match the position's immutable entry premium, and recompute its
+  charges from the cost snapshot frozen at write time.
+- **Fail closed.** Empty or forged payloads, consistent wrong prices, wrong
+  costs and missing provenance all deny entry.
+- **Proof.** All 15 corruption tests fail on the pre-R4 reader and pass on
+  R4.
+- **Tests.** 18 new; 781 regression passed, plus the known unrelated
+  mark-to-market failure.
+
+Commit `0bc8fa4` (Dev-local). Next: **R5**. Dev only, not pushed or deployed.
+
+## October 3 — F0-R3 implemented in Dev (canonical cash, clock, completed trades)
+
+[R3 slice and verification](2026-10-03-fno-f0-r3-cash-clock-completion.md).
+- **One reader.** The shared view and policy read one validated cash
+  ledger. `TRADE_PARTIAL` and `TRADE_CLOSED` are each counted once.
+- **Fail closed.** Future, naive, non-finite, duplicate-exact and
+  unclassified cash all deny entry; the observation clock defaults to the
+  wall clock. Settled positions without their exact cash also deny entry.
+- **Brakes.** Buckets are bounded by the policy day, and the six-loss pause
+  counts completed trades.
+- **Manual cash.** A positive manual deposit is never capacity.
+- **Legacy rows** (generation 0, or no origin) are reported, not rejected.
+- **Probe.** The pre-R3 code allowed the partial-loss and future-masking
+  cases and falsely paused on six partial exits; R3 fixes all three.
+- **Tests.** 20 new; 727 regression passed, plus the known unrelated
+  mark-to-market failure.
+
+Production's stack was found **stopped** at 12:22 IST on October 3; this
+task did not touch it. Before promoting R3, run the slice's read-only SQL
+check on Production.
+
+Commit `5a3b978` (Dev-local). Next: **R4**, then R5. Dev only, not pushed or deployed.
+
+## October 3 — F0-R2 implemented in Dev (one dispatch owner)
+
+[R2 slice and verification](2026-10-03-fno-f0-r2-dispatch-ownership.md).
+- **Claims.** A reservation is now only a receipt.
+  `claim_shared_fno_entry_dispatch` re-reads the entry policy and grants
+  exactly one `DISPATCHING` owner per reservation. Positions require the
+  claim, and a halted retry is denied and released before dispatch.
+- **Executor.** It re-reads the final order state after a cancel and returns
+  typed outcomes with evidence. Only no-dispatch, explicit 4xx rejection and
+  verified zero-fill outcomes release capital. Partial, unknown and
+  unrecorded fills keep the full reservation (`UNRESOLVED`) until
+  `reconcile_shared_fno_entry_dispatch` is given verified evidence.
+- **Broker client.** `place_order` reports `dispatch_certainty`.
+- **Tests.** 37 new; 666 F&O/broker/settlement passed, plus the known
+  unrelated mark-to-market failure; 118 Penny order-path passed.
+
+Commit `54c500e` (Dev-local). Next: **R3**, then R4 and R5. Dev only, not pushed or deployed.
+
+**Operator note.** After any live F&O entry, check for `UNRESOLVED` or
+orphaned `DISPATCHING` rows in `fno_entry_dispatches`
+(`SharedFnoRiskView.unresolved_entry_dispatch_count`). They hold capital by
+design until reconciled.
+
+## October 3 — F0-R1 implemented in Dev (fee-inclusive exposure)
+
+[R1 slice and verification](2026-10-03-fno-f0-r1-fee-inclusive-exposure.md).
+- Single-leg rows freeze `risk_fee_reserve_rupees` from the actual fill and
+  quantity; DR uses its frozen `entry_cost_rs`.
+- The shared view counts loss plus fee for every OPEN/UNRESOLVED row. A
+  partial keeps the full fee; a close hands over to exact ledger cash.
+- Unbound fee economics, or a single-leg loss below its premium at risk,
+  fail closed. Immutability triggers protect the evidence.
+- The review's reproduction now holds capacity at ₹1, where it previously
+  leaked ₹51.58.
+- Tests: 11 new warnings-fatal; 530 F&O/settlement passed, plus 1
+  pre-existing unrelated mark-to-market failure.
+
+Commit `d4fd298` (Dev-local). Next: **R2** (single dispatch owner; halt-safe retry; ambiguous entries keep
+capital), then R3–R5. Dev only, not pushed or deployed.
+
+## October 3 — B1/B2 implemented in Dev (current state; read first)
+
+[B1/B2 slice, results and verification](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md). The owner directed this
+task to treat the F&O half of the October 3 plan as done and to implement
+B1/B2. For the record, the [independent F0 review](2026-10-03-fno-f0-independent-review.md)
+still lists R1–R5; this slice changed no F&O code.
+
+- **B1 `research_data_contracts.py`.**
+  - One interval label per run; other labels are reported and never merged;
+    `legacy_unknown` is never usable.
+  - IST bar-start clock; an invalid row invalidates its ticker-day.
+  - Zero-volume bars are marks, not fills.
+  - Coverage statuses: COMPLETE, PARTIAL, INVALID, UNAVAILABLE.
+  - The audited calendar has an explicit validity range.
+  - Daily bars are point-in-time; suspected corporate actions and
+    off-calendar dates are reported, never repaired.
+  - Manifests carry hashes; loaders are read-only.
+- **B2 `penny_lifecycle_replay.py`.** Replays the exact classic Penny MIS
+  lifecycle (scope `LIFECYCLE`):
+  - the live completed-bar clock;
+  - real `PennyRiskEngine` sizing, the circuit filter, one position per
+    ticker and at most 3 MIS positions;
+  - executor drift and stop-breach checks;
+  - the paper LTP stop or a broker stop, the 14:30 smart-EOD / 30-minute
+    time stop, and the 15:00 force close, with no target exit.
+
+  It passed a minute-by-minute parity test against the real
+  `PennyScanner._evaluate_ticker_breakout`. It is registered in the Lab as
+  `penny_breakout_mis_lifecycle_1m` and available through
+  `scripts/run_penny_research.py --strategy lifecycle`.
+- **Tests.**
+  - B1 + B2 + CLI: 57 passed, warnings-fatal.
+  - Broad Penny/Lab/research/calendar selection: 809 passed and 1 skipped;
+    its warnings are the known Starlette/HTTPX deprecations.
+- **Predeclared runs on Production data (read-only).**
+  - Primary (`complete_only`): 3 trades, net +₹31.52; excluding the best
+    winner, −₹5.91.
+  - Sensitivity (`allow_gaps`): 5 trades, net +₹81.12.
+
+  This shows rare entries and dependence on winners running to the 14:30
+  rule. It establishes no profitability, holdout or funding authority.
+- **Findings left for the owner.**
+  - The classic Penny daily kill switch is never fed by runtime
+    settlements, so it is inert.
+  - Minute capture stops at about 14:29 after 2026-09-03, which leaves later
+    sessions without exit evidence.
+  - The bankroll is a fixed setting.
+- **Next.**
+  - CNC Connors exact adapter, then B3–B6.
+  - Point-in-time universe and regime before any `FULL_PORTFOLIO` claim.
+  - The F0 R1–R5 items and F1 remain open.
+
+Dev only: implementation commit `9a18445`, local, not pushed or deployed; Production is unchanged at `044c016`.
+
+## October 3 — independent F0 review: acceptance reopened
+
+Read [the independent F0 review](2026-10-03-fno-f0-independent-review.md)
+before acting on the earlier completion receipts. Reviewed Dev `2b106f7`;
+Production remains `044c016` and lacks the shared-risk module. Existing F0
+paper gates and atomic writes are implemented; source acceptance is open.
+
+- R1: preserve fee-inclusive exposure through consumed/open/unresolved/partial
+  states, with exact cash conservation across both books.
+- R2: one durable dispatch owner, current-policy retry checks and evidence-backed
+  handling of ambiguous entry/cancel/partial outcomes; no timeout release.
+- R3: canonical partial/terminal cash, aware observation bounds and completed
+  trade identity for the existing consecutive-loss brake.
+- R4: re-derive retained broker payload facts and bind immutable entry/cost
+  economics, beyond checking a digest and consistent scalar arithmetic.
+- R5: enforce existing occupancy/premium/daily/no-pyramid limits atomically,
+  then refresh real deadlines/freshness after the new admission DB waits.
+
+Two bounded corrections are implemented here: shared read helpers do not
+create missing databases, and verified zero-fill recovery retains all exposure
+without false unavailability. Three new regressions pass warnings-fatal; final
+verification is 114 passed with one existing Starlette warning and normal
+exit; compilation/atlas/whitespace checks passed. Commit identity is in the
+review. Implementation commit `a3f082f` is Dev-local, with immediate
+post-commit source/atlas/docs/plan consistency verified. No schema/configuration
+change, push or Production action. B1/B2 remains the next requested phase;
+do not carry the superseded F0 source-complete claim into that work.
+
+## October 3 — successor and shipped-module backtesting (current priority)
+
+Start with [the successor inheritance](2026-10-03-successor-inheritance.md) and
+[F&O safety / B0–B6 backtest plan](2026-10-03-backtesting-and-fno-safety-plan.md).
+**Historical implemented slice — F0-D verified partial-exit residual exposure (October 3, Dev only).**
+Problem: the existing, operator-authorised `FNO_LIVE` recovery can record a
+broker-verified partial exit and proportionally lower `fno_positions.max_loss_rupees`,
+but the shared F&O view currently trusts that scalar without tying it to the
+recovery receipt and exact ledger cash. Contract: for every still-open
+single-leg position with recovery evidence, validate the ordered filled/residual
+quantities, settlement generations, retained `ledger_id`/source/origin cash,
+and the pro-rata residual catastrophe loss against immutable initial quantity
+and loss. Any missing, stale, duplicate or inconsistent partial evidence makes
+new shared-risk admission unavailable; it never fabricates a release. Closed
+history is not retroactively repaired, and no partial DR execution mechanism is
+invented. Acceptance: a verified partial release exposes only its residual
+worst-case cash; tampered/missing recovery or ledger evidence fails closed;
+concurrent/restart resolution produces one cash row and one residual state;
+unresolved/reserved exposure remains blocked. No signal, sizing, live-entry,
+broker call, DR legging or exit authority change. Rollout: Dev tests and
+additive read validation only, then local commit/review and paper observation;
+rollback reverts the validation, preserving cash/recovery evidence.
+
+Implementation result: residual FNO exposure is accepted only after the
+shared view verifies ordered recovery quantities/generations, the unique
+source/origin/generation ledger event and pro-rata remaining structural loss.
+This covers actual operator-reconciled partial fills without inventing a paper
+or DR partial fill path. A scalar/cash/receipt mismatch fails closed. Focused
+shared-risk tests: 10 warnings-fatal; shared-risk plus recovery selection: 32
+passed with the existing deprecated-ASGI route test deselected; broader F&O
+risk/DR/orchestrator coverage: 80 passed normally. Source commit `7b77341`;
+Dev only, not pushed or deployed.
+
+**Completed implementation slice — F0-E receipt-backed partial cash integrity
+(October 3, Dev only).** Problem: F0-D binds a residual to the identity of a
+partial-exit ledger event but does not re-derive that event's P&L from the
+retained fill receipt, and its declared entry quantity/loss baselines are not
+write-protected. An altered fill price, cash value or baseline could therefore
+make an invalid residual appear internally consistent. Contract: the shared
+view must verify the canonical broker-evidence digest, filled receipt price and
+cost-derived cash against the exact ledger row; `initial_qty`, `initial_lots`
+and `initial_max_loss_rupees` become migration-safe immutable baselines once
+populated. Any discrepancy denies new entry without changing existing
+management, exits, broker calls, signal selection, sizing or thresholds.
+Acceptance: real verified partial recovery still exposes its pro-rata residual
+and exact cash; altered evidence, fill price, cash, generation or baseline
+fails closed; legacy-null baselines can be populated once, while a populated
+baseline cannot be rewritten; concurrent/restart recovery continues to yield
+one receipt/cash transition. Rollout: additive Dev schema trigger and read
+validation, local tests/commit, then GitHub promotion and paper observation.
+Rollback: revert only the view validation and trigger migration, retaining all
+settlement/recovery evidence. Implementation result: recovery rows now persist
+the entry/fill/gross/cost/P&L values calculated in their atomic resolution
+transaction, and immutable triggers protect recovery receipts plus populated
+quantity/loss baselines. The shared view verifies the receipt hash, arithmetic,
+ledger identity/cash, ordered generation and pro-rata residual before it grants
+capacity. Existing partial rows lacking the new economic evidence fail closed;
+they are never silently backfilled. Focused shared-risk/recovery tests: 32
+passed warnings-fatal (two documented non-F0 test exclusions). Broader F&O
+admission/lifecycle/DR/orchestrator selection: 150 passed normally; its
+warnings-fatal form has one pre-existing socket-lifecycle warning in an
+orchestrator timing test after 149 assertions. F0's Dev source contract is
+complete pending post-promotion paper admission/recovery observation. F1
+remains the separately authorised broker cash/margin preflight before any live
+funding. Source commit `a9fef57`; Dev only, not pushed or deployed.
+
+**Completed implementation slice — F0-C shared paper entry-policy receipt (October 3, Dev only).**
+Problem: F0-B atomically reserves paper F&O catastrophe cash across the
+single-leg and defined-risk books, but the legacy directional kill switches and
+drawdown gate do not count defined-risk/partial ledger cash and DR admission
+does not consult them. Contracts: add a typed, source-scoped, fail-closed
+shared-entry-policy receipt in `fno_shared_risk.py`; derive day/week/month
+losses from exact `TRADE_CLOSED` ledger rows (all F&O origins) using explicit
+IST event dates, and derive drawdown from the same shared realised equity view.
+Both new paper entry paths must consult that same receipt; existing position
+management and exits must remain callable during a halt. Do not change signal,
+quote, sizing, structural-limit, broker, live-spread, or settlement authority.
+Acceptance checks: one DR or partial ledger loss halts either prospective book;
+source isolation, malformed/naive clocks and missing required evidence reject
+new entries; no halt is introduced for a profitable/within-limit fixture; the
+drawdown threshold remains the existing 25% allocation policy; and a halted
+tick still manages single-leg/DR exits. Rollout: additive code/tests and paper
+receipt only in Dev, then a local commit and GitHub promotion/review before
+paper observation; no Production configuration/data/process changes. Rollback:
+revert only admission-policy wiring while preserving reservation/ledger
+evidence; an emergency entry disable never removes exit authority. Remaining
+F0 work after this slice: exact partial-settlement release/restart/race
+reconciliation and F1 broker cash/margin preflight. Implementation result:
+both paper admissions now read the typed receipt, and reservation re-checks it
+inside `BEGIN IMMEDIATE`; exact DR/partial `TRADE_CLOSED` cash is common to
+both books, while malformed/naive evidence denies new entries. Existing values
+remain 6%/12%/20%, six losses and 25% drawdown—no new restriction was tuned in.
+Focused `test_fno_shared_risk.py` plus `test_fno_risk_switches.py` passed 24
+warnings-fatal; F&O shared-risk/risk-switch/DR/orchestrator selection passed
+79 normally. The corresponding warnings-fatal wider run hit one documented
+Windows socket-lifecycle warning after 47 assertions. Implementation commit
+`bc666fe`; Dev only, not pushed or deployed.
+
+**F0-A foundation is now in Dev:** `fno_shared_risk.py` provides a fail-closed,
+source-scoped view of exact settlement cash plus single-leg/defined-risk
+OPEN/UNRESOLVED losses and durable reservations. Its transactionally inserted
+reservations cannot expire automatically and one-way resolution needs a receipt.
+F0-B now binds both paper entries' fee-inclusive worst-case reservations to
+their position insert atomically, preserving feasible fixture admissions while
+preventing cross-book double spending. Next, make shared loss/drawdown decisions
+apply to both books, then add partial-settlement/restart/race characterization. F1 verifies cash-only broker
+margin/legging safety; no live spread authority is implied. Recent positive F&O
+results do not prove improvement was caused at September 17 (that is also a
+cash-key sample boundary). F0-B source commit: `0ba2d29` (Dev; pushed, not deployed).
+
+Completed: existing Penny minute baseline via new inert Dev CLI; two unavailable
+samples retained, valid two-stock August 11–20 diagnostic has 5,774 evaluations
+and no entries (profitability unavailable). Small research-only SQLite handle
+closure fixes Windows temp cleanup. CLI 4 and replay 11 warnings-fatal; combined
+82 passed with one existing dependency warning. Full all-module CLI, provider
+history, regime/lifecycle/capital parity are **planned**, not code-complete.
+B1 data contracts/B2 classic Penny lifecycle follow F0. R6 operational acceptance
+and independently authorized partner qualification/canary remain open.
+
+## October 2 — current F&O profitability request
+
+Read [the assessment and concrete replay/data plan](2026-10-02-fno-profitability-assessment.md).
+The Dev-only `scripts/assess_fno_profitability.py` ran against Production
+SQLite read-only. Recent linked paper outcomes are +₹10,755.67 single-leg (9)
+and +₹3,187.60 spreads (7), but all retained July–October position rows report
+-₹18,367.22 / -₹3,721.71 and older cash is not exactly reconciled. This is
+operational history, **not a current-policy backtest or funding approval**.
+Quote archive directories cover only September 10–October 1; obtain licensed
+historical executable quotes/contract masters before implementing a full-policy
+chronological replay. Existing constant-IV synthetic backtest is insufficient.
+The report specifies source/settings freeze, shared policy parity, missing-data
+handling, shared-capital portfolio, cost/fill stress and independent holdout.
+No Production edits/restarts, provider calls or live-order authority changes.
+
 ## October 2 — release candidate; operational acceptance next (R6)
 
 All review source items R1–R5 are in Dev and pushed. Promote through the GitHub

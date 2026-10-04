@@ -1,7 +1,7 @@
 from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import ClassVar, Optional
+from typing import Optional
 
 # [2026-07-19] Resolve env files by ABSOLUTE path from this module's location,
 # not a CWD-relative ".env". Order is low->high precedence: the local
@@ -40,6 +40,16 @@ class Settings(BaseSettings):
     
     STRATEGY_VERSION: str = "1.0.0"
     DB_PATH: str = "/data/cache.db"
+    # [P1 2026-10-03] Shared live-entry reservation identity and owner-approved
+    # nominal book allocations. Transfers are allowed, so these annotate the
+    # ledger rather than stranding cash in separate broker sub-accounts; the
+    # account-wide own-cash reservation remains the hard admission limit.
+    ACCOUNT_CASH_ACCOUNT_ID: str = "kite-primary"
+    ACCOUNT_BOOK_SWING_LIMIT: float = 1000.0
+    ACCOUNT_BOOK_PENNY_LIMIT: float = 2000.0
+    ACCOUNT_BOOK_MOMENTUM_LIMIT: float = 3000.0
+    ACCOUNT_BOOK_EDGE_LIMIT: float = 3000.0
+    ACCOUNT_BOOK_TRANSFERS_ALLOWED: bool = True
     # Offline proactive research is opt-in.  The scheduled consumer accepts
     # only an explicitly marked local SHADOW fixture and has no broker,
     # transport, or partner-delivery dependency.
@@ -532,7 +542,12 @@ class Settings(BaseSettings):
     # 2026-06-22 deviation: penny code now does its own cost accounting per
     # the isolation rule (no import from engine.calc_zerodha_costs).
     PENNY_STT_MIS:             float = 0.00025   # 0.025% sell side (intraday)
-    PENNY_STT_CNC:             float = 0.001     # 0.1% sell side (delivery)
+    PENNY_STT_CNC:             float = 0.001     # 0.1% BUY and sell side (delivery)
+    # [CNC-COSTS 2026-10-05] Delivery has no Zerodha brokerage, 0.015% buy
+    # stamp duty and a flat depository (DP) charge per scrip on each sell day
+    # (Rs 13.5 + 18% GST). Before this fix delivery P&L was overstated.
+    PENNY_CNC_STAMP_DUTY_PCT:  float = 0.00015
+    PENNY_CNC_DP_CHARGE:       float = 15.93
     PENNY_BROKERAGE_PCT:       float = 0.0003    # 0.03% per side
     PENNY_BROKERAGE_MAX:       float = 20.0      # Rs 20 cap per order
     PENNY_EXCHANGE_PCT:        float = 0.0000307  # NSE cash 0.00307%, both sides
@@ -683,10 +698,20 @@ class Settings(BaseSettings):
     # fire several trades per day to validate the edge.
     PENNY_BREAKOUT_VOL_MULT:       float = 1.8
     PENNY_BREAKOUT_TARGET_R:       float = 2.0
+    # [PENNY-NOISE-STOP 2026-10-04] Owner-selected (dev evidence: +Rs93 vs +Rs78 on
+    # Sep 7-Oct 1, smaller drawdown). The breakout-bar-low stop sat in one-minute
+    # noise; it is widened to >= 1.5% / Rs0.03 under entry at the same rupee risk.
+    PENNY_NOISE_STOP_ENABLED:      bool  = True
     PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
     # Broker-free evidence side-channel; never reaches PennyExecutor.
     PENNY_SHADOW_ENABLED:          bool  = True
+    # Independent durable paper allocation, no broker orders; reuses scanner
+    # data and <=3-symbol exit quote batches. ON from Oct 5, 2026 by owner
+    # direction to collect forward (unseen) evidence: the candidate failed its
+    # seen-data diagnostic (penny-smart-t4) and is not a trading policy.
+    PENNY_SMART_SHADOW_ENABLED:    bool  = True
+    PENNY_SMART_SHADOW_BANKROLL:   float = 2000.0
     PENNY_BREAKOUT_TIME_EXIT:      int   = 15*60       # 15:00 IST
     # [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST = 30 min after the
     # 15:00 force-close fires. Gives time for the broker to confirm
@@ -863,6 +888,12 @@ class Settings(BaseSettings):
     # explicitly approved promotion; it is not permission to trade while the
     # live-disable switch remains true.
     PENNY_EDGE_LIVE_BANKROLL:        float = 1500.0    # 1.5k live
+    # [EDGE-OVERNIGHT 2026-10-05] Broker-free paper book for the overnight
+    # clock (docs/2026-10-05-edge-overnight-study.md): buy the EDGE scan at
+    # 15:20 on today's provisional bar, sell at the next opening auction.
+    # Separate store; never places an order. Owner chose a Rs 25,000 book.
+    EDGE_OVERNIGHT_PAPER_ENABLED:    bool  = True
+    EDGE_OVERNIGHT_PAPER_BANKROLL:   float = 25000.0
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3
@@ -937,6 +968,21 @@ class Settings(BaseSettings):
     # misbehaves) without also disabling the proven single-leg paper book, which
     # FNO_DISABLE_PAPER would do. Default False = DR book active (current behaviour).
     FNO_DR_DISABLE_PAPER:      bool  = False
+    # [FNO-GROWTH 2026-10-04] Capped-loss income book sizing. One structure at
+    # a time, still intraday; lots = floor(FNO_DR_MAX_LOSS_RS x adaptive
+    # multiplier / max loss per lot), at most FNO_DR_MAX_LOTS, and the capital
+    # it ties up (debit, or conservatively reserved broker margin for a credit
+    # condor) stays within FNO_DR_MAX_CAPITAL_PCT of the pool.
+    FNO_DR_MAX_LOSS_RS:        float = 10000.0
+    FNO_DR_MAX_LOTS:           int   = 3
+    FNO_DR_MARGIN_PER_LOT_RS:  float = 50000.0
+    FNO_DR_MAX_CAPITAL_PCT:    float = 0.40
+    # One vehicle per directional idea: rich premium (IV-rank proxy at or above
+    # the threshold) -> debit spread only, otherwise -> naked option only.
+    # Ships OFF: at NIFTY's usual 11-14% IV it would retire the debit spreads,
+    # which earned in the Sep 17-Oct 1 paper record; decide on fresh sessions.
+    FNO_VEHICLE_BY_IV:         bool  = False
+    FNO_VEHICLE_SPREAD_IV_RANK: float = 0.6
     # Shared deadline for cancellable quote/history reads used solely to
     # prepare a new paper defined-risk structure.  It never caps management
     # of an existing structure or a ledger admission write.
@@ -947,7 +993,12 @@ class Settings(BaseSettings):
     FNO_DR_MANAGEMENT_READ_MAX_SEC: float = 10.0
 
     # --- universe ----------------------------------------------------------
-    FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1
+    FNO_UNDERLYING:            str   = "NIFTY"    # primary trading underlying (capped-loss book, shadow)
+    # [FNO-GROWTH 2026-10-04] Single-leg paper book underlyings. SENSEX (BSE's
+    # weekly expiry) uses its own price for the opening range/ATR/EMAs and
+    # NIFTY futures participation (fno_underlyings.SPECS rvol_source). The live
+    # leg stays NIFTY-only until exit evidence/recovery accept BFO packets.
+    FNO_TRADING_UNDERLYINGS:   str   = "NIFTY,SENSEX"
     FNO_STRIKE_WINDOW:         int   = 5          # ATM +/- N strikes to snapshot
     FNO_TARGET_DELTA:          float = 0.55       # ATM / 1-strike ITM, never OTM
 
@@ -974,16 +1025,39 @@ class Settings(BaseSettings):
     # weekly band. Scaled, the binding gate is back to the pool-derived
     # min_viable_pool (~Rs 266.67) -- the spec §3 volatility filter.
     FNO_MAX_LOSS_PER_TRADE:    float = 6250.0
-    FNO_MAX_STRUCTURAL_LOSS_PER_TRADE: float = 30000.0
+    # [FNO-GROWTH 2026-10-04] Owner approved a small structural-cap rise
+    # (30k -> 40k) and a third lot. Normal sizing keeps the two-lot ceiling;
+    # the third lot is allowed only while the evidence-gated adaptive
+    # multiplier is above 1 (fno_adaptive_risk).
+    FNO_MAX_STRUCTURAL_LOSS_PER_TRADE: float = 40000.0
     FNO_MAX_LOTS:              int   = 2
+    FNO_MAX_LOTS_PROVEN:       int   = 3
 
     # --- kill switches -----------------------------------------------------
     # Weekly + monthly exist because options bleed slowly enough to walk
     # under a daily limit every day for a month (spec §7.6).
-    FNO_DAILY_KILL_PCT:        float = 0.06
-    FNO_WEEKLY_KILL_PCT:       float = 0.12
-    FNO_MONTHLY_KILL_PCT:      float = 0.20
+    # [FNO-GROWTH 2026-10-04] Tightened to the owner's goal (~Rs 20k/month,
+    # "never lose crazy"): on the Rs 2.5L pool a day halts at -7.5k, a week
+    # at -15k, a month at -25k, and the book stops at a 15% drawdown
+    # (previously 6% / 12% / 20% / 25%).
+    FNO_DAILY_KILL_PCT:        float = 0.03
+    FNO_WEEKLY_KILL_PCT:       float = 0.06
+    FNO_MONTHLY_KILL_PCT:      float = 0.10
+    FNO_MAX_DRAWDOWN_PCT:      float = 0.15
     FNO_MAX_CONSECUTIVE_LOSSES: int  = 6
+
+    # --- adaptive risk (fno_adaptive_risk.py) --------------------------------
+    # Size follows evidence: it shrinks quickly in a drawdown and grows only
+    # after enough profitable closed trades while equity is near its peak.
+    FNO_ADAPTIVE_RISK_ENABLED:      bool  = True
+    FNO_RISK_CUT1_DRAWDOWN_PCT:     float = 0.04    # -> 0.50x
+    FNO_RISK_CUT2_DRAWDOWN_PCT:     float = 0.08    # -> 0.25x
+    FNO_RISK_UP1_MIN_TRADES:        int   = 20      # PF >= 1.3 -> 1.25x
+    FNO_RISK_UP1_MIN_PF:            float = 1.3
+    FNO_RISK_UP2_MIN_TRADES:        int   = 40      # PF >= 1.5 -> 1.50x
+    FNO_RISK_UP2_MIN_PF:            float = 1.5
+    FNO_RISK_NEAR_PEAK_PCT:         float = 0.02
+    FNO_TWO_STRIKE_LOSSES:          int   = 2       # single-leg losing closes that end the day
 
     # --- microstructure ----------------------------------------------------
     FNO_MIN_OI:                int   = 5000
@@ -1040,6 +1114,18 @@ class Settings(BaseSettings):
     # Full-chain evaluation can exceed one minute.  Leave headroom so the next
     # tick is useful work rather than an APScheduler max_instances warning.
     FNO_SCAN_INTERVAL_SEC:     int   = 90
+    # [FAST-EXIT 2026-10-04] Options cannot carry an exchange stop order, so
+    # stops are only as fast as the loop checking them. The fast exit loop
+    # runs ONLY single-leg position management (no entries) every N seconds;
+    # the bar-close trigger fires the regular tick a few seconds after each
+    # 5-minute bar closes instead of waiting for the free 90 s clock. Both are
+    # serialised with the regular tick by one lock and ship OFF: the replay
+    # (docs/2026-10-04-fno-replay-and-speed-slice.md) shows no profit effect at
+    # its 60 s data resolution; the value is protection on fast days.
+    FNO_FAST_EXIT_ENABLED:          bool = False
+    FNO_FAST_EXIT_INTERVAL_SEC:     int  = 10
+    FNO_BAR_CLOSE_TRIGGER_ENABLED:  bool = False
+    FNO_BAR_CLOSE_DELAY_SEC:        int  = 3
 
     # --- backtest model params ([ROADMAP-3.11 2026-07-12]) ------------------
     # fno_backtest.py replays evaluate_fno_mom on REAL futures bars but

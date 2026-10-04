@@ -131,6 +131,76 @@ CREATE TABLE IF NOT EXISTS fno_exit_execution_receipts (
 """
 
 
+# Initial quantity/loss baselines and a recovery receipt are audit evidence,
+# not mutable position state. The migration below may fill a legacy NULL once;
+# after that, an UPDATE cannot rewrite the baseline used by shared-risk
+# admission. Current quantity/loss remain intentionally mutable because a
+# broker-verified partial exit changes them transactionally.
+_ENTRY_EVIDENCE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_positions_entry_evidence_immutable
+BEFORE UPDATE OF initial_qty, initial_lots, initial_max_loss_rupees
+ON fno_positions
+FOR EACH ROW WHEN
+    (OLD.initial_qty IS NOT NULL AND NEW.initial_qty IS NOT OLD.initial_qty)
+    OR (OLD.initial_lots IS NOT NULL AND NEW.initial_lots IS NOT OLD.initial_lots)
+    OR (OLD.initial_max_loss_rupees IS NOT NULL
+        AND NEW.initial_max_loss_rupees IS NOT OLD.initial_max_loss_rupees)
+BEGIN
+    SELECT RAISE(ABORT, 'fno entry evidence is immutable');
+END
+"""
+
+
+# [F0-R4 2026-10-03] Entry identity and economics bind every later recovery
+# receipt; no writer changes them once populated.
+_IDENTITY_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_positions_identity_immutable
+BEFORE UPDATE OF entry_premium, tradingsymbol, source
+ON fno_positions
+FOR EACH ROW WHEN
+    (OLD.entry_premium IS NOT NULL AND NEW.entry_premium IS NOT OLD.entry_premium)
+    OR (OLD.tradingsymbol IS NOT NULL AND NEW.tradingsymbol IS NOT OLD.tradingsymbol)
+    OR NEW.source IS NOT OLD.source
+BEGIN
+    SELECT RAISE(ABORT, 'fno entry identity is immutable');
+END
+"""
+
+
+# [F0-R1 2026-10-03] The fee reserve frozen at entry is part of the shared
+# worst-case cash exposure until the terminal close; it may be written once.
+_FEE_RESERVE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_positions_fee_reserve_immutable
+BEFORE UPDATE OF risk_fee_reserve_rupees
+ON fno_positions
+FOR EACH ROW WHEN
+    OLD.risk_fee_reserve_rupees IS NOT NULL
+    AND NEW.risk_fee_reserve_rupees IS NOT OLD.risk_fee_reserve_rupees
+BEGIN
+    SELECT RAISE(ABORT, 'fno fee reserve is immutable');
+END
+"""
+
+
+_RECOVERY_EVIDENCE_UPDATE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_exit_recoveries_evidence_update_immutable
+BEFORE UPDATE ON fno_exit_recoveries
+FOR EACH ROW
+BEGIN
+    SELECT RAISE(ABORT, 'fno exit recovery evidence is immutable');
+END;
+"""
+
+_RECOVERY_EVIDENCE_DELETE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_exit_recoveries_evidence_delete_immutable
+BEFORE DELETE ON fno_exit_recoveries
+FOR EACH ROW
+BEGIN
+    SELECT RAISE(ABORT, 'fno exit recovery evidence is immutable');
+END
+"""
+
+
 @dataclass
 class FnoPosition:
     """In-memory mirror of one fno_positions row."""
@@ -206,7 +276,8 @@ async def init_fno_positions_db(db_path: str) -> None:
                 raise
         for column, datatype in (("initial_qty", "INTEGER"),
                                  ("initial_lots", "INTEGER"),
-                                 ("initial_max_loss_rupees", "REAL")):
+                                 ("initial_max_loss_rupees", "REAL"),
+                                 ("risk_fee_reserve_rupees", "REAL")):
             try:
                 await db.execute(f"ALTER TABLE fno_positions ADD COLUMN {column} {datatype}")
             except aiosqlite.OperationalError as exc:
@@ -239,11 +310,27 @@ async def init_fno_positions_db(db_path: str) -> None:
             broker_evidence_sha256 TEXT NOT NULL,
             broker_evidence_json TEXT NOT NULL,
             terminal_status TEXT NOT NULL, filled_qty INTEGER NOT NULL,
-            remaining_qty INTEGER NOT NULL, fill_price REAL,
+            remaining_qty INTEGER NOT NULL, entry_premium REAL, fill_price REAL,
+            gross_pnl REAL, costs REAL, pnl REAL,
             settlement_generation INTEGER NOT NULL,
             ledger_id INTEGER, resolved_at TEXT NOT NULL,
             UNIQUE(position_id, intent_created_at), UNIQUE(source, order_id)
         )""")
+        for column, datatype in (("entry_premium", "REAL"), ("gross_pnl", "REAL"),
+                                 ("costs", "REAL"), ("pnl", "REAL"),
+                                 ("cost_snapshot_json", "TEXT")):
+            try:
+                await db.execute(
+                    f"ALTER TABLE fno_exit_recoveries ADD COLUMN {column} {datatype}"
+                )
+            except aiosqlite.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    raise
+        await db.execute(_ENTRY_EVIDENCE_IMMUTABLE_DDL)
+        await db.execute(_FEE_RESERVE_IMMUTABLE_DDL)
+        await db.execute(_IDENTITY_IMMUTABLE_DDL)
+        await db.execute(_RECOVERY_EVIDENCE_UPDATE_IMMUTABLE_DDL)
+        await db.execute(_RECOVERY_EVIDENCE_DELETE_IMMUTABLE_DDL)
         await db.commit()
 
 
@@ -254,12 +341,30 @@ async def _table_exists(db) -> bool:
         return (await cur.fetchone()) is not None
 
 
-async def insert_position(db_path: str, **fields) -> int:
-    """Insert an OPEN position; returns the row id."""
-    await init_fno_positions_db(db_path)
+def _with_entry_baselines(fields: dict) -> dict:
+    """Freeze entry quantity/loss baselines and the catastrophe fee reserve.
+
+    [F0-R1 2026-10-03] For a bought option, loss plus charges is largest when
+    the premium goes to zero, so the reserve uses the *actual* fill premium
+    and filled quantity: ``calc_fno_costs(entry_premium, 0, qty)``. A row
+    without those economics gets no reserve and the shared view fails closed;
+    it is never treated as zero fees.
+    """
     fields.setdefault("initial_qty", fields.get("qty"))
     fields.setdefault("initial_lots", fields.get("lots"))
     fields.setdefault("initial_max_loss_rupees", fields.get("max_loss_rupees"))
+    if fields.get("risk_fee_reserve_rupees") is None:
+        entry, qty = fields.get("entry_premium"), fields.get("qty")
+        if isinstance(entry, (int, float)) and isinstance(qty, int) and entry > 0 and qty > 0:
+            from fno_costs import calc_fno_costs
+            fields["risk_fee_reserve_rupees"] = calc_fno_costs(float(entry), 0.0, qty)
+    return fields
+
+
+async def insert_position(db_path: str, **fields) -> int:
+    """Insert an OPEN position; returns the row id."""
+    await init_fno_positions_db(db_path)
+    fields = _with_entry_baselines(fields)
     cols = ", ".join(fields.keys())
     marks = ", ".join(["?"] * len(fields))
     async with aiosqlite.connect(db_path) as db:
@@ -269,6 +374,38 @@ async def insert_position(db_path: str, **fields) -> int:
         )
         await db.commit()
         return cur.lastrowid
+
+
+async def insert_position_with_risk_reservation(
+    db_path: str, *, reservation_key: str, **fields,
+) -> int:
+    """Insert an OPEN single-leg position and consume its reservation atomically.
+
+    A failed database receipt after a paper/broker fill leaves the reservation
+    intact rather than making capacity available again.  The caller must
+    reconcile that external state; it must never retry the entry blindly.
+    """
+    from fno_shared_risk import consume_shared_fno_risk_reservation_in_transaction
+    await init_fno_positions_db(db_path)
+    fields = _with_entry_baselines(fields)
+    cols = ", ".join(fields.keys())
+    marks = ", ".join(["?"] * len(fields))
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        cur = await db.execute(
+            f"INSERT INTO fno_positions ({cols}) VALUES ({marks})", list(fields.values()),
+        )
+        position_id = int(cur.lastrowid)
+        consumed = await consume_shared_fno_risk_reservation_in_transaction(
+            db, reservation_key=reservation_key, source=str(fields["source"]),
+            book="SINGLE_LEG", position_ref=f"fno_position:{position_id}",
+            resolved_at=datetime.now(timezone.utc),
+        )
+        if not consumed:
+            await db.rollback()
+            raise RuntimeError("shared_risk_reservation_not_consumed")
+        await db.commit()
+        return position_id
 
 
 async def open_positions(db_path: str, source: str) -> List[FnoPosition]:
@@ -311,15 +448,16 @@ async def trades_today(db_path: str, source: str, today_iso: str) -> int:
     return int(row[0]) if row else 0
 
 
-async def already_entered_bar(db_path: str, source: str, bar_ts: str) -> bool:
-    """Idempotency: one entry per signal bar per leg, restart-safe."""
+async def already_entered_bar(db_path: str, source: str, bar_ts: str,
+                              underlying: Optional[str] = None) -> bool:
+    """Idempotency: one entry per signal bar per leg (and underlying), restart-safe."""
     async with aiosqlite.connect(db_path) as db:
         if not await _table_exists(db):
             return False
-        async with db.execute(
-            "SELECT 1 FROM fno_positions WHERE source=? AND bar_ts=? LIMIT 1",
-            (source, bar_ts),
-        ) as cur:
+        sql, params = "SELECT 1 FROM fno_positions WHERE source=? AND bar_ts=?", [source, bar_ts]
+        if underlying is not None:
+            sql, params = sql + " AND underlying=?", params + [underlying]
+        async with db.execute(sql + " LIMIT 1", params) as cur:
             return (await cur.fetchone()) is not None
 
 

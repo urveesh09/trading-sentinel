@@ -1,0 +1,306 @@
+{
+  "as_of": "2026-10-01",
+  "source": "Symbol-only frozen current configuration; fallback when Dev penny_static.json is empty; no prices or trade history",
+  "tickers": [
+    {
+      "symbol": "PCJEWELLER"
+    },
+    {
+      "symbol": "IDEA"
+    },
+    {
+      "symbol": "AHCL"
+    },
+    {
+      "symbol": "JINDWORLD"
+    },
+    {
+      "symbol": "RETAIL"
+    },
+    {
+      "symbol": "SYNCOMF"
+    },
+    {
+      "symbol": "JHS"
+    },
+    {
+      "symbol": "OLAELEC"
+    },
+    {
+      "symbol": "SUBEXLTD"
+    },
+    {
+      "symbol": "STLNETWORK"
+    },
+    {
+      "symbol": "GTECJAINX"
+    },
+    {
+      "symbol": "IBULLSLTD"
+    },
+    {
+      "symbol": "HINDCON"
+    },
+    {
+      "symbol": "PVP"
+    },
+    {
+      "symbol": "GAYAPROJ"
+    },
+    {
+      "symbol": "MWL"
+    },
+    {
+      "symbol": "MOTISONS"
+    },
+    {
+      "symbol": "UNITEDPOLY"
+    },
+    {
+      "symbol": "KESORAMIND"
+    },
+    {
+      "symbol": "KAMDHENU"
+    },
+    {
+      "symbol": "TNTELE"
+    },
+    {
+      "symbol": "SIGACHI"
+    },
+    {
+      "symbol": "AFIL"
+    },
+    {
+      "symbol": "VISL"
+    },
+    {
+      "symbol": "KWIL"
+    },
+    {
+      "symbol": "NGIL"
+    },
+    {
+      "symbol": "KOTYARK"
+    },
+    {
+      "symbol": "PRIMO"
+    },
+    {
+      "symbol": "STLSTRINF"
+    },
+    {
+      "symbol": "GEEKAYWIRE"
+    },
+    {
+      "symbol": "JETFREIGHT"
+    },
+    {
+      "symbol": "SOUTHBANK"
+    },
+    {
+      "symbol": "VAISHALI"
+    },
+    {
+      "symbol": "TATSILV"
+    },
+    {
+      "symbol": "STEELXIND"
+    },
+    {
+      "symbol": "PRITIKAUTO"
+    },
+    {
+      "symbol": "MGEL"
+    },
+    {
+      "symbol": "MMWL"
+    },
+    {
+      "symbol": "ELGIRUBCO"
+    },
+    {
+      "symbol": "OPTIFIN"
+    },
+    {
+      "symbol": "PALREDTEC"
+    },
+    {
+      "symbol": "PATINTLOG"
+    },
+    {
+      "symbol": "KOHINOOR"
+    },
+    {
+      "symbol": "MCLEODRUSS"
+    },
+    {
+      "symbol": "SILVER1"
+    },
+    {
+      "symbol": "SILVERCASE"
+    },
+    {
+      "symbol": "ZEELEARN"
+    },
+    {
+      "symbol": "SILVERADD"
+    },
+    {
+      "symbol": "HCC"
+    },
+    {
+      "symbol": "SHYAMTEL"
+    },
+    {
+      "symbol": "GROWWSLVR"
+    },
+    {
+      "symbol": "VEDAVAAG"
+    },
+    {
+      "symbol": "WELSPLSOL"
+    },
+    {
+      "symbol": "ATLPP-E1"
+    },
+    {
+      "symbol": "MANAKALUCO"
+    },
+    {
+      "symbol": "MOTOGENFIN"
+    },
+    {
+      "symbol": "BALAXI"
+    },
+    {
+      "symbol": "TCC"
+    },
+    {
+      "symbol": "VITAL"
+    },
+    {
+      "symbol": "SUMIT"
+    },
+    {
+      "symbol": "DOLLEX"
+    },
+    {
+      "symbol": "TTL"
+    },
+    {
+      "symbol": "GFLLIMITED"
+    },
+    {
+      "symbol": "DAVANGERE"
+    },
+    {
+      "symbol": "SUZLON"
+    },
+    {
+      "symbol": "COFFEEDAY"
+    },
+    {
+      "symbol": "AVONMORE"
+    },
+    {
+      "symbol": "LAL"
+    },
+    {
+      "symbol": "BESTAGRO"
+    },
+    {
+      "symbol": "YESBANK"
+    },
+    {
+      "symbol": "VMSTMT"
+    },
+    {
+      "symbol": "SARVESHWAR"
+    },
+    {
+      "symbol": "IWP"
+    },
+    {
+      "symbol": "WEWIN"
+    },
+    {
+      "symbol": "ONIDA"
+    },
+    {
+      "symbol": "SBGLP"
+    },
+    {
+      "symbol": "GLFL"
+    },
+    {
+      "symbol": "ASHOKAMET"
+    },
+    {
+      "symbol": "MANGALAM"
+    },
+    {
+      "symbol": "GRANDOAK"
+    },
+    {
+      "symbol": "SHIVAMAUTO"
+    },
+    {
+      "symbol": "NAGREEKCAP"
+    },
+    {
+      "symbol": "TATAGOLD"
+    },
+    {
+      "symbol": "VISACHROME"
+    },
+    {
+      "symbol": "ALLCARGO"
+    },
+    {
+      "symbol": "TCIFINANCE"
+    },
+    {
+      "symbol": "PEARLPOLY"
+    },
+    {
+      "symbol": "VIPCLOTHNG"
+    },
+    {
+      "symbol": "NDL"
+    },
+    {
+      "symbol": "SAKUMA"
+    },
+    {
+      "symbol": "TREL"
+    },
+    {
+      "symbol": "RHETAN"
+    },
+    {
+      "symbol": "TRIGYN"
+    },
+    {
+      "symbol": "KHANDSE"
+    },
+    {
+      "symbol": "SPLIL"
+    },
+    {
+      "symbol": "TAKE"
+    },
+    {
+      "symbol": "OSWALSEEDS"
+    },
+    {
+      "symbol": "METAL"
+    },
+    {
+      "symbol": "BOHRAIND"
+    },
+    {
+      "symbol": "DBEIL"
+    }
+  ]
+}

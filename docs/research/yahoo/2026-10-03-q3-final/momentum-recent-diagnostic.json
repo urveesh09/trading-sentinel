@@ -1,0 +1,58 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "PARTIAL_UNIVERSE",
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "exit_fidelity": {
+    "not_live_lifecycle": true,
+    "reasons": {
+      "time_exit": 2
+    }
+  },
+  "job": "momentum-recent-diagnostic",
+  "metrics": {
+    "avg_r": -0.054505,
+    "max_drawdown_pct": null,
+    "net_pnl": -0.827101,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "folds": [],
+      "required_folds": 3,
+      "scored_folds": 0,
+      "status": "insufficient_data"
+    },
+    "profit_factor": 0.888034,
+    "trade_count": 2,
+    "variant_comparison": {
+      "avg_r": -0.054505,
+      "closed_trades": 2,
+      "entries": 2,
+      "expectancy": -0.413551,
+      "max_drawdown": 7.38705,
+      "net_pnl": -0.827101,
+      "open_trades": 0,
+      "profit_factor": 0.888034
+    },
+    "win_rate_pct": null
+  },
+  "module": "momentum",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\momentum-recent-diagnostic-report.json",
+  "report_sha256": "sha256:af3cfa4b1cea2bd4b0c8f8ff47a477da5349385f277822365c5f702e472e87be",
+  "scope": "EVALUATOR",
+  "state": "SUCCEEDED",
+  "strategy_id": "momentum_intraday_15m_replay",
+  "warnings": [
+    "15-minute OHLC assumes stop before target.",
+    "Full quantity exits at T1; partial runners and trailing stops are not modelled.",
+    "Historical Swing-derived regime, Telegram approval, broker admission and shared capital are not archived; configured context is declared, not inferred.",
+    "Research replay only; it never calls Kite, an executor, or an order path.",
+    "15-minute OHLC cannot reveal intrabar path; simultaneous stop/target resolves stop first.",
+    "Virtual lifecycle exits the full quantity at T1 and cannot model the production partial-T1 runner/trail.",
+    "Entry and exit fills use frozen Momentum shadow slippage and equity MIS cost assumptions."
+  ],
+  "window_kind": "recent-diagnostic"
+}

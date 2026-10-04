@@ -41,7 +41,9 @@ def broker(*, qty, filled, status="CANCELLED", price=110.0, symbol="NIFTY26SEP19
 
 
 async def claimed(db_path, *, qty=75):
-    pid = await _insert_open_position(db_path, source="FNO_LIVE", qty=qty)
+    # A long option's structural loss is its whole paid premium (100/unit).
+    pid = await _insert_open_position(db_path, source="FNO_LIVE", qty=qty,
+                                      max_loss_rupees=100.0 * qty)
     assert await claim_exit_intent(db_path, pid, "FNO_LIVE")
     intent = (await pending_exit_intents(db_path))[0]
     return pid, intent["created_at"]
@@ -70,15 +72,41 @@ async def test_terminal_zero_fill_releases_intent_with_audit_no_ledger(fno_db):
 
 
 @pytest.mark.asyncio
+async def test_verified_zero_fill_preserves_all_shared_exposure(fno_db):
+    from fno_dr_book import init_dr_db
+    from fno_shared_risk import init_shared_fno_risk_db, shared_fno_risk_view
+
+    await init_dr_db(fno_db)
+    await init_shared_fno_risk_db(fno_db)
+    pid, created = await claimed(fno_db)
+    before = await shared_fno_risk_view(fno_db, "FNO_LIVE", 10_000.0)
+    await resolve(fno_db, broker(qty=75, filled=0), pid, created)
+    after = await shared_fno_risk_view(fno_db, "FNO_LIVE", 10_000.0)
+    assert before.available and after.available
+    assert after.open_worst_case_cash_rs == before.open_worst_case_cash_rs
+    assert after.available_worst_case_cash_rs == before.available_worst_case_cash_rs
+    assert after.realised_pnl_rs == before.realised_pnl_rs == 0.0
+    assert after.single_leg_open_count == 1
+
+
+@pytest.mark.asyncio
 async def test_recovered_intent_requires_new_exit_evaluation(fno_db):
     pid, created = await claimed(fno_db)
-    stale_tick = datetime.now(timezone.utc)
     await resolve(fno_db, broker(qty=75, filled=0), pid, created)
+    with closing(sqlite3.connect(fno_db)) as db:
+        stamp = db.execute(
+            "SELECT resolved_at FROM fno_exit_recoveries WHERE position_id=?", (pid,)
+        ).fetchone()[0]
+    recovered_at = datetime.fromisoformat(stamp)
+    # Wall-clock reads can be equal on Windows; exercise the actual boundary.
     assert not await claim_exit_intent(
-        fno_db, pid, "FNO_LIVE", evaluation_started_at=stale_tick,
+        fno_db, pid, "FNO_LIVE", evaluation_started_at=recovered_at - timedelta(microseconds=1),
+    )
+    assert not await claim_exit_intent(
+        fno_db, pid, "FNO_LIVE", evaluation_started_at=recovered_at,
     )
     assert await claim_exit_intent(
-        fno_db, pid, "FNO_LIVE", evaluation_started_at=datetime.now(timezone.utc),
+        fno_db, pid, "FNO_LIVE", evaluation_started_at=recovered_at + timedelta(microseconds=1),
     )
 
 
@@ -94,6 +122,25 @@ async def test_terminal_partial_fill_realizes_once_and_preserves_residual(fno_db
     assert await pending_exit_intents(fno_db) == []
     with pytest.raises(RecoveryConflict):
         await resolve(fno_db, broker(qty=150, filled=75), pid, created)
+
+
+@pytest.mark.asyncio
+async def test_verified_partial_recovery_releases_only_residual_shared_risk(fno_db):
+    """F0-D reads the durable recovery/cash chain, never an invented release."""
+    pid, created = await claimed(fno_db, qty=150)
+    await resolve(fno_db, broker(qty=150, filled=75), pid, created)
+    from fno_dr_book import init_dr_db
+    from fno_shared_risk import init_shared_fno_risk_db, shared_fno_risk_view
+
+    await init_dr_db(fno_db)
+    await init_shared_fno_risk_db(fno_db)
+    view = await shared_fno_risk_view(fno_db, "FNO_LIVE", 10_000.0)
+    assert view.available
+    # Residual premium loss plus the full fee reserve frozen at entry (F0-R1).
+    assert view.open_worst_case_cash_rs == pytest.approx(7_500.0 + calc_fno_costs(100.0, 0.0, 150))
+    assert view.realised_pnl_rs == pytest.approx(
+        (110.0 - 100.0) * 75 - calc_fno_costs(100.0, 110.0, 75)
+    )
 
 
 @pytest.mark.asyncio
@@ -115,7 +162,7 @@ async def test_partial_then_final_close_reports_total_economics_and_scaled_risk(
         ledger = db.execute("SELECT SUM(pnl),COUNT(*) FROM bankroll_ledger WHERE origin_ref=?", (f"fno_position:{pid}",)).fetchone()
     assert row[0] == pytest.approx(ledger[0])
     assert row[1] - row[2] == pytest.approx(row[0])
-    assert row[3] == 750.0 and row[4] == 1500.0
+    assert row[3] == 7500.0 and row[4] == 15000.0
     assert ledger[1] == 2
     report = await closed_today(fno_db, "FNO_LIVE", datetime.now(IST).date().isoformat())
     assert report[0]["pnl"] == pytest.approx(ledger[0])

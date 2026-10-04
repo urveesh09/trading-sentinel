@@ -22,6 +22,16 @@ const configSchema = z.object({
   
   PYTHON_ENGINE_URL: z.string().url().default('http://python-engine:8000'),
   PYTHON_ENGINE_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
+
+  // [P1 2026-10-03] Nominal owner allocations are ledger attribution, not
+  // isolated broker wallets: approved unused allocation can transfer while the
+  // shared account reservation remains the hard no-borrowing constraint.
+  ACCOUNT_CASH_ACCOUNT_ID: z.string().min(1).default('kite-primary'),
+  ACCOUNT_BOOK_SWING_LIMIT: z.coerce.number().nonnegative().default(1000),
+  ACCOUNT_BOOK_PENNY_LIMIT: z.coerce.number().nonnegative().default(2000),
+  ACCOUNT_BOOK_MOMENTUM_LIMIT: z.coerce.number().nonnegative().default(3000),
+  ACCOUNT_BOOK_EDGE_LIMIT: z.coerce.number().nonnegative().default(3000),
+  ACCOUNT_BOOK_TRANSFERS_ALLOWED: z.coerce.boolean().default(true),
   
   // [FILL-ANCHOR 2026-08-04] Stop floors, mirrored from the engine's
   // MOMENTUM_MIN_STOP_PCT / MOMENTUM_MIN_STOP_ATR_MULT. The gateway re-applies
@@ -30,6 +40,13 @@ const configSchema = z.object({
   // divergence shows up as a stop that the engine's exit logic disagrees with.
   MOMENTUM_MIN_STOP_PCT: z.coerce.number().positive().default(0.012),
   MOMENTUM_MIN_STOP_ATR_MULT: z.coerce.number().nonnegative().default(0.35),
+
+  // [MOMENTUM-AUTO 2026-10-04] When true, an engine-accepted Momentum signal is
+  // executed without a Telegram tap (POST /api/internal/momentum-auto-execute),
+  // through the same lock, snapshot and executor checks as the EM button.
+  // Strict parse: z.coerce.boolean() would read the string "false" as true.
+  MOMENTUM_AUTO_EXECUTE: z.enum(['true', 'false', '1', '0']).default('false')
+    .transform((value) => value === 'true' || value === '1'),
 
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),

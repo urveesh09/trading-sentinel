@@ -24,6 +24,7 @@ from cost_schedules import (
     EQUITY_INTRADAY_VERIFIED_AS_OF,
 )
 from engine import evaluate_momentum_signal
+from momentum_selective import selective_gate
 
 
 @dataclass(frozen=True)
@@ -31,11 +32,15 @@ class MomentumShadowVariant:
     name: str
     crossover_lookback: int
     max_vwap_distance_atr: float | None
+    # Round-3 MOM_SELECTIVE context gate (momentum_selective.py) on top of the
+    # shipped evaluator: forward paper evidence for the untested candidate.
+    selective: bool = False
 
 
 _VARIANT_ROWS = (
     MomentumShadowVariant("MOM_BASE", 3, None),
     MomentumShadowVariant("MOM_RECENCY_5", 5, 0.50),
+    MomentumShadowVariant("MOM_SELECTIVE", 3, None, selective=True),
 )
 VARIANTS: Mapping[str, MomentumShadowVariant] = MappingProxyType({
     variant.name: variant for variant in _VARIANT_ROWS
@@ -193,8 +198,13 @@ def evaluate_momentum_shadows(
     variants: Sequence[str] | None = None,
     trading_date: date | str | None = None,
     bar_ts: datetime | str | None = None,
+    index_today: pd.DataFrame | None = None,
 ) -> list[dict]:
-    """Purely evaluate named variants against the exact same input frames."""
+    """Purely evaluate named variants against the exact same input frames.
+
+    ``index_today`` holds NIFTY 50 bars for the session; selective variants
+    fail closed without it.
+    """
     ticker = _ticker(ticker)
     day_text, bar_text = _identity(df, trading_date, bar_ts)
     results = []
@@ -213,8 +223,18 @@ def evaluate_momentum_shadows(
             crossover_lookback=variant.crossover_lookback,
             max_vwap_distance_atr=variant.max_vwap_distance_atr,
         )
+        variant_config = asdict(variant)
+        if variant.selective:
+            if accepted:
+                accepted, reason, evidence = _selective_decision(df, index_today, prev_day_high)
+                decision = {**decision, "selective": evidence}
+                if not accepted:
+                    decision["reject_reason"] = f"selective_{reason}"
+        else:
+            # Keeps pre-existing variant configs (and fingerprints) unchanged.
+            variant_config.pop("selective")
         config = {
-            **asdict(variant),
+            **variant_config,
             "min_candles": min_candles,
             "vol_surge_threshold": vol_surge_threshold,
             "market_regime": market_regime,
@@ -248,6 +268,17 @@ def evaluate_momentum_shadows(
             "bars": _bars(df),
         })
     return results
+
+
+def _selective_decision(df: pd.DataFrame, index_today: pd.DataFrame | None,
+                        prev_day_high: float) -> tuple[bool, str | None, dict]:
+    if index_today is None or index_today.empty or df.empty:
+        return False, "index_bar_unavailable", {}
+    session = df.index[-1].date() if isinstance(df.index, pd.DatetimeIndex) else None
+    if session is None or not isinstance(index_today.index, pd.DatetimeIndex):
+        return False, "index_bar_unavailable", {}
+    stock_today = df[df.index.date == session]
+    return selective_gate(stock_today, index_today[index_today.index.date == session], prev_day_high)
 
 
 async def init_momentum_shadow_db(db_path: str) -> None:

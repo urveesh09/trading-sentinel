@@ -133,8 +133,13 @@ def calc_rsi_series(close: pd.Series, length: int = 14) -> pd.Series:
 
     # Wilder smoothing for remaining periods
     for i in range(length + 1, n):
-        avg_gain = (avg_gain * (length - 1) + gains[i]) / length
-        avg_loss = (avg_loss * (length - 1) + losses[i]) / length
+        # ``gains``/``losses`` describe close[i] - close[i - 1], so their
+        # final valid index is n - 2.  The former ``gains[i]`` read past that
+        # final delta whenever RSI history had enough rows, which could abort
+        # the live Swing scanner before it reached its evaluator.
+        delta_idx = i - 1
+        avg_gain = (avg_gain * (length - 1) + gains[delta_idx]) / length
+        avg_loss = (avg_loss * (length - 1) + losses[delta_idx]) / length
         if avg_loss == 0:
             rsi_values[i] = 100.0
         else:

@@ -55,10 +55,22 @@ class FnoExecutor:
     # ------------------------------------------------------------------
 
     async def execute_entry(
-        self, tradingsymbol: str, qty: int, ask: float,
+        self, tradingsymbol: str, qty: int, ask: float, *, exchange: str = "NFO",
     ) -> dict:
-        """BUY LIMIT at ask. Returns {status, order_id, fill_price}.
-        status in: paper | filled | timeout | rejected."""
+        """BUY LIMIT at ask. Returns {status, order_id, fill_price, evidence}.
+
+        [F0-R2 2026-10-03] status is one of:
+          paper | filled             -- a fill with a known average price
+          no_dispatch                -- proven never sent (halt/validation/connect)
+          rejected                   -- explicit broker 4xx, no order created
+          zero_fill_verified         -- final order state re-read after cancel is
+                                        CANCELLED/REJECTED with filled_quantity 0
+          partial                    -- terminal with 0 < filled_quantity < qty
+          unknown                    -- anything that cannot prove the above
+        Only the first four can ever free reserved capital; ``partial`` and
+        ``unknown`` must be reconciled. A swallowed cancel error or an
+        unreadable final state is ``unknown``, never a quiet ``timeout``.
+        """
         if self.paper_mode:
             logger.info(
                 "fno_paper_entry symbol=%s qty=%d fill=ask=%.2f tag=%s",
@@ -69,19 +81,86 @@ class FnoExecutor:
                 "order_id": f"PAPER-FNO-ENT-{uuid4().hex[:8]}",
                 "fill_price": ask,
             }
-        resp = await self._place_limit(tradingsymbol, "BUY", qty, ask, intent="entry")
+        resp = await self._place_limit(tradingsymbol, "BUY", qty, ask, intent="entry", exchange=exchange)
         order_id = resp.get("order_id")
         if not order_id:
-            return {"status": "rejected", "order_id": None, "fill_price": None}
+            certainty = resp.get("dispatch_certainty") or "AMBIGUOUS"
+            status = {"NOT_SENT": "no_dispatch", "BROKER_REJECTED": "rejected"}.get(
+                certainty, "unknown")
+            evidence = {"dispatch_certainty": certainty, "order_id": None,
+                        "message": str(resp.get("message") or "")[:300]}
+            if status == "unknown":
+                logger.critical(
+                    "fno_entry_dispatch_ambiguous symbol=%s certainty=%s -- the broker may "
+                    "hold an order; reserved capital is retained until reconciled",
+                    tradingsymbol, certainty,
+                )
+            return {"status": status, "order_id": None, "fill_price": None, "evidence": evidence}
         fill = await self._wait_for_fill(order_id)
-        if fill is None:
-            await self._cancel_quietly(order_id)
+        if fill is not None:
+            return {"status": "filled", "order_id": order_id, "fill_price": fill,
+                    "evidence": {"dispatch_certainty": "ACCEPTED", "order_id": order_id,
+                                 "final_status": "COMPLETE", "average_price": fill}}
+        cancel_error = await self._cancel_quietly(order_id)
+        return await self._verify_unfilled_entry(tradingsymbol, order_id, qty, cancel_error)
+
+    async def _verify_unfilled_entry(
+        self, tradingsymbol: str, order_id: str, qty: int, cancel_error: Optional[str],
+    ) -> dict:
+        """Re-read the broker's final order state after a cancel attempt."""
+        latest: dict = {}
+        read_error = None
+        for attempt in range(3):
+            try:
+                latest = latest_order_state(await self.kite.order_history(order_id=order_id) or [])
+            except Exception as exc:
+                read_error = f"{type(exc).__name__}: {exc}"[:200]
+                latest = {}
+            if latest.get("status") in ("COMPLETE", "CANCELLED", "REJECTED"):
+                break
+            if attempt < 2:
+                await asyncio.sleep(self.poll_interval_sec)
+        final_status = latest.get("status")
+        filled = latest.get("filled_quantity")
+        filled = filled if type(filled) is int and filled >= 0 else None
+        average = latest.get("average_price")
+        evidence = {
+            "dispatch_certainty": "ACCEPTED", "order_id": order_id,
+            "final_status": final_status, "filled_quantity": filled,
+            "average_price": average, "cancel_error": cancel_error,
+            "read_error": read_error, "requested_quantity": qty,
+        }
+        if final_status == "COMPLETE":
+            try:
+                price = float(average or latest.get("price") or 0.0)
+            except (TypeError, ValueError):
+                price = 0.0
+            if price > 0:
+                logger.warning("fno_entry_filled_during_cancel symbol=%s order_id=%s",
+                               tradingsymbol, order_id)
+                return {"status": "filled", "order_id": order_id, "fill_price": price,
+                        "evidence": evidence}
+        elif final_status in ("CANCELLED", "REJECTED") and filled == 0:
             logger.warning(
-                "fno_entry_timeout_cancelled symbol=%s order_id=%s -- never chase",
-                tradingsymbol, order_id,
+                "fno_entry_unfilled_verified symbol=%s order_id=%s status=%s -- never chase",
+                tradingsymbol, order_id, final_status,
             )
-            return {"status": "timeout", "order_id": order_id, "fill_price": None}
-        return {"status": "filled", "order_id": order_id, "fill_price": fill}
+            return {"status": "zero_fill_verified", "order_id": order_id, "fill_price": None,
+                    "evidence": evidence}
+        elif final_status in ("CANCELLED", "REJECTED") and filled is not None and 0 < filled < qty:
+            logger.critical(
+                "fno_entry_partial_fill symbol=%s order_id=%s filled=%d/%d -- OPERATOR MUST "
+                "RECONCILE; full reserved capital retained",
+                tradingsymbol, order_id, filled, qty,
+            )
+            return {"status": "partial", "order_id": order_id, "fill_price": None,
+                    "evidence": evidence}
+        logger.critical(
+            "fno_entry_outcome_unknown symbol=%s order_id=%s status=%s filled=%s "
+            "cancel_error=%s read_error=%s -- OPERATOR MUST RECONCILE; reserved capital retained",
+            tradingsymbol, order_id, final_status, filled, cancel_error, read_error,
+        )
+        return {"status": "unknown", "order_id": order_id, "fill_price": None, "evidence": evidence}
 
     # ------------------------------------------------------------------
     # exit
@@ -89,7 +168,7 @@ class FnoExecutor:
 
     async def execute_exit(
         self, tradingsymbol: str, qty: int, bid: float,
-        tick_size: float, hard_flat: bool = False,
+        tick_size: float, hard_flat: bool = False, *, exchange: str = "NFO",
     ) -> dict:
         """Submit one SELL LIMIT. An uncertain fill requires reconciliation.
 
@@ -109,7 +188,7 @@ class FnoExecutor:
 
         if hard_flat:
             price = max(tick_size, bid - HARD_FLAT_TICKS_THROUGH * tick_size)
-            resp = await self._place_limit(tradingsymbol, "SELL", qty, price, intent="exit")
+            resp = await self._place_limit(tradingsymbol, "SELL", qty, price, intent="exit", exchange=exchange)
             order_id = resp.get("order_id")
             fill = await self._wait_for_fill(order_id) if order_id else None
             if fill is None:
@@ -122,7 +201,7 @@ class FnoExecutor:
             return {"status": "filled", "order_id": order_id, "fill_price": fill}
 
         # Normal exit ladder: bid, then bid - 3 ticks.
-        resp = await self._place_limit(tradingsymbol, "SELL", qty, bid, intent="exit")
+        resp = await self._place_limit(tradingsymbol, "SELL", qty, bid, intent="exit", exchange=exchange)
         order_id = resp.get("order_id")
         if not order_id:
             return {"status": "rejected", "order_id": None, "fill_price": None}
@@ -139,14 +218,14 @@ class FnoExecutor:
 
     async def _place_limit(
         self, tradingsymbol: str, txn: str, qty: int, price: float,
-        *, intent: str,
+        *, intent: str, exchange: str = "NFO",
     ) -> dict:
         """`intent` is required: see KiteClient.place_order. Entries are
         halt-gated, the exit ladder never is."""
         try:
             return await self.kite.place_order(
                 variety="regular",
-                exchange="NFO",
+                exchange=exchange,
                 tradingsymbol=tradingsymbol,
                 transaction_type=txn,
                 quantity=qty,
@@ -162,7 +241,10 @@ class FnoExecutor:
                 "fno_place_order_failed symbol=%s txn=%s error=%s",
                 tradingsymbol, txn, str(e),
             )
-            return {"order_id": None, "status": "ERROR"}
+            # An exception escaping the client may have occurred after the
+            # request reached the broker: never treat it as a rejection.
+            return {"order_id": None, "status": "ERROR", "dispatch_certainty": "AMBIGUOUS",
+                    "message": f"{type(e).__name__}: {e}"[:300]}
 
     async def _wait_for_fill(
         self, order_id: Optional[str], timeout: Optional[float] = None,
@@ -214,8 +296,11 @@ class FnoExecutor:
             elapsed += self.poll_interval_sec
         return None
 
-    async def _cancel_quietly(self, order_id: str) -> None:
+    async def _cancel_quietly(self, order_id: str) -> Optional[str]:
+        """Cancel; return the error text (``None`` on success) for evidence."""
         try:
             await self.kite.cancel_order(order_id)
+            return None
         except Exception as e:
             logger.error("fno_cancel_failed order_id=%s error=%s", order_id, str(e))
+            return f"{type(e).__name__}: {e}"[:200]

@@ -1,0 +1,577 @@
+{
+  "defined_risk": {
+    "authorization_effect": "NONE",
+    "development": {
+      "baseline": {
+        "complete": 0,
+        "unresolved": 0
+      },
+      "candidate": {
+        "complete": 0,
+        "unresolved": 0
+      },
+      "paired": {
+        "complete_pairs": 0
+      },
+      "pairs": 0,
+      "reconciled_usable": 0
+    },
+    "experiment_id": "oct3-current-dr-exit-review",
+    "holdout": {
+      "baseline": {
+        "complete": 0,
+        "unresolved": 0
+      },
+      "candidate": {
+        "complete": 0,
+        "unresolved": 0
+      },
+      "paired": {
+        "complete_pairs": 0
+      },
+      "pairs": 0,
+      "reconciled_usable": 0
+    },
+    "manifest": {
+      "baseline_policy": "defined_risk_current_target_stop_flat_v1",
+      "candidate_parameters": {
+        "description": "hold a target hit; exit when the mid mark gives back a fraction of max profit from its peak",
+        "floor": "target_level",
+        "stop_and_squareoff": "unchanged_live_rules",
+        "trail_giveback_fraction_of_max_profit": 0.5
+      },
+      "candidate_policy": "defined_risk_target_hold_trail_v1",
+      "cost_multipliers": [
+        1.0,
+        1.5,
+        2.0
+      ],
+      "cost_schedule": {
+        "effective_date": "2026-04-01",
+        "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+        "rates": {
+          "brokerage_flat_per_order": 20.0,
+          "exchange_pct": 0.0003553,
+          "gst_pct": 0.18,
+          "ipft_pct": 1e-09,
+          "sebi_pct": 1e-06,
+          "stamp_duty_buy_pct": 3e-05,
+          "stt_sell_pct": 0.0015
+        },
+        "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01"
+      },
+      "experiment_id": "oct3-current-dr-exit-review",
+      "frozen_at": "2026-10-03T14:25:25.008069+00:00",
+      "holdout_rule": "only entries strictly after frozen_at are HOLDOUT",
+      "live_settings": {
+        "FNO_DR_SQUAREOFF_MIN": 910,
+        "FNO_DR_STOP_FRAC": 0.6,
+        "FNO_DR_TARGET_FRAC": 0.5
+      },
+      "max_gap_seconds": 180,
+      "reconciliation_tolerance_rs": 1.0,
+      "schema": "fno_dr_exit_experiment_manifest_v2",
+      "source_fingerprint": "sha256:4c52604616aec28181dd8b0fdd9524c1047720d934898926561f89997ee7273b"
+    },
+    "manifest_fingerprint": "sha256:16cbaae01b56a03426587f9663eb249fdcd24c9108ed094118b8aba6ea0baedc",
+    "pairs": [],
+    "qualification": "NOT_ASSESSED",
+    "report_fingerprint": "sha256:a11606b913ab3bc75e3c520b3e3d5abf45c664f5616c35a9dccd6c16ef7e27b0",
+    "schema": "fno_dr_exit_experiment_report_v2",
+    "unavailable_entries": [
+      {
+        "entry_day": "2026-09-17",
+        "position_id": 22,
+        "reason": "DrStudyError: row lacks exact bound leg identities (legacy or invalid)"
+      },
+      {
+        "entry_day": "2026-09-21",
+        "position_id": 23,
+        "reason": "DrStudyError: row lacks exact bound leg identities (legacy or invalid)"
+      },
+      {
+        "entry_day": "2026-09-23",
+        "position_id": 24,
+        "reason": "DrStudyError: row lacks exact bound leg identities (legacy or invalid)"
+      },
+      {
+        "entry_day": "2026-09-24",
+        "position_id": 25,
+        "reason": "DrStudyError: row lacks exact bound leg identities (legacy or invalid)"
+      },
+      {
+        "entry_day": "2026-09-28",
+        "position_id": 26,
+        "reason": "DrStudyError: row lacks exact bound leg identities (legacy or invalid)"
+      },
+      {
+        "entry_day": "2026-09-30",
+        "position_id": 27,
+        "reason": "DrStudyError: row lacks exact bound leg identities (legacy or invalid)"
+      },
+      {
+        "entry_day": "2026-10-01",
+        "position_id": 28,
+        "reason": "DrStudyError: row lacks exact bound leg identities (legacy or invalid)"
+      }
+    ],
+    "warning": "Paired deltas use only entries whose baseline replay reconciles to persisted settlement and ledger cash. Paper research is not authority to alter DR exits."
+  },
+  "full_strategy_available": false,
+  "qualification": "NOT_ASSESSED",
+  "quote_inventory": [
+    {
+      "day": "2026-09-17",
+      "events": 30690,
+      "futures": [
+        {
+          "exchange": "NFO",
+          "expiry": "2026-09-29",
+          "instrument_token": "17512194",
+          "instrument_type": "FUT",
+          "lot_size": 65,
+          "strike": 0.0,
+          "tick_size": 0.1,
+          "tradingsymbol": "NIFTY26SEPFUT",
+          "underlying": "NIFTY"
+        }
+      ],
+      "option_tokens": 120
+    },
+    {
+      "day": "2026-09-21",
+      "events": 30780,
+      "futures": [
+        {
+          "exchange": "NFO",
+          "expiry": "2026-09-29",
+          "instrument_token": "17512194",
+          "instrument_type": "FUT",
+          "lot_size": 65,
+          "strike": 0.0,
+          "tick_size": 0.1,
+          "tradingsymbol": "NIFTY26SEPFUT",
+          "underlying": "NIFTY"
+        }
+      ],
+      "option_tokens": 108
+    },
+    {
+      "day": "2026-09-23",
+      "events": 29340,
+      "futures": [
+        {
+          "exchange": "NFO",
+          "expiry": "2026-09-29",
+          "instrument_token": "17512194",
+          "instrument_type": "FUT",
+          "lot_size": 65,
+          "strike": 0.0,
+          "tick_size": 0.1,
+          "tradingsymbol": "NIFTY26SEPFUT",
+          "underlying": "NIFTY"
+        }
+      ],
+      "option_tokens": 112
+    },
+    {
+      "day": "2026-09-24",
+      "events": 30970,
+      "futures": [
+        {
+          "exchange": "NFO",
+          "expiry": "2026-09-29",
+          "instrument_token": "17512194",
+          "instrument_type": "FUT",
+          "lot_size": 65,
+          "strike": 0.0,
+          "tick_size": 0.1,
+          "tradingsymbol": "NIFTY26SEPFUT",
+          "underlying": "NIFTY"
+        }
+      ],
+      "option_tokens": 140
+    },
+    {
+      "day": "2026-09-28",
+      "events": 30420,
+      "futures": [
+        {
+          "exchange": "NFO",
+          "expiry": "2026-09-29",
+          "instrument_token": "17512194",
+          "instrument_type": "FUT",
+          "lot_size": 65,
+          "strike": 0.0,
+          "tick_size": 0.1,
+          "tradingsymbol": "NIFTY26SEPFUT",
+          "underlying": "NIFTY"
+        }
+      ],
+      "option_tokens": 140
+    },
+    {
+      "day": "2026-09-30",
+      "events": 31344,
+      "futures": [
+        {
+          "exchange": "NFO",
+          "expiry": "2026-10-27",
+          "instrument_token": "12468226",
+          "instrument_type": "FUT",
+          "lot_size": 65,
+          "strike": 0.0,
+          "tick_size": 0.1,
+          "tradingsymbol": "NIFTY26OCTFUT",
+          "underlying": "NIFTY"
+        }
+      ],
+      "option_tokens": 136
+    },
+    {
+      "day": "2026-10-01",
+      "events": 29882,
+      "futures": [
+        {
+          "exchange": "NFO",
+          "expiry": "2026-10-27",
+          "instrument_token": "12468226",
+          "instrument_type": "FUT",
+          "lot_size": 65,
+          "strike": 0.0,
+          "tick_size": 0.1,
+          "tradingsymbol": "NIFTY26OCTFUT",
+          "underlying": "NIFTY"
+        }
+      ],
+      "option_tokens": 168
+    }
+  ],
+  "scope": "RECORDED_ENTRY_EXIT_ONLY",
+  "single_leg": [
+    {
+      "entry_day": "2026-09-17",
+      "excluded": {},
+      "observations": 341,
+      "pairs": [
+        {
+          "baseline": {
+            "legs": [],
+            "policy": "live_single_leg_exit_ladder_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "candidate": {
+            "legs": [],
+            "policy": "fno_partial_at_target_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "entry_evidence": "FNO_POSITIONS_ROW",
+          "entry_id": "fno_position:30",
+          "position_ref": "30",
+          "reason": "observation_not_after_entry",
+          "reconciliation": {
+            "state": "PATH_INSUFFICIENT",
+            "usable": false
+          },
+          "sample_class": "DEVELOPMENT",
+          "source_ref": "sha256:e045b18d8c7052aa744228d6cb8aa7ab77d55b0d2007c782c0a7d89fe8e16ab9",
+          "status": "INSUFFICIENT_EVIDENCE",
+          "tradingsymbol": "NIFTY2692223350CE"
+        }
+      ],
+      "position_id": 30,
+      "state": "ATTEMPTED",
+      "tradingsymbol": "NIFTY2692223350CE"
+    },
+    {
+      "entry_day": "2026-09-21",
+      "excluded": {},
+      "observations": 344,
+      "pairs": [
+        {
+          "baseline": {
+            "legs": [],
+            "policy": "live_single_leg_exit_ladder_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "candidate": {
+            "legs": [],
+            "policy": "fno_partial_at_target_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "entry_evidence": "FNO_POSITIONS_ROW",
+          "entry_id": "fno_position:31",
+          "position_ref": "31",
+          "reason": "observation_not_after_entry",
+          "reconciliation": {
+            "state": "PATH_INSUFFICIENT",
+            "usable": false
+          },
+          "sample_class": "DEVELOPMENT",
+          "source_ref": "sha256:c5bd42402032463aae7c9a2c8343066861d4d39416d22664e7d94725bf726c37",
+          "status": "INSUFFICIENT_EVIDENCE",
+          "tradingsymbol": "NIFTY2692223400CE"
+        }
+      ],
+      "position_id": 31,
+      "state": "ATTEMPTED",
+      "tradingsymbol": "NIFTY2692223400CE"
+    },
+    {
+      "entry_day": "2026-09-23",
+      "excluded": {},
+      "observations": 328,
+      "pairs": [
+        {
+          "baseline": {
+            "legs": [],
+            "policy": "live_single_leg_exit_ladder_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "candidate": {
+            "legs": [],
+            "policy": "fno_partial_at_target_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "entry_evidence": "FNO_POSITIONS_ROW",
+          "entry_id": "fno_position:32",
+          "position_ref": "32",
+          "reason": "observation_not_after_entry",
+          "reconciliation": {
+            "state": "PATH_INSUFFICIENT",
+            "usable": false
+          },
+          "sample_class": "DEVELOPMENT",
+          "source_ref": "sha256:e70851192840f505da3d2c67cef769be4013d50717a6994c62bc436e828cc7ce",
+          "status": "INSUFFICIENT_EVIDENCE",
+          "tradingsymbol": "NIFTY26SEP23400CE"
+        }
+      ],
+      "position_id": 32,
+      "state": "ATTEMPTED",
+      "tradingsymbol": "NIFTY26SEP23400CE"
+    },
+    {
+      "entry_day": "2026-09-28",
+      "excluded": {},
+      "observations": 339,
+      "pairs": [
+        {
+          "baseline": {
+            "legs": [],
+            "policy": "live_single_leg_exit_ladder_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "candidate": {
+            "legs": [],
+            "policy": "fno_partial_at_target_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "entry_evidence": "FNO_POSITIONS_ROW",
+          "entry_id": "fno_position:33",
+          "position_ref": "33",
+          "reason": "observation_not_after_entry",
+          "reconciliation": {
+            "state": "PATH_INSUFFICIENT",
+            "usable": false
+          },
+          "sample_class": "DEVELOPMENT",
+          "source_ref": "sha256:577607dbeba4a3e7a8fd0c4b81023af0f95eba6804c2dea9b5cbcf21d96e386b",
+          "status": "INSUFFICIENT_EVIDENCE",
+          "tradingsymbol": "NIFTY26SEP22900PE"
+        }
+      ],
+      "position_id": 33,
+      "state": "ATTEMPTED",
+      "tradingsymbol": "NIFTY26SEP22900PE"
+    },
+    {
+      "entry_day": "2026-09-28",
+      "excluded": {},
+      "observations": 339,
+      "pairs": [
+        {
+          "baseline": {
+            "legs": [],
+            "policy": "live_single_leg_exit_ladder_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "candidate": {
+            "legs": [],
+            "policy": "fno_partial_at_target_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "entry_evidence": "FNO_POSITIONS_ROW",
+          "entry_id": "fno_position:34",
+          "position_ref": "34",
+          "reason": "observation_not_after_entry",
+          "reconciliation": {
+            "state": "PATH_INSUFFICIENT",
+            "usable": false
+          },
+          "sample_class": "DEVELOPMENT",
+          "source_ref": "sha256:b92ceb9c466cbd564679c3bca882e02f6659a824bf7d6c2edd1fa5f77fd2f44f",
+          "status": "INSUFFICIENT_EVIDENCE",
+          "tradingsymbol": "NIFTY26SEP22900PE"
+        }
+      ],
+      "position_id": 34,
+      "state": "ATTEMPTED",
+      "tradingsymbol": "NIFTY26SEP22900PE"
+    },
+    {
+      "entry_day": "2026-09-28",
+      "excluded": {},
+      "observations": 339,
+      "pairs": [
+        {
+          "baseline": {
+            "legs": [],
+            "policy": "live_single_leg_exit_ladder_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "candidate": {
+            "legs": [],
+            "policy": "fno_partial_at_target_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "entry_evidence": "FNO_POSITIONS_ROW",
+          "entry_id": "fno_position:35",
+          "position_ref": "35",
+          "reason": "observation_not_after_entry",
+          "reconciliation": {
+            "state": "PATH_INSUFFICIENT",
+            "usable": false
+          },
+          "sample_class": "DEVELOPMENT",
+          "source_ref": "sha256:a5b6871ecd125037b4bf2d72c4323703fc4cd8d990913b217b1e3544d1711646",
+          "status": "INSUFFICIENT_EVIDENCE",
+          "tradingsymbol": "NIFTY26SEP22900PE"
+        }
+      ],
+      "position_id": 35,
+      "state": "ATTEMPTED",
+      "tradingsymbol": "NIFTY26SEP22900PE"
+    },
+    {
+      "entry_day": "2026-09-30",
+      "excluded": {},
+      "observations": 348,
+      "pairs": [
+        {
+          "baseline": {
+            "legs": [],
+            "policy": "live_single_leg_exit_ladder_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "candidate": {
+            "legs": [],
+            "policy": "fno_partial_at_target_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "entry_evidence": "FNO_POSITIONS_ROW",
+          "entry_id": "fno_position:36",
+          "position_ref": "36",
+          "reason": "observation_not_after_entry",
+          "reconciliation": {
+            "state": "PATH_INSUFFICIENT",
+            "usable": false
+          },
+          "sample_class": "DEVELOPMENT",
+          "source_ref": "sha256:507ad15be58efbdbab72ba0823de8acf83104d7c4d05e5ac9ca2f34aa3100c5a",
+          "status": "INSUFFICIENT_EVIDENCE",
+          "tradingsymbol": "NIFTY26O0622850PE"
+        }
+      ],
+      "position_id": 36,
+      "state": "ATTEMPTED",
+      "tradingsymbol": "NIFTY26O0622850PE"
+    },
+    {
+      "entry_day": "2026-09-30",
+      "excluded": {},
+      "observations": 348,
+      "pairs": [
+        {
+          "baseline": {
+            "legs": [],
+            "policy": "live_single_leg_exit_ladder_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "candidate": {
+            "legs": [],
+            "policy": "fno_partial_at_target_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "entry_evidence": "FNO_POSITIONS_ROW",
+          "entry_id": "fno_position:37",
+          "position_ref": "37",
+          "reason": "observation_not_after_entry",
+          "reconciliation": {
+            "state": "PATH_INSUFFICIENT",
+            "usable": false
+          },
+          "sample_class": "DEVELOPMENT",
+          "source_ref": "sha256:991726cd6e5cde58b9784fb168270af78047ba48c1da7cd7659328e4085ed644",
+          "status": "INSUFFICIENT_EVIDENCE",
+          "tradingsymbol": "NIFTY26O0622850PE"
+        }
+      ],
+      "position_id": 37,
+      "state": "ATTEMPTED",
+      "tradingsymbol": "NIFTY26O0622850PE"
+    },
+    {
+      "entry_day": "2026-10-01",
+      "excluded": {},
+      "observations": 322,
+      "pairs": [
+        {
+          "baseline": {
+            "legs": [],
+            "policy": "live_single_leg_exit_ladder_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "candidate": {
+            "legs": [],
+            "policy": "fno_partial_at_target_v1",
+            "reason": "observation_not_after_entry",
+            "status": "INSUFFICIENT_EVIDENCE"
+          },
+          "entry_evidence": "FNO_POSITIONS_ROW",
+          "entry_id": "fno_position:38",
+          "position_ref": "38",
+          "reason": "observation_not_after_entry",
+          "reconciliation": {
+            "state": "PATH_INSUFFICIENT",
+            "usable": false
+          },
+          "sample_class": "DEVELOPMENT",
+          "source_ref": "sha256:7fe49faf40fe8df35452aebf7164ccc5f4dd4f79aba8fe34dca76defb46aea81",
+          "status": "INSUFFICIENT_EVIDENCE",
+          "tradingsymbol": "NIFTY26O0622650PE"
+        }
+      ],
+      "position_id": 38,
+      "state": "ATTEMPTED",
+      "tradingsymbol": "NIFTY26O0622650PE"
+    }
+  ]
+}

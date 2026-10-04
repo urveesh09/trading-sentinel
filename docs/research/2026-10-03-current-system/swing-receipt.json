@@ -1,0 +1,11 @@
+{
+  "dataset_fingerprint": null,
+  "job": "swing",
+  "metrics": null,
+  "reason": "no evaluable sessions after point-in-time warm-up",
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\swing-report.json",
+  "report_sha256": "sha256:44b211d062ff521a16a291d71dbe6970066dc14c2d73d60594e513e74d281b0b",
+  "result_status": null,
+  "scope": "EVALUATOR",
+  "state": "UNAVAILABLE"
+}

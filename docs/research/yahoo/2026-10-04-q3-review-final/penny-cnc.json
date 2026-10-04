@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "job": "penny-cnc",
+  "metrics": null,
+  "module": "penny-cnc",
+  "qualification": "NOT_ASSESSED",
+  "reason": "Yahoo rejected requested 1m window: YahooDataError: Unprocessable Entity: 1m data not available for startTime=1782844200 and endTime=1783449000. The requested range must be within the last 30 days.",
+  "report_file": "_local\\penny-cnc-report.json",
+  "report_sha256": "sha256:5840e5b23d391db5f71841d6783ddbed61d76642ab92f0cb5a46575f87a3cbd1",
+  "scope": "LIFECYCLE",
+  "state": "UNAVAILABLE",
+  "strategy_id": "penny_cnc_connors_lifecycle_1d",
+  "window_kind": "primary"
+}

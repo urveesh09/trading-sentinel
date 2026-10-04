@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "penny-joint-recent-diagnostic",
+  "metrics": null,
+  "module": "penny-joint",
+  "qualification": "NOT_ASSESSED",
+  "reason": "joint cash requires successful same-window MIS and CNC lifecycle reports",
+  "report_file": "_local\\penny-joint-recent-diagnostic-report.json",
+  "report_sha256": "sha256:c279023619139d42a48334e632cafeca26727a6e1c5f3cc4d908cc948b4439b6",
+  "scope": "PORTFOLIO_PARTIAL",
+  "state": "UNAVAILABLE",
+  "strategy_id": "penny_joint_lifecycle_portfolio",
+  "window_kind": "recent-diagnostic"
+}

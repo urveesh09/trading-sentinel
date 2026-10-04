@@ -15,16 +15,17 @@ from zoneinfo import ZoneInfo
 
 import aiosqlite
 
-from fno_costs import calc_fno_costs
+from cost_schedules import options_cost_snapshot
+from fno_costs import calc_fno_costs_from_snapshot
+# [F0-R4] One packet interpretation shared with the shared-risk reader.
+from fno_exit_evidence import (  # noqa: F401  (RecoveryConflict/TERMINAL re-exported)
+    TERMINAL, RecoveryConflict, _positive_int, broker_time as _broker_time,
+    derive_exit_facts, encode_evidence,
+)
 from fno_positions import init_fno_positions_db
 from performance import allocation_for_source
 
 IST = ZoneInfo("Asia/Kolkata")
-TERMINAL = {"COMPLETE", "CANCELLED", "REJECTED"}
-
-
-class RecoveryConflict(ValueError):
-    """Evidence is ambiguous or no longer matches the durable intent."""
 
 
 async def pending_exit_intents(db_path: str) -> list[dict]:
@@ -49,32 +50,6 @@ async def pending_exit_intents(db_path: str) -> list[dict]:
             return [dict(row) for row in await cur.fetchall()]
         except aiosqlite.OperationalError as exc:
             raise RecoveryConflict("F&O recovery schema unavailable") from exc
-
-
-def _positive_int(value, field: str, *, allow_zero: bool = False) -> int:
-    if type(value) is not int or value < (0 if allow_zero else 1):
-        raise RecoveryConflict(f"invalid {field}")
-    return value
-
-
-def _price(value, field: str) -> float:
-    try:
-        result = float(value)
-    except (TypeError, ValueError) as exc:
-        raise RecoveryConflict(f"invalid {field}") from exc
-    if not math.isfinite(result) or result <= 0:
-        raise RecoveryConflict(f"invalid {field}")
-    return result
-
-
-def _broker_time(value: str) -> datetime:
-    if not isinstance(value, str) or not value.strip():
-        raise RecoveryConflict("missing broker fill timestamp")
-    try:
-        parsed = datetime.fromisoformat(value.strip())
-    except ValueError as exc:
-        raise RecoveryConflict("invalid broker fill timestamp") from exc
-    return parsed.replace(tzinfo=IST) if parsed.tzinfo is None else parsed.astimezone(IST)
 
 
 async def verify_broker_exit(
@@ -105,23 +80,9 @@ async def verify_broker_exit(
     order = matches[0]
     symbol = intent["tradingsymbol"]
     source = intent["source"]
-    qty = _positive_int(intent["qty"], "position quantity")
-    for field, expected in (("placed_by", account_id), ("tradingsymbol", symbol),
-                            ("exchange", "NFO"), ("product", "MIS"),
-                            ("transaction_type", "SELL"), ("tag", source[:20])):
-        if str(order.get(field) or "") != expected:
-            raise RecoveryConflict(f"broker order {field} mismatch")
-    if str(order.get("status") or "").upper() not in TERMINAL:
-        raise RecoveryConflict("broker order is not terminal")
-    if _broker_time(order.get("order_timestamp")) + timedelta(seconds=1) < claimed.astimezone(IST):
-        raise RecoveryConflict("broker order predates exit intent")
-    if _positive_int(order.get("quantity"), "order quantity") != qty:
-        raise RecoveryConflict("broker order quantity differs from local residual")
-    filled = _positive_int(order.get("filled_quantity"), "filled quantity", allow_zero=True)
-    if filled > qty:
-        raise RecoveryConflict("filled quantity exceeds local position")
-    if str(order["status"]).upper() == "COMPLETE" and filled != qty:
-        raise RecoveryConflict("COMPLETE order has incomplete fill")
+    _positive_int(intent["qty"], "position quantity")
+    # Order-book checks need the whole book, so they stay here; everything
+    # about this order/trades/net packet is derived by the shared function.
     for other in orders:
         if (not isinstance(other, dict) or str(other.get("order_id")) == order_id
                 or other.get("placed_by") != account_id
@@ -138,53 +99,20 @@ async def verify_broker_exit(
                 or other_time >= claimed.astimezone(IST)
                 or str(other.get("status") or "").upper() not in TERMINAL):
             raise RecoveryConflict("another same-symbol broker order is not reconciled")
-    trade_qty = 0
-    weighted = 0.0
-    fill_times = []
-    seen_trade_ids = set()
-    for trade in trades:
-        if not isinstance(trade, dict):
-            raise RecoveryConflict("malformed broker trade")
-        trade_id = str(trade.get("trade_id") or "")
-        if not trade_id or trade_id in seen_trade_ids:
-            raise RecoveryConflict("missing or duplicate broker trade ID")
-        seen_trade_ids.add(trade_id)
-        for field, expected in (("order_id", order_id), ("tradingsymbol", symbol),
-                                ("exchange", "NFO"), ("product", "MIS"),
-                                ("transaction_type", "SELL")):
-            if str(trade.get(field) or "") != expected:
-                raise RecoveryConflict(f"broker trade {field} mismatch")
-        n = _positive_int(trade.get("quantity"), "trade quantity")
-        px = _price(trade.get("average_price"), "trade price")
-        trade_qty += n
-        weighted += n * px
-        fill_time = _broker_time(trade.get("fill_timestamp"))
-        if fill_time + timedelta(seconds=1) < claimed.astimezone(IST):
-            raise RecoveryConflict("broker fill predates exit intent")
-        fill_times.append(fill_time)
-    if trade_qty != filled:
-        raise RecoveryConflict("trade quantity disagrees with order fill")
-    if filled and (not fill_times or max(fill_times) > now.astimezone(IST)):
-        raise RecoveryConflict("broker fill timestamp is missing or future")
-    remaining = qty - filled
     net = [p for p in positions["net"] if isinstance(p, dict)
            and p.get("exchange") == "NFO" and p.get("product") == "MIS"
            and p.get("tradingsymbol") == symbol]
-    if len(net) > 1:
-        raise RecoveryConflict("duplicate broker net positions")
-    broker_qty = _positive_int(net[0].get("quantity"), "broker net quantity", allow_zero=True) if net else 0
-    if broker_qty != remaining:
-        raise RecoveryConflict("broker net quantity differs from expected residual")
+    facts = derive_exit_facts(
+        order=order, trades=trades, net_position=net, account_id=account_id,
+        order_id=order_id, source=source, tradingsymbol=symbol, intent_qty=intent["qty"],
+        intent_created_at=claimed, observed_at=now,
+    )
     evidence = {"account_id": account_id, "order": order, "trades": trades,
                 "net_position": net, "observed_at": now.isoformat()}
-    evidence_json = json.dumps(evidence, sort_keys=True, default=str,
-                               separators=(",", ":"), ensure_ascii=True)
-    if len(evidence_json.encode("utf-8")) > 65536:
-        raise RecoveryConflict("broker evidence exceeds retained limit")
-    digest = hashlib.sha256(evidence_json.encode("utf-8")).hexdigest()
-    return {"status": str(order["status"]).upper(), "filled_qty": filled,
-            "remaining_qty": remaining, "fill_price": weighted / filled if filled else None,
-            "fill_time": max(fill_times).isoformat() if filled else None,
+    evidence_json, digest = encode_evidence(evidence)
+    return {"status": facts["status"], "filled_qty": facts["filled_qty"],
+            "remaining_qty": facts["remaining_qty"], "fill_price": facts["fill_price"],
+            "fill_time": facts["fill_time"],
             "evidence_sha256": digest, "evidence_json": evidence_json}
 
 
@@ -225,6 +153,10 @@ async def resolve_exit_intent(
     from performance import init_ledger
     await init_ledger(db_path)
     resolved_at = datetime.now(timezone.utc).isoformat()
+    # [F0-R4] Freeze the exact cost schedule used, so the shared reader can
+    # re-derive these charges without repricing at later settings.
+    cost_snapshot = options_cost_snapshot()
+    cost_snapshot_json = json.dumps(cost_snapshot, sort_keys=True, separators=(",", ":"))
     async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row
         await db.execute("BEGIN IMMEDIATE")
@@ -243,11 +175,13 @@ async def resolve_exit_intent(
                 raise RecoveryConflict("intent or position changed during broker inspection")
             generation = int(current["settlement_generation"])
             ledger_id = None
+            gross = costs = pnl = None
             if filled:
                 generation += 1
                 px = proof["fill_price"]
                 gross = (px - float(current["entry_premium"])) * filled
-                costs = calc_fno_costs(float(current["entry_premium"]), px, filled)
+                costs = calc_fno_costs_from_snapshot(
+                    float(current["entry_premium"]), px, filled, cost_snapshot)
                 pnl = gross - costs
                 cur = await db.execute("SELECT COALESCE(SUM(pnl),0) FROM bankroll_ledger WHERE source=?", (source,))
                 prior = float((await cur.fetchone())[0])
@@ -289,11 +223,13 @@ async def resolve_exit_intent(
             await db.execute("""INSERT INTO fno_exit_recoveries
                 (position_id,source,intent_created_at,order_id,operator,account_id,
                  broker_evidence_sha256,broker_evidence_json,terminal_status,filled_qty,remaining_qty,
-                 fill_price,settlement_generation,ledger_id,resolved_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                 entry_premium,fill_price,gross_pnl,costs,pnl,settlement_generation,ledger_id,resolved_at,
+                 cost_snapshot_json)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (position_id, source, expected_created_at, order_id, operator.strip(),
                  account_id, proof["evidence_sha256"], proof["evidence_json"], proof["status"], filled,
-                 remaining, proof["fill_price"], generation, ledger_id, resolved_at))
+                 remaining, current["entry_premium"], proof["fill_price"], gross, costs, pnl,
+                 generation, ledger_id, resolved_at, cost_snapshot_json))
             await db.commit()
         except Exception:
             await db.rollback()
