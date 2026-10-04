@@ -127,3 +127,53 @@ def test_trader_cuts_failed_mo_thesis_and_locks_breakeven(monkeypatch):
     trade = _run(monkeypatch, _rows(up), {DAYS[0]: [_pos(stop=19.0, target=22.0, hold=2)]},
                  policy="EDGE_TRADER_V1")["trades"][0]
     assert trade["exit_reason"] == "STOP" and trade["exit_price"] >= trade["entry_price"] * (1 - 0.0005) - 1e-9
+
+
+# ---- EDGE_OVERNIGHT: buy at the signal close, sell at the next open ----------
+
+def _overnight(monkeypatch, rows, signals, **cfg):
+    return _run(monkeypatch, rows, signals, policy="EDGE_OVERNIGHT", **cfg)
+
+
+def test_overnight_buys_the_signal_close_and_sells_the_next_open(monkeypatch):
+    rows = _rows({"AAA": {DAYS[0]: (20.0, 20.2, 19.0, 19.2, 100000.0),
+                          DAYS[1]: (19.6, 19.9, 18.0, 18.2, 100000.0)}})
+    result = _overnight(monkeypatch, rows, {DAYS[0]: [_pos(close=19.2, stop=18.5)]})
+    trade = result["trades"][0]
+    assert result["clock"].startswith("scan_at_D_close; entry_D_close")
+    assert trade["entry_date"] == DAYS[0] and trade["entry_price"] == pytest.approx(19.2 * 1.0025)
+    # Sold at the opening auction (19.6), not at the later low under the stop.
+    assert trade["exit_date"] == DAYS[1] and trade["exit_reason"] == "NEXT_OPEN"
+    assert trade["exit_price"] == pytest.approx(19.6 * 0.9995)
+    assert trade["shares"] == 100
+
+
+def test_overnight_waits_for_the_next_traded_session(monkeypatch):
+    rows = _rows({"AAA": {DAYS[0]: (20.0, 20.2, 19.8, 20.0, 100000.0),
+                          DAYS[1]: (20.0, 20.0, 20.0, 20.0, 0.0),
+                          DAYS[2]: (20.5, 20.6, 20.4, 20.5, 100000.0)}})
+    trade = _overnight(monkeypatch, rows, {DAYS[0]: [_pos()]})["trades"][0]
+    assert (trade["exit_date"], trade["exit_reason"]) == (DAYS[2], "OPEN_DELAYED")
+
+
+def test_overnight_caps_size_by_liquidity_and_own_cash(monkeypatch):
+    # 1% of Rs 20 x 5,000 = Rs 1,000 -> 49 shares at 20.05; plan 100 -> resized.
+    rows = _rows({"AAA": {DAYS[0]: (20.0, 20.2, 19.8, 20.0, 5000.0)}})
+    result = _overnight(monkeypatch, rows, {DAYS[0]: [_pos()]})
+    assert result["trades"][0]["shares"] == int(0.01 * 20.0 * 5000.0 // (20.0 * 1.0025))
+    assert result["admission_outcomes"]["LIQUIDITY_LIMITED_RESIZE"] == 1
+    thin = _rows({"AAA": {DAYS[0]: (20.0, 20.2, 19.8, 20.0, 1000.0)}})       # capacity 9 < 25% of 100
+    assert _overnight(monkeypatch, thin, {DAYS[0]: [_pos()]})["admission_outcomes"] == {"LIQUIDITY_REJECTED": 1}
+    small = _rows({"AAA": {DAYS[0]: (20.0, 20.2, 19.8, 20.0, 100000.0)}})
+    resized = _overnight(monkeypatch, small, {DAYS[0]: [_pos(shares=100)]}, bankroll=1000.0)
+    assert resized["trades"][0]["shares"] * 20.05 <= 1000.0
+    assert resized["admission_outcomes"]["CASH_LIMITED_RESIZE"] == 1
+
+
+def test_full_cnc_costs_add_buy_side_stt_and_the_dp_charge():
+    from daily_portfolio import CNC_DP_CHARGE_PER_SELL, penny_cnc_costs, penny_cnc_full_costs
+    runtime = penny_cnc_costs(20.0, 20.4, 500, False)
+    assert penny_cnc_full_costs(20.0, 20.4, 500, False) == pytest.approx(runtime + 10.0 + CNC_DP_CHARGE_PER_SELL)
+    assert penny_cnc_full_costs(20.0, 20.4, 500, True) == penny_cnc_costs(20.0, 20.4, 500, True)
+    with pytest.raises(ValueError, match="cost_model"):
+        EdgeReplayConfig(tickers=("AAA",), cost_model="FREE")

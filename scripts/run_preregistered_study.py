@@ -105,6 +105,22 @@ STUDIES: dict[str, Study] = {
         candidate="EDGE_TRADER_V1", decision_window="untouched",
         drawdown_key="max_marked_drawdown_pct", drawdown_floor=5.0, metrics="portfolio",
         hypothesis="Separate MR/MO thesis entries and exits beat shipped EDGE execution."),
+    "edge-overnight-t1": Study(
+        strategy="penny_edge_portfolio_replay", snapshot=Q3_SNAPSHOT,
+        base_config=lambda: {**json.loads((YAHOO / "2026-10-04-review-candidates/_local/edge-next-open-proxy-report.json")
+                                          .read_text())["request"]["config"], "cost_model": "CNC_FULL"},
+        sources=("python-engine/daily_portfolio.py", "python-engine/edge_portfolio_replay.py",
+                 "python-engine/penny_edge_live.py", "python-engine/penny_edge_engine.py", "python-engine/penny_risk.py"),
+        windows={"development": (("2026-01-01", "2026-09-30"),), "untouched": (("2024-03-01", "2025-12-31"),)},
+        arms={"BASELINE": {"policy": "BASELINE"}, "EDGE_OVERNIGHT": {"policy": "EDGE_OVERNIGHT"},
+              "EDGE_OVERNIGHT_S60": {"policy": "EDGE_OVERNIGHT", "min_strength": 0.6}},
+        books={"paper_25k": {"bankroll": 25000.0}, "paper_100k": {"bankroll": 100000.0},
+               "owner_3000": {"bankroll": 3000.0}}, decision_book="paper_25k",
+        candidate="EDGE_OVERNIGHT", decision_window="untouched",
+        drawdown_key="max_marked_drawdown_pct", drawdown_floor=5.0, metrics="portfolio",
+        hypothesis="The shipped EDGE signals earn their move overnight (Jan-Sep 2026 event study): buying at the "
+                   "signal close (15:20 proxy, +25 bps) and selling at the next open beats buying at the next open, "
+                   "after full CNC costs (buy STT and DP charge) and a 1% liquidity cap."),
     "range-trader-t2": Study(
         strategy="range_reversion_portfolio_replay", snapshot=Q3_SNAPSHOT,
         base_config=lambda: {"tickers": json.loads((REVIEW / "range-report.json").read_text())["request"]["config"]["tickers"],
