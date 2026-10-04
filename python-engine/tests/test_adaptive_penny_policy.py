@@ -4,7 +4,7 @@ import pytest
 
 from adaptive_penny_policy import (
     CompletedBar, SetupState, advance_setup, begin_new_thesis, begin_watch,
-    mark_closed, mark_exit_pending, mark_open, plan_entry,
+    mark_closed, mark_exit_pending, mark_open, plan_entry, watch_from_prior_bars,
 )
 
 
@@ -40,6 +40,23 @@ def test_baseline_rejected_continuation_has_frozen_anchor_and_intent():
     assert intent.intent.entry_kind == "CONTINUATION"
     assert intent.intent.baseline_status == "baseline_rejected"
     assert intent.setup.anchor == 100.0
+
+
+def test_watch_derives_anchor_only_from_visible_prior_bars():
+    prior = (
+        _bar("p1", 13, high=99.5, low=98.9, close=99.2),
+        _bar("p2", 14, high=100.0, low=99.1, close=99.8),
+        _bar("p3", 15, high=99.8, low=99.2, close=99.5),
+    )
+    watch = watch_from_prior_bars(ticker="ABC", prior_bars=prior,
+                                  decision_at=_bar("break", 16).available_at,
+                                  baseline_accepted=False)
+    assert watch and watch.anchor == 100.0 and watch.baseline_status == "baseline_rejected"
+    # A delayed source bar is unavailable, rather than being used as future
+    # structure or silently dropped to manufacture a lower anchor.
+    delayed = (*prior[:-1], _bar("late-prior", 17, high=101, low=100, close=100.5))
+    assert watch_from_prior_bars(ticker="ABC", prior_bars=delayed,
+                                 decision_at=_bar("break", 16).available_at) is None
 
 
 def test_bounded_retest_reclaim_is_distinct_from_continuation():

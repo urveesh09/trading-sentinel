@@ -210,6 +210,29 @@ def begin_watch(
     )
 
 
+def watch_from_prior_bars(
+    *, ticker: str, prior_bars: tuple[CompletedBar, ...], decision_at: datetime,
+    expiry_minutes: int = 10, noise_allowance: float = 0.05,
+    baseline_accepted: bool = False,
+) -> PennySetup | None:
+    """Derive a watch from a declared pre-decision structure window.
+
+    The current/confirmation bar is intentionally not an input.  Returning
+    ``None`` for insufficient or not-yet-visible history is an availability
+    outcome, not a substitute anchor or a permissive fallback.
+    """
+    decision = _aware(decision_at, "decision_at")
+    if len(prior_bars) < 3:
+        return None
+    if any(bar.available_at > decision for bar in prior_bars):
+        return None
+    anchor_bar = max(prior_bars, key=lambda bar: (bar.high, bar.available_at, bar.observation_id))
+    return begin_watch(ticker=ticker, anchor=anchor_bar.high,
+                       anchor_available_at=anchor_bar.available_at,
+                       expiry_minutes=expiry_minutes, noise_allowance=noise_allowance,
+                       baseline_accepted=baseline_accepted)
+
+
 def _transition(setup: PennySetup, state: SetupState, *, observation: CompletedBar,
                 reason: str, intent_price: float | None = None, entry_kind: str | None = None) -> PennySetup:
     if setup.state == state and setup.last_observation_id == observation.observation_id:
