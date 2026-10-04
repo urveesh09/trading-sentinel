@@ -178,3 +178,66 @@ def edge_evaluator_replay(
             os.remove(path)
         except FileNotFoundError:
             pass
+
+
+def edge_next_open_lifecycle_replay(
+    rows: list[tuple], *, start: str, end: str, tickers: tuple[str, ...],
+    nifty_ticker: str, bankroll: float, max_positions: int, min_strength: float,
+) -> dict:
+    """Run the shipped EDGE scan then model only next-session executable fills.
+
+    This does not recreate the historical scheduler, event calendar, broker
+    recovery, concurrent portfolio, or actual approval.  It deliberately fixes
+    only the previous evaluator's discovery-close shortcut: a selected signal
+    must survive the next observed open and its shipped simulator owns exits.
+    """
+    from penny_edge_live import scan_today
+    from non_fno_research import edge_next_open_lifecycle
+
+    required = {nifty_ticker, *tickers}
+    have = {str(row[0]).upper() for row in rows}
+    missing = sorted(required - have)
+    if missing:
+        raise DailyReplayUnavailable("missing required daily history: " + ", ".join(missing))
+    fd, path = tempfile.mkstemp(prefix="sentinel-edge-lifecycle-", suffix=".sqlite")
+    os.close(fd)
+    try:
+        conn = sqlite3.connect(path)
+        conn.execute("CREATE TABLE ohlcv_cache (ticker TEXT,date TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL)")
+        conn.executemany("INSERT INTO ohlcv_cache VALUES (?,?,?,?,?,?,?)", rows)
+        conn.commit(); conn.close()
+        bars_by_ticker: dict[str, list[dict]] = {}
+        for ticker, stamp, open_, high, low, close, volume in rows:
+            bars_by_ticker.setdefault(str(ticker).upper(), []).append({
+                "date": str(stamp), "open": float(open_), "high": float(high), "low": float(low),
+                "close": float(close), "volume": float(volume),
+            })
+        for bars in bars_by_ticker.values():
+            bars.sort(key=lambda row: row["date"])
+        days = sorted({str(row[1]) for row in rows if start <= str(row[1]) <= end})
+        if not days:
+            raise DailyReplayUnavailable("no daily sessions in requested window")
+        trials: list[dict] = []
+        scans = 0
+        for day in days:
+            scan = scan_today(bankroll=bankroll, max_positions=max_positions,
+                              min_strength=min_strength, db_path=path,
+                              as_of_date=day, nifty_ticker=nifty_ticker)
+            scans += 1
+            for position in scan["positions"]:
+                future = [row for row in bars_by_ticker.get(position.ticker, []) if row["date"] > day]
+                result = edge_next_open_lifecycle(position, future)
+                trials.append({"decision_date": day, "ticker": position.ticker,
+                               "adjusted_strength": position.adjusted_strength,
+                               "signal_subtype": position.signal_subtype, **result})
+        return {"scope": "LIFECYCLE", "clock": "signal_after_D_close_then_D_plus_1_open",
+                "scans": scans, "trials": trials,
+                "closed": sum(row["status"] == "CLOSED" for row in trials),
+                "open_marked": sum(row["status"] == "OPEN_MARKED" for row in trials),
+                "unresolved": sum(row["status"] == "UNRESOLVED" for row in trials),
+                "no_fill": sum(row["status"] == "NO_FILL" for row in trials)}
+    finally:
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass

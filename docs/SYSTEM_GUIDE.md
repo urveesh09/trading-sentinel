@@ -1,5 +1,50 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 4 — N1–N3 non-F&O research implementation (Dev only)
+
+[N1–N3 implementation slice](2026-10-04-n1-n3-implementation-slice.md) is
+implemented in Dev. It changes **research measurement and named offline
+candidates**, not live strategy policy or any F&O component.
+
+- N1: `LIVE_EXIT_LIFECYCLE` makes the Momentum replay call shipped
+  `evaluate_momentum_exit`, including broker-stop-first OHLC ordering,
+  scale-out/runner quantities, per-order costs, ratchets, hard square-off and
+  unresolved exits. `TARGET_1_PROXY` remains the default. EDGE now has a Lab
+  lifecycle adapter: shipped scan/ranker, next-daily-open fill only,
+  geometry-invalid gap refusal and shipped exit simulator.
+- N2: Penny MIS `PEN_CONTEXT` is optional research-only/default `BASELINE`.
+  It preserves the baseline decision, requires five historical same-minute
+  cumulative-volume profiles plus fresh breakout/bounded retest, and fails
+  closed when evidence is absent. `penny_exit_thesis` is a non-widening,
+  one-rearm-only diagnostic, not a runtime exit change.
+- N3: broker-free Range net-room/thesis and Swing relative-strength/correlation
+  gates are available for matched research; Momentum's real runner is now
+  measurable. They are not wired to the live/shadow dispatcher.
+
+No broker/order/API call, scheduler, DB schema, strategy setting, capital
+reservation, F&O source/configuration or Production file changed. This is not
+performance evidence or a rollout recommendation: manual approval,
+point-in-time universe/event context, depth/fill receipts and shared stock
+portfolio evidence remain absent. Verification: 109 focused tests passed (one
+existing HTTPX deprecation), affected modules compiled and diff checks passed.
+Dev only; no push or deployment. Commit identity is recorded after final checks.
+
+## October 3 — non-F&O improvement direction (plan only)
+
+[Researched smart-entry/exit plan](2026-10-03-non-fno-smart-entry-exit-development-plan.md)
+prioritizes Penny MIS and EDGE, then Range/Swing, with Momentum's existing
+partial/runner and S7 research reused. It first requires baseline isolation,
+complete lifecycle economics and honest coverage, then bounded entry/exit
+experiments at equal capital/risk and genuinely untouched holdouts.
+
+F&O development is excluded. Its capital, decisions, exits and shared runtime
+resources must remain protected; filename isolation alone is insufficient.
+New non-F&O variants remain proposed, broker-free/default OFF; no strategy,
+threshold, funding, dependency, runtime configuration or schema changed.
+₹15.18 remains a five-session partial Penny sensitivity result, not live or
+system profit. Source baseline `4be033a`; documentation-only, Dev-local and
+uncommitted, no Production access, broker action, push or deployment this task.
+
 ## October 3 — Yahoo-only non-F&O backtest interface (Dev only)
 
 `scripts/backtest_all_yahoo.py --start YYYY-MM-DD --end YYYY-MM-DD` supplies one

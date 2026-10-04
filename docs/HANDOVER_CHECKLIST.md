@@ -1,5 +1,26 @@
 # Handover receipt and operator checklist
 
+## October 3 — researched non-F&O development plan
+
+- [x] [Smart-entry/exit plan](2026-10-03-non-fno-smart-entry-exit-development-plan.md)
+  records module priority, shipped contracts, primary web sources and transfer
+  limits, acceptance, rollout/rollback and remaining work.
+- [x] F&O excluded; no interference through capital, shared code/configuration,
+  scheduler, DB, quote/broker capacity or exit authority is a release contract.
+- [x] Required docs/AGENTS and relevant source reviewed at Dev `4be033a`;
+  Yahoo counts distinguish verdicts/selections/fills and five-session sensitivity.
+- [x] Documentation-only link/scope/diff verification recorded on delivery;
+  no new strategy tests/profit claims, source/configuration/schema changes,
+  Production access, broker actions, push or deployment. Updates are uncommitted.
+- [x] N1–N3 source slice: named Momentum partial/runner exit lifecycle, EDGE
+  next-open lifecycle, default-off Penny context candidate and pure Range/Swing
+  candidate gates. See [implementation receipt](2026-10-04-n1-n3-implementation-slice.md).
+- [x] F&O isolation held: no F&O source/configuration, shared reservation,
+  scheduler, database schema, broker action, Production edit, push or deploy.
+- [ ] N0 operational F&O compatibility baseline; candidate data coverage,
+  matched-cash evidence and all-failure trial ledger; N4 untouched
+  qualification and separately authorized observation/GitHub rollout.
+
 ## October 3 Yahoo non-F&O interface — latest research receipt
 
 - [x] One script with inclusive dates, current shipped Lab paths and all-module

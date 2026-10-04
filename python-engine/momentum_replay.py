@@ -55,6 +55,10 @@ class MomentumReplayConfig:
     # MOM_RECENCY_5 is a declared research comparison, not the runtime
     # evaluator's default. It remains available only when a run names it.
     variants: tuple[str, ...] = ("MOM_BASE",)
+    # TARGET_1_PROXY is retained for reproducibility of archived research.
+    # LIVE_EXIT_LIFECYCLE is a separate research model that uses the shipped
+    # Momentum exit evaluator and never silently substitutes the proxy.
+    exit_model: str = "TARGET_1_PROXY"
     oos_folds: int = 3
 
     def __post_init__(self):
@@ -68,6 +72,8 @@ class MomentumReplayConfig:
             raise ValueError("at least three OOS folds are required")
         if not self.variants or any(name not in VARIANTS for name in self.variants):
             raise ValueError("replay variants must be registered and non-empty")
+        if self.exit_model not in {"TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE"}:
+            raise ValueError("exit_model must be TARGET_1_PROXY or LIVE_EXIT_LIFECYCLE")
         Regime[self.regime]
 
 
@@ -259,6 +265,141 @@ def _simulate(candidate: dict, future: pd.DataFrame, execution: dict) -> dict:
     return trade
 
 
+def _multi_order_costs(entry: float, exits: list[tuple[float, int]], execution: dict) -> float:
+    """Cost one buy order and every actual sell order in a runner lifecycle.
+
+    Calling the round-trip helper once per partial sale would charge the buy
+    brokerage repeatedly.  This mirrors the shipped cash-equity schedule while
+    retaining the important per-executed-order brokerage cap.
+    """
+    quantity = sum(int(qty) for _, qty in exits)
+    if quantity <= 0 or entry <= 0 or any(price <= 0 or qty <= 0 for price, qty in exits):
+        raise ReplayDataError("lifecycle cost inputs are invalid")
+    buy = entry * quantity
+    sells = [price * qty for price, qty in exits]
+    sell = sum(sells)
+    brokerage = min(buy * execution["brokerage_pct"], execution["brokerage_max_per_order"])
+    brokerage += sum(min(value * execution["brokerage_pct"], execution["brokerage_max_per_order"])
+                     for value in sells)
+    exchange = (buy + sell) * execution["exchange_pct"]
+    sebi = (buy + sell) * execution["sebi_pct"]
+    ipft = (buy + sell) * execution["ipft_pct"]
+    gst = (brokerage + exchange + sebi + ipft) * execution["gst_pct"]
+    return round(brokerage + sell * execution["stt_sell_pct"] + exchange
+                 + buy * execution["stamp_duty_buy_pct"] + sebi + ipft + gst, 4)
+
+
+def _simulate_live_exit_lifecycle(candidate: dict, future: pd.DataFrame, execution: dict) -> dict:
+    """Replay the shipped partial/runner exit decision with conservative OHLC.
+
+    The entry model deliberately remains the frozen Momentum research entry
+    model.  The change here is exit parity: a bar's protective stop is checked
+    before any favourable high; a target/scale limit needs the high to reach the
+    known level; a ratchet only affects later bars; and the 15:15 square-off
+    uses that bar's open.  A missing final fill stays unresolved.
+    """
+    from momentum_exits import ACTION_EXIT, ACTION_SCALE_OUT, ACTION_TRAIL, evaluate_momentum_exit
+
+    decision = candidate["decision"]
+    raw_entry = float(decision["entry_price"])
+    entry = raw_entry * (1 + execution["entry_slippage_bps"] / 10000.0)
+    initial_stop = float(decision["stop_loss"])
+    target = float(decision["target_1"])
+    original_quantity = int(decision["shares"])
+    if original_quantity < 1 or not (initial_stop > 0 and entry > initial_stop and target > entry):
+        raise ReplayDataError("accepted Momentum decision has invalid lifecycle geometry")
+    initial_risk = (entry - initial_stop) * original_quantity
+    trade = {
+        "variant": candidate["variant"], "ticker": candidate["ticker"],
+        "trading_date": candidate["trading_date"], "entry_bar_ts": candidate["bar_ts"],
+        "raw_entry": raw_entry, "entry_fill": round(entry, 6), "stop_price": initial_stop,
+        "target_price": target, "quantity": original_quantity, "dataset_fingerprint": candidate["dataset_fingerprint"],
+        "status": "OPEN", "exit_model": "LIVE_EXIT_LIFECYCLE", "initial_risk": round(initial_risk, 6),
+        "fills": [],
+    }
+    position = {
+        "ticker": candidate["ticker"], "entry_price": entry, "stop_loss_initial": initial_stop,
+        "trailing_stop_current": initial_stop, "target_1": target, "shares": original_quantity,
+        "t1_fired": False, "atr_14_at_entry": decision.get("atr_14"),
+        "vwap_at_entry": decision.get("vwap"), "regime_at_entry": decision.get("regime"),
+        "entry_date": candidate["bar_ts"],
+    }
+    remaining = original_quantity
+    exit_slip = execution["exit_slippage_bps"] / 10000.0
+
+    def close_all(price: float, reason: str, stamp: pd.Timestamp) -> None:
+        nonlocal remaining
+        if remaining:
+            trade["fills"].append({"quantity": remaining, "price": round(price, 6), "reason": reason,
+                                   "bar_ts": stamp.isoformat()})
+            remaining = 0
+
+    for stamp, bar in future.iterrows():
+        stamp = pd.Timestamp(stamp)
+        open_, high, low, close = (float(bar[name]) for name in ("open", "high", "low", "close"))
+        # The runtime square-off is an order at the deadline; do not inspect a
+        # later intrabar low/high and pretend a different ordering was known.
+        if (stamp.hour, stamp.minute) >= (execution["time_exit_hour"], execution["time_exit_minute"]):
+            close_all(open_ * (1 - exit_slip), "hard_square_off", stamp)
+            break
+        current_stop = float(position["trailing_stop_current"] or initial_stop)
+        # A real resting stop has priority over discretionary runner logic.
+        if open_ <= current_stop:
+            close_all(open_ * (1 - exit_slip), "broker_stop_gap", stamp)
+            break
+        if low <= current_stop:
+            close_all(current_stop * (1 - exit_slip), "broker_stop", stamp)
+            break
+
+        # High can establish a known target/partial fill.  Any ratchet set
+        # here is intentionally not applied to this same OHLC bar.
+        high_action = evaluate_momentum_exit(position, high, stamp.to_pydatetime())
+        if high_action["action"] == ACTION_EXIT:
+            price = target * (1 - exit_slip) if high >= target else close * (1 - exit_slip)
+            close_all(price, high_action["reason"], stamp)
+            break
+        if high_action["action"] == ACTION_SCALE_OUT:
+            quantity = min(int(high_action.get("scale_shares") or 0), remaining)
+            if quantity > 0:
+                trigger = entry + (entry - initial_stop) * float(settings.MOMENTUM_SCALE_OUT_R)
+                trade["fills"].append({"quantity": quantity, "price": round(trigger * (1 - exit_slip), 6),
+                                       "reason": high_action["reason"], "bar_ts": stamp.isoformat()})
+                remaining -= quantity
+                position["shares"] = remaining
+                position["t1_fired"] = True
+            position["trailing_stop_current"] = max(current_stop, float(high_action["new_stop"]))
+        elif high_action["action"] == ACTION_TRAIL:
+            position["trailing_stop_current"] = max(current_stop, float(high_action["new_stop"]))
+
+        # Time-stop/close decisions are evaluated on the completed bar close.
+        if remaining:
+            close_action = evaluate_momentum_exit(position, close, stamp.to_pydatetime())
+            if close_action["action"] == ACTION_EXIT:
+                close_all(close * (1 - exit_slip), close_action["reason"], stamp)
+                break
+            if close_action["action"] == ACTION_TRAIL:
+                position["trailing_stop_current"] = max(
+                    float(position["trailing_stop_current"]), float(close_action["new_stop"])
+                )
+
+    if remaining:
+        trade.update({"status": "UNRESOLVED", "remaining_quantity": remaining,
+                      "trailing_stop": round(float(position["trailing_stop_current"]), 6),
+                      "unresolved_reason": "no_executable_exit_or_square_off_evidence"})
+        return trade
+    exits = [(float(row["price"]), int(row["quantity"])) for row in trade["fills"]]
+    gross = sum((price - entry) * quantity for price, quantity in exits)
+    costs = _multi_order_costs(entry, exits, execution)
+    final = trade["fills"][-1]
+    trade.update({
+        "status": "CLOSED", "exit_bar_ts": final["bar_ts"], "exit_reason": final["reason"],
+        "exit_fill": round(sum(price * quantity for price, quantity in exits) / original_quantity, 6),
+        "gross_pnl": round(gross, 6), "costs": costs, "net_pnl": round(gross - costs, 6),
+        "r_multiple": round((gross - costs) / initial_risk, 8), "remaining_quantity": 0,
+    })
+    return trade
+
+
 def _summary(trades: list[dict]) -> tuple[dict, list[dict]]:
     closed = sorted((t for t in trades if t["status"] == "CLOSED"), key=lambda t: (t["exit_bar_ts"], t["ticker"], t["variant"]))
     equity, running, peak, drawdown = [], 0.0, 0.0, 0.0
@@ -394,7 +535,8 @@ def run_momentum_replay(
         future = intra[(intra["ticker"] == candidate["ticker"]) &
                        (intra["datetime"] > pd.Timestamp(candidate["bar_ts"]))].sort_values("datetime")
         future = future.set_index("datetime")
-        trades.append(_simulate(candidate, future, execution))
+        runner = _simulate_live_exit_lifecycle if config.exit_model == "LIVE_EXIT_LIFECYCLE" else _simulate
+        trades.append(runner(candidate, future, execution))
     summary, equity = _summary(trades)
     coverage = {
         "tickers": int(intra["ticker"].nunique()), "trading_days": int(intra["trading_date"].nunique()),
@@ -404,7 +546,9 @@ def run_momentum_replay(
     warnings = [
         "Research replay only; it never calls Kite, an executor, or an order path.",
         "15-minute OHLC cannot reveal intrabar path; simultaneous stop/target resolves stop first.",
-        "Virtual lifecycle exits the full quantity at T1 and cannot model the production partial-T1 runner/trail.",
+        ("Virtual lifecycle exits the full quantity at T1 and cannot model the production partial-T1 runner/trail."
+         if config.exit_model == "TARGET_1_PROXY" else
+         "LIVE_EXIT_LIFECYCLE uses the shipped Momentum exit evaluator with conservative OHLC ordering; quote-level order timing and broker receipts remain unavailable."),
         "Entry and exit fills use frozen Momentum shadow slippage and equity MIS cost assumptions.",
     ]
     if missing_daily:

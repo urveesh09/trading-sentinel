@@ -138,7 +138,7 @@ Related tests: `python-engine/tests/test_backtest_cli.py`
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `RangeReversionEvaluatorAdapter` (line 447), `PennyDailyProxyAdapter` (line 534), `PennyWalkForwardConfig` (line 630), `PennyDailyProxyWalkForwardAdapter` (line 661), `_ticker_list` (line 849), `_write_replay_cache` (line 858), `PennyMinuteReplayAdapter` (line 878), `PennyMisLifecycleAdapter` (line 980), `PennyCncConnorsLifecycleAdapter` (line 1082), `PennyJointPortfolioAdapter` (line 1166), `Momentum15MinuteReplayAdapter` (line 1249), `FnoUnavailableAdapter` (line 1346), `init_backtest_lab_db` (line 1381), `_validate_dates` (line 1455), `list_strategies` (line 1466), `submit_run` (line 1506), `_run_background` (line 1542), `_row_to_run` (line 1578), `list_runs` (line 1603), `get_run` (line 1622)
+Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `EdgeNextOpenLifecycleAdapter` (line 447), `RangeReversionEvaluatorAdapter` (line 517), `PennyDailyProxyAdapter` (line 604), `PennyWalkForwardConfig` (line 700), `PennyDailyProxyWalkForwardAdapter` (line 731), `_ticker_list` (line 919), `_write_replay_cache` (line 928), `PennyMinuteReplayAdapter` (line 948), `PennyMisLifecycleAdapter` (line 1050), `PennyCncConnorsLifecycleAdapter` (line 1157), `PennyJointPortfolioAdapter` (line 1241), `Momentum15MinuteReplayAdapter` (line 1324), `FnoUnavailableAdapter` (line 1422), `init_backtest_lab_db` (line 1457), `_validate_dates` (line 1531), `list_strategies` (line 1542), `submit_run` (line 1582), `_run_background` (line 1618), `_row_to_run` (line 1654), `list_runs` (line 1679), `get_run` (line 1698)
 
 Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `portfolio_parity`, `range_reversion`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `walk_forward`
 
@@ -1128,9 +1128,9 @@ Top-level declarations: `PathEnvelopeError` (line 23), `encode_path_quote_envelo
 
 Decision-grade, broker-free replay of the production 15-minute Momentum evaluator. The module is intentionally library-only: it has no API, scheduler, broker, order, or persistence side effects. Cache access is SQLite read-only and fails closed on ambiguous intraday provenance.
 
-Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 44), `_settings_snapshot` (line 74), `_read_cache` (line 92), `_validate_frame` (line 162), `_daily_frame` (line 185), `_volume_threshold` (line 193), `_exit` (line 200), `_costs` (line 218), `_simulate` (line 230), `_summary` (line 262), `chronological_oos` (line 283), `run_momentum_replay` (line 326)
+Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 44), `_settings_snapshot` (line 80), `_read_cache` (line 98), `_validate_frame` (line 168), `_daily_frame` (line 191), `_volume_threshold` (line 199), `_exit` (line 206), `_costs` (line 224), `_simulate` (line 236), `_multi_order_costs` (line 268), `_simulate_live_exit_lifecycle` (line 292), `_summary` (line 403), `chronological_oos` (line 424), `run_momentum_replay` (line 467)
 
-Engine dependencies: `config`, `engine`, `models`, `momentum_shadow`
+Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `momentum_shadow`
 
 Related tests: `python-engine/tests/test_momentum_replay.py`
 
@@ -1155,6 +1155,16 @@ Top-level declarations: `_get_globals` (line 39), `_format_pnl` (line 46), `_tod
 Engine dependencies: `performance`, `position_tracker`
 
 Related tests: `python-engine/tests/test_nifty_commands.py`
+
+## `python-engine/non_fno_research.py`
+
+Pure, broker-free N2/N3 candidate gates and executable lifecycle helpers. These helpers are deliberately *not* wired into live scanners. They make the extra hypotheses falsifiable against the existing shipped evaluators without changing a threshold, admission path, database table, account reservation, or F&O dependency. Every function consumes supplied, already-visible evidence and returns a named reason instead of inventing unavailable market context.
+
+Top-level declarations: `_number` (line 17), `penny_context_gate` (line 25), `penny_exit_thesis` (line 72), `edge_next_open_lifecycle` (line 96), `range_candidate_gate` (line 131), `swing_candidate_gate` (line 160)
+
+Engine dependencies: `engine`, `penny_edge_engine`, `penny_risk`, `range_reversion`
+
+Related tests: `python-engine/tests/test_non_fno_research.py`
 
 ## `python-engine/operational_coverage.py`
 
@@ -1622,9 +1632,9 @@ Related tests: `python-engine/tests/test_penny_intraday_replay.py`
 
 [B2 2026-10-03] Exact classic Penny MIS breakout lifecycle replay (offline). Replays the shipped classic Penny MIS book over B1-validated minute bars, calling the same functions the runtime calls, in the runtime's order: * entry: ``PennyScanner._evaluate_ticker_breakout`` input construction -> ``evaluate_breakout_entry`` (with a real ``PennyRiskEngine`` for sizing) -> per-ticker reservation and MIS capacity -> ``PennyExecutor.execute_entry`` drift / stop-breach checks -> fill at the LTP; * exits: the 60-second paper LTP stop monitor (``PENNY_PAPER``) or a broker stop (``PENNY``), the 14:30 ``run_penny_eod_check`` branch order (``time_stop_triggered`` then ``smart_eod_check``) and the 15:00 `
 
-Top-level declarations: `reject_code` (line 83), `PennyLifecycleConfig` (line 93), `settings_snapshot` (line 112), `_TickerDay` (line 141), `_aware` (line 186), `_round` (line 190), `_Replay` (line 194), `_summary` (line 467), `run_penny_lifecycle` (line 517)
+Top-level declarations: `reject_code` (line 84), `PennyLifecycleConfig` (line 94), `settings_snapshot` (line 116), `_TickerDay` (line 145), `_aware` (line 190), `_round` (line 194), `_Replay` (line 198), `_summary` (line 499), `run_penny_lifecycle` (line 549)
 
-Engine dependencies: `config`, `penny_engine_breakout`, `penny_executor`, `penny_models`, `penny_risk`, `penny_shadow`, `research_data_contracts`
+Engine dependencies: `config`, `non_fno_research`, `penny_engine_breakout`, `penny_executor`, `penny_models`, `penny_risk`, `penny_shadow`, `research_data_contracts`
 
 Related tests: `python-engine/tests/test_penny_lifecycle_replay.py`
 
@@ -1976,9 +1986,9 @@ Related tests: `python-engine/tests/test_research_cli_qualification.py`, `python
 
 Daily decision replays that call the shipped Swing and EDGE code paths. This is deliberately an evaluator study, not a fill or portfolio simulator. Daily cache bars are only visible after their session, so each decision for session D is made from bars strictly before D. Missing market context is a data failure, never a reason to substitute the traded ticker as an index.
 
-Top-level declarations: `DailyReplayUnavailable` (line 22), `_frame` (line 26), `_by_ticker` (line 34), `swing_evaluator_replay` (line 41), `edge_evaluator_replay` (line 129)
+Top-level declarations: `DailyReplayUnavailable` (line 22), `_frame` (line 26), `_by_ticker` (line 34), `swing_evaluator_replay` (line 41), `edge_evaluator_replay` (line 129), `edge_next_open_lifecycle_replay` (line 183)
 
-Engine dependencies: `engine`, `penny_edge_live`, `regime`
+Engine dependencies: `engine`, `non_fno_research`, `penny_edge_live`, `regime`
 
 ## `python-engine/research_data_contracts.py`
 

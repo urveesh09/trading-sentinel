@@ -1,5 +1,44 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 4 — active N1–N3 implementation slice (Dev only)
+
+The owner authorized N1, N2 and N3 from the researched non-F&O plan.  The
+current implementation contract is [N1–N3 implementation slice](2026-10-04-n1-n3-implementation-slice.md): first replace known optimistic research
+shortcuts with deterministic lifecycle measurement, then add named,
+broker-free candidates.  F&O and shared live infrastructure remain out of
+scope; baseline policy stays active unless a separate rollout is approved.
+
+**Source completion boundary.** N1–N3 code is now present: Momentum has a
+named shipped-exit lifecycle, EDGE has next-open lifecycle evidence, Penny has
+default-off `PEN_CONTEXT`, and Range/Swing gates are pure research helpers.
+No candidate has earned a policy change. Next: freeze candidate manifests,
+compare equal cash/risk with coverage and all failures retained, then pursue N4
+only if full-system context can be recorded. F&O operational compatibility and
+any broker/paper observation remain separate, unapproved work.
+
+## October 3 — active next direction: smarter non-F&O entries/exits
+
+The owner requested a researched development plan after the Yahoo results.
+[Smart entry/exit plan](2026-10-03-non-fno-smart-entry-exit-development-plan.md)
+is the latest direction: N0 baseline/F&O isolation and N1 lifecycle economics,
+then Penny MIS/EDGE experiments, followed by Range/Swing and existing Momentum
+research/parity. Activity counts are setup/selection/fill-specific; ₹15.18 is
+five-session Penny sensitivity, not full-system/live earnings.
+
+**F&O development is excluded and must not be hindered**, including shared cash,
+regime/configuration, scheduler/DB/broker resources and exit authority. New
+variants stay broker-free/default OFF until separate qualification and rollout.
+No guaranteed daily profit, capital increase or gate weakening to force activity.
+Reuse existing shipped VWAP/ATR/regime/ranking/exit and S7/proactive functions.
+
+The plan is documentation only against Dev `4be033a`; all N0–N4 source work,
+data coverage, qualification and promotion remain open. Required docs/source
+and primary research reviewed; delivery link/scope/diff checks recorded in the
+plan. Dev-local uncommitted documentation, no source/configuration/schema change,
+Production access, broker actions, push or deployment in this planning task.
+Earlier instructions to await this discussion are superseded by this plan;
+older F&O/S6 priorities are historical for this non-F&O development request.
+
 ## October 3 — Yahoo interface delivered; historical fidelity limits remain
 
 The owner superseded reliance on Sentinel's retained price history for these

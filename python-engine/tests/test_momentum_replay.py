@@ -164,6 +164,51 @@ def test_fill_model_is_stop_first_cost_aware_and_full_quantity():
     assert trade["net_pnl"] == pytest.approx(trade["gross_pnl"] - trade["costs"])
 
 
+def test_live_exit_lifecycle_calls_shipped_exit_and_keeps_partial_runner(monkeypatch):
+    execution = replay.momentum_shadow_execution_config()
+    candidate = {
+        "variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+        "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "sha256:test",
+        "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 104, "shares": 4},
+    }
+    # The first bar reaches the real evaluator's scale threshold.  The second
+    # bar reaches the runner target; a proxy would have sold all four at T1.
+    future = pd.DataFrame({
+        "open": [100, 101], "high": [101.2, 105], "low": [100.2, 101],
+        "close": [101, 104.5], "volume": [1, 1],
+    }, index=pd.to_datetime(["2026-08-03T11:00:00", "2026-08-03T11:15:00"]))
+    import momentum_exits
+    real = momentum_exits.evaluate_momentum_exit
+    calls = []
+
+    def tracked(position, ltp, now):
+        calls.append((position["shares"], ltp))
+        return real(position, ltp, now)
+
+    monkeypatch.setattr(momentum_exits, "evaluate_momentum_exit", tracked)
+    trade = replay._simulate_live_exit_lifecycle(candidate, future, execution)
+    assert calls
+    assert trade["status"] == "CLOSED"
+    assert sum(fill["quantity"] for fill in trade["fills"]) == 4
+    assert len(trade["fills"]) == 2
+    assert trade["costs"] > 0
+
+
+def test_live_exit_lifecycle_gives_resting_stop_priority_over_favourable_high():
+    execution = replay.momentum_shadow_execution_config()
+    candidate = {
+        "variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+        "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "sha256:test",
+        "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 103, "shares": 2},
+    }
+    future = pd.DataFrame({"open": [100], "high": [104], "low": [98], "close": [101], "volume": [1]},
+                          index=pd.to_datetime(["2026-08-03T11:00:00"]))
+    trade = replay._simulate_live_exit_lifecycle(candidate, future, execution)
+    assert trade["status"] == "CLOSED"
+    assert trade["exit_reason"] == "broker_stop"
+    assert len(trade["fills"]) == 1
+
+
 def test_oos_selection_never_uses_test_fold_outcomes():
     trades = []
     for day in range(1, 6):

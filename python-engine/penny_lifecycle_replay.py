@@ -41,10 +41,11 @@ from research_data_contracts import (
     COVERAGE_REQUIREMENTS, IST, STATUS_COMPLETE, DailyDataset, IntradayDataset,
 )
 
-LIFECYCLE_VERSION = "penny_mis_breakout_lifecycle_v1"
+LIFECYCLE_VERSION = "penny_mis_breakout_lifecycle_v2"
 SCOPE = "LIFECYCLE"
 BOOKS = ("PENNY_PAPER", "PENNY")
 REGIMES = ("PR1_CALM", "PR2_ELEVATED", "PR3_HOT")
+CANDIDATE_POLICIES = ("BASELINE", "PEN_CONTEXT")
 SESSION_FIRST_BOUNDARY = 9 * 60 + 16
 SESSION_LAST_BOUNDARY = 15 * 60 + 30
 MEDIAN_LOOKBACK_CALENDAR_DAYS = 30
@@ -95,6 +96,7 @@ class PennyLifecycleConfig:
     book: str = "PENNY_PAPER"
     regime: str = "PR1_CALM"
     session_policy: str = "complete_only"
+    candidate_policy: str = "BASELINE"
 
     def __post_init__(self):
         clean = tuple(sorted({str(t).strip().upper() for t in self.tickers if str(t).strip()}))
@@ -107,6 +109,8 @@ class PennyLifecycleConfig:
             raise ValueError(f"regime must be one of {REGIMES}")
         if self.session_policy not in COVERAGE_REQUIREMENTS:
             raise ValueError(f"session_policy must be one of {sorted(COVERAGE_REQUIREMENTS)}")
+        if self.candidate_policy not in CANDIDATE_POLICIES:
+            raise ValueError(f"candidate_policy must be one of {CANDIDATE_POLICIES}")
 
 
 def settings_snapshot(book: str) -> dict:
@@ -255,6 +259,22 @@ class _Replay:
         prior = self.daily.known_before(ticker, day)
         return prior[-1].close if prior else None
 
+    def _same_minute_volume_profile(self, ticker: str, day: date, boundary: int) -> list[float]:
+        """Prior-session cumulative volume at this exact completed-bar clock."""
+        profile = []
+        for (known_ticker, known_day), bars in self.intraday.bars.items():
+            if known_ticker != ticker or known_day >= day.isoformat():
+                continue
+            td = _TickerDay(bars)
+            count = td.completed_count(boundary)
+            # A complete validated session can contain zero-volume marks.  They
+            # are genuine zero volume for a cumulative profile, not a reason to
+            # discard the entire prior session; missing bars were rejected by
+            # the dataset contract before this replay.
+            if count:
+                profile.append(sum(float(bar.volume) for bar in td.bars[:count]))
+        return profile
+
     def _evaluate(self, ticker: str, day: date, td: _TickerDay, boundary: int) -> dict:
         from penny_engine_breakout import _rsi_14_wilder, evaluate_breakout_entry
         from penny_risk import PennyRiskEngine
@@ -307,6 +327,18 @@ class _Replay:
         decision["_evaluation_bar_ts"] = last.start.isoformat()
         decision["_median_vol_20d"] = median
         decision["_cum_vol_today"] = int(visible["volume"].sum())
+        if decision.get("accept") and self.config.candidate_policy == "PEN_CONTEXT":
+            from non_fno_research import penny_context_gate
+            gate = penny_context_gate(
+                decision,
+                [{"open": bar.open, "high": bar.high, "low": bar.low, "close": bar.close, "volume": bar.volume}
+                 for bar in td.bars[:completed]],
+                self._same_minute_volume_profile(ticker, day, boundary),
+            )
+            decision["candidate_context"] = gate
+            if not gate["accepted"]:
+                decision["accept"] = False
+                decision["reject_reason"] = "PEN_CONTEXT:" + gate["reason"]
         return decision
 
     # ---- trade bookkeeping ------------------------------------------

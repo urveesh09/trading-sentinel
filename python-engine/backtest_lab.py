@@ -20,7 +20,7 @@ import traceback
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum
 from typing import Any
 
@@ -441,6 +441,76 @@ class EdgeDecisionParityAdapter(BacktestAdapter):
                  "profit_factor": None, "max_drawdown_pct": None, "avg_r": None, "scope": result["scope"],
                  "scan_count": len(result["scans"]), "candidate_count": result["candidates"], "selected_count": result["selected"],
                  "oos": {"available": False, "reason": "evaluator replay has no portfolio result"}},
+                list(self.metadata.limitations))
+
+
+class EdgeNextOpenLifecycleAdapter(EdgeDecisionParityAdapter):
+    """EDGE lifecycle evidence with next-session fills, never signal-close fills."""
+    metadata = StrategyMetadata(
+        strategy_id="penny_edge_next_open_lifecycle", name="Adaptive Penny EDGE (next-open lifecycle)",
+        version="1.0.0", description="Calls the shipped EDGE scan/ranker, then models next-session executable opens and shipped exits.",
+        engine="research_daily_decision_replay.edge_next_open_lifecycle_replay", timeframe="1 day", scope="LIFECYCLE",
+        capabilities=("universe", "shipped_scanner", "shipped_ranking", "next_session_open", "costs", "shipped_exit"),
+        data_requirements=("explicit EDGE universe", "NIFTYBEES daily history", "next-session daily OHLC for each selected signal"),
+        limitations=(
+            "Partial lifecycle only: historical event calendar, scheduler timing, approval, broker admission, protective-stop confirmation and portfolio cash are not reconstructed.",
+            "Daily OHLC cannot prove intraday order sequence; a next-open geometry gap is a no-fill and an unfinished trade is marked, not silently closed.",
+            "This is research only and never submits an order or changes EDGE_LIVE/EDGE_PAPER policy.",
+        ),
+        default_config={"tickers": [], "nifty_ticker": "NIFTYBEES", "bankroll": 100000.0, "max_positions": 3, "min_strength": 0.45},
+        default_assumptions={"signal_clock": "D_close", "entry_clock": "D_plus_1_open", "exit": "penny_edge_engine.simulate_position"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "nifty_ticker": {"type": "string"}, "bankroll": {"type": "number", "minimum": 0.01},
+                          "max_positions": {"type": "integer", "minimum": 1}, "min_strength": {"type": "number", "minimum": 0, "maximum": 1}},
+    )
+
+    def prepare(self, db_path, request):
+        """Freeze a small post-window tail needed for next-open/hold exits."""
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset
+        names = [*request.config["tickers"], request.config["nifty_ticker"]]
+        try:
+            data = load_daily_dataset(
+                db_path, tickers=names,
+                before=(date.fromisoformat(request.end_date) + timedelta(days=10)).isoformat(),
+            )
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        invalid = sorted(data.invalid)
+        if invalid:
+            raise BacktestUnavailable("invalid daily history for: " + ", ".join(invalid))
+        missing = sorted(name for name in names if not data.bars.get(name))
+        if missing:
+            raise BacktestUnavailable("missing required daily history: " + ", ".join(missing))
+        rows = [(bar.ticker, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume)
+                for name in names for bar in data.bars[name]]
+        return PreparedDataset(_fingerprint_rows(["ticker", "date", "open", "high", "low", "close", "volume"], rows),
+                               len(rows), {"daily": data.manifest, "universe": request.config["tickers"],
+                                           "post_window_tail_days": 10}, rows)
+
+    def execute(self, prepared, request):
+        from research_daily_decision_replay import DailyReplayUnavailable, edge_next_open_lifecycle_replay
+        try:
+            return edge_next_open_lifecycle_replay(
+                prepared.payload, start=request.start_date, end=request.end_date,
+                tickers=tuple(request.config["tickers"]), nifty_ticker=request.config["nifty_ticker"],
+                bankroll=request.config["bankroll"], max_positions=request.config["max_positions"],
+                min_strength=request.config["min_strength"],
+            )
+        except DailyReplayUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+
+    def normalize(self, result, request):
+        closed = [row for row in result["trials"] if row["status"] == "CLOSED"]
+        net = sum(float(row["net_pnl"]) for row in closed)
+        wins = sum(float(row["net_pnl"]) for row in closed if float(row["net_pnl"]) > 0)
+        losses = -sum(float(row["net_pnl"]) for row in closed if float(row["net_pnl"]) < 0)
+        return ({"trade_count": len(closed), "net_pnl": round(net, 6) if closed else None,
+                 "net_return_pct": None, "win_rate_pct": round(100 * sum(float(row["net_pnl"]) > 0 for row in closed) / len(closed), 4) if closed else None,
+                 "profit_factor": round(wins / losses, 6) if losses > 0 else None, "max_drawdown_pct": None,
+                 "avg_r": None, "scope": result["scope"], "scan_count": result["scans"],
+                 "selected_count": len(result["trials"]), "open_marked": result["open_marked"],
+                 "unresolved": result["unresolved"], "no_fill": result["no_fill"],
+                 "oos": {"available": False, "reason": "partial lifecycle has no portfolio/context evidence"}},
                 list(self.metadata.limitations))
 
 
@@ -981,7 +1051,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
     """[B2 2026-10-03] Exact classic Penny MIS lifecycle over B1-validated bars."""
     metadata = StrategyMetadata(
         strategy_id="penny_breakout_mis_lifecycle_1m",
-        name="Penny Breakout MIS (exact lifecycle, 1-minute)", version="1.0.0",
+        name="Penny Breakout MIS (exact lifecycle, 1-minute)", version="1.1.0",
         description=("Replays the shipped classic Penny MIS book: live completed-bar clock, real "
                      "PennyRiskEngine sizing, circuit filter, capacity, executor drift/stop checks, "
                      "paper LTP or broker stop, 14:30 smart-EOD/time stop and 15:00 force close."),
@@ -999,7 +1069,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
         ),
         default_config={"tickers": [], "book": "PENNY_PAPER", "regime": "PR1_CALM",
-                        "session_policy": "complete_only"},
+                        "session_policy": "complete_only", "candidate_policy": "BASELINE"},
         default_assumptions={
             "clock": "bar_k_minus_1_evaluated_at_boundary_k", "fills": "ltp_on_traded_bar_only",
             "costs": "frozen_real_equity_MIS", "target_exit": "none_smart_eod_only",
@@ -1009,6 +1079,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             "book": {"enum": ["PENNY_PAPER", "PENNY"]},
             "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
             "session_policy": {"enum": ["complete_only", "allow_gaps"]},
+            "candidate_policy": {"enum": ["BASELINE", "PEN_CONTEXT"]},
         },
         scope="LIFECYCLE",
     )
@@ -1017,7 +1088,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
         from penny_lifecycle_replay import PennyLifecycleConfig
         return PennyLifecycleConfig(
             tickers=tuple(values["tickers"]), book=values["book"], regime=values["regime"],
-            session_policy=values["session_policy"],
+            session_policy=values["session_policy"], candidate_policy=values["candidate_policy"],
         )
 
     def snapshot_config(self, supplied):
@@ -1027,7 +1098,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             raise ValueError("the lifecycle replay requires an explicit ticker list")
         cfg = self._config({**merged, "tickers": tickers})
         return {"tickers": list(cfg.tickers), "book": cfg.book, "regime": cfg.regime,
-                "session_policy": cfg.session_policy}
+                "session_policy": cfg.session_policy, "candidate_policy": cfg.candidate_policy}
 
     def prepare(self, db_path, request):
         from research_data_contracts import (
@@ -1035,15 +1106,18 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
         )
         tickers = request.config["tickers"]
         try:
+            profile_start = (date.fromisoformat(request.start_date) - timedelta(days=10)).isoformat()
             intraday = load_intraday_dataset(
-                db_path, interval="minute", start=request.start_date, end=request.end_date,
+                db_path, interval="minute", start=profile_start, end=request.end_date,
                 tickers=tickers,
             )
             daily = load_daily_dataset(db_path, tickers=tickers, before=request.end_date)
         except DatasetUnavailable as exc:
             raise BacktestUnavailable(str(exc)) from exc
         requirement = COVERAGE_REQUIREMENTS[request.config["session_policy"]]
-        if not intraday.usable_days(requirement):
+        requested_usable = [item for item in intraday.usable_days(requirement)
+                            if request.start_date <= item[1] <= request.end_date]
+        if not requested_usable:
             raise BacktestUnavailable(
                 f"no ticker-day satisfies session_policy={requirement.name}: "
                 f"{intraday.manifest['status_counts']}"
@@ -1051,7 +1125,8 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
         fingerprint = "sha256:" + hashlib.sha256(
             (intraday.manifest["dataset_sha256"] + daily.manifest["dataset_sha256"]).encode()
         ).hexdigest()
-        details = {"intraday": intraday.manifest, "daily": daily.manifest}
+        details = {"intraday": intraday.manifest, "daily": daily.manifest,
+                   "volume_profile_warmup_start": profile_start}
         rows = sum(len(bars) for bars in intraday.bars.values())
         return PreparedDataset(fingerprint, rows, details, (intraday, daily))
 
@@ -1249,17 +1324,17 @@ class PennyJointPortfolioAdapter(BacktestAdapter):
 class Momentum15MinuteReplayAdapter(BacktestAdapter):
     metadata = StrategyMetadata(
         strategy_id="momentum_intraday_15m_replay", name="Momentum (true 15-minute replay)",
-        version="1.0.0", description="Chronological production-evaluator replay using explicit 15-minute cache provenance.",
+        version="1.1.0", description="Chronological production-evaluator replay using explicit 15-minute cache provenance.",
         engine="momentum_replay", timeframe="15 minute", scope="EVALUATOR",
         capabilities=("universe", "true_intraday", "gate_funnel", "costs", "risk_metrics", "chronological_oos"),
         data_requirements=("intraday_cache interval='15minute'", "strictly prior ohlcv_cache daily history"),
-        limitations=("15-minute OHLC assumes stop before target.", "Full quantity exits at T1; partial runners and trailing stops are not modelled.", "Historical Swing-derived regime, Telegram approval, broker admission and shared capital are not archived; configured context is declared, not inferred."),
+        limitations=("15-minute OHLC assumes protective stop before a favourable high and cannot prove quote-level order timing.", "TARGET_1_PROXY exits the full quantity at T1; LIVE_EXIT_LIFECYCLE calls the shipped exit evaluator but still has no broker receipt.", "Historical Swing-derived regime, Telegram approval, broker admission and shared capital are not archived; configured context is declared, not inferred."),
         default_config={
             "tickers": [], "bankroll": 4500.0, "momentum_pool": 2500.0,
             "min_candles": 4, "daily_lookback_rows": 30, "market_regime": "BULL",
             "regime": "REGIME_1_NORMAL", "normal_volume_threshold": 1.5,
             "lunchtime_volume_threshold": 1.75, "lunchtime_start": "11:30",
-            "lunchtime_end": "13:15", "variants": ["MOM_BASE"], "oos_folds": 3,
+            "lunchtime_end": "13:15", "variants": ["MOM_BASE"], "exit_model": "TARGET_1_PROXY", "oos_folds": 3,
         },
         default_assumptions={"execution": "frozen_momentum_shadow_slippage_and_MIS_costs", "same_bar_rule": "stop_before_target", "position_lifecycle": "full_quantity_target_1"},
         parameter_schema={
@@ -1275,6 +1350,7 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
             "lunchtime_start": {"type": "string", "format": "HH:MM"},
             "lunchtime_end": {"type": "string", "format": "HH:MM"},
             "variants": {"type": "array", "items": {"enum": ["MOM_BASE", "MOM_RECENCY_5"]}},
+            "exit_model": {"type": "string", "enum": ["TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE"]},
             "oos_folds": {"type": "integer", "minimum": 3},
         },
     )
@@ -1370,7 +1446,7 @@ class FnoUnavailableAdapter(BacktestAdapter):
 STRATEGY_REGISTRY: dict[str, BacktestAdapter] = {
     adapter.metadata.strategy_id: adapter
     for adapter in (
-        SwingDailyAdapter(), SwingDecisionParityAdapter(), EdgeDecisionParityAdapter(), PennyDailyProxyAdapter(),
+        SwingDailyAdapter(), SwingDecisionParityAdapter(), EdgeDecisionParityAdapter(), EdgeNextOpenLifecycleAdapter(), PennyDailyProxyAdapter(),
         PennyDailyProxyWalkForwardAdapter(), PennyMinuteReplayAdapter(),
         PennyMisLifecycleAdapter(), PennyCncConnorsLifecycleAdapter(), PennyJointPortfolioAdapter(),
         Momentum15MinuteReplayAdapter(), RangeReversionEvaluatorAdapter(), FnoUnavailableAdapter(),
