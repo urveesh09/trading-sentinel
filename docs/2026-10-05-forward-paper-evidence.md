@@ -69,7 +69,7 @@ picture. The Production `.env` overrides none of them (read-only check, Oct 4).
 | --- | --- | --- |
 | Momentum | Owner-tap EXEC only; `MOMENTUM_AUTO_EXECUTE=false` | `MOMENTUM_PAPER_ENABLED=true`, shadow variants `MOM_BASE`, `MOM_RECENCY_5`, `MOM_SELECTIVE` |
 | Penny MIS | `PENNY_LIVE_TRADING=false` | Paper book with the noise-floor stop, plus the smart paper shadow |
-| EDGE (CNC) | `PENNY_EDGE_DISABLE_LIVE=true` | `PENNY_EDGE_DISABLE_PAPER=false` |
+| EDGE (CNC) | `PENNY_EDGE_DISABLE_LIVE=true` | `PENNY_EDGE_DISABLE_PAPER=false`, plus the EDGE overnight paper book (₹25k, `EDGE_OVERNIGHT_PAPER_ENABLED=true`) |
 | F&O | `FNO_LIVE_TRADING=false`, `FNO_DISABLE_LIVE=true` | `FNO_DISABLE_PAPER=false`, `FNO_DR_DISABLE_PAPER=false`, shadow on |
 | Swing / Range | Owner-tap alerts only (no automatic orders) | Shadow and decision-quality records |
 

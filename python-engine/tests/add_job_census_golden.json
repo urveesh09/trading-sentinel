@@ -20,6 +20,16 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_edge_overnight_entry_safe",
+    "id": "'edge_overnight_entry'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_edge_overnight_exit_safe",
+    "id": "'edge_overnight_exit'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_fno_accept_watchdog_safe",
     "id": "'fno_accept_watchdog'",
     "trigger": "'cron'"

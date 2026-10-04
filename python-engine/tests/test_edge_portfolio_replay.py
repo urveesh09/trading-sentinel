@@ -170,10 +170,13 @@ def test_overnight_caps_size_by_liquidity_and_own_cash(monkeypatch):
     assert resized["admission_outcomes"]["CASH_LIMITED_RESIZE"] == 1
 
 
-def test_full_cnc_costs_add_buy_side_stt_and_the_dp_charge():
-    from daily_portfolio import CNC_DP_CHARGE_PER_SELL, penny_cnc_costs, penny_cnc_full_costs
-    runtime = penny_cnc_costs(20.0, 20.4, 500, False)
-    assert penny_cnc_full_costs(20.0, 20.4, 500, False) == pytest.approx(runtime + 10.0 + CNC_DP_CHARGE_PER_SELL)
-    assert penny_cnc_full_costs(20.0, 20.4, 500, True) == penny_cnc_costs(20.0, 20.4, 500, True)
-    with pytest.raises(ValueError, match="cost_model"):
-        EdgeReplayConfig(tickers=("AAA",), cost_model="FREE")
+def test_runtime_delivery_costs_charge_both_leg_stt_dp_and_no_brokerage():
+    from config import settings
+    from penny_risk import calc_penny_costs
+    buy, sell = 20.0 * 500, 20.4 * 500
+    statutory = (buy + sell) * (settings.PENNY_EXCHANGE_PCT + settings.PENNY_SEBI_PCT + settings.PENNY_IPFT_PCT)
+    expected = ((buy + sell) * settings.PENNY_STT_CNC + buy * settings.PENNY_CNC_STAMP_DUTY_PCT
+                + statutory * (1 + settings.PENNY_GST_PCT) + settings.PENNY_CNC_DP_CHARGE)
+    assert calc_penny_costs(20.0, 20.4, 500, False) == pytest.approx(expected, abs=1e-4)
+    # The DP charge is flat: a Rs 1,000 delivery round trip costs ~1.8%.
+    assert calc_penny_costs(10.0, 10.0, 100, False) > 0.018 * 1000

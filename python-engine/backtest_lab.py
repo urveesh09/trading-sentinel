@@ -634,14 +634,13 @@ class EdgePortfolioReplayAdapter(DailyPortfolioAdapter):
             "Runtime EDGE_PAPER also passes through the daily OHLC position tracker; that mixed paper bookkeeping is not reproduced.",
         ),
         default_config={"tickers": [], "nifty_ticker": "NIFTYBEES", "bankroll": 100000.0, "max_positions": 3,
-                        "min_strength": 0.45, "policy": "BASELINE", "cost_model": "RUNTIME"},
+                        "min_strength": 0.45, "policy": "BASELINE"},
         default_assumptions={"signal_clock": "D_close", "entry_clock": "D_plus_1_open_as_0930_proxy",
                              "exit_clock": "stop_before_target_intraday; time_exit_at_close", "cash": "own_cash_no_margin"},
         parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
                           "nifty_ticker": {"type": "string"}, "bankroll": {"type": "number", "minimum": 0.01},
                           "max_positions": {"type": "integer", "minimum": 1}, "min_strength": {"type": "number", "minimum": 0, "maximum": 1},
-                          "policy": {"enum": ["BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT"]},
-                          "cost_model": {"enum": ["RUNTIME", "CNC_FULL"]}},
+                          "policy": {"enum": ["BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT"]}},
     )
 
     def snapshot_config(self, supplied):
@@ -661,8 +660,7 @@ class EdgePortfolioReplayAdapter(DailyPortfolioAdapter):
         cfg = request.config
         return run_edge_portfolio(rows, start=request.start_date, end=request.end_date, config=EdgeReplayConfig(
             tickers=universe, nifty_ticker=cfg["nifty_ticker"], bankroll=cfg["bankroll"],
-            max_positions=cfg["max_positions"], min_strength=cfg["min_strength"], policy=cfg["policy"],
-            cost_model=cfg["cost_model"]))
+            max_positions=cfg["max_positions"], min_strength=cfg["min_strength"], policy=cfg["policy"]))
 
 
 class RangePortfolioReplayAdapter(DailyPortfolioAdapter):

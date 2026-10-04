@@ -149,7 +149,7 @@ RESEARCH_TESTING_METHOD.md. Update both files whenever a new study is scored.
 New days are untouched by definition. Paper books record every module with live
 money off. The Momentum shadow compares `MOM_BASE`, `MOM_RECENCY_5` and
 `MOM_SELECTIVE` (`/api/experiments/momentum`). The smart-Penny paper shadow
-writes its own `<DB_PATH>.penny-smart-paper.db`. Decide in advance how many
+writes its own `<DB_PATH>.penny-smart-paper.db`. The EDGE overnight paper book (₹25k) writes `<DB_PATH>.edge-overnight-paper.db` and posts a Telegram summary at 15:20 and 09:17. Decide in advance how many
 sessions to wait before reading, then read once.
 
 ## What a test can and cannot tell you

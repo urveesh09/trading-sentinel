@@ -10,12 +10,12 @@ capital); the S60 attribution arm passed all four.
 
 Next, if the owner approves:
 
-1. **E1 forward paper shadow:** a broker-free EDGE overnight book. A 15:20 job
-   scans on intraday-complete data and buys up to three at LTP; a pre-open or
-   09:15 job sells at the auction. It needs a separate store and must not change
-   EDGE runtime entries.
-2. **E2:** fix `calc_penny_costs` for CNC (buy STT, DP charge, zero delivery
-   brokerage) with paper-ledger migration notes.
+1. **E1 (done):** the `edge_overnight_paper.py` ₹25k paper book. After 10 or more
+   sessions, compare it with the EDGE_PAPER book on the corrected costs. Watch
+   for exits waiting on circuit-locked names (`OPEN_DELAYED`).
+2. **E2 (done):** delivery costs fixed in `calc_penny_costs`. EDGE_PAPER rows
+   recorded before Oct 5 used the old schedule and were not migrated, so compare
+   from Oct 5 onwards.
 3. **E3:** a future study must declare a peak-relative drawdown metric before
    freezing. Do not re-score `edge-overnight-t1`.
 

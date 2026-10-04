@@ -47,7 +47,8 @@ Fidelity checks on 1-minute data (Sep 7–Oct 1, seen):
 - **Capacity:** never more than 1% of the signal day's traded value. Fills under
   25% of plan are skipped.
 - **Book:** own cash only, at most 3 entries per day.
-- **Costs:** `penny_cnc_full_costs` for every arm, the baseline included. This is
+- **Costs:** `penny_cnc_full_costs` for every arm, the baseline included (retired
+  after scoring; see the correction below). This is
   the runtime schedule plus the buy-side delivery STT (0.1%) and the ₹15.93
   depository charge per sell, both of which the runtime model omits. Runtime
   delivery brokerage is kept although Zerodha charges none, so the model errs
@@ -107,15 +108,63 @@ Distribution checks on the ₹25k decision arm:
   ruin every arm. Below about ₹25,000 this idea does not work.
 - **Runtime cost model.** `calc_penny_costs` under-charges delivery trades: buy
   STT and the DP charge are missing, while delivery brokerage is wrongly
-  included. EDGE paper P&L is therefore slightly optimistic. This is recorded
-  here, not fixed in this slice.
+  included. EDGE paper P&L was therefore optimistic. Fixed on October 5 (see
+  below).
+
+## Forward paper book (built after the owner's go-ahead, October 5)
+
+The owner chose a broker-free forward paper book of ₹25,000.
+
+- **Code:** `edge_overnight_paper.py`. Scheduler jobs `edge_overnight_entry`
+  (Mon–Fri 15:20 IST) and `edge_overnight_exit` (Mon–Fri 09:17 IST).
+- **Settings:** `EDGE_OVERNIGHT_PAPER_ENABLED=True`, `EDGE_OVERNIGHT_PAPER_BANKROLL=25000`.
+
+How a day runs:
+
+- **15:20 entry.** One quote batch builds today's provisional bar (session
+  open/high/low, LTP as close, volume so far) for cached tickers whose latest
+  close is ₹4–60.
+  - The shipped `scan_today` ranks them on a temporary copy of the last 60 bars
+    plus that bar.
+  - Up to three picks are bought on paper at LTP +25 bps, capped at 1% of today's
+    traded value and by own cash.
+- **09:17 exit.** Each earlier position is sold at the quote's `ohlc.open` (the
+  opening-auction print) −5 bps. Costs come from the corrected delivery schedule.
+  A ticker with no trade today stays open and is retried (`OPEN_DELAYED`).
+- **Store and restart safety.** Positions live in the separate store
+  `<DB_PATH>.edge-overnight-paper.db`. Each phase runs once per day, so a restart
+  is safe.
+- **Reporting.** Telegram receives a summary at entry and at exit, with the book's
+  running P&L and equity.
+- **Safety.** No executor import, no `place_order` and no write to the
+  operational ledger (enforced by a test).
+
+## Delivery-cost correction (runtime, October 5)
+
+`penny_risk.calc_penny_costs` with `is_intraday=False` now applies Zerodha
+delivery charges:
+
+- no brokerage;
+- 0.1% STT on both buy and sell;
+- 0.015% buy stamp duty (`PENNY_CNC_STAMP_DUTY_PCT`);
+- a ₹15.93 DP charge per sell (`PENNY_CNC_DP_CHARGE`);
+- exchange, SEBI and GST as before.
+
+This applies to every Penny delivery path: EDGE paper and live, the CNC Connors
+leg, and research replays. EDGE and CNC paper P&L were overstated before.
+
+Intraday (MIS) costs are unchanged.
+
+The research-only `CNC_FULL` model used to score `edge-overnight-t1` is retired.
+It was the old runtime schedule plus buy STT and the DP charge, and it kept the
+non-existent delivery brokerage, so it charged at least as much as the corrected
+schedule. The frozen results remain conservative.
 
 ## Rollout
 
-Nothing in runtime changed. EDGE runtime still buys at 09:30 and is still
-paper-only. The natural next step is a broker-free forward paper shadow:
+EDGE runtime still buys at 09:30 and stays paper-only; the overnight paper book
+runs next to it.
 
-- a 15:20 job that buys the scan's top three at LTP;
-- a pre-open job that sells at the auction.
-
-That is the owner's call, because the frozen verdict says the candidate stays OFF.
+- Rollback: `EDGE_OVERNIGHT_PAPER_ENABLED=false`. Open paper positions stay in
+  the store and are sold by the exit job only while the setting is on.
+- The frozen verdict still stands: this is forward evidence, not a promotion.

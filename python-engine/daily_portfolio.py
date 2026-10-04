@@ -347,23 +347,6 @@ def penny_cnc_costs(entry: float, exit_price: float, shares: int, intraday: bool
     return float(calc_penny_costs(entry, exit_price, shares, is_intraday=intraday))
 
 
-# Delivery charges the runtime Penny schedule omits (as of Oct 2026): STT is
-# 0.1% on the BUY as well as the sell, and the depository charges a flat fee
-# per scrip on every sell day (Zerodha/CDSL ~Rs 15.93 incl. GST). Runtime
-# brokerage on delivery is kept although Zerodha charges none, so this model
-# errs towards over-charging.
-CNC_BUY_STT_PCT = 0.001
-CNC_DP_CHARGE_PER_SELL = 15.93
-
-
-def penny_cnc_full_costs(entry: float, exit_price: float, shares: int, intraday: bool) -> float:
-    """Runtime Penny schedule plus the delivery charges it omits (CNC only)."""
-    base = penny_cnc_costs(entry, exit_price, shares, intraday)
-    if intraday:
-        return base
-    return round(base + entry * shares * CNC_BUY_STT_PCT + CNC_DP_CHARGE_PER_SELL, 4)
-
-
 def system_cnc_costs(entry: float, exit_price: float, shares: int, intraday: bool) -> float:
     """Runtime SYSTEM (Swing/Range) Zerodha cost schedule."""
     from engine import calc_zerodha_costs

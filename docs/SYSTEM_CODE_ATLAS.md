@@ -148,7 +148,7 @@ Related tests: `python-engine/tests/test_backtest_cli.py`
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `RangeReversionEvaluatorAdapter` (line 447), `DailyPortfolioAdapter` (line 534), `EdgePortfolioReplayAdapter` (line 620), `RangePortfolioReplayAdapter` (line 668), `SwingPortfolioReplayAdapter` (line 699), `PennyDailyProxyAdapter` (line 736), `PennyWalkForwardConfig` (line 832), `PennyDailyProxyWalkForwardAdapter` (line 863), `_ticker_list` (line 1051), `_write_replay_cache` (line 1060), `PennyMinuteReplayAdapter` (line 1080), `PennyMisLifecycleAdapter` (line 1182), `PennyCncConnorsLifecycleAdapter` (line 1298), `PennyJointPortfolioAdapter` (line 1382), `Momentum15MinuteReplayAdapter` (line 1465), `FnoUnavailableAdapter` (line 1570), `init_backtest_lab_db` (line 1605), `_validate_dates` (line 1679), `list_strategies` (line 1690), `submit_run` (line 1730), `_run_background` (line 1766), `_row_to_run` (line 1802), `list_runs` (line 1827), `get_run` (line 1846)
+Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `RangeReversionEvaluatorAdapter` (line 447), `DailyPortfolioAdapter` (line 534), `EdgePortfolioReplayAdapter` (line 620), `RangePortfolioReplayAdapter` (line 666), `SwingPortfolioReplayAdapter` (line 697), `PennyDailyProxyAdapter` (line 734), `PennyWalkForwardConfig` (line 830), `PennyDailyProxyWalkForwardAdapter` (line 861), `_ticker_list` (line 1049), `_write_replay_cache` (line 1058), `PennyMinuteReplayAdapter` (line 1078), `PennyMisLifecycleAdapter` (line 1180), `PennyCncConnorsLifecycleAdapter` (line 1296), `PennyJointPortfolioAdapter` (line 1380), `Momentum15MinuteReplayAdapter` (line 1463), `FnoUnavailableAdapter` (line 1568), `init_backtest_lab_db` (line 1603), `_validate_dates` (line 1677), `list_strategies` (line 1688), `submit_run` (line 1728), `_run_background` (line 1764), `_row_to_run` (line 1800), `list_runs` (line 1825), `get_run` (line 1844)
 
 Engine dependencies: `backtest`, `daily_portfolio`, `edge_portfolio_replay`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `portfolio_parity`, `range_portfolio_replay`, `range_reversion`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `swing_portfolio_replay`, `walk_forward`
 
@@ -410,7 +410,7 @@ Related tests: `python-engine/tests/test_daily_decision_quality.py`
 
 Shared own-cash daily portfolio book for research replays (EDGE, Swing, Range). Research only: no fetch, order, database or runtime import. A module supplies two things — the signals it would have produced after each session's close, and an exit policy — and this book owns everything that must be identical across strategies so their results are comparable: * Clock: signals are decided after session D's close; orders work from D+1. A market order fills at D+1's open (the declared 09:30 proxy for daily data). A limit order rests for ``entry_valid_sessions`` sessions and fills at the open if it gaps through the limit, otherwise at the limit when the low reaches it. A missing or zero-volume sess
 
-Top-level declarations: `PortfolioUnavailable` (line 38), `DailySignal` (line 43), `OpenPosition` (line 67), `RestingLevel` (line 90), `ExitPolicy` (line 96), `BookConfig` (line 112), `run_daily_book` (line 126), `_trade_record` (line 273), `summarize` (line 294), `bars_by_ticker` (line 327), `calendar_from` (line 335), `penny_cnc_costs` (line 341), `penny_cnc_full_costs` (line 359), `system_cnc_costs` (line 367)
+Top-level declarations: `PortfolioUnavailable` (line 38), `DailySignal` (line 43), `OpenPosition` (line 67), `RestingLevel` (line 90), `ExitPolicy` (line 96), `BookConfig` (line 112), `run_daily_book` (line 126), `_trade_record` (line 273), `summarize` (line 294), `bars_by_ticker` (line 327), `calendar_from` (line 335), `penny_cnc_costs` (line 341), `system_cnc_costs` (line 350)
 
 Engine dependencies: `config`, `engine`, `penny_risk`
 
@@ -466,11 +466,23 @@ Top-level declarations: `GateOutcome` (line 49), `DispatchGateStatus` (line 59),
 
 Related tests: `python-engine/tests/test_dispatch_independence.py`
 
+## `python-engine/edge_overnight_paper.py`
+
+EDGE overnight paper book: buy the EDGE scan near the close, sell at the next open. Broker-free. It never imports an executor or places an order. Research basis: docs/2026-10-05-edge-overnight-study.md. The shipped EDGE candidates earn their move overnight, while the runtime EDGE buys the following morning. * 15:20 IST (``run_overnight_entry``): one quote batch gives today's provisional bar (open/high/low from the session so far, LTP as the close, volume so far) for every cached ticker in or near the EDGE price band. The shipped ``scan_today`` ranks them on a temporary copy of recent history plus that bar. Each pick is bought on paper at LTP + ``ENTRY_SLIPPAGE_BPS``, capped by 1% of today's
+
+Top-level declarations: `overnight_db_path` (line 64), `_store` (line 69), `_read_only` (line 78), `_finite_positive` (line 82), `book_state` (line 89), `_already_ran` (line 101), `_record_run` (line 107), `universe_from_cache` (line 112), `provisional_bar` (line 127), `build_scan_db` (line 143), `_quotes` (line 161), `run_overnight_entry` (line 173), `run_overnight_exit` (line 240), `format_entry_telegram` (line 294), `format_exit_telegram` (line 302)
+
+Engine dependencies: `config`, `penny_edge_live`, `penny_risk`
+
+Related tests: `python-engine/tests/test_edge_overnight_paper.py`
+
+Declared tables: `edge_overnight_paper_runs`, `edge_overnight_paper_trades`
+
 ## `python-engine/edge_portfolio_replay.py`
 
 R2: causal, own-cash EDGE portfolio replay and the EDGE_TRADER_V1 candidate. Research only. Signals come from the shipped ``penny_edge_live.scan_today`` over a frozen daily cache; execution, cash and costs come from the shared ``daily_portfolio`` book. Nothing here fetches, orders or edits EDGE runtime. BASELINE follows the live orchestrator as closely as daily bars allow: market entry at the next open (09:30 proxy) behind the executor's 2% drift check, protective stop, resting target, and the 15:15 time exit (close proxy) on the first session whose calendar age reaches ``PENNY_EDGE_MAX_HOLD_DAYS``. EDGE_TRADER_V1 treats MR and MO as different theses (declared before scoring): * MO (momentum
 
-Top-level declarations: `EdgeReplayConfig` (line 61), `EdgeBaselinePolicy` (line 88), `EdgeTraderPolicy` (line 108), `run_edge_portfolio` (line 133), `run_overnight_book` (line 190)
+Top-level declarations: `EdgeReplayConfig` (line 60), `EdgeBaselinePolicy` (line 84), `EdgeTraderPolicy` (line 104), `run_edge_portfolio` (line 129), `run_overnight_book` (line 186)
 
 Engine dependencies: `daily_portfolio`, `penny_edge_live`
 
@@ -2260,7 +2272,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 999)
+Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 1061)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 

@@ -108,7 +108,7 @@ STUDIES: dict[str, Study] = {
     "edge-overnight-t1": Study(
         strategy="penny_edge_portfolio_replay", snapshot=Q3_SNAPSHOT,
         base_config=lambda: {**json.loads((YAHOO / "2026-10-04-review-candidates/_local/edge-next-open-proxy-report.json")
-                                          .read_text())["request"]["config"], "cost_model": "CNC_FULL"},
+                                          .read_text())["request"]["config"]},
         sources=("python-engine/daily_portfolio.py", "python-engine/edge_portfolio_replay.py",
                  "python-engine/penny_edge_live.py", "python-engine/penny_edge_engine.py", "python-engine/penny_risk.py"),
         windows={"development": (("2026-01-01", "2026-09-30"),), "untouched": (("2024-03-01", "2025-12-31"),)},

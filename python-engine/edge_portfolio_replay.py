@@ -46,11 +46,10 @@ from collections import Counter
 
 from daily_portfolio import (
     BookConfig, DailySignal, OpenPosition, PortfolioUnavailable, RestingLevel, _trade_record, bars_by_ticker,
-    calendar_from, penny_cnc_costs, penny_cnc_full_costs, run_daily_book, summarize,
+    calendar_from, penny_cnc_costs, run_daily_book, summarize,
 )
 
 EDGE_POLICIES = ("BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT")
-COST_MODELS = {"RUNTIME": penny_cnc_costs, "CNC_FULL": penny_cnc_full_costs}
 MO_GAP_TOLERANCE = 0.005     # MO open may be at most 0.5% below the signal close
 BREAKEVEN_R = 1.0
 
@@ -68,7 +67,6 @@ class EdgeReplayConfig:
     entry_drift_pct: float = 0.02      # penny_executor.MAX_ENTRY_DRIFT_PCT
     slippage_bps: float = 5.0          # penny_edge_orchestrator.EDGE_SLIPPAGE_BPS
     max_hold_days: int = 3             # PENNY_EDGE_MAX_HOLD_DAYS (calendar age)
-    cost_model: str = "RUNTIME"        # CNC_FULL adds buy-side STT and DP charges
     overnight_entry_slippage_bps: float = 25.0
     # Capacity: never buy more than this share of the signal day's traded value
     # (penny 15:10-15:25 value can be thin; set from liquidity, not outcomes).
@@ -77,8 +75,6 @@ class EdgeReplayConfig:
     def __post_init__(self):
         if self.policy not in EDGE_POLICIES:
             raise ValueError(f"policy must be one of {EDGE_POLICIES}")
-        if self.cost_model not in COST_MODELS:
-            raise ValueError(f"cost_model must be one of {tuple(COST_MODELS)}")
         if not self.tickers:
             raise ValueError("EDGE replay requires an explicit universe")
         if not math.isfinite(self.bankroll) or self.bankroll <= 0:
@@ -138,7 +134,7 @@ def run_edge_portfolio(rows: list[tuple], *, start: str, end: str, config: EdgeR
     if missing:
         raise PortfolioUnavailable("missing required daily history: " + ", ".join(missing))
     calendar = calendar_from(bars, config.nifty_ticker, start)
-    costs = COST_MODELS[config.cost_model]
+    costs = penny_cnc_costs
     policy = (EdgeTraderPolicy if config.policy == "EDGE_TRADER_V1" else EdgeBaselinePolicy)(config.max_hold_days)
     fd, path = tempfile.mkstemp(prefix="sentinel-edge-portfolio-", suffix=".sqlite")
     os.close(fd)

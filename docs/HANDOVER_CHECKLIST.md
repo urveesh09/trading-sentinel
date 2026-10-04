@@ -12,7 +12,14 @@
 - [x] Verdict `NOT_SUPPORTED_STAYS_OFF` (drawdown vs starting capital);
   the results are recorded in full.
 - [x] Windows task `Sentinel-Round3-KiteScoring` registered for Oct 5, 17:07.
-- [ ] Owner decision on the E1 forward paper shadow; E2 runtime CNC cost fix.
+- [x] The owner approved E1: `edge_overnight_paper.py` (₹25k) with 15:20 and
+  09:17 jobs, a separate store and no order capability (5 tests; scheduler
+  goldens add exactly the two jobs).
+- [x] E2: runtime delivery costs corrected; the EDGE partial-settlement test now
+  asserts the exact cost-inclusive P&L.
+- [x] Verification: full engine suite 4,930 pass / 4 skip, with the 4 pre-existing
+  failures plus the cron-gating guard. After the gating fix, the gating, golden
+  and paper tests give 11 pass.
 
 ## October 5 — everything on paper, forward evidence
 

@@ -542,7 +542,12 @@ class Settings(BaseSettings):
     # 2026-06-22 deviation: penny code now does its own cost accounting per
     # the isolation rule (no import from engine.calc_zerodha_costs).
     PENNY_STT_MIS:             float = 0.00025   # 0.025% sell side (intraday)
-    PENNY_STT_CNC:             float = 0.001     # 0.1% sell side (delivery)
+    PENNY_STT_CNC:             float = 0.001     # 0.1% BUY and sell side (delivery)
+    # [CNC-COSTS 2026-10-05] Delivery has no Zerodha brokerage, 0.015% buy
+    # stamp duty and a flat depository (DP) charge per scrip on each sell day
+    # (Rs 13.5 + 18% GST). Before this fix delivery P&L was overstated.
+    PENNY_CNC_STAMP_DUTY_PCT:  float = 0.00015
+    PENNY_CNC_DP_CHARGE:       float = 15.93
     PENNY_BROKERAGE_PCT:       float = 0.0003    # 0.03% per side
     PENNY_BROKERAGE_MAX:       float = 20.0      # Rs 20 cap per order
     PENNY_EXCHANGE_PCT:        float = 0.0000307  # NSE cash 0.00307%, both sides
@@ -883,6 +888,12 @@ class Settings(BaseSettings):
     # explicitly approved promotion; it is not permission to trade while the
     # live-disable switch remains true.
     PENNY_EDGE_LIVE_BANKROLL:        float = 1500.0    # 1.5k live
+    # [EDGE-OVERNIGHT 2026-10-05] Broker-free paper book for the overnight
+    # clock (docs/2026-10-05-edge-overnight-study.md): buy the EDGE scan at
+    # 15:20 on today's provisional bar, sell at the next opening auction.
+    # Separate store; never places an order. Owner chose a Rs 25,000 book.
+    EDGE_OVERNIGHT_PAPER_ENABLED:    bool  = True
+    EDGE_OVERNIGHT_PAPER_BANKROLL:   float = 25000.0
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3

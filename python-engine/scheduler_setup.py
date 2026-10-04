@@ -729,6 +729,68 @@ def register_penny_scheduler_jobs(scheduler):
         "misfire_grace_time=600"
     )
 
+    # [EDGE-OVERNIGHT 2026-10-05] Broker-free overnight paper book: buy the
+    # EDGE scan at 15:20 on today's provisional bar, sell at the next opening
+    # auction (09:17, after the 09:15 print). Never places an order.
+    async def _run_edge_overnight_phase_safe(phase: str):
+        import httpx as _httpx
+        import edge_overnight_paper as eop
+        logger.info("edge_overnight_%s_invoked now_ist=%s", phase,
+                    datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"))
+        if not settings.EDGE_OVERNIGHT_PAPER_ENABLED:
+            return
+        if not _main.kite.access_token:
+            logger.warning("edge_overnight_%s_skip reason=no_access_token", phase)
+            return
+        try:
+            if phase == "entry":
+                summary = await eop.run_overnight_entry(_main.kite)
+                message = eop.format_entry_telegram(summary)
+            else:
+                summary = await eop.run_overnight_exit(_main.kite)
+                message = eop.format_exit_telegram(summary) if summary["closed"] or summary["waiting"] else None
+            if message and not summary.get("repeat"):
+                async with _httpx.AsyncClient() as _client:
+                    await _client.post(
+                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                        json={"message": message},
+                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                        timeout=5.0,
+                    )
+        except Exception as exc:
+            logger.error("edge_overnight_%s_failed err=%s", phase, type(exc).__name__, exc_info=True)
+
+    async def _run_edge_overnight_entry_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            logger.info("edge_overnight_entry_skip reason=non_trading_day")
+            return
+        await _run_edge_overnight_phase_safe("entry")
+
+    async def _run_edge_overnight_exit_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            logger.info("edge_overnight_exit_skip reason=non_trading_day")
+            return
+        await _run_edge_overnight_phase_safe("exit")
+
+    scheduler.add_job(
+        _run_edge_overnight_entry_safe, "cron",
+        day_of_week="mon-fri", hour=15, minute=20,
+        id="edge_overnight_entry",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=300,
+    )
+    scheduler.add_job(
+        _run_edge_overnight_exit_safe, "cron",
+        day_of_week="mon-fri", hour=9, minute=17,
+        id="edge_overnight_exit",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=1800,
+    )
+
     # [PENNY-EDGE-STARTUP-CATCHUP 2026-07-02] Companion catchup for the
     # 15:15 IST EOD exit. Fires only if the container was offline at
     # 15:15 IST AND it's now after-market. The startup_scan catchup

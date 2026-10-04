@@ -402,7 +402,7 @@ def calc_penny_costs(
     PENNY_* settings instead of ZERODHA_*.
 
     Returns total cost in rupees (brokerage + STT + exchange + stamp +
-    SEBI + GST).
+    SEBI + GST, plus the DP charge on delivery).
 
     [PENNY-TEST 2026-06-24] Honors PENNY_BROKERAGE_BYPASS: when set, returns
     0.0 so P&L math is gross (no cost erosion). This lets the operator
@@ -442,20 +442,27 @@ def calc_penny_costs(
     sell_value = exit_price * shares
 
     exchange_txn = (buy_value + sell_value) * settings.PENNY_EXCHANGE_PCT
-    stamp_duty = buy_value * settings.PENNY_STAMP_DUTY_PCT
     sebi = (buy_value + sell_value) * settings.PENNY_SEBI_PCT
     ipft = (buy_value + sell_value) * settings.PENNY_IPFT_PCT
 
-    brokerage_buy = min(buy_value * settings.PENNY_BROKERAGE_PCT, settings.PENNY_BROKERAGE_MAX)
-    brokerage_sell = min(sell_value * settings.PENNY_BROKERAGE_PCT, settings.PENNY_BROKERAGE_MAX)
-
-    stt_rate = settings.PENNY_STT_MIS if is_intraday else settings.PENNY_STT_CNC
-    stt = sell_value * stt_rate
+    if is_intraday:
+        stamp_duty = buy_value * settings.PENNY_STAMP_DUTY_PCT
+        brokerage_buy = min(buy_value * settings.PENNY_BROKERAGE_PCT, settings.PENNY_BROKERAGE_MAX)
+        brokerage_sell = min(sell_value * settings.PENNY_BROKERAGE_PCT, settings.PENNY_BROKERAGE_MAX)
+        stt = sell_value * settings.PENNY_STT_MIS
+        dp_charge = 0.0
+    else:
+        # [CNC-COSTS 2026-10-05] Delivery: no brokerage, STT on both legs,
+        # delivery stamp duty and the DP charge (GST already included).
+        stamp_duty = buy_value * settings.PENNY_CNC_STAMP_DUTY_PCT
+        brokerage_buy = brokerage_sell = 0.0
+        stt = (buy_value + sell_value) * settings.PENNY_STT_CNC
+        dp_charge = settings.PENNY_CNC_DP_CHARGE if shares > 0 else 0.0
 
     gst = (brokerage_buy + brokerage_sell + exchange_txn + sebi + ipft) * settings.PENNY_GST_PCT
 
     return round(
         brokerage_buy + brokerage_sell + stt + exchange_txn +
-        stamp_duty + sebi + ipft + gst,
+        stamp_duty + sebi + ipft + gst + dp_charge,
         4,
     )

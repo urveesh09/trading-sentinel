@@ -9,8 +9,8 @@
 - policy `EDGE_OVERNIGHT` (`run_overnight_book`): the shipped scan, ranking and
   sizing; buy at the signal close (+25 bps); sell at the next open; a 1% capacity
   cap on traded value; own cash only;
-- `cost_model` (`RUNTIME` | `CNC_FULL`). `daily_portfolio.penny_cnc_full_costs`
-  adds the buy-side delivery STT and the ₹15.93 DP charge to the runtime schedule.
+- `edge-overnight-t1` was scored with a research `CNC_FULL` cost model, since
+  retired (see below).
 
 Lab adapter `penny_edge_portfolio_replay` is now 1.2.0.
 
@@ -19,7 +19,17 @@ Lab adapter `penny_edge_portfolio_replay` is now 1.2.0.
 `NOT_SUPPORTED_STAYS_OFF`, on the drawdown check measured against starting
 capital (19% from peak).
 
-EDGE runtime is unchanged (09:30 entries, paper only).
+EDGE runtime still buys at 09:30 (paper only).
+
+Added with the owner's go-ahead:
+
+- the broker-free overnight paper book `edge_overnight_paper.py` (₹25,000), with
+  jobs `edge_overnight_entry` (15:20) and `edge_overnight_exit` (09:17);
+- the runtime delivery-cost fix in `calc_penny_costs`: no delivery brokerage,
+  STT on both legs, 0.015% stamp duty and a ₹15.93 DP charge per sell. EDGE and
+  CNC paper P&L was overstated before.
+
+The research `cost_model`/`CNC_FULL` option is retired.
 `scripts/run_round3_kite_scoring.ps1` is the one-shot Windows task (Oct 5, 17:07)
 that acquires Kite Jan–Jul 2026 data and scores `momentum-smart-t3` and
 `penny-noise-t3`.
