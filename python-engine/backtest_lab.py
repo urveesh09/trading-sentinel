@@ -1081,7 +1081,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             "book": {"enum": ["PENNY_PAPER", "PENNY"]},
             "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
             "session_policy": {"enum": ["complete_only", "allow_gaps"]},
-            "candidate_policy": {"enum": ["BASELINE", "PEN_CONTEXT"]},
+            "candidate_policy": {"enum": ["BASELINE", "PEN_CONTEXT", "PEN_TRADER_V1", "PEN_TRADER_V1_THESIS", "PEN_BASE_THESIS", "PEN_TRADER_V2"]},
         },
         scope="LIFECYCLE",
     )
