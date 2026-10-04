@@ -13,6 +13,7 @@
 - [x] Live switches verified OFF by default; the Production `.env` overrides none
   (read-only).
 - [x] Verification: full engine suite 4,918 pass / 4 skip / 4 pre-existing failures (dev harness, integrated demo, F&O DR fixture, proactive demo); penny/momentum/ops selection with new defaults 1,348 pass.
+- [x] Commit `9c5becb`, pushed to `codex/production-correction-hedge-p0`; not merged or deployed (owner merges to `main` on GitHub).
 - [ ] Kite January–July acquisition, then freeze and score of the round-3
   studies (October 5, after the owner's login).
 
