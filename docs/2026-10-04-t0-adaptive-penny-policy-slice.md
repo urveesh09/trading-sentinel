@@ -67,3 +67,7 @@ modules; it remains unstaged because it also contains the existing independent
 review changes that this slice must not absorb. Commit identity is added after
 the isolated source commits. Source commits: `b08c934`, `fab80c6`. Dev only;
 no broker action, push or deployment.
+
+## Superseded by T1
+
+The prototype above was corrected and completed in the [T1 slice](2026-10-04-t1-penny-edge-trader-slice.md) (WATCH invalidation, expiry clock, volatility-scaled stop, participation, exits and replay).

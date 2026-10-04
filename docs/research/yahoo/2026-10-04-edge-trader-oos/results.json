@@ -1,0 +1,440 @@
+{
+  "decision": {
+    "checks": {
+      "max_marked_drawdown_pct <= max(1.5 * BASELINE max_marked_drawdown_pct, 5.0)": true,
+      "net_excluding_best_winner > 0": false,
+      "net_pnl > 0": false,
+      "net_pnl > BASELINE net_pnl": false
+    },
+    "qualification": "NOT_ASSESSED",
+    "verdict": "NOT_SUPPORTED_STAYS_OFF"
+  },
+  "freeze_sha256": "006c792d4c9b64ebea0038496cbff5a6b1d4f9c6a269bd709e7fa4443b7e1ed6",
+  "results": {
+    "development": {
+      "owner_3000": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 2,
+            "CASH_LIMITED_RESIZE": 17,
+            "CASH_REJECTED_DUST": 11,
+            "DRIFT_REJECTED": 67,
+            "FILLED": 84
+          },
+          "avg_capital_deployed_pct": 16.4127,
+          "by_subtype": {
+            "MO_mid": {
+              "closed": 9,
+              "net_pnl": -205.3441,
+              "wins": 3
+            },
+            "MO_strong": {
+              "closed": 21,
+              "net_pnl": -381.0934,
+              "wins": 6
+            },
+            "MR_mid": {
+              "closed": 32,
+              "net_pnl": -121.6288,
+              "wins": 17
+            },
+            "MR_strong": {
+              "closed": 22,
+              "net_pnl": -79.5413,
+              "wins": 13
+            }
+          },
+          "closed": 84,
+          "costs": 86.8775,
+          "entries": 84,
+          "exit_reasons": {
+            "STOP": 36,
+            "STOP_GAP": 3,
+            "TARGET": 39,
+            "TIME": 6
+          },
+          "final_marked_equity": 2212.3928,
+          "gross_pnl": -700.7301,
+          "marked_return_pct": -26.2536,
+          "max_marked_drawdown": 953.2161,
+          "max_marked_drawdown_pct": 31.7739,
+          "net_excluding_best_winner": -870.2213,
+          "net_pnl": -787.6076,
+          "open_marked": 0,
+          "profit_factor": 0.5394,
+          "win_rate_pct": 46.43
+        },
+        "EDGE_TRADER_V1": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 2,
+            "CASH_LIMITED_RESIZE": 13,
+            "CASH_REJECTED_DUST": 7,
+            "DRIFT_REJECTED": 67,
+            "FILLED": 80,
+            "THESIS_SKIP_MO_GAP_DOWN": 8
+          },
+          "avg_capital_deployed_pct": 17.1342,
+          "by_subtype": {
+            "MO_mid": {
+              "closed": 8,
+              "net_pnl": -168.2471,
+              "wins": 2
+            },
+            "MO_strong": {
+              "closed": 15,
+              "net_pnl": -237.5794,
+              "wins": 5
+            },
+            "MR_mid": {
+              "closed": 35,
+              "net_pnl": -163.939,
+              "wins": 18
+            },
+            "MR_strong": {
+              "closed": 22,
+              "net_pnl": -81.7964,
+              "wins": 13
+            }
+          },
+          "closed": 80,
+          "costs": 84.2669,
+          "entries": 80,
+          "exit_reasons": {
+            "STOP": 33,
+            "STOP_GAP": 2,
+            "TARGET": 37,
+            "TIME": 8
+          },
+          "final_marked_equity": 2348.4381,
+          "gross_pnl": -567.295,
+          "marked_return_pct": -21.7187,
+          "max_marked_drawdown": 855.882,
+          "max_marked_drawdown_pct": 28.5294,
+          "net_excluding_best_winner": -714.023,
+          "net_pnl": -651.5619,
+          "open_marked": 0,
+          "profit_factor": 0.5796,
+          "win_rate_pct": 47.5
+        }
+      },
+      "paper_100k": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 2,
+            "CASH_LIMITED_RESIZE": 17,
+            "CASH_REJECTED_DUST": 11,
+            "DRIFT_REJECTED": 67,
+            "FILLED": 84
+          },
+          "avg_capital_deployed_pct": 16.6652,
+          "by_subtype": {
+            "MO_mid": {
+              "closed": 8,
+              "net_pnl": -7290.9915,
+              "wins": 2
+            },
+            "MO_strong": {
+              "closed": 21,
+              "net_pnl": -12740.9816,
+              "wins": 6
+            },
+            "MR_mid": {
+              "closed": 33,
+              "net_pnl": -4519.9719,
+              "wins": 17
+            },
+            "MR_strong": {
+              "closed": 22,
+              "net_pnl": -2670.7978,
+              "wins": 13
+            }
+          },
+          "closed": 84,
+          "costs": 2951.6182,
+          "entries": 84,
+          "exit_reasons": {
+            "STOP": 37,
+            "STOP_GAP": 3,
+            "TARGET": 38,
+            "TIME": 6
+          },
+          "final_marked_equity": 72777.2628,
+          "gross_pnl": -24271.1246,
+          "marked_return_pct": -27.2227,
+          "max_marked_drawdown": 32993.9557,
+          "max_marked_drawdown_pct": 32.994,
+          "net_excluding_best_winner": -30065.045,
+          "net_pnl": -27222.7428,
+          "open_marked": 0,
+          "profit_factor": 0.5329,
+          "win_rate_pct": 45.24
+        },
+        "EDGE_TRADER_V1": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 2,
+            "CASH_LIMITED_RESIZE": 13,
+            "CASH_REJECTED_DUST": 7,
+            "DRIFT_REJECTED": 67,
+            "FILLED": 80,
+            "THESIS_SKIP_MO_GAP_DOWN": 8
+          },
+          "avg_capital_deployed_pct": 17.3502,
+          "by_subtype": {
+            "MO_mid": {
+              "closed": 8,
+              "net_pnl": -5676.4722,
+              "wins": 2
+            },
+            "MO_strong": {
+              "closed": 15,
+              "net_pnl": -7709.4876,
+              "wins": 5
+            },
+            "MR_mid": {
+              "closed": 35,
+              "net_pnl": -5609.7117,
+              "wins": 18
+            },
+            "MR_strong": {
+              "closed": 22,
+              "net_pnl": -2899.6034,
+              "wins": 13
+            }
+          },
+          "closed": 80,
+          "costs": 2869.9926,
+          "entries": 80,
+          "exit_reasons": {
+            "STOP": 33,
+            "STOP_GAP": 2,
+            "TARGET": 37,
+            "TIME": 8
+          },
+          "final_marked_equity": 78104.732,
+          "gross_pnl": -19025.2823,
+          "marked_return_pct": -21.8953,
+          "max_marked_drawdown": 28716.4144,
+          "max_marked_drawdown_pct": 28.7164,
+          "net_excluding_best_winner": -24010.7591,
+          "net_pnl": -21895.2749,
+          "open_marked": 0,
+          "profit_factor": 0.5837,
+          "win_rate_pct": 47.5
+        }
+      }
+    },
+    "untouched": {
+      "owner_3000": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 17,
+            "CASH_REJECTED_DUST": 13,
+            "DRIFT_REJECTED": 136,
+            "FILLED": 141,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 3
+          },
+          "avg_capital_deployed_pct": 13.4853,
+          "by_subtype": {
+            "MO_mid": {
+              "closed": 14,
+              "net_pnl": -166.8705,
+              "wins": 7
+            },
+            "MO_strong": {
+              "closed": 34,
+              "net_pnl": -138.5154,
+              "wins": 14
+            },
+            "MR_mid": {
+              "closed": 68,
+              "net_pnl": -476.2867,
+              "wins": 39
+            },
+            "MR_strong": {
+              "closed": 25,
+              "net_pnl": -390.3567,
+              "wins": 11
+            }
+          },
+          "closed": 141,
+          "costs": 129.0926,
+          "entries": 141,
+          "exit_reasons": {
+            "STOP": 58,
+            "STOP_GAP": 6,
+            "TARGET": 70,
+            "TIME": 7
+          },
+          "final_marked_equity": 1827.9711,
+          "gross_pnl": -1042.9367,
+          "marked_return_pct": -39.0676,
+          "max_marked_drawdown": 1299.3719,
+          "max_marked_drawdown_pct": 43.3124,
+          "net_excluding_best_winner": -1239.5308,
+          "net_pnl": -1172.0293,
+          "open_marked": 0,
+          "profit_factor": 0.5515,
+          "win_rate_pct": 50.35
+        },
+        "EDGE_TRADER_V1": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 12,
+            "CASH_REJECTED_DUST": 10,
+            "DRIFT_REJECTED": 136,
+            "FILLED": 137,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 3,
+            "THESIS_SKIP_MO_GAP_DOWN": 7
+          },
+          "avg_capital_deployed_pct": 12.5741,
+          "by_subtype": {
+            "MO_mid": {
+              "closed": 14,
+              "net_pnl": -190.2137,
+              "wins": 6
+            },
+            "MO_strong": {
+              "closed": 28,
+              "net_pnl": -212.5091,
+              "wins": 11
+            },
+            "MR_mid": {
+              "closed": 70,
+              "net_pnl": -520.4335,
+              "wins": 39
+            },
+            "MR_strong": {
+              "closed": 25,
+              "net_pnl": -401.4897,
+              "wins": 11
+            }
+          },
+          "closed": 137,
+          "costs": 126.5363,
+          "entries": 137,
+          "exit_reasons": {
+            "STOP": 56,
+            "STOP_GAP": 6,
+            "TARGET": 65,
+            "TIME": 10
+          },
+          "final_marked_equity": 1675.3542,
+          "gross_pnl": -1198.1097,
+          "marked_return_pct": -44.1549,
+          "max_marked_drawdown": 1450.3791,
+          "max_marked_drawdown_pct": 48.346,
+          "net_excluding_best_winner": -1377.9039,
+          "net_pnl": -1324.646,
+          "open_marked": 0,
+          "profit_factor": 0.491,
+          "win_rate_pct": 48.91
+        }
+      },
+      "paper_100k": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 18,
+            "CASH_REJECTED_DUST": 14,
+            "DRIFT_REJECTED": 136,
+            "FILLED": 140,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 3
+          },
+          "avg_capital_deployed_pct": 13.7498,
+          "by_subtype": {
+            "MO_mid": {
+              "closed": 14,
+              "net_pnl": -5579.8225,
+              "wins": 7
+            },
+            "MO_strong": {
+              "closed": 33,
+              "net_pnl": -5024.7325,
+              "wins": 13
+            },
+            "MR_mid": {
+              "closed": 68,
+              "net_pnl": -16381.5217,
+              "wins": 39
+            },
+            "MR_strong": {
+              "closed": 25,
+              "net_pnl": -13180.2327,
+              "wins": 11
+            }
+          },
+          "closed": 140,
+          "costs": 4379.8315,
+          "entries": 140,
+          "exit_reasons": {
+            "STOP": 58,
+            "STOP_GAP": 6,
+            "TARGET": 69,
+            "TIME": 7
+          },
+          "final_marked_equity": 59833.6966,
+          "gross_pnl": -35786.4779,
+          "marked_return_pct": -40.1663,
+          "max_marked_drawdown": 44502.6299,
+          "max_marked_drawdown_pct": 44.5026,
+          "net_excluding_best_winner": -42443.5967,
+          "net_pnl": -40166.3094,
+          "open_marked": 0,
+          "profit_factor": 0.5472,
+          "win_rate_pct": 50.0
+        },
+        "EDGE_TRADER_V1": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 14,
+            "CASH_REJECTED_DUST": 11,
+            "DRIFT_REJECTED": 136,
+            "FILLED": 136,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 3,
+            "THESIS_SKIP_MO_GAP_DOWN": 7
+          },
+          "avg_capital_deployed_pct": 12.8711,
+          "by_subtype": {
+            "MO_mid": {
+              "closed": 14,
+              "net_pnl": -6385.7527,
+              "wins": 6
+            },
+            "MO_strong": {
+              "closed": 27,
+              "net_pnl": -7115.0997,
+              "wins": 10
+            },
+            "MR_mid": {
+              "closed": 70,
+              "net_pnl": -17676.928,
+              "wins": 39
+            },
+            "MR_strong": {
+              "closed": 25,
+              "net_pnl": -13598.8243,
+              "wins": 11
+            }
+          },
+          "closed": 136,
+          "costs": 4297.7264,
+          "entries": 136,
+          "exit_reasons": {
+            "STOP": 56,
+            "STOP_GAP": 6,
+            "TARGET": 64,
+            "TIME": 10
+          },
+          "final_marked_equity": 55223.399,
+          "gross_pnl": -40478.8783,
+          "marked_return_pct": -44.7766,
+          "max_marked_drawdown": 49081.3037,
+          "max_marked_drawdown_pct": 49.0813,
+          "net_excluding_best_winner": -46574.3526,
+          "net_pnl": -44776.6047,
+          "open_marked": 0,
+          "profit_factor": 0.4915,
+          "win_rate_pct": 48.53
+        }
+      }
+    }
+  },
+  "schema": "edge_trader_oos_results_v1"
+}

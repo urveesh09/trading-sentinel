@@ -1,5 +1,26 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 4 — T1 research trader candidates (actual behavior, Dev)
+
+Research-only modules, never imported by runtime Penny/EDGE/F&O code:
+
+- `adaptive_penny_policy.py` — pure `PEN_TRADER_V1` / `V2_PARAMS` setup-state
+  policy (context scoring, fast/retest/continuation entries, structural stop,
+  cost-aware sizing, churn memory) and thesis exit manager.
+- `penny_lifecycle_replay.py` — `candidate_policy` now accepts `PEN_TRADER_V1`,
+  `PEN_TRADER_V1_THESIS`, `PEN_BASE_THESIS`, `PEN_TRADER_V2` (default
+  `BASELINE`, unchanged output). Hard blocks are shared via `_hard_constraint`.
+- `edge_portfolio_replay.py` / Lab `penny_edge_portfolio_replay` — causal
+  own-cash EDGE portfolio (`BASELINE` live clocks or `EDGE_TRADER_V1`).
+- `scripts/run_penny_trader_oos.py`, `scripts/run_edge_trader_oos.py` —
+  freeze-then-run pre-registration.
+
+Measured on untouched windows ([receipt](2026-10-04-t1-penny-edge-trader-slice.md)):
+no candidate beat its baseline; the shipped Penny MIS baseline was +₹63.17 over
+13 sessions; the shipped EDGE strategy lost 40.17% marked in Jan–Jun 2026 with
+own cash. Runtime EDGE paper sizing does not check cash (per-day entry cap
+only). No runtime, settings, schedule or F&O behavior changed.
+
 ## October 4 — latest direction: adaptive non-F&O trader policies
 
 The owner requested a stronger plan after identifying excessive filter behavior.

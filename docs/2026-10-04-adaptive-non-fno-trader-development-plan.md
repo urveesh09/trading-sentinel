@@ -1,5 +1,11 @@
 # Adaptive non-F&O trader development — October 4, 2026
 
+> **Progress (Oct 4, later):** T0 prototype corrected and T1 Penny/EDGE
+> candidates implemented and scored on pre-registered untouched windows — see
+> [T1 receipt](2026-10-04-t1-penny-edge-trader-slice.md). No candidate beat its
+> baseline; all remain OFF. The shipped EDGE strategy itself lost ~40% (own
+> cash, Jan–Jun 2026), so EDGE round 2 targets stop/target geometry. T2/T3 open.
+
 Status: **revised development plan, not implemented or deployed**. The owner
 asked for trader-like entry/exit decisions and an improved plan after weak
 research results. Dev HEAD is `434c4ccce6cb21894750cb74f01f546b4af1ea84`;

@@ -1,5 +1,20 @@
 # Handover receipt and operator checklist
 
+## October 4 — T1 Penny/EDGE trader candidates (Dev only)
+
+- [x] Review corrections committed separately (`00fd560`).
+- [x] Penny trader policy + replay candidates, pre-registered freeze (`22a7ce6`).
+- [x] EDGE own-cash portfolio replay + `EDGE_TRADER_V1`, freeze (`684de3d`).
+- [x] Untouched windows scored once; [results](2026-10-04-t1-penny-edge-trader-slice.md):
+  Penny V2 and EDGE V1 **NOT_SUPPORTED_STAYS_OFF**; shipped Penny baseline
+  +₹63.17 untouched; shipped EDGE −40.17% marked (Jan–Jun, own cash).
+- [ ] Owner: decide whether to pause EDGE paper; keep EDGE live disabled.
+- [ ] EDGE round-2 geometry hypothesis on 2024–2025 untouched data.
+- [ ] Weekly Penny minute archive (Yahoo ~30-day retention).
+- [ ] T2 Range/Swing/Momentum adapters; R5/T3 F&O noninterference.
+- Not pushed, not deployed; no Production access, broker action, settings,
+  schema, dependency or F&O change.
+
 ## October 4 — revised adaptive trader plan (latest direction)
 
 - [x] [Adaptive non-F&O trader plan](2026-10-04-adaptive-non-fno-trader-development-plan.md)

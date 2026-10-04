@@ -1,5 +1,24 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 4 — T1 Penny/EDGE trader candidates scored; none beat baseline
+
+[T1 slice receipt](2026-10-04-t1-penny-edge-trader-slice.md). The T0 prototype
+was corrected (WATCH invalidation, expiry clock, volatility stop, participation)
+and completed into `PEN_TRADER_V1/V2` with thesis exits, wired into the exact
+Penny replay; EDGE gained a causal own-cash portfolio replay
+(`penny_edge_portfolio_replay`) and `EDGE_TRADER_V1`. Freezes were committed
+before untouched windows were scored. Verdicts: **NOT_SUPPORTED_STAYS_OFF** for
+both. Penny untouched (13 sessions): shipped baseline +₹63.17, V2 −₹17.02.
+EDGE untouched Jan–Jun, ₹100k own cash: shipped baseline −40.17% marked, V1
+−44.78%; stop/target geometry (≈+2.8% targets vs −5.2% stops at ~50% hits) is
+structurally negative.
+
+Next: (1) owner decision on pausing EDGE paper and keeping EDGE live disabled;
+(2) EDGE round 2 on geometry, judged on 2024–2025 untouched daily data;
+(3) weekly Penny minute archive for future untouched windows; (4) T2 Range/
+Swing/Momentum adapters. Do not re-tune on Sep 7–23/Oct 1 or Jan–Jun 2026; they
+are now seen. Dev commits only; nothing pushed or deployed; F&O untouched.
+
 ## October 4 — active next direction: complete adaptive trader candidates
 
 Follow the [revised adaptive non-F&O plan](2026-10-04-adaptive-non-fno-trader-development-plan.md).
