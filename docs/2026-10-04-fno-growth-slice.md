@@ -104,3 +104,58 @@ already existed). No scheduler job added.
 Not evidence of profit: tests prove the rules behave as written, not that the
 book earns. The archived sessions are all seen; forward paper sessions from
 October 5, 2026 decide.
+
+## Owner-requested test, Sep 17 – Oct 1, 2026 (development evidence; all sessions already seen)
+
+Reproduce: `docs/research/fno/2026-10-04-growth-window-test/` holds the drivers
+(`run_window.py ENGINE LABEL BANKROLL history|fresh OUT`, `ledger_whatif.py BANKROLL`)
+and every scenario's JSON. Old rules ran from a detached worktree at `c791a38`.
+
+Single-leg NIFTY replay (`fno_policy_replay`) on the 10 archived sessions in the
+window (Sep 17, 21–25, 28–30, Oct 1; **Sep 18 is missing from the archive**).
+Old rules = worktree at `c791a38`; new rules = this slice. Capped-loss and SENSEX
+decisions are not replayable (no SENSEX candles; DR closes enter as history).
+
+**Bug found and fixed by this test:** a drawdown cut (0.5×/0.25×) shrank the
+risk budget below the cost of one lot (~₹2,400–3,600 of risk), so it silently
+refused every trade. The paper book entered the window ₹36k below its
+allocation (−14.4%) and the new rules took **0 trades**. Fix: a cut now shrinks
+to one lot, never below; whether that lot fits is judged on the normal budget
+(`fno_entry_plan`, `dr_lots`). Halting remains the entry brakes' job. Tests pin
+it (`test_drawdown_cut_shrinks_to_one_lot_but_never_halts`, mutation-checked).
+
+| Scenario | Trades | Net | Net excl. best | Max DD |
+| --- | --- | --- | --- | --- |
+| Old rules, ₹2.5L, real paper history | 10 | +₹12,054 | +₹4,947 | ₹1,991 |
+| New rules, ₹2.5L, real paper history | 9 | +₹9,001 | +₹1,894 | ₹1,991 |
+| New = old, fresh ₹2.5L | 10 | +₹11,577 | +₹4,470 | ₹1,991 |
+| New = old, fresh ₹2.0L | 10 | +₹11,821 | +₹4,714 | ₹1,991 |
+| New = old, fresh ₹1.75L | 9 | +₹9,810 | +₹2,703 | ₹1,991 |
+| New = old, fresh ₹1.5L | 7 | +₹1,743 | −₹654 | ₹1,252 |
+
+- With real history the new rules earned ₹3,053 less: the drawdown cut held
+  2-lot trades at 1 lot, and on Sep 24 equity (₹212,281) sat just under the new
+  15% halt line (₹212,500).
+- Fresh accounts: identical old/new (no drawdown, <20 trades, no brake hit).
+- ₹1.5L could not afford ~₹195–222 premiums (1-lot risk > 2% of pool) and missed
+  the Sep 30/Oct 1 trades, including the +₹7,108 winner. **Minimum live test
+  amount revised to ₹2,00,000.**
+- One trade (+₹7,108) is most of the profit in every scenario.
+
+Approximate stress test on the **actual** 38 paper single-leg trades since July
+(new sizing/brakes applied, P&L scaled per lot, DR kept as traded; it can only
+remove or resize trades; July–Aug trades came from older code, some of which the
+current reward/risk gate would refuse):
+
+| | Total since July | Worst day | Max DD | Losing days | Longest losing streak |
+| --- | --- | --- | --- | --- | --- |
+| As traded (old rules) | −₹22,089 | −₹8,580 | ₹38,054 | 22/33 | 10 days |
+| New rules, ₹2.5L | −₹20,039 | −₹8,580 | ₹33,491 | 22/33 | 10 days |
+| New rules, ₹2.0L | −₹19,960 | −₹8,580 | ₹31,433 | 21/33 | 10 days |
+
+Exit mix since July: underlying stops 11 (−₹22,165), time stops 20 (−₹9,145),
+trail stops 5 (+₹16,636). Reading: the risk rules trim drawdown a little but
+cannot turn a losing stretch into a winning one; July–August lost because the
+entries lost, not because size was too large. Entry quality in unfavourable
+stretches is the open problem; any fix must be frozen and scored on sessions
+from October 5, not fitted to July–August.

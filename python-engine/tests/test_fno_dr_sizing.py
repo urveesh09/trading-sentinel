@@ -23,6 +23,8 @@ def test_lots_respect_risk_budget_lot_ceiling_and_own_cash():
     # Drawdown halves the budget; an oversized structure stands aside.
     assert dr_lots(StructureKind.DEBIT_SPREAD, 2_900, pool=250_000, risk_multiplier=0.5) == 1
     assert dr_lots(StructureKind.DEBIT_SPREAD, 12_000, pool=250_000, risk_multiplier=1.0) == 0
+    # A cut never turns a normally affordable 1-lot structure into a halt.
+    assert dr_lots(StructureKind.DEBIT_SPREAD, 6_000, pool=250_000, risk_multiplier=0.25) == 1
 
 
 def test_builders_and_costs_scale_with_lots():

@@ -7,6 +7,10 @@ grow only when proven, two-strike day halt), tighter brakes (3/6/10/15%), cap
 ₹40k, multi-lot capped-loss book, SENSEX on the paper single-leg book with a
 NIFTY-participation proxy and a correlation guard. Vehicle-by-IV ships OFF.
 
+Owner test Sep 17–Oct 1 (see slice): found and fixed the drawdown-cut
+"silent halt"; fresh ₹2L = +₹11,821 on 10 sessions; minimum live test revised to
+₹2L. Since July the paper book is −₹22k; risk rules trim drawdown only.
+
 Remaining, in order:
 1. Promote through GitHub after owner review; watch paper logs for
    `fno_adaptive_risk`, `two_strike_day_halt`, `correlated_exposure_open` and
@@ -17,6 +21,8 @@ Remaining, in order:
 3. BFO support in `fno_exit_evidence`/`fno_exit_recovery` before any live SENSEX.
 4. Score vehicle-by-IV and the fast exit loop as frozen candidates on forward data.
 5. Redesign the stale `test_mark_to_market` DR writer-row test.
+6. Entry quality in losing stretches (e.g. an equity-curve pause): freeze first,
+   score only on sessions from October 5.
 
 Do not loosen F&O hard limits beyond owner approval. Nothing pushed or deployed.
 

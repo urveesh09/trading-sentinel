@@ -103,3 +103,18 @@ def test_entry_halts_loss_streak_pause_and_reset():
     expired = entry_halts(trade_cash=[], completed_newest_first=streak, today_ist=date(2026, 9, 16),
                           pool_rs=250_000, equity_rs=249_400, policy=policy)
     assert expired.active == ()
+
+
+def test_drawdown_cut_shrinks_to_one_lot_but_never_halts():
+    """[FNO-GROWTH] A risk cut reduces size; it must not silently refuse every trade."""
+    full = plan_single_leg_entry(signal(), chain(), "REGIME_1_NORMAL", NOW, state(pool=214_000.0))
+    assert full.accepted and full.lots >= 1
+    for multiplier in (0.5, 0.25):
+        cut = plan_single_leg_entry(signal(), chain(), "REGIME_1_NORMAL", NOW,
+                                    state(pool=214_000.0, risk_multiplier=multiplier))
+        assert cut.accepted, cut.reject_reason
+        assert 1 <= cut.lots <= full.lots
+    # A pool too small for one lot at the normal budget still declines.
+    tiny = plan_single_leg_entry(signal(), chain(), "REGIME_1_NORMAL", NOW,
+                                 state(pool=40_000.0, risk_multiplier=0.25))
+    assert not tiny.accepted and tiny.reject_reason == "pool_below_min_viable"

@@ -86,10 +86,14 @@ def dr_lots(kind: StructureKind, per_lot_max_loss: float, *, pool: float, risk_m
     """Lots for one structure: the ₹ max-loss budget (x adaptive multiplier),
     the lot ceiling, and own-cash capital — a debit spread ties up its debit
     (= max loss), a credit structure ties up broker margin, reserved here
-    conservatively per lot. 0 means stand aside."""
+    conservatively per lot. 0 means stand aside. A drawdown cut
+    (multiplier < 1) shrinks to one lot, never below, if that lot fits the
+    normal budget (stopping is the entry brakes' job)."""
     if per_lot_max_loss <= 0 or pool <= 0 or risk_multiplier <= 0:
         return 0
     by_risk = int((_max_loss_ceiling() * risk_multiplier) // per_lot_max_loss)
+    if by_risk < 1 and risk_multiplier < 1.0:
+        by_risk = min(1, int(_max_loss_ceiling() // per_lot_max_loss))
     capital_per_lot = per_lot_max_loss if kind == StructureKind.DEBIT_SPREAD else _margin_per_lot()
     by_capital = int((_max_capital_pct() * pool) // capital_per_lot) if capital_per_lot > 0 else 0
     return max(0, min(by_risk, by_capital, _max_lots()))

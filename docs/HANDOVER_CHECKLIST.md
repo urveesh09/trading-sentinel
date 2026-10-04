@@ -8,6 +8,8 @@
 - [x] SENSEX paper single-leg: NIFTY RVOL proxy, correlation guard, per-underlying
   management, exchange routing, traded-book refresh.
 - [x] Vehicle-by-IV implemented, OFF.
+- [x] Owner window test Sep 17–Oct 1: drawdown-cut silent-halt bug fixed (one-lot floor);
+  live test minimum revised ₹1.5L → ₹2L. Flaky under load: `test_s5_provider_lanes` (passes alone 3/3).
 - [ ] SENSEX replay export; BFO live exit evidence/recovery; forward scoring.
 - [ ] Owner: review and approve promotion via GitHub.
 - Commit `e8d93c3`: full suite 4854 passed, 4 skipped, 4 failed (pre-existing, listed in the slice).

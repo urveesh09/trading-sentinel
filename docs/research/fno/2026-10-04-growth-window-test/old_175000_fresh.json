@@ -1,0 +1,331 @@
+{
+  "label": "OLD rules 175000 fresh",
+  "bankroll": 175000.0,
+  "mode": "fresh",
+  "window": [
+    "2026-09-17",
+    "2026-10-01"
+  ],
+  "sessions": 10,
+  "start_equity": 175000.0,
+  "summary": {
+    "closed": 9,
+    "net_pnl": 9810.3772,
+    "net_excluding_best_winner": 2702.7027,
+    "max_drawdown": 1990.8913,
+    "win_rate_pct": 55.56,
+    "profit_factor": 4.0251,
+    "exit_reasons": {
+      "time_stop": 6,
+      "trail_stop": 2,
+      "underlying_stop": 1
+    }
+  },
+  "daily": {
+    "2026-09-17": -456.79,
+    "2026-09-21": -680.56,
+    "2026-09-23": -114.77,
+    "2026-09-24": 185.91,
+    "2026-09-28": 5759.8,
+    "2026-09-30": -1990.89,
+    "2026-10-01": 7107.67
+  },
+  "trades": [
+    {
+      "entry_time": "2026-09-17T12:11:31.253777+05:30",
+      "tradingsymbol": "NIFTY2692223350CE",
+      "direction": "LONG",
+      "lots_at_exit": 1,
+      "entry_premium": 132.0,
+      "exit_premium": 126.0,
+      "exit_reason": "time_stop",
+      "net_pnl": -456.7931
+    },
+    {
+      "entry_time": "2026-09-21T12:15:59.154440+05:30",
+      "tradingsymbol": "NIFTY2692223400CE",
+      "direction": "LONG",
+      "lots_at_exit": 2,
+      "entry_premium": 76.35,
+      "exit_premium": 71.65,
+      "exit_reason": "time_stop",
+      "net_pnl": -680.5587
+    },
+    {
+      "entry_time": "2026-09-23T11:35:25.417793+05:30",
+      "tradingsymbol": "NIFTY26SEP23400CE",
+      "direction": "LONG",
+      "lots_at_exit": 1,
+      "entry_premium": 143.75,
+      "exit_premium": 143.05,
+      "exit_reason": "time_stop",
+      "net_pnl": -114.7654
+    },
+    {
+      "entry_time": "2026-09-24T11:35:33.887886+05:30",
+      "tradingsymbol": "NIFTY26SEP23250PE",
+      "direction": "SHORT",
+      "lots_at_exit": 1,
+      "entry_premium": 129.15,
+      "exit_premium": 133.05,
+      "exit_reason": "time_stop",
+      "net_pnl": 185.9103
+    },
+    {
+      "entry_time": "2026-09-28T10:25:26.463051+05:30",
+      "tradingsymbol": "NIFTY26SEP22900PE",
+      "direction": "SHORT",
+      "lots_at_exit": 2,
+      "entry_premium": 101.8,
+      "exit_premium": 108.25,
+      "exit_reason": "time_stop",
+      "net_pnl": 758.3136
+    },
+    {
+      "entry_time": "2026-09-28T11:55:26.284679+05:30",
+      "tradingsymbol": "NIFTY26SEP22900PE",
+      "direction": "SHORT",
+      "lots_at_exit": 2,
+      "entry_premium": 103.8,
+      "exit_premium": 105.65,
+      "exit_reason": "time_stop",
+      "net_pnl": 160.8456
+    },
+    {
+      "entry_time": "2026-09-28T13:36:25.445574+05:30",
+      "tradingsymbol": "NIFTY26SEP22900PE",
+      "direction": "SHORT",
+      "lots_at_exit": 2,
+      "entry_premium": 96.35,
+      "exit_premium": 134.25,
+      "exit_reason": "trail_stop",
+      "net_pnl": 4840.6417
+    },
+    {
+      "entry_time": "2026-09-30T11:20:25.460802+05:30",
+      "tradingsymbol": "NIFTY26O0622850PE",
+      "direction": "SHORT",
+      "lots_at_exit": 1,
+      "entry_premium": 214.9,
+      "exit_premium": 185.45,
+      "exit_reason": "underlying_stop",
+      "net_pnl": -1990.8913
+    },
+    {
+      "entry_time": "2026-10-01T12:21:26.213735+05:30",
+      "tradingsymbol": "NIFTY26O0622650PE",
+      "direction": "SHORT",
+      "lots_at_exit": 1,
+      "entry_premium": 195.0,
+      "exit_premium": 305.75,
+      "exit_reason": "trail_stop",
+      "net_pnl": 7107.6745
+    }
+  ],
+  "unresolved": [],
+  "funnel": {
+    "accepted": 9,
+    "already_holding_this_contract": 7,
+    "engine:ema_trend_disagreement": 10,
+    "engine:inside_opening_range_window": 33,
+    "engine:no_or_break": 1008,
+    "engine:not_fresh_break": 735,
+    "engine:rvol_below_min": 33,
+    "pool_below_min_viable": 2,
+    "reward_risk_below_min": 5
+  },
+  "decisions": [
+    {
+      "at": "2026-09-17T12:11:31.253777+05:30",
+      "bar_ts": "2026-09-17 12:05:00",
+      "direction": "LONG",
+      "outcome": "accepted",
+      "halts": [],
+      "pool": 175000.0
+    },
+    {
+      "at": "2026-09-21T11:56:25.468254+05:30",
+      "bar_ts": "2026-09-21 11:50:00",
+      "direction": "LONG",
+      "outcome": "reward_risk_below_min",
+      "halts": [],
+      "pool": 174543.21
+    },
+    {
+      "at": "2026-09-21T11:57:25.418397+05:30",
+      "bar_ts": "2026-09-21 11:50:00",
+      "direction": "LONG",
+      "outcome": "reward_risk_below_min",
+      "halts": [],
+      "pool": 174543.21
+    },
+    {
+      "at": "2026-09-21T11:58:26.174523+05:30",
+      "bar_ts": "2026-09-21 11:50:00",
+      "direction": "LONG",
+      "outcome": "reward_risk_below_min",
+      "halts": [],
+      "pool": 174543.21
+    },
+    {
+      "at": "2026-09-21T12:15:59.154440+05:30",
+      "bar_ts": "2026-09-21 12:10:00",
+      "direction": "LONG",
+      "outcome": "accepted",
+      "halts": [],
+      "pool": 174543.21
+    },
+    {
+      "at": "2026-09-21T12:30:59.126417+05:30",
+      "bar_ts": "2026-09-21 12:25:00",
+      "direction": "LONG",
+      "outcome": "already_holding_this_contract",
+      "halts": [],
+      "pool": 174543.21
+    },
+    {
+      "at": "2026-09-21T12:33:00.355148+05:30",
+      "bar_ts": "2026-09-21 12:25:00",
+      "direction": "LONG",
+      "outcome": "already_holding_this_contract",
+      "halts": [],
+      "pool": 174543.21
+    },
+    {
+      "at": "2026-09-21T12:34:26.184705+05:30",
+      "bar_ts": "2026-09-21 12:25:00",
+      "direction": "LONG",
+      "outcome": "already_holding_this_contract",
+      "halts": [],
+      "pool": 174543.21
+    },
+    {
+      "at": "2026-09-23T11:35:25.417793+05:30",
+      "bar_ts": "2026-09-23 11:30:00",
+      "direction": "LONG",
+      "outcome": "accepted",
+      "halts": [],
+      "pool": 173862.65
+    },
+    {
+      "at": "2026-09-24T11:35:33.887886+05:30",
+      "bar_ts": "2026-09-24 11:30:00",
+      "direction": "SHORT",
+      "outcome": "accepted",
+      "halts": [],
+      "pool": 173747.88
+    },
+    {
+      "at": "2026-09-24T11:50:33.484483+05:30",
+      "bar_ts": "2026-09-24 11:45:00",
+      "direction": "SHORT",
+      "outcome": "already_holding_this_contract",
+      "halts": [],
+      "pool": 173747.88
+    },
+    {
+      "at": "2026-09-24T11:51:34.038585+05:30",
+      "bar_ts": "2026-09-24 11:45:00",
+      "direction": "SHORT",
+      "outcome": "already_holding_this_contract",
+      "halts": [],
+      "pool": 173747.88
+    },
+    {
+      "at": "2026-09-24T11:53:33.277579+05:30",
+      "bar_ts": "2026-09-24 11:45:00",
+      "direction": "SHORT",
+      "outcome": "already_holding_this_contract",
+      "halts": [],
+      "pool": 173747.88
+    },
+    {
+      "at": "2026-09-24T11:54:34.238039+05:30",
+      "bar_ts": "2026-09-24 11:45:00",
+      "direction": "SHORT",
+      "outcome": "already_holding_this_contract",
+      "halts": [],
+      "pool": 173747.88
+    },
+    {
+      "at": "2026-09-28T10:25:26.463051+05:30",
+      "bar_ts": "2026-09-28 10:20:00",
+      "direction": "SHORT",
+      "outcome": "accepted",
+      "halts": [],
+      "pool": 173933.79
+    },
+    {
+      "at": "2026-09-28T11:55:26.284679+05:30",
+      "bar_ts": "2026-09-28 11:50:00",
+      "direction": "SHORT",
+      "outcome": "accepted",
+      "halts": [],
+      "pool": 174692.11
+    },
+    {
+      "at": "2026-09-28T13:36:25.445574+05:30",
+      "bar_ts": "2026-09-28 13:30:00",
+      "direction": "SHORT",
+      "outcome": "accepted",
+      "halts": [],
+      "pool": 174852.95
+    },
+    {
+      "at": "2026-09-30T11:20:25.460802+05:30",
+      "bar_ts": "2026-09-30 11:15:00",
+      "direction": "SHORT",
+      "outcome": "accepted",
+      "halts": [],
+      "pool": 179693.59
+    },
+    {
+      "at": "2026-09-30T14:25:26.196993+05:30",
+      "bar_ts": "2026-09-30 14:20:00",
+      "direction": "SHORT",
+      "outcome": "pool_below_min_viable",
+      "halts": [],
+      "pool": 177702.7
+    },
+    {
+      "at": "2026-09-30T14:26:25.465256+05:30",
+      "bar_ts": "2026-09-30 14:20:00",
+      "direction": "SHORT",
+      "outcome": "pool_below_min_viable",
+      "halts": [],
+      "pool": 177702.7
+    },
+    {
+      "at": "2026-09-30T14:28:25.467913+05:30",
+      "bar_ts": "2026-09-30 14:20:00",
+      "direction": "SHORT",
+      "outcome": "reward_risk_below_min",
+      "halts": [],
+      "pool": 177702.7
+    },
+    {
+      "at": "2026-09-30T14:29:26.199868+05:30",
+      "bar_ts": "2026-09-30 14:20:00",
+      "direction": "SHORT",
+      "outcome": "reward_risk_below_min",
+      "halts": [],
+      "pool": 177702.7
+    },
+    {
+      "at": "2026-10-01T12:21:26.213735+05:30",
+      "bar_ts": "2026-10-01 12:15:00",
+      "direction": "SHORT",
+      "outcome": "accepted",
+      "halts": [],
+      "pool": 177702.7
+    }
+  ],
+  "parity_vs_live": {
+    "live_trades": 9,
+    "replayed_trades": 9
+  },
+  "notes": {
+    "grid_phase_live_aligned": 10,
+    "regime_logged_for_bar": 1861
+  }
+}

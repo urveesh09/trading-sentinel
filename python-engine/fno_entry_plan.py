@@ -124,12 +124,21 @@ def plan_single_leg_entry(sig: MomSignal, snap: ChainSnapshot, regime: str, now_
         return plan
 
     # Sizing (§3): decline rather than oversize; the marginal lot must also fit
-    # the open-premium cap.
+    # the open-premium cap. A drawdown cut (multiplier < 1) shrinks size down
+    # to one lot, never below: whether that lot is affordable is judged on the
+    # normal budget, so a cut cannot silently become a permanent halt (halting
+    # is the entry brakes' job).
     multiplier = max(0.0, float(state.risk_multiplier))
     lot_ceiling = settings.FNO_MAX_LOTS_PROVEN if multiplier > 1.0 else settings.FNO_MAX_LOTS
-    lots = lots_for_pool(state.pool, ask, lot_size, settings.FNO_STOP_PREMIUM_PCT,
-                         settings.FNO_MAX_RISK_PCT * multiplier, lot_ceiling,
-                         max_risk_rupees=settings.FNO_MAX_LOSS_PER_TRADE * multiplier)
+
+    def _lots(scale: float, ceiling: int) -> int:
+        return lots_for_pool(state.pool, ask, lot_size, settings.FNO_STOP_PREMIUM_PCT,
+                             settings.FNO_MAX_RISK_PCT * scale, ceiling,
+                             max_risk_rupees=settings.FNO_MAX_LOSS_PER_TRADE * scale)
+
+    lots = _lots(multiplier, lot_ceiling)
+    if lots < 1 and 0.0 < multiplier < 1.0:
+        lots = _lots(1.0, 1)
     while lots > 0 and state.open_premium + lots * ask * lot_size > settings.FNO_MAX_OPEN_PREMIUM_PCT * state.pool:
         lots -= 1
     if lots < 1:

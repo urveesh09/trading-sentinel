@@ -11,7 +11,8 @@
   at 8% below the equity peak (anchored on the static allocation, both paper books'
   completed trades); 1.25×/1.5× only with ≥20/≥40 trades at PF ≥1.3/≥1.5 within 2%
   of the peak. It scales the single-leg risk budget and rupee ceiling and the
-  capped-loss budget. Two losing single-leg closes in an IST day add the
+  capped-loss budget; a cut shrinks to one lot, never below (one lot must
+  still fit the normal budget). Two losing single-leg closes in an IST day add the
   `two_strike_day_halt` switch (management continues).
 - **Capped-loss book:** `dr_lots` sizes up to `FNO_DR_MAX_LOTS`=3 inside ₹10,000 ×
   multiplier and 40% of pool capital (condor margin reserved at ₹50,000/lot);
