@@ -1,5 +1,18 @@
 # Handover receipt and operator checklist
 
+## October 4 — T2 Range/Swing/Momentum + CNC audit (Dev only)
+
+- [x] Shared own-cash daily book; EDGE refactor reproduces frozen equity/trades.
+- [x] Range, Swing portfolio replays; Momentum next-bar entry + thesis exit.
+- [x] Generic pre-registration tool; T2 freezes committed (`68e0754`) before scoring.
+- [x] [T2 results](2026-10-04-t2-range-swing-momentum-slice.md): all candidates
+  NOT_SUPPORTED_STAYS_OFF; CNC conjunction fired 0 times Jan–Sep 2026.
+- [x] Removed superseded gates and the EDGE independent-trial proxy.
+- [x] [Testing method guide](RESEARCH_TESTING_METHOD.md) and
+  [improvement options + F&O review](2026-10-04-improvement-options-and-fno-review.md).
+- [ ] Owner: choose next rounds (Swing round 2, EDGE/Range geometry, F&O archive/replay/tick exits).
+- Not pushed, not deployed; no Production edit, settings, schema or F&O change.
+
 ## October 4 — T1 Penny/EDGE trader candidates (Dev only)
 
 - [x] Review corrections committed separately (`00fd560`).

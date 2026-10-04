@@ -1,5 +1,20 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 4 — T2 research replays (actual behavior, Dev)
+
+- `daily_portfolio.py` is the single own-cash daily book for EDGE, Range and
+  Swing research replays (next-open/limit entries, stop-first ties, resting
+  levels, close-time policy hooks, runtime cost schedules, marked equity).
+- Lab adapters `penny_edge_portfolio_replay`, `range_reversion_portfolio_replay`
+  and `swing_regime_portfolio_replay` share `DailyPortfolioAdapter`. The EDGE
+  independent-trial proxy (`penny_edge_next_open_lifecycle`) was removed.
+- `momentum_replay` accepts `entry_clock` (`ACCEPTED_CLOSE` legacy default,
+  `NEXT_BAR_OPEN` executable) and `exit_model=THESIS_EXIT`.
+- `scripts/run_preregistered_study.py` (list/freeze/run) replaces the per-module
+  OOS scripts; `scripts/audit_penny_cnc_conjunction.py` is a CNC diagnostic.
+- Measured: no T2 candidate is profitable; see the
+  [T2 receipt](2026-10-04-t2-range-swing-momentum-slice.md). Runtime unchanged.
+
 ## October 4 — T1 research trader candidates (actual behavior, Dev)
 
 Research-only modules, never imported by runtime Penny/EDGE/F&O code:

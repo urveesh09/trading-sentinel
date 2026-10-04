@@ -4,7 +4,11 @@
 > candidates implemented and scored on pre-registered untouched windows — see
 > [T1 receipt](2026-10-04-t1-penny-edge-trader-slice.md). No candidate beat its
 > baseline; all remain OFF. The shipped EDGE strategy itself lost ~40% (own
-> cash, Jan–Jun 2026), so EDGE round 2 targets stop/target geometry. T2/T3 open.
+> cash, Jan–Jun 2026), so EDGE round 2 targets stop/target geometry.
+> **T2 done (Oct 4):** [receipt](2026-10-04-t2-range-swing-momentum-slice.md) —
+> no profitable candidate; best leads Range reclaim and SWING_TRADER_V1; CNC
+> conjunction never fires. Next rounds and the F&O review:
+> [improvement options](2026-10-04-improvement-options-and-fno-review.md). T3 open.
 
 Status: **revised development plan, not implemented or deployed**. The owner
 asked for trader-like entry/exit decisions and an improved plan after weak

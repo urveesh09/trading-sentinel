@@ -1,5 +1,9 @@
 # Run all non-F&O modules using Yahoo Finance
 
+> To judge whether a *new version* of a module is better (baseline vs
+> candidate, freeze-then-score on untouched data), follow
+> [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md).
+
 Run from **Dev**, using its existing Python environment:
 
 ```powershell

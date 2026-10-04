@@ -1,5 +1,23 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 4 — T2 scored; improvement options and F&O review written
+
+[T2 receipt](2026-10-04-t2-range-swing-momentum-slice.md): shared own-cash
+`daily_portfolio` book (EDGE moved onto it, regression-identical), Range and
+Swing portfolio replays, Momentum `NEXT_BAR_OPEN` clock + `THESIS_EXIT`, one
+pre-registration tool (`scripts/run_preregistered_study.py`) and the
+[testing method guide](RESEARCH_TESTING_METHOD.md). All T2 verdicts
+**NOT_SUPPORTED_STAYS_OFF**; Range reclaim (−30% loss) and SWING_TRADER_V1
+(−80% loss vs baseline) are the best leads. Penny CNC fired 0 times in 9
+months (rule conjunction is effectively unsatisfiable).
+
+Owner direction: running modules (including EDGE) stay on as they are.
+Next per [improvement options and F&O review](2026-10-04-improvement-options-and-fno-review.md):
+Swing round 2 (market-weather switch + affordable universe) on 2024–2025;
+EDGE/Range geometry rounds; F&O chain-archive retention → F&O replay →
+tick-driven exit monitor → frozen F&O candidates. Windows Jan–Jun 2026 (daily)
+and Aug 10–Oct 1 (Momentum) are now seen. Dev only; nothing pushed/deployed.
+
 ## October 4 — T1 Penny/EDGE trader candidates scored; none beat baseline
 
 [T1 slice receipt](2026-10-04-t1-penny-edge-trader-slice.md). The T0 prototype

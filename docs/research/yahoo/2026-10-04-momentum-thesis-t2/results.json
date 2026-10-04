@@ -1,0 +1,126 @@
+{
+  "decision": {
+    "checks": {
+      "max_drawdown <= max(1.5 * BASELINE max_drawdown, 50.0)": true,
+      "net_excluding_best_winner > 0": false,
+      "net_pnl > 0": false,
+      "net_pnl > BASELINE net_pnl": false
+    },
+    "qualification": "NOT_ASSESSED",
+    "verdict": "NOT_SUPPORTED_STAYS_OFF"
+  },
+  "freeze_sha256": "bd9bf3fe56f5643ea33e3d56bb93eff34626c2706737dd7677614b63c9982ef3",
+  "results": {
+    "development": {
+      "default": {
+        "BASELINE": {
+          "closed": 1,
+          "entries": 1,
+          "exit_reasons": {
+            "NO_FILL": 1,
+            "time_stop_90min_at_0.13R": 1
+          },
+          "max_drawdown": 0.8325,
+          "net_excluding_best_winner": -0.8325,
+          "net_pnl": -0.8325,
+          "positive_sessions": 0,
+          "profit_factor": 0.0,
+          "sessions_with_trades": 1,
+          "unresolved": 0,
+          "win_rate_pct": 0.0
+        },
+        "MOM_THESIS_EXIT": {
+          "closed": 1,
+          "entries": 1,
+          "exit_reasons": {
+            "NO_FILL": 1,
+            "thesis_stalled": 1
+          },
+          "max_drawdown": 6.426,
+          "net_excluding_best_winner": -6.426,
+          "net_pnl": -6.426,
+          "positive_sessions": 0,
+          "profit_factor": 0.0,
+          "sessions_with_trades": 1,
+          "unresolved": 0,
+          "win_rate_pct": 0.0
+        }
+      }
+    },
+    "untouched": {
+      "default": {
+        "BASELINE": {
+          "closed": 54,
+          "entries": 54,
+          "exit_reasons": {
+            "NO_FILL": 7,
+            "broker_stop": 5,
+            "hard_square_off": 10,
+            "target_hit": 5,
+            "time_stop_105min_at_0.24R": 1,
+            "time_stop_105min_at_0.25R": 1,
+            "time_stop_120min_at_0.21R": 1,
+            "time_stop_120min_at_0.25R": 1,
+            "time_stop_165min_at_0.16R": 1,
+            "time_stop_90min_at_-0.01R": 1,
+            "time_stop_90min_at_-0.02R": 2,
+            "time_stop_90min_at_-0.03R": 1,
+            "time_stop_90min_at_-0.04R": 1,
+            "time_stop_90min_at_-0.05R": 1,
+            "time_stop_90min_at_-0.08R": 1,
+            "time_stop_90min_at_-0.13R": 1,
+            "time_stop_90min_at_-0.31R": 1,
+            "time_stop_90min_at_-0.35R": 1,
+            "time_stop_90min_at_0.05R": 1,
+            "time_stop_90min_at_0.07R": 1,
+            "time_stop_90min_at_0.13R": 1,
+            "time_stop_90min_at_0.19R": 1,
+            "time_stop_90min_at_0.24R": 1,
+            "time_stop_90min_at_0.25R": 1,
+            "time_stop_fast_30min_at_-0.21R": 1,
+            "time_stop_fast_30min_at_-0.24R": 1,
+            "time_stop_fast_30min_at_-0.26R": 2,
+            "time_stop_fast_30min_at_-0.36R": 1,
+            "time_stop_fast_30min_at_-0.40R": 1,
+            "time_stop_fast_30min_at_-0.41R": 1,
+            "time_stop_fast_30min_at_-0.44R": 1,
+            "time_stop_fast_30min_at_-0.45R": 1,
+            "time_stop_fast_30min_at_-0.57R": 1,
+            "time_stop_fast_30min_at_-0.64R": 1,
+            "time_stop_fast_60min_at_-0.53R": 1,
+            "time_stop_fast_75min_at_-0.51R": 1
+          },
+          "max_drawdown": 177.1852,
+          "net_excluding_best_winner": -163.9976,
+          "net_pnl": -120.8668,
+          "positive_sessions": 9,
+          "profit_factor": 0.7031,
+          "sessions_with_trades": 25,
+          "unresolved": 0,
+          "win_rate_pct": 31.48
+        },
+        "MOM_THESIS_EXIT": {
+          "closed": 54,
+          "entries": 54,
+          "exit_reasons": {
+            "NO_FILL": 7,
+            "hard_square_off": 16,
+            "stop": 2,
+            "thesis_momentum_failed_vwap": 10,
+            "thesis_stalled": 26
+          },
+          "max_drawdown": 157.943,
+          "net_excluding_best_winner": -210.8622,
+          "net_pnl": -149.7645,
+          "positive_sessions": 8,
+          "profit_factor": 0.6696,
+          "sessions_with_trades": 25,
+          "unresolved": 0,
+          "win_rate_pct": 29.63
+        }
+      }
+    }
+  },
+  "schema": "preregistered_study_results_v1",
+  "study": "momentum-thesis-t2"
+}
