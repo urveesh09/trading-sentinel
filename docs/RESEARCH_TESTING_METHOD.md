@@ -131,7 +131,7 @@ planner, gates, exit ladder, costs and brakes; never fork them for research.
 | Module | Development (seen) | Scored untouched (now seen) | Still untouched |
 | --- | --- | --- | --- |
 | Penny MIS | Sep 24–30, 2026; Sep 7–Oct 1 for round 3 design | Sep 7–23 + Oct 1, 2026 | Kite minute Jan–Jul 2026 (reserved for `penny-noise-t3`), forward data from Oct 5, 2026 |
-| EDGE | Jul–Sep 2026 | Jan–Jun 2026 | 2024–2025 daily |
+| EDGE | Jan–Sep 2026 (overnight event study) | Jan–Jun 2026 (T1); Mar 2024–Dec 2025 (`edge-overnight-t1`) | forward data only |
 | Range | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
 | Swing | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
 | Momentum | Sep 24–30, 2026; all of Aug 10–Oct 1 for round 3 design | Aug 10–Sep 23 + Oct 1, 2026 (T2) | Kite Jan–Jul 2026 (reserved for `momentum-smart-t3`), forward data |

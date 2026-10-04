@@ -112,7 +112,8 @@ per-trade reports stay in the git-ignored `_local/` folder.
 - Shared own-cash daily book (`daily_portfolio.py`). Signals are decided after
   the close and filled at the next day's open (the 09:30 stand-in), with stop
   before target, no doubled ticker and dust fills skipped.
-- Untouched daily history still exists for **2024–2025**.
+- 2024–2025 daily is now used (`edge-overnight-t1`); Range and Swing still have it untouched.
+- EDGE overnight clock (`EDGE_OVERNIGHT`): buy at the signal close (15:20 proxy), sell at the next open; see [the study](2026-10-05-edge-overnight-study.md).
 
 ### F&O
 1. Export Sentinel's own recorded quotes read-only from Production (command in
@@ -133,6 +134,7 @@ per-trade reports stay in the git-ignored `_local/` folder.
 | --- | --- | --- | --- | --- |
 | Penny MIS | `penny-trader-t1` (Sep 7–23 + Oct 1) | 24 trades, +₹63.17 | PEN_TRADER_V2: −₹17.02 | Stays OFF |
 | EDGE | `edge-trader-t1` (Jan–Jun 2026, ₹1L book) | 140 trades, −₹40,166 | EDGE_TRADER_V1: −₹44,777 | Stays OFF |
+| EDGE | `edge-overnight-t1` (Mar 2024–Dec 2025, ₹25k book, full CNC costs) | 522 trades, −₹22,008 | EDGE_OVERNIGHT: 829 trades, +₹2,22,864 (DD 19% from peak) | Stays OFF: drawdown check (measured vs starting capital) failed; S60 arm passed all four |
 | Range | `range-trader-t2` (Jan–Jun 2026) | 174 trades, −₹9,024 | RANGE_TRADER_V1: −₹6,650 | Stays OFF (better, still losing) |
 | Swing | `swing-trader-t2` (Jan–Jun 2026, ₹4,500) | 70 trades, −₹1,288 | SWING_TRADER_V1: −₹255 | Stays OFF (better, still losing) |
 | Momentum | `momentum-thesis-t2` (Aug 10–Sep 23 + Oct 1) | 54 trades, −₹120.87 | MOM_THESIS_EXIT: −₹149.76 | Stays OFF |

@@ -1,6 +1,29 @@
 # Trading Sentinel — system guide and engineering handover
 
 
+
+## October 5 — EDGE overnight research candidate (actual behavior, Dev, research only)
+
+[Study](2026-10-05-edge-overnight-study.md). `edge_portfolio_replay` adds:
+
+- policy `EDGE_OVERNIGHT` (`run_overnight_book`): the shipped scan, ranking and
+  sizing; buy at the signal close (+25 bps); sell at the next open; a 1% capacity
+  cap on traded value; own cash only;
+- `cost_model` (`RUNTIME` | `CNC_FULL`). `daily_portfolio.penny_cnc_full_costs`
+  adds the buy-side delivery STT and the ₹15.93 DP charge to the runtime schedule.
+
+Lab adapter `penny_edge_portfolio_replay` is now 1.2.0.
+
+`edge-overnight-t1` scored once on untouched Mar 2024–Dec 2025: candidate
++₹2,22,864 versus baseline −₹22,008 on ₹25k. The verdict is
+`NOT_SUPPORTED_STAYS_OFF`, on the drawdown check measured against starting
+capital (19% from peak).
+
+EDGE runtime is unchanged (09:30 entries, paper only).
+`scripts/run_round3_kite_scoring.ps1` is the one-shot Windows task (Oct 5, 17:07)
+that acquires Kite Jan–Jul 2026 data and scores `momentum-smart-t3` and
+`penny-noise-t3`.
+
 ## October 5 — everything on paper, forward evidence for new strategies (actual behavior, Dev)
 
 [Slice](2026-10-05-forward-paper-evidence.md). The Momentum shadow book evaluates

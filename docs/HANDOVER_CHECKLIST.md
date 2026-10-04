@@ -1,6 +1,19 @@
 # Handover receipt and operator checklist
 
 
+
+## October 5 — EDGE overnight study
+
+- [x] Event study on seen Jan–Sep 2026; 1-minute fill and liquidity checks.
+- [x] `EDGE_OVERNIGHT` and `CNC_FULL` costs implemented with tests (4 new; EDGE,
+  daily-book and Lab suites: 42 pass).
+- [x] Code `2298e77`; freeze `1e5c904` committed and pushed before scoring;
+  scored once.
+- [x] Verdict `NOT_SUPPORTED_STAYS_OFF` (drawdown vs starting capital);
+  the results are recorded in full.
+- [x] Windows task `Sentinel-Round3-KiteScoring` registered for Oct 5, 17:07.
+- [ ] Owner decision on the E1 forward paper shadow; E2 runtime CNC cost fix.
+
 ## October 5 — everything on paper, forward evidence
 
 - [x] Slice doc [2026-10-05-forward-paper-evidence.md](2026-10-05-forward-paper-evidence.md)

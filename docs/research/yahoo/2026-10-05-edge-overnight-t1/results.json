@@ -1,0 +1,963 @@
+{
+  "bound_verified_after_scoring": true,
+  "decision": {
+    "checks": {
+      "max_marked_drawdown_pct <= max(1.5 * BASELINE max_marked_drawdown_pct, 5.0)": false,
+      "net_excluding_best_winner > 0": true,
+      "net_pnl > 0": true,
+      "net_pnl > BASELINE net_pnl": true
+    },
+    "qualification": "NOT_ASSESSED",
+    "verdict": "NOT_SUPPORTED_STAYS_OFF"
+  },
+  "freeze_sha256": "23c1e8e219f3aa8d2c81d20806f43e74f4cee05fdf3beef399d7f99289186af5",
+  "results": {
+    "development": {
+      "owner_3000": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 2,
+            "CASH_LIMITED_RESIZE": 30,
+            "CASH_REJECTED_DUST": 23,
+            "DRIFT_REJECTED": 205,
+            "FILLED": 227,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 3
+          },
+          "avg_capital_deployed_pct": 9.3944,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 23,
+              "net_pnl": -369.5487,
+              "wins": 7
+            },
+            "MO_strong": {
+              "closed": 55,
+              "net_pnl": -498.4811,
+              "wins": 20
+            },
+            "MR_mid": {
+              "closed": 102,
+              "net_pnl": -1052.4073,
+              "wins": 49
+            },
+            "MR_strong": {
+              "closed": 47,
+              "net_pnl": -606.4595,
+              "wins": 20
+            }
+          },
+          "closed": 227,
+          "costs": 1397.8068,
+          "entries": 227,
+          "exit_reasons": {
+            "STOP": 96,
+            "STOP_GAP": 9,
+            "TARGET": 109,
+            "TIME": 13
+          },
+          "final_marked_equity": 473.1035,
+          "gross_pnl": -1129.0898,
+          "marked_return_pct": -84.2299,
+          "max_marked_drawdown": 2565.4468,
+          "max_marked_drawdown_pct": 85.5149,
+          "net_excluding_best_winner": -2573.2238,
+          "net_pnl": -2526.8966,
+          "open_marked": 0,
+          "profit_factor": 0.328,
+          "win_rate_pct": 42.29
+        },
+        "EDGE_OVERNIGHT": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 19,
+            "CASH_REJECTED_DUST": 17,
+            "FILLED": 240
+          },
+          "avg_capital_deployed_pct": 23.0594,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 10,
+              "net_pnl": -177.4718,
+              "wins": 0
+            },
+            "MO_strong": {
+              "closed": 64,
+              "net_pnl": -550.3364,
+              "wins": 12
+            },
+            "MR_mid": {
+              "closed": 116,
+              "net_pnl": -1468.482,
+              "wins": 19
+            },
+            "MR_strong": {
+              "closed": 50,
+              "net_pnl": -802.7303,
+              "wins": 9
+            }
+          },
+          "closed": 240,
+          "costs": 4177.6245,
+          "entries": 240,
+          "exit_reasons": {
+            "NEXT_OPEN": 237,
+            "OPEN_DELAYED": 3
+          },
+          "final_marked_equity": 0.9794,
+          "gross_pnl": 1178.604,
+          "marked_return_pct": -99.9674,
+          "max_marked_drawdown": 3137.6727,
+          "max_marked_drawdown_pct": 104.5891,
+          "net_excluding_best_winner": -3119.5731,
+          "net_pnl": -2999.0205,
+          "open_marked": 0,
+          "profit_factor": 0.2018,
+          "win_rate_pct": 16.67
+        },
+        "EDGE_OVERNIGHT_S60": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 18,
+            "CASH_REJECTED_DUST": 26,
+            "FILLED": 287,
+            "LIQUIDITY_LIMITED_RESIZE": 1
+          },
+          "avg_capital_deployed_pct": 29.084,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 21,
+              "net_pnl": -270.8005,
+              "wins": 1
+            },
+            "MO_strong": {
+              "closed": 100,
+              "net_pnl": -680.5714,
+              "wins": 23
+            },
+            "MR_mid": {
+              "closed": 108,
+              "net_pnl": -1157.743,
+              "wins": 21
+            },
+            "MR_strong": {
+              "closed": 58,
+              "net_pnl": -883.0975,
+              "wins": 13
+            }
+          },
+          "closed": 287,
+          "costs": 5022.3767,
+          "entries": 287,
+          "exit_reasons": {
+            "NEXT_OPEN": 285,
+            "OPEN_DELAYED": 2
+          },
+          "final_marked_equity": 7.7876,
+          "gross_pnl": 2030.1643,
+          "marked_return_pct": -99.7404,
+          "max_marked_drawdown": 3161.6873,
+          "max_marked_drawdown_pct": 105.3896,
+          "net_excluding_best_winner": -3112.765,
+          "net_pnl": -2992.2124,
+          "open_marked": 0,
+          "profit_factor": 0.2759,
+          "win_rate_pct": 20.21
+        }
+      },
+      "paper_100k": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 2,
+            "CASH_LIMITED_RESIZE": 35,
+            "CASH_REJECTED_DUST": 25,
+            "DRIFT_REJECTED": 205,
+            "FILLED": 225,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 3
+          },
+          "avg_capital_deployed_pct": 12.4523,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 22,
+              "net_pnl": -10180.8592,
+              "wins": 9
+            },
+            "MO_strong": {
+              "closed": 55,
+              "net_pnl": -12254.8624,
+              "wins": 20
+            },
+            "MR_mid": {
+              "closed": 101,
+              "net_pnl": -20076.0738,
+              "wins": 56
+            },
+            "MR_strong": {
+              "closed": 47,
+              "net_pnl": -15158.4798,
+              "wins": 24
+            }
+          },
+          "closed": 225,
+          "costs": 8840.0547,
+          "entries": 225,
+          "exit_reasons": {
+            "STOP": 95,
+            "STOP_GAP": 9,
+            "TARGET": 108,
+            "TIME": 13
+          },
+          "final_marked_equity": 42329.7252,
+          "gross_pnl": -48830.2205,
+          "marked_return_pct": -57.6703,
+          "max_marked_drawdown": 59849.8454,
+          "max_marked_drawdown_pct": 59.8498,
+          "net_excluding_best_winner": -59897.8251,
+          "net_pnl": -57670.2752,
+          "open_marked": 0,
+          "profit_factor": 0.5349,
+          "win_rate_pct": 48.44
+        },
+        "EDGE_OVERNIGHT": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 44,
+            "CASH_REJECTED_DUST": 24,
+            "FILLED": 371,
+            "LIQUIDITY_LIMITED_RESIZE": 84,
+            "LIQUIDITY_REJECTED": 68
+          },
+          "avg_capital_deployed_pct": 126.1765,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 24,
+              "net_pnl": 2582.1324,
+              "wins": 16
+            },
+            "MO_strong": {
+              "closed": 112,
+              "net_pnl": 132544.2816,
+              "wins": 72
+            },
+            "MR_mid": {
+              "closed": 154,
+              "net_pnl": 56265.574,
+              "wins": 88
+            },
+            "MR_strong": {
+              "closed": 79,
+              "net_pnl": 61866.3482,
+              "wins": 47
+            }
+          },
+          "closed": 369,
+          "costs": 67377.3553,
+          "entries": 371,
+          "exit_reasons": {
+            "NEXT_OPEN": 369,
+            "OPEN_MARKED": 2
+          },
+          "final_marked_equity": 352721.5077,
+          "gross_pnl": 320635.6915,
+          "marked_return_pct": 252.7215,
+          "max_marked_drawdown": 8693.4622,
+          "max_marked_drawdown_pct": 8.6935,
+          "net_excluding_best_winner": 241229.7337,
+          "net_pnl": 253258.3362,
+          "open_marked": 2,
+          "profit_factor": 3.0685,
+          "win_rate_pct": 60.43
+        },
+        "EDGE_OVERNIGHT_S60": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 33,
+            "CASH_REJECTED_DUST": 18,
+            "FILLED": 321,
+            "LIQUIDITY_LIMITED_RESIZE": 67,
+            "LIQUIDITY_REJECTED": 43
+          },
+          "avg_capital_deployed_pct": 108.9203,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 22,
+              "net_pnl": 3815.9082,
+              "wins": 15
+            },
+            "MO_strong": {
+              "closed": 109,
+              "net_pnl": 128701.9314,
+              "wins": 70
+            },
+            "MR_mid": {
+              "closed": 107,
+              "net_pnl": 40481.9046,
+              "wins": 62
+            },
+            "MR_strong": {
+              "closed": 81,
+              "net_pnl": 57961.4969,
+              "wins": 48
+            }
+          },
+          "closed": 319,
+          "costs": 58168.6789,
+          "entries": 321,
+          "exit_reasons": {
+            "NEXT_OPEN": 318,
+            "OPEN_DELAYED": 1,
+            "OPEN_MARKED": 2
+          },
+          "final_marked_equity": 330446.0759,
+          "gross_pnl": 289129.92,
+          "marked_return_pct": 230.4461,
+          "max_marked_drawdown": 9029.645,
+          "max_marked_drawdown_pct": 9.0296,
+          "net_excluding_best_winner": 219510.9928,
+          "net_pnl": 230961.2411,
+          "open_marked": 2,
+          "profit_factor": 3.237,
+          "win_rate_pct": 61.13
+        }
+      },
+      "paper_25k": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 2,
+            "CASH_LIMITED_RESIZE": 35,
+            "CASH_REJECTED_DUST": 25,
+            "DRIFT_REJECTED": 205,
+            "FILLED": 225,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 3
+          },
+          "avg_capital_deployed_pct": 12.1851,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 22,
+              "net_pnl": -2579.6849,
+              "wins": 9
+            },
+            "MO_strong": {
+              "closed": 55,
+              "net_pnl": -3172.97,
+              "wins": 20
+            },
+            "MR_mid": {
+              "closed": 101,
+              "net_pnl": -5358.8005,
+              "wins": 56
+            },
+            "MR_strong": {
+              "closed": 47,
+              "net_pnl": -3909.3071,
+              "wins": 24
+            }
+          },
+          "closed": 225,
+          "costs": 3063.2659,
+          "entries": 225,
+          "exit_reasons": {
+            "STOP": 95,
+            "STOP_GAP": 9,
+            "TARGET": 108,
+            "TIME": 13
+          },
+          "final_marked_equity": 9979.2377,
+          "gross_pnl": -11957.4966,
+          "marked_return_pct": -60.083,
+          "max_marked_drawdown": 15516.4538,
+          "max_marked_drawdown_pct": 62.0658,
+          "net_excluding_best_winner": -15562.5509,
+          "net_pnl": -15020.7625,
+          "open_marked": 0,
+          "profit_factor": 0.5147,
+          "win_rate_pct": 48.44
+        },
+        "EDGE_OVERNIGHT": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 51,
+            "CASH_REJECTED_DUST": 35,
+            "FILLED": 414,
+            "LIQUIDITY_LIMITED_RESIZE": 53,
+            "LIQUIDITY_REJECTED": 14
+          },
+          "avg_capital_deployed_pct": 135.8653,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 25,
+              "net_pnl": 1797.5387,
+              "wins": 15
+            },
+            "MO_strong": {
+              "closed": 114,
+              "net_pnl": 35131.7658,
+              "wins": 71
+            },
+            "MR_mid": {
+              "closed": 184,
+              "net_pnl": 16515.0049,
+              "wins": 99
+            },
+            "MR_strong": {
+              "closed": 88,
+              "net_pnl": 15141.0457,
+              "wins": 51
+            }
+          },
+          "closed": 411,
+          "costs": 23988.5838,
+          "entries": 414,
+          "exit_reasons": {
+            "NEXT_OPEN": 408,
+            "OPEN_DELAYED": 3,
+            "OPEN_MARKED": 3
+          },
+          "final_marked_equity": 93392.2544,
+          "gross_pnl": 92573.9389,
+          "marked_return_pct": 273.569,
+          "max_marked_drawdown": 3757.3139,
+          "max_marked_drawdown_pct": 15.0293,
+          "net_excluding_best_winner": 65467.9143,
+          "net_pnl": 68585.3551,
+          "open_marked": 3,
+          "profit_factor": 2.8531,
+          "win_rate_pct": 57.42
+        },
+        "EDGE_OVERNIGHT_S60": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 34,
+            "CASH_REJECTED_DUST": 29,
+            "FILLED": 345,
+            "LIQUIDITY_LIMITED_RESIZE": 34,
+            "LIQUIDITY_REJECTED": 8
+          },
+          "avg_capital_deployed_pct": 118.6783,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 23,
+              "net_pnl": 2156.097,
+              "wins": 15
+            },
+            "MO_strong": {
+              "closed": 112,
+              "net_pnl": 35708.0484,
+              "wins": 71
+            },
+            "MR_mid": {
+              "closed": 119,
+              "net_pnl": 13527.5146,
+              "wins": 70
+            },
+            "MR_strong": {
+              "closed": 88,
+              "net_pnl": 14619.029,
+              "wins": 51
+            }
+          },
+          "closed": 342,
+          "costs": 20680.9033,
+          "entries": 345,
+          "exit_reasons": {
+            "NEXT_OPEN": 340,
+            "OPEN_DELAYED": 2,
+            "OPEN_MARKED": 3
+          },
+          "final_marked_equity": 90827.0765,
+          "gross_pnl": 86691.5923,
+          "marked_return_pct": 263.3083,
+          "max_marked_drawdown": 3706.4649,
+          "max_marked_drawdown_pct": 14.8259,
+          "net_excluding_best_winner": 62893.2482,
+          "net_pnl": 66010.689,
+          "open_marked": 3,
+          "profit_factor": 3.1432,
+          "win_rate_pct": 60.53
+        }
+      }
+    },
+    "untouched": {
+      "owner_3000": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 1,
+            "CASH_LIMITED_RESIZE": 29,
+            "CASH_REJECTED_DUST": 19,
+            "DRIFT_REJECTED": 279,
+            "FILLED": 375,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 7,
+            "SIZE_ZERO": 35
+          },
+          "avg_capital_deployed_pct": 4.1007,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 36,
+              "net_pnl": -142.3056,
+              "wins": 15
+            },
+            "MO_strong": {
+              "closed": 102,
+              "net_pnl": -1351.0597,
+              "wins": 28
+            },
+            "MR_mid": {
+              "closed": 203,
+              "net_pnl": -1262.6013,
+              "wins": 100
+            },
+            "MR_soft": {
+              "closed": 1,
+              "net_pnl": 18.9324,
+              "wins": 1
+            },
+            "MR_strong": {
+              "closed": 33,
+              "net_pnl": -235.5166,
+              "wins": 15
+            }
+          },
+          "closed": 375,
+          "costs": 1906.3916,
+          "entries": 375,
+          "exit_reasons": {
+            "STOP": 170,
+            "STOP_GAP": 5,
+            "TARGET": 185,
+            "TIME": 15
+          },
+          "final_marked_equity": 27.4502,
+          "gross_pnl": -1066.1592,
+          "marked_return_pct": -99.085,
+          "max_marked_drawdown": 2999.7631,
+          "max_marked_drawdown_pct": 99.9921,
+          "net_excluding_best_winner": -3035.8676,
+          "net_pnl": -2972.5508,
+          "open_marked": 0,
+          "profit_factor": 0.3653,
+          "win_rate_pct": 42.4
+        },
+        "EDGE_OVERNIGHT": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 22,
+            "CASH_REJECTED_DUST": 30,
+            "FILLED": 285,
+            "LIQUIDITY_LIMITED_RESIZE": 1
+          },
+          "avg_capital_deployed_pct": 11.547,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 22,
+              "net_pnl": -190.0347,
+              "wins": 4
+            },
+            "MO_strong": {
+              "closed": 103,
+              "net_pnl": -529.0317,
+              "wins": 24
+            },
+            "MR_mid": {
+              "closed": 141,
+              "net_pnl": -2030.3349,
+              "wins": 13
+            },
+            "MR_soft": {
+              "closed": 1,
+              "net_pnl": -21.9501,
+              "wins": 0
+            },
+            "MR_strong": {
+              "closed": 18,
+              "net_pnl": -219.4597,
+              "wins": 1
+            }
+          },
+          "closed": 285,
+          "costs": 4973.2181,
+          "entries": 285,
+          "exit_reasons": {
+            "NEXT_OPEN": 283,
+            "OPEN_DELAYED": 2
+          },
+          "final_marked_equity": 9.1887,
+          "gross_pnl": 1982.407,
+          "marked_return_pct": -99.6937,
+          "max_marked_drawdown": 2990.8113,
+          "max_marked_drawdown_pct": 99.6937,
+          "net_excluding_best_winner": -3143.7332,
+          "net_pnl": -2990.8111,
+          "open_marked": 0,
+          "profit_factor": 0.2525,
+          "win_rate_pct": 14.74
+        },
+        "EDGE_OVERNIGHT_S60": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 19,
+            "CASH_REJECTED_DUST": 30,
+            "FILLED": 400,
+            "LIQUIDITY_LIMITED_RESIZE": 1
+          },
+          "avg_capital_deployed_pct": 21.2373,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 21,
+              "net_pnl": -21.9429,
+              "wins": 6
+            },
+            "MO_strong": {
+              "closed": 142,
+              "net_pnl": 37.9888,
+              "wins": 46
+            },
+            "MR_mid": {
+              "closed": 183,
+              "net_pnl": -2395.8826,
+              "wins": 31
+            },
+            "MR_strong": {
+              "closed": 54,
+              "net_pnl": -617.1633,
+              "wins": 7
+            }
+          },
+          "closed": 400,
+          "costs": 7173.8738,
+          "entries": 400,
+          "exit_reasons": {
+            "NEXT_OPEN": 395,
+            "OPEN_DELAYED": 5
+          },
+          "final_marked_equity": 3.0006,
+          "gross_pnl": 4176.8738,
+          "marked_return_pct": -99.9,
+          "max_marked_drawdown": 2996.9994,
+          "max_marked_drawdown_pct": 99.9,
+          "net_excluding_best_winner": -3172.27,
+          "net_pnl": -2997.0,
+          "open_marked": 0,
+          "profit_factor": 0.4723,
+          "win_rate_pct": 22.5
+        }
+      },
+      "paper_100k": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 1,
+            "CASH_LIMITED_RESIZE": 57,
+            "CASH_REJECTED_DUST": 47,
+            "DRIFT_REJECTED": 373,
+            "FILLED": 521,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 8
+          },
+          "avg_capital_deployed_pct": 7.4959,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 56,
+              "net_pnl": -2827.6809,
+              "wins": 29
+            },
+            "MO_strong": {
+              "closed": 143,
+              "net_pnl": -52284.5287,
+              "wins": 48
+            },
+            "MR_mid": {
+              "closed": 277,
+              "net_pnl": -25120.4048,
+              "wins": 160
+            },
+            "MR_soft": {
+              "closed": 1,
+              "net_pnl": 607.1886,
+              "wins": 1
+            },
+            "MR_strong": {
+              "closed": 44,
+              "net_pnl": -4908.6154,
+              "wins": 24
+            }
+          },
+          "closed": 521,
+          "costs": 15634.1142,
+          "entries": 521,
+          "exit_reasons": {
+            "STOP": 228,
+            "STOP_GAP": 9,
+            "TARGET": 256,
+            "TIME": 28
+          },
+          "final_marked_equity": 15465.9576,
+          "gross_pnl": -68899.927,
+          "marked_return_pct": -84.534,
+          "max_marked_drawdown": 85690.6797,
+          "max_marked_drawdown_pct": 85.6907,
+          "net_excluding_best_winner": -86765.4135,
+          "net_pnl": -84534.0412,
+          "open_marked": 0,
+          "profit_factor": 0.5704,
+          "win_rate_pct": 50.29
+        },
+        "EDGE_OVERNIGHT": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 70,
+            "CASH_REJECTED_DUST": 37,
+            "FILLED": 757,
+            "LIQUIDITY_LIMITED_RESIZE": 165,
+            "LIQUIDITY_REJECTED": 157
+          },
+          "avg_capital_deployed_pct": 173.6719,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 68,
+              "net_pnl": 94566.2928,
+              "wins": 39
+            },
+            "MO_strong": {
+              "closed": 245,
+              "net_pnl": 501156.8779,
+              "wins": 153
+            },
+            "MR_mid": {
+              "closed": 366,
+              "net_pnl": -97307.5167,
+              "wins": 180
+            },
+            "MR_soft": {
+              "closed": 1,
+              "net_pnl": -996.4478,
+              "wins": 0
+            },
+            "MR_strong": {
+              "closed": 77,
+              "net_pnl": 98451.9252,
+              "wins": 48
+            }
+          },
+          "closed": 757,
+          "costs": 208825.894,
+          "entries": 757,
+          "exit_reasons": {
+            "NEXT_OPEN": 752,
+            "OPEN_DELAYED": 5
+          },
+          "final_marked_equity": 695871.1309,
+          "gross_pnl": 804697.0254,
+          "marked_return_pct": 595.8711,
+          "max_marked_drawdown": 108400.34,
+          "max_marked_drawdown_pct": 108.4003,
+          "net_excluding_best_winner": 549773.6542,
+          "net_pnl": 595871.1314,
+          "open_marked": 0,
+          "profit_factor": 2.111,
+          "win_rate_pct": 55.48
+        },
+        "EDGE_OVERNIGHT_S60": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 50,
+            "CASH_REJECTED_DUST": 29,
+            "FILLED": 581,
+            "LIQUIDITY_LIMITED_RESIZE": 113,
+            "LIQUIDITY_REJECTED": 107
+          },
+          "avg_capital_deployed_pct": 136.1299,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 47,
+              "net_pnl": 63469.3647,
+              "wins": 27
+            },
+            "MO_strong": {
+              "closed": 242,
+              "net_pnl": 496170.0464,
+              "wins": 152
+            },
+            "MR_mid": {
+              "closed": 216,
+              "net_pnl": 9157.1856,
+              "wins": 103
+            },
+            "MR_strong": {
+              "closed": 76,
+              "net_pnl": 94599.6971,
+              "wins": 48
+            }
+          },
+          "closed": 581,
+          "costs": 163793.5452,
+          "entries": 581,
+          "exit_reasons": {
+            "NEXT_OPEN": 576,
+            "OPEN_DELAYED": 5
+          },
+          "final_marked_equity": 763396.2935,
+          "gross_pnl": 827189.839,
+          "marked_return_pct": 663.3963,
+          "max_marked_drawdown": 22622.2477,
+          "max_marked_drawdown_pct": 22.6222,
+          "net_excluding_best_winner": 612290.8067,
+          "net_pnl": 663396.2938,
+          "open_marked": 0,
+          "profit_factor": 3.015,
+          "win_rate_pct": 56.8
+        }
+      },
+      "paper_25k": {
+        "BASELINE": {
+          "admission_outcomes": {
+            "ALREADY_HELD": 1,
+            "CASH_LIMITED_RESIZE": 53,
+            "CASH_REJECTED_DUST": 46,
+            "DRIFT_REJECTED": 373,
+            "FILLED": 522,
+            "NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION": 8
+          },
+          "avg_capital_deployed_pct": 7.1094,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 56,
+              "net_pnl": -763.4984,
+              "wins": 28
+            },
+            "MO_strong": {
+              "closed": 143,
+              "net_pnl": -13022.2126,
+              "wins": 48
+            },
+            "MR_mid": {
+              "closed": 278,
+              "net_pnl": -6990.6015,
+              "wins": 157
+            },
+            "MR_soft": {
+              "closed": 1,
+              "net_pnl": 152.8114,
+              "wins": 1
+            },
+            "MR_strong": {
+              "closed": 44,
+              "net_pnl": -1384.7684,
+              "wins": 24
+            }
+          },
+          "closed": 522,
+          "costs": 5758.3378,
+          "entries": 522,
+          "exit_reasons": {
+            "STOP": 228,
+            "STOP_GAP": 9,
+            "TARGET": 257,
+            "TIME": 28
+          },
+          "final_marked_equity": 2991.7305,
+          "gross_pnl": -16249.9317,
+          "marked_return_pct": -88.0331,
+          "max_marked_drawdown": 22237.5197,
+          "max_marked_drawdown_pct": 88.9501,
+          "net_excluding_best_winner": -22562.8376,
+          "net_pnl": -22008.2695,
+          "open_marked": 0,
+          "profit_factor": 0.5426,
+          "win_rate_pct": 49.43
+        },
+        "EDGE_OVERNIGHT": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 94,
+            "CASH_REJECTED_DUST": 53,
+            "FILLED": 829,
+            "LIQUIDITY_LIMITED_RESIZE": 106,
+            "LIQUIDITY_REJECTED": 69
+          },
+          "avg_capital_deployed_pct": 238.4881,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 69,
+              "net_pnl": 29098.0319,
+              "wins": 39
+            },
+            "MO_strong": {
+              "closed": 256,
+              "net_pnl": 185257.9024,
+              "wins": 162
+            },
+            "MR_mid": {
+              "closed": 423,
+              "net_pnl": -26775.2131,
+              "wins": 206
+            },
+            "MR_soft": {
+              "closed": 1,
+              "net_pnl": -262.0,
+              "wins": 0
+            },
+            "MR_strong": {
+              "closed": 80,
+              "net_pnl": 35544.9602,
+              "wins": 50
+            }
+          },
+          "closed": 829,
+          "costs": 87695.5644,
+          "entries": 829,
+          "exit_reasons": {
+            "NEXT_OPEN": 822,
+            "OPEN_DELAYED": 7
+          },
+          "final_marked_equity": 247863.6814,
+          "gross_pnl": 310559.2458,
+          "marked_return_pct": 891.4547,
+          "max_marked_drawdown": 38334.5123,
+          "max_marked_drawdown_pct": 153.338,
+          "net_excluding_best_winner": 208084.2021,
+          "net_pnl": 222863.6814,
+          "open_marked": 0,
+          "profit_factor": 2.1936,
+          "win_rate_pct": 55.13
+        },
+        "EDGE_OVERNIGHT_S60": {
+          "admission_outcomes": {
+            "CASH_LIMITED_RESIZE": 60,
+            "CASH_REJECTED_DUST": 41,
+            "FILLED": 632,
+            "LIQUIDITY_LIMITED_RESIZE": 76,
+            "LIQUIDITY_REJECTED": 44
+          },
+          "avg_capital_deployed_pct": 192.0966,
+          "by_kind": {
+            "MO_mid": {
+              "closed": 48,
+              "net_pnl": 21068.8842,
+              "wins": 28
+            },
+            "MO_strong": {
+              "closed": 256,
+              "net_pnl": 186539.7615,
+              "wins": 163
+            },
+            "MR_mid": {
+              "closed": 249,
+              "net_pnl": 9495.0772,
+              "wins": 126
+            },
+            "MR_strong": {
+              "closed": 79,
+              "net_pnl": 35402.8447,
+              "wins": 50
+            }
+          },
+          "closed": 632,
+          "costs": 70064.3915,
+          "entries": 632,
+          "exit_reasons": {
+            "NEXT_OPEN": 627,
+            "OPEN_DELAYED": 5
+          },
+          "final_marked_equity": 277506.5677,
+          "gross_pnl": 322570.9591,
+          "marked_return_pct": 1010.0263,
+          "max_marked_drawdown": 6766.5951,
+          "max_marked_drawdown_pct": 27.0664,
+          "net_excluding_best_winner": 235375.8041,
+          "net_pnl": 252506.5676,
+          "open_marked": 0,
+          "profit_factor": 3.1791,
+          "win_rate_pct": 58.07
+        }
+      }
+    }
+  },
+  "schema": "preregistered_study_results_v1",
+  "study": "edge-overnight-t1"
+}

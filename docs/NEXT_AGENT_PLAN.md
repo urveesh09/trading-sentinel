@@ -1,6 +1,26 @@
 # Trading Sentinel — next-agent execution plan
 
 
+
+## October 5 — EDGE overnight result and next steps
+
+`edge-overnight-t1` is complete ([study](2026-10-05-edge-overnight-study.md)).
+The candidate failed only the frozen drawdown check (measured against starting
+capital); the S60 attribution arm passed all four.
+
+Next, if the owner approves:
+
+1. **E1 forward paper shadow:** a broker-free EDGE overnight book. A 15:20 job
+   scans on intraday-complete data and buys up to three at LTP; a pre-open or
+   09:15 job sells at the auction. It needs a separate store and must not change
+   EDGE runtime entries.
+2. **E2:** fix `calc_penny_costs` for CNC (buy STT, DP charge, zero delivery
+   brokerage) with paper-ledger migration notes.
+3. **E3:** a future study must declare a peak-relative drawdown metric before
+   freezing. Do not re-score `edge-overnight-t1`.
+
+Capital floor: at least about ₹25,000 for this idea, because of the DP charge.
+
 ## October 5 — forward paper evidence and the Kite untouched scoring
 
 Read [the slice](2026-10-05-forward-paper-evidence.md). Every module runs on paper
