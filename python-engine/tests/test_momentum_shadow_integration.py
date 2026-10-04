@@ -118,6 +118,7 @@ async def _run_scan(
         if notify.await_args is not None else []
     )
     captured["intraday_calls"] = fake_kite.get_intraday.await_count
+    captured["intraday_tickers"] = [call.args[0] for call in fake_kite.get_intraday.await_args_list]
     captured["historical_calls"] = fake_kite.get_historical.await_count
     captured["shadow_calls"] = shadow_mock.call_args_list
     # Avoid leaking the synthetic dict signals into route tests that expect
@@ -131,7 +132,7 @@ async def _run_scan(
 
 
 @pytest.mark.asyncio
-async def test_shadow_on_off_preserves_baseline_and_adds_no_market_calls(monkeypatch, db_path):
+async def test_shadow_on_off_preserves_baseline_and_adds_one_index_call(monkeypatch, db_path):
     import main
 
     off = await _run_scan(main, monkeypatch, False)
@@ -139,8 +140,10 @@ async def test_shadow_on_off_preserves_baseline_and_adds_no_market_calls(monkeyp
 
     assert on["accepted"] == off["accepted"]
     assert on["rejected"] == off["rejected"]
-    assert (on["intraday_calls"], on["historical_calls"]) == (2, 2)
+    # Shadow-on adds exactly one NIFTY 50 fetch per scan (MOM_SELECTIVE context).
+    assert (on["intraday_calls"], on["historical_calls"]) == (3, 2)
     assert (off["intraday_calls"], off["historical_calls"]) == (2, 2)
+    assert on["intraday_tickers"][0] == "NIFTY 50" and "NIFTY 50" not in off["intraday_tickers"]
     assert len(off["shadow_calls"]) == 0
     assert len(on["shadow_calls"]) == 2
     for call in on["shadow_calls"]:
@@ -148,6 +151,7 @@ async def test_shadow_on_off_preserves_baseline_and_adds_no_market_calls(monkeyp
         assert call.kwargs["market_regime"] == "BULL"
         assert call.kwargs["trading_date"].isoformat() == "2026-08-10"
         assert call.kwargs["bar_ts"] == _intra().index[-1]
+        assert call.kwargs["index_today"] is not None
 
 
 @pytest.mark.asyncio

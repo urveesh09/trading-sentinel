@@ -18,6 +18,7 @@ import json
 import logging
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -936,6 +937,8 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
                 tv_20d = corp_rec.get("median_traded_value_20d", 0) or 0
                 cand = {
                     "symbol": sym,
+                    "tick_size": inst.get("tick_size"),
+                    "tick_size_as_of": datetime.now(ZoneInfo("Asia/Kolkata")).date().isoformat(),
                     "series": series,
                     "prev_close": prev_close,
                     "promoter_holding_pct": corp_rec.get("promoter_holding_pct"),

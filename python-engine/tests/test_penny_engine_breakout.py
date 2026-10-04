@@ -118,10 +118,10 @@ def test_entry_accepts_when_all_conditions_met():
     assert result["sl_order_type"] == "SL-M"
     # Entry at close + 0.3% = 10.43. The breakout-candle low (10.30, 0.13 away)
     # is inside the 1.5% noise floor (0.156), so the stop widens to 10.27 and
-    # size shrinks at the same rupee risk: floor(50 * 0.13 / 0.1565) = 41.
+    # size uses the final tick-rounded distance: floor(50 * 0.13 / 0.16) = 40.
     assert abs(result["entry"] - 10.43) < 0.01
     assert result["stop_loss"] == 10.27
-    assert result["shares"] == 41
+    assert result["shares"] == 40
     # target = +2R from the widened stop = 10.43 + 2 * 0.16 = 10.75
     assert abs(result["target"] - 10.75) < 0.01
 

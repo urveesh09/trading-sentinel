@@ -39,19 +39,22 @@ from research_data_contracts import (
     COVERAGE_REQUIREMENTS, IST, DailyDataset, IntradayDataset,
 )
 
-LIFECYCLE_VERSION = "penny_mis_breakout_lifecycle_v2"
+LIFECYCLE_VERSION = "penny_mis_breakout_lifecycle_v4"
 SCOPE = "LIFECYCLE"
 BOOKS = ("PENNY_PAPER", "PENNY")
 REGIMES = ("PR1_CALM", "PR2_ELEVATED", "PR3_HOT")
 # Round 1: PEN_TRADER_V1 (entry change) and _THESIS (same entries + thesis exits).
 # Round 2: PEN_BASE_THESIS (shipped entry + thesis exits) and PEN_TRADER_V2.
 TRADER_POLICIES = ("PEN_TRADER_V1", "PEN_TRADER_V1_THESIS", "PEN_BASE_THESIS", "PEN_TRADER_V2")
+SMART_POLICIES = ("PEN_SMART_ENTRY", "PEN_SMART_TRADER")
+RANK_POLICY = "PEN_STRENGTH_RANK"
 # Round 3 (declared 2026-10-04): the shipped entry and lifecycle, with the stop
 # moved out of one-minute noise (PEN_NOISE_STOP) and, for _BE, moved to the
 # entry after a +1R close. Live paper stops sat 0.07-2% under entry.
 NOISE_POLICIES = ("PEN_NOISE_STOP", "PEN_NOISE_STOP_BE")
 NOISE_BREAKEVEN_R = 1.0
-CANDIDATE_POLICIES = ("BASELINE", "PEN_CONTEXT") + TRADER_POLICIES + NOISE_POLICIES
+CANDIDATE_POLICIES = ("BASELINE", "PEN_CONTEXT", RANK_POLICY, "PEN_SMART_EXIT") + TRADER_POLICIES + NOISE_POLICIES + SMART_POLICIES
+STOP_POLICIES = ("RUNTIME", "BAR_LOW", "NOISE_FLOOR")
 
 
 def noise_floored_decision(decision: dict, target_r: float) -> dict:
@@ -79,6 +82,7 @@ def trader_policy(name: str) -> tuple:
         "PEN_TRADER_V1_THESIS": (DEFAULT_PARAMS, True),
         "PEN_BASE_THESIS": (None, True),
         "PEN_TRADER_V2": (V2_PARAMS, True),
+        "PEN_SMART_EXIT": (None, True),
     }[name]
 SESSION_FIRST_BOUNDARY = 9 * 60 + 16
 SESSION_LAST_BOUNDARY = 15 * 60 + 30
@@ -131,6 +135,9 @@ class PennyLifecycleConfig:
     regime: str = "PR1_CALM"
     session_policy: str = "complete_only"
     candidate_policy: str = "BASELINE"
+    stop_policy: str = "RUNTIME"
+    bankroll: float | None = None
+    benchmark_ticker: str | None = None
 
     def __post_init__(self):
         clean = tuple(sorted({str(t).strip().upper() for t in self.tickers if str(t).strip()}))
@@ -145,6 +152,18 @@ class PennyLifecycleConfig:
             raise ValueError(f"session_policy must be one of {sorted(COVERAGE_REQUIREMENTS)}")
         if self.candidate_policy not in CANDIDATE_POLICIES:
             raise ValueError(f"candidate_policy must be one of {CANDIDATE_POLICIES}")
+        if self.stop_policy not in STOP_POLICIES:
+            raise ValueError(f"stop_policy must be one of {STOP_POLICIES}")
+        if self.candidate_policy in NOISE_POLICIES and self.stop_policy == "BAR_LOW":
+            raise ValueError("noise candidate cannot select BAR_LOW stop")
+        if self.bankroll is not None:
+            import math
+            if isinstance(self.bankroll, bool) or not math.isfinite(self.bankroll) or self.bankroll <= 0:
+                raise ValueError("bankroll must be positive and finite")
+        if self.benchmark_ticker is not None:
+            if not isinstance(self.benchmark_ticker,str) or not self.benchmark_ticker.strip():
+                raise ValueError("benchmark_ticker must be a nonempty symbol or None")
+            object.__setattr__(self,"benchmark_ticker",self.benchmark_ticker.strip().upper())
 
 
 def settings_snapshot(book: str) -> dict:
@@ -241,6 +260,14 @@ class _Replay:
         self.start, self.end = start, end
         self.intraday, self.daily = intraday, daily
         self.snapshot = settings_snapshot(config.book)
+        self.noise_stop_enabled = (config.stop_policy == "NOISE_FLOOR" or
+                                  config.candidate_policy in NOISE_POLICIES or
+                                  (config.stop_policy == "RUNTIME" and settings.PENNY_NOISE_STOP_ENABLED))
+        self.snapshot["effective_stop_policy"] = "NOISE_FLOOR" if self.noise_stop_enabled else "BAR_LOW"
+        self.snapshot["PENNY_NOISE_STOP_ENABLED"] = self.noise_stop_enabled
+        if config.bankroll is not None:
+            self.snapshot["bankroll"] = float(config.bankroll)
+            self.snapshot["bankroll_setting"] = "EXPLICIT_RESEARCH_BANKROLL"
         self.regime = PennyRegime(config.regime)
         self.risk = PennyRiskEngine(bankroll=self.snapshot["bankroll"])
         self.execution = _execution_snapshot("LIFECYCLE_REPLAY")
@@ -253,6 +280,8 @@ class _Replay:
         self.trades: list[dict] = []
         self.exclusions: list[dict] = []
         self.usable: list[tuple[str, str]] = []
+        self.smart_daily_marks: list[dict] = []
+        self._benchmark_cache: dict = {}
 
     # ---- coverage ----------------------------------------------------
     def _select_days(self) -> dict:
@@ -367,6 +396,8 @@ class _Replay:
             day_high=float(visible["high"].iloc[:-1].max()),
             rsi_14=_rsi_14_wilder([float(value) for value in visible["close"].tolist()]),
             as_of=as_of, risk_engine=self.risk, intraday=visible, regime=self.regime,
+            noise_stop_enabled=self.noise_stop_enabled,
+            stop_tick_size=0.01,
         )
         decision["_evaluation_bar_ts"] = last.start.isoformat()
         decision["_median_vol_20d"] = median
@@ -383,8 +414,6 @@ class _Replay:
             if not gate["accepted"]:
                 decision["accept"] = False
                 decision["reject_reason"] = "PEN_CONTEXT:" + gate["reason"]
-        if decision.get("accept") and self.config.candidate_policy in NOISE_POLICIES:
-            decision = noise_floored_decision(decision, float(self.settings.PENNY_BREAKOUT_TARGET_R))
         return decision
 
     # ---- trade bookkeeping ------------------------------------------
@@ -403,6 +432,7 @@ class _Replay:
             "status": "OPEN", "_fill_index": fill_index,
             "_high": fill_bar.high, "_low": fill_bar.low,
             "initial_stop_price": float(decision["stop_loss"]),
+            "strength_evidence": decision.get("strength_evidence"),
         }
 
     def _close(self, trade, td, exit_index, exit_price, reason, decided_at):
@@ -478,6 +508,10 @@ class _Replay:
 
     # ---- day loop ---------------------------------------------------
     def run_day(self, day_text: str, tickers: list[str]):
+        if self.config.candidate_policy in SMART_POLICIES:
+            return self._run_day_smart(day_text,tickers)
+        if self.config.candidate_policy == "PEN_SMART_EXIT":
+            return self._run_day_trader(day_text,tickers)
         if self.config.candidate_policy in TRADER_POLICIES:
             return self._run_day_trader(day_text, tickers)
         from penny_engine_breakout import mis_time_stop_active, smart_eod_check, time_stop_triggered
@@ -524,6 +558,7 @@ class _Replay:
                     self._exit_via_market(open_trades[ticker], tds[ticker], boundary, "MIS_TIME_STOP_1500", day)
                 open_trades.clear()
             # 4. scan (scheduler runs the paper stop monitor, then the scanner)
+            ranked = []
             for ticker in tickers:
                 td = tds[ticker]
                 if td.bar_at(boundary - 1)[1] is None:
@@ -534,13 +569,134 @@ class _Replay:
                     self.reject_counts[reject_code(decision.get("reject_reason"))] += 1
                     continue
                 self.accepted_signals += 1
+                if self.config.candidate_policy == RANK_POLICY:
+                    from penny_smart_policy import strength_evidence
+                    score = strength_evidence(self._completed_bars(td,ticker)[:td.completed_count(boundary)],
+                                              decision_at=now,benchmark_bars=self._benchmark(day_text,boundary))
+                    ranked.append((ticker,decision,score))
+                    continue
                 outcome = self._admit(ticker, day, td, boundary, decision, open_trades)
                 self.admission_counts[outcome] += 1
+            for ticker,decision,evidence in sorted(ranked,key=lambda x:(-(x[2].get('score') or 0.),x[0])):
+                decision['strength_evidence']=evidence
+                outcome=self._admit(ticker,day,tds[ticker],boundary,decision,open_trades)
+                self.admission_counts[outcome]+=1
         for ticker in sorted(open_trades):
             trade = open_trades[ticker]
             trade.update({"status": "UNRESOLVED", "exit_reason": "UNRESOLVED_SESSION_DATA_ENDED"})
 
     # ---- PEN_TRADER_V1 candidates (research only) ---------------------
+
+    def _benchmark(self, day_text, boundary):
+        ticker = self.config.benchmark_ticker
+        bars = self.intraday.bars.get((ticker, day_text)) if ticker else None
+        if not bars:
+            return []
+        if (ticker, day_text) not in self._benchmark_cache:
+            td = _TickerDay(bars)
+            self._benchmark_cache[ticker, day_text] = (td, self._completed_bars(td, ticker))
+        td, completed = self._benchmark_cache[ticker, day_text]
+        return completed[: td.completed_count(boundary)]
+
+    def _run_day_smart(self, day_text, tickers):
+        from penny_smart_book import new_book, step_book
+        from penny_smart_policy import SMART_PARAMS
+        from penny_shadow import _costs_from_snapshot
+
+        day = date.fromisoformat(day_text)
+        tds = {t: _TickerDay(self.intraday.bars[(t, day_text)]) for t in tickers}
+        cbars = {t: self._completed_bars(td, t) for t, td in tds.items()}
+        medians = {t: self._median_volume(t, day) for t in tickers}
+        state = new_book(day_text, self.snapshot["bankroll"], self.execution)
+        cost = lambda e, x, q: _costs_from_snapshot(e, x, q, self.execution)
+        for boundary in range(SESSION_FIRST_BOUNDARY, SESSION_LAST_BOUNDARY + 1):
+            now = _aware(day, boundary)
+            observations = {}
+            quotes = {}
+            benchmark = self._benchmark(day_text, boundary)
+            for ticker, td in tds.items():
+                count = td.completed_count(boundary)
+                if count:
+                    observations[ticker] = {
+                        "bars": cbars[ticker][:count],
+                        "median_volume": medians[ticker],
+                        "benchmark_bars": benchmark,
+                        "entry_allowed": self._hard_constraint(ticker, day, td, boundary) is None,
+                    }
+                ltp, executable = td.ltp_at(boundary)
+                quotes[ticker] = {"entry": ltp, "exit": ltp, "executable": executable}
+            state, events = step_book(
+                state,
+                observations,
+                quotes,
+                now=now,
+                cost=cost,
+                allow_entries=self.regime.value in ("PR1_CALM", "PR2_ELEVATED"),
+                stock_cap=self.settings.PENNY_PER_STOCK_CAP,
+                max_positions=min(
+                    3, self.settings.PENNY_MAX_POSITIONS_MIS, self.settings.PENNY_MAX_POSITIONS_TOTAL
+                ),
+                params=SMART_PARAMS,
+                manage_exits=self.config.candidate_policy == "PEN_SMART_TRADER",
+            )
+            self.evaluations += sum(e["kind"] == "SETUP" for e in events)
+            for e in events:
+                self.trader_counts[e["kind"] + ":" + str(e.get("reason", e.get("action", "")))] += 1
+                self.accepted_signals += int(e["kind"] == "ENTRY_FILLED")
+                if e["kind"] == "ENTRY_FILLED":
+                    self.admission_counts["FILLED"] += 1
+                elif e["kind"] == "ENTRY_EXPIRED":
+                    self.admission_counts[e["reason"]] += 1
+        self.smart_daily_marks.append(
+            {
+                "date": day_text,
+                "marked_pnl": state.get("marked_pnl"),
+                "max_intraday_marked_drawdown": state.get("max_marked_drawdown", 0.0),
+                "daily_loss_latched": state.get("daily_loss_latched", False),
+                "mark_status": state.get("mark_status", "UNAVAILABLE"),
+            }
+        )
+        for row in state["trades"] + list(state["positions"].values()):
+            p = row["thesis"]
+            entry = p["entry_price"]
+            quantity = p["shares_initial"]
+            risk = (entry - p["initial_stop"]) * quantity
+            closed = row.get("status") == "CLOSED"
+            net = row.get("net_pnl")
+            exit_ = row.get("exit_price")
+            trade = {
+                "ticker": p["ticker"],
+                "trading_date": day_text,
+                "book": self.config.book,
+                "policy": self.config.candidate_policy,
+                "thesis_id": p["thesis_id"],
+                "entry_kind": "SMART_STRUCTURAL",
+                "entry_fill_ts": p["entry_at"],
+                "entry_fill_price": entry,
+                "shares": quantity,
+                "initial_stop_price": p["initial_stop"],
+                "stop_price": p["stop"],
+                "planned_risk_rupees": risk,
+                "status": "CLOSED" if closed else "UNRESOLVED",
+                "exit_reason": row.get("exit_reason", "UNRESOLVED_SESSION_DATA_ENDED"),
+                "exit_fill_ts": row.get("exit_at"),
+                "exit_fill_price": exit_,
+                "evidence": row.get("evidence"),
+            }
+            if closed:
+                worst_entry = entry * self.snapshot["executor"]["LIVE_ENTRY_LIMIT_MULTIPLIER"]
+                worst_exit = exit_ * (1 - self.snapshot["executor"]["UNWIND_LIMIT_SLIP_PCT"])
+                trade.update(
+                    net_pnl=round(net, 4),
+                    gross_pnl=round((exit_ - entry) * quantity, 4),
+                    costs=round(row["costs"], 4),
+                    r_multiple=round(net / risk, 6) if risk > 0 else None,
+                    adverse_fill_bound_net=round(
+                        (worst_exit - worst_entry) * quantity - cost(worst_entry, worst_exit, quantity),
+                        4,
+                    ),
+                )
+            self.trades.append(trade)
     def _completed_bars(self, td: _TickerDay, ticker: str):
         from adaptive_penny_policy import CompletedBar
         return [CompletedBar(f"{ticker}|{bar.start.isoformat()}", bar.start, bar.available_at,
@@ -555,6 +711,7 @@ class _Replay:
         )
         from penny_engine_breakout import mis_time_stop_active, smart_eod_check, time_stop_triggered
         params, thesis_exits = trader_policy(self.config.candidate_policy)
+        smart_exits = self.config.candidate_policy == "PEN_SMART_EXIT"
         base_entries = params is None
         params = params or DEFAULT_PARAMS   # exit parameters for shipped entries
         day = date.fromisoformat(day_text)
@@ -580,7 +737,7 @@ class _Replay:
             for ticker in sorted(open_trades):
                 trade, td = open_trades[ticker], tds[ticker]
                 index, _ = td.bar_at(boundary - 1)
-                if thesis_exits and index is not None and index >= trade["_fill_index"] and td.bars[index].executable:
+                if thesis_exits and not smart_exits and index is not None and index >= trade["_fill_index"] and td.bars[index].executable:
                     partial = resting_partial(trade["_thesis"], cbars[ticker][index], params)
                     if partial.partial_quantity:
                         trade["_thesis"] = partial.position
@@ -597,7 +754,11 @@ class _Replay:
                     index, _ = td.bar_at(boundary - 1)
                     if index is None or index < trade["_fill_index"]:
                         continue
-                    outcome = manage_position(trade["_thesis"], cbars[ticker][index], decision_at=now, params=params)
+                    if smart_exits:
+                        from penny_smart_policy import manage_smart
+                        outcome = manage_smart(trade["_thesis"],cbars[ticker][index],decision_at=now)
+                    else:
+                        outcome = manage_position(trade["_thesis"], cbars[ticker][index], decision_at=now, params=params)
                     trade["_thesis"] = outcome.position
                     if outcome.new_stop is not None:
                         trade["stop_price"] = outcome.new_stop
@@ -899,11 +1060,18 @@ def run_penny_lifecycle(
     else:
         status = "COMPLETE"
     candidate_params = None
-    if config.candidate_policy in TRADER_POLICIES:
+    if config.candidate_policy in TRADER_POLICIES or config.candidate_policy == "PEN_SMART_EXIT":
         from adaptive_penny_policy import DEFAULT_PARAMS
         params, thesis_exits = trader_policy(config.candidate_policy)
         candidate_params = {"entry": "SHIPPED_EVALUATOR" if params is None else params.to_dict(),
                             "thesis_exits": thesis_exits, "exit_params": (params or DEFAULT_PARAMS).to_dict()}
+    if config.candidate_policy in SMART_POLICIES or config.candidate_policy == "PEN_SMART_EXIT":
+        from penny_smart_policy import SMART_PARAMS
+        candidate_params={"entry":"SHIPPED_EVALUATOR" if config.candidate_policy=='PEN_SMART_EXIT' else SMART_PARAMS.to_dict(),
+                          "exit":"INCUMBENT_EOD" if config.candidate_policy=='PEN_SMART_ENTRY' else 'COMPLETED_CLOSE_TRAIL_NO_PARTIAL_NO_AUTO_BE',
+                          "exit_params":SMART_PARAMS.to_dict(),"thesis_exits":config.candidate_policy!='PEN_SMART_ENTRY'}
+        if config.candidate_policy in SMART_POLICIES:
+            candidate_params.update(paper_risk_pct=.0025,paper_total_risk_pct=.0075,paper_daily_loss_pct=.01)
     declared = {
         "lifecycle_version": LIFECYCLE_VERSION, "config": asdict(config),
         "candidate_params": candidate_params,
@@ -923,6 +1091,7 @@ def run_penny_lifecycle(
                       if config.book == "PENNY_PAPER" else
                       "broker stop fills at the stop (or the bar open on a gap); stop-limit non-fill unmodelled"),
         "stop_model": "PAPER_LTP_POLL_60S" if config.book == "PENNY_PAPER" else "BROKER_STOP_APPROXIMATION",
+        "stop_tick": "declared INR 0.01 research quantization; historical instrument ticks unavailable",
         "target_exit": "none (live book never exits at target; target feeds smart-EOD only)",
         "sizing": f"PennyRiskEngine.position_size with fixed {snapshot['bankroll_setting']}",
         "regime": f"declared constant {config.regime}; historical regime not reconstructed",
@@ -951,10 +1120,30 @@ def run_penny_lifecycle(
         warnings.append("Candidate parameters were declared a priori; this window is development data, not qualification.")
     if replay.requirement.assumption:
         warnings.append(f"Coverage assumption {replay.requirement.assumption} applies to this run.")
+    daily_returns=[]
+    for day_text in sorted(days):
+        day_trades=[t for t in replay.trades if t['trading_date']==day_text]
+        resolved=all(t['status']=='CLOSED' for t in day_trades)
+        net=round(sum(t.get('net_pnl',0.) for t in day_trades),4) if resolved else None
+        daily_returns.append({'date':day_text,'net_pnl':net,
+                              'allocated_return_pct':net/snapshot['bankroll']*100 if net is not None else None,
+                              'status':'ALL_FLAT' if resolved else 'UNRESOLVED','entries':len(day_trades)})
+    if config.candidate_policy in SMART_POLICIES:
+        assumptions.update(stop_model='SMART_PAPER_LTP_QUOTE',entry_fill='traded minute open as paper quote proxy; no historical bid/ask depth',
+                           kill_switch='independent marked daily loss brake 1%; 0.25% single / 0.75% total marked-risk admission, modeled stop costs included',
+                           cash='own paper equity less occupied cash and modeled costs; no incumbent book funding',
+                           candidate_exit=candidate_params['exit'],
+                           candidate_entry='persistent positive strength with shipped structural setup transitions; ranked one-shot intent within ATR/0.5% price budget',
+                           sizing='fixed research allocation per independent session; fee-inclusive cash/risk budgets; not a compounded multi-day runtime ledger replay',
+                           benchmark='optional observed completed benchmark bars; absent context explicitly unavailable')
+    if config.candidate_policy=='PEN_SMART_EXIT':
+        assumptions['candidate_exit']=candidate_params['exit']
     return {
         "schema": "sentinel_penny_lifecycle_replay_v1", "scope": SCOPE, "status": status,
         "strategy": "classic_penny_mis_breakout", "run_fingerprint": fingerprint,
         "config": asdict(config), "settings": snapshot, "assumptions": assumptions,
+        "daily_returns":daily_returns,
+        "smart_daily_marks":replay.smart_daily_marks,
         "not_replayed": list(NOT_REPLAYED),
         "datasets": {"intraday": intraday.manifest, "daily": {
             k: v for k, v in daily.manifest.items()

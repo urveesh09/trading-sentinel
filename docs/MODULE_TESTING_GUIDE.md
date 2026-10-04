@@ -137,9 +137,18 @@ per-trade reports stay in the git-ignored `_local/` folder.
 | Swing | `swing-trader-t2` (Jan–Jun 2026, ₹4,500) | 70 trades, −₹1,288 | SWING_TRADER_V1: −₹255 | Stays OFF (better, still losing) |
 | Momentum | `momentum-thesis-t2` (Aug 10–Sep 23 + Oct 1) | 54 trades, −₹120.87 | MOM_THESIS_EXIT: −₹149.76 | Stays OFF |
 | F&O | `fno-trader-v1` (Sep 24–Oct 1) | 7 trades, +₹13,306 | FNO_TRADER_V1: +₹7,128 | Stays OFF |
+| Penny MIS (seen-data diagnostic) | `penny-smart-t4` (Sep 7–Oct 1, ₹2,000) | 38 trades, +₹91.72 | PEN_SMART_TRADER: 153 trades, −₹47.50 | Stays OFF (forward paper shadow only) |
 
 Which days are already used up is listed in the window ledger in
 RESEARCH_TESTING_METHOD.md. Update both files whenever a new study is scored.
+
+## Forward paper evidence (from October 5, 2026)
+
+New days are untouched by definition. Paper books record every module with live
+money off. The Momentum shadow compares `MOM_BASE`, `MOM_RECENCY_5` and
+`MOM_SELECTIVE` (`/api/experiments/momentum`). The smart-Penny paper shadow
+writes its own `<DB_PATH>.penny-smart-paper.db`. Decide in advance how many
+sessions to wait before reading, then read once.
 
 ## What a test can and cannot tell you
 

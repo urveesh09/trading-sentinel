@@ -701,6 +701,12 @@ class Settings(BaseSettings):
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
     # Broker-free evidence side-channel; never reaches PennyExecutor.
     PENNY_SHADOW_ENABLED:          bool  = True
+    # Independent durable paper allocation, no broker orders; reuses scanner
+    # data and <=3-symbol exit quote batches. ON from Oct 5, 2026 by owner
+    # direction to collect forward (unseen) evidence: the candidate failed its
+    # seen-data diagnostic (penny-smart-t4) and is not a trading policy.
+    PENNY_SMART_SHADOW_ENABLED:    bool  = True
+    PENNY_SMART_SHADOW_BANKROLL:   float = 2000.0
     PENNY_BREAKOUT_TIME_EXIT:      int   = 15*60       # 15:00 IST
     # [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST = 30 min after the
     # 15:00 force-close fires. Gives time for the broker to confirm

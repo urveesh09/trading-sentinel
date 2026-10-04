@@ -1,5 +1,109 @@
 # Trading Sentinel — next-agent execution plan
 
+
+## October 5 — forward paper evidence and the Kite untouched scoring
+
+Read [the slice](2026-10-05-forward-paper-evidence.md). Every module runs on paper
+with live money off. New forward evidence comes from the `MOM_SELECTIVE` shadow
+variant and the smart-Penny paper shadow.
+
+Next:
+1. After the owner's same-day Kite login (owner authorised ~16:30–17:00 IST,
+   October 5), acquire January–July 2026 history with
+   `scripts/acquire_kite_history.py`, checking coverage only. Then freeze, commit,
+   push and score `momentum-smart-t3` and `penny-noise-t3` once.
+2. After 5 or more sessions, compare forward `MOM_SELECTIVE` against `MOM_BASE`
+   (`/api/experiments/momentum`, decision-quality report), and the smart-Penny
+   shadow against the Penny paper book. Read forward data only after a
+   predeclared count of sessions; do not tune on it.
+3. Open items carried forward: fix the three Penny paper `exit_price` blob rows;
+   Penny D1 live-risk reconciliation; momentum auto-execute stays the owner's call.
+
+## October 4 — smart Penny implementation and matched diagnostics
+
+Read [the current implementation receipt](2026-10-04-penny-smart-trader-implementation.md)
+first. R1 strength ranking and R2 stateful affordable entry / confirmed-close
+management are implemented as default-OFF paper/replay variants. The separate
+paper book also owns its simulated cash, fees, working risk and daily brake;
+this completes paper accounting, not R3's actual live fill/settlement contract.
+T4 compares five arms on the ₹2,000 budget over two already examined windows;
+do not label either an untouched holdout or optimize exits until it looks good.
+Keep all losing arms and execution stress results.
+
+T4 is complete and `NOT_SUPPORTED_STAYS_OFF`: incumbent broader net +₹91.7169
+(38 trades), combined −₹47.5019 (153), entry/risk −₹47.7479 (79), exit −₹2.2712
+(48), ranking unchanged. Do not promote any new trading arm. Follow the explicit
+D1–D4 material slices in the receipt: reconcile live risk; independent data and
+decision context; small calibrated entry utility under matched risk; exit tests
+on fixed cohorts before whole-book replay. No September outcome-driven retuning.
+
+Remaining sequence:
+1. Review the frozen T4 results and failure paths. Select further work from
+   stable evidence; no activation from a positive seen-window PnL.
+2. R0/T3 still needs absent January–July Kite history. Acquire only through the
+   existing owner-login/data-contract process; commit the freeze before any
+   actual untouched scoring. No present task generated or invented that data.
+3. Develop a separate exit hypothesis only after isolating selection/entry
+   economics. Preserve the incumbent exit policy if thesis exits do not help.
+4. R3 must reconcile actual fills, costs, open risk and classic daily settlements
+   before live activation/increased risk. Candle replay cannot prove depth,
+   intraminute fills or runtime sampled-quote management.
+5. R4 requires genuine point-in-time universe/regime/eligibility, continuous
+   portfolio capital and untouched data, then prospective paper execution
+   observations. GitHub promotion is separate; Production/F&O stay protected.
+
+Current changes remain uncommitted Dev at `a674740`; no push/deployment, funding
+change or broker order. The broad regression's unchanged F&O fixture failure is
+recorded in the receipt; do not silently call that run completely green.
+
+## October 4 — authorized corrections completed; next Penny hypotheses
+
+[Implementation and verification receipt](2026-10-04-penny-corrections-and-relative-strength-slice.md)
+closes the explicit stop-arm/effective-freeze and decision-stop rounding findings
+from the earlier review below. Current cached instrument ticks now control
+Penny execution; dated metadata is required for new live entries. Final fill
+risk, complete settlement-driven daily brakes and marked exposure remain open.
+830 selected tests and a final 55-test source check passed; atlas regenerated.
+Changes are uncommitted in Dev at base `a674740`, not pushed/promoted. No new
+live flags, funding, F&O operational or Production changes.
+
+Read [the researched strategy and explicit R0–R4 slices](2026-10-04-penny-consistent-returns-strategy.md).
+Next: finish R0 once independently validated untouched Kite history exists and
+a corrected source freeze is committed before scoring; then R1 tests persistent
+positive stock-specific strength ranking while keeping entries/exits fixed.
+Test broader reclaim entries and winner trails separately after selection has
+evidence. R3 reconciled owner risk/daily cash accounting is required before any
+live activation or increased admitted risk. Preserve all failed hypotheses,
+unknown/missing-data status, costs and F&O resource priority. A daily 1% goal is
+measured on allocated equity and never becomes a mandatory entry quota.
+
+Pending T3 now distinguishes BAR_LOW/NOISE_FLOOR and ₹100,000/₹2,000 books;
+its January–July snapshot path is absent. The earlier review remains a historical
+receipt; its statement that no source changes were made refers to that stage.
+
+## October 4 — Penny independent-review findings before the next study
+
+Read [Penny efficiency review and discussion](2026-10-04-penny-efficiency-independent-review.md)
+before the older round-3 sequence below. Current `penny-noise-t3` BASELINE calls
+the default-ON runtime noise stop, so it cannot isolate the old-to-new stop
+hypothesis. Add explicit, exactly-once stop-policy inputs and bind effective
+settings before freezing/scoring. Correct rounded-distance quantity arithmetic;
+review actual-instrument tick and fill/protection risk before any live promotion.
+Preserve previous frozen results; do not relabel them as current-policy results.
+
+Then complete the untouched Kite comparison with distinct old/current policies,
+owner-budget economics and daily marked returns. Further hypotheses should
+isolate a stop or execution/selection change on shipped entries. Research a
+larger admitted risk allocation only after an edge survives; this is a material
+change, not a rounding fix. Existing caps/own cash/exit recovery and F&O capacity
+remain protected. The owner's daily target is an aspiration, not a trade quota.
+
+This task is review/discussion only: findings and proposals remain open, no
+source/flag change or new scoring. 45 focused tests passed; reproductions reveal
+gaps those tests do not cover. `a674740` is confirmed pushed; no merge/deployment
+by this task. Review docs are Dev-local/uncommitted. Tomorrow's Production/paper
+decision is separate; Penny live and Momentum auto-execute remain default OFF.
+
 ## October 4 — round 3: smarter Momentum/Penny candidates; Momentum direct trading built (OFF)
 
 Development (seen windows):

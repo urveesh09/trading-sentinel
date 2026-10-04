@@ -1,5 +1,86 @@
 # Handover receipt and operator checklist
 
+
+## October 5 — everything on paper, forward evidence
+
+- [x] Slice doc [2026-10-05-forward-paper-evidence.md](2026-10-05-forward-paper-evidence.md)
+  (insights from `penny-smart-t4`; no new thresholds).
+- [x] `MOM_SELECTIVE` Momentum shadow variant with one NIFTY 50 fetch per scan;
+  the funnel and existing variants are unchanged (tests: 4 selective cases,
+  integration on/off parity plus exactly one index call).
+- [x] `PENNY_SMART_SHADOW_ENABLED=True` (paper only, separate DB).
+- [x] Owner's smart-Penny controller and tick corrections committed as verified.
+- [x] Live switches verified OFF by default; the Production `.env` overrides none
+  (read-only).
+- [x] Verification: full engine suite 4,918 pass / 4 skip / 4 pre-existing failures (dev harness, integrated demo, F&O DR fixture, proactive demo); penny/momentum/ops selection with new defaults 1,348 pass.
+- [ ] Kite January–July acquisition, then freeze and score of the round-3
+  studies (October 5, after the owner's login).
+
+## October 4 — smart Penny paper controller and frozen ablations
+
+- [x] Explicit [implementation slice and receipt](2026-10-04-penny-smart-trader-implementation.md)
+  maintained before implementation; prior Dev edits preserved.
+- [x] Reused adaptive setup state transitions; persistent strength ranking,
+  one-shot quote budgets and confirmed-close management. No automatic
+  breakeven/partial, widened stop, averaging down or forced trade quota.
+- [x] Durable separate paper store, entry risk/cost/cash checks, daily marked-loss
+  latch, cross-day equity carry, restart/concurrent dedup and independent exits.
+- [x] Default OFF, no real orders/funding; reuse scanner history, bound optional
+  held-symbol quote batch and CPU/time/DB impact. F&O AST and adapter isolation.
+- [x] Broad regression: 1,410 pass / one skip / one unchanged F&O fixture failure;
+  final policy/scanner/lifecycle 74 pass (28 new-policy), runner two pass.
+  Compilation, diff check, final bound/hash verification and stable atlas passed.
+- [x] [Frozen five-arm owner-budget diagnostic](research/yahoo/2026-10-04-penny-smart-t4/freeze.json)
+  distinguishes ranking, entry/risk, exit and combined policies. Both windows
+  are already examined; zero-trade days and losing arms retained.
+- [x] T4 complete with stable bound inputs: incumbent +₹91.7169 / 38 versus
+  combined −₹47.5019 / 153; every improvement check fails, stays OFF. Other new
+  entry/exit arms also trail incumbent. Daily/stress results preserved.
+- [ ] Prospective quote/fill evidence, explicit D1–D4 follow-up slices; untouched
+  T3 data/freeze/score remains unavailable. No qualifying profitability claim.
+- [ ] Actual live settlement/risk contract, broader exit evidence, point-in-time
+  universe/regime/portfolio fidelity and GitHub promotion.
+- [x] Dev-local/uncommitted at `a674740`, no push/merge/deployment or Production
+  edit. The new DB is opt-in and separate; runtime dependencies unchanged.
+
+## October 4 — authorized Penny corrections and researched strategy
+
+- [x] [Correction contracts and receipt](2026-10-04-penny-corrections-and-relative-strength-slice.md):
+  explicit exactly-once old/new stop comparison, effective setting/cost/source
+  binding, rounded decision-risk arithmetic, current-date instrument ticks.
+- [x] Unknown tick metadata refuses new live orders; existing stop/unwind/exit
+  recovery remains available with the legacy fallback. Future promotion needs
+  a successful normal universe refresh before any live entry.
+- [x] 830 selected tests passed (one skip, existing dependency warnings); final
+  price/executor/lifecycle 55 passed, source compile/diff checks and stable atlas.
+- [x] Stable five-day source/data freeze and baseline parity: old 18 / +₹15.1765,
+  corrected noise 15 / +₹36.4486; seen paper-book evidence only. The first drifted
+  run is preserved as invalid and untouched Kite scoring remains unavailable.
+- [x] [Primary research and R0–R4 development plan](2026-10-04-penny-consistent-returns-strategy.md)
+  separates possible 1% days from unproved daily consistency; preserves F&O.
+- [ ] Untouched T3 data/freeze/score; proposed selection and exit ablations.
+- [ ] Actual-fill/cost/open-risk budget and settlement-fed daily brake before
+  live activation or increased admitted risk; qualification and GitHub promotion.
+- [x] Dev-local/uncommitted at base `a674740`; no push/merge/deployment, funding
+  or live-flag change, broker call or Production edit. No DB/dependency migration.
+
+## October 4 — independent Penny review and further-development discussion
+
+- [x] [Source/evidence review and primary web research](2026-10-04-penny-efficiency-independent-review.md)
+  at pushed Dev `a674740`; required docs revalidated. Production Git metadata
+  only read (`044c016`); no new operational performance claim.
+- [x] 45 focused tests passed; in-memory counterexamples confirm risk-rounding,
+  coarse live snapping, capital shrinkage and the contaminated pending baseline.
+  Historical suite totals remain historical; not every branch path was audited.
+- [x] Saved proposed sequence with files/contracts, acceptance, rollout/rollback,
+  owner-budget daily metrics and F&O noninterference. No 1–2% daily guarantee.
+- [ ] Explicit exactly-once stop policies/effective-settings freeze, final-price
+  risk arithmetic, instrument-aware execution review and untouched Kite study.
+- [ ] Further stop/selection/execution experiments, qualification and any
+  separately authorized GitHub promotion/paper observation/live decision.
+- [x] Documentation only in this task, Dev-local/uncommitted; no source/config,
+  schema/dependency change, broker call, new historical scoring, merge/deployment.
+
 ## October 4 — Penny noise-floor stop ON (owner selection) and push
 
 - [x] `PENNY_NOISE_STOP_ENABLED=True` in runtime Penny; tests updated (794 Penny, 4873 engine pass; 4 pre-existing failures).

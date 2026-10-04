@@ -66,6 +66,25 @@ def _breakout_day(**extra):
     return _bars(overrides=overrides, post_from="10:32", **extra)
 
 
+def test_stop_policy_applies_noise_once_and_honors_explicit_bankroll(monkeypatch):
+    from config import settings
+    import penny_engine_breakout
+    monkeypatch.setattr(settings, "PENNY_NOISE_STOP_ENABLED", True)
+    calls = []
+    original = penny_engine_breakout.noise_floor_stop
+    def measured(*args, **kwargs):
+        calls.append((args, kwargs))
+        return original(*args, **kwargs)
+    monkeypatch.setattr(penny_engine_breakout, "noise_floor_stop", measured)
+    old = _run(_breakout_day(), stop_policy="BAR_LOW", bankroll=2000.)
+    assert calls == []
+    assert old["settings"]["bankroll"] == 2000.
+    new = _run(_breakout_day(), candidate_policy="PEN_NOISE_STOP", stop_policy="NOISE_FLOOR", bankroll=2000.)
+    assert len(calls) == new["funnel"]["accepted_signals"] > 0
+    assert new["settings"]["effective_stop_policy"] == "NOISE_FLOOR"
+    assert old["settings"]["effective_stop_policy"] == "BAR_LOW"
+
+
 def test_entry_uses_live_clock_next_minute_ltp_fill_and_real_sizing():
     result = _run(_breakout_day())
     assert result["scope"] == "LIFECYCLE" and result["status"] == "COMPLETE"

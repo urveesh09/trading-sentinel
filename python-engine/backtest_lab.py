@@ -1181,7 +1181,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
     """[B2 2026-10-03] Exact classic Penny MIS lifecycle over B1-validated bars."""
     metadata = StrategyMetadata(
         strategy_id="penny_breakout_mis_lifecycle_1m",
-        name="Penny Breakout MIS (exact lifecycle, 1-minute)", version="1.1.0",
+        name="Penny Breakout MIS (exact lifecycle, 1-minute)", version="1.3.0",
         description=("Replays the shipped classic Penny MIS book: live completed-bar clock, real "
                      "PennyRiskEngine sizing, circuit filter, capacity, executor drift/stop checks, "
                      "paper LTP or broker stop, 14:30 smart-EOD/time stop and 15:00 force close."),
@@ -1199,7 +1199,8 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
         ),
         default_config={"tickers": [], "book": "PENNY_PAPER", "regime": "PR1_CALM",
-                        "session_policy": "complete_only", "candidate_policy": "BASELINE"},
+                        "session_policy": "complete_only", "candidate_policy": "BASELINE",
+                        "stop_policy": "RUNTIME", "bankroll": None,"benchmark_ticker":None},
         default_assumptions={
             "clock": "bar_k_minus_1_evaluated_at_boundary_k", "fills": "ltp_on_traded_bar_only",
             "costs": "frozen_real_equity_MIS", "target_exit": "none_smart_eod_only",
@@ -1209,8 +1210,12 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             "book": {"enum": ["PENNY_PAPER", "PENNY"]},
             "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
             "session_policy": {"enum": ["complete_only", "allow_gaps"]},
+            "stop_policy": {"enum": ["RUNTIME", "BAR_LOW", "NOISE_FLOOR"]},
+            "bankroll": {"type": ["number", "null"], "exclusiveMinimum": 0},
+            "benchmark_ticker": {"type":["string","null"]},
             "candidate_policy": {"enum": ["BASELINE", "PEN_CONTEXT", "PEN_TRADER_V1", "PEN_TRADER_V1_THESIS", "PEN_BASE_THESIS", "PEN_TRADER_V2",
-                                          "PEN_NOISE_STOP", "PEN_NOISE_STOP_BE"]},
+                                          "PEN_NOISE_STOP", "PEN_NOISE_STOP_BE", "PEN_STRENGTH_RANK",
+                                          "PEN_SMART_ENTRY", "PEN_SMART_EXIT", "PEN_SMART_TRADER"]},
         },
         scope="LIFECYCLE",
     )
@@ -1220,6 +1225,8 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
         return PennyLifecycleConfig(
             tickers=tuple(values["tickers"]), book=values["book"], regime=values["regime"],
             session_policy=values["session_policy"], candidate_policy=values["candidate_policy"],
+            stop_policy=values.get("stop_policy", "RUNTIME"), bankroll=values.get("bankroll"),
+            benchmark_ticker=values.get("benchmark_ticker"),
         )
 
     def snapshot_config(self, supplied):
@@ -1229,7 +1236,8 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             raise ValueError("the lifecycle replay requires an explicit ticker list")
         cfg = self._config({**merged, "tickers": tickers})
         return {"tickers": list(cfg.tickers), "book": cfg.book, "regime": cfg.regime,
-                "session_policy": cfg.session_policy, "candidate_policy": cfg.candidate_policy}
+                "session_policy": cfg.session_policy, "candidate_policy": cfg.candidate_policy,
+                "stop_policy": cfg.stop_policy, "bankroll": cfg.bankroll,"benchmark_ticker":cfg.benchmark_ticker}
 
     def prepare(self, db_path, request):
         from research_data_contracts import (
@@ -1240,14 +1248,14 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             profile_start = (date.fromisoformat(request.start_date) - timedelta(days=10)).isoformat()
             intraday = load_intraday_dataset(
                 db_path, interval="minute", start=profile_start, end=request.end_date,
-                tickers=tickers,
+                tickers=sorted(set(tickers)|({request.config['benchmark_ticker']} if request.config.get('benchmark_ticker') else set())),
             )
             daily = load_daily_dataset(db_path, tickers=tickers, before=request.end_date)
         except DatasetUnavailable as exc:
             raise BacktestUnavailable(str(exc)) from exc
         requirement = COVERAGE_REQUIREMENTS[request.config["session_policy"]]
         requested_usable = [item for item in intraday.usable_days(requirement)
-                            if request.start_date <= item[1] <= request.end_date]
+                            if item[0] in tickers and request.start_date <= item[1] <= request.end_date]
         if not requested_usable:
             raise BacktestUnavailable(
                 f"no ticker-day satisfies session_policy={requirement.name}: "

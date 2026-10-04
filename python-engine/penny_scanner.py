@@ -582,6 +582,16 @@ class PennyScanner:
             # via _normalise_regime_getter above; the engine coerces if needed.
             regime=PennyRegime(self.regime),
         )
+        # Reuse observations already fetched, never issue another history call.
+        # The smart twin independently excludes today's daily volume baseline.
+        if getattr(self, "_smart_collect", None) is not None:
+            try:
+                prior_daily = daily.loc[daily.index.date < as_of.date()] if daily is not None else None
+                self._smart_collect[ticker] = {"frame": intraday,
+                    "median_volume": float(prior_daily["volume"].tail(20).median())
+                    if prior_daily is not None and len(prior_daily) >= 5 else 0.0}
+            except (AttributeError, TypeError, ValueError, KeyError) as exc:
+                logger.warning("penny_smart_observation_unavailable ticker=%s error=%s", ticker, str(exc))
         if isinstance(decision, dict):
             # Identity uses the last fully closed, evaluator-visible 1m bar,
             # not the 30-second scheduler timestamp.
@@ -1015,6 +1025,7 @@ class PennyScanner:
                     quote_map = {}
 
         # Phase 1a: parallel per-ticker evaluation (breakout engine).
+        self._smart_collect = {} if settings.PENNY_SMART_SHADOW_ENABLED else None
         # [FIX-PHASE2-AUDIT 2026-07-09] Pass prev_close from each
         # universe record so circuit_blocked (spec §7.4) can be enforced
         # inside the evaluator.
@@ -1035,6 +1046,19 @@ class PennyScanner:
             )
         else:
             results = []
+
+        if self._smart_collect is not None:
+            try:
+                from datetime import datetime as smart_datetime
+                from penny_smart_shadow import observe_smart_shadow, smart_db_path, IST
+                await asyncio.wait_for(observe_smart_shadow(smart_db_path(settings.DB_PATH), self._smart_collect,
+                    {t["symbol"]: quote_map.get(int(self.kite.instrument_cache[t["symbol"]]), {})
+                     for t in surviving if self.kite.instrument_cache.get(t["symbol"]) is not None},
+                    now=smart_datetime.now(IST), bankroll=settings.PENNY_SMART_SHADOW_BANKROLL,
+                    stock_cap=settings.PENNY_PER_STOCK_CAP,
+                    max_positions=min(3, settings.PENNY_MAX_POSITIONS_MIS, settings.PENNY_MAX_POSITIONS_TOTAL)), timeout=2.0)
+            except Exception as exc:
+                logger.error("penny_smart_shadow_failed error=%s", str(exc))
 
         # Phase 1a (continued): drop records that the breakout engine
         # rejected so we don't waste Kite calls on the Connors leg.

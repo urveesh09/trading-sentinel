@@ -59,6 +59,26 @@ def _config_from(report: str, **overrides) -> Callable[[], dict]:
 
 
 STUDIES: dict[str, Study] = {
+    "penny-smart-t4": Study(
+        strategy="penny_breakout_mis_lifecycle_1m",
+        snapshot=YAHOO / "2026-10-04-penny-trader-window/_local/validated-yahoo.sqlite",
+        base_config=_config_from("penny-mis-recent-diagnostic-gap-sensitivity-report.json",
+                                 stop_policy="NOISE_FLOOR",benchmark_ticker=None),
+        sources=("python-engine/adaptive_penny_policy.py", "python-engine/penny_lifecycle_replay.py",
+                 "python-engine/penny_engine_breakout.py", "python-engine/penny_risk.py",
+                 "python-engine/penny_shadow.py", "python-engine/cost_schedules.py",
+                 "python-engine/penny_smart_policy.py", "python-engine/penny_smart_book.py",
+                 "python-engine/penny_smart_shadow.py", "python-engine/penny_scanner.py",
+                 "python-engine/main.py", "python-engine/backtest_cli.py"),
+        windows={"seen_short": (("2026-09-24", "2026-09-30"),),
+                 "seen_broader": (("2026-09-07", "2026-10-01"),)},
+        arms={name:{"candidate_policy":name} for name in (
+            "BASELINE","PEN_STRENGTH_RANK","PEN_SMART_EXIT","PEN_SMART_ENTRY","PEN_SMART_TRADER")},
+        books={"owner_2000":{"bankroll":2000.}},decision_book="owner_2000",
+        candidate="PEN_SMART_TRADER",decision_window="seen_broader",
+        drawdown_key="max_drawdown",drawdown_floor=20.,metrics="trades",
+        hypothesis="Frozen strength/timing/winner management improves owner-budget Penny economics; "
+                   "both windows are previously examined diagnostics, never untouched qualification."),
     "penny-trader-t1": Study(
         strategy="penny_breakout_mis_lifecycle_1m",
         snapshot=YAHOO / "2026-10-04-penny-trader-window/_local/validated-yahoo.sqlite",
@@ -166,7 +186,10 @@ STUDIES: dict[str, Study] = {
         sources=("python-engine/penny_lifecycle_replay.py", "python-engine/penny_engine_breakout.py",
                  "python-engine/penny_risk.py", "python-engine/penny_shadow.py", "python-engine/cost_schedules.py"),
         windows={"untouched": (("2026-01-01", "2026-07-31"),)},
-        arms={name: {"candidate_policy": name} for name in ("BASELINE", "PEN_NOISE_STOP", "PEN_NOISE_STOP_BE")},
+        arms={name: {"candidate_policy": name, "stop_policy": "BAR_LOW" if name == "BASELINE" else "NOISE_FLOOR"}
+              for name in ("BASELINE", "PEN_NOISE_STOP", "PEN_NOISE_STOP_BE")},
+        books={"paper_100k": {"bankroll": 100000.0}, "owner_2000": {"bankroll": 2000.0}},
+        decision_book="owner_2000",
         candidate="PEN_NOISE_STOP", decision_window="untouched",
         drawdown_key="max_drawdown", drawdown_floor=50.0, metrics="trades",
         hypothesis="Moving the shipped Penny stop out of one-minute noise (>=1.5% and >=Rs0.03 under entry, "
@@ -190,7 +213,15 @@ def _verify_dataset(folder: Path) -> dict:
 
 def _bound(study: Study) -> dict:
     snapshot = _verify_dataset(study.snapshot) if study.runner == "fno_replay" else verify_snapshot(str(study.snapshot))
-    return {"sources": {rel: _sha(ROOT / rel) for rel in (*study.sources, *COMMON_SOURCES)}, "snapshot": snapshot}
+    bound = {"sources": {rel: _sha(ROOT / rel) for rel in (*study.sources, *COMMON_SOURCES)}, "snapshot": snapshot}
+    if study.strategy == "penny_breakout_mis_lifecycle_1m":
+        from penny_lifecycle_replay import settings_snapshot
+        from penny_shadow import _execution_snapshot
+        bound["penny_effective_settings"] = {book: settings_snapshot(book) for book in ("PENNY_PAPER", "PENNY")}
+        bound["penny_execution_costs"] = _execution_snapshot("PREREGISTRATION")
+        bound["sources"]["python-engine/penny_prices.py"] = _sha(ROOT / "python-engine/penny_prices.py")
+        bound["sources"]["python-engine/penny_executor.py"] = _sha(ROOT / "python-engine/penny_executor.py")
+    return bound
 
 
 def _trade_metrics(reports: list[dict]) -> dict:
@@ -313,6 +344,8 @@ def run(name: str, out: Path, jobs: int = 1) -> None:
             reports_by_task = dict(zip(tasks, pool.map(_execute_task, tasks.values())))
     else:
         reports_by_task = {key: _execute_task(task) for key, task in tasks.items()}
+    if frozen["bound"] != _bound(study):
+        raise SystemExit("bound inputs changed during scoring; reports invalid, refusing results/verdict")
     results: dict = {}
     for window, ranges in study.windows.items():
         for book in study.books:
@@ -331,7 +364,8 @@ def run(name: str, out: Path, jobs: int = 1) -> None:
     decision = decide(study, results)
     _atomic_json_new(str(out / "results.json"), {"schema": "preregistered_study_results_v1", "study": name,
                                                  "freeze_sha256": _sha(out / "freeze.json"),
-                                                 "results": results, "decision": decision})
+                                                 "results": results, "decision": decision,
+                                                 "bound_verified_after_scoring":True})
     print("decision:", json.dumps(decision))
 
 

@@ -102,6 +102,7 @@ async def get_momentum_experiment(request: Request):
         name: {
             "crossover_lookback": variant.crossover_lookback,
             "max_vwap_distance_atr": variant.max_vwap_distance_atr,
+            **({"selective": True} if variant.selective else {}),
         }
         for name, variant in _main.MOMENTUM_SHADOW_VARIANTS.items()
     }

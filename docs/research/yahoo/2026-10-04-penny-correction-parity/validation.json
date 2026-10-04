@@ -1,0 +1,9 @@
+{
+  "changed_sources": [
+    "penny_executor",
+    "penny_lifecycle_replay"
+  ],
+  "reason": "Source edits completed while this development regression was running. Preserve outputs; repeat with stable source.",
+  "state": "INVALID_SOURCE_DRIFT",
+  "usable_for_profitability_claim": false
+}

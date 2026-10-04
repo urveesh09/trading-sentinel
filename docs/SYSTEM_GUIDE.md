@@ -1,5 +1,117 @@
 # Trading Sentinel — system guide and engineering handover
 
+
+## October 5 — everything on paper, forward evidence for new strategies (actual behavior, Dev)
+
+[Slice](2026-10-05-forward-paper-evidence.md). The Momentum shadow book evaluates
+a third broker-free variant, `MOM_SELECTIVE`: the shipped evaluator, then
+`momentum_selective.selective_gate` (NIFTY up on the day, stock at least 0.3%
+stronger, close above yesterday's high). With `MOMENTUM_SHADOW_ENABLED`, the scan
+fetches NIFTY 50 15-minute bars once. A failed fetch makes only this variant
+reject (`selective_index_bar_unavailable`); the funnel, the other variants and
+their configs are unchanged. `PENNY_SMART_SHADOW_ENABLED` now defaults to `True`.
+The owner's smart-Penny paper book collects forward evidence; it remains a failed
+candidate (`penny-smart-t4`), not a trading policy. The owner's tick-size and
+smart-controller changes below are committed unchanged. Automated live paths
+stay off by default: `PENNY_LIVE_TRADING`, `PENNY_EDGE_DISABLE_LIVE`,
+`FNO_LIVE_TRADING`/`FNO_DISABLE_LIVE` and `MOMENTUM_AUTO_EXECUTE`. Owner-tap EXEC
+can still place an order unless `OWNER_LIVE_ENTRY_HALT=true`.
+
+## October 4 — authorized smart Penny controller implemented (OFF)
+
+[Implementation, verification and remaining contracts](2026-10-04-penny-smart-trader-implementation.md)
+supersedes the earlier proposal-only status. New pure policy/book functions reuse
+adaptive setup transitions, rank persistent positive stock strength, expire
+overextended quotes and manage confirmed-close winners/failed setups. Durable
+paper state has fee-inclusive cash/risk, a latched daily marked-loss brake,
+restart/dedup and equity carry without daily top-ups. It does not fix the classic
+live Penny settlement/daily-risk contract.
+
+`PENNY_SMART_SHADOW_ENABLED=False` and virtual bankroll ₹2,000. No real orders or
+capital reservations exist in this controller. Its sibling
+`<DB_PATH>.penny-smart-paper.db` owns two additive state/event tables; the
+operational ledger is not migrated or locked by shadow writes. Existing scanner
+candles/quotes are reused; opt-in exit observation adds only one bounded batch
+of at most three held symbols on the current cadence. Actual candles take
+precedence over explicitly labelled archived bid samples. Processing moves off
+the shared async loop, two-second timeout bounds shadow work, and incumbent
+stop exits run first. F&O functions/adapters, broker clients and scheduler jobs
+are unchanged; Production remains untouched.
+
+Lifecycle v4 / Penny Lab 1.3.0 adds ranking, exit, entry/risk and combined ablations,
+optional actual benchmark context, and daily returns including zero-trade days.
+Runtime has no benchmark-history fetch: the frozen comparison also declares
+benchmark absent. Replay fixed per-session capital, candle quote proxies and
+constant PR1_CALM are diagnostics, not exact runtime/continuous cash performance.
+Seen-window freeze and reports: [Penny T4](research/yahoo/2026-10-04-penny-smart-t4/freeze.json).
+The runner checks source/settings/data both before and after scoring; a changing
+input prevents a verdict. Completed broader T4: incumbent 38 closes / +₹91.7169;
+full candidate 153 / −₹47.5019, drawdown ₹97.1379; ranking unchanged, entry and
+exit variants also trail incumbent. All improvement checks fail: candidate OFF.
+[Verdict](research/yahoo/2026-10-04-penny-smart-t4/results.json) and
+[daily economics](research/yahoo/2026-10-04-penny-smart-t4/daily-economics.json)
+preserve zero/losing days and negative execution stress. No untouched qualification or minimum daily income is
+established. New code remains Dev-local/uncommitted at `a674740`, unpushed and
+undeployed. Earlier sections below describe earlier source/evidence stages.
+
+## October 4 — authorized Penny corrections and researched strategy proposal
+
+[Correction receipt](2026-10-04-penny-corrections-and-relative-strength-slice.md)
+supersedes the earlier review's open comparison/rounding/tick findings below.
+Dev-local source changes at base `a674740` quantize the stop before sizing,
+resolve current instrument ticks from refreshed Penny universe metadata and
+require dated ticks before new live entries. Recovery/exits retain a fallback
+when metadata is unavailable; this is an attempted exit, not a fill guarantee.
+Runtime noise sizing preserves decision-price planned risk using the final tick
+distance. It does not guarantee risk at later entry/exit fills.
+
+Lifecycle v3 / Lab 1.2.0 adds explicit `stop_policy` and optional research
+`bankroll`. T3's old-stop baseline is BAR_LOW, its noise arms NOISE_FLOOR,
+applied once; effective settings/costs/helper sources bind its freeze. Paper
+₹100,000 and owner ₹2,000 are distinct books. Stateful trader policies retain
+their own structural stops. Historical tick/fill/regime/universe limitations
+remain explicit. Old research receipts are preserved.
+
+[Researched development proposal](2026-10-04-penny-consistent-returns-strategy.md)
+prioritizes causal stock-specific strength ranking, affordable setup entries,
+winner management and a reconciled owner-risk contract. These new strategies
+are proposed, not implemented or proven. Runtime Penny's daily counter is not
+fed by current settlements; resolving it is a material pre-live requirement.
+No evidence proves a minimum 1–2% profit on every day.
+
+Stable Sep 24–30 regression reproduced old baseline 18 / +₹15.1765 and gave
+corrected noise 15 / +₹36.4486; removing its best winner leaves −₹4.8747.
+These are seen-window ₹100,000 paper-book diagnostics, not owner/live proof.
+830 selected tests passed (one skip, existing deprecation warnings), then 55
+price/executor/lifecycle tests passed after final edits. Compilation and atlas
+regeneration passed. Stable-source five-day baseline regression is recorded in
+the correction receipt. Untouched January–July Kite data is unavailable locally.
+No funding/strategy-live flag, DB migration or dependency change. No broker call,
+push, merge, deployment or Production edit. F&O operational source and shared
+scheduling remain unchanged. These corrections are uncommitted in Dev.
+
+## October 4 — earlier independent Penny efficiency review
+
+[Review and development discussion](2026-10-04-penny-efficiency-independent-review.md)
+checks pushed Dev `a674740` against source and stored evidence. The stateful
+Penny candidates are implemented but failed their untouched comparisons;
+the owner-selected noise floor has a modest seen-window improvement and its
+January–July test remains pending. 45 focused tests passed in this review.
+
+Before the pending study/promotion review, address: its BASELINE now inherits
+the default-ON noise stop, unrounded-distance sizing can violate preserved risk,
+and the live executor's ₹0.10 snapping differs from intended research protection.
+These are documented findings, not fixes performed in this task. Freeze explicit
+stop policy/effective settings and final executable risk; then measure net daily
+returns, cash utilization and marked exposure at the owner allocation.
+No evidence establishes 1–2% profit every day or qualifies Penny live.
+
+Remote branch HEAD was verified at `a674740`; Production Git HEAD is `044c016`
+(metadata read only). Older 'not pushed' receipts below describe their original
+task status; the reviewed branch is now pushed. This review changes documentation
+only in Dev, uncommitted; no new source/configuration/schema/dependency change,
+broker call, strategy scoring, merge or deployment. F&O development is excluded.
+
 ## October 4 — Penny noise-floor stop selected by the owner (actual behavior, Dev)
 
 `penny_engine_breakout.evaluate_breakout_entry` widens the breakout-bar-low stop

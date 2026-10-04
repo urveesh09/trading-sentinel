@@ -1,0 +1,192 @@
+{
+  "baseline_receipt_parity": true,
+  "can_place_orders": false,
+  "limitations": [
+    "Seen five-day development window, not untouched or Production evidence",
+    "100000 INR paper book, not owner-budget return",
+    "95 current symbols and constant PR1_CALM; one-minute fills and historical ticks approximate",
+    "No live qualification or funding authority"
+  ],
+  "qualification": "NOT_ASSESSED",
+  "results": {
+    "baseline": {
+      "fingerprint": "sha256:6b7404fd666f0dcf07663831480124d8af54fe8aae3145e4961167efa8fbb150",
+      "report_sha256": "26abd926d74395d6df6ecf6734437a69428e866a6d2fd89f9485ce4ed676cbee",
+      "settings": {
+        "PENNY_BREAKOUT_ADAPTIVE_THRESHOLD": false,
+        "PENNY_BREAKOUT_BUFFER_PCT": 0.003,
+        "PENNY_BREAKOUT_RSI_MAX": 70.0,
+        "PENNY_BREAKOUT_RVOL_TIME_ADJUSTED": true,
+        "PENNY_BREAKOUT_TARGET_R": 2.0,
+        "PENNY_BREAKOUT_TIME_END": 870,
+        "PENNY_BREAKOUT_TIME_EXIT": 900,
+        "PENNY_BREAKOUT_TIME_START": 630,
+        "PENNY_BREAKOUT_USE_VWAP": false,
+        "PENNY_BREAKOUT_VOL_MULT": 1.8,
+        "PENNY_CIRCUIT_FROM_HIGH_PCT": 0.03,
+        "PENNY_CIRCUIT_SKIP_DISTANCE": 0.005,
+        "PENNY_DAILY_KILL_SWITCH_PCT": 0.2,
+        "PENNY_DISABLE_TICKERS": "",
+        "PENNY_MAX_POSITIONS_MIS": 3,
+        "PENNY_MAX_POSITIONS_TOTAL": 5,
+        "PENNY_MIS_SMART_EOD_LOSS_MIN": 30,
+        "PENNY_MIS_SMART_EOD_TIME": 870,
+        "PENNY_MIS_SMART_EOD_WITHIN_R": 0.5,
+        "PENNY_NOISE_STOP_ENABLED": false,
+        "PENNY_PER_STOCK_CAP": 500.0,
+        "PENNY_RISK_PCT_PR1": 0.05,
+        "PENNY_RISK_PCT_PR2": 0.025,
+        "PENNY_RISK_PCT_PR3": 0.01,
+        "PENNY_TIME_STOP_MIN": 30,
+        "bankroll": 100000.0,
+        "bankroll_setting": "EXPLICIT_RESEARCH_BANKROLL",
+        "effective_stop_policy": "BAR_LOW",
+        "executor": {
+          "LIVE_ENTRY_LIMIT_MULTIPLIER": 1.005,
+          "MAX_ENTRY_DRIFT_PCT": 0.02,
+          "STOP_LIMIT_SLIP_PCT": 0.01,
+          "UNWIND_LIMIT_SLIP_PCT": 0.01
+        }
+      },
+      "state": "SUCCEEDED",
+      "summary": {
+        "adverse_fill_bound_net": -115.8338,
+        "avg_r": -2.321613,
+        "closed_trades": 18,
+        "costs": 9.2835,
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 1,
+          "PAPER_STOP_LTP": 13,
+          "SMART_EOD:within_0_5R_of_target": 4
+        },
+        "expectancy": 0.8431,
+        "gross_pnl": 24.46,
+        "kill_switch_threshold_breached_days": [],
+        "max_drawdown": 45.0962,
+        "net_excluding_best_winner": -27.7362,
+        "net_pnl": 15.1765,
+        "paper_entries": 18,
+        "per_day": [
+          {
+            "closed": 2,
+            "net_pnl": -12.4108,
+            "trading_date": "2026-09-24",
+            "wins": 0
+          },
+          {
+            "closed": 7,
+            "net_pnl": 46.0297,
+            "trading_date": "2026-09-25",
+            "wins": 2
+          },
+          {
+            "closed": 6,
+            "net_pnl": -38.4877,
+            "trading_date": "2026-09-28",
+            "wins": 1
+          },
+          {
+            "closed": 3,
+            "net_pnl": 20.0453,
+            "trading_date": "2026-09-29",
+            "wins": 2
+          }
+        ],
+        "profit_factor": 1.186994,
+        "unresolved_trades": 0,
+        "win_rate_pct": 27.7778
+      }
+    },
+    "noise": {
+      "fingerprint": "sha256:6b7404fd666f0dcf07663831480124d8af54fe8aae3145e4961167efa8fbb150",
+      "report_sha256": "c4bfe3bb4a00ea461e2ad98e8ee645b2375334770a337589ca7e66a28e8a990a",
+      "settings": {
+        "PENNY_BREAKOUT_ADAPTIVE_THRESHOLD": false,
+        "PENNY_BREAKOUT_BUFFER_PCT": 0.003,
+        "PENNY_BREAKOUT_RSI_MAX": 70.0,
+        "PENNY_BREAKOUT_RVOL_TIME_ADJUSTED": true,
+        "PENNY_BREAKOUT_TARGET_R": 2.0,
+        "PENNY_BREAKOUT_TIME_END": 870,
+        "PENNY_BREAKOUT_TIME_EXIT": 900,
+        "PENNY_BREAKOUT_TIME_START": 630,
+        "PENNY_BREAKOUT_USE_VWAP": false,
+        "PENNY_BREAKOUT_VOL_MULT": 1.8,
+        "PENNY_CIRCUIT_FROM_HIGH_PCT": 0.03,
+        "PENNY_CIRCUIT_SKIP_DISTANCE": 0.005,
+        "PENNY_DAILY_KILL_SWITCH_PCT": 0.2,
+        "PENNY_DISABLE_TICKERS": "",
+        "PENNY_MAX_POSITIONS_MIS": 3,
+        "PENNY_MAX_POSITIONS_TOTAL": 5,
+        "PENNY_MIS_SMART_EOD_LOSS_MIN": 30,
+        "PENNY_MIS_SMART_EOD_TIME": 870,
+        "PENNY_MIS_SMART_EOD_WITHIN_R": 0.5,
+        "PENNY_NOISE_STOP_ENABLED": true,
+        "PENNY_PER_STOCK_CAP": 500.0,
+        "PENNY_RISK_PCT_PR1": 0.05,
+        "PENNY_RISK_PCT_PR2": 0.025,
+        "PENNY_RISK_PCT_PR3": 0.01,
+        "PENNY_TIME_STOP_MIN": 30,
+        "bankroll": 100000.0,
+        "bankroll_setting": "EXPLICIT_RESEARCH_BANKROLL",
+        "effective_stop_policy": "NOISE_FLOOR",
+        "executor": {
+          "LIVE_ENTRY_LIMIT_MULTIPLIER": 1.005,
+          "MAX_ENTRY_DRIFT_PCT": 0.02,
+          "STOP_LIMIT_SLIP_PCT": 0.01,
+          "UNWIND_LIMIT_SLIP_PCT": 0.01
+        }
+      },
+      "state": "SUCCEEDED",
+      "summary": {
+        "adverse_fill_bound_net": -41.0747,
+        "avg_r": -0.21141,
+        "closed_trades": 15,
+        "costs": 5.4914,
+        "exit_reasons": {
+          "MIS_TIME_STOP_1500": 3,
+          "PAPER_STOP_LTP": 8,
+          "SMART_EOD:within_0_5R_of_target": 4
+        },
+        "expectancy": 2.4299,
+        "gross_pnl": 41.94,
+        "kill_switch_threshold_breached_days": [],
+        "max_drawdown": 30.856,
+        "net_excluding_best_winner": -4.8747,
+        "net_pnl": 36.4486,
+        "paper_entries": 15,
+        "per_day": [
+          {
+            "closed": 2,
+            "net_pnl": -13.0795,
+            "trading_date": "2026-09-24",
+            "wins": 0
+          },
+          {
+            "closed": 4,
+            "net_pnl": 57.6766,
+            "trading_date": "2026-09-25",
+            "wins": 2
+          },
+          {
+            "closed": 6,
+            "net_pnl": -24.7569,
+            "trading_date": "2026-09-28",
+            "wins": 1
+          },
+          {
+            "closed": 3,
+            "net_pnl": 16.6084,
+            "trading_date": "2026-09-29",
+            "wins": 2
+          }
+        ],
+        "profit_factor": 1.722414,
+        "unresolved_trades": 0,
+        "win_rate_pct": 33.3333
+      }
+    }
+  },
+  "schema": "penny_correction_development_parity_v1",
+  "snapshot_unchanged": true,
+  "source_stable": true
+}

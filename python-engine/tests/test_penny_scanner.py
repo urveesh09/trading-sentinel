@@ -124,6 +124,24 @@ def _read_csv_rows(path):
 
 # ---- tests ------------------------------------------------------------
 
+
+def test_smart_shadow_flag_reuses_provider_inputs_and_failure_isolated(
+    tmp_paths, fake_kite, fake_universe, monkeypatch,
+):
+    from config import settings
+    import penny_smart_shadow
+    observer=AsyncMock(side_effect=RuntimeError('paper store unavailable'))
+    monkeypatch.setattr(penny_smart_shadow,'observe_smart_shadow',observer)
+    monkeypatch.setattr(settings,'PENNY_SMART_SHADOW_ENABLED',False)
+    asyncio.run(_run_scanner_with(tmp_paths,fake_kite,fake_universe))
+    observer.assert_not_awaited()
+    counts=(fake_kite.get_intraday.await_count,fake_kite.get_historical.await_count,fake_kite.get_quote.await_count)
+    fake_kite.get_intraday.reset_mock();fake_kite.get_historical.reset_mock();fake_kite.get_quote.reset_mock()
+    monkeypatch.setattr(settings,'PENNY_SMART_SHADOW_ENABLED',True)
+    asyncio.run(_run_scanner_with(tmp_paths,fake_kite,fake_universe))
+    observer.assert_awaited_once()
+    assert counts==(fake_kite.get_intraday.await_count,fake_kite.get_historical.await_count,fake_kite.get_quote.await_count)
+
 @pytest.mark.parametrize("hour,minute", [(9, 15), (10, 29), (14, 30), (15, 30)])
 def test_scanner_skips_guaranteed_rejects_outside_entry_window(
     tmp_paths, fake_kite, fake_universe, hour, minute,
