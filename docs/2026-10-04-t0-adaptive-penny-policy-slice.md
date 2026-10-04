@@ -48,8 +48,9 @@ and any deployment remain open.
 
 The prototype is implemented as `adaptive_penny_policy.py` with no runtime or
 I/O imports. It contains the persistent Penny state record, causal completed
-bar contract, frozen-anchor continuation/retest candidate logic, explicit
-execution confirmations and bounded pre-entry sizing. The setup's
+bar contract, a watch derived only from visible prior bars, frozen-anchor
+continuation/retest candidate logic, explicit execution confirmations and
+bounded pre-entry sizing. The setup's
 `baseline_status` is recorded but never used as an eligibility prerequisite,
 so a mechanically defined baseline-rejected setup can be represented without
 weakening any shipped policy.
@@ -60,9 +61,9 @@ Focused verification:
 python-engine\winvenv\Scripts\python.exe -m pytest python-engine\tests\test_adaptive_penny_policy.py python-engine\tests\test_non_fno_research.py python-engine\tests\test_penny_lifecycle_replay.py python-engine\tests\test_penny_engine_breakout.py python-engine\tests\test_penny_risk.py -q
 ```
 
-Result: `75 passed`. `py_compile` and `git diff --check` passed. The shared
+Result: `76 passed`. `py_compile` and `git diff --check` passed. The shared
 atlas was regenerated against the current Dev tree and now indexes 242 Python
 modules; it remains unstaged because it also contains the existing independent
 review changes that this slice must not absorb. Commit identity is added after
-the isolated source commit. Source commit: `b08c934`. Dev only; no broker
-action, push or deployment.
+the isolated source commits. Source commits: `b08c934`, `fab80c6`. Dev only;
+no broker action, push or deployment.
