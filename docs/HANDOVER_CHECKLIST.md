@@ -1,5 +1,14 @@
 # Handover receipt and operator checklist
 
+## October 4 — Momentum direct trading + round-3 candidates (Dev only)
+
+- [x] Gateway shared Momentum execution path + auto route (default OFF) + agent wiring.
+- [x] Momentum `MOM_SELECTIVE` / `RUNNER_EXIT`, Penny `PEN_NOISE_STOP(_BE)`, Kite history tool,
+  parallel study runner, [module testing guide](MODULE_TESTING_GUIDE.md).
+- [ ] Kite data (owner login) → freeze → score `momentum-smart-t3`, `penny-noise-t3`.
+- [ ] Owner: set `MOMENTUM_AUTO_EXECUTE=true` only after promotion and a passing study.
+- Not pushed, not deployed.
+
 ## October 4 — SENSEX/NIFTY future-candle recording (Dev only)
 
 - [x] `research_future_candles` job (15:40 IST) + exporter includes SENSEX futures.

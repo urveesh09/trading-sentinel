@@ -41,6 +41,13 @@ const configSchema = z.object({
   MOMENTUM_MIN_STOP_PCT: z.coerce.number().positive().default(0.012),
   MOMENTUM_MIN_STOP_ATR_MULT: z.coerce.number().nonnegative().default(0.35),
 
+  // [MOMENTUM-AUTO 2026-10-04] When true, an engine-accepted Momentum signal is
+  // executed without a Telegram tap (POST /api/internal/momentum-auto-execute),
+  // through the same lock, snapshot and executor checks as the EM button.
+  // Strict parse: z.coerce.boolean() would read the string "false" as true.
+  MOMENTUM_AUTO_EXECUTE: z.enum(['true', 'false', '1', '0']).default('false')
+    .transform((value) => value === 'true' || value === '1'),
+
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100)

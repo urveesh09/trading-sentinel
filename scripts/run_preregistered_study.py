@@ -28,6 +28,7 @@ sys.path.insert(0, str(ROOT / "python-engine"))
 from backtest_cli import _atomic_json_new, run as run_backtest, verify_snapshot  # noqa: E402
 
 YAHOO = ROOT / "docs/research/yahoo"
+KITE = ROOT / "docs/research/kite"
 REVIEW = YAHOO / "2026-10-04-q3-review-final/_local"
 Q3_SNAPSHOT = YAHOO / "2026-10-04-q3-review-baseline/_local/validated-yahoo.sqlite"
 COMMON_SOURCES = ("python-engine/config.py", "python-engine/backtest_lab.py", "scripts/run_preregistered_study.py")
@@ -137,6 +138,39 @@ STUDIES: dict[str, Study] = {
         drawdown_key="max_drawdown", drawdown_floor=50.0, metrics="trades",
         hypothesis="A thesis exit (T1 half, breakeven, trail, VWAP failure, stall) beats shipped Momentum exits "
                    "at identical executable next-bar entries."),
+    # Round 3 (declared 2026-10-04). Untouched data: Kite history Jan–Jul 2026,
+    # never used by any study (scripts/acquire_kite_history.py). Development was
+    # the seen Yahoo windows (docs/2026-10-04-momentum-penny-smarter-slice.md).
+    "momentum-smart-t3": Study(
+        strategy="momentum_intraday_15m_replay",
+        snapshot=KITE / "2026-10-05-momentum-h1/_local/validated-kite.sqlite",
+        base_config=lambda: {**_config_from("momentum-recent-diagnostic-report.json", entry_clock="NEXT_BAR_OPEN")(),
+                             "index_ticker": "NIFTY 50"},
+        sources=("python-engine/momentum_replay.py", "python-engine/momentum_selective.py",
+                 "python-engine/momentum_exits.py", "python-engine/engine.py", "python-engine/momentum_shadow.py"),
+        windows={"untouched": (("2026-01-01", "2026-07-31"),)},
+        arms={"BASELINE": {"variants": ["MOM_BASE"], "exit_model": "LIVE_EXIT_LIFECYCLE"},
+              "MOM_SELECTIVE": {"variants": ["MOM_SELECTIVE"], "exit_model": "LIVE_EXIT_LIFECYCLE"},
+              "MOM_SELECTIVE_RUNNER": {"variants": ["MOM_SELECTIVE"], "exit_model": "RUNNER_EXIT"}},
+        books={"paper_50k": {"bankroll": 50000.0, "momentum_pool": 50000.0}},
+        decision_book="paper_50k", candidate="MOM_SELECTIVE", decision_window="untouched",
+        drawdown_key="max_drawdown", drawdown_floor=1000.0, metrics="trades",
+        hypothesis="Taking shipped Momentum signals only when NIFTY is up, the stock leads NIFTY by >=0.3% "
+                   "and trades above yesterday's high beats the shipped Momentum book (shipped exits). "
+                   "MOM_SELECTIVE_RUNNER (runner exit) is attribution: on development the runner exit lost "
+                   "more than the shipped exits on shipped entries."),
+    "penny-noise-t3": Study(
+        strategy="penny_breakout_mis_lifecycle_1m",
+        snapshot=KITE / "2026-10-05-penny-h1/_local/validated-kite.sqlite",
+        base_config=_config_from("penny-mis-recent-diagnostic-gap-sensitivity-report.json"),
+        sources=("python-engine/penny_lifecycle_replay.py", "python-engine/penny_engine_breakout.py",
+                 "python-engine/penny_risk.py", "python-engine/penny_shadow.py", "python-engine/cost_schedules.py"),
+        windows={"untouched": (("2026-01-01", "2026-07-31"),)},
+        arms={name: {"candidate_policy": name} for name in ("BASELINE", "PEN_NOISE_STOP", "PEN_NOISE_STOP_BE")},
+        candidate="PEN_NOISE_STOP", decision_window="untouched",
+        drawdown_key="max_drawdown", drawdown_floor=50.0, metrics="trades",
+        hypothesis="Moving the shipped Penny stop out of one-minute noise (>=1.5% and >=Rs0.03 under entry, "
+                   "same rupee risk) beats the shipped breakout-bar-low stop; _BE adds breakeven at +1R."),
 }
 
 
@@ -247,7 +281,13 @@ def freeze(name: str, out: Path) -> None:
     print("frozen:", out / "freeze.json")
 
 
-def run(name: str, out: Path) -> None:
+def _execute_task(task: tuple) -> dict:
+    """Process-pool entry point: one (window range, book, arm) score."""
+    name, frozen, start, end, overrides, target = task
+    return _execute(STUDIES[name], frozen, start, end, overrides, Path(target))
+
+
+def run(name: str, out: Path, jobs: int = 1) -> None:
     study = STUDIES[name]
     frozen = json.loads((out / "freeze.json").read_text())
     if frozen["study"] != name or frozen["bound"] != _bound(study):
@@ -255,18 +295,34 @@ def run(name: str, out: Path) -> None:
     local = out / "_local"
     local.mkdir(exist_ok=True)
     combine = {"trades": _trade_metrics, "portfolio": _portfolio_metrics, "fno": _fno_metrics}[study.metrics]
-    results: dict = {}
+    tasks = {}
     for window, ranges in study.windows.items():
         for book, book_overrides in study.books.items():
             for arm, arm_overrides in study.arms.items():
-                reports = []
                 for start, end in ranges:
                     target = local / f"{window}-{book}-{arm.lower()}-{start}.json"
                     if target.exists():
                         raise SystemExit(f"{target} exists; a frozen window is scored once")
-                    report = _execute(study, frozen, start, end, {**book_overrides, **arm_overrides}, target)
+                    tasks[(window, book, arm, start)] = (name, frozen, start, end,
+                                                         {**book_overrides, **arm_overrides}, str(target))
+    # Every score is independent and writes its own report, so they may run in
+    # parallel; results are combined in the declared order either way.
+    if jobs > 1:
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(max_workers=jobs) as pool:
+            reports_by_task = dict(zip(tasks, pool.map(_execute_task, tasks.values())))
+    else:
+        reports_by_task = {key: _execute_task(task) for key, task in tasks.items()}
+    results: dict = {}
+    for window, ranges in study.windows.items():
+        for book in study.books:
+            for arm in study.arms:
+                reports = []
+                for start, _ in ranges:
+                    report = reports_by_task[(window, book, arm, start)]
                     if report.get("state") != "SUCCEEDED":
-                        raise SystemExit(f"{target.name}: {report.get('state')} {report.get('reason') or report.get('error')}")
+                        raise SystemExit(f"{window}-{book}-{arm}-{start}: {report.get('state')} "
+                                         f"{report.get('reason') or report.get('error')}")
                     reports.append(report)
                 metrics = combine(reports)
                 results.setdefault(window, {}).setdefault(book, {})[arm] = metrics
@@ -284,6 +340,7 @@ def main() -> None:
     cli.add_argument("action", choices=("list", "freeze", "run"))
     cli.add_argument("study", nargs="?", choices=sorted(STUDIES))
     cli.add_argument("--out", type=Path)
+    cli.add_argument("--jobs", type=int, default=1, help="run: score independent arms in parallel processes")
     args = cli.parse_args()
     if args.action == "list":
         for name, study in STUDIES.items():
@@ -291,7 +348,10 @@ def main() -> None:
         return
     if not args.study or not args.out:
         cli.error("freeze/run need STUDY and --out")
-    (freeze if args.action == "freeze" else run)(args.study, args.out.resolve())
+    if args.action == "freeze":
+        freeze(args.study, args.out.resolve())
+    else:
+        run(args.study, args.out.resolve(), max(1, args.jobs))
 
 
 if __name__ == "__main__":

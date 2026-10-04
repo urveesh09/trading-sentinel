@@ -10,6 +10,9 @@ const logger = require('pino')();
 // the J.6 sessionPhase mirror; result is one of the 10
 // documented bounded phases.
 const { stampSessionPhaseForSignal } = require('../utils/market-hours');
+const config = require('../config');
+const { entrySessionVerdict } = require('../services/cas-eligibility');
+const { executeMomentum } = require('../services/momentum-execution');
 
 const notifySchema = z.object({
   message: z.string().min(1)
@@ -85,6 +88,52 @@ router.post('/register-signal', requireInternalSecret, validate(registerSignalSc
       signal_id, ticker, action
     });
     res.json({ success: true, registered });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// [MOMENTUM-AUTO 2026-10-04] POST /api/internal/momentum-auto-execute
+// Auth: X-Internal-Secret header. Body: { signal_id: 'TICKER_MOM' }
+//
+// Executes a registered Momentum snapshot without a Telegram tap when
+// MOMENTUM_AUTO_EXECUTE is on. Same path as the EM button
+// (services/momentum-execution.js); never re-fetches live engine data.
+// Always 200 with an explicit outcome so the caller can word its alert.
+const autoExecuteSchema = z.object({
+  signal_id: z.string().min(1).max(40).regex(/_MOM$/)
+});
+
+router.post('/momentum-auto-execute', requireInternalSecret, validate(autoExecuteSchema, 'body'), async (req, res, next) => {
+  try {
+    const { signal_id } = req.body;
+    if (!config.MOMENTUM_AUTO_EXECUTE) {
+      return res.json({ executed: false, outcome: 'DISABLED', reason: 'auto_execute_disabled' });
+    }
+    const cleanId = signal_id.replace(/_MOM$/, '');
+    const verdict = await entrySessionVerdict(cleanId, new Date());
+    if (!verdict.allowed) {
+      return res.json({ executed: false, outcome: 'SESSION_BLOCKED',
+                        reason: verdict.reason || `market_${verdict.phase}` });
+    }
+    const result = await executeMomentum({ signalId: signal_id, cleanId, allowLiveFetch: false });
+    logger.info({ event_type: 'momentum_auto_execute', signal_id, outcome: result.outcome, held: !!result.held });
+    if (result.outcome === 'EXECUTED') {
+      return res.json({ executed: true, outcome: 'EXECUTED', order_id: result.result.orderId,
+                        fill_price: result.result.fillPrice, shares: result.result.shares,
+                        stop_loss: result.result.stop_loss });
+    }
+    if (result.outcome === 'LOCKED') {
+      return res.json({ executed: false, outcome: 'LOCKED', reason: `already_${String(result.status).toLowerCase()}` });
+    }
+    if (result.held) {
+      // Independent of the caller: an unprotected or unknown position pages now.
+      await telegram.sendAlert(`❌ Momentum AUTO buy FAILED for ${cleanId}:
+${result.error.message}
+
+Outcome locked for broker reconciliation. Do NOT retry.`);
+    }
+    return res.json({ executed: false, outcome: 'FAILED', held: !!result.held, reason: result.error.message });
   } catch (err) {
     next(err);
   }

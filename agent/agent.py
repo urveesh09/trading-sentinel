@@ -1940,8 +1940,13 @@ def send_momentum_telegram_alert(
     # momentum list lives only in memory -- a restart wipes it and the press
     # then dies with "Momentum signal not found in Engine state". This row is
     # on disk and survives that.
-    register_approved_snapshot(sig_id, ticker, "EM", signal)
+    registered = register_approved_snapshot(sig_id, ticker, "EM", signal)
 
+    # [MOMENTUM-AUTO 2026-10-04] Direct trading: the gateway executes the
+    # registered snapshot through the EM button's own path when its
+    # MOMENTUM_AUTO_EXECUTE is on (it answers DISABLED otherwise).
+    auto = request_momentum_auto_execute(sig_id) if registered else None
+    text += momentum_auto_execute_note(auto)
     keyboard = {
         "inline_keyboard": [[
             {"text": "✅ EXECUTE INTRADAY",
@@ -1950,18 +1955,62 @@ def send_momentum_telegram_alert(
              "callback_data": f"REJ:{sig_id}:{ts}"}
         ]]
     }
-    payload = {
-        "chat_id":      TELEGRAM_CHAT_ID,
-        "text":         text,
-        "reply_markup": json.dumps(keyboard)
-    }
+    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text}
+    if momentum_buttons_needed(auto):
+        payload["reply_markup"] = json.dumps(keyboard)
     try:
         res = requests.post(url, json=payload, timeout=10)
         res.raise_for_status()
         logger.info(f"Momentum Telegram sent: {ticker}")
     except Exception as e:
         _raise_redacted_delivery_error(ticker, e)
-    _register_pending_completion(res, review, completion_key, text, payload["reply_markup"], ts)
+    if "reply_markup" in payload:
+        _register_pending_completion(res, review, completion_key, text, payload["reply_markup"], ts)
+
+
+def request_momentum_auto_execute(sig_id: str) -> Optional[Dict]:
+    """Ask the gateway to execute a registered Momentum snapshot now.
+
+    Returns the gateway's outcome, or None when the request itself failed --
+    the alert then falls back to the manual EXEC button, never to a retry.
+    """
+    try:
+        resp = requests.post(
+            f"{NODE_GATEWAY_URL}/api/internal/momentum-auto-execute",
+            json={"signal_id": sig_id},
+            headers={"X-Internal-Secret": INTERNAL_API_SECRET},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        body = resp.json()
+    except Exception as e:
+        # Type only: exception text can carry request URLs.
+        logger.error(f"Momentum auto-execute request failed for {sig_id}: {type(e).__name__}")
+        return None
+    # Anything but a JSON object is treated as "not executed" (manual buttons).
+    return body if isinstance(body, dict) else None
+
+
+def momentum_auto_execute_note(auto: Optional[Dict]) -> str:
+    """Alert suffix describing what automatic execution did (empty when off)."""
+    if not auto or auto.get("outcome") == "DISABLED":
+        return ""
+    if auto.get("executed"):
+        return (f"\n\n⚡ AUTO-EXECUTED (MIS): order {auto.get('order_id')} | "
+                f"fill Rs{auto.get('fill_price')} | {auto.get('shares')} sh | SL Rs{auto.get('stop_loss')}")
+    if auto.get("held"):
+        return ("\n\n❌ AUTO-EXECUTION outcome locked for broker reconciliation: "
+                f"{auto.get('reason')}. Do NOT retry.")
+    return f"\n\nAuto-execution did not run: {auto.get('reason')}."
+
+
+def momentum_buttons_needed(auto: Optional[Dict]) -> bool:
+    """Offer the manual buttons only when automatic execution left the signal open."""
+    if not auto:
+        return True
+    if auto.get("executed") or auto.get("held"):
+        return False
+    return auto.get("outcome") != "LOCKED"
 
 
 def _register_pending_completion(res, review: "Review", completion_key: Optional[str],

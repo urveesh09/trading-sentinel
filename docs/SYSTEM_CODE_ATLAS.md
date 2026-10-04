@@ -16,7 +16,7 @@ Related tests: `agent/tests/test_advisory.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_usable_classifications` (line 148), `_effective_classification_expiry` (line 167), `_attach_classification_context` (line 186), `_attach_provenance` (line 225), `register_approved_snapshot` (line 304), `_build_classifier_client` (line 350), `_today_str` (line 404), `_load_dedup_state` (line 409), `_save_dedup_state` (line 460), `mark_processed` (line 475), `clear_memory` (line 481), `touch_heartbeat` (line 498), `_is_market_hours` (line 525), `read_scheduler_tick_age` (line 536), `check_engine_liveness` (line 548), `SignalOutput` (line 586), `NewsItem` (line 602), `fetch_signals` (line 617), `fetch_rss_feed` (line 644), `fetch_news_items` (line 661), `_parse_rss_pubdate` (line 724), `_hostname_from_url` (line 747), `_age_label` (line 757), `_fetch_news_bundle_for_ticker` (line 792), `_render_news_bundle` (line 820), `scrape_sentiment` (line 844), `_extract_json_object` (line 861), `_fetch_news_items_for_ticker` (line 915), `_maybe_classify_news` (line 928), `_collect_news_context` (line 981), `_render_classified_section` (line 1014), `analyze_with_minimax` (line 1058), `_optional_review_key` (line 1401), `_get_optional_ai_queue` (line 1429), `optional_ai_status` (line 1449), `publish_optional_ai_status` (line 1495), `queue_optional_ai_review` (line 1515), `queue_optional_ai_review_with_key` (line 1527), `_review_completion_tracker` (line 1591), `_completion_annotation` (line 1599), `_edit_telegram_message` (line 1612), `deliver_review_completions` (line 1640), `send_telegram_alert` (line 1653), `system_health_check` (line 1702), `run_momentum_pipeline` (line 1731), `send_conviction_veto_notice` (line 1846), `send_momentum_telegram_alert` (line 1864), `_register_pending_completion` (line 1967), `_raise_redacted_delivery_error` (line 1984), `run_pipeline` (line 2002), `main` (line 2063)
+Top-level declarations: `_usable_classifications` (line 148), `_effective_classification_expiry` (line 167), `_attach_classification_context` (line 186), `_attach_provenance` (line 225), `register_approved_snapshot` (line 304), `_build_classifier_client` (line 350), `_today_str` (line 404), `_load_dedup_state` (line 409), `_save_dedup_state` (line 460), `mark_processed` (line 475), `clear_memory` (line 481), `touch_heartbeat` (line 498), `_is_market_hours` (line 525), `read_scheduler_tick_age` (line 536), `check_engine_liveness` (line 548), `SignalOutput` (line 586), `NewsItem` (line 602), `fetch_signals` (line 617), `fetch_rss_feed` (line 644), `fetch_news_items` (line 661), `_parse_rss_pubdate` (line 724), `_hostname_from_url` (line 747), `_age_label` (line 757), `_fetch_news_bundle_for_ticker` (line 792), `_render_news_bundle` (line 820), `scrape_sentiment` (line 844), `_extract_json_object` (line 861), `_fetch_news_items_for_ticker` (line 915), `_maybe_classify_news` (line 928), `_collect_news_context` (line 981), `_render_classified_section` (line 1014), `analyze_with_minimax` (line 1058), `_optional_review_key` (line 1401), `_get_optional_ai_queue` (line 1429), `optional_ai_status` (line 1449), `publish_optional_ai_status` (line 1495), `queue_optional_ai_review` (line 1515), `queue_optional_ai_review_with_key` (line 1527), `_review_completion_tracker` (line 1591), `_completion_annotation` (line 1599), `_edit_telegram_message` (line 1612), `deliver_review_completions` (line 1640), `send_telegram_alert` (line 1653), `system_health_check` (line 1702), `run_momentum_pipeline` (line 1731), `send_conviction_veto_notice` (line 1846), `send_momentum_telegram_alert` (line 1864), `request_momentum_auto_execute` (line 1971), `momentum_auto_execute_note` (line 1994), `momentum_buttons_needed` (line 2007), `_register_pending_completion` (line 2016), `_raise_redacted_delivery_error` (line 2033), `run_pipeline` (line 2051), `main` (line 2112)
 
 Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_schedule.py`, `agent/tests/test_agent_watchdog.py`
 
@@ -148,7 +148,7 @@ Related tests: `python-engine/tests/test_backtest_cli.py`
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `RangeReversionEvaluatorAdapter` (line 447), `DailyPortfolioAdapter` (line 534), `EdgePortfolioReplayAdapter` (line 620), `RangePortfolioReplayAdapter` (line 666), `SwingPortfolioReplayAdapter` (line 697), `PennyDailyProxyAdapter` (line 734), `PennyWalkForwardConfig` (line 830), `PennyDailyProxyWalkForwardAdapter` (line 861), `_ticker_list` (line 1049), `_write_replay_cache` (line 1058), `PennyMinuteReplayAdapter` (line 1078), `PennyMisLifecycleAdapter` (line 1180), `PennyCncConnorsLifecycleAdapter` (line 1287), `PennyJointPortfolioAdapter` (line 1371), `Momentum15MinuteReplayAdapter` (line 1454), `FnoUnavailableAdapter` (line 1554), `init_backtest_lab_db` (line 1589), `_validate_dates` (line 1663), `list_strategies` (line 1674), `submit_run` (line 1714), `_run_background` (line 1750), `_row_to_run` (line 1786), `list_runs` (line 1811), `get_run` (line 1830)
+Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `RangeReversionEvaluatorAdapter` (line 447), `DailyPortfolioAdapter` (line 534), `EdgePortfolioReplayAdapter` (line 620), `RangePortfolioReplayAdapter` (line 666), `SwingPortfolioReplayAdapter` (line 697), `PennyDailyProxyAdapter` (line 734), `PennyWalkForwardConfig` (line 830), `PennyDailyProxyWalkForwardAdapter` (line 861), `_ticker_list` (line 1049), `_write_replay_cache` (line 1058), `PennyMinuteReplayAdapter` (line 1078), `PennyMisLifecycleAdapter` (line 1180), `PennyCncConnorsLifecycleAdapter` (line 1288), `PennyJointPortfolioAdapter` (line 1372), `Momentum15MinuteReplayAdapter` (line 1455), `FnoUnavailableAdapter` (line 1560), `init_backtest_lab_db` (line 1595), `_validate_dates` (line 1669), `list_strategies` (line 1680), `submit_run` (line 1720), `_run_background` (line 1756), `_row_to_run` (line 1792), `list_runs` (line 1817), `get_run` (line 1836)
 
 Engine dependencies: `backtest`, `daily_portfolio`, `edge_portfolio_replay`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `portfolio_parity`, `range_portfolio_replay`, `range_reversion`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `swing_portfolio_replay`, `walk_forward`
 
@@ -1188,11 +1188,19 @@ Top-level declarations: `PathEnvelopeError` (line 23), `encode_path_quote_envelo
 
 Decision-grade, broker-free replay of the production 15-minute Momentum evaluator. The module is intentionally library-only: it has no API, scheduler, broker, order, or persistence side effects. Cache access is SQLite read-only and fails closed on ambiguous intraday provenance.
 
-Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 58), `_settings_snapshot` (line 101), `_read_cache` (line 119), `_validate_frame` (line 189), `_daily_frame` (line 212), `_volume_threshold` (line 220), `_exit` (line 227), `_costs` (line 245), `_simulate` (line 257), `_multi_order_costs` (line 289), `_simulate_live_exit_lifecycle` (line 313), `_finish_lifecycle` (line 421), `_simulate_thesis_exit` (line 441), `_next_bar_entry` (line 522), `_summary` (line 548), `chronological_oos` (line 570), `run_momentum_replay` (line 613)
+Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 67), `_settings_snapshot` (line 119), `_read_cache` (line 137), `_validate_frame` (line 210), `_daily_frame` (line 233), `_volume_threshold` (line 241), `_exit` (line 248), `_costs` (line 266), `_simulate` (line 278), `_multi_order_costs` (line 310), `_simulate_live_exit_lifecycle` (line 334), `_finish_lifecycle` (line 442), `_simulate_thesis_exit` (line 462), `_simulate_runner_exit` (line 543), `_next_bar_entry` (line 605), `_summary` (line 631), `chronological_oos` (line 653), `run_momentum_replay` (line 696)
 
-Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `momentum_shadow`
+Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `momentum_selective`, `momentum_shadow`
 
 Related tests: `python-engine/tests/test_momentum_replay.py`
+
+## `python-engine/momentum_selective.py`
+
+Selective Momentum: take a shipped Momentum signal only when the context agrees. Pure (no I/O), shared by the research replay and, once promoted, the live scanner. A smart intraday trader does not buy every VWAP reclaim: the development evidence (Aug–Oct 2026, docs/2026-10-04-momentum-penny-smarter-slice.md) showed ordinary breakouts on 15-minute bars do not beat costs. This gate keeps only breakouts that line up with three classic conditions: * the market is up on the day (NIFTY 50 above its session open), * the stock is clearly stronger than the market since the open (relative strength >= ``min_relative_strength``), * the stock is through yesterday's high (a real breakout, not a bounce). E
+
+Top-level declarations: `SelectivePolicy` (line 27), `_session_return` (line 36), `selective_gate` (line 45)
+
+Related tests: `python-engine/tests/test_momentum_selective.py`
 
 ## `python-engine/momentum_shadow.py`
 
@@ -1690,7 +1698,7 @@ Related tests: `python-engine/tests/test_penny_intraday_replay.py`
 
 [B2 2026-10-03] Exact classic Penny MIS breakout lifecycle replay (offline). Replays the shipped classic Penny MIS book over B1-validated minute bars, calling the same functions the runtime calls, in the runtime's order: * entry: ``PennyScanner._evaluate_ticker_breakout`` input construction -> ``evaluate_breakout_entry`` (with a real ``PennyRiskEngine`` for sizing) -> per-ticker reservation and MIS capacity -> ``PennyExecutor.execute_entry`` drift / stop-breach checks -> fill at the LTP; * exits: the 60-second paper LTP stop monitor (``PENNY_PAPER``) or a broker stop (``PENNY``), the 14:30 ``run_penny_eod_check`` branch order (``time_stop_triggered`` then ``smart_eod_check``) and the 15:00 `
 
-Top-level declarations: `trader_policy` (line 52), `reject_code` (line 96), `PennyLifecycleConfig` (line 106), `settings_snapshot` (line 128), `_TickerDay` (line 157), `_aware` (line 202), `_round` (line 206), `_Replay` (line 210), `_summary` (line 770), `_trader_breakdown` (line 820), `run_penny_lifecycle` (line 836)
+Top-level declarations: `noise_floored_decision` (line 59), `trader_policy` (line 77), `reject_code` (line 121), `PennyLifecycleConfig` (line 131), `settings_snapshot` (line 153), `_TickerDay` (line 182), `_aware` (line 227), `_round` (line 231), `_Replay` (line 235), `_summary` (line 811), `_trader_breakdown` (line 861), `run_penny_lifecycle` (line 877)
 
 Engine dependencies: `adaptive_penny_policy`, `config`, `non_fno_research`, `penny_engine_breakout`, `penny_executor`, `penny_models`, `penny_risk`, `penny_shadow`, `research_data_contracts`
 
@@ -2340,7 +2348,7 @@ Dependencies: none extracted
 
 ## `node-gateway/server/index.js`
 
-Dependencies: `./app`, `./config`, `./db/index`, `./middleware/logger`, `./services/cas-eligibility`, `./services/executor`, `./services/telegram`, `./services/token-restore`, `./utils/market-hours`, `http`
+Dependencies: `./app`, `./config`, `./db/index`, `./middleware/logger`, `./services/approved-snapshots`, `./services/cas-eligibility`, `./services/executor`, `./services/momentum-execution`, `./services/telegram`, `./services/token-restore`, `./utils/market-hours`, `http`
 
 ## `node-gateway/server/jest.config.js`
 
@@ -2380,9 +2388,9 @@ Local routes: `GET /`
 
 ## `node-gateway/server/routes/internal.js`
 
-Dependencies: `../db`, `../middleware/auth`, `../middleware/validate`, `../services/telegram`, `../utils/market-hours`, `express`, `pino`, `zod`
+Dependencies: `../config`, `../db`, `../middleware/auth`, `../middleware/validate`, `../services/cas-eligibility`, `../services/momentum-execution`, `../services/telegram`, `../utils/market-hours`, `express`, `pino`, `zod`
 
-Local routes: `POST /notify`, `POST /register-signal`
+Local routes: `POST /notify`, `POST /register-signal`, `POST /momentum-auto-execute`
 
 ## `node-gateway/server/routes/orders.js`
 
@@ -2416,6 +2424,10 @@ Dependencies: `../services/backlog-reconciliation`, `better-sqlite3`, `fs`
 
 Dependencies: `../config`, `better-sqlite3`, `path`
 
+## `node-gateway/server/services/approved-snapshots.js`
+
+Dependencies: `../db/index`, `../middleware/logger`
+
 ## `node-gateway/server/services/backlog-reconciliation.js`
 
 Dependencies: `crypto`, `fs`
@@ -2436,6 +2448,10 @@ Dependencies: `../middleware/logger`, `fs`, `path`
 ## `node-gateway/server/services/kite.js`
 
 Dependencies: `../config`, `../middleware/logger`, `../utils/errors`, `./halt-switch`, `./telegram`, `./token-store`, `axios`, `kiteconnect`
+
+## `node-gateway/server/services/momentum-execution.js`
+
+Dependencies: `../config`, `../db/index`, `../middleware/logger`, `./approved-snapshots`, `./executor`
 
 ## `node-gateway/server/services/risk-geometry.js`
 

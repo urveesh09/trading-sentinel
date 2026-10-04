@@ -1007,3 +1007,42 @@ class TestSendTelegramAlert:
         assert "AI conviction is low" in payload["text"]
         assert "manual review" in payload["text"]
         assert "reply_markup" in payload
+
+
+class TestMomentumAutoExecute:
+    """[MOMENTUM-AUTO 2026-10-04] The alert reflects what the gateway did."""
+
+    SIGNAL = {"ticker": "GRAVITA", "close": 1823.7, "target_1": 1864.2,
+              "stop_loss": 1798.38, "vwap": 1817.9, "cost_ratio": 0.0042}
+
+    def _send(self, agent_mod, gateway_body):
+        def post(url, **kwargs):
+            response = MagicMock(raise_for_status=MagicMock())
+            response.json.return_value = gateway_body if "momentum-auto-execute" in url else {}
+            return response
+        with patch.object(agent_mod, "register_approved_snapshot", return_value=True), \
+             patch("requests.post", side_effect=post) as mock_post:
+            agent_mod.send_momentum_telegram_alert(self.SIGNAL, _review({"conviction_score": 80}), 5000)
+        urls = [c.args[0] for c in mock_post.call_args_list]
+        return urls, mock_post.call_args_list[-1].kwargs["json"]
+
+    def test_auto_executed_alert_has_no_buttons(self, agent_mod):
+        urls, payload = self._send(agent_mod, {"executed": True, "outcome": "EXECUTED", "order_id": "OID1",
+                                               "fill_price": 1824.1, "shares": 2, "stop_loss": 1800.0})
+        assert urls[0].endswith("/api/internal/momentum-auto-execute")
+        assert "AUTO-EXECUTED (MIS): order OID1" in payload["text"]
+        assert "reply_markup" not in payload
+
+    def test_disabled_keeps_the_manual_buttons_and_text(self, agent_mod):
+        _, payload = self._send(agent_mod, {"executed": False, "outcome": "DISABLED"})
+        assert "AUTO" not in payload["text"] and "reply_markup" in payload
+
+    def test_held_outcome_warns_and_offers_no_retry(self, agent_mod):
+        _, payload = self._send(agent_mod, {"executed": False, "outcome": "FAILED", "held": True,
+                                            "reason": "stop and unwind failed"})
+        assert "Do NOT retry" in payload["text"] and "reply_markup" not in payload
+
+    def test_flat_failure_falls_back_to_the_button(self, agent_mod):
+        _, payload = self._send(agent_mod, {"executed": False, "outcome": "FAILED", "held": False,
+                                            "reason": "LTP drifted"})
+        assert "Auto-execution did not run: LTP drifted" in payload["text"] and "reply_markup" in payload

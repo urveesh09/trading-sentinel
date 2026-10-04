@@ -32,15 +32,20 @@ class ReplayVariant:
     name: str
     crossover_lookback: int
     max_vwap_distance_atr: float | None
+    # MOM_SELECTIVE: a fired shipped signal must also pass
+    # momentum_selective.selective_gate (market up, relative strength,
+    # above yesterday's high) against the index ticker's bars.
+    selective: bool = False
 
 
 VARIANTS: Mapping[str, ReplayVariant] = {
     "MOM_BASE": ReplayVariant("MOM_BASE", 3, None),
     "MOM_RECENCY_5": ReplayVariant("MOM_RECENCY_5", 5, 0.50),
+    "MOM_SELECTIVE": ReplayVariant("MOM_SELECTIVE", 3, None, selective=True),
 }
 
 
-EXIT_MODELS = ("TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE", "THESIS_EXIT")
+EXIT_MODELS = ("TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE", "THESIS_EXIT", "RUNNER_EXIT")
 ENTRY_CLOCKS = ("ACCEPTED_CLOSE", "NEXT_BAR_OPEN")
 # MOM_THESIS_EXIT (declared before scoring): half at T1 when two or more shares
 # remain, breakeven after a +1R close, trail one R under the highest close once
@@ -52,6 +57,10 @@ THESIS_TRAIL_R = 1.0
 THESIS_VWAP_FAIL_CLOSES = 2
 THESIS_STALL_BARS = 4
 THESIS_STALL_MFE_R = 0.5
+# RUNNER_EXIT (declared before scoring): no fixed target and no clock stop; the
+# initial stop holds until a bar closes at +1R, then the stop moves to entry
+# and trails under each completed bar's low; square-off at the deadline.
+RUNNER_BREAKEVEN_R = 1.0
 
 
 @dataclass(frozen=True)
@@ -79,6 +88,9 @@ class MomentumReplayConfig:
     # the decision's rupee risk.
     entry_clock: str = "ACCEPTED_CLOSE"
     oos_folds: int = 3
+    # Index bars (same intraday_cache, same interval) read only when a
+    # selective variant runs; never traded.
+    index_ticker: str = "NIFTY 50"
 
     def __post_init__(self):
         if self.bankroll <= 0 or self.momentum_pool <= 0:
@@ -96,6 +108,12 @@ class MomentumReplayConfig:
         if self.entry_clock not in ENTRY_CLOCKS:
             raise ValueError(f"entry_clock must be one of {ENTRY_CLOCKS}")
         Regime[self.regime]
+        if not isinstance(self.index_ticker, str) or not self.index_ticker.strip():
+            raise ValueError("index_ticker must be a non-empty string")
+
+    @property
+    def needs_index(self) -> bool:
+        return any(VARIANTS[name].selective for name in self.variants)
 
 
 def _settings_snapshot() -> dict:
@@ -118,6 +136,7 @@ def _settings_snapshot() -> dict:
 
 def _read_cache(
     db_path: str, tickers: Sequence[str] | None, start: str | None, end: str | None,
+    index_ticker: str | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     uri = f"file:{db_path}?mode=ro"
     try:
@@ -139,6 +158,8 @@ def _read_cache(
             clean = tuple(sorted({str(item).strip().upper() for item in tickers if str(item).strip()}))
             if not clean:
                 raise ReplayDataError("ticker filter is empty")
+            if index_ticker:
+                clean = tuple(sorted({*clean, index_ticker.strip().upper()}))
             where.append(f"ticker IN ({','.join('?' for _ in clean)})")
             params.extend(clean)
         if start:
@@ -519,6 +540,68 @@ def _simulate_thesis_exit(candidate: dict, future: pd.DataFrame, execution: dict
                              unresolved_reason, execution)
 
 
+def _simulate_runner_exit(candidate: dict, future: pd.DataFrame, execution: dict) -> dict:
+    """RUNNER_EXIT on completed 15-minute bars (research candidate).
+
+    The decision's target is ignored: winners run until the trailing stop or
+    the square-off. Clock discipline matches the other lifecycles: the resting
+    stop is checked first (gap fills at the open), stop changes decided on a
+    bar's close apply from the next bar, and the deadline bar's open squares off.
+    """
+    decision = candidate["decision"]
+    raw_entry = float(decision["entry_price"])
+    entry = raw_entry * (1 + execution["entry_slippage_bps"] / 10000.0)
+    stop = float(decision["stop_loss"])
+    quantity = int(decision["shares"])
+    if quantity < 1 or not (stop > 0 and entry > stop):
+        raise ReplayDataError("accepted Momentum decision has invalid lifecycle geometry")
+    risk = entry - stop
+    initial_risk = risk * quantity
+    trade = {
+        "variant": candidate["variant"], "ticker": candidate["ticker"],
+        "trading_date": candidate["trading_date"], "entry_bar_ts": candidate["bar_ts"],
+        "raw_entry": raw_entry, "entry_fill": round(entry, 6), "stop_price": stop,
+        "target_price": None, "quantity": quantity, "dataset_fingerprint": candidate["dataset_fingerprint"],
+        "status": "OPEN", "exit_model": "RUNNER_EXIT", "initial_risk": round(initial_risk, 6), "fills": [],
+    }
+    exit_slip = execution["exit_slippage_bps"] / 10000.0
+    armed = False
+    remaining = quantity
+
+    def sell(price: float, reason: str, stamp: pd.Timestamp) -> None:
+        nonlocal remaining
+        trade["fills"].append({"quantity": remaining, "price": round(price * (1 - exit_slip), 6),
+                               "reason": reason, "bar_ts": stamp.isoformat()})
+        remaining = 0
+
+    unresolved_reason = "no_executable_exit_or_square_off_evidence"
+    for stamp, bar in future.iterrows():
+        stamp = pd.Timestamp(stamp)
+        if stamp.date().isoformat() != candidate["trading_date"]:
+            unresolved_reason = "missing_intraday_exit_evidence_before_next_session"
+            break
+        if not math.isfinite(float(bar["volume"])) or float(bar["volume"]) <= 0:
+            continue
+        open_, low, close = float(bar["open"]), float(bar["low"]), float(bar["close"])
+        if (stamp.hour, stamp.minute) >= (execution["time_exit_hour"], execution["time_exit_minute"]):
+            if (stamp.hour, stamp.minute) != (execution["time_exit_hour"], execution["time_exit_minute"]):
+                unresolved_reason = "missing_exact_square_off_bar"
+                break
+            sell(open_, "hard_square_off", stamp)
+            break
+        if open_ <= stop:
+            sell(open_, "stop_gap", stamp)
+            break
+        if low <= stop:
+            sell(stop, "runner_trail_stop" if armed else "stop", stamp)
+            break
+        if not armed and close >= entry + RUNNER_BREAKEVEN_R * risk:
+            armed = True
+        if armed:
+            stop = max(stop, entry, low)
+    return _finish_lifecycle(trade, entry, quantity, initial_risk, remaining, stop, unresolved_reason, execution)
+
+
 def _next_bar_entry(candidate: dict, future: pd.DataFrame) -> tuple[dict, pd.DataFrame, str | None]:
     """Move entry to the next same-session positive-volume bar's open (R3).
 
@@ -621,8 +704,16 @@ def run_momentum_replay(
         normal_volume_threshold=float(settings.MOMENTUM_VOL_SURGE_PCT),
         lunchtime_volume_threshold=float(settings.MOMENTUM_VOL_SURGE_LUNCHTIME),
     )
-    intra_raw, daily, provenance = _read_cache(db_path, tickers, start, end)
+    index_ticker = config.index_ticker.strip().upper() if config.needs_index else None
+    intra_raw, daily, provenance = _read_cache(db_path, tickers, start, end, index_ticker)
     intra = _validate_frame(intra_raw)
+    index_bars = pd.DataFrame()
+    if index_ticker:
+        index_bars = intra[intra["ticker"] == index_ticker]
+        intra = intra[intra["ticker"] != index_ticker]
+        if index_bars.empty:
+            raise ReplayDataError(f"selective variants need {index_ticker} 15-minute bars in the snapshot")
+        index_bars = index_bars.set_index("datetime").sort_index()
     # Retain only daily rows that could be consumed by at least one replay day;
     # neither evaluator input nor the dataset fingerprint includes later history.
     last_replay_day = intra["trading_date"].max()
@@ -642,6 +733,12 @@ def run_momentum_replay(
         config_snapshot["exit_settings"] = {name: getattr(settings, name) for name in exit_names}
         execution["position_lifecycle"] = "shipped_partial_runner_OHLC_diagnostic_not_exact_quote_replay"
         execution["square_off_evidence"] = "positive_volume_exact_deadline_bar_same_session_only"
+    if config.exit_model == "RUNNER_EXIT":
+        config_snapshot["runner_exit"] = {"breakeven_r": RUNNER_BREAKEVEN_R, "trail": "completed_bar_low"}
+        execution["position_lifecycle"] = "MOM_RUNNER_EXIT_OHLC_research_candidate"
+    if any(VARIANTS[name].selective for name in config.variants):
+        from momentum_selective import DEFAULT_POLICY
+        config_snapshot["selective_policy"] = asdict(DEFAULT_POLICY)
     if config.exit_model == "THESIS_EXIT":
         config_snapshot["thesis_exit"] = {
             "breakeven_r": THESIS_BREAKEVEN_R, "trail_start_r": THESIS_TRAIL_START_R, "trail_r": THESIS_TRAIL_R,
@@ -651,6 +748,8 @@ def run_momentum_replay(
     digest = hashlib.sha256()
     digest.update(pd.util.hash_pandas_object(intra, index=True).values.tobytes())
     digest.update(pd.util.hash_pandas_object(daily, index=True).values.tobytes())
+    if not index_bars.empty:
+        digest.update(pd.util.hash_pandas_object(index_bars, index=True).values.tobytes())
     digest.update(json.dumps(config_snapshot, sort_keys=True, separators=(",", ":")).encode())
     fingerprint = f"sha256:{digest.hexdigest()}"
     funnel = {name: {"evaluations": 0, "accepted_prefixes": 0, "distinct_candidates": 0, "rejects": {}} for name in config.variants}
@@ -663,6 +762,8 @@ def run_momentum_replay(
             missing_daily += 1
             continue
         prev_high = float(daily_prior["high"].iloc[-1])
+        index_today = (index_bars[index_bars["trading_date"] == trading_date][["open", "high", "low", "close"]]
+                       if not index_bars.empty else index_bars)
         accepted_variants = set()
         for length in range(1, len(group) + 1):
             prefix = group.iloc[:length][["open", "high", "low", "close", "volume"]].copy()
@@ -679,6 +780,13 @@ def run_momentum_replay(
                     max_vwap_distance_atr=variant.max_vwap_distance_atr,
                 )
                 funnel[name]["evaluations"] += 1
+                if fired and variant.selective:
+                    from momentum_selective import selective_gate
+                    passed, reason, evidence = selective_gate(prefix, index_today, prev_high)
+                    if passed:
+                        decision = {**decision, "selective": evidence}
+                    else:
+                        fired, decision = False, {"reject_reason": f"selective_{reason}"}
                 if fired:
                     funnel[name]["accepted_prefixes"] += 1
                     if name not in accepted_variants:
@@ -696,7 +804,7 @@ def run_momentum_replay(
                     funnel[name]["rejects"][reason] = funnel[name]["rejects"].get(reason, 0) + 1
     trades = []
     runner = {"TARGET_1_PROXY": _simulate, "LIVE_EXIT_LIFECYCLE": _simulate_live_exit_lifecycle,
-              "THESIS_EXIT": _simulate_thesis_exit}[config.exit_model]
+              "THESIS_EXIT": _simulate_thesis_exit, "RUNNER_EXIT": _simulate_runner_exit}[config.exit_model]
     for candidate in candidates:
         future = intra[(intra["ticker"] == candidate["ticker"]) &
                        (intra["datetime"] > pd.Timestamp(candidate["bar_ts"]))].sort_values("datetime")
@@ -713,6 +821,7 @@ def run_momentum_replay(
     coverage = {
         "tickers": int(intra["ticker"].nunique()), "trading_days": int(intra["trading_date"].nunique()),
         "bars": len(intra), "daily_rows": len(daily), "ticker_days_missing_prior_daily": missing_daily,
+        "index_bars": len(index_bars),
         **provenance,
     }
     warnings = [
@@ -720,7 +829,8 @@ def run_momentum_replay(
         "15-minute OHLC cannot reveal intrabar path; simultaneous stop/target resolves stop first.",
         {"TARGET_1_PROXY": "Virtual lifecycle exits the full quantity at T1 and cannot model the production partial-T1 runner/trail.",
          "LIVE_EXIT_LIFECYCLE": "LIVE_EXIT_LIFECYCLE is a shipped-exit OHLC diagnostic, not exact path replay: partial/target order, high-driven ratchets and completed-bar execution clocks remain ambiguous; broker receipts are unavailable.",
-         "THESIS_EXIT": "THESIS_EXIT is a research candidate on completed 15-minute bars: stop first, resting T1 half, close-based thesis decisions, raised stops from the next bar."}[config.exit_model],
+         "THESIS_EXIT": "THESIS_EXIT is a research candidate on completed 15-minute bars: stop first, resting T1 half, close-based thesis decisions, raised stops from the next bar.",
+         "RUNNER_EXIT": "RUNNER_EXIT is a research candidate on completed 15-minute bars: no target, breakeven after a +1R close, trail under completed bar lows from the next bar, square-off at the deadline."}[config.exit_model],
         ("Entries fill at the next positive-volume bar's open, re-sized to the decision's rupee risk."
          if config.entry_clock == "NEXT_BAR_OPEN" else
          "Entries fill at the accepted bar's close (legacy clock retained for archived receipts; not executable before the bar ends)."),

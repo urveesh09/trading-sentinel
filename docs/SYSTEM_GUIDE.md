@@ -1,5 +1,35 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 4 — Momentum direct trading (OFF) and round-3 research candidates (actual behavior, Dev)
+
+[Slice](2026-10-04-momentum-penny-smarter-slice.md).
+
+- **Gateway:** `services/momentum-execution.js` is the only Momentum execution path
+  (per-day lock, approved snapshot, `executor.executeSignal`, armed-fill persistence),
+  used by the Telegram EM button and `POST /api/internal/momentum-auto-execute`.
+  - The route returns `DISABLED` unless `MOMENTUM_AUTO_EXECUTE=true`
+    (strict `true/false/1/0` parse; default false).
+  - It executes registered snapshots only (no live engine re-fetch).
+  - A `positionHeld` or `outcomeUnknown` failure stays locked (`HELD_UNPROTECTED` /
+    `OUTCOME_UNKNOWN`) and pages. The EM button path now also locks
+    `outcomeUnknown`; previously it reset to PENDING.
+  - `services/approved-snapshots.js` holds `getApprovedSnapshot`.
+- **Agent:** after registering the EM snapshot, `send_momentum_telegram_alert`
+  calls the route. An executed alert carries no buttons; a flat refusal keeps the
+  buttons with the reason; a held outcome warns "Do NOT retry". A non-JSON or
+  failed reply falls back to the buttons, and only the exception type is logged.
+- **Research only:**
+  - `momentum_selective.selective_gate`;
+  - `momentum_replay` variant `MOM_SELECTIVE` (needs `NIFTY 50` bars in the
+    snapshot; `index_ticker`) and exit `RUNNER_EXIT`;
+  - Penny `PEN_NOISE_STOP` / `PEN_NOISE_STOP_BE` (`noise_floored_decision`; the
+    baseline trade dicts gain `initial_stop_price` with unchanged numbers);
+  - `scripts/acquire_kite_history.py`;
+  - `run_preregistered_study.py run --jobs N`;
+  - studies `momentum-smart-t3` and `penny-noise-t3` (not yet frozen; they need
+    Kite data).
+- Runtime Momentum and Penny strategy code is unchanged.
+
 ## October 4 — index-future candle recording for research (actual behavior, Dev)
 
 - New scheduler job `research_future_candles` (mon–fri 15:40 IST, trading-day and

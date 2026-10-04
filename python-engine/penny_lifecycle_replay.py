@@ -46,7 +46,32 @@ REGIMES = ("PR1_CALM", "PR2_ELEVATED", "PR3_HOT")
 # Round 1: PEN_TRADER_V1 (entry change) and _THESIS (same entries + thesis exits).
 # Round 2: PEN_BASE_THESIS (shipped entry + thesis exits) and PEN_TRADER_V2.
 TRADER_POLICIES = ("PEN_TRADER_V1", "PEN_TRADER_V1_THESIS", "PEN_BASE_THESIS", "PEN_TRADER_V2")
-CANDIDATE_POLICIES = ("BASELINE", "PEN_CONTEXT") + TRADER_POLICIES
+# Round 3 (declared 2026-10-04): the shipped entry and lifecycle, with the stop
+# moved out of one-minute noise (PEN_NOISE_STOP) and, for _BE, moved to the
+# entry after a +1R close. Live paper stops sat 0.07-2% under entry.
+NOISE_POLICIES = ("PEN_NOISE_STOP", "PEN_NOISE_STOP_BE")
+NOISE_STOP_MIN_PCT = 0.015
+NOISE_STOP_MIN_RUPEES = 0.03          # three ₹0.01 ticks
+NOISE_BREAKEVEN_R = 1.0
+CANDIDATE_POLICIES = ("BASELINE", "PEN_CONTEXT") + TRADER_POLICIES + NOISE_POLICIES
+
+
+def noise_floored_decision(decision: dict, target_r: float) -> dict:
+    """Widen an accepted decision's stop to the noise floor at the same rupee risk.
+
+    Stop distance becomes max(breakout-bar distance, 1.5% of entry, ₹0.03);
+    shares shrink so shares x distance never exceeds the shipped risk; the
+    target stays ``target_r`` R from the new stop. Zero shares -> refused.
+    """
+    entry, stop, shares = float(decision["entry"]), float(decision["stop_loss"]), int(decision["shares"])
+    distance = max(entry - stop, entry * NOISE_STOP_MIN_PCT, NOISE_STOP_MIN_RUPEES)
+    resized = int((shares * (entry - stop)) // distance) if entry > stop else 0
+    if resized < 1:
+        return {**decision, "accept": False, "reject_reason": "position size = 0 (noise-floor stop)"}
+    new_stop = round(entry - distance, 2)
+    return {**decision, "stop_loss": new_stop, "shares": resized,
+            "target": round(entry + target_r * (entry - new_stop), 2),
+            "noise_floor": {"shipped_stop": stop, "shipped_shares": shares}}
 
 
 def trader_policy(name: str) -> tuple:
@@ -361,6 +386,8 @@ class _Replay:
             if not gate["accepted"]:
                 decision["accept"] = False
                 decision["reject_reason"] = "PEN_CONTEXT:" + gate["reason"]
+        if decision.get("accept") and self.config.candidate_policy in NOISE_POLICIES:
+            decision = noise_floored_decision(decision, float(self.settings.PENNY_BREAKOUT_TARGET_R))
         return decision
 
     # ---- trade bookkeeping ------------------------------------------
@@ -378,6 +405,7 @@ class _Replay:
             "cum_vol_today": decision["_cum_vol_today"],
             "status": "OPEN", "_fill_index": fill_index,
             "_high": fill_bar.high, "_low": fill_bar.low,
+            "initial_stop_price": float(decision["stop_loss"]),
         }
 
     def _close(self, trade, td, exit_index, exit_price, reason, decided_at):
@@ -440,6 +468,17 @@ class _Replay:
                 elif bar.low <= trade["stop_price"]:
                     self._close(trade, td, index, trade["stop_price"], "BROKER_STOP", now)
 
+    def _breakeven_after_one_r(self, trade, td, boundary):
+        """PEN_NOISE_STOP_BE: a completed bar closing at +1R moves the stop to
+        the entry; it applies from the next boundary (stops only rise)."""
+        index, bar = td.bar_at(boundary - 1)
+        if bar is None or not bar.executable or index < trade["_fill_index"]:
+            return
+        entry = trade["entry_fill_price"]
+        risk = entry - trade["initial_stop_price"]
+        if risk > 0 and bar.close >= entry + NOISE_BREAKEVEN_R * risk:
+            trade["stop_price"] = max(trade["stop_price"], entry)
+
     # ---- day loop ---------------------------------------------------
     def run_day(self, day_text: str, tickers: list[str]):
         if self.config.candidate_policy in TRADER_POLICIES:
@@ -459,6 +498,8 @@ class _Replay:
                 self._check_stop(trade, td, boundary, now, day)
                 if trade["status"] != "OPEN":
                     del open_trades[ticker]
+                elif self.config.candidate_policy == "PEN_NOISE_STOP_BE":
+                    self._breakeven_after_one_r(trade, td, boundary)
             # 2. 14:30 smart-EOD job (run_penny_eod_check branch order)
             if boundary == eod_minute:
                 for ticker in sorted(open_trades):
@@ -467,7 +508,7 @@ class _Replay:
                     current = ltp if ltp is not None else trade["entry_fill_price"]
                     position = {
                         "entry_price": trade["entry_fill_price"],
-                        "stop_loss_initial": trade["stop_price"],
+                        "stop_loss_initial": trade["initial_stop_price"],
                         "target_1": trade["target_price"],
                         "entry_date": trade["entry_time_utc"],
                     }

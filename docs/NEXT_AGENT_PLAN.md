@@ -1,5 +1,23 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 4 — round 3: smarter Momentum/Penny candidates; Momentum direct trading built (OFF)
+
+Development (seen windows):
+- `MOM_SELECTIVE` sat out the falling Aug–Oct market (0 trades vs shipped −₹3,110).
+- The runner exit was worse on shipped entries.
+- `PEN_NOISE_STOP` beat the Penny baseline (+₹93 vs +₹78; DD ₹32 vs ₹45).
+
+Next, in order:
+1. With a same-day Kite session (owner login; run after 15:45 IST), acquire Kite
+   history Jan–Jul 2026 for Momentum (15-minute + NIFTY 50) and Penny (minute)
+   into `docs/research/kite/2026-10-05-*`. Check coverage only.
+2. Freeze `momentum-smart-t3` and `penny-noise-t3`, commit, then
+   `run --jobs 3`, once each. Record the verdicts.
+3. Port only a promising candidate to the runtime (paper twin first).
+4. Owner decides `MOMENTUM_AUTO_EXECUTE` after promotion; recommended together
+   with a passing selective entry.
+5. Fix the `PENNY_PAPER` exit_price blob rows (3 rows, Aug 31).
+
 ## October 4 — owner direction: Momentum, then Penny; F&O only records SENSEX history
 
 F&O: no further development except SENSEX/NIFTY future-candle recording

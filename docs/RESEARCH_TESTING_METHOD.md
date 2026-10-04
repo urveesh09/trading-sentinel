@@ -67,6 +67,11 @@ take a few minutes.
 
 ## Getting fresh untouched data
 
+Kite's historical API also serves older intraday months:
+`scripts/acquire_kite_history.py` writes the same snapshot format from a
+same-day Kite session (see [MODULE_TESTING_GUIDE.md](MODULE_TESTING_GUIDE.md)).
+
+
 Untouched windows are the scarce resource. Yahoo keeps about **30 days of 1-minute**
 and **60 days of 15-minute** history, so intraday windows expire. Archive forward
 data regularly:
@@ -125,11 +130,11 @@ planner, gates, exit ladder, costs and brakes; never fork them for research.
 
 | Module | Development (seen) | Scored untouched (now seen) | Still untouched |
 | --- | --- | --- | --- |
-| Penny MIS | Sep 24–30, 2026 | Sep 7–23 + Oct 1, 2026 | forward data from Oct 5, 2026 |
+| Penny MIS | Sep 24–30, 2026; Sep 7–Oct 1 for round 3 design | Sep 7–23 + Oct 1, 2026 | Kite minute Jan–Jul 2026 (reserved for `penny-noise-t3`), forward data from Oct 5, 2026 |
 | EDGE | Jul–Sep 2026 | Jan–Jun 2026 | 2024–2025 daily |
 | Range | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
 | Swing | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
-| Momentum | Sep 24–30, 2026 | Aug 10–Sep 23 + Oct 1, 2026 (T2) | forward 15-minute data |
+| Momentum | Sep 24–30, 2026; all of Aug 10–Oct 1 for round 3 design | Aug 10–Sep 23 + Oct 1, 2026 (T2) | Kite Jan–Jul 2026 (reserved for `momentum-smart-t3`), forward data |
 | F&O single-leg | Sep 10–23, 2026 | Sep 24–Oct 1, 2026 (`fno-trader-v1`) | archive sessions from Oct 5, 2026 |
 
 Historical note: the T1 Penny and EDGE freezes were made with the earlier

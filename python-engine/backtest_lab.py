@@ -1209,7 +1209,8 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             "book": {"enum": ["PENNY_PAPER", "PENNY"]},
             "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
             "session_policy": {"enum": ["complete_only", "allow_gaps"]},
-            "candidate_policy": {"enum": ["BASELINE", "PEN_CONTEXT", "PEN_TRADER_V1", "PEN_TRADER_V1_THESIS", "PEN_BASE_THESIS", "PEN_TRADER_V2"]},
+            "candidate_policy": {"enum": ["BASELINE", "PEN_CONTEXT", "PEN_TRADER_V1", "PEN_TRADER_V1_THESIS", "PEN_BASE_THESIS", "PEN_TRADER_V2",
+                                          "PEN_NOISE_STOP", "PEN_NOISE_STOP_BE"]},
         },
         scope="LIFECYCLE",
     )
@@ -1458,14 +1459,14 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
         engine="momentum_replay", timeframe="15 minute", scope="EVALUATOR",
         capabilities=("universe", "true_intraday", "gate_funnel", "costs", "risk_metrics", "chronological_oos"),
         data_requirements=("intraday_cache interval='15minute'", "strictly prior ohlcv_cache daily history"),
-        limitations=("15-minute OHLC assumes protective stop before a favourable high and cannot prove quote-level order timing.", "TARGET_1_PROXY exits the full quantity at T1; LIVE_EXIT_LIFECYCLE calls the shipped exit evaluator; THESIS_EXIT is a research candidate; none has a broker receipt.", "ACCEPTED_CLOSE (legacy default) fills at a bar close known only at bar end; NEXT_BAR_OPEN is the executable clock.", "Historical Swing-derived regime, Telegram approval, broker admission and shared capital are not archived; configured context is declared, not inferred."),
+        limitations=("15-minute OHLC assumes protective stop before a favourable high and cannot prove quote-level order timing.", "TARGET_1_PROXY exits the full quantity at T1; LIVE_EXIT_LIFECYCLE calls the shipped exit evaluator; THESIS_EXIT and RUNNER_EXIT are research candidates; none has a broker receipt.", "MOM_SELECTIVE also needs the index_ticker's 15-minute bars in the snapshot (market and relative-strength context).", "ACCEPTED_CLOSE (legacy default) fills at a bar close known only at bar end; NEXT_BAR_OPEN is the executable clock.", "Historical Swing-derived regime, Telegram approval, broker admission and shared capital are not archived; configured context is declared, not inferred."),
         default_config={
             "tickers": [], "bankroll": 4500.0, "momentum_pool": 2500.0,
             "min_candles": 4, "daily_lookback_rows": 30, "market_regime": "BULL",
             "regime": "REGIME_1_NORMAL", "normal_volume_threshold": 1.5,
             "lunchtime_volume_threshold": 1.75, "lunchtime_start": "11:30",
             "lunchtime_end": "13:15", "variants": ["MOM_BASE"], "exit_model": "TARGET_1_PROXY",
-            "entry_clock": "ACCEPTED_CLOSE", "oos_folds": 3,
+            "entry_clock": "ACCEPTED_CLOSE", "oos_folds": 3, "index_ticker": "NIFTY 50",
         },
         default_assumptions={"execution": "frozen_momentum_shadow_slippage_and_MIS_costs", "same_bar_rule": "stop_before_target", "position_lifecycle": "selected_by_exit_model; actual assumptions recorded in result"},
         parameter_schema={
@@ -1480,10 +1481,12 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
             "lunchtime_volume_threshold": {"type": "number", "minimum": 0},
             "lunchtime_start": {"type": "string", "format": "HH:MM"},
             "lunchtime_end": {"type": "string", "format": "HH:MM"},
-            "variants": {"type": "array", "items": {"enum": ["MOM_BASE", "MOM_RECENCY_5"]}},
-            "exit_model": {"type": "string", "enum": ["TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE", "THESIS_EXIT"]},
+            "variants": {"type": "array", "items": {"enum": ["MOM_BASE", "MOM_RECENCY_5", "MOM_SELECTIVE"]}},
+            "exit_model": {"type": "string", "enum": ["TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE", "THESIS_EXIT",
+                                                      "RUNNER_EXIT"]},
             "entry_clock": {"type": "string", "enum": ["ACCEPTED_CLOSE", "NEXT_BAR_OPEN"]},
             "oos_folds": {"type": "integer", "minimum": 3},
+            "index_ticker": {"type": "string"},
         },
     )
 
@@ -1518,8 +1521,11 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
 
     def prepare(self, db_path, request):
         from momentum_replay import ReplayDataError, _read_cache, _validate_frame
+        typed = self._typed(request.config)
+        index_ticker = typed.index_ticker.strip().upper() if typed.needs_index else None
         try:
-            intra, daily, provenance = _read_cache(db_path, request.config["tickers"] or None, request.start_date, request.end_date)
+            intra, daily, provenance = _read_cache(db_path, request.config["tickers"] or None, request.start_date,
+                                                   request.end_date, index_ticker)
             validated = _validate_frame(intra)
         except ReplayDataError as exc:
             raise BacktestUnavailable(str(exc)) from exc
