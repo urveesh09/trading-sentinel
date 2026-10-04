@@ -532,6 +532,16 @@ Top-level declarations: `zero_accept_scan` (line 38), `format_zero_accept_alert`
 
 Engine dependencies: `config`
 
+## `python-engine/fno_adaptive_risk.py`
+
+Evidence-driven F&O position sizing: shrink fast when losing, grow slowly when proven. Pure (no I/O), shared by the live tick and the research replay. The owner's rule is that a loss shrinks the capital that earns, so the book must not keep paying full size into a losing streak, and it may only press harder after it has shown, on enough closed trades, that it is winning: * Drawdown from the equity peak: >= ``cut1`` halves the risk budget, >= ``cut2`` quarters it. (The 15% drawdown halt in the entry brakes stops entries.) * Proven edge: with >= ``up1_trades`` closed trades at profit factor >= ``up1_pf`` and equity within ``near_peak`` of its high, size steps to 1.25x; with >= ``up2_trades`` a
+
+Top-level declarations: `AdaptiveRiskPolicy` (line 32), `RiskStance` (line 45), `Close` (line 56), `read_book_closes` (line 63), `policy_from_settings` (line 89), `_profit_factor` (line 102), `risk_stance` (line 110)
+
+Engine dependencies: `config`
+
+Related tests: `python-engine/tests/test_fno_adaptive_risk.py`
+
 ## `python-engine/fno_analytics.py`
 
 [PARTNER-TIPS 2026-07-18] Pure options-chain analytics (WS3). Everything here is computed from data the engine ALREADY fetches (the wide chain snapshot + daily closes); this module just does the math the liquidity gates never needed: PCR, max pain, ATM IV, IV-vs-realized-vol read, OI walls, futures OI buildup classification, expiry/theta notes. Pure: dataclasses/pandas in, floats/strings out. No I/O, no Kite, no DB (mirrors fno_engine_mom's discipline; storage lives in fno_oi_store).
@@ -586,7 +596,7 @@ Related tests: `python-engine/tests/test_fno_costs.py`
 
 [FNO-DEFINED-RISK 2026-07-20] Defined-risk multi-leg structures for the F&O paper book (Phase 2 of the strategy-activation plan). Why this exists --------------- The P1 F&O engine buys a naked option off a directional ORB signal. On real data that book is -Rs 4,274 over 3 paper trades: buying weekly ATM premium is structurally theta-negative, and SEBI's own data (93% of individual F&O traders lose, FY22-24) says naked long-option punting is exactly where retail bleeds. This module replaces it with two *defined-risk* structures whose loss is capped and whose cost is modelled honestly: A. DEBIT_SPREAD -- directional, on a trend day + a directional signal. Buy ATM, sell the OTM strike `width` s
 
-Top-level declarations: `StructureKind` (line 47), `Structure` (line 59), `RouterParams` (line 83), `select_structure` (line 91), `_profile` (line 126), `_breakevens` (line 144), `build_debit_spread` (line 164), `build_iron_condor` (line 200), `structure_round_trip_cost` (line 243), `net_entry_credit_rs` (line 256)
+Top-level declarations: `StructureKind` (line 47), `Structure` (line 59), `RouterParams` (line 83), `select_structure` (line 91), `_profile` (line 126), `_breakevens` (line 144), `build_debit_spread` (line 164), `build_iron_condor` (line 201), `structure_round_trip_cost` (line 245), `net_entry_credit_rs` (line 259)
 
 Engine dependencies: `fno_costs`, `fno_models`
 
@@ -596,9 +606,9 @@ Related tests: `python-engine/tests/test_fno_defined_risk.py`
 
 [FNO-DR-BOOK 2026-07-20] Paper book that trades the defined-risk structures from fno_defined_risk (Phase 2 wiring). It rides the EXISTING run_fno_tick: that tick already builds the directional signal and the chain snapshot, so this book reuses both -- no second scheduler job, no duplicate market data. Scope (P1, paper only): - One structure open at a time per source (FNO_PAPER). Simple, auditable. - 1-lot unit; a structure whose 1-lot max-loss exceeds FNO_DR_MAX_LOSS_RS is skipped rather than force-sized. Multi-lot pool sizing is a later refinement (fno_risk.lots_for_pool) and gated behind the promotion bar anyway. - Mark-to-mid P&L; exit on target / stop (fractions of the structure's own ma
 
-Top-level declarations: `_enabled` (line 53), `_strike_step` (line 57), `_debit_width` (line 61), `_condor_offset` (line 65), `_condor_wing` (line 69), `_max_loss_ceiling` (line 73), `_target_frac` (line 77), `_stop_frac` (line 81), `_entry_lo_min` (line 85), `_entry_hi_min` (line 89), `_squareoff_min` (line 93), `_iv_low` (line 97), `_iv_high` (line 101), `premium_lookup_from_snapshot` (line 109), `_nearest_strike` (line 122), `expected_move_pct_from_snapshot` (line 126), `iv_rank_proxy` (line 139), `PlannedStructure` (line 157), `_contract_leg_snapshot` (line 166), `_selected_contract_legs` (line 208), `plan_structure` (line 230), `_legs_from_json` (line 315), `_legs_to_json` (line 323), `_bound_legs_to_json` (line 331), `_bound_legs_from_row` (line 339), `_matching_quote` (line 380), `_bound_price_functions` (line 400), `exact_open_leg_tokens` (line 427), `exact_leg_snapshot_from_quotes` (line 438), `structure_mtm_rs` (line 492), `structure_executable_pnl_rs` (line 504), `evaluate_dr_exit` (line 515), `init_dr_db` (line 585), `open_structures` (line 605), `insert_structure` (line 615), `_mark_unresolved` (line 649), `_settle_structure_atomically` (line 663), `manage_dr_structures` (line 727), `dr_post_admission_reject` (line 767), `maybe_open_dr_structure` (line 784)
+Top-level declarations: `_enabled` (line 53), `_strike_step` (line 57), `_debit_width` (line 61), `_condor_offset` (line 65), `_condor_wing` (line 69), `_max_lots` (line 73), `_margin_per_lot` (line 77), `_max_capital_pct` (line 81), `dr_lots` (line 85), `_max_loss_ceiling` (line 98), `_target_frac` (line 102), `_stop_frac` (line 106), `_entry_lo_min` (line 110), `_entry_hi_min` (line 114), `_squareoff_min` (line 118), `_iv_low` (line 122), `_iv_high` (line 126), `premium_lookup_from_snapshot` (line 134), `_nearest_strike` (line 147), `expected_move_pct_from_snapshot` (line 151), `iv_rank_proxy` (line 164), `vehicle_by_iv_active` (line 181), `choose_directional_vehicle` (line 186), `PlannedStructure` (line 203), `_contract_leg_snapshot` (line 213), `_selected_contract_legs` (line 255), `plan_structure` (line 277), `_legs_from_json` (line 374), `_legs_to_json` (line 382), `_bound_legs_to_json` (line 390), `_bound_legs_from_row` (line 398), `_matching_quote` (line 439), `_bound_price_functions` (line 459), `exact_open_leg_tokens` (line 486), `exact_leg_snapshot_from_quotes` (line 497), `structure_mtm_rs` (line 551), `structure_executable_pnl_rs` (line 563), `evaluate_dr_exit` (line 574), `init_dr_db` (line 644), `open_structures` (line 664), `insert_structure` (line 674), `_mark_unresolved` (line 708), `_settle_structure_atomically` (line 722), `manage_dr_structures` (line 786), `dr_post_admission_reject` (line 826), `maybe_open_dr_structure` (line 843)
 
-Engine dependencies: `config`, `fno_analytics`, `fno_chain`, `fno_defined_risk`, `fno_models`, `fno_positions`, `fno_shared_risk`, `performance`
+Engine dependencies: `config`, `fno_adaptive_risk`, `fno_analytics`, `fno_chain`, `fno_defined_risk`, `fno_models`, `fno_positions`, `fno_shared_risk`, `performance`
 
 Related tests: `python-engine/tests/test_fno_dr_book.py`
 
@@ -628,7 +638,7 @@ Related tests: `python-engine/tests/test_fno_engine_mom.py`
 
 Pure single-leg F&O entry planning shared by the live tick and research replay. Extracted from ``fno_orchestrator._try_entry_for_leg`` so the replay evaluates *the same* decision instead of a copy that could drift. Given a fired signal, a chain snapshot and the book's current state, it performs, in the shipped order: strike selection (|delta| closest to FNO_TARGET_DELTA, ATM-or-ITM), the §7 gate ladder, the no-pyramid same-contract refusal, pool sizing under the risk and open-premium caps, the §4 max-loss constitution and the net reward/ risk check. No I/O: the caller reads state, logs the outcome and performs any reservation and dispatch.
 
-Top-level declarations: `EntryState` (line 27), `EntryPlan` (line 40), `quote_age_sec` (line 57), `plan_single_leg_entry` (line 61)
+Top-level declarations: `EntryState` (line 27), `EntryPlan` (line 48), `quote_age_sec` (line 65), `plan_single_leg_entry` (line 69)
 
 Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_gates`, `fno_models`, `fno_risk`
 
@@ -726,9 +736,9 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 66), `_read_cap` (line 70), `_record_management_read` (line 75), `_timed_database_operation` (line 105), `_management_quote` (line 126), `_oldest_quote_age_sec` (line 142), `_settle_exit_receipt` (line 159), `_fno_pool_paper` (line 220), `_fno_pool_live` (line 225), `_load_dr_entry_inputs` (line 237), `_fno_equity` (line 290), `_fno_halted` (line 296), `_fetch_futures_bars` (line 317), `_record_shadow_observation` (line 325), `_schedule_shadow_observation` (line 342), `_manage_open_positions` (line 372), `_try_entry_for_leg` (line 601), `post_admission_entry_reject` (line 856), `_insert_entry_position` (line 874), `_manage_single_leg_books` (line 885), `run_fno_tick` (line 964), `run_fno_fast_exit` (line 1316), `_bar_already_logged` (line 1364), `format_fno_telegram` (line 1385)
+Top-level declarations: `_now_min` (line 68), `_read_cap` (line 72), `_record_management_read` (line 77), `_timed_database_operation` (line 107), `_management_quote` (line 128), `_oldest_quote_age_sec` (line 144), `_settle_exit_receipt` (line 161), `_fno_pool_paper` (line 222), `_fno_pool_live` (line 227), `_load_dr_entry_inputs` (line 238), `_fno_equity` (line 291), `_fno_halted` (line 297), `_fetch_futures_bars` (line 319), `_record_shadow_observation` (line 327), `_schedule_shadow_observation` (line 344), `_manage_open_positions` (line 374), `_try_entry_for_leg` (line 614), `post_admission_entry_reject` (line 898), `_insert_entry_position` (line 916), `_manage_single_leg_books` (line 927), `run_fno_tick` (line 1026), `_single_leg_entries` (line 1278), `run_fno_fast_exit` (line 1431), `_bar_already_logged` (line 1479), `format_fno_telegram` (line 1501)
 
-Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `operator_alert`, `performance`
+Engine dependencies: `affordability`, `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `fno_underlyings`, `operator_alert`, `performance`
 
 Related tests: `python-engine/tests/test_fno_orchestrator.py`
 
@@ -736,9 +746,9 @@ Related tests: `python-engine/tests/test_fno_orchestrator.py`
 
 Full-policy single-leg F&O replay over archived quotes (research only). The replay re-runs the *shipped* NIFTY single-leg paper book tick by tick on evidence the live system actually had: * futures 5-minute candles (``fut_candles``) for the day's front future, * every archived NIFTY quote batch (front future + ATM±5 calls/puts for two expiries, raw provider packets verified by ``verify_archive_event``), * the live ``fno_signals`` regime per bar (point-in-time, never re-derived). Decisions call the production code: ``evaluate_fno_mom`` (signal), ``fno_chain._parse_quote_entry`` + ``ChainSnapshot`` (chain view), ``fno_entry_plan.plan_single_leg_entry`` (strike, gates, sizing, max loss, reward/
 
-Top-level declarations: `FnoReplayError` (line 54), `ReplayPolicy` (line 61), `Observation` (line 85), `ReplayData` (line 93), `_last_closed_bar` (line 213), `_aware` (line 220), `OpenLeg` (line 228), `Book` (line 258), `_close_record` (line 268), `SingleLegReplay` (line 291), `summarize` (line 527), `parity_report` (line 543), `run_replay` (line 560)
+Top-level declarations: `FnoReplayError` (line 56), `ReplayPolicy` (line 63), `Observation` (line 87), `ReplayData` (line 95), `_last_closed_bar` (line 215), `_aware` (line 222), `OpenLeg` (line 230), `Book` (line 260), `_close_record` (line 271), `SingleLegReplay` (line 294), `summarize` (line 550), `parity_report` (line 566), `run_replay` (line 583)
 
-Engine dependencies: `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_exit_experiment`, `fno_exit_rules`, `fno_models`, `fno_risk`, `fno_shared_risk`, `intraday_spread_archive_adapter`
+Engine dependencies: `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_exit_experiment`, `fno_exit_rules`, `fno_models`, `fno_risk`, `fno_shared_risk`, `intraday_spread_archive_adapter`
 
 Related tests: `python-engine/tests/test_fno_policy_replay.py`
 
@@ -746,7 +756,7 @@ Related tests: `python-engine/tests/test_fno_policy_replay.py`
 
 [FNO-POSITIONS 2026-07-10] Position store for the F&O subsystem. Options positions don't fit the equity `positions` table (premium vs price, lots vs shares, underlying-level stops next to premium backstops), so they get their own table. Pool accounting still flows into the shared bankroll_ledger via performance.record_trade_close(source=FNO_PAPER/ FNO_LIVE) at close time -- purely additive next to the existing source tags (spec §10.3). All dates/times stored in IST (the exchange's clock), ISO format. Kill switches and day-queries key off entry_date / exit_date, so the module's "day" can never drift against the trading session the way UTC dates do. Rule 57: every reader preflights the table a
 
-Top-level declarations: `FnoPosition` (line 205), `_row_to_position` (line 248), `init_fno_positions_db` (line 252), `_table_exists` (line 337), `_with_entry_baselines` (line 344), `insert_position` (line 364), `insert_position_with_risk_reservation` (line 379), `open_positions` (line 411), `open_premium_committed` (line 425), `trades_today` (line 439), `already_entered_bar` (line 451), `update_trail` (line 463), `close_position` (line 477), `exit_execution_receipt` (line 509), `claim_exit_intent` (line 528), `record_exit_execution_receipt` (line 554), `SettlementError` (line 665), `PositionNotOpen` (line 669), `SettlementConflict` (line 679), `settle_position_close` (line 704), `settle_position_close_idempotent` (line 935), `closed_today` (line 988)
+Top-level declarations: `FnoPosition` (line 205), `_row_to_position` (line 248), `init_fno_positions_db` (line 252), `_table_exists` (line 337), `_with_entry_baselines` (line 344), `insert_position` (line 364), `insert_position_with_risk_reservation` (line 379), `open_positions` (line 411), `open_premium_committed` (line 425), `trades_today` (line 439), `already_entered_bar` (line 451), `update_trail` (line 464), `close_position` (line 478), `exit_execution_receipt` (line 510), `claim_exit_intent` (line 529), `record_exit_execution_receipt` (line 555), `SettlementError` (line 666), `PositionNotOpen` (line 670), `SettlementConflict` (line 680), `settle_position_close` (line 705), `settle_position_close_idempotent` (line 936), `closed_today` (line 989)
 
 Engine dependencies: `fno_costs`, `fno_shared_risk`, `performance`
 
@@ -810,7 +820,7 @@ Related tests: `python-engine/tests/test_fno_signal_scan.py`
 
 [PARTNER-TIPS 2026-07-18] Multi-underlying registry for F&O analytics (partner tips bot, plan feat/partner-tips-bot WS1). The trading path stays single-underlying (FNO_UNDERLYING=NIFTY, spec "NIFTY only in P1") and is NOT routed through this module. This registry exists for the read-only analytics/signal-generation side: NIFTY + BANKNIFTY on NFO, SENSEX on BFO (BSE F&O). Hard rules: - ONE instruments-dump fetch per SEGMENT per refresh (an NFO dump is 60-90k rows; fetching it twice for NIFTY and BANKNIFTY would double the 38-minute cold-start pathology ops rule 61 exists to prevent). - A BANKNIFTY/SENSEX failure must NEVER sink the NIFTY refresh: the NIFTY book feeds the live paper-trading pa
 
-Top-level declarations: `UnderlyingSpec` (line 40), `analytics_underlyings` (line 62), `instruments_path` (line 78), `get_instruments_for` (line 93), `_persist_underlying_names` (line 117), `load_underlying_names` (line 146), `refresh_all` (line 154)
+Top-level declarations: `UnderlyingSpec` (line 40), `trading_underlyings` (line 65), `analytics_underlyings` (line 82), `instruments_path` (line 98), `get_instruments_for` (line 113), `_persist_underlying_names` (line 137), `load_underlying_names` (line 166), `refresh_all` (line 174)
 
 Engine dependencies: `config`, `fno_instruments`, `research_archive`
 

@@ -28,7 +28,7 @@ Pure: pandas in, dataclass out. No I/O, no Kite, no DB.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -113,12 +113,19 @@ def evaluate_fno_mom(
     bars: pd.DataFrame,
     regime: str,
     now_ist: datetime,
+    *,
+    rvol_bars: Optional[pd.DataFrame] = None,
 ) -> MomSignal:
     """Evaluate the momentum entry on the last CLOSED 5-min bar.
 
     `bars`: 5-min futures bars indexed by naive-IST datetime, spanning
     several sessions (multi-day frame feeds the EMAs and the RVOL
     baseline; the opening range uses today only).
+
+    `rvol_bars` (optional): the futures frame whose same-slot volume measures
+    participation. SENSEX futures volume is too thin to measure it (median
+    40-120 contracts per bar, a quarter of bars zero), so SENSEX passes the
+    NIFTY futures frame; the price rules still use `bars`.
     """
     out = MomSignal()
     if bars is None or bars.empty:
@@ -167,7 +174,11 @@ def evaluate_fno_mom(
     out.ema_fast = float(ema_fast.iloc[-1])
     out.ema_slow = float(ema_slow.iloc[-1])
 
-    rvol = _rvol_time_adjusted(closed, last_ts)
+    if rvol_bars is None:
+        rvol = _rvol_time_adjusted(closed, last_ts)
+    else:
+        rvol_closed = rvol_bars[rvol_bars.index + timedelta(minutes=5) <= naive_now]
+        rvol = _rvol_time_adjusted(rvol_closed, last_ts) if last_ts in rvol_closed.index else None
     out.rvol = rvol if rvol is not None else 0.0
 
     # ---- breakout levels ---------------------------------------------

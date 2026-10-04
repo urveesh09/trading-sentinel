@@ -165,10 +165,10 @@ class SharedFnoRiskPolicy:
     non-default settings.
     """
 
-    daily_loss_pct: float = 0.06
-    weekly_loss_pct: float = 0.12
-    monthly_loss_pct: float = 0.20
-    drawdown_pct: float = 0.25
+    daily_loss_pct: float = 0.03
+    weekly_loss_pct: float = 0.06
+    monthly_loss_pct: float = 0.10
+    drawdown_pct: float = 0.15
     max_consecutive_losses: int = 6
 
 
@@ -762,7 +762,7 @@ def policy_from_settings() -> SharedFnoRiskPolicy:
         daily_loss_pct=float(settings.FNO_DAILY_KILL_PCT),
         weekly_loss_pct=float(settings.FNO_WEEKLY_KILL_PCT),
         monthly_loss_pct=float(settings.FNO_MONTHLY_KILL_PCT),
-        drawdown_pct=0.25,  # existing directional FNO_MAX_DRAWDOWN_PCT policy
+        drawdown_pct=float(settings.FNO_MAX_DRAWDOWN_PCT),
         max_consecutive_losses=int(settings.FNO_MAX_CONSECUTIVE_LOSSES),
     )
 

@@ -46,6 +46,9 @@ class UnderlyingSpec:
     signal_enabled: bool = True     # ORB signal-gen for partner tips
     or_minutes: Optional[int] = None
     min_rvol: Optional[float] = None
+    # Futures frame used for the participation (RVOL) check when this
+    # underlying's own futures volume is unusable; None = its own volume.
+    rvol_source: Optional[str] = None
 
 
 SPECS: Dict[str, UnderlyingSpec] = {
@@ -55,8 +58,25 @@ SPECS: Dict[str, UnderlyingSpec] = {
     # futures volume may be too thin for an honest RVOL baseline, in
     # which case ORB signals are structurally absent and only the chain
     # analytics (options ARE liquid on BFO) carry value.
-    "SENSEX": UnderlyingSpec("SENSEX", "BFO", signal_enabled=False),
+    "SENSEX": UnderlyingSpec("SENSEX", "BFO", signal_enabled=False, rvol_source="NIFTY"),
 }
+
+
+def trading_underlyings() -> List[UnderlyingSpec]:
+    """Underlyings the single-leg paper book trades (FNO_TRADING_UNDERLYINGS).
+
+    NIFTY always leads so the tick-local bars/signal/chain shared with the
+    capped-loss book are reused. Unknown names are logged and skipped.
+    """
+    names = [raw.strip().upper() for raw in settings.FNO_TRADING_UNDERLYINGS.split(",") if raw.strip()]
+    out: List[UnderlyingSpec] = []
+    for name in sorted(set(names), key=lambda n: (n != "NIFTY", n)):
+        spec = SPECS.get(name)
+        if spec is None:
+            logger.warning("fno_trading_underlying_unknown name=%s -- skipped", name)
+            continue
+        out.append(spec)
+    return out
 
 
 def analytics_underlyings() -> List[UnderlyingSpec]:
@@ -152,15 +172,19 @@ def load_underlying_names() -> set:
 
 
 async def refresh_all(kite) -> Dict[str, bool]:
-    """Refresh every analytics book: ONE dump fetch per segment, shared
-    across that segment's underlyings. Returns {name: ok}. Callers judge
-    the trading path on the NIFTY entry alone."""
+    """Refresh every analytics and traded book: ONE dump fetch per segment,
+    shared across that segment's underlyings. Returns {name: ok}. Callers
+    judge the trading path on the NIFTY entry alone."""
     specs = analytics_underlyings()
     # NIFTY is non-negotiable: the daily_bootstrap task delegates the
     # trading path's book refresh here, so an .env that trims the
     # analytics list must never silently starve the live NIFTY book.
+    # Likewise every FNO_TRADING_UNDERLYINGS book (e.g. SENSEX) is refreshed.
     if not any(s.name == "NIFTY" for s in specs):
         specs.insert(0, SPECS["NIFTY"])
+    for spec in trading_underlyings():
+        if not any(s.name == spec.name for s in specs):
+            specs.append(spec)
     results: Dict[str, bool] = {}
     by_segment: Dict[str, List[UnderlyingSpec]] = {}
     for s in specs:

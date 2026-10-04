@@ -7,6 +7,7 @@ from datetime import date
 import aiosqlite
 import pytest
 
+from config import settings
 from fno_audit_report import build_fno_daily_audit_report
 from fno_signal_log import _encode_audit_list, init_fno_signal_db, log_fno_signal
 from performance import init_ledger
@@ -57,7 +58,7 @@ async def test_report_groups_repeated_leg_rows_and_exposes_switch_evidence(db_pa
     assert block["active_switches"] == [{
         "name": "daily_loss_halt",
         "observed": "daily_loss_halt pnl=-17000",
-        "threshold_pct": 0.06,
+        "threshold_pct": settings.FNO_DAILY_KILL_PCT,
         "condition": "IST-day realized P&L <= -threshold_pct * evaluated pool",
     }]
 

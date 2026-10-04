@@ -1,5 +1,18 @@
 # Handover receipt and operator checklist
 
+## October 4 — F&O growth slice (Dev only)
+
+- [x] Adaptive risk multiplier + two-strike day halt (live tick, capped-loss book, replay).
+- [x] Brakes 3/6/10/15%; cap ₹40,000; lots 2 (3 only when proven).
+- [x] Capped-loss book multi-lot within ₹10k × multiplier and 40% pool capital; cost fix.
+- [x] SENSEX paper single-leg: NIFTY RVOL proxy, correlation guard, per-underlying
+  management, exchange routing, traded-book refresh.
+- [x] Vehicle-by-IV implemented, OFF.
+- [ ] SENSEX replay export; BFO live exit evidence/recovery; forward scoring.
+- [ ] Owner: review and approve promotion via GitHub.
+- Verification: see the commit message; 4 pre-existing unrelated failures listed in the slice.
+- Not pushed, not deployed; Production only read.
+
 ## October 4 — F&O replay, candidates and speed (Dev only)
 
 - [x] Read-only export of the Production research archive (14 sessions, 166 MB, local only).

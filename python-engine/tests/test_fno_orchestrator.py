@@ -165,6 +165,27 @@ def kite(book):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
+async def test_two_losing_closes_today_halt_single_leg_entries(kite, db_path, monkeypatch):
+    """[FNO-GROWTH] Two strikes: the live tick refuses new single-leg entries."""
+    import fno_orchestrator
+    from fno_adaptive_risk import Close
+
+    async def two_losses(*_args):
+        return [Close(NOW - timedelta(minutes=40), -900.0, True), Close(NOW - timedelta(minutes=20), -700.0, True)]
+
+    monkeypatch.setattr(fno_orchestrator, "read_book_closes", two_losses)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    assert summary["entries"] == []
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute("SELECT reject_reason, active_kill_switches_json FROM fno_signals "
+                              "WHERE leg='FNO_PAPER'") as cur:
+            rows = await cur.fetchall()
+    assert rows and all(reason == "kill_switches_clear" for reason, _ in rows)
+    assert any("two_strike_day_halt" in switches for _, switches in rows)
+
+
+@pytest.mark.asyncio
 async def test_paper_entry_end_to_end(kite, db_path):
     summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL",
                                  now_ist=NOW)
@@ -987,3 +1008,20 @@ async def test_live_dr_management_refreshes_after_snapshot(db_path, kite, monkey
     monkeypatch.setattr(dr, "manage_dr_structures", manage)
     await run_fno_tick(kite, db_path=db_path)
     assert managed == [after]
+
+
+@pytest.mark.asyncio
+async def test_rich_premium_defers_the_naked_leg_to_the_spread_book(kite, db_path, monkeypatch):
+    """[FNO-GROWTH] FNO_VEHICLE_BY_IV: one vehicle per directional idea."""
+    import fno_dr_book
+    monkeypatch.setattr(settings, "FNO_VEHICLE_BY_IV", True)
+    monkeypatch.setattr(fno_dr_book, "choose_directional_vehicle", lambda snap, now: fno_dr_book.VEHICLE_SPREAD)
+    from unittest.mock import AsyncMock
+    monkeypatch.setattr(fno_dr_book, "maybe_open_dr_structure", AsyncMock(return_value=None))
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    assert summary["entries"] == []
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute("SELECT reject_reason FROM fno_signals WHERE leg='FNO_PAPER'") as cur:
+            reasons = [row[0] for row in await cur.fetchall()]
+    assert reasons and set(reasons) == {"vehicle_spread_preferred"}

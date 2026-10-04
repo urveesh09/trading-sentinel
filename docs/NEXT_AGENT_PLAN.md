@@ -1,5 +1,25 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 4 — F&O growth slice implemented (paper, Dev only)
+
+[Growth slice](2026-10-04-fno-growth-slice.md): adaptive risk (shrink in drawdown,
+grow only when proven, two-strike day halt), tighter brakes (3/6/10/15%), cap
+₹40k, multi-lot capped-loss book, SENSEX on the paper single-leg book with a
+NIFTY-participation proxy and a correlation guard. Vehicle-by-IV ships OFF.
+
+Remaining, in order:
+1. Promote through GitHub after owner review; watch paper logs for
+   `fno_adaptive_risk`, `two_strike_day_halt`, `correlated_exposure_open` and
+   SENSEX entries.
+2. SENSEX replay: a second read-only export with SENSEX futures candles
+   (leave the frozen `2026-10-04-archive/_local` untouched), underlying-aware
+   replay, frozen round on sessions from October 5, 2026.
+3. BFO support in `fno_exit_evidence`/`fno_exit_recovery` before any live SENSEX.
+4. Score vehicle-by-IV and the fast exit loop as frozen candidates on forward data.
+5. Redesign the stale `test_mark_to_market` DR writer-row test.
+
+Do not loosen F&O hard limits beyond owner approval. Nothing pushed or deployed.
+
 ## October 4 — F&O replay built; shipped book still best; speed features OFF
 
 [F&O replay and speed slice](2026-10-04-fno-replay-and-speed-slice.md): read-only

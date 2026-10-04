@@ -152,8 +152,11 @@ async def test_slow_shadow_is_supervised_and_never_awaited_by_tick_path(monkeypa
     assert await asyncio.to_thread(task.result, 5) == 1
     assert task not in fno_orchestrator._SHADOW_TASKS
 
-    source = inspect.getsource(fno_orchestrator.run_fno_tick)
-    assert source.rfind("_try_entry_for_leg(") < source.rfind("_schedule_shadow_observation(")
+    # Entries for each underlying live in _single_leg_entries; the shadow is
+    # scheduled (never awaited) only after both legs' entry attempts.
+    source = inspect.getsource(fno_orchestrator._single_leg_entries)
+    assert "shadow = _schedule_shadow_observation" in source
+    assert source.rfind("_try_entry_for_leg(") < source.rfind("shadow(db_path, bars, regime, now_ist, snap)")
 
 
 def test_operational_toggle_prevents_scheduling(monkeypatch, db_path):

@@ -34,6 +34,14 @@ class EntryState:
     held_symbols: FrozenSet[str]
     is_trading_day: bool
     is_expiry_day: bool
+    # fno_adaptive_risk multiplier (0.25-1.5): scales the per-trade risk budget
+    # and its rupee ceiling; the lot ceiling (FNO_MAX_LOTS, or
+    # FNO_MAX_LOTS_PROVEN above 1x) and the structural cap stay hard.
+    risk_multiplier: float = 1.0
+    # Directions already held on OTHER (correlated) index underlyings: NIFTY
+    # and SENSEX move together, so a same-direction second entry is the same
+    # bet twice and is refused.
+    correlated_open_directions: FrozenSet[str] = frozenset()
 
 
 @dataclass
@@ -105,6 +113,10 @@ def plan_single_leg_entry(sig: MomSignal, snap: ChainSnapshot, regime: str, now_
         plan.reject_reason, plan.log_fields = reject, {**contract_fields, **audit}
         return plan
 
+    if sig.direction.value in state.correlated_open_directions:
+        plan.reject_reason, plan.log_fields = "correlated_exposure_open", {**contract_fields, **audit}
+        return plan
+
     # No pyramiding into a contract this leg already holds (count/premium caps
     # and the same-bar guard do not stop a later-bar repeat on one strike).
     if contract.tradingsymbol in state.held_symbols:
@@ -113,8 +125,11 @@ def plan_single_leg_entry(sig: MomSignal, snap: ChainSnapshot, regime: str, now_
 
     # Sizing (§3): decline rather than oversize; the marginal lot must also fit
     # the open-premium cap.
+    multiplier = max(0.0, float(state.risk_multiplier))
+    lot_ceiling = settings.FNO_MAX_LOTS_PROVEN if multiplier > 1.0 else settings.FNO_MAX_LOTS
     lots = lots_for_pool(state.pool, ask, lot_size, settings.FNO_STOP_PREMIUM_PCT,
-                         settings.FNO_MAX_RISK_PCT, settings.FNO_MAX_LOTS)
+                         settings.FNO_MAX_RISK_PCT * multiplier, lot_ceiling,
+                         max_risk_rupees=settings.FNO_MAX_LOSS_PER_TRADE * multiplier)
     while lots > 0 and state.open_premium + lots * ask * lot_size > settings.FNO_MAX_OPEN_PREMIUM_PCT * state.pool:
         lots -= 1
     if lots < 1:

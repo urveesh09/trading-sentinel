@@ -187,13 +187,34 @@ def test_house_money_pyramid_adds_one_lot_after_profit_is_locked(tmp_path):
     assert len(added) == 1 and trade["lots_at_exit"] == 2 and added[0]["at"] > trade["entry_time"]
 
 
-def test_pyramid_never_breaks_the_structural_loss_cap(tmp_path):
-    data = _write_dataset(tmp_path, _run_up_then_reverse)               # pricier premium
-    result = run_replay(data, start=DAY.isoformat(), end=DAY.isoformat(), policy="FNO_HOUSE_MONEY_PYRAMID")
-    trade = next(t for t in result["trades"] if "net_pnl" in t)
-    assert result["notes"].get("pyramid_skipped_constitution") == 1
+def test_pyramid_never_breaks_the_structural_loss_cap(tmp_path, monkeypatch):
+    from config import settings
+    data = _write_dataset(tmp_path, _run_up_then_reverse)               # one lot at entry
+    added = run_replay(data, start=DAY.isoformat(), end=DAY.isoformat(), policy="FNO_HOUSE_MONEY_PYRAMID")
+    trade = next(t for t in added["trades"] if "net_pnl" in t)
+    if added["notes"].get("pyramid_added"):
+        whole_premium = trade["entry_premium"] * trade["lots_at_exit"] * 65
+        assert whole_premium <= settings.FNO_MAX_STRUCTURAL_LOSS_PER_TRADE
+    # A tighter cap must refuse the very same add.
+    monkeypatch.setattr(settings, "FNO_MAX_STRUCTURAL_LOSS_PER_TRADE", 20_000.0)
+    refused = run_replay(data, start=DAY.isoformat(), end=DAY.isoformat(), policy="FNO_HOUSE_MONEY_PYRAMID")
+    trade = next(t for t in refused["trades"] if "net_pnl" in t)
+    assert refused["notes"].get("pyramid_skipped_constitution") == 1
     assert not [f for f in trade["fills"] if f["kind"] == "PYRAMID_ADD"] and trade["lots_at_exit"] == 1
 
+
+def test_replay_sizes_through_the_live_adaptive_stance(tmp_path):
+    """A prior drawdown of ~8.8% quarters the risk budget, exactly as live would."""
+    data = _write_dataset(tmp_path)
+    con = sqlite3.connect(data / "fno-replay.sqlite")
+    con.execute("INSERT INTO fno_positions (source, status, exit_time, pnl) VALUES "
+                "('FNO_PAPER', 'CLOSED', '2026-08-31T14:00:00+05:30', -22000)")
+    con.commit()
+    con.close()
+    result = run_replay(data, start=DAY.isoformat(), end=DAY.isoformat())
+    decision = result["decisions"][0]
+    assert decision["risk_multiplier"] == 0.25 and decision["risk_reason"] == "drawdown_cut2"
+    assert not any(h.startswith("two_strike") for h in decision["halts"])
 
 def test_replay_is_inert_research():
     """No runtime caller, broker/order/scheduler import or writable database."""

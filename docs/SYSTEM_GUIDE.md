@@ -1,5 +1,32 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 4 — F&O growth slice: adaptive risk, SENSEX, multi-lot capped-loss book (actual behavior, Dev)
+
+[Growth slice](2026-10-04-fno-growth-slice.md). Paper behaviour after this commit:
+
+- **Brakes/caps:** daily 3%, weekly 6%, monthly 10%, drawdown halt 15%
+  (`FNO_MAX_DRAWDOWN_PCT`, read by `fno_shared_risk` and the orchestrator);
+  structural cap ₹40,000; `FNO_MAX_LOTS` 2, `FNO_MAX_LOTS_PROVEN` 3.
+- **Adaptive risk** (`fno_adaptive_risk.risk_stance`, pure): 0.5× at 4% and 0.25×
+  at 8% below the equity peak (anchored on the static allocation, both paper books'
+  completed trades); 1.25×/1.5× only with ≥20/≥40 trades at PF ≥1.3/≥1.5 within 2%
+  of the peak. It scales the single-leg risk budget and rupee ceiling and the
+  capped-loss budget. Two losing single-leg closes in an IST day add the
+  `two_strike_day_halt` switch (management continues).
+- **Capped-loss book:** `dr_lots` sizes up to `FNO_DR_MAX_LOTS`=3 inside ₹10,000 ×
+  multiplier and 40% of pool capital (condor margin reserved at ₹50,000/lot);
+  `structure_round_trip_cost` charges each leg's full quantity.
+- **SENSEX:** `run_fno_tick` evaluates every `FNO_TRADING_UNDERLYINGS` (NIFTY first,
+  default `NIFTY,SENSEX`). SENSEX uses its own bars for range/ATR/EMA and NIFTY
+  futures bars for RVOL (`rvol_bars`; missing aligned bar → reject). The
+  correlation guard rejects `correlated_exposure_open` when the other index holds
+  the same direction. Each position is managed against its own front future;
+  executor orders carry the spec exchange. The live leg runs only on NFO.
+  `refresh_all` refreshes traded books too.
+- **Vehicle by IV:** implemented, `FNO_VEHICLE_BY_IV=False` (OFF).
+- **Replay:** `fno_policy_replay` sizes through `risk_stance` and logs
+  `risk_multiplier`/`risk_reason` per decision; NIFTY only.
+
 ## October 4 — F&O runtime and research changes (actual behavior, Dev)
 
 - `_try_entry_for_leg` now delegates its pure decision to

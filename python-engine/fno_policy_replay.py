@@ -11,8 +11,10 @@ evidence the live system actually had:
 Decisions call the production code: ``evaluate_fno_mom`` (signal),
 ``fno_chain._parse_quote_entry`` + ``ChainSnapshot`` (chain view),
 ``fno_entry_plan.plan_single_leg_entry`` (strike, gates, sizing, max loss,
-reward/risk), ``evaluate_single_leg_exit`` (exit ladder), ``calc_fno_costs``
-and ``fno_shared_risk.entry_halts`` (loss brakes). Paper fills follow the
+reward/risk), ``evaluate_single_leg_exit`` (exit ladder), ``calc_fno_costs``,
+``fno_shared_risk.entry_halts`` (loss brakes) and
+``fno_adaptive_risk.risk_stance`` (size multiplier and two-strike day halt,
+read from the same completed-trade evidence the live tick reads). Paper fills follow the
 executor: buy at the ask, sell at the bid (else LTP).
 
 Clock: the live tick runs every 90 s. BASELINE processes the first archived
@@ -258,6 +260,7 @@ class OpenLeg:
 class Book:
     equity: float
     closes: list = field(default_factory=list)        # (instant, pnl, book)
+    completed: list = field(default_factory=list)     # fno_adaptive_risk.Close, one per finished trade
     open: dict = field(default_factory=dict)          # id -> OpenLeg
     trades: list = field(default_factory=list)
     entered_bars: set = field(default_factory=set)
@@ -306,15 +309,26 @@ class SingleLegReplay:
                            pool_rs=float(settings.FNO_PAPER_BANKROLL), equity_rs=book.equity,
                            policy=policy_from_settings()).active
 
+    def _stance(self, book: Book, now: datetime):
+        """Live sizing stance: allocation-anchored, one Close per finished trade
+        (a banked partial is part of its trade, as the live row stores it)."""
+        from config import settings
+        from fno_adaptive_risk import policy_from_settings, risk_stance
+        return risk_stance(book.completed, allocation=float(settings.FNO_PAPER_BANKROLL), now=now,
+                           policy=policy_from_settings())
+
     def _apply_exogenous(self, book: Book, pending: list, now: datetime) -> None:
+        from fno_adaptive_risk import Close
         while pending and pending[0][0] <= now:
             at, pnl, kind = pending.pop(0)
             book.equity += pnl
             book.closes.append((at, pnl, kind))
+            book.completed.append(Close(at, pnl, kind == "SINGLE_LEG"))
 
     # -- management ------------------------------------------------------
     def _manage(self, book: Book, obs: Observation, now: datetime) -> None:
         from config import settings
+        from fno_adaptive_risk import Close
         from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
         hard_flat = now.hour * 60 + now.minute >= settings.FNO_HARD_FLAT_MIN
         fut_price = obs.future.ltp
@@ -341,6 +355,7 @@ class SingleLegReplay:
             book.trades.append(record)
             book.equity += final_net
             book.closes.append((now, final_net, "SINGLE_LEG"))
+            book.completed.append(Close(now, record["net_pnl"], True))
             del book.open[leg_id]
 
     def _on_target(self, book: Book, leg: OpenLeg, obs: Observation, now: datetime) -> None:
@@ -450,13 +465,19 @@ class SingleLegReplay:
                              lot_size=obs.future.contract.lot_size, fut_quote=obs.future, quotes=quotes)
         held = frozenset(leg.tradingsymbol for leg in book.open.values())
         open_premium = sum(leg.entry_premium * leg.qty for leg in book.open.values())
+        stance = self._stance(book, now)
+        halts = self._halts(book, now)
+        if stance.single_leg_halted_today:
+            halts = (*halts, f"two_strike_day_halt losses={stance.single_leg_losses_today}")
         state = EntryState(pool=book.equity, open_premium=open_premium, open_positions=len(book.open),
-                           trades_today=book.entries_today[today], active_kill_switches=self._halts(book, now),
-                           held_symbols=held, is_trading_day=True, is_expiry_day=today in obs.expiries)
+                           trades_today=book.entries_today[today], active_kill_switches=halts,
+                           held_symbols=held, is_trading_day=True, is_expiry_day=today in obs.expiries,
+                           risk_multiplier=stance.multiplier)
         plan = plan_single_leg_entry(sig, snap, regime, now, state)
         self.decisions.append({"at": now.isoformat(), "bar_ts": sig.bar_ts, "direction": sig.direction.value,
                                "outcome": "accepted" if plan.accepted else plan.reject_reason,
-                               "halts": list(state.active_kill_switches), "pool": round(state.pool, 2)})
+                               "halts": list(state.active_kill_switches), "pool": round(state.pool, 2),
+                               "risk_multiplier": stance.multiplier, "risk_reason": stance.reason})
         if not plan.accepted:
             self.funnel[plan.reject_reason] += 1
             return
@@ -484,7 +505,9 @@ class SingleLegReplay:
         closes = self.data.paper_closes()
         prior = [(at, pnl, kind) for at, pnl, kind in closes if at < first]
         exogenous = [(at, pnl, kind) for at, pnl, kind in closes if at >= first and kind == "DEFINED_RISK"]
-        book = Book(equity=float(settings.FNO_PAPER_BANKROLL) + sum(pnl for _, pnl, _ in prior), closes=list(prior))
+        from fno_adaptive_risk import Close
+        book = Book(equity=float(settings.FNO_PAPER_BANKROLL) + sum(pnl for _, pnl, _ in prior), closes=list(prior),
+                    completed=[Close(at, pnl, kind == "SINGLE_LEG") for at, pnl, kind in prior])
         start_equity = book.equity
         exclusions: Counter = Counter()
         for day in days:

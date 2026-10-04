@@ -168,10 +168,11 @@ def build_debit_spread(
     width: int,
     prem: PremiumLookup,
     lot_size: int,
+    lots: int = 1,
 ) -> Optional[Structure]:
     """Buy ATM, sell the OTM strike `width` steps away, same option type.
     LONG -> call debit spread (bull); SHORT -> put debit spread (bear)."""
-    if width < 1 or strike_step <= 0 or lot_size <= 0:
+    if width < 1 or strike_step <= 0 or lot_size <= 0 or lots < 1:
         return None
     opt = OptionType.CE if direction == FnoDirection.LONG else OptionType.PE
     long_strike = float(atm_strike)
@@ -186,8 +187,8 @@ def build_debit_spread(
         # sp >= lp would be a non-positive debit (mispriced/illiquid) -> skip.
         return None
     legs = [
-        Leg(opt_type=opt, strike=long_strike, quantity=1, premium=float(lp)),
-        Leg(opt_type=opt, strike=short_strike, quantity=-1, premium=float(sp)),
+        Leg(opt_type=opt, strike=long_strike, quantity=lots, premium=float(lp)),
+        Leg(opt_type=opt, strike=short_strike, quantity=-lots, premium=float(sp)),
     ]
     net_premium, max_profit, max_loss, bes = _profile(legs, lot_size)
     return Structure(
@@ -204,11 +205,12 @@ def build_iron_condor(
     wing_width: int,
     prem: PremiumLookup,
     lot_size: int,
+    lots: int = 1,
 ) -> Optional[Structure]:
     """Sell an OTM call spread + an OTM put spread, symmetric around ATM.
     short_offset = steps from ATM to the short strikes; wing_width = steps
     from each short strike to its protective long wing."""
-    if short_offset < 1 or wing_width < 1 or strike_step <= 0 or lot_size <= 0:
+    if short_offset < 1 or wing_width < 1 or strike_step <= 0 or lot_size <= 0 or lots < 1:
         return None
     call_short = atm_strike + short_offset * strike_step
     call_long = call_short + wing_width * strike_step
@@ -223,10 +225,10 @@ def build_iron_condor(
         # No credit -> the structure has no edge and (width - credit) loss; skip.
         return None
     legs = [
-        Leg(opt_type=OptionType.CE, strike=call_short, quantity=-1, premium=float(cs)),
-        Leg(opt_type=OptionType.CE, strike=call_long, quantity=1, premium=float(cl)),
-        Leg(opt_type=OptionType.PE, strike=put_short, quantity=-1, premium=float(ps)),
-        Leg(opt_type=OptionType.PE, strike=put_long, quantity=1, premium=float(pl)),
+        Leg(opt_type=OptionType.CE, strike=call_short, quantity=-lots, premium=float(cs)),
+        Leg(opt_type=OptionType.CE, strike=call_long, quantity=lots, premium=float(cl)),
+        Leg(opt_type=OptionType.PE, strike=put_short, quantity=-lots, premium=float(ps)),
+        Leg(opt_type=OptionType.PE, strike=put_long, quantity=lots, premium=float(pl)),
     ]
     net_premium, max_profit, max_loss, bes = _profile(legs, lot_size)
     return Structure(
@@ -245,10 +247,11 @@ def structure_round_trip_cost(structure: Structure) -> float:
     entry, before we know exit premiums: model each leg as a flat round trip
     (exit == entry premium) and sum. Conservative and consistent with
     fno_costs' 'the book must clear the cost' ethos -- every leg pays its own
-    brokerage + taxes, which is what makes 4-leg condors expensive to churn."""
+    brokerage + taxes, which is what makes 4-leg condors expensive to churn.
+    Each leg is charged for its full quantity (lots x lot size)."""
     lot = structure.lot_size
     return round(
-        sum(calc_fno_costs(leg.premium, leg.premium, lot) for leg in structure.legs),
+        sum(calc_fno_costs(leg.premium, leg.premium, abs(leg.quantity) * lot) for leg in structure.legs),
         2,
     )
 

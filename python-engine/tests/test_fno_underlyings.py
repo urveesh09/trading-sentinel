@@ -139,6 +139,17 @@ async def test_refresh_all_always_includes_nifty(sandbox, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_refresh_all_includes_traded_underlyings(sandbox, monkeypatch):
+    # A traded SENSEX book must refresh even when analytics omits it.
+    monkeypatch.setattr(settings, "FNO_ANALYTICS_UNDERLYINGS", "NIFTY")
+    monkeypatch.setattr(settings, "FNO_TRADING_UNDERLYINGS", "NIFTY,SENSEX")
+    kite = _SegmentKite()
+    results = await fu.refresh_all(kite)
+    assert results == {"NIFTY": True, "SENSEX": True}
+    assert kite.calls == {"NFO": 1, "BFO": 1}
+
+
+@pytest.mark.asyncio
 async def test_underlying_names_sidecar_written(sandbox):
     kite = _SegmentKite()
     await fu.refresh_all(kite)

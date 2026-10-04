@@ -55,7 +55,7 @@ class FnoExecutor:
     # ------------------------------------------------------------------
 
     async def execute_entry(
-        self, tradingsymbol: str, qty: int, ask: float,
+        self, tradingsymbol: str, qty: int, ask: float, *, exchange: str = "NFO",
     ) -> dict:
         """BUY LIMIT at ask. Returns {status, order_id, fill_price, evidence}.
 
@@ -81,7 +81,7 @@ class FnoExecutor:
                 "order_id": f"PAPER-FNO-ENT-{uuid4().hex[:8]}",
                 "fill_price": ask,
             }
-        resp = await self._place_limit(tradingsymbol, "BUY", qty, ask, intent="entry")
+        resp = await self._place_limit(tradingsymbol, "BUY", qty, ask, intent="entry", exchange=exchange)
         order_id = resp.get("order_id")
         if not order_id:
             certainty = resp.get("dispatch_certainty") or "AMBIGUOUS"
@@ -168,7 +168,7 @@ class FnoExecutor:
 
     async def execute_exit(
         self, tradingsymbol: str, qty: int, bid: float,
-        tick_size: float, hard_flat: bool = False,
+        tick_size: float, hard_flat: bool = False, *, exchange: str = "NFO",
     ) -> dict:
         """Submit one SELL LIMIT. An uncertain fill requires reconciliation.
 
@@ -188,7 +188,7 @@ class FnoExecutor:
 
         if hard_flat:
             price = max(tick_size, bid - HARD_FLAT_TICKS_THROUGH * tick_size)
-            resp = await self._place_limit(tradingsymbol, "SELL", qty, price, intent="exit")
+            resp = await self._place_limit(tradingsymbol, "SELL", qty, price, intent="exit", exchange=exchange)
             order_id = resp.get("order_id")
             fill = await self._wait_for_fill(order_id) if order_id else None
             if fill is None:
@@ -201,7 +201,7 @@ class FnoExecutor:
             return {"status": "filled", "order_id": order_id, "fill_price": fill}
 
         # Normal exit ladder: bid, then bid - 3 ticks.
-        resp = await self._place_limit(tradingsymbol, "SELL", qty, bid, intent="exit")
+        resp = await self._place_limit(tradingsymbol, "SELL", qty, bid, intent="exit", exchange=exchange)
         order_id = resp.get("order_id")
         if not order_id:
             return {"status": "rejected", "order_id": None, "fill_price": None}
@@ -218,14 +218,14 @@ class FnoExecutor:
 
     async def _place_limit(
         self, tradingsymbol: str, txn: str, qty: int, price: float,
-        *, intent: str,
+        *, intent: str, exchange: str = "NFO",
     ) -> dict:
         """`intent` is required: see KiteClient.place_order. Entries are
         halt-gated, the exit ladder never is."""
         try:
             return await self.kite.place_order(
                 variety="regular",
-                exchange="NFO",
+                exchange=exchange,
                 tradingsymbol=tradingsymbol,
                 transaction_type=txn,
                 quantity=qty,

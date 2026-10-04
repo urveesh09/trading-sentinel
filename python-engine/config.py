@@ -1,7 +1,7 @@
 from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import ClassVar, Optional
+from typing import Optional
 
 # [2026-07-19] Resolve env files by ABSOLUTE path from this module's location,
 # not a CWD-relative ".env". Order is low->high precedence: the local
@@ -947,6 +947,21 @@ class Settings(BaseSettings):
     # misbehaves) without also disabling the proven single-leg paper book, which
     # FNO_DISABLE_PAPER would do. Default False = DR book active (current behaviour).
     FNO_DR_DISABLE_PAPER:      bool  = False
+    # [FNO-GROWTH 2026-10-04] Capped-loss income book sizing. One structure at
+    # a time, still intraday; lots = floor(FNO_DR_MAX_LOSS_RS x adaptive
+    # multiplier / max loss per lot), at most FNO_DR_MAX_LOTS, and the capital
+    # it ties up (debit, or conservatively reserved broker margin for a credit
+    # condor) stays within FNO_DR_MAX_CAPITAL_PCT of the pool.
+    FNO_DR_MAX_LOSS_RS:        float = 10000.0
+    FNO_DR_MAX_LOTS:           int   = 3
+    FNO_DR_MARGIN_PER_LOT_RS:  float = 50000.0
+    FNO_DR_MAX_CAPITAL_PCT:    float = 0.40
+    # One vehicle per directional idea: rich premium (IV-rank proxy at or above
+    # the threshold) -> debit spread only, otherwise -> naked option only.
+    # Ships OFF: at NIFTY's usual 11-14% IV it would retire the debit spreads,
+    # which earned in the Sep 17-Oct 1 paper record; decide on fresh sessions.
+    FNO_VEHICLE_BY_IV:         bool  = False
+    FNO_VEHICLE_SPREAD_IV_RANK: float = 0.6
     # Shared deadline for cancellable quote/history reads used solely to
     # prepare a new paper defined-risk structure.  It never caps management
     # of an existing structure or a ledger admission write.
@@ -957,7 +972,12 @@ class Settings(BaseSettings):
     FNO_DR_MANAGEMENT_READ_MAX_SEC: float = 10.0
 
     # --- universe ----------------------------------------------------------
-    FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1
+    FNO_UNDERLYING:            str   = "NIFTY"    # primary trading underlying (capped-loss book, shadow)
+    # [FNO-GROWTH 2026-10-04] Single-leg paper book underlyings. SENSEX (BSE's
+    # weekly expiry) uses its own price for the opening range/ATR/EMAs and
+    # NIFTY futures participation (fno_underlyings.SPECS rvol_source). The live
+    # leg stays NIFTY-only until exit evidence/recovery accept BFO packets.
+    FNO_TRADING_UNDERLYINGS:   str   = "NIFTY,SENSEX"
     FNO_STRIKE_WINDOW:         int   = 5          # ATM +/- N strikes to snapshot
     FNO_TARGET_DELTA:          float = 0.55       # ATM / 1-strike ITM, never OTM
 
@@ -984,16 +1004,39 @@ class Settings(BaseSettings):
     # weekly band. Scaled, the binding gate is back to the pool-derived
     # min_viable_pool (~Rs 266.67) -- the spec §3 volatility filter.
     FNO_MAX_LOSS_PER_TRADE:    float = 6250.0
-    FNO_MAX_STRUCTURAL_LOSS_PER_TRADE: float = 30000.0
+    # [FNO-GROWTH 2026-10-04] Owner approved a small structural-cap rise
+    # (30k -> 40k) and a third lot. Normal sizing keeps the two-lot ceiling;
+    # the third lot is allowed only while the evidence-gated adaptive
+    # multiplier is above 1 (fno_adaptive_risk).
+    FNO_MAX_STRUCTURAL_LOSS_PER_TRADE: float = 40000.0
     FNO_MAX_LOTS:              int   = 2
+    FNO_MAX_LOTS_PROVEN:       int   = 3
 
     # --- kill switches -----------------------------------------------------
     # Weekly + monthly exist because options bleed slowly enough to walk
     # under a daily limit every day for a month (spec §7.6).
-    FNO_DAILY_KILL_PCT:        float = 0.06
-    FNO_WEEKLY_KILL_PCT:       float = 0.12
-    FNO_MONTHLY_KILL_PCT:      float = 0.20
+    # [FNO-GROWTH 2026-10-04] Tightened to the owner's goal (~Rs 20k/month,
+    # "never lose crazy"): on the Rs 2.5L pool a day halts at -7.5k, a week
+    # at -15k, a month at -25k, and the book stops at a 15% drawdown
+    # (previously 6% / 12% / 20% / 25%).
+    FNO_DAILY_KILL_PCT:        float = 0.03
+    FNO_WEEKLY_KILL_PCT:       float = 0.06
+    FNO_MONTHLY_KILL_PCT:      float = 0.10
+    FNO_MAX_DRAWDOWN_PCT:      float = 0.15
     FNO_MAX_CONSECUTIVE_LOSSES: int  = 6
+
+    # --- adaptive risk (fno_adaptive_risk.py) --------------------------------
+    # Size follows evidence: it shrinks quickly in a drawdown and grows only
+    # after enough profitable closed trades while equity is near its peak.
+    FNO_ADAPTIVE_RISK_ENABLED:      bool  = True
+    FNO_RISK_CUT1_DRAWDOWN_PCT:     float = 0.04    # -> 0.50x
+    FNO_RISK_CUT2_DRAWDOWN_PCT:     float = 0.08    # -> 0.25x
+    FNO_RISK_UP1_MIN_TRADES:        int   = 20      # PF >= 1.3 -> 1.25x
+    FNO_RISK_UP1_MIN_PF:            float = 1.3
+    FNO_RISK_UP2_MIN_TRADES:        int   = 40      # PF >= 1.5 -> 1.50x
+    FNO_RISK_UP2_MIN_PF:            float = 1.5
+    FNO_RISK_NEAR_PEAK_PCT:         float = 0.02
+    FNO_TWO_STRIKE_LOSSES:          int   = 2       # single-leg losing closes that end the day
 
     # --- microstructure ----------------------------------------------------
     FNO_MIN_OI:                int   = 5000

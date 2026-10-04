@@ -448,15 +448,16 @@ async def trades_today(db_path: str, source: str, today_iso: str) -> int:
     return int(row[0]) if row else 0
 
 
-async def already_entered_bar(db_path: str, source: str, bar_ts: str) -> bool:
-    """Idempotency: one entry per signal bar per leg, restart-safe."""
+async def already_entered_bar(db_path: str, source: str, bar_ts: str,
+                              underlying: Optional[str] = None) -> bool:
+    """Idempotency: one entry per signal bar per leg (and underlying), restart-safe."""
     async with aiosqlite.connect(db_path) as db:
         if not await _table_exists(db):
             return False
-        async with db.execute(
-            "SELECT 1 FROM fno_positions WHERE source=? AND bar_ts=? LIMIT 1",
-            (source, bar_ts),
-        ) as cur:
+        sql, params = "SELECT 1 FROM fno_positions WHERE source=? AND bar_ts=?", [source, bar_ts]
+        if underlying is not None:
+            sql, params = sql + " AND underlying=?", params + [underlying]
+        async with db.execute(sql + " LIMIT 1", params) as cur:
             return (await cur.fetchone()) is not None
 
 
