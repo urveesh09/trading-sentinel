@@ -72,8 +72,13 @@ here and that the shipped exit ladder (time stop + trail) is doing the work.
 ## Verification
 
 - F&O suite before changes: 520 passed; after both refactors 534 (with the
-  division report) — behaviour-neutral; final F&O + new tests 545+; full engine
-  suite receipt in the handover entry.
+  division report) — behaviour-neutral; F&O + scheduler + new tests 543 passed.
+- Full engine suite: 4,834 passed, 4 skipped, 5 failed. Four failures
+  (`test_dev_acceptance_harness`, `test_integrated_dev_demo`,
+  `test_proactive_intelligence` demo, `test_mark_to_market` DR row) fail the same
+  way on `31f84ec`, before this work (date-dependent/unrelated demos). The fifth,
+  the `add_job` census golden, was this change; it now lists exactly the two new
+  default-off jobs and passes.
 - New tests: `test_fno_entry_plan.py` (planner outcomes, halts), `test_fno_policy_replay.py`
   (end-to-end on a format-genuine archive: entry at ask after bar close, time
   stop at bid, exact costs, fast exit, trail exit, partial, pyramid add and the
