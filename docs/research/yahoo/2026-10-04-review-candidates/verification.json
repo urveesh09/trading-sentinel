@@ -1,0 +1,156 @@
+{
+  "atlas": "241 modules; deterministic",
+  "baseline_commit": "434c4cc",
+  "can_place_orders": false,
+  "candidate_count": 3,
+  "candidate_policies_unchanged": true,
+  "fno_catalogue_entries_unchanged": true,
+  "protected_runtime_paths_unchanged": true,
+  "qualification": "NOT_ASSESSED",
+  "runs": [
+    {
+      "comparisons": [
+        {
+          "job": "penny-mis",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-mis-gap-sensitivity",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-cnc",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-joint",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-joint-gap-sensitivity",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "edge",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "swing",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "momentum",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "range",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "partner",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-mis-recent-diagnostic",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-mis-recent-diagnostic-gap-sensitivity",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-cnc-recent-diagnostic",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-joint-recent-diagnostic",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-joint-recent-diagnostic-gap-sensitivity",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "momentum-recent-diagnostic",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        }
+      ],
+      "raw_responses_verified": 1203,
+      "run": "2026-10-04-q3-review-baseline",
+      "validated_snapshot_sha256": "sha256:c9a19427a6305a759e36257239d9fa245c0e23ab8b317179669e97946d0d5739"
+    },
+    {
+      "comparisons": [
+        {
+          "job": "penny-mis",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-mis-gap-sensitivity",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-cnc",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-joint",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-joint-gap-sensitivity",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "edge",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "swing",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "momentum",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "range",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "partner",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-mis-recent-diagnostic",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-mis-recent-diagnostic-gap-sensitivity",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-cnc-recent-diagnostic",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-joint-recent-diagnostic",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "penny-joint-recent-diagnostic-gap-sensitivity",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        },
+        {
+          "job": "momentum-recent-diagnostic",
+          "same_state_dates_scope_metrics_and_effective_config": true
+        }
+      ],
+      "raw_responses_verified": 1203,
+      "run": "2026-10-04-q3-review-final",
+      "validated_snapshot_sha256": "sha256:c9a19427a6305a759e36257239d9fa245c0e23ab8b317179669e97946d0d5739"
+    }
+  ],
+  "source_changes_dev_local_uncommitted": true,
+  "tests": "130 passed; one existing HTTPX deprecation"
+}

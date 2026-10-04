@@ -290,13 +290,15 @@ def _multi_order_costs(entry: float, exits: list[tuple[float, int]], execution: 
 
 
 def _simulate_live_exit_lifecycle(candidate: dict, future: pd.DataFrame, execution: dict) -> dict:
-    """Replay the shipped partial/runner exit decision with conservative OHLC.
+    """Diagnostic replay of the shipped partial/runner decision using OHLC.
 
     The entry model deliberately remains the frozen Momentum research entry
-    model.  The change here is exit parity: a bar's protective stop is checked
+    model. A bar's protective stop is checked
     before any favourable high; a target/scale limit needs the high to reach the
     known level; a ratchet only affects later bars; and the 15:15 square-off
-    uses that bar's open.  A missing final fill stays unresolved.
+    uses that bar's open. A missing final fill stays unresolved. High/partial/
+    ratchet ordering and completed-bar clocks still require path evidence;
+    this helper is not an exact or uniformly conservative lifecycle.
     """
     from momentum_exits import ACTION_EXIT, ACTION_SCALE_OUT, ACTION_TRAIL, evaluate_momentum_exit
 
@@ -320,8 +322,8 @@ def _simulate_live_exit_lifecycle(candidate: dict, future: pd.DataFrame, executi
     position = {
         "ticker": candidate["ticker"], "entry_price": entry, "stop_loss_initial": initial_stop,
         "trailing_stop_current": initial_stop, "target_1": target, "shares": original_quantity,
-        "t1_fired": False, "atr_14_at_entry": decision.get("atr_14"),
-        "vwap_at_entry": decision.get("vwap"), "regime_at_entry": decision.get("regime"),
+        "t1_fired": False, "atr_14_at_entry": decision.get("atr_at_entry"),
+        "vwap_at_entry": decision.get("vwap"), "regime_at_entry": candidate.get("regime_at_entry"),
         "entry_date": candidate["bar_ts"],
     }
     remaining = original_quantity
@@ -334,12 +336,21 @@ def _simulate_live_exit_lifecycle(candidate: dict, future: pd.DataFrame, executi
                                    "bar_ts": stamp.isoformat()})
             remaining = 0
 
+    unresolved_reason = "no_executable_exit_or_square_off_evidence"
     for stamp, bar in future.iterrows():
         stamp = pd.Timestamp(stamp)
+        if stamp.date().isoformat() != candidate["trading_date"]:
+            unresolved_reason = "missing_intraday_exit_evidence_before_next_session"
+            break
+        if not math.isfinite(float(bar["volume"])) or float(bar["volume"]) <= 0:
+            continue  # A zero-volume mark cannot establish an executable fill.
         open_, high, low, close = (float(bar[name]) for name in ("open", "high", "low", "close"))
         # The runtime square-off is an order at the deadline; do not inspect a
         # later intrabar low/high and pretend a different ordering was known.
         if (stamp.hour, stamp.minute) >= (execution["time_exit_hour"], execution["time_exit_minute"]):
+            if (stamp.hour, stamp.minute) != (execution["time_exit_hour"], execution["time_exit_minute"]):
+                unresolved_reason = "missing_exact_square_off_bar"
+                break
             close_all(open_ * (1 - exit_slip), "hard_square_off", stamp)
             break
         current_stop = float(position["trailing_stop_current"] or initial_stop)
@@ -385,7 +396,7 @@ def _simulate_live_exit_lifecycle(candidate: dict, future: pd.DataFrame, executi
     if remaining:
         trade.update({"status": "UNRESOLVED", "remaining_quantity": remaining,
                       "trailing_stop": round(float(position["trailing_stop_current"]), 6),
-                      "unresolved_reason": "no_executable_exit_or_square_off_evidence"})
+                      "unresolved_reason": unresolved_reason})
         return trade
     exits = [(float(row["price"]), int(row["quantity"])) for row in trade["fills"]]
     gross = sum((price - entry) * quantity for price, quantity in exits)
@@ -485,6 +496,17 @@ def run_momentum_replay(
         raise ReplayDataError("strictly prior daily OHLC history is missing")
     execution = momentum_shadow_execution_config()
     config_snapshot = {**asdict(config), "variants": list(config.variants), "evaluator_settings": _settings_snapshot()}
+    if config.exit_model == "LIVE_EXIT_LIFECYCLE":
+        exit_names = (
+            "MOMENTUM_USE_SCALE_OUT", "MOMENTUM_SCALE_OUT_R", "MOMENTUM_SCALE_OUT_FRAC",
+            "MOMENTUM_BREAKEVEN_R", "MOMENTUM_USE_TRAIL", "MOMENTUM_TRAIL_ATR_MULT",
+            "MOMENTUM_TIME_STOP_FAST_MIN", "MOMENTUM_TIME_STOP_FAST_R", "MOMENTUM_FAST_STOP_USES_THESIS",
+            "MOMENTUM_TIME_STOP_MIN", "MOMENTUM_TIME_STOP_MIN_R", "MOMENTUM_TIME_STOP_R1_MULT",
+            "MOMENTUM_TIME_STOP_R2_MULT", "MOMENTUM_TIME_STOP_R3_MULT",
+        )
+        config_snapshot["exit_settings"] = {name: getattr(settings, name) for name in exit_names}
+        execution["position_lifecycle"] = "shipped_partial_runner_OHLC_diagnostic_not_exact_quote_replay"
+        execution["square_off_evidence"] = "positive_volume_exact_deadline_bar_same_session_only"
     digest = hashlib.sha256()
     digest.update(pd.util.hash_pandas_object(intra, index=True).values.tobytes())
     digest.update(pd.util.hash_pandas_object(daily, index=True).values.tobytes())
@@ -527,6 +549,8 @@ def run_momentum_replay(
                             "decision": decision, "dataset_fingerprint": fingerprint,
                             "prefix_bars": length,
                         })
+                        if config.exit_model == "LIVE_EXIT_LIFECYCLE":
+                            candidates[-1]["regime_at_entry"] = config.regime
                 else:
                     reason = str(decision.get("reject_reason", "unknown"))
                     funnel[name]["rejects"][reason] = funnel[name]["rejects"].get(reason, 0) + 1
@@ -548,7 +572,7 @@ def run_momentum_replay(
         "15-minute OHLC cannot reveal intrabar path; simultaneous stop/target resolves stop first.",
         ("Virtual lifecycle exits the full quantity at T1 and cannot model the production partial-T1 runner/trail."
          if config.exit_model == "TARGET_1_PROXY" else
-         "LIVE_EXIT_LIFECYCLE uses the shipped Momentum exit evaluator with conservative OHLC ordering; quote-level order timing and broker receipts remain unavailable."),
+         "LIVE_EXIT_LIFECYCLE is a shipped-exit OHLC diagnostic, not exact path replay: partial/target order, high-driven ratchets and completed-bar execution clocks remain ambiguous; broker receipts are unavailable."),
         "Entry and exit fills use frozen Momentum shadow slippage and equity MIS cost assumptions.",
     ]
     if missing_daily:

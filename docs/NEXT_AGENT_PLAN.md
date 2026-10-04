@@ -1,5 +1,55 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 4 — active next direction: complete adaptive trader candidates
+
+Follow the [revised adaptive non-F&O plan](2026-10-04-adaptive-non-fno-trader-development-plan.md).
+The owner wants opportunity recognition and timely thesis-based management,
+not another layer of subset-only filters. T0 couples candidate selection,
+complete condition evidence, native warm-up and causal cash/clock fixes with
+runnable Penny/EDGE stateful prototypes. T1 completes those policies; T2 adds
+Range/Swing/Momentum using existing research and audits CNC; T3 qualifies on
+untouched data at matched cash/risk and proves F&O noninterference.
+
+Preserve R1–R5 acceptance and immutable earlier results. Strategy quality cues
+may change only in explicitly named research versions; hard cash/risk/approval,
+execution evidence, protective stops/recovery and deadlines remain constraints.
+Keep baseline reproducible, all failed trials visible and new candidates OFF.
+F&O is excluded and must remain unhindered, including shared cash/resources/exits.
+No live activation or promotion follows from this plan revision.
+
+Plan-only revision at `434c4cc`, Dev-local/uncommitted, preserving earlier dirty
+source/evidence. No source/configuration/schema/dependency change, new test or
+backtest, Production access, broker action, commit, push or deployment. Prior
+130 test passes belong to the preceding review. All T0–T3 work remains open.
+
+## October 4 — latest independent review; finish fidelity before tuning
+
+The owner requested minor fixes, a plan for larger gaps and an identical-parameter
+Yahoo comparison. [Review and R1–R5 follow-up](2026-10-04-non-fno-independent-review-and-repeat-plan.md)
+is the active next slice. **The original plan is partial**, despite N1–N3 helpers
+being present. Default policies did not change; first repeat matches all 16 prior
+outcomes. Candidate filters/measurement cannot imply improved live performance.
+
+Minor corrections cover Penny retest/profile validity and Momentum ATR/regime,
+same-session positive-volume/deadline evidence and settings receipts. EDGE is
+PROXY until causal holding/entry/cash semantics are established. 130 focused
+tests passed; compilation/diff and 241-module atlas checks passed. Final repeat
+and separately named candidate evidence remain distinct in the review receipt.
+
+Next major work: explicit candidate interface and historical context/warm-up;
+causal EDGE/Momentum lifecycle with marked/partial equity; real Range/Swing
+adapters and bounded hypotheses; untouched trial qualification and F&O cash/
+resource compatibility. Keep F&O excluded and unhindered. No new runtime gates,
+funding, shared defaults, orders or canary are authorized by this review.
+Baseline `434c4cc`; Dev-local uncommitted work, no Production access/edit,
+configuration/schema/dependency change, push or deployment.
+
+[Completed comparison](2026-10-04-non-fno-review-and-backtest-results.md): both
+all-module repeats reproduce all 16 original outcomes; PEN_CONTEXT zero entries
+with missing profiles, Momentum exit diagnostic −₹19.01 and EDGE independent-
+trial PROXY sum −₹60,813.84. None proves improvement; R1–R5 stay open. Integrity
+receipts bind snapshots/raw responses, current source/settings and trial freezes.
+
 ## October 4 — active N1–N3 implementation slice (Dev only)
 
 The owner authorized N1, N2 and N3 from the researched non-F&O plan.  The

@@ -76,6 +76,14 @@ Related tests: `python-engine/tests/test_account_cash_reservations.py`
 
 Declared tables: `account_cash_reservations`
 
+## `python-engine/adaptive_penny_policy.py`
+
+T0 pure, restartable `PEN_TRADER_V1` setup-state prototype. This module is deliberately outside the Penny runtime. It turns complete, already-available bars into *entry intent* only; no function here can fetch a quote, reserve cash, submit an order, write a database row, or change F&O. Later research adapters must still apply the shipped Penny risk/executor contracts before an intent could become a simulated fill.
+
+Top-level declarations: `SetupState` (line 22), `_finite_positive` (line 48), `_aware` (line 58), `CompletedBar` (line 65), `PennySetup` (line 95), `EntryIntent` (line 152), `EntryPlan` (line 163), `SetupOutcome` (line 175), `_thesis_id` (line 182), `begin_watch` (line 187), `_transition` (line 213), `advance_setup` (line 227), `plan_entry` (line 274), `mark_open` (line 290), `mark_exit_pending` (line 294), `mark_closed` (line 298), `begin_new_thesis` (line 302)
+
+Related tests: `python-engine/tests/test_adaptive_penny_policy.py`
+
 ## `python-engine/affordability.py`
 
 [WORKFLOW-F 2026-09-13] Paper-vs-live affordability guard (Phase 2). Implements plan section 10.3 — *"Audit true cost per trade relative to expected edge for INR 8k capital. Prevent a large configured paper bankroll from implying owner live affordability."* This module is the F-side seam the promotion-bridge contract (see ``docs/2026-09-13-workflow-g-promotion-bridge.md`` sections 3.3 and 4) depends on for ``APPROVED_LIVE_BUDGET`` decisions. Concretely: * ``evaluate_paper_to_live_affordability(...)`` returns a structured result describing whether a proposed *live* delta is affordable from the *live* bank's current state, the *paper* P&L earned over the same period, and the operator-tunable m
@@ -138,7 +146,7 @@ Related tests: `python-engine/tests/test_backtest_cli.py`
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `EdgeNextOpenLifecycleAdapter` (line 447), `RangeReversionEvaluatorAdapter` (line 517), `PennyDailyProxyAdapter` (line 604), `PennyWalkForwardConfig` (line 700), `PennyDailyProxyWalkForwardAdapter` (line 731), `_ticker_list` (line 919), `_write_replay_cache` (line 928), `PennyMinuteReplayAdapter` (line 948), `PennyMisLifecycleAdapter` (line 1050), `PennyCncConnorsLifecycleAdapter` (line 1157), `PennyJointPortfolioAdapter` (line 1241), `Momentum15MinuteReplayAdapter` (line 1324), `FnoUnavailableAdapter` (line 1422), `init_backtest_lab_db` (line 1457), `_validate_dates` (line 1531), `list_strategies` (line 1542), `submit_run` (line 1582), `_run_background` (line 1618), `_row_to_run` (line 1654), `list_runs` (line 1679), `get_run` (line 1698)
+Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `EdgeNextOpenLifecycleAdapter` (line 447), `RangeReversionEvaluatorAdapter` (line 519), `PennyDailyProxyAdapter` (line 606), `PennyWalkForwardConfig` (line 702), `PennyDailyProxyWalkForwardAdapter` (line 733), `_ticker_list` (line 921), `_write_replay_cache` (line 930), `PennyMinuteReplayAdapter` (line 950), `PennyMisLifecycleAdapter` (line 1052), `PennyCncConnorsLifecycleAdapter` (line 1159), `PennyJointPortfolioAdapter` (line 1243), `Momentum15MinuteReplayAdapter` (line 1326), `FnoUnavailableAdapter` (line 1424), `init_backtest_lab_db` (line 1459), `_validate_dates` (line 1533), `list_strategies` (line 1544), `submit_run` (line 1584), `_run_background` (line 1620), `_row_to_run` (line 1656), `list_runs` (line 1681), `get_run` (line 1700)
 
 Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `portfolio_parity`, `range_reversion`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `walk_forward`
 
@@ -1128,7 +1136,7 @@ Top-level declarations: `PathEnvelopeError` (line 23), `encode_path_quote_envelo
 
 Decision-grade, broker-free replay of the production 15-minute Momentum evaluator. The module is intentionally library-only: it has no API, scheduler, broker, order, or persistence side effects. Cache access is SQLite read-only and fails closed on ambiguous intraday provenance.
 
-Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 44), `_settings_snapshot` (line 80), `_read_cache` (line 98), `_validate_frame` (line 168), `_daily_frame` (line 191), `_volume_threshold` (line 199), `_exit` (line 206), `_costs` (line 224), `_simulate` (line 236), `_multi_order_costs` (line 268), `_simulate_live_exit_lifecycle` (line 292), `_summary` (line 403), `chronological_oos` (line 424), `run_momentum_replay` (line 467)
+Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 44), `_settings_snapshot` (line 80), `_read_cache` (line 98), `_validate_frame` (line 168), `_daily_frame` (line 191), `_volume_threshold` (line 199), `_exit` (line 206), `_costs` (line 224), `_simulate` (line 236), `_multi_order_costs` (line 268), `_simulate_live_exit_lifecycle` (line 292), `_summary` (line 414), `chronological_oos` (line 435), `run_momentum_replay` (line 478)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `momentum_shadow`
 
@@ -1160,7 +1168,7 @@ Related tests: `python-engine/tests/test_nifty_commands.py`
 
 Pure, broker-free N2/N3 candidate gates and executable lifecycle helpers. These helpers are deliberately *not* wired into live scanners. They make the extra hypotheses falsifiable against the existing shipped evaluators without changing a threshold, admission path, database table, account reservation, or F&O dependency. Every function consumes supplied, already-visible evidence and returns a named reason instead of inventing unavailable market context.
 
-Top-level declarations: `_number` (line 17), `penny_context_gate` (line 25), `penny_exit_thesis` (line 72), `edge_next_open_lifecycle` (line 96), `range_candidate_gate` (line 131), `swing_candidate_gate` (line 160)
+Top-level declarations: `_number` (line 17), `penny_context_gate` (line 25), `penny_exit_thesis` (line 74), `edge_next_open_lifecycle` (line 98), `range_candidate_gate` (line 133), `swing_candidate_gate` (line 162)
 
 Engine dependencies: `engine`, `penny_edge_engine`, `penny_risk`, `range_reversion`
 

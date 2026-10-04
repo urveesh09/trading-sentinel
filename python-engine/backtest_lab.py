@@ -448,14 +448,16 @@ class EdgeNextOpenLifecycleAdapter(EdgeDecisionParityAdapter):
     """EDGE lifecycle evidence with next-session fills, never signal-close fills."""
     metadata = StrategyMetadata(
         strategy_id="penny_edge_next_open_lifecycle", name="Adaptive Penny EDGE (next-open lifecycle)",
-        version="1.0.0", description="Calls the shipped EDGE scan/ranker, then models next-session executable opens and shipped exits.",
-        engine="research_daily_decision_replay.edge_next_open_lifecycle_replay", timeframe="1 day", scope="LIFECYCLE",
+        version="1.0.1", description="Independent EDGE next-open simulator trials; not a validated shipped execution lifecycle.",
+        engine="research_daily_decision_replay.edge_next_open_lifecycle_replay", timeframe="1 day", scope="PROXY",
         capabilities=("universe", "shipped_scanner", "shipped_ranking", "next_session_open", "costs", "shipped_exit"),
         data_requirements=("explicit EDGE universe", "NIFTYBEES daily history", "next-session daily OHLC for each selected signal"),
         limitations=(
             "Partial lifecycle only: historical event calendar, scheduler timing, approval, broker admission, protective-stop confirmation and portfolio cash are not reconstructed.",
             "Daily OHLC cannot prove intraday order sequence; a next-open geometry gap is a no-fill and an unfinished trade is marked, not silently closed.",
             "This is research only and never submits an order or changes EDGE_LIVE/EDGE_PAPER policy.",
+            "Independent trials reuse discovery-sized shares without shared cash/deduplication or entry slippage; aggregate trial P&L is not bankroll profit.",
+            "Entry-day bars are passed to a simulator designed for days after entry; time-stop versus daily high/low ordering is unvalidated and can use future prices before an open-time exit.",
         ),
         default_config={"tickers": [], "nifty_ticker": "NIFTYBEES", "bankroll": 100000.0, "max_positions": 3, "min_strength": 0.45},
         default_assumptions={"signal_clock": "D_close", "entry_clock": "D_plus_1_open", "exit": "penny_edge_engine.simulate_position"},
@@ -1336,7 +1338,7 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
             "lunchtime_volume_threshold": 1.75, "lunchtime_start": "11:30",
             "lunchtime_end": "13:15", "variants": ["MOM_BASE"], "exit_model": "TARGET_1_PROXY", "oos_folds": 3,
         },
-        default_assumptions={"execution": "frozen_momentum_shadow_slippage_and_MIS_costs", "same_bar_rule": "stop_before_target", "position_lifecycle": "full_quantity_target_1"},
+        default_assumptions={"execution": "frozen_momentum_shadow_slippage_and_MIS_costs", "same_bar_rule": "stop_before_target", "position_lifecycle": "selected_by_exit_model; actual assumptions recorded in result"},
         parameter_schema={
             "tickers": {"type": "array", "items": {"type": "string"}},
             "bankroll": {"type": "number", "minimum": 0.01},

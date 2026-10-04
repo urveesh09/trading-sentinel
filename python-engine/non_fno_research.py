@@ -54,7 +54,9 @@ def penny_context_gate(
     relative_volume = cumulative / baseline
     if relative_volume < min_relative_volume:
         return {"accepted": False, "reason": "relative_volume_below_profile", "relative_volume": round(relative_volume, 6)}
-    anchor = max(row["high"] for row in parsed[:-1])
+    # Freeze structure before both confirmation candles. Including the prior
+    # candle's high makes prior close > anchor impossible for a valid candle.
+    anchor = max(row["high"] for row in parsed[:-2])
     previous, current = parsed[-2], parsed[-1]
     fresh = previous["close"] <= anchor and current["close"] > anchor
     # A retest is bounded: the completed bar touches the prior structure but
@@ -162,7 +164,7 @@ def swing_candidate_gate(
     relative_strength: float | None, correlation_to_open: float | None,
     max_correlation: float = 0.80,
 ) -> dict[str, Any]:
-    """Research-only Swing overlay: no stretch/chase or correlated duplication."""
+    """Research-only relative-strength/correlation overlay; no timing rule."""
     if not baseline_fired:
         return {"accepted": False, "reason": "baseline_rejected"}
     values = (entry, stop, target, relative_strength, correlation_to_open)

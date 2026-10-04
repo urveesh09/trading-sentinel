@@ -27,6 +27,18 @@ def test_penny_exit_thesis_never_allows_stop_widening_or_repeated_rearm():
     assert result == {"action": "HOLD", "reason": "structure_intact_reentry_already_consumed"}
 
 
+def test_penny_retest_anchors_before_confirmation_and_does_not_rechase():
+    prior = _bar(10, 10.2, 9.9, 10)
+    breakout = _bar(10.1, 10.5, 10, 10.4)
+    retest = _bar(10.4, 10.45, 10.1, 10.3)
+    result = penny_context_gate({"accept": True}, [prior, breakout, retest], [100] * 5)
+    assert result["accepted"] and result["reason"] == "bounded_retest"
+    assert result["anchor"] == 10.2
+    chase = _bar(10.4, 10.7, 10.3, 10.6)
+    result = penny_context_gate({"accept": True}, [prior, breakout, chase], [100] * 5)
+    assert not result["accepted"]
+
+
 def test_edge_lifecycle_uses_next_open_not_discovery_close_and_rejects_gap_geometry():
     position = Position("AAA", "2026-10-01", 100, 2, 105, 95, 1, "MO", .7, .7)
     result = edge_next_open_lifecycle(position, [_bar(102, 106, 101, 105, date="2026-10-02")])

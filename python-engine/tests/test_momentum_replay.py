@@ -6,6 +6,41 @@ import pytest
 import momentum_replay as replay
 
 
+@pytest.mark.parametrize("stamp,volume,reason", [
+    ("2026-08-04T10:00:00", 100, "missing_intraday_exit_evidence_before_next_session"),
+    ("2026-08-03T15:30:00", 100, "missing_exact_square_off_bar"),
+    ("2026-08-03T15:15:00", 0, "no_executable_exit_or_square_off_evidence"),
+])
+def test_live_exit_does_not_invent_next_session_late_or_zero_volume_fills(stamp, volume, reason):
+    candidate = {"variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+                 "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "test",
+                 "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 104, "shares": 2}}
+    future = pd.DataFrame({"open": [103], "high": [105], "low": [102], "close": [104], "volume": [volume]},
+                          index=pd.to_datetime([stamp]))
+    trade = replay._simulate_live_exit_lifecycle(candidate, future, replay.momentum_shadow_execution_config())
+    assert trade["status"] == "UNRESOLVED"
+    assert trade["unresolved_reason"] == reason
+    assert trade["fills"] == [] and trade["remaining_quantity"] == 2
+
+
+def test_live_exit_forwards_actual_atr_and_declared_regime(monkeypatch):
+    import momentum_exits
+    seen = []
+    def inspect(pos, ltp, now):
+        seen.append((pos["atr_14_at_entry"], pos["regime_at_entry"]))
+        return {"action": "hold", "reason": "fixture", "new_stop": None}
+    monkeypatch.setattr(momentum_exits, "evaluate_momentum_exit", inspect)
+    candidate = {"variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+                 "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "test",
+                 "regime_at_entry": "REGIME_2_ELEVATED",
+                 "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 104,
+                              "shares": 2, "atr_at_entry": .75}}
+    future = pd.DataFrame({"open": [100], "high": [101], "low": [99.5], "close": [100.5], "volume": [10]},
+                          index=pd.to_datetime(["2026-08-03T11:00:00"]))
+    replay._simulate_live_exit_lifecycle(candidate, future, replay.momentum_shadow_execution_config())
+    assert seen and all(row == (.75, "REGIME_2_ELEVATED") for row in seen)
+
+
 def _cache(path, *, days=5, provenance="15minute"):
     connection = sqlite3.connect(path)
     connection.executescript("""

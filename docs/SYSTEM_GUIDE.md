@@ -1,5 +1,54 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 4 — latest direction: adaptive non-F&O trader policies
+
+The owner requested a stronger plan after identifying excessive filter behavior.
+[Adaptive trader development plan](2026-10-04-adaptive-non-fno-trader-development-plan.md)
+is now the active design/order: T0 causal comparison plus runnable prototypes,
+T1 complete Penny/EDGE policies, T2 Range/Swing/Momentum and limited CNC audit,
+T3 untouched qualification and F&O compatibility. Replacement candidates may
+recognize baseline-rejected setups; new subset-only gates are not completion.
+Persistent setup/execution states, context-sensitive timing and thesis exits
+are proposed, not implemented. Safety/cash/loss/protection contracts stay firm.
+
+R1–R5 fidelity requirements and all adverse/unavailable receipts remain open.
+Prior documentation below describes historical implementation and must not be
+read as qualification. F&O remains excluded and must not be hindered through
+cash, shared source/configuration, broker/quote capacity or scheduler/DB load.
+This revision is documentation only; source HEAD `434c4cc` and existing
+uncommitted review corrections/evidence are preserved. No new tests/backtest,
+runtime/configuration/schema/dependency change, Production access, broker action,
+commit, push or deployment occurred in this planning task.
+
+## October 4 — independent review override and same-data repeat (Dev only)
+
+[Independent review / larger follow-up plan](2026-10-04-non-fno-independent-review-and-repeat-plan.md)
+supersedes a claim that N0–N4 or full N1–N3 lifecycle/candidate integration is
+complete. New commits were research-only; the Yahoo runner and active policies
+still select baseline defaults. Initial archived-Yahoo repeat reproduces all
+16 prior states/windows/metrics, including Penny +₹15.1765 and Momentum −₹0.827101.
+
+Bounded research corrections: Penny's retest anchors before its confirmation
+candles and prior profiles require a complete same-minute prefix; Momentum's
+named exit diagnostic forwards actual ATR/regime, refuses overnight, late
+deadline and zero-volume fills, and binds exit settings/assumptions. EDGE's
+new independent-trial adapter is correctly PROXY, not a verified LIFECYCLE;
+holding-clock, sizing, slippage and persistent cash/position gaps remain planned.
+Momentum intrabar ordering/completed-bar clock limits likewise remain explicit.
+
+[Final comparison](2026-10-04-non-fno-review-and-backtest-results.md): both
+16-outcome repeats agree exactly with the old defaults. PEN_CONTEXT finds zero
+entries with insufficient prior profiles; Momentum exit diagnostic is −₹19.01;
+EDGE PROXY has a −₹60,813.84 independent closed-trial sum, not account P&L.
+No demonstrated improvement or qualification. All adverse diagnostics retained.
+
+130 focused tests passed (one existing HTTPX deprecation); affected source
+compiled, diff checks passed and atlas regenerated to 241 modules. Final repeat
+and separately frozen candidate studies are recorded in the review receipt.
+Source baseline `434c4cc`; corrections/results are Dev-local and uncommitted.
+No shipped strategy, F&O, shared cash/scheduler, broker, runtime configuration,
+dependency/schema or Production change; no push/deployment or qualification.
+
 ## October 4 — N1–N3 non-F&O research implementation (Dev only)
 
 [N1–N3 implementation slice](2026-10-04-n1-n3-implementation-slice.md) is

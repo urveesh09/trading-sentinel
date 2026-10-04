@@ -179,7 +179,7 @@ def test_edge_next_open_lifecycle_is_registered_and_never_uses_signal_close(db_p
 
     monkeypatch.setattr("penny_edge_live.scan_today", scanner)
     result = adapter.execute(prepared, request)
-    assert result["scope"] == "LIFECYCLE"
+    assert result["scope"] == "PROXY"
     assert result["trials"]
     # Synthetic daily data opens above the signal close; the lifecycle must
     # preserve that executable open rather than using 100.0.

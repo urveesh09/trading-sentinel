@@ -81,6 +81,20 @@ def test_entry_uses_live_clock_next_minute_ltp_fill_and_real_sizing():
     assert result["funnel"]["admission_outcomes"] == {"FILLED": 1}
 
 
+def test_same_minute_profile_refuses_a_missing_opening_prefix():
+    prior, current = "2026-08-07", "2026-08-10"
+    rows = _bars(day=prior, overrides={"09:15": None}) + _bars(day=current)
+    intra = validate_intraday_rows(rows, interval="minute", start=prior, end=current, tickers=("AAA",))
+    daily = validate_daily_rows(_daily(day=prior), tickers=("AAA",), before=current)
+    run = _Replay(intra, daily, PennyLifecycleConfig(tickers=("AAA",), session_policy="allow_gaps"),
+                  date.fromisoformat(current), date.fromisoformat(current))
+    assert run._same_minute_volume_profile("AAA", date.fromisoformat(current), 10 * 60) == []
+    # An afternoon gap cannot erase a completely known earlier prefix.
+    rows = _bars(day=prior, overrides={"14:00": None}) + _bars(day=current)
+    run.intraday = validate_intraday_rows(rows, interval="minute", start=prior, end=current, tickers=("AAA",))
+    assert run._same_minute_volume_profile("AAA", date.fromisoformat(current), 10 * 60) == [45000.0]
+
+
 def test_live_book_never_exits_at_target_and_force_closes_at_1500():
     rows = _breakout_day(overrides={"12:00": (101.0, 110.0, 101.0, 102.0, 1000.0)})
     trade = _run(rows)["trades"][0]

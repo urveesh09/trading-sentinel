@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "penny-mis-recent-diagnostic",
+  "metrics": null,
+  "module": "penny-mis",
+  "qualification": "NOT_ASSESSED",
+  "reason": "no ticker-day satisfies session_policy=complete_only: {'PARTIAL': 404, 'UNAVAILABLE': 736}",
+  "report_file": "_local\\penny-mis-recent-diagnostic-report.json",
+  "report_sha256": "sha256:9bd822614bd393a6eeeba3fa0bcb1cec6ae0547cd277b20254bdff7ea600a99b",
+  "scope": "LIFECYCLE",
+  "state": "UNAVAILABLE",
+  "strategy_id": "penny_breakout_mis_lifecycle_1m",
+  "window_kind": "recent-diagnostic"
+}

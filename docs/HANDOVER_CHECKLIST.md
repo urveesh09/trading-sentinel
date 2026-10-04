@@ -1,5 +1,43 @@
 # Handover receipt and operator checklist
 
+## October 4 — revised adaptive trader plan (latest direction)
+
+- [x] [Adaptive non-F&O trader plan](2026-10-04-adaptive-non-fno-trader-development-plan.md)
+  supersedes prior design/order while preserving R1–R5 fidelity requirements.
+  Current subset-only helpers, mixed activity/economic evidence and source
+  limitations reviewed; primary research and transfer limits recorded.
+- [x] Complete module candidates, persistent setup/execution states, alternative
+  timing, thesis exits, rejected-opportunity evidence and matched-risk tests
+  specified with files/contracts, acceptance, rollout/rollback and remaining work.
+- [x] F&O excluded and protected through cash, shared resources and exit authority;
+  no strategy/funding/risk/approval change authorized by this plan-only revision.
+- [x] Required docs reviewed; documentation link/scope and diff checks recorded;
+  source diff preserved from prior review. No fresh test/backtest or profit claim.
+- [x] Dev-local/uncommitted at HEAD `434c4cc`, prior corrections/results preserved;
+  no Production access, broker action, runtime/configuration/dependency/schema
+  change, implementation commit, push or deployment in this task.
+- [ ] T0–T3 implementation, data, economics, untouched qualification and F&O
+  operational compatibility; any separately authorized GitHub promotion/canary.
+
+## October 4 — independent review and identical Yahoo comparison
+
+- [x] Required docs/source/new commits reviewed at Dev `434c4cc`; explicit
+  [correction and R1–R5 plan](2026-10-04-non-fno-independent-review-and-repeat-plan.md)
+  recorded before edits. Original plan is partial; source-only research is not
+  an active-policy improvement or operational F&O compatibility proof.
+- [x] Initial repeat reproduces all 16 old states/windows/metrics exactly.
+- [x] Minor Penny retest/profile and Momentum ATR/regime/exit-evidence corrections;
+  EDGE independent trials downgraded to PROXY with unvalidated clock/cash limits.
+- [x] 130 focused tests passed (existing HTTPX warning), compilation/diff and
+  atlas regeneration (241 modules) passed; shipped/F&O/shared runtime untouched.
+- [x] Final same-data repeat matches all 16 previous outcomes; three candidate/
+  measurement studies and raw/report/source integrity receipts retained. See
+  [results](2026-10-04-non-fno-review-and-backtest-results.md): no demonstrated
+  improvement; losing/unavailable diagnostics remain visible.
+- [ ] R1–R5, sufficient native coverage, qualification and any separate rollout.
+- [x] Dev-local uncommitted corrections/docs/results; no Production access,
+  broker action, funding/configuration/dependency/schema change, push/deployment.
+
 ## October 3 — researched non-F&O development plan
 
 - [x] [Smart-entry/exit plan](2026-10-03-non-fno-smart-entry-exit-development-plan.md)

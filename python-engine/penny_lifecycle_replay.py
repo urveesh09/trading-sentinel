@@ -267,11 +267,11 @@ class _Replay:
                 continue
             td = _TickerDay(bars)
             count = td.completed_count(boundary)
-            # A complete validated session can contain zero-volume marks.  They
-            # are genuine zero volume for a cumulative profile, not a reason to
-            # discard the entire prior session; missing bars were rejected by
-            # the dataset contract before this replay.
-            if count:
+            # Gap-sensitivity datasets also contain partial sessions. Require
+            # every minute up to the same boundary: missing opening minutes
+            # cannot become a deceptively low cumulative-volume baseline.
+            expected = boundary - (SESSION_FIRST_BOUNDARY - 1)
+            if expected > 0 and td.minutes[:count] == list(range(SESSION_FIRST_BOUNDARY - 1, boundary)):
                 profile.append(sum(float(bar.volume) for bar in td.bars[:count]))
         return profile
 

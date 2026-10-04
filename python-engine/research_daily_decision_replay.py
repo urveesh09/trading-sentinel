@@ -230,7 +230,7 @@ def edge_next_open_lifecycle_replay(
                 trials.append({"decision_date": day, "ticker": position.ticker,
                                "adjusted_strength": position.adjusted_strength,
                                "signal_subtype": position.signal_subtype, **result})
-        return {"scope": "LIFECYCLE", "clock": "signal_after_D_close_then_D_plus_1_open",
+        return {"scope": "PROXY", "clock": "signal_after_D_close_then_D_plus_1_open",
                 "scans": scans, "trials": trials,
                 "closed": sum(row["status"] == "CLOSED" for row in trials),
                 "open_marked": sum(row["status"] == "OPEN_MARKED" for row in trials),

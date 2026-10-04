@@ -1,5 +1,13 @@
 # Smarter non-F&O entries and exits — October 3, 2026
 
+**October 4 direction update:** the
+[adaptive trader plan](2026-10-04-adaptive-non-fno-trader-development-plan.md)
+supersedes this document's design direction and implementation order. Build
+complete stateful replacement candidates that can recover baseline-rejected
+setups; additional subset-only filters do not satisfy the owner request.
+Keep this original rationale/history and its F&O noninterference contract;
+R1–R5 fidelity and all adverse research receipts remain applicable.
+
 Status: **researched development plan; no strategy implementation or promotion**.
 Source baseline: Dev `4be033acdba81b18b941f28845725dc63fa80897`.
 This is the owner's next development direction, superseding earlier notes to

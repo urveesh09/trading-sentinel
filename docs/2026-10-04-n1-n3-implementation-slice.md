@@ -1,5 +1,16 @@
 # N1–N3 implementation slice — non-F&O research only
 
+## Independent review override (later October 4)
+
+[Review and follow-up plan](2026-10-04-non-fno-independent-review-and-repeat-plan.md)
+records bounded corrections and R1–R5. Source helpers exist, but the larger
+N0–N4 plan and complete lifecycle integration are unfinished. EDGE next-open
+trials are now PROXY because holding-clock, risk/fill and cash semantics are
+unvalidated; Momentum's shipped-exit model remains an OHLC diagnostic with
+unresolved path/clock limits. Default policy/Yahoo selections did not change.
+Earlier completion claims below are the original implementation receipt, not
+independent fidelity, profitability or rollout acceptance.
+
 ## Problem and boundary
 
 The current non-F&O evidence mixes exact evaluator calls with simplified fills
