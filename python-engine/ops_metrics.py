@@ -69,6 +69,10 @@ async def init_ops_metrics_db(db_path: str) -> None:
                     PRIMARY KEY (date_ist, subsystem)
                 )
             """)
+            async with db.execute("PRAGMA table_info(ops_funnel_daily)") as cur:
+                funnel_cols = {row[1] for row in await cur.fetchall()}
+            if "stages_json" not in funnel_cols:
+                await db.execute("ALTER TABLE ops_funnel_daily ADD COLUMN stages_json TEXT")
             await db.commit()
     except Exception as e:
         logger.error("ops_metrics_init_failed db=%s error=%s", db_path, str(e))
@@ -264,6 +268,42 @@ def _top_rejects(reason_rows, normalise=None) -> str:
     return json.dumps(dict(top))
 
 
+_PENNY_JOURNAL_STAGES = {
+    "CANDIDATE_ACCEPTED": "admitted",
+    "VALIDATION_REJECTED": "admission_refused",
+    "ENTRY_FILLED": "entries_filled",
+    "POSITION_CREATED": "positions_created",
+}
+
+
+async def _penny_journal_stages(db, utc_start: str, utc_end: str) -> Optional[dict]:
+    """Distinct attempts per execution stage for one IST day, or None when
+    the journal is absent. Paper and live are summed; ``by_source`` keeps
+    them apart."""
+    async with db.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='penny_execution_events'"
+    ) as cur:
+        if await cur.fetchone() is None:
+            return None
+    async with db.execute(
+        """SELECT source, event_type, COUNT(DISTINCT attempt_id)
+           FROM penny_execution_events
+           WHERE event_ts >= ? AND event_ts < ? GROUP BY source, event_type""",
+        (utc_start, utc_end),
+    ) as cur:
+        rows = await cur.fetchall()
+    stages = {name: 0 for name in _PENNY_JOURNAL_STAGES.values()}
+    by_source: dict[str, dict[str, int]] = {}
+    for source, event_type, attempts in rows:
+        name = _PENNY_JOURNAL_STAGES.get(event_type)
+        if name is None:
+            continue
+        stages[name] += int(attempts)
+        by_source.setdefault(source, {})[name] = int(attempts)
+    stages["by_source"] = by_source
+    return stages
+
+
 async def snapshot_funnels_for_day(db_path: str, date_ist: str) -> dict:
     """Upsert one ops_funnel_daily row per subsystem for `date_ist`.
     Zero-evaluation days are written too: "the scanner never ran" must
@@ -302,23 +342,43 @@ async def snapshot_funnels_for_day(db_path: str, date_ist: str) -> dict:
                 if counts is None:
                     continue  # subsystem not initialised yet
                 total, accepted, accepted_rows, reason_rows = counts
+                # [FUNNEL-STAGES 2026-10-05] Production audit: penny showed
+                # evaluated 17,111 / accepted 1 / rejected 17,109 because
+                # `accepted` is distinct tickers and `rejected` is rows. The
+                # explicit stages reconcile: evaluator accept rows + reject
+                # rows = evaluated, and accept rows split into admitted and
+                # not admitted (capacity, duplicate, brake) before any fill.
+                stages = {
+                    "evaluated_rows": total,
+                    "evaluator_accept_rows": accepted_rows,
+                    "evaluator_reject_rows": total - accepted_rows,
+                    "distinct_accepted": accepted,
+                }
+                if name == "penny":
+                    journal = await _penny_journal_stages(db, utc_start, utc_end)
+                    if journal is not None:
+                        stages.update(journal)
+                        stages["accept_rows_not_admitted"] = max(
+                            0, accepted_rows - journal["admitted"])
                 await db.execute(
                     """INSERT INTO ops_funnel_daily
                            (date_ist, subsystem, evaluated, accepted,
-                            rejected, top_rejects, as_of)
-                       VALUES (?, ?, ?, ?, ?, ?, ?)
+                            rejected, top_rejects, as_of, stages_json)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                        ON CONFLICT(date_ist, subsystem) DO UPDATE SET
                            evaluated = excluded.evaluated,
                            accepted = excluded.accepted,
                            rejected = excluded.rejected,
                            top_rejects = excluded.top_rejects,
-                           as_of = excluded.as_of""",
+                           as_of = excluded.as_of,
+                           stages_json = excluded.stages_json""",
                     (
                         # rejected is a ROW count (it pairs with `evaluated`);
                         # accepted is a DISTINCT-SIGNAL count. They deliberately
                         # do not sum to `evaluated` -- see _funnel_counts.
                         date_ist, name, total, accepted, total - accepted_rows,
                         _top_rejects(reason_rows, normalise), as_of,
+                        json.dumps(stages, sort_keys=True),
                     ),
                 )
                 await db.commit()
@@ -338,7 +398,7 @@ async def funnel_window(db_path: str, days: int = 30) -> list[dict]:
         async with aiosqlite.connect(db_path) as db:
             async with db.execute(
                 """SELECT date_ist, subsystem, evaluated, accepted,
-                          rejected, top_rejects
+                          rejected, top_rejects, stages_json
                    FROM ops_funnel_daily
                    WHERE date_ist > ? ORDER BY date_ist, subsystem""",
                 (since,),
@@ -352,6 +412,7 @@ async def funnel_window(db_path: str, days: int = 30) -> list[dict]:
             "date_ist": r[0], "subsystem": r[1], "evaluated": r[2],
             "accepted": r[3], "rejected": r[4],
             "top_rejects": json.loads(r[5]) if r[5] else {},
+            "stages": json.loads(r[6]) if r[6] else {},
         }
         for r in rows
     ]

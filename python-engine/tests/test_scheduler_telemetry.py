@@ -196,3 +196,55 @@ async def test_legacy_summary_table_gains_the_histogram_column(tmp_path):
     summary = (await scheduler_daily_summary_report(db_path, session_date="2026-10-01"))["summaries"][0]
     assert summary["runs"] == 4 and summary["results"] == {"COMPLETED": 4}
     assert summary["elapsed_distribution"]["market_hours"]["count"] == 1
+
+
+@pytest.fixture
+def _clean_completion_state():
+    import scheduler_telemetry
+    scheduler_telemetry._PENDING_COMPLETIONS.clear()
+    scheduler_telemetry._ACTIVE_RUNS.clear()
+    yield scheduler_telemetry
+    scheduler_telemetry._PENDING_COMPLETIONS.clear()
+    scheduler_telemetry._ACTIVE_RUNS.clear()
+
+
+@pytest.mark.asyncio
+async def test_busy_completion_write_is_reported_then_replayed(tmp_path, caplog, _clean_completion_state):
+    """Audit 2026-10-05: a finished job must not look IN_FLIGHT forever."""
+    db_path = str(tmp_path / "cache.db")
+    await record_scheduler_event(db_path, job_id="seed", event_kind="EXECUTION", result="COMPLETED")
+    holder: dict = {}
+
+    async def fno_tick():
+        # The business work finishes while another writer holds the database.
+        holder["lock"] = sqlite3.connect(db_path, check_same_thread=False)
+        holder["lock"].execute("BEGIN EXCLUSIVE")
+        return {"status": "COMPLETED"}
+
+    with caplog.at_level("WARNING", logger="scheduler_telemetry"):
+        assert await instrument_async_job(db_path, "fno_tick", fno_tick)() == {"status": "COMPLETED"}
+    holder["lock"].rollback(); holder["lock"].close()
+    assert "scheduler_telemetry_completion_write_failed" in caplog.text
+
+    report = await scheduler_timing_report(db_path)
+    assert [i["inflight_state"] for i in report["inflight"]] == ["COMPLETION_WRITE_FAILED"]
+    assert report["pending_completion_writes"][0]["job_id"] == "fno_tick"
+    assert report["pending_completion_writes"][0]["result"] == "COMPLETED"
+
+    async def next_tick():
+        return {"status": "COMPLETED"}
+    await instrument_async_job(db_path, "fno_tick", next_tick)()
+    replayed = await scheduler_timing_report(db_path)
+    assert replayed["inflight"] == [] and replayed["pending_completion_writes"] == []
+    assert replayed["jobs"]["fno_tick"]["executed_runs"] == 2
+    daily = await scheduler_daily_summary_report(db_path)
+    assert {s["job_id"]: s["runs"] for s in daily["summaries"]}["fno_tick"] == 2
+
+
+@pytest.mark.asyncio
+async def test_unfinished_current_boot_marker_is_stale_not_running(tmp_path, _clean_completion_state):
+    from scheduler_telemetry import start_scheduler_run
+    db_path = str(tmp_path / "cache.db")
+    await start_scheduler_run(db_path, job_id="partner_manual_advisory_lifecycle_tick")
+    report = await scheduler_timing_report(db_path)
+    assert report["inflight"][0]["inflight_state"] == "CURRENT_PROCESS_STALE"

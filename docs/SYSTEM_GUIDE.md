@@ -8,6 +8,37 @@
 
 
 
+
+## October 5 (night) — scheduler completion telemetry and Penny funnel stages (actual behavior, Dev)
+
+- **Scheduler telemetry (`scheduler_telemetry.py`).** The Production audit
+  found 18 current-boot rows left IN_FLIGHT although the jobs finished. The
+  final write had failed silently inside a 100 ms busy budget.
+  - `instrument_async_job` now retries the final write with budgets of 100,
+    250 and 500 ms (`COMPLETION_BUSY_BUDGETS_MS`).
+  - If every attempt fails, it logs `scheduler_telemetry_completion_write_failed`
+    and parks the final fact in memory (at most 200).
+  - The next durable write replays parked facts, oldest first, at most 20
+    each time, and logs `scheduler_telemetry_completion_replayed`.
+  - `scheduler_timing_report` adds `pending_completion_writes` and gives each
+    row its `run_id`. A current-boot `inflight_state` is now one of:
+    - `CURRENT_PROCESS`: the callback is still being awaited.
+    - `COMPLETION_WRITE_FAILED`: the job finished, but its final write is parked.
+    - `CURRENT_PROCESS_STALE`: neither of the above is known.
+  - The business callback never waits on telemetry for more than about 0.85 s
+    in total, and never fails because of it.
+- **Penny funnel stages (`ops_metrics.py`).**
+  - `ops_funnel_daily` gains a `stages_json` column, added by
+    `init_ops_metrics_db` at startup.
+  - Every subsystem records `evaluated_rows`, `evaluator_accept_rows`,
+    `evaluator_reject_rows` and `distinct_accepted`.
+  - Penny also records distinct journal attempts for the IST day: `admitted`
+    (CANDIDATE_ACCEPTED), `admission_refused` (VALIDATION_REJECTED),
+    `entries_filled`, `positions_created`, `accept_rows_not_admitted` and
+    `by_source`.
+  - The existing `accepted` and `rejected` columns are unchanged.
+  - `funnel_window` (and `/ops` `funnel`) returns `stages`.
+
 ## October 5 (night) — partner advisory cards delivered with advice labels (actual behavior, Dev)
 
 - Owner direction: `PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED=True`.

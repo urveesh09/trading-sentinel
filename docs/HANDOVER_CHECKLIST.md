@@ -6,6 +6,20 @@
 
 
 
+
+## October 5 (night) — scheduler telemetry and Penny funnel stages
+
+- [x] `scheduler_telemetry.py`: retried final write, failure log, parked
+  replay, and the `inflight_state` split. `test_scheduler_telemetry.py` and the
+  H2 tiers tests: 33 pass. The new tests fault-inject a locked database at
+  completion.
+- [x] `ops_metrics.py`: `stages_json`. `test_ops_metrics.py`: 28 pass,
+  including a reconciliation of the Oct 5 shape (2 accept rows, 1 admitted,
+  1 not admitted, 1 fill) and a column migration.
+- [ ] After rebuild, check `/ops` `funnel[].stages` for the first trading day,
+  and check for no `scheduler_telemetry_completion_write_failed` lines or for
+  replays.
+
 ## October 5 (night) — partner advisory labels
 
 - [x] Unqualified cards are delivered as "PURE ADVICE — NOT CHECKED", qualified

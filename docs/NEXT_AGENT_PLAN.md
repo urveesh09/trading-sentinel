@@ -22,12 +22,13 @@ Next, in order:
 4. ~~C8~~ done (whole-trade analytics).
 5. C2 BSE option schedule and C4 one DP per scrip per day remain; DP ₹15.34 done.
 6. ~~C5/C6~~ done (overnight outbox and catch-up).
-7. Scheduler IN_FLIGHT telemetry; Penny funnel stages. Swing heads-up and the
-   heatmap log name are done.
-8. Owner decision: `OWNER_LIVE_ENTRY_HALT` is `false` in Production; manual taps
-   can still place real orders.
-9. Owner decision: deliver unqualified advisory cards to the partner, labelled,
-   or keep them shadow-only.
+7. ~~Scheduler IN_FLIGHT telemetry; Penny funnel stages~~ done (retried and
+   parked completion writes; `ops_funnel_daily.stages_json`). Swing heads-up and
+   the heatmap log name are done.
+8. ~~Owner halt~~ decided: `OWNER_LIVE_ENTRY_HALT=true` in Production `.env`
+   with Momentum automatic, so it trades on paper until the owner lifts the halt.
+9. ~~Partner cards~~ decided: unqualified cards go out labelled PURE ADVICE —
+   NOT CHECKED.
 
 ## October 5 (evening) — expiry-day paper book
 

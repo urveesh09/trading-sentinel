@@ -1296,7 +1296,7 @@ Related tests: `python-engine/tests/test_ops_freshness_diagnostic.py`
 
 [ROADMAP-2.8 2026-07-12] Persistent ops metrics time-series. Docker's log ring buffer forgets; these two tables don't. They exist so that "did the engine run clean for 30 days?" and "how many accepts did each subsystem produce last week?" are SQL queries instead of manual log greps: ops_liveness_daily -- one row per IST day: scheduler-tick count and the worst gap between consecutive ticks (total and market-hours). Fed by main._scheduler_tick_job (the ROADMAP-2.4 loop-progress tick, 60s, 24/7). This is the attestation source for the F&O go-live liveness gate (fno_risk.fno_go_live_check condition 4, FNO_LIVENESS_30D_CLEAN) -- previously an operator log grep over logs that rotate away. ops_funn
 
-Top-level declarations: `init_ops_metrics_db` (line 47), `_gap_overlaps_market` (line 81), `record_scheduler_tick` (line 98), `liveness_report` (line 131), `_ist_day_utc_bounds` (line 192), `_funnel_counts` (line 201), `_top_rejects` (line 258), `snapshot_funnels_for_day` (line 267), `funnel_window` (line 334)
+Top-level declarations: `init_ops_metrics_db` (line 47), `_gap_overlaps_market` (line 85), `record_scheduler_tick` (line 102), `liveness_report` (line 135), `_ist_day_utc_bounds` (line 196), `_funnel_counts` (line 205), `_top_rejects` (line 262), `_penny_journal_stages` (line 279), `snapshot_funnels_for_day` (line 307), `funnel_window` (line 394)
 
 Engine dependencies: `penny_accept_watchdog`
 
@@ -2300,7 +2300,7 @@ Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_ho
 
 Bounded, read-only scheduler timing evidence. APScheduler's own log lines are useful for a live operator but cannot answer later whether a job was skipped, ran late, or simply returned because the market was closed. This module records what is actually known without inventing scheduled/start times that an older invocation did not expose.
 
-Top-level declarations: `_utc_now` (line 56), `_iso` (line 60), `_session_date` (line 68), `_market_segment` (line 79), `_fold_elapsed` (line 88), `elapsed_quantile_upper_bound` (line 100), `_ensure_summary_columns` (line 114), `_record_daily_summary` (line 122), `init_scheduler_telemetry` (line 174), `record_scheduler_event` (line 180), `start_scheduler_run` (line 220), `complete_scheduler_run` (line 248), `scheduler_daily_summary_report` (line 278), `instrument_async_job` (line 328), `telemetry_job` (line 386), `attach_scheduler_listener` (line 393), `_percentiles` (line 421), `_tier_for` (line 504), `_aggregate_by_tier` (line 511), `scheduler_timing_report` (line 603)
+Top-level declarations: `_utc_now` (line 69), `_iso` (line 73), `_session_date` (line 81), `_market_segment` (line 92), `_fold_elapsed` (line 101), `elapsed_quantile_upper_bound` (line 113), `_ensure_summary_columns` (line 127), `_record_daily_summary` (line 135), `init_scheduler_telemetry` (line 187), `record_scheduler_event` (line 193), `start_scheduler_run` (line 233), `complete_scheduler_run` (line 261), `scheduler_daily_summary_report` (line 291), `instrument_async_job` (line 341), `_write_final` (line 397), `_park_completion` (line 424), `_replay_pending` (line 431), `pending_completion_writes` (line 444), `telemetry_job` (line 451), `attach_scheduler_listener` (line 458), `_percentiles` (line 486), `_tier_for` (line 569), `_aggregate_by_tier` (line 576), `_inflight_state` (line 668), `scheduler_timing_report` (line 679)
 
 Related tests: `python-engine/tests/test_scheduler_telemetry.py`
 
