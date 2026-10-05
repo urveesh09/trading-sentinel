@@ -9,6 +9,31 @@
 
 
 
+## October 5 (late night) — expiry book: exit-fee reserve and acknowledged Telegram (actual behavior, Dev, paper only)
+
+A second review of `4673105` found two gaps; both are closed.
+
+- **Exit fees are reserved.** `max_loss` is now the whole premium, the buy's
+  charges, and one sell-order fee per lot (an exit is at most one slice per
+  lot). The buy is charged once at entry (`buy_charges`); each exit slice pays
+  only its own sell order (`sell_charges`). Before, each slice charged a full
+  round trip, so 2 lots at ₹18.80 sold one lot at a time at ₹0.05 lost ₹2,533
+  against a ₹2,492 reserve. Sizing now gives 1 lot there, and ₹6 premiums give
+  5 lots, not 6.
+- **Telegram delivery is acknowledged.** `/api/internal/notify` accepts
+  `require_delivery: true`: one send through `sendAlertOnce`, no gateway retry
+  or dead letter, and **502** if Telegram refused it. `_send_paper_notice`
+  (expiry and EDGE overnight outboxes) sends it, so only the outbox retries.
+  Other callers keep the old always-200 contract with gateway retries; the
+  response now also says `delivered`.
+- **Settlement wording:** `SETTLED_ASSUMED` uses our own sampled post-auction
+  index quote (`settlement_source: SAMPLED_INDEX_QUOTE`), not the exchange's
+  published settlement price, and the summary says so.
+- **Totals:** the running per-underlying line is filled P&L only; assumed
+  settlements get their own line.
+- **Deploy order:** gateway and engine ship together in one rebuild. An old
+  gateway ignores the flag and answers 200, the previous behaviour.
+
 ## October 5 (night) — expiry-day paper book hardened after review (actual behavior, Dev, paper only)
 
 Supersedes the risk and fill description in the `expiry-v1` section below. See

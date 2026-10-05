@@ -7,6 +7,23 @@
 
 
 
+## October 5 (late night) — expiry book second review
+
+- [x] Exit-fee reserve: buy charged once, one sell-order fee per lot reserved.
+- [x] `require_delivery` on `/api/internal/notify`, 502 on refusal, used by the
+  paper outboxes.
+- [x] Settlement labelled as our sampled index; filled and assumed totals on
+  separate lines.
+- [x] Python: `test_expiry_paper.py` 20 pass; focused expiry, EDGE overnight,
+  cost, scheduler and golden selection 134 pass (`.\winvenv\Scripts\python.exe
+  -m pytest ...`).
+- [x] Gateway: new `internal-notify-ack.test.js` (3) and the `sendAlertOnce`
+  case in `alert-dead-letter.test.js` pass. Full jest: 476 pass, 4 skip, 18
+  fail; all 18 are in `db.test.js` and `backlog-reconciliation.test.js` and
+  fail identically with these changes stashed (native SQLite on this host).
+- [x] Full Python suite not rerun for this change.
+- [ ] Owner merges and rebuilds both containers (Production runs `acc7181`).
+
 ## October 5 (night) — expiry-day book review fixes
 
 - [x] Hard loss ceiling (premium plus charges); A tries ATM, else one strike

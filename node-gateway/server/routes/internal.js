@@ -15,7 +15,8 @@ const { entrySessionVerdict } = require('../services/cas-eligibility');
 const { executeMomentum } = require('../services/momentum-execution');
 
 const notifySchema = z.object({
-  message: z.string().min(1)
+  message: z.string().min(1),
+  require_delivery: z.boolean().optional()
 });
 
 // [HIGH-007 / ROADMAP-4.5 2026-07-13]
@@ -30,13 +31,23 @@ const registerSignalSchema = z.object({
 
 // POST /api/internal/notify
 // Auth: X-Internal-Secret header
-// Body: { message: string }
-// Forwards message to TELEGRAM_CHAT_ID
+// Body: { message: string, require_delivery?: boolean }
+// Forwards message to TELEGRAM_CHAT_ID.
+//
+// Default: one send plus the gateway's own background retry/dead-letter;
+// always 200 (delivered says whether the first attempt succeeded).
+// require_delivery: one attempt and no gateway retry; 502 when Telegram did
+// not accept it, so the caller's durable outbox owns the retry.
 router.post('/notify', requireInternalSecret, validate(notifySchema, 'body'), async (req, res, next) => {
   try {
-    const { message } = req.body;
-    await telegram.sendAlert(`🚨 [SYSTEM ALERT]\n${message}`);
-    res.json({ success: true });
+    const { message, require_delivery: requireDelivery } = req.body;
+    const text = `🚨 [SYSTEM ALERT]\n${message}`;
+    if (requireDelivery) {
+      const delivered = await telegram.sendAlertOnce(text);
+      return res.status(delivered ? 200 : 502).json({ success: delivered, delivered });
+    }
+    const delivered = await telegram.sendAlert(text);
+    res.json({ success: true, delivered });
   } catch (err) {
     next(err);
   }

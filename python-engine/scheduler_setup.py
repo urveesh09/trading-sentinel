@@ -734,13 +734,15 @@ def register_penny_scheduler_jobs(scheduler):
     # auction (09:17, after the 09:15 print). Never places an order.
     # Phase summaries go through the store's outbox (audit C5): a failed or
     # non-2xx send leaves the notice pending for the next flush instead of
-    # being lost after the phase has committed.
+    # being lost after the phase has committed. require_delivery makes the
+    # gateway answer 502 when Telegram refused the message (and skip its own
+    # background retry), so the outbox alone owns retries.
     async def _send_paper_notice(message: str) -> None:
         import httpx as _httpx
         async with _httpx.AsyncClient() as _client:
             response = await _client.post(
                 f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": message},
+                json={"message": message, "require_delivery": True},
                 headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
                 timeout=5.0,
             )

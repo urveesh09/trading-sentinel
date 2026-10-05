@@ -19,9 +19,13 @@ flat still apply.
 - **Legs left open are settled.** After an outage, anything still open is settled
   as a labelled assumed valuation.
 - **Telegram uses a durable outbox.** A notice is marked sent only after a 2xx
-  response.
+  response, and the gateway answers 502 when Telegram refused it
+  (`require_delivery`).
 
-No expiry had been traded, so the rules are still `expiry-v1`.
+A second review of `4673105` found that sliced exits could exceed the reserve
+(each slice was charged a full round trip). The buy is now charged once and one
+sell-order fee per lot is reserved. No expiry had been traded, so the rules are
+still `expiry-v1`.
 
 ## Why
 
@@ -65,8 +69,11 @@ Module `python-engine/expiry_paper.py`; job `expiry_paper_tick` runs every 10 s,
   timestamp. The auction window is included.
 - **Load on the shared Kite quote limiter:** about one request every 10 s.
 
-**Loss ceiling (hard).** Every entry is sized so that the whole premium plus the
-charges of a worthless expiry fits the play's remaining ₹2,500 for the day.
+**Loss ceiling (hard).** Every entry is sized so that its `max_loss` fits the
+play's remaining ₹2,500 for the day. `max_loss` is the whole premium, the buy's
+charges, and one sell-order fee per lot, because an exit can be split into at
+most one order per lot. The buy is charged once at entry; each exit slice pays
+only its own sell order.
 - The stops below are planned exits, not guarantees: a gap between ticks can
   fill below them.
 - Raising a stop protects profit only as far as the next observed price allows.
@@ -88,10 +95,11 @@ charges of a worthless expiry fits the play's remaining ₹2,500 for the day.
 - **When it runs:** on every tick for earlier days, and hourly at :45 from 09:45
   to 17:45 on trading days.
 - **Legs still open after 15:40** are valued at intrinsic using the last index
-  print logged after 15:36 (the post-auction close), less buy charges and 0.15%
-  exercise STT. They are marked `SETTLED_ASSUMED`.
-- **Without such a print**, a leg is marked `UNRESOLVED` at its full worst-case
-  loss.
+  quote we sampled after 15:36, less 0.15% exercise STT (the buy was charged at
+  entry). They are marked `SETTLED_ASSUMED`. This is our own sample, not the
+  exchange's published settlement price.
+- **Without such a quote**, a leg is marked `UNRESOLVED` at its remaining worst
+  case (premium plus one order fee per open lot).
 - **Separation:** both are stored in `assumed_pnl`, never mixed with filled P&L.
 
 **Box.** The range of fresh index and futures samples between 13:00 and 13:30.
@@ -156,7 +164,8 @@ At least 30 samples are required; otherwise A and C stand down for the day.
   label, and one summary per expiry day. The summary shows:
   - box status, signals, and ticks with stale-quote counts;
   - filled and assumed P&L per play;
-  - per-underlying totals to date.
+  - per-underlying filled totals to date, with assumed settlements on a
+    separate line.
 - **Outbox:** `expiry_paper_notices`, flushed after each tick and each
   reconcile.
 - **Store:** `<DB_PATH>.expiry-paper.db`, with tables

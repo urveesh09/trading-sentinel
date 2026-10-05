@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 import json
 import math
 import sqlite3
+from types import SimpleNamespace
 
 import pytest
 
@@ -232,11 +233,33 @@ def test_affordable_fill_keeps_premium_plus_charges_inside_the_budget():
     assert xp.affordable_fill([(quote(60.0), 65)], BUDGET, 4) == (0, [])          # one lot is Rs 3,900
     lots, prices = xp.affordable_fill([(quote(19.0), 65)], BUDGET, 4)
     assert lots == 1                                                              # two lots + charges > 2,500
-    assert xp.worst_case_loss(prices[0], 65) <= BUDGET
+    assert xp.worst_case_loss(prices[0], 1, 65) <= BUDGET
     lots, prices = xp.affordable_fill([(quote(6.0), 65)], BUDGET, 10)
-    assert lots == 6 and xp.worst_case_loss(prices[0], lots * 65) <= BUDGET
+    assert lots == 5 and xp.worst_case_loss(prices[0], lots, 65) <= BUDGET       # 6 lots + exit fees > 2,500
     lots, _ = xp.affordable_fill([(quote(10.0), 65), (quote(17.0), 65)], BUDGET, 4)
     assert lots == 1
+
+
+def test_sliced_exits_at_nearly_zero_stay_inside_max_loss():
+    """Review repro: 2 lots at 18.80 sold one lot at a time at 0.05 lost more than the reserve.
+
+    Sizing now reserves one sell-order fee per lot, so 2 lots at 18.80 no
+    longer fit. Whatever the size, the buy is charged once at entry, each
+    slice pays only its own sell order, and the result stays inside max_loss.
+    """
+    assert xp.affordable_fill([(_quote([(18.80, 650)]), 65)], BUDGET, 4)[0] == 1
+    contract = SimpleNamespace(tradingsymbol="NIFTY26OCT25050CE", token=1, strike=25050.0,
+                               instrument_type="CE", lot_size=65)
+    now = _at(TUESDAY, 13, 40)
+    pos = xp._new_position("2026-10-06", "NIFTY", "A", "NFO", contract, 18.80, 2, now)
+    assert pos["max_loss"] > BUDGET                                              # why sizing refuses it
+    assert pos["net_pnl"] == pytest.approx(-xp.buy_charges(18.80, 130), abs=0.01)
+    xp._sell(pos, 1, 0.05, "STOP", now)
+    xp._sell(pos, 1, 0.05, "STOP", now + timedelta(seconds=10))
+    assert pos["status"] == "CLOSED" and -pos["net_pnl"] <= pos["max_loss"]
+    from fno_costs import calc_fno_costs
+    one_order_pair = calc_fno_costs(18.80, 0.05, 130)
+    assert pos["costs"] == pytest.approx(one_order_pair + xp.order_fee(), abs=0.02)   # one buy, two sells
 
 
 # --------------------------------------------------------------------------- the tick
@@ -317,7 +340,9 @@ async def test_missing_bids_latch_the_exit_and_settle_as_assumed_after_the_sessi
     settle = json.loads(c["events"])[-1]
     assert settle["settlement_spot"] == pytest.approx(25060.0)
     intrinsic = max(0.0, 25060.0 - c["strike"])
-    assert c["assumed_pnl"] < (intrinsic - c["entry_price"]) * c["lots_open"] * 65
+    assert c["assumed_pnl"] == pytest.approx(
+        (intrinsic * (1 - xp.EXERCISE_STT_PCT) - c["entry_price"]) * c["lots_open"] * 65, abs=0.01)
+    assert settle["settlement_source"] == "SAMPLED_INDEX_QUOTE"
 
 
 @pytest.mark.asyncio
@@ -331,7 +356,8 @@ async def test_outage_leaves_unresolved_legs_settled_next_morning(tmp_path):
     assert settled >= 1 and not any(r["status"] == "OPEN" for r in rows)
     unresolved = [r for r in rows if r["status"] == "UNRESOLVED"]
     assert unresolved and all(r["assumed_pnl"] == pytest.approx(
-        -xp.worst_case_loss(r["entry_price"], r["lots_open"] * 65), abs=0.01) for r in unresolved)
+        -(r["entry_price"] * r["lots_open"] * 65 + r["lots_open"] * xp.order_fee()), abs=0.01) for r in unresolved)
+    assert all(-(r["net_pnl"] + r["assumed_pnl"]) <= r["max_loss"] + 0.01 for r in unresolved)
     assert [k for k, _, _ in _notices(db) if k.endswith(":summary")] == ["2026-10-06:NIFTY:summary"]
 
 

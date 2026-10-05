@@ -3,6 +3,23 @@
 
 
 
+## October 5 (late night) — expiry book second review (done, Dev)
+
+- Problem: partial exits could exceed the ₹2,500 reserve; the gateway reported
+  success for Telegram sends that failed.
+- Files: `python-engine/expiry_paper.py`, `python-engine/scheduler_setup.py`,
+  `node-gateway/server/routes/internal.js`,
+  `node-gateway/server/services/telegram.js`, and their tests.
+- Acceptance: the review's repro stays inside `max_loss`; `require_delivery`
+  answers 502 on a refusal without a gateway retry.
+- Rollout: one rebuild of both containers. Rollback: revert the commit; no
+  schema change (column meanings: `costs` and `net_pnl` include the buy's
+  charges from entry; no Production rows exist yet).
+- Still open: as in the section below (merge and rebuild, first-expiry
+  freshness check, 20-expiry review). Do not loosen the 20 s freshness rule to
+  get trades; first find out whether missing timestamps, provider lag or
+  request timing caused any rejections.
+
 ## October 5 (night) — expiry-day book review fixes (done, Dev)
 
 The independent review of `f000acb` was applied. The details are in the

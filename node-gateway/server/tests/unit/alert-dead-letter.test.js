@@ -69,4 +69,15 @@ describe('undelivered alert dead-letter', () => {
     // A health probe must never throw just because nothing has failed yet.
     expect(telegram.undeliveredAlertCount()).toBe(0);
   });
+
+  // [EXPIRY-OUTBOX 2026-10-05] The caller's outbox owns retries for
+  // sendAlertOnce, so a refusal reports false and leaves no dead-letter row.
+  test('sendAlertOnce reports a refusal without retrying or dead-lettering', async () => {
+    telegram.bot.sendMessage.mockRejectedValueOnce(Object.assign(new Error('boom'), { code: 'EFATAL' }));
+    expect(await telegram.sendAlertOnce('x')).toBe(false);
+    telegram.bot.sendMessage.mockResolvedValueOnce({});
+    expect(await telegram.sendAlertOnce('y')).toBe(true);
+    expect(telegram.bot.sendMessage).toHaveBeenCalledTimes(2);
+    expect(fs.existsSync(tmpFile)).toBe(false);
+  });
 });

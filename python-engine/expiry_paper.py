@@ -257,11 +257,38 @@ def walk(levels: tuple[tuple[float, int], ...], lots: int, lot_size: int) -> tup
     return whole, round(value / qty, 4)
 
 
-def worst_case_loss(price: float, qty: int) -> float:
-    """Whole premium plus the charges of a buy that expires worthless."""
+def order_fee() -> float:
+    """Charges of one order that do not scale with premium (flat brokerage and its GST)."""
     from fno_costs import calc_fno_costs
 
-    return price * qty + calc_fno_costs(price, 0.0, qty)
+    return calc_fno_costs(0.0, 0.0, 1) / 2.0
+
+
+def buy_charges(price: float, qty: int) -> float:
+    """Charges of the single buy order, booked once at entry."""
+    from fno_costs import calc_fno_costs
+
+    return calc_fno_costs(price, 0.0, qty) - order_fee()
+
+
+def sell_charges(price: float, qty: int) -> float:
+    """Charges of one sell order (an exit slice)."""
+    from fno_costs import calc_fno_costs
+
+    return calc_fno_costs(0.0, price, qty) - order_fee()
+
+
+def worst_case_loss(price: float, lots: int, lot_size: int) -> float:
+    """Hard loss bound: the whole premium, the buy's charges, and one order fee per lot.
+
+    An exit can be sliced into at most ``lots`` sell orders (each fills at
+    least one whole lot), and a sell's proceeds always exceed its ad-valorem
+    charges, so each slice costs at most one order fee net. Expiring
+    worthless or exercising costs no more (exercise STT is under 1% of
+    intrinsic).
+    """
+    qty = lots * lot_size
+    return price * qty + buy_charges(price, qty) + lots * order_fee()
 
 
 def affordable_fill(quotes: list[tuple[Quote, int]], budget: float, cap: int) -> tuple[int, list[float]]:
@@ -273,7 +300,7 @@ def affordable_fill(quotes: list[tuple[Quote, int]], budget: float, cap: int) ->
             if filled < lots:
                 break
             prices.append(price)
-            loss += worst_case_loss(price, lots * lot_size)
+            loss += worst_case_loss(price, lots, lot_size)
         else:
             if loss <= budget:
                 return lots, prices
@@ -433,11 +460,10 @@ def _realized(conn, day: str, underlying: str, play: str) -> float:
 
 
 def _sell(pos: dict, lots: int, price: float, reason: str, now: datetime) -> dict:
-    from fno_costs import calc_fno_costs
-
+    """Book one exit slice: its gross and its own sell-order charges (the buy was charged at entry)."""
     qty = lots * pos["lot_size"]
     gross = (price - pos["entry_price"]) * qty
-    costs = calc_fno_costs(pos["entry_price"], price, qty)
+    costs = sell_charges(price, qty)
     pos["lots_open"] -= lots
     pos["gross"] = round(pos["gross"] + gross, 2)
     pos["costs"] = round(pos["costs"] + costs, 2)
@@ -453,17 +479,17 @@ def _sell(pos: dict, lots: int, price: float, reason: str, now: datetime) -> dic
 def _new_position(day: str, underlying: str, play: str, exchange: str, contract, price: float,
                   lots: int, now: datetime) -> dict:
     policy = POLICIES[play]
-    qty = lots * contract.lot_size
+    charges = round(buy_charges(price, lots * contract.lot_size), 2)
     return {"id": None, "day": day, "underlying": underlying, "play": play, "exchange": exchange,
             "symbol": contract.tradingsymbol, "token": contract.token, "strike": contract.strike,
             "opt_type": contract.instrument_type, "lot_size": contract.lot_size, "lots": lots,
             "lots_open": lots, "entry_ts": now.isoformat(), "entry_price": price,
-            "max_loss": round(worst_case_loss(price, qty), 2), "peak": price,
+            "max_loss": round(worst_case_loss(price, lots, contract.lot_size), 2), "peak": price,
             "stop": round(price * (1 - policy.hard_stop), 2) if policy.hard_stop else 0.0,
-            "banked": 0, "exit_pending": None, "status": "OPEN", "gross": 0.0, "costs": 0.0,
-            "net_pnl": 0.0, "assumed_pnl": None,
+            "banked": 0, "exit_pending": None, "status": "OPEN", "gross": 0.0, "costs": charges,
+            "net_pnl": -charges, "assumed_pnl": None,
             "_events": [{"ts": now.isoformat(), "action": "BUY", "lots": lots, "price": price,
-                         "fill_model": fill_model(now.time())}]}
+                         "charges": charges, "fill_model": fill_model(now.time())}]}
 
 
 def _save_position(conn, pos: dict) -> None:
@@ -503,7 +529,10 @@ def _try_exit(pos: dict, quote: Optional[Quote], lots: int, reason: str, now: da
 # ---------------------------------------------------------------------------
 
 def _settlement_spot(conn, day: str, underlying: str) -> Optional[float]:
-    """The index print after the closing auction (15:36-15:40 ticks), if one was logged."""
+    """The last index quote we sampled after the closing auction (15:36-15:40), if any.
+
+    This is our own sample, not the exchange's published settlement price.
+    """
     row = conn.execute("SELECT spot FROM expiry_paper_ticks WHERE day=? AND underlying=? AND spot IS NOT NULL "
                        "AND substr(ts, 12, 8) >= ? ORDER BY ts DESC LIMIT 1",
                        (day, underlying, AUCTION_CLOSE_KNOWN.isoformat())).fetchone()
@@ -513,13 +542,12 @@ def _settlement_spot(conn, day: str, underlying: str) -> Optional[float]:
 def reconcile(db_path: Optional[str] = None, now: Optional[datetime] = None) -> int:
     """Settle every leg still open after its expiry session; returns the number settled.
 
-    With a post-auction index print the residual is valued at intrinsic less
-    exercise STT (SETTLED_ASSUMED); without one it is UNRESOLVED at its full
-    worst-case loss. Both are assumed valuations kept in ``assumed_pnl``,
-    never executable fills. Day summaries are queued here.
+    With a sampled post-auction index quote the residual is valued at
+    intrinsic less exercise STT (SETTLED_ASSUMED); without one it is
+    UNRESOLVED at its remaining worst case. The buy's charges were booked at
+    entry. Both are assumed valuations kept in ``assumed_pnl``, never
+    executable fills. Day summaries are queued here.
     """
-    from fno_costs import calc_fno_costs
-
     now = now or datetime.now(IST)
     today = now.date().isoformat()
     after_session = now.time() >= SESSION_END
@@ -532,15 +560,15 @@ def reconcile(db_path: Optional[str] = None, now: Optional[datetime] = None) -> 
             spot = _settlement_spot(conn, pos["day"], pos["underlying"])
             if spot is None:
                 pos["status"] = "UNRESOLVED"
-                pos["assumed_pnl"] = round(-worst_case_loss(pos["entry_price"], qty), 2)
+                pos["assumed_pnl"] = round(-(pos["entry_price"] * qty + pos["lots_open"] * order_fee()), 2)
             else:
                 intrinsic = max(0.0, spot - pos["strike"]) if pos["opt_type"] == "CE" \
                     else max(0.0, pos["strike"] - spot)
-                charges = calc_fno_costs(pos["entry_price"], 0.0, qty) + EXERCISE_STT_PCT * intrinsic * qty
                 pos["status"] = "SETTLED_ASSUMED"
-                pos["assumed_pnl"] = round((intrinsic - pos["entry_price"]) * qty - charges, 2)
+                pos["assumed_pnl"] = round((intrinsic * (1 - EXERCISE_STT_PCT) - pos["entry_price"]) * qty, 2)
             pos["_events"].append({"ts": now.isoformat(), "action": pos["status"], "lots": pos["lots_open"],
-                                   "settlement_spot": spot, "assumed_pnl": pos["assumed_pnl"]})
+                                   "settlement_spot": spot, "settlement_source": "SAMPLED_INDEX_QUOTE",
+                                   "assumed_pnl": pos["assumed_pnl"]})
             _save_position(conn, pos)
             settled += 1
         days = conn.execute("SELECT day, underlying, state FROM expiry_paper_days WHERE day < ? OR (day = ? AND ?)",
@@ -728,15 +756,18 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
         detail = ", ".join(f"{r['symbol']} {r['status']}" for r in rows)
         line = f"  {play}: filled Rs {filled:+,.0f}"
         if any(r["assumed_pnl"] is not None for r in rows):
-            line += f", assumed settlement Rs {assumed:+,.0f}"
+            line += f", assumed Rs {assumed:+,.0f} [our sampled index, not the official settlement]"
         lines.append(line + f" ({detail}{'; auction-window fills unverified' if auction else ''})")
     totals = conn.execute(
         "SELECT play, COALESCE(SUM(net_pnl), 0), COALESCE(SUM(assumed_pnl), 0) FROM expiry_paper_positions "
         "WHERE underlying=? AND status != 'OPEN' GROUP BY play", (underlying,)).fetchall()
     expiries = conn.execute("SELECT COUNT(*) FROM expiry_paper_days WHERE underlying=?", (underlying,)).fetchone()[0]
     if totals:
-        lines.append(f"  {underlying} to date over {expiries} expiries: " + ", ".join(
-            f"{r[0]} Rs {r[1] + r[2]:+,.0f}" + (f" (incl. assumed {r[2]:+,.0f})" if r[2] else "") for r in totals))
+        lines.append(f"  {underlying} to date over {expiries} expiries, filled: " + ", ".join(
+            f"{r[0]} Rs {r[1]:+,.0f}" for r in totals))
+        if any(r[2] for r in totals):
+            lines.append("  assumed settlements, kept apart: " + ", ".join(
+                f"{r[0]} Rs {r[2]:+,.0f}" for r in totals if r[2]))
     return "\n".join(lines)
 
 
