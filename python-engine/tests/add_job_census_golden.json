@@ -30,6 +30,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_expiry_paper_tick_safe",
+    "id": "'expiry_paper_tick'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_fno_accept_watchdog_safe",
     "id": "'fno_accept_watchdog'",
     "trigger": "'cron'"

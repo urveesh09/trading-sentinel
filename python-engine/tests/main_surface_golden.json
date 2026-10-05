@@ -19,6 +19,12 @@
       "trigger": "cron[day_of_week='mon-fri', hour='9', minute='17']"
     },
     {
+      "func": "_run_expiry_paper_tick_safe",
+      "id": "expiry_paper_tick",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='12-15', second='*/10']"
+    },
+    {
       "func": "_run_fno_accept_watchdog_safe",
       "id": "fno_accept_watchdog",
       "kwargs": [],

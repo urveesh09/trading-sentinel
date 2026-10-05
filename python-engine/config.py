@@ -894,6 +894,14 @@ class Settings(BaseSettings):
     # Separate store; never places an order. Owner chose a Rs 25,000 book.
     EDGE_OVERNIGHT_PAPER_ENABLED:    bool  = True
     EDGE_OVERNIGHT_PAPER_BANKROLL:   float = 25000.0
+    # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book
+    # (docs/2026-10-05-expiry-day-paper-book.md): plays A/B/C on the weekly
+    # NIFTY (Tue) and SENSEX (Thu) expiry, 12:59-15:40 IST. The budget is the
+    # most each play may lose per expiry day (owner chose Rs 2,500). Separate
+    # store; the live F&O book keeps FNO_EXPIRY_DAY_ENTRIES=False.
+    EXPIRY_PAPER_ENABLED:            bool  = True
+    EXPIRY_PAPER_BUDGET:             float = 2500.0
+    EXPIRY_PAPER_UNDERLYINGS:        str   = "NIFTY,SENSEX"
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3

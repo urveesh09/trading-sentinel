@@ -2,6 +2,21 @@
 
 
 
+## October 5 (evening) — expiry-day paper book
+
+[Design and frozen rules](2026-10-05-expiry-day-paper-book.md). Paper only.
+
+1. It needs the merge and rebuild before its first expiry. The same PR carries
+   the gateway fix that Telegram needs.
+2. After each expiry, check the Telegram summary or `expiry_paper_days` /
+   `expiry_paper_positions`. Confirm the box was READY and the tick log reaches
+   15:40.
+3. Score each play after 20 expiries against the pre-registered measures. Any
+   rule change is `expiry-v2`, scored only on later expiries.
+4. Watch the SEBI settlement decision (consultation closed Oct 3). If the auction
+   settlement or session times change, record the date; B and C must be
+   re-judged from then.
+
 ## October 4 (late) — start here: successor inheritance and gateway fix
 
 Read [the inheritance doc](2026-10-04-successor-inheritance.md) first.

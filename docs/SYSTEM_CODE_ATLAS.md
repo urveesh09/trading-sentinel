@@ -536,6 +536,18 @@ Top-level declarations: `Excursion` (line 81), `grade` (line 105), `attribute` (
 
 Related tests: `python-engine/tests/test_exit_quality.py`
 
+## `python-engine/expiry_paper.py`
+
+Expiry-day paper book: three pre-registered plays on the weekly index expiry. Broker-free. It never imports an executor or places an order. Design, rules and the reasoning behind them: docs/2026-10-05-expiry-day-paper-book.md. The tick (``run_expiry_tick``) runs every 10 s from 12:59 to 15:40 IST. It acts only for an underlying whose nearest option expiry is today according to the instrument dump, so holiday shifts are handled by the exchange calendar: NIFTY (NFO) on Tuesdays and SENSEX (BFO) on Thursdays. One quote batch per underlying per tick (index, front future, ATM +/- 8 strikes of today's expiry and every open leg) is logged in full, so the 15:15-15:40 auction window is recorded too.
+
+Top-level declarations: `ExitPolicy` (line 71), `expiry_db_path` (line 107), `_store` (line 112), `Quote` (line 127), `_positive` (line 143), `parse_quote` (line 151), `new_day_state` (line 168), `update_box` (line 174), `breakout_signal` (line 195), `failed_break` (line 221), `manage_position` (line 232), `a_lots` (line 270), `premium_lots` (line 277), `pick_lottery_strike` (line 281), `_load_state` (line 297), `_open_positions` (line 303), `_realized` (line 309), `_last_logged_quote` (line 315), `_sell` (line 325), `_new_position` (line 343), `_save_position` (line 356), `_chain` (line 371), `_fetch` (line 384), `_tick_underlying` (line 392), `format_day_summary` (line 501), `run_expiry_tick` (line 517)
+
+Engine dependencies: `config`, `fno_costs`, `fno_models`, `fno_underlyings`
+
+Related tests: `python-engine/tests/test_expiry_paper.py`
+
+Declared tables: `expiry_paper_days`, `expiry_paper_positions`, `expiry_paper_ticks`
+
 ## `python-engine/fno_accept_watchdog.py`
 
 [FNO-WATCHDOG 2026-07-10] Zero-accept alarm for the F&O subsystem (spec §9.2). Sibling of penny_accept_watchdog (GAP-2), tuned for the F&O reject taxonomy. Fires when accepts == 0 across FNO_ZERO_ACCEPT_ALERT_DAYS consecutive trading days while evaluations > 0 -- carrying the reject-reason histogram. It MUST distinguish two cases (this is the whole reason the §3 reject taxonomy earns its keep): - `pool_below_min_viable` dominating -> HEALTHY. The module is correctly declining expensive-premium days (the §3 volatility filter). Reported as a self-regulation note, severity=info. - a histogram that never varies / one reason at ~100% on every day regardless of market conditions -> a DEAD GATE. Al
@@ -2272,7 +2284,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 1061)
+Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 1103)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 

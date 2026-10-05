@@ -2,6 +2,25 @@
 
 
 
+## October 5 — expiry-day paper book `expiry-v1` (actual behavior, Dev, paper only)
+
+- `expiry_paper.py`, job `expiry_paper_tick`:
+  - runs every 10 s, 12:59–15:40 IST, gated on trading days;
+  - acts only when NIFTY (Tue) or SENSEX (Thu) expires today per the dump.
+- **Plays:**
+  - **A, gamma breakout:** a 13:00–13:30 box; −30% stop; failed-break and
+    8-minute time stops; banks half at +40%, then trails; flat by 15:13.
+  - **B, auction strangle:** bought 15:13:30–15:15 and held through the closing
+    auction.
+  - **C, lottery:** a cheap OTM option on A's signal, held into the auction.
+- **Risk:** at most ₹2,500 (`EXPIRY_PAPER_BUDGET`) per play per expiry day.
+  Broker-free; separate store `<DB_PATH>.expiry-paper.db`, which logs every tick
+  including 15:15–15:40.
+- The live F&O book is unchanged (`FNO_EXPIRY_DAY_ENTRIES=False`, 15:10 flat).
+- The research quote archive now collects until 15:40 (F&O closes at 15:40 since
+  the August 3 closing auction).
+- Design and frozen rules: [expiry-day paper book](2026-10-05-expiry-day-paper-book.md).
+
 ## October 4 — container users share uid 1000 (actual behavior, Dev)
 
 - `python-engine` (`quantuser`) and `node-gateway` (`appuser`) both run as

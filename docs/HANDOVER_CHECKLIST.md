@@ -2,6 +2,23 @@
 
 
 
+## October 5 (evening) — expiry-day paper book
+
+- [x] Researched expiry-day dynamics and wrote the
+  [design doc](2026-10-05-expiry-day-paper-book.md) covering:
+  - the closing auction and the 15:40 close;
+  - SEBI's pending settlement review;
+  - evidence on retail losses.
+- [x] `expiry_paper.py` (plays A/B/C, ₹2,500 per play per expiry, paper only)
+  and a 10 s scheduler job. The research archive window was extended to 15:40.
+- [x] Tests: `tests/test_expiry_paper.py`, 11 pass (pure exit and entry rules
+  plus a simulated expiry afternoon). Scheduler goldens updated. Full suite
+  after the fix: 4,942 pass, 4 skip, and only the 4 known pre-existing
+  failures.
+- [ ] Owner merges and rebuilds Production before the next expiry (NIFTY, Tue
+  Oct 6).
+- [ ] First expiry: confirm the ticks, the box and the Telegram summary.
+
 ## October 4 (late) — gateway uid fix and successor inheritance
 
 - [x] Diagnosed the Production `node-gateway` crash loop (read-only): uid 100

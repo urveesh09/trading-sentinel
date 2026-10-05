@@ -791,6 +791,48 @@ def register_penny_scheduler_jobs(scheduler):
         misfire_grace_time=1800,
     )
 
+    # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
+    # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
+    # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today
+    # per the instrument dump. Never places an order.
+    async def _run_expiry_paper_tick_safe():
+        import httpx as _httpx
+        import expiry_paper as xp
+        if not settings.EXPIRY_PAPER_ENABLED or not _main.kite.access_token:
+            return
+        now_ist = datetime.now(IST)
+        if not xp.TICK_START <= now_ist.time() <= xp.SESSION_END:
+            return
+        if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH):
+            return
+        try:
+            messages = await xp.run_expiry_tick(_main.kite)
+        except Exception as exc:
+            logger.error("expiry_paper_tick_failed err=%s", type(exc).__name__, exc_info=True)
+            return
+        if not messages:
+            return
+        logger.info("expiry_paper_events n=%d", len(messages))
+        try:
+            async with _httpx.AsyncClient() as _client:
+                await _client.post(
+                    f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                    json={"message": "\n".join(messages)},
+                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                    timeout=5.0,
+                )
+        except Exception as exc:
+            logger.warning("expiry_paper_notify_failed err=%s", type(exc).__name__)
+
+    scheduler.add_job(
+        _run_expiry_paper_tick_safe, "cron",
+        day_of_week="mon-fri", hour="12-15", second="*/10",
+        id="expiry_paper_tick",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=8,
+    )
+
     # [PENNY-EDGE-STARTUP-CATCHUP 2026-07-02] Companion catchup for the
     # 15:15 IST EOD exit. Fires only if the container was offline at
     # 15:15 IST AND it's now after-market. The startup_scan catchup
