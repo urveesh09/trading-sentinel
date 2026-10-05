@@ -21,7 +21,7 @@ Next, in order:
 3. C7: late Momentum shadow bars (15:15 EOD exits unresolved).
 4. ~~C8~~ done (whole-trade analytics).
 5. C2 BSE option schedule and C4 one DP per scrip per day remain; DP ₹15.34 done.
-6. C5/C6: overnight EDGE outbox and startup catch-up.
+6. ~~C5/C6~~ done (overnight outbox and catch-up).
 7. Scheduler IN_FLIGHT telemetry; Penny funnel stages. Swing heads-up and the
    heatmap log name are done.
 8. Owner decision: `OWNER_LIVE_ENTRY_HALT` is `false` in Production; manual taps

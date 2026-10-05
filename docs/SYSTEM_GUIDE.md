@@ -5,6 +5,25 @@
 
 
 
+
+## October 5 (night) — EDGE overnight outbox and restart catch-up (actual behavior, Dev, paper only)
+
+- **Outbox (audit C5).** Each phase writes its Telegram text to
+  `edge_overnight_paper_notices` in the same transaction as its run receipt.
+  - `flush_notices` sends pending notices oldest first and marks one sent only
+    after a 2xx response (`raise_for_status`).
+  - A failed send leaves the notice pending and stops that flush.
+  - Flushes run after every phase and every catch-up tick.
+- **Catch-up (audit C6).** Job `edge_overnight_catchup` (cron mon–fri 9–15,
+  every 5 minutes, trading days) calls `catch_up`, which runs only a phase
+  whose receipt is missing today:
+  - **Exit**, 09:17–15:20. Up to 09:47 (the old misfire grace) it sells at the
+    opening-auction price. Later it sells at the current LTP less 5 bps, with
+    `exit_reason=CATCHUP_LTP` and `exit_open` still recording the real open.
+    It never claims an auction fill it wasn't present for.
+  - **Entry**, 15:21–15:29 only (pre-close); after that the day is not traded.
+  - Receipts make every phase once-only per day.
+
 ## October 5 (night) — audit fixes: analytics, Swing heads-up, DP tariff (actual behavior, Dev)
 
 - **Whole-trade analytics (audit C8).**

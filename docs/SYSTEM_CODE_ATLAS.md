@@ -470,13 +470,13 @@ Related tests: `python-engine/tests/test_dispatch_independence.py`
 
 EDGE overnight paper book: buy the EDGE scan near the close, sell at the next open. Broker-free. It never imports an executor or places an order. Research basis: docs/2026-10-05-edge-overnight-study.md. The shipped EDGE candidates earn their move overnight, while the runtime EDGE buys the following morning. * 15:20 IST (``run_overnight_entry``): one quote batch gives today's provisional bar (open/high/low from the session so far, LTP as the close, volume so far) for every cached ticker in or near the EDGE price band. The shipped ``scan_today`` ranks them on a temporary copy of recent history plus that bar. Each pick is bought on paper at LTP + ``ENTRY_SLIPPAGE_BPS``, capped by 1% of today's
 
-Top-level declarations: `overnight_db_path` (line 64), `_store` (line 69), `_read_only` (line 78), `_finite_positive` (line 82), `book_state` (line 89), `_already_ran` (line 101), `_record_run` (line 107), `universe_from_cache` (line 112), `provisional_bar` (line 127), `build_scan_db` (line 143), `_quotes` (line 161), `run_overnight_entry` (line 173), `run_overnight_exit` (line 240), `format_entry_telegram` (line 294), `format_exit_telegram` (line 302)
+Top-level declarations: `overnight_db_path` (line 80), `_store` (line 85), `_read_only` (line 94), `_finite_positive` (line 98), `book_state` (line 105), `_already_ran` (line 117), `_record_run` (line 123), `flush_notices` (line 132), `catch_up` (line 157), `universe_from_cache` (line 180), `provisional_bar` (line 195), `build_scan_db` (line 211), `_quotes` (line 229), `run_overnight_entry` (line 241), `run_overnight_exit` (line 308), `format_entry_telegram` (line 365), `format_exit_telegram` (line 373)
 
 Engine dependencies: `config`, `penny_edge_live`, `penny_risk`
 
 Related tests: `python-engine/tests/test_edge_overnight_paper.py`
 
-Declared tables: `edge_overnight_paper_runs`, `edge_overnight_paper_trades`
+Declared tables: `edge_overnight_paper_notices`, `edge_overnight_paper_runs`, `edge_overnight_paper_trades`
 
 ## `python-engine/edge_portfolio_replay.py`
 
@@ -2292,7 +2292,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 1103)
+Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 1130)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 

@@ -126,3 +126,54 @@ def test_module_has_no_order_capability():
     modules = {node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)}
     assert not any("executor" in n or "order" in n for n in names | {m or "" for m in modules})
     assert "place_order" not in Path(eop.__file__).read_text(encoding="utf-8")
+
+
+# [EDGE-OVERNIGHT-CATCHUP 2026-10-05] Audit C5/C6.
+@pytest.mark.asyncio
+async def test_notice_outbox_retries_until_a_send_succeeds(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    sent = []
+
+    async def fail(message):
+        raise RuntimeError("HTTP 500")
+
+    async def ok(message):
+        sent.append(message)
+
+    assert await eop.flush_notices(fail, cache) == 0
+    assert await eop.flush_notices(ok, cache) == 1
+    assert await eop.flush_notices(ok, cache) == 0                   # sent once
+    assert sent[0].startswith(f"EDGE overnight (paper) {TODAY.isoformat()}: bought 1")
+    with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM edge_overnight_paper_trades").fetchone()[0] == 1
+
+
+@pytest.mark.asyncio
+async def test_catch_up_late_exit_sells_at_ltp_not_the_missed_auction(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    quotes = {"AAA": _quote(20.6, 20.8, 20.1, 20.3, 50000.0, NEXT)}
+    assert await eop.catch_up(_Kite(quotes), cache, now=_at(NEXT, 9, 10)) == []    # before the window
+    assert await eop.catch_up(_Kite(quotes), cache, now=_at(NEXT, 11, 5)) == ["EXIT"]
+    with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
+        row = conn.execute("SELECT exit_price, exit_reason, exit_open FROM edge_overnight_paper_trades").fetchone()
+    assert row == (round(20.3 * 0.9995, 4), "CATCHUP_LTP", 20.6)
+    assert await eop.catch_up(_Kite(quotes), cache, now=_at(NEXT, 11, 10)) == []    # once only
+
+
+@pytest.mark.asyncio
+async def test_catch_up_within_auction_grace_keeps_the_open_price(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    quotes = {"AAA": _quote(20.6, 20.8, 20.1, 20.3, 50000.0, NEXT)}
+    assert await eop.catch_up(_Kite(quotes), cache, now=_at(NEXT, 9, 40)) == ["EXIT"]
+    with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
+        assert conn.execute("SELECT exit_reason FROM edge_overnight_paper_trades").fetchone()[0] == "NEXT_OPEN"
+
+
+@pytest.mark.asyncio
+async def test_catch_up_entry_only_before_the_close(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    assert await eop.catch_up(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 35)) == []
+    assert await eop.catch_up(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 25)) == ["ENTRY"]

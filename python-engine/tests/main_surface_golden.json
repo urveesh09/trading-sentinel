@@ -7,6 +7,12 @@
       "trigger": "interval[0:02:00]"
     },
     {
+      "func": "_run_edge_overnight_catchup_safe",
+      "id": "edge_overnight_catchup",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9-15', minute='*/5']"
+    },
+    {
       "func": "_run_edge_overnight_entry_safe",
       "id": "edge_overnight_entry",
       "kwargs": [],

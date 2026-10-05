@@ -20,6 +20,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_edge_overnight_catchup_safe",
+    "id": "'edge_overnight_catchup'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_edge_overnight_entry_safe",
     "id": "'edge_overnight_entry'",
     "trigger": "'cron'"

@@ -4,6 +4,15 @@
 
 
 
+## October 5 (night) — EDGE overnight C5/C6
+
+- [x] Notice outbox plus restart catch-up (`edge_overnight_paper.py`,
+  `scheduler_setup.py`).
+- [x] `test_edge_overnight_paper.py`: 9 pass (outbox retry and send-once; late
+  exit at LTP; exit within grace at the open; entry only before the close).
+  Scheduler goldens updated with `TS_UPDATE_GOLDEN=1` (one new job); scheduler
+  and surface tests pass.
+
 ## October 5 (night) — audit remediation slice 3
 
 - [x] C8 whole-trade analytics; Swing heads-up typed signal; heatmap log names;
