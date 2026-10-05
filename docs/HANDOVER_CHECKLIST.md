@@ -4,6 +4,14 @@
 
 
 
+
+## October 5 (night) — Momentum auto-execute
+
+- [x] `node-gateway/server/config.js`: `MOMENTUM_AUTO_EXECUTE` defaults to `true`.
+- [x] Production `.env`: `OWNER_LIVE_ENTRY_HALT=true` (verified by key-only grep).
+- [x] Gateway `momentum-auto-execute` and `momentum-execution` tests pass.
+- [ ] Owner lifts the halt when real automatic Momentum buys are wanted.
+
 ## October 5 (night) — EDGE overnight C5/C6
 
 - [x] Notice outbox plus restart catch-up (`edge_overnight_paper.py`,

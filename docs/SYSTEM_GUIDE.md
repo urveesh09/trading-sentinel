@@ -6,6 +6,18 @@
 
 
 
+
+## October 5 (night) — Momentum automatic execution ON, owner halt ON (actual behavior, Dev + Prod .env)
+
+- The gateway defaults to `MOMENTUM_AUTO_EXECUTE=true` (owner direction: automatic
+  instead of manual approval). Every engine-accepted Momentum signal goes through
+  `executeMomentum` with no tap.
+- Production `.env` sets `OWNER_LIVE_ENTRY_HALT=true` (owner-authorised; the owner
+  confirmed the edit). The executor refuses every real entry before dispatch, so
+  automatic buys stay paper-only. The alert reads "Auto-execution did not run:
+  Owner entry halted". Removing the halt makes Momentum fully automatic with real
+  orders.
+
 ## October 5 (night) — EDGE overnight outbox and restart catch-up (actual behavior, Dev, paper only)
 
 - **Outbox (audit C5).** Each phase writes its Telegram text to
