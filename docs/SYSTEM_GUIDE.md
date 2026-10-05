@@ -4,6 +4,28 @@
 
 
 
+
+## October 5 (night) — audit fixes: analytics, Swing heads-up, DP tariff (actual behavior, Dev)
+
+- **Whole-trade analytics (audit C8).**
+  - `performance_analytics._whole_trades` attaches each `TRADE_PARTIAL` leg to
+    its position's final `TRADE_CLOSED`: the same `origin_ref` when recorded,
+    otherwise the same ticker.
+  - Profit factor, win rate and `trade_close_pnl` are now whole-trade figures.
+  - Drawdown uses every ordered trade-cash leg; deposits and withdrawals stay
+    excluded.
+  - Partials without a final close appear as `unresolved_partial_pnl`, with a
+    warning.
+  - This clears Momentum paper's false +₹1,516 reconciliation mismatch.
+- **Swing pre-market heads-up** reads the typed `Signal.ticker`; it crashed on
+  `.get` and lost the heads-up.
+- **Penny heatmap log.** `penny_heatmap_skipped` when nothing is open,
+  `penny_heatmap_sending` before a send. The old `penny_heatmap_sent` line was
+  logged even for empty heatmaps that were never sent.
+- **DP charge** `PENNY_CNC_DP_CHARGE` = ₹15.34, Zerodha's published amount
+  including GST (checked Oct 5). The earlier ₹15.93 was used by the already
+  scored `edge-overnight-t1` study. That record is left as scored.
+
 ## October 5 (night) — classic Penny MIS paper profit lock (actual behavior, Dev, paper only)
 
 - `penny_profit_lock.decide` (pure), applied by `main.run_penny_paper_stop_monitor`

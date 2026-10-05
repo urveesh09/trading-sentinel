@@ -19,11 +19,11 @@ Next, in order:
    rule by forward paper days. No untouched Penny data is left.
 2. Penny durable, settlement-fed daily brake (audit P1 pre-live).
 3. C7: late Momentum shadow bars (15:15 EOD exits unresolved).
-4. C8: group partial and final legs for Momentum PF and drawdown.
-5. C2–C4 cost model (BFO schedule, DP ₹15.34, one DP per scrip per day).
+4. ~~C8~~ done (whole-trade analytics).
+5. C2 BSE option schedule and C4 one DP per scrip per day remain; DP ₹15.34 done.
 6. C5/C6: overnight EDGE outbox and startup catch-up.
-7. Swing heads-up `Signal.get`; scheduler IN_FLIGHT telemetry; Penny funnel
-   stages; heatmap "sent" naming.
+7. Scheduler IN_FLIGHT telemetry; Penny funnel stages. Swing heads-up and the
+   heatmap log name are done.
 8. Owner decision: `OWNER_LIVE_ENTRY_HALT` is `false` in Production; manual taps
    can still place real orders.
 9. Owner decision: deliver unqualified advisory cards to the partner, labelled,

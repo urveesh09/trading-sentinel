@@ -4,6 +4,21 @@
 
 
 
+## October 5 (night) — audit remediation slice 3
+
+- [x] C8 whole-trade analytics; Swing heads-up typed signal; heatmap log names;
+  DP ₹15.34.
+- [x] Tests:
+  - `test_performance_analytics.py`: 9 pass, including the new partial-leg
+    case.
+  - `test_main_breadth_integration.py`: 3 pass; the new heads-up test fails
+    without the fix.
+  - `test_edge_portfolio_replay.py`: 12 pass; the DP assertion is updated to
+    about 1.75%.
+- [ ] Deferred: C2 BSE option exchange rate (0.0325% vs NSE 0.03553%, about
+  ₹3.6 per ₹1 lakh premium; many call sites plus the entry cost snapshot); C4
+  one DP per scrip per day for partial EDGE sells.
+
 ## October 5 (night) — Penny paper profit lock
 
 - [x] `penny_profit_lock.py`, monitor wiring in `main.py`, flag

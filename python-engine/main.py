@@ -1603,14 +1603,17 @@ async def _run_penny_heatmap():
             warn_pct_is_fraction=True,  # config is a fraction, not percent
             source=_classic_penny_source(),
         )
+        # Only send if there are open positions (don't spam Telegram
+        # with empty messages every 15 min when nothing's open). The log
+        # names what happened: 46 of 53 "sent" lines on Oct 5 were empty
+        # heatmaps that were never sent.
+        if total_open == 0:
+            logger.info("penny_heatmap_skipped reason=no_open_positions")
+            return
         logger.info(
-            "penny_heatmap_sent total_open=%d priced=%d",
+            "penny_heatmap_sending total_open=%d priced=%d",
             total_open, priced_count,
         )
-        # Only send if there are open positions (don't spam Telegram
-        # with empty messages every 15 min when nothing's open).
-        if total_open == 0:
-            return
         from penny_hourly_report import PennyHourlyReport
         sender = PennyHourlyReport(db_path=settings.DB_PATH)
         await sender.send(
@@ -2846,8 +2849,10 @@ async def run_screener():
             if current_signals:
                 try:
                     from operator_alert import notify_operator
+                    # filter_and_allocate returns typed Signal models, not
+                    # dicts (Production Oct 5: 'Signal' has no attribute 'get').
                     names = ", ".join(
-                        s.get("ticker", "?") for s in current_signals[:5]
+                        str(getattr(s, "ticker", "?")) for s in current_signals[:5]
                     )
                     await notify_operator(
                         f"🌅 *Pre-market swing scan* found "

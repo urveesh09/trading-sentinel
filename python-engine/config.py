@@ -544,10 +544,12 @@ class Settings(BaseSettings):
     PENNY_STT_MIS:             float = 0.00025   # 0.025% sell side (intraday)
     PENNY_STT_CNC:             float = 0.001     # 0.1% BUY and sell side (delivery)
     # [CNC-COSTS 2026-10-05] Delivery has no Zerodha brokerage, 0.015% buy
-    # stamp duty and a flat depository (DP) charge per scrip on each sell day
-    # (Rs 13.5 + 18% GST). Before this fix delivery P&L was overstated.
+    # stamp duty and a flat depository (DP) charge per scrip on each sell day.
+    # Before this fix delivery P&L was overstated. DP is Zerodha's published
+    # Rs 15.34 (Rs 3.5 CDSL + Rs 9.5 Zerodha + Rs 2.34 GST; zerodha.com/charges,
+    # checked 2026-10-05); 15.93 was an older schedule.
     PENNY_CNC_STAMP_DUTY_PCT:  float = 0.00015
-    PENNY_CNC_DP_CHARGE:       float = 15.93
+    PENNY_CNC_DP_CHARGE:       float = 15.34
     PENNY_BROKERAGE_PCT:       float = 0.0003    # 0.03% per side
     PENNY_BROKERAGE_MAX:       float = 20.0      # Rs 20 cap per order
     PENNY_EXCHANGE_PCT:        float = 0.0000307  # NSE cash 0.00307%, both sides

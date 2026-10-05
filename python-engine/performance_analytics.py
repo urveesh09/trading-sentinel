@@ -112,6 +112,33 @@ def _drawdown(all_events: list[float], allocation: float) -> dict:
     }
 
 
+def _whole_trades(rows) -> tuple[list[float], list[float], float]:
+    """Whole-trade P&L, ordered trade-cash legs, unresolved partial cash.
+
+    [AUDIT-C8 2026-10-05] A TRADE_PARTIAL leg belongs to its position's final
+    TRADE_CLOSED (same origin_ref when recorded, else the same ticker). Counting
+    only final closes dropped Rs1,516 of Momentum partial profit from PF and
+    drawdown and flagged a false ledger/position mismatch.
+    """
+    closes: list[float] = []
+    trade_cash: list[float] = []
+    pending: dict[str, float] = {}
+    for event, pnl, ticker, origin in rows:
+        if event not in ("TRADE_PARTIAL", "TRADE_CLOSED"):
+            continue
+        pnl = float(pnl)
+        trade_cash.append(pnl)
+        key = f"origin:{origin}" if origin else f"ticker:{ticker}"
+        if event == "TRADE_PARTIAL":
+            pending[key] = pending.get(key, 0.0) + pnl
+            continue
+        whole = pnl + pending.pop(key, 0.0)
+        if origin:
+            whole += pending.pop(f"ticker:{ticker}", 0.0)
+        closes.append(whole)
+    return closes, trade_cash, sum(pending.values())
+
+
 async def _ledger_observation(
     db: aiosqlite.Connection, source: str, allocation: float,
 ) -> tuple[dict, list[str]]:
@@ -121,29 +148,33 @@ async def _ledger_observation(
     if columns is None or not required.issubset(columns):
         return ({
             "available": False, "cash_pnl": None, "trade_close_count": None,
-            "trade_close_pnl": None, "equity": None,
+            "trade_close_pnl": None, "unresolved_partial_pnl": None, "equity": None,
             **_trade_statistics([]),
             "max_drawdown": None, "max_drawdown_pct": None,
             "current_drawdown": None, "current_drawdown_pct": None,
         }, ["bankroll_ledger unavailable or missing required columns"])
 
+    identity = "COALESCE(ticker,'')" if "ticker" in columns else "''"
+    origin = "origin_ref" if "origin_ref" in columns else "NULL"
     rows = await (await db.execute(
-        "SELECT event_type, pnl FROM bankroll_ledger WHERE source=? "
+        f"SELECT event_type, pnl, {identity}, {origin} FROM bankroll_ledger WHERE source=? "
         "ORDER BY timestamp, rowid", (source,),
     )).fetchall()
     if any(row[1] is None for row in rows):
         warnings.append("ledger contains NULL P&L; cash metrics unavailable")
         return ({
             "available": False, "cash_pnl": None, "trade_close_count": None,
-            "trade_close_pnl": None, "equity": None,
+            "trade_close_pnl": None, "unresolved_partial_pnl": None, "equity": None,
             **_trade_statistics([]),
             "max_drawdown": None, "max_drawdown_pct": None,
             "current_drawdown": None, "current_drawdown_pct": None,
         }, warnings)
 
     all_events = [float(row[1]) for row in rows]
-    closes = [float(row[1]) for row in rows if row[0] == "TRADE_CLOSED"]
+    closes, trade_cash, unresolved = _whole_trades(rows)
     stats = _trade_statistics(closes)
+    if unresolved:
+        warnings.append("partial exits without a final close are excluded from trade statistics")
     if not closes:
         warnings.append("no ledger trade-close sample; trade metrics unavailable")
     elif stats["profit_factor"] is None:
@@ -154,11 +185,13 @@ async def _ledger_observation(
         "cash_pnl": _round(cash_pnl),
         "trade_close_count": len(closes),
         "trade_close_pnl": _round(sum(closes)),
+        "unresolved_partial_pnl": _round(unresolved),
         "equity": _round(allocation + cash_pnl),
         **stats,
         # Deposits and withdrawals change cash equity but are not strategy
-        # returns. The performance curve therefore uses ordered trade closes.
-        **_drawdown(closes, allocation),
+        # returns. The performance curve uses every ordered trade-cash leg,
+        # partial exits included.
+        **_drawdown(trade_cash, allocation),
     }, warnings)
 
 
