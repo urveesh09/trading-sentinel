@@ -9,6 +9,8 @@
 
 ## October 5 (late night) — expiry book second review
 
+Commit `263dd48` on `codex/production-correction-hedge-p0`: pushed to Dev, not deployed.
+
 - [x] Exit-fee reserve: buy charged once, one sell-order fee per lot reserved.
 - [x] `require_delivery` on `/api/internal/notify`, 502 on refusal, used by the
   paper outboxes.
