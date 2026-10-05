@@ -112,3 +112,41 @@ async def test_final_dispatch_revalidates_artifact_after_card_was_queued(db_path
     assert await _authorize_dispatch(db_path,kind,key,token,detail,now=card_now)
     (Path(settings.PARTNER_ARTIFACT_ROOT)/'test-package.json').write_bytes(b'{}')
     assert not await _authorize_dispatch(db_path,kind,key,token,detail,now=card_now)
+
+
+# [PARTNER-UNQUALIFIED 2026-10-05] Owner direction: unqualified cards are sent
+# under a bold NOT CHECKED label; qualified cards say PURE ADVICE.
+@pytest.mark.asyncio
+async def test_unqualified_card_is_sent_only_under_the_not_checked_label(db_path, monkeypatch):
+    from tests.test_partner_manual_advisory import _candidate, NOW as card_now
+    from partner_manual_advisory import ADVICE_LABEL_UNCHECKED, persist_candidate
+    from hedge_advisory import _claim, _authorize_dispatch
+
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED", True)
+    profile = PartnerAdvisoryProfile(holding_period="INTRADAY")
+    await save_partner_profile(db_path, profile, now=card_now)
+    stored = await persist_candidate(db_path, _candidate(), profile, now=card_now, queue_for_delivery=True)
+    assert stored["status"] == "QUEUED"
+    assert stored["rendered_card"].startswith(ADVICE_LABEL_UNCHECKED + "\n")
+    key = stored["advisory_id"]; kind = "manual_market_advisory"
+    token = await _claim(db_path, kind, key, now=card_now)
+    detail = dict(phase="manual_v1", advisory_id=key, profile_id="default", underlying="NIFTY",
+                  valid_until=stored["valid_until"], rendered_text=stored["rendered_card"])
+    assert await _authorize_dispatch(db_path, kind, key, token, detail, now=card_now)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED", False)
+    assert not await _authorize_dispatch(db_path, kind, key, token, detail, now=card_now)
+
+
+@pytest.mark.asyncio
+async def test_qualified_card_is_labelled_pure_advice(db_path, monkeypatch):
+    from tests.test_partner_manual_advisory import _candidate, NOW as card_now
+    from partner_manual_advisory import ADVICE_LABEL_CHECKED, persist_candidate, StrategyEvidence
+
+    profile = PartnerAdvisoryProfile(holding_period="INTRADAY")
+    await save_partner_profile(db_path, profile, now=card_now)
+    await register_test_package(db_path, profile, card_now, monkeypatch)
+    candidate = replace(_candidate(), evidence=StrategyEvidence.QUALIFIED_FOR_ADVISORY)
+    stored = await persist_candidate(db_path, candidate, profile, now=card_now, queue_for_delivery=True)
+    assert stored["status"] == "QUEUED"
+    assert stored["rendered_card"].startswith(ADVICE_LABEL_CHECKED + "\n")
+    assert "NOT" not in stored["rendered_card"].split("\n")[0]

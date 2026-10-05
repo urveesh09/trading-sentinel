@@ -7,6 +7,29 @@
 
 
 
+
+## October 5 (night) — partner advisory cards delivered with advice labels (actual behavior, Dev)
+
+- Owner direction: `PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED=True`.
+- `persist_candidate` queues every valid card, not only qualified ones. The
+  card's first line is the label: `⚠️ 𝗣𝗨𝗥𝗘 𝗔𝗗𝗩𝗜𝗖𝗘 — 𝗡𝗢𝗧 𝗖𝗛𝗘𝗖𝗞𝗘𝗗` when
+  no current qualification exists, `𝗣𝗨𝗥𝗘 𝗔𝗗𝗩𝗜𝗖𝗘` when one does. The text is
+  Unicode bold, because the partner transport is plain text with no
+  parse_mode. `payload.advice_label` records it.
+- **`hedge_advisory._authorize_dispatch` (manual_v1):**
+  - A qualified card still needs a current qualification at the transport
+    boundary.
+  - An unqualified card is sent only while the flag is on and its text starts
+    with the NOT CHECKED label.
+  - Every other gate is unchanged: validation reasons, profile version, session
+    date, entry deadline, quote validity, claim token, the daily cap
+    (`PARTNER_MANUAL_ADVISORY_DAILY_CAP=2`) and the one-minute gap.
+- Qualification packages bind partner settings, so a package must be
+  registered under the flag value in force.
+- The informational surfaces (brief/EOD/analytics) still key off a *current
+  qualification*, so the partner gets both the information messages and the
+  labelled cards.
+
 ## October 5 (night) — Momentum automatic execution ON, owner halt ON (actual behavior, Dev + Prod .env)
 
 - The gateway defaults to `MOMENTUM_AUTO_EXECUTE=true` (owner direction: automatic

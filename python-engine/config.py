@@ -1332,6 +1332,11 @@ class Settings(BaseSettings):
     PARTNER_MANUAL_ADVISORY_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED: bool = True
+    # [PARTNER-UNQUALIFIED 2026-10-05] Owner direction: send validated cards
+    # even when no strategy is qualified, headed in bold "PURE ADVICE — NOT
+    # CHECKED"; qualified cards are headed "PURE ADVICE". Every other delivery
+    # gate (validation, profile, quote freshness, deadlines, caps) still applies.
+    PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED: bool = True
     # [WORKFLOW-ITEMS-5/6/9 2026-09-20] Operations freshness thresholds.
     #
     # The audit requires the operator to be alerted BEFORE useful

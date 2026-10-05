@@ -5,6 +5,17 @@
 
 
 
+
+## October 5 (night) — partner advisory labels
+
+- [x] Unqualified cards are delivered as "PURE ADVICE — NOT CHECKED", qualified
+  ones as "PURE ADVICE" (`config.py`, `partner_manual_advisory.py`,
+  `hedge_advisory.py`).
+- [x] Partner, hedge and qualification-boundary tests: 132 pass. New tests
+  cover the label, the authorizer under flag on/off, and the qualified label.
+- [ ] After rebuild, confirm the partner's first labelled card (at most 2 per
+  day).
+
 ## October 5 (night) — Momentum auto-execute
 
 - [x] `node-gateway/server/config.js`: `MOMENTUM_AUTO_EXECUTE` defaults to `true`.
