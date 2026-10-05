@@ -3,6 +3,24 @@
 
 
 
+## October 5 (night) — expiry-day book review fixes (done, Dev)
+
+The independent review of `f000acb` was applied. The details are in the
+[design doc](2026-10-05-expiry-day-paper-book.md) "Revised" note.
+
+Still open:
+
+1. **Merge and rebuild.** Production runs `acc7181` and lacks the module.
+2. **First expiry:** check the summary's stale-index and stale-future counts. If
+   Kite index timestamps lag, the box is unusable, A and C stand down, and the
+   freshness rule for index quotes needs evidence-based adjustment as
+   `expiry-v2`.
+3. **Initial review after 20 expiries:**
+   - per play and per underlying;
+   - no-trade days count as zero;
+   - report net without the best day;
+   - keep assumed settlements and auction-window fills separate.
+
 ## October 5 (night) — Production audit remediation (owner-directed order)
 
 Source: [Production audit](../../Production_Trading-sentinel/docs/2026-10-05-production-deep-audit.md)

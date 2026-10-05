@@ -735,7 +735,7 @@ def register_penny_scheduler_jobs(scheduler):
     # Phase summaries go through the store's outbox (audit C5): a failed or
     # non-2xx send leaves the notice pending for the next flush instead of
     # being lost after the phase has committed.
-    async def _send_edge_overnight_notice(message: str) -> None:
+    async def _send_paper_notice(message: str) -> None:
         import httpx as _httpx
         async with _httpx.AsyncClient() as _client:
             response = await _client.post(
@@ -765,7 +765,7 @@ def register_penny_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("edge_overnight_%s_failed err=%s", phase, type(exc).__name__, exc_info=True)
         try:
-            await eop.flush_notices(_send_edge_overnight_notice)
+            await eop.flush_notices(_send_paper_notice)
         except Exception as exc:
             logger.error("edge_overnight_notice_flush_failed err=%s", type(exc).__name__)
 
@@ -821,9 +821,17 @@ def register_penny_scheduler_jobs(scheduler):
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
     # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
     # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today
-    # per the instrument dump. Never places an order.
+    # per the instrument dump. Never places an order. Notices go to the
+    # book's outbox and are marked sent only after a 2xx response; an hourly
+    # reconcile (09:45-17:45) settles legs left open by an outage.
+    async def _flush_expiry_paper_notices():
+        import expiry_paper as xp
+        try:
+            await xp.flush_notices(_send_paper_notice)
+        except Exception as exc:
+            logger.error("expiry_paper_notice_flush_failed err=%s", type(exc).__name__)
+
     async def _run_expiry_paper_tick_safe():
-        import httpx as _httpx
         import expiry_paper as xp
         if not settings.EXPIRY_PAPER_ENABLED or not _main.kite.access_token:
             return
@@ -833,23 +841,24 @@ def register_penny_scheduler_jobs(scheduler):
         if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH):
             return
         try:
-            messages = await xp.run_expiry_tick(_main.kite)
+            await xp.run_expiry_tick(_main.kite)
         except Exception as exc:
             logger.error("expiry_paper_tick_failed err=%s", type(exc).__name__, exc_info=True)
+        await _flush_expiry_paper_notices()
+
+    async def _run_expiry_paper_reconcile_safe():
+        import expiry_paper as xp
+        if not settings.EXPIRY_PAPER_ENABLED:
             return
-        if not messages:
+        if not await _main.is_trading_day(datetime.now(IST).date(), settings.DB_PATH):
             return
-        logger.info("expiry_paper_events n=%d", len(messages))
         try:
-            async with _httpx.AsyncClient() as _client:
-                await _client.post(
-                    f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                    json={"message": "\n".join(messages)},
-                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                    timeout=5.0,
-                )
+            settled = await asyncio.to_thread(xp.reconcile)
+            if settled:
+                logger.info("expiry_paper_reconciled positions=%d", settled)
         except Exception as exc:
-            logger.warning("expiry_paper_notify_failed err=%s", type(exc).__name__)
+            logger.error("expiry_paper_reconcile_failed err=%s", type(exc).__name__, exc_info=True)
+        await _flush_expiry_paper_notices()
 
     scheduler.add_job(
         _run_expiry_paper_tick_safe, "cron",
@@ -858,6 +867,14 @@ def register_penny_scheduler_jobs(scheduler):
         max_instances=1,
         coalesce=True,
         misfire_grace_time=8,
+    )
+    scheduler.add_job(
+        _run_expiry_paper_reconcile_safe, "cron",
+        day_of_week="mon-fri", hour="9-17", minute=45,
+        id="expiry_paper_reconcile",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=1800,
     )
 
     # [PENNY-EDGE-STARTUP-CATCHUP 2026-07-02] Companion catchup for the

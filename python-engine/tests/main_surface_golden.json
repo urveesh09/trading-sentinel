@@ -25,6 +25,12 @@
       "trigger": "cron[day_of_week='mon-fri', hour='9', minute='17']"
     },
     {
+      "func": "_run_expiry_paper_reconcile_safe",
+      "id": "expiry_paper_reconcile",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9-17', minute='45']"
+    },
+    {
       "func": "_run_expiry_paper_tick_safe",
       "id": "expiry_paper_tick",
       "kwargs": [],

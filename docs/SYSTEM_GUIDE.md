@@ -9,6 +9,32 @@
 
 
 
+## October 5 (night) — expiry-day paper book hardened after review (actual behavior, Dev, paper only)
+
+Supersedes the risk and fill description in the `expiry-v1` section below. See
+the [design doc](2026-10-05-expiry-day-paper-book.md).
+
+- **Hard ceiling:** each entry's whole premium plus worthless-expiry charges
+  (`max_loss`) fits the play's remaining ₹2,500 for the day. Stops are planned
+  exits only; a gap can fill below them, never below `max_loss`.
+- **A's strike:** ATM, or the next OTM strike if one ATM lot does not fit.
+- **Fills:**
+  - Fresh quotes only: the provider timestamp must be at most 20 s old.
+  - Buys and sells walk the five-level depth in whole lots.
+  - An unfillable exit latches `exit_pending` and is retried each tick.
+  - Fills from 15:15 are labelled `AUCTION_WINDOW` (unverified).
+- **Breakout:** needs fresh index and futures on 2 observations no more than
+  25 s apart. A missing observation or a gap restarts the count.
+- **`reconcile` settlement:** runs on each tick for earlier days and hourly
+  09:45–17:45 (`expiry_paper_reconcile`).
+  - It settles legs left open after 15:40 as `SETTLED_ASSUMED`: intrinsic at the
+    post-15:36 index print, less charges and exercise STT.
+  - Without that print a leg is `UNRESOLVED` at its worst-case loss.
+  - Both go in `assumed_pnl`, separate from fills.
+- **Telegram:** a durable outbox, `expiry_paper_notices`. A notice is marked
+  sent only after a 2xx response. The sender `_send_paper_notice` is shared
+  with EDGE overnight.
+
 ## October 5 (night) — scheduler completion telemetry and Penny funnel stages (actual behavior, Dev)
 
 - **Scheduler telemetry (`scheduler_telemetry.py`).** The Production audit

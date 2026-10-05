@@ -35,6 +35,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_expiry_paper_reconcile_safe",
+    "id": "'expiry_paper_reconcile'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_expiry_paper_tick_safe",
     "id": "'expiry_paper_tick'",
     "trigger": "'cron'"

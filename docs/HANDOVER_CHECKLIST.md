@@ -7,6 +7,27 @@
 
 
 
+## October 5 (night) — expiry-day book review fixes
+
+- [x] Hard loss ceiling (premium plus charges); A tries ATM, else one strike
+  OTM.
+- [x] Fresh, depth-walked fills; latched exits; `AUCTION_WINDOW` labels.
+- [x] Futures-confirmed breakout with no stale carry-over.
+- [x] `reconcile` settles leftovers as assumed or unresolved (hourly job plus
+  every tick).
+- [x] Durable Telegram outbox.
+- [x] Tests: `tests/test_expiry_paper.py` 19 pass. They cover gaps,
+  bank-then-gap, one-lot banking, stale and one-unit quotes, missing bids,
+  outage settlement, the outbox, and the second-trade ceiling. Goldens were
+  updated.
+- [x] Full suite: 4,967 pass, 4 skip, 8 fail. None of the failures is in the
+  expiry book:
+  - `test_partner_delivery_blockers` ×3 already fail at `653560a`;
+  - `test_mark_to_market::test_all_legs_fresh` is clock-dependent and passes
+    alone;
+  - the rest are the known pre-existing failures.
+- [ ] Owner merges and rebuilds Production (running `acc7181`).
+
 ## October 5 (night) — scheduler telemetry and Penny funnel stages
 
 - [x] `scheduler_telemetry.py`: retried final write, failure log, parked
