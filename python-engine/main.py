@@ -1199,6 +1199,35 @@ async def _execute_scheduled_penny_exit(
     return result
 
 
+async def _apply_penny_profit_lock(position: dict, entry: float, stop: float, ltp: float):
+    """Advance the paper position's peak and profit-lock stop; persist changes."""
+    from penny_profit_lock import decide
+    from penny_risk import calc_penny_costs
+
+    shares = int(position.get("shares") or 0)
+    breakeven = calc_penny_costs(entry, entry, shares, True) / shares if shares > 0 else 0.0
+    peak = position.get("highest_close_since_entry")
+    decision = decide(
+        entry=entry, initial_stop=float(position.get("stop_loss_initial") or stop),
+        target=float(position.get("target_1") or 0) or None, stop=stop,
+        peak=float(peak) if peak else None, ltp=ltp, breakeven_per_share=breakeven,
+    )
+    if decision.stop != stop or decision.peak != (float(peak) if peak else None):
+        async with aiosqlite.connect(settings.DB_PATH) as db:
+            await db.execute(
+                "UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=? "
+                "WHERE ticker=? AND source='PENNY_PAPER' AND entry_date=? AND exit_date IS NULL",
+                (decision.peak, decision.stop, position.get("ticker"), position.get("entry_date")),
+            )
+            await db.commit()
+        if decision.stop > stop:
+            logger.info(
+                "penny_profit_lock_raised ticker=%s ltp=%.2f peak=%.2f stop=%.2f->%.2f",
+                position.get("ticker"), ltp, decision.peak, stop, decision.stop,
+            )
+    return decision
+
+
 async def run_penny_paper_stop_monitor() -> dict:
     """Settle breached protective stops for classic penny paper positions.
 
@@ -1248,19 +1277,31 @@ async def run_penny_paper_stop_monitor() -> dict:
                     position.get("ticker"), stop,
                 )
                 continue
-            ltp = await _penny_ltp(position.get("ticker"), entry)
-            if ltp > stop:
+            # No quote -> no decision. (The entry-price fallback would look
+            # like a breach once the profit lock has raised the stop above it.)
+            ltp = await _penny_ltp(position.get("ticker"), 0.0)
+            if ltp <= 0:
+                continue
+            reason = "protective_stop_paper"
+            if settings.PENNY_PROFIT_LOCK_ENABLED:
+                decision = await _apply_penny_profit_lock(position, entry, stop, ltp)
+                stop = decision.stop
+                if decision.exit_reason:
+                    reason = decision.exit_reason
+                elif stop > entry:
+                    reason = "profit_lock_paper"
+            if reason != "target_paper" and ltp > stop:
                 continue
             result = await _execute_scheduled_penny_exit(
-                position, reason="protective_stop_paper", reference_price=ltp,
+                position, reason=reason, reference_price=ltp,
             )
             settled = int((result.get("settlement") or {}).get("settled") or 0)
             if settled:
                 stopped.append(str(position.get("ticker")))
                 logger.info(
                     "penny_paper_stop_closed ticker=%s ltp=%.2f stop=%.2f "
-                    "settled=%d",
-                    position.get("ticker"), ltp, stop, settled,
+                    "settled=%d reason=%s",
+                    position.get("ticker"), ltp, stop, settled, reason,
                 )
     except Exception as exc:
         # Paper bookkeeping must never prevent the live/paper signal scan.
@@ -1562,14 +1603,17 @@ async def _run_penny_heatmap():
             warn_pct_is_fraction=True,  # config is a fraction, not percent
             source=_classic_penny_source(),
         )
+        # Only send if there are open positions (don't spam Telegram
+        # with empty messages every 15 min when nothing's open). The log
+        # names what happened: 46 of 53 "sent" lines on Oct 5 were empty
+        # heatmaps that were never sent.
+        if total_open == 0:
+            logger.info("penny_heatmap_skipped reason=no_open_positions")
+            return
         logger.info(
-            "penny_heatmap_sent total_open=%d priced=%d",
+            "penny_heatmap_sending total_open=%d priced=%d",
             total_open, priced_count,
         )
-        # Only send if there are open positions (don't spam Telegram
-        # with empty messages every 15 min when nothing's open).
-        if total_open == 0:
-            return
         from penny_hourly_report import PennyHourlyReport
         sender = PennyHourlyReport(db_path=settings.DB_PATH)
         await sender.send(
@@ -2805,8 +2849,10 @@ async def run_screener():
             if current_signals:
                 try:
                     from operator_alert import notify_operator
+                    # filter_and_allocate returns typed Signal models, not
+                    # dicts (Production Oct 5: 'Signal' has no attribute 'get').
                     names = ", ".join(
-                        s.get("ticker", "?") for s in current_signals[:5]
+                        str(getattr(s, "ticker", "?")) for s in current_signals[:5]
                     )
                     await notify_operator(
                         f"🌅 *Pre-market swing scan* found "

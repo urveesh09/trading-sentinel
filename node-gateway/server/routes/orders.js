@@ -8,6 +8,7 @@ const { requireSession, requireInternalSecret } = require('../middleware/auth');
 const kite = require('../services/kite');
 const { validate } = require('../middleware/validate');
 const { ReplayAttackError } = require('../utils/errors');
+const { logger } = require('../middleware/logger');
 const crypto = require('crypto');
 
 // Serialize same-key requests inside this process and retain the known broker
@@ -255,15 +256,9 @@ router.post('/execute', requireSession, validate(executeSchema, 'body'), async (
     const signalData = JSON.parse(signalRecord.payload_json);
 
     // Call Executor
+    let result;
     try {
-      const result = await executor.executeSignal(signalData, 'EXEC');
-      signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED' WHERE signal_id = ?`).run(signal_id);
-      
-      // Notify via Telegram of web execution
-      const telegram = require('../services/telegram');
-      telegram.sendAlert(`🌐 Signal ${signalData.ticker} executed via Web Dashboard.\nAvg Price: ₹${result.fillPrice}`);
-      
-      res.json({ success: true, order_id: result.orderId, fill_price: result.fillPrice });
+      result = await executor.executeSignal(signalData, 'EXEC');
     } catch (execErr) {
       // UNKNOWN/possibly-held outcomes must retain the EXECUTING lock. Resetting
       // them to PENDING would let a second click stack another BUY.
@@ -274,6 +269,17 @@ router.post('/execute', requireSession, validate(executeSchema, 'body'), async (
       }
       throw execErr;
     }
+    // [DISPATCH-LOCK 2026-10-05] Filled: a failed record must leave the row
+    // EXECUTING (locked) rather than reach the PENDING reset above.
+    try {
+      signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED' WHERE signal_id = ?`).run(signal_id);
+    } catch (recordErr) {
+      logger.error({ event_type: 'execution_record_failed', order_id: result.orderId, err: recordErr.message });
+    }
+    // Notify via Telegram of web execution
+    const telegram = require('../services/telegram');
+    telegram.sendAlert(`🌐 Signal ${signalData.ticker} executed via Web Dashboard.\nAvg Price: ₹${result.fillPrice}`);
+    res.json({ success: true, order_id: result.orderId, fill_price: result.fillPrice });
 
   } catch (err) {
     next(err);

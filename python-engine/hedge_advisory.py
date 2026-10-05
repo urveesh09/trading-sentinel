@@ -1034,8 +1034,6 @@ async def _authorize_dispatch(
             if (
                 payload.get("validation_reasons")
                 or payload.get("profile_id") != profile_id
-                or not payload.get("strategy_qualified")
-                or payload.get("evidence") != "QUALIFIED_FOR_ADVISORY"
                 or payload.get("holding_horizon") != "INTRADAY"
                 or payload.get("policy_version") != "partner-manual-intraday-v1"
                 or payload.get("session_date") != now.astimezone(IST).date().isoformat()
@@ -1044,12 +1042,21 @@ async def _authorize_dispatch(
             entry_deadline = _parse_ist(payload.get("entry_deadline"))
             if entry_deadline is None or entry_deadline < now:
                 return False
-            # Re-read the registry at the transport boundary; a queued card
-            # cannot rely on a stale cached qualification after suspension.
-            from partner_manual_advisory import qualification_is_current
-            if not await qualification_is_current(db_path, underlying=detail.get("underlying"),
-                    structure_kind=payload.get("structure_kind"), horizon="INTRADAY",
-                    policy_version="partner-manual-intraday-v1", profile_id=profile_id, now=now):
+            from partner_manual_advisory import ADVICE_LABEL_UNCHECKED, qualification_is_current
+            if payload.get("strategy_qualified") and payload.get("evidence") == "QUALIFIED_FOR_ADVISORY":
+                # Re-read the registry at the transport boundary; a queued card
+                # cannot rely on a stale cached qualification after suspension.
+                if not await qualification_is_current(db_path, underlying=detail.get("underlying"),
+                        structure_kind=payload.get("structure_kind"), horizon="INTRADAY",
+                        policy_version="partner-manual-intraday-v1", profile_id=profile_id, now=now):
+                    return False
+            elif not (
+                # [PARTNER-UNQUALIFIED 2026-10-05] Owner-directed: an unqualified
+                # card goes out only while the flag is on and only when its text
+                # opens with the bold NOT CHECKED label.
+                settings.PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED
+                and str(card[4]).startswith(ADVICE_LABEL_UNCHECKED)
+            ):
                 return False
             return _parse_ist(card[3]) is not None and _parse_ist(card[3]) > now
         except Exception:

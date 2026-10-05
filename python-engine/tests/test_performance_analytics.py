@@ -310,3 +310,41 @@ async def test_partial_legacy_position_schema_degrades_to_unavailable(
     assert fno["positions"]["closed_pnl"] is None
     assert fno["reconciliation"]["status"] == "UNAVAILABLE"
     assert any("missing required" in warning for warning in fno["warnings"])
+
+
+@pytest.mark.asyncio
+async def test_partial_exits_join_their_trade_for_stats_drawdown_and_reconciliation(
+    tmp_path, analytics_allocations
+):
+    """[AUDIT-C8 2026-10-05] Production MOMENTUM_PAPER: +Rs1,516 of partial
+    profit was missing from PF/drawdown and flagged as a reconciliation gap."""
+    db_path = str(tmp_path / "partials.db")
+    await _schema(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        legs = [
+            ("TRADE_PARTIAL", "AAA", 300.0),   # AAA: +300 partial, -100 runner = +200 trade
+            ("TRADE_CLOSED", "BBB", -150.0),
+            ("TRADE_CLOSED", "AAA", -100.0),
+            ("TRADE_PARTIAL", "CCC", 80.0),    # CCC still open
+        ]
+        for i, (kind, ticker, pnl) in enumerate(legs):
+            await db.execute(
+                "INSERT INTO bankroll_ledger (timestamp,event_type,ticker,pnl,source) "
+                "VALUES (?,?,?,?,?)", (f"2026-08-01T10:0{i}:00Z", kind, ticker, pnl, "MOMENTUM_PAPER"))
+        for ticker, pnl in (("BBB", -150.0), ("AAA", 200.0)):
+            await db.execute(
+                "INSERT INTO positions (ticker,entry_price,shares,stop_loss_initial,"
+                "trailing_stop_current,status,source,exit_date,realised_pnl,r_multiple) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (ticker, 100.0, 0, 90.0, 90.0, "CLOSED_TIME", "MOMENTUM_PAPER",
+                 "2026-08-01", pnl, None))
+        await db.commit()
+
+    row = _division(await division_performance(db_path), "MOMENTUM_PAPER")
+    ledger = row["ledger"]
+    assert ledger["trade_close_count"] == 2
+    assert ledger["trade_close_pnl"] == 50.0           # +200 and -150 whole trades
+    assert ledger["unresolved_partial_pnl"] == 80.0
+    assert ledger["cash_pnl"] == 130.0
+    assert ledger["max_drawdown"] == 250.0             # +300 peak, then -150, -100
+    assert row["reconciliation"]["status"] == "MATCH"

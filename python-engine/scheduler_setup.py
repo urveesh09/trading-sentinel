@@ -732,8 +732,23 @@ def register_penny_scheduler_jobs(scheduler):
     # [EDGE-OVERNIGHT 2026-10-05] Broker-free overnight paper book: buy the
     # EDGE scan at 15:20 on today's provisional bar, sell at the next opening
     # auction (09:17, after the 09:15 print). Never places an order.
-    async def _run_edge_overnight_phase_safe(phase: str):
+    # Phase summaries go through the store's outbox (audit C5): a failed or
+    # non-2xx send leaves the notice pending for the next flush instead of
+    # being lost after the phase has committed. require_delivery makes the
+    # gateway answer 502 when Telegram refused the message (and skip its own
+    # background retry), so the outbox alone owns retries.
+    async def _send_paper_notice(message: str) -> None:
         import httpx as _httpx
+        async with _httpx.AsyncClient() as _client:
+            response = await _client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": message, "require_delivery": True},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                timeout=5.0,
+            )
+            response.raise_for_status()
+
+    async def _run_edge_overnight_phase_safe(phase: str):
         import edge_overnight_paper as eop
         logger.info("edge_overnight_%s_invoked now_ist=%s", phase,
                     datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"))
@@ -744,21 +759,17 @@ def register_penny_scheduler_jobs(scheduler):
             return
         try:
             if phase == "entry":
-                summary = await eop.run_overnight_entry(_main.kite)
-                message = eop.format_entry_telegram(summary)
+                await eop.run_overnight_entry(_main.kite)
+            elif phase == "exit":
+                await eop.run_overnight_exit(_main.kite)
             else:
-                summary = await eop.run_overnight_exit(_main.kite)
-                message = eop.format_exit_telegram(summary) if summary["closed"] or summary["waiting"] else None
-            if message and not summary.get("repeat"):
-                async with _httpx.AsyncClient() as _client:
-                    await _client.post(
-                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                        json={"message": message},
-                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                        timeout=5.0,
-                    )
+                await eop.catch_up(_main.kite)
         except Exception as exc:
             logger.error("edge_overnight_%s_failed err=%s", phase, type(exc).__name__, exc_info=True)
+        try:
+            await eop.flush_notices(_send_paper_notice)
+        except Exception as exc:
+            logger.error("edge_overnight_notice_flush_failed err=%s", type(exc).__name__)
 
     async def _run_edge_overnight_entry_safe():
         today = datetime.now(IST).date()
@@ -786,6 +797,83 @@ def register_penny_scheduler_jobs(scheduler):
         _run_edge_overnight_exit_safe, "cron",
         day_of_week="mon-fri", hour=9, minute=17,
         id="edge_overnight_exit",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=1800,
+    )
+
+    # [EDGE-OVERNIGHT-CATCHUP 2026-10-05] Audit C6: in-memory cron jobs do not
+    # replay a phase that passed while the process was down. Every 5 minutes
+    # in market hours, run a phase whose receipt is missing inside its
+    # permitted window (edge_overnight_paper.catch_up) and retry unsent notices.
+    async def _run_edge_overnight_catchup_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_edge_overnight_phase_safe("catchup")
+
+    scheduler.add_job(
+        _run_edge_overnight_catchup_safe, "cron",
+        day_of_week="mon-fri", hour="9-15", minute="*/5",
+        id="edge_overnight_catchup",
+        max_instances=1,
+        coalesce=True,
+    )
+
+    # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
+    # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
+    # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today
+    # per the instrument dump. Never places an order. Notices go to the
+    # book's outbox and are marked sent only after a 2xx response; an hourly
+    # reconcile (09:45-17:45) settles legs left open by an outage.
+    async def _flush_expiry_paper_notices():
+        import expiry_paper as xp
+        try:
+            await xp.flush_notices(_send_paper_notice)
+        except Exception as exc:
+            logger.error("expiry_paper_notice_flush_failed err=%s", type(exc).__name__)
+
+    async def _run_expiry_paper_tick_safe():
+        import expiry_paper as xp
+        if not settings.EXPIRY_PAPER_ENABLED or not _main.kite.access_token:
+            return
+        now_ist = datetime.now(IST)
+        if not xp.TICK_START <= now_ist.time() <= xp.SESSION_END:
+            return
+        if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH):
+            return
+        try:
+            await xp.run_expiry_tick(_main.kite)
+        except Exception as exc:
+            logger.error("expiry_paper_tick_failed err=%s", type(exc).__name__, exc_info=True)
+        await _flush_expiry_paper_notices()
+
+    async def _run_expiry_paper_reconcile_safe():
+        import expiry_paper as xp
+        if not settings.EXPIRY_PAPER_ENABLED:
+            return
+        if not await _main.is_trading_day(datetime.now(IST).date(), settings.DB_PATH):
+            return
+        try:
+            settled = await asyncio.to_thread(xp.reconcile)
+            if settled:
+                logger.info("expiry_paper_reconciled positions=%d", settled)
+        except Exception as exc:
+            logger.error("expiry_paper_reconcile_failed err=%s", type(exc).__name__, exc_info=True)
+        await _flush_expiry_paper_notices()
+
+    scheduler.add_job(
+        _run_expiry_paper_tick_safe, "cron",
+        day_of_week="mon-fri", hour="12-15", second="*/10",
+        id="expiry_paper_tick",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=8,
+    )
+    scheduler.add_job(
+        _run_expiry_paper_reconcile_safe, "cron",
+        day_of_week="mon-fri", hour="9-17", minute=45,
+        id="expiry_paper_reconcile",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=1800,

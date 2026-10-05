@@ -2,6 +2,84 @@
 
 
 
+
+## October 5 (late night) — expiry book second review (done, Dev)
+
+- Problem: partial exits could exceed the ₹2,500 reserve; the gateway reported
+  success for Telegram sends that failed.
+- Files: `python-engine/expiry_paper.py`, `python-engine/scheduler_setup.py`,
+  `node-gateway/server/routes/internal.js`,
+  `node-gateway/server/services/telegram.js`, and their tests.
+- Acceptance: the review's repro stays inside `max_loss`; `require_delivery`
+  answers 502 on a refusal without a gateway retry.
+- Rollout: one rebuild of both containers. Rollback: revert the commit; no
+  schema change (column meanings: `costs` and `net_pnl` include the buy's
+  charges from entry; no Production rows exist yet).
+- Still open: as in the section below (merge and rebuild, first-expiry
+  freshness check, 20-expiry review). Do not loosen the 20 s freshness rule to
+  get trades; first find out whether missing timestamps, provider lag or
+  request timing caused any rejections.
+
+## October 5 (night) — expiry-day book review fixes (done, Dev)
+
+The independent review of `f000acb` was applied. The details are in the
+[design doc](2026-10-05-expiry-day-paper-book.md) "Revised" note.
+
+Still open:
+
+1. **Merge and rebuild.** Production runs `acc7181` and lacks the module.
+2. **First expiry:** check the summary's stale-index and stale-future counts. If
+   Kite index timestamps lag, the box is unusable, A and C stand down, and the
+   freshness rule for index quotes needs evidence-based adjustment as
+   `expiry-v2`.
+3. **Initial review after 20 expiries:**
+   - per play and per underlying;
+   - no-trade days count as zero;
+   - report net without the best day;
+   - keep assumed settlements and auction-window fills separate.
+
+## October 5 (night) — Production audit remediation (owner-directed order)
+
+Source: [Production audit](../../Production_Trading-sentinel/docs/2026-10-05-production-deep-audit.md)
+(Production report; read-only).
+
+Done in Dev (this slice): C1 Momentum post-dispatch lock; partner informational
+surfaces restored while advisory is unqualified; partner RV datetime fix; Kite
+acquisition retries.
+
+Next, in order:
+1. **Penny profit protection: paper rule implemented** (`penny_profit_lock.py`,
+   see SYSTEM_GUIDE). Remaining: once round-3 scoring has finished, add a
+   labelled diagnostic arm to `penny_lifecycle_replay.py` (seen data); judge the
+   rule by forward paper days. No untouched Penny data is left.
+2. Penny durable, settlement-fed daily brake (audit P1 pre-live).
+3. C7: late Momentum shadow bars (15:15 EOD exits unresolved).
+4. ~~C8~~ done (whole-trade analytics).
+5. C2 BSE option schedule and C4 one DP per scrip per day remain; DP ₹15.34 done.
+6. ~~C5/C6~~ done (overnight outbox and catch-up).
+7. ~~Scheduler IN_FLIGHT telemetry; Penny funnel stages~~ done (retried and
+   parked completion writes; `ops_funnel_daily.stages_json`). Swing heads-up and
+   the heatmap log name are done.
+8. ~~Owner halt~~ decided: `OWNER_LIVE_ENTRY_HALT=true` in Production `.env`
+   with Momentum automatic, so it trades on paper until the owner lifts the halt.
+9. ~~Partner cards~~ decided: unqualified cards go out labelled PURE ADVICE —
+   NOT CHECKED.
+
+## October 5 (evening) — expiry-day paper book
+
+[Design and frozen rules](2026-10-05-expiry-day-paper-book.md). Paper only.
+
+1. It needs the merge and rebuild before its first expiry. The same PR carries
+   the gateway fix that Telegram needs.
+2. After each expiry, check the Telegram summary or `expiry_paper_days` /
+   `expiry_paper_positions`. Confirm the box was READY and the tick log reaches
+   15:40.
+3. Score each play after 20 expiries against the pre-registered measures. Any
+   rule change is `expiry-v2`, scored only on later expiries.
+4. Watch the SEBI settlement decision (consultation closed Oct 3). If the auction
+   settlement or session times change, record the date; B and C must be
+   re-judged from then.
+
 ## October 4 (late) — start here: successor inheritance and gateway fix
 
 Read [the inheritance doc](2026-10-04-successor-inheritance.md) first.

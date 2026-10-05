@@ -474,3 +474,61 @@ class TestFunnelCountsDistinctSignals:
         rows = {r["subsystem"]: r for r in await funnel_window(db_path, days=365)}
         assert rows["fno"]["evaluated"] == 2
         assert rows["fno"]["accepted"] == 1   # fell back to the row count
+
+
+class TestFunnelStages:
+    """[FUNNEL-STAGES 2026-10-05] Audit: penny reported evaluated 17,111 /
+    accepted 1 / rejected 17,109 -- one short, because the second SUTLEJTEX
+    accept row was refused admission and no field said so."""
+
+    @pytest.mark.asyncio
+    async def test_penny_stages_reconcile_accepts_admission_and_fill(self, db_path):
+        from penny_execution_journal import append_execution_event
+        await init_ops_metrics_db(db_path)
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(
+                """CREATE TABLE penny_signals (
+                    scan_id TEXT, scanned_at TEXT, ticker TEXT,
+                    accepted INTEGER, reject_reason TEXT)"""
+            )
+            await db.executemany(
+                "INSERT INTO penny_signals VALUES (?, ?, ?, ?, ?)",
+                [("s1", "2026-10-05T05:20:00+00:00", "SUTLEJTEX", 1, ""),
+                 ("s2", "2026-10-05T05:21:00+00:00", "SUTLEJTEX", 1, "")]
+                + [(f"r{i}", "2026-10-05T05:20:00+00:00", f"T{i}", 0, "volume 1 < 2")
+                   for i in range(3)],
+            )
+            await db.commit()
+        for event in ("CANDIDATE_ACCEPTED", "ENTRY_FILLED", "POSITION_CREATED"):
+            await append_execution_event(
+                db_path, attempt_id="pen-a", scan_id="s1", candidate_key="k",
+                ticker="SUTLEJTEX", leg="ENTRY", source="PENNY_PAPER", mode="paper",
+                event_type=event, event_ts="2026-10-05T05:20:05+00:00",
+            )
+        await snapshot_funnels_for_day(db_path, "2026-10-05")
+        stages = {r["subsystem"]: r for r in await funnel_window(db_path, days=365)}["penny"]["stages"]
+        assert stages["evaluated_rows"] == 5
+        assert stages["evaluator_accept_rows"] + stages["evaluator_reject_rows"] == 5
+        assert stages["evaluator_accept_rows"] == 2 and stages["distinct_accepted"] == 1
+        assert stages["admitted"] == 1 and stages["accept_rows_not_admitted"] == 1
+        assert stages["entries_filled"] == 1 and stages["positions_created"] == 1
+        assert stages["by_source"] == {"PENNY_PAPER": {
+            "admitted": 1, "entries_filled": 1, "positions_created": 1}}
+
+    @pytest.mark.asyncio
+    async def test_init_adds_stages_column_to_existing_table(self, db_path):
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(
+                """CREATE TABLE ops_funnel_daily (
+                    date_ist TEXT NOT NULL, subsystem TEXT NOT NULL,
+                    evaluated INTEGER NOT NULL, accepted INTEGER NOT NULL,
+                    rejected INTEGER NOT NULL, top_rejects TEXT,
+                    as_of TEXT NOT NULL, PRIMARY KEY (date_ist, subsystem))"""
+            )
+            await db.execute(
+                "INSERT INTO ops_funnel_daily VALUES ('2026-10-01','penny',1,0,1,'{}','t')")
+            await db.commit()
+        await init_ops_metrics_db(db_path)
+        await init_ops_metrics_db(db_path)
+        rows = await funnel_window(db_path, days=365)
+        assert rows[0]["stages"] == {}

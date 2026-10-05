@@ -8,6 +8,7 @@ inventing scheduled/start times that an older invocation did not expose.
 from __future__ import annotations
 
 import asyncio
+import logging
 import math
 import os
 import time
@@ -51,6 +52,18 @@ CREATE TABLE IF NOT EXISTS scheduler_daily_summaries (
 );
 """
 IST = ZoneInfo("Asia/Kolkata")
+logger = logging.getLogger(__name__)
+
+# [TELEMETRY-FINAL 2026-10-05] Production audit: 18 current-boot rows stayed
+# IN_FLIGHT although their jobs completed (F&O logs show outcome=ok); the final
+# write failed silently inside a 100 ms busy budget. The completion write now
+# retries with a growing budget, logs a failure, and keeps the final fact in
+# memory so a later successful write can replay it. The report separates an
+# active run from a stale marker and from a failed completion write.
+COMPLETION_BUSY_BUDGETS_MS = (100, 250, 500)
+PENDING_COMPLETION_LIMIT = 200
+_ACTIVE_RUNS: set[str] = set()
+_PENDING_COMPLETIONS: dict[str, dict[str, Any]] = {}
 
 
 def _utc_now() -> datetime:
@@ -248,13 +261,13 @@ async def start_scheduler_run(db_path: str, *, job_id: str, retention: int = 500
 async def complete_scheduler_run(
     db_path: str, *, run_id: str, result: str, started_at: datetime, ended_at: datetime,
     elapsed_seconds: float, reason: str | None = None, stage_durations: dict[str, Any] | None = None,
-    retention: int = 5000,
+    retention: int = 5000, busy_ms: int = 100,
 ) -> bool:
     """Complete a pre-recorded run; returns false if its marker was absent."""
     import json
     payload = json.dumps(stage_durations or {}, sort_keys=True, separators=(",", ":"))
-    async with aiosqlite.connect(db_path, timeout=0.10) as db:
-        await db.execute("PRAGMA busy_timeout=100")
+    async with aiosqlite.connect(db_path, timeout=busy_ms / 1000) as db:
+        await db.execute(f"PRAGMA busy_timeout={int(busy_ms)}")
         await db.executescript(_SCHEMA)
         existing = await (await db.execute(
             "SELECT job_id,event_kind FROM scheduler_run_telemetry WHERE run_id=? AND result='IN_FLIGHT'",
@@ -343,6 +356,7 @@ def instrument_async_job(
         run_id: str | None = None
         try:
             run_id = await start_scheduler_run(db_path, job_id=job_id, retention=retention)
+            _ACTIVE_RUNS.add(run_id)
         except Exception:
             # Telemetry has a deliberately tiny lock budget and cannot become
             # a dependency of the business callback.
@@ -367,20 +381,71 @@ def instrument_async_job(
         finally:
             ended = _utc_now()
             elapsed = round(time.monotonic() - monotonic_started, 6)
-            try:
-                completed = run_id is not None and await complete_scheduler_run(
-                    db_path, run_id=run_id, result=outcome, started_at=started, ended_at=ended,
-                    elapsed_seconds=elapsed, reason=reason, stage_durations=stages, retention=retention,
-                )
-                if not completed:
-                    await record_scheduler_event(db_path, job_id=job_id, event_kind="EXECUTION", result=outcome,
-                                                 started_at=started, ended_at=ended, elapsed_seconds=elapsed,
-                                                 reason=reason, stage_durations=stages, retention=retention)
-            except Exception:
-                # Observability must not recursively destabilise scheduled
-                # work while a database is locked or storage is degraded.
-                pass
+            final = {"job_id": job_id, "result": outcome, "started_at": started, "ended_at": ended,
+                     "elapsed_seconds": elapsed, "reason": reason, "stage_durations": stages}
+            # Observability must not destabilise scheduled work: a failed
+            # final write is logged and parked, never raised.
+            if await _write_final(db_path, run_id, final, retention):
+                await _replay_pending(db_path, retention)
+            else:
+                _park_completion(run_id, final)
+            if run_id is not None:
+                _ACTIVE_RUNS.discard(run_id)
     return wrapped
+
+
+async def _write_final(db_path: str, run_id: str | None, final: dict[str, Any], retention: int) -> bool:
+    """Persist one final fact with bounded retries; True when it is durable."""
+    error: str | None = None
+    for budget in COMPLETION_BUSY_BUDGETS_MS:
+        try:
+            completed = run_id is not None and await complete_scheduler_run(
+                db_path, run_id=run_id, result=final["result"], started_at=final["started_at"],
+                ended_at=final["ended_at"], elapsed_seconds=final["elapsed_seconds"],
+                reason=final["reason"], stage_durations=final["stage_durations"],
+                retention=retention, busy_ms=budget,
+            )
+            if not completed:
+                await record_scheduler_event(
+                    db_path, job_id=final["job_id"], event_kind="EXECUTION", result=final["result"],
+                    started_at=final["started_at"], ended_at=final["ended_at"],
+                    elapsed_seconds=final["elapsed_seconds"], reason=final["reason"],
+                    stage_durations=final["stage_durations"], retention=retention,
+                )
+            return True
+        except Exception as exc:  # noqa: BLE001 - telemetry is best-effort
+            error = f"{type(exc).__name__}: {exc}"[:240]
+    logger.warning("scheduler_telemetry_completion_write_failed job_id=%s run_id=%s result=%s error=%s",
+                   final["job_id"], run_id, final["result"], error)
+    final["write_error"] = error
+    return False
+
+
+def _park_completion(run_id: str | None, final: dict[str, Any]) -> None:
+    final["run_id"] = run_id
+    _PENDING_COMPLETIONS[run_id or f"unmarked:{uuid.uuid4().hex}"] = final
+    while len(_PENDING_COMPLETIONS) > PENDING_COMPLETION_LIMIT:
+        _PENDING_COMPLETIONS.pop(next(iter(_PENDING_COMPLETIONS)))
+
+
+async def _replay_pending(db_path: str, retention: int) -> None:
+    """After a durable write, retry parked final facts, oldest first."""
+    for key in list(_PENDING_COMPLETIONS)[:20]:
+        final = _PENDING_COMPLETIONS.get(key)
+        if final is None:
+            continue
+        if not await _write_final(db_path, final.get("run_id"), final, retention):
+            return
+        _PENDING_COMPLETIONS.pop(key, None)
+        logger.info("scheduler_telemetry_completion_replayed job_id=%s run_id=%s",
+                    final["job_id"], final.get("run_id"))
+
+
+def pending_completion_writes() -> list[dict[str, Any]]:
+    """Final facts this process has not persisted yet (bounded, oldest first)."""
+    return [{"run_id": f.get("run_id"), "job_id": f["job_id"], "result": f["result"],
+             "ended_at": _iso(f["ended_at"]), "elapsed_seconds": f["elapsed_seconds"],
+             "write_error": f.get("write_error")} for f in _PENDING_COMPLETIONS.values()]
 
 
 def telemetry_job(db_path: str, job_id: str, *, retention: int = 5000):
@@ -600,6 +665,17 @@ def _aggregate_by_tier(jobs: dict[str, dict[str, Any]]) -> dict[str, Any]:
     return by_tier
 
 
+def _inflight_state(item: dict[str, Any]) -> str:
+    """CURRENT_PROCESS only while this process is still awaiting the callback."""
+    if item["boot_id"] != BOOT_ID:
+        return "PREVIOUS_PROCESS_UNFINISHED"
+    if item.get("run_id") in _ACTIVE_RUNS:
+        return "CURRENT_PROCESS"
+    if item.get("run_id") in _PENDING_COMPLETIONS:
+        return "COMPLETION_WRITE_FAILED"
+    return "CURRENT_PROCESS_STALE"
+
+
 async def scheduler_timing_report(db_path: str, *, limit: int = 500) -> dict[str, Any]:
     """Reproducible report; unavailable fields remain null rather than guessed."""
     if not 1 <= limit <= 5000:
@@ -608,7 +684,7 @@ async def scheduler_timing_report(db_path: str, *, limit: int = 500) -> dict[str
     async with aiosqlite.connect(db_path) as db:
         rows = await (await db.execute(
             "SELECT job_id,event_kind,scheduled_at,started_at,ended_at,elapsed_seconds,result,reason,"
-            "stage_durations_json,boot_id,created_at FROM scheduler_run_telemetry "
+            "stage_durations_json,boot_id,created_at,run_id FROM scheduler_run_telemetry "
             "ORDER BY created_at DESC LIMIT ?", (limit,),
         )).fetchall()
     import json
@@ -622,7 +698,7 @@ async def scheduler_timing_report(db_path: str, *, limit: int = 500) -> dict[str
         item = {"job_id": row[0], "event_kind": row[1], "scheduled_at": row[2],
                 "started_at": row[3], "ended_at": row[4], "elapsed_seconds": row[5],
                 "result": row[6], "reason": row[7] or None, "stage_durations": stages,
-                "boot_id": row[9], "recorded_at": row[10]}
+                "boot_id": row[9], "recorded_at": row[10], "run_id": row[11]}
         events.append(item)
         bucket = jobs.setdefault(row[0], {
             "runs": 0, "executed_runs": 0, "rejected": 0, "in_flight": 0,
@@ -666,8 +742,9 @@ async def scheduler_timing_report(db_path: str, *, limit: int = 500) -> dict[str
     for bucket in jobs.values():
         bucket["elapsed_seconds"] = _percentiles(bucket.pop("elapsed_samples"))
         bucket.pop("stage_durations_samples", None)
-    inflight = [item | {"inflight_state": "CURRENT_PROCESS" if item["boot_id"] == BOOT_ID else "PREVIOUS_PROCESS_UNFINISHED"}
+    inflight = [item | {"inflight_state": _inflight_state(item)}
                 for item in events if item["event_kind"] == "EXECUTION" and item["result"] == "IN_FLIGHT"]
     return {"boot_id": BOOT_ID, "events": events, "jobs": jobs, "inflight": inflight,
+            "pending_completion_writes": pending_completion_writes(),
             "by_tier": by_tier,
-            "note": "scheduled_at is null for executions because APScheduler did not provide it to the callback; null is not a zero delay. In-flight markers survive crashes and are not inferred as successful runs. by_tier groups jobs by priority tier per plan §12 (exit, advice, scan, research, system); unrecognised job_ids land in 'other'. A tier with zero jobs returns None -- not 0 -- for all numeric fields, so the UI can distinguish 'unavailable' from 'instant'."}
+            "note": "scheduled_at is null for executions because APScheduler did not provide it to the callback; null is not a zero delay. In-flight markers survive crashes and are not inferred as successful runs. inflight_state CURRENT_PROCESS means the callback is still running; COMPLETION_WRITE_FAILED means it finished but its final write is parked in pending_completion_writes; CURRENT_PROCESS_STALE means neither is known. by_tier groups jobs by priority tier per plan §12 (exit, advice, scan, research, system); unrecognised job_ids land in 'other'. A tier with zero jobs returns None -- not 0 -- for all numeric fields, so the UI can distinguish 'unavailable' from 'instant'."}

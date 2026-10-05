@@ -426,11 +426,26 @@ const sendAlert = async (message) => {
   }
 };
 
+// [EXPIRY-OUTBOX 2026-10-05] One attempt, no background retry and no
+// dead-letter: for callers that keep their own durable outbox and retry
+// until delivery is acknowledged. Retrying here as well would duplicate.
+// Only the error code is logged (Telegram error text can carry the bot URL).
+const sendAlertOnce = async (message) => {
+  try {
+    await bot.sendMessage(config.TELEGRAM_CHAT_ID, message);
+    return true;
+  } catch (err) {
+    logger.warn({ event_type: 'telegram_send_once_failed', code: err && err.code }, 'Alert not delivered; caller retries');
+    return false;
+  }
+};
+
 module.exports = {
   bot,
   isValidChat,
   sendSignalAlert,
   sendAlert,
+  sendAlertOnce,
   // [ALERT-DEADLETTER 2026-07-31] Surfaced on /api/health so a silent alert
   // path is observable rather than inferred.
   undeliveredAlertCount,

@@ -526,7 +526,31 @@ async function assertOwnerEntrySession(ticker, options = {}) {
   }
 }
 
+// [DISPATCH-LOCK 2026-10-05] Once a BUY may have reached the broker, a local
+// failure (for example SQLITE_BUSY while recording the fill) must never look
+// retryable: the caller would unlock the signal and a retry would buy again.
+// Only outcomes broker-confirmed flat carry `brokerFlat`; every other
+// post-dispatch error is promoted to positionHeld/outcomeUnknown.
 async function executeSignal(signal, action, isIntraday = false) {
+  const dispatch = { sent: false };
+  try {
+    return await executeSignalSteps(signal, action, isIntraday, dispatch);
+  } catch (err) {
+    if (dispatch.sent && !err.brokerFlat && !err.positionHeld && !err.outcomeUnknown) {
+      logger.error({ event_type: 'post_dispatch_failure_locked', ticker: signal.ticker, err: err.message });
+      err.positionHeld = true;
+      err.outcomeUnknown = true;
+    }
+    throw err;
+  }
+}
+
+function brokerFlat(err) {
+  err.brokerFlat = true;
+  return err;
+}
+
+async function executeSignalSteps(signal, action, isIntraday, dispatch) {
   logger.info({ event_type: 'execution_started', ticker: signal.ticker, id: signal.signal_id, isIntraday });
 
     // 1. Token & Pre-checks
@@ -663,11 +687,13 @@ async function executeSignal(signal, action, isIntraday = false) {
     // Never retry a non-idempotent submission. A network failure may happen
     // after broker acceptance; retrying would create a duplicate position.
     orderResponse = await kite.placeOrder(entryParams, { intent: "entry", channel: "momentum" });
+    dispatch.sent = true;
   } catch (err) {
     if (err.retryable === false || ['OrderExecutionError', 'TokenExpiredError', 'ValidationError'].includes(err.name)) {
       accountCashReservations.releaseNotSent(`GW:${idempotencyTag}`, `known_not_sent:${err.name}`);
       throw new OrderExecutionError(`Order Placement Failed: ${err.message}`);
     }
+    dispatch.sent = true;
     orderResponse = await recoverAmbiguousPlacement(entryParams, idempotencyTag);
     if (!orderResponse) {
       accountCashReservations.markDispatch(`GW:${idempotencyTag}`, { ambiguous: true });
@@ -721,7 +747,7 @@ async function executeSignal(signal, action, isIntraday = false) {
     });
     signalsDb.prepare(`UPDATE executed_orders SET status = 'REJECTED', execution_state = 'REJECTED', notes = ? WHERE order_id = ?`)
       .run(fill.reason, orderId);
-    throw new OrderExecutionError(`Order rejected by broker: ${fill.reason}`);
+    throw brokerFlat(new OrderExecutionError(`Order rejected by broker: ${fill.reason}`));
   }
   if (fill.state === 'CANCELLED') {
     accountCashReservations.releaseZeroFill(`GW:${idempotencyTag}`, {
@@ -729,7 +755,7 @@ async function executeSignal(signal, action, isIntraday = false) {
     });
     signalsDb.prepare(`UPDATE executed_orders SET status = 'CANCELLED', execution_state = 'CANCELLED_UNFILLED', notes = ? WHERE order_id = ?`)
       .run('entry_cancelled_unfilled', orderId);
-    throw new OrderExecutionError(`Order ${orderId} was cancelled without a fill.`);
+    throw brokerFlat(new OrderExecutionError(`Order ${orderId} was cancelled without a fill.`));
   }
   if (fill.state === 'UNKNOWN' || fill.state === 'PARTIAL_OPEN') {
     signalsDb.prepare(`UPDATE executed_orders SET status = 'PLACED', execution_state = 'OUTCOME_UNKNOWN', notes = ? WHERE order_id = ?`)
@@ -798,7 +824,7 @@ async function executeSignal(signal, action, isIntraday = false) {
       signalsDb.prepare(
         `UPDATE executed_orders SET status = 'CANCELLED', execution_state = 'FLAT_STOP_EXECUTED', entry_price = ?, shares = ?, filled_at = ?, sl_order_id = ?, notes = ? WHERE order_id = ?`
       ).run(fillPrice, signal.shares, new Date().toISOString(), slOrderId, 'protective_stop_filled_immediately', orderId);
-      throw new OrderExecutionError(`${signal.ticker}: protective stop filled immediately; broker position is flat.`);
+      throw brokerFlat(new OrderExecutionError(`${signal.ticker}: protective stop filled immediately; broker position is flat.`));
     }
 
     if (stop.state === 'UNKNOWN') {
@@ -824,9 +850,9 @@ async function executeSignal(signal, action, isIntraday = false) {
         signalsDb.prepare(
           `UPDATE executed_orders SET status = 'CANCELLED', execution_state = 'FLAT_CONFIRMED', notes = ? WHERE order_id = ?`
         ).run(`sl_failed_flatten_confirmed:${unwind.orderId}`, orderId);
-        throw new OrderExecutionError(
+        throw brokerFlat(new OrderExecutionError(
           `${signal.ticker}: protective stop was rejected; full unwind was broker-confirmed. Position is flat.`
-        );
+        ));
       }
 
       // Stop failed and the unwind was not fully confirmed: the shares may

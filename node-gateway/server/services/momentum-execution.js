@@ -54,6 +54,30 @@ async function fetchEngineMomentumSignal(cleanId) {
   }
 }
 
+// [FILL-ANCHOR 2026-08-04] Persist what was actually armed, not the signal's
+// stale stop/target. Failure is logged, not thrown: acquireMomentumLock left the
+// row EXECUTING, which already blocks a second buy.
+function recordMomentumExecuted(lockId, signalData, result) {
+  const executedPayload = {
+    ...signalData,
+    shares: result.shares,
+    stop_loss: result.stop_loss,
+    target_1: result.target_1,
+    target_2: result.target_2,
+    entry_price: result.fillPrice,
+    risk_per_share: result.risk_per_share,
+    signal_close: signalData.close,
+  };
+  try {
+    signalsDb.prepare(`
+      UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED', payload_json = ? WHERE signal_id = ?
+    `).run(JSON.stringify(executedPayload), lockId);
+  } catch (err) {
+    logger.error({ event_type: 'momentum_executed_record_failed', signal_id: lockId,
+      order_id: result.orderId, err: err.message });
+  }
+}
+
 /**
  * Execute one Momentum signal.
  *
@@ -95,22 +119,9 @@ async function executeMomentum({ signalId, cleanId, allowLiveFetch, onStart = as
     // MomentumSignal has no signal_id; executed_orders.signal_id is NOT NULL.
     signalData.signal_id = lockId;
     const result = await executor.executeSignal(signalData, 'EM', true);
-
-    // [FILL-ANCHOR 2026-08-04] Persist what was actually armed, not the
-    // signal's stale stop/target.
-    const executedPayload = {
-      ...signalData,
-      shares: result.shares,
-      stop_loss: result.stop_loss,
-      target_1: result.target_1,
-      target_2: result.target_2,
-      entry_price: result.fillPrice,
-      risk_per_share: result.risk_per_share,
-      signal_close: signalData.close,
-    };
-    signalsDb.prepare(`
-      UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED', payload_json = ? WHERE signal_id = ?
-    `).run(JSON.stringify(executedPayload), lockId);
+    // [DISPATCH-LOCK 2026-10-05] The BUY is filled from here on. A failure to
+    // record it must leave the row EXECUTING (locked), never reset it.
+    recordMomentumExecuted(lockId, signalData, result);
     return { outcome: 'EXECUTED', result, signalData };
   } catch (err) {
     // A held position (stop and unwind failed) or an unknown broker outcome

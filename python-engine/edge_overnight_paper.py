@@ -13,6 +13,14 @@ move overnight, while the runtime EDGE buys the following morning.
 * 09:17 IST (``run_overnight_exit``): every open position is sold at today's
   opening-auction price (the quote's ``ohlc.open``) less ``EXIT_SLIPPAGE_BPS``.
   A ticker with no trade today stays open and is retried the next session.
+* Restart catch-up (``catch_up``, every 5 min in market hours): a missed exit
+  runs later the same session. Up to ``AUCTION_EXIT_LATEST`` it still uses the
+  opening-auction price; later it sells at the then-current LTP
+  (``CATCHUP_LTP``), never at an auction the process was not present for. A
+  missed entry is caught up only before ``ENTRY_LATEST`` (pre-close).
+* Telegram summaries are written to an outbox in the same transaction as the
+  phase receipt and sent by ``flush_notices``, which marks a notice sent only
+  after a 2xx response, so a failed send retries without re-running the book.
 
 Costs use ``penny_risk.calc_penny_costs`` on the delivery (CNC) schedule.
 State lives in a sibling store ``<DB_PATH>.edge-overnight-paper.db``; each phase
@@ -22,14 +30,14 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import closing, contextmanager
-from datetime import datetime
+from datetime import datetime, time
 import json
 import logging
 import math
 import os
 import sqlite3
 import tempfile
-from typing import Optional
+from typing import Awaitable, Callable, Optional
 from zoneinfo import ZoneInfo
 
 from config import settings
@@ -47,6 +55,11 @@ UNIVERSE_PRICE_BAND = (4.0, 60.0)
 NIFTY_PROXY = "NIFTYBEES"
 HISTORY_BARS = 60
 IST = ZoneInfo("Asia/Kolkata")
+EXIT_START = time(9, 17)
+AUCTION_EXIT_LATEST = time(9, 47)     # the 09:17 job's existing misfire grace
+EXIT_LATEST = time(15, 20)
+ENTRY_CATCHUP_START = time(15, 21)  # after the 15:20 job's own run
+ENTRY_LATEST = time(15, 29)
 
 _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS edge_overnight_paper_trades (
@@ -58,6 +71,9 @@ _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS edge_overnight_paper_runs (
         run_date TEXT NOT NULL, phase TEXT NOT NULL, summary TEXT NOT NULL, created_at TEXT NOT NULL,
         PRIMARY KEY (run_date, phase))""",
+    """CREATE TABLE IF NOT EXISTS edge_overnight_paper_notices (
+        run_date TEXT NOT NULL, phase TEXT NOT NULL, message TEXT NOT NULL, created_at TEXT NOT NULL,
+        sent_at TEXT, attempts INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (run_date, phase))""",
 )
 
 
@@ -104,9 +120,61 @@ def _already_ran(conn: sqlite3.Connection, day: str, phase: str) -> Optional[dic
     return json.loads(row[0]) if row else None
 
 
-def _record_run(conn: sqlite3.Connection, day: str, phase: str, summary: dict, now: datetime) -> None:
+def _record_run(conn: sqlite3.Connection, day: str, phase: str, summary: dict, now: datetime,
+                message: Optional[str] = None) -> None:
     conn.execute("INSERT OR REPLACE INTO edge_overnight_paper_runs VALUES (?,?,?,?)",
                  (day, phase, json.dumps(summary, sort_keys=True), now.isoformat()))
+    if message:
+        conn.execute("INSERT OR IGNORE INTO edge_overnight_paper_notices (run_date, phase, message, created_at) "
+                     "VALUES (?,?,?,?)", (day, phase, message, now.isoformat()))
+
+
+async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optional[str] = None,
+                        now: Optional[datetime] = None) -> int:
+    """Send unsent phase summaries oldest first; ``send`` raises on failure."""
+    store = overnight_db_path(db_path or settings.DB_PATH)
+    now = now or datetime.now(IST)
+    with _store(store) as conn:
+        pending = conn.execute("SELECT run_date, phase, message FROM edge_overnight_paper_notices "
+                               "WHERE sent_at IS NULL ORDER BY created_at").fetchall()
+    sent = 0
+    for day, phase, message in pending:
+        try:
+            await send(message)
+        except Exception as exc:
+            logger.warning("edge_overnight_notice_failed date=%s phase=%s err=%s", day, phase, type(exc).__name__)
+            with _store(store) as conn:
+                conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1 "
+                             "WHERE run_date=? AND phase=?", (day, phase))
+            break
+        with _store(store) as conn:
+            conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1 "
+                         "WHERE run_date=? AND phase=?", (now.isoformat(), day, phase))
+        sent += 1
+    return sent
+
+
+async def catch_up(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> list[str]:
+    """Run a phase whose receipt is missing today, inside its permitted window."""
+    db_path = db_path or settings.DB_PATH
+    now = now or datetime.now(IST)
+    today, clock = now.date().isoformat(), now.time()
+    with _store(overnight_db_path(db_path)) as conn:
+        has_exit = _already_ran(conn, today, "EXIT") is not None
+        has_entry = _already_ran(conn, today, "ENTRY") is not None
+    ran = []
+    if not has_exit and EXIT_START <= clock < EXIT_LATEST:
+        summary = await run_overnight_exit(kite, db_path, now)
+        if not summary.get("repeat"):
+            ran.append("EXIT")
+    if not has_entry and ENTRY_CATCHUP_START <= clock <= ENTRY_LATEST:
+        summary = await run_overnight_entry(kite, db_path, now)
+        if not summary.get("repeat"):
+            ran.append("ENTRY")
+    if ran:
+        logger.warning("edge_overnight_catch_up date=%s phases=%s at=%s", today, ",".join(ran),
+                       now.strftime("%H:%M:%S"))
+    return ran
 
 
 def universe_from_cache(cache_path: str) -> list[str]:
@@ -231,7 +299,7 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
             "shares, entry_ts, status) VALUES (?,?,?,?,?,?,?,?, 'OPEN')",
             [(today, o["ticker"], o["kind"], o["strength"], o["entry_ltp"], o["entry_price"], o["shares"],
               now.isoformat()) for o in opened])
-        _record_run(conn, today, "ENTRY", summary, now)
+        _record_run(conn, today, "ENTRY", summary, now, format_entry_telegram(summary))
     logger.info("edge_overnight_entry date=%s quoted=%d candidates=%d opened=%d",
                 today, len(bars_today), len(scan["candidates"]), len(opened))
     return summary
@@ -255,19 +323,21 @@ async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[
     quotes = await _quotes(kite, sorted({row[1] for row in held})) if held else {}
 
     closed, waiting = [], []
+    auction = now.time() <= AUCTION_EXIT_LATEST
     for trade_date, ticker, entry_price, shares, attempts in held:
         quote = quotes.get(ticker) or {}
         open_price = (quote.get("ohlc") or {}).get("open")
+        basis = open_price if auction else quote.get("last_price")
         stamp = str(quote.get("last_trade_time") or quote.get("timestamp") or "")
-        if not _finite_positive(open_price) or not stamp.startswith(today):
+        if not _finite_positive(open_price) or not _finite_positive(basis) or not stamp.startswith(today):
             waiting.append({"ticker": ticker, "trade_date": trade_date, "reason": "no_trade_today"})
             continue
-        exit_price = round(float(open_price) * (1 - EXIT_SLIPPAGE_BPS / 10000.0), 4)
+        exit_price = round(float(basis) * (1 - EXIT_SLIPPAGE_BPS / 10000.0), 4)
         costs = float(calc_penny_costs(entry_price, exit_price, shares, is_intraday=False))
         net = round((exit_price - entry_price) * shares - costs, 4)
         closed.append({"trade_date": trade_date, "ticker": ticker, "exit_open": float(open_price),
                        "exit_price": exit_price, "costs": round(costs, 4), "net_pnl": net,
-                       "reason": "OPEN_DELAYED" if attempts else "NEXT_OPEN"})
+                       "reason": "CATCHUP_LTP" if not auction else "OPEN_DELAYED" if attempts else "NEXT_OPEN"})
 
     with _store(store) as conn:
         if _already_ran(conn, today, "EXIT") is not None:
@@ -285,7 +355,8 @@ async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[
         summary = {"date": today, "phase": "EXIT", "closed": closed, "waiting": waiting,
                    "session_pnl": round(sum(c["net_pnl"] for c in closed), 4), "book": {
                        k: state[k] for k in ("equity", "realized_pnl", "closed", "wins")}}
-        _record_run(conn, today, "EXIT", summary, now)
+        message = format_exit_telegram(summary) if closed or waiting else None
+        _record_run(conn, today, "EXIT", summary, now, message)
     logger.info("edge_overnight_exit date=%s closed=%d waiting=%d session_pnl=%.2f",
                 today, len(closed), len(waiting), summary["session_pnl"])
     return summary

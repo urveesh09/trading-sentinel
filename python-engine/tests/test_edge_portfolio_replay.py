@@ -178,5 +178,5 @@ def test_runtime_delivery_costs_charge_both_leg_stt_dp_and_no_brokerage():
     expected = ((buy + sell) * settings.PENNY_STT_CNC + buy * settings.PENNY_CNC_STAMP_DUTY_PCT
                 + statutory * (1 + settings.PENNY_GST_PCT) + settings.PENNY_CNC_DP_CHARGE)
     assert calc_penny_costs(20.0, 20.4, 500, False) == pytest.approx(expected, abs=1e-4)
-    # The DP charge is flat: a Rs 1,000 delivery round trip costs ~1.8%.
-    assert calc_penny_costs(10.0, 10.0, 100, False) > 0.018 * 1000
+    # The DP charge is flat: a Rs 1,000 delivery round trip costs ~1.75%.
+    assert calc_penny_costs(10.0, 10.0, 100, False) > 0.017 * 1000

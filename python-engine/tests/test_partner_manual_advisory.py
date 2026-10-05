@@ -224,6 +224,9 @@ async def test_research_card_cannot_queue_and_expired_card_never_reaches_transpo
     from config import settings
     import hedge_advisory
 
+    # Owner switch off: research cards stay shadow-only. Set before the package
+    # is registered, because qualification binds the partner settings.
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED", False)
     profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     candidate = _candidate()

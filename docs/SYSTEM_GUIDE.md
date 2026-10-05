@@ -2,6 +2,242 @@
 
 
 
+
+
+
+
+
+
+
+## October 5 (late night) — expiry book: exit-fee reserve and acknowledged Telegram (actual behavior, Dev, paper only)
+
+A second review of `4673105` found two gaps; both are closed.
+
+- **Exit fees are reserved.** `max_loss` is now the whole premium, the buy's
+  charges, and one sell-order fee per lot (an exit is at most one slice per
+  lot). The buy is charged once at entry (`buy_charges`); each exit slice pays
+  only its own sell order (`sell_charges`). Before, each slice charged a full
+  round trip, so 2 lots at ₹18.80 sold one lot at a time at ₹0.05 lost ₹2,533
+  against a ₹2,492 reserve. Sizing now gives 1 lot there, and ₹6 premiums give
+  5 lots, not 6.
+- **Telegram delivery is acknowledged.** `/api/internal/notify` accepts
+  `require_delivery: true`: one send through `sendAlertOnce`, no gateway retry
+  or dead letter, and **502** if Telegram refused it. `_send_paper_notice`
+  (expiry and EDGE overnight outboxes) sends it, so only the outbox retries.
+  Other callers keep the old always-200 contract with gateway retries; the
+  response now also says `delivered`.
+- **Settlement wording:** `SETTLED_ASSUMED` uses our own sampled post-auction
+  index quote (`settlement_source: SAMPLED_INDEX_QUOTE`), not the exchange's
+  published settlement price, and the summary says so.
+- **Totals:** the running per-underlying line is filled P&L only; assumed
+  settlements get their own line.
+- **Deploy order:** gateway and engine ship together in one rebuild. An old
+  gateway ignores the flag and answers 200, the previous behaviour.
+
+## October 5 (night) — expiry-day paper book hardened after review (actual behavior, Dev, paper only)
+
+Supersedes the risk and fill description in the `expiry-v1` section below. See
+the [design doc](2026-10-05-expiry-day-paper-book.md).
+
+- **Hard ceiling:** each entry's whole premium plus worthless-expiry charges
+  (`max_loss`) fits the play's remaining ₹2,500 for the day. Stops are planned
+  exits only; a gap can fill below them, never below `max_loss`.
+- **A's strike:** ATM, or the next OTM strike if one ATM lot does not fit.
+- **Fills:**
+  - Fresh quotes only: the provider timestamp must be at most 20 s old.
+  - Buys and sells walk the five-level depth in whole lots.
+  - An unfillable exit latches `exit_pending` and is retried each tick.
+  - Fills from 15:15 are labelled `AUCTION_WINDOW` (unverified).
+- **Breakout:** needs fresh index and futures on 2 observations no more than
+  25 s apart. A missing observation or a gap restarts the count.
+- **`reconcile` settlement:** runs on each tick for earlier days and hourly
+  09:45–17:45 (`expiry_paper_reconcile`).
+  - It settles legs left open after 15:40 as `SETTLED_ASSUMED`: intrinsic at the
+    post-15:36 index print, less charges and exercise STT.
+  - Without that print a leg is `UNRESOLVED` at its worst-case loss.
+  - Both go in `assumed_pnl`, separate from fills.
+- **Telegram:** a durable outbox, `expiry_paper_notices`. A notice is marked
+  sent only after a 2xx response. The sender `_send_paper_notice` is shared
+  with EDGE overnight.
+
+## October 5 (night) — scheduler completion telemetry and Penny funnel stages (actual behavior, Dev)
+
+- **Scheduler telemetry (`scheduler_telemetry.py`).** The Production audit
+  found 18 current-boot rows left IN_FLIGHT although the jobs finished. The
+  final write had failed silently inside a 100 ms busy budget.
+  - `instrument_async_job` now retries the final write with budgets of 100,
+    250 and 500 ms (`COMPLETION_BUSY_BUDGETS_MS`).
+  - If every attempt fails, it logs `scheduler_telemetry_completion_write_failed`
+    and parks the final fact in memory (at most 200).
+  - The next durable write replays parked facts, oldest first, at most 20
+    each time, and logs `scheduler_telemetry_completion_replayed`.
+  - `scheduler_timing_report` adds `pending_completion_writes` and gives each
+    row its `run_id`. A current-boot `inflight_state` is now one of:
+    - `CURRENT_PROCESS`: the callback is still being awaited.
+    - `COMPLETION_WRITE_FAILED`: the job finished, but its final write is parked.
+    - `CURRENT_PROCESS_STALE`: neither of the above is known.
+  - The business callback never waits on telemetry for more than about 0.85 s
+    in total, and never fails because of it.
+- **Penny funnel stages (`ops_metrics.py`).**
+  - `ops_funnel_daily` gains a `stages_json` column, added by
+    `init_ops_metrics_db` at startup.
+  - Every subsystem records `evaluated_rows`, `evaluator_accept_rows`,
+    `evaluator_reject_rows` and `distinct_accepted`.
+  - Penny also records distinct journal attempts for the IST day: `admitted`
+    (CANDIDATE_ACCEPTED), `admission_refused` (VALIDATION_REJECTED),
+    `entries_filled`, `positions_created`, `accept_rows_not_admitted` and
+    `by_source`.
+  - The existing `accepted` and `rejected` columns are unchanged.
+  - `funnel_window` (and `/ops` `funnel`) returns `stages`.
+
+## October 5 (night) — partner advisory cards delivered with advice labels (actual behavior, Dev)
+
+- Owner direction: `PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED=True`.
+- `persist_candidate` queues every valid card, not only qualified ones. The
+  card's first line is the label: `⚠️ 𝗣𝗨𝗥𝗘 𝗔𝗗𝗩𝗜𝗖𝗘 — 𝗡𝗢𝗧 𝗖𝗛𝗘𝗖𝗞𝗘𝗗` when
+  no current qualification exists, `𝗣𝗨𝗥𝗘 𝗔𝗗𝗩𝗜𝗖𝗘` when one does. The text is
+  Unicode bold, because the partner transport is plain text with no
+  parse_mode. `payload.advice_label` records it.
+- **`hedge_advisory._authorize_dispatch` (manual_v1):**
+  - A qualified card still needs a current qualification at the transport
+    boundary.
+  - An unqualified card is sent only while the flag is on and its text starts
+    with the NOT CHECKED label.
+  - Every other gate is unchanged: validation reasons, profile version, session
+    date, entry deadline, quote validity, claim token, the daily cap
+    (`PARTNER_MANUAL_ADVISORY_DAILY_CAP=2`) and the one-minute gap.
+- Qualification packages bind partner settings, so a package must be
+  registered under the flag value in force.
+- The informational surfaces (brief/EOD/analytics) still key off a *current
+  qualification*, so the partner gets both the information messages and the
+  labelled cards.
+
+## October 5 (night) — Momentum automatic execution ON, owner halt ON (actual behavior, Dev + Prod .env)
+
+- The gateway defaults to `MOMENTUM_AUTO_EXECUTE=true` (owner direction: automatic
+  instead of manual approval). Every engine-accepted Momentum signal goes through
+  `executeMomentum` with no tap.
+- Production `.env` sets `OWNER_LIVE_ENTRY_HALT=true` (owner-authorised; the owner
+  confirmed the edit). The executor refuses every real entry before dispatch, so
+  automatic buys stay paper-only. The alert reads "Auto-execution did not run:
+  Owner entry halted". Removing the halt makes Momentum fully automatic with real
+  orders.
+
+## October 5 (night) — EDGE overnight outbox and restart catch-up (actual behavior, Dev, paper only)
+
+- **Outbox (audit C5).** Each phase writes its Telegram text to
+  `edge_overnight_paper_notices` in the same transaction as its run receipt.
+  - `flush_notices` sends pending notices oldest first and marks one sent only
+    after a 2xx response (`raise_for_status`).
+  - A failed send leaves the notice pending and stops that flush.
+  - Flushes run after every phase and every catch-up tick.
+- **Catch-up (audit C6).** Job `edge_overnight_catchup` (cron mon–fri 9–15,
+  every 5 minutes, trading days) calls `catch_up`, which runs only a phase
+  whose receipt is missing today:
+  - **Exit**, 09:17–15:20. Up to 09:47 (the old misfire grace) it sells at the
+    opening-auction price. Later it sells at the current LTP less 5 bps, with
+    `exit_reason=CATCHUP_LTP` and `exit_open` still recording the real open.
+    It never claims an auction fill it wasn't present for.
+  - **Entry**, 15:21–15:29 only (pre-close); after that the day is not traded.
+  - Receipts make every phase once-only per day.
+
+## October 5 (night) — audit fixes: analytics, Swing heads-up, DP tariff (actual behavior, Dev)
+
+- **Whole-trade analytics (audit C8).**
+  - `performance_analytics._whole_trades` attaches each `TRADE_PARTIAL` leg to
+    its position's final `TRADE_CLOSED`: the same `origin_ref` when recorded,
+    otherwise the same ticker.
+  - Profit factor, win rate and `trade_close_pnl` are now whole-trade figures.
+  - Drawdown uses every ordered trade-cash leg; deposits and withdrawals stay
+    excluded.
+  - Partials without a final close appear as `unresolved_partial_pnl`, with a
+    warning.
+  - This clears Momentum paper's false +₹1,516 reconciliation mismatch.
+- **Swing pre-market heads-up** reads the typed `Signal.ticker`; it crashed on
+  `.get` and lost the heads-up.
+- **Penny heatmap log.** `penny_heatmap_skipped` when nothing is open,
+  `penny_heatmap_sending` before a send. The old `penny_heatmap_sent` line was
+  logged even for empty heatmaps that were never sent.
+- **DP charge** `PENNY_CNC_DP_CHARGE` = ₹15.34, Zerodha's published amount
+  including GST (checked Oct 5). The earlier ₹15.93 was used by the already
+  scored `edge-overnight-t1` study. That record is left as scored.
+
+## October 5 (night) — classic Penny MIS paper profit lock (actual behavior, Dev, paper only)
+
+- `penny_profit_lock.decide` (pure), applied by `main.run_penny_paper_stop_monitor`
+  on every Penny scan (about 1 minute) when `PENNY_PROFIT_LOCK_ENABLED=True` (the
+  default).
+- **Rule** (owner-directed after SUTLEJTEX on Oct 5: entry 37.70, +4.1% at 11:18,
+  stopped at 36.74 for −₹9; declared before any replay):
+  1. LTP at or above the stored `target_1` (+2R) → exit, reason `target_paper`.
+  2. Once the best LTP since entry reaches +1R, the stop rises to the larger of
+     round-trip cost breakeven and entry + half the best gain. A hit exits with
+     reason `profit_lock_paper`.
+  3. The stop only rises. The peak and stop persist in
+     `positions.highest_close_since_entry` / `trailing_stop_current`.
+- A missing quote now skips the position. The earlier entry-price fallback
+  would read as a breach once the stop sits above entry.
+- Scope: `PENNY_PAPER` MIS rows only. Live Penny stops are broker SL orders and
+  are not modified. Live parity needs broker `modify_order` wiring before any
+  live Penny switch.
+- The replay (`penny_lifecycle_replay.py`) still models the shipped book (no
+  target exit). A labelled diagnostic arm comes after round-3 scoring, because
+  that file is a frozen study source.
+
+## October 5 (night) — audit fixes: Momentum dispatch lock, partner silence (actual behavior, Dev)
+
+Source: the Production audit `Production_Trading-sentinel/docs/2026-10-05-production-deep-audit.md`.
+
+- **Post-dispatch lock (audit C1).** `executor.executeSignal` now wraps the
+  steps in `executeSignalSteps`, with a `dispatch.sent` flag set once a BUY may
+  have reached the broker.
+  - After that point, any error not marked `brokerFlat` is promoted to
+    `positionHeld`/`outcomeUnknown`. `brokerFlat` marks broker-confirmed flat
+    outcomes: rejected, cancelled unfilled, stop filled immediately, or unwind
+    confirmed.
+  - The three callers (`momentum-execution.js`, the Telegram EXEC handler in
+    `index.js`, `POST /api/orders/execute`) record EXECUTED outside the
+    `executeSignal` try. A failed record leaves the row `EXECUTING`, so the
+    signal stays locked.
+  - Previously a SQLITE_BUSY on that write reset the row to PENDING, and a retry
+    bought again.
+- **Partner informational surfaces (audit §7).** With
+  `PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED=True` but no qualified advisory
+  strategy, every partner surface was suppressed. Production's last partner
+  message was on September 9.
+  - `partner_orchestrator._legacy_info_retired` now retires these surfaces only
+    when `_advisory_can_deliver` finds a current `QUALIFIED_FOR_ADVISORY` row
+    (cached for 5 minutes): the morning brief, EOD wrap, analytics alerts
+    (PCR/IV/OI walls/wall flow) and the expiry pin note.
+  - The hedge pipeline's own suppress flags still apply when
+    `PARTNER_HEDGE_ENABLED`.
+  - Legacy directional trade calls (`partner_scan_tick`, Momentum stock-option
+    cues) stay retired: they are unqualified trade instructions.
+- **Partner RV refresh.** It passes full datetimes to `get_intraday_by_token`;
+  date-only bounds failed every morning.
+- **Kite history acquisition** retries timeouts, resets and 502/503/504, five
+  attempts with backoff; history reads are idempotent. One 30 s timeout had
+  aborted the round-3 download.
+
+## October 5 — expiry-day paper book `expiry-v1` (actual behavior, Dev, paper only)
+
+- `expiry_paper.py`, job `expiry_paper_tick`:
+  - runs every 10 s, 12:59–15:40 IST, gated on trading days;
+  - acts only when NIFTY (Tue) or SENSEX (Thu) expires today per the dump.
+- **Plays:**
+  - **A, gamma breakout:** a 13:00–13:30 box; −30% stop; failed-break and
+    8-minute time stops; banks half at +40%, then trails; flat by 15:13.
+  - **B, auction strangle:** bought 15:13:30–15:15 and held through the closing
+    auction.
+  - **C, lottery:** a cheap OTM option on A's signal, held into the auction.
+- **Risk:** at most ₹2,500 (`EXPIRY_PAPER_BUDGET`) per play per expiry day.
+  Broker-free; separate store `<DB_PATH>.expiry-paper.db`, which logs every tick
+  including 15:15–15:40.
+- The live F&O book is unchanged (`FNO_EXPIRY_DAY_ENTRIES=False`, 15:10 flat).
+- The research quote archive now collects until 15:40 (F&O closes at 15:40 since
+  the August 3 closing auction).
+- Design and frozen rules: [expiry-day paper book](2026-10-05-expiry-day-paper-book.md).
+
 ## October 4 — container users share uid 1000 (actual behavior, Dev)
 
 - `python-engine` (`quantuser`) and `node-gateway` (`appuser`) both run as

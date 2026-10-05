@@ -816,3 +816,61 @@ describe('executeSignal()', () => {
     expect(updates.some(sql => sql.includes("'CANCELLED'"))).toBe(false);
   });
 });
+
+// [DISPATCH-LOCK 2026-10-05] Production audit C1: a local failure after the BUY
+// reached the broker must never look retryable to the caller.
+describe('executeSignal() post-dispatch failures', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    setupHappyPath();
+  });
+
+  function failSqlOnce(fragment) {
+    mockDbPrepare.mockImplementation((sql) => ({
+      run: (...args) => {
+        if (sql.includes(fragment)) {
+          mockDbPrepare.mockReturnValue({ run: mockDbRun, get: mockDbGet });
+          mockDbPrepare.mockImplementation(() => ({ run: mockDbRun, get: mockDbGet }));
+          throw new Error('SQLITE_BUSY: database is locked');
+        }
+        return mockDbRun(...args);
+      },
+      get: mockDbGet,
+    }));
+  }
+
+  afterEach(() => {
+    mockDbPrepare.mockImplementation(() => ({ run: mockDbRun, get: mockDbGet }));
+  });
+
+  test('fill-record write failure after a filled MIS buy is locked, not retryable', async () => {
+    failSqlOnce("SET status = 'COMPLETE', execution_state = ?, entry_price = ?, shares = ?, filled_at = ?, gtt_stop_id");
+    let caught;
+    await executeSignal(makeSignal(), 'EM', true).catch(err => { caught = err; });
+    expect(kite.placeOrder).toHaveBeenCalled();
+    expect(caught.positionHeld).toBe(true);
+    expect(caught.outcomeUnknown).toBe(true);
+  });
+
+  test('sync-status write failure is handled and still reports the fill', async () => {
+    failSqlOnce('SET sync_to_b = 1');
+    const result = await executeSignal(makeSignal(), 'EM', true);
+    expect(result.orderId).toBe('ORD-001');
+  });
+
+  test('a broker-rejected entry stays retryable (flat)', async () => {
+    kite.getOrderHistory.mockResolvedValue([{ status: 'REJECTED', status_message: 'RMS', filled_quantity: 0 }]);
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
+    expect(caught.brokerFlat).toBe(true);
+    expect(caught.positionHeld).toBeUndefined();
+  });
+
+  test('a failure before dispatch stays retryable', async () => {
+    tokenStore.isValid.mockReturnValue(false);
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+    expect(caught.positionHeld).toBeUndefined();
+  });
+});

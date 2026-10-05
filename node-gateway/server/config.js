@@ -44,8 +44,11 @@ const configSchema = z.object({
   // [MOMENTUM-AUTO 2026-10-04] When true, an engine-accepted Momentum signal is
   // executed without a Telegram tap (POST /api/internal/momentum-auto-execute),
   // through the same lock, snapshot and executor checks as the EM button.
+  // ON by owner direction 2026-10-05 (automatic instead of manual approval).
+  // OWNER_LIVE_ENTRY_HALT=true still refuses every real entry inside the
+  // executor, so automatic buys stay paper-only until the owner lifts it.
   // Strict parse: z.coerce.boolean() would read the string "false" as true.
-  MOMENTUM_AUTO_EXECUTE: z.enum(['true', 'false', '1', '0']).default('false')
+  MOMENTUM_AUTO_EXECUTE: z.enum(['true', 'false', '1', '0']).default('true')
     .transform((value) => value === 'true' || value === '1'),
 
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),

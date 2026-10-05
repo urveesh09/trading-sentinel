@@ -174,3 +174,47 @@ async def test_run_screener_skips_breadth_when_flag_off(monkeypatch, db_path):
 
     # breadth_engine still None (build_breadth_engine was never called)
     assert main.breadth_engine is None
+
+
+@pytest.mark.asyncio
+async def test_premarket_headsup_names_typed_signals(monkeypatch, db_path):
+    """Production Oct 5: allocation returns typed Signal models; the pre-market
+    heads-up read them as dicts and was lost ('Signal' has no attribute 'get')."""
+    from types import SimpleNamespace
+    from performance import init_ledger
+    from position_tracker import init_positions_db
+    await init_ledger(db_path)
+    await init_positions_db(db_path)
+
+    import main
+    import operator_alert
+    from config import settings
+
+    monkeypatch.setattr(settings, "BREADTH_ENRICHMENT_ENABLED", False)
+    monkeypatch.setattr(main, "breadth_engine", None)
+    for name, value in {"current_regime": MagicMock(), "market_regime": "BULL", "bankroll": 5000.0,
+                        "risk_pct": 0.10, "nifty_close": 18000.0, "nifty_ema20": 17900.0,
+                        "nifty_return_1d": 0.001, "nifty_df": _make_df(),
+                        "is_market_open": MagicMock(return_value=False)}.items():
+        monkeypatch.setattr(main, name, value, raising=False)
+    sent = AsyncMock()
+    monkeypatch.setattr(operator_alert, "notify_operator", sent)
+
+    with patch.object(main, "is_trading_day", new=AsyncMock(return_value=True)), \
+         patch.object(main, "kite") as mock_kite, \
+         patch.object(main, "calc_ema", return_value=pd.Series([100.0])), \
+         patch.object(main, "calc_atr", return_value=pd.Series([1.5, 1.5])), \
+         patch.object(main, "calc_rsi_series", return_value=pd.Series([60.0])), \
+         patch.object(main, "get_open_positions", new=AsyncMock(return_value=[])), \
+         patch.object(main, "filter_and_allocate",
+                      return_value=([SimpleNamespace(ticker="TARIL")], [])), \
+         patch.object(main, "notify_screener_results", new=AsyncMock()), \
+         patch.object(main, "current_bankroll", new=AsyncMock(return_value=5000.0)), \
+         patch("pandas.read_csv", return_value=_make_universe_df(1)):
+        mock_kite.access_token = "fake_token"
+        mock_kite.instrument_cache = {}
+        mock_kite.get_historical = AsyncMock(return_value=_make_df())
+        await main.run_screener()
+
+    sent.assert_awaited_once()
+    assert "TARIL" in sent.await_args.args[0]

@@ -2,6 +2,153 @@
 
 
 
+
+
+
+
+
+## October 5 (late night) — expiry book second review
+
+Commit `263dd48` on `codex/production-correction-hedge-p0`: pushed to Dev, not deployed.
+
+- [x] Exit-fee reserve: buy charged once, one sell-order fee per lot reserved.
+- [x] `require_delivery` on `/api/internal/notify`, 502 on refusal, used by the
+  paper outboxes.
+- [x] Settlement labelled as our sampled index; filled and assumed totals on
+  separate lines.
+- [x] Python: `test_expiry_paper.py` 20 pass; focused expiry, EDGE overnight,
+  cost, scheduler and golden selection 134 pass (`.\winvenv\Scripts\python.exe
+  -m pytest ...`).
+- [x] Gateway: new `internal-notify-ack.test.js` (3) and the `sendAlertOnce`
+  case in `alert-dead-letter.test.js` pass. Full jest: 476 pass, 4 skip, 18
+  fail; all 18 are in `db.test.js` and `backlog-reconciliation.test.js` and
+  fail identically with these changes stashed (native SQLite on this host).
+- [x] Full Python suite not rerun for this change.
+- [ ] Owner merges and rebuilds both containers (Production runs `acc7181`).
+
+## October 5 (night) — expiry-day book review fixes
+
+- [x] Hard loss ceiling (premium plus charges); A tries ATM, else one strike
+  OTM.
+- [x] Fresh, depth-walked fills; latched exits; `AUCTION_WINDOW` labels.
+- [x] Futures-confirmed breakout with no stale carry-over.
+- [x] `reconcile` settles leftovers as assumed or unresolved (hourly job plus
+  every tick).
+- [x] Durable Telegram outbox.
+- [x] Tests: `tests/test_expiry_paper.py` 19 pass. They cover gaps,
+  bank-then-gap, one-lot banking, stale and one-unit quotes, missing bids,
+  outage settlement, the outbox, and the second-trade ceiling. Goldens were
+  updated.
+- [x] Full suite: 4,967 pass, 4 skip, 8 fail. None of the failures is in the
+  expiry book:
+  - `test_partner_delivery_blockers` ×3 already fail at `653560a`;
+  - `test_mark_to_market::test_all_legs_fresh` is clock-dependent and passes
+    alone;
+  - the rest are the known pre-existing failures.
+- [ ] Owner merges and rebuilds Production (running `acc7181`).
+
+## October 5 (night) — scheduler telemetry and Penny funnel stages
+
+- [x] `scheduler_telemetry.py`: retried final write, failure log, parked
+  replay, and the `inflight_state` split. `test_scheduler_telemetry.py` and the
+  H2 tiers tests: 33 pass. The new tests fault-inject a locked database at
+  completion.
+- [x] `ops_metrics.py`: `stages_json`. `test_ops_metrics.py`: 28 pass,
+  including a reconciliation of the Oct 5 shape (2 accept rows, 1 admitted,
+  1 not admitted, 1 fill) and a column migration.
+- [ ] After rebuild, check `/ops` `funnel[].stages` for the first trading day,
+  and check for no `scheduler_telemetry_completion_write_failed` lines or for
+  replays.
+
+## October 5 (night) — partner advisory labels
+
+- [x] Unqualified cards are delivered as "PURE ADVICE — NOT CHECKED", qualified
+  ones as "PURE ADVICE" (`config.py`, `partner_manual_advisory.py`,
+  `hedge_advisory.py`).
+- [x] Partner, hedge and qualification-boundary tests: 132 pass. New tests
+  cover the label, the authorizer under flag on/off, and the qualified label.
+- [ ] After rebuild, confirm the partner's first labelled card (at most 2 per
+  day).
+
+## October 5 (night) — Momentum auto-execute
+
+- [x] `node-gateway/server/config.js`: `MOMENTUM_AUTO_EXECUTE` defaults to `true`.
+- [x] Production `.env`: `OWNER_LIVE_ENTRY_HALT=true` (verified by key-only grep).
+- [x] Gateway `momentum-auto-execute` and `momentum-execution` tests pass.
+- [ ] Owner lifts the halt when real automatic Momentum buys are wanted.
+
+## October 5 (night) — EDGE overnight C5/C6
+
+- [x] Notice outbox plus restart catch-up (`edge_overnight_paper.py`,
+  `scheduler_setup.py`).
+- [x] `test_edge_overnight_paper.py`: 9 pass (outbox retry and send-once; late
+  exit at LTP; exit within grace at the open; entry only before the close).
+  Scheduler goldens updated with `TS_UPDATE_GOLDEN=1` (one new job); scheduler
+  and surface tests pass.
+
+## October 5 (night) — audit remediation slice 3
+
+- [x] C8 whole-trade analytics; Swing heads-up typed signal; heatmap log names;
+  DP ₹15.34.
+- [x] Tests:
+  - `test_performance_analytics.py`: 9 pass, including the new partial-leg
+    case.
+  - `test_main_breadth_integration.py`: 3 pass; the new heads-up test fails
+    without the fix.
+  - `test_edge_portfolio_replay.py`: 12 pass; the DP assertion is updated to
+    about 1.75%.
+- [ ] Deferred: C2 BSE option exchange rate (0.0325% vs NSE 0.03553%, about
+  ₹3.6 per ₹1 lakh premium; many call sites plus the entry cost snapshot); C4
+  one DP per scrip per day for partial EDGE sells.
+
+## October 5 (night) — Penny paper profit lock
+
+- [x] `penny_profit_lock.py`, monitor wiring in `main.py`, flag
+  `PENNY_PROFIT_LOCK_ENABLED=True` (paper MIS only).
+- [x] Tests: `tests/test_penny_profit_lock.py` (rule, SUTLEJTEX Oct 5 path,
+  monitor raise→bank, target exit, missing quote, flag off) plus
+  `test_penny_exit_lifecycle.py`: 27 pass.
+- [ ] Forward evidence: count `target_paper` / `profit_lock_paper` closes against
+  `protective_stop_paper` over 10+ sessions. This is not qualification.
+- [ ] Diagnostic replay arm after round-3 scoring (seen data, labelled).
+
+## October 5 (night) — audit remediation slice 1
+
+- [x] C1: post-dispatch failures keep the Momentum/EXEC lock
+  (`executor.js`, `momentum-execution.js`, `index.js`, `routes/orders.js`).
+- [x] Partner informational surfaces resume while advisory is unqualified;
+  RV refresh datetime fix (`partner_orchestrator.py`).
+- [x] Kite acquisition retries transient network failures.
+- [x] Verification:
+  - Gateway `npx jest`: 472 pass, 4 skip, 18 fail. The 18 failures are
+    pre-existing (`db.test.js`, `backlog-reconciliation.test.js`: better-sqlite3
+    has no native Windows build); the same 18 fail with these changes stashed.
+  - New `tests/unit/momentum-execution.test.js` 3/3 pass; the retry test fails
+    without the fix.
+  - New executor post-dispatch tests pass.
+  - Python partner modules: 116 pass. The new silence tests fail without the
+    fix.
+- [ ] Owner merges and rebuilds Production; confirm a partner morning brief on
+  the next trading day.
+- [ ] Penny profit protection (after round-3 scoring).
+
+## October 5 (evening) — expiry-day paper book
+
+- [x] Researched expiry-day dynamics and wrote the
+  [design doc](2026-10-05-expiry-day-paper-book.md) covering:
+  - the closing auction and the 15:40 close;
+  - SEBI's pending settlement review;
+  - evidence on retail losses.
+- [x] `expiry_paper.py` (plays A/B/C, ₹2,500 per play per expiry, paper only)
+  and a 10 s scheduler job. The research archive window was extended to 15:40.
+- [x] Tests: `tests/test_expiry_paper.py`, 11 pass (pure exit and entry rules
+  plus a simulated expiry afternoon). Scheduler goldens updated. Full suite
+  after the fix: 4,942 pass, 4 skip, and only the 4 known pre-existing
+  failures.
+- [ ] Owner merges and rebuilds Production before the next expiry (NIFTY, Tue
+  Oct 6).
+- [ ] First expiry: confirm the ticks, the box and the Telegram summary.
+
 ## October 4 (late) — gateway uid fix and successor inheritance
 
 - [x] Diagnosed the Production `node-gateway` crash loop (read-only): uid 100

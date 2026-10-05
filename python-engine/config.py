@@ -544,10 +544,12 @@ class Settings(BaseSettings):
     PENNY_STT_MIS:             float = 0.00025   # 0.025% sell side (intraday)
     PENNY_STT_CNC:             float = 0.001     # 0.1% BUY and sell side (delivery)
     # [CNC-COSTS 2026-10-05] Delivery has no Zerodha brokerage, 0.015% buy
-    # stamp duty and a flat depository (DP) charge per scrip on each sell day
-    # (Rs 13.5 + 18% GST). Before this fix delivery P&L was overstated.
+    # stamp duty and a flat depository (DP) charge per scrip on each sell day.
+    # Before this fix delivery P&L was overstated. DP is Zerodha's published
+    # Rs 15.34 (Rs 3.5 CDSL + Rs 9.5 Zerodha + Rs 2.34 GST; zerodha.com/charges,
+    # checked 2026-10-05); 15.93 was an older schedule.
     PENNY_CNC_STAMP_DUTY_PCT:  float = 0.00015
-    PENNY_CNC_DP_CHARGE:       float = 15.93
+    PENNY_CNC_DP_CHARGE:       float = 15.34
     PENNY_BROKERAGE_PCT:       float = 0.0003    # 0.03% per side
     PENNY_BROKERAGE_MAX:       float = 20.0      # Rs 20 cap per order
     PENNY_EXCHANGE_PCT:        float = 0.0000307  # NSE cash 0.00307%, both sides
@@ -702,6 +704,11 @@ class Settings(BaseSettings):
     # Sep 7-Oct 1, smaller drawdown). The breakout-bar-low stop sat in one-minute
     # noise; it is widened to >= 1.5% / Rs0.03 under entry at the same rupee risk.
     PENNY_NOISE_STOP_ENABLED:      bool  = True
+    # [PENNY-PROFIT-LOCK 2026-10-05] Owner-directed, classic Penny MIS PAPER
+    # monitor only (penny_profit_lock.py): exit at the stored +2R target, and
+    # once +1R is reached never give back more than half the best gain. Live
+    # Penny stops are broker orders and are not modified by this flag.
+    PENNY_PROFIT_LOCK_ENABLED:     bool  = True
     PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
     # Broker-free evidence side-channel; never reaches PennyExecutor.
@@ -894,6 +901,14 @@ class Settings(BaseSettings):
     # Separate store; never places an order. Owner chose a Rs 25,000 book.
     EDGE_OVERNIGHT_PAPER_ENABLED:    bool  = True
     EDGE_OVERNIGHT_PAPER_BANKROLL:   float = 25000.0
+    # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book
+    # (docs/2026-10-05-expiry-day-paper-book.md): plays A/B/C on the weekly
+    # NIFTY (Tue) and SENSEX (Thu) expiry, 12:59-15:40 IST. The budget is the
+    # most each play may lose per expiry day (owner chose Rs 2,500). Separate
+    # store; the live F&O book keeps FNO_EXPIRY_DAY_ENTRIES=False.
+    EXPIRY_PAPER_ENABLED:            bool  = True
+    EXPIRY_PAPER_BUDGET:             float = 2500.0
+    EXPIRY_PAPER_UNDERLYINGS:        str   = "NIFTY,SENSEX"
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3
@@ -1317,6 +1332,11 @@ class Settings(BaseSettings):
     PARTNER_MANUAL_ADVISORY_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED: bool = True
+    # [PARTNER-UNQUALIFIED 2026-10-05] Owner direction: send validated cards
+    # even when no strategy is qualified, headed in bold "PURE ADVICE — NOT
+    # CHECKED"; qualified cards are headed "PURE ADVICE". Every other delivery
+    # gate (validation, profile, quote freshness, deadlines, caps) still applies.
+    PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED: bool = True
     # [WORKFLOW-ITEMS-5/6/9 2026-09-20] Operations freshness thresholds.
     #
     # The audit requires the operator to be alerted BEFORE useful

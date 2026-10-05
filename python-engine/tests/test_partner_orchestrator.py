@@ -1068,3 +1068,73 @@ def test_management_rejects_nonfinite_or_boolean_price(price):
     observed, value, reason = po._closed_bar_observation(sig, IST.localize(datetime(2026, 7, 20, 10, 30)))
     assert observed is None and value is None
     assert reason == "bar_close_unusable"
+
+
+# [PARTNER-SILENCE 2026-10-05] Advisory delivery enabled with nothing qualified
+# silenced every partner surface for four weeks in Production.
+@pytest.mark.asyncio
+async def test_unqualified_advisory_delivery_keeps_info_surfaces(wired, monkeypatch):
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", True)
+    monkeypatch.setattr(po, "_advisory_live_cache", None)
+    assert await po._advisory_can_deliver(NOW) is False
+    assert await po._legacy_info_retired(NOW, True) is False
+    await po.init_partner_db(settings.DB_PATH)
+    assert await po._send_event(settings.DB_PATH, "pcr_shift", "NIFTY", "x", NOW) != "suppressed"
+
+
+@pytest.mark.asyncio
+async def test_qualified_advisory_retires_info_surfaces(wired, monkeypatch):
+    import aiosqlite
+    import partner_manual_advisory
+
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", True)
+    monkeypatch.setattr(po, "_advisory_live_cache", None)
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute(
+            "CREATE TABLE partner_advisory_strategy_qualifications (underlying TEXT, "
+            "structure_kind TEXT, horizon TEXT, policy_version TEXT, dataset_ref TEXT, "
+            "reviewed_at TEXT, status TEXT)")
+        await db.execute(
+            "INSERT INTO partner_advisory_strategy_qualifications VALUES "
+            "('NIFTY','LONG_CALL','INTRADAY','v1','d','2026-07-01','QUALIFIED_FOR_ADVISORY')")
+        await db.commit()
+
+    async def _current(*a, **kw):
+        return True
+
+    monkeypatch.setattr(partner_manual_advisory, "qualification_is_current", _current)
+    assert await po._advisory_can_deliver(NOW) is True
+    assert await po._send_event(settings.DB_PATH, "pcr_shift", "NIFTY", "x", NOW) == "suppressed"
+
+
+@pytest.mark.asyncio
+async def test_disabled_delivery_never_retires_info(wired, monkeypatch):
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", False)
+    monkeypatch.setattr(po, "_advisory_live_cache", None)
+    assert await po._legacy_info_retired(NOW, True) is False
+
+
+@pytest.mark.asyncio
+async def test_rv_refresh_passes_full_datetimes(wired, monkeypatch):
+    import main
+
+    class _FutBook(_Book):
+        def front_future(self, today):
+            return SimpleNamespace(token=123)
+
+    calls = []
+
+    async def _fetch(token, frm, to, interval="5minute"):
+        calls.append((frm, to))
+        closes = [100 + i * (1 if i % 2 else -0.5) for i in range(30)]
+        return pd.DataFrame({"close": closes})
+
+    monkeypatch.setattr(po, "get_instruments_for", lambda name: _FutBook())
+    monkeypatch.setattr(main, "kite", SimpleNamespace(access_token="tok", get_intraday_by_token=_fetch))
+    await po.partner_rv_refresh(NOW)
+    assert calls
+    for frm, to in calls:
+        datetime.strptime(frm, "%Y-%m-%d %H:%M:%S")
+        datetime.strptime(to, "%Y-%m-%d %H:%M:%S")

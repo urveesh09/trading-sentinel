@@ -990,6 +990,15 @@ def advisory_identity(candidate: AdvisoryCandidate) -> tuple[str, str]:
     return advisory_id, economic_version
 
 
+# Plain-text transport (no parse_mode), so the label uses Unicode bold letters.
+ADVICE_LABEL_CHECKED = "𝗣𝗨𝗥𝗘 𝗔𝗗𝗩𝗜𝗖𝗘"
+ADVICE_LABEL_UNCHECKED = "⚠️ 𝗣𝗨𝗥𝗘 𝗔𝗗𝗩𝗜𝗖𝗘 — 𝗡𝗢𝗧 𝗖𝗛𝗘𝗖𝗞𝗘𝗗"
+
+
+def advice_label(qualified: bool) -> str:
+    return ADVICE_LABEL_CHECKED if qualified else ADVICE_LABEL_UNCHECKED
+
+
 def render_advisory_card(candidate: AdvisoryCandidate, advisory_id: str) -> str:
     """Render a complete bounded card; never transport-truncate an advisory.
 
@@ -1039,8 +1048,12 @@ async def persist_candidate(
     qualified = registry_qualified and candidate.evidence == StrategyEvidence.QUALIFIED_FOR_ADVISORY
     payload["strategy_qualified"] = qualified
     payload["qualification_registry_match"] = registry_qualified
+    # Owner direction (2026-10-05): unqualified cards may be delivered, but
+    # only under the bold NOT CHECKED label.
+    deliverable = qualified or bool(settings.PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED)
+    payload["advice_label"] = advice_label(qualified)
     delivery_reasons = list(validation.reasons)
-    if queue_for_delivery and not qualified:
+    if queue_for_delivery and not deliverable:
         # A research preview remains a useful, explicitly non-deliverable
         # record.  Qualification is a transport gate, not a claim that its
         # leg arithmetic became invalid.
@@ -1065,8 +1078,9 @@ async def persist_candidate(
             # archive must not make an otherwise safe card more actionable.
             import structlog
             structlog.get_logger().error("research_candidate_archive_failed err=%s", str(exc))
-    card = render_advisory_card(candidate, advisory_id) if validation.valid else ""
-    status = "QUEUED" if validation.valid and queue_for_delivery and qualified else (
+    card = (payload["advice_label"] + "\n" + render_advisory_card(candidate, advisory_id)
+            if validation.valid else "")
+    status = "QUEUED" if validation.valid and queue_for_delivery and deliverable else (
         "VALIDATED_SHADOW" if validation.valid else "REJECTED"
     )
     stamp = _iso(now)
@@ -1130,7 +1144,7 @@ async def persist_candidate(
         "evidence": candidate.evidence.value,
         "validation": {"valid": validation.valid, "reasons": list(validation.reasons)},
         "delivery_reasons": payload["delivery_reasons"],
-        "delivery_eligible": bool(validation.valid and queue_for_delivery and qualified),
+        "delivery_eligible": bool(validation.valid and queue_for_delivery and deliverable),
         "can_place_orders": False, "can_send": bool(status == "QUEUED"), "rendered_card": card,
         "delivery_thesis_id": payload["delivery_thesis_id"],
         "entry_deadline": payload.get("entry_deadline"), "management_deadline": payload.get("management_deadline"),

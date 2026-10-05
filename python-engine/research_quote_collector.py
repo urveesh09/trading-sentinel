@@ -714,7 +714,7 @@ async def research_quote_collection_tick(now_ist: Optional[datetime] = None) -> 
         return result
     if not settings.RESEARCH_QUOTE_COLLECTION_ENABLED:
         return await journal({"reason": "disabled"})
-    if now_ist.weekday() > 4 or (now_ist.hour, now_ist.minute) < (9, 15) or (now_ist.hour, now_ist.minute) > (15, 30):
+    if now_ist.weekday() > 4 or (now_ist.hour, now_ist.minute) < (9, 15) or (now_ist.hour, now_ist.minute) > (15, 40):
         return await journal({"reason": "outside_weekday_session"})
     try:
         import main as _main
