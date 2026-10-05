@@ -3,6 +3,18 @@
 
 
 
+
+## October 5 (night) — Penny paper profit lock
+
+- [x] `penny_profit_lock.py`, monitor wiring in `main.py`, flag
+  `PENNY_PROFIT_LOCK_ENABLED=True` (paper MIS only).
+- [x] Tests: `tests/test_penny_profit_lock.py` (rule, SUTLEJTEX Oct 5 path,
+  monitor raise→bank, target exit, missing quote, flag off) plus
+  `test_penny_exit_lifecycle.py`: 27 pass.
+- [ ] Forward evidence: count `target_paper` / `profit_lock_paper` closes against
+  `protective_stop_paper` over 10+ sessions. This is not qualification.
+- [ ] Diagnostic replay arm after round-3 scoring (seen data, labelled).
+
 ## October 5 (night) — audit remediation slice 1
 
 - [x] C1: post-dispatch failures keep the Momentum/EXEC lock

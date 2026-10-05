@@ -702,6 +702,11 @@ class Settings(BaseSettings):
     # Sep 7-Oct 1, smaller drawdown). The breakout-bar-low stop sat in one-minute
     # noise; it is widened to >= 1.5% / Rs0.03 under entry at the same rupee risk.
     PENNY_NOISE_STOP_ENABLED:      bool  = True
+    # [PENNY-PROFIT-LOCK 2026-10-05] Owner-directed, classic Penny MIS PAPER
+    # monitor only (penny_profit_lock.py): exit at the stored +2R target, and
+    # once +1R is reached never give back more than half the best gain. Live
+    # Penny stops are broker orders and are not modified by this flag.
+    PENNY_PROFIT_LOCK_ENABLED:     bool  = True
     PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
     # Broker-free evidence side-channel; never reaches PennyExecutor.

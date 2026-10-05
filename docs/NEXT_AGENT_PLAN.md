@@ -13,11 +13,10 @@ surfaces restored while advisory is unqualified; partner RV datetime fix; Kite
 acquisition retries.
 
 Next, in order:
-1. **Penny profit protection.** Classic Penny MIS never raises its stop or takes
-   its target (SUTLEJTEX on Oct 5: +4.1% at 11:18, closed −₹9 at 12:44). Implement
-   it after round-3 scoring finishes, because that scoring reads Penny sources from
-   the Dev tree. Paper first. Judge it by forward days plus a labelled diagnostic
-   on seen data; there is no untouched Penny data left.
+1. **Penny profit protection: paper rule implemented** (`penny_profit_lock.py`,
+   see SYSTEM_GUIDE). Remaining: once round-3 scoring has finished, add a
+   labelled diagnostic arm to `penny_lifecycle_replay.py` (seen data); judge the
+   rule by forward paper days. No untouched Penny data is left.
 2. Penny durable, settlement-fed daily brake (audit P1 pre-live).
 3. C7: late Momentum shadow bars (15:15 EOD exits unresolved).
 4. C8: group partial and final legs for Momentum PF and drawdown.

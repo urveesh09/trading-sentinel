@@ -3,6 +3,29 @@
 
 
 
+
+## October 5 (night) — classic Penny MIS paper profit lock (actual behavior, Dev, paper only)
+
+- `penny_profit_lock.decide` (pure), applied by `main.run_penny_paper_stop_monitor`
+  on every Penny scan (about 1 minute) when `PENNY_PROFIT_LOCK_ENABLED=True` (the
+  default).
+- **Rule** (owner-directed after SUTLEJTEX on Oct 5: entry 37.70, +4.1% at 11:18,
+  stopped at 36.74 for −₹9; declared before any replay):
+  1. LTP at or above the stored `target_1` (+2R) → exit, reason `target_paper`.
+  2. Once the best LTP since entry reaches +1R, the stop rises to the larger of
+     round-trip cost breakeven and entry + half the best gain. A hit exits with
+     reason `profit_lock_paper`.
+  3. The stop only rises. The peak and stop persist in
+     `positions.highest_close_since_entry` / `trailing_stop_current`.
+- A missing quote now skips the position. The earlier entry-price fallback
+  would read as a breach once the stop sits above entry.
+- Scope: `PENNY_PAPER` MIS rows only. Live Penny stops are broker SL orders and
+  are not modified. Live parity needs broker `modify_order` wiring before any
+  live Penny switch.
+- The replay (`penny_lifecycle_replay.py`) still models the shipped book (no
+  target exit). A labelled diagnostic arm comes after round-3 scoring, because
+  that file is a frozen study source.
+
 ## October 5 (night) — audit fixes: Momentum dispatch lock, partner silence (actual behavior, Dev)
 
 Source: the Production audit `Production_Trading-sentinel/docs/2026-10-05-production-deep-audit.md`.
