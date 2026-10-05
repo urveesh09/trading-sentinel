@@ -47,6 +47,16 @@ Done in Dev (this slice): C1 Momentum post-dispatch lock; partner informational
 surfaces restored while advisory is unqualified; partner RV datetime fix; Kite
 acquisition retries.
 
+**Round-3 Kite scoring is postponed (owner, Oct 5 22:45).** The data and freezes
+are committed (`ae2b775`). The 21:12 scoring run was killed at about 22:40 for
+low system memory and wrote no results, so the Kite Jan–Jul 2026 data is still
+unseen.
+- Do not rerun until the owner names a date. Then run only
+  `scripts/run_preregistered_study.py run <study> --out <dir> --jobs 1` for
+  momentum-smart-t3, then penny-noise-t3. No new acquisition and no re-freeze.
+- Until then, the frozen sources stay unedited. That blocks items 1 (replay arm),
+  2, 3 and 5 below.
+
 Next, in order:
 1. **Penny profit protection: paper rule implemented** (`penny_profit_lock.py`,
    see SYSTEM_GUIDE). Remaining: once round-3 scoring has finished, add a
