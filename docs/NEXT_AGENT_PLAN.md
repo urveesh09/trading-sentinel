@@ -2,6 +2,34 @@
 
 
 
+
+## October 5 (night) — Production audit remediation (owner-directed order)
+
+Source: [Production audit](../../Production_Trading-sentinel/docs/2026-10-05-production-deep-audit.md)
+(Production report; read-only).
+
+Done in Dev (this slice): C1 Momentum post-dispatch lock; partner informational
+surfaces restored while advisory is unqualified; partner RV datetime fix; Kite
+acquisition retries.
+
+Next, in order:
+1. **Penny profit protection.** Classic Penny MIS never raises its stop or takes
+   its target (SUTLEJTEX on Oct 5: +4.1% at 11:18, closed −₹9 at 12:44). Implement
+   it after round-3 scoring finishes, because that scoring reads Penny sources from
+   the Dev tree. Paper first. Judge it by forward days plus a labelled diagnostic
+   on seen data; there is no untouched Penny data left.
+2. Penny durable, settlement-fed daily brake (audit P1 pre-live).
+3. C7: late Momentum shadow bars (15:15 EOD exits unresolved).
+4. C8: group partial and final legs for Momentum PF and drawdown.
+5. C2–C4 cost model (BFO schedule, DP ₹15.34, one DP per scrip per day).
+6. C5/C6: overnight EDGE outbox and startup catch-up.
+7. Swing heads-up `Signal.get`; scheduler IN_FLIGHT telemetry; Penny funnel
+   stages; heatmap "sent" naming.
+8. Owner decision: `OWNER_LIVE_ENTRY_HALT` is `false` in Production; manual taps
+   can still place real orders.
+9. Owner decision: deliver unqualified advisory cards to the partner, labelled,
+   or keep them shadow-only.
+
 ## October 5 (evening) — expiry-day paper book
 
 [Design and frozen rules](2026-10-05-expiry-day-paper-book.md). Paper only.

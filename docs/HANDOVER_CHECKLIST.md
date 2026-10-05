@@ -2,6 +2,27 @@
 
 
 
+
+## October 5 (night) — audit remediation slice 1
+
+- [x] C1: post-dispatch failures keep the Momentum/EXEC lock
+  (`executor.js`, `momentum-execution.js`, `index.js`, `routes/orders.js`).
+- [x] Partner informational surfaces resume while advisory is unqualified;
+  RV refresh datetime fix (`partner_orchestrator.py`).
+- [x] Kite acquisition retries transient network failures.
+- [x] Verification:
+  - Gateway `npx jest`: 472 pass, 4 skip, 18 fail. The 18 failures are
+    pre-existing (`db.test.js`, `backlog-reconciliation.test.js`: better-sqlite3
+    has no native Windows build); the same 18 fail with these changes stashed.
+  - New `tests/unit/momentum-execution.test.js` 3/3 pass; the retry test fails
+    without the fix.
+  - New executor post-dispatch tests pass.
+  - Python partner modules: 116 pass. The new silence tests fail without the
+    fix.
+- [ ] Owner merges and rebuilds Production; confirm a partner morning brief on
+  the next trading day.
+- [ ] Penny profit protection (after round-3 scoring).
+
 ## October 5 (evening) — expiry-day paper book
 
 - [x] Researched expiry-day dynamics and wrote the

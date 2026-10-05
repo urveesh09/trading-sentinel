@@ -1462,7 +1462,7 @@ Declared tables: `partner_advisory_feedback`, `partner_advisory_ideas`, `partner
 
 [PARTNER-TIPS 2026-07-18] Partner tips bot orchestration (WS5). Owns the partner-facing jobs (wired in scheduler_setup.register_partner_ scheduler_jobs) and the partner_messages dedup/throttle table: - partner_scan_tick cron */2min at :40s, 09:45-15:05 -> ORB signal tips - partner_analytics_tick cron minute 2-57/5, 09:20-15:30 -> wide-chain snapshot -> OI store -> PCR/IV/OI-wall/regime/halt/momentum events - partner_morning_brief 09:50 -> per-underlying levels + options context - partner_eod_wrap 15:40 -> day recap + signal outcomes + OI purge - partner_rv_refresh 09:10 -> per-underlying 20d realized vol cache Scheduling is deliberately OFF the quarter-hour grid: the momentum screener and pe
 
-Top-level declarations: `_closed_bar_observation` (line 63), `_partner_db` (line 118), `init_partner_db` (line 122), `_seen` (line 134), `_record` (line 143), `_throttled` (line 158), `_send_event` (line 180), `_gates_open` (line 217), `_expiry_note_for` (line 233), `_dte_for` (line 240), `_track_record` (line 249), `partner_scan_tick` (line 296), `partner_manual_advisory_tick` (line 421), `partner_manual_advisory_lifecycle_tick` (line 1022), `partner_analytics_tick` (line 1039), `_log_non_momentum_open_positions` (line 1310), `partner_morning_brief` (line 1347), `_signal_outcome` (line 1437), `_stamp_outcome` (line 1478), `_option_outcome_line` (line 1496), `_track_record_overall` (line 1524), `partner_eod_wrap` (line 1562), `partner_rv_refresh` (line 1695)
+Top-level declarations: `_closed_bar_observation` (line 63), `_partner_db` (line 118), `init_partner_db` (line 122), `_seen` (line 134), `_record` (line 143), `_throttled` (line 158), `_send_event` (line 180), `_advisory_can_deliver` (line 222), `_legacy_info_retired` (line 250), `_gates_open` (line 255), `_expiry_note_for` (line 271), `_dte_for` (line 278), `_track_record` (line 287), `partner_scan_tick` (line 334), `partner_manual_advisory_tick` (line 459), `partner_manual_advisory_lifecycle_tick` (line 1060), `partner_analytics_tick` (line 1077), `_log_non_momentum_open_positions` (line 1345), `partner_morning_brief` (line 1382), `_signal_outcome` (line 1470), `_stamp_outcome` (line 1511), `_option_outcome_line` (line 1529), `_track_record_overall` (line 1557), `partner_eod_wrap` (line 1595), `partner_rv_refresh` (line 1726)
 
 Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_models`, `fno_signal_scan`, `fno_underlyings`, `macro_events`, `partner_bot`, `partner_collection_attempts`, `partner_content`, `partner_decision_clock`, `partner_manual_advisory`, `partner_research_capture`
 
@@ -2454,7 +2454,7 @@ Local routes: `POST /notify`, `POST /register-signal`, `POST /momentum-auto-exec
 
 ## `node-gateway/server/routes/orders.js`
 
-Dependencies: `../db/index`, `../middleware/auth`, `../middleware/validate`, `../services/executor`, `../services/kite`, `../services/telegram`, `../utils/errors`, `crypto`, `express`, `zod`
+Dependencies: `../db/index`, `../middleware/auth`, `../middleware/logger`, `../middleware/validate`, `../services/executor`, `../services/kite`, `../services/telegram`, `../utils/errors`, `crypto`, `express`, `zod`
 
 Local routes: `GET /ltp`, `POST /square-off`, `POST /execute`
 

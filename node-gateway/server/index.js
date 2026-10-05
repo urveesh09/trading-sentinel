@@ -154,15 +154,9 @@ telegram.bot.on('callback_query', async (query) => {
       }
       await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Swing Trade...' });
 
+      let result;
       try {
-        const result = await executor.executeSignal(signalData, 'EXEC', false);
-        if (fullSignalId) {
-          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED' WHERE signal_id = ?`).run(fullSignalId);
-        }
-        await telegram.bot.editMessageText(query.message.text + `\n\n✅ EXECUTED: ${result.orderId}`, {
-          chat_id: query.message.chat.id,
-          message_id: query.message.message_id
-        });
+        result = await executor.executeSignal(signalData, 'EXEC', false);
       } catch (err) {
         if (fullSignalId && (err.positionHeld || err.outcomeUnknown)) {
           signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'OUTCOME_UNKNOWN' WHERE signal_id = ?`).run(fullSignalId);
@@ -176,6 +170,20 @@ telegram.bot.on('callback_query', async (query) => {
           ? 'Outcome locked for broker reconciliation. Do NOT retry.'
           : 'Signal reset to PENDING.';
         await telegram.sendAlert(`❌ Swing execution FAILED for ${signalData?.ticker || signal_id}:\n${err.message}\n\n${retryText}`);
+        return;
+      }
+      // [DISPATCH-LOCK 2026-10-05] Filled: a failed record or edit must not
+      // reach the reset above, so the row stays EXECUTING (locked).
+      try {
+        if (fullSignalId) {
+          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED' WHERE signal_id = ?`).run(fullSignalId);
+        }
+        await telegram.bot.editMessageText(query.message.text + `\n\n✅ EXECUTED: ${result.orderId}`, {
+          chat_id: query.message.chat.id,
+          message_id: query.message.message_id
+        });
+      } catch (err) {
+        logger.error({ event_type: 'execution_record_failed', order_id: result.orderId, err: err.message });
       }
       return;
     }

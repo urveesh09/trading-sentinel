@@ -2,6 +2,42 @@
 
 
 
+
+## October 5 (night) — audit fixes: Momentum dispatch lock, partner silence (actual behavior, Dev)
+
+Source: the Production audit `Production_Trading-sentinel/docs/2026-10-05-production-deep-audit.md`.
+
+- **Post-dispatch lock (audit C1).** `executor.executeSignal` now wraps the
+  steps in `executeSignalSteps`, with a `dispatch.sent` flag set once a BUY may
+  have reached the broker.
+  - After that point, any error not marked `brokerFlat` is promoted to
+    `positionHeld`/`outcomeUnknown`. `brokerFlat` marks broker-confirmed flat
+    outcomes: rejected, cancelled unfilled, stop filled immediately, or unwind
+    confirmed.
+  - The three callers (`momentum-execution.js`, the Telegram EXEC handler in
+    `index.js`, `POST /api/orders/execute`) record EXECUTED outside the
+    `executeSignal` try. A failed record leaves the row `EXECUTING`, so the
+    signal stays locked.
+  - Previously a SQLITE_BUSY on that write reset the row to PENDING, and a retry
+    bought again.
+- **Partner informational surfaces (audit §7).** With
+  `PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED=True` but no qualified advisory
+  strategy, every partner surface was suppressed. Production's last partner
+  message was on September 9.
+  - `partner_orchestrator._legacy_info_retired` now retires these surfaces only
+    when `_advisory_can_deliver` finds a current `QUALIFIED_FOR_ADVISORY` row
+    (cached for 5 minutes): the morning brief, EOD wrap, analytics alerts
+    (PCR/IV/OI walls/wall flow) and the expiry pin note.
+  - The hedge pipeline's own suppress flags still apply when
+    `PARTNER_HEDGE_ENABLED`.
+  - Legacy directional trade calls (`partner_scan_tick`, Momentum stock-option
+    cues) stay retired: they are unqualified trade instructions.
+- **Partner RV refresh.** It passes full datetimes to `get_intraday_by_token`;
+  date-only bounds failed every morning.
+- **Kite history acquisition** retries timeouts, resets and 502/503/504, five
+  attempts with backoff; history reads are idempotent. One 30 s timeout had
+  aborted the round-3 download.
+
 ## October 5 — expiry-day paper book `expiry-v1` (actual behavior, Dev, paper only)
 
 - `expiry_paper.py`, job `expiry_paper_tick`:

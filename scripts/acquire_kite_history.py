@@ -29,7 +29,7 @@ import os
 from pathlib import Path
 import sys
 import time
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
@@ -75,17 +75,25 @@ class Kite:
         wait = REQUEST_GAP_SEC - (time.monotonic() - self.last)
         if wait > 0:
             time.sleep(wait)
-        for attempt in range(3):
+        # Reads are idempotent, so rate limits and transient network failures
+        # (timeouts, resets) are retried with backoff instead of losing a
+        # long acquisition to one slow response.
+        for attempt in range(5):
             self.last = time.monotonic()
             try:
                 with urlopen(Request(self.base + path, headers=self.headers), timeout=30) as response:
                     return response.read()
             except HTTPError as exc:
-                if exc.code == 429 and attempt < 2:
+                if exc.code in (429, 502, 503, 504) and attempt < 4:
                     time.sleep(2 * (attempt + 1))
                     continue
                 body = exc.read()[:300].decode("utf-8", "replace")
                 raise SystemExit(f"Kite HTTP {exc.code} for {path.split('?')[0]}: {body}") from None
+            except (URLError, TimeoutError, ConnectionError) as exc:
+                if attempt < 4:
+                    time.sleep(5 * (attempt + 1))
+                    continue
+                raise SystemExit(f"Kite network failure for {path.split('?')[0]}: {type(exc).__name__}") from None
         raise SystemExit("Kite rate limit persisted")
 
     def instruments(self) -> dict[str, int]:

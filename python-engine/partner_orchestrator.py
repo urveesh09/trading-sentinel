@@ -187,13 +187,9 @@ async def _send_event(
     resistance) so the two don't collide on one shared row."""
     if metrics is not None:
         metrics["events_considered"] = metrics.get("events_considered", 0) + 1
-    if (
-        settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
-        or (
-            settings.PARTNER_HEDGE_ENABLED
-            and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
-        )
-    ) and kind in {"pcr_shift", "iv_move", "oi_walls", "wall_flow", "pin"}:
+    if kind in {"pcr_shift", "iv_move", "oi_walls", "wall_flow", "pin"} and await _legacy_info_retired(
+        now or datetime.now(IST), settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS,
+    ):
         if metrics is not None:
             metrics["suppressed"] = metrics.get("suppressed", 0) + 1
         return "suppressed"
@@ -213,6 +209,48 @@ async def _send_event(
 # ---------------------------------------------------------------------------
 # shared gates
 # ---------------------------------------------------------------------------
+
+# [PARTNER-SILENCE 2026-10-05] Manual-advisory delivery was meant to replace
+# the legacy brief/EOD/analytics surfaces, but it can only send a card for a
+# currently qualified strategy. With none qualified, retiring the legacy surfaces
+# silenced the partner entirely (last message Sep 9). Informational surfaces
+# therefore stand down only while advisory delivery can actually deliver.
+_ADVISORY_LIVE_TTL = timedelta(minutes=5)
+_advisory_live_cache: Optional[tuple[datetime, bool]] = None
+
+
+async def _advisory_can_deliver(now: datetime) -> bool:
+    global _advisory_live_cache
+    if not (settings.PARTNER_MANUAL_ADVISORY_ENABLED and settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED):
+        return False
+    if _advisory_live_cache and now - _advisory_live_cache[0] < _ADVISORY_LIVE_TTL:
+        return _advisory_live_cache[1]
+    from partner_manual_advisory import qualification_is_current
+    live = False
+    try:
+        async with aiosqlite.connect(settings.DB_PATH) as db:
+            rows = await (await db.execute(
+                "SELECT underlying, structure_kind, horizon, policy_version "
+                "FROM partner_advisory_strategy_qualifications WHERE status=?",
+                ("QUALIFIED_FOR_ADVISORY",))).fetchall()
+        for underlying, structure_kind, horizon, policy_version in rows:
+            if await qualification_is_current(
+                settings.DB_PATH, underlying=underlying, structure_kind=structure_kind,
+                horizon=horizon, policy_version=policy_version, now=now,
+            ):
+                live = True
+                break
+    except aiosqlite.Error as exc:
+        # Missing table means nothing is qualified; informational surfaces run.
+        logger.info("partner_advisory_qualification_unreadable err=%s", type(exc).__name__)
+    _advisory_live_cache = (now, live)
+    return live
+
+
+async def _legacy_info_retired(now: datetime, hedge_suppress: bool) -> bool:
+    """True when the brief/EOD/analytics surfaces must stay silent."""
+    return (settings.PARTNER_HEDGE_ENABLED and hedge_suppress) or await _advisory_can_deliver(now)
+
 
 async def _gates_open(now: datetime, lo_min: int, hi_min: int) -> bool:
     """enabled -> session window -> trading day -> fresh-ish token.
@@ -1049,9 +1087,8 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
         "underlyings_seen": 0, "snapshots_persisted": 0,
         "snapshot_errors": 0, "events_considered": 0, "suppressed": 0,
         "throttled": 0, "sent": 0, "send_failed": 0,
-        "analytics_suppression_enabled": bool(
-            settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
-            or (settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS)
+        "analytics_suppression_enabled": await _legacy_info_retired(
+            now, settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS,
         ),
     }
 
@@ -1187,9 +1224,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
             # --- expiry-day pin note ------------------------------------
             # [PARTNER-ENRICH 2026-07-19] T3a: once per expiry afternoon.
             if (
-                not (settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
-                    settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
-                ))
+                not metrics["analytics_suppression_enabled"]
                 and
                 book.is_expiry_day(now.date())
                 and (now.hour * 60 + now.minute) >= 13 * 60 + 30
@@ -1348,9 +1383,7 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
     if not await _gates_open(now, 0, 24 * 60):
         return
-    if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
-        settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF
-    ):
+    if await _legacy_info_retired(now, settings.PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF):
         return
     import main as _main
     day_iso = now.date().isoformat()
@@ -1646,9 +1679,7 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
             row["error"] = "internal error"
         rows.append(row)
 
-    if not (settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
-        settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD
-    )):
+    if not await _legacy_info_retired(now, settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD):
         msg = format_eod(
             day_iso, rows,
             record_line=await _track_record_overall(settings.DB_PATH, now),
@@ -1704,12 +1735,14 @@ async def partner_rv_refresh(now: Optional[datetime] = None) -> None:
             fut = book.front_future(now.date())
             if fut is None:
                 continue
-            frm = (now - timedelta(days=RV_FETCH_CALENDAR_DAYS)).strftime("%Y-%m-%d")
+            # get_intraday_by_token parses full datetimes; date-only bounds
+            # failed every refresh in Production (audit 2026-10-05).
+            frm = (now - timedelta(days=RV_FETCH_CALENDAR_DAYS)).strftime("%Y-%m-%d 09:15:00")
             # NOTE: futures dailies contaminate ~1 of 20 returns near the
             # contract roll; acceptable for a rich/cheap read (plan WS3.3;
             # index-token closes are the post-verification upgrade).
             bars = await _main.kite.get_intraday_by_token(
-                fut.token, frm, now.strftime("%Y-%m-%d"), interval="day",
+                fut.token, frm, now.strftime("%Y-%m-%d %H:%M:%S"), interval="day",
             )
             if bars is None or bars.empty or "close" not in bars:
                 continue
