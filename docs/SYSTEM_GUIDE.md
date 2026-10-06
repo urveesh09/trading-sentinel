@@ -11,6 +11,38 @@
 
 
 
+
+## October 6 (night) — classic Penny durable daily brake; Momentum allocation holdout frozen (actual behavior, Dev)
+
+- **Classic Penny kill switch is now settlement-fed (`main.sync_penny_daily_brake`, audit C3).**
+  - Before: the runtime never called `PennyRiskEngine.record_close`, so
+    `daily_pnl` stayed 0 and `kill_switch_active` could never trip. A restart
+    or the 00:05 reset also cleared it.
+  - Now, before each 30 s scan, the engine sums the IST day's `TRADE_CLOSED`
+    and `TRADE_PARTIAL` ledger rows for the scanner's own source and sets
+    `daily_pnl` from that sum. The source is `PENNY_PAPER` or `PENNY`; other
+    books are excluded.
+  - The trip threshold is unchanged: `PENNY_DAILY_KILL_SWITCH_PCT` (20%) of
+    the configured bankroll, so ₹20,000 on the ₹1L paper book and ₹400 on a
+    ₹2,000 live book.
+  - If the ledger cannot be read, a live scanner is blocked (fail closed) and
+    a paper scanner keeps its last value.
+  - No frozen study source was edited: `penny_risk.py` and
+    `penny_scanner.py` are unchanged.
+- **Momentum allocation holdout (S7a).**
+  - `docs/research/momentum-allocation/2026-10-06-allocation-freeze.json`
+    freezes the comparison of first-arrival, equal-split and risk-proportional
+    allocation on identical candidates (`momentum_allocation_research.py`).
+    It also covers the capital-skipped NUVOCO and SUNTV kind.
+  - Frozen at 2026-10-06 15:33 UTC; every batch after that is holdout.
+  - Evaluate later, in Dev, against a read-only copy of the Production
+    engine DB:
+    `python momentum_allocation_research.py evaluate --db <copy> --manifest <freeze> --output <report>`.
+  - The source fingerprint covers `cost_schedules.py` and `engine.py`, so
+    evaluate on a checkout whose fingerprint matches.
+  - Nothing in runtime changes until a reviewed holdout and a versioned
+    paper pilot.
+
 ## October 6 (night) — research archive writers wait briefly instead of dropping (actual behavior, Dev)
 
 - **`research_archive.guarded_write` (audit R1).**

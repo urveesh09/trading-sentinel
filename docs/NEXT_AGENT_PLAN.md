@@ -18,10 +18,13 @@
 - Acceptance: the tests listed in HANDOVER_CHECKLIST.
 - Rollout: an engine rebuild. The schema change only adds a column.
   Rollback: revert; the column is ignored.
-- R1 is done in the next commit: research writers wait up to 5 s and name
-  the holder. Expiry-tick telemetry was decided against (see SYSTEM_GUIDE).
-  - C3 (Penny durable brake), C4 and C7 stay blocked by the round-3 frozen
-    sources.
+- R1 done (`5817263`): research writers wait up to 5 s and name the holder.
+  Expiry-tick telemetry was decided against (see SYSTEM_GUIDE).
+- C3 done: the classic Penny kill switch is fed from the durable ledger.
+- Momentum allocation holdout frozen (S7a). Evaluate after about 10 sessions
+  with capital skips.
+- Still blocked by the round-3 frozen sources: C4 (DP once per scrip per day,
+  in `penny_risk.py`) and C7 (`momentum_shadow.py` late bars).
 
 ## October 6 (evening) — expiry shadow plays (done, Dev)
 
@@ -157,7 +160,7 @@ Next, in order:
    see SYSTEM_GUIDE). Remaining: once round-3 scoring has finished, add a
    labelled diagnostic arm to `penny_lifecycle_replay.py` (seen data); judge the
    rule by forward paper days. No untouched Penny data is left.
-2. Penny durable, settlement-fed daily brake (audit P1 pre-live).
+2. ~~Penny durable, settlement-fed daily brake~~ done Oct 6 (`main.sync_penny_daily_brake`, no frozen file edited).
 3. C7: late Momentum shadow bars (15:15 EOD exits unresolved).
 4. ~~C8~~ done (whole-trade analytics).
 5. C2 BSE option schedule and C4 one DP per scrip per day remain; DP ₹15.34 done.

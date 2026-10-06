@@ -9,6 +9,22 @@
 
 
 
+
+## October 6 (night) — Penny durable brake (C3) and allocation freeze
+
+- [x] `tests/test_penny_daily_brake.py` (3 tests):
+  - today's paper partial and close legs trip the brake, and other days,
+    books and deposits are excluded;
+  - a restart rebuilds the same value;
+  - an unreadable ledger blocks live and keeps paper.
+- [x] Penny integration and scanner tests: 34 pass. Main-surface and add_job
+  goldens: 4 pass.
+- [x] Allocation manifest frozen (experiment
+  `momentum-allocation-holdout-from-2026-10-07`).
+- [ ] After about 10 sessions with capital skips, run `evaluate` on a
+  read-only Production DB copy and record holdout per policy, net and
+  drawdown, without changing the runtime.
+
 ## October 6 (night) — research writer bounded wait (R1)
 
 - [x] `test_research_archive.py`: 19 pass. A 0.3 s holder delays an append
