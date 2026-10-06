@@ -9,8 +9,7 @@
 
 ## October 6 — expiry first-day audit remediation (`expiry-exec-v2`)
 
-Commit: see the follow-up docs commit on `codex/production-correction-hedge-p0`.
-Status: Dev only until pushed; not deployed. Production runs `70a2256`.
+Commit `db5153d` on `codex/production-correction-hedge-p0`: pushed, not deployed. Production runs `70a2256`.
 
 - [x] Decision clock after quote receipt; start and decision times and limiter
   timing on each tick.
