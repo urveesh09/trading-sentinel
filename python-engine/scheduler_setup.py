@@ -826,6 +826,9 @@ def register_penny_scheduler_jobs(scheduler):
     # per the instrument dump. Never places an order. Notices go to the
     # book's outbox and are marked sent only after a 2xx response; an hourly
     # reconcile (09:45-17:45) settles legs left open by an outage.
+    # [EXPIRY-AUDIT 2026-10-06] The outbox flushes in its own job, 5 s after
+    # each tick, so a slow gateway never holds the tick past its next slot
+    # (Oct 6: 90 of 966 slots skipped while a tick was still running).
     async def _flush_expiry_paper_notices():
         import expiry_paper as xp
         try:
@@ -846,6 +849,12 @@ def register_penny_scheduler_jobs(scheduler):
             await xp.run_expiry_tick(_main.kite)
         except Exception as exc:
             logger.error("expiry_paper_tick_failed err=%s", type(exc).__name__, exc_info=True)
+
+    async def _run_expiry_paper_flush_safe():
+        if not settings.EXPIRY_PAPER_ENABLED:
+            return
+        if not await _main.is_trading_day(datetime.now(IST).date(), settings.DB_PATH):
+            return
         await _flush_expiry_paper_notices()
 
     async def _run_expiry_paper_reconcile_safe():
@@ -866,6 +875,14 @@ def register_penny_scheduler_jobs(scheduler):
         _run_expiry_paper_tick_safe, "cron",
         day_of_week="mon-fri", hour="12-15", second="*/10",
         id="expiry_paper_tick",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=8,
+    )
+    scheduler.add_job(
+        _run_expiry_paper_flush_safe, "cron",
+        day_of_week="mon-fri", hour="12-15", second="5-55/10",
+        id="expiry_paper_flush",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=8,

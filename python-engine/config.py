@@ -1166,6 +1166,7 @@ class Settings(BaseSettings):
     FNO_BROKERAGE_FLAT:        float = 20.0       # Rs 20 per executed order
     FNO_STT_SELL_PCT:          float = 0.0015     # 0.15% sell premium
     FNO_EXCHANGE_TXN_PCT:      float = 0.0003553  # NSE 0.03553%, both sides
+    FNO_BSE_EXCHANGE_TXN_PCT:  float = 0.000325   # BSE 0.0325%, both sides (SENSEX options)
     FNO_SEBI_PCT:              float = 0.000001   # Rs 10/crore, both sides
     FNO_STAMP_DUTY_PCT:        float = 0.00003    # 0.003% buy side
     FNO_IPFT_PCT:              float = 0.000000001 # NSE IPFT Rs 0.01/crore, both sides

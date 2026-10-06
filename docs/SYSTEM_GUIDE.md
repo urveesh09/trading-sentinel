@@ -9,6 +9,51 @@
 
 
 
+## October 6 — expiry book execution contract `expiry-exec-v2` after the first-day audit (actual behavior, Dev, paper only)
+
+Source: the [first-day expiry audit](../../Production_Trading-sentinel/docs/2026-10-06-expiry-system-deep-audit.md)
+(Production, read-only). On October 6 the NIFTY book lost ₹3,224.47 modeled:
+filled +₹25.53, assumed −₹3,250.00. The strategy thresholds stay `expiry-v1`.
+Only the data, clock and fill contract changed. Ticks, day state and positions
+record `expiry-exec-v2`; a day begun under v1 reads
+`expiry-exec-v1+expiry-exec-v2`.
+
+- **Decision clock:** `run_expiry_tick(..., clock=)`. The start time only
+  decides whether to run. Freshness (`Quote.age_status`), entry windows, fill
+  labels and event times use `clock()` read after the quotes arrive.
+- **Tick evidence:** each tick stores
+  - the start and decision times;
+  - `get_quote_by_instruments_with_timing` limiter and transport seconds;
+  - every leg's full depth with its provider time;
+  - index and future status: `FRESH`, `STALE`, `AHEAD`, `NO_TIMESTAMP`,
+    `NO_PRICE` or `MISSING`.
+- **Day-state counters:** refusals by reason, entry refusals by play, maximum
+  gap, gaps over 25 s, and the slowest decision.
+- **Partial bank:** the `bank_pending` column keeps the unfilled lots of a
+  half-bank. They are retried while the bid holds the bank level and survive
+  a restart.
+- **No-quote expiry:** the expiry still writes its day and ticks. The box goes
+  to `UNUSABLE_0_SAMPLES`, and a summary is queued.
+- **Charges:** `options_cost_snapshot(exchange)`. BFO uses
+  `FNO_BSE_EXCHANGE_TXN_PCT=0.000325` (BSE 0.0325%, Zerodha's list read on
+  October 6). The schedule is frozen in `fee_snapshot` at entry; rows without
+  a snapshot use the exchange's current schedule.
+- **Outbox:**
+  - per-store `asyncio.Lock` in the expiry and EDGE overnight `flush_notices`;
+  - `sent_at` is the acknowledgement time;
+  - delivery is at-least-once;
+  - new job `expiry_paper_flush` (Mon–Fri, 12–15 h, second `5-55/10`); the
+    tick callback no longer flushes.
+- **Messages:**
+  - buys show buy fees;
+  - sells show slice gross, sell fees and the trade's net after all fees;
+  - the summary has a data line;
+  - per play: fees, filled net, assumed and whole modeled;
+  - day and to-date whole modeled totals.
+- **Schema:** `expiry_paper_positions` gains `bank_pending`, `fee_snapshot`
+  and `execution` through `ALTER TABLE` when a store is first opened. Existing
+  rows are kept.
+
 ## October 5 (late night) — expiry book: exit-fee reserve and acknowledged Telegram (actual behavior, Dev, paper only)
 
 A second review of `4673105` found two gaps; both are closed.

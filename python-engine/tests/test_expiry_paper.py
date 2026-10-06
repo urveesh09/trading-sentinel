@@ -1,4 +1,5 @@
 """Expiry-day paper book: rules, executable fills, loss ceiling, settlement and the outbox."""
+from contextlib import closing
 from datetime import date, datetime, timedelta
 import json
 import math
@@ -138,7 +139,7 @@ def test_a_planned_stop_at_minus_30_percent():
 def test_a_banks_half_then_raises_the_stop():
     pos = _pos()
     assert xp.manage_position(pos, xp.POLICIES["A"], 28.5, _at(TUESDAY, 13, 42)) == (2, "BANK_HALF")
-    pos["lots_open"] = 2
+    pos["lots_open"], pos["bank_pending"] = 2, 0                                 # the bank filled
     assert pos["banked"] and pos["stop"] == pytest.approx(21.0)
     assert xp.manage_position(pos, xp.POLICIES["A"], 21.5, _at(TUESDAY, 13, 50)) is None
     assert xp.manage_position(pos, xp.POLICIES["A"], 20.9, _at(TUESDAY, 13, 51)) == (2, "TRAIL")
@@ -174,7 +175,7 @@ def test_c_lottery_has_no_stop_banks_at_3x_and_holds_into_the_auction():
     pos = _pos(entry=4.0, lots=6, play="C")
     assert xp.manage_position(pos, xp.POLICIES["C"], 0.5, _at(TUESDAY, 14, 0)) is None
     assert xp.manage_position(pos, xp.POLICIES["C"], 12.0, _at(TUESDAY, 15, 20)) == (3, "BANK_HALF")
-    pos["lots_open"] = 3
+    pos["lots_open"], pos["bank_pending"] = 3, 0
     xp.manage_position(pos, xp.POLICIES["C"], 25.0, _at(TUESDAY, 15, 25))       # 6.25x: keep 60%
     assert pos["stop"] == pytest.approx(15.0)
     assert xp.manage_position(pos, xp.POLICIES["C"], 20.0, _at(TUESDAY, 15, 38)) == (3, "FLAT_TIME")
@@ -397,3 +398,160 @@ async def test_an_a_loss_shrinks_the_ceiling_for_the_second_trade(tmp_path):
     first, second = [r for r in _positions(db) if r["play"] == "A"]
     assert first["net_pnl"] < 0
     assert second["max_loss"] <= BUDGET + first["net_pnl"]
+
+
+# --------------------------------------------------------------------------- first-day audit (Oct 6)
+
+async def _one_tick(tmp_path, market, started, decided):
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    db = str(tmp_path / "trading.db")
+    market.now = decided
+    await xp.run_expiry_tick(market, db, now=started, books={"NIFTY": market.book}, clock=lambda: decided)
+    with sqlite3.connect(xp.expiry_db_path(db)) as conn:
+        ts, spot, payload = conn.execute("SELECT ts, spot, quotes FROM expiry_paper_ticks").fetchone()
+    return db, ts, spot, json.loads(payload)
+
+
+@pytest.mark.asyncio
+async def test_freshness_is_judged_when_the_quotes_arrive_not_when_the_request_started(tmp_path):
+    """Audit probe: a 15 s wait for quotes made v1 refuse new packets and accept old ones."""
+    started, decided = _at(TUESDAY, 13, 40), _at(TUESDAY, 13, 40, 15)
+    # Stamped at receipt, 15 s after the start: v1 called it 15 s in the future.
+    _, ts, spot, payload = await _one_tick(tmp_path / "new", _Market(_book(), _breakout_day, lag_sec=0),
+                                           started, decided)
+    assert ts == decided.isoformat() and payload["started"] == started.isoformat()
+    assert spot is not None and payload["index"]["status"] == "FRESH"
+    assert payload["execution"] == xp.EXECUTION_VERSION
+    leg = next(iter(payload["legs"].values()))
+    assert len(leg["b"]) == 5 and len(leg["a"]) == 5 and leg["ts"]                # the whole depth is kept
+    # Stamped 15 s before the start: 30 s old at receipt, which v1 accepted as 15 s.
+    _, _, spot, payload = await _one_tick(tmp_path / "old", _Market(_book(), _breakout_day, lag_sec=30),
+                                          started, decided)
+    assert spot is None and payload["index"]["status"] == "STALE"
+
+
+@pytest.mark.asyncio
+async def test_entry_windows_and_phase_labels_use_the_decision_time(tmp_path):
+    db, *_ = await _one_tick(tmp_path / "late", _Market(_book(), _breakout_day),
+                             _at(TUESDAY, 15, 14, 55), _at(TUESDAY, 15, 15, 5))
+    assert _positions(db) == []                                                   # B's window closed in transit
+    db, *_ = await _one_tick(tmp_path / "in", _Market(_book(), _breakout_day),
+                             _at(TUESDAY, 15, 13, 25), _at(TUESDAY, 15, 13, 35))
+    legs = _positions(db)
+    assert [r["play"] for r in legs] == ["B", "B"]
+    assert all(r["entry_ts"] == _at(TUESDAY, 15, 13, 35).isoformat() for r in legs)
+
+
+def test_a_partly_filled_bank_keeps_its_remainder_pending_across_a_restart(tmp_path):
+    """Audit probe: 6 lots at 4 reach 12 and the bid takes 1 of 3 lots; v1 forgot the other 2."""
+    contract = SimpleNamespace(tradingsymbol="NIFTY26OCT25200CE", token=7, strike=25200.0,
+                               instrument_type="CE", lot_size=65)
+    t0 = _at(TUESDAY, 14, 0)
+    pos = xp._new_position("2026-10-06", "NIFTY", "C", "NFO", contract, 4.0, 6, t0)
+    policy = xp.POLICIES["C"]
+    action = xp.manage_position(pos, policy, 12.0, t0)
+    assert action == (3, "BANK_HALF")
+    event = xp._try_exit(pos, xp.Quote(bids=((12.0, 65),), asks=(), ltp=12.0, ts=t0), *action, t0)
+    assert event["lots"] == 1 and pos["lots_open"] == 5 and pos["bank_pending"] == 2
+    assert pos["exit_pending"] is None
+
+    store = str(tmp_path / "x.db")
+    with xp._store(store) as conn:
+        xp._save_position(conn, pos)
+    with xp._store(store) as conn:
+        (pos,) = xp._rows(conn, "SELECT * FROM expiry_paper_positions", ())
+    assert pos["bank_pending"] == 2                                               # survives a restart
+
+    t1, t2 = t0 + timedelta(seconds=10), t0 + timedelta(seconds=20)
+    assert xp.manage_position(pos, policy, 11.0, t1) is None                      # under the bank level: wait
+    action = xp.manage_position(pos, policy, 12.5, t2)
+    assert action == (2, "BANK_HALF")
+    event = xp._try_exit(pos, xp.Quote(bids=((12.5, 650),), asks=(), ltp=12.5, ts=t2), *action, t2)
+    assert event["lots"] == 2 and pos["lots_open"] == 3 and pos["bank_pending"] == 0
+    assert xp.manage_position(pos, policy, 13.0, t2 + timedelta(seconds=10)) is None
+    expected = xp.buy_charges(4.0, 390) + xp.sell_charges(12.0, 65) + xp.sell_charges(12.5, 130)
+    assert pos["costs"] == pytest.approx(expected, abs=0.02)                      # one buy, one fee per sell
+
+
+@pytest.mark.asyncio
+async def test_concurrent_flushes_send_each_notice_once(tmp_path):
+    import asyncio
+
+    db = await _run_day(tmp_path, _Market(_book(), _breakout_day), end=(13, 41))
+    pending = len(_notices(db))
+    delivered = []
+
+    async def slow(message):
+        await asyncio.sleep(0.01)
+        delivered.append(message)
+
+    counts = await asyncio.gather(xp.flush_notices(slow, db), xp.flush_notices(slow, db))
+    assert sorted(counts) == [0, pending] and len(delivered) == len(set(delivered)) == pending
+
+
+@pytest.mark.asyncio
+async def test_an_expiry_whose_index_never_answers_is_still_recorded(tmp_path):
+    class _Dark(_Market):
+        async def get_quote_by_instruments(self, request):
+            self.requests.append(request)
+            return {}
+
+    db = await _run_day(tmp_path, _Dark(_book(), _breakout_day), end=(13, 35))
+    with sqlite3.connect(xp.expiry_db_path(db)) as conn:
+        state = json.loads(conn.execute("SELECT state FROM expiry_paper_days").fetchone()[0])
+        ticks = conn.execute("SELECT COUNT(*) FROM expiry_paper_ticks").fetchone()[0]
+    assert state["ticks"] == ticks == 217 and state["spot_refusals"] == {"MISSING": 217}
+    assert state["box_status"] == "UNUSABLE_0_SAMPLES" and _positions(db) == []
+    (summary,) = [m for k, m, _ in _notices(db) if k.endswith(":summary")]
+    assert "ticks 217 of 967 slots" in summary and "index refused 217 (MISSING 217)" in summary
+
+
+def test_charges_follow_the_exchange_and_are_frozen_at_entry(monkeypatch):
+    from config import settings
+
+    contract = SimpleNamespace(tradingsymbol="SENSEX26OCT82000CE", token=9, strike=82000.0,
+                               instrument_type="CE", lot_size=20)
+    now = _at(TUESDAY, 14, 0)
+    pos = xp._new_position("2026-10-08", "SENSEX", "A", "BFO", contract, 50.0, 2, now)
+    frozen = json.loads(pos["fee_snapshot"])
+    assert frozen["market"] == "BSE_EQUITY_OPTIONS_PREMIUM" and pos["execution"] == xp.EXECUTION_VERSION
+    assert pos["costs"] < round(xp.buy_charges(50.0, 40, xp.fee_schedule("NFO")), 2)
+    monkeypatch.setattr(settings, "FNO_BROKERAGE_FLAT", 40.0)                     # a rate change mid-trade
+    event = xp._sell(pos, 2, 60.0, "TRAIL", now)
+    assert event["charges"] == pytest.approx(xp.sell_charges(60.0, 40, frozen), abs=0.01)
+    assert event["charges"] < xp.sell_charges(60.0, 40, xp.fee_schedule("BFO")) - 10
+
+
+def test_a_store_from_the_first_day_gains_the_new_columns_and_still_settles(tmp_path):
+    db = str(tmp_path / "trading.db")
+    with closing(sqlite3.connect(xp.expiry_db_path(db))) as conn, conn:
+        conn.execute("""CREATE TABLE expiry_paper_positions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, day TEXT NOT NULL, underlying TEXT NOT NULL, play TEXT NOT NULL,
+            exchange TEXT NOT NULL, symbol TEXT NOT NULL, token INTEGER NOT NULL, strike REAL NOT NULL,
+            opt_type TEXT NOT NULL, lot_size INTEGER NOT NULL, lots INTEGER NOT NULL, lots_open INTEGER NOT NULL,
+            entry_ts TEXT NOT NULL, entry_price REAL NOT NULL, max_loss REAL NOT NULL, peak REAL NOT NULL,
+            stop REAL NOT NULL, banked INTEGER NOT NULL DEFAULT 0, exit_pending TEXT, status TEXT NOT NULL,
+            gross REAL NOT NULL DEFAULT 0, costs REAL NOT NULL DEFAULT 0, net_pnl REAL NOT NULL DEFAULT 0,
+            assumed_pnl REAL, events TEXT NOT NULL DEFAULT '[]')""")
+        conn.execute("INSERT INTO expiry_paper_positions (day, underlying, play, exchange, symbol, token, strike, "
+                     "opt_type, lot_size, lots, lots_open, entry_ts, entry_price, max_loss, peak, stop, status, "
+                     "costs, net_pnl) VALUES ('2026-10-06', 'NIFTY', 'C', 'NFO', 'NIFTY26OCT25200CE', 7, 25200, "
+                     "'CE', 65, 8, 8, '2026-10-06T14:06:00+05:30', 4.1, 2345.36, 4.5, 0, 'OPEN', 24.56, -24.56)")
+    assert xp.reconcile(db, now=_at(WEDNESDAY, 9, 45)) == 1
+    (row,) = _positions(db)
+    assert row["status"] == "UNRESOLVED" and row["bank_pending"] == 0 and row["fee_snapshot"] is None
+    assert row["assumed_pnl"] == pytest.approx(-(4.1 * 520 + 8 * xp.order_fee(xp.fee_schedule("NFO"))), abs=0.01)
+
+
+def test_a_day_begun_under_v1_is_marked_mixed_once(tmp_path):
+    store = str(tmp_path / "x.db")
+    legacy = xp.new_day_state()
+    del legacy["execution"]
+    now = _at(TUESDAY, 13, 0)
+    with xp._store(store) as conn:
+        xp._save_state(conn, "2026-10-06", "NIFTY", legacy, now)
+    for _ in range(2):                                                            # load and save on each tick
+        with xp._store(store) as conn:
+            state = xp._load_state(conn, "2026-10-06", "NIFTY")
+            xp._save_state(conn, "2026-10-06", "NIFTY", state, now)
+    assert state["execution"] == "expiry-exec-v1+expiry-exec-v2"

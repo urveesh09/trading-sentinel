@@ -3,6 +3,50 @@
 
 
 
+## October 6 — expiry first-day audit remediation, `expiry-exec-v2` (done, Dev)
+
+- Problem: the first-day audit found these defects:
+  - freshness and windows were judged at the request start;
+  - fills could not be replayed (only top of book was logged);
+  - a partial bank lost its remainder;
+  - concurrent flushes could send a notice twice;
+  - an expiry with no index quote vanished from the record;
+  - SENSEX used NSE charges, and fees were not frozen per position;
+  - messages showed a slice net that excluded buy fees;
+  - 90 of 966 slots were skipped.
+- Files:
+  - `python-engine/expiry_paper.py` and `python-engine/edge_overnight_paper.py`;
+  - `python-engine/cost_schedules.py` and `python-engine/config.py`
+    (`FNO_BSE_EXCHANGE_TXN_PCT`);
+  - `python-engine/scheduler_setup.py` (`expiry_paper_flush` job);
+  - tests and goldens.
+- Acceptance:
+  - the audit's clock probe (one packet 15 s ahead of the start, one 15 s
+    behind it) is judged at receipt;
+  - a B window crossing in transit is refused;
+  - the 3-wanted/1-filled bank keeps 2 pending across a restart;
+  - two concurrent flushes deliver once (both books);
+  - a dark index day records 217 ticks and a summary;
+  - BFO charges are frozen at entry;
+  - a v1 store migrates and settles.
+- Rollout:
+  - one engine rebuild. The gateway is unchanged; Production `70a2256`
+    (PR #103) already serves `require_delivery`.
+  - Schema additions are additive.
+  - Rollback: revert the commit. The extra columns are ignored by v1 code.
+- Not changed: strategy thresholds, the ₹2,500 ceilings, the 20 s and 5 s
+  freshness limits, paper-only authority, and the owner's live halt.
+- Still open:
+  1. Merge and rebuild before Thursday's SENSEX expiry (October 8), the first
+     BFO day.
+  2. After it, read the summary's data line and the tick timing. If limiter
+     wait dominates, consider reserving quote capacity for the expiry tick
+     during 13:00–15:40. That decision needs evidence first.
+  3. Compare our settlement sample with the official settlement price, without
+     overwriting assumed rows.
+  4. Run the 20-expiry review on `expiry-exec-v2` days, with October 6 shown
+     separately.
+
 ## October 5 (late night) — expiry book second review (done, Dev)
 
 - Problem: partial exits could exceed the ₹2,500 reserve; the gateway reported

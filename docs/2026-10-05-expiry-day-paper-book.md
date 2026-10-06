@@ -27,6 +27,42 @@ A second review of `4673105` found that sliced exits could exceed the reserve
 sell-order fee per lot is reserved. No expiry had been traded, so the rules are
 still `expiry-v1`.
 
+**After the first expiry (October 6, NIFTY):** modeled loss ₹3,224.47 = filled
++₹25.53 and assumed −₹3,250.00 (B's put and C expired worthless by our sample).
+The [first-day audit](../../Production_Trading-sentinel/docs/2026-10-06-expiry-system-deep-audit.md)
+found execution and data defects, not rule defects. The strategy thresholds stay
+frozen as `expiry-v1`; the corrected data/clock/fill contract is
+`expiry-exec-v2`, recorded on every tick, day and position so later days are not
+mixed with October 6:
+
+- **Decision clock.** v1 judged freshness, windows and fill times at the
+  request start, so a slow quote call refused new packets and accepted old
+  ones. v2 reads the decision time after the quotes arrive. The tick row keeps
+  the start and decision times and the client's limiter/transport timing.
+- **Replayable evidence.** Each tick stores every leg's full five-level depth
+  with its provider time, and the index/future packets with a status (`FRESH`,
+  `STALE`, `AHEAD`, `NO_TIMESTAMP`, `NO_PRICE`, `MISSING`). The day state counts
+  refusals by reason, entry refusals by play (spread, depth or budget, stale
+  quote, max trades, and so on), the largest gap between ticks, gaps longer
+  than 25 s, and the slowest decision.
+- **Partial banks.** Reaching the bank level sets `bank_pending` to half the
+  lots. Lots the bid depth could not take stay pending, survive a restart, and
+  are sold while the bid holds the bank level. v1 forgot them.
+- **No lost expiries.** An expiry whose index never answers still writes its
+  day and ticks, so it stays in the 20-expiry denominator.
+- **Exchange-bound charges.** SENSEX (BFO) uses BSE's 0.0325% transaction
+  charge, against NSE's 0.03553%, from Zerodha's published list read on
+  October 6. The schedule is frozen on the position at entry, and exits and
+  settlement use it.
+- **Outbox.** Flushes of one store are serialised. `sent_at` is the time of
+  the acknowledgement. Delivery is at-least-once: a crash between Telegram
+  accepting a notice and the mark sends it again. The flush runs in its own job,
+  5 s after each tick, so a slow gateway no longer holds the tick. On October 6,
+  90 of 966 slots were skipped while a tick was still running.
+- **Messages.** A sell shows its gross, its sell fees, and the trade's net after
+  all fees, including the buy. The summary shows fees, filled net, assumed and
+  whole modeled per play and for the day, plus a data line.
+
 ## Why
 
 The owner's goal is to profit on the expiry afternoon without big losses and
@@ -160,19 +196,26 @@ At least 30 samples are required; otherwise A and C stand down for the day.
 
 ## Reading the results
 
-- **Telegram:** each buy and sell, showing its max loss and any auction-window
-  label, and one summary per expiry day. The summary shows:
-  - box status, signals, and ticks with stale-quote counts;
-  - filled and assumed P&L per play;
-  - per-underlying filled totals to date, with assumed settlements on a
-    separate line.
-- **Outbox:** `expiry_paper_notices`, flushed after each tick and each
-  reconcile.
+- **Telegram:** each buy (with buy fees and max loss) and each sell (with slice
+  gross, sell fees and the trade's net after all fees), and one summary per
+  expiry day. The summary shows:
+  - the rules and execution versions, box status and signals;
+  - a data line: ticks out of 967 slots, the largest gap, gaps over 25 s, the
+    slowest decision, and index/future refusals by reason;
+  - per play: fees, filled net, assumed and whole modeled, or the entry
+    refusals when there was no trade;
+  - the day's filled + assumed = whole modeled;
+  - per-underlying filled totals to date, assumed settlements on a separate
+    line, and the whole modeled total.
+- **Outbox:** `expiry_paper_notices`, flushed by the `expiry_paper_flush` job
+  (5 s after each tick) and after each reconcile.
 - **Store:** `<DB_PATH>.expiry-paper.db`, with tables
-  - `expiry_paper_positions` (`max_loss`, `exit_pending`, `assumed_pnl`, events
-    carrying `fill_model`);
-  - `expiry_paper_days`;
-  - `expiry_paper_ticks`.
+  - `expiry_paper_positions` (`max_loss`, `exit_pending`, `bank_pending`,
+    `assumed_pnl`, `fee_snapshot`, `execution`, events carrying `fill_model`,
+    and, on sells, `gross` and `charges`);
+  - `expiry_paper_days` (state with counters and refusals);
+  - `expiry_paper_ticks` (start and decision times, timing, full depth, and
+    index/future status).
 - **Quote archive:** the research quote archive now records until 15:40.
 
 ## Evaluation (pre-registered)
@@ -202,8 +245,16 @@ At least 30 samples are required; otherwise A and C stand down for the day.
 
 ## Not done
 
-- BFO live exits remain unsupported (SENSEX is paper anyway). BSE charges use
-  the NSE schedule as an approximation.
+- BFO live exits remain unsupported (SENSEX is paper anyway). BSE's
+  transaction charge is bound. Its effective date is not published, and IPFT
+  (₹0.01 per crore) is applied on both exchanges.
+- **Settlement:** the official exchange settlement price is not fetched. The
+  value is still our post-auction sample.
+- **Queue position:** no queue position or order-book depletion is modelled.
+- **Exactly-once delivery:** not guaranteed.
+- **Shared limiter:** the expiry tick shares the Kite quote limiter with
+  research collection. v2 measures the limiter wait per tick, but does not
+  reserve capacity.
 - No replay of past expiries yet. The tick log builds that history from now on.
 - No live switch exists for this book.
 

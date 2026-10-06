@@ -4,6 +4,7 @@ import pytest
 
 from config import settings
 from cost_schedules import (
+    BSE_OPTIONS_SCHEDULE_VERSION,
     EQUITY_INTRADAY_SCHEDULE_VERSION,
     OPTIONS_SCHEDULE_VERSION,
     equity_intraday_cost_snapshot,
@@ -58,6 +59,21 @@ def test_options_representative_hand_calculation_and_snapshot():
     expected += 0.18 * (40 + 5.3295 + 0.015 + 0.000015)
     assert calc_fno_costs(100.0, 100.0, 75) == pytest.approx(expected)
     assert calc_fno_costs_from_snapshot(100.0, 100.0, 75, snapshot) == pytest.approx(expected)
+
+
+def test_bse_options_schedule_differs_only_in_the_exchange_charge():
+    nse, bse = options_cost_snapshot("NFO"), options_cost_snapshot("BFO")
+    assert bse["schedule_version"] == BSE_OPTIONS_SCHEDULE_VERSION and bse["market"] == "BSE_EQUITY_OPTIONS_PREMIUM"
+    assert bse["effective_date"] is None and bse["verified_as_of"] == "2026-10-06"
+    assert bse["rates"]["exchange_pct"] == 0.000325
+    assert {k: v for k, v in bse["rates"].items() if k != "exchange_pct"} == \
+        {k: v for k, v in nse["rates"].items() if k != "exchange_pct"}
+    # One 20-unit lot, Rs100 premium in and out: only the 0.0325% leg and its GST change.
+    gap = (0.0003553 - 0.000325) * 4000 * 1.18
+    assert calc_fno_costs_from_snapshot(100.0, 100.0, 20, nse) - \
+        calc_fno_costs_from_snapshot(100.0, 100.0, 20, bse) == pytest.approx(gap)
+    with pytest.raises(ValueError):
+        options_cost_snapshot("NSE")
 
 
 def test_shadow_and_replay_execution_snapshots_freeze_schedule_identity():

@@ -150,6 +150,23 @@ async def test_notice_outbox_retries_until_a_send_succeeds(tmp_path, entry_quote
 
 
 @pytest.mark.asyncio
+async def test_overlapping_flushes_send_a_notice_once(tmp_path, entry_quotes):
+    """[EXPIRY-AUDIT 2026-10-06] Two flushers that read the same unsent row duplicated it."""
+    import asyncio
+
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    sent = []
+
+    async def slow(message):
+        await asyncio.sleep(0.01)
+        sent.append(message)
+
+    counts = await asyncio.gather(eop.flush_notices(slow, cache), eop.flush_notices(slow, cache))
+    assert sorted(counts) == [0, 1] and len(sent) == 1
+
+
+@pytest.mark.asyncio
 async def test_catch_up_late_exit_sells_at_ltp_not_the_missed_auction(tmp_path, entry_quotes):
     cache = _cache(tmp_path)
     await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))

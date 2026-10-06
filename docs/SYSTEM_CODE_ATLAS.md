@@ -372,7 +372,7 @@ Related tests: `python-engine/tests/test_cost_audit.py`
 
 Versioned transaction-cost schedules frozen into research evidence. Snapshot functions read active settings once. New evidence therefore records both its declared published schedule and any operator-overridden rates, while previously persisted JSON remains untouched and self-contained.
 
-Top-level declarations: `equity_intraday_cost_snapshot` (line 20), `options_cost_snapshot` (line 42)
+Top-level declarations: `equity_intraday_cost_snapshot` (line 25), `options_cost_snapshot` (line 47)
 
 Engine dependencies: `config`
 
@@ -470,7 +470,7 @@ Related tests: `python-engine/tests/test_dispatch_independence.py`
 
 EDGE overnight paper book: buy the EDGE scan near the close, sell at the next open. Broker-free. It never imports an executor or places an order. Research basis: docs/2026-10-05-edge-overnight-study.md. The shipped EDGE candidates earn their move overnight, while the runtime EDGE buys the following morning. * 15:20 IST (``run_overnight_entry``): one quote batch gives today's provisional bar (open/high/low from the session so far, LTP as the close, volume so far) for every cached ticker in or near the EDGE price band. The shipped ``scan_today`` ranks them on a temporary copy of recent history plus that bar. Each pick is bought on paper at LTP + ``ENTRY_SLIPPAGE_BPS``, capped by 1% of today's
 
-Top-level declarations: `overnight_db_path` (line 80), `_store` (line 85), `_read_only` (line 94), `_finite_positive` (line 98), `book_state` (line 105), `_already_ran` (line 117), `_record_run` (line 123), `flush_notices` (line 132), `catch_up` (line 157), `universe_from_cache` (line 180), `provisional_bar` (line 195), `build_scan_db` (line 211), `_quotes` (line 229), `run_overnight_entry` (line 241), `run_overnight_exit` (line 308), `format_entry_telegram` (line 365), `format_exit_telegram` (line 373)
+Top-level declarations: `overnight_db_path` (line 80), `_store` (line 85), `_read_only` (line 94), `_finite_positive` (line 98), `book_state` (line 105), `_already_ran` (line 117), `_record_run` (line 123), `flush_notices` (line 135), `catch_up` (line 167), `universe_from_cache` (line 190), `provisional_bar` (line 205), `build_scan_db` (line 221), `_quotes` (line 239), `run_overnight_entry` (line 251), `run_overnight_exit` (line 318), `format_entry_telegram` (line 375), `format_exit_telegram` (line 383)
 
 Engine dependencies: `config`, `penny_edge_live`, `penny_risk`
 
@@ -538,11 +538,11 @@ Related tests: `python-engine/tests/test_exit_quality.py`
 
 ## `python-engine/expiry_paper.py`
 
-Expiry-day paper book: three pre-registered plays on the weekly index expiry. Broker-free. It never imports an executor or places an order. Design, rules and the reasoning behind them: docs/2026-10-05-expiry-day-paper-book.md. The tick (``run_expiry_tick``) runs every 10 s from 12:59 to 15:40 IST. It acts only for an underlying whose nearest option expiry is today according to the instrument dump, so holiday shifts are handled by the exchange calendar: NIFTY (NFO) on Tuesdays and SENSEX (BFO) on Thursdays. One quote batch per underlying per tick (index, front future, ATM +/- 8 strikes of today's expiry and every open leg) is logged with its timestamps and top-of-book quantities, so the 15:15
+Expiry-day paper book: three pre-registered plays on the weekly index expiry. Broker-free. It never imports an executor or places an order. Design, rules and the reasoning behind them: docs/2026-10-05-expiry-day-paper-book.md. The tick (``run_expiry_tick``) runs every 10 s from 12:59 to 15:40 IST. It acts only for an underlying whose nearest option expiry is today according to the instrument dump, so holiday shifts are handled by the exchange calendar: NIFTY (NFO) on Tuesdays and SENSEX (BFO) on Thursdays. One quote batch per underlying per tick (index, front future, ATM +/- 8 strikes of today's expiry and every open leg) is logged with its timestamps and full five-level depth, so the 15:15-
 
-Top-level declarations: `ExitPolicy` (line 87), `expiry_db_path` (line 127), `_store` (line 132), `_notice` (line 142), `flush_notices` (line 147), `Quote` (line 178), `_positive` (line 207), `_provider_time` (line 215), `parse_quote` (line 227), `walk` (line 245), `order_fee` (line 260), `buy_charges` (line 267), `sell_charges` (line 274), `worst_case_loss` (line 281), `affordable_fill` (line 294), `fill_model` (line 310), `new_day_state` (line 318), `update_box` (line 324), `breakout_signal` (line 344), `failed_break` (line 380), `manage_position` (line 391), `pick_lottery_strike` (line 433), `_rows` (line 449), `_realized` (line 456), `_sell` (line 462), `_new_position` (line 479), `_save_position` (line 495), `_try_exit` (line 511), `_settlement_spot` (line 531), `reconcile` (line 542), `_load_state` (line 592), `_chain` (line 598), `_fetch` (line 611), `_fresh_price` (line 619), `_tick_underlying` (line 626), `format_day_summary` (line 743), `run_expiry_tick` (line 774)
+Top-level declarations: `ExitPolicy` (line 107), `expiry_db_path` (line 154), `_store` (line 159), `_notice` (line 173), `flush_notices` (line 181), `Quote` (line 220), `_positive` (line 256), `_provider_time` (line 264), `parse_quote` (line 276), `walk` (line 294), `fee_schedule` (line 309), `_charges` (line 316), `order_fee` (line 322), `buy_charges` (line 327), `sell_charges` (line 332), `worst_case_loss` (line 337), `affordable_fill` (line 350), `fill_model` (line 367), `new_day_state` (line 375), `update_box` (line 381), `breakout_signal` (line 401), `failed_break` (line 437), `manage_position` (line 448), `pick_lottery_strike` (line 494), `_rows` (line 510), `_realized` (line 517), `_position_schedule` (line 523), `_sell` (line 528), `_new_position` (line 548), `_save_position` (line 566), `_try_exit` (line 582), `_settlement_spot` (line 605), `reconcile` (line 616), `_load_state` (line 667), `_chain` (line 679), `_fetch` (line 692), `_observe` (line 704), `_bump` (line 714), `_record_tick` (line 719), `_save_state` (line 742), `_quote_refusal` (line 747), `_buy_text` (line 758), `_sell_text` (line 763), `_tick_underlying` (line 772), `format_day_summary` (line 915), `run_expiry_tick` (line 967)
 
-Engine dependencies: `config`, `fno_costs`, `fno_models`, `fno_underlyings`
+Engine dependencies: `config`, `cost_schedules`, `fno_costs`, `fno_models`, `fno_underlyings`
 
 Related tests: `python-engine/tests/test_expiry_paper.py`
 
@@ -2292,7 +2292,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 1149)
+Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 1166)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 

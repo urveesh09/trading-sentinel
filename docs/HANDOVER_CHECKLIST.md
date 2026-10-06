@@ -7,6 +7,39 @@
 
 
 
+## October 6 — expiry first-day audit remediation (`expiry-exec-v2`)
+
+Commit: see the follow-up docs commit on `codex/production-correction-hedge-p0`.
+Status: Dev only until pushed; not deployed. Production runs `70a2256`.
+
+- [x] Decision clock after quote receipt; start and decision times and limiter
+  timing on each tick.
+- [x] Full five-level depth and index/future status logged; refusal counters.
+- [x] `bank_pending` keeps a partial bank's remainder (survives restart).
+- [x] Serialised outbox flush (expiry and EDGE overnight); `sent_at` is the
+  acknowledgement time; separate `expiry_paper_flush` job.
+- [x] A dark-index expiry is recorded (day, ticks, summary).
+- [x] BSE options charge (`FNO_BSE_EXCHANGE_TXN_PCT=0.000325`); schedule
+  frozen per position.
+- [x] Sell and summary messages show fees, filled net, assumed and whole
+  modeled.
+- [x] Unchanged: strategy thresholds, ceilings, freshness limits, paper-only.
+- [x] Tests (`.\winvenv\Scripts\python.exe -m pytest`):
+  - `test_expiry_paper.py`: 29 pass. Nine are new: the clock probe, window
+    crossing, partial bank across a restart, concurrent flush, dark-index day,
+    BFO fee freeze, v1 store migration, and the mixed-contract label.
+  - Focused expiry, EDGE overnight, cost, golden, scheduler and cron-gating
+    tests pass.
+  - Full suite: 4,978 pass, 4 skip, 12 fail.
+    - 11 of the failures are in the dev-acceptance, integrated-demo,
+      mark-to-market DR, partner delivery/advisory, proactive and
+      qualification tests. They fail identically with these changes stashed.
+    - The 12th, `test_penny_cron_gating`, was this change: the new flush job
+      had no `is_trading_day` gate. The gate was added and the test passes.
+- [x] Environment limit: on this host, pytest sometimes hangs at interpreter
+  exit after all tests report, with and without these changes (3 of 4
+  baseline runs). Run with `timeout` and read the summary line.
+
 ## October 5 (late night) — expiry book second review
 
 Commit `263dd48` on `codex/production-correction-hedge-p0`: pushed to Dev, not deployed.

@@ -129,29 +129,39 @@ def _record_run(conn: sqlite3.Connection, day: str, phase: str, summary: dict, n
                      "VALUES (?,?,?,?)", (day, phase, message, now.isoformat()))
 
 
+_FLUSH_LOCKS: dict[str, asyncio.Lock] = {}
+
+
 async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optional[str] = None,
                         now: Optional[datetime] = None) -> int:
-    """Send unsent phase summaries oldest first; ``send`` raises on failure."""
+    """Send unsent phase summaries oldest first; ``send`` raises on failure.
+
+    Flushes of one store are serialised (the phase jobs and the catch-up can
+    overlap), so a row is never sent twice concurrently; ``sent_at`` is the
+    acknowledgement time. Delivery is at-least-once across a crash.
+    """
     store = overnight_db_path(db_path or settings.DB_PATH)
-    now = now or datetime.now(IST)
-    with _store(store) as conn:
-        pending = conn.execute("SELECT run_date, phase, message FROM edge_overnight_paper_notices "
-                               "WHERE sent_at IS NULL ORDER BY created_at").fetchall()
-    sent = 0
-    for day, phase, message in pending:
-        try:
-            await send(message)
-        except Exception as exc:
-            logger.warning("edge_overnight_notice_failed date=%s phase=%s err=%s", day, phase, type(exc).__name__)
-            with _store(store) as conn:
-                conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1 "
-                             "WHERE run_date=? AND phase=?", (day, phase))
-            break
+    async with _FLUSH_LOCKS.setdefault(store, asyncio.Lock()):
         with _store(store) as conn:
-            conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1 "
-                         "WHERE run_date=? AND phase=?", (now.isoformat(), day, phase))
-        sent += 1
-    return sent
+            pending = conn.execute("SELECT run_date, phase, message FROM edge_overnight_paper_notices "
+                                   "WHERE sent_at IS NULL ORDER BY created_at").fetchall()
+        sent = 0
+        for day, phase, message in pending:
+            try:
+                await send(message)
+            except Exception as exc:
+                logger.warning("edge_overnight_notice_failed date=%s phase=%s err=%s",
+                               day, phase, type(exc).__name__)
+                with _store(store) as conn:
+                    conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1 "
+                                 "WHERE run_date=? AND phase=?", (day, phase))
+                break
+            acked = now or datetime.now(IST)
+            with _store(store) as conn:
+                conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1 "
+                             "WHERE run_date=? AND phase=?", (acked.isoformat(), day, phase))
+            sent += 1
+        return sent
 
 
 async def catch_up(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> list[str]:
