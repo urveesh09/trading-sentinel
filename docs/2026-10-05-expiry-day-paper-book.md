@@ -63,6 +63,45 @@ mixed with October 6:
   all fees, including the buy. The summary shows fees, filled net, assumed and
   whole modeled per play and for the day, plus a data line.
 
+## Shadow plays `expiry-shadow-v1` (frozen October 6, before October 8)
+
+The owner approved these on October 6, after the first expiry. They test
+lessons that come from market structure, not from fitting October 6. A, B and C
+stay unchanged as `expiry-v1`. Each shadow play runs on the same quotes in the
+same tick, keeps its own ₹2,500 ceiling (C500: ₹500), sends no per-trade
+Telegram lines, and appears in a separate summary section. They are scored
+beside `expiry-v1` after the same 20 expiries, by the same measures. October 6
+is not part of their record.
+
+| Play | Lesson tested | Rule |
+|---|---|---|
+| **BH** | After 15:15 the auction sets the price and option quotes are thin; a trailing stop may sell on noise. | B's strangle (same strikes, same entry), with no bank and no trail. Sold at 15:38, or settled if no bid. |
+| **C500** | Lottery options are overpriced (lottery-preference research), so C deserves a small stake. | C's strike and timing, inside ₹500. |
+| **D** | Expiry decay pays sellers. The owner asked for small but consistent profit. | Short iron condor, entered 14:30–14:45. Sell the strikes 2 steps either side of the money, and buy one step further out as protection. If that doesn't fit ₹2,500, try 1 step, then at the money (an iron butterfly). Held to cash settlement. |
+
+D details:
+- **Ceiling.** Held to cash settlement, only one side can finish in the money,
+  and that side loses at most its strike gap. So the maximum loss is (gap −
+  credit) × quantity, plus entry charges, plus exercise STT on a protective leg
+  up to 5% of spot in the money. That sum must fit ₹2,500.
+- **Credit rule.** The credit must cover at least twice the entry charges.
+- **Settlement.** The result is our sampled settlement, labelled assumed like
+  B's and C's leftovers. No closing orders or closing fees are modelled at
+  settlement.
+- **If quotes are lost** (an outage), each sold leg is valued at half the gap,
+  so the whole condor books its maximum settlement loss.
+- **Fit by index.** A condor 50 points wide on NIFTY risks ₹3,250 a lot before
+  the credit, so on NIFTY D usually needs the nearer strikes or the butterfly.
+  On SENSEX (20 units, 100-point steps) the 2-step condor fits.
+- **Margin.** Selling an option blocks margin from the owner's own cash. There
+  is no borrowing, but it is margin. That is why D stays paper only, with no
+  live switch, until the owner decides on margin separately.
+
+**Dropped before freezing:** "A only when fees are under 2% of premium". A round
+trip costs about ₹47 flat plus 0.24% of premium, so getting under 2% needs
+about ₹2,700 of premium, more than A's ₹2,500 ceiling allows. The variant could
+never trade. A's fee drag is a fixed property of its size.
+
 ## Why
 
 The owner's goal is to profit on the expiry afternoon without big losses and

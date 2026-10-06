@@ -3,6 +3,25 @@
 
 
 
+## October 6 (evening) — expiry shadow plays (done, Dev)
+
+- Problem: the owner asked for changes that could make expiry trading
+  profitable after the October 6 loss, without fitting October 6.
+- Files: `python-engine/expiry_paper.py`, `python-engine/tests/test_expiry_paper.py`
+  and the design doc.
+- Acceptance:
+  - BH, C500 and D run beside A, B and C on the same ticks, with no Telegram
+    trade lines;
+  - D's settlement loss stays inside its ceiling on a runaway close;
+  - an outage values D at its maximum loss;
+  - a credit too small for its charges is refused.
+- Rollout: an engine rebuild, ideally before October 8, the shadow plays'
+  first expiry. The schema additions only add columns. Rollback: revert; the
+  extra columns and rows are ignored.
+- Still open:
+  - score the shadow plays beside `expiry-v1` after 20 expiries;
+  - D's live use needs the owner's separate margin decision.
+
 ## October 6 — expiry first-day audit remediation, `expiry-exec-v2` (done, Dev)
 
 - Problem: the first-day audit found these defects:

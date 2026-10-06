@@ -275,7 +275,7 @@ async def test_no_quotes_on_a_non_expiry_day(tmp_path):
 @pytest.mark.asyncio
 async def test_simulated_breakout_expiry_runs_all_three_plays_within_the_ceiling(tmp_path):
     db = await _run_day(tmp_path, _Market(_book(), _breakout_day))
-    rows = _positions(db)
+    rows = [r for r in _positions(db) if r["play"] in xp.MAIN_PLAYS]
     by_play = {play: [r for r in rows if r["play"] == play] for play in "ABC"}
 
     (a,) = by_play["A"]
@@ -438,7 +438,7 @@ async def test_entry_windows_and_phase_labels_use_the_decision_time(tmp_path):
     db, *_ = await _one_tick(tmp_path / "in", _Market(_book(), _breakout_day),
                              _at(TUESDAY, 15, 13, 25), _at(TUESDAY, 15, 13, 35))
     legs = _positions(db)
-    assert [r["play"] for r in legs] == ["B", "B"]
+    assert [r["play"] for r in legs] == ["B", "B", "BH", "BH"]
     assert all(r["entry_ts"] == _at(TUESDAY, 15, 13, 35).isoformat() for r in legs)
 
 
@@ -555,3 +555,85 @@ def test_a_day_begun_under_v1_is_marked_mixed_once(tmp_path):
             state = xp._load_state(conn, "2026-10-06", "NIFTY")
             xp._save_state(conn, "2026-10-06", "NIFTY", state, now)
     assert state["execution"] == "expiry-exec-v1+expiry-exec-v2"
+
+
+# --------------------------------------------------------------------------- shadow plays (expiry-shadow-v1)
+
+def _whole(rows):
+    return sum(r["net_pnl"] + (r["assumed_pnl"] or 0.0) for r in rows)
+
+
+@pytest.mark.asyncio
+async def test_shadow_plays_run_beside_the_main_book_without_telegram_trades(tmp_path):
+    db = await _run_day(tmp_path, _Market(_book(), _breakout_day))
+    rows = _positions(db)
+    by_play = {play: [r for r in rows if r["play"] == play] for play in xp.MAIN_PLAYS + xp.SHADOW_PLAYS}
+
+    # BH: B's legs, held with no bank or trail, sold at 15:38
+    assert [r["symbol"] for r in by_play["BH"]] == [r["symbol"] for r in by_play["B"]]
+    for leg in by_play["BH"]:
+        actions = [e["action"] for e in json.loads(leg["events"])]
+        assert actions[0] == "BUY" and set(actions[1:]) <= {"FLAT_TIME", "SETTLED_ASSUMED"}
+    # C500: C's strike inside a Rs 500 ceiling
+    (c500,) = by_play["C500"]
+    assert c500["symbol"] == by_play["C"][0]["symbol"] and c500["max_loss"] <= xp.C500_BUDGET
+    # D: the farthest sold strikes inside the ceiling, wings one step further, settled after the session
+    d = by_play["D"]
+    (steps,) = {json.loads(r["events"])[0]["short_steps"] for r in d}
+    atm, out = 25050.0, 50.0 * steps
+    assert sorted((r["opt_type"], r["side"], r["strike"]) for r in d) == [
+        ("CE", "LONG", atm + out + 50), ("CE", "SHORT", atm + out),
+        ("PE", "LONG", atm - out - 50), ("PE", "SHORT", atm - out)]
+    assert all(r["entry_ts"].startswith("2026-10-06T14:30") for r in d)
+    assert sum(r["max_loss"] for r in d) <= BUDGET and all(r["status"] == "SETTLED_ASSUMED" for r in d)
+    assert -_whole(d) <= sum(r["max_loss"] for r in d)
+
+    messages = [m for _, m, _ in _notices(db)]
+    trades = [m for m in messages if "summary" not in m and not m.startswith("Expiry paper NIFTY 2026")]
+    assert trades and all(any(f"NIFTY {p}:" in m for p in xp.MAIN_PLAYS) for m in trades)
+    (summary,) = [m for k, m, _ in _notices(db) if k.endswith(":summary")]
+    assert "shadow plays (expiry-shadow-v1" in summary and f"sold NIFTY26OCT{atm + out:.0f}CE" in summary
+
+
+@pytest.mark.asyncio
+async def test_the_condor_loss_stays_inside_its_ceiling_on_a_runaway_close(tmp_path):
+    def runaway(now):
+        minutes = now.hour * 60 + now.minute
+        if minutes < 14 * 60 + 31:
+            return 25000.0 + 10.0 * math.sin(minutes)                 # quiet: no breakout, D enters at 14:30
+        return 25600.0                                                # far through the call side
+
+    db = await _run_day(tmp_path, _Market(_book(), runaway))
+    d = [r for r in _positions(db) if r["play"] == "D"]
+    assert len(d) == 4
+    ceiling = sum(r["max_loss"] for r in d)
+    assert ceiling <= BUDGET
+    # Short 25,100 call loses 500, the 25,150 wing makes back 450 less exercise STT.
+    assert _whole(d) < 0 and -_whole(d) <= ceiling
+
+
+@pytest.mark.asyncio
+async def test_an_outage_values_the_condor_at_its_maximum_settlement_loss(tmp_path):
+    db = await _run_day(tmp_path, _Market(_book(), _breakout_day), end=(14, 35), reconcile_at=None)
+    xp.reconcile(db, now=_at(WEDNESDAY, 9, 45))
+    d = [r for r in _positions(db) if r["play"] == "D"]
+    assert len(d) == 4 and all(r["status"] == "UNRESOLVED" for r in d)
+    qty = d[0]["lots"] * 65
+    credit = sum(r["entry_price"] * (1 if r["side"] == "SHORT" else -1) for r in d)
+    fees = sum(r["costs"] for r in d)
+    assert _whole(d) == pytest.approx(-(50.0 - credit) * qty - fees, abs=0.05)
+    assert -_whole(d) <= sum(r["max_loss"] for r in d)
+
+
+def test_condor_sizing_refuses_a_credit_too_small_for_its_charges():
+    def leg(price):
+        return xp.Quote(bids=((price, 650),), asks=((price + 0.05, 650),), ltp=price, ts=_at(TUESDAY, 14, 30))
+
+    legs = [(leg(0.30), "SHORT"), (leg(0.20), "LONG"), (leg(0.30), "SHORT"), (leg(0.20), "LONG")]
+    assert xp.condor_fill(legs, 65, 5.0, 25000.0, BUDGET)[3] == "CREDIT_TOO_SMALL"   # 0.10 credit vs Rs 94 fees
+    narrow = [(leg(4.0), "SHORT"), (leg(2.0), "LONG"), (leg(4.0), "SHORT"), (leg(2.0), "LONG")]
+    assert xp.condor_fill(narrow, 65, 50.0, 25000.0, BUDGET)[3] == "DEPTH_OR_BUDGET"   # (50 - 3.9) x 65 > 2,500
+    legs = [(leg(20.0), "SHORT"), (leg(6.0), "LONG"), (leg(20.0), "SHORT"), (leg(6.0), "LONG")]
+    lots, prices, max_loss, refusal = xp.condor_fill(legs, 65, 50.0, 25000.0, BUDGET)
+    assert (lots, refusal) == (1, None) and max_loss <= BUDGET
+    assert prices == [20.0, 6.05, 20.0, 6.05]                                     # sold on the bid, bought on the ask

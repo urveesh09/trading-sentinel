@@ -9,6 +9,29 @@
 
 
 
+## October 6 (evening) — expiry shadow plays `expiry-shadow-v1` (actual behavior, Dev, paper only)
+
+The owner approved them. See the
+[design doc](2026-10-05-expiry-day-paper-book.md) section "Shadow plays".
+
+- **Plays:**
+  - `BH`: B's strangle with no bank or trail, sold at 15:38.
+  - `C500`: C inside ₹500.
+  - `D`: short iron condor, 14:30–14:45. Sold strikes are tried at 2, then 1,
+    then 0 steps from the money; the protective legs sit one step further out.
+    Sized by `condor_fill`. Held to cash settlement, so `reconcile` values it.
+- **Isolation:** shadow plays share the tick's quotes. Each has its own trade
+  counter in `state["trades"]` and sends no Telegram trade lines (`notify`
+  filters to `MAIN_PLAYS`). The summary has a separate section and a shadow
+  to-date line.
+- **Schema:** `expiry_paper_positions` gains `side` (SHORT only for D's sold
+  legs) and `width`, added in place. `reconcile` values a sold leg at
+  (entry − intrinsic) × qty. If there is no settlement sample, it uses
+  (entry − width/2) × qty.
+- **Unchanged:** A, B and C (`expiry-v1`), the ceilings, the freshness limits,
+  and paper-only authority. D has no live path. Selling options needs margin,
+  and that is the owner's decision.
+
 ## October 6 — expiry book execution contract `expiry-exec-v2` after the first-day audit (actual behavior, Dev, paper only)
 
 Source: the [first-day expiry audit](../../Production_Trading-sentinel/docs/2026-10-06-expiry-system-deep-audit.md)

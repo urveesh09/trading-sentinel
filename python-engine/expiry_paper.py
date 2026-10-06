@@ -100,7 +100,25 @@ A_MAX_SPREAD, BC_MAX_SPREAD = 0.06, 0.10
 B_MAX_LOTS, C_MAX_LOTS = 4, 10
 C_PREMIUM_BAND = (0.00004, 0.0003)  # ask as a fraction of spot (NIFTY ~1.0-7.5)
 EXERCISE_STT_PCT = 0.0015           # STT on the settlement value of an exercised ITM option
-OPEN_STATUSES = ("OPEN",)
+
+# Shadow plays, frozen on 2026-10-06 before their first expiry (October 8) and
+# scored beside expiry-v1 after the same 20 expiries. They never send their own
+# Telegram lines; the day summary reports them in a separate section.
+#   BH    B's strangle held through the auction: no bank, no trail, sold at 15:38.
+#   C500  C with a Rs 500 ceiling instead of the full budget.
+#   D     Short iron condor held to cash settlement, entered 14:30-14:45: sell
+#         the strikes two steps either side of ATM and buy the next strike out
+#         as the wing; when that does not fit the ceiling, one step, then ATM
+#         (an iron butterfly). NIFTY's 65-unit lot and 50-point step make a
+#         50-point wing risk Rs 3,250 a lot less the credit, so it usually
+#         needs a nearer short strike than SENSEX (20 units, 100 points).
+SHADOW_VERSION = "expiry-shadow-v1"
+MAIN_PLAYS, SHADOW_PLAYS = ("A", "B", "C"), ("BH", "C500", "D")
+C500_BUDGET = 500.0
+D_ENTRY_START, D_ENTRY_END = time(14, 30), time(14, 45)
+D_SHORT_STEPS, D_WING_STEPS, D_MAX_LOTS = 2, 1, 4  # widest sold strikes tried first
+D_MIN_CREDIT_X_CHARGES = 2.0        # the credit must cover at least twice the entry charges
+D_STT_RESERVE_MOVE = 0.05           # exercise STT reserved on a long wing up to 5% of spot in the money
 
 
 @dataclass(frozen=True)
@@ -121,7 +139,10 @@ POLICIES = {
                     late=(time(15, 30), 0.80), time_stop=None, flat_at=FINAL_FLAT),
     "C": ExitPolicy(hard_stop=None, bank_at=2.0, bank_stop=None, trails=((4.0, 0.60),),
                     late=None, time_stop=None, flat_at=FINAL_FLAT),
+    "BH": ExitPolicy(hard_stop=None, bank_at=None, bank_stop=None, trails=(),
+                     late=None, time_stop=None, flat_at=FINAL_FLAT),
 }
+POLICIES["C500"] = POLICIES["C"]
 
 _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS expiry_paper_positions (
@@ -132,7 +153,7 @@ _SCHEMA = (
         stop REAL NOT NULL, banked INTEGER NOT NULL DEFAULT 0, exit_pending TEXT, status TEXT NOT NULL,
         gross REAL NOT NULL DEFAULT 0, costs REAL NOT NULL DEFAULT 0, net_pnl REAL NOT NULL DEFAULT 0,
         assumed_pnl REAL, events TEXT NOT NULL DEFAULT '[]', bank_pending INTEGER NOT NULL DEFAULT 0,
-        fee_snapshot TEXT, execution TEXT)""",
+        fee_snapshot TEXT, execution TEXT, side TEXT NOT NULL DEFAULT 'LONG', width REAL)""",
     """CREATE TABLE IF NOT EXISTS expiry_paper_days (
         day TEXT NOT NULL, underlying TEXT NOT NULL, state TEXT NOT NULL, updated_at TEXT NOT NULL,
         PRIMARY KEY (day, underlying))""",
@@ -147,8 +168,9 @@ _SCHEMA = (
 
 # Columns added after the first Production day. Older stores gain them in
 # place; their rows keep NULL fee_snapshot/execution (the legacy contract).
+# ``side`` is SHORT only for D's sold legs; ``width`` is D's strike gap.
 _ADDED_POSITION_COLUMNS = {"bank_pending": "INTEGER NOT NULL DEFAULT 0", "fee_snapshot": "TEXT",
-                           "execution": "TEXT"}
+                           "execution": "TEXT", "side": "TEXT NOT NULL DEFAULT 'LONG'", "width": "REAL"}
 
 
 def expiry_db_path(db_path: str) -> str:
@@ -364,6 +386,37 @@ def affordable_fill(quotes: list[tuple[Quote, int]], budget: float, cap: int,
     return 0, []
 
 
+def condor_fill(legs: list[tuple[Quote, str]], lot_size: int, width: float, spot: float, budget: float,
+                schedule: Optional[dict] = None) -> tuple[int, list[float], float, Optional[str]]:
+    """D's sizing: (lots, prices, max_loss, refusal) for SHORT/LONG legs of one iron condor.
+
+    Sold legs walk the bids and wings walk the asks. Held to cash settlement,
+    only one side can finish in the money and a side loses at most its strike
+    gap, so the loss is bounded by (width - credit) x qty plus the entry
+    charges and exercise STT on a wing up to ``D_STT_RESERVE_MOVE`` of spot in
+    the money. The credit must cover ``D_MIN_CREDIT_X_CHARGES`` x the charges.
+    """
+    for lots in range(D_MAX_LOTS, 0, -1):
+        qty, prices = lots * lot_size, []
+        for quote, side in legs:
+            filled, price = walk(quote.bids if side == "SHORT" else quote.asks, lots, lot_size)
+            if filled < lots:
+                break
+            prices.append(price)
+        else:
+            credit = sum(p if side == "SHORT" else -p for p, (_, side) in zip(prices, legs))
+            charges = sum(sell_charges(p, qty, schedule) if side == "SHORT" else buy_charges(p, qty, schedule)
+                          for p, (_, side) in zip(prices, legs))
+            stt = EXERCISE_STT_PCT * D_STT_RESERVE_MOVE * spot * qty
+            max_loss = (width - credit) * qty + charges + stt
+            if max_loss > budget:
+                continue
+            if credit * qty < D_MIN_CREDIT_X_CHARGES * charges:
+                return 0, [], 0.0, "CREDIT_TOO_SMALL"       # fewer lots only worsens the ratio
+            return lots, prices, max_loss, None
+    return 0, [], 0.0, "DEPTH_OR_BUDGET"
+
+
 def fill_model(clock: time) -> str:
     return "AUCTION_WINDOW" if clock >= AUCTION_START else "CONTINUOUS"
 
@@ -373,9 +426,11 @@ def fill_model(clock: time) -> str:
 # ---------------------------------------------------------------------------
 
 def new_day_state() -> dict:
-    return {"rules": RULES_VERSION, "execution": EXECUTION_VERSION, "box": None, "box_samples": [], "box_status": "BUILDING",
+    return {"rules": RULES_VERSION, "shadow": SHADOW_VERSION, "execution": EXECUTION_VERSION,
+            "box": None, "box_samples": [], "box_status": "BUILDING",
             "pending": None, "armed": {"UP": True, "DOWN": True}, "signals": [],
-            "trades": {"A": 0, "B": 0, "C": 0}, "last_spot": None, "summary_queued": False}
+            "trades": {play: 0 for play in MAIN_PLAYS + SHADOW_PLAYS}, "last_spot": None,
+            "summary_queued": False}
 
 
 def update_box(state: dict, now: time, spot: Optional[float], fut: Optional[float]) -> None:
@@ -464,9 +519,10 @@ def manage_position(pos: dict, policy: ExitPolicy, bid: float, now: datetime,
     for threshold, keep in policy.trails:
         if peak_gain >= threshold:
             stop = max(stop, pos["peak"] * keep)
-    profit_stage = policy.bank_at if policy.bank_at is not None else policy.trails[0][0]
-    if policy.late and now.time() >= policy.late[0] and peak_gain >= profit_stage:
-        stop = max(stop, pos["peak"] * policy.late[1])
+    if policy.late and now.time() >= policy.late[0]:
+        profit_stage = policy.bank_at if policy.bank_at is not None else policy.trails[0][0]
+        if peak_gain >= profit_stage:
+            stop = max(stop, pos["peak"] * policy.late[1])
     pos["stop"] = round(stop, 2)
 
     lots = pos["lots_open"]
@@ -547,7 +603,7 @@ def _sell(pos: dict, lots: int, price: float, reason: str, now: datetime) -> dic
 
 def _new_position(day: str, underlying: str, play: str, exchange: str, contract, price: float,
                   lots: int, now: datetime, schedule: Optional[dict] = None) -> dict:
-    policy = POLICIES[play]
+    policy = POLICIES.get(play)                     # D is held to settlement: no exit policy
     schedule = schedule or fee_schedule(exchange)
     charges = round(buy_charges(price, lots * contract.lot_size, schedule), 2)
     return {"id": None, "day": day, "underlying": underlying, "play": play, "exchange": exchange,
@@ -555,10 +611,11 @@ def _new_position(day: str, underlying: str, play: str, exchange: str, contract,
             "opt_type": contract.instrument_type, "lot_size": contract.lot_size, "lots": lots,
             "lots_open": lots, "entry_ts": now.isoformat(), "entry_price": price,
             "max_loss": round(worst_case_loss(price, lots, contract.lot_size, schedule), 2), "peak": price,
-            "stop": round(price * (1 - policy.hard_stop), 2) if policy.hard_stop else 0.0,
+            "stop": round(price * (1 - policy.hard_stop), 2) if policy and policy.hard_stop else 0.0,
             "banked": 0, "exit_pending": None, "status": "OPEN", "gross": 0.0, "costs": charges,
             "net_pnl": -charges, "assumed_pnl": None, "bank_pending": 0,
             "fee_snapshot": json.dumps(schedule, sort_keys=True), "execution": EXECUTION_VERSION,
+            "side": "LONG", "width": None,
             "_events": [{"ts": now.isoformat(), "action": "BUY", "lots": lots, "price": price,
                          "charges": charges, "fill_model": fill_model(now.time())}]}
 
@@ -617,10 +674,12 @@ def reconcile(db_path: Optional[str] = None, now: Optional[datetime] = None) -> 
     """Settle every leg still open after its expiry session; returns the number settled.
 
     With a sampled post-auction index quote the residual is valued at
-    intrinsic less exercise STT (SETTLED_ASSUMED); without one it is
-    UNRESOLVED at its remaining worst case. The buy's charges were booked at
-    entry. Both are assumed valuations kept in ``assumed_pnl``, never
-    executable fills. Day summaries are queued here.
+    intrinsic, less exercise STT on a bought leg (SETTLED_ASSUMED); without
+    one it is UNRESOLVED at its remaining worst case. For D's sold legs that
+    worst case is half the strike gap each, so a whole condor is valued at its
+    maximum settlement loss. Entry charges were booked at entry. Both are
+    assumed valuations kept in ``assumed_pnl``, never executable fills. Day
+    summaries are queued here.
     """
     now = now or datetime.now(IST)
     today = now.date().isoformat()
@@ -632,15 +691,22 @@ def reconcile(db_path: Optional[str] = None, now: Optional[datetime] = None) -> 
         for pos in stale:
             qty = pos["lots_open"] * pos["lot_size"]
             spot = _settlement_spot(conn, pos["day"], pos["underlying"])
+            short = pos["side"] == "SHORT"
             if spot is None:
                 pos["status"] = "UNRESOLVED"
-                fee = order_fee(_position_schedule(pos))
-                pos["assumed_pnl"] = round(-(pos["entry_price"] * qty + pos["lots_open"] * fee), 2)
+                if short:
+                    value = (pos["entry_price"] - pos["width"] / 2.0) * qty
+                elif pos["play"] == "D":                        # a wing is held, never sold
+                    value = -pos["entry_price"] * qty
+                else:
+                    value = -(pos["entry_price"] * qty + pos["lots_open"] * order_fee(_position_schedule(pos)))
             else:
                 intrinsic = max(0.0, spot - pos["strike"]) if pos["opt_type"] == "CE" \
                     else max(0.0, pos["strike"] - spot)
                 pos["status"] = "SETTLED_ASSUMED"
-                pos["assumed_pnl"] = round((intrinsic * (1 - EXERCISE_STT_PCT) - pos["entry_price"]) * qty, 2)
+                value = (pos["entry_price"] - intrinsic) * qty if short \
+                    else (intrinsic * (1 - EXERCISE_STT_PCT) - pos["entry_price"]) * qty
+            pos["assumed_pnl"] = round(value, 2)
             pos["_events"].append({"ts": now.isoformat(), "action": pos["status"], "lots": pos["lots_open"],
                                    "settlement_spot": spot, "settlement_source": "SAMPLED_INDEX_QUOTE",
                                    "assumed_pnl": pos["assumed_pnl"]})
@@ -673,6 +739,9 @@ def _load_state(conn, day: str, underlying: str) -> dict:
     contract = state.get("execution", "expiry-exec-v1")
     if not contract.endswith(EXECUTION_VERSION):        # a day begun under an older contract
         state["execution"] = f"{contract}+{EXECUTION_VERSION}"
+    state.setdefault("shadow", f"{SHADOW_VERSION} joined mid-day")
+    for play in MAIN_PLAYS + SHADOW_PLAYS:
+        state["trades"].setdefault(play, 0)
     return state
 
 
@@ -814,6 +883,8 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
     schedule = fee_schedule(exchange)
 
     def notify(pos: dict, text: str) -> None:
+        if pos["play"] not in MAIN_PLAYS:                # shadow plays report only in the summary
+            return
         _notice(conn, f"{day}:{underlying}:{pos['id']}:{now.isoformat()}", f"{label} {pos['play']}: {text}", now)
 
     def open_position(play: str, contract, price: float, lots: int) -> dict:
@@ -822,8 +893,10 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
         state["trades"][play] += 1
         return pos
 
-    # 1. manage what is open
+    # 1. manage what is open (D's legs are held to cash settlement)
     for pos in positions:
+        if pos["play"] == "D":
+            continue
         quote = quotes.get(pos["token"])
         if pos["exit_pending"]:
             event = _try_exit(pos, quote, pos["lots_open"], pos["exit_pending"], now)
@@ -872,42 +945,83 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
                 break
             if reason:
                 _bump(state, "refusals", f"A:{reason}")
-        if state["trades"]["C"] < 1:
+        for play, ceiling in (("C", budget), ("C500", C500_BUDGET)):
+            if state["trades"][play] >= 1:
+                continue
             strike = pick_lottery_strike(quoted_chain, direction, spot, now)
             if strike is None:
-                _bump(state, "refusals", "C:NO_STRIKE_IN_BAND")
+                _bump(state, "refusals", f"{play}:NO_STRIKE_IN_BAND")
+                continue
+            contract, quote = quoted_chain[(strike, kind)]
+            lots, prices = affordable_fill([(quote, contract.lot_size)], ceiling, C_MAX_LOTS, schedule)
+            if lots:
+                pos = open_position(play, contract, prices[0], lots)
+                notify(pos, _buy_text(pos, f"lottery {direction}, held into the auction"))
             else:
-                contract, quote = quoted_chain[(strike, kind)]
-                lots, prices = affordable_fill([(quote, contract.lot_size)], budget, C_MAX_LOTS, schedule)
-                if lots:
-                    pos = open_position("C", contract, prices[0], lots)
-                    notify(pos, _buy_text(pos, f"lottery {direction}, held into the auction"))
-                else:
-                    _bump(state, "refusals", "C:DEPTH_OR_BUDGET")
+                _bump(state, "refusals", f"{play}:DEPTH_OR_BUDGET")
 
-    # 3. B: the auction strangle
-    if state["trades"]["B"] == 0 and B_ENTRY_START <= clock_now < B_ENTRY_END:
+    # 3. B and its shadow BH: the same auction strangle, managed differently
+    for play in ("B", "BH"):
+        if state["trades"][play] or not B_ENTRY_START <= clock_now < B_ENTRY_END:
+            continue
         if spot is None:
-            _bump(state, "refusals", "B:NO_FRESH_INDEX")
+            _bump(state, "refusals", f"{play}:NO_FRESH_INDEX")
+            continue
+        step = book.strike_step
+        legs = [quoted_chain.get((float(math.ceil(spot / step) * step), "CE")),
+                quoted_chain.get((float(math.floor(spot / step) * step), "PE"))]
+        reason = next((r for r in (_quote_refusal(leg, now, BC_MAX_SPREAD) for leg in legs) if r), None)
+        lots, prices = (0, []) if reason else affordable_fill(
+            [(q, c.lot_size) for c, q in legs], budget, B_MAX_LOTS, schedule)
+        if not lots:
+            _bump(state, "refusals", f"{play}:{reason or 'DEPTH_OR_BUDGET'}")
+            continue
+        opened = [_new_position(day, underlying, play, exchange, contract, price, lots, now, schedule)
+                  for (contract, _), price in zip(legs, prices)]
+        for pos in opened:
+            _save_position(conn, pos)
+        state["trades"][play] = 1
+        notify(opened[0], f"BUY {lots} lot strangle "
+                          + " + ".join(f"{p['symbol']} @ {p['entry_price']:.2f}" for p in opened)
+                          + f" (buy fees Rs {sum(p['costs'] for p in opened):,.2f}, "
+                          + f"max loss Rs {sum(p['max_loss'] for p in opened):,.2f})")
+
+    # 4. D (shadow): a short iron condor held to cash settlement
+    if not state["trades"]["D"] and D_ENTRY_START <= clock_now < D_ENTRY_END:
+        if spot is None:
+            _bump(state, "refusals", "D:NO_FRESH_INDEX")
         else:
             step = book.strike_step
-            legs = [quoted_chain.get((float(math.ceil(spot / step) * step), "CE")),
-                    quoted_chain.get((float(math.floor(spot / step) * step), "PE"))]
-            reason = next((r for r in (_quote_refusal(leg, now, BC_MAX_SPREAD) for leg in legs) if r), None)
-            lots, prices = (0, []) if reason else affordable_fill(
-                [(q, c.lot_size) for c, q in legs], budget, B_MAX_LOTS, schedule)
-            if lots:
-                opened = [_new_position(day, underlying, "B", exchange, contract, price, lots, now, schedule)
-                          for (contract, _), price in zip(legs, prices)]
-                for pos in opened:
+            atm = float(book.atm_strike(spot))
+            width = D_WING_STEPS * step
+            for short_steps in range(D_SHORT_STEPS, -1, -1):        # the farthest sold strikes that fit
+                plan = [(atm + short_steps * step, "CE", "SHORT"),
+                        (atm + short_steps * step + width, "CE", "LONG"),
+                        (atm - short_steps * step, "PE", "SHORT"),
+                        (atm - short_steps * step - width, "PE", "LONG")]
+                candidates = [quoted_chain.get((strike, kind)) for strike, kind, _ in plan]
+                reason = next((r for r in (_quote_refusal(c, now, BC_MAX_SPREAD) for c in candidates) if r), None)
+                if reason is None:
+                    lot_size = candidates[0][0].lot_size
+                    lots, prices, max_loss, reason = condor_fill(
+                        [(q, side) for (_, q), (_, _, side) in zip(candidates, plan)], lot_size, width, spot,
+                        budget, schedule)
+                if reason is None:
+                    break
+            if reason is None:
+                for (contract, _), price, (_, _, side) in zip(candidates, prices, plan):
+                    pos = _new_position(day, underlying, "D", exchange, contract, price, lots, now, schedule)
+                    if side == "SHORT":
+                        charges = round(sell_charges(price, lots * lot_size, schedule), 2)
+                        pos["costs"], pos["net_pnl"] = charges, -charges
+                        pos["_events"][0].update(action="SELL", charges=charges)
+                    pos["side"], pos["width"] = side, width
+                    pos["_events"][0]["short_steps"] = short_steps
+                    pos["max_loss"] = round(max_loss / len(plan), 2)
                     _save_position(conn, pos)
-                state["trades"]["B"] = 1
-                notify(opened[0], f"BUY {lots} lot strangle "
-                                  + " + ".join(f"{p['symbol']} @ {p['entry_price']:.2f}" for p in opened)
-                                  + f" (buy fees Rs {sum(p['costs'] for p in opened):,.2f}, "
-                                  + f"max loss Rs {sum(p['max_loss'] for p in opened):,.2f})")
+                state["trades"]["D"] = 1
             else:
-                _bump(state, "refusals", f"B:{reason or 'DEPTH_OR_BUDGET'}")
+                _bump(state, "refusals", f"D:{reason}")
 
     _save_state(conn, day, underlying, state, now)
 
@@ -929,38 +1043,52 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
              + (f" ({index_why})" if index_why else "")
              + f", future refused {state.get('stale_fut', 0)}"]
     refusals = state.get("refusals", {})
-    day_filled = day_assumed = day_fees = 0.0
-    for play in ("A", "B", "C"):
-        rows = conn.execute("SELECT symbol, status, costs, net_pnl, assumed_pnl, events FROM expiry_paper_positions "
-                            "WHERE day=? AND underlying=? AND play=?", (day, underlying, play)).fetchall()
-        why = ", ".join(f"{k.split(':', 1)[1]} {v}" for k, v in sorted(refusals.items()) if k.startswith(f"{play}:"))
-        if not rows:
-            lines.append(f"  {play}: no trade" + (f" (refused: {why})" if why else ""))
-            continue
-        fees = sum(r["costs"] for r in rows)
-        filled = sum(r["net_pnl"] for r in rows)
-        assumed = sum(r["assumed_pnl"] or 0.0 for r in rows)
-        day_filled, day_assumed, day_fees = day_filled + filled, day_assumed + assumed, day_fees + fees
-        auction = any(e.get("fill_model") == "AUCTION_WINDOW" for r in rows for e in json.loads(r["events"]))
-        detail = ", ".join(f"{r['symbol']} {r['status']}" for r in rows)
-        line = f"  {play}: filled net Rs {filled:+,.2f} after fees Rs {fees:,.2f}"
-        if any(r["assumed_pnl"] is not None for r in rows):
-            line += (f", assumed Rs {assumed:+,.2f} [our sampled index, not the official settlement], "
-                     f"whole modeled Rs {filled + assumed:+,.2f}")
-        lines.append(line + f" ({detail}{'; auction-window fills unverified' if auction else ''})")
+
+    def section(plays: tuple[str, ...]) -> tuple[float, float, float]:
+        total_filled = total_assumed = total_fees = 0.0
+        for play in plays:
+            rows = conn.execute("SELECT symbol, status, side, costs, net_pnl, assumed_pnl, events "
+                                "FROM expiry_paper_positions WHERE day=? AND underlying=? AND play=?",
+                                (day, underlying, play)).fetchall()
+            why = ", ".join(f"{k.split(':', 1)[1]} {v}" for k, v in sorted(refusals.items())
+                            if k.startswith(f"{play}:"))
+            if not rows:
+                lines.append(f"  {play}: no trade" + (f" (refused: {why})" if why else ""))
+                continue
+            fees = sum(r["costs"] for r in rows)
+            filled = sum(r["net_pnl"] for r in rows)
+            assumed = sum(r["assumed_pnl"] or 0.0 for r in rows)
+            total_filled, total_assumed, total_fees = total_filled + filled, total_assumed + assumed, total_fees + fees
+            auction = any(e.get("fill_model") == "AUCTION_WINDOW" for r in rows for e in json.loads(r["events"]))
+            detail = ", ".join(f"{'sold ' if r['side'] == 'SHORT' else ''}{r['symbol']} {r['status']}" for r in rows)
+            line = f"  {play}: filled net Rs {filled:+,.2f} after fees Rs {fees:,.2f}"
+            if any(r["assumed_pnl"] is not None for r in rows):
+                line += (f", assumed Rs {assumed:+,.2f} [our sampled index, not the official settlement], "
+                         f"whole modeled Rs {filled + assumed:+,.2f}")
+            lines.append(line + f" ({detail}{'; auction-window fills unverified' if auction else ''})")
+        return total_filled, total_assumed, total_fees
+
+    day_filled, day_assumed, day_fees = section(MAIN_PLAYS)
     lines.append(f"  day: filled net Rs {day_filled:+,.2f} + assumed Rs {day_assumed:+,.2f} = whole modeled "
                  f"Rs {day_filled + day_assumed:+,.2f} (fees Rs {day_fees:,.2f})")
+    lines.append(f"  shadow plays ({state.get('shadow', SHADOW_VERSION)}, frozen, no Telegram trades):")
+    section(SHADOW_PLAYS)
     totals = conn.execute(
         "SELECT play, COALESCE(SUM(net_pnl), 0), COALESCE(SUM(assumed_pnl), 0) FROM expiry_paper_positions "
         "WHERE underlying=? AND status != 'OPEN' GROUP BY play", (underlying,)).fetchall()
+    main = [r for r in totals if r[0] in MAIN_PLAYS]
+    shadow = [r for r in totals if r[0] in SHADOW_PLAYS]
     expiries = conn.execute("SELECT COUNT(*) FROM expiry_paper_days WHERE underlying=?", (underlying,)).fetchone()[0]
-    if totals:
+    if main:
         lines.append(f"  {underlying} to date over {expiries} expiries, filled: " + ", ".join(
-            f"{r[0]} Rs {r[1]:+,.2f}" for r in totals))
-        if any(r[2] for r in totals):
+            f"{r[0]} Rs {r[1]:+,.2f}" for r in main))
+        if any(r[2] for r in main):
             lines.append("  assumed settlements, kept apart: " + ", ".join(
-                f"{r[0]} Rs {r[2]:+,.2f}" for r in totals if r[2]))
-        lines.append(f"  whole modeled to date: Rs {sum(r[1] + r[2] for r in totals):+,.2f}")
+                f"{r[0]} Rs {r[2]:+,.2f}" for r in main if r[2]))
+        lines.append(f"  whole modeled to date: Rs {sum(r[1] + r[2] for r in main):+,.2f}")
+    if shadow:
+        lines.append("  shadow whole modeled to date (filled + assumed): " + ", ".join(
+            f"{r[0]} Rs {r[1] + r[2]:+,.2f}" for r in shadow))
     return "\n".join(lines)
 
 

@@ -7,6 +7,23 @@
 
 
 
+## October 6 (evening) — expiry shadow plays (`expiry-shadow-v1`)
+
+Commit: recorded in the follow-up docs commit. Status: Dev; not deployed.
+
+- [x] BH (B held, no bank or trail), C500 (C inside ₹500) and D (short iron
+  condor, 2 → 1 → 0 steps out, held to settlement) run beside A, B and C. They
+  send no Telegram trade lines and have their own summary section.
+- [x] D's maximum loss is (gap − credit) × qty + entry charges + STT reserve,
+  and must fit ₹2,500. If quotes are lost, D is valued at that maximum.
+- [x] Dropped the A fee-filter variant: it could never trade inside ₹2,500.
+- [x] `test_expiry_paper.py`: 32 pass (4 new shadow tests).
+- [x] Full suite: 4,983 pass, 4 skip, 11 fail (the same 11 that fail without
+  these changes; see the section below).
+- [ ] Owner rebuilds the engine before October 8; the shadow plays are scored
+  after 20 expiries.
+- [ ] D stays paper only; selling options needs margin, the owner's decision.
+
 ## October 6 — expiry first-day audit remediation (`expiry-exec-v2`)
 
 Commit `db5153d` on `codex/production-correction-hedge-p0`: pushed, not deployed. Production runs `70a2256`.
@@ -24,9 +41,10 @@ Commit `db5153d` on `codex/production-correction-hedge-p0`: pushed, not deployed
   modeled.
 - [x] Unchanged: strategy thresholds, ceilings, freshness limits, paper-only.
 - [x] Tests (`.\winvenv\Scripts\python.exe -m pytest`):
-  - `test_expiry_paper.py`: 29 pass. Nine are new: the clock probe, window
-    crossing, partial bank across a restart, concurrent flush, dark-index day,
-    BFO fee freeze, v1 store migration, and the mixed-contract label.
+  - `test_expiry_paper.py`: 28 pass (corrected on October 6 evening; an
+    earlier note said 29). Eight are new: the clock probe, window crossing,
+    partial bank across a restart, concurrent flush, dark-index day, BFO fee
+    freeze, v1 store migration, and the mixed-contract label.
   - Focused expiry, EDGE overnight, cost, golden, scheduler and cron-gating
     tests pass.
   - Full suite: 4,978 pass, 4 skip, 12 fail.
