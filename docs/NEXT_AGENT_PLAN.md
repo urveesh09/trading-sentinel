@@ -18,9 +18,8 @@
 - Acceptance: the tests listed in HANDOVER_CHECKLIST.
 - Rollout: an engine rebuild. The schema change only adds a column.
   Rollback: revert; the column is ignored.
-- Next in this audit:
-  - R1, research writer contention;
-  - telemetry for the expiry and overnight jobs.
+- R1 is done in the next commit: research writers wait up to 5 s and name
+  the holder. Expiry-tick telemetry was decided against (see SYSTEM_GUIDE).
   - C3 (Penny durable brake), C4 and C7 stay blocked by the round-3 frozen
     sources.
 

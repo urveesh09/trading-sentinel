@@ -16,6 +16,7 @@ import os
 import shutil
 import sqlite3
 import tempfile
+import time
 import uuid
 import threading
 from contextvars import ContextVar
@@ -32,17 +33,38 @@ EVIDENCE_OPTION_LTP_OI = "OPTION_LTP_OI_SNAPSHOT"
 EVIDENCE_OBSERVED_QUOTE = "OBSERVED_QUOTE_REPLAY"
 
 
-# One admitted archive operation per process; reject saturation rather than
-# accumulating an unbounded writer queue. CLI uses the same disk reserve.
+# One admitted archive operation per process. A writer waits a bounded time
+# for admission, then is refused rather than joining an unbounded queue. CLI
+# uses the same disk reserve.
+#
+# [R1 2026-10-06] Oct 6 audit: immediate refusal (no wait) dropped seven
+# quote collections and four partner input captures while another short
+# archive write held the lock. Every caller runs in a worker thread
+# (asyncio.to_thread), so a bounded wait never blocks the event loop. A
+# refusal names the holder and how long it held the lock.
+WRITER_ADMISSION_WAIT_SEC = 5.0
 _write_lock = threading.RLock()
 _write_context = ContextVar("research_write_context", default=None)
+_holder: Dict[str, Any] = {}
+
+
+def _busy(waited: float, *, other_process: bool = False) -> OSError:
+    held = None if other_process else _holder.get("since")
+    holder = "other_process" if other_process else _holder.get("operation", "unknown")
+    return OSError(
+        f"research writer busy holder={holder} "
+        f"held_ms={int((time.monotonic() - held) * 1000) if held else -1} waited_ms={int(waited * 1000)}")
 
 
 def guarded_write(function):
     @wraps(function)
     def guarded(*args, **kwargs):
-        if not _write_lock.acquire(blocking=False):
-            raise OSError("research writer busy")
+        started = time.monotonic()
+        if not _write_lock.acquire(timeout=WRITER_ADMISSION_WAIT_SEC):
+            raise _busy(time.monotonic() - started)
+        outer = not _holder
+        if outer:
+            _holder.update(operation=function.__qualname__, since=time.monotonic())
         token = None
         lease = None
         try:
@@ -58,11 +80,17 @@ def guarded_write(function):
             limit = getattr(owner, "session_max_bytes", settings.RESEARCH_SESSION_MAX_BYTES)
             root = Path(root)
             _require_capacity(root, reserve, 65536)
-            lease = sqlite3.connect(str(root / "writer-lease.sqlite3"), timeout=0)
+            # The lease serialises writers across processes (CLI and engine).
+            remaining = max(0.0, WRITER_ADMISSION_WAIT_SEC - (time.monotonic() - started))
+            lease = sqlite3.connect(str(root / "writer-lease.sqlite3"), timeout=remaining)
             try:
                 lease.execute("BEGIN IMMEDIATE")
             except sqlite3.OperationalError as exc:
-                raise OSError("research writer busy") from exc
+                raise _busy(time.monotonic() - started, other_process=True) from exc
+            waited = time.monotonic() - started
+            if waited >= 0.5:
+                logger.info("research_writer_waited", operation=function.__qualname__,
+                            waited_ms=int(waited * 1000))
             token = _write_context.set((root, reserve, limit))
             return function(*args, **kwargs)
         finally:
@@ -70,6 +98,8 @@ def guarded_write(function):
                 lease.rollback(); lease.close()
             if token is not None:
                 _write_context.reset(token)
+            if outer:
+                _holder.clear()
             _write_lock.release()
     return guarded
 
@@ -536,8 +566,8 @@ class QuoteArchive:
 
         [WORKFLOW-C.B.1 2026-09-15] Hold ``_write_lock`` for the
         ENTIRE iteration loop, not per-day. The per-day
-        ``@guarded_write`` decorator on ``finalize_day`` uses
-        ``acquire(blocking=False)``, so two concurrent ticks
+        ``@guarded_write`` decorator on ``finalize_day`` then refused
+        without waiting (it now waits up to WRITER_ADMISSION_WAIT_SEC), so two concurrent ticks
         both calling ``finalize_prior_days`` would race:
         Tick A acquires the lock for ``finalize_day("day1")``,
         releases, then Tick B starts and tries
@@ -569,11 +599,18 @@ class QuoteArchive:
         # second concurrent tick WAITS rather than firing
         # ``"research writer busy"`` mid-iteration.
         with _write_lock:
-            for directory in sorted(base.iterdir()):
-                if directory.is_dir() and directory.name < current_day:
-                    item = self.finalize_day(directory.name)
-                    if item is not None:
-                        finalized.append(item)
+            outer = not _holder
+            if outer:
+                _holder.update(operation="QuoteArchive.finalize_prior_days", since=time.monotonic())
+            try:
+                for directory in sorted(base.iterdir()):
+                    if directory.is_dir() and directory.name < current_day:
+                        item = self.finalize_day(directory.name)
+                        if item is not None:
+                            finalized.append(item)
+            finally:
+                if outer:
+                    _holder.clear()
         return finalized
 
 

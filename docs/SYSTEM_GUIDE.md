@@ -10,6 +10,28 @@
 
 
 
+
+## October 6 (night) — research archive writers wait briefly instead of dropping (actual behavior, Dev)
+
+- **`research_archive.guarded_write` (audit R1).**
+  - Before: admission refused immediately when another archive write held
+    the process lock or the cross-process `writer-lease.sqlite3`. On Oct 6
+    this dropped seven quote collections and four partner input captures.
+  - Now: the writer waits up to `WRITER_ADMISSION_WAIT_SEC` (5 s) for the
+    lock and lease together. All callers run in worker threads, so the event
+    loop is not blocked.
+  - A wait of 0.5 s or more logs `research_writer_waited`.
+  - A refusal reads `research writer busy holder=<operation|other_process>
+    held_ms=… waited_ms=…`. `finalize_prior_days` registers itself as the
+    holder for its whole loop.
+  - The collector's failure handling is unchanged. A refused observation is
+    still a recorded gap; it is never re-fetched later and passed off as the
+    missed one.
+- **Telemetry scope.** The 10 s expiry tick gets no scheduler-telemetry
+  wrapper on purpose. Its ticks already store start and decision times, and
+  two telemetry writes every 10 s would add load to the database that hit a
+  lock on Oct 6.
+
 ## October 6 (night) — overnight buy charges reserved; partner management updates retried (actual behavior, Dev)
 
 - **EDGE overnight admission (`edge_overnight_paper.py`, audit O1).**

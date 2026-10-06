@@ -8,6 +8,16 @@
 
 
 
+
+## October 6 (night) — research writer bounded wait (R1)
+
+- [x] `test_research_archive.py`: 19 pass. A 0.3 s holder delays an append
+  instead of dropping it, and a holder past the bound is named in the
+  refusal. Research, partner and scheduler isolation tests: 211 pass.
+- [ ] After rebuild: count `research_storage_stop` and
+  `partner_research_input_capture_failed` (Oct 6: 7 and 4). If any remain,
+  the `holder=` field names the culprit.
+
 ## October 6 (night) — overnight buy charges and partner management retry
 
 - [x] O1: `test_edge_overnight_paper.py`, 13 pass. Includes the Oct 6

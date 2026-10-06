@@ -355,3 +355,45 @@ def test_finalize_prior_days_with_only_current_day_returns_empty(tmp_path):
     assert writer.finalize_prior_days("2026-09-13") == []
     # The current day's open segment is still open.
     assert (tmp_path / "quotes" / "2026-09-13" / "quotes.jsonl.open").exists()
+
+
+def _hold_writer(seconds, entered):
+    """A guarded operation that holds the writer for ``seconds``."""
+    import time
+
+    @archive.guarded_write
+    def slow_write(root):
+        entered.set()
+        time.sleep(seconds)
+    return slow_write
+
+
+def test_short_contention_waits_instead_of_dropping_the_write(tmp_path):
+    # [R1 2026-10-06] Oct 6: immediate refusal dropped 7 collections and
+    # 4 partner captures. A short holder now delays, not drops, the append.
+    import threading
+    entered = threading.Event()
+    holder = threading.Thread(target=_hold_writer(0.3, entered), args=(str(tmp_path),))
+    holder.start()
+    entered.wait(2)
+    writer = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    writer.append({"received_at_utc": "2026-10-06T08:30:00Z", "ltp": 100, "buy_depth": []})
+    holder.join()
+    assert (tmp_path / "quotes" / "2026-10-06" / "quotes.jsonl.open").stat().st_size > 0
+
+
+def test_contention_past_the_bound_names_the_holder(tmp_path, monkeypatch):
+    import threading
+    monkeypatch.setattr(archive, "WRITER_ADMISSION_WAIT_SEC", 0.1)
+    entered = threading.Event()
+    holder = threading.Thread(target=_hold_writer(0.6, entered), args=(str(tmp_path),))
+    holder.start()
+    entered.wait(2)
+    writer = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    with pytest.raises(OSError) as busy:
+        writer.append({"received_at_utc": "2026-10-06T08:30:00Z", "ltp": 100, "buy_depth": []})
+    holder.join()
+    message = str(busy.value)
+    assert message.startswith("research writer busy holder=")
+    assert "slow_write" in message and "waited_ms=" in message
+    assert not archive._holder                       # released with the lock
