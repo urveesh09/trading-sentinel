@@ -12,6 +12,26 @@
 
 
 
+
+## October 6 (night) — EDGE overnight result split into entry and overnight parts (actual behavior, Dev)
+
+- `edge_overnight_paper.run_overnight_exit` reads `ohlc.close` from the
+  09:17 quote. On the first exit session that is the entry day's official
+  close. It records three values:
+  - `entry_day_close` (a new column, added at open);
+  - `entry_vs_close_rs`: close minus the paper entry price, times shares. This
+    is the cost of buying at 15:20 LTP + 25 bps instead of at the close.
+  - `overnight_rs`: open minus close, times shares. This is the move the
+    study measured.
+- The exit message shows both parts per trade.
+- A delayed exit (`OPEN_DELAYED`, or a catch-up on a later session) does not
+  record them, because that quote's close belongs to a different day.
+- Why: the study's edge is close → next open. The Oct 6 audit noted that IWP
+  opened above its reference and still lost, to slippage and costs. After
+  10+ sessions these fields show whether losses come from the overnight
+  thesis or from the 15:20 entry, before anyone changes the entry clock. This
+  is measurement only; no rule changed.
+
 ## October 6 (night) — classic Penny durable daily brake; Momentum allocation holdout frozen (actual behavior, Dev)
 
 - **Classic Penny kill switch is now settlement-fed (`main.sync_penny_daily_brake`, audit C3).**

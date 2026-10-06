@@ -87,6 +87,9 @@ def _store(path: str):
     with closing(sqlite3.connect(path, timeout=10)) as conn:
         for statement in _SCHEMA:
             conn.execute(statement)
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(edge_overnight_paper_trades)")}
+        if "entry_day_close" not in columns:
+            conn.execute("ALTER TABLE edge_overnight_paper_trades ADD COLUMN entry_day_close REAL")
         with conn:
             yield conn
 
@@ -370,9 +373,20 @@ async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[
         exit_price = round(float(basis) * (1 - EXIT_SLIPPAGE_BPS / 10000.0), 4)
         costs = float(calc_penny_costs(entry_price, exit_price, shares, is_intraday=False))
         net = round((exit_price - entry_price) * shares - costs, 4)
-        closed.append({"trade_date": trade_date, "ticker": ticker, "exit_open": float(open_price),
-                       "exit_price": exit_price, "costs": round(costs, 4), "net_pnl": net,
-                       "reason": "CATCHUP_LTP" if not auction else "OPEN_DELAYED" if attempts else "NEXT_OPEN"})
+        item = {"trade_date": trade_date, "ticker": ticker, "exit_open": float(open_price),
+                "exit_price": exit_price, "costs": round(costs, 4), "net_pnl": net,
+                "reason": "CATCHUP_LTP" if not auction else "OPEN_DELAYED" if attempts else "NEXT_OPEN"}
+        # [OVERNIGHT-ATTRIBUTION 2026-10-06] On the first exit session the
+        # quote's ohlc.close is the entry day's official close. It splits the
+        # result into the 15:20 entry (entry price vs close) and the overnight
+        # move the study measured (close vs open). Later sessions' close is a
+        # different day, so it is not recorded for a delayed exit.
+        prior_close = (quote.get("ohlc") or {}).get("close")
+        if not attempts and _finite_positive(prior_close):
+            item["entry_day_close"] = float(prior_close)
+            item["entry_vs_close_rs"] = round((float(prior_close) - entry_price) * shares, 4)
+            item["overnight_rs"] = round((float(open_price) - float(prior_close)) * shares, 4)
+        closed.append(item)
 
     with _store(store) as conn:
         if _already_ran(conn, today, "EXIT") is not None:
@@ -380,9 +394,9 @@ async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[
         for c in closed:
             conn.execute(
                 "UPDATE edge_overnight_paper_trades SET status='CLOSED', exit_date=?, exit_open=?, exit_price=?, "
-                "costs=?, net_pnl=?, exit_reason=? WHERE trade_date=? AND ticker=? AND status='OPEN'",
+                "costs=?, net_pnl=?, exit_reason=?, entry_day_close=? WHERE trade_date=? AND ticker=? AND status='OPEN'",
                 (today, c["exit_open"], c["exit_price"], c["costs"], c["net_pnl"], c["reason"],
-                 c["trade_date"], c["ticker"]))
+                 c.get("entry_day_close"), c["trade_date"], c["ticker"]))
         for w in waiting:
             conn.execute("UPDATE edge_overnight_paper_trades SET exit_attempts = exit_attempts + 1 "
                          "WHERE trade_date=? AND ticker=? AND status='OPEN'", (w["trade_date"], w["ticker"]))
@@ -411,7 +425,11 @@ def format_exit_telegram(summary: dict) -> str:
              f"session Rs {summary['session_pnl']:+,.2f}; book Rs {book['realized_pnl']:+,.2f} "
              f"over {book['closed']} trades, equity Rs {book['equity']:,.0f}"]
     for c in summary["closed"]:
-        lines.append(f"  {c['ticker']} @ {c['exit_price']:.2f} net Rs {c['net_pnl']:+,.2f}")
+        line = f"  {c['ticker']} @ {c['exit_price']:.2f} net Rs {c['net_pnl']:+,.2f}"
+        if "overnight_rs" in c:
+            line += (f" (15:20 entry vs close Rs {c['entry_vs_close_rs']:+,.2f}, "
+                     f"overnight close->open Rs {c['overnight_rs']:+,.2f})")
+        lines.append(line)
     if summary["waiting"]:
         lines.append(f"  still held (no trade yet): {', '.join(w['ticker'] for w in summary['waiting'])}")
     return "\n".join(lines)

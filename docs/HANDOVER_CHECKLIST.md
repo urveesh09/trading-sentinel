@@ -10,6 +10,16 @@
 
 
 
+
+## October 6 (night) — overnight entry/overnight attribution
+
+- [x] `test_edge_overnight_paper.py`: 15 pass, including the split and the
+  delayed exit (which records no split).
+- [ ] After rebuild: the first 09:17 message shows the two parts for each
+  trade.
+- [ ] After 10+ sessions: sum `entry_vs_close_rs` and `overnight_rs`
+  separately. Only then consider an entry-clock study, frozen first.
+
 ## October 6 (night) — Penny durable brake (C3) and allocation freeze
 
 - [x] `tests/test_penny_daily_brake.py` (3 tests):

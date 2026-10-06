@@ -237,3 +237,32 @@ async def test_cash_bound_admission_fits_premium_plus_buy_charges(tmp_path, entr
     assert summary["cash_after"] >= 0
     with eop._store(eop.overnight_db_path(cache)) as conn:
         assert eop.book_state(conn, 1000.0)["cash"] == pytest.approx(summary["cash_after"], abs=1e-3)
+
+
+@pytest.mark.asyncio
+async def test_exit_splits_the_result_into_entry_and_overnight_parts(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    entry = await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    shares, entry_price = entry["opened"][0]["shares"], entry["opened"][0]["entry_price"]
+    exit_quote = _quote(20.6, 20.8, 20.1, 20.3, 50000.0, NEXT)
+    exit_quote["ohlc"]["close"] = 20.2                         # Oct 6 official close
+    summary = await eop.run_overnight_exit(_Kite({"AAA": exit_quote}), cache, now=_at(NEXT, 9, 17))
+    trade = summary["closed"][0]
+    assert trade["entry_day_close"] == 20.2
+    assert trade["entry_vs_close_rs"] == pytest.approx((20.2 - entry_price) * shares, abs=1e-3)
+    assert trade["overnight_rs"] == pytest.approx((20.6 - 20.2) * shares, abs=1e-3)
+    assert "overnight close->open" in eop.format_exit_telegram(summary)
+    with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
+        assert conn.execute("SELECT entry_day_close FROM edge_overnight_paper_trades").fetchone() == (20.2,)
+
+
+@pytest.mark.asyncio
+async def test_delayed_exit_does_not_claim_the_entry_day_close(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    await eop.run_overnight_exit(_Kite({}), cache, now=_at(NEXT, 9, 17))          # no trade: waits
+    later = date(2026, 10, 8)
+    summary = await eop.run_overnight_exit(_Kite({"AAA": _quote(20.6, 20.8, 20.1, 20.3, 50000.0, later)}),
+                                           cache, now=_at(later, 9, 17))
+    assert summary["closed"][0]["reason"] == "OPEN_DELAYED"
+    assert "overnight_rs" not in summary["closed"][0]
