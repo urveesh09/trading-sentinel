@@ -9,7 +9,7 @@
 
 ## October 6 (evening) — expiry shadow plays (`expiry-shadow-v1`)
 
-Commit: recorded in the follow-up docs commit. Status: Dev; not deployed.
+Commit `6c2a82f` on `codex/production-correction-hedge-p0`: pushed, not deployed.
 
 - [x] BH (B held, no bank or trail), C500 (C inside ₹500) and D (short iron
   condor, 2 → 1 → 0 steps out, held to settlement) run beside A, B and C. They
