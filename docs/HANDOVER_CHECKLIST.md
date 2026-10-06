@@ -7,6 +7,24 @@
 
 
 
+
+## October 6 (night) — overnight buy charges and partner management retry
+
+- [x] O1: `test_edge_overnight_paper.py`, 13 pass. Includes the Oct 6
+  reproduction (reserved Rs 28.93, cash −Rs 7.59 rebuilt), the buy-side and DP
+  split, and a cash-bound admission that fits premium plus charges.
+- [x] A1: `test_partner_manual_advisory.py` covers a 50 s old target update
+  sent after one refused send, an EXPIRED_UNSENT reason past 360 s, and
+  acknowledged-claim reconciliation.
+- [x] Partner, hedge and overnight suites: 427 pass. Repaired existing tests:
+  - the qualification fixture clock expired on Oct 6 (29-day validity from
+    Sept 7);
+  - the delivery-blocker tests now pin the qualified-only contract
+    (`SEND_UNQUALIFIED=False`).
+- [ ] After rebuild: the old Oct 6 TARGET_ZONE row closes on the first scan
+  as `EXPIRED_UNSENT` (`idea_retired_session_end`). It is not sent.
+- [ ] After rebuild: the overnight entry message's `cash_after` is ≥ 0.
+
 ## October 6 (evening) — expiry shadow plays (`expiry-shadow-v1`)
 
 Commit `6c2a82f` on `codex/production-correction-hedge-p0`: pushed, not deployed.

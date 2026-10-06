@@ -9,6 +9,40 @@
 
 
 
+
+## October 6 (night) — overnight buy charges reserved; partner management updates retried (actual behavior, Dev)
+
+- **EDGE overnight admission (`edge_overnight_paper.py`, audit O1).**
+  - `buy_charges(price, shares)` gives the delivery buy-side charges:
+    `calc_penny_costs` with a zero sell leg, minus the DP charge (DP belongs to
+    the sell).
+  - `book_state` cash now subtracts each open position's premium and its buy
+    charges (`reserved_buy_charges`). After a restart the reservation is
+    rebuilt the same way.
+  - At 15:20, each pick's shares are cut until premium plus its own buy
+    charges fit the cash left after earlier picks. The entry summary records
+    `buy_charges` per pick and `cash_after`.
+  - The full round trip is still booked once, at exit. Equity and realized
+    P&L are unchanged.
+  - Oct 6 reproduction: the three picks would have reserved Rs 28.93 against
+    Rs 21.34 of cash (−Rs 7.59).
+- **Partner management updates (`partner_manual_advisory.py`, audit A1).**
+  - A TARGET_ZONE, INVALIDATION or SESSION_EXIT_REMINDER update reports a
+    completed public bar, not an executable quote.
+  - Dispatch and authorization now use
+    `PARTNER_MANUAL_ADVISORY_MANAGEMENT_MAX_OBSERVATION_AGE_SEC` (360 s) through
+    `management_observation_fresh`. Before, they used the 30 s option-quote
+    bound, which refused the Oct 6 12:40 SENSEX TARGET_ZONE 50 s later and
+    left it QUEUED.
+  - `pending_management_updates` runs on each scan and lifecycle tick. Every
+    QUEUED row is either dispatched again or closed with a recorded reason:
+    - `DELIVERED_ACKNOWLEDGED` (`acknowledged_claim_reconciled`) when its
+      claim was already acknowledged;
+    - `EXPIRED_UNSENT` (`observation_older_than_management_bound`,
+      `idea_<status>`, or `idea_payload_unusable`).
+  - A stale observation is never resent as current.
+  - `partner_advisory_updates` gains a `status_reason` column, added at init.
+
 ## October 6 (evening) — expiry shadow plays `expiry-shadow-v1` (actual behavior, Dev, paper only)
 
 The owner approved them. See the

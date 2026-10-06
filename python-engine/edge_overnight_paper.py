@@ -102,16 +102,34 @@ def _finite_positive(value) -> bool:
         return False
 
 
+def buy_charges(entry_price: float, shares: int) -> float:
+    """Delivery buy-side charges (STT, stamp, exchange, SEBI, IPFT, GST).
+
+    ``calc_penny_costs`` with a zero sell leg is the buy side plus the DP
+    charge, which belongs to the sell. The full round trip is still booked
+    once, at exit; this only reserves the buy part while a position is open.
+    """
+    from penny_risk import calc_penny_costs
+    if shares < 1:
+        return 0.0
+    whole = float(calc_penny_costs(entry_price, 0.0, shares, is_intraday=False))
+    return round(max(0.0, whole - float(settings.PENNY_CNC_DP_CHARGE)), 4)
+
+
 def book_state(conn: sqlite3.Connection, bankroll: float) -> dict:
+    """Equity is bankroll + realized P&L; cash also reserves each open
+    position's premium and buy charges (rebuilt the same way after a restart)."""
     realized = conn.execute(
         "SELECT COALESCE(SUM(net_pnl), 0), COUNT(*), COALESCE(SUM(net_pnl > 0), 0) "
         "FROM edge_overnight_paper_trades WHERE status='CLOSED'").fetchone()
     held = conn.execute(
-        "SELECT ticker, entry_price * shares FROM edge_overnight_paper_trades WHERE status='OPEN'").fetchall()
+        "SELECT ticker, entry_price, shares FROM edge_overnight_paper_trades WHERE status='OPEN'").fetchall()
     equity = bankroll + float(realized[0])
+    reserved = sum(buy_charges(price, shares) for _, price, shares in held)
     return {"equity": round(equity, 4), "realized_pnl": round(float(realized[0]), 4), "closed": int(realized[1]),
-            "wins": int(realized[2]), "held": {ticker: value for ticker, value in held},
-            "cash": round(equity - sum(value for _, value in held), 4)}
+            "wins": int(realized[2]), "held": {ticker: price * shares for ticker, price, shares in held},
+            "reserved_buy_charges": round(reserved, 4),
+            "cash": round(equity - sum(price * shares for _, price, shares in held) - reserved, 4)}
 
 
 def _already_ran(conn: sqlite3.Connection, day: str, phase: str) -> Optional[dict]:
@@ -286,21 +304,28 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         ltp, volume = bar[3], bar[4]
         entry_price = round(ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0), 4)
         capacity = int(MAX_PARTICIPATION * ltp * volume // entry_price)
+        # [O1 2026-10-06] Oct 6 audit: three picks used Rs 24,364.88 of
+        # Rs 24,386.22 and left -Rs 7.59 after their buy charges, because only
+        # premium was debited. Each admission now fits premium plus its own
+        # buy charges inside the cash left after earlier picks' charges.
         affordable = int(cash // (entry_price * (1 + BUY_COST_BUFFER)))
+        while affordable > 0 and entry_price * affordable + buy_charges(entry_price, affordable) > cash:
+            affordable -= 1
         shares = min(int(pick.shares), capacity, affordable)
         if shares < 1 or shares < MIN_FILL_FRACTION * int(pick.shares):
             reason = "liquidity" if capacity <= affordable else "cash"
             skipped.append({"ticker": pick.ticker, "reason": f"{reason}_below_quarter_of_plan",
                             "planned": int(pick.shares), "capacity": capacity, "affordable": affordable})
             continue
-        cash -= entry_price * shares
+        charges = buy_charges(entry_price, shares)
+        cash -= entry_price * shares + charges
         opened.append({"ticker": pick.ticker, "kind": pick.signal_subtype,
                        "strength": round(float(pick.adjusted_strength), 4), "entry_ltp": ltp,
-                       "entry_price": entry_price, "shares": shares})
+                       "entry_price": entry_price, "shares": shares, "buy_charges": charges})
 
     summary = {"date": today, "phase": "ENTRY", "universe": len(tickers), "quoted": len(bars_today),
                "candidates": len(scan["candidates"]), "opened": opened, "skipped": skipped,
-               "equity": state["equity"]}
+               "equity": state["equity"], "cash_after": round(cash, 4)}
     with _store(store) as conn:
         if _already_ran(conn, today, "ENTRY") is not None:      # a concurrent run won
             return {**_already_ran(conn, today, "ENTRY"), "repeat": True}

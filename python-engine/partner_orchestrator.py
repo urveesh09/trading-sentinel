@@ -484,7 +484,8 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
         build_directional_debit_spread,
         dispatch_queued_advisory, persist_candidate,
         dispatch_queued_management_update, is_strategy_qualified, load_partner_profile_with_state,
-        queue_management_updates, record_advisory_input_status, resolve_advisory_expiry,
+        pending_management_updates, queue_management_updates, record_advisory_input_status,
+        resolve_advisory_expiry,
         select_preferred_market_candidates, validate_candidate,
     )
 
@@ -649,14 +650,16 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
             metrics["management_input_unavailable"] += 1
             continue
         try:
-            updates = await queue_management_updates(
+            await queue_management_updates(
                 settings.DB_PATH, underlying=spec.name,
                 observed_underlying=observed_underlying, observed_at=observed_at,
             )
             metrics["management_observed"] += 1
             # Dispatch urgent lifecycle facts before optional entry I/O and
-            # before progressing to another index's optional-chain work.
-            for update in updates:
+            # before progressing to another index's optional-chain work. New
+            # and earlier unsent updates go out together; stale ones close
+            # with a reason.
+            for update in await pending_management_updates(settings.DB_PATH, now=now, underlying=spec.name):
                 delivered = await dispatch_queued_management_update(settings.DB_PATH, update, now=now)
                 key = "update_delivered" if delivered else "update_queued"
                 metrics[key] = metrics.get(key, 0) + 1
@@ -1064,9 +1067,11 @@ async def partner_manual_advisory_lifecycle_tick(now: Optional[datetime] = None)
     now = now or datetime.now(IST)
     # Retirement is safe local bookkeeping even off-session. Transporting a
     # reminder remains independently authorised by its durable update path.
-    from partner_manual_advisory import dispatch_queued_management_update, run_intraday_session_lifecycle
-    updates = await run_intraday_session_lifecycle(settings.DB_PATH, now=now)
-    for update in updates:
+    from partner_manual_advisory import (
+        dispatch_queued_management_update, pending_management_updates, run_intraday_session_lifecycle,
+    )
+    await run_intraday_session_lifecycle(settings.DB_PATH, now=now)
+    for update in await pending_management_updates(settings.DB_PATH, now=now):
         await dispatch_queued_management_update(settings.DB_PATH, update, now=now)
 
 

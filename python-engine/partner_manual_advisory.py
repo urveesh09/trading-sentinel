@@ -353,6 +353,9 @@ async def init_partner_advisory_db(db_path: str) -> None:
             # multiple profiles and are conservatively attributed to default;
             # they cannot authorize another profile's delivery.
             await db.execute("ALTER TABLE partner_advisory_ideas ADD COLUMN profile_id TEXT NOT NULL DEFAULT 'default'")
+        update_columns = {row[1] for row in await (await db.execute("PRAGMA table_info(partner_advisory_updates)")).fetchall()}
+        if "status_reason" not in update_columns:
+            await db.execute("ALTER TABLE partner_advisory_updates ADD COLUMN status_reason TEXT")
         await db.commit()
 
 
@@ -1347,6 +1350,74 @@ async def run_intraday_session_lifecycle(db_path: str, *, now: datetime) -> list
     return queued
 
 
+def management_observation_fresh(observed_at: datetime, now: datetime) -> bool:
+    """A management update reports a completed public bar, not an executable
+    quote, so it carries the management observation age bound (not the
+    30-second option-quote bound used for entry cards).
+
+    [A1 2026-10-06] Oct 6 audit: a SENSEX TARGET_ZONE observed from the
+    12:40 bar was dispatched 50 s later and refused by the 30 s quote bound
+    before any claim, then stayed QUEUED forever.
+    """
+    age = (now - observed_at).total_seconds()
+    return -5 <= age <= settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_MAX_OBSERVATION_AGE_SEC
+
+
+async def pending_management_updates(
+    db_path: str, *, now: datetime, underlying: Optional[str] = None,
+) -> list[dict]:
+    """QUEUED updates that may still be sent, oldest first.
+
+    Every QUEUED row ends in a recorded state instead of waiting silently:
+    a row whose claim was already acknowledged is marked delivered; a row
+    whose observation is past the bound, or whose idea is no longer live, is
+    ``EXPIRED_UNSENT`` with its reason. A stale observation is never resent
+    as if it were current.
+    """
+    await init_partner_advisory_db(db_path)
+    sql = ("SELECT u.update_id,u.advisory_id,u.event_type,u.observed_at,u.rendered_update,i.status,i.payload,{acked} "
+           "FROM partner_advisory_updates u JOIN partner_advisory_ideas i ON i.advisory_id=u.advisory_id "
+           "WHERE u.status='QUEUED'" + (" AND i.underlying=?" if underlying is not None else "")
+           + " ORDER BY u.created_at")
+    args = (underlying.upper(),) if underlying is not None else ()
+    async with aiosqlite.connect(db_path) as db:
+        has_claims = await (await db.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='partner_hedge_messages'")).fetchone()
+        acked = ("(SELECT MAX(m.delivered) FROM partner_hedge_messages m "
+                 "WHERE m.kind='manual_advisory_update' AND m.dedup_key=u.update_id)") if has_claims else "NULL"
+        rows = await (await db.execute(sql.format(acked=acked), args)).fetchall()
+        pending, closed = [], []
+        for update_id, advisory_id, event_type, observed, text, idea_status, raw_payload, delivered in rows:
+            try:
+                observed_at = datetime.fromisoformat(str(observed)).astimezone(IST)
+            except ValueError:
+                observed_at = None
+            if delivered == 1:
+                closed.append(("DELIVERED_ACKNOWLEDGED", "acknowledged_claim_reconciled", update_id))
+            elif idea_status != "DELIVERED_ACKNOWLEDGED":
+                closed.append(("EXPIRED_UNSENT", f"idea_{str(idea_status).lower()}", update_id))
+            elif observed_at is None or not management_observation_fresh(observed_at, now):
+                closed.append(("EXPIRED_UNSENT", "observation_older_than_management_bound", update_id))
+            else:
+                try:
+                    profile_id = str(json.loads(raw_payload)["profile_id"])
+                except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+                    closed.append(("EXPIRED_UNSENT", "idea_payload_unusable", update_id))
+                    continue
+                pending.append({"update_id": update_id, "advisory_id": advisory_id, "profile_id": profile_id,
+                                "event_type": event_type, "observed_at": observed, "rendered_update": text,
+                                "status": "QUEUED"})
+        for status, reason, update_id in closed:
+            await db.execute(
+                "UPDATE partner_advisory_updates SET status=?,status_reason=?,updated_at=? "
+                "WHERE update_id=? AND status='QUEUED'", (status, reason, _iso(now), update_id))
+            import structlog
+            structlog.get_logger().info("partner_manual_advisory_update_closed", update_id=update_id,
+                                        status=status, reason=reason)
+        await db.commit()
+    return pending
+
+
 async def dispatch_queued_management_update(db_path: str, update: dict, *, now: datetime, clock=None) -> bool:
     """Deliver a queued material update with its own quota and authorization."""
     final_now = (clock() if clock is not None else datetime.now(IST)).astimezone(IST)
@@ -1354,7 +1425,7 @@ async def dispatch_queued_management_update(db_path: str, update: dict, *, now: 
             or update.get("status") != "QUEUED"):
         return False
     observed_at = datetime.fromisoformat(str(update["observed_at"])).astimezone(IST)
-    if (final_now - observed_at).total_seconds() > settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC:
+    if not management_observation_fresh(observed_at, final_now):
         return False
     from hedge_advisory import _send_claimed_review
     update_id = str(update["update_id"])

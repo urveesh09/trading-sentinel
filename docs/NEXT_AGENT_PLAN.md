@@ -3,6 +3,27 @@
 
 
 
+
+## October 6 (night) — Production audit follow-up: O1 overnight fees, A1 partner updates (done, Dev)
+
+- Source: Production `docs/2026-10-06-production-deep-audit.md` (read-only).
+  The expiry findings E1–E5 were done in `db5153d`.
+- Problem:
+  - O1: overnight admission debited premium only. Oct 6 left −Rs 7.59 after
+    buy charges.
+  - A1: a partner target update was refused by the 30 s quote bound and
+    stayed QUEUED with no retry and no reason.
+- Files: `edge_overnight_paper.py`, `partner_manual_advisory.py`,
+  `hedge_advisory.py`, `partner_orchestrator.py`, and tests.
+- Acceptance: the tests listed in HANDOVER_CHECKLIST.
+- Rollout: an engine rebuild. The schema change only adds a column.
+  Rollback: revert; the column is ignored.
+- Next in this audit:
+  - R1, research writer contention;
+  - telemetry for the expiry and overnight jobs.
+  - C3 (Penny durable brake), C4 and C7 stay blocked by the round-3 frozen
+    sources.
+
 ## October 6 (evening) — expiry shadow plays (done, Dev)
 
 - Problem: the owner asked for changes that could make expiry trading
@@ -116,7 +137,19 @@ low system memory and wrote no results, so the Kite Jan–Jul 2026 data is still
 unseen.
 - Do not rerun until the owner names a date. Then run only
   `scripts/run_preregistered_study.py run <study> --out <dir> --jobs 1` for
-  momentum-smart-t3, then penny-noise-t3. No new acquisition and no re-freeze.
+  momentum-smart-t3, then penny-noise-t3. No new acquisition.
+- **Freeze drift (found Oct 6).** Later commits changed bound common files:
+  - `config.py`, for both studies: `653560a` added
+    `PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED` and `db5153d` added
+    `FNO_BSE_EXCHANGE_TXN_PCT`;
+  - `cost_schedules.py`, for Penny: `db5153d` added the BSE options path.
+  - `run` therefore refuses to score.
+  - A bound diff shows only those file hashes moved. The Penny effective
+    settings and execution-cost snapshot are identical, and the equity cost
+    path is untouched.
+  - Since nothing was ever scored, the fix is to freeze both studies again
+    into new dated folders right before scoring, with the same study
+    definitions, and to record this reason in the study docs.
 - Until then, the frozen sources stay unedited. That blocks items 1 (replay arm),
   2, 3 and 5 below.
 
