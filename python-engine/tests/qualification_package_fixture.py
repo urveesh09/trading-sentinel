@@ -62,7 +62,15 @@ def authorization_package(profile, now):
 
 async def register_test_package(db_path, profile, now, monkeypatch):
     from config import settings
+    import partner_manual_advisory
     from partner_manual_advisory import record_research_artifact, record_strategy_qualification
+    # Registration verifies the package against the wall clock; pin it to the
+    # fixture clock so a 29-day validity from a fixed date never expires.
+    class _FixtureClock(partner_manual_advisory.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return now.astimezone(tz) if tz is not None else now
+    monkeypatch.setattr(partner_manual_advisory,"datetime",_FixtureClock)
     root=Path(db_path).parent/'test-artifacts'; root.mkdir(exist_ok=True)
     monkeypatch.setattr(settings,"PARTNER_ARTIFACT_ROOT",str(root))
     data=json.dumps(authorization_package(profile,now),sort_keys=True).encode()

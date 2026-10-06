@@ -300,6 +300,41 @@ def _within_penny_market_hours(now_ist) -> bool:
     return 9 * 60 + 15 <= minutes <= 15 * 60 + 30
 
 
+async def sync_penny_daily_brake(scanner, now_ist: datetime) -> float:
+    """Load today's durable classic-Penny realized P&L into the kill switch.
+
+    [C3 2026-10-06] Production audits (Oct 5, Oct 6): nothing in the runtime
+    called ``PennyRiskEngine.record_close``, so ``daily_pnl`` stayed 0 and the
+    daily loss kill switch could never trip; a restart or the 00:05 reset
+    would also have erased it. Before each scan the engine now reads the
+    IST day's settled ``TRADE_CLOSED`` and ``TRADE_PARTIAL`` rows for this
+    book's ledger source, so the brake survives restarts and counts every
+    settled leg once. If the ledger cannot be read, a live book is blocked
+    (fail closed) and a paper book keeps its last known value.
+    """
+    risk = scanner.risk_engine
+    day = now_ist.astimezone(IST).date()
+    start = IST.localize(datetime.combine(day, datetime.min.time())).astimezone(timezone.utc)
+    end = start + timedelta(days=1)
+    source = _classic_penny_source(scanner.paper_mode)
+    try:
+        async with aiosqlite.connect(settings.DB_PATH, timeout=5) as db:
+            row = await (await db.execute(
+                "SELECT COALESCE(SUM(pnl), 0) FROM bankroll_ledger WHERE source=? "
+                "AND event_type IN ('TRADE_CLOSED','TRADE_PARTIAL') AND timestamp>=? AND timestamp<?",
+                (source, start.isoformat(), end.isoformat()),
+            )).fetchone()
+        realized = float(row[0])
+    except Exception as exc:  # noqa: BLE001 - the brake must not crash the scan
+        logger.error("penny_daily_brake_read_failed source=%s err=%s", source, type(exc).__name__)
+        if scanner.paper_mode:
+            return risk.daily_pnl
+        realized = float("-inf")
+    risk.daily_pnl = realized
+    risk.daily_pnl_date = day.isoformat()
+    return realized
+
+
 async def run_penny_scanner_once():
     """30-second MIS leg (spec §9.1).
 
@@ -370,6 +405,7 @@ async def run_penny_scanner_once():
     # fictitious winning paper outcome.  Run the paper-only stop check on the
     # existing market-hours cadence before looking for another entry.
     await run_penny_paper_stop_monitor()
+    await sync_penny_daily_brake(scanner, now_ist)
     _last_penny_scan_attempt_at = datetime.now(timezone.utc)
     _last_penny_scan_outcome = "IN_FLIGHT"
     try:

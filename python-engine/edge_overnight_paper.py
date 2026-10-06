@@ -87,6 +87,9 @@ def _store(path: str):
     with closing(sqlite3.connect(path, timeout=10)) as conn:
         for statement in _SCHEMA:
             conn.execute(statement)
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(edge_overnight_paper_trades)")}
+        if "entry_day_close" not in columns:
+            conn.execute("ALTER TABLE edge_overnight_paper_trades ADD COLUMN entry_day_close REAL")
         with conn:
             yield conn
 
@@ -102,16 +105,34 @@ def _finite_positive(value) -> bool:
         return False
 
 
+def buy_charges(entry_price: float, shares: int) -> float:
+    """Delivery buy-side charges (STT, stamp, exchange, SEBI, IPFT, GST).
+
+    ``calc_penny_costs`` with a zero sell leg is the buy side plus the DP
+    charge, which belongs to the sell. The full round trip is still booked
+    once, at exit; this only reserves the buy part while a position is open.
+    """
+    from penny_risk import calc_penny_costs
+    if shares < 1:
+        return 0.0
+    whole = float(calc_penny_costs(entry_price, 0.0, shares, is_intraday=False))
+    return round(max(0.0, whole - float(settings.PENNY_CNC_DP_CHARGE)), 4)
+
+
 def book_state(conn: sqlite3.Connection, bankroll: float) -> dict:
+    """Equity is bankroll + realized P&L; cash also reserves each open
+    position's premium and buy charges (rebuilt the same way after a restart)."""
     realized = conn.execute(
         "SELECT COALESCE(SUM(net_pnl), 0), COUNT(*), COALESCE(SUM(net_pnl > 0), 0) "
         "FROM edge_overnight_paper_trades WHERE status='CLOSED'").fetchone()
     held = conn.execute(
-        "SELECT ticker, entry_price * shares FROM edge_overnight_paper_trades WHERE status='OPEN'").fetchall()
+        "SELECT ticker, entry_price, shares FROM edge_overnight_paper_trades WHERE status='OPEN'").fetchall()
     equity = bankroll + float(realized[0])
+    reserved = sum(buy_charges(price, shares) for _, price, shares in held)
     return {"equity": round(equity, 4), "realized_pnl": round(float(realized[0]), 4), "closed": int(realized[1]),
-            "wins": int(realized[2]), "held": {ticker: value for ticker, value in held},
-            "cash": round(equity - sum(value for _, value in held), 4)}
+            "wins": int(realized[2]), "held": {ticker: price * shares for ticker, price, shares in held},
+            "reserved_buy_charges": round(reserved, 4),
+            "cash": round(equity - sum(price * shares for _, price, shares in held) - reserved, 4)}
 
 
 def _already_ran(conn: sqlite3.Connection, day: str, phase: str) -> Optional[dict]:
@@ -129,29 +150,39 @@ def _record_run(conn: sqlite3.Connection, day: str, phase: str, summary: dict, n
                      "VALUES (?,?,?,?)", (day, phase, message, now.isoformat()))
 
 
+_FLUSH_LOCKS: dict[str, asyncio.Lock] = {}
+
+
 async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optional[str] = None,
                         now: Optional[datetime] = None) -> int:
-    """Send unsent phase summaries oldest first; ``send`` raises on failure."""
+    """Send unsent phase summaries oldest first; ``send`` raises on failure.
+
+    Flushes of one store are serialised (the phase jobs and the catch-up can
+    overlap), so a row is never sent twice concurrently; ``sent_at`` is the
+    acknowledgement time. Delivery is at-least-once across a crash.
+    """
     store = overnight_db_path(db_path or settings.DB_PATH)
-    now = now or datetime.now(IST)
-    with _store(store) as conn:
-        pending = conn.execute("SELECT run_date, phase, message FROM edge_overnight_paper_notices "
-                               "WHERE sent_at IS NULL ORDER BY created_at").fetchall()
-    sent = 0
-    for day, phase, message in pending:
-        try:
-            await send(message)
-        except Exception as exc:
-            logger.warning("edge_overnight_notice_failed date=%s phase=%s err=%s", day, phase, type(exc).__name__)
-            with _store(store) as conn:
-                conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1 "
-                             "WHERE run_date=? AND phase=?", (day, phase))
-            break
+    async with _FLUSH_LOCKS.setdefault(store, asyncio.Lock()):
         with _store(store) as conn:
-            conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1 "
-                         "WHERE run_date=? AND phase=?", (now.isoformat(), day, phase))
-        sent += 1
-    return sent
+            pending = conn.execute("SELECT run_date, phase, message FROM edge_overnight_paper_notices "
+                                   "WHERE sent_at IS NULL ORDER BY created_at").fetchall()
+        sent = 0
+        for day, phase, message in pending:
+            try:
+                await send(message)
+            except Exception as exc:
+                logger.warning("edge_overnight_notice_failed date=%s phase=%s err=%s",
+                               day, phase, type(exc).__name__)
+                with _store(store) as conn:
+                    conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1 "
+                                 "WHERE run_date=? AND phase=?", (day, phase))
+                break
+            acked = now or datetime.now(IST)
+            with _store(store) as conn:
+                conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1 "
+                             "WHERE run_date=? AND phase=?", (acked.isoformat(), day, phase))
+            sent += 1
+        return sent
 
 
 async def catch_up(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> list[str]:
@@ -276,21 +307,28 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         ltp, volume = bar[3], bar[4]
         entry_price = round(ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0), 4)
         capacity = int(MAX_PARTICIPATION * ltp * volume // entry_price)
+        # [O1 2026-10-06] Oct 6 audit: three picks used Rs 24,364.88 of
+        # Rs 24,386.22 and left -Rs 7.59 after their buy charges, because only
+        # premium was debited. Each admission now fits premium plus its own
+        # buy charges inside the cash left after earlier picks' charges.
         affordable = int(cash // (entry_price * (1 + BUY_COST_BUFFER)))
+        while affordable > 0 and entry_price * affordable + buy_charges(entry_price, affordable) > cash:
+            affordable -= 1
         shares = min(int(pick.shares), capacity, affordable)
         if shares < 1 or shares < MIN_FILL_FRACTION * int(pick.shares):
             reason = "liquidity" if capacity <= affordable else "cash"
             skipped.append({"ticker": pick.ticker, "reason": f"{reason}_below_quarter_of_plan",
                             "planned": int(pick.shares), "capacity": capacity, "affordable": affordable})
             continue
-        cash -= entry_price * shares
+        charges = buy_charges(entry_price, shares)
+        cash -= entry_price * shares + charges
         opened.append({"ticker": pick.ticker, "kind": pick.signal_subtype,
                        "strength": round(float(pick.adjusted_strength), 4), "entry_ltp": ltp,
-                       "entry_price": entry_price, "shares": shares})
+                       "entry_price": entry_price, "shares": shares, "buy_charges": charges})
 
     summary = {"date": today, "phase": "ENTRY", "universe": len(tickers), "quoted": len(bars_today),
                "candidates": len(scan["candidates"]), "opened": opened, "skipped": skipped,
-               "equity": state["equity"]}
+               "equity": state["equity"], "cash_after": round(cash, 4)}
     with _store(store) as conn:
         if _already_ran(conn, today, "ENTRY") is not None:      # a concurrent run won
             return {**_already_ran(conn, today, "ENTRY"), "repeat": True}
@@ -335,9 +373,20 @@ async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[
         exit_price = round(float(basis) * (1 - EXIT_SLIPPAGE_BPS / 10000.0), 4)
         costs = float(calc_penny_costs(entry_price, exit_price, shares, is_intraday=False))
         net = round((exit_price - entry_price) * shares - costs, 4)
-        closed.append({"trade_date": trade_date, "ticker": ticker, "exit_open": float(open_price),
-                       "exit_price": exit_price, "costs": round(costs, 4), "net_pnl": net,
-                       "reason": "CATCHUP_LTP" if not auction else "OPEN_DELAYED" if attempts else "NEXT_OPEN"})
+        item = {"trade_date": trade_date, "ticker": ticker, "exit_open": float(open_price),
+                "exit_price": exit_price, "costs": round(costs, 4), "net_pnl": net,
+                "reason": "CATCHUP_LTP" if not auction else "OPEN_DELAYED" if attempts else "NEXT_OPEN"}
+        # [OVERNIGHT-ATTRIBUTION 2026-10-06] On the first exit session the
+        # quote's ohlc.close is the entry day's official close. It splits the
+        # result into the 15:20 entry (entry price vs close) and the overnight
+        # move the study measured (close vs open). Later sessions' close is a
+        # different day, so it is not recorded for a delayed exit.
+        prior_close = (quote.get("ohlc") or {}).get("close")
+        if not attempts and _finite_positive(prior_close):
+            item["entry_day_close"] = float(prior_close)
+            item["entry_vs_close_rs"] = round((float(prior_close) - entry_price) * shares, 4)
+            item["overnight_rs"] = round((float(open_price) - float(prior_close)) * shares, 4)
+        closed.append(item)
 
     with _store(store) as conn:
         if _already_ran(conn, today, "EXIT") is not None:
@@ -345,9 +394,9 @@ async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[
         for c in closed:
             conn.execute(
                 "UPDATE edge_overnight_paper_trades SET status='CLOSED', exit_date=?, exit_open=?, exit_price=?, "
-                "costs=?, net_pnl=?, exit_reason=? WHERE trade_date=? AND ticker=? AND status='OPEN'",
+                "costs=?, net_pnl=?, exit_reason=?, entry_day_close=? WHERE trade_date=? AND ticker=? AND status='OPEN'",
                 (today, c["exit_open"], c["exit_price"], c["costs"], c["net_pnl"], c["reason"],
-                 c["trade_date"], c["ticker"]))
+                 c.get("entry_day_close"), c["trade_date"], c["ticker"]))
         for w in waiting:
             conn.execute("UPDATE edge_overnight_paper_trades SET exit_attempts = exit_attempts + 1 "
                          "WHERE trade_date=? AND ticker=? AND status='OPEN'", (w["trade_date"], w["ticker"]))
@@ -376,7 +425,11 @@ def format_exit_telegram(summary: dict) -> str:
              f"session Rs {summary['session_pnl']:+,.2f}; book Rs {book['realized_pnl']:+,.2f} "
              f"over {book['closed']} trades, equity Rs {book['equity']:,.0f}"]
     for c in summary["closed"]:
-        lines.append(f"  {c['ticker']} @ {c['exit_price']:.2f} net Rs {c['net_pnl']:+,.2f}")
+        line = f"  {c['ticker']} @ {c['exit_price']:.2f} net Rs {c['net_pnl']:+,.2f}"
+        if "overnight_rs" in c:
+            line += (f" (15:20 entry vs close Rs {c['entry_vs_close_rs']:+,.2f}, "
+                     f"overnight close->open Rs {c['overnight_rs']:+,.2f})")
+        lines.append(line)
     if summary["waiting"]:
         lines.append(f"  still held (no trade yet): {', '.join(w['ticker'] for w in summary['waiting'])}")
     return "\n".join(lines)

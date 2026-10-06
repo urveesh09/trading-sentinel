@@ -3,6 +3,92 @@
 
 
 
+
+## October 6 (night) — Production audit follow-up: O1 overnight fees, A1 partner updates (done, Dev)
+
+- Source: Production `docs/2026-10-06-production-deep-audit.md` (read-only).
+  The expiry findings E1–E5 were done in `db5153d`.
+- Problem:
+  - O1: overnight admission debited premium only. Oct 6 left −Rs 7.59 after
+    buy charges.
+  - A1: a partner target update was refused by the 30 s quote bound and
+    stayed QUEUED with no retry and no reason.
+- Files: `edge_overnight_paper.py`, `partner_manual_advisory.py`,
+  `hedge_advisory.py`, `partner_orchestrator.py`, and tests.
+- Acceptance: the tests listed in HANDOVER_CHECKLIST.
+- Rollout: an engine rebuild. The schema change only adds a column.
+  Rollback: revert; the column is ignored.
+- R1 done (`5817263`): research writers wait up to 5 s and name the holder.
+  Expiry-tick telemetry was decided against (see SYSTEM_GUIDE).
+- C3 done: the classic Penny kill switch is fed from the durable ledger.
+- Momentum allocation holdout frozen (S7a). Evaluate after about 10 sessions
+  with capital skips.
+- Still blocked by the round-3 frozen sources: C4 (DP once per scrip per day,
+  in `penny_risk.py`) and C7 (`momentum_shadow.py` late bars).
+
+## October 6 (evening) — expiry shadow plays (done, Dev)
+
+- Problem: the owner asked for changes that could make expiry trading
+  profitable after the October 6 loss, without fitting October 6.
+- Files: `python-engine/expiry_paper.py`, `python-engine/tests/test_expiry_paper.py`
+  and the design doc.
+- Acceptance:
+  - BH, C500 and D run beside A, B and C on the same ticks, with no Telegram
+    trade lines;
+  - D's settlement loss stays inside its ceiling on a runaway close;
+  - an outage values D at its maximum loss;
+  - a credit too small for its charges is refused.
+- Rollout: an engine rebuild, ideally before October 8, the shadow plays'
+  first expiry. The schema additions only add columns. Rollback: revert; the
+  extra columns and rows are ignored.
+- Still open:
+  - score the shadow plays beside `expiry-v1` after 20 expiries;
+  - D's live use needs the owner's separate margin decision.
+
+## October 6 — expiry first-day audit remediation, `expiry-exec-v2` (done, Dev)
+
+- Problem: the first-day audit found these defects:
+  - freshness and windows were judged at the request start;
+  - fills could not be replayed (only top of book was logged);
+  - a partial bank lost its remainder;
+  - concurrent flushes could send a notice twice;
+  - an expiry with no index quote vanished from the record;
+  - SENSEX used NSE charges, and fees were not frozen per position;
+  - messages showed a slice net that excluded buy fees;
+  - 90 of 966 slots were skipped.
+- Files:
+  - `python-engine/expiry_paper.py` and `python-engine/edge_overnight_paper.py`;
+  - `python-engine/cost_schedules.py` and `python-engine/config.py`
+    (`FNO_BSE_EXCHANGE_TXN_PCT`);
+  - `python-engine/scheduler_setup.py` (`expiry_paper_flush` job);
+  - tests and goldens.
+- Acceptance:
+  - the audit's clock probe (one packet 15 s ahead of the start, one 15 s
+    behind it) is judged at receipt;
+  - a B window crossing in transit is refused;
+  - the 3-wanted/1-filled bank keeps 2 pending across a restart;
+  - two concurrent flushes deliver once (both books);
+  - a dark index day records 217 ticks and a summary;
+  - BFO charges are frozen at entry;
+  - a v1 store migrates and settles.
+- Rollout:
+  - one engine rebuild. The gateway is unchanged; Production `70a2256`
+    (PR #103) already serves `require_delivery`.
+  - Schema additions are additive.
+  - Rollback: revert the commit. The extra columns are ignored by v1 code.
+- Not changed: strategy thresholds, the ₹2,500 ceilings, the 20 s and 5 s
+  freshness limits, paper-only authority, and the owner's live halt.
+- Still open:
+  1. Merge and rebuild before Thursday's SENSEX expiry (October 8), the first
+     BFO day.
+  2. After it, read the summary's data line and the tick timing. If limiter
+     wait dominates, consider reserving quote capacity for the expiry tick
+     during 13:00–15:40. That decision needs evidence first.
+  3. Compare our settlement sample with the official settlement price, without
+     overwriting assumed rows.
+  4. Run the 20-expiry review on `expiry-exec-v2` days, with October 6 shown
+     separately.
+
 ## October 5 (late night) — expiry book second review (done, Dev)
 
 - Problem: partial exits could exceed the ₹2,500 reserve; the gateway reported
@@ -47,12 +133,34 @@ Done in Dev (this slice): C1 Momentum post-dispatch lock; partner informational
 surfaces restored while advisory is unqualified; partner RV datetime fix; Kite
 acquisition retries.
 
+**Round-3 Kite scoring is postponed (owner, Oct 5 22:45).** The data and freezes
+are committed (`ae2b775`). The 21:12 scoring run was killed at about 22:40 for
+low system memory and wrote no results, so the Kite Jan–Jul 2026 data is still
+unseen.
+- Do not rerun until the owner names a date. Then run only
+  `scripts/run_preregistered_study.py run <study> --out <dir> --jobs 1` for
+  momentum-smart-t3, then penny-noise-t3. No new acquisition.
+- **Freeze drift (found Oct 6).** Later commits changed bound common files:
+  - `config.py`, for both studies: `653560a` added
+    `PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED` and `db5153d` added
+    `FNO_BSE_EXCHANGE_TXN_PCT`;
+  - `cost_schedules.py`, for Penny: `db5153d` added the BSE options path.
+  - `run` therefore refuses to score.
+  - A bound diff shows only those file hashes moved. The Penny effective
+    settings and execution-cost snapshot are identical, and the equity cost
+    path is untouched.
+  - Since nothing was ever scored, the fix is to freeze both studies again
+    into new dated folders right before scoring, with the same study
+    definitions, and to record this reason in the study docs.
+- Until then, the frozen sources stay unedited. That blocks items 1 (replay arm),
+  2, 3 and 5 below.
+
 Next, in order:
 1. **Penny profit protection: paper rule implemented** (`penny_profit_lock.py`,
    see SYSTEM_GUIDE). Remaining: once round-3 scoring has finished, add a
    labelled diagnostic arm to `penny_lifecycle_replay.py` (seen data); judge the
    rule by forward paper days. No untouched Penny data is left.
-2. Penny durable, settlement-fed daily brake (audit P1 pre-live).
+2. ~~Penny durable, settlement-fed daily brake~~ done Oct 6 (`main.sync_penny_daily_brake`, no frozen file edited).
 3. C7: late Momentum shadow bars (15:15 EOD exits unresolved).
 4. ~~C8~~ done (whole-trade analytics).
 5. C2 BSE option schedule and C4 one DP per scrip per day remain; DP ₹15.34 done.

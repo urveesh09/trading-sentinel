@@ -462,3 +462,83 @@ async def test_one_profile_cannot_supersede_another_profiles_cards(db_path):
 def test_research_evidence_is_not_delivery_eligible_by_default(db_path):
     candidate = _candidate()
     assert candidate.evidence == StrategyEvidence.RESEARCH_ONLY
+
+
+async def _acknowledged_idea(db_path):
+    import aiosqlite
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
+    await save_partner_profile(db_path, profile, now=NOW)
+    stored = await persist_candidate(db_path, _candidate(), profile, now=NOW)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("UPDATE partner_advisory_ideas SET status='DELIVERED_ACKNOWLEDGED' WHERE advisory_id=?",
+                         (stored["advisory_id"],))
+        await db.commit()
+    return stored["advisory_id"]
+
+
+@pytest.mark.asyncio
+async def test_closed_bar_target_update_50s_old_is_sent_and_a_failed_send_retries(db_path, monkeypatch):
+    # Oct 6: the SENSEX TARGET_ZONE from the 12:40 bar was dispatched 50 s
+    # later, refused by the 30 s option-quote bound, and stayed QUEUED.
+    import aiosqlite
+    import hedge_advisory
+    from partner_manual_advisory import pending_management_updates
+    await _acknowledged_idea(db_path)
+    observed = NOW + timedelta(seconds=10)
+    first = await queue_management_updates(db_path, underlying="NIFTY", observed_underlying=25105.0,
+                                           observed_at=observed)
+    attempts = []
+
+    async def transport(db, kind, key, text, **kwargs):
+        attempts.append(key)
+        return len(attempts) > 1                 # first send refused, second acknowledged
+
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", True)
+    monkeypatch.setattr(hedge_advisory, "_send_claimed_review", transport)
+    at_50s = observed + timedelta(seconds=50)
+    assert not await dispatch_queued_management_update(db_path, first[0], now=at_50s, clock=lambda: at_50s)
+    # The next scan sees no new update (same milestone) but retries the queued one.
+    assert not await queue_management_updates(db_path, underlying="NIFTY", observed_underlying=25110.0,
+                                              observed_at=observed + timedelta(minutes=5))
+    retry = await pending_management_updates(db_path, now=at_50s + timedelta(minutes=2), underlying="NIFTY")
+    assert [u["update_id"] for u in retry] == [first[0]["update_id"]]
+    later = at_50s + timedelta(minutes=2)
+    assert await dispatch_queued_management_update(db_path, retry[0], now=later, clock=lambda: later)
+    assert attempts == [first[0]["update_id"]] * 2
+    async with aiosqlite.connect(db_path) as db:
+        status = await (await db.execute("SELECT status FROM partner_advisory_updates")).fetchone()
+    assert status == ("DELIVERED_ACKNOWLEDGED",)
+
+
+@pytest.mark.asyncio
+async def test_unsent_update_past_the_management_bound_closes_with_a_reason(db_path):
+    import aiosqlite
+    from partner_manual_advisory import pending_management_updates
+    await _acknowledged_idea(db_path)
+    observed = NOW + timedelta(seconds=10)
+    await queue_management_updates(db_path, underlying="NIFTY", observed_underlying=25105.0, observed_at=observed)
+    stale = observed + timedelta(seconds=settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_MAX_OBSERVATION_AGE_SEC + 1)
+    assert await pending_management_updates(db_path, now=stale) == []
+    async with aiosqlite.connect(db_path) as db:
+        row = await (await db.execute("SELECT status,status_reason FROM partner_advisory_updates")).fetchone()
+    assert row == ("EXPIRED_UNSENT", "observation_older_than_management_bound")
+
+
+@pytest.mark.asyncio
+async def test_acknowledged_claim_reconciles_a_row_left_queued(db_path):
+    import aiosqlite
+    from partner_manual_advisory import pending_management_updates
+    await _acknowledged_idea(db_path)
+    observed = NOW + timedelta(seconds=10)
+    update = (await queue_management_updates(db_path, underlying="NIFTY", observed_underlying=25105.0,
+                                             observed_at=observed))[0]
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("CREATE TABLE IF NOT EXISTS partner_hedge_messages (kind TEXT, dedup_key TEXT, delivered INTEGER)")
+        await db.execute("INSERT INTO partner_hedge_messages (kind, dedup_key, delivered) VALUES (?,?,1)",
+                         ("manual_advisory_update", update["update_id"]))
+        await db.commit()
+    assert await pending_management_updates(db_path, now=observed + timedelta(seconds=20)) == []
+    async with aiosqlite.connect(db_path) as db:
+        row = await (await db.execute("SELECT status,status_reason FROM partner_advisory_updates")).fetchone()
+    assert row == ("DELIVERED_ACKNOWLEDGED", "acknowledged_claim_reconciled")

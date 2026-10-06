@@ -14,6 +14,15 @@ from partner_manual_advisory import PartnerAdvisoryProfile, persist_candidate, s
 from tests.test_partner_manual_advisory import NOW, _candidate
 
 
+@pytest.fixture(autouse=True)
+def _qualified_only_delivery(monkeypatch):
+    # These fixtures describe the qualified-only contract: an unqualified
+    # valid card stays VALIDATED_SHADOW. Production sends unqualified cards
+    # labelled NOT CHECKED (PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED).
+    from config import settings
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED", False)
+
+
 def _digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 

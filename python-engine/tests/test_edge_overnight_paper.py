@@ -150,6 +150,23 @@ async def test_notice_outbox_retries_until_a_send_succeeds(tmp_path, entry_quote
 
 
 @pytest.mark.asyncio
+async def test_overlapping_flushes_send_a_notice_once(tmp_path, entry_quotes):
+    """[EXPIRY-AUDIT 2026-10-06] Two flushers that read the same unsent row duplicated it."""
+    import asyncio
+
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    sent = []
+
+    async def slow(message):
+        await asyncio.sleep(0.01)
+        sent.append(message)
+
+    counts = await asyncio.gather(eop.flush_notices(slow, cache), eop.flush_notices(slow, cache))
+    assert sorted(counts) == [0, 1] and len(sent) == 1
+
+
+@pytest.mark.asyncio
 async def test_catch_up_late_exit_sells_at_ltp_not_the_missed_auction(tmp_path, entry_quotes):
     cache = _cache(tmp_path)
     await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
@@ -177,3 +194,75 @@ async def test_catch_up_entry_only_before_the_close(tmp_path, entry_quotes):
     cache = _cache(tmp_path)
     assert await eop.catch_up(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 35)) == []
     assert await eop.catch_up(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 25)) == ["ENTRY"]
+
+
+def test_open_positions_reserve_their_buy_charges_oct6_reproduction(tmp_path, monkeypatch):
+    # Oct 6 audit: equity Rs 24,386.2186 after Oct 6 closes; three new picks
+    # used Rs 24,364.8752 of premium and their buy charges were not reserved.
+    monkeypatch.setattr(settings, "PENNY_BROKERAGE_BYPASS", False)
+    store = eop.overnight_db_path(str(tmp_path / "cache.db"))
+    picks = (("AAKASH", 8.2305, 990), ("PRAENG", 19.4986, 417), ("VIVOBIOT", 14.2355, 568))
+    with eop._store(store) as conn:
+        conn.execute("INSERT INTO edge_overnight_paper_trades (trade_date, ticker, kind, strength, entry_ltp, "
+                     "entry_price, shares, entry_ts, status, net_pnl) VALUES ('2026-10-05','OLD','MR',1,1,1,1,'x',"
+                     "'CLOSED',-613.7814)")
+        conn.executemany("INSERT INTO edge_overnight_paper_trades (trade_date, ticker, kind, strength, entry_ltp, "
+                         "entry_price, shares, entry_ts, status) VALUES ('2026-10-06',?,'MR',1,?,?,?,'x','OPEN')",
+                         [(t, p, p, n) for t, p, n in picks])
+        state = eop.book_state(conn, 25000.0)
+    charges = sum(eop.buy_charges(p, n) for _, p, n in picks)
+    assert state["equity"] == pytest.approx(24386.2186)
+    assert charges == pytest.approx(28.931, abs=0.01)
+    assert state["reserved_buy_charges"] == pytest.approx(charges)
+    # Rebuilt after a restart, the over-admission is visible: -Rs 7.59.
+    assert state["cash"] == pytest.approx(24386.2186 - 24364.8752 - charges, abs=1e-3)
+
+
+def test_buy_charges_exclude_the_sell_side_dp_charge():
+    whole = calc_penny_costs(10.0, 0.0, 100, False)
+    assert eop.buy_charges(10.0, 100) == pytest.approx(whole - settings.PENNY_CNC_DP_CHARGE, abs=1e-4)
+    assert eop.buy_charges(10.0, 0) == 0.0
+
+
+@pytest.mark.asyncio
+async def test_cash_bound_admission_fits_premium_plus_buy_charges(tmp_path, entry_quotes, monkeypatch):
+    monkeypatch.setattr(settings, "PENNY_BROKERAGE_BYPASS", False)
+    monkeypatch.setattr(settings, "EDGE_OVERNIGHT_PAPER_BANKROLL", 1000.0)
+    cache = _cache(tmp_path)
+    summary = await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    opened = summary["opened"][0]
+    price, shares = opened["entry_price"], opened["shares"]
+    assert opened["buy_charges"] == pytest.approx(eop.buy_charges(price, shares))
+    assert price * shares + opened["buy_charges"] <= 1000.0
+    assert summary["cash_after"] >= 0
+    with eop._store(eop.overnight_db_path(cache)) as conn:
+        assert eop.book_state(conn, 1000.0)["cash"] == pytest.approx(summary["cash_after"], abs=1e-3)
+
+
+@pytest.mark.asyncio
+async def test_exit_splits_the_result_into_entry_and_overnight_parts(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    entry = await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    shares, entry_price = entry["opened"][0]["shares"], entry["opened"][0]["entry_price"]
+    exit_quote = _quote(20.6, 20.8, 20.1, 20.3, 50000.0, NEXT)
+    exit_quote["ohlc"]["close"] = 20.2                         # Oct 6 official close
+    summary = await eop.run_overnight_exit(_Kite({"AAA": exit_quote}), cache, now=_at(NEXT, 9, 17))
+    trade = summary["closed"][0]
+    assert trade["entry_day_close"] == 20.2
+    assert trade["entry_vs_close_rs"] == pytest.approx((20.2 - entry_price) * shares, abs=1e-3)
+    assert trade["overnight_rs"] == pytest.approx((20.6 - 20.2) * shares, abs=1e-3)
+    assert "overnight close->open" in eop.format_exit_telegram(summary)
+    with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
+        assert conn.execute("SELECT entry_day_close FROM edge_overnight_paper_trades").fetchone() == (20.2,)
+
+
+@pytest.mark.asyncio
+async def test_delayed_exit_does_not_claim_the_entry_day_close(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    await eop.run_overnight_exit(_Kite({}), cache, now=_at(NEXT, 9, 17))          # no trade: waits
+    later = date(2026, 10, 8)
+    summary = await eop.run_overnight_exit(_Kite({"AAA": _quote(20.6, 20.8, 20.1, 20.3, 50000.0, later)}),
+                                           cache, now=_at(later, 9, 17))
+    assert summary["closed"][0]["reason"] == "OPEN_DELAYED"
+    assert "overnight_rs" not in summary["closed"][0]

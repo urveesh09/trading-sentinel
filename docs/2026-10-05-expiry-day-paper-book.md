@@ -27,6 +27,81 @@ A second review of `4673105` found that sliced exits could exceed the reserve
 sell-order fee per lot is reserved. No expiry had been traded, so the rules are
 still `expiry-v1`.
 
+**After the first expiry (October 6, NIFTY):** modeled loss ₹3,224.47 = filled
++₹25.53 and assumed −₹3,250.00 (B's put and C expired worthless by our sample).
+The [first-day audit](../../Production_Trading-sentinel/docs/2026-10-06-expiry-system-deep-audit.md)
+found execution and data defects, not rule defects. The strategy thresholds stay
+frozen as `expiry-v1`; the corrected data/clock/fill contract is
+`expiry-exec-v2`, recorded on every tick, day and position so later days are not
+mixed with October 6:
+
+- **Decision clock.** v1 judged freshness, windows and fill times at the
+  request start, so a slow quote call refused new packets and accepted old
+  ones. v2 reads the decision time after the quotes arrive. The tick row keeps
+  the start and decision times and the client's limiter/transport timing.
+- **Replayable evidence.** Each tick stores every leg's full five-level depth
+  with its provider time, and the index/future packets with a status (`FRESH`,
+  `STALE`, `AHEAD`, `NO_TIMESTAMP`, `NO_PRICE`, `MISSING`). The day state counts
+  refusals by reason, entry refusals by play (spread, depth or budget, stale
+  quote, max trades, and so on), the largest gap between ticks, gaps longer
+  than 25 s, and the slowest decision.
+- **Partial banks.** Reaching the bank level sets `bank_pending` to half the
+  lots. Lots the bid depth could not take stay pending, survive a restart, and
+  are sold while the bid holds the bank level. v1 forgot them.
+- **No lost expiries.** An expiry whose index never answers still writes its
+  day and ticks, so it stays in the 20-expiry denominator.
+- **Exchange-bound charges.** SENSEX (BFO) uses BSE's 0.0325% transaction
+  charge, against NSE's 0.03553%, from Zerodha's published list read on
+  October 6. The schedule is frozen on the position at entry, and exits and
+  settlement use it.
+- **Outbox.** Flushes of one store are serialised. `sent_at` is the time of
+  the acknowledgement. Delivery is at-least-once: a crash between Telegram
+  accepting a notice and the mark sends it again. The flush runs in its own job,
+  5 s after each tick, so a slow gateway no longer holds the tick. On October 6,
+  90 of 966 slots were skipped while a tick was still running.
+- **Messages.** A sell shows its gross, its sell fees, and the trade's net after
+  all fees, including the buy. The summary shows fees, filled net, assumed and
+  whole modeled per play and for the day, plus a data line.
+
+## Shadow plays `expiry-shadow-v1` (frozen October 6, before October 8)
+
+The owner approved these on October 6, after the first expiry. They test
+lessons that come from market structure, not from fitting October 6. A, B and C
+stay unchanged as `expiry-v1`. Each shadow play runs on the same quotes in the
+same tick, keeps its own ₹2,500 ceiling (C500: ₹500), sends no per-trade
+Telegram lines, and appears in a separate summary section. They are scored
+beside `expiry-v1` after the same 20 expiries, by the same measures. October 6
+is not part of their record.
+
+| Play | Lesson tested | Rule |
+|---|---|---|
+| **BH** | After 15:15 the auction sets the price and option quotes are thin; a trailing stop may sell on noise. | B's strangle (same strikes, same entry), with no bank and no trail. Sold at 15:38, or settled if no bid. |
+| **C500** | Lottery options are overpriced (lottery-preference research), so C deserves a small stake. | C's strike and timing, inside ₹500. |
+| **D** | Expiry decay pays sellers. The owner asked for small but consistent profit. | Short iron condor, entered 14:30–14:45. Sell the strikes 2 steps either side of the money, and buy one step further out as protection. If that doesn't fit ₹2,500, try 1 step, then at the money (an iron butterfly). Held to cash settlement. |
+
+D details:
+- **Ceiling.** Held to cash settlement, only one side can finish in the money,
+  and that side loses at most its strike gap. So the maximum loss is (gap −
+  credit) × quantity, plus entry charges, plus exercise STT on a protective leg
+  up to 5% of spot in the money. That sum must fit ₹2,500.
+- **Credit rule.** The credit must cover at least twice the entry charges.
+- **Settlement.** The result is our sampled settlement, labelled assumed like
+  B's and C's leftovers. No closing orders or closing fees are modelled at
+  settlement.
+- **If quotes are lost** (an outage), each sold leg is valued at half the gap,
+  so the whole condor books its maximum settlement loss.
+- **Fit by index.** A condor 50 points wide on NIFTY risks ₹3,250 a lot before
+  the credit, so on NIFTY D usually needs the nearer strikes or the butterfly.
+  On SENSEX (20 units, 100-point steps) the 2-step condor fits.
+- **Margin.** Selling an option blocks margin from the owner's own cash. There
+  is no borrowing, but it is margin. That is why D stays paper only, with no
+  live switch, until the owner decides on margin separately.
+
+**Dropped before freezing:** "A only when fees are under 2% of premium". A round
+trip costs about ₹47 flat plus 0.24% of premium, so getting under 2% needs
+about ₹2,700 of premium, more than A's ₹2,500 ceiling allows. The variant could
+never trade. A's fee drag is a fixed property of its size.
+
 ## Why
 
 The owner's goal is to profit on the expiry afternoon without big losses and
@@ -160,19 +235,26 @@ At least 30 samples are required; otherwise A and C stand down for the day.
 
 ## Reading the results
 
-- **Telegram:** each buy and sell, showing its max loss and any auction-window
-  label, and one summary per expiry day. The summary shows:
-  - box status, signals, and ticks with stale-quote counts;
-  - filled and assumed P&L per play;
-  - per-underlying filled totals to date, with assumed settlements on a
-    separate line.
-- **Outbox:** `expiry_paper_notices`, flushed after each tick and each
-  reconcile.
+- **Telegram:** each buy (with buy fees and max loss) and each sell (with slice
+  gross, sell fees and the trade's net after all fees), and one summary per
+  expiry day. The summary shows:
+  - the rules and execution versions, box status and signals;
+  - a data line: ticks out of 967 slots, the largest gap, gaps over 25 s, the
+    slowest decision, and index/future refusals by reason;
+  - per play: fees, filled net, assumed and whole modeled, or the entry
+    refusals when there was no trade;
+  - the day's filled + assumed = whole modeled;
+  - per-underlying filled totals to date, assumed settlements on a separate
+    line, and the whole modeled total.
+- **Outbox:** `expiry_paper_notices`, flushed by the `expiry_paper_flush` job
+  (5 s after each tick) and after each reconcile.
 - **Store:** `<DB_PATH>.expiry-paper.db`, with tables
-  - `expiry_paper_positions` (`max_loss`, `exit_pending`, `assumed_pnl`, events
-    carrying `fill_model`);
-  - `expiry_paper_days`;
-  - `expiry_paper_ticks`.
+  - `expiry_paper_positions` (`max_loss`, `exit_pending`, `bank_pending`,
+    `assumed_pnl`, `fee_snapshot`, `execution`, events carrying `fill_model`,
+    and, on sells, `gross` and `charges`);
+  - `expiry_paper_days` (state with counters and refusals);
+  - `expiry_paper_ticks` (start and decision times, timing, full depth, and
+    index/future status).
 - **Quote archive:** the research quote archive now records until 15:40.
 
 ## Evaluation (pre-registered)
@@ -202,8 +284,16 @@ At least 30 samples are required; otherwise A and C stand down for the day.
 
 ## Not done
 
-- BFO live exits remain unsupported (SENSEX is paper anyway). BSE charges use
-  the NSE schedule as an approximation.
+- BFO live exits remain unsupported (SENSEX is paper anyway). BSE's
+  transaction charge is bound. Its effective date is not published, and IPFT
+  (₹0.01 per crore) is applied on both exchanges.
+- **Settlement:** the official exchange settlement price is not fetched. The
+  value is still our post-auction sample.
+- **Queue position:** no queue position or order-book depletion is modelled.
+- **Exactly-once delivery:** not guaranteed.
+- **Shared limiter:** the expiry tick shares the Kite quote limiter with
+  research collection. v2 measures the limiter wait per tick, but does not
+  reserve capacity.
 - No replay of past expiries yet. The tick log builds that history from now on.
 - No live switch exists for this book.
 

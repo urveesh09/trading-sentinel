@@ -466,6 +466,9 @@ async def test_chain_failure_still_processes_active_public_invalidation(wired, m
     advisory = __import__("partner_manual_advisory")
     monkeypatch.setattr(advisory, "queue_management_updates", manage)
     monkeypatch.setattr(advisory, "dispatch_queued_management_update", dispatch)
+    async def pending(_db, *, now, underlying=None):
+        return [{"update_id": "invalidation-fixture"}] if queued else []
+    monkeypatch.setattr(advisory, "pending_management_updates", pending)
     await po.partner_manual_advisory_tick(NOW)
     assert queued and queued[0][0] == "NIFTY"
     assert dispatched == [({"update_id": "invalidation-fixture"}, NOW)]

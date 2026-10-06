@@ -7,6 +7,110 @@
 
 
 
+
+
+
+
+## October 6 (night) — overnight entry/overnight attribution
+
+- [x] `test_edge_overnight_paper.py`: 15 pass, including the split and the
+  delayed exit (which records no split).
+- [ ] After rebuild: the first 09:17 message shows the two parts for each
+  trade.
+- [ ] After 10+ sessions: sum `entry_vs_close_rs` and `overnight_rs`
+  separately. Only then consider an entry-clock study, frozen first.
+
+## October 6 (night) — Penny durable brake (C3) and allocation freeze
+
+- [x] `tests/test_penny_daily_brake.py` (3 tests):
+  - today's paper partial and close legs trip the brake, and other days,
+    books and deposits are excluded;
+  - a restart rebuilds the same value;
+  - an unreadable ledger blocks live and keeps paper.
+- [x] Penny integration and scanner tests: 34 pass. Main-surface and add_job
+  goldens: 4 pass.
+- [x] Allocation manifest frozen (experiment
+  `momentum-allocation-holdout-from-2026-10-07`).
+- [ ] After about 10 sessions with capital skips, run `evaluate` on a
+  read-only Production DB copy and record holdout per policy, net and
+  drawdown, without changing the runtime.
+
+## October 6 (night) — research writer bounded wait (R1)
+
+- [x] `test_research_archive.py`: 19 pass. A 0.3 s holder delays an append
+  instead of dropping it, and a holder past the bound is named in the
+  refusal. Research, partner and scheduler isolation tests: 211 pass.
+- [ ] After rebuild: count `research_storage_stop` and
+  `partner_research_input_capture_failed` (Oct 6: 7 and 4). If any remain,
+  the `holder=` field names the culprit.
+
+## October 6 (night) — overnight buy charges and partner management retry
+
+- [x] O1: `test_edge_overnight_paper.py`, 13 pass. Includes the Oct 6
+  reproduction (reserved Rs 28.93, cash −Rs 7.59 rebuilt), the buy-side and DP
+  split, and a cash-bound admission that fits premium plus charges.
+- [x] A1: `test_partner_manual_advisory.py` covers a 50 s old target update
+  sent after one refused send, an EXPIRED_UNSENT reason past 360 s, and
+  acknowledged-claim reconciliation.
+- [x] Partner, hedge and overnight suites: 427 pass. Repaired existing tests:
+  - the qualification fixture clock expired on Oct 6 (29-day validity from
+    Sept 7);
+  - the delivery-blocker tests now pin the qualified-only contract
+    (`SEND_UNQUALIFIED=False`).
+- [ ] After rebuild: the old Oct 6 TARGET_ZONE row closes on the first scan
+  as `EXPIRED_UNSENT` (`idea_retired_session_end`). It is not sent.
+- [ ] After rebuild: the overnight entry message's `cash_after` is ≥ 0.
+
+## October 6 (evening) — expiry shadow plays (`expiry-shadow-v1`)
+
+Commit `6c2a82f` on `codex/production-correction-hedge-p0`: pushed, not deployed.
+
+- [x] BH (B held, no bank or trail), C500 (C inside ₹500) and D (short iron
+  condor, 2 → 1 → 0 steps out, held to settlement) run beside A, B and C. They
+  send no Telegram trade lines and have their own summary section.
+- [x] D's maximum loss is (gap − credit) × qty + entry charges + STT reserve,
+  and must fit ₹2,500. If quotes are lost, D is valued at that maximum.
+- [x] Dropped the A fee-filter variant: it could never trade inside ₹2,500.
+- [x] `test_expiry_paper.py`: 32 pass (4 new shadow tests).
+- [x] Full suite: 4,983 pass, 4 skip, 11 fail (the same 11 that fail without
+  these changes; see the section below).
+- [ ] Owner rebuilds the engine before October 8; the shadow plays are scored
+  after 20 expiries.
+- [ ] D stays paper only; selling options needs margin, the owner's decision.
+
+## October 6 — expiry first-day audit remediation (`expiry-exec-v2`)
+
+Commit `db5153d` on `codex/production-correction-hedge-p0`: pushed, not deployed. Production runs `70a2256`.
+
+- [x] Decision clock after quote receipt; start and decision times and limiter
+  timing on each tick.
+- [x] Full five-level depth and index/future status logged; refusal counters.
+- [x] `bank_pending` keeps a partial bank's remainder (survives restart).
+- [x] Serialised outbox flush (expiry and EDGE overnight); `sent_at` is the
+  acknowledgement time; separate `expiry_paper_flush` job.
+- [x] A dark-index expiry is recorded (day, ticks, summary).
+- [x] BSE options charge (`FNO_BSE_EXCHANGE_TXN_PCT=0.000325`); schedule
+  frozen per position.
+- [x] Sell and summary messages show fees, filled net, assumed and whole
+  modeled.
+- [x] Unchanged: strategy thresholds, ceilings, freshness limits, paper-only.
+- [x] Tests (`.\winvenv\Scripts\python.exe -m pytest`):
+  - `test_expiry_paper.py`: 28 pass (corrected on October 6 evening; an
+    earlier note said 29). Eight are new: the clock probe, window crossing,
+    partial bank across a restart, concurrent flush, dark-index day, BFO fee
+    freeze, v1 store migration, and the mixed-contract label.
+  - Focused expiry, EDGE overnight, cost, golden, scheduler and cron-gating
+    tests pass.
+  - Full suite: 4,978 pass, 4 skip, 12 fail.
+    - 11 of the failures are in the dev-acceptance, integrated-demo,
+      mark-to-market DR, partner delivery/advisory, proactive and
+      qualification tests. They fail identically with these changes stashed.
+    - The 12th, `test_penny_cron_gating`, was this change: the new flush job
+      had no `is_trading_day` gate. The gate was added and the test passes.
+- [x] Environment limit: on this host, pytest sometimes hangs at interpreter
+  exit after all tests report, with and without these changes (3 of 4
+  baseline runs). Run with `timeout` and read the summary line.
+
 ## October 5 (late night) — expiry book second review
 
 Commit `263dd48` on `codex/production-correction-hedge-p0`: pushed to Dev, not deployed.

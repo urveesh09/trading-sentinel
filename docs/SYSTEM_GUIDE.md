@@ -9,6 +9,182 @@
 
 
 
+
+
+
+
+## October 6 (night) — EDGE overnight result split into entry and overnight parts (actual behavior, Dev)
+
+- `edge_overnight_paper.run_overnight_exit` reads `ohlc.close` from the
+  09:17 quote. On the first exit session that is the entry day's official
+  close. It records three values:
+  - `entry_day_close` (a new column, added at open);
+  - `entry_vs_close_rs`: close minus the paper entry price, times shares. This
+    is the cost of buying at 15:20 LTP + 25 bps instead of at the close.
+  - `overnight_rs`: open minus close, times shares. This is the move the
+    study measured.
+- The exit message shows both parts per trade.
+- A delayed exit (`OPEN_DELAYED`, or a catch-up on a later session) does not
+  record them, because that quote's close belongs to a different day.
+- Why: the study's edge is close → next open. The Oct 6 audit noted that IWP
+  opened above its reference and still lost, to slippage and costs. After
+  10+ sessions these fields show whether losses come from the overnight
+  thesis or from the 15:20 entry, before anyone changes the entry clock. This
+  is measurement only; no rule changed.
+
+## October 6 (night) — classic Penny durable daily brake; Momentum allocation holdout frozen (actual behavior, Dev)
+
+- **Classic Penny kill switch is now settlement-fed (`main.sync_penny_daily_brake`, audit C3).**
+  - Before: the runtime never called `PennyRiskEngine.record_close`, so
+    `daily_pnl` stayed 0 and `kill_switch_active` could never trip. A restart
+    or the 00:05 reset also cleared it.
+  - Now, before each 30 s scan, the engine sums the IST day's `TRADE_CLOSED`
+    and `TRADE_PARTIAL` ledger rows for the scanner's own source and sets
+    `daily_pnl` from that sum. The source is `PENNY_PAPER` or `PENNY`; other
+    books are excluded.
+  - The trip threshold is unchanged: `PENNY_DAILY_KILL_SWITCH_PCT` (20%) of
+    the configured bankroll, so ₹20,000 on the ₹1L paper book and ₹400 on a
+    ₹2,000 live book.
+  - If the ledger cannot be read, a live scanner is blocked (fail closed) and
+    a paper scanner keeps its last value.
+  - No frozen study source was edited: `penny_risk.py` and
+    `penny_scanner.py` are unchanged.
+- **Momentum allocation holdout (S7a).**
+  - `docs/research/momentum-allocation/2026-10-06-allocation-freeze.json`
+    freezes the comparison of first-arrival, equal-split and risk-proportional
+    allocation on identical candidates (`momentum_allocation_research.py`).
+    It also covers the capital-skipped NUVOCO and SUNTV kind.
+  - Frozen at 2026-10-06 15:33 UTC; every batch after that is holdout.
+  - Evaluate later, in Dev, against a read-only copy of the Production
+    engine DB:
+    `python momentum_allocation_research.py evaluate --db <copy> --manifest <freeze> --output <report>`.
+  - The source fingerprint covers `cost_schedules.py` and `engine.py`, so
+    evaluate on a checkout whose fingerprint matches.
+  - Nothing in runtime changes until a reviewed holdout and a versioned
+    paper pilot.
+
+## October 6 (night) — research archive writers wait briefly instead of dropping (actual behavior, Dev)
+
+- **`research_archive.guarded_write` (audit R1).**
+  - Before: admission refused immediately when another archive write held
+    the process lock or the cross-process `writer-lease.sqlite3`. On Oct 6
+    this dropped seven quote collections and four partner input captures.
+  - Now: the writer waits up to `WRITER_ADMISSION_WAIT_SEC` (5 s) for the
+    lock and lease together. All callers run in worker threads, so the event
+    loop is not blocked.
+  - A wait of 0.5 s or more logs `research_writer_waited`.
+  - A refusal reads `research writer busy holder=<operation|other_process>
+    held_ms=… waited_ms=…`. `finalize_prior_days` registers itself as the
+    holder for its whole loop.
+  - The collector's failure handling is unchanged. A refused observation is
+    still a recorded gap; it is never re-fetched later and passed off as the
+    missed one.
+- **Telemetry scope.** The 10 s expiry tick gets no scheduler-telemetry
+  wrapper on purpose. Its ticks already store start and decision times, and
+  two telemetry writes every 10 s would add load to the database that hit a
+  lock on Oct 6.
+
+## October 6 (night) — overnight buy charges reserved; partner management updates retried (actual behavior, Dev)
+
+- **EDGE overnight admission (`edge_overnight_paper.py`, audit O1).**
+  - `buy_charges(price, shares)` gives the delivery buy-side charges:
+    `calc_penny_costs` with a zero sell leg, minus the DP charge (DP belongs to
+    the sell).
+  - `book_state` cash now subtracts each open position's premium and its buy
+    charges (`reserved_buy_charges`). After a restart the reservation is
+    rebuilt the same way.
+  - At 15:20, each pick's shares are cut until premium plus its own buy
+    charges fit the cash left after earlier picks. The entry summary records
+    `buy_charges` per pick and `cash_after`.
+  - The full round trip is still booked once, at exit. Equity and realized
+    P&L are unchanged.
+  - Oct 6 reproduction: the three picks would have reserved Rs 28.93 against
+    Rs 21.34 of cash (−Rs 7.59).
+- **Partner management updates (`partner_manual_advisory.py`, audit A1).**
+  - A TARGET_ZONE, INVALIDATION or SESSION_EXIT_REMINDER update reports a
+    completed public bar, not an executable quote.
+  - Dispatch and authorization now use
+    `PARTNER_MANUAL_ADVISORY_MANAGEMENT_MAX_OBSERVATION_AGE_SEC` (360 s) through
+    `management_observation_fresh`. Before, they used the 30 s option-quote
+    bound, which refused the Oct 6 12:40 SENSEX TARGET_ZONE 50 s later and
+    left it QUEUED.
+  - `pending_management_updates` runs on each scan and lifecycle tick. Every
+    QUEUED row is either dispatched again or closed with a recorded reason:
+    - `DELIVERED_ACKNOWLEDGED` (`acknowledged_claim_reconciled`) when its
+      claim was already acknowledged;
+    - `EXPIRED_UNSENT` (`observation_older_than_management_bound`,
+      `idea_<status>`, or `idea_payload_unusable`).
+  - A stale observation is never resent as current.
+  - `partner_advisory_updates` gains a `status_reason` column, added at init.
+
+## October 6 (evening) — expiry shadow plays `expiry-shadow-v1` (actual behavior, Dev, paper only)
+
+The owner approved them. See the
+[design doc](2026-10-05-expiry-day-paper-book.md) section "Shadow plays".
+
+- **Plays:**
+  - `BH`: B's strangle with no bank or trail, sold at 15:38.
+  - `C500`: C inside ₹500.
+  - `D`: short iron condor, 14:30–14:45. Sold strikes are tried at 2, then 1,
+    then 0 steps from the money; the protective legs sit one step further out.
+    Sized by `condor_fill`. Held to cash settlement, so `reconcile` values it.
+- **Isolation:** shadow plays share the tick's quotes. Each has its own trade
+  counter in `state["trades"]` and sends no Telegram trade lines (`notify`
+  filters to `MAIN_PLAYS`). The summary has a separate section and a shadow
+  to-date line.
+- **Schema:** `expiry_paper_positions` gains `side` (SHORT only for D's sold
+  legs) and `width`, added in place. `reconcile` values a sold leg at
+  (entry − intrinsic) × qty. If there is no settlement sample, it uses
+  (entry − width/2) × qty.
+- **Unchanged:** A, B and C (`expiry-v1`), the ceilings, the freshness limits,
+  and paper-only authority. D has no live path. Selling options needs margin,
+  and that is the owner's decision.
+
+## October 6 — expiry book execution contract `expiry-exec-v2` after the first-day audit (actual behavior, Dev, paper only)
+
+Source: the [first-day expiry audit](../../Production_Trading-sentinel/docs/2026-10-06-expiry-system-deep-audit.md)
+(Production, read-only). On October 6 the NIFTY book lost ₹3,224.47 modeled:
+filled +₹25.53, assumed −₹3,250.00. The strategy thresholds stay `expiry-v1`.
+Only the data, clock and fill contract changed. Ticks, day state and positions
+record `expiry-exec-v2`; a day begun under v1 reads
+`expiry-exec-v1+expiry-exec-v2`.
+
+- **Decision clock:** `run_expiry_tick(..., clock=)`. The start time only
+  decides whether to run. Freshness (`Quote.age_status`), entry windows, fill
+  labels and event times use `clock()` read after the quotes arrive.
+- **Tick evidence:** each tick stores
+  - the start and decision times;
+  - `get_quote_by_instruments_with_timing` limiter and transport seconds;
+  - every leg's full depth with its provider time;
+  - index and future status: `FRESH`, `STALE`, `AHEAD`, `NO_TIMESTAMP`,
+    `NO_PRICE` or `MISSING`.
+- **Day-state counters:** refusals by reason, entry refusals by play, maximum
+  gap, gaps over 25 s, and the slowest decision.
+- **Partial bank:** the `bank_pending` column keeps the unfilled lots of a
+  half-bank. They are retried while the bid holds the bank level and survive
+  a restart.
+- **No-quote expiry:** the expiry still writes its day and ticks. The box goes
+  to `UNUSABLE_0_SAMPLES`, and a summary is queued.
+- **Charges:** `options_cost_snapshot(exchange)`. BFO uses
+  `FNO_BSE_EXCHANGE_TXN_PCT=0.000325` (BSE 0.0325%, Zerodha's list read on
+  October 6). The schedule is frozen in `fee_snapshot` at entry; rows without
+  a snapshot use the exchange's current schedule.
+- **Outbox:**
+  - per-store `asyncio.Lock` in the expiry and EDGE overnight `flush_notices`;
+  - `sent_at` is the acknowledgement time;
+  - delivery is at-least-once;
+  - new job `expiry_paper_flush` (Mon–Fri, 12–15 h, second `5-55/10`); the
+    tick callback no longer flushes.
+- **Messages:**
+  - buys show buy fees;
+  - sells show slice gross, sell fees and the trade's net after all fees;
+  - the summary has a data line;
+  - per play: fees, filled net, assumed and whole modeled;
+  - day and to-date whole modeled totals.
+- **Schema:** `expiry_paper_positions` gains `bank_pending`, `fee_snapshot`
+  and `execution` through `ALTER TABLE` when a store is first opened. Existing
+  rows are kept.
+
 ## October 5 (late night) — expiry book: exit-fee reserve and acknowledged Telegram (actual behavior, Dev, paper only)
 
 A second review of `4673105` found two gaps; both are closed.

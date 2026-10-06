@@ -1075,7 +1075,8 @@ async def _authorize_dispatch(
         observed_at = _parse_ist(detail.get("observed_at"))
         if not all(isinstance(value, str) for value in (update_id, advisory_id, profile_id)) or observed_at is None:
             return False
-        if (now - observed_at).total_seconds() > settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC or observed_at > now + timedelta(seconds=5):
+        from partner_manual_advisory import management_observation_fresh
+        if not management_observation_fresh(observed_at, now):
             return False
         try:
             async with aiosqlite.connect(db_path, timeout=30) as db:
