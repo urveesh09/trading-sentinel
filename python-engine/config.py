@@ -321,6 +321,11 @@ class Settings(BaseSettings):
     # frames already fetched by the live scanner and never reaches sizing or
     # order execution, so evidence collection is safe to enable by default.
     MOMENTUM_SHADOW_ENABLED:  bool  = True
+    # [MOM-SELECTIVE-ENTRY 2026-10-07] Owner decision (round-3 scoring
+    # skipped): Momentum entries also need NIFTY up on the day, the stock
+    # >= 0.3% ahead of NIFTY and above yesterday's high (momentum_selective).
+    # Oct 7's IRCON (-Rs 507) is the kind it refuses. Off = shipped entries.
+    MOMENTUM_SELECTIVE_ENTRY_ENABLED: bool = True
     MOMENTUM_ATR_FUEL_BUFFER:          float = 0.85   # [MC5] ATR exhaustion gate: target must fit within remaining_fuel * buffer
     MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30-13:15 IST)
     MOMENTUM_LUNCHTIME_START_HOUR:     int   = 11     # [MC3-T] Lunchtime start hour (IST)
@@ -1117,6 +1122,28 @@ class Settings(BaseSettings):
     # AND not in profit on premium. See fno_orchestrator for the record: 8
     # time-stop exits, -Rs 7,010, two of them profitable when cut.
     FNO_TIME_STOP_RESPECTS_PREMIUM: bool = True
+    # [FNO-PROFIT-LOCK 2026-10-07] Keep a small profit instead of giving it
+    # back. Units are premium-R (entry premium x FNO_STOP_PREMIUM_PCT): once
+    # the best bid has been ARM_R above entry, exit if it falls to entry +
+    # FLOOR_R (fees are about 0.02 R on one lot). KEEP_FRACTION > 0 also
+    # ratchets the floor to that share of the best gain. See fno_exit_rules.
+    # Replay of all 18 archived sessions (Sep 10-Oct 7, development data):
+    # arming at 0.2-0.25 R cut winners and its exits landed below the floor
+    # between 90 s samples (net Rs 546-3,674 vs baseline 5,323); arming at
+    # 0.4 R and keeping half the best gain was the only setting that never
+    # did worse (Rs 6,041). docs/research/fno/2026-10-07-exit-and-reentry/.
+    FNO_PROFIT_LOCK_ENABLED:   bool  = True
+    FNO_PROFIT_LOCK_ARM_R:     float = 0.40
+    FNO_PROFIT_LOCK_FLOOR_R:   float = 0.10
+    FNO_PROFIT_LOCK_KEEP_FRACTION: float = 0.5
+    # [FNO-REENTRY 2026-10-07] After a same-day stop in one direction, a new
+    # entry in that direction must be beyond the stopped trade's entry level
+    # (fno_entry_plan.reentry_confirmed). Never blocks the other direction.
+    # Same replay: Rs 5,323 -> 7,693 and max drawdown 3,831 -> 1,991 (Oct 7's
+    # 14:00 put after the 13:36 stop is the case it blocks; the Jul 27 and
+    # Sep 30 re-entries that won were beyond the margin and stay allowed).
+    FNO_REENTRY_REQUIRES_CONFIRMATION: bool = True
+    FNO_REENTRY_MARGIN_R:      float = 0.25
     FNO_MIN_RVOL:              float = 1.2
     FNO_EMA_FAST:              int   = 21
     FNO_EMA_SLOW:              int   = 50

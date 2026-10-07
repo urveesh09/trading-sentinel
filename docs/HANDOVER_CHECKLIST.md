@@ -11,6 +11,40 @@
 
 
 
+
+## October 7 (evening) — F&O profit lock + re-entry gate; audit T1–T3
+
+- [x] `tests/test_fno_profit_lock_and_reentry.py` (9 tests):
+  - lock arming, the half-gain floor, no arm-and-fire on one sample,
+    precedence and the no-futures path;
+  - the re-entry level and margin, the Oct 7 case blocked and the other
+    direction allowed;
+  - plan refusal, the levels SQL and `best_premium` persistence.
+- [x] `test_edge_overnight_paper.py`: 19 pass, adding:
+  - the PRAENG-like same-session retry;
+  - LTP retry after the grace and the stop at 15:20;
+  - a missed whole session gets no split;
+  - `prior_session` skips holidays.
+- [x] `test_expiry_paper.py`: 38 pass, including the ±20% D stress, which
+  records a breach and is not capped.
+- [x] F&O replay grid saved in `docs/research/fno/2026-10-07-exit-and-reentry/`.
+- [x] `test_momentum_shadow_integration.py`: 9 pass. The selective entry
+  keeps a strong stock in a rising market. It refuses on a falling market,
+  low relative strength or a missing index, and the same scan with the gate
+  off accepts.
+- [ ] Oct 8+: the Momentum funnel shows `selective_*` refusals, and paper
+  entries only on up-market days. After 30+ overnight exits, count
+  `open_is_prev_close` and compare net with and without those exits.
+- [ ] After the rebuild:
+  - check the first `profit_lock` or `reentry_not_confirmed` rows in
+    `fno_positions` and `fno_signals`;
+  - check that any overnight `EXIT_RETRY_*` notice arrives with its reason;
+  - on Oct 8 SENSEX, check that the summary has no `RESERVE BREACH` unless
+    the move exceeded 5%.
+- [ ] After 20 forward F&O single-leg trades, compare against the replay
+  baseline. If the lock or the gate costs money forward, set the flags off;
+  no code change is needed.
+
 ## October 7 — expiry chain context (`expiry-context-v1`, record-only)
 
 Commit: see `git log`, on `codex/production-correction-hedge-p0`.

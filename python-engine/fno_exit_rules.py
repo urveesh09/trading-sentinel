@@ -8,9 +8,18 @@ returned facts and performs any exit.  Ladder order (unchanged):
 0. hard flat (caller-supplied flag) -- unconditional;
 with a futures quote:
 1. underlying stop, 2. trailing stop after the target armed it,
-3. premium backstop on the exit basis, 4. time stop (only before the trail is
-   armed; optionally deferred while the premium is in profit);
-without a futures quote: only the premium backstop can fire.
+3. premium backstop on the exit basis, 4. profit lock (when enabled),
+5. time stop (only before the trail is armed; optionally deferred while the
+   premium is in profit);
+without a futures quote: the premium backstop and the profit lock can fire.
+
+Profit lock [FNO-PROFIT-LOCK 2026-10-07]: once the option's best exit basis
+(bid, else LTP) has been ``FNO_PROFIT_LOCK_ARM_R`` premium-R above entry
+(premium-R = entry premium x FNO_STOP_PREMIUM_PCT), the position may not fall
+back below a floor of entry + ``FNO_PROFIT_LOCK_FLOOR_R`` premium-R. With
+``FNO_PROFIT_LOCK_KEEP_FRACTION`` > 0 the floor also ratchets to keep that
+fraction of the best gain. Archived sessions showed 5 of 9 trades that were
++Rs 700-1,560 in profit before giving it all back on the time stop.
 """
 from __future__ import annotations
 
@@ -31,6 +40,8 @@ class SingleLegExitDecision:
     best_underlying: Optional[float]
     persist_trail: bool
     trail_newly_armed: bool = False
+    best_premium: Optional[float] = None
+    profit_lock_floor: Optional[float] = None
     entry_time_unparseable: bool = False
     time_stop_deferred: Optional[dict] = None
 
@@ -42,7 +53,32 @@ def live_single_leg_exit_params(settings: Any) -> dict:
         "FNO_TIME_STOP_MIN": float(settings.FNO_TIME_STOP_MIN),
         "FNO_TIME_STOP_MIN_R": float(settings.FNO_TIME_STOP_MIN_R),
         "FNO_TIME_STOP_RESPECTS_PREMIUM": bool(settings.FNO_TIME_STOP_RESPECTS_PREMIUM),
+        "FNO_STOP_PREMIUM_PCT": float(settings.FNO_STOP_PREMIUM_PCT),
+        "FNO_PROFIT_LOCK_ENABLED": bool(settings.FNO_PROFIT_LOCK_ENABLED),
+        "FNO_PROFIT_LOCK_ARM_R": float(settings.FNO_PROFIT_LOCK_ARM_R),
+        "FNO_PROFIT_LOCK_FLOOR_R": float(settings.FNO_PROFIT_LOCK_FLOOR_R),
+        "FNO_PROFIT_LOCK_KEEP_FRACTION": float(settings.FNO_PROFIT_LOCK_KEEP_FRACTION),
     }
+
+
+def profit_lock_floor(entry_premium: float, best_premium: Optional[float],
+                      params: Mapping[str, Any]) -> Optional[float]:
+    """The premium floor once the lock is armed, else ``None`` (pure)."""
+    if not params.get("FNO_PROFIT_LOCK_ENABLED") or not entry_premium or entry_premium <= 0:
+        return None
+    if best_premium is None:
+        return None
+    risk_unit = entry_premium * float(params.get("FNO_STOP_PREMIUM_PCT", 0.25))
+    if risk_unit <= 0:
+        return None
+    gain = best_premium - entry_premium
+    if gain < float(params.get("FNO_PROFIT_LOCK_ARM_R", 0.25)) * risk_unit:
+        return None
+    floor = entry_premium + float(params.get("FNO_PROFIT_LOCK_FLOOR_R", 0.1)) * risk_unit
+    keep = float(params.get("FNO_PROFIT_LOCK_KEEP_FRACTION", 0.0))
+    if keep > 0:
+        floor = max(floor, entry_premium + keep * gain)
+    return floor
 
 
 def _age_minutes(entry_time: Any, now_ist: datetime) -> tuple[float, bool]:
@@ -67,15 +103,26 @@ def evaluate_single_leg_exit(
     entry_premium, premium_stop, entry_time and trail fields).
     """
     p = position
+    prior_best_premium = getattr(p, "best_premium", None)
+    best_premium = prior_best_premium
+    if exit_px_basis > 0:
+        best_premium = exit_px_basis if best_premium is None else max(best_premium, exit_px_basis)
+    # The floor comes from the best seen BEFORE this sample, so one sample
+    # cannot both arm the lock and fire it.
+    floor = profit_lock_floor(p.entry_premium, prior_best_premium, params)
+    locked = floor is not None and 0 < exit_px_basis <= floor
     if hard_flat:
         return SingleLegExitDecision("hard_flat_1510", bool(p.trail_active),
-                                     p.trail_stop_underlying, p.best_underlying, False)
+                                     p.trail_stop_underlying, p.best_underlying, False,
+                                     best_premium=best_premium, profit_lock_floor=floor)
     if fut_price is None or not fut_price > 0:
-        # No futures quote this tick: only the premium backstop can still
-        # protect the position.
-        reason = "premium_backstop" if exit_px_basis > 0 and exit_px_basis <= p.premium_stop else ""
+        # No futures quote this tick: only the premium backstop and the
+        # premium-based profit lock can still protect the position.
+        reason = ("premium_backstop" if exit_px_basis > 0 and exit_px_basis <= p.premium_stop
+                  else "profit_lock" if locked else "")
         return SingleLegExitDecision(reason, bool(p.trail_active),
-                                     p.trail_stop_underlying, p.best_underlying, False)
+                                     p.trail_stop_underlying, p.best_underlying, False,
+                                     best_premium=best_premium, profit_lock_floor=floor)
 
     long_view = p.direction == "LONG"
     best = p.best_underlying or p.entry_underlying
@@ -126,6 +173,8 @@ def evaluate_single_leg_exit(
         reason = "trail_stop"
     elif premium_stopped:
         reason = "premium_backstop"
+    elif locked:
+        reason = "profit_lock"
     elif timed_out:
         reason = "time_stop"
     else:
@@ -133,8 +182,9 @@ def evaluate_single_leg_exit(
     return SingleLegExitDecision(
         reason, trail_active, trail_stop, best, persist_trail=not reason,
         trail_newly_armed=newly_armed, entry_time_unparseable=unparseable,
-        time_stop_deferred=deferred,
+        time_stop_deferred=deferred, best_premium=best_premium, profit_lock_floor=floor,
     )
 
 
-__all__ = ["SingleLegExitDecision", "evaluate_single_leg_exit", "live_single_leg_exit_params"]
+__all__ = ["SingleLegExitDecision", "evaluate_single_leg_exit", "live_single_leg_exit_params",
+           "profit_lock_floor"]

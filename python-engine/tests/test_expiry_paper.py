@@ -729,3 +729,26 @@ async def test_a_context_failure_never_costs_the_tick(tmp_path, monkeypatch):
     _, _, spot, payload = await _one_tick(tmp_path, _Market(_book(), _breakout_day, oi=True), at, at)
     assert spot is not None and payload["context"] == {"status": "ERROR", "ts": at.isoformat(),
                                                        "error": "ZeroDivisionError"}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("far", [30000.0, 20000.0])                     # +20% / -20% settlement stress
+async def test_a_move_beyond_the_reserve_is_recorded_as_a_breach_not_capped_t2(tmp_path, far):
+    # Oct 7 audit T2: the 5% exercise-STT reserve is a bound only inside its
+    # domain. Past it the loss exceeds max_loss; it is reported, never capped.
+    def stress(now):
+        minutes = now.hour * 60 + now.minute
+        if minutes < 14 * 60 + 31:
+            return 25000.0 + 10.0 * math.sin(minutes)
+        return far
+
+    db = await _run_day(tmp_path, _Market(_book(), stress))
+    d = [r for r in _positions(db) if r["play"] == "D"]
+    assert len(d) == 4
+    ceiling = sum(r["max_loss"] for r in d)
+    breaches = [e["reserve_breach"] for r in d for e in json.loads(r["events"]) if e.get("reserve_breach")]
+    assert len(breaches) == 1                                            # only the ITM wing
+    assert -_whole(d) > ceiling                                          # the bound is conditional
+    assert -_whole(d) <= ceiling + breaches[0]["stt_beyond_reserve"] + 1.0   # and the excess is reported
+    (summary,) = [m for k, m, _ in _notices(db) if k.endswith(":summary")]
+    assert "RESERVE BREACH" in summary

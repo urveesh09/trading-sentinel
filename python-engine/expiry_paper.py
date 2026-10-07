@@ -126,6 +126,12 @@ D_ENTRY_START, D_ENTRY_END = time(14, 30), time(14, 45)
 D_SHORT_STEPS, D_WING_STEPS, D_MAX_LOTS = 2, 1, 4  # widest sold strikes tried first
 D_MIN_CREDIT_X_CHARGES = 2.0        # the credit must cover at least twice the entry charges
 D_STT_RESERVE_MOVE = 0.05           # exercise STT reserved on a long wing up to 5% of spot in the money
+# [EXPIRY-D-RESERVE 2026-10-07, audit T2] D's max_loss is a bound only for a
+# settlement move inside that 5% domain: exercise STT on the long wing grows
+# with its intrinsic, so a larger move (the audit's +20% stress: -Rs 3,000.43
+# against a Rs 2,298.44 bound) costs more. Sizing is frozen (expiry-shadow-v1)
+# and the loss is never capped; settlement records a RESERVE_BREACH event and
+# the day summary prints the STT beyond the reserve.
 
 # Chain context, record-only from 2026-10-07 (no rule reads it). Implied and
 # realized volatility share one clock, the 375-minute NSE session year, so their
@@ -415,6 +421,8 @@ def condor_fill(legs: list[tuple[Quote, str]], lot_size: int, width: float, spot
     gap, so the loss is bounded by (width - credit) x qty plus the entry
     charges and exercise STT on a wing up to ``D_STT_RESERVE_MOVE`` of spot in
     the money. The credit must cover ``D_MIN_CREDIT_X_CHARGES`` x the charges.
+    That bound holds only inside the reserve's move domain; beyond it the
+    wing's exercise STT is uncapped (see ``reconcile``'s RESERVE_BREACH).
     """
     for lots in range(D_MAX_LOTS, 0, -1):
         qty, prices = lots * lot_size, []
@@ -858,9 +866,21 @@ def reconcile(db_path: Optional[str] = None, now: Optional[datetime] = None) -> 
                 value = (pos["entry_price"] - intrinsic) * qty if short \
                     else (intrinsic * (1 - EXERCISE_STT_PCT) - pos["entry_price"]) * qty
             pos["assumed_pnl"] = round(value, 2)
-            pos["_events"].append({"ts": now.isoformat(), "action": pos["status"], "lots": pos["lots_open"],
-                                   "settlement_spot": spot, "settlement_source": "SAMPLED_INDEX_QUOTE",
-                                   "assumed_pnl": pos["assumed_pnl"]})
+            event = {"ts": now.isoformat(), "action": pos["status"], "lots": pos["lots_open"],
+                     "settlement_spot": spot, "settlement_source": "SAMPLED_INDEX_QUOTE",
+                     "assumed_pnl": pos["assumed_pnl"]}
+            if pos["play"] == "D" and not short and spot is not None:
+                # The entry event stores the reserved intrinsic; rows from
+                # before that field fall back to the settlement spot.
+                stored = (json.loads(pos.get("events") or "[]") or [{}])[0]
+                reserved = stored.get("reserve_intrinsic") or D_STT_RESERVE_MOVE * spot
+            if pos["play"] == "D" and not short and spot is not None and intrinsic > reserved:
+                beyond = EXERCISE_STT_PCT * (intrinsic - reserved) * qty
+                event["reserve_breach"] = {"reserved_move": D_STT_RESERVE_MOVE, "intrinsic": round(intrinsic, 2),
+                                           "stt_beyond_reserve": round(beyond, 2)}
+                logger.warning("expiry_d_reserve_breach day=%s symbol=%s intrinsic=%.2f stt_beyond=%.2f",
+                               pos["day"], pos["symbol"], intrinsic, beyond)
+            pos["_events"].append(event)
             _save_position(conn, pos)
             settled += 1
         days = conn.execute("SELECT day, underlying, state FROM expiry_paper_days WHERE day < ? OR (day = ? AND ?)",
@@ -1180,6 +1200,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
                         pos["_events"][0].update(action="SELL", charges=charges)
                     pos["side"], pos["width"] = side, width
                     pos["_events"][0]["short_steps"] = short_steps
+                    pos["_events"][0]["reserve_intrinsic"] = round(D_STT_RESERVE_MOVE * spot, 2)
                     pos["max_loss"] = round(max_loss / len(plan), 2)
                     _save_position(conn, pos)
                 state["trades"]["D"] = 1
@@ -1229,6 +1250,11 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
             if any(r["assumed_pnl"] is not None for r in rows):
                 line += (f", assumed Rs {assumed:+,.2f} [our sampled index, not the official settlement], "
                          f"whole modeled Rs {filled + assumed:+,.2f}")
+            breach = sum(e["reserve_breach"]["stt_beyond_reserve"] for r in rows
+                         for e in json.loads(r["events"]) if e.get("reserve_breach"))
+            if breach:
+                line += (f", RESERVE BREACH: exercise STT Rs {breach:,.2f} beyond the "
+                         f"{D_STT_RESERVE_MOVE:.0%}-move reserve")
             lines.append(line + f" ({detail}{'; auction-window fills unverified' if auction else ''})")
         return total_filled, total_assumed, total_fees
 

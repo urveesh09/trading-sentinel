@@ -47,6 +47,7 @@ from models import PerformanceReport, OpenPosition
 from breadth import BreadthEngine
 from universe import Universe
 from momentum_shadow import (
+    _selective_decision as _momentum_selective_decision,
     VARIANTS as MOMENTUM_SHADOW_VARIANTS,
     evaluate_momentum_shadows,
     momentum_shadow_execution_config,
@@ -3089,10 +3090,11 @@ async def _run_momentum_screener_impl(t0):
         else settings.MOMENTUM_VOL_SURGE_PCT
     )
 
-    # One NIFTY 50 fetch per scan feeds the MOM_SELECTIVE shadow variant only;
-    # a failure leaves it failing closed and never touches the live funnel.
+    # One NIFTY 50 fetch per scan feeds the MOM_SELECTIVE shadow variant and,
+    # since 2026-10-07, the selective entry gate (MOMENTUM_SELECTIVE_ENTRY_ENABLED).
+    # A failure fails closed: with the gate on, no Momentum entry that scan.
     index_today = None
-    if getattr(settings, "MOMENTUM_SHADOW_ENABLED", True):
+    if getattr(settings, "MOMENTUM_SHADOW_ENABLED", True) or settings.MOMENTUM_SELECTIVE_ENTRY_ENABLED:
         try:
             index_today = await kite.get_intraday("NIFTY 50", from_dt, to_dt)
         except Exception as index_exc:
@@ -3161,6 +3163,18 @@ async def _run_momentum_screener_impl(t0):
                 market_regime=market_regime,
                 regime=today_regime,
             )
+            if fired and settings.MOMENTUM_SELECTIVE_ENTRY_ENABLED:
+                # [MOM-SELECTIVE-ENTRY 2026-10-07] Owner decision: take a
+                # shipped signal only when NIFTY is up on the day, the stock
+                # leads it by >= 0.3% and trades above yesterday's high
+                # (momentum_selective.py). Unscored on untouched data: the
+                # owner chose paper forward evidence over the round-3 run.
+                selected, why, selective_evidence = _momentum_selective_decision(
+                    df_intra, index_today, prev_day_high)
+                if not selected:
+                    fired = False
+                    sig_data["reject_reason"] = f"selective_{why}"
+                    sig_data["selective"] = selective_evidence
             sig_data["ticker"] = ticker
             sig_data["fired"] = bool(fired)
             if fired:

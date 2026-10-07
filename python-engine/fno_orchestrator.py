@@ -504,7 +504,7 @@ async def _manage_open_positions(
             await _timed_database_operation(
                 db_timing, f"trail_update:{source}", fpos.update_trail(
                     db_path, p.id, 1 if decision.trail_active else 0,
-                    decision.trail_stop, decision.best_underlying,
+                    decision.trail_stop, decision.best_underlying, decision.best_premium,
                 ),
             )
 
@@ -689,6 +689,12 @@ async def _try_entry_for_leg(
                     source, stance.multiplier, stance.reason, stance.drawdown_pct, stance.closed_trades,
                     stance.profit_factor)
 
+    reentry_levels = None
+    if settings.FNO_REENTRY_REQUIRES_CONFIRMATION:
+        from fno_entry_plan import REENTRY_STOP_REASONS
+        reentry_levels = await fpos.stopped_entry_levels_today(
+            db_path, source, underlying, today_iso, REENTRY_STOP_REASONS,
+            float(settings.FNO_REENTRY_MARGIN_R))
     plan = plan_single_leg_entry(sig, snap, regime, now_ist, EntryState(
         pool=pool, open_premium=open_prem, open_positions=len(open_rows), trades_today=n_today,
         active_kill_switches=tuple(switches),
@@ -696,7 +702,7 @@ async def _try_entry_for_leg(
         correlated_open_directions=frozenset(
             p.direction for p in open_rows if (p.underlying or "NIFTY").upper() != underlying),
         is_trading_day=is_trading_day, is_expiry_day=instruments.is_expiry_day(now_ist.date()),
-        risk_multiplier=stance.multiplier,
+        risk_multiplier=stance.multiplier, reentry_levels=reentry_levels,
     ))
     if not plan.accepted:
         await _log(False, plan.reject_reason, **plan.log_fields)

@@ -13,6 +13,101 @@
 
 
 
+
+## October 7 (evening) — F&O profit lock and re-entry confirmation; Oct 7 audit fixes T1–T3 (actual behavior, Dev)
+
+- **F&O single-leg profit lock (`fno_exit_rules.profit_lock_floor`, on by default).**
+  - Once the option's best exit basis (bid, else LTP) has been
+    `FNO_PROFIT_LOCK_ARM_R` = 0.4 premium-R above entry, the position exits
+    (`profit_lock`) if the basis falls to the floor. Premium-R is entry
+    premium x `FNO_STOP_PREMIUM_PCT`.
+  - The floor is the larger of entry + 0.1 R and entry + half the best gain
+    (`FNO_PROFIT_LOCK_KEEP_FRACTION` = 0.5).
+  - The floor uses the best seen before the current sample, so one sample
+    cannot both arm and fire it.
+  - The ladder order is: underlying stop, trail, premium backstop, profit
+    lock, then the time stop. The lock also works without a futures quote.
+  - `fno_positions.best_premium` is a new additive column, written with the
+    trail.
+- **F&O re-entry confirmation (`fno_entry_plan.reentry_confirmed`, on by default).**
+  - After a same-day `underlying_stop` or `premium_backstop` on an
+    underlying, a new single-leg entry in that direction must be beyond the
+    stopped trade's entry by `FNO_REENTRY_MARGIN_R` (0.25) x its stop
+    distance. Otherwise it is refused as `reentry_not_confirmed`, and the log
+    carries the level.
+  - The opposite direction and other underlyings are never blocked.
+  - Levels come from `fno_positions.stopped_entry_levels_today`.
+- **Evidence (development only, every session already seen).**
+  - The replay covered 18 archived NIFTY sessions:
+    `docs/research/fno/2026-10-07-exit-and-reentry/README.md`.
+  - Results:
+    - baseline: ₹5,323 net, drawdown ₹3,831;
+    - re-entry gate alone: ₹7,693, drawdown ₹1,991;
+    - both features: ₹8,411, drawdown ₹1,991. Without the best trade,
+      the result goes from −₹1,784 to +₹1,303.
+  - Rejected settings:
+    - an early lock (0.2–0.25 R) lost money, because exits fell through a
+      thin floor between samples;
+    - faster management did not help on this data.
+  - Oct 7's two puts never went meaningfully green, so no exit rule could
+    have saved them. The re-entry gate blocks the second one.
+- **Momentum selective entry (`MOMENTUM_SELECTIVE_ENTRY_ENABLED`, on).**
+  - This was an owner decision on Oct 7. The round-3 scoring on untouched
+    data was skipped, so this is unscored and paper forward evidence only.
+  - A shipped Momentum signal now also needs all three of
+    `momentum_selective.selective_gate`:
+    - NIFTY 50 above its session open;
+    - the stock at least 0.3% ahead of NIFTY;
+    - the close above yesterday's high.
+  - A refusal is recorded as `selective_<reason>`.
+  - The one NIFTY 50 intraday fetch per scan now also runs when the shadow
+    is off. A missing index fails closed: no entry in that scan.
+  - It applies to the shared scanner, so it also gates the live Momentum
+    path, which remains halted by the owner.
+  - The frozen Momentum allocation holdout's candidate population is now
+    selective-only from Oct 8. Record that when evaluating it.
+  - Penny's matching candidate `PEN_NOISE_STOP` was already on in the runtime
+    (`PENNY_NOISE_STOP_ENABLED`).
+- **Overnight forward check (Oct 7).**
+  - Official Yahoo daily bars for the 8 live picks give these 15:20 entries
+    against the official close: −0.4, −1.1, −0.7, −0.3, −2.6, +1.0, +2.1
+    and −1.1%.
+  - The close → next open moves were −4.6, 0, +0.7, 0, 0 and +3.6%. The
+    +3.6% is PRAENG, the winner the T1 bug never sold.
+  - All 8 picks had strength 0.96–1.0, so a stricter strength filter
+    (S60) would have changed nothing.
+  - Three exits had open exactly equal to the previous close. NSE sets the
+    open to the previous close when the pre-open auction finds no
+    equilibrium, so those modeled auction exits were not traded prices. Each
+    exit now records `open_is_prev_close` to measure this.
+  - No rule changed. The untouched 22-month study remains the evidence.
+    Judge after 30+ forward trades.
+- **Overnight waiting-leg retry (audit T1, `edge_overnight_paper.retry_waiting_exits`).**
+  - After today's EXIT receipt, `catch_up` (every 5 min) retries legs that
+    had no trade at 09:17, until 15:20:
+    - inside the 09:47 auction grace it sells at `ohlc.open` (`OPEN_RETRY`);
+    - after that it sells at LTP (`CATCHUP_LTP`).
+  - Each retry that closes something queues its own notice
+    (`EXIT_RETRY_HHMM`).
+  - Refusals keep their exact predicate: `no_quote`, `no_open_price`,
+    `no_basis_price`, or `no_trade_today` with the quote's last trade time.
+  - A leg still untraded at 15:20 is carried, as before.
+- **Overnight attribution date check (audit T3).**
+  - The entry-vs-close / overnight split is recorded only when the entry day
+    is the session right before today (`prior_session`, from the cached
+    holiday list; never the network).
+  - A wholly missed session now exits as `OPEN_DELAYED` without a split,
+    even with zero attempts.
+  - LTP exits add `after_open_rs`.
+- **Expiry D reserve (audit T2).**
+  - D's sizing is unchanged (frozen `expiry-shadow-v1`). Its `max_loss` is
+    a bound only within the 5% exercise-STT reserve domain.
+  - Settlement now records a `reserve_breach` event on a long wing whose
+    intrinsic is beyond the reserve stored at entry
+    (`reserve_intrinsic`), and logs `expiry_d_reserve_breach`.
+  - The day summary prints `RESERVE BREACH` with the STT beyond the
+    reserve. The loss is never capped.
+
 ## October 6 (night) — EDGE overnight result split into entry and overnight parts (actual behavior, Dev)
 
 - `edge_overnight_paper.run_overnight_exit` reads `ohlc.close` from the

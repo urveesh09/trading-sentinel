@@ -57,12 +57,20 @@ def _shadow_rows(ticker, bar_ts):
 
 async def _run_scan(
     main, monkeypatch, shadow_enabled, shadow_side_effect=None,
-    reset_state=True, cleanup_state=True,
+    reset_state=True, cleanup_state=True, selective=False, index_frame=None,
 ):
     fake_now = main.IST.localize(RealDateTime(2026, 8, 10, 11, 0, 0))
     fake_kite = MagicMock()
     fake_kite.access_token = "fake"
-    fake_kite.get_intraday = AsyncMock(return_value=_intra())
+
+    async def intraday(ticker, *_args, **_kwargs):
+        if ticker == "NIFTY 50" and index_frame is not None:
+            if isinstance(index_frame, Exception):
+                raise index_frame
+            return index_frame
+        return _intra()
+
+    fake_kite.get_intraday = AsyncMock(side_effect=intraday)
     fake_kite.get_historical = AsyncMock(return_value=_daily())
 
     def baseline_eval(**kwargs):
@@ -86,6 +94,7 @@ async def _run_scan(
 
     notify = AsyncMock()
     monkeypatch.setattr(main.settings, "MOMENTUM_SHADOW_ENABLED", shadow_enabled)
+    monkeypatch.setattr(main.settings, "MOMENTUM_SELECTIVE_ENTRY_ENABLED", selective)
     monkeypatch.setattr(main.settings, "MOMENTUM_LOG_ENABLED", False)
     if reset_state:
         main.current_momentum_signals = []
@@ -239,3 +248,36 @@ async def test_single_persistence_failure_isolated_from_baseline(monkeypatch, db
     persist.assert_awaited_once()
     persisted_rows = persist.await_args.args[1]
     assert len(persisted_rows) == 4
+
+
+def _index(change):
+    index = pd.date_range("2026-08-10 09:15", periods=6, freq="15min")
+    closes = [25000.0 * (1 + change * i / 5) for i in range(6)]
+    return pd.DataFrame({"open": [25000.0] + closes[:-1], "high": closes, "low": closes,
+                         "close": closes, "volume": [0] * 6}, index=index)
+
+
+@pytest.mark.asyncio
+async def test_selective_entry_keeps_a_strong_stock_in_a_rising_market(monkeypatch, db_path):
+    # MOM-SELECTIVE-ENTRY: NIFTY +0.5%, AAA +6.1% and above yesterday's 102 high.
+    import main
+    result = await _run_scan(main, monkeypatch, False, selective=True, index_frame=_index(0.005))
+    assert [row["ticker"] for row in result["accepted"]] == ["AAA"]
+    assert result["intraday_tickers"][0] == "NIFTY 50"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("index_frame, reason", [
+    (_index(-0.004), "selective_market_not_up"),
+    (_index(0.059), "selective_relative_strength_too_low"),
+    (RuntimeError("index down"), "selective_index_bar_unavailable"),
+])
+async def test_selective_entry_refuses_with_its_reason(monkeypatch, db_path, index_frame, reason):
+    import main
+    result = await _run_scan(main, monkeypatch, False, selective=True, index_frame=index_frame)
+    assert result["accepted"] == []                     # a silent scan sends no reject notice
+    index = None if isinstance(index_frame, Exception) else index_frame
+    ok, why, _ = main._momentum_selective_decision(_intra(), index, 102.0)
+    assert not ok and f"selective_{why}" == reason
+    off = await _run_scan(main, monkeypatch, False, selective=False, index_frame=index_frame)
+    assert [row["ticker"] for row in off["accepted"]] == ["AAA"]   # the gate alone refused it
