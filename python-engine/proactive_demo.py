@@ -12,6 +12,7 @@ from pathlib import Path
 from proactive_intelligence import (
     _SHADOW_ENTRY_PROFILES,
     _SHADOW_EXIT_PROFILES,
+    _recent_eligible_session_dates,
     build_shadow_proposals,
     proactive_activity_report,
     proactive_session_diagnostics,
@@ -55,7 +56,13 @@ async def run_proactive_shadow_demo(db_path: str) -> dict:
     if target.exists():
         raise FileExistsError("demo database already exists; choose a new path")
     target.parent.mkdir(parents=True, exist_ok=True)
-    base = datetime(2026, 9, 1, 9, 30, tzinfo=timezone.utc)
+    # The reports read windows relative to the wall clock (e.g. the last 30
+    # days), so a fixed date aged out of them on Oct 1, 2026 and the demo
+    # failed. Anchor to the latest Tuesday at least 8 days back: Tue-Fri plus
+    # the next Monday are the five sessions, all in the past and in-window.
+    today = datetime.now(timezone.utc).replace(hour=9, minute=30, second=0, microsecond=0)
+    base = today - timedelta(days=8)
+    base -= timedelta(days=(base.weekday() - 1) % 7)
     account_id, run_id, capital = "demo-synthetic-account", "demo-multisession-v1", 150.0
 
     # Session 1: an eligible range setup is selected but no executable bar is
@@ -108,9 +115,13 @@ async def run_proactive_shadow_demo(db_path: str) -> dict:
     # It exercises the same persisted scan/event evidence consumed by the
     # Dashboard diagnostic, rather than a one-off explanatory mock.
     diagnostic_account, diagnostic_policy = "demo-sparse-activity", "trend_pullback_v1"
-    session_days = (1, 2, 3, 4, 7)
-    for index, day in enumerate(session_days, start=1):
-        session_at = base.replace(day=day, hour=10)
+    # The diagnostic counts NSE sessions with the holiday calendar, so take
+    # the five sessions from that same rule (a floating week can hold a
+    # holiday such as Oct 2) rather than assuming weekdays.
+    diagnostic_now = (base + timedelta(days=6)).replace(hour=15)
+    sessions = [datetime.fromisoformat(day).replace(hour=10, tzinfo=timezone.utc)
+                for day in _recent_eligible_session_dates(db_path, now=diagnostic_now, count=5)]
+    for index, session_at in enumerate(sessions, start=1):
         await record_scan_run(
             db_path, scan_id=f"demo-five-session-{index}", policy_id=diagnostic_policy,
             account_id=diagnostic_account, mode="SHADOW", status="SUCCESS", observed_at=session_at,
@@ -119,10 +130,10 @@ async def run_proactive_shadow_demo(db_path: str) -> dict:
         db_path, opportunity_id="demo-five-session-fill", policy_id=diagnostic_policy,
         policy_version="v1", account_id=diagnostic_account, mode="SHADOW",
         instrument="SYNTH:SPARSE", stage="FILLED", reason_code="NEXT_EXECUTABLE_OPEN",
-        idempotency_key="demo-five-session-fill", observed_at=base.replace(day=3, hour=10),
+        idempotency_key="demo-five-session-fill", observed_at=sessions[2],
     )
     session_diagnostics = await proactive_session_diagnostics(
-        db_path, now=base.replace(day=7, hour=15), session_count=5,
+        db_path, now=diagnostic_now, session_count=5,
     )
 
     if pending["allocations"] < 1 or expiry_sweep["expired_pending"] != 1:

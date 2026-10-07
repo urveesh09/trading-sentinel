@@ -251,6 +251,7 @@ async def test_exit_splits_the_result_into_entry_and_overnight_parts(tmp_path, e
     assert trade["entry_day_close"] == 20.2
     assert trade["entry_vs_close_rs"] == pytest.approx((20.2 - entry_price) * shares, abs=1e-3)
     assert trade["overnight_rs"] == pytest.approx((20.6 - 20.2) * shares, abs=1e-3)
+    assert trade["open_is_prev_close"] is False
     assert "overnight close->open" in eop.format_exit_telegram(summary)
     with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
         assert conn.execute("SELECT entry_day_close FROM edge_overnight_paper_trades").fetchone() == (20.2,)
@@ -266,3 +267,117 @@ async def test_delayed_exit_does_not_claim_the_entry_day_close(tmp_path, entry_q
                                            cache, now=_at(later, 9, 17))
     assert summary["closed"][0]["reason"] == "OPEN_DELAYED"
     assert "overnight_rs" not in summary["closed"][0]
+
+
+@pytest.mark.asyncio
+async def test_waiting_leg_is_retried_the_same_session_oct7_praeng(tmp_path, entry_quotes):
+    # Oct 7 audit T1: PRAENG had no trade at 09:17, the EXIT receipt was
+    # written and nothing retried it although it traded later that day.
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    stale = _quote(20.6, 20.8, 20.1, 20.3, 50000.0, TODAY)            # last trade yesterday
+    first = await eop.run_overnight_exit(_Kite({"AAA": stale}), cache, now=_at(NEXT, 9, 17))
+    assert first["waiting"] == [{"ticker": "AAA", "trade_date": TODAY.isoformat(), "reason": "no_trade_today",
+                                 "last_trade_time": f"{TODAY.isoformat()} 15:19:58"}]
+    assert await eop.catch_up(_Kite({"AAA": stale}), cache, now=_at(NEXT, 9, 20)) == []   # still no trade
+    traded = _quote(20.4, 20.8, 20.1, 20.3, 50000.0, NEXT)
+    assert await eop.catch_up(_Kite({"AAA": traded}), cache, now=_at(NEXT, 9, 25)) == ["EXIT_RETRY"]
+    with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
+        row = conn.execute("SELECT status, exit_reason, exit_price, exit_date FROM edge_overnight_paper_trades").fetchone()
+        notices = conn.execute("SELECT phase FROM edge_overnight_paper_notices ORDER BY phase").fetchall()
+    assert row == ("CLOSED", "OPEN_RETRY", round(20.4 * 0.9995, 4), NEXT.isoformat())
+    assert notices == [("ENTRY",), ("EXIT",), ("EXIT_RETRY_0925",)]
+    assert await eop.catch_up(_Kite({"AAA": traded}), cache, now=_at(NEXT, 9, 30)) == []   # closed once
+
+
+@pytest.mark.asyncio
+async def test_retry_after_the_auction_grace_sells_at_ltp_and_stops_at_the_close(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    await eop.run_overnight_exit(_Kite({}), cache, now=_at(NEXT, 9, 17))
+    traded = _quote(20.4, 20.8, 20.1, 20.3, 50000.0, NEXT)
+    assert await eop.retry_waiting_exits(_Kite({"AAA": traded}), cache, now=_at(NEXT, 15, 25)) \
+        == {"closed": [], "waiting": []}                                  # past EXIT_LATEST: carried
+    summary = await eop.retry_waiting_exits(_Kite({"AAA": traded}), cache, now=_at(NEXT, 11, 0))
+    trade = summary["closed"][0]
+    assert trade["reason"] == "CATCHUP_LTP" and trade["exit_price"] == round(20.3 * 0.9995, 4)
+    assert trade["after_open_rs"] == pytest.approx((20.3 - 20.4) * eop_shares(cache))
+    assert "[CATCHUP_LTP]" in eop.format_exit_telegram(summary)
+
+
+def eop_shares(cache):
+    with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
+        return conn.execute("SELECT shares FROM edge_overnight_paper_trades").fetchone()[0]
+
+
+@pytest.mark.asyncio
+async def test_missed_whole_session_does_not_claim_the_entry_day_close_t3(tmp_path, entry_quotes):
+    # Oct 7 audit T3 probe: entered Oct 6, the service missed Oct 7 entirely
+    # (no attempt), first exit Oct 8. Its quote's close is Oct 7's.
+    cache = _cache(tmp_path)
+    await eop.run_overnight_entry(_Kite(entry_quotes), cache, now=_at(TODAY, 15, 20))
+    later = date(2026, 10, 8)
+    quote = _quote(20.6, 20.8, 20.1, 20.3, 50000.0, later)
+    quote["ohlc"]["close"] = 20.5
+    summary = await eop.run_overnight_exit(_Kite({"AAA": quote}), cache, now=_at(later, 9, 17))
+    trade = summary["closed"][0]
+    assert trade["reason"] == "OPEN_DELAYED"
+    assert "entry_day_close" not in trade and "overnight_rs" not in trade
+
+
+def test_prior_session_skips_weekends_and_cached_holidays(tmp_path):
+    db = str(tmp_path / "cal.db")
+    with sqlite3.connect(db) as conn:
+        conn.execute("CREATE TABLE holidays (holiday_date TEXT PRIMARY KEY, fetched_at TIMESTAMP)")
+        conn.execute("INSERT INTO holidays VALUES ('2026-10-02', NULL)")           # Friday holiday
+    assert eop.prior_session("2026-10-05", db) == "2026-10-01"                      # Monday -> Thursday
+    assert eop.prior_session("2026-10-07", db) == "2026-10-06"
+
+
+# ---------------------------------------------------------------- realism guards (2026-10-07)
+
+BAR = (20.0, 20.5, 19.5, 20.2, 100000.0)                # open, high, low, LTP, volume
+
+
+def test_realism_refuses_unbuyable_duplicate_sme_and_weak_picks():
+    ok = {"ohlc": {"close": 20.0}, "upper_circuit_limit": 24.0,
+          "depth": {"sell": [{"price": 20.25, "quantity": 500}]}}
+    assert eop.realism_refusal("AAA", "MR_strong", ok, BAR, set()) is None
+    assert eop.realism_refusal("AAA-SM", "MR_strong", ok, BAR, set()) == "sme_series"
+    assert eop.realism_refusal("CALSOFT-BE", "MO_strong", ok, BAR, {"CALSOFT"}) == "duplicate_series"
+    assert eop.realism_refusal("AAA", "MR_mid", ok, BAR, set()) == "weak_kind_MR_mid"
+    locked = {**ok, "upper_circuit_limit": 20.25}
+    assert eop.realism_refusal("AAA", "MO_strong", locked, BAR, set()) == "at_upper_circuit"
+    no_sellers = {**ok, "depth": {"sell": [{"price": 0, "quantity": 0}]}}
+    assert eop.realism_refusal("AAA", "MO_strong", no_sellers, BAR, set()) == "no_sellers"
+    at_high = (19.6, 20.5, 19.5, 20.5, 100000.0)        # +2.5% and closing on its high, band unknown
+    assert eop.realism_refusal("AAA", "MO_strong", {"ohlc": {"close": 20.0}}, at_high, set()) \
+        == "at_day_high_after_rise"
+
+
+@pytest.mark.asyncio
+async def test_a_refused_pick_is_replaced_by_the_next_ranked_one(tmp_path, entry_quotes, monkeypatch):
+    from types import SimpleNamespace
+    cache = _cache(tmp_path)
+
+    def pick(ticker, kind):
+        return SimpleNamespace(ticker=ticker, signal_subtype=kind, adjusted_strength=1.0, shares=100)
+
+    ranked = [pick("AAA-SM", "MO_strong"), pick("AAA", "MR_mid"), pick("BBB", "MO_strong")]
+    seen = {}
+
+    def fake_scan(**kwargs):
+        seen.update(kwargs)
+        return {"positions": ranked, "candidates": ranked}
+
+    monkeypatch.setattr("penny_edge_live.scan_today", fake_scan)
+    monkeypatch.setattr(settings, "PENNY_EDGE_MAX_POSITIONS", 1)
+    quotes = {**entry_quotes, "AAA-SM": entry_quotes["AAA"]}
+    kite = _Kite(quotes)
+    kite.instrument_cache["AAA-SM"] = 4
+    monkeypatch.setattr(eop, "universe_from_cache", lambda _db: ["AAA", "AAA-SM", "BBB"])
+    summary = await eop.run_overnight_entry(kite, cache, now=_at(TODAY, 15, 20))
+    assert seen["max_positions"] == eop.RANK_DEPTH
+    assert [o["ticker"] for o in summary["opened"]] == ["BBB"]
+    assert [(s["ticker"], s["reason"]) for s in summary["skipped"]] == [
+        ("AAA-SM", "sme_series"), ("AAA", "weak_kind_MR_mid")]

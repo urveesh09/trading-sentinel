@@ -1113,6 +1113,56 @@ async def test_qualified_advisory_retires_info_surfaces(wired, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_brief_and_eod_survive_a_dormant_hedge_bot_oct7(wired, monkeypatch):
+    # Production enables the hedge bot without a bound portfolio; it sent
+    # nothing but silenced the brief and EOD. Context surfaces now run;
+    # intraday analytics keep the suppression rule.
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", True)
+    monkeypatch.setattr(po, "_advisory_live_cache", None)
+    assert await po._legacy_info_retired(NOW, True, context=True) is False
+    assert await po._legacy_info_retired(NOW, True) is True
+    monkeypatch.setattr(settings, "PARTNER_CONTEXT_WITH_ADVISORY", False)
+    assert await po._legacy_info_retired(NOW, True, context=True) is True
+
+
+@pytest.mark.asyncio
+async def test_eod_card_outcomes_and_30_day_record(wired):
+    import json as _json
+    import aiosqlite
+    from partner_manual_advisory import init_partner_advisory_db
+
+    db = settings.DB_PATH
+    await init_partner_advisory_db(db)
+    rows = [  # id, day, direction, signal_at, trigger, invalidation, target, event
+        ("a", "2026-10-07", "SHORT", "2026-10-07T13:11:07+05:30", 22611.0, 22655.0, 22540.0, "INVALIDATION"),
+        ("b", "2026-10-07", "SHORT", "2026-10-07T14:00:59+05:30", 22619.0, 22658.0, 22550.0, None),
+        ("c", "2026-10-01", "SHORT", "2026-10-01T12:20:00+05:30", 22594.0, 22634.0, 22520.0, "TARGET_ZONE"),
+    ]
+    async with aiosqlite.connect(db) as conn:
+        for advisory_id, day, direction, signal_at, trigger, invalidation, target, event in rows:
+            payload = {"direction": direction, "session_date": day, "signal_at": signal_at,
+                       "trigger_level": trigger, "invalidation_level": invalidation, "target_level": target}
+            await conn.execute(
+                "INSERT INTO partner_advisory_ideas VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (advisory_id, "v", "MARKET_DIRECTIONAL", "NIFTY", "NFO", "RETIRED_SESSION_END", "RESEARCH_ONLY",
+                 "p", 1, day, day, "card", _json.dumps(payload), None, day, day))
+            if event:
+                await conn.execute(
+                    "INSERT INTO partner_advisory_updates (update_id, advisory_id, event_type, observed_at, "
+                    "observed_underlying, rendered_update, status, created_at, updated_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?)",
+                    (f"u{advisory_id}", advisory_id, event, day + "T13:50:00+05:30", 1.0, "u",
+                     "DELIVERED_ACKNOWLEDGED", day, day))
+        await conn.commit()
+    cards, record = await po._todays_card_outcomes(db, "NIFTY", "2026-10-07", 22690.0)
+    assert [(c["time"], c["outcome"]) for c in cards] == [
+        ("13:11", "invalidated at 13:50 (level 22,655)"),
+        ("14:00", "neither level reached; closed 22,690 (-71 pts vs trigger)"),
+    ]
+    assert record == "NIFTY advice cards, last 30 days: 3 sent, 1 reached target, 1 invalidated, 1 neither"
+
+
+@pytest.mark.asyncio
 async def test_disabled_delivery_never_retires_info(wired, monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", False)
     monkeypatch.setattr(po, "_advisory_live_cache", None)

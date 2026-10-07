@@ -542,3 +542,40 @@ async def test_acknowledged_claim_reconciles_a_row_left_queued(db_path):
     async with aiosqlite.connect(db_path) as db:
         row = await (await db.execute("SELECT status,status_reason FROM partner_advisory_updates")).fetchone()
     assert row == ("DELIVERED_ACKNOWLEDGED", "acknowledged_claim_reconciled")
+
+
+@pytest.mark.asyncio
+async def test_invalidated_idea_sets_a_same_direction_reentry_level_oct7(tmp_path):
+    # Oct 7: the 13:11 bearish card was invalidated; the 14:00 card repeated it.
+    import json as _json
+    import aiosqlite as _aiosqlite
+    from fno_entry_plan import reentry_confirmed
+    from partner_manual_advisory import init_partner_advisory_db, invalidated_reentry_levels
+
+    db = str(tmp_path / "p.db")
+    await init_partner_advisory_db(db)
+    ideas = [  # (id, day, direction, trigger, invalidation, invalidated?)
+        ("a", "2026-10-07", "SHORT", 22611.0, 22655.0, True),
+        ("b", "2026-10-07", "LONG", 22700.0, 22660.0, False),
+        ("c", "2026-10-06", "SHORT", 22900.0, 22950.0, True),
+    ]
+    async with _aiosqlite.connect(db) as conn:
+        for advisory_id, day, direction, trigger, invalidation, hit in ideas:
+            payload = {"direction": direction, "trigger_level": trigger,
+                       "invalidation_level": invalidation, "session_date": day}
+            await conn.execute(
+                "INSERT INTO partner_advisory_ideas VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (advisory_id, "v", "MARKET_DIRECTIONAL", "NIFTY", "NFO", "INVALIDATED", "RESEARCH_ONLY",
+                 "p", 1, day, day, "card", _json.dumps(payload), None, day, day))
+            if hit:
+                await conn.execute(
+                    "INSERT INTO partner_advisory_updates (update_id, advisory_id, event_type, observed_at, "
+                    "observed_underlying, rendered_update, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                    (f"u{advisory_id}", advisory_id, "INVALIDATION", day + "T13:50:00+05:30", invalidation,
+                     "upd", "DELIVERED_ACKNOWLEDGED", day, day))
+        await conn.commit()
+    levels = await invalidated_reentry_levels(db, underlying="NIFTY", session_date="2026-10-07", margin_r=0.25)
+    assert levels == {"SHORT": pytest.approx(22611.0 - 0.25 * 44.0)}
+    assert not reentry_confirmed("SHORT", 22619.2, levels)      # the 14:00 card: suppressed
+    assert reentry_confirmed("SHORT", 22590.0, levels)          # a clear new low: allowed
+    assert reentry_confirmed("LONG", 22720.0, levels)           # the other direction is never blocked

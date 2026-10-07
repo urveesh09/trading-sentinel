@@ -18,6 +18,13 @@ move overnight, while the runtime EDGE buys the following morning.
   opening-auction price; later it sells at the then-current LTP
   (``CATCHUP_LTP``), never at an auction the process was not present for. A
   missed entry is caught up only before ``ENTRY_LATEST`` (pre-close).
+* Waiting-leg retry (``retry_waiting_exits``, from the same catch-up, audit
+  Oct 7 T1): after today's EXIT receipt, a position that had no trade at 09:17
+  is retried until ``EXIT_LATEST``. It sells at the open (``OPEN_RETRY``) while
+  inside the auction grace, else at LTP (``CATCHUP_LTP``). Each refusal keeps
+  its exact predicate (``no_quote``, ``no_open_price``, ``no_basis_price``,
+  ``no_trade_today`` with the quote's last trade time). Still untraded at
+  ``EXIT_LATEST`` means an explicit carry to the next session.
 * Telegram summaries are written to an outbox in the same transaction as the
   phase receipt and sent by ``flush_notices``, which marks a notice sent only
   after a 2xx response, so a failed send retries without re-running the book.
@@ -58,6 +65,67 @@ IST = ZoneInfo("Asia/Kolkata")
 EXIT_START = time(9, 17)
 AUCTION_EXIT_LATEST = time(9, 47)     # the 09:17 job's existing misfire grace
 EXIT_LATEST = time(15, 20)
+RANK_DEPTH = 10
+SME_SUFFIXES = ("-SM", "-ST")
+SKIP_KINDS = ("MR_mid",)
+
+
+def prior_session(today_iso: str, db_path: str) -> str:
+    """The trading session before ``today_iso`` (weekends and cached NSE holidays).
+
+    Cache only, never the network: ``market_calendar._load_holidays_sync``.
+    """
+    from datetime import date, timedelta
+    from market_calendar import _load_holidays_sync
+    holidays = set(_load_holidays_sync(db_path))
+    day = date.fromisoformat(today_iso) - timedelta(days=1)
+    while day.weekday() >= 5 or day in holidays:
+        day -= timedelta(days=1)
+    return day.isoformat()
+
+
+def _price_exit(quote: dict, *, today: str, auction: bool, trade_date: str, ticker: str,
+                entry_price: float, shares: int, delayed: bool, entry_session_prior: bool,
+                retry: bool = False) -> tuple[Optional[dict], Optional[dict]]:
+    """(closed item, None) or (None, waiting item with the exact refusal predicate)."""
+    from penny_risk import calc_penny_costs
+    quote = quote or {}
+    ohlc = quote.get("ohlc") or {}
+    open_price = ohlc.get("open")
+    basis = open_price if auction else quote.get("last_price")
+    stamp = str(quote.get("last_trade_time") or quote.get("timestamp") or "")
+    refusal = ("no_quote" if not quote else "no_open_price" if not _finite_positive(open_price)
+               else "no_basis_price" if not _finite_positive(basis)
+               else "no_trade_today" if not stamp.startswith(today) else None)
+    if refusal is not None:
+        return None, {"ticker": ticker, "trade_date": trade_date, "reason": refusal,
+                      "last_trade_time": stamp[:19] or None}
+    exit_price = round(float(basis) * (1 - EXIT_SLIPPAGE_BPS / 10000.0), 4)
+    costs = float(calc_penny_costs(entry_price, exit_price, shares, is_intraday=False))
+    net = round((exit_price - entry_price) * shares - costs, 4)
+    reason = ("CATCHUP_LTP" if not auction else "OPEN_DELAYED" if delayed
+              else "OPEN_RETRY" if retry else "NEXT_OPEN")
+    item = {"trade_date": trade_date, "ticker": ticker, "exit_open": float(open_price),
+            "exit_price": exit_price, "costs": round(costs, 4), "net_pnl": net, "reason": reason}
+    # [OVERNIGHT-ATTRIBUTION 2026-10-06, date-checked 2026-10-07 T3] A quote's
+    # ohlc.close is the PREVIOUS session's close. It is the entry day's close
+    # only when the entry day is the session right before today; a missed
+    # session (with or without a failed attempt) would mislabel a later close,
+    # so the split is then left out.
+    prior_close = ohlc.get("close")
+    # NSE sets the open to the previous close when the pre-open auction finds
+    # no equilibrium, so such an "open" is not a traded auction price. The
+    # Oct 5-7 fills had 3 of 6 exactly so; record it to measure how often the
+    # modeled auction exit is a placeholder (measurement only).
+    if _finite_positive(prior_close):
+        item["open_is_prev_close"] = float(open_price) == float(prior_close)
+    if entry_session_prior and _finite_positive(prior_close):
+        item["entry_day_close"] = float(prior_close)
+        item["entry_vs_close_rs"] = round((float(prior_close) - entry_price) * shares, 4)
+        item["overnight_rs"] = round((float(open_price) - float(prior_close)) * shares, 4)
+        if not auction:
+            item["after_open_rs"] = round((float(basis) - float(open_price)) * shares, 4)
+    return item, None
 ENTRY_CATCHUP_START = time(15, 21)  # after the 15:20 job's own run
 ENTRY_LATEST = time(15, 29)
 
@@ -198,6 +266,10 @@ async def catch_up(kite, db_path: Optional[str] = None, now: Optional[datetime] 
         summary = await run_overnight_exit(kite, db_path, now)
         if not summary.get("repeat"):
             ran.append("EXIT")
+    elif has_exit and EXIT_START <= clock < EXIT_LATEST:
+        retried = await retry_waiting_exits(kite, db_path, now)
+        if retried.get("closed"):
+            ran.append("EXIT_RETRY")
     if not has_entry and ENTRY_CATCHUP_START <= clock <= ENTRY_LATEST:
         summary = await run_overnight_entry(kite, db_path, now)
         if not summary.get("repeat"):
@@ -269,6 +341,40 @@ async def _quotes(kite, tickers: list[str]) -> dict:
     return {tokens[int(token)]: quote for token, quote in (raw or {}).items() if int(token) in tokens}
 
 
+def base_symbol(ticker: str) -> str:
+    """One company across its series twins (``CALSOFT`` / ``CALSOFT-BE``)."""
+    return ticker.split("-")[0]
+
+
+def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases: set) -> Optional[str]:
+    """[EDGE-OVERNIGHT-REALISM 2026-10-07] Why a pick cannot be bought honestly, else ``None``.
+
+    The live-universe replay (docs/research/edge-overnight/2026-10-07-live-universe)
+    found 75% of the modeled profit came from closes locked at the day's high
+    after a rise, which have no sellers and cannot be bought at the close.
+    Without them, and without SME or duplicate-series picks and the weak
+    ``MR_mid`` kind, the book was positive in every quarter
+    (+0.62% a trade, max drawdown 13.4% from peak, Jul 2025-Oct 2026).
+    """
+    if ticker.endswith(SME_SUFFIXES):
+        return "sme_series"
+    if base_symbol(ticker) in taken_bases:
+        return "duplicate_series"
+    if kind in SKIP_KINDS:
+        return f"weak_kind_{kind}"
+    _open, high, _low, ltp, _volume = bar
+    upper = quote.get("upper_circuit_limit")
+    if _finite_positive(upper) and ltp >= float(upper) * (1 - 0.005):
+        return "at_upper_circuit"
+    depth_sell = (quote.get("depth") or {}).get("sell") or []
+    if depth_sell and not any(_finite_positive(level.get("quantity")) for level in depth_sell):
+        return "no_sellers"
+    prev_close = (quote.get("ohlc") or {}).get("close")
+    if _finite_positive(prev_close) and ltp >= high * 0.999 and ltp / float(prev_close) - 1 >= 0.019:
+        return "at_day_high_after_rise"
+    return None
+
+
 async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> dict:
     """15:20 IST: score today's provisional bars and open the paper picks."""
     from penny_edge_live import scan_today
@@ -288,21 +394,32 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
     bars_today = {t: bar for t, q in quotes.items() if (bar := provisional_bar(q, today)) is not None}
     scan_path = build_scan_db(db_path, tickers, bars_today, today)
     try:
+        # Rank deeper than the slots so a refused pick is replaced by the next
+        # one (sizing is risk-based per pick, independent of the slot count).
         scan = await asyncio.to_thread(
-            scan_today, bankroll=state["equity"], max_positions=int(settings.PENNY_EDGE_MAX_POSITIONS),
+            scan_today, bankroll=state["equity"], max_positions=RANK_DEPTH,
             min_strength=float(settings.PENNY_EDGE_MIN_STRENGTH), db_path=scan_path, as_of_date=today,
             nifty_ticker=NIFTY_PROXY)
     finally:
         os.remove(scan_path)
 
+    slots = int(settings.PENNY_EDGE_MAX_POSITIONS)
+    held_bases = {base_symbol(t) for t in state["held"]}
     cash, opened, skipped = state["cash"], [], []
     for pick in scan["positions"]:
+        if len(opened) >= slots:
+            break
         bar = bars_today.get(pick.ticker)
         if bar is None:
             skipped.append({"ticker": pick.ticker, "reason": "no_provisional_bar"})
             continue
         if pick.ticker in state["held"]:
             skipped.append({"ticker": pick.ticker, "reason": "already_held"})
+            continue
+        refusal = realism_refusal(pick.ticker, pick.signal_subtype, quotes.get(pick.ticker) or {}, bar,
+                                  held_bases | {base_symbol(o["ticker"]) for o in opened})
+        if refusal is not None:
+            skipped.append({"ticker": pick.ticker, "reason": refusal})
             continue
         ltp, volume = bar[3], bar[4]
         entry_price = round(ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0), 4)
@@ -345,8 +462,6 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
 
 async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> dict:
     """09:17 IST: sell every earlier-session paper position at today's opening auction."""
-    from penny_risk import calc_penny_costs
-
     db_path = db_path or settings.DB_PATH
     now = now or datetime.now(IST)
     today = now.date().isoformat()
@@ -359,56 +474,101 @@ async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[
             "SELECT trade_date, ticker, entry_price, shares, exit_attempts FROM edge_overnight_paper_trades "
             "WHERE status='OPEN' AND trade_date < ?", (today,)).fetchall()
     quotes = await _quotes(kite, sorted({row[1] for row in held})) if held else {}
+    session_before = prior_session(today, db_path) if held else None
 
     closed, waiting = [], []
     auction = now.time() <= AUCTION_EXIT_LATEST
     for trade_date, ticker, entry_price, shares, attempts in held:
-        quote = quotes.get(ticker) or {}
-        open_price = (quote.get("ohlc") or {}).get("open")
-        basis = open_price if auction else quote.get("last_price")
-        stamp = str(quote.get("last_trade_time") or quote.get("timestamp") or "")
-        if not _finite_positive(open_price) or not _finite_positive(basis) or not stamp.startswith(today):
-            waiting.append({"ticker": ticker, "trade_date": trade_date, "reason": "no_trade_today"})
-            continue
-        exit_price = round(float(basis) * (1 - EXIT_SLIPPAGE_BPS / 10000.0), 4)
-        costs = float(calc_penny_costs(entry_price, exit_price, shares, is_intraday=False))
-        net = round((exit_price - entry_price) * shares - costs, 4)
-        item = {"trade_date": trade_date, "ticker": ticker, "exit_open": float(open_price),
-                "exit_price": exit_price, "costs": round(costs, 4), "net_pnl": net,
-                "reason": "CATCHUP_LTP" if not auction else "OPEN_DELAYED" if attempts else "NEXT_OPEN"}
-        # [OVERNIGHT-ATTRIBUTION 2026-10-06] On the first exit session the
-        # quote's ohlc.close is the entry day's official close. It splits the
-        # result into the 15:20 entry (entry price vs close) and the overnight
-        # move the study measured (close vs open). Later sessions' close is a
-        # different day, so it is not recorded for a delayed exit.
-        prior_close = (quote.get("ohlc") or {}).get("close")
-        if not attempts and _finite_positive(prior_close):
-            item["entry_day_close"] = float(prior_close)
-            item["entry_vs_close_rs"] = round((float(prior_close) - entry_price) * shares, 4)
-            item["overnight_rs"] = round((float(open_price) - float(prior_close)) * shares, 4)
-        closed.append(item)
+        first_session = trade_date == session_before
+        item, wait = _price_exit(quotes.get(ticker), today=today, auction=auction, trade_date=trade_date,
+                                 ticker=ticker, entry_price=entry_price, shares=shares,
+                                 delayed=bool(attempts) or not first_session, entry_session_prior=first_session)
+        if item is None:
+            waiting.append(wait)
+        else:
+            closed.append(item)
 
     with _store(store) as conn:
         if _already_ran(conn, today, "EXIT") is not None:
             return {**_already_ran(conn, today, "EXIT"), "repeat": True}
-        for c in closed:
-            conn.execute(
-                "UPDATE edge_overnight_paper_trades SET status='CLOSED', exit_date=?, exit_open=?, exit_price=?, "
-                "costs=?, net_pnl=?, exit_reason=?, entry_day_close=? WHERE trade_date=? AND ticker=? AND status='OPEN'",
-                (today, c["exit_open"], c["exit_price"], c["costs"], c["net_pnl"], c["reason"],
-                 c.get("entry_day_close"), c["trade_date"], c["ticker"]))
+        _close_items(conn, today, closed)
         for w in waiting:
             conn.execute("UPDATE edge_overnight_paper_trades SET exit_attempts = exit_attempts + 1 "
                          "WHERE trade_date=? AND ticker=? AND status='OPEN'", (w["trade_date"], w["ticker"]))
-        state = book_state(conn, float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL))
-        summary = {"date": today, "phase": "EXIT", "closed": closed, "waiting": waiting,
-                   "session_pnl": round(sum(c["net_pnl"] for c in closed), 4), "book": {
-                       k: state[k] for k in ("equity", "realized_pnl", "closed", "wins")}}
+        summary = _exit_summary(conn, today, "EXIT", closed, waiting)
         message = format_exit_telegram(summary) if closed or waiting else None
         _record_run(conn, today, "EXIT", summary, now, message)
-    logger.info("edge_overnight_exit date=%s closed=%d waiting=%d session_pnl=%.2f",
+    logger.info("edge_overnight_exit date=%s closed=%d waiting=%d session_pnl=%.2f refusals=%s",
+                today, len(closed), len(waiting), summary["session_pnl"],
+                ",".join(f"{w['ticker']}:{w['reason']}" for w in waiting) or "-")
+    return summary
+
+
+async def retry_waiting_exits(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> dict:
+    """Retry today's still-waiting exits after the EXIT receipt (audit Oct 7 T1).
+
+    Runs from ``catch_up`` every 5 minutes until ``EXIT_LATEST``. Only legs
+    that closed get written; a leg that still has no trade keeps waiting and
+    is carried to the next session after ``EXIT_LATEST``. A notice is queued
+    per retry that closed something (phase ``EXIT_RETRY_HHMM``).
+    """
+    db_path = db_path or settings.DB_PATH
+    now = now or datetime.now(IST)
+    today = now.date().isoformat()
+    if not (EXIT_START <= now.time() < EXIT_LATEST):
+        return {"closed": [], "waiting": []}
+    store = overnight_db_path(db_path)
+    with _store(store) as conn:
+        if _already_ran(conn, today, "EXIT") is None:
+            return {"closed": [], "waiting": []}
+        held = conn.execute(
+            "SELECT trade_date, ticker, entry_price, shares, exit_attempts FROM edge_overnight_paper_trades "
+            "WHERE status='OPEN' AND trade_date < ?", (today,)).fetchall()
+    if not held:
+        return {"closed": [], "waiting": []}
+    quotes = await _quotes(kite, sorted({row[1] for row in held}))
+    session_before = prior_session(today, db_path)
+    auction = now.time() <= AUCTION_EXIT_LATEST
+    closed, waiting = [], []
+    for trade_date, ticker, entry_price, shares, attempts in held:
+        first_session = trade_date == session_before
+        # exit_attempts already counts today's 09:17 refusal, so only earlier
+        # sessions' refusals or a missed session make this a delayed exit.
+        item, wait = _price_exit(quotes.get(ticker), today=today, auction=auction, trade_date=trade_date,
+                                 ticker=ticker, entry_price=entry_price, shares=shares,
+                                 delayed=not first_session, entry_session_prior=first_session, retry=True)
+        if item is None:
+            waiting.append(wait)
+        else:
+            closed.append(item)
+    if not closed:
+        return {"closed": [], "waiting": waiting}
+    phase = f"EXIT_RETRY_{now.strftime('%H%M')}"
+    with _store(store) as conn:
+        if _already_ran(conn, today, phase) is not None:
+            return {"closed": [], "waiting": waiting, "repeat": True}
+        _close_items(conn, today, closed)
+        summary = _exit_summary(conn, today, phase, closed, waiting)
+        _record_run(conn, today, phase, summary, now, format_exit_telegram(summary))
+    logger.info("edge_overnight_exit_retry date=%s closed=%d still_waiting=%d session_pnl=%.2f",
                 today, len(closed), len(waiting), summary["session_pnl"])
     return summary
+
+
+def _close_items(conn: sqlite3.Connection, today: str, closed: list[dict]) -> None:
+    for c in closed:
+        conn.execute(
+            "UPDATE edge_overnight_paper_trades SET status='CLOSED', exit_date=?, exit_open=?, exit_price=?, "
+            "costs=?, net_pnl=?, exit_reason=?, entry_day_close=? WHERE trade_date=? AND ticker=? AND status='OPEN'",
+            (today, c["exit_open"], c["exit_price"], c["costs"], c["net_pnl"], c["reason"],
+             c.get("entry_day_close"), c["trade_date"], c["ticker"]))
+
+
+def _exit_summary(conn: sqlite3.Connection, today: str, phase: str, closed: list, waiting: list) -> dict:
+    state = book_state(conn, float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL))
+    return {"date": today, "phase": phase, "closed": closed, "waiting": waiting,
+            "session_pnl": round(sum(c["net_pnl"] for c in closed), 4), "book": {
+                k: state[k] for k in ("equity", "realized_pnl", "closed", "wins")}}
 
 
 def format_entry_telegram(summary: dict) -> str:
@@ -426,10 +586,16 @@ def format_exit_telegram(summary: dict) -> str:
              f"over {book['closed']} trades, equity Rs {book['equity']:,.0f}"]
     for c in summary["closed"]:
         line = f"  {c['ticker']} @ {c['exit_price']:.2f} net Rs {c['net_pnl']:+,.2f}"
+        if c["reason"] != "NEXT_OPEN":
+            line += f" [{c['reason']}]"
         if "overnight_rs" in c:
             line += (f" (15:20 entry vs close Rs {c['entry_vs_close_rs']:+,.2f}, "
-                     f"overnight close->open Rs {c['overnight_rs']:+,.2f})")
+                     f"overnight close->open Rs {c['overnight_rs']:+,.2f}")
+            if "after_open_rs" in c:
+                line += f", open->sale Rs {c['after_open_rs']:+,.2f}"
+            line += ")"
         lines.append(line)
     if summary["waiting"]:
-        lines.append(f"  still held (no trade yet): {', '.join(w['ticker'] for w in summary['waiting'])}")
+        lines.append("  still held, retried until 15:20: "
+                     + ", ".join(f"{w['ticker']} ({w['reason']})" for w in summary["waiting"]))
     return "\n".join(lines)

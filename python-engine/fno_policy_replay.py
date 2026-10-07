@@ -68,6 +68,8 @@ class ReplayPolicy:
     pyramid_house_money: bool = False        # add one lot after target only if locked profit covers its risk
     trend_day_filter: bool = False           # enter only on compressed-opening-range days
     trend_day_lookback: int = 10
+    exit_overrides: tuple = ()               # ((setting, value), ...) applied to the exit ladder params
+    reentry_confirmation: Optional[bool] = None   # None = live setting
 
 
 POLICIES = {
@@ -247,6 +249,7 @@ class OpenLeg:
     trail_active: int = 0
     trail_stop_underlying: Optional[float] = None
     best_underlying: Optional[float] = None
+    best_premium: Optional[float] = None
     initial_qty: int = 0
     fills: list = field(default_factory=list)       # partial / pyramid legs
     pyramided: bool = False
@@ -285,7 +288,8 @@ def _close_record(leg: OpenLeg, at: datetime, price: float, reason: str, fut: fl
     return ({"tradingsymbol": leg.tradingsymbol, "direction": leg.direction, "bar_ts": leg.bar_ts,
              "entry_time": leg.entry_time, "entry_premium": round(leg.entry_premium, 4),
              "lots_at_exit": leg.lots, "exit_time": at.isoformat(), "exit_premium": price,
-             "exit_underlying": fut, "exit_reason": reason,
+             "exit_underlying": fut, "exit_reason": reason, "entry_underlying": leg.entry_underlying,
+             "stop_underlying": leg.stop_underlying,
              "gross_pnl": round(gross + sum(f["gross_pnl"] for f in leg.fills), 4),
              "net_pnl": round(total, 4), "r_multiple": round(total / risk_rs, 4) if risk_rs > 0 else None,
              "fills": leg.fills}, final_net)
@@ -338,8 +342,10 @@ class SingleLegReplay:
             bid = quote.bid if quote else 0.0
             ltp = quote.ltp if quote else 0.0
             basis = bid if bid > 0 else ltp
+            params = {**live_single_leg_exit_params(settings), **dict(self.policy.exit_overrides)}
             decision = evaluate_single_leg_exit(leg, now_ist=now, fut_price=fut_price, exit_px_basis=basis,
-                                                hard_flat=hard_flat, params=live_single_leg_exit_params(settings))
+                                                hard_flat=hard_flat, params=params)
+            leg.best_premium = decision.best_premium
             if decision.persist_trail:
                 leg.trail_active = 1 if decision.trail_active else 0
                 leg.trail_stop_underlying = decision.trail_stop
@@ -469,10 +475,19 @@ class SingleLegReplay:
         halts = self._halts(book, now)
         if stance.single_leg_halted_today:
             halts = (*halts, f"two_strike_day_halt losses={stance.single_leg_losses_today}")
+        from fno_entry_plan import REENTRY_STOP_REASONS, reentry_level
+        confirm = (settings.FNO_REENTRY_REQUIRES_CONFIRMATION if self.policy.reentry_confirmation is None
+                   else self.policy.reentry_confirmation)
+        levels = {}
+        if confirm:
+            for t in sorted((t for t in book.trades if "net_pnl" in t), key=lambda t: t["exit_time"]):
+                if t["exit_time"][:10] == today.isoformat() and t["exit_reason"] in REENTRY_STOP_REASONS:
+                    levels[t["direction"]] = reentry_level(t["direction"], t["entry_underlying"],
+                                                           t["stop_underlying"], settings.FNO_REENTRY_MARGIN_R)
         state = EntryState(pool=book.equity, open_premium=open_premium, open_positions=len(book.open),
                            trades_today=book.entries_today[today], active_kill_switches=halts,
                            held_symbols=held, is_trading_day=True, is_expiry_day=today in obs.expiries,
-                           risk_multiplier=stance.multiplier)
+                           risk_multiplier=stance.multiplier, reentry_levels=levels)
         plan = plan_single_leg_entry(sig, snap, regime, now, state)
         self.decisions.append({"at": now.isoformat(), "bar_ts": sig.bar_ts, "direction": sig.direction.value,
                                "outcome": "accepted" if plan.accepted else plan.reject_reason,

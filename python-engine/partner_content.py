@@ -299,6 +299,10 @@ def format_eod(
             f" | OR was {_fmt(u.get('or_low'))}–{_fmt(u.get('or_high'))}"
         )
         sigs = u.get("signals") or []
+        # [PARTNER-CONTEXT 2026-10-07] Honest scorecard of today's advice
+        # cards: what each published level did, wins and failures alike.
+        for c in u.get("cards") or []:
+            lines.append(f"  advice card {c['time']} {c['direction']} -> {c['outcome']}")
         if sigs:
             for s in sigs:
                 lines.append(
@@ -308,8 +312,10 @@ def format_eod(
                 # premium actually did — the partner's real P&L axis.
                 if s.get("option_line"):
                     lines.append(f"    {s['option_line']}")
-        else:
-            lines.append("  no ORB signals today")
+        elif not u.get("cards"):
+            lines.append("  no ORB signals or advice cards today")
+        if u.get("card_record"):
+            lines.append(f"  {u['card_record']}")
         lines.append(
             f"  closing PCR {_fmt(u.get('pcr'), 2)}"
             f" | max pain {_fmt(u.get('max_pain'))}"

@@ -50,6 +50,13 @@ Charges come from the contract's exchange schedule (NSE for NFO, BSE for BFO)
 and are frozen on the position at entry, so exits and settlement use the
 rates the ceiling was sized with.
 
+Chain context (``CONTEXT_VERSION``) is recorded on every tick and read by no
+rule: the ATM straddle (the expected absolute move to settlement) and the
+volatility it implies, the index's realized volatility so far, OI and its change
+per strike with the walls, max pain and PCR over the fetched window, and the
+future's OI build-up. Snapshots at the A/C signals and the D and B entry times
+let later expiries test whether the context separates winners from losers.
+
 Telegram lines go to an outbox in the same transaction as the tick and are
 marked sent when a 2xx acknowledgement arrives (``flush_notices``); flushes
 of one store are serialised, so delivery is at-least-once without concurrent
@@ -119,6 +126,23 @@ D_ENTRY_START, D_ENTRY_END = time(14, 30), time(14, 45)
 D_SHORT_STEPS, D_WING_STEPS, D_MAX_LOTS = 2, 1, 4  # widest sold strikes tried first
 D_MIN_CREDIT_X_CHARGES = 2.0        # the credit must cover at least twice the entry charges
 D_STT_RESERVE_MOVE = 0.05           # exercise STT reserved on a long wing up to 5% of spot in the money
+# [EXPIRY-D-RESERVE 2026-10-07, audit T2] D's max_loss is a bound only for a
+# settlement move inside that 5% domain: exercise STT on the long wing grows
+# with its intrinsic, so a larger move (the audit's +20% stress: -Rs 3,000.43
+# against a Rs 2,298.44 bound) costs more. Sizing is frozen (expiry-shadow-v1)
+# and the loss is never capped; settlement records a RESERVE_BREACH event and
+# the day summary prints the STT beyond the reserve.
+
+# Chain context, record-only from 2026-10-07 (no rule reads it). Implied and
+# realized volatility share one clock, the 375-minute NSE session year, so their
+# ratio compares like with like. Max pain, walls and PCR cover only the fetched
+# ATM +/- CHAIN_WINDOW strikes, where most same-day OI sits.
+CONTEXT_VERSION = "expiry-context-v1"
+SETTLE_AT = time(15, 35)            # closing-auction end, which sets the settlement price
+TRADING_YEAR_SEC = 252 * 375 * 60
+RV_SAMPLE_SEC = 60.0                # index returns sampled at least a minute apart (less tick noise)
+RV_MIN_SEC = 600.0                  # realized volatility needs ten minutes of samples
+CONTEXT_MOMENTS = {"d_entry": D_ENTRY_START, "b_entry": B_ENTRY_START}
 
 
 @dataclass(frozen=True)
@@ -244,6 +268,7 @@ class Quote:
     asks: tuple[tuple[float, int], ...]
     ltp: Optional[float]
     ts: Optional[datetime]
+    oi: Optional[float] = None                  # open interest; record-only context
 
     @property
     def bid(self) -> Optional[float]:
@@ -270,9 +295,9 @@ class Quote:
             and (self.ask - self.bid) <= max_fraction * self.ask
 
     def logged(self) -> dict:
-        """What a fill can use: every depth level, the LTP and the provider time."""
+        """What a fill can use: every depth level, the LTP and the provider time (and the OI)."""
         return {"b": [list(level) for level in self.bids], "a": [list(level) for level in self.asks],
-                "ltp": self.ltp, "ts": self.ts.isoformat() if self.ts else None}
+                "ltp": self.ltp, "ts": self.ts.isoformat() if self.ts else None, "oi": self.oi}
 
 
 def _positive(value) -> Optional[float]:
@@ -309,8 +334,9 @@ def parse_quote(packet: dict) -> Quote:
             out.append((price, int(qty)))
         return tuple(out[:5])
 
+    oi = packet.get("oi")
     return Quote(bids=levels("buy"), asks=levels("sell"), ltp=_positive(packet.get("last_price")),
-                 ts=_provider_time(packet))
+                 ts=_provider_time(packet), oi=float(oi) if isinstance(oi, (int, float)) and oi >= 0 else None)
 
 
 def walk(levels: tuple[tuple[float, int], ...], lots: int, lot_size: int) -> tuple[int, Optional[float]]:
@@ -395,6 +421,8 @@ def condor_fill(legs: list[tuple[Quote, str]], lot_size: int, width: float, spot
     gap, so the loss is bounded by (width - credit) x qty plus the entry
     charges and exercise STT on a wing up to ``D_STT_RESERVE_MOVE`` of spot in
     the money. The credit must cover ``D_MIN_CREDIT_X_CHARGES`` x the charges.
+    That bound holds only inside the reserve's move domain; beyond it the
+    wing's exercise STT is uncapped (see ``reconcile``'s RESERVE_BREACH).
     """
     for lots in range(D_MAX_LOTS, 0, -1):
         qty, prices = lots * lot_size, []
@@ -427,7 +455,7 @@ def fill_model(clock: time) -> str:
 
 def new_day_state() -> dict:
     return {"rules": RULES_VERSION, "shadow": SHADOW_VERSION, "execution": EXECUTION_VERSION,
-            "box": None, "box_samples": [], "box_status": "BUILDING",
+            "context": CONTEXT_VERSION, "box": None, "box_samples": [], "box_status": "BUILDING",
             "pending": None, "armed": {"UP": True, "DOWN": True}, "signals": [],
             "trades": {play: 0 for play in MAIN_PLAYS + SHADOW_PLAYS}, "last_spot": None,
             "summary_queued": False}
@@ -656,6 +684,137 @@ def _try_exit(pos: dict, quote: Optional[Quote], lots: int, reason: str, now: da
 
 
 # ---------------------------------------------------------------------------
+# chain context: recorded on every tick, read by no rule
+# ---------------------------------------------------------------------------
+
+def update_realized(state: dict, now: datetime, spot: Optional[float]) -> None:
+    """Add the squared index log return since the last sample at least ``RV_SAMPLE_SEC`` old."""
+    if spot is None:
+        return
+    rv = state.setdefault("rv", {"sum_sq": 0.0, "secs": 0.0, "ts": None, "spot": None})
+    if rv["ts"] is not None:
+        elapsed = (now - datetime.fromisoformat(rv["ts"])).total_seconds()
+        if elapsed < RV_SAMPLE_SEC:
+            return
+        rv["sum_sq"] += math.log(spot / rv["spot"]) ** 2
+        rv["secs"] += elapsed
+    rv["ts"], rv["spot"] = now.isoformat(), spot
+
+
+def realized_vol(state: dict) -> Optional[float]:
+    """Annualised volatility of today's sampled index returns on the session clock, once there is enough."""
+    rv = state.get("rv") or {}
+    if rv.get("secs", 0.0) < RV_MIN_SEC:
+        return None
+    return math.sqrt(rv["sum_sq"] / rv["secs"] * TRADING_YEAR_SEC)
+
+
+def max_pain(oi: dict) -> Optional[float]:
+    """The strike at which the in-window option holders would collect least at settlement."""
+    if not oi or not sum(oi.values()):
+        return None
+
+    def payout(settle: float) -> float:
+        return sum(units * max(0.0, settle - strike if kind == "CE" else strike - settle)
+                   for (strike, kind), units in oi.items())
+
+    return min(sorted({strike for strike, _ in oi}), key=payout)
+
+
+def chain_context(state: dict, quoted_chain: dict, spot: Optional[float], step: float,
+                  fut: Optional[float], fut_oi: Optional[float], now: datetime) -> dict:
+    """The chain read at decision time, for the record only.
+
+    Updates today's realized-volatility samples and the OI baselines (each
+    strike's first OI seen today, so a strike entering the window is not an OI
+    change). The ATM straddle mid is the expected absolute move to settlement;
+    ``iv`` is the volatility it implies on the session clock
+    (straddle = sqrt(2/pi) * spot * iv * sqrt(T)).
+    """
+    update_realized(state, now, spot)
+    if spot is None:
+        return {"status": "NO_FRESH_INDEX", "ts": now.isoformat()}
+    ctx: dict = {"status": "OK", "ts": now.isoformat(), "spot": spot}
+    atm = float(round(spot / step) * step)
+    mids = []
+    for kind in ("CE", "PE"):
+        quote = (quoted_chain.get((atm, kind)) or (None, None))[1]
+        if quote is None or not quote.fresh(now) or not quote.spread_ok(1.0):   # fresh and two-sided
+            break
+        mids.append((quote.bid + quote.ask) / 2.0)
+    if len(mids) == 2:
+        ctx["atm"], ctx["straddle"] = atm, round(sum(mids), 2)
+        left = (datetime.combine(now.date(), SETTLE_AT, tzinfo=now.tzinfo) - now).total_seconds()
+        if left > 0:
+            ctx["iv"] = round(sum(mids) / (math.sqrt(2.0 / math.pi) * spot
+                                           * math.sqrt(left / TRADING_YEAR_SEC)), 4)
+    rv = realized_vol(state)
+    if rv:
+        ctx["rv"] = round(rv, 4)
+        if "iv" in ctx:
+            ctx["iv_rv"] = round(ctx["iv"] / rv, 3)
+
+    oi = {key: q.oi for key, (_, q) in quoted_chain.items() if q.oi is not None}
+    if oi:
+        base = state.setdefault("oi_base", {})
+        change = {}
+        for (strike, kind), units in oi.items():
+            change[(strike, kind)] = units - base.setdefault(f"{strike:g}{kind}", units)
+        side = {kind: {k: v for (k, t), v in oi.items() if t == kind} for kind in ("CE", "PE")}
+        added = {kind: {k: v for (k, t), v in change.items() if t == kind} for kind in ("CE", "PE")}
+        calls = sum(side["CE"].values())
+        ctx.update(
+            call_wall=max((k for k in side["CE"] if k >= spot), key=side["CE"].get, default=None),
+            put_wall=max((k for k in side["PE"] if k <= spot), key=side["PE"].get, default=None),
+            max_pain=max_pain(oi),
+            pcr=round(sum(side["PE"].values()) / calls, 3) if calls else None,
+            ce_oi_chg=sum(added["CE"].values()), pe_oi_chg=sum(added["PE"].values()),
+            top_ce_add=max(added["CE"], key=added["CE"].get, default=None),
+            top_pe_add=max(added["PE"], key=added["PE"].get, default=None))
+    if fut is not None and fut_oi is not None:
+        from fno_analytics import classify_buildup
+
+        first_px, first_oi = state.setdefault("fut_base", [fut, fut_oi])
+        ctx["fut_oi_chg"] = fut_oi - first_oi
+        ctx["fut_buildup"] = classify_buildup(fut - first_px, fut_oi - first_oi)
+    return ctx
+
+
+def _context_text(ctx: dict) -> str:
+    def pct(value):
+        return f"{value * 100:.1f}%" if value is not None else "n/a"
+
+    def strike(value):
+        return f"{value:,.0f}" if value is not None else "n/a"
+
+    ratio = f" (x{ctx['iv_rv']:.2f})" if ctx.get("iv_rv") is not None else ""
+    straddle = f"{ctx['straddle']:.1f} pts" if ctx.get("straddle") is not None else "n/a"
+    return (f"IV {pct(ctx.get('iv'))} vs realized {pct(ctx.get('rv'))}{ratio}, straddle {straddle}, "
+            f"walls {strike(ctx.get('put_wall'))} PE / {strike(ctx.get('call_wall'))} CE, "
+            f"max pain {strike(ctx.get('max_pain'))}, PCR {ctx.get('pcr') if ctx.get('pcr') is not None else 'n/a'}, "
+            f"future {ctx.get('fut_buildup', 'n/a')}")
+
+
+def context_lines(state: dict, settle: Optional[float]) -> list[str]:
+    """The record-only chain context at the D and B entry times, and how the close met it."""
+    snaps = state.get("context_at") or {}
+    lines = [f"  context ({state.get('context', CONTEXT_VERSION)}, record-only, no rule uses it):"]
+    for moment, at in CONTEXT_MOMENTS.items():
+        ctx = snaps.get(moment)
+        lines.append(f"    {at:%H:%M:%S}: " + (_context_text(ctx) if ctx else "not recorded"))
+    first = snaps.get("d_entry")
+    if settle is not None and first:
+        walls = (first.get("put_wall"), first.get("call_wall"))
+        inside = "n/a" if None in walls else ("yes" if walls[0] <= settle <= walls[1] else "no")
+        pain = f"{abs(settle - first['max_pain']):,.0f} pts" if first.get("max_pain") is not None else "n/a"
+        move = f"{abs(settle - first['spot']):,.1f} pts"
+        implied = f" against straddle {first['straddle']:.1f}" if first.get("straddle") is not None else ""
+        lines.append(f"    close {settle:,.2f} (our sample) vs {D_ENTRY_START:%H:%M}: inside the walls {inside}, "
+                     f"{pain} from max pain, moved {move}{implied}")
+    return lines
+
+
+# ---------------------------------------------------------------------------
 # settlement of anything still open after the session
 # ---------------------------------------------------------------------------
 
@@ -707,9 +866,21 @@ def reconcile(db_path: Optional[str] = None, now: Optional[datetime] = None) -> 
                 value = (pos["entry_price"] - intrinsic) * qty if short \
                     else (intrinsic * (1 - EXERCISE_STT_PCT) - pos["entry_price"]) * qty
             pos["assumed_pnl"] = round(value, 2)
-            pos["_events"].append({"ts": now.isoformat(), "action": pos["status"], "lots": pos["lots_open"],
-                                   "settlement_spot": spot, "settlement_source": "SAMPLED_INDEX_QUOTE",
-                                   "assumed_pnl": pos["assumed_pnl"]})
+            event = {"ts": now.isoformat(), "action": pos["status"], "lots": pos["lots_open"],
+                     "settlement_spot": spot, "settlement_source": "SAMPLED_INDEX_QUOTE",
+                     "assumed_pnl": pos["assumed_pnl"]}
+            if pos["play"] == "D" and not short and spot is not None:
+                # The entry event stores the reserved intrinsic; rows from
+                # before that field fall back to the settlement spot.
+                stored = (json.loads(pos.get("events") or "[]") or [{}])[0]
+                reserved = stored.get("reserve_intrinsic") or D_STT_RESERVE_MOVE * spot
+            if pos["play"] == "D" and not short and spot is not None and intrinsic > reserved:
+                beyond = EXERCISE_STT_PCT * (intrinsic - reserved) * qty
+                event["reserve_breach"] = {"reserved_move": D_STT_RESERVE_MOVE, "intrinsic": round(intrinsic, 2),
+                                           "stt_beyond_reserve": round(beyond, 2)}
+                logger.warning("expiry_d_reserve_breach day=%s symbol=%s intrinsic=%.2f stt_beyond=%.2f",
+                               pos["day"], pos["symbol"], intrinsic, beyond)
+            pos["_events"].append(event)
             _save_position(conn, pos)
             settled += 1
         days = conn.execute("SELECT day, underlying, state FROM expiry_paper_days WHERE day < ? OR (day = ? AND ?)",
@@ -740,6 +911,7 @@ def _load_state(conn, day: str, underlying: str) -> dict:
     if not contract.endswith(EXECUTION_VERSION):        # a day begun under an older contract
         state["execution"] = f"{contract}+{EXECUTION_VERSION}"
     state.setdefault("shadow", f"{SHADOW_VERSION} joined mid-day")
+    state.setdefault("context", f"{CONTEXT_VERSION} joined mid-day")
     for play in MAIN_PLAYS + SHADOW_PLAYS:
         state["trades"].setdefault(play, 0)
     return state
@@ -875,8 +1047,18 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
     quoted_chain = {key: (c, quotes[c.token]) for key, c in chain.items() if c.token in quotes}
     if spot is not None:
         state["last_spot"] = spot
+    fut_oi = parse_quote(raw[FUT_KEY]).oi if isinstance(raw.get(FUT_KEY), dict) else None
+    try:                                        # record-only: it must never cost a tick
+        context = chain_context(state, quoted_chain, spot, book.strike_step, fut, fut_oi, now)
+    except Exception as exc:
+        logger.warning("expiry chain context failed: %s", type(exc).__name__)
+        context = {"status": "ERROR", "ts": now.isoformat(), "error": type(exc).__name__}
+    snaps = state.setdefault("context_at", {})
+    for moment, at in CONTEXT_MOMENTS.items():
+        if clock_now >= at and moment not in snaps and context["status"] == "OK":
+            snaps[moment] = context
     _record_tick(conn, state, day, underlying, started, now, spot, fut,
-                 {"timing": timings, "index": index_seen, "future": future_seen,
+                 {"timing": timings, "index": index_seen, "future": future_seen, "context": context,
                   "legs": {contracts[t].tradingsymbol: q.logged() for t, q in quotes.items()}})
 
     label = f"Expiry paper {underlying}"
@@ -917,7 +1099,8 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
     direction = breakout_signal(state, now, spot, fut)
     budget = float(settings.EXPIRY_PAPER_BUDGET)
     if direction is not None:
-        state["signals"].append({"ts": now.isoformat(), "dir": direction, "spot": spot, "fut": fut})
+        state["signals"].append({"ts": now.isoformat(), "dir": direction, "spot": spot, "fut": fut,
+                                 "context": context})
         kind = "CE" if direction == "UP" else "PE"
         remaining = budget + min(0.0, _realized(conn, day, underlying, "A"))
         if state["trades"]["A"] >= A_MAX_TRADES:
@@ -1017,6 +1200,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
                         pos["_events"][0].update(action="SELL", charges=charges)
                     pos["side"], pos["width"] = side, width
                     pos["_events"][0]["short_steps"] = short_steps
+                    pos["_events"][0]["reserve_intrinsic"] = round(D_STT_RESERVE_MOVE * spot, 2)
                     pos["max_loss"] = round(max_loss / len(plan), 2)
                     _save_position(conn, pos)
                 state["trades"]["D"] = 1
@@ -1042,6 +1226,7 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
              f"after start, index refused {state.get('stale_spot', 0)}"
              + (f" ({index_why})" if index_why else "")
              + f", future refused {state.get('stale_fut', 0)}"]
+    lines += context_lines(state, _settlement_spot(conn, day, underlying))
     refusals = state.get("refusals", {})
 
     def section(plays: tuple[str, ...]) -> tuple[float, float, float]:
@@ -1065,6 +1250,11 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
             if any(r["assumed_pnl"] is not None for r in rows):
                 line += (f", assumed Rs {assumed:+,.2f} [our sampled index, not the official settlement], "
                          f"whole modeled Rs {filled + assumed:+,.2f}")
+            breach = sum(e["reserve_breach"]["stt_beyond_reserve"] for r in rows
+                         for e in json.loads(r["events"]) if e.get("reserve_breach"))
+            if breach:
+                line += (f", RESERVE BREACH: exercise STT Rs {breach:,.2f} beyond the "
+                         f"{D_STT_RESERVE_MOVE:.0%}-move reserve")
             lines.append(line + f" ({detail}{'; auction-window fills unverified' if auction else ''})")
         return total_filled, total_assumed, total_fees
 

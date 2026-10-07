@@ -247,9 +247,80 @@ async def _advisory_can_deliver(now: datetime) -> bool:
     return live
 
 
-async def _legacy_info_retired(now: datetime, hedge_suppress: bool) -> bool:
-    """True when the brief/EOD/analytics surfaces must stay silent."""
+async def _legacy_info_retired(now: datetime, hedge_suppress: bool, *, context: bool = False) -> bool:
+    """True when the brief/EOD/analytics surfaces must stay silent.
+
+    [PARTNER-CONTEXT 2026-10-07] Owner direction: give the partner every
+    useful, honest insight. Production enables the hedge bot without a bound
+    portfolio, so it sends nothing, yet its "do not mix mandates" rule had
+    silenced the morning brief and EOD wrap all along. The context surfaces
+    (``context=True``: brief, EOD) now run beside advice cards and the hedge
+    bot unless PARTNER_CONTEXT_WITH_ADVISORY is off; intraday analytics alerts
+    keep the old rule (about 100 events a day would be noise).
+    """
+    if context and settings.PARTNER_CONTEXT_WITH_ADVISORY:
+        return False
     return (settings.PARTNER_HEDGE_ENABLED and hedge_suppress) or await _advisory_can_deliver(now)
+
+
+async def _todays_card_outcomes(db_path: str, underlying: str, day_iso: str,
+                                close: Optional[float]) -> tuple[list[dict], str]:
+    """Delivered advice cards for the day and what happened to each, plus a
+    30-day record line. Outcomes come from the published levels only (the
+    same public observations that sent the updates); no partner fill or P&L
+    is inferred."""
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            ideas = await (await db.execute(
+                "SELECT i.advisory_id, i.payload FROM partner_advisory_ideas i WHERE i.underlying=? "
+                "AND (i.status IN ('DELIVERED_ACKNOWLEDGED','RETIRED_SESSION_END') OR EXISTS "
+                "(SELECT 1 FROM partner_advisory_updates u WHERE u.advisory_id=i.advisory_id))",
+                (underlying.upper(),))).fetchall()
+            events = await (await db.execute(
+                "SELECT advisory_id, event_type, observed_at, observed_underlying FROM partner_advisory_updates "
+                "WHERE event_type IN ('INVALIDATION','TARGET_ZONE') ORDER BY observed_at")).fetchall()
+    except aiosqlite.Error:
+        return [], ""
+    first_event: dict = {}
+    for advisory_id, event_type, observed_at, level in events:
+        first_event.setdefault(advisory_id, (event_type, observed_at, level))
+    cards, record = [], {"n": 0, "target": 0, "invalidation": 0}
+    cutoff = (date.fromisoformat(day_iso) - timedelta(days=30)).isoformat()
+    for advisory_id, raw in ideas:
+        try:
+            payload = json.loads(raw)
+        except (TypeError, json.JSONDecodeError):
+            continue
+        session = str(payload.get("session_date") or "")
+        if not session or session < cutoff or session > day_iso:
+            continue
+        event = first_event.get(advisory_id)
+        record["n"] += 1
+        if event and event[0] == "TARGET_ZONE":
+            record["target"] += 1
+        elif event and event[0] == "INVALIDATION":
+            record["invalidation"] += 1
+        if session != day_iso:
+            continue
+        direction = payload.get("direction", "?")
+        trigger = payload.get("trigger_level")
+        if event and event[0] == "TARGET_ZONE":
+            outcome = f"target {payload.get('target_level', 0):,.0f} reached at {str(event[1])[11:16]}"
+        elif event and event[0] == "INVALIDATION":
+            outcome = f"invalidated at {str(event[1])[11:16]} (level {payload.get('invalidation_level', 0):,.0f})"
+        elif close and trigger:
+            pts = (float(close) - float(trigger)) * (1 if direction == "LONG" else -1)
+            outcome = f"neither level reached; closed {float(close):,.0f} ({pts:+,.0f} pts vs trigger)"
+        else:
+            outcome = "no level reached"
+        cards.append({"time": str(payload.get("signal_at") or "")[11:16], "direction": direction,
+                      "outcome": outcome})
+    record_line = ""
+    if record["n"]:
+        record_line = (f"{underlying} advice cards, last 30 days: {record['n']} sent, "
+                       f"{record['target']} reached target, {record['invalidation']} invalidated, "
+                       f"{record['n'] - record['target'] - record['invalidation']} neither")
+    return cards, record_line
 
 
 async def _gates_open(now: datetime, lo_min: int, hi_min: int) -> bool:
@@ -925,6 +996,21 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
                     profile_state=profile_state, successful_observation=True,
                 )
                 continue
+            if settings.FNO_REENTRY_REQUIRES_CONFIRMATION:
+                from fno_entry_plan import reentry_confirmed
+                from partner_manual_advisory import invalidated_reentry_levels
+                levels = await invalidated_reentry_levels(
+                    settings.DB_PATH, underlying=spec.name,
+                    session_date=candidate_clock.candidate_constructed_at.astimezone(IST).date().isoformat(),
+                    margin_r=float(settings.FNO_REENTRY_MARGIN_R),
+                )
+                price = getattr(snapshot, "forward", None) or scan.sig.close
+                if levels and not reentry_confirmed(scan.sig.direction.value, float(price), levels):
+                    metrics["unavailable"] += 1
+                    await record_candidate_attempt(spec.name, scan, state="UNAVAILABLE",
+                                                   reason="reentry_not_confirmed")
+                    await finish_attempt(spec.name, "SUPPRESSED", "reentry_not_confirmed")
+                    continue
             candidate = build_directional_debit_spread(
                 snapshot, book, scan.sig.direction, candidate_clock.candidate_constructed_at,
                 evidence=StrategyEvidence.RESEARCH_ONLY,
@@ -1388,7 +1474,7 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
     if not await _gates_open(now, 0, 24 * 60):
         return
-    if await _legacy_info_retired(now, settings.PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF):
+    if await _legacy_info_retired(now, settings.PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF, context=True):
         return
     import main as _main
     day_iso = now.date().isoformat()
@@ -1667,6 +1753,8 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
                     "option_line": await _option_outcome_line(detail, day_iso),
                 })
             row["signals"] = sig_rows
+            row["cards"], row["card_record"] = await _todays_card_outcomes(
+                settings.DB_PATH, spec.name, day_iso, row.get("close"))
 
             last = await fno_oi_store.latest_fut_row(settings.DB_PATH, spec.name)
             if last is not None and last["snap_ts"].startswith(day_iso):
@@ -1684,7 +1772,7 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
             row["error"] = "internal error"
         rows.append(row)
 
-    if not await _legacy_info_retired(now, settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD):
+    if not await _legacy_info_retired(now, settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD, context=True):
         msg = format_eod(
             day_iso, rows,
             record_line=await _track_record_overall(settings.DB_PATH, now),

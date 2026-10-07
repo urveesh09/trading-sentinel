@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, FrozenSet, Optional, Sequence
+from typing import Any, FrozenSet, Mapping, Optional, Sequence
 
 from config import settings
 from fno_chain import ChainSnapshot, select_strike_by_delta
@@ -42,6 +42,31 @@ class EntryState:
     # and SENSEX move together, so a same-direction second entry is the same
     # bet twice and is refused.
     correlated_open_directions: FrozenSet[str] = frozenset()
+    # [FNO-REENTRY 2026-10-07] direction -> the price a new entry in that
+    # direction must pass: today's latest STOPPED same-underlying trade in that
+    # direction (underlying stop or premium backstop), its entry underlying
+    # moved FNO_REENTRY_MARGIN_R x its stop distance further in the trade's
+    # favour (``reentry_level``). The move has to resume clearly past the point
+    # where the last idea was wrong. The other direction is never blocked.
+    # Empty when FNO_REENTRY_REQUIRES_CONFIRMATION is off.
+    reentry_levels: Optional[Mapping[str, float]] = None
+
+
+REENTRY_STOP_REASONS = ("underlying_stop", "premium_backstop")
+
+
+def reentry_level(direction: str, entry_underlying: float, stop_underlying: float, margin_r: float) -> float:
+    """Price a same-direction re-entry must pass after a stop (pure)."""
+    margin = abs(entry_underlying - stop_underlying) * margin_r
+    return entry_underlying + margin if direction == "LONG" else entry_underlying - margin
+
+
+def reentry_confirmed(direction: str, forward: float, levels: Optional[Mapping[str, float]]) -> bool:
+    """True unless a same-day stopped trade in ``direction`` set a level not yet passed."""
+    level = (levels or {}).get(direction)
+    if level is None:
+        return True
+    return forward > level if direction == "LONG" else forward < level
 
 
 @dataclass
@@ -115,6 +140,12 @@ def plan_single_leg_entry(sig: MomSignal, snap: ChainSnapshot, regime: str, now_
 
     if sig.direction.value in state.correlated_open_directions:
         plan.reject_reason, plan.log_fields = "correlated_exposure_open", {**contract_fields, **audit}
+        return plan
+
+    if not reentry_confirmed(sig.direction.value, snap.forward, state.reentry_levels):
+        plan.reject_reason = "reentry_not_confirmed"
+        plan.log_fields = {**contract_fields, **audit,
+                           "reentry_level": (state.reentry_levels or {}).get(sig.direction.value)}
         return plan
 
     # No pyramiding into a contract this leg already holds (count/premium caps

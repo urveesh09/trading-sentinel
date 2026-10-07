@@ -4,6 +4,67 @@
 
 
 
+
+## October 7 (evening) — owner-requested profit keeping + Oct 7 audit fixes (done, Dev)
+
+- Source: Production `docs/2026-10-07-production-deep-audit.md` (read-only),
+  and the owner's question of how to keep small profits without pausing half
+  the market.
+- Done:
+  - F&O profit lock and re-entry confirmation (paper, on by default). The
+    flags `FNO_PROFIT_LOCK_ENABLED` and `FNO_REENTRY_REQUIRES_CONFIRMATION`
+    turn them off.
+  - Audit fixes: T1 overnight retry, T2 D reserve breach reporting, T3
+    attribution date check.
+  - Momentum selective entry turned on (owner decision; round-3 skipped,
+    unscored). Penny noise stop was already on.
+  - Overnight: an exit records `open_is_prev_close`; the forward fidelity
+    check is in SYSTEM_GUIDE.
+  - Overnight realistic-entry guards, from the live-universe replay
+    (`docs/research/edge-overnight/2026-10-07-live-universe/README.md`).
+    The old +₹2.2 lakh study was mostly unbuyable circuit closes. The
+    realistic edge is about +0.6% a trade, positive every quarter, and very
+    sensitive to slippage.
+- Not done, by evidence:
+  - an overnight liquidity floor (it cut the edge: the edge is in thinner
+    names);
+  - an overnight strength filter (all live picks were already 0.96–1.0);
+  - a faster F&O management cadence (no gain in the replay);
+  - an early profit lock (lost money).
+- Still open from the audit:
+  - T4: finite research-writer wait and the unbounded outer finalizer;
+  - T7 / C7: late-bar shadow closure (frozen source);
+  - T8: four historical position-store mismatches;
+  - T9: DB size and bootstrap cost.
+- Rollout: an engine rebuild. Additive column `fno_positions.best_premium`.
+  Rollback: set the two flags off, or revert.
+- Watch: the evidence is in-sample (12 trades, and the margin was picked
+  after seeing 4 re-entry cases). Judge only on forward paper trades.
+
+## October 7 — expiry chain context `expiry-context-v1` (done, Dev, record-only)
+
+- Problem: the owner asked whether the option chain, OI, change in OI and IV
+  can improve the odds. The research ranked implied against realized
+  volatility first, OI walls second, and change in OI, max pain and PCR as
+  weak. The owner chose to observe first, then integrate what proves useful.
+- Files: `python-engine/expiry_paper.py`, `python-engine/tests/test_expiry_paper.py`
+  and the design doc.
+- Acceptance:
+  - the max pain and realized-volatility math is checked;
+  - the straddle-implied IV recovers a known volatility;
+  - walls, PCR, OI change and futures build-up are read correctly;
+  - a whole day gives identical positions with and without OI;
+  - snapshots are taken at 14:30 and 15:13:30, and the summary shows the
+    context block.
+- Rollout: an engine rebuild (the October 8 SENSEX expiry is the first
+  observation). No schema change: the context lives in the tick JSON and the
+  day state. Rollback: revert; the stored context is ignored.
+- Next:
+  - after October 8, check that the fields fill and look sensible on real
+    SENSEX data;
+  - after more expiries, freeze thresholds for a D/B IV-against-RV gate and
+    an A wall label as a new version, and score them only on later expiries.
+
 ## October 6 (night) — Production audit follow-up: O1 overnight fees, A1 partner updates (done, Dev)
 
 - Source: Production `docs/2026-10-06-production-deep-audit.md` (read-only).

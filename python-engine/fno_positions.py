@@ -233,6 +233,7 @@ class FnoPosition:
     status: str
     bar_ts: str
     settlement_generation: int
+    best_premium: Optional[float] = None    # FNO-PROFIT-LOCK: best exit basis seen
 
 
 _SELECT_COLS = (
@@ -241,7 +242,7 @@ _SELECT_COLS = (
     "entry_underlying, delta_at_entry, iv_at_entry, atr_at_entry, "
     "stop_underlying, target_underlying, premium_stop, trail_active, "
     "trail_stop_underlying, best_underlying, max_loss_rupees, status, bar_ts, "
-    "settlement_generation"
+    "settlement_generation, best_premium"
 )
 
 
@@ -277,7 +278,8 @@ async def init_fno_positions_db(db_path: str) -> None:
         for column, datatype in (("initial_qty", "INTEGER"),
                                  ("initial_lots", "INTEGER"),
                                  ("initial_max_loss_rupees", "REAL"),
-                                 ("risk_fee_reserve_rupees", "REAL")):
+                                 ("risk_fee_reserve_rupees", "REAL"),
+                                 ("best_premium", "REAL")):
             try:
                 await db.execute(f"ALTER TABLE fno_positions ADD COLUMN {column} {datatype}")
             except aiosqlite.OperationalError as exc:
@@ -465,12 +467,13 @@ async def update_trail(
     db_path: str, position_id: int,
     trail_active: int, trail_stop_underlying: Optional[float],
     best_underlying: float,
+    best_premium: Optional[float] = None,
 ) -> None:
     async with aiosqlite.connect(db_path) as db:
         await db.execute(
             "UPDATE fno_positions SET trail_active=?, trail_stop_underlying=?, "
-            "best_underlying=? WHERE id=?",
-            (trail_active, trail_stop_underlying, best_underlying, position_id),
+            "best_underlying=?, best_premium=COALESCE(?, best_premium) WHERE id=?",
+            (trail_active, trail_stop_underlying, best_underlying, best_premium, position_id),
         )
         await db.commit()
 
@@ -984,6 +987,25 @@ async def settle_position_close_idempotent(
         **kwargs,
     )
     return {"settled": True, "result": result}
+
+
+async def stopped_entry_levels_today(db_path: str, source: str, underlying: str,
+                                     today_iso: str, reasons: tuple, margin_r: float) -> dict:
+    """direction -> re-entry level from today's latest stopped trade (FNO-REENTRY)."""
+    from fno_entry_plan import reentry_level
+    async with aiosqlite.connect(db_path) as db:
+        if not await _table_exists(db):
+            return {}
+        marks = ",".join("?" for _ in reasons)
+        async with db.execute(
+            "SELECT direction, entry_underlying, stop_underlying FROM fno_positions WHERE source=? AND status='CLOSED' "
+            "AND exit_date=? AND UPPER(COALESCE(underlying,'NIFTY'))=? "
+            f"AND exit_reason IN ({marks}) ORDER BY exit_time",
+            (source, today_iso, underlying.upper(), *reasons),
+        ) as cur:
+            rows = await cur.fetchall()
+    return {direction: reentry_level(direction, float(entry), float(stop or entry), margin_r)
+            for direction, entry, stop in rows if entry}
 
 
 async def closed_today(db_path: str, source: str, today_iso: str) -> List[dict]:

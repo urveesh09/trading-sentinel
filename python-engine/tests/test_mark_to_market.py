@@ -428,8 +428,9 @@ class TestFnoMark:
 
 class TestFnoDrMark:
     @pytest.mark.asyncio
-    async def test_actual_dr_writer_row_is_explicitly_unsupported(self, tmp_path) -> None:
-        """Real stored DR legs lack an immutable quote identity."""
+    async def test_actual_dr_writer_row_is_marked_from_its_bound_contracts(self, tmp_path) -> None:
+        """Since 9e26e1b the DR writer binds each leg to its exact contract;
+        the marker reads that format the way fno_dr_book values it."""
         from fno_defined_risk import Structure, StructureKind
         from fno_dr_book import PlannedStructure, init_dr_db, insert_structure, open_structures
         from fno_models import Leg, OptionType
@@ -438,16 +439,35 @@ class TestFnoDrMark:
         await init_dr_db(db_path)
         structure = Structure(
             kind=StructureKind.DEBIT_SPREAD,
-            legs=[Leg(OptionType.CE, 25_000.0, 1, 100.0)],
-            lot_size=25, net_premium=-100.0, max_profit_rs=100.0,
-            max_loss_rs=100.0, breakevens=[25_100.0],
+            legs=[Leg(OptionType.CE, 25_000.0, 1, 100.0), Leg(OptionType.CE, 25_100.0, -1, 60.0)],
+            lot_size=25, net_premium=-40.0, max_profit_rs=1500.0,
+            max_loss_rs=1000.0, breakevens=[25_040.0],
         )
+
+        def bound(strike, quantity, premium, token, symbol):
+            return {"opt_type": "CE", "strike": strike, "quantity": quantity, "premium": premium,
+                    "contract": {"underlying": "NIFTY", "expiry": "2026-10-13", "exchange": "NFO",
+                                 "token": token, "tradingsymbol": symbol, "lot_size": 25,
+                                 "instrument_type": "CE"}}
+
+        contract_legs = (bound(25_000.0, 1, 100.0, 11, "NIFTY26O1325000CE"),
+                         bound(25_100.0, -1, 60.0, 12, "NIFTY26O1325100CE"))
         await insert_structure(
-            db_path, "FNO_PAPER", PlannedStructure(structure, 25_000.0), _now(),
+            db_path, "FNO_PAPER", PlannedStructure(structure, 25_000.0, contract_legs), _now(),
         )
         [stored] = await open_structures(db_path, "FNO_PAPER")
         result = mark_open_positions(
             equity_rows=[], fno_rows=[], fno_dr_rows=[stored],
+            quotes={"NIFTY26O1325000CE": _quote(120.0), 12: _quote(70.0)}, now_utc=_now(),
+        )
+        assert result.marks[0].quote_status == QuoteStatus.FRESH
+        # long +20 x 25 = +500, short (70 - 60) x 25 x -1 = -250
+        assert result.total_unrealised_pnl == pytest.approx(250.0)
+
+    def test_legacy_dr_leg_without_identity_stays_unsupported(self) -> None:
+        legs = [{"opt_type": "CE", "strike": 25_000.0, "quantity": 1, "premium": 100.0}]
+        result = mark_open_positions(
+            equity_rows=[], fno_rows=[], fno_dr_rows=[_fno_dr_row(legs=legs)],
             quotes={"unrelated": _quote(999.0)}, now_utc=_now(),
         )
         assert result.marks[0].quote_status == QuoteStatus.UNSUPPORTED
@@ -486,9 +506,9 @@ class TestFnoDrMark:
         # Long pnl: 30 * 1 * 25 = +750
         # Short pnl: 10 * 1 * 25 * -1 = -250
         # Total leg marks = 500
-        # Net premium = 1250 (entry_cost)
-        # Structure pnl = 500 - 1250 = -750
-        assert result.total_unrealised_pnl == pytest.approx(-750.0)
+        # Net premium = 1250 is the entry cost, already inside each leg's
+        # (mark - entry) term; subtracting it again double-counted (Oct 7).
+        assert result.total_unrealised_pnl == pytest.approx(500.0)
         m = result.marks[0]
         assert m.subsystem == "FNO_DR"
         assert m.quote_status == QuoteStatus.FRESH

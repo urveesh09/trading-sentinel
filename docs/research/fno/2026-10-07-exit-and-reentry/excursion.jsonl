@@ -1,0 +1,11 @@
+{"id": 30, "day": "2026-09-17", "reason": "time_stop", "pnl": -404.0, "entry": 127.75, "best_bid": 140.45, "best_net": 1561.0, "best_at_min": 27.9, "max_prog_R": 1.01, "n": 39}
+{"id": 31, "day": "2026-09-21", "reason": "time_stop", "pnl": -764.0, "entry": 74.4, "best_bid": 80.4, "best_net": 708.0, "best_at_min": 3.0, "max_prog_R": 0.31, "n": 41}
+{"id": 32, "day": "2026-09-23", "reason": "time_stop", "pnl": -102.0, "entry": 144.45, "best_bid": 163.4, "best_net": 1160.0, "best_at_min": 43.9, "max_prog_R": 1.11, "n": 99}
+{"id": 33, "day": "2026-09-28", "reason": "time_stop", "pnl": 174.0, "entry": 102.35, "best_bid": 111.25, "best_net": 1076.0, "best_at_min": 18.0, "max_prog_R": 0.74, "n": 38}
+{"id": 34, "day": "2026-09-28", "reason": "time_stop", "pnl": 141.0, "entry": 104.0, "best_bid": 111.55, "best_net": 900.0, "best_at_min": 3.0, "max_prog_R": 0.49, "n": 63}
+{"id": 35, "day": "2026-09-28", "reason": "trail_stop", "pnl": 4711.0, "entry": 97.5, "best_bid": 151.8, "best_net": 6968.0, "best_at_min": 63.5, "max_prog_R": 3.58, "n": 61}
+{"id": 36, "day": "2026-09-30", "reason": "underlying_stop", "pnl": -2056.0, "entry": 218.05, "best_bid": 218.05, "best_net": -81.0, "best_at_min": 5.3, "max_prog_R": 0.11, "n": 29}
+{"id": 37, "day": "2026-09-30", "reason": "trail_stop", "pnl": 1622.0, "entry": 219.7, "best_bid": 277.3, "best_net": 3656.0, "best_at_min": 17.3, "max_prog_R": 2.08, "n": 21}
+{"id": 38, "day": "2026-10-01", "reason": "trail_stop", "pnl": 7435.0, "entry": 199.95, "best_bid": 351.7, "best_net": 9767.0, "best_at_min": 37.5, "max_prog_R": 4.77, "n": 36}
+{"id": 39, "day": "2026-10-07", "reason": "underlying_stop", "pnl": -2079.0, "entry": 198.3, "best_bid": 196.25, "best_net": -211.0, "best_at_min": 0.2, "max_prog_R": -0.08, "n": 24}
+{"id": 40, "day": "2026-10-07", "reason": "underlying_stop", "pnl": -3228.0, "entry": 222.85, "best_bid": 227.35, "best_net": 210.0, "best_at_min": 0.2, "max_prog_R": 0.12, "n": 27}

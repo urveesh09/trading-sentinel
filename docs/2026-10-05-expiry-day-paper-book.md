@@ -97,6 +97,60 @@ D details:
   is no borrowing, but it is margin. That is why D stays paper only, with no
   live switch, until the owner decides on margin separately.
 
+## Chain context `expiry-context-v1` (record-only, from October 7)
+
+The owner asked whether the option chain, OI, change in OI and current IV can
+improve the odds. The research ranking (October 7):
+
+1. **Implied against realized volatility.** This is the strongest case.
+   Options usually price in more movement than happens (the variance risk
+   premium), even on the same day, but at that horizon the premium is small
+   and fees can swallow it. It may serve as a regime filter for D (sell when
+   rich) and B/C (buy when cheap).
+2. **OI walls.** Gamma-hedging flows amplify moves when option sellers are
+   short gamma (Baltussen et al., JFE 2021). Closes cluster at strikes for
+   stocks (Ni, Pearson and Poteshman, JFE 2005); the evidence for indices is
+   weaker. Public OI does not show who is short. This may serve as a label
+   for A (breaking through or away from a wall) and as a placement guide
+   for D.
+3. **Change in OI and the future's build-up.** On the expiry afternoon this
+   is mostly positions being closed, and index options show no sign of
+   informed trading (Pan and Poteshman, 2006).
+4. **Max pain.** The evidence is anecdotal. It is recorded only so the
+   folklore can be checked.
+5. **PCR.** It has no index-level predictive power. It is recorded only for
+   the same check.
+
+Nothing reads this context yet. Every tick records it under `context`, and
+every leg records its `oi`. It costs no extra request, because Kite's full
+quote already carries OI.
+
+| Field | Meaning |
+|---|---|
+| `straddle`, `atm` | Mid of the fresh, two-sided ATM call and put: the expected absolute move to settlement |
+| `iv` | Volatility the straddle implies, solved from straddle = √(2/π) × spot × iv × √T. T runs to the 15:35 auction close on a 252 × 375-minute session year |
+| `rv`, `iv_rv` | Today's index volatility from returns at least 60 s apart, on the same clock (shown after 10 minutes of samples), and the ratio of implied to realized |
+| `put_wall`, `call_wall` | Strike with the most put OI at or below spot, and with the most call OI at or above it |
+| `max_pain`, `pcr` | Over the fetched ATM ± 8 strikes |
+| `ce_oi_chg`, `pe_oi_chg`, `top_ce_add`, `top_pe_add` | OI change since each strike was first seen today. A strike entering the window is not counted as a change |
+| `fut_oi_chg`, `fut_buildup` | The front future since the day's first fresh tick (long or short build-up, short covering, long unwinding) |
+
+Snapshots are taken:
+- in each A/C signal;
+- at D's entry time, 14:30, under `state["context_at"]["d_entry"]`;
+- at B's entry time, 15:13:30, under `state["context_at"]["b_entry"]`.
+
+The summary prints both snapshots and how our sampled close met the 14:30 read:
+- whether it closed inside the walls;
+- its distance from max pain;
+- how far it moved against the straddle.
+
+**Next step:** after the first expiry, check that the fields fill and look
+sensible on real data. After more expiries, propose the thresholds for a gate
+on D and B and a label on A (`expiry-context-v2` or a shadow variant).
+Freeze them before scoring, and score them only on later expiries. A filter
+that halves the trades needs more than 20 expiries to prove itself.
+
 **Dropped before freezing:** "A only when fees are under 2% of premium". A round
 trip costs about ₹47 flat plus 0.24% of premium, so getting under 2% needs
 about ₹2,700 of premium, more than A's ₹2,500 ceiling allows. The variant could
@@ -241,6 +295,8 @@ At least 30 samples are required; otherwise A and C stand down for the day.
   - the rules and execution versions, box status and signals;
   - a data line: ticks out of 967 slots, the largest gap, gaps over 25 s, the
     slowest decision, and index/future refusals by reason;
+  - the record-only chain context at 14:30 and 15:13:30, and how the close
+    met it;
   - per play: fees, filled net, assumed and whole modeled, or the entry
     refusals when there was no trade;
   - the day's filled + assumed = whole modeled;
@@ -253,8 +309,8 @@ At least 30 samples are required; otherwise A and C stand down for the day.
     `assumed_pnl`, `fee_snapshot`, `execution`, events carrying `fill_model`,
     and, on sells, `gross` and `charges`);
   - `expiry_paper_days` (state with counters and refusals);
-  - `expiry_paper_ticks` (start and decision times, timing, full depth, and
-    index/future status).
+  - `expiry_paper_ticks` (start and decision times, timing, full depth and OI
+    per leg, index/future status, and the chain `context`).
 - **Quote archive:** the research quote archive now records until 15:40.
 
 ## Evaluation (pre-registered)

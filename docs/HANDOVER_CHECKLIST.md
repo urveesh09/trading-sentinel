@@ -11,6 +11,87 @@
 
 
 
+
+## October 7 (evening) — F&O profit lock + re-entry gate; audit T1–T3
+
+- [x] `tests/test_fno_profit_lock_and_reentry.py` (9 tests):
+  - lock arming, the half-gain floor, no arm-and-fire on one sample,
+    precedence and the no-futures path;
+  - the re-entry level and margin, the Oct 7 case blocked and the other
+    direction allowed;
+  - plan refusal, the levels SQL and `best_premium` persistence.
+- [x] `test_edge_overnight_paper.py`: 19 pass, adding:
+  - the PRAENG-like same-session retry;
+  - LTP retry after the grace and the stop at 15:20;
+  - a missed whole session gets no split;
+  - `prior_session` skips holidays.
+- [x] `test_expiry_paper.py`: 38 pass, including the ±20% D stress, which
+  records a breach and is not capped.
+- [x] F&O replay grid saved in `docs/research/fno/2026-10-07-exit-and-reentry/`.
+- [x] `test_momentum_shadow_integration.py`: 9 pass. The selective entry
+  keeps a strong stock in a rising market. It refuses on a falling market,
+  low relative strength or a missing index, and the same scan with the gate
+  off accepts.
+- [x] The 4 long-standing suite failures are fixed (76 pass):
+  - `mark_to_market` DR: the code could not read the contract-bound leg
+    format that `fno_dr_book` has stored since `9e26e1b` (every real spread
+    was UNSUPPORTED), and it subtracted `net_premium_rs` on top of
+    per-leg (mark − entry) P&L. Both are fixed. No runtime caller passes DR
+    rows (`main.py` uses `fno_dr_rows=[]`), so no live value was wrong.
+  - `proactive_demo`: the fixed Sep 1–7 2026 dates aged out of the 30-day
+    report window on Oct 1, which broke the 3 demo tests. The demo now
+    anchors to a recent week and takes its five sessions from the same NSE
+    calendar rule the diagnostic uses (Oct 2 is a holiday).
+- [x] Full suite before the overnight guards: 5,030 passed, 4 skipped,
+  0 failed (395 s).
+- [x] Overnight realistic-entry guards: `test_edge_overnight_paper.py` has 21
+  passing tests. They cover every refusal reason, and that a refused pick is
+  replaced by the next ranked one (the scan is ranked 10 deep).
+- [x] Partner re-entry gate: `test_partner_manual_advisory.py` covers the
+  Oct 7 case. 439 tests matching partner, hedge or advisory pass.
+- [x] Partner context: 460 partner/hedge/advisory/brief/EOD tests pass,
+  including the dormant-hedge decoupling and the EOD card scorecard.
+- [ ] Oct 8: the partner receives the 09:50 brief and the 15:40 EOD with
+  the card scorecard, and intraday analytics stay silent.
+- [ ] Oct 8+: a `reentry_not_confirmed` partner attempt appears only after a
+  same-day invalidation in that direction.
+- [ ] Oct 8+: the overnight ENTRY `skipped` list shows the realism reasons.
+  After 30+ trades, compare the live entry cost with the 25 bps assumption.
+  If real slippage is 0.5% or more, the edge is gone; stop the book.
+- [ ] Oct 8+: the Momentum funnel shows `selective_*` refusals, and paper
+  entries only on up-market days. After 30+ overnight exits, count
+  `open_is_prev_close` and compare net with and without those exits.
+- [ ] After the rebuild:
+  - check the first `profit_lock` or `reentry_not_confirmed` rows in
+    `fno_positions` and `fno_signals`;
+  - check that any overnight `EXIT_RETRY_*` notice arrives with its reason;
+  - on Oct 8 SENSEX, check that the summary has no `RESERVE BREACH` unless
+    the move exceeded 5%.
+- [ ] After 20 forward F&O single-leg trades, compare against the replay
+  baseline. If the lock or the gate costs money forward, set the flags off;
+  no code change is needed.
+
+## October 7 — expiry chain context (`expiry-context-v1`, record-only)
+
+Commit: see `git log`, on `codex/production-correction-hedge-p0`.
+
+- [x] Every expiry tick records the ATM straddle and the IV it implies,
+  realized volatility so far, OI walls, max pain, PCR, OI change per side,
+  and the future's build-up. Every leg records its OI.
+- [x] Snapshots are taken in each A/C signal, at 14:30 and at 15:13:30. The
+  summary shows them and how the close met them.
+- [x] No rule reads the context. A whole day gives identical positions with
+  and without OI.
+- [x] `test_expiry_paper.py`: 36 pass (4 new, including a context failure that
+  still records the tick). Cost and EDGE overnight
+  tests pass. Full suite: 5,006 pass, 4 skip, 4 fail (dev_acceptance_harness,
+  integrated_dev_demo, mark_to_market DR, proactive_intelligence; all in the
+  earlier no-change failure list).
+- [x] Pushed; not deployed.
+- [ ] Owner rebuilds the engine before October 8 (the first observation).
+- [ ] After the expiries, the owner decides which context becomes a frozen
+  gate or label.
+
 ## October 6 (night) — overnight entry/overnight attribution
 
 - [x] `test_edge_overnight_paper.py`: 15 pass, including the split and the

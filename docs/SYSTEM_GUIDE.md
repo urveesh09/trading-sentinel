@@ -13,6 +13,165 @@
 
 
 
+
+## October 7 (evening) — F&O profit lock and re-entry confirmation; Oct 7 audit fixes T1–T3 (actual behavior, Dev)
+
+- **F&O single-leg profit lock (`fno_exit_rules.profit_lock_floor`, on by default).**
+  - Once the option's best exit basis (bid, else LTP) has been
+    `FNO_PROFIT_LOCK_ARM_R` = 0.4 premium-R above entry, the position exits
+    (`profit_lock`) if the basis falls to the floor. Premium-R is entry
+    premium x `FNO_STOP_PREMIUM_PCT`.
+  - The floor is the larger of entry + 0.1 R and entry + half the best gain
+    (`FNO_PROFIT_LOCK_KEEP_FRACTION` = 0.5).
+  - The floor uses the best seen before the current sample, so one sample
+    cannot both arm and fire it.
+  - The ladder order is: underlying stop, trail, premium backstop, profit
+    lock, then the time stop. The lock also works without a futures quote.
+  - `fno_positions.best_premium` is a new additive column, written with the
+    trail.
+- **F&O re-entry confirmation (`fno_entry_plan.reentry_confirmed`, on by default).**
+  - After a same-day `underlying_stop` or `premium_backstop` on an
+    underlying, a new single-leg entry in that direction must be beyond the
+    stopped trade's entry by `FNO_REENTRY_MARGIN_R` (0.25) x its stop
+    distance. Otherwise it is refused as `reentry_not_confirmed`, and the log
+    carries the level.
+  - The opposite direction and other underlyings are never blocked.
+  - Levels come from `fno_positions.stopped_entry_levels_today`.
+- **Evidence (development only, every session already seen).**
+  - The replay covered 18 archived NIFTY sessions:
+    `docs/research/fno/2026-10-07-exit-and-reentry/README.md`.
+  - Results:
+    - baseline: ₹5,323 net, drawdown ₹3,831;
+    - re-entry gate alone: ₹7,693, drawdown ₹1,991;
+    - both features: ₹8,411, drawdown ₹1,991. Without the best trade,
+      the result goes from −₹1,784 to +₹1,303.
+  - Rejected settings:
+    - an early lock (0.2–0.25 R) lost money, because exits fell through a
+      thin floor between samples;
+    - faster management did not help on this data.
+  - Oct 7's two puts never went meaningfully green, so no exit rule could
+    have saved them. The re-entry gate blocks the second one.
+- **Partner context restored: morning brief and EOD wrap (`PARTNER_CONTEXT_WITH_ADVISORY`, on).**
+  - Production's compose file defaults `PARTNER_HEDGE_ENABLED=true`, with no
+    bound partner portfolio. The hedge bot therefore sent nothing, but
+    `_legacy_info_retired` silenced the 09:50 brief and the 15:40 EOD wrap.
+  - Both are now context surfaces (`context=True`). They run beside advice
+    cards and the hedge bot.
+  - The 09:50 brief covers, per index:
+    - opening-range breakout levels;
+    - IV against RV, with a buyer's-day verdict;
+    - skew, PCR, max pain and the OI support/resistance walls;
+    - expiry and event-calendar notes.
+  - The 15:40 EOD wrap now lists each delivered advice card with its
+    outcome (invalidated, target reached, or neither with the close against
+    the trigger). It adds a 30-day card record and a tomorrow-expiry
+    warning.
+  - Intraday analytics alerts keep the suppression rule, because about 100
+    events a day would be noise.
+  - Turn it off with `PARTNER_CONTEXT_WITH_ADVISORY=false`.
+- **Partner cards follow the same re-entry rule (`partner_manual_advisory.invalidated_reentry_levels`).**
+  - After a same-day partner idea on an underlying reaches its published
+    invalidation, a new card in that direction is suppressed
+    (`reentry_not_confirmed`). It is allowed once the forward price passes
+    the failed idea's trigger by `FNO_REENTRY_MARGIN_R` x its
+    trigger-to-invalidation distance.
+  - The other direction is never blocked. The gate is controlled by the
+    same flag as the paper book.
+  - On Oct 7 the partner received the 13:11 card and the 14:00 repeat. Both
+    were invalidated; the second is the kind this gate suppresses.
+  - Partner traffic is unchanged otherwise. It stays event-driven:
+    - at most 2 cards and 4 updates a day;
+    - cards 09:45–14:45;
+    - invalidation or target updates, and a 15:10 exit reminder;
+    - PURE ADVICE (NOT CHECKED) labels;
+    - no orders.
+    The hedge bot (`PARTNER_HEDGE_ENABLED`) is off, and analytics messages
+    are suppressed.
+- **`mark_to_market` defined-risk marks.**
+  - The marker now reads `fno_dr_book`'s contract-bound legs (signed
+    `quantity`, `premium`, `contract.token` / `tradingsymbol`), using the
+    row's `lot_size`.
+  - Structure P&L is the sum of the legs' (mark − entry) values.
+    `net_premium_rs` is the entry cost and is no longer subtracted a second
+    time.
+  - Legacy legs with no identity stay UNSUPPORTED. No runtime caller passes
+    DR rows yet.
+- **Momentum selective entry (`MOMENTUM_SELECTIVE_ENTRY_ENABLED`, on).**
+  - This was an owner decision on Oct 7. The round-3 scoring on untouched
+    data was skipped, so this is unscored and paper forward evidence only.
+  - A shipped Momentum signal now also needs all three of
+    `momentum_selective.selective_gate`:
+    - NIFTY 50 above its session open;
+    - the stock at least 0.3% ahead of NIFTY;
+    - the close above yesterday's high.
+  - A refusal is recorded as `selective_<reason>`.
+  - The one NIFTY 50 intraday fetch per scan now also runs when the shadow
+    is off. A missing index fails closed: no entry in that scan.
+  - It applies to the shared scanner, so it also gates the live Momentum
+    path, which remains halted by the owner.
+  - The frozen Momentum allocation holdout's candidate population is now
+    selective-only from Oct 8. Record that when evaluating it.
+  - Penny's matching candidate `PEN_NOISE_STOP` was already on in the runtime
+    (`PENNY_NOISE_STOP_ENABLED`).
+- **Overnight forward check (Oct 7).**
+  - Official Yahoo daily bars for the 8 live picks give these 15:20 entries
+    against the official close: −0.4, −1.1, −0.7, −0.3, −2.6, +1.0, +2.1
+    and −1.1%.
+  - The close → next open moves were −4.6, 0, +0.7, 0, 0 and +3.6%. The
+    +3.6% is PRAENG, the winner the T1 bug never sold.
+  - All 8 picks had strength 0.96–1.0, so a stricter strength filter
+    (S60) would have changed nothing.
+  - Three exits had open exactly equal to the previous close. NSE sets the
+    open to the previous close when the pre-open auction finds no
+    equilibrium, so those modeled auction exits were not traded prices. Each
+    exit now records `open_is_prev_close` to measure this.
+- **Overnight realistic-entry guards (`edge_overnight_paper.realism_refusal`, Oct 7 night).**
+  - The live-universe replay
+    (`docs/research/edge-overnight/2026-10-07-live-universe/`) used Kite
+    daily data, about 1,500 band tickers and Jul 2025 – Oct 2026. It found
+    that 75% of the old model's profit came from closes locked at the day's
+    high, which cannot be bought at the close. The frozen `edge-overnight-t1`
+    result is inflated the same way.
+  - With realistic fills the edge is thin but positive in every quarter:
+    - +₹68,820 on ₹25k;
+    - +0.62% per trade (median +0.27%);
+    - 13.4% drawdown from peak.
+  - The 15:20 entry now ranks 10 deep and fills the
+    `PENNY_EDGE_MAX_POSITIONS` slots, replacing each refused pick with the
+    next one. It refuses:
+    - SME series (`-SM`, `-ST`);
+    - a second series of a held company;
+    - the `MR_mid` kind;
+    - an LTP within 0.5% of `upper_circuit_limit`;
+    - empty sell depth;
+    - an LTP at the day's high after a rise of 1.9% or more.
+  - Refusals appear in the entry summary's `skipped` list.
+- **Overnight waiting-leg retry (audit T1, `edge_overnight_paper.retry_waiting_exits`).**
+  - After today's EXIT receipt, `catch_up` (every 5 min) retries legs that
+    had no trade at 09:17, until 15:20:
+    - inside the 09:47 auction grace it sells at `ohlc.open` (`OPEN_RETRY`);
+    - after that it sells at LTP (`CATCHUP_LTP`).
+  - Each retry that closes something queues its own notice
+    (`EXIT_RETRY_HHMM`).
+  - Refusals keep their exact predicate: `no_quote`, `no_open_price`,
+    `no_basis_price`, or `no_trade_today` with the quote's last trade time.
+  - A leg still untraded at 15:20 is carried, as before.
+- **Overnight attribution date check (audit T3).**
+  - The entry-vs-close / overnight split is recorded only when the entry day
+    is the session right before today (`prior_session`, from the cached
+    holiday list; never the network).
+  - A wholly missed session now exits as `OPEN_DELAYED` without a split,
+    even with zero attempts.
+  - LTP exits add `after_open_rs`.
+- **Expiry D reserve (audit T2).**
+  - D's sizing is unchanged (frozen `expiry-shadow-v1`). Its `max_loss` is
+    a bound only within the 5% exercise-STT reserve domain.
+  - Settlement now records a `reserve_breach` event on a long wing whose
+    intrinsic is beyond the reserve stored at entry
+    (`reserve_intrinsic`), and logs `expiry_d_reserve_breach`.
+  - The day summary prints `RESERVE BREACH` with the STT beyond the
+    reserve. The loss is never capped.
+
 ## October 6 (night) — EDGE overnight result split into entry and overnight parts (actual behavior, Dev)
 
 - `edge_overnight_paper.run_overnight_exit` reads `ohlc.close` from the
@@ -116,6 +275,32 @@
       `idea_<status>`, or `idea_payload_unusable`).
   - A stale observation is never resent as current.
   - `partner_advisory_updates` gains a `status_reason` column, added at init.
+
+## October 7 — expiry chain context `expiry-context-v1` (actual behavior, Dev, record-only)
+
+See the [design doc](2026-10-05-expiry-day-paper-book.md), section "Chain
+context", for the research ranking and the field table.
+
+- **Recording:**
+  - `chain_context` runs on every expiry tick after the quotes arrive and is
+    stored under `context` in the tick row.
+  - `Quote` now parses Kite's `oi`, so every logged leg carries it.
+  - The day state keeps the realized-volatility samples (`rv`), each strike's
+    first OI today (`oi_base`), the future's first price and OI
+    (`fut_base`), and snapshots at 14:30 and 15:13:30 (`context_at`). Each A/C
+    signal carries the context of its tick.
+- **Summary:** a context block with both snapshots and how our sampled close
+  met the 14:30 read (inside the walls, distance from max pain, move against
+  the straddle).
+- **Authority:** no rule reads the context. A whole simulated day gives
+  identical positions with and without OI (test). If the context computation
+  fails, the tick stores `{"status": "ERROR", "error": <type>}` and carries on
+  (test).
+- **Limits:**
+  - max pain, walls and PCR cover only the ATM ± 8 strikes fetched;
+  - IV comes from the straddle approximation, not a solver;
+  - after 15:15 the index is frozen, so the 15:13:30 snapshot is the last
+    meaningful one.
 
 ## October 6 (evening) — expiry shadow plays `expiry-shadow-v1` (actual behavior, Dev, paper only)
 
