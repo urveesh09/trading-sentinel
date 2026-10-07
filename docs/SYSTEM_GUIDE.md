@@ -117,6 +117,32 @@
   - A stale observation is never resent as current.
   - `partner_advisory_updates` gains a `status_reason` column, added at init.
 
+## October 7 — expiry chain context `expiry-context-v1` (actual behavior, Dev, record-only)
+
+See the [design doc](2026-10-05-expiry-day-paper-book.md), section "Chain
+context", for the research ranking and the field table.
+
+- **Recording:**
+  - `chain_context` runs on every expiry tick after the quotes arrive and is
+    stored under `context` in the tick row.
+  - `Quote` now parses Kite's `oi`, so every logged leg carries it.
+  - The day state keeps the realized-volatility samples (`rv`), each strike's
+    first OI today (`oi_base`), the future's first price and OI
+    (`fut_base`), and snapshots at 14:30 and 15:13:30 (`context_at`). Each A/C
+    signal carries the context of its tick.
+- **Summary:** a context block with both snapshots and how our sampled close
+  met the 14:30 read (inside the walls, distance from max pain, move against
+  the straddle).
+- **Authority:** no rule reads the context. A whole simulated day gives
+  identical positions with and without OI (test). If the context computation
+  fails, the tick stores `{"status": "ERROR", "error": <type>}` and carries on
+  (test).
+- **Limits:**
+  - max pain, walls and PCR cover only the ATM ± 8 strikes fetched;
+  - IV comes from the straddle approximation, not a solver;
+  - after 15:15 the index is frozen, so the 15:13:30 snapshot is the last
+    meaningful one.
+
 ## October 6 (evening) — expiry shadow plays `expiry-shadow-v1` (actual behavior, Dev, paper only)
 
 The owner approved them. See the

@@ -4,6 +4,30 @@
 
 
 
+## October 7 — expiry chain context `expiry-context-v1` (done, Dev, record-only)
+
+- Problem: the owner asked whether the option chain, OI, change in OI and IV
+  can improve the odds. The research ranked implied against realized
+  volatility first, OI walls second, and change in OI, max pain and PCR as
+  weak. The owner chose to observe first, then integrate what proves useful.
+- Files: `python-engine/expiry_paper.py`, `python-engine/tests/test_expiry_paper.py`
+  and the design doc.
+- Acceptance:
+  - the max pain and realized-volatility math is checked;
+  - the straddle-implied IV recovers a known volatility;
+  - walls, PCR, OI change and futures build-up are read correctly;
+  - a whole day gives identical positions with and without OI;
+  - snapshots are taken at 14:30 and 15:13:30, and the summary shows the
+    context block.
+- Rollout: an engine rebuild (the October 8 SENSEX expiry is the first
+  observation). No schema change: the context lives in the tick JSON and the
+  day state. Rollback: revert; the stored context is ignored.
+- Next:
+  - after October 8, check that the fields fill and look sensible on real
+    SENSEX data;
+  - after more expiries, freeze thresholds for a D/B IV-against-RV gate and
+    an A wall label as a new version, and score them only on later expiries.
+
 ## October 6 (night) — Production audit follow-up: O1 overnight fees, A1 partner updates (done, Dev)
 
 - Source: Production `docs/2026-10-06-production-deep-audit.md` (read-only).

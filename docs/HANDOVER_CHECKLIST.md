@@ -11,6 +11,27 @@
 
 
 
+## October 7 — expiry chain context (`expiry-context-v1`, record-only)
+
+Commit: see `git log`, on `codex/production-correction-hedge-p0`.
+
+- [x] Every expiry tick records the ATM straddle and the IV it implies,
+  realized volatility so far, OI walls, max pain, PCR, OI change per side,
+  and the future's build-up. Every leg records its OI.
+- [x] Snapshots are taken in each A/C signal, at 14:30 and at 15:13:30. The
+  summary shows them and how the close met them.
+- [x] No rule reads the context. A whole day gives identical positions with
+  and without OI.
+- [x] `test_expiry_paper.py`: 36 pass (4 new, including a context failure that
+  still records the tick). Cost and EDGE overnight
+  tests pass. Full suite: 5,006 pass, 4 skip, 4 fail (dev_acceptance_harness,
+  integrated_dev_demo, mark_to_market DR, proactive_intelligence; all in the
+  earlier no-change failure list).
+- [x] Pushed; not deployed.
+- [ ] Owner rebuilds the engine before October 8 (the first observation).
+- [ ] After the expiries, the owner decides which context becomes a frozen
+  gate or label.
+
 ## October 6 (night) — overnight entry/overnight attribution
 
 - [x] `test_edge_overnight_paper.py`: 15 pass, including the split and the

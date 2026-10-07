@@ -45,9 +45,9 @@ def _option_price(spot, strike, kind):
 class _Market:
     """Answers documented quote requests from a scripted spot path with five-level depth."""
 
-    def __init__(self, book, spot_at, *, lag_sec=1.0, level_qty=650, no_bid_after=None, gap_at=None):
+    def __init__(self, book, spot_at, *, lag_sec=1.0, level_qty=650, no_bid_after=None, gap_at=None, oi=False):
         self.access_token = "test"
-        self.book, self.spot_at = book, spot_at
+        self.book, self.spot_at, self.oi = book, spot_at, oi
         self.lag_sec, self.level_qty = lag_sec, level_qty
         self.no_bid_after, self.gap_at = no_bid_after, gap_at
         self.now = None
@@ -65,6 +65,8 @@ class _Market:
                 out[key] = {"last_price": spot, "timestamp": self._stamp()}
             elif key == xp.FUT_KEY:
                 out[key] = {"last_price": spot + 20.0, "timestamp": self._stamp()}
+                if self.oi:
+                    out[key]["oi"] = 9_000_000 + (self.now.hour * 60 + self.now.minute) * 500
             else:
                 contract = self.book.by_symbol[name.split(":", 1)[1]]
                 mid = _option_price(spot, contract.strike, contract.instrument_type)
@@ -76,7 +78,16 @@ class _Market:
                 asks = [{"price": round(mid + 0.1 + 0.05 * i, 2), "quantity": self.level_qty, "orders": 2}
                         for i in range(5)]
                 out[key] = {"last_price": mid, "timestamp": self._stamp(), "depth": {"buy": bids, "sell": asks}}
+                if self.oi:
+                    out[key]["oi"] = _chain_oi(contract, self.now)
         return out
+
+
+def _chain_oi(contract, now):
+    """Put OI peaks at 24,900 and call OI at 25,200; call writers add through the afternoon."""
+    peak = 24900.0 if contract.instrument_type == "PE" else 25200.0
+    added = max(0, (now.hour * 60 + now.minute - 13 * 60) * 100) if contract.instrument_type == "CE" else 0
+    return max(0, 500_000 - 2_000 * abs(contract.strike - peak)) + added
 
 
 def _breakout_day(now):
@@ -637,3 +648,84 @@ def test_condor_sizing_refuses_a_credit_too_small_for_its_charges():
     lots, prices, max_loss, refusal = xp.condor_fill(legs, 65, 50.0, 25000.0, BUDGET)
     assert (lots, refusal) == (1, None) and max_loss <= BUDGET
     assert prices == [20.0, 6.05, 20.0, 6.05]                                     # sold on the bid, bought on the ask
+
+
+# --------------------------------------------------------------------------- chain context (expiry-context-v1)
+
+def test_max_pain_and_realized_volatility_math():
+    # Settling at 105 pays 10 (the one-unit 100 call and 110 put); 100 or 110 pays 60.
+    assert xp.max_pain({(100.0, "CE"): 1, (105.0, "CE"): 10, (110.0, "CE"): 0,
+                        (100.0, "PE"): 0, (105.0, "PE"): 10, (110.0, "PE"): 1}) == 105.0
+    assert xp.max_pain({}) is None and xp.max_pain({(100.0, "CE"): 0}) is None
+
+    state, start = {}, _at(TUESDAY, 13, 0)
+    for minute in range(11):
+        xp.update_realized(state, start + timedelta(minutes=minute), 100.0 if minute % 2 == 0 else 101.0)
+        xp.update_realized(state, start + timedelta(minutes=minute, seconds=30), 150.0)   # too soon: ignored
+        if minute < 10:
+            assert xp.realized_vol(state) is None                                        # under ten minutes
+    expected = math.sqrt(10 * math.log(1.01) ** 2 / 600.0 * xp.TRADING_YEAR_SEC)
+    assert xp.realized_vol(state) == pytest.approx(expected)
+
+
+def test_chain_context_reads_the_straddle_walls_and_oi_change():
+    now, spot = _at(TUESDAY, 14, 30), 25000.0
+    straddle = math.sqrt(2 / math.pi) * spot * 0.12 * math.sqrt(65 * 60 / xp.TRADING_YEAR_SEC)
+
+    def chain(extra_ce_oi=0):
+        out = {}
+        for strike in (24900.0, 25000.0, 25100.0):
+            for kind in ("CE", "PE"):
+                mid = straddle / 2 if strike == 25000.0 else 5.0
+                oi = {24900.0: 300, 25000.0: 200, 25100.0: 100}[strike] if kind == "PE" else \
+                    {24900.0: 100, 25000.0: 200, 25100.0: 400 + extra_ce_oi}[strike]
+                out[(strike, kind)] = (None, xp.Quote(bids=((mid - 0.05, 650),), asks=((mid + 0.05, 650),),
+                                                      ltp=mid, ts=now, oi=float(oi)))
+        return out
+
+    state = {}
+    first = xp.chain_context(state, chain(), spot, 50.0, 25020.0, 9_000_000.0, now)
+    assert first["iv"] == pytest.approx(0.12, abs=1e-4) and first["straddle"] == pytest.approx(straddle, abs=0.01)
+    assert (first["put_wall"], first["call_wall"], first["pcr"]) == (24900.0, 25100.0, round(600 / 700, 3))
+    assert first["ce_oi_chg"] == 0 and "rv" not in first
+    later = xp.chain_context(state, chain(extra_ce_oi=250), spot, 50.0, 25040.0, 9_100_000.0,
+                             now + timedelta(seconds=10))
+    assert (later["ce_oi_chg"], later["pe_oi_chg"], later["top_ce_add"]) == (250, 0, 25100.0)
+    assert later["fut_buildup"] == "LONG_BUILDUP" and later["fut_oi_chg"] == 100_000
+    assert xp.chain_context({}, chain(), None, 50.0, None, None, now)["status"] == "NO_FRESH_INDEX"
+
+
+@pytest.mark.asyncio
+async def test_chain_context_is_recorded_and_changes_no_trade(tmp_path):
+    plain = await _run_day(tmp_path / "plain", _Market(_book(), _breakout_day))
+    with_oi = await _run_day(tmp_path / "oi", _Market(_book(), _breakout_day, oi=True))
+    assert _positions(with_oi) == _positions(plain)                     # record-only: identical trades
+
+    with closing(sqlite3.connect(xp.expiry_db_path(with_oi))) as conn:
+        (state,) = [json.loads(r[0]) for r in conn.execute("SELECT state FROM expiry_paper_days")]
+        (payload,) = [json.loads(r[0]) for r in conn.execute(
+            "SELECT quotes FROM expiry_paper_ticks WHERE ts LIKE '%T14:30:00%'")]
+    assert state["context"] == xp.CONTEXT_VERSION
+    assert payload["context"]["status"] == "OK" and all(leg["oi"] is not None for leg in payload["legs"].values())
+    snaps = state["context_at"]
+    assert snaps["d_entry"]["ts"].startswith("2026-10-06T14:30:00")
+    assert snaps["b_entry"]["ts"].startswith("2026-10-06T15:13:30")
+    assert (snaps["d_entry"]["put_wall"], snaps["d_entry"]["call_wall"]) == (24900.0, 25200.0)
+    assert snaps["d_entry"]["rv"] > 0 and snaps["d_entry"]["iv"] > 0
+    assert all(s["context"]["status"] == "OK" for s in state["signals"])
+    (summary,) = [m for k, m, _ in _notices(with_oi) if k.endswith(":summary")]
+    assert "context (expiry-context-v1, record-only" in summary
+    assert "walls 24,900 PE / 25,200 CE" in summary and "close 25,060.00 (our sample)" in summary
+    assert "inside the walls yes" in summary
+
+
+@pytest.mark.asyncio
+async def test_a_context_failure_never_costs_the_tick(tmp_path, monkeypatch):
+    def broken(*args):
+        raise ZeroDivisionError
+
+    monkeypatch.setattr(xp, "chain_context", broken)
+    at = _at(TUESDAY, 13, 0)
+    _, _, spot, payload = await _one_tick(tmp_path, _Market(_book(), _breakout_day, oi=True), at, at)
+    assert spot is not None and payload["context"] == {"status": "ERROR", "ts": at.isoformat(),
+                                                       "error": "ZeroDivisionError"}
