@@ -1351,6 +1351,13 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_SUPPRESS_ANALYTICS:   bool  = True
     PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF: bool = True
     PARTNER_HEDGE_SUPPRESS_LEGACY_EOD:   bool = True
+    # [PARTNER-CONTEXT 2026-10-07] Owner direction: the morning brief (levels,
+    # IV vs RV, OI walls, expiry and event warnings) and the EOD wrap (with an
+    # honest scorecard of the day's advice cards) run beside advice cards and
+    # the hedge bot. The hedge bot was enabled in Production without a bound
+    # portfolio, so it sent nothing but silenced both. Analytics alerts stay
+    # under the suppression rule above.
+    PARTNER_CONTEXT_WITH_ADVISORY: bool = True
 
     # Scoped manual-trader advisory for NIFTY 50 (NSE) and SENSEX (BSE).
     # Owner-approved delivery remains advisory-only: the hardened transport

@@ -49,6 +49,10 @@
   replaced by the next ranked one (the scan is ranked 10 deep).
 - [x] Partner re-entry gate: `test_partner_manual_advisory.py` covers the
   Oct 7 case. 439 tests matching partner, hedge or advisory pass.
+- [x] Partner context: 460 partner/hedge/advisory/brief/EOD tests pass,
+  including the dormant-hedge decoupling and the EOD card scorecard.
+- [ ] Oct 8: the partner receives the 09:50 brief and the 15:40 EOD with
+  the card scorecard, and intraday analytics stay silent.
 - [ ] Oct 8+: a `reentry_not_confirmed` partner attempt appears only after a
   same-day invalidation in that direction.
 - [ ] Oct 8+: the overnight ENTRY `skipped` list shows the realism reasons.

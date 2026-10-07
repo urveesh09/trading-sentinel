@@ -51,6 +51,24 @@
     - faster management did not help on this data.
   - Oct 7's two puts never went meaningfully green, so no exit rule could
     have saved them. The re-entry gate blocks the second one.
+- **Partner context restored: morning brief and EOD wrap (`PARTNER_CONTEXT_WITH_ADVISORY`, on).**
+  - Production's compose file defaults `PARTNER_HEDGE_ENABLED=true`, with no
+    bound partner portfolio. The hedge bot therefore sent nothing, but
+    `_legacy_info_retired` silenced the 09:50 brief and the 15:40 EOD wrap.
+  - Both are now context surfaces (`context=True`). They run beside advice
+    cards and the hedge bot.
+  - The 09:50 brief covers, per index:
+    - opening-range breakout levels;
+    - IV against RV, with a buyer's-day verdict;
+    - skew, PCR, max pain and the OI support/resistance walls;
+    - expiry and event-calendar notes.
+  - The 15:40 EOD wrap now lists each delivered advice card with its
+    outcome (invalidated, target reached, or neither with the close against
+    the trigger). It adds a 30-day card record and a tomorrow-expiry
+    warning.
+  - Intraday analytics alerts keep the suppression rule, because about 100
+    events a day would be noise.
+  - Turn it off with `PARTNER_CONTEXT_WITH_ADVISORY=false`.
 - **Partner cards follow the same re-entry rule (`partner_manual_advisory.invalidated_reentry_levels`).**
   - After a same-day partner idea on an underlying reaches its published
     invalidation, a new card in that direction is suppressed
