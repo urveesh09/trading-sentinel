@@ -47,6 +47,10 @@
 - [x] Overnight realistic-entry guards: `test_edge_overnight_paper.py` has 21
   passing tests. They cover every refusal reason, and that a refused pick is
   replaced by the next ranked one (the scan is ranked 10 deep).
+- [x] Partner re-entry gate: `test_partner_manual_advisory.py` covers the
+  Oct 7 case. 439 tests matching partner, hedge or advisory pass.
+- [ ] Oct 8+: a `reentry_not_confirmed` partner attempt appears only after a
+  same-day invalidation in that direction.
 - [ ] Oct 8+: the overnight ENTRY `skipped` list shows the realism reasons.
   After 30+ trades, compare the live entry cost with the 25 bps assumption.
   If real slippage is 0.5% or more, the edge is gone; stop the book.

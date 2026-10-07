@@ -51,6 +51,24 @@
     - faster management did not help on this data.
   - Oct 7's two puts never went meaningfully green, so no exit rule could
     have saved them. The re-entry gate blocks the second one.
+- **Partner cards follow the same re-entry rule (`partner_manual_advisory.invalidated_reentry_levels`).**
+  - After a same-day partner idea on an underlying reaches its published
+    invalidation, a new card in that direction is suppressed
+    (`reentry_not_confirmed`). It is allowed once the forward price passes
+    the failed idea's trigger by `FNO_REENTRY_MARGIN_R` x its
+    trigger-to-invalidation distance.
+  - The other direction is never blocked. The gate is controlled by the
+    same flag as the paper book.
+  - On Oct 7 the partner received the 13:11 card and the 14:00 repeat. Both
+    were invalidated; the second is the kind this gate suppresses.
+  - Partner traffic is unchanged otherwise. It stays event-driven:
+    - at most 2 cards and 4 updates a day;
+    - cards 09:45–14:45;
+    - invalidation or target updates, and a 15:10 exit reminder;
+    - PURE ADVICE (NOT CHECKED) labels;
+    - no orders.
+    The hedge bot (`PARTNER_HEDGE_ENABLED`) is off, and analytics messages
+    are suppressed.
 - **`mark_to_market` defined-risk marks.**
   - The marker now reads `fno_dr_book`'s contract-bound legs (signed
     `quantity`, `premium`, `contract.token` / `tradingsymbol`), using the

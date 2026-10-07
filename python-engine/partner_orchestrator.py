@@ -925,6 +925,21 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
                     profile_state=profile_state, successful_observation=True,
                 )
                 continue
+            if settings.FNO_REENTRY_REQUIRES_CONFIRMATION:
+                from fno_entry_plan import reentry_confirmed
+                from partner_manual_advisory import invalidated_reentry_levels
+                levels = await invalidated_reentry_levels(
+                    settings.DB_PATH, underlying=spec.name,
+                    session_date=candidate_clock.candidate_constructed_at.astimezone(IST).date().isoformat(),
+                    margin_r=float(settings.FNO_REENTRY_MARGIN_R),
+                )
+                price = getattr(snapshot, "forward", None) or scan.sig.close
+                if levels and not reentry_confirmed(scan.sig.direction.value, float(price), levels):
+                    metrics["unavailable"] += 1
+                    await record_candidate_attempt(spec.name, scan, state="UNAVAILABLE",
+                                                   reason="reentry_not_confirmed")
+                    await finish_attempt(spec.name, "SUPPRESSED", "reentry_not_confirmed")
+                    continue
             candidate = build_directional_debit_spread(
                 snapshot, book, scan.sig.direction, candidate_clock.candidate_constructed_at,
                 evidence=StrategyEvidence.RESEARCH_ONLY,

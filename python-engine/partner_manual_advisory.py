@@ -1218,6 +1218,39 @@ async def dispatch_queued_advisory(
     return sent
 
 
+async def invalidated_reentry_levels(db_path: str, *, underlying: str, session_date: str,
+                                     margin_r: float) -> dict:
+    """[FNO-REENTRY 2026-10-07] direction -> price a new same-direction card must pass.
+
+    After an idea's published invalidation level was reached this session, a
+    new card in that direction needs the move to resume past the failed
+    idea's trigger by ``margin_r`` x its trigger-to-invalidation distance
+    (same rule as the paper book, ``fno_entry_plan.reentry_level``). Oct 7:
+    the 14:00 card repeated the 13:11 idea after it was invalidated and
+    failed the same way.
+    """
+    from fno_entry_plan import reentry_level
+    await init_partner_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT i.payload FROM partner_advisory_ideas i JOIN partner_advisory_updates u "
+            "ON u.advisory_id=i.advisory_id WHERE i.underlying=? AND u.event_type='INVALIDATION' "
+            "ORDER BY u.observed_at", (underlying.upper(),),
+        )).fetchall()
+    levels: dict = {}
+    for (raw,) in rows:
+        try:
+            payload = json.loads(raw)
+            direction = str(payload.get("direction"))
+            trigger, invalidation = float(payload["trigger_level"]), float(payload["invalidation_level"])
+        except (TypeError, ValueError, KeyError, json.JSONDecodeError):
+            continue
+        if payload.get("session_date") != session_date or direction not in ("LONG", "SHORT"):
+            continue
+        levels[direction] = reentry_level(direction, trigger, invalidation, margin_r)
+    return levels
+
+
 async def queue_management_updates(
     db_path: str, *, underlying: str, observed_underlying: float, observed_at: datetime,
 ) -> list[dict]:
