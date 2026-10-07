@@ -32,6 +32,24 @@
   keeps a strong stock in a rising market. It refuses on a falling market,
   low relative strength or a missing index, and the same scan with the gate
   off accepts.
+- [x] The 4 long-standing suite failures are fixed (76 pass):
+  - `mark_to_market` DR: the code could not read the contract-bound leg
+    format that `fno_dr_book` has stored since `9e26e1b` (every real spread
+    was UNSUPPORTED), and it subtracted `net_premium_rs` on top of
+    per-leg (mark − entry) P&L. Both are fixed. No runtime caller passes DR
+    rows (`main.py` uses `fno_dr_rows=[]`), so no live value was wrong.
+  - `proactive_demo`: the fixed Sep 1–7 2026 dates aged out of the 30-day
+    report window on Oct 1, which broke the 3 demo tests. The demo now
+    anchors to a recent week and takes its five sessions from the same NSE
+    calendar rule the diagnostic uses (Oct 2 is a holiday).
+- [x] Full suite before the overnight guards: 5,030 passed, 4 skipped,
+  0 failed (395 s).
+- [x] Overnight realistic-entry guards: `test_edge_overnight_paper.py` has 21
+  passing tests. They cover every refusal reason, and that a refused pick is
+  replaced by the next ranked one (the scan is ranked 10 deep).
+- [ ] Oct 8+: the overnight ENTRY `skipped` list shows the realism reasons.
+  After 30+ trades, compare the live entry cost with the 25 bps assumption.
+  If real slippage is 0.5% or more, the edge is gone; stop the book.
 - [ ] Oct 8+: the Momentum funnel shows `selective_*` refusals, and paper
   entries only on up-market days. After 30+ overnight exits, count
   `open_is_prev_close` and compare net with and without those exits.

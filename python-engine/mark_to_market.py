@@ -30,7 +30,8 @@ from the orchestrator tick (which already has Kite open).
   6. Equity positions: ``pnl = (current_price - entry_price) * shares``.
      F&O positions: ``pnl = (current_premium - entry_premium) * qty
      * lot_size`` (premium multiplier). Multi-leg structures:
-     ``pnl = sum(per_leg_mark) - net_premium_rs``.
+     ``pnl = sum((mark - entry_premium) * qty * lot_size * direction)``;
+     ``net_premium_rs`` is reported as the entry cost, not subtracted again.
   7. No UPDATE/DELETE on positions / fno_positions / fno_dr_positions.
      MTM is read-only; the audit doc explicitly disallows ledger
      mutation in this workflow.
@@ -319,6 +320,23 @@ def _validate_fno_row(row: Mapping[str, Any]) -> None:
         )
 
 
+def _bound_dr_leg(leg: Mapping[str, Any], row: Mapping[str, Any]) -> dict:
+    """Flatten one contract-bound fno_dr_book leg into the marker's leg keys."""
+    contract = leg["contract"]
+    try:
+        quantity = int(leg.get("quantity", 0))
+    except (TypeError, ValueError):
+        quantity = 0
+    return {
+        "tradingsymbol": contract.get("tradingsymbol"),
+        "token": contract.get("token"),
+        "qty": abs(quantity),
+        "lot_size": row.get("lot_size") or contract.get("lot_size") or 1,
+        "entry_premium": leg.get("premium", 0.0),
+        "direction": -1.0 if quantity < 0 else 1.0,
+    }
+
+
 def _mark_fno_row(
     row: Mapping[str, Any],
     quotes: Mapping[Any, QuoteTick],
@@ -435,8 +453,8 @@ def _mark_fno_dr_row(
     """Mark a multi-leg F&O structure.
 
     Each leg is marked against the quote cache individually. The
-    structure's P&L is the sum of leg marks minus the
-    ``net_premium_rs`` paid at entry. If ANY leg's quote is stale or
+    structure's P&L is the sum of each leg's (mark - entry premium) term;
+    ``net_premium_rs`` is the entry cost. If ANY leg's quote is stale or
     unavailable, the structure is conservatively marked UNKNOWN
     (one bad leg makes the whole mark unsound) and the row is
     returned with ``quote_status`` reflecting the *worst* leg.
@@ -476,9 +494,14 @@ def _mark_fno_dr_row(
             notes="legs_json empty or not a list",
         )
 
-    # The owning fno_dr_book persists only opt_type/strike/quantity/premium.
-    # That cannot identify a broker instrument later, so never manufacture a
-    # symbol from it: distinguish this unsupported row from a missing quote.
+    # Since 9e26e1b fno_dr_book binds every leg to its exact contract:
+    # {opt_type, strike, quantity (signed, + bought / - sold), premium,
+    #  contract: {token, tradingsymbol, lot_size, ...}}. Read that format the
+    # way the book values it (structure_mtm_rs): quantity x (price - premium)
+    # x the row's lot_size. Older rows that hold only opt_type/strike cannot
+    # identify an instrument, so never manufacture a symbol for them.
+    legs = [_bound_dr_leg(leg, row) if isinstance(leg, dict) and isinstance(leg.get("contract"), dict)
+            else leg for leg in legs]
     if any(
         not isinstance(leg, dict)
         or (not leg.get("tradingsymbol") and not leg.get("token"))
@@ -566,7 +589,10 @@ def _mark_fno_dr_row(
         identity=structure_id,
         entry_cost=net_premium,
         mark_price=0.0,
-        unrealised_pnl=leg_pnl - net_premium,
+        # Each leg is already measured against its own entry premium, so the
+        # structure's P&L is their sum. Subtracting net_premium_rs again
+        # counted the entry debit twice (Oct 7 fix).
+        unrealised_pnl=leg_pnl,
         quote_status=QuoteStatus.FRESH,
         quote_age_seconds=worst_age or 0,
     )

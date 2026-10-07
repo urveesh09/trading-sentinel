@@ -20,7 +20,14 @@
     unscored). Penny noise stop was already on.
   - Overnight: an exit records `open_is_prev_close`; the forward fidelity
     check is in SYSTEM_GUIDE.
+  - Overnight realistic-entry guards, from the live-universe replay
+    (`docs/research/edge-overnight/2026-10-07-live-universe/README.md`).
+    The old +₹2.2 lakh study was mostly unbuyable circuit closes. The
+    realistic edge is about +0.6% a trade, positive every quarter, and very
+    sensitive to slippage.
 - Not done, by evidence:
+  - an overnight liquidity floor (it cut the edge: the edge is in thinner
+    names);
   - an overnight strength filter (all live picks were already 0.96–1.0);
   - a faster F&O management cadence (no gain in the replay);
   - an early profit lock (lost money).

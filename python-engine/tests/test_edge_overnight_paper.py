@@ -332,3 +332,52 @@ def test_prior_session_skips_weekends_and_cached_holidays(tmp_path):
         conn.execute("INSERT INTO holidays VALUES ('2026-10-02', NULL)")           # Friday holiday
     assert eop.prior_session("2026-10-05", db) == "2026-10-01"                      # Monday -> Thursday
     assert eop.prior_session("2026-10-07", db) == "2026-10-06"
+
+
+# ---------------------------------------------------------------- realism guards (2026-10-07)
+
+BAR = (20.0, 20.5, 19.5, 20.2, 100000.0)                # open, high, low, LTP, volume
+
+
+def test_realism_refuses_unbuyable_duplicate_sme_and_weak_picks():
+    ok = {"ohlc": {"close": 20.0}, "upper_circuit_limit": 24.0,
+          "depth": {"sell": [{"price": 20.25, "quantity": 500}]}}
+    assert eop.realism_refusal("AAA", "MR_strong", ok, BAR, set()) is None
+    assert eop.realism_refusal("AAA-SM", "MR_strong", ok, BAR, set()) == "sme_series"
+    assert eop.realism_refusal("CALSOFT-BE", "MO_strong", ok, BAR, {"CALSOFT"}) == "duplicate_series"
+    assert eop.realism_refusal("AAA", "MR_mid", ok, BAR, set()) == "weak_kind_MR_mid"
+    locked = {**ok, "upper_circuit_limit": 20.25}
+    assert eop.realism_refusal("AAA", "MO_strong", locked, BAR, set()) == "at_upper_circuit"
+    no_sellers = {**ok, "depth": {"sell": [{"price": 0, "quantity": 0}]}}
+    assert eop.realism_refusal("AAA", "MO_strong", no_sellers, BAR, set()) == "no_sellers"
+    at_high = (19.6, 20.5, 19.5, 20.5, 100000.0)        # +2.5% and closing on its high, band unknown
+    assert eop.realism_refusal("AAA", "MO_strong", {"ohlc": {"close": 20.0}}, at_high, set()) \
+        == "at_day_high_after_rise"
+
+
+@pytest.mark.asyncio
+async def test_a_refused_pick_is_replaced_by_the_next_ranked_one(tmp_path, entry_quotes, monkeypatch):
+    from types import SimpleNamespace
+    cache = _cache(tmp_path)
+
+    def pick(ticker, kind):
+        return SimpleNamespace(ticker=ticker, signal_subtype=kind, adjusted_strength=1.0, shares=100)
+
+    ranked = [pick("AAA-SM", "MO_strong"), pick("AAA", "MR_mid"), pick("BBB", "MO_strong")]
+    seen = {}
+
+    def fake_scan(**kwargs):
+        seen.update(kwargs)
+        return {"positions": ranked, "candidates": ranked}
+
+    monkeypatch.setattr("penny_edge_live.scan_today", fake_scan)
+    monkeypatch.setattr(settings, "PENNY_EDGE_MAX_POSITIONS", 1)
+    quotes = {**entry_quotes, "AAA-SM": entry_quotes["AAA"]}
+    kite = _Kite(quotes)
+    kite.instrument_cache["AAA-SM"] = 4
+    monkeypatch.setattr(eop, "universe_from_cache", lambda _db: ["AAA", "AAA-SM", "BBB"])
+    summary = await eop.run_overnight_entry(kite, cache, now=_at(TODAY, 15, 20))
+    assert seen["max_positions"] == eop.RANK_DEPTH
+    assert [o["ticker"] for o in summary["opened"]] == ["BBB"]
+    assert [(s["ticker"], s["reason"]) for s in summary["skipped"]] == [
+        ("AAA-SM", "sme_series"), ("AAA", "weak_kind_MR_mid")]

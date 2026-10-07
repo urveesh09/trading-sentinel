@@ -470,7 +470,7 @@ Related tests: `python-engine/tests/test_dispatch_independence.py`
 
 EDGE overnight paper book: buy the EDGE scan near the close, sell at the next open. Broker-free. It never imports an executor or places an order. Research basis: docs/2026-10-05-edge-overnight-study.md. The shipped EDGE candidates earn their move overnight, while the runtime EDGE buys the following morning. * 15:20 IST (``run_overnight_entry``): one quote batch gives today's provisional bar (open/high/low from the session so far, LTP as the close, volume so far) for every cached ticker in or near the EDGE price band. The shipped ``scan_today`` ranks them on a temporary copy of recent history plus that bar. Each pick is bought on paper at LTP + ``ENTRY_SLIPPAGE_BPS``, capped by 1% of today's
 
-Top-level declarations: `prior_session` (line 70), `_price_exit` (line 84), `overnight_db_path` (line 145), `_store` (line 150), `_read_only` (line 162), `_finite_positive` (line 166), `buy_charges` (line 173), `book_state` (line 187), `_already_ran` (line 203), `_record_run` (line 209), `flush_notices` (line 221), `catch_up` (line 253), `universe_from_cache` (line 280), `provisional_bar` (line 295), `build_scan_db` (line 311), `_quotes` (line 329), `run_overnight_entry` (line 341), `run_overnight_exit` (line 415), `retry_waiting_exits` (line 459), `_close_items` (line 510), `_exit_summary` (line 519), `format_entry_telegram` (line 526), `format_exit_telegram` (line 534)
+Top-level declarations: `prior_session` (line 73), `_price_exit` (line 87), `overnight_db_path` (line 148), `_store` (line 153), `_read_only` (line 165), `_finite_positive` (line 169), `buy_charges` (line 176), `book_state` (line 190), `_already_ran` (line 206), `_record_run` (line 212), `flush_notices` (line 224), `catch_up` (line 256), `universe_from_cache` (line 283), `provisional_bar` (line 298), `build_scan_db` (line 314), `_quotes` (line 332), `base_symbol` (line 344), `realism_refusal` (line 349), `run_overnight_entry` (line 378), `run_overnight_exit` (line 463), `retry_waiting_exits` (line 507), `_close_items` (line 558), `_exit_summary` (line 567), `format_entry_telegram` (line 574), `format_exit_telegram` (line 582)
 
 Engine dependencies: `config`, `market_calendar`, `penny_edge_live`, `penny_risk`
 
@@ -1078,7 +1078,7 @@ Related tests: `python-engine/tests/test_main_api.py`, `python-engine/tests/test
 
 [WORKFLOW-F 2026-09-13] Open mark-to-market valuation (Phase 3). Implements plan section 10.4 -- "Audit funding, expenses, partial closes, rejected/cancelled orders and open mark-to-market independently." The function is purely read-only: it computes unrealised P&L on every open position (equity, F&O, and F&O debit/credit structures) using a caller-supplied quote cache, and returns an aggregate plus per-row breakdown with named freshness buckets. The reason this module exists at all: ``operator_status.py:257`` and ``penny_hourly_report.py:66`` consume an ``unrealised_pnl`` field that no production code path produces. ``main.py:1599`` previously read ``p.get("current_price", 0.0)`` from each
 
-Top-level declarations: `QuoteStatus` (line 54), `QuoteTick` (line 64), `PositionMark` (line 94), `OpenMarkToMarket` (line 123), `_validate_equity_row` (line 164), `_mark_equity_row` (line 209), `_validate_fno_row` (line 269), `_mark_fno_row` (line 322), `_validate_fno_dr_row` (line 397), `_mark_fno_dr_row` (line 429), `mark_open_positions` (line 577)
+Top-level declarations: `QuoteStatus` (line 55), `QuoteTick` (line 65), `PositionMark` (line 95), `OpenMarkToMarket` (line 124), `_validate_equity_row` (line 165), `_mark_equity_row` (line 210), `_validate_fno_row` (line 270), `_bound_dr_leg` (line 323), `_mark_fno_row` (line 340), `_validate_fno_dr_row` (line 415), `_mark_fno_dr_row` (line 447), `mark_open_positions` (line 603)
 
 Related tests: `python-engine/tests/test_mark_to_market.py`
 
@@ -1946,7 +1946,7 @@ Declared tables: `proactive_comparison_protocols`, `proactive_comparison_reports
 
 Deterministic, isolated SHADOW workflow demonstration for Dev review. It intentionally exercises the same workflow and reports consumed by the application. The symbols, account and prices are synthetic; this module has no broker, transport, scheduler or production configuration dependency.
 
-Top-level declarations: `_trend_bars` (line 27), `_range_bars` (line 40), `run_proactive_shadow_demo` (line 52)
+Top-level declarations: `_trend_bars` (line 28), `_range_bars` (line 41), `run_proactive_shadow_demo` (line 53)
 
 Engine dependencies: `proactive_intelligence`
 

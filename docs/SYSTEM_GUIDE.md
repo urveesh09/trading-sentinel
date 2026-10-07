@@ -51,6 +51,15 @@
     - faster management did not help on this data.
   - Oct 7's two puts never went meaningfully green, so no exit rule could
     have saved them. The re-entry gate blocks the second one.
+- **`mark_to_market` defined-risk marks.**
+  - The marker now reads `fno_dr_book`'s contract-bound legs (signed
+    `quantity`, `premium`, `contract.token` / `tradingsymbol`), using the
+    row's `lot_size`.
+  - Structure P&L is the sum of the legs' (mark − entry) values.
+    `net_premium_rs` is the entry cost and is no longer subtracted a second
+    time.
+  - Legacy legs with no identity stay UNSUPPORTED. No runtime caller passes
+    DR rows yet.
 - **Momentum selective entry (`MOMENTUM_SELECTIVE_ENTRY_ENABLED`, on).**
   - This was an owner decision on Oct 7. The round-3 scoring on untouched
     data was skipped, so this is unscored and paper forward evidence only.
@@ -80,8 +89,27 @@
     open to the previous close when the pre-open auction finds no
     equilibrium, so those modeled auction exits were not traded prices. Each
     exit now records `open_is_prev_close` to measure this.
-  - No rule changed. The untouched 22-month study remains the evidence.
-    Judge after 30+ forward trades.
+- **Overnight realistic-entry guards (`edge_overnight_paper.realism_refusal`, Oct 7 night).**
+  - The live-universe replay
+    (`docs/research/edge-overnight/2026-10-07-live-universe/`) used Kite
+    daily data, about 1,500 band tickers and Jul 2025 – Oct 2026. It found
+    that 75% of the old model's profit came from closes locked at the day's
+    high, which cannot be bought at the close. The frozen `edge-overnight-t1`
+    result is inflated the same way.
+  - With realistic fills the edge is thin but positive in every quarter:
+    - +₹68,820 on ₹25k;
+    - +0.62% per trade (median +0.27%);
+    - 13.4% drawdown from peak.
+  - The 15:20 entry now ranks 10 deep and fills the
+    `PENNY_EDGE_MAX_POSITIONS` slots, replacing each refused pick with the
+    next one. It refuses:
+    - SME series (`-SM`, `-ST`);
+    - a second series of a held company;
+    - the `MR_mid` kind;
+    - an LTP within 0.5% of `upper_circuit_limit`;
+    - empty sell depth;
+    - an LTP at the day's high after a rise of 1.9% or more.
+  - Refusals appear in the entry summary's `skipped` list.
 - **Overnight waiting-leg retry (audit T1, `edge_overnight_paper.retry_waiting_exits`).**
   - After today's EXIT receipt, `catch_up` (every 5 min) retries legs that
     had no trade at 09:17, until 15:20:

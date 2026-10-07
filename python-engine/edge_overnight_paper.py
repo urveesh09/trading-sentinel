@@ -65,6 +65,9 @@ IST = ZoneInfo("Asia/Kolkata")
 EXIT_START = time(9, 17)
 AUCTION_EXIT_LATEST = time(9, 47)     # the 09:17 job's existing misfire grace
 EXIT_LATEST = time(15, 20)
+RANK_DEPTH = 10
+SME_SUFFIXES = ("-SM", "-ST")
+SKIP_KINDS = ("MR_mid",)
 
 
 def prior_session(today_iso: str, db_path: str) -> str:
@@ -338,6 +341,40 @@ async def _quotes(kite, tickers: list[str]) -> dict:
     return {tokens[int(token)]: quote for token, quote in (raw or {}).items() if int(token) in tokens}
 
 
+def base_symbol(ticker: str) -> str:
+    """One company across its series twins (``CALSOFT`` / ``CALSOFT-BE``)."""
+    return ticker.split("-")[0]
+
+
+def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases: set) -> Optional[str]:
+    """[EDGE-OVERNIGHT-REALISM 2026-10-07] Why a pick cannot be bought honestly, else ``None``.
+
+    The live-universe replay (docs/research/edge-overnight/2026-10-07-live-universe)
+    found 75% of the modeled profit came from closes locked at the day's high
+    after a rise, which have no sellers and cannot be bought at the close.
+    Without them, and without SME or duplicate-series picks and the weak
+    ``MR_mid`` kind, the book was positive in every quarter
+    (+0.62% a trade, max drawdown 13.4% from peak, Jul 2025-Oct 2026).
+    """
+    if ticker.endswith(SME_SUFFIXES):
+        return "sme_series"
+    if base_symbol(ticker) in taken_bases:
+        return "duplicate_series"
+    if kind in SKIP_KINDS:
+        return f"weak_kind_{kind}"
+    _open, high, _low, ltp, _volume = bar
+    upper = quote.get("upper_circuit_limit")
+    if _finite_positive(upper) and ltp >= float(upper) * (1 - 0.005):
+        return "at_upper_circuit"
+    depth_sell = (quote.get("depth") or {}).get("sell") or []
+    if depth_sell and not any(_finite_positive(level.get("quantity")) for level in depth_sell):
+        return "no_sellers"
+    prev_close = (quote.get("ohlc") or {}).get("close")
+    if _finite_positive(prev_close) and ltp >= high * 0.999 and ltp / float(prev_close) - 1 >= 0.019:
+        return "at_day_high_after_rise"
+    return None
+
+
 async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> dict:
     """15:20 IST: score today's provisional bars and open the paper picks."""
     from penny_edge_live import scan_today
@@ -357,21 +394,32 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
     bars_today = {t: bar for t, q in quotes.items() if (bar := provisional_bar(q, today)) is not None}
     scan_path = build_scan_db(db_path, tickers, bars_today, today)
     try:
+        # Rank deeper than the slots so a refused pick is replaced by the next
+        # one (sizing is risk-based per pick, independent of the slot count).
         scan = await asyncio.to_thread(
-            scan_today, bankroll=state["equity"], max_positions=int(settings.PENNY_EDGE_MAX_POSITIONS),
+            scan_today, bankroll=state["equity"], max_positions=RANK_DEPTH,
             min_strength=float(settings.PENNY_EDGE_MIN_STRENGTH), db_path=scan_path, as_of_date=today,
             nifty_ticker=NIFTY_PROXY)
     finally:
         os.remove(scan_path)
 
+    slots = int(settings.PENNY_EDGE_MAX_POSITIONS)
+    held_bases = {base_symbol(t) for t in state["held"]}
     cash, opened, skipped = state["cash"], [], []
     for pick in scan["positions"]:
+        if len(opened) >= slots:
+            break
         bar = bars_today.get(pick.ticker)
         if bar is None:
             skipped.append({"ticker": pick.ticker, "reason": "no_provisional_bar"})
             continue
         if pick.ticker in state["held"]:
             skipped.append({"ticker": pick.ticker, "reason": "already_held"})
+            continue
+        refusal = realism_refusal(pick.ticker, pick.signal_subtype, quotes.get(pick.ticker) or {}, bar,
+                                  held_bases | {base_symbol(o["ticker"]) for o in opened})
+        if refusal is not None:
+            skipped.append({"ticker": pick.ticker, "reason": refusal})
             continue
         ltp, volume = bar[3], bar[4]
         entry_price = round(ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0), 4)
