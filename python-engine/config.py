@@ -1587,6 +1587,11 @@ class Settings(BaseSettings):
     # Relay is a path-preserving forward proxy; auth + X-Kite-Version headers pass through.
     # Override with KITE_BASE_URL in .env (e.g. http://161.118.160.180:31527).
     KITE_BASE_URL: str = "https://api.kite.trade"
+    # [FOLLOW-UP-F3 2026-10-08] Kite documents 1 quote request/second (up to
+    # 500 instruments each). kite_client.QuoteBudget enforces it and merges
+    # concurrent token requests into one call; the shared limiter (3/s, all
+    # endpoints) still applies on top.
+    KITE_QUOTE_RATE_PER_SEC: float = 1.0
 
     # === Breadth Enrichment (2026-06-14) ===
     BREADTH_ENRICHMENT_ENABLED:         bool  = False   # Feature flag -- OFF by default

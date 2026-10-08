@@ -14,6 +14,50 @@
 
 
 
+## October 8 (late night, 2) — follow-up review F1–F3: entry clock, outbox classification, quote budget (actual behavior, Dev)
+
+- **Overnight entry `visible-asks-v3` (F1).**
+  - The admission decision uses a clock read after the scan and the
+    shortlist re-quote. Past 15:29 (or another date) every pick refuses
+    `past_entry_cutoff`. Entries and the receipt are recorded at that
+    decision time; the summary keeps `started_at` and `decided_at`.
+  - The live catch-up passes the wall clock (it used to freeze its start).
+  - Snapshot freshness is its own rule: the quote `timestamp` must exist
+    (`no_quote_timestamp`), be at most 120 s old (`stale_quote_snapshot`)
+    and not more than 5 s ahead (`quote_time_ahead`). The 30-minute
+    last-trade rule stays as the separate activity policy.
+- **Outbox delivery classification (F2).**
+  - Gateway: `require_delivery` answers 422 when Telegram rejected the
+    message itself (HTTP 400), 502 for anything else
+    (`telegram.sendAlertOnceDetailed`).
+  - `notice_outbox.py`: 422 = content (step over at once, back off 1 min
+    doubling to 30 min); network/timeout/other HTTP = transport (stop the
+    round, keep order); other exceptions = unknown (keep order for 3
+    tries, then step over with backoff). Rows backing off are skipped until
+    due; `last_error` and `next_attempt_at` are stored.
+  - The overnight outbox uses it: any number of rejected notices no longer
+    block healthy ones, and an outage retries only the first row. Delivery
+    is at-least-once (a lost acknowledgement resends).
+  - The expiry outbox (expiry agent's code) still has the older step-over
+    rule; adopting `notice_outbox` there is a small change for that agent.
+    The new 422 status does not change its current behaviour.
+- **Quote budget enforced (F3, `kite_client.QuoteBudget`).**
+  - Every `/quote` HTTP attempt takes a slot at `KITE_QUOTE_RATE_PER_SEC`
+    (1.0, Kite's documented limit), management lane first; the shared 3/s
+    limiter still applies on top.
+  - Concurrent token requests waiting for a slot are merged into one call
+    (up to 500 instruments) and each caller gets only its own tokens.
+    Instrument-keyed calls (expiry, research collection) share the budget
+    unmerged.
+  - Load test (scaled 10x): 36 concurrent Penny/F&O-exit/expiry requests
+    needed 4 HTTP calls; F&O exits waited one slot (about 1.1 s at the real
+    rate), bulk Penny at most about 3.3 s.
+  - Counters now include instrument refresh and funds/margins; orders count
+    at HTTP dispatch only; non-2xx statuses (including 429) are counted per
+    endpoint. `/ops/provider-budget` shows scope (this engine process since
+    `started_at`; Node gateway traffic excluded) and the quote-budget
+    batches and maximum waits per lane.
+
 ## October 8 (late night) — independent review R2–R6 and overnight outbox (actual behavior, Dev)
 
 - **Overnight entry `visible-asks-v2` (R3).**

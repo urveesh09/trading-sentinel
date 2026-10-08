@@ -470,7 +470,7 @@ Related tests: `python-engine/tests/test_dispatch_independence.py`
 
 EDGE overnight paper book: buy the EDGE scan near the close, sell at the next open. Broker-free. It never imports an executor or places an order. Research basis: docs/2026-10-05-edge-overnight-study.md. The shipped EDGE candidates earn their move overnight, while the runtime EDGE buys the following morning. * 15:20 IST (``run_overnight_entry``): one quote batch gives today's provisional bar (open/high/low from the session so far, LTP as the close, volume so far) for every cached ticker in or near the EDGE price band. The shipped ``scan_today`` ranks them on a temporary copy of recent history plus that bar. Each pick is bought on paper at LTP + ``ENTRY_SLIPPAGE_BPS``, capped by 1% of today's
 
-Top-level declarations: `prior_session` (line 81), `_price_exit` (line 95), `overnight_db_path` (line 156), `_store` (line 161), `_read_only` (line 173), `_finite_positive` (line 177), `buy_charges` (line 184), `book_state` (line 198), `_already_ran` (line 214), `_record_run` (line 220), `flush_notices` (line 239), `catch_up` (line 281), `universe_from_cache` (line 308), `provisional_bar` (line 323), `build_scan_db` (line 339), `_quotes` (line 357), `base_symbol` (line 369), `visible_asks` (line 374), `walk_asks` (line 394), `_best_bid` (line 406), `_trade_age` (line 414), `price_for_cash` (line 426), `realism_refusal` (line 448), `run_overnight_entry` (line 479), `run_overnight_exit` (line 581), `retry_waiting_exits` (line 625), `_close_items` (line 676), `_exit_summary` (line 685), `format_entry_telegram` (line 692), `format_exit_telegram` (line 700)
+Top-level declarations: `prior_session` (line 87), `_price_exit` (line 101), `overnight_db_path` (line 162), `_store` (line 167), `_read_only` (line 183), `_finite_positive` (line 187), `buy_charges` (line 194), `book_state` (line 208), `_already_ran` (line 224), `_record_run` (line 230), `flush_notices` (line 249), `catch_up` (line 301), `universe_from_cache` (line 330), `provisional_bar` (line 345), `build_scan_db` (line 361), `_quotes` (line 379), `base_symbol` (line 391), `visible_asks` (line 396), `walk_asks` (line 416), `_best_bid` (line 428), `_stamp_age` (line 436), `_trade_age` (line 450), `snapshot_refusal` (line 455), `price_for_cash` (line 467), `realism_refusal` (line 489), `run_overnight_entry` (line 520), `run_overnight_exit` (line 646), `retry_waiting_exits` (line 690), `_close_items` (line 741), `_exit_summary` (line 750), `format_entry_telegram` (line 757), `format_exit_telegram` (line 765)
 
 Engine dependencies: `config`, `expiry_paper`, `market_calendar`, `penny_edge_live`, `penny_risk`
 
@@ -1042,7 +1042,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 40), `_intraday_cache_gate_evaluate` (line 76), `provider_lane` (line 196), `RateLimiter` (line 213), `EndpointBudget` (line 298), `_record_endpoint` (line 352), `KiteClient` (line 359), `_finite` (line 2099), `own_uncommitted_cash` (line 2108), `latest_order_state` (line 2158)
+Top-level declarations: `_interval_minutes` (line 40), `_intraday_cache_gate_evaluate` (line 76), `provider_lane` (line 196), `RateLimiter` (line 213), `EndpointBudget` (line 298), `QuoteBudget` (line 368), `_record_endpoint` (line 468), `_record_status` (line 475), `KiteClient` (line 481), `_finite` (line 2254), `own_uncommitted_cash` (line 2263), `latest_order_state` (line 2313)
 
 Engine dependencies: `account_cash_reservations`, `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
@@ -1263,6 +1263,12 @@ PEN_CONTEXT research gate (N2), retained for its archived receipts. Not wired in
 Top-level declarations: `_number` (line 16), `penny_context_gate` (line 24)
 
 Related tests: `python-engine/tests/test_non_fno_research.py`
+
+## `python-engine/notice_outbox.py`
+
+Delivery-failure policy shared by the durable paper-book outboxes. [OUTBOX-CLASSIFY 2026-10-08, follow-up review F2] The gateway's ``/api/internal/notify`` with ``require_delivery`` answers 422 when Telegram rejected *this* message (it will never be accepted as is) and 502 for any other failure. The old step-over heuristic took a second failure in a row as "gateway down", so two permanently bad notices blocked every healthy one behind them. With the cause known: * ``content`` (422): step over the row at once, keep it, retry it on a backoff; later notices still go out. * ``transport`` (network error, timeout, any other HTTP status): stop the round so a real outage does not hammer every queued
+
+Top-level declarations: `classify_send_failure` (line 33), `backoff` (line 43), `is_due` (line 49), `after_failure` (line 58)
 
 ## `python-engine/operational_coverage.py`
 
@@ -2260,7 +2266,7 @@ Engine dependencies: `config`, `engine_auth`, `market_calendar`, `owner_entry_ha
 
 [ROADMAP-4.1 stage 3, 2026-07-13] Ops, token and circuit-breaker endpoints. Extracted verbatim from main.py. Registered on the app via `app.include_router(router)`, so the route table -- paths, methods, endpoint names, response models -- is byte-identical; the 24-route characterization golden proves it. EVERY business name is reached through `_main` at CALL time, not imported. That is not stylistic. Two independent reasons, both load-bearing: 1. Eight of main's globals are REBOUND at runtime via `global` statements (current_signals, market_regime, momentum_signals_today, last_run, rejected_signals, current_momentum_signals, last_momentum_date, _last_regime_state). `from main import current_s
 
-Top-level declarations: `FnoExitRecoveryRequest` (line 44), `get_fno_exit_intents` (line 54), `post_fno_exit_resolution` (line 63), `OptionalAiStatusPayload` (line 78), `get_momentum_experiment` (line 97), `post_optional_ai_status` (line 140), `get_optional_ai_status` (line 150), `inject_token` (line 159), `get_current_token` (line 207), `invalidate_token` (line 228), `get_ops_metrics` (line 253), `get_provider_budget` (line 271), `get_circuit_breaker` (line 281), `reset_circuit_breaker` (line 289), `health_check` (line 306), `test_momentum_screener` (line 406)
+Top-level declarations: `FnoExitRecoveryRequest` (line 44), `get_fno_exit_intents` (line 54), `post_fno_exit_resolution` (line 63), `OptionalAiStatusPayload` (line 78), `get_momentum_experiment` (line 97), `post_optional_ai_status` (line 140), `get_optional_ai_status` (line 150), `inject_token` (line 159), `get_current_token` (line 207), `invalidate_token` (line 228), `get_ops_metrics` (line 253), `get_provider_budget` (line 271), `get_circuit_breaker` (line 285), `reset_circuit_breaker` (line 293), `health_check` (line 310), `test_momentum_screener` (line 410)
 
 Engine dependencies: `config`, `fno_exit_recovery`, `halt_switch`, `ops_metrics`, `optional_ai_status`, `order_execution_readiness`, `penny_health`, `performance`, `release_identity`, `token_lifecycle`
 

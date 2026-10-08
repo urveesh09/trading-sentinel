@@ -74,8 +74,14 @@ SKIP_KINDS = ("MR_mid",)
 # v2 (review, Oct 8 night): the shortlist is re-quoted after the scan, a pick
 # whose last trade is older than ENTRY_MAX_TRADE_AGE refuses, and price and
 # fees are re-walked for the final (cash-trimmed) share count.
-ENTRY_FILL_CONTRACT = "visible-asks-v2"
-ENTRY_MAX_TRADE_AGE = timedelta(minutes=30)
+# v3 (follow-up review F1): admission is decided on a clock read after the
+# re-quote, refused past ENTRY_LATEST, recorded at that actual time, and each
+# quote snapshot must itself be fresh (ENTRY_QUOTE_TTL), separately from the
+# last-trade activity rule (ENTRY_MAX_TRADE_AGE).
+ENTRY_FILL_CONTRACT = "visible-asks-v3"
+ENTRY_MAX_TRADE_AGE = timedelta(minutes=30)     # activity: the stock traded recently
+ENTRY_QUOTE_TTL = timedelta(seconds=120)        # snapshot: the displayed depth is current
+ENTRY_QUOTE_MAX_AHEAD = timedelta(seconds=5)    # provider clock may lead ours by this much
 
 
 def prior_session(today_iso: str, db_path: str) -> str:
@@ -166,6 +172,10 @@ def _store(path: str):
         columns = {row[1] for row in conn.execute("PRAGMA table_info(edge_overnight_paper_trades)")}
         if "entry_day_close" not in columns:
             conn.execute("ALTER TABLE edge_overnight_paper_trades ADD COLUMN entry_day_close REAL")
+        notice_columns = {row[1] for row in conn.execute("PRAGMA table_info(edge_overnight_paper_notices)")}
+        for column in ("next_attempt_at", "last_error"):
+            if column not in notice_columns:
+                conn.execute(f"ALTER TABLE edge_overnight_paper_notices ADD COLUMN {column} TEXT")
         with conn:
             yield conn
 
@@ -233,7 +243,7 @@ def _record_run(conn: sqlite3.Connection, day: str, phase: str, summary: dict, n
 
 
 _FLUSH_LOCKS: dict[str, asyncio.Lock] = {}
-NOTICE_STEP_OVER_AFTER = 3          # failed attempts after which a notice may be stepped over
+NOTICE_STEP_OVER_AFTER = 3          # unknown-cause failures before a notice may be stepped over
 
 
 async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optional[str] = None,
@@ -242,45 +252,56 @@ async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optiona
 
     Flushes of one store are serialised (the phase jobs and the catch-up can
     overlap), so a row is never sent twice concurrently; ``sent_at`` is the
-    acknowledgement time. Delivery is at-least-once across a crash.
+    acknowledgement time. Delivery is at-least-once across a crash or a lost
+    acknowledgement.
 
-    A failure stops the flush to keep order, except that a notice which has
-    failed NOTICE_STEP_OVER_AFTER times is stepped over (kept, retried every
-    flush) so it cannot hold back later notices; a second failure in a row
-    after a step-over means the transport is down and the flush stops.
+    Failures follow ``notice_outbox``: a message the gateway rejects (422)
+    is stepped over at once and retried on a backoff, so any number of bad
+    notices cannot block healthy ones; a transport failure stops the round
+    in order; an unknown failure keeps order for NOTICE_STEP_OVER_AFTER tries.
+    Rows backing off are skipped until due. Failed rows are kept with
+    ``last_error`` for inspection.
     """
+    import notice_outbox
+
     store = overnight_db_path(db_path or settings.DB_PATH)
     async with _FLUSH_LOCKS.setdefault(store, asyncio.Lock()):
         with _store(store) as conn:
-            pending = conn.execute("SELECT run_date, phase, message, attempts FROM edge_overnight_paper_notices "
-                                   "WHERE sent_at IS NULL ORDER BY created_at, phase").fetchall()
-        sent, stepped = 0, False
-        for day, phase, message, attempts in pending:
+            pending = conn.execute("SELECT run_date, phase, message, attempts, next_attempt_at "
+                                   "FROM edge_overnight_paper_notices WHERE sent_at IS NULL "
+                                   "ORDER BY created_at, phase").fetchall()
+        sent = 0
+        for day, phase, message, attempts, next_attempt_at in pending:
+            clock = now or datetime.now(IST)
+            if not notice_outbox.is_due(next_attempt_at, clock):
+                continue
             try:
                 await send(message)
             except Exception as exc:
-                logger.warning("edge_overnight_notice_failed date=%s phase=%s attempts=%d err=%s",
-                               day, phase, attempts + 1, type(exc).__name__)
+                kind = notice_outbox.classify_send_failure(exc)
+                go_on, retry_at = notice_outbox.after_failure(kind, attempts + 1, clock)
+                logger.warning("edge_overnight_notice_failed date=%s phase=%s attempts=%d kind=%s err=%s%s",
+                               day, phase, attempts + 1, kind, type(exc).__name__,
+                               " stepped_over" if go_on else "")
                 with _store(store) as conn:
-                    conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1 "
-                                 "WHERE run_date=? AND phase=?", (day, phase))
-                if stepped or attempts + 1 < NOTICE_STEP_OVER_AFTER:
+                    conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1, "
+                                 "next_attempt_at=?, last_error=? WHERE run_date=? AND phase=?",
+                                 (retry_at, f"{kind}:{type(exc).__name__}", day, phase))
+                if not go_on:
                     break
-                stepped = True
-                logger.warning("edge_overnight_notice_stepped_over date=%s phase=%s chars=%d",
-                               day, phase, len(message))
                 continue
             acked = now or datetime.now(IST)
             with _store(store) as conn:
-                conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1 "
-                             "WHERE run_date=? AND phase=?", (acked.isoformat(), day, phase))
-            sent, stepped = sent + 1, False
+                conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1, "
+                             "next_attempt_at=NULL WHERE run_date=? AND phase=?", (acked.isoformat(), day, phase))
+            sent += 1
         return sent
 
 
 async def catch_up(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> list[str]:
     """Run a phase whose receipt is missing today, inside its permitted window."""
     db_path = db_path or settings.DB_PATH
+    wall_clock = now is None          # a live call decides entries on the wall clock (F1)
     now = now or datetime.now(IST)
     today, clock = now.date().isoformat(), now.time()
     with _store(overnight_db_path(db_path)) as conn:
@@ -296,7 +317,8 @@ async def catch_up(kite, db_path: Optional[str] = None, now: Optional[datetime] 
         if retried.get("closed"):
             ran.append("EXIT_RETRY")
     if not has_entry and ENTRY_CATCHUP_START <= clock <= ENTRY_LATEST:
-        summary = await run_overnight_entry(kite, db_path, now)
+        summary = await run_overnight_entry(kite, db_path, now,
+                                            clock=(lambda: datetime.now(IST)) if wall_clock else None)
         if not summary.get("repeat"):
             ran.append("ENTRY")
     if ran:
@@ -411,9 +433,11 @@ def _best_bid(quote: dict) -> Optional[float]:
     return max(prices) if prices else None
 
 
-def _trade_age(quote: dict, now: datetime) -> Optional[timedelta]:
-    """Age of the quote's last trade at ``now``, or ``None`` when unknown."""
-    raw = quote.get("last_trade_time")
+def _stamp_age(quote: dict, field: str, now: datetime) -> Optional[timedelta]:
+    """Age at ``now`` of a quote timestamp field, or ``None`` when absent/unparseable."""
+    raw = quote.get(field)
+    if raw in (None, ""):
+        return None
     try:
         stamp = raw if isinstance(raw, datetime) else datetime.fromisoformat(str(raw))
     except (TypeError, ValueError):
@@ -421,6 +445,23 @@ def _trade_age(quote: dict, now: datetime) -> Optional[timedelta]:
     if stamp.tzinfo is None:
         stamp = stamp.replace(tzinfo=IST)
     return now - stamp
+
+
+def _trade_age(quote: dict, now: datetime) -> Optional[timedelta]:
+    """Age of the quote's last trade at ``now`` (trading activity)."""
+    return _stamp_age(quote, "last_trade_time", now)
+
+
+def snapshot_refusal(quote: dict, now: datetime) -> Optional[str]:
+    """Why the quote packet itself is not current at ``now``, else ``None``."""
+    age = _stamp_age(quote, "timestamp", now)
+    if age is None:
+        return "no_quote_timestamp"
+    if age < -ENTRY_QUOTE_MAX_AHEAD:
+        return "quote_time_ahead"
+    if age > ENTRY_QUOTE_TTL:
+        return "stale_quote_snapshot"
+    return None
 
 
 def price_for_cash(asks: list[tuple[float, int]], wanted: int, model_price: float,
@@ -476,12 +517,20 @@ def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases
     return None
 
 
-async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> dict:
-    """15:20 IST: score today's provisional bars and open the paper picks."""
+async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional[datetime] = None,
+                              clock: Optional[Callable[[], datetime]] = None) -> dict:
+    """15:20 IST: score today's provisional bars and open the paper picks.
+
+    ``now`` starts the run; ``clock`` gives the admission decision time after
+    the scan and re-quote (defaults to the wall clock, or to ``now`` when only
+    ``now`` is injected).
+    """
     from penny_edge_live import scan_today
 
     db_path = db_path or settings.DB_PATH
-    now = now or datetime.now(IST)
+    if clock is None:
+        clock = (lambda: now) if now is not None else (lambda: datetime.now(IST))
+    now = now or clock()
     today = now.date().isoformat()
     store = overnight_db_path(db_path)
     with _store(store) as conn:
@@ -510,10 +559,20 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
     except Exception as exc:                          # noqa: BLE001 - a failed refresh refuses, never stale fills
         logger.warning("edge_overnight_entry_requote_failed error=%s", type(exc).__name__)
         fresh = {}
+    # Decide on the clock after the scan and re-quote, not the start time.
+    decided = clock()
+    if decided.date().isoformat() != today or decided.time() > ENTRY_LATEST:
+        fresh = {}
+        late = {"reason": "past_entry_cutoff", "decided_at": decided.isoformat()}
+    else:
+        late = None
     slots = int(settings.PENNY_EDGE_MAX_POSITIONS)
     held_bases = {base_symbol(t) for t in state["held"]}
     cash, opened, skipped = state["cash"], [], []
     for pick in scan["positions"]:
+        if late is not None:
+            skipped.append({"ticker": pick.ticker, **late})
+            continue
         if len(opened) >= slots:
             break
         if pick.ticker in state["held"]:
@@ -524,7 +583,12 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         if bar is None:
             skipped.append({"ticker": pick.ticker, "reason": "no_fresh_quote"})
             continue
-        age = _trade_age(quote, now)
+        stale = snapshot_refusal(quote, decided)
+        if stale is not None:
+            skipped.append({"ticker": pick.ticker, "reason": stale,
+                            "quote_timestamp": str(quote.get("timestamp") or "")})
+            continue
+        age = _trade_age(quote, decided)
         if age is None or age > ENTRY_MAX_TRADE_AGE:
             skipped.append({"ticker": pick.ticker, "reason": "stale_last_trade",
                             "last_trade_time": str(quote.get("last_trade_time") or "")})
@@ -563,7 +627,8 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
 
     summary = {"date": today, "phase": "ENTRY", "universe": len(tickers), "quoted": len(bars_today),
                "candidates": len(scan["candidates"]), "opened": opened, "skipped": skipped,
-               "equity": state["equity"], "cash_after": round(cash, 4), "fill_contract": ENTRY_FILL_CONTRACT}
+               "equity": state["equity"], "cash_after": round(cash, 4), "fill_contract": ENTRY_FILL_CONTRACT,
+               "started_at": now.isoformat(), "decided_at": decided.isoformat()}
     with _store(store) as conn:
         if _already_ran(conn, today, "ENTRY") is not None:      # a concurrent run won
             return {**_already_ran(conn, today, "ENTRY"), "repeat": True}
@@ -571,8 +636,8 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
             "INSERT INTO edge_overnight_paper_trades (trade_date, ticker, kind, strength, entry_ltp, entry_price, "
             "shares, entry_ts, status) VALUES (?,?,?,?,?,?,?,?, 'OPEN')",
             [(today, o["ticker"], o["kind"], o["strength"], o["entry_ltp"], o["entry_price"], o["shares"],
-              now.isoformat()) for o in opened])
-        _record_run(conn, today, "ENTRY", summary, now, format_entry_telegram(summary))
+              decided.isoformat()) for o in opened])
+        _record_run(conn, today, "ENTRY", summary, decided, format_entry_telegram(summary))
     logger.info("edge_overnight_entry date=%s quoted=%d candidates=%d opened=%d",
                 today, len(bars_today), len(scan["candidates"]), len(opened))
     return summary

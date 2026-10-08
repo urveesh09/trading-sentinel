@@ -80,4 +80,21 @@ describe('undelivered alert dead-letter', () => {
     expect(telegram.bot.sendMessage).toHaveBeenCalledTimes(2);
     expect(fs.existsSync(tmpFile)).toBe(false);
   });
+
+  // [OUTBOX-CLASSIFY 2026-10-08] Only Telegram's own 400 marks THIS message
+  // as rejected; network failures, 429 and 5xx stay transient.
+  test('sendAlertOnceDetailed separates a rejected message from a transient failure', async () => {
+    const telegramError = (status) => Object.assign(new Error(`ETELEGRAM ${status}`), {
+      code: 'ETELEGRAM', response: { statusCode: status, body: { error_code: status } },
+    });
+    telegram.bot.sendMessage.mockRejectedValueOnce(telegramError(400));
+    expect(await telegram.sendAlertOnceDetailed('too long')).toEqual({ delivered: false, rejected: true, status: 400 });
+    telegram.bot.sendMessage.mockRejectedValueOnce(telegramError(429));
+    expect(await telegram.sendAlertOnceDetailed('x')).toEqual({ delivered: false, rejected: false, status: 429 });
+    telegram.bot.sendMessage.mockRejectedValueOnce(Object.assign(new Error('net'), { code: 'EFATAL' }));
+    expect(await telegram.sendAlertOnceDetailed('x')).toEqual({ delivered: false, rejected: false, status: null });
+    telegram.bot.sendMessage.mockResolvedValueOnce({});
+    expect(await telegram.sendAlertOnceDetailed('ok')).toEqual({ delivered: true, rejected: false });
+    expect(fs.existsSync(tmpFile)).toBe(false);
+  });
 });

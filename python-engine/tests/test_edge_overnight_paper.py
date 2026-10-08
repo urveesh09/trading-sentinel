@@ -44,7 +44,8 @@ def _quote(o, h, l, c, v, day=TODAY):
     asks = [{"price": round(c * (1 + 0.0005 * (i + 1)), 2), "quantity": 20000, "orders": 3} for i in range(5)]
     bids = [{"price": round(c * (1 - 0.0005 * (i + 1)), 2), "quantity": 20000, "orders": 3} for i in range(5)]
     return {"ohlc": {"open": o, "high": h, "low": l, "close": 20.0}, "last_price": c, "volume": v,
-            "last_trade_time": f"{day.isoformat()} 15:19:58", "depth": {"buy": bids, "sell": asks}}
+            "last_trade_time": f"{day.isoformat()} 15:19:58", "timestamp": f"{day.isoformat()} 15:19:59",
+            "depth": {"buy": bids, "sell": asks}}
 
 
 class _Kite:
@@ -390,7 +391,7 @@ async def test_entry_is_capped_by_visible_asks_and_priced_at_their_average(tmp_p
     thin["depth"] = {"buy": [{"price": 19.9, "quantity": 400}],
                      "sell": [{"price": 20.10, "quantity": 120}, {"price": 20.30, "quantity": 80}]}
     summary = await eop.run_overnight_entry(_Kite({**entry_quotes, "AAA": thin}), cache, now=_at(TODAY, 15, 20))
-    assert summary["fill_contract"] == "visible-asks-v2"
+    assert summary["fill_contract"] == "visible-asks-v3"
     (o,) = [o for o in summary["opened"] if o["ticker"] == "AAA"]
     assert o["planned"] > 200 and o["shares"] == 200 and o["visible_ask_qty"] == 200
     assert o["entry_price"] == pytest.approx((120 * 20.10 + 80 * 20.30) / 200)   # walked, above the 25 bps model
@@ -526,3 +527,141 @@ def test_long_notice_is_stored_as_acknowledged_parts(tmp_path):
         rows = conn.execute("SELECT phase, message FROM edge_overnight_paper_notices ORDER BY phase").fetchall()
     assert len(rows) >= 2 and all(len(m) <= 3500 for _p, m in rows)
     assert rows[0][0] == f"EXIT:part01of{len(rows):02d}" and rows[0][1].startswith(f"[part 1/{len(rows)}]")
+
+
+class _AdvancingClock:
+    def __init__(self, *times):
+        self.times = list(times)
+
+    def __call__(self):
+        return self.times.pop(0) if len(self.times) > 1 else self.times[0]
+
+
+@pytest.mark.asyncio
+async def test_a_scan_finishing_past_the_cutoff_opens_nothing_follow_up_f1(tmp_path, entry_quotes):
+    """Follow-up F1: start 15:20, fresh quotes at 15:31 -> no admission after 15:29."""
+    cache = _cache(tmp_path)
+    late = {k: dict(v, timestamp=f"{TODAY.isoformat()} 15:30:59", last_trade_time=f"{TODAY.isoformat()} 15:30:58")
+            for k, v in entry_quotes.items()}
+    summary = await eop.run_overnight_entry(_Kite(late), cache, now=_at(TODAY, 15, 20),
+                                            clock=_AdvancingClock(_at(TODAY, 15, 31)))
+    assert summary["opened"] == [] and summary["decided_at"].startswith(f"{TODAY.isoformat()}T15:31")
+    assert summary["skipped"] and all(s["reason"] == "past_entry_cutoff" for s in summary["skipped"])
+
+
+@pytest.mark.asyncio
+async def test_entry_is_recorded_at_the_actual_decision_time_f1(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    decided = _at(TODAY, 15, 23)
+    fresh = {k: dict(v, timestamp=f"{TODAY.isoformat()} 15:22:59") for k, v in entry_quotes.items()}
+    summary = await eop.run_overnight_entry(_Kite(fresh), cache, now=_at(TODAY, 15, 20),
+                                            clock=_AdvancingClock(decided))
+    assert summary["opened"] and summary["started_at"].endswith("15:20:00+05:30")
+    with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
+        (entry_ts,) = conn.execute("SELECT entry_ts FROM edge_overnight_paper_trades").fetchone()
+    assert entry_ts == decided.isoformat()
+
+
+@pytest.mark.parametrize("stamp,reason", [
+    (None, "no_quote_timestamp"),
+    ("15:17:00", "stale_quote_snapshot"),        # 3 min old depth
+    ("15:21:00", "quote_time_ahead"),            # a minute in the future
+])
+def test_quote_snapshot_freshness_is_separate_from_trade_activity_f1(stamp, reason):
+    now = _at(TODAY, 15, 20)
+    quote = {"last_trade_time": f"{TODAY.isoformat()} 15:19:00"}
+    if stamp:
+        quote["timestamp"] = f"{TODAY.isoformat()} {stamp}"
+    assert eop.snapshot_refusal(quote, now) == reason
+    assert eop.snapshot_refusal({"timestamp": f"{TODAY.isoformat()} 15:19:30"}, now) is None
+
+
+def _http_error(status):
+    import httpx
+    request = httpx.Request("POST", "http://gateway/api/internal/notify")
+    return httpx.HTTPStatusError(f"HTTP {status}", request=request, response=httpx.Response(status, request=request))
+
+
+@pytest.mark.asyncio
+async def test_two_rejected_notices_do_not_block_a_healthy_one_follow_up_f2(tmp_path):
+    """Follow-up F2 reproduction: two permanently rejected notices, then a
+    healthy one, on a healthy gateway. The healthy one must go out."""
+    cache = _cache(tmp_path)
+    _queue(cache, ("EXIT", "bad-1"), ("EXIT_RETRY_0920", "bad-2"), ("ENTRY", "good"))
+    sent, tried = [], []
+
+    async def gateway(message):
+        tried.append(message)
+        if message.startswith("bad"):
+            raise _http_error(422)          # Telegram rejected this message
+        sent.append(message)
+
+    assert await eop.flush_notices(gateway, cache, now=_at(TODAY, 15, 30)) == 1
+    assert sent == ["good"] and tried == ["bad-1", "bad-2", "good"]
+    # Not due yet: the rejected rows are not resent on the next round.
+    tried.clear()
+    assert await eop.flush_notices(gateway, cache, now=_at(TODAY, 15, 30)) == 0 and tried == []
+    with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
+        rows = conn.execute("SELECT phase, last_error, next_attempt_at IS NOT NULL FROM edge_overnight_paper_notices "
+                            "WHERE sent_at IS NULL ORDER BY phase").fetchall()
+    assert rows == [("EXIT", "content:HTTPStatusError", 1), ("EXIT_RETRY_0920", "content:HTTPStatusError", 1)]
+
+
+@pytest.mark.asyncio
+async def test_unknown_failures_step_over_without_blocking_eight_rounds_f2(tmp_path):
+    cache = _cache(tmp_path)
+    _queue(cache, ("EXIT", "bad-1"), ("EXIT_RETRY_0920", "bad-2"), ("ENTRY", "good"))
+    sent = []
+
+    async def picky(message):
+        if message.startswith("bad"):
+            raise RuntimeError("refused")
+        sent.append(message)
+
+    for minute in range(8):
+        await eop.flush_notices(picky, cache, now=_at(TODAY, 15, 30 + minute))
+    assert sent == ["good"]
+
+
+@pytest.mark.asyncio
+async def test_a_gateway_outage_stops_at_the_first_row_and_keeps_order_f2(tmp_path):
+    import httpx
+    cache = _cache(tmp_path)
+    _queue(cache, ("EXIT", "a"), ("ENTRY", "b"), ("EXIT_RETRY_0920", "c"))
+    calls = []
+
+    async def down(message):
+        calls.append(message)
+        raise httpx.ConnectError("refused")
+
+    for minute in range(6):
+        await eop.flush_notices(down, cache, now=_at(TODAY, 15, 30 + minute))
+    assert calls == ["a"] * 6                                        # never hammers b or c
+    calls.clear()
+
+    async def bad_gateway(message):
+        calls.append(message)
+        raise _http_error(502)                                       # Telegram refused, not this message's fault
+
+    await eop.flush_notices(bad_gateway, cache, now=_at(TODAY, 15, 40))
+    assert calls == ["a"]
+
+
+@pytest.mark.asyncio
+async def test_an_acknowledged_part_is_not_resent_when_a_later_part_fails_f2(tmp_path):
+    import httpx
+    cache = _cache(tmp_path)
+    long = "\n".join(f"  TICKER{i} @ 20.00 net Rs +1.00" for i in range(200))
+    _queue(cache, ("EXIT", long))
+    seen = []
+
+    async def flaky(message):
+        seen.append(message[:12])
+        if message.startswith("[part 2/") and seen.count(message[:12]) == 1:
+            raise httpx.ReadTimeout("slow")
+        return None
+
+    await eop.flush_notices(flaky, cache, now=_at(TODAY, 15, 30))
+    await eop.flush_notices(flaky, cache, now=_at(TODAY, 15, 31))
+    assert sum(m.startswith("[part 1/") for m in seen) == 1          # acknowledged first part sent once
+    assert sum(m.startswith("[part 2/") for m in seen) == 2          # the failed part retried

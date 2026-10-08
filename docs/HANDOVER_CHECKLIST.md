@@ -12,6 +12,17 @@
 
 
 
+## October 8 (late night, 2) — follow-up review F1–F3
+
+- [x] F1 overnight decision clock, cutoff recheck, actual entry time, snapshot TTL.
+- [x] F2 gateway 422 for rejected content; `notice_outbox` classification; overnight outbox.
+- [x] F3 quote budget enforced with merged batches; counters complete; 429 counted.
+- [ ] Expiry outbox adopts `notice_outbox` (expiry agent).
+- [x] Engine suite: 5,075 pass, 4 skip, 0 fail. Agent: 390 pass. Gateway jest:
+  478 pass, 18 fail in `db.test.js` / `backlog-reconciliation.test.js`, the
+  same 18 failing on the unchanged baseline (pre-existing on this Windows host);
+  the notify tests (10) pass. Expiry test durations are unchanged by the budget.
+
 ## October 8 (late night) — independent review R2–R6 (commit `fc58da3`, Dev, pushed, not deployed)
 
 - [x] R2 research arms explicit; re-run reproduces −₹5,267 / +₹6,968.

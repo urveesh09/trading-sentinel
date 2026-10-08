@@ -273,7 +273,11 @@ async def get_provider_budget(request: Request):
     against Kite's documented limits (measurement only; see EndpointBudget)."""
     _main._check_internal_secret(request, "provider_budget")
     budget = getattr(_main.kite, "endpoint_budget", None)
-    return {"endpoints": budget.snapshot() if budget is not None else {},
+    quote_budget = getattr(_main.kite, "quote_budget", None)
+    return {"scope": "this engine process since start; Node gateway traffic not included",
+            "started_at": getattr(budget, "started_at", None),
+            "endpoints": budget.snapshot() if budget is not None else {},
+            "quote_budget": quote_budget.snapshot() if quote_budget is not None else None,
             "shared_limiter_rate_per_sec": getattr(getattr(_main.kite, "limiter", None), "rate", None)}
 
 

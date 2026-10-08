@@ -5,6 +5,32 @@
 
 
 
+## October 8 (late night, 2) — follow-up review F1–F3 (done, Dev, commit pending, not deployed)
+
+- Problem: overnight admission used the pre-scan clock (could enter after
+  15:29 and record 15:20) and had no snapshot TTL (F1); two permanently
+  rejected notices blocked healthy ones (F2); the quote budget was only
+  measured (F3).
+- Files: `edge_overnight_paper.py`, `notice_outbox.py` (new),
+  `kite_client.py`, `config.py` (`KITE_QUOTE_RATE_PER_SEC`), `routes_ops.py`,
+  `node-gateway/server/routes/internal.js`, `services/telegram.js`, tests.
+- Acceptance (met): scan crossing 15:29 refuses; actual decision time
+  recorded; missing/stale/future snapshot refuses; two 422 notices and two
+  unknown-failure notices do not block a healthy one over 8 rounds; outage
+  retries only the first row; an acknowledged part is not resent;
+  concurrent load stays within the quote budget with merged calls and
+  bounded management wait.
+- Config impact: new `KITE_QUOTE_RATE_PER_SEC=1.0`. Gateway contract: 422
+  for rejected content (engine and gateway must be rebuilt together).
+  Schema: two nullable columns on the overnight notice table (added on open).
+- Rollout: merge, rebuild engine and gateway together. Rollback: revert;
+  or set `KITE_QUOTE_RATE_PER_SEC=3` to match the old shared rate.
+- Next:
+  1. After a market day, read `/ops/provider-budget`: quote `over_documented_limit`
+     should be 0, `http_429` 0, `quote_budget.max_wait_sec.management` small.
+  2. Expiry agent: adopt `notice_outbox` in `expiry_paper.flush_notices`.
+  3. Watch overnight 15:20 receipts for `decided_at` and the new refusals.
+
 ## October 8 (late night) — review R2–R6 (done, Dev, commit `fc58da3`, pushed, not deployed)
 
 - Problem: independent review of the Oct 8 fixes: research arms inherited
