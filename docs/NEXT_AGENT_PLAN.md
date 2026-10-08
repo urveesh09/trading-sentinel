@@ -5,6 +5,15 @@
 
 
 
+## October 8 (evening) — owner's expiry stop rule (done, Dev)
+
+- Owner decision: observe 8 more expiries (10 in all). If every one loses,
+  stop expiry-day F&O. Drop any play or section that keeps losing on its own.
+- Each day summary now prints the tally (`owner_rule_lines`). At expiry 10,
+  report the verdict to the owner with the per-play counts, and recommend
+  which plays to drop even if the rule is not met. The owner decides; nothing
+  stops automatically.
+
 ## October 8 — first SENSEX expiry audit follow-up (done, Dev, commit `b7d3f4d`, pushed, not deployed)
 
 - Problem: the owner asked what went wrong and right on October 8, for the

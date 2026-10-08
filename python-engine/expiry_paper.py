@@ -169,6 +169,13 @@ RV_SAMPLE_SEC = 60.0                # index returns sampled at least a minute ap
 RV_MIN_SEC = 600.0                  # realized volatility needs ten minutes of samples
 CONTEXT_MOMENTS = {"d_entry": D_ENTRY_START, "b_entry": B_ENTRY_START}
 
+# The owner's decision rule, set on 2026-10-08 after two losing expiries
+# (October 6 NIFTY, October 8 SENSEX): observe up to OWNER_REVIEW_EXPIRIES
+# expiries in all. If the main book loses on every one, expiry-day F&O trading
+# stops; a play that keeps losing is dropped on its own. Every day summary
+# prints the tally (``owner_rule_lines``) so the rule cannot be missed.
+OWNER_RULE_SET, OWNER_REVIEW_EXPIRIES = "2026-10-08", 10
+
 
 @dataclass(frozen=True)
 class ExitPolicy:
@@ -1430,7 +1437,41 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
     if shadow:
         lines.append("  shadow whole modeled to date (filled + assumed): " + ", ".join(
             f"{r[0]} Rs {r[1] + r[2]:+,.2f}" for r in shadow))
+    lines += owner_rule_lines(conn, day)
     return "\n".join(lines)
+
+
+def owner_rule_lines(conn, through: str) -> list[str]:
+    """The owner's stop-rule tally over every expiry (all underlyings) up to ``through``.
+
+    An expiry's main-book result is the whole modeled (filled + assumed) of
+    A, B and C; a day without a main trade is not a loss. Per play it counts
+    the expiries the play traded and how many of them it lost.
+    """
+    days = conn.execute("SELECT day, underlying FROM expiry_paper_days WHERE day <= ? ORDER BY day, underlying",
+                        (through,)).fetchall()
+    whole = {(r[0], r[1], r[2]): r[3] for r in conn.execute(
+        "SELECT day, underlying, play, SUM(net_pnl + COALESCE(assumed_pnl, 0)) FROM expiry_paper_positions "
+        "WHERE day <= ? AND status != 'OPEN' GROUP BY day, underlying, play", (through,))}
+    results = [sum(whole.get((d, u, play), 0.0) for play in MAIN_PLAYS) for d, u in days]
+    lost = sum(result < 0 for result in results)
+    streak = 0
+    for result in reversed(results):
+        if result >= 0:
+            break
+        streak += 1
+    per_play = []
+    for play in MAIN_PLAYS + SHADOW_PLAYS:
+        traded = [value for (_, _, p), value in whole.items() if p == play]
+        if traded:
+            per_play.append(f"{play} {sum(value < 0 for value in traded)}/{len(traded)}")
+    met = len(results) >= OWNER_REVIEW_EXPIRIES and lost == len(results)
+    verdict = "RULE MET: every expiry lost, stop expiry-day F&O" if met else \
+        f"{max(0, OWNER_REVIEW_EXPIRIES - len(results))} expiries left to observe"
+    return [f"  owner rule ({OWNER_RULE_SET}): expiry {len(results)} of {OWNER_REVIEW_EXPIRIES}, main book lost "
+            f"{lost} of {len(results)}, losing streak {streak}; {verdict}",
+            "  losing expiries / expiries traded, per play (a play that keeps losing is dropped): "
+            + (", ".join(per_play) or "none")]
 
 
 async def run_expiry_tick(kite, db_path: Optional[str] = None, now: Optional[datetime] = None,

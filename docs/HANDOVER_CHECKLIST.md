@@ -12,6 +12,15 @@
 
 
 
+## October 8 (evening) — owner's expiry stop rule
+
+- [x] Rule recorded in the design doc header, the guide and the plan.
+- [x] `owner_rule_lines` added to every expiry day summary.
+- [x] Test `test_the_owner_stop_rule_is_tallied_in_every_summary`.
+  `test_expiry_paper.py`: 46 pass.
+- [x] Checked on a read-only copy of the Production store: expiry 2 of 10, lost 2 of 2.
+- [ ] At expiry 10: report the verdict and the per-play drop recommendations.
+
 ## October 8 — first SENSEX expiry audit follow-up (`expiry-shadow-v2`, `expiry-context-v1.1`)
 
 Commit `b7d3f4d` on `codex/production-correction-hedge-p0` (docs-identity

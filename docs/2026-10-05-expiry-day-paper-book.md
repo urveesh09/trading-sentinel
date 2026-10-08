@@ -6,6 +6,18 @@ It goes live in Production only after the PR is merged and the images are rebuil
 The live F&O book is unchanged: `FNO_EXPIRY_DAY_ENTRIES=False` and the 15:10 hard
 flat still apply.
 
+> **Owner's stop rule (set October 8, 2026, after two losing expiries).**
+> October 6 (NIFTY, −₹3,224.47) and October 8 (SENSEX, −₹2,934.51) both lost.
+> The owner will observe **8 more expiries, 10 in all**. If the main book (A, B
+> and C, filled plus assumed) loses on **every one of the 10**, expiry-day F&O
+> trading stops. Separately, **a play or section that keeps losing is dropped
+> on its own**, even if the book as a whole does not meet the rule. This
+> decision point comes before the 20-expiry scoring horizon: that horizon is
+> only for choosing between plays if the book continues. Every day summary
+> prints the tally ("owner rule … expiry N of 10, main book lost X of N,
+> losing streak S" plus each play's losing/traded count;
+> `expiry_paper.owner_rule_lines`).
+
 **Revised before its first expiry** (an independent review of `f000acb`):
 
 - **The loss ceiling is now hard.** The earlier version sized A from its −30% stop,

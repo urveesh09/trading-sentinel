@@ -14,6 +14,24 @@
 
 
 
+## October 8 (evening) — owner's expiry stop rule, tallied in the summary (actual behavior, Dev)
+
+- **The rule.** The owner set it after two losing expiries (Oct 6 NIFTY
+  −₹3,224.47, Oct 8 SENSEX −₹2,934.51). Observe 10 expiries in all. If the main
+  book (A+B+C whole modeled) loses on every one, stop expiry-day F&O trading.
+  A play or section that keeps losing is dropped on its own. This decision
+  point comes before the 20-expiry scoring horizon.
+- **Code.** `OWNER_RULE_SET`/`OWNER_REVIEW_EXPIRIES` (10). `owner_rule_lines`
+  covers every expiry day in the store up to the summary's day, all
+  underlyings. It counts how many lost, the current losing streak (a day
+  without a main loss resets it) and per play the expiries lost/traded. At 10
+  expiries, all of them lost, it prints "RULE MET: … stop expiry-day F&O".
+  `format_day_summary` appends both lines. The rule is reporting only: nothing
+  stops automatically; the owner decides.
+- **Checked on a read-only copy of the Production store:** "expiry 2 of 10,
+  main book lost 2 of 2, losing streak 2; 8 expiries left to observe". Per
+  play: A 2/2, B 2/2, C 2/2, BH 1/1, C500 1/1, D 0/1.
+
 ## October 8 — expiry book after the first SENSEX audit: shadow-v2 (AL, BP), path marks, T4/T5 fixes (actual behavior, Dev, paper only)
 
 Source: Production `docs/2026-10-08-expiry-system-deep-audit.md` (read-only).

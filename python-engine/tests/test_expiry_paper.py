@@ -877,3 +877,22 @@ async def test_bp_sells_the_strangle_as_one_trade_at_its_target(tmp_path):
     assert "  BP: filled net" in summary and "    entry 15:13:30: best Rs" in summary
     assert "path per entry" in summary and "D ENTRY" not in summary
     assert "D entry 14:30:00, read 14:30:00" in summary
+
+
+def test_the_owner_stop_rule_is_tallied_in_every_summary(tmp_path):
+    # Owner, 2026-10-08: if the main book loses on all of 10 expiries, stop expiry-day F&O.
+    store = str(tmp_path / "x.db")
+    with xp._store(store) as conn:
+        for i, (day, net) in enumerate((("2026-10-06", -500.0), ("2026-10-08", -300.0), ("2026-10-13", 0.0))):
+            conn.execute("INSERT INTO expiry_paper_days VALUES (?,?,?,?)", (day, "NIFTY", "{}", day))
+            if net:
+                conn.execute("INSERT INTO expiry_paper_positions (day, underlying, play, exchange, symbol, token, "
+                             "strike, opt_type, lot_size, lots, lots_open, entry_ts, entry_price, max_loss, peak, "
+                             "stop, status, net_pnl) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                             (day, "NIFTY", "A", "NFO", f"S{i}", i, 1.0, "CE", 65, 1, 0, day, 1.0, 1.0, 1.0,
+                              0.0, "CLOSED", net))
+        assert xp.owner_rule_lines(conn, "2026-10-08") == [
+            "  owner rule (2026-10-08): expiry 2 of 10, main book lost 2 of 2, losing streak 2; "
+            "8 expiries left to observe",
+            "  losing expiries / expiries traded, per play (a play that keeps losing is dropped): A 2/2"]
+        assert "losing streak 0" in xp.owner_rule_lines(conn, "2026-10-13")[0]    # a day without a loss
