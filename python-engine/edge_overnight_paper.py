@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import closing, contextmanager
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import json
 import logging
 import math
@@ -68,6 +68,20 @@ EXIT_LATEST = time(15, 20)
 RANK_DEPTH = 10
 SME_SUFFIXES = ("-SM", "-ST")
 SKIP_KINDS = ("MR_mid",)
+# [O8-O1 2026-10-08] Entries fill against the visible sell depth: missing
+# depth refuses, shares never exceed the displayed ask quantity and the price
+# is the walked average ask (never better than the 25 bps model).
+# v2 (review, Oct 8 night): the shortlist is re-quoted after the scan, a pick
+# whose last trade is older than ENTRY_MAX_TRADE_AGE refuses, and price and
+# fees are re-walked for the final (cash-trimmed) share count.
+# v3 (follow-up review F1): admission is decided on a clock read after the
+# re-quote, refused past ENTRY_LATEST, recorded at that actual time, and each
+# quote snapshot must itself be fresh (ENTRY_QUOTE_TTL), separately from the
+# last-trade activity rule (ENTRY_MAX_TRADE_AGE).
+ENTRY_FILL_CONTRACT = "visible-asks-v3"
+ENTRY_MAX_TRADE_AGE = timedelta(minutes=30)     # activity: the stock traded recently
+ENTRY_QUOTE_TTL = timedelta(seconds=120)        # snapshot: the displayed depth is current
+ENTRY_QUOTE_MAX_AHEAD = timedelta(seconds=5)    # provider clock may lead ours by this much
 
 
 def prior_session(today_iso: str, db_path: str) -> str:
@@ -113,10 +127,10 @@ def _price_exit(quote: dict, *, today: str, auction: bool, trade_date: str, tick
     # session (with or without a failed attempt) would mislabel a later close,
     # so the split is then left out.
     prior_close = ohlc.get("close")
-    # NSE sets the open to the previous close when the pre-open auction finds
-    # no equilibrium, so such an "open" is not a traded auction price. The
-    # Oct 5-7 fills had 3 of 6 exactly so; record it to measure how often the
-    # modeled auction exit is a placeholder (measurement only).
+    # An open equal to the previous close may be a no-equilibrium pre-open
+    # placeholder, but a discovered open can also equal it, so this is an
+    # equality flag for measurement only, not proof of an untraded open.
+    # The Oct 5-7 fills had 3 of 6 exactly so.
     if _finite_positive(prior_close):
         item["open_is_prev_close"] = float(open_price) == float(prior_close)
     if entry_session_prior and _finite_positive(prior_close):
@@ -158,6 +172,10 @@ def _store(path: str):
         columns = {row[1] for row in conn.execute("PRAGMA table_info(edge_overnight_paper_trades)")}
         if "entry_day_close" not in columns:
             conn.execute("ALTER TABLE edge_overnight_paper_trades ADD COLUMN entry_day_close REAL")
+        notice_columns = {row[1] for row in conn.execute("PRAGMA table_info(edge_overnight_paper_notices)")}
+        for column in ("next_attempt_at", "last_error"):
+            if column not in notice_columns:
+                conn.execute(f"ALTER TABLE edge_overnight_paper_notices ADD COLUMN {column} TEXT")
         with conn:
             yield conn
 
@@ -214,11 +232,18 @@ def _record_run(conn: sqlite3.Connection, day: str, phase: str, summary: dict, n
     conn.execute("INSERT OR REPLACE INTO edge_overnight_paper_runs VALUES (?,?,?,?)",
                  (day, phase, json.dumps(summary, sort_keys=True), now.isoformat()))
     if message:
-        conn.execute("INSERT OR IGNORE INTO edge_overnight_paper_notices (run_date, phase, message, created_at) "
-                     "VALUES (?,?,?,?)", (day, phase, message, now.isoformat()))
+        # Over-long notices become numbered parts, each acknowledged on its
+        # own row (the expiry book's splitter; Telegram refuses > 4,096).
+        from expiry_paper import notice_parts
+        parts = notice_parts(message)
+        keys = [phase] if len(parts) == 1 else [f"{phase}:part{i:02d}of{len(parts):02d}"
+                                               for i in range(1, len(parts) + 1)]
+        conn.executemany("INSERT OR IGNORE INTO edge_overnight_paper_notices (run_date, phase, message, created_at) "
+                         "VALUES (?,?,?,?)", [(day, key, part, now.isoformat()) for key, part in zip(keys, parts)])
 
 
 _FLUSH_LOCKS: dict[str, asyncio.Lock] = {}
+NOTICE_STEP_OVER_AFTER = 3          # unknown-cause failures before a notice may be stepped over
 
 
 async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optional[str] = None,
@@ -227,28 +252,48 @@ async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optiona
 
     Flushes of one store are serialised (the phase jobs and the catch-up can
     overlap), so a row is never sent twice concurrently; ``sent_at`` is the
-    acknowledgement time. Delivery is at-least-once across a crash.
+    acknowledgement time. Delivery is at-least-once across a crash or a lost
+    acknowledgement.
+
+    Failures follow ``notice_outbox``: a message the gateway rejects (422)
+    is stepped over at once and retried on a backoff, so any number of bad
+    notices cannot block healthy ones; a transport failure stops the round
+    in order; an unknown failure keeps order for NOTICE_STEP_OVER_AFTER tries.
+    Rows backing off are skipped until due. Failed rows are kept with
+    ``last_error`` for inspection.
     """
+    import notice_outbox
+
     store = overnight_db_path(db_path or settings.DB_PATH)
     async with _FLUSH_LOCKS.setdefault(store, asyncio.Lock()):
         with _store(store) as conn:
-            pending = conn.execute("SELECT run_date, phase, message FROM edge_overnight_paper_notices "
-                                   "WHERE sent_at IS NULL ORDER BY created_at").fetchall()
+            pending = conn.execute("SELECT run_date, phase, message, attempts, next_attempt_at "
+                                   "FROM edge_overnight_paper_notices WHERE sent_at IS NULL "
+                                   "ORDER BY created_at, phase").fetchall()
         sent = 0
-        for day, phase, message in pending:
+        for day, phase, message, attempts, next_attempt_at in pending:
+            clock = now or datetime.now(IST)
+            if not notice_outbox.is_due(next_attempt_at, clock):
+                continue
             try:
                 await send(message)
             except Exception as exc:
-                logger.warning("edge_overnight_notice_failed date=%s phase=%s err=%s",
-                               day, phase, type(exc).__name__)
+                kind = notice_outbox.classify_send_failure(exc)
+                go_on, retry_at = notice_outbox.after_failure(kind, attempts + 1, clock)
+                logger.warning("edge_overnight_notice_failed date=%s phase=%s attempts=%d kind=%s err=%s%s",
+                               day, phase, attempts + 1, kind, type(exc).__name__,
+                               " stepped_over" if go_on else "")
                 with _store(store) as conn:
-                    conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1 "
-                                 "WHERE run_date=? AND phase=?", (day, phase))
-                break
+                    conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1, "
+                                 "next_attempt_at=?, last_error=? WHERE run_date=? AND phase=?",
+                                 (retry_at, f"{kind}:{type(exc).__name__}", day, phase))
+                if not go_on:
+                    break
+                continue
             acked = now or datetime.now(IST)
             with _store(store) as conn:
-                conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1 "
-                             "WHERE run_date=? AND phase=?", (acked.isoformat(), day, phase))
+                conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1, "
+                             "next_attempt_at=NULL WHERE run_date=? AND phase=?", (acked.isoformat(), day, phase))
             sent += 1
         return sent
 
@@ -256,6 +301,7 @@ async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optiona
 async def catch_up(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> list[str]:
     """Run a phase whose receipt is missing today, inside its permitted window."""
     db_path = db_path or settings.DB_PATH
+    wall_clock = now is None          # a live call decides entries on the wall clock (F1)
     now = now or datetime.now(IST)
     today, clock = now.date().isoformat(), now.time()
     with _store(overnight_db_path(db_path)) as conn:
@@ -271,7 +317,8 @@ async def catch_up(kite, db_path: Optional[str] = None, now: Optional[datetime] 
         if retried.get("closed"):
             ran.append("EXIT_RETRY")
     if not has_entry and ENTRY_CATCHUP_START <= clock <= ENTRY_LATEST:
-        summary = await run_overnight_entry(kite, db_path, now)
+        summary = await run_overnight_entry(kite, db_path, now,
+                                            clock=(lambda: datetime.now(IST)) if wall_clock else None)
         if not summary.get("repeat"):
             ran.append("ENTRY")
     if ran:
@@ -346,6 +393,99 @@ def base_symbol(ticker: str) -> str:
     return ticker.split("-")[0]
 
 
+def visible_asks(quote: dict) -> Optional[list[tuple[float, int]]]:
+    """Valid ``(price, quantity)`` sell levels, or ``None`` when depth is absent.
+
+    ``None`` (no depth object or no sell list) is a data gap; ``[]`` means the
+    book was quoted but nobody is selling.
+    """
+    depth = quote.get("depth")
+    sell = depth.get("sell") if isinstance(depth, dict) else None
+    if not isinstance(sell, list):
+        return None
+    asks = []
+    for level in sell:
+        if not isinstance(level, dict):
+            continue
+        price, qty = level.get("price"), level.get("quantity")
+        if _finite_positive(price) and _finite_positive(qty):
+            asks.append((float(price), int(qty)))
+    return sorted(asks)
+
+
+def walk_asks(asks: list[tuple[float, int]], shares: int) -> tuple[int, Optional[float]]:
+    """Shares the visible asks can fill (up to ``shares``) and their average price."""
+    filled, cost = 0, 0.0
+    for price, qty in asks:
+        take = min(qty, shares - filled)
+        if take <= 0:
+            break
+        filled += take
+        cost += take * price
+    return filled, (cost / filled if filled else None)
+
+
+def _best_bid(quote: dict) -> Optional[float]:
+    depth = quote.get("depth")
+    bids = depth.get("buy") if isinstance(depth, dict) else None
+    prices = [float(level["price"]) for level in bids or [] if isinstance(level, dict)
+              and _finite_positive(level.get("price")) and _finite_positive(level.get("quantity"))]
+    return max(prices) if prices else None
+
+
+def _stamp_age(quote: dict, field: str, now: datetime) -> Optional[timedelta]:
+    """Age at ``now`` of a quote timestamp field, or ``None`` when absent/unparseable."""
+    raw = quote.get(field)
+    if raw in (None, ""):
+        return None
+    try:
+        stamp = raw if isinstance(raw, datetime) else datetime.fromisoformat(str(raw))
+    except (TypeError, ValueError):
+        return None
+    if stamp.tzinfo is None:
+        stamp = stamp.replace(tzinfo=IST)
+    return now - stamp
+
+
+def _trade_age(quote: dict, now: datetime) -> Optional[timedelta]:
+    """Age of the quote's last trade at ``now`` (trading activity)."""
+    return _stamp_age(quote, "last_trade_time", now)
+
+
+def snapshot_refusal(quote: dict, now: datetime) -> Optional[str]:
+    """Why the quote packet itself is not current at ``now``, else ``None``."""
+    age = _stamp_age(quote, "timestamp", now)
+    if age is None:
+        return "no_quote_timestamp"
+    if age < -ENTRY_QUOTE_MAX_AHEAD:
+        return "quote_time_ahead"
+    if age > ENTRY_QUOTE_TTL:
+        return "stale_quote_snapshot"
+    return None
+
+
+def price_for_cash(asks: list[tuple[float, int]], wanted: int, model_price: float,
+                   cash: float) -> tuple[int, float]:
+    """Largest share count up to ``wanted`` whose walked price plus buy charges
+    fit ``cash``, and that price (never below ``model_price``)."""
+    def priced(n: int) -> float:
+        _filled, walked = walk_asks(asks, n)
+        return round(max(model_price, walked or 0.0), 4)
+
+    def fits(n: int) -> bool:
+        price = priced(n)
+        return price * n + buy_charges(price, n) <= cash
+
+    shares = wanted
+    while shares > 0 and not fits(shares):
+        shares = min(shares - 1, int(cash // (priced(shares) * (1 + BUY_COST_BUFFER))))
+    # The estimate above uses the larger order's (higher) average; grow back
+    # while the next share still fits at its own walked price.
+    while 0 < shares < wanted and fits(shares + 1):
+        shares += 1
+    return (shares, priced(shares)) if shares > 0 else (0, round(model_price, 4))
+
+
 def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases: set) -> Optional[str]:
     """[EDGE-OVERNIGHT-REALISM 2026-10-07] Why a pick cannot be bought honestly, else ``None``.
 
@@ -366,8 +506,10 @@ def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases
     upper = quote.get("upper_circuit_limit")
     if _finite_positive(upper) and ltp >= float(upper) * (1 - 0.005):
         return "at_upper_circuit"
-    depth_sell = (quote.get("depth") or {}).get("sell") or []
-    if depth_sell and not any(_finite_positive(level.get("quantity")) for level in depth_sell):
+    asks = visible_asks(quote)
+    if asks is None:
+        return "no_depth"
+    if not asks:
         return "no_sellers"
     prev_close = (quote.get("ohlc") or {}).get("close")
     if _finite_positive(prev_close) and ltp >= high * 0.999 and ltp / float(prev_close) - 1 >= 0.019:
@@ -375,12 +517,20 @@ def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases
     return None
 
 
-async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> dict:
-    """15:20 IST: score today's provisional bars and open the paper picks."""
+async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional[datetime] = None,
+                              clock: Optional[Callable[[], datetime]] = None) -> dict:
+    """15:20 IST: score today's provisional bars and open the paper picks.
+
+    ``now`` starts the run; ``clock`` gives the admission decision time after
+    the scan and re-quote (defaults to the wall clock, or to ``now`` when only
+    ``now`` is injected).
+    """
     from penny_edge_live import scan_today
 
     db_path = db_path or settings.DB_PATH
-    now = now or datetime.now(IST)
+    if clock is None:
+        clock = (lambda: now) if now is not None else (lambda: datetime.now(IST))
+    now = now or clock()
     today = now.date().isoformat()
     store = overnight_db_path(db_path)
     with _store(store) as conn:
@@ -403,49 +553,82 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
     finally:
         os.remove(scan_path)
 
+    # The scan takes minutes; price and refuse on a fresh quote of the shortlist.
+    try:
+        fresh = await _quotes(kite, [pick.ticker for pick in scan["positions"]])
+    except Exception as exc:                          # noqa: BLE001 - a failed refresh refuses, never stale fills
+        logger.warning("edge_overnight_entry_requote_failed error=%s", type(exc).__name__)
+        fresh = {}
+    # Decide on the clock after the scan and re-quote, not the start time.
+    decided = clock()
+    if decided.date().isoformat() != today or decided.time() > ENTRY_LATEST:
+        fresh = {}
+        late = {"reason": "past_entry_cutoff", "decided_at": decided.isoformat()}
+    else:
+        late = None
     slots = int(settings.PENNY_EDGE_MAX_POSITIONS)
     held_bases = {base_symbol(t) for t in state["held"]}
     cash, opened, skipped = state["cash"], [], []
     for pick in scan["positions"]:
+        if late is not None:
+            skipped.append({"ticker": pick.ticker, **late})
+            continue
         if len(opened) >= slots:
             break
-        bar = bars_today.get(pick.ticker)
-        if bar is None:
-            skipped.append({"ticker": pick.ticker, "reason": "no_provisional_bar"})
-            continue
         if pick.ticker in state["held"]:
             skipped.append({"ticker": pick.ticker, "reason": "already_held"})
             continue
-        refusal = realism_refusal(pick.ticker, pick.signal_subtype, quotes.get(pick.ticker) or {}, bar,
+        quote = fresh.get(pick.ticker) or {}
+        bar = provisional_bar(quote, today)
+        if bar is None:
+            skipped.append({"ticker": pick.ticker, "reason": "no_fresh_quote"})
+            continue
+        stale = snapshot_refusal(quote, decided)
+        if stale is not None:
+            skipped.append({"ticker": pick.ticker, "reason": stale,
+                            "quote_timestamp": str(quote.get("timestamp") or "")})
+            continue
+        age = _trade_age(quote, decided)
+        if age is None or age > ENTRY_MAX_TRADE_AGE:
+            skipped.append({"ticker": pick.ticker, "reason": "stale_last_trade",
+                            "last_trade_time": str(quote.get("last_trade_time") or "")})
+            continue
+        refusal = realism_refusal(pick.ticker, pick.signal_subtype, quote, bar,
                                   held_bases | {base_symbol(o["ticker"]) for o in opened})
         if refusal is not None:
             skipped.append({"ticker": pick.ticker, "reason": refusal})
             continue
         ltp, volume = bar[3], bar[4]
-        entry_price = round(ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0), 4)
-        capacity = int(MAX_PARTICIPATION * ltp * volume // entry_price)
-        # [O1 2026-10-06] Oct 6 audit: three picks used Rs 24,364.88 of
-        # Rs 24,386.22 and left -Rs 7.59 after their buy charges, because only
-        # premium was debited. Each admission now fits premium plus its own
-        # buy charges inside the cash left after earlier picks' charges.
-        affordable = int(cash // (entry_price * (1 + BUY_COST_BUFFER)))
-        while affordable > 0 and entry_price * affordable + buy_charges(entry_price, affordable) > cash:
-            affordable -= 1
-        shares = min(int(pick.shares), capacity, affordable)
+        asks = visible_asks(quote) or []
+        visible = sum(qty for _price, qty in asks)
+        model_price = ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0)
+        capacity = int(MAX_PARTICIPATION * ltp * volume // model_price)
+        wanted = min(int(pick.shares), capacity, visible)
+        # [O1 2026-10-06] Each admission fits premium plus its own buy charges
+        # inside the cash left after earlier picks. The asks are re-walked for
+        # the final share count, so price and fees match what is bought.
+        shares, entry_price = price_for_cash(asks, wanted, model_price, cash)
         if shares < 1 or shares < MIN_FILL_FRACTION * int(pick.shares):
-            reason = "liquidity" if capacity <= affordable else "cash"
+            reason = ("cash" if shares < wanted
+                      else "thin_asks" if visible == wanted < int(pick.shares)
+                      else "liquidity")
             skipped.append({"ticker": pick.ticker, "reason": f"{reason}_below_quarter_of_plan",
-                            "planned": int(pick.shares), "capacity": capacity, "affordable": affordable})
+                            "planned": int(pick.shares), "capacity": capacity, "affordable": shares,
+                            "visible_ask_qty": visible})
             continue
         charges = buy_charges(entry_price, shares)
         cash -= entry_price * shares + charges
         opened.append({"ticker": pick.ticker, "kind": pick.signal_subtype,
                        "strength": round(float(pick.adjusted_strength), 4), "entry_ltp": ltp,
-                       "entry_price": entry_price, "shares": shares, "buy_charges": charges})
+                       "entry_price": entry_price, "shares": shares, "buy_charges": charges,
+                       "planned": int(pick.shares), "visible_ask_qty": visible,
+                       "best_ask": asks[0][0] if asks else None, "best_bid": _best_bid(quote),
+                       "quote_ts": str(quote.get("timestamp") or quote.get("last_trade_time") or "")})
 
     summary = {"date": today, "phase": "ENTRY", "universe": len(tickers), "quoted": len(bars_today),
                "candidates": len(scan["candidates"]), "opened": opened, "skipped": skipped,
-               "equity": state["equity"], "cash_after": round(cash, 4)}
+               "equity": state["equity"], "cash_after": round(cash, 4), "fill_contract": ENTRY_FILL_CONTRACT,
+               "started_at": now.isoformat(), "decided_at": decided.isoformat()}
     with _store(store) as conn:
         if _already_ran(conn, today, "ENTRY") is not None:      # a concurrent run won
             return {**_already_ran(conn, today, "ENTRY"), "repeat": True}
@@ -453,8 +636,8 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
             "INSERT INTO edge_overnight_paper_trades (trade_date, ticker, kind, strength, entry_ltp, entry_price, "
             "shares, entry_ts, status) VALUES (?,?,?,?,?,?,?,?, 'OPEN')",
             [(today, o["ticker"], o["kind"], o["strength"], o["entry_ltp"], o["entry_price"], o["shares"],
-              now.isoformat()) for o in opened])
-        _record_run(conn, today, "ENTRY", summary, now, format_entry_telegram(summary))
+              decided.isoformat()) for o in opened])
+        _record_run(conn, today, "ENTRY", summary, decided, format_entry_telegram(summary))
     logger.info("edge_overnight_entry date=%s quoted=%d candidates=%d opened=%d",
                 today, len(bars_today), len(scan["candidates"]), len(opened))
     return summary

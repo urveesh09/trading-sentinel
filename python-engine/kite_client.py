@@ -1,4 +1,5 @@
 import asyncio
+import collections
 import math
 import contextlib
 import contextvars
@@ -6,7 +7,7 @@ import os
 import re
 import time
 import uuid
-from typing import Optional
+from typing import Callable, Optional
 import httpx
 import sqlite3
 import pandas as pd
@@ -294,12 +295,197 @@ class RateLimiter:
                 if not admitted:
                     self._condition.notify_all()
 
+class EndpointBudget:
+    """Per-endpoint provider usage against Kite's documented rate limits.
+
+    [REVIEW-R6 2026-10-08] The shared ``RateLimiter`` allows 3 requests/s on
+    every endpoint, while Kite documents quotes at 1/s, historical candles at
+    3/s and orders/other endpoints at 10/s. Oct 8 Production logs show no
+    429 rejection, so the limiter is not narrowed blindly (that would triple
+    quote queueing for expiry, F&O exits and Penny). This records the real
+    per-second rate of each endpoint class, the peak, and how many times it
+    exceeded the documented limit, and logs (at most once a minute per class)
+    when it does, so an endpoint-specific cap can be set from evidence.
+    Measurement only: it never delays or refuses a call.
+    """
+
+    DOCUMENTED_LIMITS = {"quote": 1, "historical": 3, "order": 10, "other": 10}
+    WINDOW_SEC = 1.0
+    LOG_EVERY_SEC = 60.0
+
+    def __init__(self, clock: Callable[[], float] = time.monotonic):
+        self._clock = clock
+        self._recent: dict[str, collections.deque] = {k: collections.deque() for k in self.DOCUMENTED_LIMITS}
+        self.calls = {k: 0 for k in self.DOCUMENTED_LIMITS}
+        self.peak_per_sec = {k: 0 for k in self.DOCUMENTED_LIMITS}
+        self.over_limit = {k: 0 for k in self.DOCUMENTED_LIMITS}
+        self._last_log = {k: float("-inf") for k in self.DOCUMENTED_LIMITS}
+        self.statuses: dict[str, dict[int, int]] = {}
+        self.started_at = datetime.now(timezone.utc).isoformat()
+
+    def record(self, endpoint: str) -> int:
+        """Count one admitted call; return the calls seen in the last second."""
+        if endpoint not in self.DOCUMENTED_LIMITS:
+            endpoint = "other"
+        now = self._clock()
+        window = self._recent[endpoint]
+        window.append(now)
+        while window and now - window[0] >= self.WINDOW_SEC:
+            window.popleft()
+        current = len(window)
+        self.calls[endpoint] += 1
+        self.peak_per_sec[endpoint] = max(self.peak_per_sec[endpoint], current)
+        limit = self.DOCUMENTED_LIMITS[endpoint]
+        if current > limit:
+            self.over_limit[endpoint] += 1
+            if now - self._last_log[endpoint] >= self.LOG_EVERY_SEC:
+                self._last_log[endpoint] = now
+                logger.warning("kite_endpoint_over_documented_limit endpoint=%s observed_per_sec=%d "
+                               "limit_per_sec=%d over_limit_calls=%d", endpoint, current, limit,
+                               self.over_limit[endpoint])
+        return current
+
+    def record_status(self, endpoint: str, status: int) -> None:
+        """Count a non-2xx provider answer (429 is the rate-limit evidence)."""
+        if endpoint not in self.DOCUMENTED_LIMITS:
+            endpoint = "other"
+        bucket = self.statuses.setdefault(endpoint, {})
+        bucket[int(status)] = bucket.get(int(status), 0) + 1
+        if int(status) == 429:
+            logger.warning("kite_endpoint_http_429 endpoint=%s total=%d", endpoint, bucket[429])
+
+    def snapshot(self) -> dict:
+        return {k: {"calls": self.calls[k], "peak_per_sec": self.peak_per_sec[k],
+                    "over_documented_limit": self.over_limit[k], "documented_limit_per_sec": v,
+                    "http_errors": {str(code): n for code, n in sorted(self.statuses.get(k, {}).items())},
+                    "http_429": self.statuses.get(k, {}).get(429, 0)}
+                for k, v in self.DOCUMENTED_LIMITS.items()}
+
+
+_LANE_RANK = {"management": 0, "normal": 1, "bulk": 2}
+
+
+class QuoteBudget:
+    """Kite's quote budget (1 request/s) with transparent request batching.
+
+    [FOLLOW-UP-F3 2026-10-08] Kite documents 1 quote request per second and
+    up to 500 instruments per request, while the shared limiter allows 3/s on
+    every endpoint. Every ``/quote`` HTTP attempt now takes a slot from this
+    budget (management lane first), and concurrent token requests waiting for
+    a slot are merged into one call of up to ``MAX_INSTRUMENTS``, each caller
+    receiving only its own tokens. So the documented rate holds without
+    queueing callers one second apart. The shared limiter still applies on
+    top. The limiter is rebuilt per event loop (tests run several loops).
+    """
+
+    MAX_INSTRUMENTS = 500
+
+    def __init__(self, rate: float = 1.0):
+        self.rate = rate
+        self._limiter: Optional[RateLimiter] = None
+        self._loop = None
+        self._pending: list = []
+        self._dispatcher: Optional[asyncio.Task] = None
+        self._seq = 0
+        self.batches = 0
+        self.merged_requests = 0
+        self.max_wait_sec = {lane: 0.0 for lane in _LANE_RANK}
+
+    def limiter(self) -> RateLimiter:
+        loop = asyncio.get_running_loop()
+        if self._limiter is None or self._loop is not loop:
+            self._limiter, self._loop = RateLimiter(rate=self.rate, burst=1), loop
+            self._pending, self._dispatcher = [], None
+        return self._limiter
+
+    async def slot(self, lane: Optional[str] = None) -> float:
+        """Wait for one quote request slot; returns the seconds waited."""
+        started = time.monotonic()
+        await self.limiter().acquire(priority=lane)
+        return time.monotonic() - started
+
+    async def submit(self, fetch, tokens: list, lane: str) -> tuple:
+        """Queue ``tokens``; the dispatcher merges queued requests per slot."""
+        self.limiter()
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        self._seq += 1
+        self._pending.append((_LANE_RANK.get(lane, 1), self._seq, lane, tokens, future, time.monotonic()))
+        if self._dispatcher is None or self._dispatcher.done():
+            self._dispatcher = loop.create_task(self._dispatch(fetch))
+        return await future
+
+    def _live(self) -> list:
+        self._pending = sorted((item for item in self._pending if not item[4].done()),
+                               key=lambda item: (item[0], item[1]))
+        return self._pending
+
+    async def _dispatch(self, fetch) -> None:
+        while self._live():
+            lane = self._pending[0][2]
+            await self.limiter().acquire(priority=lane)
+            if not self._live():
+                return
+            batch, merged, seen = [], [], set()
+            for item in self._pending:
+                new = [t for t in item[3] if t not in seen]
+                if batch and len(merged) + len(new) > self.MAX_INSTRUMENTS:
+                    continue
+                batch.append(item)
+                merged.extend(new)
+                seen.update(new)
+            taken = {id(item) for item in batch}
+            self._pending = [item for item in self._pending if id(item) not in taken]
+            now = time.monotonic()
+            for item in batch:
+                self.max_wait_sec[item[2]] = max(self.max_wait_sec.get(item[2], 0.0), now - item[5])
+            self.batches += 1
+            self.merged_requests += len(batch)
+            asyncio.get_running_loop().create_task(self._run(fetch, batch, merged, lane))
+
+    async def _run(self, fetch, batch, merged, lane) -> None:
+        try:
+            result, timing = await fetch(merged, lane)
+        except Exception as exc:                      # noqa: BLE001 - hand the failure to every caller
+            for item in batch:
+                if not item[4].done():
+                    item[4].set_exception(exc)
+            return
+        for item in batch:
+            if item[4].done():
+                continue
+            mine = {t: result[t] for t in item[3] if t in result}
+            item[4].set_result((mine, {**timing,
+                                       "quote_batch_wait_sec": round(time.monotonic() - item[5], 6),
+                                       "quote_batch_requests": len(batch),
+                                       "quote_batch_instruments": len(merged)}))
+
+    def snapshot(self) -> dict:
+        return {"rate_per_sec": self.rate, "batches": self.batches, "merged_requests": self.merged_requests,
+                "max_wait_sec": {lane: round(v, 3) for lane, v in self.max_wait_sec.items()}}
+
+
+def _record_endpoint(client, endpoint: str) -> None:
+    """Count a dispatched provider call (tolerates bare test doubles)."""
+    budget = getattr(client, "endpoint_budget", None)
+    if budget is not None:
+        budget.record(endpoint)
+
+
+def _record_status(client, endpoint: str, status: int) -> None:
+    budget = getattr(client, "endpoint_budget", None)
+    if budget is not None:
+        budget.record_status(endpoint, status)
+
+
 class KiteClient:
     def __init__(self, db_path: str):
         self.db_path = db_path
         self.access_token = ""
         self.token_set_ist_date = None  # [BOOTSTRAP-2026-07-17] see set_token
         self.limiter = RateLimiter(rate=3.0, burst=1)
+        self.endpoint_budget = EndpointBudget()
+        self.quote_budget = QuoteBudget(rate=float(getattr(settings, "KITE_QUOTE_RATE_PER_SEC", 1.0)))
         self.instrument_cache = {}
         self._cache_lock = asyncio.Lock()
         # P1 uses the same durable file as Node's gateway.  ``:memory:`` is
@@ -568,6 +754,7 @@ class KiteClient:
             try:
                 # Fetch NSE instruments only -- INDICES segment returns 403 on this plan
                 for segment in ["NSE"]:
+                    _record_endpoint(self, "other")
                     resp = await self.client.get(f"/instruments/{segment}")
                     resp.raise_for_status()
                     lines = resp.text.split("\n")
@@ -714,6 +901,7 @@ class KiteClient:
         
         for attempt in range(5):
             await self.limiter.acquire()
+            _record_endpoint(self, "historical")
             try:
                 resp = await self.client.get(
                     f"/instruments/historical/{instrument_token}/day",
@@ -740,6 +928,7 @@ class KiteClient:
                 return df
 
             except httpx.HTTPStatusError as e:
+                _record_status(self, "historical", e.response.status_code)
                 if e.response.status_code in (429, 503, 504):  # 504 = Zerodha gateway timeout, also retried
                     await asyncio.sleep(2 ** attempt)
                     continue
@@ -879,6 +1068,7 @@ class KiteClient:
 
         for attempt in range(5):
             await self.limiter.acquire()
+            _record_endpoint(self, "historical")
             try:
                 resp = await self.client.get(
                     f"/instruments/historical/{instrument_token}/{interval}",
@@ -914,6 +1104,7 @@ class KiteClient:
                 return df
 
             except httpx.HTTPStatusError as e:
+                _record_status(self, "historical", e.response.status_code)
                 if e.response.status_code in (429, 503, 504):  # 504 = Zerodha gateway timeout, also retried
                     await asyncio.sleep(2 ** attempt)
                     continue
@@ -940,6 +1131,24 @@ class KiteClient:
         return result
 
     async def get_quote_with_timing(self, tokens, *, priority: Optional[str] = None) -> tuple[dict, dict]:
+        """Fetch live quotes for tokens through the quote budget (merged batches).
+
+        See ``QuoteBudget``; without one (bare test doubles) the request goes
+        straight to ``_quote_direct``.
+        """
+        if isinstance(tokens, (int, str)):
+            tokens = [tokens]
+        tokens = [int(t) for t in tokens] if tokens else []
+        budget = getattr(self, "quote_budget", None)
+        if not tokens or budget is None or len(tokens) > QuoteBudget.MAX_INSTRUMENTS:
+            return await self._quote_direct(tokens, priority=priority)
+        lane = priority if priority in _LANE_RANK else _provider_lane.get()
+        return await budget.submit(
+            lambda merged, batch_lane: self._quote_direct(merged, priority=batch_lane, slot_held=True),
+            tokens, lane)
+
+    async def _quote_direct(self, tokens, *, priority: Optional[str] = None,
+                            slot_held: bool = False) -> tuple[dict, dict]:
         """Fetch live quote for one or more instrument tokens.
         Kite endpoint: GET /quote?i={token1}&i={token2}...
         Returns: dict {token_int: {last_price, ohlc, volume, depth, ...}, ...}
@@ -992,11 +1201,17 @@ class KiteClient:
         max_attempts = 3
         backoff = 0.5
         last_exc: Optional[Exception] = None
+        budget = getattr(self, "quote_budget", None)
         for attempt in range(1, max_attempts + 1):
             timing["attempt_count"] = attempt
             limiter_started = time.monotonic()
+            # Every HTTP attempt spends a quote slot; the batch dispatcher
+            # already holds the first one.
+            if budget is not None and not (slot_held and attempt == 1):
+                await budget.slot(priority)
             try:
                 await self.limiter.acquire(priority=priority)
+                _record_endpoint(self, "quote")
             except TypeError as exc:
                 # Small broker adapters used by replay/tests may still expose
                 # the pre-S2 no-argument limiter contract.  They retain their
@@ -1005,6 +1220,7 @@ class KiteClient:
                 if "priority" not in str(exc):
                     raise
                 await self.limiter.acquire()
+                _record_endpoint(self, "quote")
             timing["limiter_wait_sec"] += time.monotonic() - limiter_started
             try:
                 transport_started = time.monotonic()
@@ -1043,6 +1259,7 @@ class KiteClient:
             except httpx.HTTPStatusError as e:
                 last_exc = e
                 status = e.response.status_code
+                _record_status(self, "quote", status)
                 # Retry on 401 (token expired), 403 (rate-limit /
                 # momentary overload), 429 (explicit rate-limit), and
                 # any 5xx server error.
@@ -1137,7 +1354,11 @@ class KiteClient:
         if not requested:
             return _finish({})
         limiter_started = time.monotonic()
+        budget = getattr(self, "quote_budget", None)
+        if budget is not None:
+            await budget.slot()                       # shares the 1/s quote budget (ambient lane)
         await self.limiter.acquire()
+        _record_endpoint(self, "quote")
         timing["limiter_wait_sec"] = time.monotonic() - limiter_started
         timing["attempt_count"] = 1
         try:
@@ -1293,6 +1514,7 @@ class KiteClient:
         Also refreshes self.instrument_cache (symbol -> token).
         """
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get("/instruments/NSE")
             resp.raise_for_status()
@@ -1349,6 +1571,7 @@ class KiteClient:
             logger.warning("kite_instruments_dump_skip segment=%s reason=no_access_token", segment)
             return ""
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get(f"/instruments/{segment}")
             resp.raise_for_status()
@@ -1482,6 +1705,7 @@ class KiteClient:
         )
         for attempt in range(5):
             await self.limiter.acquire()
+            _record_endpoint(self, "historical")
             try:
                 resp = await self.client.get(
                     f"/instruments/historical/{int(instrument_token)}/{interval}",
@@ -1529,6 +1753,7 @@ class KiteClient:
                 df.set_index('datetime', inplace=True)
                 return df
             except httpx.HTTPStatusError as e:
+                _record_status(self, "historical", e.response.status_code)
                 if e.response.status_code in (429, 503, 504):
                     await asyncio.sleep(2 ** attempt)
                     continue
@@ -1681,6 +1906,7 @@ class KiteClient:
             if refusal is not None:
                 return refusal
         try:
+            _record_endpoint(self, "order")     # counted at dispatch; refusals above never reach HTTP
             resp = await self.client.post(f"/orders/{variety}", data=params)
             resp.raise_for_status()
             data = resp.json().get("data", {})
@@ -1803,6 +2029,7 @@ class KiteClient:
             return {"order_id": order_id, "status": "ERROR", "message": "nothing to modify"}
 
         await self.limiter.acquire()
+        _record_endpoint(self, "order")
         try:
             resp = await self.client.put(f"/orders/{variety}/{order_id}", data=params)
             resp.raise_for_status()
@@ -1827,6 +2054,7 @@ class KiteClient:
         if not order_id:
             return {"order_id": None, "status": "ERROR", "message": "order_id required"}
         await self.limiter.acquire()
+        _record_endpoint(self, "order")
         try:
             resp = await self.client.delete(f"/orders/{variety}/{order_id}")
             resp.raise_for_status()
@@ -1863,6 +2091,7 @@ class KiteClient:
         if not order_id:
             return []
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get(f"/orders/{order_id}")
             resp.raise_for_status()
@@ -1879,6 +2108,7 @@ class KiteClient:
     async def get_funds_margins(self) -> dict | None:
         """[F1-A] Read-only ``GET /user/margins``; ``None`` when unavailable."""
         try:
+            _record_endpoint(self, "other")
             resp = await self.client.get("/user/margins")
             resp.raise_for_status()
             data = resp.json().get("data")
@@ -1958,6 +2188,7 @@ class KiteClient:
         tagged order was not accepted and may be submitted.
         """
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get("/orders")
             resp.raise_for_status()
@@ -1979,6 +2210,7 @@ class KiteClient:
         if not order_id:
             return None
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get(f"/orders/{order_id}/trades")
             resp.raise_for_status()
@@ -1999,6 +2231,7 @@ class KiteClient:
         word on whether we actually hold stock is the positions book, not
         our bookkeeping. See PennyExecutor.execute_entry."""
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get("/portfolio/positions")
             resp.raise_for_status()

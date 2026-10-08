@@ -11,7 +11,10 @@ const request = require('supertest');
 
 const mockSendAlert = jest.fn();
 const mockSendAlertOnce = jest.fn();
-jest.mock('../../services/telegram', () => ({ sendAlert: mockSendAlert, sendAlertOnce: mockSendAlertOnce }));
+const mockSendAlertOnceDetailed = jest.fn();
+jest.mock('../../services/telegram', () => ({
+  sendAlert: mockSendAlert, sendAlertOnce: mockSendAlertOnce, sendAlertOnceDetailed: mockSendAlertOnceDetailed,
+}));
 jest.mock('../../services/executor', () => ({ executeSignal: jest.fn() }));
 jest.mock('../../services/cas-eligibility', () => ({ entrySessionVerdict: jest.fn() }));
 jest.mock('../../utils/market-hours', () => ({ stampSessionPhaseForSignal: jest.fn() }));
@@ -37,21 +40,29 @@ const post = (body) => request(app)
 
 beforeEach(() => jest.clearAllMocks());
 
-test('require_delivery: a refused send answers 502 and leaves retry to the caller', async () => {
-  mockSendAlertOnce.mockResolvedValue(false);
+test('require_delivery: a transient refusal answers 502 and leaves retry to the caller', async () => {
+  mockSendAlertOnceDetailed.mockResolvedValue({ delivered: false, rejected: false, status: null });
   const res = await post({ message: 'A: BUY 1 lot', require_delivery: true });
   expect(res.status).toBe(502);
-  expect(res.body).toEqual({ success: false, delivered: false });
-  expect(mockSendAlertOnce).toHaveBeenCalledTimes(1);
+  expect(res.body).toEqual({ success: false, delivered: false, rejected: false, telegram_status: null });
+  expect(mockSendAlertOnceDetailed).toHaveBeenCalledTimes(1);
+  expect(mockSendAlert).not.toHaveBeenCalled();
+});
+
+test('require_delivery: a message Telegram rejects answers 422', async () => {
+  mockSendAlertOnceDetailed.mockResolvedValue({ delivered: false, rejected: true, status: 400 });
+  const res = await post({ message: 'x'.repeat(5000), require_delivery: true });
+  expect(res.status).toBe(422);
+  expect(res.body).toEqual({ success: false, delivered: false, rejected: true, telegram_status: 400 });
   expect(mockSendAlert).not.toHaveBeenCalled();
 });
 
 test('require_delivery: an accepted send answers 200 delivered', async () => {
-  mockSendAlertOnce.mockResolvedValue(true);
+  mockSendAlertOnceDetailed.mockResolvedValue({ delivered: true, rejected: false });
   const res = await post({ message: 'A: BUY 1 lot', require_delivery: true });
   expect(res.status).toBe(200);
   expect(res.body).toEqual({ success: true, delivered: true });
-  expect(mockSendAlertOnce.mock.calls[0][0]).toContain('A: BUY 1 lot');
+  expect(mockSendAlertOnceDetailed.mock.calls[0][0]).toContain('A: BUY 1 lot');
 });
 
 test('legacy callers keep 200 and the gateway-owned retry', async () => {

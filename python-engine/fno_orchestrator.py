@@ -466,9 +466,8 @@ async def _manage_open_positions(
         # [S6b 2026-10-02] The exit ladder is the pure, shared
         # ``fno_exit_rules.evaluate_single_leg_exit`` (extracted verbatim so
         # research replays the identical rules).  Logging and trail
-        # persistence remain here.  Rationale for the time-stop premium
-        # deferral (8 time-stop exits, -Rs 7,010, two cut in profit) is
-        # retained in that module and in config.FNO_TIME_STOP_RESPECTS_PREMIUM.
+        # persistence remain here.  The time-stop premium deferral is OFF
+        # since the Oct 8 put-sign fix; see config.FNO_TIME_STOP_RESPECTS_PREMIUM.
         position_fut = (fut_prices.get((p.underlying or "NIFTY").upper()) if fut_prices is not None
                         else fut_price)
         decision = evaluate_single_leg_exit(
@@ -505,6 +504,15 @@ async def _manage_open_positions(
                 db_timing, f"trail_update:{source}", fpos.update_trail(
                     db_path, p.id, 1 if decision.trail_active else 0,
                     decision.trail_stop, decision.best_underlying, decision.best_premium,
+                ),
+            )
+        elif (not exit_reason and decision.best_premium is not None
+              and (p.best_premium is None or decision.best_premium > p.best_premium)):
+            # No futures quote: the trail stays put, but a new option peak
+            # must still be kept or the profit lock can never arm (O8-F1).
+            await _timed_database_operation(
+                db_timing, f"best_premium_update:{source}", fpos.update_best_premium(
+                    db_path, p.id, decision.best_premium,
                 ),
             )
 

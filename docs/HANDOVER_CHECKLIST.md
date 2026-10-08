@@ -12,6 +12,91 @@
 
 
 
+## October 8 (late night, 2) — follow-up review F1–F3 (commit `1f4321b`, Dev, pushed, not deployed)
+
+- [x] F1 overnight decision clock, cutoff recheck, actual entry time, snapshot TTL.
+- [x] F2 gateway 422 for rejected content; `notice_outbox` classification; overnight outbox.
+- [x] F3 quote budget enforced with merged batches; counters complete; 429 counted.
+- [ ] Expiry outbox adopts `notice_outbox` (expiry agent).
+- [x] Engine suite: 5,075 pass, 4 skip, 0 fail. Agent: 390 pass. Gateway jest:
+  478 pass, 18 fail in `db.test.js` / `backlog-reconciliation.test.js`, the
+  same 18 failing on the unchanged baseline (pre-existing on this Windows host);
+  the notify tests (10) pass. Expiry test durations are unchanged by the budget.
+
+## October 8 (late night) — independent review R2–R6 (commit `fc58da3`, Dev, pushed, not deployed)
+
+- [x] R2 research arms explicit; re-run reproduces −₹5,267 / +₹6,968.
+- [x] R3 overnight `visible-asks-v2` (re-quote, 30-min last trade, re-walk).
+- [x] Overnight outbox parts and step-over (expiry R1 flaw).
+- [x] R4 cohort unavailable attribution.
+- [x] R5 agent guard release.
+- [x] R6 endpoint budget measurement and `/ops/provider-budget`.
+- [x] Full engine suite: 5,064 pass, 1 fail (`test_surface_matches_golden`,
+  the intended new `/ops/provider-budget` route); golden regenerated with
+  `TS_UPDATE_GOLDEN=1`, that file then 4 pass. Agent suite: 390 pass.
+
+## October 8 (night) — review R1: expiry notices split; refused row stepped over
+
+- [x] `notice_parts` (3,500-character parts, at line ends, nothing dropped)
+  and per-part outbox rows.
+- [x] `flush_notices` steps over a row refused 3 times; it stays pending, and
+  two failures in a row stop the flush.
+- [x] `test_expiry_paper.py`: 49 pass (3 new).
+- [x] Oct 8 replay (read-only copy of the Production store): summary in 2
+  parts, 3,472 + 826 characters.
+- [ ] Owner: merge and rebuild before October 13. On that day, confirm the
+  summary parts arrived on Telegram.
+
+## October 8 (night) — Oct 8 production audit fixes (commit `7f028ed`, Dev, pushed, not deployed)
+
+- [x] O8-F1 peak persistence without futures (`update_best_premium`).
+- [x] O8-F2 bought-put sign; `FNO_TIME_STOP_RESPECTS_PREMIUM=False` from replay.
+- [x] O8-O1 overnight `visible-asks-v1` entry fill contract.
+- [x] O8-P1 scorecard "observed" wording, 30-date window.
+- [x] T6 Momentum cohort report outside the frozen fingerprint; freeze verifies.
+- [x] O8-A1 agent status publish timeout/overlap/streak.
+- [x] Equal-open wording corrected in guide and code comment.
+- [x] Full engine suite (`winvenv python -m pytest tests`): 5,054 pass, 4 skip,
+  0 fail (process hangs at exit after the summary, known host issue).
+  Agent suite: 389 pass.
+- [x] Replays: `docs/research/fno/2026-10-08-time-stop-sign/` (18 archived sessions).
+- [ ] Merge, rebuild, then verify the first F&O single-leg and overnight entry receipts.
+
+## October 8 (evening) — owner's expiry stop rule
+
+- [x] Rule recorded in the design doc header, the guide and the plan.
+- [x] `owner_rule_lines` added to every expiry day summary.
+- [x] Test `test_the_owner_stop_rule_is_tallied_in_every_summary`.
+  `test_expiry_paper.py`: 46 pass.
+- [x] Checked on a read-only copy of the Production store: expiry 2 of 10, lost 2 of 2.
+- [ ] At expiry 10: report the verdict and the per-play drop recommendations.
+
+## October 8 — first SENSEX expiry audit follow-up (`expiry-shadow-v2`, `expiry-context-v1.1`)
+
+Commit `b7d3f4d` on `codex/production-correction-hedge-p0` (docs-identity
+follow-up recorded below it). Status: Dev, pushed, not deployed.
+
+- [x] T5: 966 slots; no tick at exactly 15:40 (tick and scheduler guards).
+- [x] T4: OI context reads fresh quotes only and records `oi_fresh`/`oi_window`.
+- [x] The summary shows each snapshot's nominal and actual read time, and a
+  whole-trade path line per entry.
+- [x] The expiry quote batch waits in the limiter's management lane (rate unchanged).
+- [x] New frozen shadows AL and BP; A/B/C thresholds unchanged.
+- [x] Tests: `test_expiry_paper.py` 45 pass (7 new).
+- [x] Expiry plus scheduler/cron tests: 133 pass.
+- [x] Full Python suite (`.\winvenv\Scripts\python.exe -m pytest tests`):
+  5,043 pass, 4 skip, 0 fail. The process hung at exit after the summary,
+  which is a known host issue.
+- [x] Replay of the retained Oct 8 Production packets: a read-only `docker cp`
+  of `/data/cache.db.expiry-paper.db` into the scratchpad, run through Dev.
+  All A/B/C/BH/C500/D legs and the audit's path marks matched to the paise.
+  AL +₹501.63 and BP +₹786.76 are in-sample only.
+- [x] Atlas regenerated. No schema, config or migration change. No
+  Production edit.
+- [ ] Owner: merge and rebuild before the next expiry (Tuesday Oct 13, NIFTY).
+- [ ] After that expiry: check that the summary shows 966 slots, OI coverage,
+  AL/BP rows, and a lower max decision lag.
+
 ## October 7 (evening) — F&O profit lock + re-entry gate; audit T1–T3
 
 - [x] `tests/test_fno_profit_lock_and_reentry.py` (9 tests):

@@ -478,6 +478,22 @@ async def update_trail(
         await db.commit()
 
 
+async def update_best_premium(db_path: str, position_id: int, best_premium: float) -> None:
+    """Ratchet the profit-lock peak only (O8-F1 2026-10-08).
+
+    Used on ticks without a futures quote, where the underlying trail must
+    not move but a newly observed option peak still has to survive to the
+    next tick and across a restart. ``MAX`` keeps the stored peak monotonic.
+    """
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "UPDATE fno_positions SET best_premium=MAX(COALESCE(best_premium, ?), ?) "
+            "WHERE id=? AND status='OPEN'",
+            (best_premium, best_premium, position_id),
+        )
+        await db.commit()
+
+
 async def close_position(
     db_path: str, position_id: int,
     exit_time_ist: datetime, exit_premium: float, exit_underlying: float,

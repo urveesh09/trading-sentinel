@@ -285,7 +285,8 @@ async def _todays_card_outcomes(db_path: str, underlying: str, day_iso: str,
     for advisory_id, event_type, observed_at, level in events:
         first_event.setdefault(advisory_id, (event_type, observed_at, level))
     cards, record = [], {"n": 0, "target": 0, "invalidation": 0}
-    cutoff = (date.fromisoformat(day_iso) - timedelta(days=30)).isoformat()
+    # 30 calendar dates including today (O8-P1: day-30 counted 31).
+    cutoff = (date.fromisoformat(day_iso) - timedelta(days=29)).isoformat()
     for advisory_id, raw in ideas:
         try:
             payload = json.loads(raw)
@@ -310,16 +311,18 @@ async def _todays_card_outcomes(db_path: str, underlying: str, day_iso: str,
             outcome = f"invalidated at {str(event[1])[11:16]} (level {payload.get('invalidation_level', 0):,.0f})"
         elif close and trigger:
             pts = (float(close) - float(trigger)) * (1 if direction == "LONG" else -1)
-            outcome = f"neither level reached; closed {float(close):,.0f} ({pts:+,.0f} pts vs trigger)"
+            # Only sampled observations exist, so absence of an event is
+            # "not observed", never proof neither level traded (O8-P1).
+            outcome = f"no target/invalidation observed; closed {float(close):,.0f} ({pts:+,.0f} pts vs trigger)"
         else:
-            outcome = "no level reached"
+            outcome = "no target/invalidation observed"
         cards.append({"time": str(payload.get("signal_at") or "")[11:16], "direction": direction,
                       "outcome": outcome})
     record_line = ""
     if record["n"]:
         record_line = (f"{underlying} advice cards, last 30 days: {record['n']} sent, "
                        f"{record['target']} reached target, {record['invalidation']} invalidated, "
-                       f"{record['n'] - record['target'] - record['invalidation']} neither")
+                       f"{record['n'] - record['target'] - record['invalidation']} with no level observed")
     return cards, record_line
 
 

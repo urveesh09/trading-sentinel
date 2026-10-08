@@ -92,7 +92,8 @@ def build_allocation_candidates(db_path: str) -> dict[str, Any]:
         for row in rows:
             built = _entry_path(con, row, max_gap)
             if isinstance(built, str):
-                unavailable.append({"admission_key": row["admission_key"], "reason": built})
+                unavailable.append({"admission_key": row["admission_key"], "reason": built,
+                                    "recorded_at": row["recorded_at"]})
                 continue
             try:
                 risk_pct = float(json.loads(row["admission_economics_json"])["risk_pct"])
@@ -100,7 +101,8 @@ def build_allocation_candidates(db_path: str) -> dict[str, Any]:
                     raise ValueError
             except (TypeError, ValueError, KeyError, json.JSONDecodeError):
                 unavailable.append({"admission_key": row["admission_key"],
-                                    "reason": f"risk_pct_unavailable:{row['admission_key']}"})
+                                    "reason": f"risk_pct_unavailable:{row['admission_key']}",
+                                    "recorded_at": row["recorded_at"]})
                 continue
             entry_row, quotes = built
             batch_at = _timestamp(row["recorded_at"])

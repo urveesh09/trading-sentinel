@@ -5,6 +5,157 @@
 
 
 
+## October 8 (late night, 2) — follow-up review F1–F3 (done, Dev, commit `1f4321b`, pushed, not deployed)
+
+- Problem: overnight admission used the pre-scan clock (could enter after
+  15:29 and record 15:20) and had no snapshot TTL (F1); two permanently
+  rejected notices blocked healthy ones (F2); the quote budget was only
+  measured (F3).
+- Files: `edge_overnight_paper.py`, `notice_outbox.py` (new),
+  `kite_client.py`, `config.py` (`KITE_QUOTE_RATE_PER_SEC`), `routes_ops.py`,
+  `node-gateway/server/routes/internal.js`, `services/telegram.js`, tests.
+- Acceptance (met): scan crossing 15:29 refuses; actual decision time
+  recorded; missing/stale/future snapshot refuses; two 422 notices and two
+  unknown-failure notices do not block a healthy one over 8 rounds; outage
+  retries only the first row; an acknowledged part is not resent;
+  concurrent load stays within the quote budget with merged calls and
+  bounded management wait.
+- Config impact: new `KITE_QUOTE_RATE_PER_SEC=1.0`. Gateway contract: 422
+  for rejected content (engine and gateway must be rebuilt together).
+  Schema: two nullable columns on the overnight notice table (added on open).
+- Rollout: merge, rebuild engine and gateway together. Rollback: revert;
+  or set `KITE_QUOTE_RATE_PER_SEC=3` to match the old shared rate.
+- Next:
+  1. After a market day, read `/ops/provider-budget`: quote `over_documented_limit`
+     should be 0, `http_429` 0, `quote_budget.max_wait_sec.management` small.
+  2. Expiry agent: adopt `notice_outbox` in `expiry_paper.flush_notices`.
+  3. Watch overnight 15:20 receipts for `decided_at` and the new refusals.
+
+## October 8 (late night) — review R2–R6 (done, Dev, commit `fc58da3`, pushed, not deployed)
+
+- Problem: independent review of the Oct 8 fixes: research arms inherited
+  the changed default (R2); overnight cash-trim kept the larger order's
+  price and stale quotes passed on date (R3); cohort report mislabelled
+  unavailable paths (R4); agent guard could stay held (R5); provider limits
+  differ by endpoint (R6). The expiry agent also flagged the overnight
+  outbox blocking flaw.
+- Files: `edge_overnight_paper.py`, `momentum_paper_path_adapter.py`,
+  `momentum_admission_cohorts.py`, `agent/agent.py`, `kite_client.py`,
+  `routes_ops.py`, tests, the research scripts and README.
+- Acceptance (met): tests for the re-walked price, the stale last trade,
+  the failed re-quote, outbox step-over / gateway down / long-notice parts,
+  cohort unavailable attribution, guard release, budget counting; the
+  research re-run reproduces both figures.
+- Rollout: merge and rebuild. No schema/config change. Rollback: revert.
+- Next:
+  1. After a market day, read `GET /ops/provider-budget` (or the
+     `kite_endpoint_over_documented_limit` lines). If quotes exceed 1/s,
+     batch callers first (one `/quote` takes up to 500 instruments), then
+     add a quote-specific limiter tested with Penny, expiry and F&O exits
+     together.
+  2. Overnight: count `stale_last_trade` and `no_fresh_quote` refusals.
+
+## October 8 (night) — review R1: expiry summary over Telegram's limit (done, Dev, commit `c4329bc`, pushed, not deployed)
+
+- Problem: the expanded summary (4,277 characters) would be refused by
+  Telegram and block every later expiry notice.
+- Files: `python-engine/expiry_paper.py` (`notice_parts`, `_notice`,
+  `flush_notices`), `python-engine/tests/test_expiry_paper.py`, the design
+  doc, the guide and the checklist.
+- Acceptance (met): parts stay within 3,500 characters and are rebuilt with
+  nothing lost; a full day is accepted under the Telegram limit with the
+  prefix; a refused row is stepped over after 3 attempts and stays pending;
+  with the gateway down, the flush stops after two failures; the Oct 8
+  replay splits into 3,472 + 826 characters.
+- Rollout: with the same merge and rebuild before October 13. Rollback:
+  revert; part rows are ordinary outbox rows.
+- Left to the developer agent (outside expiry): the review's R2–R6, the EDGE
+  overnight outbox's same blocking pattern, and per-endpoint Kite budgets.
+
+## October 8 (night) — Oct 8 production audit fixes (done, Dev, commit `7f028ed`, pushed, not deployed)
+
+- Problem: the Oct 8 audit reproduced latent defects (F&O peak persistence
+  without futures, inverted bought-put time-stop sign, overnight missing
+  depth fails open), a scorecard wording/lookback issue, the Momentum
+  cohort-pooling limit and agent status timeouts.
+- Files: `fno_exit_rules.py`, `fno_orchestrator.py`, `fno_positions.py`,
+  `config.py`, `edge_overnight_paper.py`, `partner_orchestrator.py`,
+  `momentum_admission_cohorts.py` (new), `agent/agent.py`, tests, research
+  `docs/research/fno/2026-10-08-time-stop-sign/`.
+- Acceptance (met): peak kept on a no-futures tick and arms the lock on the
+  next; bought CE and PE defer/exit symmetrically; live default banks at the
+  time stop; missing/empty/zero depth refused; entry capped at visible asks
+  with walked price; scorecard says "observed"; 30-date window; cohort split
+  with the Oct 6 freeze verifying; status publish skip/streak tests.
+- Config impact: `FNO_TIME_STOP_RESPECTS_PREMIUM` True → False (no `.env`
+  override in Production). No schema migration (`best_premium` exists).
+- Rollout: merge and rebuild. Rollback: revert the commit; to keep the sign
+  fix but restore the deferral set `FNO_TIME_STOP_RESPECTS_PREMIUM=true`
+  (replayed worse).
+- Next:
+  1. Watch the first single-leg F&O trades: `time_stop` exits in profit,
+     `profit_lock`, no `fno_time_stop_deferred_in_profit` lines.
+  2. Overnight 15:20: count `no_depth`, `no_sellers`, `thin_asks_*` refusals
+     and compare walked entry prices with LTP + 25 bps.
+  3. Owner decision pending: the F&O 15% drawdown halt sits ₹10.6k below
+     current paper equity; replays show it can stop the book right before
+     its trend winners. Do not change without the owner.
+  4. Score selective Momentum only on `SELECTIVE_ADMISSION_V1`.
+
+## October 8 (evening) — owner's expiry stop rule (done, Dev, commit `ab5e3a1`, pushed, not deployed)
+
+- Owner decision: observe 8 more expiries (10 in all). If every one loses,
+  stop expiry-day F&O. Drop any play or section that keeps losing on its own.
+- Each day summary now prints the tally (`owner_rule_lines`). At expiry 10,
+  report the verdict to the owner with the per-play counts, and recommend
+  which plays to drop even if the rule is not met. The owner decides; nothing
+  stops automatically.
+
+## October 8 — first SENSEX expiry audit follow-up (done, Dev, commit `b7d3f4d`, pushed, not deployed)
+
+- Problem: the owner asked what went wrong and right on October 8, for the
+  fixes, and for better strategies, on the expiry module and report only.
+  The audit found:
+  - strategy losses, not data faults: a one-lot A gave back ₹1,090 from its
+    best mark; B's losing put and C both settled at zero;
+  - a 966 vs 967 slot count;
+  - latent stale OI in the context;
+  - nominal snapshot labels;
+  - a shared-limiter wait tail of up to 28.9 s.
+- Files:
+  - `python-engine/expiry_paper.py`;
+  - `python-engine/scheduler_setup.py` (tick guard);
+  - `python-engine/tests/test_expiry_paper.py`;
+  - the design doc, the guide, this plan, the checklist and the atlas.
+- Acceptance (all met):
+  - 966 slots, and no tick at exactly 15:40;
+  - stale OI is excluded, with coverage recorded;
+  - the batch runs in the management lane and the lane is restored afterwards;
+  - `liquidation_net` walks the depth and returns None on stale, shallow or
+    missing quotes;
+  - AL's lock is half the peak gain for one lot and A's bank for two or more;
+  - AL copies A's entries;
+  - BP sells both legs on the first tick at target, BH is unchanged, and the
+    BP mark equals its fills;
+  - the summary shows the path lines and the "read" times;
+  - the Oct 8 replay reproduces Production exactly.
+- Rollout: merge and rebuild before the next expiry (Tuesday October 13, NIFTY, unless the calendar shifts it). That is the
+  first scored day for AL and BP and the first `expiry-context-v1.1` day. No
+  schema or config change. Rollback: revert; old day states are read as
+  before.
+- Next:
+  1. Watch October 13. Expect the summary to read "ticks N of 966", the
+     coverage "from N/M fresh quotes", and AL/BP rows. Max decision lag
+     should drop if limiter queueing was the cause.
+  2. Confirm the official SENSEX/NIFTY settlement price against our sampled
+     index (still open since October 6).
+  3. Isolated Dev tests from audit item 5 (send failure, a crash between ACK
+     and commit, restart with open legs, an absent final sample) are still to
+     be written.
+  4. After 20 expiries, score `expiry-v1`, v1 shadows and v2 shadows on their
+     own records (AL/BP from October 13). Test an IV/RV gate on D's recorded
+     context; freeze it as `expiry-context-v2` only if it holds.
+
 ## October 7 (evening) — owner-requested profit keeping + Oct 7 audit fixes (done, Dev)
 
 - Source: Production `docs/2026-10-07-production-deep-audit.md` (read-only),

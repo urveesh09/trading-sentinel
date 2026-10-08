@@ -159,9 +159,12 @@ def evaluate_single_leg_exit(
             if progress < needed:
                 timed_out = True
             if timed_out and params["FNO_TIME_STOP_RESPECTS_PREMIUM"]:
+                # Single-leg positions always BUY the option (a CE for a
+                # LONG view, a PE for a SHORT view) and settle as
+                # (exit - entry) x qty, so premium P&L never flips with the
+                # underlying direction. [O8-F2 2026-10-08: the old negation
+                # deferred losing puts and time-stopped profitable ones.]
                 premium_pnl_per_lot = exit_px_basis - p.entry_premium
-                if p.direction == "SHORT":
-                    premium_pnl_per_lot = -premium_pnl_per_lot
                 if exit_px_basis > 0 and premium_pnl_per_lot > 0:
                     timed_out = False
                     deferred = {"age_min": age_min, "underlying_progress": progress,

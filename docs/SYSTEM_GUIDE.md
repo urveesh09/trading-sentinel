@@ -14,6 +14,239 @@
 
 
 
+## October 8 (late night, 2) — follow-up review F1–F3: entry clock, outbox classification, quote budget (actual behavior, Dev)
+
+- **Overnight entry `visible-asks-v3` (F1).**
+  - The admission decision uses a clock read after the scan and the
+    shortlist re-quote. Past 15:29 (or another date) every pick refuses
+    `past_entry_cutoff`. Entries and the receipt are recorded at that
+    decision time; the summary keeps `started_at` and `decided_at`.
+  - The live catch-up passes the wall clock (it used to freeze its start).
+  - Snapshot freshness is its own rule: the quote `timestamp` must exist
+    (`no_quote_timestamp`), be at most 120 s old (`stale_quote_snapshot`)
+    and not more than 5 s ahead (`quote_time_ahead`). The 30-minute
+    last-trade rule stays as the separate activity policy.
+- **Outbox delivery classification (F2).**
+  - Gateway: `require_delivery` answers 422 when Telegram rejected the
+    message itself (HTTP 400), 502 for anything else
+    (`telegram.sendAlertOnceDetailed`).
+  - `notice_outbox.py`: 422 = content (step over at once, back off 1 min
+    doubling to 30 min); network/timeout/other HTTP = transport (stop the
+    round, keep order); other exceptions = unknown (keep order for 3
+    tries, then step over with backoff). Rows backing off are skipped until
+    due; `last_error` and `next_attempt_at` are stored.
+  - The overnight outbox uses it: any number of rejected notices no longer
+    block healthy ones, and an outage retries only the first row. Delivery
+    is at-least-once (a lost acknowledgement resends).
+  - The expiry outbox (expiry agent's code) still has the older step-over
+    rule; adopting `notice_outbox` there is a small change for that agent.
+    The new 422 status does not change its current behaviour.
+- **Quote budget enforced (F3, `kite_client.QuoteBudget`).**
+  - Every `/quote` HTTP attempt takes a slot at `KITE_QUOTE_RATE_PER_SEC`
+    (1.0, Kite's documented limit), management lane first; the shared 3/s
+    limiter still applies on top.
+  - Concurrent token requests waiting for a slot are merged into one call
+    (up to 500 instruments) and each caller gets only its own tokens.
+    Instrument-keyed calls (expiry, research collection) share the budget
+    unmerged.
+  - Load test (scaled 10x): 36 concurrent Penny/F&O-exit/expiry requests
+    needed 4 HTTP calls; F&O exits waited one slot (about 1.1 s at the real
+    rate), bulk Penny at most about 3.3 s.
+  - Counters now include instrument refresh and funds/margins; orders count
+    at HTTP dispatch only; non-2xx statuses (including 429) are counted per
+    endpoint. `/ops/provider-budget` shows scope (this engine process since
+    `started_at`; Node gateway traffic excluded) and the quote-budget
+    batches and maximum waits per lane.
+
+## October 8 (late night) — independent review R2–R6 and overnight outbox (actual behavior, Dev)
+
+- **Overnight entry `visible-asks-v2` (R3).**
+  - After the scan, the shortlist is re-quoted in one call. A failed
+    re-quote refuses (`no_fresh_quote`); it never prices from the old batch.
+  - A pick whose last trade is more than 30 minutes old at admission refuses
+    `stale_last_trade` (a 09:00 trade used to pass a 15:20 entry on date).
+  - `price_for_cash` re-walks the asks for the final, cash-trimmed share
+    count, so price and buy charges match what is bought (the reviewer's
+    probe overpaid ₹14.10 on 295 shares).
+- **Overnight outbox.** Over-long notices are stored as acknowledged
+  `[part i/n]` rows (`expiry_paper.notice_parts`, read-only reuse). A notice
+  refused 3 times is stepped over, kept and retried; a second failure in a
+  row means the gateway is down and the flush stops.
+- **Momentum cohorts (R4).** Unavailable paths carry `recorded_at` and are
+  reported in their own admission population; store-level gaps go to
+  `unattributed_unavailable`. Each population lists its admission keys.
+- **Agent status guard (R5).** A snapshot or thread-start failure releases
+  `in_flight`.
+- **Provider budgets (R6), measurement first.** `kite_client.EndpointBudget`
+  counts admitted calls per endpoint class (quote 1/s, historical 3/s,
+  order and other 10/s, as documented by Kite), with the per-second peak
+  and over-limit count. `kite_endpoint_over_documented_limit` is logged at
+  most once a minute per class; `GET /ops/provider-budget` returns the
+  snapshot. The shared limiter stays at 3/s. Oct 8 logs had no 429
+  rejection, and a blind 1/s quote cap would triple quote queueing; set a
+  per-endpoint cap from this data.
+- **Research scripts (R2).** Every arm in
+  `docs/research/fno/2026-10-08-time-stop-sign/` now sets the deferral
+  explicitly; a re-run reproduces −₹5,267 / +₹6,968. The shipped row is
+  −₹139 without its best winner (Oct 1), so the sample cannot show steady
+  profits.
+- Kept: the F&O 15% drawdown halt (agreed with the reviewer; a weekly reset
+  could repeatedly forgive losses).
+
+## October 8 (night) — expiry notices split into parts; a refused row no longer blocks (actual behavior, Dev, review R1)
+
+- **Problem (independent review R1, valid).** The expanded day summary was
+  4,277 characters on the replayed Oct 8. Telegram's limit is 4,096; the
+  gateway adds a "🚨 [SYSTEM ALERT]" prefix line and does not split. `flush_notices`
+  broke on the first failure, so that row blocked every later notice across
+  days.
+- **`notice_parts` / `_notice`.** A notice over `NOTICE_MAX_CHARS` (3,500) is
+  split at line ends into "[part i/n]" parts, stored as
+  `<key>:partNNofMM` rows, each acknowledged separately. A notice that fits
+  keeps its key.
+- **`flush_notices`.** A row with `attempts >= NOTICE_STEP_OVER_AFTER` (3) is
+  stepped over, logged as `expiry_paper_notice_stepped_over` with key,
+  attempts and length (no text). It stays pending. A second consecutive
+  failure stops the flush.
+- **Checked.** The Oct 8 replay summary splits into 3,472 + 826 characters.
+  A full simulated day is delivered through a fake sender that enforces
+  Telegram's UTF-16 limit with the gateway prefix. A refused row is stepped
+  over after 3 attempts. With the gateway down, the flush stops after two
+  failures.
+- **Not changed here:** the EDGE overnight outbox has the same break-on-first
+  pattern (not expiry; left to the developer agent). Review R6 (per-endpoint
+  Kite budgets: full quote is 1 request/s versus the shared 3/s limiter)
+  belongs to the shared `kite_client`, also the developer agent's area.
+
+## October 8 (night) — Oct 8 audit fixes: F&O peak and put sign, overnight depth, card wording, Momentum cohorts, status publish (actual behavior, Dev)
+
+- **F&O profit-lock peak without futures (O8-F1).** A new option peak seen on
+  a tick with no futures quote is now stored (`fpos.update_best_premium`,
+  monotonic `MAX`, open rows only). Before, it was computed but dropped, so
+  the lock could not arm from it. Trail state is still only written when a
+  futures quote exists.
+- **Bought-put time-stop sign (O8-F2).** Single-leg positions always buy the
+  option and settle as `(exit - entry) x qty`. The time-stop deferral negated
+  premium P&L for SHORT (bought puts), so it deferred losing puts and cut
+  winning ones. The negation is removed.
+- **Time-stop deferral OFF (`FNO_TIME_STOP_RESPECTS_PREMIUM=False`).** With
+  the sign corrected, the 18 archived sessions replay at −₹5,267 with the
+  deferral and +₹6,968 banking at the time stop (max DD ₹1,991, PF 2.26).
+  The Oct 7 ₹8,411 figure depended on the bug holding three losing puts that
+  recovered. Evidence: `docs/research/fno/2026-10-08-time-stop-sign/`
+  (in-sample development evidence). So at 45 minutes without 0.5 R of
+  underlying progress the trade now closes, profitable or not; the profit
+  lock and trail still manage winners before that.
+- **Drawdown-halt cliff (finding, unchanged).** The F&O paper book halts all
+  entries below 85% of the ₹2.5 L pool (₹212,500); Production equity on
+  Oct 8 was ₹223,087, already at 0.25x size (more than 8% below peak).
+  Replays starting near the line are dominated by it.
+- **Overnight entry fills against visible asks (O8-O1, `visible-asks-v1`).**
+  - Missing depth refuses `no_depth`; empty, zero or malformed asks refuse
+    `no_sellers`.
+  - Shares are capped at the displayed ask quantity, and the price is the
+    walked average ask, never below LTP + 25 bps.
+  - Fewer visible shares than a quarter of the plan refuses
+    `thin_asks_below_quarter_of_plan`.
+  - Each entry keeps `planned`, `visible_ask_qty`, `best_ask`, `best_bid`
+    and `quote_ts`; the summary carries `fill_contract`.
+- **Equal open (audit 3.4).** `open_is_prev_close` is an equality flag only;
+  a discovered open can equal the previous close.
+- **Partner EOD card scorecard (O8-P1).** No retained target/invalidation
+  event now reads "no target/invalidation observed" (not "neither level
+  reached"). The record covers 30 calendar dates including today (was 31).
+- **Momentum allocation cohorts (T6).** `momentum_admission_cohorts.py` runs
+  the unchanged frozen allocation report per admission population
+  (`BASELINE_ADMISSION`, `SELECTIVE_ADMISSION_V1` from 09:00 IST Oct 8). It
+  lives outside the fingerprinted modules, so the Oct 6 freeze still
+  verifies. CLI: `python momentum_admission_cohorts.py --db … --manifest …
+  --output …`.
+- **Agent status publish (O8-A1).** Timeout (2 s connect, 10 s read); a post
+  still in flight makes the next minute skip; failures log `streak` and
+  `last_ok`, with a `recovered` line. Status only; no trading path.
+- Already done by the expiry follow-up (`b7d3f4d`): audit T4 stale OI, T5
+  966 slots, limiter management lane.
+- Not changed: T7 settlement-horizon labels (documented already), C4/C7, R1,
+  T8/T9 historical mismatches.
+
+## October 8 (evening) — owner's expiry stop rule, tallied in the summary (actual behavior, Dev)
+
+- **The rule.** The owner set it after two losing expiries (Oct 6 NIFTY
+  −₹3,224.47, Oct 8 SENSEX −₹2,934.51). Observe 10 expiries in all. If the main
+  book (A+B+C whole modeled) loses on every one, stop expiry-day F&O trading.
+  A play or section that keeps losing is dropped on its own. This decision
+  point comes before the 20-expiry scoring horizon.
+- **Code.** `OWNER_RULE_SET`/`OWNER_REVIEW_EXPIRIES` (10). `owner_rule_lines`
+  covers every expiry day in the store up to the summary's day, all
+  underlyings. It counts how many lost, the current losing streak (a day
+  without a main loss resets it) and per play the expiries lost/traded. At 10
+  expiries, all of them lost, it prints "RULE MET: … stop expiry-day F&O".
+  `format_day_summary` appends both lines. The rule is reporting only: nothing
+  stops automatically; the owner decides.
+- **Checked on a read-only copy of the Production store:** "expiry 2 of 10,
+  main book lost 2 of 2, losing streak 2; 8 expiries left to observe". Per
+  play: A 2/2, B 2/2, C 2/2, BH 1/1, C500 1/1, D 0/1.
+
+## October 8 — expiry book after the first SENSEX audit: shadow-v2 (AL, BP), path marks, T4/T5 fixes (actual behavior, Dev, paper only)
+
+Source: Production `docs/2026-10-08-expiry-system-deep-audit.md` (read-only).
+That day was primary −₹2,934.51 (filled +₹508.49, assumed −₹3,443.00) and
+shadows −₹184.19. All 16 fills and fees replayed exactly, and every quote was
+fresh. The losses were strategy outcomes, not data faults. The thresholds of A,
+B and C (`expiry-v1`) are unchanged.
+
+- **Shadow plays `expiry-shadow-v2`** (`SHADOW_PLAYS` = BH, C500, D, AL, BP;
+  no Telegram trade lines; summary only):
+  - **AL** uses A's entry rules under its own ₹2,500 ceiling, trade count
+    and open-position check, so its entries can diverge from A's after a
+    different exit. Its lock is a stop and can gap. Its policy is `replace(POLICIES["A"],
+    lock_gain=0.5)`: `_bank_floor` keeps a banked one-lot position at
+    entry + 0.5 × (peak − entry). With two or more lots it behaves as A.
+  - **BP** takes B's strangle. Its legs have BH's policy (no bank, no trail,
+    flat at 15:38). Before the per-leg loop, `_pair_target` sets
+    `exit_pending="PAIR_TARGET"` on both legs once `liquidation_net` of the
+    pair is at least `BP_TARGET` (0.20) × the premium paid. Only when both legs
+    are open and neither is pending, and only before 15:38.
+  - A day begun under v1 reads `expiry-shadow-v1+expiry-shadow-v2 joined
+    mid-day`.
+- **Path marks:** `liquidation_net(legs, quotes, now)` gives the net of selling
+  every open leg on the fresh visible depth now. Long legs walk the bids; D's
+  sold legs buy back on the asks. Each pays its own order charges, plus what
+  the legs already booked. It is None when any open leg lacks fresh, deep
+  enough depth. `_mark_paths` stores the best and worst mark and the count per
+  entry (`state["marks"]["<play> <entry_ts>"]`). An entry that closes during a
+  tick is marked at its fills. The summary adds a line under each play
+  ("entry HH:MM:SS: best … worst … (n marks), finished …").
+- **T5:** `EXPECTED_SLOTS` = 966. `run_expiry_tick` and the scheduler wrapper
+  run only while `TICK_START <= t < SESSION_END`.
+- **T4, `expiry-context-v1.1`:** OI-based context reads fresh quotes only. It
+  adds `oi_fresh`/`oi_window`, and the text prints "from N/M fresh quotes".
+  `_observe` logs the future's `oi`.
+- **Labels:** `_moment` prints "D entry 14:30:00, read 14:30:10". `SETTLE_AT`
+  is commented as an approximation.
+- **Limiter:** `_fetch` runs inside `kite_client.provider_lane("management")`.
+  The rate and burst are unchanged; `management_burst` bounds starvation of
+  the other lanes.
+  - Cause found on the Oct 8 packets: 95 ticks waited over 3 s. Nearly all
+    were the first tick of a minute, between 13:00 and 14:30, and none came
+    after 14:30. That matches the per-minute Penny breakout scan
+    (`penny_scan_interval`, 60 s, breakout window to 14:30, normal lane).
+  - Check: the real `RateLimiter` (3/s, burst 1) with 60 queued normal
+    requests gives an expiry wait of 13.78 s in the normal lane and 0.28 s in
+    the management lane.
+  - Owner question (Oct 8): pause Swing or other modules on expiry
+    afternoons? No. The lane removes the contention while Penny keeps
+    running, and pausing would cost Penny its trades. Swing makes no intraday
+    quote calls, so pausing it frees nothing. Revisit only if the first v2
+    expiry still shows waits over 3 s.
+- **Replay check:** the retained Oct 8 Production packets replayed through Dev
+  (scratch script, read-only copy of the store). Every primary and v1-shadow
+  result, and the audit's path figures, matched to the paise. AL came to
+  +₹501.63 and BP to +₹786.76. These are in-sample, not evidence.
+- **Unchanged:** `expiry-v1` thresholds, ceilings, freshness limits, fill
+  model, fee snapshots, the outbox, reconcile and D's sizing. Schema: none
+  (the marks live in the day state).
+
 ## October 7 (evening) — F&O profit lock and re-entry confirmation; Oct 7 audit fixes T1–T3 (actual behavior, Dev)
 
 - **F&O single-leg profit lock (`fno_exit_rules.profit_lock_floor`, on by default).**
@@ -45,6 +278,8 @@
     - re-entry gate alone: ₹7,693, drawdown ₹1,991;
     - both features: ₹8,411, drawdown ₹1,991. Without the best trade,
       the result goes from −₹1,784 to +₹1,303.
+    - Superseded Oct 8: these used the inverted put sign; corrected with
+      the deferral off, +₹6,968 (see the Oct 8 night section).
   - Rejected settings:
     - an early lock (0.2–0.25 R) lost money, because exits fell through a
       thin floor between samples;
@@ -121,10 +356,11 @@
     +3.6% is PRAENG, the winner the T1 bug never sold.
   - All 8 picks had strength 0.96–1.0, so a stricter strength filter
     (S60) would have changed nothing.
-  - Three exits had open exactly equal to the previous close. NSE sets the
-    open to the previous close when the pre-open auction finds no
-    equilibrium, so those modeled auction exits were not traded prices. Each
-    exit now records `open_is_prev_close` to measure this.
+  - Three exits had open exactly equal to the previous close. That may mean
+    the pre-open auction found no equilibrium price, but a real discovered
+    open can also equal the previous close (Oct 8 audit, NSE pre-open rules).
+    `open_is_prev_close` is an equality flag only; it does not prove the open
+    was untraded.
 - **Overnight realistic-entry guards (`edge_overnight_paper.realism_refusal`, Oct 7 night).**
   - The live-universe replay
     (`docs/research/edge-overnight/2026-10-07-live-universe/`) used Kite

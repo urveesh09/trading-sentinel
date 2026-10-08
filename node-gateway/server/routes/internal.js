@@ -36,15 +36,20 @@ const registerSignalSchema = z.object({
 //
 // Default: one send plus the gateway's own background retry/dead-letter;
 // always 200 (delivered says whether the first attempt succeeded).
-// require_delivery: one attempt and no gateway retry; 502 when Telegram did
-// not accept it, so the caller's durable outbox owns the retry.
+// require_delivery: one attempt and no gateway retry, so the caller's durable
+// outbox owns the retry. 422 when Telegram rejected THIS message (HTTP 400:
+// it will never be accepted as is); 502 for any other failure (network,
+// 429, 5xx), which later messages would also hit.
 router.post('/notify', requireInternalSecret, validate(notifySchema, 'body'), async (req, res, next) => {
   try {
     const { message, require_delivery: requireDelivery } = req.body;
     const text = `🚨 [SYSTEM ALERT]\n${message}`;
     if (requireDelivery) {
-      const delivered = await telegram.sendAlertOnce(text);
-      return res.status(delivered ? 200 : 502).json({ success: delivered, delivered });
+      const result = await telegram.sendAlertOnceDetailed(text);
+      if (result.delivered) return res.status(200).json({ success: true, delivered: true });
+      return res.status(result.rejected ? 422 : 502).json({
+        success: false, delivered: false, rejected: Boolean(result.rejected), telegram_status: result.status ?? null,
+      });
     }
     const delivered = await telegram.sendAlert(text);
     res.json({ success: true, delivered });

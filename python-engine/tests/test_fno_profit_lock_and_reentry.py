@@ -136,3 +136,90 @@ async def test_best_premium_persists_with_the_trail(tmp_path):
     await fpos.update_trail(db, 1, 0, None, 22612.0)                     # no premium this tick: kept
     (pos,) = await fpos.open_positions(db, "FNO_PAPER")
     assert pos.best_premium == 231.5 and pos.best_underlying == 22612.0
+
+
+# ---------------------------------------------------------------- O8-F1 / O8-F2 (Oct 8 audit)
+
+@pytest.mark.asyncio
+async def test_best_premium_ratchet_is_monotonic_and_open_only(tmp_path):
+    db = str(tmp_path / "fno.db")
+    await fpos.init_fno_positions_db(db)
+    await fpos.insert_position(db, **_open_row())
+    await fpos.update_best_premium(db, 1, 230.0)
+    await fpos.update_best_premium(db, 1, 210.0)                         # lower: ignored
+    (pos,) = await fpos.open_positions(db, "FNO_PAPER")
+    assert pos.best_premium == 230.0
+
+
+def _open_row(**over):
+    row = dict(source="FNO_PAPER", tradingsymbol="NIFTY26OCT22600CE", token=4242, underlying="NIFTY",
+               expiry="2026-10-13", strike=22600.0, opt_type="CE", direction="LONG", lots=1, lot_size=65,
+               qty=65, entry_time=NOW.isoformat(), entry_date="2026-10-07", entry_premium=200.0,
+               entry_underlying=22600.0, delta_at_entry=0.5, iv_at_entry=0.15, atr_at_entry=30.0,
+               stop_underlying=22560.0, target_underlying=22800.0, premium_stop=150.0, trail_active=0,
+               trail_stop_underlying=None, best_underlying=22600.0, max_loss_rupees=3250.0, status="OPEN",
+               entry_order_id="PAPER-TEST", bar_ts="2026-10-07 10:55:00")
+    row.update(over)
+    return row
+
+
+@pytest.mark.asyncio
+async def test_a_peak_seen_without_futures_survives_to_arm_the_lock(tmp_path):
+    """Audit O8-F1: a new option peak on a tick with no futures quote was
+    computed but never stored, so the lock could not arm from it."""
+    from unittest.mock import AsyncMock, MagicMock
+    from fno_executor import FnoExecutor
+    from fno_orchestrator import _manage_open_positions
+    db = str(tmp_path / "fno.db")
+    await fpos.init_fno_positions_db(db)
+    await fpos.insert_position(db, **_open_row())
+    kite = MagicMock()
+    kite.get_quote = AsyncMock(return_value={4242: {"last_price": 230.0, "depth": {"buy": [{"price": 230.0}]}}})
+    executor = FnoExecutor(kite, paper_mode=True, source_tag="FNO_PAPER")
+    closed = await _manage_open_positions(kite, db, "FNO_PAPER", executor, NOW, fut_price=None)
+    assert closed == []
+    (pos,) = await fpos.open_positions(db, "FNO_PAPER")
+    assert pos.best_premium == 230.0                                     # kept without futures
+    # The next sample is judged against that stored peak: floor = 215.
+    decision = evaluate_single_leg_exit(pos, now_ist=NOW, fut_price=None, exit_px_basis=212.0,
+                                        hard_flat=False, params=LOCK)
+    assert decision.exit_reason == "profit_lock" and decision.profit_lock_floor == pytest.approx(215.0)
+
+
+def _time_stop_case(direction, entry_u, stop_u, fut):
+    params = {**LOCK, "FNO_PROFIT_LOCK_ENABLED": False}
+    pos = SimpleNamespace(direction=direction, entry_underlying=entry_u, stop_underlying=stop_u,
+                          target_underlying=entry_u + (200 if direction == "LONG" else -200),
+                          atr_at_entry=30.0, entry_premium=200.0, premium_stop=150.0,
+                          entry_time=(NOW.replace(hour=9, minute=55)).isoformat(), trail_active=0,
+                          trail_stop_underlying=None, best_underlying=entry_u, best_premium=None)
+    return pos, params
+
+
+@pytest.mark.parametrize("direction,entry_u,stop_u,fut", [
+    ("LONG", 22600.0, 22560.0, 22601.0),     # bought call, little underlying progress
+    ("SHORT", 22600.0, 22640.0, 22599.0),    # bought put, little underlying progress
+])
+def test_time_stop_defers_only_a_profitable_bought_option_either_side(direction, entry_u, stop_u, fut):
+    """Audit O8-F2: both sides BUY the option, so a premium above entry is a
+    profit for a put exactly as for a call."""
+    pos, params = _time_stop_case(direction, entry_u, stop_u, fut)
+    winning = evaluate_single_leg_exit(pos, now_ist=NOW, fut_price=fut, exit_px_basis=220.0,
+                                       hard_flat=False, params=params)
+    assert winning.exit_reason == "" and winning.time_stop_deferred["premium_pnl_per_unit"] == pytest.approx(20.0)
+    losing = evaluate_single_leg_exit(pos, now_ist=NOW, fut_price=fut, exit_px_basis=180.0,
+                                      hard_flat=False, params=params)
+    assert losing.exit_reason == "time_stop" and losing.time_stop_deferred is None
+
+
+def test_live_default_banks_a_small_profit_at_the_time_stop():
+    """With the sign corrected, deferring in profit replayed -Rs 5,267 against
+    +Rs 6,968 for banking (docs/research/fno/2026-10-08-time-stop-sign)."""
+    from config import settings
+    from fno_exit_rules import live_single_leg_exit_params
+    params = live_single_leg_exit_params(settings)
+    assert params["FNO_TIME_STOP_RESPECTS_PREMIUM"] is False
+    pos, _ = _time_stop_case("SHORT", 22600.0, 22640.0, 22599.0)
+    decision = evaluate_single_leg_exit(pos, now_ist=NOW, fut_price=22599.0, exit_px_basis=215.0,
+                                        hard_flat=False, params=params)
+    assert decision.exit_reason == "time_stop" and decision.time_stop_deferred is None

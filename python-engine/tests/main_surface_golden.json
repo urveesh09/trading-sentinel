@@ -563,6 +563,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_provider_budget",
+      "methods": [
+        "GET"
+      ],
+      "path": "/ops/provider-budget",
+      "response_model": null
+    },
+    {
       "endpoint": "get_partner_advisory_cards",
       "methods": [
         "GET"

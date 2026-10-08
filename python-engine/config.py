@@ -1121,7 +1121,14 @@ class Settings(BaseSettings):
     # True the clock only cuts a trade that is going nowhere on the underlying
     # AND not in profit on premium. See fno_orchestrator for the record: 8
     # time-stop exits, -Rs 7,010, two of them profitable when cut.
-    FNO_TIME_STOP_RESPECTS_PREMIUM: bool = True
+    # [O8-F2 2026-10-08] OFF: at the time stop a trade in profit is banked.
+    # The deferral above was measured with an inverted put sign (it deferred
+    # LOSING puts). With the sign corrected, the 18 archived sessions
+    # (Sep 10-Oct 7, live halts, lock + re-entry) replay: deferral -Rs 5,267,
+    # bank at the time stop +Rs 6,968 (max DD Rs 1,991, PF 2.26), defer only
+    # while the profit lock is armed +Rs 6,748. In-sample development evidence;
+    # docs/research/fno/2026-10-08-time-stop-sign/README.md.
+    FNO_TIME_STOP_RESPECTS_PREMIUM: bool = False
     # [FNO-PROFIT-LOCK 2026-10-07] Keep a small profit instead of giving it
     # back. Units are premium-R (entry premium x FNO_STOP_PREMIUM_PCT): once
     # the best bid has been ARM_R above entry, exit if it falls to entry +
@@ -1580,6 +1587,11 @@ class Settings(BaseSettings):
     # Relay is a path-preserving forward proxy; auth + X-Kite-Version headers pass through.
     # Override with KITE_BASE_URL in .env (e.g. http://161.118.160.180:31527).
     KITE_BASE_URL: str = "https://api.kite.trade"
+    # [FOLLOW-UP-F3 2026-10-08] Kite documents 1 quote request/second (up to
+    # 500 instruments each). kite_client.QuoteBudget enforces it and merges
+    # concurrent token requests into one call; the shared limiter (3/s, all
+    # endpoints) still applies on top.
+    KITE_QUOTE_RATE_PER_SEC: float = 1.0
 
     # === Breadth Enrichment (2026-06-14) ===
     BREADTH_ENRICHMENT_ENABLED:         bool  = False   # Feature flag -- OFF by default

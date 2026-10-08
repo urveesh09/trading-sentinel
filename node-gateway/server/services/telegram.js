@@ -440,8 +440,28 @@ const sendAlertOnce = async (message) => {
   }
 };
 
+// [OUTBOX-CLASSIFY 2026-10-08] Durable outboxes need to know WHY a send
+// failed: Telegram answering 400 means this message is bad (too long,
+// unparsable) and will never be accepted, while network errors, 429 and 5xx
+// are transient and mean later messages would fail too. The outbox steps
+// over the first kind and stops on the second.
+const sendAlertOnceDetailed = async (message) => {
+  try {
+    await bot.sendMessage(config.TELEGRAM_CHAT_ID, message);
+    return { delivered: true, rejected: false };
+  } catch (err) {
+    const status = err && err.response && (err.response.statusCode
+      || (err.response.body && err.response.body.error_code));
+    const rejected = err && err.code === 'ETELEGRAM' && status === 400;
+    logger.warn({ event_type: 'telegram_send_once_failed', code: err && err.code, status, rejected },
+      'Alert not delivered; caller retries');
+    return { delivered: false, rejected, status: status || null };
+  }
+};
+
 module.exports = {
   bot,
+  sendAlertOnceDetailed,
   isValidChat,
   sendSignalAlert,
   sendAlert,
