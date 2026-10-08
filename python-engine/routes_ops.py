@@ -267,6 +267,16 @@ async def get_ops_metrics(request: Request, days: int = 30):
 
 
 
+@router.get("/ops/provider-budget")
+async def get_provider_budget(request: Request):
+    """[REVIEW-R6 2026-10-08] Per-endpoint provider usage since engine start
+    against Kite's documented limits (measurement only; see EndpointBudget)."""
+    _main._check_internal_secret(request, "provider_budget")
+    budget = getattr(_main.kite, "endpoint_budget", None)
+    return {"endpoints": budget.snapshot() if budget is not None else {},
+            "shared_limiter_rate_per_sec": getattr(getattr(_main.kite, "limiter", None), "rate", None)}
+
+
 @router.get("/circuit-breaker")
 async def get_circuit_breaker():
     halted, reasons = await _main.check_circuit_breakers(settings.DB_PATH)

@@ -1,4 +1,5 @@
 import asyncio
+import collections
 import math
 import contextlib
 import contextvars
@@ -6,7 +7,7 @@ import os
 import re
 import time
 import uuid
-from typing import Optional
+from typing import Callable, Optional
 import httpx
 import sqlite3
 import pandas as pd
@@ -294,12 +295,74 @@ class RateLimiter:
                 if not admitted:
                     self._condition.notify_all()
 
+class EndpointBudget:
+    """Per-endpoint provider usage against Kite's documented rate limits.
+
+    [REVIEW-R6 2026-10-08] The shared ``RateLimiter`` allows 3 requests/s on
+    every endpoint, while Kite documents quotes at 1/s, historical candles at
+    3/s and orders/other endpoints at 10/s. Oct 8 Production logs show no
+    429 rejection, so the limiter is not narrowed blindly (that would triple
+    quote queueing for expiry, F&O exits and Penny). This records the real
+    per-second rate of each endpoint class, the peak, and how many times it
+    exceeded the documented limit, and logs (at most once a minute per class)
+    when it does, so an endpoint-specific cap can be set from evidence.
+    Measurement only: it never delays or refuses a call.
+    """
+
+    DOCUMENTED_LIMITS = {"quote": 1, "historical": 3, "order": 10, "other": 10}
+    WINDOW_SEC = 1.0
+    LOG_EVERY_SEC = 60.0
+
+    def __init__(self, clock: Callable[[], float] = time.monotonic):
+        self._clock = clock
+        self._recent: dict[str, collections.deque] = {k: collections.deque() for k in self.DOCUMENTED_LIMITS}
+        self.calls = {k: 0 for k in self.DOCUMENTED_LIMITS}
+        self.peak_per_sec = {k: 0 for k in self.DOCUMENTED_LIMITS}
+        self.over_limit = {k: 0 for k in self.DOCUMENTED_LIMITS}
+        self._last_log = {k: float("-inf") for k in self.DOCUMENTED_LIMITS}
+
+    def record(self, endpoint: str) -> int:
+        """Count one admitted call; return the calls seen in the last second."""
+        if endpoint not in self.DOCUMENTED_LIMITS:
+            endpoint = "other"
+        now = self._clock()
+        window = self._recent[endpoint]
+        window.append(now)
+        while window and now - window[0] >= self.WINDOW_SEC:
+            window.popleft()
+        current = len(window)
+        self.calls[endpoint] += 1
+        self.peak_per_sec[endpoint] = max(self.peak_per_sec[endpoint], current)
+        limit = self.DOCUMENTED_LIMITS[endpoint]
+        if current > limit:
+            self.over_limit[endpoint] += 1
+            if now - self._last_log[endpoint] >= self.LOG_EVERY_SEC:
+                self._last_log[endpoint] = now
+                logger.warning("kite_endpoint_over_documented_limit endpoint=%s observed_per_sec=%d "
+                               "limit_per_sec=%d over_limit_calls=%d", endpoint, current, limit,
+                               self.over_limit[endpoint])
+        return current
+
+    def snapshot(self) -> dict:
+        return {k: {"calls": self.calls[k], "peak_per_sec": self.peak_per_sec[k],
+                    "over_documented_limit": self.over_limit[k], "documented_limit_per_sec": v}
+                for k, v in self.DOCUMENTED_LIMITS.items()}
+
+
+def _record_endpoint(client, endpoint: str) -> None:
+    """Count an admitted provider call (tolerates bare test doubles)."""
+    budget = getattr(client, "endpoint_budget", None)
+    if budget is not None:
+        budget.record(endpoint)
+
+
 class KiteClient:
     def __init__(self, db_path: str):
         self.db_path = db_path
         self.access_token = ""
         self.token_set_ist_date = None  # [BOOTSTRAP-2026-07-17] see set_token
         self.limiter = RateLimiter(rate=3.0, burst=1)
+        self.endpoint_budget = EndpointBudget()
         self.instrument_cache = {}
         self._cache_lock = asyncio.Lock()
         # P1 uses the same durable file as Node's gateway.  ``:memory:`` is
@@ -714,6 +777,7 @@ class KiteClient:
         
         for attempt in range(5):
             await self.limiter.acquire()
+            _record_endpoint(self, "historical")
             try:
                 resp = await self.client.get(
                     f"/instruments/historical/{instrument_token}/day",
@@ -879,6 +943,7 @@ class KiteClient:
 
         for attempt in range(5):
             await self.limiter.acquire()
+            _record_endpoint(self, "historical")
             try:
                 resp = await self.client.get(
                     f"/instruments/historical/{instrument_token}/{interval}",
@@ -997,6 +1062,7 @@ class KiteClient:
             limiter_started = time.monotonic()
             try:
                 await self.limiter.acquire(priority=priority)
+                _record_endpoint(self, "quote")
             except TypeError as exc:
                 # Small broker adapters used by replay/tests may still expose
                 # the pre-S2 no-argument limiter contract.  They retain their
@@ -1005,6 +1071,7 @@ class KiteClient:
                 if "priority" not in str(exc):
                     raise
                 await self.limiter.acquire()
+                _record_endpoint(self, "quote")
             timing["limiter_wait_sec"] += time.monotonic() - limiter_started
             try:
                 transport_started = time.monotonic()
@@ -1138,6 +1205,7 @@ class KiteClient:
             return _finish({})
         limiter_started = time.monotonic()
         await self.limiter.acquire()
+        _record_endpoint(self, "quote")
         timing["limiter_wait_sec"] = time.monotonic() - limiter_started
         timing["attempt_count"] = 1
         try:
@@ -1293,6 +1361,7 @@ class KiteClient:
         Also refreshes self.instrument_cache (symbol -> token).
         """
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get("/instruments/NSE")
             resp.raise_for_status()
@@ -1349,6 +1418,7 @@ class KiteClient:
             logger.warning("kite_instruments_dump_skip segment=%s reason=no_access_token", segment)
             return ""
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get(f"/instruments/{segment}")
             resp.raise_for_status()
@@ -1482,6 +1552,7 @@ class KiteClient:
         )
         for attempt in range(5):
             await self.limiter.acquire()
+            _record_endpoint(self, "historical")
             try:
                 resp = await self.client.get(
                     f"/instruments/historical/{int(instrument_token)}/{interval}",
@@ -1662,6 +1733,7 @@ class KiteClient:
             params["tag"] = tag
 
         await self.limiter.acquire()
+        _record_endpoint(self, "order")
         # The limiter can yield while an operator trips either entry halt.
         # Recheck at dispatch; exits never consult either halt predicate.
         blocked = entry_blocker()
@@ -1803,6 +1875,7 @@ class KiteClient:
             return {"order_id": order_id, "status": "ERROR", "message": "nothing to modify"}
 
         await self.limiter.acquire()
+        _record_endpoint(self, "order")
         try:
             resp = await self.client.put(f"/orders/{variety}/{order_id}", data=params)
             resp.raise_for_status()
@@ -1827,6 +1900,7 @@ class KiteClient:
         if not order_id:
             return {"order_id": None, "status": "ERROR", "message": "order_id required"}
         await self.limiter.acquire()
+        _record_endpoint(self, "order")
         try:
             resp = await self.client.delete(f"/orders/{variety}/{order_id}")
             resp.raise_for_status()
@@ -1863,6 +1937,7 @@ class KiteClient:
         if not order_id:
             return []
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get(f"/orders/{order_id}")
             resp.raise_for_status()
@@ -1958,6 +2033,7 @@ class KiteClient:
         tagged order was not accepted and may be submitted.
         """
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get("/orders")
             resp.raise_for_status()
@@ -1979,6 +2055,7 @@ class KiteClient:
         if not order_id:
             return None
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get(f"/orders/{order_id}/trades")
             resp.raise_for_status()
@@ -1999,6 +2076,7 @@ class KiteClient:
         word on whether we actually hold stock is the positions book, not
         our bookkeeping. See PennyExecutor.execute_entry."""
         await self.limiter.acquire()
+        _record_endpoint(self, "other")
         try:
             resp = await self.client.get("/portfolio/positions")
             resp.raise_for_status()

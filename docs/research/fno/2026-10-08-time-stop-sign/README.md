@@ -20,7 +20,14 @@ Live halts on (15% drawdown halt from the Rs 2.5 L pool):
 | --- | --- | --- | --- | --- |
 | Corrected sign, deferral ON | 8 | −₹5,267 | ₹5,267 | 0.07 |
 | **Corrected sign, deferral OFF (shipped)** | **11** | **+₹6,968** | **₹1,991** | **2.26** |
-| Defer only while the profit lock is armed | 11 | +₹6,748 | ₹1,991 | 2.22 |
+| Defer only while the profit lock is armed* | 11 | +₹6,748 | ₹1,991 | 2.22 |
+
+\* Measured with a temporary evaluator flag that was removed before commit
+(it was no better), so this row is not reproducible from the scripts.
+
+Without the single best winner (Oct 1, +₹7,108) the shipped row is −₹139:
+the trend book depends on a few large winners, and this sample cannot show
+steady profits.
 
 The drawdown halt dominates the first row: the replay starts near the
 halt line (~₹212.5k), so a few small losses stop all later entries,
@@ -41,5 +48,6 @@ kept. With the sign correct, deferral loses money on both sides: Sep 28 10:25
 gives +₹356 banked against −₹144 deferred, and Sep 23's call gives +₹638
 against +₹417.
 
-Scripts: `replay_time_stop.py <root> <start> <end> <out> <drawdown_pct>` and
-`replay_old_vs_new_sign.py`. Results: `results.json`.
+Scripts (every arm sets the deferral explicitly, so re-runs do not inherit
+the changed default): `replay_time_stop.py <root> <start> <end> <out> <drawdown_pct>`
+and `replay_old_vs_new_sign.py`. Results: `results.json`.

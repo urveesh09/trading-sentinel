@@ -11,8 +11,9 @@ from fno_policy_replay import ReplayData, ReplayPolicy, SingleLegReplay
 data = ReplayData(root)
 BEST = (("FNO_PROFIT_LOCK_ENABLED", True), ("FNO_PROFIT_LOCK_ARM_R", 0.4),
         ("FNO_PROFIT_LOCK_FLOOR_R", 0.1), ("FNO_PROFIT_LOCK_KEEP_FRACTION", 0.5))
-arms = {"BASE": ReplayPolicy(name="BASE", exit_overrides=(("FNO_PROFIT_LOCK_ENABLED", False),), reentry_confirmation=False),
-        "SHIPPED": ReplayPolicy(name="SHIPPED", exit_overrides=BEST, reentry_confirmation=True),
+DEFER = (("FNO_TIME_STOP_RESPECTS_PREMIUM", True),)     # explicit: the Oct 7 default, not today's
+arms = {"BASE": ReplayPolicy(name="BASE", exit_overrides=(("FNO_PROFIT_LOCK_ENABLED", False),) + DEFER, reentry_confirmation=False),
+        "SHIPPED": ReplayPolicy(name="SHIPPED", exit_overrides=BEST + DEFER, reentry_confirmation=True),
         "SHIPPED_NO_DEFER": ReplayPolicy(name="SHIPPED_NO_DEFER", exit_overrides=BEST + (("FNO_TIME_STOP_RESPECTS_PREMIUM", False),), reentry_confirmation=True)}
 res = {}
 for name, pol in arms.items():

@@ -5,6 +5,30 @@
 
 
 
+## October 8 (late night) — review R2–R6 (done, Dev, commit pending, not deployed)
+
+- Problem: independent review of the Oct 8 fixes: research arms inherited
+  the changed default (R2); overnight cash-trim kept the larger order's
+  price and stale quotes passed on date (R3); cohort report mislabelled
+  unavailable paths (R4); agent guard could stay held (R5); provider limits
+  differ by endpoint (R6). The expiry agent also flagged the overnight
+  outbox blocking flaw.
+- Files: `edge_overnight_paper.py`, `momentum_paper_path_adapter.py`,
+  `momentum_admission_cohorts.py`, `agent/agent.py`, `kite_client.py`,
+  `routes_ops.py`, tests, the research scripts and README.
+- Acceptance (met): tests for the re-walked price, the stale last trade,
+  the failed re-quote, outbox step-over / gateway down / long-notice parts,
+  cohort unavailable attribution, guard release, budget counting; the
+  research re-run reproduces both figures.
+- Rollout: merge and rebuild. No schema/config change. Rollback: revert.
+- Next:
+  1. After a market day, read `GET /ops/provider-budget` (or the
+     `kite_endpoint_over_documented_limit` lines). If quotes exceed 1/s,
+     batch callers first (one `/quote` takes up to 500 instruments), then
+     add a quote-specific limiter tested with Penny, expiry and F&O exits
+     together.
+  2. Overnight: count `stale_last_trade` and `no_fresh_quote` refusals.
+
 ## October 8 (night) — review R1: expiry summary over Telegram's limit (done, Dev, commit `c4329bc`, pushed, not deployed)
 
 - Problem: the expanded summary (4,277 characters) would be refused by

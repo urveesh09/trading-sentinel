@@ -51,3 +51,28 @@ def test_a_post_still_in_flight_makes_the_next_publish_skip(agent_mod, monkeypat
     agent_mod.publish_optional_ai_status()
     agent_mod.publish_optional_ai_status()                 # first one never finished
     assert started == [1] and agent_mod._status_publish["in_flight"] is True
+
+
+def test_setup_failures_release_the_in_flight_guard(agent_mod, monkeypatch):
+    """Review R5: a snapshot or thread-start error must not wedge publishing."""
+    def broken_snapshot():
+        raise ValueError("bad queue state")
+
+    monkeypatch.setattr(agent_mod, "optional_ai_status", broken_snapshot)
+    agent_mod.publish_optional_ai_status()
+    assert agent_mod._status_publish["in_flight"] is False
+
+    monkeypatch.undo()
+    monkeypatch.setattr(agent_mod, "INTERNAL_API_SECRET", "test-secret")
+    monkeypatch.setattr(agent_mod, "_status_publish", {"in_flight": False, "failures": 0, "last_ok": None})
+
+    class NoThreads:
+        def __init__(self, *a, **k):
+            pass
+
+        def start(self):
+            raise RuntimeError("can't start new thread")
+
+    monkeypatch.setattr(agent_mod.threading, "Thread", NoThreads)
+    agent_mod.publish_optional_ai_status()
+    assert agent_mod._status_publish["in_flight"] is False

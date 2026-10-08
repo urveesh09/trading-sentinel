@@ -274,8 +274,18 @@ def test_holdout_is_reported_per_admission_population_o8_t6():
     before = _brigade_batch()
     after = [_candidate("s-cub", "CUB", 150.0, 147.0, 156.0,
                         batch_at=IST.localize(datetime(2026, 10, 8, 11, 0)), index=0)]
-    report = cohorts.build_cohort_reports(before + after, manifest, deadline_policy="exact_1515")
+    unavailable = [{"admission_key": "u-old", "reason": "path_clock_unavailable:u-old",
+                    "recorded_at": "2026-10-07T10:00:00+05:30"},
+                   {"admission_key": "u-new", "reason": "entry_economics_unavailable:u-new",
+                    "recorded_at": "2026-10-08T10:30:00+05:30"},
+                   {"reason": "database_unavailable_or_missing"}]
+    report = cohorts.build_cohort_reports(before + after, manifest, deadline_policy="exact_1515",
+                                          unavailable=unavailable)
     split = report["by_population"]
+    assert [u["admission_key"] for u in split["BASELINE_ADMISSION"]["unavailable_candidates"]] == ["u-old"]
+    assert [u["admission_key"] for u in split["SELECTIVE_ADMISSION_V1"]["unavailable_candidates"]] == ["u-new"]
+    assert report["unattributed_unavailable"] == [{"reason": "database_unavailable_or_missing"}]
+    assert report["admission_populations"][1]["admission_keys"] == ["s-cub"]
     assert split["BASELINE_ADMISSION"]["holdout"]["candidates"] == 3
     assert split["SELECTIVE_ADMISSION_V1"]["holdout"]["candidates"] == 1
     assert [p["candidates"] for p in report["admission_populations"]] == [3, 1]

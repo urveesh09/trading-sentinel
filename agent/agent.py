@@ -1510,7 +1510,13 @@ def publish_optional_ai_status() -> None:
             logger.info("optional_ai_status_publish_skipped reason=previous_in_flight")
             return
         _status_publish["in_flight"] = True
-    payload = optional_ai_status()
+    try:
+        payload = optional_ai_status()
+    except Exception as exc:                          # noqa: BLE001 - never leave the guard held
+        with _status_publish_lock:
+            _status_publish["in_flight"] = False
+        logger.warning("optional_ai_status_snapshot_failed error=%s", type(exc).__name__)
+        return
 
     def _post() -> None:
         ok, detail = False, ""
@@ -1538,7 +1544,12 @@ def publish_optional_ai_status() -> None:
             logger.warning("optional_ai_status_publish_failed %s streak=%d last_ok=%s",
                            detail, streak, last_ok)
 
-    threading.Thread(target=_post, name="optional-ai-status", daemon=True).start()
+    try:
+        threading.Thread(target=_post, name="optional-ai-status", daemon=True).start()
+    except Exception as exc:                          # noqa: BLE001 - e.g. RuntimeError: can't start new thread
+        with _status_publish_lock:
+            _status_publish["in_flight"] = False
+        logger.warning("optional_ai_status_thread_failed error=%s", type(exc).__name__)
 
 
 def queue_optional_ai_review(

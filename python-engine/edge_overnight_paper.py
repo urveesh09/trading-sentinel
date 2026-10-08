@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import closing, contextmanager
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import json
 import logging
 import math
@@ -71,7 +71,11 @@ SKIP_KINDS = ("MR_mid",)
 # [O8-O1 2026-10-08] Entries fill against the visible sell depth: missing
 # depth refuses, shares never exceed the displayed ask quantity and the price
 # is the walked average ask (never better than the 25 bps model).
-ENTRY_FILL_CONTRACT = "visible-asks-v1"
+# v2 (review, Oct 8 night): the shortlist is re-quoted after the scan, a pick
+# whose last trade is older than ENTRY_MAX_TRADE_AGE refuses, and price and
+# fees are re-walked for the final (cash-trimmed) share count.
+ENTRY_FILL_CONTRACT = "visible-asks-v2"
+ENTRY_MAX_TRADE_AGE = timedelta(minutes=30)
 
 
 def prior_session(today_iso: str, db_path: str) -> str:
@@ -218,11 +222,18 @@ def _record_run(conn: sqlite3.Connection, day: str, phase: str, summary: dict, n
     conn.execute("INSERT OR REPLACE INTO edge_overnight_paper_runs VALUES (?,?,?,?)",
                  (day, phase, json.dumps(summary, sort_keys=True), now.isoformat()))
     if message:
-        conn.execute("INSERT OR IGNORE INTO edge_overnight_paper_notices (run_date, phase, message, created_at) "
-                     "VALUES (?,?,?,?)", (day, phase, message, now.isoformat()))
+        # Over-long notices become numbered parts, each acknowledged on its
+        # own row (the expiry book's splitter; Telegram refuses > 4,096).
+        from expiry_paper import notice_parts
+        parts = notice_parts(message)
+        keys = [phase] if len(parts) == 1 else [f"{phase}:part{i:02d}of{len(parts):02d}"
+                                               for i in range(1, len(parts) + 1)]
+        conn.executemany("INSERT OR IGNORE INTO edge_overnight_paper_notices (run_date, phase, message, created_at) "
+                         "VALUES (?,?,?,?)", [(day, key, part, now.isoformat()) for key, part in zip(keys, parts)])
 
 
 _FLUSH_LOCKS: dict[str, asyncio.Lock] = {}
+NOTICE_STEP_OVER_AFTER = 3          # failed attempts after which a notice may be stepped over
 
 
 async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optional[str] = None,
@@ -232,28 +243,38 @@ async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optiona
     Flushes of one store are serialised (the phase jobs and the catch-up can
     overlap), so a row is never sent twice concurrently; ``sent_at`` is the
     acknowledgement time. Delivery is at-least-once across a crash.
+
+    A failure stops the flush to keep order, except that a notice which has
+    failed NOTICE_STEP_OVER_AFTER times is stepped over (kept, retried every
+    flush) so it cannot hold back later notices; a second failure in a row
+    after a step-over means the transport is down and the flush stops.
     """
     store = overnight_db_path(db_path or settings.DB_PATH)
     async with _FLUSH_LOCKS.setdefault(store, asyncio.Lock()):
         with _store(store) as conn:
-            pending = conn.execute("SELECT run_date, phase, message FROM edge_overnight_paper_notices "
-                                   "WHERE sent_at IS NULL ORDER BY created_at").fetchall()
-        sent = 0
-        for day, phase, message in pending:
+            pending = conn.execute("SELECT run_date, phase, message, attempts FROM edge_overnight_paper_notices "
+                                   "WHERE sent_at IS NULL ORDER BY created_at, phase").fetchall()
+        sent, stepped = 0, False
+        for day, phase, message, attempts in pending:
             try:
                 await send(message)
             except Exception as exc:
-                logger.warning("edge_overnight_notice_failed date=%s phase=%s err=%s",
-                               day, phase, type(exc).__name__)
+                logger.warning("edge_overnight_notice_failed date=%s phase=%s attempts=%d err=%s",
+                               day, phase, attempts + 1, type(exc).__name__)
                 with _store(store) as conn:
                     conn.execute("UPDATE edge_overnight_paper_notices SET attempts = attempts + 1 "
                                  "WHERE run_date=? AND phase=?", (day, phase))
-                break
+                if stepped or attempts + 1 < NOTICE_STEP_OVER_AFTER:
+                    break
+                stepped = True
+                logger.warning("edge_overnight_notice_stepped_over date=%s phase=%s chars=%d",
+                               day, phase, len(message))
+                continue
             acked = now or datetime.now(IST)
             with _store(store) as conn:
                 conn.execute("UPDATE edge_overnight_paper_notices SET sent_at=?, attempts = attempts + 1 "
                              "WHERE run_date=? AND phase=?", (acked.isoformat(), day, phase))
-            sent += 1
+            sent, stepped = sent + 1, False
         return sent
 
 
@@ -390,6 +411,40 @@ def _best_bid(quote: dict) -> Optional[float]:
     return max(prices) if prices else None
 
 
+def _trade_age(quote: dict, now: datetime) -> Optional[timedelta]:
+    """Age of the quote's last trade at ``now``, or ``None`` when unknown."""
+    raw = quote.get("last_trade_time")
+    try:
+        stamp = raw if isinstance(raw, datetime) else datetime.fromisoformat(str(raw))
+    except (TypeError, ValueError):
+        return None
+    if stamp.tzinfo is None:
+        stamp = stamp.replace(tzinfo=IST)
+    return now - stamp
+
+
+def price_for_cash(asks: list[tuple[float, int]], wanted: int, model_price: float,
+                   cash: float) -> tuple[int, float]:
+    """Largest share count up to ``wanted`` whose walked price plus buy charges
+    fit ``cash``, and that price (never below ``model_price``)."""
+    def priced(n: int) -> float:
+        _filled, walked = walk_asks(asks, n)
+        return round(max(model_price, walked or 0.0), 4)
+
+    def fits(n: int) -> bool:
+        price = priced(n)
+        return price * n + buy_charges(price, n) <= cash
+
+    shares = wanted
+    while shares > 0 and not fits(shares):
+        shares = min(shares - 1, int(cash // (priced(shares) * (1 + BUY_COST_BUFFER))))
+    # The estimate above uses the larger order's (higher) average; grow back
+    # while the next share still fits at its own walked price.
+    while 0 < shares < wanted and fits(shares + 1):
+        shares += 1
+    return (shares, priced(shares)) if shares > 0 else (0, round(model_price, 4))
+
+
 def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases: set) -> Optional[str]:
     """[EDGE-OVERNIGHT-REALISM 2026-10-07] Why a pick cannot be bought honestly, else ``None``.
 
@@ -449,46 +504,52 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
     finally:
         os.remove(scan_path)
 
+    # The scan takes minutes; price and refuse on a fresh quote of the shortlist.
+    try:
+        fresh = await _quotes(kite, [pick.ticker for pick in scan["positions"]])
+    except Exception as exc:                          # noqa: BLE001 - a failed refresh refuses, never stale fills
+        logger.warning("edge_overnight_entry_requote_failed error=%s", type(exc).__name__)
+        fresh = {}
     slots = int(settings.PENNY_EDGE_MAX_POSITIONS)
     held_bases = {base_symbol(t) for t in state["held"]}
     cash, opened, skipped = state["cash"], [], []
     for pick in scan["positions"]:
         if len(opened) >= slots:
             break
-        bar = bars_today.get(pick.ticker)
-        if bar is None:
-            skipped.append({"ticker": pick.ticker, "reason": "no_provisional_bar"})
-            continue
         if pick.ticker in state["held"]:
             skipped.append({"ticker": pick.ticker, "reason": "already_held"})
             continue
-        refusal = realism_refusal(pick.ticker, pick.signal_subtype, quotes.get(pick.ticker) or {}, bar,
+        quote = fresh.get(pick.ticker) or {}
+        bar = provisional_bar(quote, today)
+        if bar is None:
+            skipped.append({"ticker": pick.ticker, "reason": "no_fresh_quote"})
+            continue
+        age = _trade_age(quote, now)
+        if age is None or age > ENTRY_MAX_TRADE_AGE:
+            skipped.append({"ticker": pick.ticker, "reason": "stale_last_trade",
+                            "last_trade_time": str(quote.get("last_trade_time") or "")})
+            continue
+        refusal = realism_refusal(pick.ticker, pick.signal_subtype, quote, bar,
                                   held_bases | {base_symbol(o["ticker"]) for o in opened})
         if refusal is not None:
             skipped.append({"ticker": pick.ticker, "reason": refusal})
             continue
         ltp, volume = bar[3], bar[4]
-        quote = quotes.get(pick.ticker) or {}
         asks = visible_asks(quote) or []
         visible = sum(qty for _price, qty in asks)
         model_price = ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0)
         capacity = int(MAX_PARTICIPATION * ltp * volume // model_price)
         wanted = min(int(pick.shares), capacity, visible)
-        _filled, walked = walk_asks(asks, wanted)
-        entry_price = round(max(model_price, walked or 0.0), 4)
-        # [O1 2026-10-06] Oct 6 audit: three picks used Rs 24,364.88 of
-        # Rs 24,386.22 and left -Rs 7.59 after their buy charges, because only
-        # premium was debited. Each admission now fits premium plus its own
-        # buy charges inside the cash left after earlier picks' charges.
-        affordable = int(cash // (entry_price * (1 + BUY_COST_BUFFER)))
-        while affordable > 0 and entry_price * affordable + buy_charges(entry_price, affordable) > cash:
-            affordable -= 1
-        shares = min(wanted, affordable)
+        # [O1 2026-10-06] Each admission fits premium plus its own buy charges
+        # inside the cash left after earlier picks. The asks are re-walked for
+        # the final share count, so price and fees match what is bought.
+        shares, entry_price = price_for_cash(asks, wanted, model_price, cash)
         if shares < 1 or shares < MIN_FILL_FRACTION * int(pick.shares):
-            reason = ("thin_asks" if visible < min(capacity, affordable)
-                      else "liquidity" if capacity <= affordable else "cash")
+            reason = ("cash" if shares < wanted
+                      else "thin_asks" if visible == wanted < int(pick.shares)
+                      else "liquidity")
             skipped.append({"ticker": pick.ticker, "reason": f"{reason}_below_quarter_of_plan",
-                            "planned": int(pick.shares), "capacity": capacity, "affordable": affordable,
+                            "planned": int(pick.shares), "capacity": capacity, "affordable": shares,
                             "visible_ask_qty": visible})
             continue
         charges = buy_charges(entry_price, shares)

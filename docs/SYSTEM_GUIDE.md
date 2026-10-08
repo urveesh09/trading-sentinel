@@ -14,6 +14,41 @@
 
 
 
+## October 8 (late night) — independent review R2–R6 and overnight outbox (actual behavior, Dev)
+
+- **Overnight entry `visible-asks-v2` (R3).**
+  - After the scan, the shortlist is re-quoted in one call. A failed
+    re-quote refuses (`no_fresh_quote`); it never prices from the old batch.
+  - A pick whose last trade is more than 30 minutes old at admission refuses
+    `stale_last_trade` (a 09:00 trade used to pass a 15:20 entry on date).
+  - `price_for_cash` re-walks the asks for the final, cash-trimmed share
+    count, so price and buy charges match what is bought (the reviewer's
+    probe overpaid ₹14.10 on 295 shares).
+- **Overnight outbox.** Over-long notices are stored as acknowledged
+  `[part i/n]` rows (`expiry_paper.notice_parts`, read-only reuse). A notice
+  refused 3 times is stepped over, kept and retried; a second failure in a
+  row means the gateway is down and the flush stops.
+- **Momentum cohorts (R4).** Unavailable paths carry `recorded_at` and are
+  reported in their own admission population; store-level gaps go to
+  `unattributed_unavailable`. Each population lists its admission keys.
+- **Agent status guard (R5).** A snapshot or thread-start failure releases
+  `in_flight`.
+- **Provider budgets (R6), measurement first.** `kite_client.EndpointBudget`
+  counts admitted calls per endpoint class (quote 1/s, historical 3/s,
+  order and other 10/s, as documented by Kite), with the per-second peak
+  and over-limit count. `kite_endpoint_over_documented_limit` is logged at
+  most once a minute per class; `GET /ops/provider-budget` returns the
+  snapshot. The shared limiter stays at 3/s. Oct 8 logs had no 429
+  rejection, and a blind 1/s quote cap would triple quote queueing; set a
+  per-endpoint cap from this data.
+- **Research scripts (R2).** Every arm in
+  `docs/research/fno/2026-10-08-time-stop-sign/` now sets the deferral
+  explicitly; a re-run reproduces −₹5,267 / +₹6,968. The shipped row is
+  −₹139 without its best winner (Oct 1), so the sample cannot show steady
+  profits.
+- Kept: the F&O 15% drawdown halt (agreed with the reviewer; a weekly reset
+  could repeatedly forgive losses).
+
 ## October 8 (night) — expiry notices split into parts; a refused row no longer blocks (actual behavior, Dev, review R1)
 
 - **Problem (independent review R1, valid).** The expanded day summary was

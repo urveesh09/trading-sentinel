@@ -1,3 +1,7 @@
+"""Time-stop deferral ON vs OFF after the bought-put sign fix (explicit policies).
+
+Usage: replay_time_stop.py <root> <start> <end> <out.json> <drawdown_pct>
+"""
 import sys, json
 sys.path.insert(0, r"C:/Users/Urveesh/Desktop/trading-sentinel/python-engine")
 root, start, end, out, dd = sys.argv[1:6]
@@ -7,8 +11,10 @@ from fno_policy_replay import ReplayData, ReplayPolicy, SingleLegReplay
 data = ReplayData(root)
 BEST = (("FNO_PROFIT_LOCK_ENABLED", True), ("FNO_PROFIT_LOCK_ARM_R", 0.4),
         ("FNO_PROFIT_LOCK_FLOOR_R", 0.1), ("FNO_PROFIT_LOCK_KEEP_FRACTION", 0.5))
-arms = {"DEFER": BEST, "NO_DEFER": BEST + (("FNO_TIME_STOP_RESPECTS_PREMIUM", False),),
-        "DEFER_NEEDS_LOCK": BEST + (("FNO_TIME_STOP_DEFER_NEEDS_LOCK", True),)}
+# Every arm states the deferral explicitly, so a re-run does not inherit the
+# current config default (it changed to False with this study).
+arms = {"DEFER": BEST + (("FNO_TIME_STOP_RESPECTS_PREMIUM", True),),
+        "NO_DEFER": BEST + (("FNO_TIME_STOP_RESPECTS_PREMIUM", False),)}
 res = {}
 for name, ov in arms.items():
     r = SingleLegReplay(data, ReplayPolicy(name=name, exit_overrides=ov, reentry_confirmation=True)).run(start, end)

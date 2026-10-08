@@ -12,6 +12,18 @@
 
 
 
+## October 8 (late night) — independent review R2–R6
+
+- [x] R2 research arms explicit; re-run reproduces −₹5,267 / +₹6,968.
+- [x] R3 overnight `visible-asks-v2` (re-quote, 30-min last trade, re-walk).
+- [x] Overnight outbox parts and step-over (expiry R1 flaw).
+- [x] R4 cohort unavailable attribution.
+- [x] R5 agent guard release.
+- [x] R6 endpoint budget measurement and `/ops/provider-budget`.
+- [x] Full engine suite: 5,064 pass, 1 fail (`test_surface_matches_golden`,
+  the intended new `/ops/provider-budget` route); golden regenerated with
+  `TS_UPDATE_GOLDEN=1`, that file then 4 pass. Agent suite: 390 pass.
+
 ## October 8 (night) — review R1: expiry notices split; refused row stepped over
 
 - [x] `notice_parts` (3,500-character parts, at line ends, nothing dropped)

@@ -40,22 +40,42 @@ def admission_population(batch_at: datetime) -> str:
     return label
 
 
+UNATTRIBUTED = "UNATTRIBUTED"
+
+
+def _unavailable_population(record: Mapping[str, Any]) -> str:
+    """The population of a candidate whose path could not be built, from its
+    admission clock; store-level gaps without one are ``UNATTRIBUTED``."""
+    raw = record.get("recorded_at")
+    try:
+        at = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return UNATTRIBUTED
+    if at.tzinfo is None:
+        return UNATTRIBUTED
+    return admission_population(at)
+
+
 def build_cohort_reports(candidates: Sequence[Candidate], manifest: Mapping[str, Any], *,
                          deadline_policy: str,
                          unavailable: Sequence[Mapping[str, Any]] = ()) -> dict[str, Any]:
     """One frozen allocation report per admission population, never pooled."""
-    by_population = {}
+    by_population, keys = {}, {}
     for name, _started in ADMISSION_POPULATIONS:
         chosen = [item for item in candidates if admission_population(item.batch_at) == name]
+        missing = [dict(record) for record in unavailable if _unavailable_population(record) == name]
+        keys[name] = sorted(item.admission_key for item in chosen)
         by_population[name] = build_allocation_report(chosen, manifest, deadline_policy=deadline_policy,
-                                                      unavailable=unavailable if name == ADMISSION_POPULATIONS[0][0] else ())
+                                                      unavailable=missing)
     return {
         "schema": SCHEMA,
         "admission_populations": [{"name": name, "from": None if started is None else started.isoformat(),
-                                   "candidates": by_population[name]["holdout"]["candidates"]
-                                   + by_population[name]["development"]["candidates"]}
+                                   "candidates": len(keys[name]), "admission_keys": keys[name],
+                                   "unavailable": len(by_population[name]["unavailable_candidates"])}
                                   for name, started in ADMISSION_POPULATIONS],
         "by_population": by_population,
+        "unattributed_unavailable": [dict(record) for record in unavailable
+                                     if _unavailable_population(record) == UNATTRIBUTED],
         "qualification": "NOT_ASSESSED", "authorization_effect": "NONE",
     }
 
