@@ -1492,22 +1492,51 @@ def optional_ai_status() -> Dict:
     return payload
 
 
+# [O8-A1 2026-10-08] Oct 8 had eight ReadTimeouts on the old 2 s total
+# timeout while the engine was busy in market hours. The post is a status
+# heartbeat on a daemon thread, so a longer read wait delays nothing; a post
+# still in flight makes the next minute's publish skip instead of piling up.
+OPTIONAL_AI_STATUS_TIMEOUT = (2, 10)        # (connect, read) seconds
+_status_publish = {"in_flight": False, "failures": 0, "last_ok": None}
+_status_publish_lock = threading.Lock()
+
+
 def publish_optional_ai_status() -> None:
     """Report health asynchronously; a status outage must not delay trading."""
     if not INTERNAL_API_SECRET:
         return
+    with _status_publish_lock:
+        if _status_publish["in_flight"]:
+            logger.info("optional_ai_status_publish_skipped reason=previous_in_flight")
+            return
+        _status_publish["in_flight"] = True
     payload = optional_ai_status()
 
     def _post() -> None:
+        ok, detail = False, ""
         try:
             response = requests.post(
                 OPTIONAL_AI_STATUS_URL, json=payload,
-                headers={"X-Internal-Secret": INTERNAL_API_SECRET}, timeout=2,
+                headers={"X-Internal-Secret": INTERNAL_API_SECRET}, timeout=OPTIONAL_AI_STATUS_TIMEOUT,
             )
-            if response.status_code >= 300:
-                logger.warning("optional_ai_status_publish_failed status=%s", response.status_code)
+            ok, detail = response.status_code < 300, f"status={response.status_code}"
         except requests.RequestException as exc:
-            logger.warning("optional_ai_status_publish_failed error=%s", type(exc).__name__)
+            detail = f"error={type(exc).__name__}"
+        finally:
+            with _status_publish_lock:
+                _status_publish["in_flight"] = False
+                if ok:
+                    recovered = _status_publish["failures"]
+                    _status_publish["failures"], _status_publish["last_ok"] = 0, payload["reported_at"]
+                else:
+                    _status_publish["failures"] += 1
+                    streak, last_ok = _status_publish["failures"], _status_publish["last_ok"]
+        if ok:
+            if recovered:
+                logger.info("optional_ai_status_publish_recovered after_failures=%d", recovered)
+        else:
+            logger.warning("optional_ai_status_publish_failed %s streak=%d last_ok=%s",
+                           detail, streak, last_ok)
 
     threading.Thread(target=_post, name="optional-ai-status", daemon=True).start()
 

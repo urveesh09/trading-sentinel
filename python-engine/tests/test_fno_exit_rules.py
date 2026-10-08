@@ -65,8 +65,6 @@ def _inline_oracle(p, *, now_ist, fut_price, exit_px_basis, hard_flat, params):
                     timed_out = True
                 if timed_out and params["FNO_TIME_STOP_RESPECTS_PREMIUM"]:
                     premium_pnl_per_lot = (exit_px_basis - p.entry_premium)
-                    if p.direction == "SHORT":
-                        premium_pnl_per_lot = -premium_pnl_per_lot
                     if exit_px_basis > 0 and premium_pnl_per_lot > 0:
                         timed_out = False
         if stopped:

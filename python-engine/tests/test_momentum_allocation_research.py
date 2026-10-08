@@ -264,3 +264,28 @@ def test_real_budget_capacity_is_unavailable_until_configured_and_concentration_
         experiment_id="r5b", frozen_at=early), deadline_policy="exact_1515")
     capacity = report["holdout"]["bases"][alloc.REAL_BUDGET]["policies"][alloc.FIRST_ARRIVAL]
     assert capacity["pool_inr"] == 8000.0 and capacity["peak_deployed_inr"] <= 8000.0
+
+
+def test_holdout_is_reported_per_admission_population_o8_t6():
+    """Oct 8 audit T6: selective entry changed the candidate population from
+    the Oct 8 session; the holdout is reported per population, not pooled."""
+    import momentum_admission_cohorts as cohorts
+    manifest = alloc.freeze_allocation_manifest(experiment_id="t6", frozen_at=datetime(2026, 9, 1, tzinfo=timezone.utc))
+    before = _brigade_batch()
+    after = [_candidate("s-cub", "CUB", 150.0, 147.0, 156.0,
+                        batch_at=IST.localize(datetime(2026, 10, 8, 11, 0)), index=0)]
+    report = cohorts.build_cohort_reports(before + after, manifest, deadline_policy="exact_1515")
+    split = report["by_population"]
+    assert split["BASELINE_ADMISSION"]["holdout"]["candidates"] == 3
+    assert split["SELECTIVE_ADMISSION_V1"]["holdout"]["candidates"] == 1
+    assert [p["candidates"] for p in report["admission_populations"]] == [3, 1]
+    assert cohorts.admission_population(IST.localize(datetime(2026, 10, 7, 15, 0))) == "BASELINE_ADMISSION"
+    assert cohorts.admission_population(IST.localize(datetime(2026, 10, 8, 9, 15))) == "SELECTIVE_ADMISSION_V1"
+
+
+def test_the_october_6_freeze_still_verifies():
+    """The cohort split lives outside the fingerprinted modules."""
+    from pathlib import Path
+    path = Path(__file__).resolve().parents[2] / "docs/research/momentum-allocation/2026-10-06-allocation-freeze.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    assert alloc.verify_allocation_manifest(manifest.get("manifest", manifest)).isoformat().startswith("2026-10-06")

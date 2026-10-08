@@ -40,6 +40,11 @@ were entry problems. The earlier trades did give back real gains.
 
 ## Replay results (`grid.py`, shipped rules via `fno_policy_replay`)
 
+> **Superseded Oct 8.** These runs used the inverted bought-put time-stop
+> sign (audit O8-F2). With the sign fixed and the time-stop deferral off,
+> the shipped lock + re-entry replays at +₹6,968 (max DD ₹1,991, PF 2.26);
+> see `../2026-10-08-time-stop-sign/README.md`.
+
 | Arm | Trades | Net | Net excl. best | Max DD | PF |
 | --- | --- | --- | --- | --- | --- |
 | Baseline (lock off, re-entry off) | 12 | ₹5,323 | −₹1,784 | ₹3,831 | 1.79 |

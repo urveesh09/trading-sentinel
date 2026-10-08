@@ -35,9 +35,16 @@ def _cache(tmp_path, tickers=("AAA", "BBB", "BIG")):
     return str(path)
 
 
+def _fresh(path):
+    path.mkdir()
+    return path
+
+
 def _quote(o, h, l, c, v, day=TODAY):
+    asks = [{"price": round(c * (1 + 0.0005 * (i + 1)), 2), "quantity": 20000, "orders": 3} for i in range(5)]
+    bids = [{"price": round(c * (1 - 0.0005 * (i + 1)), 2), "quantity": 20000, "orders": 3} for i in range(5)]
     return {"ohlc": {"open": o, "high": h, "low": l, "close": 20.0}, "last_price": c, "volume": v,
-            "last_trade_time": f"{day.isoformat()} 15:19:58"}
+            "last_trade_time": f"{day.isoformat()} 15:19:58", "depth": {"buy": bids, "sell": asks}}
 
 
 class _Kite:
@@ -351,8 +358,49 @@ def test_realism_refuses_unbuyable_duplicate_sme_and_weak_picks():
     no_sellers = {**ok, "depth": {"sell": [{"price": 0, "quantity": 0}]}}
     assert eop.realism_refusal("AAA", "MO_strong", no_sellers, BAR, set()) == "no_sellers"
     at_high = (19.6, 20.5, 19.5, 20.5, 100000.0)        # +2.5% and closing on its high, band unknown
-    assert eop.realism_refusal("AAA", "MO_strong", {"ohlc": {"close": 20.0}}, at_high, set()) \
-        == "at_day_high_after_rise"
+    assert eop.realism_refusal("AAA", "MO_strong", {"ohlc": {"close": 20.0}, "depth": ok["depth"]},
+                               at_high, set()) == "at_day_high_after_rise"
+
+
+def test_missing_or_empty_sell_depth_fails_closed_o8_o1():
+    """Oct 8 audit O8-O1: missing or empty depth used to pass the no-sellers guard."""
+    base = {"ohlc": {"close": 20.0}, "upper_circuit_limit": 24.0}
+    assert eop.realism_refusal("AAA", "MR_strong", base, BAR, set()) == "no_depth"
+    assert eop.realism_refusal("AAA", "MR_strong", {**base, "depth": {}}, BAR, set()) == "no_depth"
+    assert eop.realism_refusal("AAA", "MR_strong", {**base, "depth": {"sell": []}}, BAR, set()) == "no_sellers"
+    junk = {**base, "depth": {"sell": [None, {"price": "x", "quantity": 5}, {"price": 20.1, "quantity": 0}]}}
+    assert eop.realism_refusal("AAA", "MR_strong", junk, BAR, set()) == "no_sellers"
+    one = {**base, "depth": {"sell": [{"price": 20.1, "quantity": 1}]}}
+    assert eop.realism_refusal("AAA", "MR_strong", one, BAR, set()) is None
+
+
+def test_walk_asks_fills_only_the_visible_quantity_at_its_average_price():
+    asks = eop.visible_asks({"depth": {"sell": [{"price": 20.2, "quantity": 100},
+                                                {"price": 20.0, "quantity": 50}]}})
+    assert asks == [(20.0, 50), (20.2, 100)]
+    assert eop.walk_asks(asks, 100) == (100, pytest.approx(20.1))
+    assert eop.walk_asks(asks, 500) == (150, pytest.approx((50 * 20.0 + 100 * 20.2) / 150))
+    assert eop.walk_asks([], 10) == (0, None)
+
+
+@pytest.mark.asyncio
+async def test_entry_is_capped_by_visible_asks_and_priced_at_their_average(tmp_path, entry_quotes):
+    cache = _cache(tmp_path)
+    thin = dict(entry_quotes["AAA"])
+    thin["depth"] = {"buy": [{"price": 19.9, "quantity": 400}],
+                     "sell": [{"price": 20.10, "quantity": 120}, {"price": 20.30, "quantity": 80}]}
+    summary = await eop.run_overnight_entry(_Kite({**entry_quotes, "AAA": thin}), cache, now=_at(TODAY, 15, 20))
+    assert summary["fill_contract"] == "visible-asks-v1"
+    (o,) = [o for o in summary["opened"] if o["ticker"] == "AAA"]
+    assert o["planned"] > 200 and o["shares"] == 200 and o["visible_ask_qty"] == 200
+    assert o["entry_price"] == pytest.approx((120 * 20.10 + 80 * 20.30) / 200)   # walked, above the 25 bps model
+    assert o["best_ask"] == 20.10 and o["best_bid"] == 19.9
+    # Fewer than a quarter of the planned shares on offer: refused, not shrunk to dust.
+    dust = dict(thin, depth={"sell": [{"price": 20.10, "quantity": 30}]})
+    summary = await eop.run_overnight_entry(_Kite({**entry_quotes, "AAA": dust}), _cache(_fresh(tmp_path / "b")),
+                                            now=_at(TODAY, 15, 20))
+    (skip,) = [s for s in summary["skipped"] if s["ticker"] == "AAA"]
+    assert skip["reason"] == "thin_asks_below_quarter_of_plan" and skip["visible_ask_qty"] == 30
 
 
 @pytest.mark.asyncio

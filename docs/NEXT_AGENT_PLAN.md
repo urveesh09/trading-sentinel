@@ -5,6 +5,36 @@
 
 
 
+## October 8 (night) — Oct 8 production audit fixes (done, Dev, commit pending, not deployed)
+
+- Problem: the Oct 8 audit reproduced latent defects (F&O peak persistence
+  without futures, inverted bought-put time-stop sign, overnight missing
+  depth fails open), a scorecard wording/lookback issue, the Momentum
+  cohort-pooling limit and agent status timeouts.
+- Files: `fno_exit_rules.py`, `fno_orchestrator.py`, `fno_positions.py`,
+  `config.py`, `edge_overnight_paper.py`, `partner_orchestrator.py`,
+  `momentum_admission_cohorts.py` (new), `agent/agent.py`, tests, research
+  `docs/research/fno/2026-10-08-time-stop-sign/`.
+- Acceptance (met): peak kept on a no-futures tick and arms the lock on the
+  next; bought CE and PE defer/exit symmetrically; live default banks at the
+  time stop; missing/empty/zero depth refused; entry capped at visible asks
+  with walked price; scorecard says "observed"; 30-date window; cohort split
+  with the Oct 6 freeze verifying; status publish skip/streak tests.
+- Config impact: `FNO_TIME_STOP_RESPECTS_PREMIUM` True → False (no `.env`
+  override in Production). No schema migration (`best_premium` exists).
+- Rollout: merge and rebuild. Rollback: revert the commit; to keep the sign
+  fix but restore the deferral set `FNO_TIME_STOP_RESPECTS_PREMIUM=true`
+  (replayed worse).
+- Next:
+  1. Watch the first single-leg F&O trades: `time_stop` exits in profit,
+     `profit_lock`, no `fno_time_stop_deferred_in_profit` lines.
+  2. Overnight 15:20: count `no_depth`, `no_sellers`, `thin_asks_*` refusals
+     and compare walked entry prices with LTP + 25 bps.
+  3. Owner decision pending: the F&O 15% drawdown halt sits ₹10.6k below
+     current paper equity; replays show it can stop the book right before
+     its trend winners. Do not change without the owner.
+  4. Score selective Momentum only on `SELECTIVE_ADMISSION_V1`.
+
 ## October 8 (evening) — owner's expiry stop rule (done, Dev, commit `ab5e3a1`, pushed, not deployed)
 
 - Owner decision: observe 8 more expiries (10 in all). If every one loses,

@@ -14,6 +14,57 @@
 
 
 
+## October 8 (night) — Oct 8 audit fixes: F&O peak and put sign, overnight depth, card wording, Momentum cohorts, status publish (actual behavior, Dev)
+
+- **F&O profit-lock peak without futures (O8-F1).** A new option peak seen on
+  a tick with no futures quote is now stored (`fpos.update_best_premium`,
+  monotonic `MAX`, open rows only). Before, it was computed but dropped, so
+  the lock could not arm from it. Trail state is still only written when a
+  futures quote exists.
+- **Bought-put time-stop sign (O8-F2).** Single-leg positions always buy the
+  option and settle as `(exit - entry) x qty`. The time-stop deferral negated
+  premium P&L for SHORT (bought puts), so it deferred losing puts and cut
+  winning ones. The negation is removed.
+- **Time-stop deferral OFF (`FNO_TIME_STOP_RESPECTS_PREMIUM=False`).** With
+  the sign corrected, the 18 archived sessions replay at −₹5,267 with the
+  deferral and +₹6,968 banking at the time stop (max DD ₹1,991, PF 2.26).
+  The Oct 7 ₹8,411 figure depended on the bug holding three losing puts that
+  recovered. Evidence: `docs/research/fno/2026-10-08-time-stop-sign/`
+  (in-sample development evidence). So at 45 minutes without 0.5 R of
+  underlying progress the trade now closes, profitable or not; the profit
+  lock and trail still manage winners before that.
+- **Drawdown-halt cliff (finding, unchanged).** The F&O paper book halts all
+  entries below 85% of the ₹2.5 L pool (₹212,500); Production equity on
+  Oct 8 was ₹223,087, already at 0.25x size (more than 8% below peak).
+  Replays starting near the line are dominated by it.
+- **Overnight entry fills against visible asks (O8-O1, `visible-asks-v1`).**
+  - Missing depth refuses `no_depth`; empty, zero or malformed asks refuse
+    `no_sellers`.
+  - Shares are capped at the displayed ask quantity, and the price is the
+    walked average ask, never below LTP + 25 bps.
+  - Fewer visible shares than a quarter of the plan refuses
+    `thin_asks_below_quarter_of_plan`.
+  - Each entry keeps `planned`, `visible_ask_qty`, `best_ask`, `best_bid`
+    and `quote_ts`; the summary carries `fill_contract`.
+- **Equal open (audit 3.4).** `open_is_prev_close` is an equality flag only;
+  a discovered open can equal the previous close.
+- **Partner EOD card scorecard (O8-P1).** No retained target/invalidation
+  event now reads "no target/invalidation observed" (not "neither level
+  reached"). The record covers 30 calendar dates including today (was 31).
+- **Momentum allocation cohorts (T6).** `momentum_admission_cohorts.py` runs
+  the unchanged frozen allocation report per admission population
+  (`BASELINE_ADMISSION`, `SELECTIVE_ADMISSION_V1` from 09:00 IST Oct 8). It
+  lives outside the fingerprinted modules, so the Oct 6 freeze still
+  verifies. CLI: `python momentum_admission_cohorts.py --db … --manifest …
+  --output …`.
+- **Agent status publish (O8-A1).** Timeout (2 s connect, 10 s read); a post
+  still in flight makes the next minute skip; failures log `streak` and
+  `last_ok`, with a `recovered` line. Status only; no trading path.
+- Already done by the expiry follow-up (`b7d3f4d`): audit T4 stale OI, T5
+  966 slots, limiter management lane.
+- Not changed: T7 settlement-horizon labels (documented already), C4/C7, R1,
+  T8/T9 historical mismatches.
+
 ## October 8 (evening) — owner's expiry stop rule, tallied in the summary (actual behavior, Dev)
 
 - **The rule.** The owner set it after two losing expiries (Oct 6 NIFTY
@@ -122,6 +173,8 @@ B and C (`expiry-v1`) are unchanged.
     - re-entry gate alone: ₹7,693, drawdown ₹1,991;
     - both features: ₹8,411, drawdown ₹1,991. Without the best trade,
       the result goes from −₹1,784 to +₹1,303.
+    - Superseded Oct 8: these used the inverted put sign; corrected with
+      the deferral off, +₹6,968 (see the Oct 8 night section).
   - Rejected settings:
     - an early lock (0.2–0.25 R) lost money, because exits fell through a
       thin floor between samples;
@@ -198,10 +251,11 @@ B and C (`expiry-v1`) are unchanged.
     +3.6% is PRAENG, the winner the T1 bug never sold.
   - All 8 picks had strength 0.96–1.0, so a stricter strength filter
     (S60) would have changed nothing.
-  - Three exits had open exactly equal to the previous close. NSE sets the
-    open to the previous close when the pre-open auction finds no
-    equilibrium, so those modeled auction exits were not traded prices. Each
-    exit now records `open_is_prev_close` to measure this.
+  - Three exits had open exactly equal to the previous close. That may mean
+    the pre-open auction found no equilibrium price, but a real discovered
+    open can also equal the previous close (Oct 8 audit, NSE pre-open rules).
+    `open_is_prev_close` is an equality flag only; it does not prove the open
+    was untraded.
 - **Overnight realistic-entry guards (`edge_overnight_paper.realism_refusal`, Oct 7 night).**
   - The live-universe replay
     (`docs/research/edge-overnight/2026-10-07-live-universe/`) used Kite

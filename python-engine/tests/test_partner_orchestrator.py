@@ -1157,9 +1157,9 @@ async def test_eod_card_outcomes_and_30_day_record(wired):
     cards, record = await po._todays_card_outcomes(db, "NIFTY", "2026-10-07", 22690.0)
     assert [(c["time"], c["outcome"]) for c in cards] == [
         ("13:11", "invalidated at 13:50 (level 22,655)"),
-        ("14:00", "neither level reached; closed 22,690 (-71 pts vs trigger)"),
+        ("14:00", "no target/invalidation observed; closed 22,690 (-71 pts vs trigger)"),
     ]
-    assert record == "NIFTY advice cards, last 30 days: 3 sent, 1 reached target, 1 invalidated, 1 neither"
+    assert record == "NIFTY advice cards, last 30 days: 3 sent, 1 reached target, 1 invalidated, 1 with no level observed"
 
 
 @pytest.mark.asyncio

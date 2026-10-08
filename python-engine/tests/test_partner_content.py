@@ -138,7 +138,7 @@ def test_eod_shows_each_advice_card_outcome_and_the_record():
     msg = pc.format_eod("2026-10-07", [{
         "name": "NIFTY", "close": 22690.0, "day_low": 22560.0, "day_high": 22700.0, "signals": [],
         "cards": [{"time": "13:11", "direction": "SHORT", "outcome": "invalidated at 13:50 (level 22,655)"}],
-        "card_record": "NIFTY advice cards, last 30 days: 2 sent, 0 reached target, 2 invalidated, 0 neither",
+        "card_record": "NIFTY advice cards, last 30 days: 2 sent, 0 reached target, 2 invalidated, 0 with no level observed",
     }])
     assert "advice card 13:11 SHORT -> invalidated at 13:50" in msg
     assert "last 30 days: 2 sent" in msg and "no ORB signals" not in msg

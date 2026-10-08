@@ -68,6 +68,10 @@ EXIT_LATEST = time(15, 20)
 RANK_DEPTH = 10
 SME_SUFFIXES = ("-SM", "-ST")
 SKIP_KINDS = ("MR_mid",)
+# [O8-O1 2026-10-08] Entries fill against the visible sell depth: missing
+# depth refuses, shares never exceed the displayed ask quantity and the price
+# is the walked average ask (never better than the 25 bps model).
+ENTRY_FILL_CONTRACT = "visible-asks-v1"
 
 
 def prior_session(today_iso: str, db_path: str) -> str:
@@ -113,10 +117,10 @@ def _price_exit(quote: dict, *, today: str, auction: bool, trade_date: str, tick
     # session (with or without a failed attempt) would mislabel a later close,
     # so the split is then left out.
     prior_close = ohlc.get("close")
-    # NSE sets the open to the previous close when the pre-open auction finds
-    # no equilibrium, so such an "open" is not a traded auction price. The
-    # Oct 5-7 fills had 3 of 6 exactly so; record it to measure how often the
-    # modeled auction exit is a placeholder (measurement only).
+    # An open equal to the previous close may be a no-equilibrium pre-open
+    # placeholder, but a discovered open can also equal it, so this is an
+    # equality flag for measurement only, not proof of an untraded open.
+    # The Oct 5-7 fills had 3 of 6 exactly so.
     if _finite_positive(prior_close):
         item["open_is_prev_close"] = float(open_price) == float(prior_close)
     if entry_session_prior and _finite_positive(prior_close):
@@ -346,6 +350,46 @@ def base_symbol(ticker: str) -> str:
     return ticker.split("-")[0]
 
 
+def visible_asks(quote: dict) -> Optional[list[tuple[float, int]]]:
+    """Valid ``(price, quantity)`` sell levels, or ``None`` when depth is absent.
+
+    ``None`` (no depth object or no sell list) is a data gap; ``[]`` means the
+    book was quoted but nobody is selling.
+    """
+    depth = quote.get("depth")
+    sell = depth.get("sell") if isinstance(depth, dict) else None
+    if not isinstance(sell, list):
+        return None
+    asks = []
+    for level in sell:
+        if not isinstance(level, dict):
+            continue
+        price, qty = level.get("price"), level.get("quantity")
+        if _finite_positive(price) and _finite_positive(qty):
+            asks.append((float(price), int(qty)))
+    return sorted(asks)
+
+
+def walk_asks(asks: list[tuple[float, int]], shares: int) -> tuple[int, Optional[float]]:
+    """Shares the visible asks can fill (up to ``shares``) and their average price."""
+    filled, cost = 0, 0.0
+    for price, qty in asks:
+        take = min(qty, shares - filled)
+        if take <= 0:
+            break
+        filled += take
+        cost += take * price
+    return filled, (cost / filled if filled else None)
+
+
+def _best_bid(quote: dict) -> Optional[float]:
+    depth = quote.get("depth")
+    bids = depth.get("buy") if isinstance(depth, dict) else None
+    prices = [float(level["price"]) for level in bids or [] if isinstance(level, dict)
+              and _finite_positive(level.get("price")) and _finite_positive(level.get("quantity"))]
+    return max(prices) if prices else None
+
+
 def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases: set) -> Optional[str]:
     """[EDGE-OVERNIGHT-REALISM 2026-10-07] Why a pick cannot be bought honestly, else ``None``.
 
@@ -366,8 +410,10 @@ def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases
     upper = quote.get("upper_circuit_limit")
     if _finite_positive(upper) and ltp >= float(upper) * (1 - 0.005):
         return "at_upper_circuit"
-    depth_sell = (quote.get("depth") or {}).get("sell") or []
-    if depth_sell and not any(_finite_positive(level.get("quantity")) for level in depth_sell):
+    asks = visible_asks(quote)
+    if asks is None:
+        return "no_depth"
+    if not asks:
         return "no_sellers"
     prev_close = (quote.get("ohlc") or {}).get("close")
     if _finite_positive(prev_close) and ltp >= high * 0.999 and ltp / float(prev_close) - 1 >= 0.019:
@@ -422,8 +468,14 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
             skipped.append({"ticker": pick.ticker, "reason": refusal})
             continue
         ltp, volume = bar[3], bar[4]
-        entry_price = round(ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0), 4)
-        capacity = int(MAX_PARTICIPATION * ltp * volume // entry_price)
+        quote = quotes.get(pick.ticker) or {}
+        asks = visible_asks(quote) or []
+        visible = sum(qty for _price, qty in asks)
+        model_price = ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0)
+        capacity = int(MAX_PARTICIPATION * ltp * volume // model_price)
+        wanted = min(int(pick.shares), capacity, visible)
+        _filled, walked = walk_asks(asks, wanted)
+        entry_price = round(max(model_price, walked or 0.0), 4)
         # [O1 2026-10-06] Oct 6 audit: three picks used Rs 24,364.88 of
         # Rs 24,386.22 and left -Rs 7.59 after their buy charges, because only
         # premium was debited. Each admission now fits premium plus its own
@@ -431,21 +483,26 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         affordable = int(cash // (entry_price * (1 + BUY_COST_BUFFER)))
         while affordable > 0 and entry_price * affordable + buy_charges(entry_price, affordable) > cash:
             affordable -= 1
-        shares = min(int(pick.shares), capacity, affordable)
+        shares = min(wanted, affordable)
         if shares < 1 or shares < MIN_FILL_FRACTION * int(pick.shares):
-            reason = "liquidity" if capacity <= affordable else "cash"
+            reason = ("thin_asks" if visible < min(capacity, affordable)
+                      else "liquidity" if capacity <= affordable else "cash")
             skipped.append({"ticker": pick.ticker, "reason": f"{reason}_below_quarter_of_plan",
-                            "planned": int(pick.shares), "capacity": capacity, "affordable": affordable})
+                            "planned": int(pick.shares), "capacity": capacity, "affordable": affordable,
+                            "visible_ask_qty": visible})
             continue
         charges = buy_charges(entry_price, shares)
         cash -= entry_price * shares + charges
         opened.append({"ticker": pick.ticker, "kind": pick.signal_subtype,
                        "strength": round(float(pick.adjusted_strength), 4), "entry_ltp": ltp,
-                       "entry_price": entry_price, "shares": shares, "buy_charges": charges})
+                       "entry_price": entry_price, "shares": shares, "buy_charges": charges,
+                       "planned": int(pick.shares), "visible_ask_qty": visible,
+                       "best_ask": asks[0][0] if asks else None, "best_bid": _best_bid(quote),
+                       "quote_ts": str(quote.get("timestamp") or quote.get("last_trade_time") or "")})
 
     summary = {"date": today, "phase": "ENTRY", "universe": len(tickers), "quoted": len(bars_today),
                "candidates": len(scan["candidates"]), "opened": opened, "skipped": skipped,
-               "equity": state["equity"], "cash_after": round(cash, 4)}
+               "equity": state["equity"], "cash_after": round(cash, 4), "fill_contract": ENTRY_FILL_CONTRACT}
     with _store(store) as conn:
         if _already_ran(conn, today, "ENTRY") is not None:      # a concurrent run won
             return {**_already_ran(conn, today, "ENTRY"), "repeat": True}

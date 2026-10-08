@@ -12,6 +12,21 @@
 
 
 
+## October 8 (night) — Oct 8 production audit fixes
+
+- [x] O8-F1 peak persistence without futures (`update_best_premium`).
+- [x] O8-F2 bought-put sign; `FNO_TIME_STOP_RESPECTS_PREMIUM=False` from replay.
+- [x] O8-O1 overnight `visible-asks-v1` entry fill contract.
+- [x] O8-P1 scorecard "observed" wording, 30-date window.
+- [x] T6 Momentum cohort report outside the frozen fingerprint; freeze verifies.
+- [x] O8-A1 agent status publish timeout/overlap/streak.
+- [x] Equal-open wording corrected in guide and code comment.
+- [x] Full engine suite (`winvenv python -m pytest tests`): 5,054 pass, 4 skip,
+  0 fail (process hangs at exit after the summary, known host issue).
+  Agent suite: 389 pass.
+- [x] Replays: `docs/research/fno/2026-10-08-time-stop-sign/` (18 archived sessions).
+- [ ] Merge, rebuild, then verify the first F&O single-leg and overnight entry receipts.
+
 ## October 8 (evening) — owner's expiry stop rule
 
 - [x] Rule recorded in the design doc header, the guide and the plan.

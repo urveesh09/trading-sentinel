@@ -1,0 +1,1178 @@
+{
+ "halt_on_0.15": {
+  "DEFER": {
+   "summary": {
+    "closed": 8,
+    "net_pnl": -5267.21,
+    "net_excluding_best_winner": -5684.421,
+    "max_drawdown": 5267.21,
+    "win_rate_pct": 12.5,
+    "profit_factor": 0.0734,
+    "exit_reasons": {
+     "profit_lock": 1,
+     "time_stop": 5,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:30:59.208172+05:30",
+     "direction": "LONG",
+     "exit_reason": "profit_lock",
+     "net_pnl": 417.211
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:30:59.044258+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -143.982
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177
+    }
+   ]
+  },
+  "NO_DEFER": {
+   "summary": {
+    "closed": 11,
+    "net_pnl": 6968.1817,
+    "net_excluding_best_winner": -139.4928,
+    "max_drawdown": 1990.8913,
+    "win_rate_pct": 45.45,
+    "profit_factor": 2.2577,
+    "exit_reasons": {
+     "time_stop": 6,
+     "trail_stop": 3,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:28:25.428061+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": 637.7866
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:12:25.424810+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": 355.5568
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858
+    },
+    {
+     "entry_time": "2026-09-28T13:36:25.445574+05:30",
+     "exit_time": "2026-09-28T14:46:59.931959+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2396.7208
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177
+    }
+   ]
+  },
+  "DEFER_NEEDS_LOCK": {
+   "summary": {
+    "closed": 11,
+    "net_pnl": 6747.6061,
+    "net_excluding_best_winner": -360.0684,
+    "max_drawdown": 1990.8913,
+    "win_rate_pct": 45.45,
+    "profit_factor": 2.2179,
+    "exit_reasons": {
+     "profit_lock": 1,
+     "time_stop": 5,
+     "trail_stop": 3,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:30:59.208172+05:30",
+     "direction": "LONG",
+     "exit_reason": "profit_lock",
+     "net_pnl": 417.211
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:12:25.424810+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": 355.5568
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858
+    },
+    {
+     "entry_time": "2026-09-28T13:36:25.445574+05:30",
+     "exit_time": "2026-09-28T14:46:59.931959+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2396.7208
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177
+    }
+   ]
+  }
+ },
+ "halt_off": {
+  "DEFER": {
+   "summary": {
+    "closed": 11,
+    "net_pnl": 3487.4672,
+    "net_excluding_best_winner": -3620.2073,
+    "max_drawdown": 4170.1716,
+    "win_rate_pct": 27.27,
+    "profit_factor": 1.5766,
+    "exit_reasons": {
+     "profit_lock": 1,
+     "time_stop": 6,
+     "trail_stop": 2,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931
+    },
+    {
+     "entry_time": "2026-09-21T12:15:59.154440+05:30",
+     "exit_time": "2026-09-21T13:03:00.160552+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": -363.8793
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:30:59.208172+05:30",
+     "direction": "LONG",
+     "exit_reason": "profit_lock",
+     "net_pnl": 417.211
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:30:59.044258+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -143.982
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177
+    }
+   ]
+  },
+  "NO_DEFER": {
+   "summary": {
+    "closed": 12,
+    "net_pnl": 6604.3024,
+    "net_excluding_best_winner": -503.3721,
+    "max_drawdown": 1990.8913,
+    "win_rate_pct": 41.67,
+    "profit_factor": 2.1186,
+    "exit_reasons": {
+     "time_stop": 7,
+     "trail_stop": 3,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931
+    },
+    {
+     "entry_time": "2026-09-21T12:15:59.154440+05:30",
+     "exit_time": "2026-09-21T13:03:00.160552+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": -363.8793
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:28:25.428061+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": 637.7866
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:12:25.424810+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": 355.5568
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858
+    },
+    {
+     "entry_time": "2026-09-28T13:36:25.445574+05:30",
+     "exit_time": "2026-09-28T14:46:59.931959+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2396.7208
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177
+    }
+   ]
+  },
+  "DEFER_NEEDS_LOCK": {
+   "summary": {
+    "closed": 12,
+    "net_pnl": 6383.7268,
+    "net_excluding_best_winner": -723.9477,
+    "max_drawdown": 1990.8913,
+    "win_rate_pct": 41.67,
+    "profit_factor": 2.0812,
+    "exit_reasons": {
+     "profit_lock": 1,
+     "time_stop": 6,
+     "trail_stop": 3,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931
+    },
+    {
+     "entry_time": "2026-09-21T12:15:59.154440+05:30",
+     "exit_time": "2026-09-21T13:03:00.160552+05:30",
+     "direction": "LONG",
+     "exit_reason": "time_stop",
+     "net_pnl": -363.8793
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:30:59.208172+05:30",
+     "direction": "LONG",
+     "exit_reason": "profit_lock",
+     "net_pnl": 417.211
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:12:25.424810+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": 355.5568
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "direction": "SHORT",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858
+    },
+    {
+     "entry_time": "2026-09-28T13:36:25.445574+05:30",
+     "exit_time": "2026-09-28T14:46:59.931959+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2396.7208
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "direction": "SHORT",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "direction": "SHORT",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177
+    }
+   ]
+  }
+ },
+ "old_sign_halt_off": {
+  "BASE": {
+   "summary": {
+    "closed": 13,
+    "net_pnl": 5509.2205,
+    "net_excluding_best_winner": -1598.454,
+    "max_drawdown": 3830.7967,
+    "win_rate_pct": 53.85,
+    "profit_factor": 1.8153,
+    "exit_reasons": {
+     "time_stop": 7,
+     "trail_stop": 3,
+     "underlying_stop": 3
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:55:25.459567+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 152.7791,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-21T12:15:59.154440+05:30",
+     "exit_time": "2026-09-21T13:03:00.160552+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -363.8793,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T13:30:59.333512+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -114.7654,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:23:34.409886+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 185.9103,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:12:25.424810+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 355.5568,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T13:07:26.144487+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 56.8228,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T13:36:25.445574+05:30",
+     "exit_time": "2026-09-28T14:46:59.931959+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2396.7208,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-07T14:00:25.251896+05:30",
+     "exit_time": "2026-10-07T14:26:25.365302+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -2369.879,
+     "direction": "SHORT"
+    }
+   ]
+  },
+  "SHIPPED": {
+   "summary": {
+    "closed": 12,
+    "net_pnl": 8411.0759,
+    "net_excluding_best_winner": 1303.4014,
+    "max_drawdown": 1990.8913,
+    "win_rate_pct": 66.67,
+    "profit_factor": 2.9687,
+    "exit_reasons": {
+     "profit_lock": 1,
+     "time_stop": 6,
+     "trail_stop": 3,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:55:25.459567+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 152.7791,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-21T12:15:59.154440+05:30",
+     "exit_time": "2026-09-21T13:03:00.160552+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -363.8793,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:30:59.208172+05:30",
+     "exit_reason": "profit_lock",
+     "net_pnl": 417.211,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:23:34.409886+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 185.9103,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:12:25.424810+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 355.5568,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T13:07:26.144487+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 56.8228,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T13:36:25.445574+05:30",
+     "exit_time": "2026-09-28T14:46:59.931959+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2396.7208,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177,
+     "direction": "SHORT"
+    }
+   ]
+  },
+  "SHIPPED_NO_DEFER": {
+   "summary": {
+    "closed": 12,
+    "net_pnl": 6604.3024,
+    "net_excluding_best_winner": -503.3721,
+    "max_drawdown": 1990.8913,
+    "win_rate_pct": 41.67,
+    "profit_factor": 2.1186,
+    "exit_reasons": {
+     "time_stop": 7,
+     "trail_stop": 3,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-21T12:15:59.154440+05:30",
+     "exit_time": "2026-09-21T13:03:00.160552+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -363.8793,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:28:25.428061+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 637.7866,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:12:25.424810+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 355.5568,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T13:36:25.445574+05:30",
+     "exit_time": "2026-09-28T14:46:59.931959+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2396.7208,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177,
+     "direction": "SHORT"
+    }
+   ]
+  }
+ },
+ "new_sign_halt_off": {
+  "BASE": {
+   "summary": {
+    "closed": 12,
+    "net_pnl": 585.6118,
+    "net_excluding_best_winner": -6522.0627,
+    "max_drawdown": 4702.148,
+    "win_rate_pct": 16.67,
+    "profit_factor": 1.0686,
+    "exit_reasons": {
+     "time_stop": 7,
+     "trail_stop": 2,
+     "underlying_stop": 3
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-21T12:15:59.154440+05:30",
+     "exit_time": "2026-09-21T13:03:00.160552+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -363.8793,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T13:30:59.333512+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -114.7654,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:30:59.044258+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -143.982,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-07T14:00:25.251896+05:30",
+     "exit_time": "2026-10-07T14:26:25.365302+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -2369.879,
+     "direction": "SHORT"
+    }
+   ]
+  },
+  "SHIPPED": {
+   "summary": {
+    "closed": 11,
+    "net_pnl": 3487.4672,
+    "net_excluding_best_winner": -3620.2073,
+    "max_drawdown": 4170.1716,
+    "win_rate_pct": 27.27,
+    "profit_factor": 1.5766,
+    "exit_reasons": {
+     "profit_lock": 1,
+     "time_stop": 6,
+     "trail_stop": 2,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-21T12:15:59.154440+05:30",
+     "exit_time": "2026-09-21T13:03:00.160552+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -363.8793,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:30:59.208172+05:30",
+     "exit_reason": "profit_lock",
+     "net_pnl": 417.211,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:30:59.044258+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -143.982,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177,
+     "direction": "SHORT"
+    }
+   ]
+  },
+  "SHIPPED_NO_DEFER": {
+   "summary": {
+    "closed": 12,
+    "net_pnl": 6604.3024,
+    "net_excluding_best_winner": -503.3721,
+    "max_drawdown": 1990.8913,
+    "win_rate_pct": 41.67,
+    "profit_factor": 2.1186,
+    "exit_reasons": {
+     "time_stop": 7,
+     "trail_stop": 3,
+     "underlying_stop": 2
+    }
+   },
+   "trades": [
+    {
+     "entry_time": "2026-09-10T14:07:25.441169+05:30",
+     "exit_time": "2026-09-10T14:52:25.454767+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -343.516,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-17T12:11:31.253777+05:30",
+     "exit_time": "2026-09-17T12:56:31.998270+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -456.7931,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-21T12:15:59.154440+05:30",
+     "exit_time": "2026-09-21T13:03:00.160552+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -363.8793,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-23T11:35:25.417793+05:30",
+     "exit_time": "2026-09-23T12:28:25.428061+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 637.7866,
+     "direction": "LONG"
+    },
+    {
+     "entry_time": "2026-09-24T11:35:33.887886+05:30",
+     "exit_time": "2026-09-24T12:20:34.238276+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -440.1351,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T10:25:26.463051+05:30",
+     "exit_time": "2026-09-28T11:12:25.424810+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": 355.5568,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T11:55:26.284679+05:30",
+     "exit_time": "2026-09-28T12:42:25.444936+05:30",
+     "exit_reason": "time_stop",
+     "net_pnl": -848.1858,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-28T13:36:25.445574+05:30",
+     "exit_time": "2026-09-28T14:46:59.931959+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2396.7208,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T11:20:25.460802+05:30",
+     "exit_time": "2026-09-30T11:50:25.452389+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1990.8913,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-09-30T14:25:26.196993+05:30",
+     "exit_time": "2026-09-30T14:48:01.905819+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 2010.882,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-01T12:21:26.213735+05:30",
+     "exit_time": "2026-10-01T13:03:56.156757+05:30",
+     "exit_reason": "trail_stop",
+     "net_pnl": 7107.6745,
+     "direction": "SHORT"
+    },
+    {
+     "entry_time": "2026-10-07T13:11:25.729254+05:30",
+     "exit_time": "2026-10-07T13:35:25.731324+05:30",
+     "exit_reason": "underlying_stop",
+     "net_pnl": -1460.9177,
+     "direction": "SHORT"
+    }
+   ]
+  }
+ }
+}
