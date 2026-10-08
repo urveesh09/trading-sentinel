@@ -5,7 +5,7 @@
 
 
 
-## October 8 (late night) — review R2–R6 (done, Dev, commit pending, not deployed)
+## October 8 (late night) — review R2–R6 (done, Dev, commit `fc58da3`, pushed, not deployed)
 
 - Problem: independent review of the Oct 8 fixes: research arms inherited
   the changed default (R2); overnight cash-trim kept the larger order's

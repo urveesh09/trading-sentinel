@@ -12,7 +12,7 @@
 
 
 
-## October 8 (late night) — independent review R2–R6
+## October 8 (late night) — independent review R2–R6 (commit `fc58da3`, Dev, pushed, not deployed)
 
 - [x] R2 research arms explicit; re-run reproduces −₹5,267 / +₹6,968.
 - [x] R3 overnight `visible-asks-v2` (re-quote, 30-min last trade, re-walk).
