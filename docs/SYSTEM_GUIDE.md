@@ -14,6 +14,53 @@
 
 
 
+## October 8 — expiry book after the first SENSEX audit: shadow-v2 (AL, BP), path marks, T4/T5 fixes (actual behavior, Dev, paper only)
+
+Source: Production `docs/2026-10-08-expiry-system-deep-audit.md` (read-only).
+That day was primary −₹2,934.51 (filled +₹508.49, assumed −₹3,443.00) and
+shadows −₹184.19. All 16 fills and fees replayed exactly, and every quote was
+fresh. The losses were strategy outcomes, not data faults. The thresholds of A,
+B and C (`expiry-v1`) are unchanged.
+
+- **Shadow plays `expiry-shadow-v2`** (`SHADOW_PLAYS` = BH, C500, D, AL, BP;
+  no Telegram trade lines; summary only):
+  - **AL** takes A's entries, each under its own ₹2,500 ceiling, trade count
+    and open-position check. Its policy is `replace(POLICIES["A"],
+    lock_gain=0.5)`: `_bank_floor` keeps a banked one-lot position at
+    entry + 0.5 × (peak − entry). With two or more lots it behaves as A.
+  - **BP** takes B's strangle. Its legs have BH's policy (no bank, no trail,
+    flat at 15:38). Before the per-leg loop, `_pair_target` sets
+    `exit_pending="PAIR_TARGET"` on both legs once `liquidation_net` of the
+    pair is at least `BP_TARGET` (0.20) × the premium paid. Only when both legs
+    are open and neither is pending, and only before 15:38.
+  - A day begun under v1 reads `expiry-shadow-v1+expiry-shadow-v2 joined
+    mid-day`.
+- **Path marks:** `liquidation_net(legs, quotes, now)` gives the net of selling
+  every open leg on the fresh visible depth now. Long legs walk the bids; D's
+  sold legs buy back on the asks. Each pays its own order charges, plus what
+  the legs already booked. It is None when any open leg lacks fresh, deep
+  enough depth. `_mark_paths` stores the best and worst mark and the count per
+  entry (`state["marks"]["<play> <entry_ts>"]`). An entry that closes during a
+  tick is marked at its fills. The summary adds a line under each play
+  ("entry HH:MM:SS: best … worst … (n marks), finished …").
+- **T5:** `EXPECTED_SLOTS` = 966. `run_expiry_tick` and the scheduler wrapper
+  run only while `TICK_START <= t < SESSION_END`.
+- **T4, `expiry-context-v1.1`:** OI-based context reads fresh quotes only. It
+  adds `oi_fresh`/`oi_window`, and the text prints "from N/M fresh quotes".
+  `_observe` logs the future's `oi`.
+- **Labels:** `_moment` prints "D entry 14:30:00, read 14:30:10". `SETTLE_AT`
+  is commented as an approximation.
+- **Limiter:** `_fetch` runs inside `kite_client.provider_lane("management")`.
+  The rate and burst are unchanged; `management_burst` bounds starvation of
+  the other lanes.
+- **Replay check:** the retained Oct 8 Production packets replayed through Dev
+  (scratch script, read-only copy of the store). Every primary and v1-shadow
+  result, and the audit's path figures, matched to the paise. AL came to
+  +₹501.63 and BP to +₹786.76. These are in-sample, not evidence.
+- **Unchanged:** `expiry-v1` thresholds, ceilings, freshness limits, fill
+  model, fee snapshots, the outbox, reconcile and D's sizing. Schema: none
+  (the marks live in the day state).
+
 ## October 7 (evening) — F&O profit lock and re-entry confirmation; Oct 7 audit fixes T1–T3 (actual behavior, Dev)
 
 - **F&O single-leg profit lock (`fno_exit_rules.profit_lock_floor`, on by default).**

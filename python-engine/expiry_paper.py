@@ -57,6 +57,12 @@ per strike with the walls, max pain and PCR over the fetched window, and the
 future's OI build-up. Snapshots at the A/C signals and the D and B entry times
 let later expiries test whether the context separates winners from losers.
 
+Every open entry is also marked on each tick at what selling all of it on the
+visible depth would net after fees (``liquidation_net``). The summary prints
+each entry's best and worst mark beside its finish. The marks are not fills,
+and BP's pair target is the only rule that reads one. Shadow plays
+(``SHADOW_VERSION``) run on the same quotes and are listed only in the summary.
+
 Telegram lines go to an outbox in the same transaction as the tick and are
 marked sent when a 2xx acknowledgement arrives (``flush_notices``); flushes
 of one store are serialised, so delivery is at-least-once without concurrent
@@ -67,7 +73,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import closing, contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, time
 import json
 import logging
@@ -94,8 +100,11 @@ AUCTION_START, AUCTION_CLOSE_KNOWN = time(15, 15), time(15, 36)
 B_ENTRY_START, B_ENTRY_END = time(15, 13, 30), time(15, 15)
 FINAL_FLAT = time(15, 38)
 TICK_SEC = 10
+# Ten-second starts from 12:59:00 through 15:39:50: the scheduler's 15:40:00
+# callback starts a fraction of a second after SESSION_END and never runs
+# (Oct 8 audit T5: 925 ticks + 41 skips = 966, not 967).
 EXPECTED_SLOTS = ((SESSION_END.hour - TICK_START.hour) * 3600
-                  + (SESSION_END.minute - TICK_START.minute) * 60) // TICK_SEC + 1
+                  + (SESSION_END.minute - TICK_START.minute) * 60) // TICK_SEC
 CHAIN_WINDOW = 8
 QUOTE_MAX_AGE_SEC, CLOCK_SKEW_SEC = 20.0, 5.0
 MIN_BOX_SAMPLES = 30
@@ -119,8 +128,21 @@ EXERCISE_STT_PCT = 0.0015           # STT on the settlement value of an exercise
 #         (an iron butterfly). NIFTY's 65-unit lot and 50-point step make a
 #         50-point wing risk Rs 3,250 a lot less the credit, so it usually
 #         needs a nearer short strike than SENSEX (20 units, 100 points).
-SHADOW_VERSION = "expiry-shadow-v1"
-MAIN_PLAYS, SHADOW_PLAYS = ("A", "B", "C"), ("BH", "C500", "D")
+#
+# expiry-shadow-v2 adds two plays, frozen on 2026-10-08 after the first SENSEX
+# expiry and scored only on expiries from October 13 (the two expiries already
+# seen are not evidence for them). BH, C500 and D are unchanged.
+#   AL    A whose one-lot position, unable to bank half, keeps half of its peak
+#         gain once it reaches the bank level. Selling half at the bank level
+#         locks half the gain; AL locks the same half as the peak rises. With
+#         two or more lots it is A.
+#   BP    B's strangle managed as one trade: no per-leg bank or trail; both
+#         legs are sold once selling the pair on the visible bids would net
+#         BP_TARGET of the premium paid, after all charges; else sold at 15:38.
+SHADOW_VERSION = "expiry-shadow-v2"
+MAIN_PLAYS, SHADOW_PLAYS = ("A", "B", "C"), ("BH", "C500", "D", "AL", "BP")
+AL_LOCK_GAIN = 0.5                  # fraction of the peak gain a banked one-lot AL keeps
+BP_TARGET = 0.20                    # pair liquidation net, as a fraction of the premium paid
 C500_BUDGET = 500.0
 D_ENTRY_START, D_ENTRY_END = time(14, 30), time(14, 45)
 D_SHORT_STEPS, D_WING_STEPS, D_MAX_LOTS = 2, 1, 4  # widest sold strikes tried first
@@ -137,8 +159,11 @@ D_STT_RESERVE_MOVE = 0.05           # exercise STT reserved on a long wing up to
 # realized volatility share one clock, the 375-minute NSE session year, so their
 # ratio compares like with like. Max pain, walls and PCR cover only the fetched
 # ATM +/- CHAIN_WINDOW strikes, where most same-day OI sits.
-CONTEXT_VERSION = "expiry-context-v1"
-SETTLE_AT = time(15, 35)            # closing-auction end, which sets the settlement price
+CONTEXT_VERSION = "expiry-context-v1.1"     # v1.1 (Oct 8): OI from fresh quotes only, with coverage
+# The horizon of the implied volatility: our approximation of when the
+# settlement price is fixed (the closing auction's end). It is not verified for
+# BFO; IV is not computed after it.
+SETTLE_AT = time(15, 35)
 TRADING_YEAR_SEC = 252 * 375 * 60
 RV_SAMPLE_SEC = 60.0                # index returns sampled at least a minute apart (less tick noise)
 RV_MIN_SEC = 600.0                  # realized volatility needs ten minutes of samples
@@ -154,6 +179,7 @@ class ExitPolicy:
     late: Optional[tuple[time, float]]          # from this time, keep this fraction of a profitable peak
     time_stop: Optional[tuple[int, float]]      # (seconds, peak gain still not reached) closes the leg
     flat_at: time
+    lock_gain: Optional[float] = None           # once banked, a one-lot position keeps this share of its peak gain
 
 
 POLICIES = {
@@ -167,6 +193,8 @@ POLICIES = {
                      late=None, time_stop=None, flat_at=FINAL_FLAT),
 }
 POLICIES["C500"] = POLICIES["C"]
+POLICIES["AL"] = replace(POLICIES["A"], lock_gain=AL_LOCK_GAIN)
+POLICIES["BP"] = POLICIES["BH"]                 # its exits are the pair's (see _pair_target)
 
 _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS expiry_paper_positions (
@@ -528,22 +556,33 @@ def failed_break(state: dict, opt_type: str, spot: Optional[float]) -> bool:
     return spot > box["lo"] + FAIL_BACK_WIDTH * width
 
 
+def _bank_floor(pos: dict, policy: ExitPolicy) -> float:
+    """The stop a banked position keeps: entry x ``bank_stop`` and, for a one-lot
+    position under a ``lock_gain`` policy (AL), that share of its peak gain."""
+    entry = pos["entry_price"]
+    floor = entry * policy.bank_stop if policy.bank_stop is not None else 0.0
+    if policy.lock_gain is not None and pos.get("lots", pos["lots_open"]) == 1:
+        floor = max(floor, entry + policy.lock_gain * (pos["peak"] - entry))
+    return floor
+
+
 def manage_position(pos: dict, policy: ExitPolicy, bid: float, now: datetime,
                     structure_broken: bool = False) -> Optional[tuple[int, str]]:
     """Update peak/stop in ``pos`` and return the planned (lots to sell, reason) or None.
 
     Stops are checked on each observed bid; a gap between checks can fill
     below the stop. A one-lot position cannot bank half: it only raises its
-    stop. Reaching the bank level sets ``bank_pending`` to half the lots; lots
-    the bid depth could not take stay pending and are offered again while the
-    bid holds the bank level (stops, failed breaks and flat time come first).
+    stop (to ``_bank_floor``). Reaching the bank level sets ``bank_pending`` to
+    half the lots; lots the bid depth could not take stay pending and are
+    offered again while the bid holds the bank level (stops, failed breaks and
+    flat time come first).
     """
     entry = pos["entry_price"]
     pos["peak"] = max(pos["peak"], bid)
     peak_gain = pos["peak"] / entry - 1.0
     stop = pos["stop"]
-    if pos["banked"] and policy.bank_stop is not None:
-        stop = max(stop, entry * policy.bank_stop)
+    if pos["banked"]:
+        stop = max(stop, _bank_floor(pos, policy))
     for threshold, keep in policy.trails:
         if peak_gain >= threshold:
             stop = max(stop, pos["peak"] * keep)
@@ -569,8 +608,7 @@ def manage_position(pos: dict, policy: ExitPolicy, bid: float, now: datetime,
         return None
     if not pos["banked"]:
         pos["banked"], pos["bank_pending"] = 1, lots // 2
-        if policy.bank_stop is not None:
-            pos["stop"] = round(max(pos["stop"], entry * policy.bank_stop), 2)
+        pos["stop"] = round(max(pos["stop"], _bank_floor(pos, policy)), 2)
     pending = min(pos.get("bank_pending", 0), lots)
     return (pending, "BANK_HALF") if pending else None
 
@@ -683,6 +721,69 @@ def _try_exit(pos: dict, quote: Optional[Quote], lots: int, reason: str, now: da
     return None
 
 
+def liquidation_net(legs: list[dict], quotes: dict, now: datetime) -> Optional[float]:
+    """Whole-trade net if every open leg were closed now, plus what its legs already booked.
+
+    Bought legs sell into the fresh bids and D's sold legs buy back on the
+    fresh asks, whole quantity, each paying its own order charges. None when
+    any open leg lacks a fresh quote deep enough: a missing price is never
+    read as zero or as the last trade. A mark, never a fill.
+    """
+    total = 0.0
+    for leg in legs:
+        total += leg["net_pnl"] + (leg.get("assumed_pnl") or 0.0)
+        if leg["status"] != "OPEN" or not leg["lots_open"]:
+            continue
+        quote = quotes.get(leg["token"])
+        if quote is None or not quote.fresh(now):
+            return None
+        short = leg.get("side") == "SHORT"
+        filled, price = walk(quote.asks if short else quote.bids, leg["lots_open"], leg["lot_size"])
+        if filled < leg["lots_open"]:
+            return None
+        qty, schedule = leg["lots_open"] * leg["lot_size"], _position_schedule(leg)
+        total += ((leg["entry_price"] - price) * qty - buy_charges(price, qty, schedule)) if short \
+            else ((price - leg["entry_price"]) * qty - sell_charges(price, qty, schedule))
+    return round(total, 2)
+
+
+def _pair_target(pair: list[dict], quotes: dict, now: datetime) -> bool:
+    """BP: both legs open and the pair, sold now on the visible bids, nets BP_TARGET of its premium."""
+    if len(pair) != 2 or any(leg["exit_pending"] or leg["status"] != "OPEN" for leg in pair):
+        return False
+    value = liquidation_net(pair, quotes, now)
+    paid = sum(leg["entry_price"] * leg["lots"] * leg["lot_size"] for leg in pair)
+    return value is not None and value >= BP_TARGET * paid
+
+
+def _mark_paths(conn, state: dict, day: str, underlying: str, quotes: dict, now: datetime,
+                was_open: set[str]) -> None:
+    """Record each open entry's best and worst liquidation mark (record-only, read by no rule).
+
+    An entry is a play's legs bought together (one A or C leg, a B strangle,
+    a D condor), so a pair is marked as one trade at one moment. An entry in
+    ``was_open`` (open when the tick began) that closed this tick is marked at
+    its fills.
+    """
+    entries: dict[str, list[dict]] = {}
+    for leg in _rows(conn, "SELECT * FROM expiry_paper_positions WHERE day=? AND underlying=?", (day, underlying)):
+        entries.setdefault(f"{leg['play']} {leg['entry_ts']}", []).append(leg)
+    marks = state.setdefault("marks", {})
+    for key, legs in entries.items():
+        if key not in was_open and not any(leg["status"] == "OPEN" for leg in legs):
+            continue
+        value = liquidation_net(legs, quotes, now)
+        if value is None:
+            continue
+        mark = marks.setdefault(key, {"n": 0, "best": value, "best_ts": now.isoformat(),
+                                      "worst": value, "worst_ts": now.isoformat()})
+        mark["n"] += 1
+        if value > mark["best"]:
+            mark["best"], mark["best_ts"] = value, now.isoformat()
+        if value < mark["worst"]:
+            mark["worst"], mark["worst_ts"] = value, now.isoformat()
+
+
 # ---------------------------------------------------------------------------
 # chain context: recorded on every tick, read by no rule
 # ---------------------------------------------------------------------------
@@ -754,7 +855,10 @@ def chain_context(state: dict, quoted_chain: dict, spot: Optional[float], step: 
         if "iv" in ctx:
             ctx["iv_rv"] = round(ctx["iv"] / rv, 3)
 
-    oi = {key: q.oi for key, (_, q) in quoted_chain.items() if q.oi is not None}
+    # Only fresh quotes count (Oct 8 audit T4: a stale OI used to reach the walls
+    # and PCR under an OK status); the coverage says how much of the window did.
+    oi = {key: q.oi for key, (_, q) in quoted_chain.items() if q.oi is not None and q.fresh(now)}
+    ctx["oi_fresh"], ctx["oi_window"] = len(oi), len(quoted_chain)
     if oi:
         base = state.setdefault("oi_base", {})
         change = {}
@@ -789,10 +893,17 @@ def _context_text(ctx: dict) -> str:
 
     ratio = f" (x{ctx['iv_rv']:.2f})" if ctx.get("iv_rv") is not None else ""
     straddle = f"{ctx['straddle']:.1f} pts" if ctx.get("straddle") is not None else "n/a"
+    coverage = f" from {ctx['oi_fresh']}/{ctx['oi_window']} fresh quotes" if "oi_window" in ctx else ""
     return (f"IV {pct(ctx.get('iv'))} vs realized {pct(ctx.get('rv'))}{ratio}, straddle {straddle}, "
             f"walls {strike(ctx.get('put_wall'))} PE / {strike(ctx.get('call_wall'))} CE, "
-            f"max pain {strike(ctx.get('max_pain'))}, PCR {ctx.get('pcr') if ctx.get('pcr') is not None else 'n/a'}, "
-            f"future {ctx.get('fut_buildup', 'n/a')}")
+            f"max pain {strike(ctx.get('max_pain'))}, PCR {ctx.get('pcr') if ctx.get('pcr') is not None else 'n/a'}"
+            f"{coverage}, future {ctx.get('fut_buildup', 'n/a')}")
+
+
+def _moment(name: str, at: time, ctx: Optional[dict]) -> str:
+    """A snapshot's label with the time it was actually read (the first tick at or after ``at``)."""
+    label = f"{name.split('_')[0].upper()} entry {at:%H:%M:%S}"
+    return f"{label}, read {datetime.fromisoformat(ctx['ts']):%H:%M:%S}" if ctx else label
 
 
 def context_lines(state: dict, settle: Optional[float]) -> list[str]:
@@ -801,7 +912,7 @@ def context_lines(state: dict, settle: Optional[float]) -> list[str]:
     lines = [f"  context ({state.get('context', CONTEXT_VERSION)}, record-only, no rule uses it):"]
     for moment, at in CONTEXT_MOMENTS.items():
         ctx = snaps.get(moment)
-        lines.append(f"    {at:%H:%M:%S}: " + (_context_text(ctx) if ctx else "not recorded"))
+        lines.append(f"    {_moment(moment, at, ctx)}: " + (_context_text(ctx) if ctx else "not recorded"))
     first = snaps.get("d_entry")
     if settle is not None and first:
         walls = (first.get("put_wall"), first.get("call_wall"))
@@ -809,7 +920,8 @@ def context_lines(state: dict, settle: Optional[float]) -> list[str]:
         pain = f"{abs(settle - first['max_pain']):,.0f} pts" if first.get("max_pain") is not None else "n/a"
         move = f"{abs(settle - first['spot']):,.1f} pts"
         implied = f" against straddle {first['straddle']:.1f}" if first.get("straddle") is not None else ""
-        lines.append(f"    close {settle:,.2f} (our sample) vs {D_ENTRY_START:%H:%M}: inside the walls {inside}, "
+        lines.append(f"    close {settle:,.2f} (our sample) vs {_moment('d_entry', D_ENTRY_START, first)}: "
+                     f"inside the walls {inside}, "
                      f"{pain} from max pain, moved {move}{implied}")
     return lines
 
@@ -910,7 +1022,9 @@ def _load_state(conn, day: str, underlying: str) -> dict:
     contract = state.get("execution", "expiry-exec-v1")
     if not contract.endswith(EXECUTION_VERSION):        # a day begun under an older contract
         state["execution"] = f"{contract}+{EXECUTION_VERSION}"
-    state.setdefault("shadow", f"{SHADOW_VERSION} joined mid-day")
+    shadow = state.setdefault("shadow", f"{SHADOW_VERSION} joined mid-day")
+    if SHADOW_VERSION not in shadow:                    # newer shadow plays join a day already begun
+        state["shadow"] = f"{shadow}+{SHADOW_VERSION} joined mid-day"
     state.setdefault("context", f"{CONTEXT_VERSION} joined mid-day")
     for play in MAIN_PLAYS + SHADOW_PLAYS:
         state["trades"].setdefault(play, 0)
@@ -931,24 +1045,36 @@ def _chain(book, expiry: date, spot: float) -> dict:
 
 
 async def _fetch(kite, underlying: str, exchange: str, contracts: list, future) -> tuple[dict, Optional[dict]]:
-    """One quote batch and, when the client measures it, its limiter/transport timing."""
+    """One quote batch and, when the client measures it, its limiter/transport timing.
+
+    The batch waits in the shared limiter's management lane: the tick manages
+    open exits every 10 s, and on October 8 its p99 limiter wait was 18.3 s
+    behind other modules' reads (max 28.9 s; transport max 0.4 s). The lane
+    changes only the order of admission, never the rate, and its burst bound
+    keeps the other lanes from starving.
+    """
+    from kite_client import provider_lane
+
     request = {SPOT_KEY: INDEX_QUOTE_KEYS[underlying]}
     if future is not None:
         request[FUT_KEY] = f"{exchange}:{future.tradingsymbol}"
     request.update({c.token: f"{exchange}:{c.tradingsymbol}" for c in contracts})
     timed = getattr(kite, "get_quote_by_instruments_with_timing", None)
-    if timed is not None:
-        return await timed(request)
-    return await kite.get_quote_by_instruments(request), None
+    with provider_lane("management"):
+        if timed is not None:
+            return await timed(request)
+        return await kite.get_quote_by_instruments(request), None
 
 
 def _observe(packet, now: datetime) -> tuple[Optional[float], dict]:
-    """A fresh LTP (else None) and the logged packet with its status at decision time."""
+    """A fresh LTP (else None) and the logged packet with its status (and the future's OI) at decision time."""
     if not isinstance(packet, dict):
         return None, {"status": "MISSING"}
     quote = parse_quote(packet)
     status = "NO_PRICE" if quote.ltp is None else quote.age_status(now)
     logged = {"ltp": quote.ltp, "ts": quote.ts.isoformat() if quote.ts else None, "status": status}
+    if quote.oi is not None:
+        logged["oi"] = quote.oi
     return (quote.ltp if status == "FRESH" else None), logged
 
 
@@ -1017,6 +1143,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
     state = _load_state(conn, day, underlying)
     positions = _rows(conn, "SELECT * FROM expiry_paper_positions WHERE day=? AND underlying=? AND status='OPEN'",
                       (day, underlying))
+    was_open = {f"{pos['play']} {pos['entry_ts']}" for pos in positions}
     future = book.front_future(started.date())
     timings = []
 
@@ -1075,7 +1202,13 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
         state["trades"][play] += 1
         return pos
 
-    # 1. manage what is open (D's legs are held to cash settlement)
+    # 1. manage what is open (D's legs are held to cash settlement). BP sells
+    #    both legs together once the pair reaches its target; the latched exit
+    #    is then retried leg by leg like any other.
+    if clock_now < FINAL_FLAT and _pair_target([p for p in positions if p["play"] == "BP"], quotes, now):
+        for pos in positions:
+            if pos["play"] == "BP":
+                pos["exit_pending"] = "PAIR_TARGET"
     for pos in positions:
         if pos["play"] == "D":
             continue
@@ -1083,7 +1216,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
         if pos["exit_pending"]:
             event = _try_exit(pos, quote, pos["lots_open"], pos["exit_pending"], now)
         elif quote is not None and quote.fresh(now) and quote.bid is not None:
-            structure = pos["play"] == "A" and failed_break(state, pos["opt_type"], spot)
+            structure = pos["play"] in ("A", "AL") and failed_break(state, pos["opt_type"], spot)
             action = manage_position(pos, POLICIES[pos["play"]], quote.bid, now, structure_broken=structure)
             event = _try_exit(pos, quote, *action, now) if action else None
         elif clock_now >= POLICIES[pos["play"]].flat_at:
@@ -1102,14 +1235,17 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
         state["signals"].append({"ts": now.isoformat(), "dir": direction, "spot": spot, "fut": fut,
                                  "context": context})
         kind = "CE" if direction == "UP" else "PE"
-        remaining = budget + min(0.0, _realized(conn, day, underlying, "A"))
-        if state["trades"]["A"] >= A_MAX_TRADES:
-            _bump(state, "refusals", "A:MAX_TRADES")
-        elif any(p["play"] == "A" and p["status"] == "OPEN" for p in positions):
-            _bump(state, "refusals", "A:POSITION_OPEN")
-        elif remaining <= 0:
-            _bump(state, "refusals", "A:BUDGET_SPENT")
-        else:
+        for play in ("A", "AL"):                    # AL: A's entries, its own exits and ceiling
+            remaining = budget + min(0.0, _realized(conn, day, underlying, play))
+            if state["trades"][play] >= A_MAX_TRADES:
+                _bump(state, "refusals", f"{play}:MAX_TRADES")
+                continue
+            if any(p["play"] == play and p["status"] == "OPEN" for p in positions):
+                _bump(state, "refusals", f"{play}:POSITION_OPEN")
+                continue
+            if remaining <= 0:
+                _bump(state, "refusals", f"{play}:BUDGET_SPENT")
+                continue
             atm = book.atm_strike(spot)
             step = book.strike_step if kind == "CE" else -book.strike_step
             reason = None
@@ -1123,11 +1259,11 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
                 if not lots:
                     reason = "DEPTH_OR_BUDGET"
                     continue
-                pos = open_position("A", contract, prices[0], lots)
+                pos = open_position(play, contract, prices[0], lots)
                 notify(pos, _buy_text(pos, f"break {direction}, spot {spot:,.1f}, planned stop {pos['stop']:.2f}"))
                 break
             if reason:
-                _bump(state, "refusals", f"A:{reason}")
+                _bump(state, "refusals", f"{play}:{reason}")
         for play, ceiling in (("C", budget), ("C500", C500_BUDGET)):
             if state["trades"][play] >= 1:
                 continue
@@ -1143,8 +1279,8 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
             else:
                 _bump(state, "refusals", f"{play}:DEPTH_OR_BUDGET")
 
-    # 3. B and its shadow BH: the same auction strangle, managed differently
-    for play in ("B", "BH"):
+    # 3. B and its shadows BH and BP: the same auction strangle, managed differently
+    for play in ("B", "BH", "BP"):
         if state["trades"][play] or not B_ENTRY_START <= clock_now < B_ENTRY_END:
             continue
         if spot is None:
@@ -1207,6 +1343,8 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
             else:
                 _bump(state, "refusals", f"D:{reason}")
 
+    # 5. every open entry's liquidation mark, for the summary's path lines
+    _mark_paths(conn, state, day, underlying, quotes, now, was_open)
     _save_state(conn, day, underlying, state, now)
 
 
@@ -1227,12 +1365,17 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
              + (f" ({index_why})" if index_why else "")
              + f", future refused {state.get('stale_fut', 0)}"]
     lines += context_lines(state, _settlement_spot(conn, day, underlying))
-    refusals = state.get("refusals", {})
+    lines.append("  path per entry: best and worst net if sold on the visible depth at a tick, after all fees "
+                 "(marks, not fills); finished = filled + assumed")
+    refusals, marks = state.get("refusals", {}), state.get("marks", {})
+
+    def clock(stamp: str) -> str:
+        return f"{datetime.fromisoformat(stamp):%H:%M:%S}"
 
     def section(plays: tuple[str, ...]) -> tuple[float, float, float]:
         total_filled = total_assumed = total_fees = 0.0
         for play in plays:
-            rows = conn.execute("SELECT symbol, status, side, costs, net_pnl, assumed_pnl, events "
+            rows = conn.execute("SELECT symbol, status, side, costs, net_pnl, assumed_pnl, events, entry_ts "
                                 "FROM expiry_paper_positions WHERE day=? AND underlying=? AND play=?",
                                 (day, underlying, play)).fetchall()
             why = ", ".join(f"{k.split(':', 1)[1]} {v}" for k, v in sorted(refusals.items())
@@ -1256,6 +1399,14 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
                 line += (f", RESERVE BREACH: exercise STT Rs {breach:,.2f} beyond the "
                          f"{D_STT_RESERVE_MOVE:.0%}-move reserve")
             lines.append(line + f" ({detail}{'; auction-window fills unverified' if auction else ''})")
+            for entry_ts in sorted({r["entry_ts"] for r in rows}):
+                mark = marks.get(f"{play} {entry_ts}")
+                if mark is None:
+                    continue
+                finished = sum(r["net_pnl"] + (r["assumed_pnl"] or 0.0) for r in rows if r["entry_ts"] == entry_ts)
+                lines.append(f"    entry {clock(entry_ts)}: best Rs {mark['best']:+,.2f} at {clock(mark['best_ts'])}, "
+                             f"worst Rs {mark['worst']:+,.2f} at {clock(mark['worst_ts'])} ({mark['n']} marks), "
+                             f"finished Rs {finished:+,.2f}")
         return total_filled, total_assumed, total_fees
 
     day_filled, day_assumed, day_fees = section(MAIN_PLAYS)
@@ -1293,7 +1444,7 @@ async def run_expiry_tick(kite, db_path: Optional[str] = None, now: Optional[dat
     started = now or datetime.now(IST)
     if clock is None:
         clock = (lambda: now) if now is not None else (lambda: datetime.now(IST))
-    if not TICK_START <= started.time() <= SESSION_END:
+    if not TICK_START <= started.time() < SESSION_END:
         return
     from fno_underlyings import SPECS, get_instruments_for
 

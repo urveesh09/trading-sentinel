@@ -841,7 +841,7 @@ def register_penny_scheduler_jobs(scheduler):
         if not settings.EXPIRY_PAPER_ENABLED or not _main.kite.access_token:
             return
         now_ist = datetime.now(IST)
-        if not xp.TICK_START <= now_ist.time() <= xp.SESSION_END:
+        if not xp.TICK_START <= now_ist.time() < xp.SESSION_END:
             return
         if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH):
             return

@@ -97,6 +97,54 @@ D details:
   is no borrowing, but it is margin. That is why D stays paper only, with no
   live switch, until the owner decides on margin separately.
 
+## Shadow plays `expiry-shadow-v2` (frozen October 8, scored from October 13)
+
+Built after the first SENSEX expiry audit (Production
+`docs/2026-10-08-expiry-system-deep-audit.md`). Both plays fix a structural
+weakness the audit found, not a number fitted to the day. October 6 and
+October 8 were both seen, so neither day counts for these plays. Their record
+starts with the next expiry after the rebuild. BH, C500 and D carry on
+unchanged. A, B and C stay `expiry-v1`.
+
+| Play | Weakness found | Rule |
+|---|---|---|
+| **AL** | A buys one lot when the ceiling allows only one. One lot cannot bank half, so after a +40% bank the stop only rises to entry × 1.05. On October 8 the first A was +₹974 sellable at 14:22 and finished −₹115.69. | A's entries, sizing, stops and ceiling. Once banked, a one-lot AL keeps half of its peak gain as the stop (entry + 0.5 × (peak − entry)). Selling half at the bank level locks the same half. With two or more lots, AL is A. |
+| **BP** | B manages its legs separately. The winning leg trails while the losing leg decays to no bid and settles at zero. On both expiries B's put was lost in full. October 8: the pair was +₹786.76 sellable at 15:26:10 and finished −₹720.75. | B's strangle (same strikes and entry), managed as one trade. On each tick before 15:38, if both legs sold now on the visible bids would net at least 20% of the premium paid, after every charge, both legs are sold (`PAIR_TARGET`). A leg the bids cannot fill stays latched and is retried. Otherwise both are sold at 15:38, like BH. |
+
+Honesty notes:
+- **The 20% target was chosen after seeing October 8**, where the pair peaked at
+  35%. It answers the owner's goal of small, consistent profit. Any value below
+  35% would have "worked" that day, so the day proves nothing about the number.
+- **A Dev replay of the October 8 packets** (mechanics check only) gave AL
+  +₹501.63 (the first A sold at 125.90 at 14:22:40) and BP +₹786.76. The same
+  replay reproduced every Production result and path mark to the paise. These
+  are in-sample figures, not evidence.
+- **A context gate on D** (sell only when IV/RV is rich) needs no new play.
+  Every D entry records its context, so after enough expiries the gate can be
+  tested on D's own record and frozen as `expiry-context-v2` if it holds.
+
+## October 8 audit corrections (Dev, no strategy change)
+
+- **Slot count (audit T5).** `EXPECTED_SLOTS` is 966 (12:59:00–15:39:50). The
+  tick guards use `< 15:40`.
+- **Stale OI (T4), `expiry-context-v1.1`.** Walls, max pain, PCR and OI change
+  read only fresh quotes. The context records `oi_fresh`/`oi_window`, and the
+  summary prints "from N/M fresh quotes". The future's tick record keeps its OI.
+- **Snapshot clocks.** The summary shows each snapshot's nominal time and the
+  time it was actually read (for example "D entry 14:30:00, read 14:30:10").
+  `SETTLE_AT` 15:35 is documented as our approximation, not a verified BFO
+  settlement rule.
+- **Quote cadence.** On October 8 the tick waited up to 28.9 s for the shared
+  limiter (p99 18.3 s), while transport never exceeded 0.4 s. The tick's batch
+  now waits in the limiter's management lane. That changes only the order of
+  admission: the rate and burst are unchanged, and the lane's burst bound stops
+  other modules from starving.
+- **Whole-trade path.** Each open entry is marked every tick at its
+  liquidation net on the visible depth, after fees (`liquidation_net`). The
+  summary prints each entry's best and worst mark, the mark count, and its
+  finish. Pairs and condors are marked as one trade at one moment. Marks are
+  never fills.
+
 ## Chain context `expiry-context-v1` (record-only, from October 7)
 
 The owner asked whether the option chain, OI, change in OI and current IV can

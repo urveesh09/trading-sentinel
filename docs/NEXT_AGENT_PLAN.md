@@ -5,6 +5,51 @@
 
 
 
+## October 8 — first SENSEX expiry audit follow-up (done, Dev)
+
+- Problem: the owner asked what went wrong and right on October 8, for the
+  fixes, and for better strategies, on the expiry module and report only.
+  The audit found:
+  - strategy losses, not data faults: a one-lot A gave back ₹1,090 from its
+    best mark; B's losing put and C both settled at zero;
+  - a 966 vs 967 slot count;
+  - latent stale OI in the context;
+  - nominal snapshot labels;
+  - a shared-limiter wait tail of up to 28.9 s.
+- Files:
+  - `python-engine/expiry_paper.py`;
+  - `python-engine/scheduler_setup.py` (tick guard);
+  - `python-engine/tests/test_expiry_paper.py`;
+  - the design doc, the guide, this plan, the checklist and the atlas.
+- Acceptance (all met):
+  - 966 slots, and no tick at exactly 15:40;
+  - stale OI is excluded, with coverage recorded;
+  - the batch runs in the management lane and the lane is restored afterwards;
+  - `liquidation_net` walks the depth and returns None on stale, shallow or
+    missing quotes;
+  - AL's lock is half the peak gain for one lot and A's bank for two or more;
+  - AL copies A's entries;
+  - BP sells both legs on the first tick at target, BH is unchanged, and the
+    BP mark equals its fills;
+  - the summary shows the path lines and the "read" times;
+  - the Oct 8 replay reproduces Production exactly.
+- Rollout: merge and rebuild before the next expiry (Tuesday October 13, NIFTY, unless the calendar shifts it). That is the
+  first scored day for AL and BP and the first `expiry-context-v1.1` day. No
+  schema or config change. Rollback: revert; old day states are read as
+  before.
+- Next:
+  1. Watch October 13. Expect the summary to read "ticks N of 966", the
+     coverage "from N/M fresh quotes", and AL/BP rows. Max decision lag
+     should drop if limiter queueing was the cause.
+  2. Confirm the official SENSEX/NIFTY settlement price against our sampled
+     index (still open since October 6).
+  3. Isolated Dev tests from audit item 5 (send failure, a crash between ACK
+     and commit, restart with open legs, an absent final sample) are still to
+     be written.
+  4. After 20 expiries, score `expiry-v1`, v1 shadows and v2 shadows on their
+     own records (AL/BP from October 13). Test an IV/RV gate on D's recorded
+     context; freeze it as `expiry-context-v2` only if it holds.
+
 ## October 7 (evening) — owner-requested profit keeping + Oct 7 audit fixes (done, Dev)
 
 - Source: Production `docs/2026-10-07-production-deep-audit.md` (read-only),

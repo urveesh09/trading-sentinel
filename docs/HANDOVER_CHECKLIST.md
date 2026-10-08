@@ -12,6 +12,32 @@
 
 
 
+## October 8 — first SENSEX expiry audit follow-up (`expiry-shadow-v2`, `expiry-context-v1.1`)
+
+Branch `codex/production-correction-hedge-p0`. Commit identity is recorded in
+the commit that follows this receipt. Status: Dev, pushed, not deployed.
+
+- [x] T5: 966 slots; no tick at exactly 15:40 (tick and scheduler guards).
+- [x] T4: OI context reads fresh quotes only and records `oi_fresh`/`oi_window`.
+- [x] The summary shows each snapshot's nominal and actual read time, and a
+  whole-trade path line per entry.
+- [x] The expiry quote batch waits in the limiter's management lane (rate unchanged).
+- [x] New frozen shadows AL and BP; A/B/C thresholds unchanged.
+- [x] Tests: `test_expiry_paper.py` 45 pass (7 new).
+- [x] Expiry plus scheduler/cron tests: 133 pass.
+- [x] Full Python suite (`.\winvenv\Scripts\python.exe -m pytest tests`):
+  5,043 pass, 4 skip, 0 fail. The process hung at exit after the summary,
+  which is a known host issue.
+- [x] Replay of the retained Oct 8 Production packets: a read-only `docker cp`
+  of `/data/cache.db.expiry-paper.db` into the scratchpad, run through Dev.
+  All A/B/C/BH/C500/D legs and the audit's path marks matched to the paise.
+  AL +₹501.63 and BP +₹786.76 are in-sample only.
+- [x] Atlas regenerated. No schema, config or migration change. No
+  Production edit.
+- [ ] Owner: merge and rebuild before the next expiry (Tuesday Oct 13, NIFTY).
+- [ ] After that expiry: check that the summary shows 966 slots, OI coverage,
+  AL/BP rows, and a lower max decision lag.
+
 ## October 7 (evening) — F&O profit lock + re-entry gate; audit T1–T3
 
 - [x] `tests/test_fno_profit_lock_and_reentry.py` (9 tests):
