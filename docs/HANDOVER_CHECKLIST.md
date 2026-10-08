@@ -12,7 +12,7 @@
 
 
 
-## October 8 (late night, 2) — follow-up review F1–F3
+## October 8 (late night, 2) — follow-up review F1–F3 (commit `1f4321b`, Dev, pushed, not deployed)
 
 - [x] F1 overnight decision clock, cutoff recheck, actual entry time, snapshot TTL.
 - [x] F2 gateway 422 for rejected content; `notice_outbox` classification; overnight outbox.

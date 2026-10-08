@@ -5,7 +5,7 @@
 
 
 
-## October 8 (late night, 2) — follow-up review F1–F3 (done, Dev, commit pending, not deployed)
+## October 8 (late night, 2) — follow-up review F1–F3 (done, Dev, commit `1f4321b`, pushed, not deployed)
 
 - Problem: overnight admission used the pre-scan clock (could enter after
   15:29 and record 15:20) and had no snapshot TTL (F1); two permanently
