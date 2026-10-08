@@ -5,7 +5,7 @@
 
 
 
-## October 8 (night) — Oct 8 production audit fixes (done, Dev, commit pending, not deployed)
+## October 8 (night) — Oct 8 production audit fixes (done, Dev, commit `7f028ed`, pushed, not deployed)
 
 - Problem: the Oct 8 audit reproduced latent defects (F&O peak persistence
   without futures, inverted bought-put time-stop sign, overnight missing

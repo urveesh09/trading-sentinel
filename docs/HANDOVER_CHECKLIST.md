@@ -12,7 +12,7 @@
 
 
 
-## October 8 (night) — Oct 8 production audit fixes
+## October 8 (night) — Oct 8 production audit fixes (commit `7f028ed`, Dev, pushed, not deployed)
 
 - [x] O8-F1 peak persistence without futures (`update_best_premium`).
 - [x] O8-F2 bought-put sign; `FNO_TIME_STOP_RESPECTS_PREMIUM=False` from replay.
