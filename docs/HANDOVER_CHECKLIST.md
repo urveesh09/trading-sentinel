@@ -14,8 +14,8 @@
 
 ## October 8 — first SENSEX expiry audit follow-up (`expiry-shadow-v2`, `expiry-context-v1.1`)
 
-Branch `codex/production-correction-hedge-p0`. Commit identity is recorded in
-the commit that follows this receipt. Status: Dev, pushed, not deployed.
+Commit `b7d3f4d` on `codex/production-correction-hedge-p0` (docs-identity
+follow-up recorded below it). Status: Dev, pushed, not deployed.
 
 - [x] T5: 966 slots; no tick at exactly 15:40 (tick and scheduler guards).
 - [x] T4: OI context reads fresh quotes only and records `oi_fresh`/`oi_window`.

@@ -5,7 +5,7 @@
 
 
 
-## October 8 — first SENSEX expiry audit follow-up (done, Dev)
+## October 8 — first SENSEX expiry audit follow-up (done, Dev, commit `b7d3f4d`, pushed, not deployed)
 
 - Problem: the owner asked what went wrong and right on October 8, for the
   fixes, and for better strategies, on the expiry module and report only.
