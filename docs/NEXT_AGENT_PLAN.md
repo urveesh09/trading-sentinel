@@ -5,7 +5,7 @@
 
 
 
-## October 8 (evening) — owner's expiry stop rule (done, Dev)
+## October 8 (evening) — owner's expiry stop rule (done, Dev, commit `ab5e3a1`, pushed, not deployed)
 
 - Owner decision: observe 8 more expiries (10 in all). If every one loses,
   stop expiry-day F&O. Drop any play or section that keeps losing on its own.
