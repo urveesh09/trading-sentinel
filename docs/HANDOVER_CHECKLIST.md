@@ -12,6 +12,18 @@
 
 
 
+## October 8 (night) — review R1: expiry notices split; refused row stepped over
+
+- [x] `notice_parts` (3,500-character parts, at line ends, nothing dropped)
+  and per-part outbox rows.
+- [x] `flush_notices` steps over a row refused 3 times; it stays pending, and
+  two failures in a row stop the flush.
+- [x] `test_expiry_paper.py`: 49 pass (3 new).
+- [x] Oct 8 replay (read-only copy of the Production store): summary in 2
+  parts, 3,472 + 826 characters.
+- [ ] Owner: merge and rebuild before October 13. On that day, confirm the
+  summary parts arrived on Telegram.
+
 ## October 8 (night) — Oct 8 production audit fixes (commit `7f028ed`, Dev, pushed, not deployed)
 
 - [x] O8-F1 peak persistence without futures (`update_best_premium`).

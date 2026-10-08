@@ -5,6 +5,23 @@
 
 
 
+## October 8 (night) — review R1: expiry summary over Telegram's limit (done, Dev)
+
+- Problem: the expanded summary (4,277 characters) would be refused by
+  Telegram and block every later expiry notice.
+- Files: `python-engine/expiry_paper.py` (`notice_parts`, `_notice`,
+  `flush_notices`), `python-engine/tests/test_expiry_paper.py`, the design
+  doc, the guide and the checklist.
+- Acceptance (met): parts stay within 3,500 characters and are rebuilt with
+  nothing lost; a full day is accepted under the Telegram limit with the
+  prefix; a refused row is stepped over after 3 attempts and stays pending;
+  with the gateway down, the flush stops after two failures; the Oct 8
+  replay splits into 3,472 + 826 characters.
+- Rollout: with the same merge and rebuild before October 13. Rollback:
+  revert; part rows are ordinary outbox rows.
+- Left to the developer agent (outside expiry): the review's R2–R6, the EDGE
+  overnight outbox's same blocking pattern, and per-endpoint Kite budgets.
+
 ## October 8 (night) — Oct 8 production audit fixes (done, Dev, commit `7f028ed`, pushed, not deployed)
 
 - Problem: the Oct 8 audit reproduced latent defects (F&O peak persistence

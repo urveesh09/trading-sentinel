@@ -3,6 +3,7 @@ from contextlib import closing
 from datetime import date, datetime, timedelta
 import json
 import math
+import re
 import sqlite3
 from types import SimpleNamespace
 
@@ -124,6 +125,12 @@ def _positions(db):
 def _notices(db):
     with sqlite3.connect(xp.expiry_db_path(db)) as conn:
         return conn.execute("SELECT key, message, sent_at FROM expiry_paper_notices ORDER BY created_at").fetchall()
+
+
+def _summary(db):
+    """The day summary as one text, its "[part i/n]" parts joined back in order."""
+    rows = sorted((k, m) for k, m, _ in _notices(db) if ":summary" in k)
+    return "\n".join(re.sub(r"^\[part \d+/\d+\] ", "", m) for _, m in rows)
 
 
 def _quote(levels, side="asks", ts=None):
@@ -301,8 +308,7 @@ async def test_simulated_breakout_expiry_runs_all_three_plays_within_the_ceiling
 
     b_exit = json.loads(by_play["B"][0]["events"])[-1]
     assert b_exit["fill_model"] == "AUCTION_WINDOW"
-    summaries = [m for k, m, _ in _notices(db) if k.endswith(":summary")]
-    assert len(summaries) == 1 and "auction-window fills unverified" in summaries[0]
+    assert "auction-window fills unverified" in _summary(db)
     with sqlite3.connect(xp.expiry_db_path(db)) as conn:
         last_tick = conn.execute("SELECT MAX(ts) FROM expiry_paper_ticks").fetchone()[0]
     assert last_tick.startswith("2026-10-06T15:39:50")
@@ -370,7 +376,7 @@ async def test_outage_leaves_unresolved_legs_settled_next_morning(tmp_path):
     assert unresolved and all(r["assumed_pnl"] == pytest.approx(
         -(r["entry_price"] * r["lots_open"] * 65 + r["lots_open"] * xp.order_fee()), abs=0.01) for r in unresolved)
     assert all(-(r["net_pnl"] + r["assumed_pnl"]) <= r["max_loss"] + 0.01 for r in unresolved)
-    assert [k for k, _, _ in _notices(db) if k.endswith(":summary")] == ["2026-10-06:NIFTY:summary"]
+    assert {k.split(":part")[0] for k, _, _ in _notices(db) if ":summary" in k} == {"2026-10-06:NIFTY:summary"}
 
 
 @pytest.mark.asyncio
@@ -513,7 +519,7 @@ async def test_an_expiry_whose_index_never_answers_is_still_recorded(tmp_path):
         ticks = conn.execute("SELECT COUNT(*) FROM expiry_paper_ticks").fetchone()[0]
     assert state["ticks"] == ticks == 217 and state["spot_refusals"] == {"MISSING": 217}
     assert state["box_status"] == "UNUSABLE_0_SAMPLES" and _positions(db) == []
-    (summary,) = [m for k, m, _ in _notices(db) if k.endswith(":summary")]
+    summary = _summary(db)
     assert "ticks 217 of 966 slots" in summary and "index refused 217 (MISSING 217)" in summary
 
 
@@ -599,10 +605,9 @@ async def test_shadow_plays_run_beside_the_main_book_without_telegram_trades(tmp
     assert sum(r["max_loss"] for r in d) <= BUDGET and all(r["status"] == "SETTLED_ASSUMED" for r in d)
     assert -_whole(d) <= sum(r["max_loss"] for r in d)
 
-    messages = [m for _, m, _ in _notices(db)]
-    trades = [m for m in messages if "summary" not in m and not m.startswith("Expiry paper NIFTY 2026")]
+    trades = [m for k, m, _ in _notices(db) if ":summary" not in k]
     assert trades and all(any(f"NIFTY {p}:" in m for p in xp.MAIN_PLAYS) for m in trades)
-    (summary,) = [m for k, m, _ in _notices(db) if k.endswith(":summary")]
+    summary = _summary(db)
     assert "shadow plays (expiry-shadow-v2" in summary and f"sold NIFTY26OCT{atm + out:.0f}CE" in summary
 
 
@@ -714,7 +719,7 @@ async def test_chain_context_is_recorded_and_changes_no_trade(tmp_path):
     assert (snaps["d_entry"]["put_wall"], snaps["d_entry"]["call_wall"]) == (24900.0, 25200.0)
     assert snaps["d_entry"]["rv"] > 0 and snaps["d_entry"]["iv"] > 0
     assert all(s["context"]["status"] == "OK" for s in state["signals"])
-    (summary,) = [m for k, m, _ in _notices(with_oi) if k.endswith(":summary")]
+    summary = _summary(with_oi)
     assert "context (expiry-context-v1.1, record-only" in summary
     assert "walls 24,900 PE / 25,200 CE" in summary and "close 25,060.00 (our sample)" in summary
     assert "inside the walls yes" in summary
@@ -751,7 +756,7 @@ async def test_a_move_beyond_the_reserve_is_recorded_as_a_breach_not_capped_t2(t
     assert len(breaches) == 1                                            # only the ITM wing
     assert -_whole(d) > ceiling                                          # the bound is conditional
     assert -_whole(d) <= ceiling + breaches[0]["stt_beyond_reserve"] + 1.0   # and the excess is reported
-    (summary,) = [m for k, m, _ in _notices(db) if k.endswith(":summary")]
+    summary = _summary(db)
     assert "RESERVE BREACH" in summary
 
 
@@ -847,7 +852,7 @@ async def test_al_takes_a_entries_with_its_own_exits(tmp_path):
     first_al = next(r for r in rows if r["play"] == "AL")
     assert (first_al["symbol"], first_al["entry_ts"], first_al["entry_price"], first_al["lots"]) == \
         (first_a["symbol"], first_a["entry_ts"], first_a["entry_price"], first_a["lots"])
-    assert not [k for k, m, _ in _notices(db) if " AL:" in m and not k.endswith(":summary")]   # summary only
+    assert not [k for k, m, _ in _notices(db) if " AL:" in m and ":summary" not in k]   # summary only
 
 
 @pytest.mark.asyncio
@@ -873,7 +878,7 @@ async def test_bp_sells_the_strangle_as_one_trade_at_its_target(tmp_path):
         state = json.loads(conn.execute("SELECT state FROM expiry_paper_days").fetchone()[0])
     mark = state["marks"][f"BP {bp[0]['entry_ts']}"]
     assert mark["best"] == pytest.approx(_whole(bp)) and mark["best_ts"] == exits[0]["ts"]   # marked at its fills
-    (summary,) = [m for k, m, _ in _notices(db) if k.endswith(":summary")]
+    summary = _summary(db)
     assert "  BP: filled net" in summary and "    entry 15:13:30: best Rs" in summary
     assert "path per entry" in summary and "D ENTRY" not in summary
     assert "D entry 14:30:00, read 14:30:00" in summary
@@ -896,3 +901,69 @@ def test_the_owner_stop_rule_is_tallied_in_every_summary(tmp_path):
             "8 expiries left to observe",
             "  losing expiries / expiries traded, per play (a play that keeps losing is dropped): A 2/2"]
         assert "losing streak 0" in xp.owner_rule_lines(conn, "2026-10-13")[0]    # a day without a loss
+
+
+# --------------------------------------------------------------------------- notice delivery (Oct 8 review R1)
+
+TELEGRAM_LIMIT, GATEWAY_PREFIX = 4096, "\U0001F6A8 [SYSTEM ALERT]\n"
+
+
+def test_long_notices_split_at_line_ends_without_losing_text():
+    lines = [f"  line {i}: " + "x" * 90 for i in range(60)] + ["y" * 8000]        # 5.6k of lines, one 8k line
+    message = "\n".join(lines)
+    parts = xp.notice_parts(message)
+    assert len(parts) > 2 and all(len(p) <= xp.NOTICE_MAX_CHARS for p in parts)
+    assert all(p.startswith(f"[part {i}/{len(parts)}] ") for i, p in enumerate(parts, 1))
+    rebuilt = [re.sub(r"^\[part \d+/\d+\] ", "", p) for p in parts]
+    assert "".join(rebuilt).replace("\n", "") == message.replace("\n", "")       # nothing dropped
+    assert xp.notice_parts("short") == ["short"]
+
+
+@pytest.mark.asyncio
+async def test_a_full_day_summary_fits_telegram_and_each_part_is_acknowledged(tmp_path):
+    db = await _run_day(tmp_path, _Market(_book(), _breakout_day, oi=True))
+    accepted = []
+
+    async def telegram(message):
+        text = GATEWAY_PREFIX + message
+        if len(text.encode("utf-16-le")) // 2 > TELEGRAM_LIMIT:                    # Telegram counts UTF-16 units
+            raise RuntimeError("message is too long")
+        accepted.append(message)
+
+    await xp.flush_notices(telegram, db)
+    assert all(sent for _, _, sent in _notices(db))                               # every part and trade delivered
+    assert "owner rule (2026-10-08)" in _summary(db) and "path per entry" in _summary(db)
+
+
+@pytest.mark.asyncio
+async def test_a_permanently_refused_notice_no_longer_blocks_later_ones(tmp_path):
+    store = str(tmp_path / "x.db")
+    now = _at(TUESDAY, 15, 45)
+    with xp._store(xp.expiry_db_path(store)) as conn:
+        xp._notice(conn, "a-poison", "POISON", now)
+        xp._notice(conn, "b-trade", "SELL 1 lot", now)
+        xp._notice(conn, "c-trade", "BUY 1 lot", now)
+    delivered = []
+
+    async def refuses_poison(message):
+        if message == "POISON":
+            raise RuntimeError("refused")
+        delivered.append(message)
+
+    for _ in range(xp.NOTICE_STEP_OVER_AFTER - 1):                                # in order while it may be transient
+        assert await xp.flush_notices(refuses_poison, store) == 0
+    assert await xp.flush_notices(refuses_poison, store) == 2                     # then stepped over
+    assert delivered == ["SELL 1 lot", "BUY 1 lot"]
+    pending = [(k, sent) for k, _, sent in _notices(store) if sent is None]
+    assert pending == [("a-poison", None)]                                        # kept, still retried
+
+    async def down(message):
+        raise RuntimeError("gateway down")
+
+    with xp._store(xp.expiry_db_path(store)) as conn:
+        xp._notice(conn, "d-trade", "BUY 2 lot", _at(TUESDAY, 15, 46))
+        xp._notice(conn, "e-trade", "SELL 2 lot", _at(TUESDAY, 15, 47))
+    assert await xp.flush_notices(down, store) == 0
+    with closing(sqlite3.connect(xp.expiry_db_path(store))) as conn:
+        attempts = dict(conn.execute("SELECT key, attempts FROM expiry_paper_notices WHERE sent_at IS NULL"))
+    assert attempts == {"a-poison": 4, "d-trade": 1, "e-trade": 0}                # two failures in a row: stop

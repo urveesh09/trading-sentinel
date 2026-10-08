@@ -16,7 +16,8 @@ flat still apply.
 > only for choosing between plays if the book continues. Every day summary
 > prints the tally ("owner rule … expiry N of 10, main book lost X of N,
 > losing streak S" plus each play's losing/traded count;
-> `expiry_paper.owner_rule_lines`).
+> `expiry_paper.owner_rule_lines`). Each main play has its own ₹2,500 daily
+> ceiling, so A, B and C together can lose up to ₹7,500 on one expiry.
 
 **Revised before its first expiry** (an independent review of `f000acb`):
 
@@ -120,7 +121,7 @@ unchanged. A, B and C stay `expiry-v1`.
 
 | Play | Weakness found | Rule |
 |---|---|---|
-| **AL** | A buys one lot when the ceiling allows only one. One lot cannot bank half, so after a +40% bank the stop only rises to entry × 1.05. On October 8 the first A was +₹974 sellable at 14:22 and finished −₹115.69. | A's entries, sizing, stops and ceiling. Once banked, a one-lot AL keeps half of its peak gain as the stop (entry + 0.5 × (peak − entry)). Selling half at the bank level locks the same half. With two or more lots, AL is A. |
+| **AL** | A buys one lot when the ceiling allows only one. One lot cannot bank half, so after a +40% bank the stop only rises to entry × 1.05. On October 8 the first A was +₹974 sellable at 14:22 and finished −₹115.69. | A's entry rules, sizing, stops and ceiling, applied to AL's own open position and budget. After a different exit, AL's later entries can differ from A's; compare matched entry paths for an exit-only view. Once banked, a one-lot AL keeps half of its peak gain as the stop (entry + 0.5 × (peak − entry)). It is a stop, not a sale, so a gap can fill below it. With two or more lots, AL is A. |
 | **BP** | B manages its legs separately. The winning leg trails while the losing leg decays to no bid and settles at zero. On both expiries B's put was lost in full. October 8: the pair was +₹786.76 sellable at 15:26:10 and finished −₹720.75. | B's strangle (same strikes and entry), managed as one trade. On each tick before 15:38, if both legs sold now on the visible bids would net at least 20% of the premium paid, after every charge, both legs are sold (`PAIR_TARGET`). A leg the bids cannot fill stays latched and is retried. Otherwise both are sold at 15:38, like BH. |
 
 Honesty notes:
@@ -156,6 +157,23 @@ Honesty notes:
   summary prints each entry's best and worst mark, the mark count, and its
   finish. Pairs and condors are marked as one trade at one moment. Marks are
   never fills.
+
+## Notice delivery after the October 8 review (R1)
+
+The expanded day summary reached 4,277 characters on the replayed October 8.
+Telegram refuses anything over 4,096 (the gateway adds a prefix and does not
+split), and the outbox then retried that one row forever, ahead of every later
+trade notice. Two fixes:
+
+- **Split into parts.** `notice_parts` splits any notice over 3,500
+  characters at line ends into "[part i/n]" parts. Each part is its own outbox
+  row with its own acknowledgement, so an accepted part is never resent. The
+  replayed October 8 summary is two parts, 3,472 and 826 characters. A single
+  over-long line is cut, never dropped.
+- **No permanent block.** A row that has failed 3 times is stepped over. It
+  stays stored and pending and is retried every flush, so later notices still
+  go out. A second failure straight after a step-over means the transport is
+  down, and the flush stops, keeping order. Delivery stays at-least-once.
 
 ## Chain context `expiry-context-v1` (record-only, from October 7)
 

@@ -14,6 +14,31 @@
 
 
 
+## October 8 (night) — expiry notices split into parts; a refused row no longer blocks (actual behavior, Dev, review R1)
+
+- **Problem (independent review R1, valid).** The expanded day summary was
+  4,277 characters on the replayed Oct 8. Telegram's limit is 4,096; the
+  gateway adds a "🚨 [SYSTEM ALERT]" prefix line and does not split. `flush_notices`
+  broke on the first failure, so that row blocked every later notice across
+  days.
+- **`notice_parts` / `_notice`.** A notice over `NOTICE_MAX_CHARS` (3,500) is
+  split at line ends into "[part i/n]" parts, stored as
+  `<key>:partNNofMM` rows, each acknowledged separately. A notice that fits
+  keeps its key.
+- **`flush_notices`.** A row with `attempts >= NOTICE_STEP_OVER_AFTER` (3) is
+  stepped over, logged as `expiry_paper_notice_stepped_over` with key,
+  attempts and length (no text). It stays pending. A second consecutive
+  failure stops the flush.
+- **Checked.** The Oct 8 replay summary splits into 3,472 + 826 characters.
+  A full simulated day is delivered through a fake sender that enforces
+  Telegram's UTF-16 limit with the gateway prefix. A refused row is stepped
+  over after 3 attempts. With the gateway down, the flush stops after two
+  failures.
+- **Not changed here:** the EDGE overnight outbox has the same break-on-first
+  pattern (not expiry; left to the developer agent). Review R6 (per-endpoint
+  Kite budgets: full quote is 1 request/s versus the shared 3/s limiter)
+  belongs to the shared `kite_client`, also the developer agent's area.
+
 ## October 8 (night) — Oct 8 audit fixes: F&O peak and put sign, overnight depth, card wording, Momentum cohorts, status publish (actual behavior, Dev)
 
 - **F&O profit-lock peak without futures (O8-F1).** A new option peak seen on
@@ -93,8 +118,9 @@ B and C (`expiry-v1`) are unchanged.
 
 - **Shadow plays `expiry-shadow-v2`** (`SHADOW_PLAYS` = BH, C500, D, AL, BP;
   no Telegram trade lines; summary only):
-  - **AL** takes A's entries, each under its own ₹2,500 ceiling, trade count
-    and open-position check. Its policy is `replace(POLICIES["A"],
+  - **AL** uses A's entry rules under its own ₹2,500 ceiling, trade count
+    and open-position check, so its entries can diverge from A's after a
+    different exit. Its lock is a stop and can gap. Its policy is `replace(POLICIES["A"],
     lock_gain=0.5)`: `_bank_floor` keeps a banked one-lot position at
     entry + 0.5 × (peak − entry). With two or more lots it behaves as A.
   - **BP** takes B's strangle. Its legs have BH's policy (no bank, no trail,

@@ -251,9 +251,42 @@ def _store(path: str):
             yield conn
 
 
+# Telegram refuses a message over 4,096 characters, and the gateway adds its
+# own prefix (Oct 8 review R1: the expanded day summary reached 4,277). Longer
+# notices are stored as numbered parts, each its own outbox row and
+# acknowledgement, so an accepted part is never resent after a later one fails.
+NOTICE_MAX_CHARS = 3500
+NOTICE_STEP_OVER_AFTER = 3          # failed attempts after which a row may be stepped over
+
+
+def notice_parts(message: str) -> list[str]:
+    """``message`` as one part, or as "[part i/n]" parts split at line ends, each within NOTICE_MAX_CHARS."""
+    if len(message) <= NOTICE_MAX_CHARS:
+        return [message]
+    room = NOTICE_MAX_CHARS - len("[part 99/99] ")
+    parts, current = [], ""
+    for line in message.split("\n"):
+        while len(line) > room:                     # a line too long for any part is cut, never dropped
+            if current:
+                parts.append(current)
+                current = ""
+            parts.append(line[:room])
+            line = line[room:]
+        if current and len(current) + 1 + len(line) > room:
+            parts.append(current)
+            current = line
+        else:
+            current = f"{current}\n{line}" if current else line
+    if current:
+        parts.append(current)
+    return [f"[part {i}/{len(parts)}] {part}" for i, part in enumerate(parts, 1)]
+
+
 def _notice(conn, key: str, message: str, now: datetime) -> None:
-    conn.execute("INSERT OR IGNORE INTO expiry_paper_notices (key, message, created_at) VALUES (?,?,?)",
-                 (key, message, now.isoformat()))
+    parts = notice_parts(message)
+    keys = [key] if len(parts) == 1 else [f"{key}:part{i:02d}of{len(parts):02d}" for i in range(1, len(parts) + 1)]
+    conn.executemany("INSERT OR IGNORE INTO expiry_paper_notices (key, message, created_at) VALUES (?,?,?)",
+                     [(k, part, now.isoformat()) for k, part in zip(keys, parts)])
 
 
 _FLUSH_LOCKS: dict[str, asyncio.Lock] = {}
@@ -261,19 +294,26 @@ _FLUSH_LOCKS: dict[str, asyncio.Lock] = {}
 
 async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optional[str] = None,
                         now: Optional[datetime] = None) -> int:
-    """Send unsent notices oldest first; ``send`` raises on failure, which stops the flush.
+    """Send unsent notices oldest first; ``send`` raises on failure.
 
     The tick, the flush job and the reconcile all call this; a per-store lock
     keeps two flushes from sending the same row. ``sent_at`` is when the 2xx
     acknowledgement arrived. A crash between that response and the mark sends
     the notice again: at-least-once, never silently dropped.
+
+    A failure normally stops the flush, keeping notices in order. A row that
+    has failed NOTICE_STEP_OVER_AFTER times is stepped over, so one message
+    the gateway keeps refusing cannot hold back later trade notices. It stays
+    stored and pending and is retried on every flush. A second failure in a
+    row after a step-over means the transport itself is down, and the flush
+    stops.
     """
     store = expiry_db_path(db_path or settings.DB_PATH)
     async with _FLUSH_LOCKS.setdefault(store, asyncio.Lock()):
         with _store(store) as conn:
             pending = conn.execute("SELECT key, message, attempts FROM expiry_paper_notices "
                                    "WHERE sent_at IS NULL ORDER BY created_at, key").fetchall()
-        sent = 0
+        sent, stepped = 0, False
         for row in pending:
             try:
                 await send(row["message"])
@@ -284,12 +324,17 @@ async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optiona
                 with _store(store) as conn:
                     conn.execute("UPDATE expiry_paper_notices SET attempts = attempts + 1 WHERE key=?",
                                  (row["key"],))
-                break
+                if stepped or row["attempts"] + 1 < NOTICE_STEP_OVER_AFTER:
+                    break
+                stepped = True
+                logger.warning("expiry_paper_notice_stepped_over key=%s attempts=%d chars=%d",
+                               row["key"], row["attempts"] + 1, len(row["message"]))
+                continue
             acked = now or datetime.now(IST)
             with _store(store) as conn:
                 conn.execute("UPDATE expiry_paper_notices SET sent_at=?, attempts = attempts + 1 WHERE key=?",
                              (acked.isoformat(), row["key"]))
-            sent += 1
+            sent, stepped = sent + 1, False
         return sent
 
 
