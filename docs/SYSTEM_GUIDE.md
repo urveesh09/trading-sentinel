@@ -71,6 +71,18 @@ B and C (`expiry-v1`) are unchanged.
 - **Limiter:** `_fetch` runs inside `kite_client.provider_lane("management")`.
   The rate and burst are unchanged; `management_burst` bounds starvation of
   the other lanes.
+  - Cause found on the Oct 8 packets: 95 ticks waited over 3 s. Nearly all
+    were the first tick of a minute, between 13:00 and 14:30, and none came
+    after 14:30. That matches the per-minute Penny breakout scan
+    (`penny_scan_interval`, 60 s, breakout window to 14:30, normal lane).
+  - Check: the real `RateLimiter` (3/s, burst 1) with 60 queued normal
+    requests gives an expiry wait of 13.78 s in the normal lane and 0.28 s in
+    the management lane.
+  - Owner question (Oct 8): pause Swing or other modules on expiry
+    afternoons? No. The lane removes the contention while Penny keeps
+    running, and pausing would cost Penny its trades. Swing makes no intraday
+    quote calls, so pausing it frees nothing. Revisit only if the first v2
+    expiry still shows waits over 3 s.
 - **Replay check:** the retained Oct 8 Production packets replayed through Dev
   (scratch script, read-only copy of the store). Every primary and v1-shadow
   result, and the audit's path figures, matched to the paise. AL came to
