@@ -5,7 +5,7 @@
 
 
 
-## October 8 (night) — review R1: expiry summary over Telegram's limit (done, Dev)
+## October 8 (night) — review R1: expiry summary over Telegram's limit (done, Dev, commit `c4329bc`, pushed, not deployed)
 
 - Problem: the expanded summary (4,277 characters) would be refused by
   Telegram and block every later expiry notice.
