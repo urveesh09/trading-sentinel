@@ -5,7 +5,7 @@
 
 
 
-## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (done, Dev, commit pending)
+## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (done, Dev, commit `2d658b8`, pushed, not deployed)
 
 - Problem: the owner asked for more profit / less loss. The paper spreads
   outperform the naked options per rupee of risk but stay 1 lot.

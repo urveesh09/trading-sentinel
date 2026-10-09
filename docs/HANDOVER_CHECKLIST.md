@@ -12,7 +12,7 @@
 
 
 
-## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (commit pending, Dev)
+## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (commit `2d658b8`, Dev, pushed, not deployed)
 
 - [x] Shadow module, hourly report line, `/ops/fno-spread-tilt`; 4 tests.
 - [x] Checked read-only on Production data (reconciles to the F&O ledger).
