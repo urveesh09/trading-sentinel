@@ -5,7 +5,7 @@
 
 
 
-## October 9 (evening) — open items closed (done, Dev, commit pending)
+## October 9 (evening) — open items closed (done, Dev, commit `68e965a`, pushed, not deployed)
 
 - Problem: the Oct 9 audit's remaining items: F&O profit-lock floor missed by
   the 90 s sample; gateway 413 for any oversized notify; unexplained

@@ -12,7 +12,7 @@
 
 
 
-## October 9 (evening) — open items closed (commit pending, Dev)
+## October 9 (evening) — open items closed (commit `68e965a`, Dev, pushed, not deployed)
 
 - [x] F&O fast exit ON by default (10 s management only).
 - [x] Gateway notify 64 KB body; best-effort alerts split into parts.
