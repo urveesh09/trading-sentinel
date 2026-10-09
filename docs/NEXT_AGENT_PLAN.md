@@ -5,7 +5,7 @@
 
 
 
-## October 9 — Production audit fixes O9-R1/S1/M1/O1/Q1-Q3/E1 (done, Dev, commit pending)
+## October 9 — Production audit fixes O9-R1/S1/M1/O1/Q1-Q3/E1 (done, Dev, commit `959392a`, pushed, not deployed)
 
 - Problem: a DNS failure on the 11:19 restart left the symbol cache empty
   all afternoon (no retry); Smart held exits, Momentum, Penny and the

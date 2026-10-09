@@ -12,7 +12,7 @@
 
 
 
-## October 9 — Production audit fixes (commit pending, Dev)
+## October 9 — Production audit fixes (commit `959392a`, Dev, pushed, not deployed)
 
 - [x] O9-R1 symbol cache snapshot + 2-min recovery job + `/health` + watchdog.
 - [x] O9-S1 Smart held exits quoted by symbol; `smart_penny` on `/health`.
@@ -26,7 +26,7 @@
   alone (load flake). `test_expiry_paper.py`: 51 pass. `test_oct9_audit_fixes.py`: 14 pass.
 - [x] Oct 8 expiry replay (925 packets) re-run on this code: identical trades,
   summary parts 3,472 + 826.
-- [ ] Deployed: no (owner merges and rebuilds).
+- [ ] Deployed: no (owner merges `codex/production-correction-hedge-p0` and rebuilds the engine).
 
 ## October 8 (late night, 2) — follow-up review F1–F3 (commit `1f4321b`, Dev, pushed, not deployed)
 
