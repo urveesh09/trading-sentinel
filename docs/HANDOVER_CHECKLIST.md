@@ -12,6 +12,20 @@
 
 
 
+## October 9 (evening) — open items closed (commit pending, Dev)
+
+- [x] F&O fast exit ON by default (10 s management only).
+- [x] Gateway notify 64 KB body; best-effort alerts split into parts.
+- [x] Ledger/position gaps explained (receipt doc); no ledger rows changed.
+- [x] Smart prior-day positions exit at the first executable bid (existing book rule + symbol quotes).
+- [x] Engine suite (all files): 5,090 pass, 4 skip, 1 fail —
+  `test_mark_to_market::TestFnoDrMark::test_all_legs_fresh` in the full run
+  only; it passes 3/3 alone with these changes (known order/date-dependent,
+  see the Oct 4 slice). Gateway jest: 484 pass, 18 fail in `db.test.js` /
+  `backlog-reconciliation.test.js` (the same pre-existing Windows baseline);
+  the new split/limit/notify tests pass.
+- [ ] Deployed: no (merge, rebuild engine + gateway).
+
 ## October 9 — Production audit fixes (commit `959392a`, Dev, pushed, not deployed)
 
 - [x] O9-R1 symbol cache snapshot + 2-min recovery job + `/health` + watchdog.

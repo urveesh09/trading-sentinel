@@ -1171,7 +1171,12 @@ class Settings(BaseSettings):
     # serialised with the regular tick by one lock and ship OFF: the replay
     # (docs/2026-10-04-fno-replay-and-speed-slice.md) shows no profit effect at
     # its 60 s data resolution; the value is protection on fast days.
-    FNO_FAST_EXIT_ENABLED:          bool = False
+    # [O9 2026-10-09] Fast exit ON. Oct 9's NIFTY call armed a profit-lock
+    # floor of 123.875 but the next 90 s sample was 115.65: net -22.75
+    # instead of roughly +500. Management only (no entries); one DB read when
+    # flat; ~2 management-lane quotes per 10 s while a leg is open, inside
+    # the 1/s quote budget. Roll back with FNO_FAST_EXIT_ENABLED=false.
+    FNO_FAST_EXIT_ENABLED:          bool = True
     FNO_FAST_EXIT_INTERVAL_SEC:     int  = 10
     FNO_BAR_CLOSE_TRIGGER_ENABLED:  bool = False
     FNO_BAR_CLOSE_DELAY_SEC:        int  = 3

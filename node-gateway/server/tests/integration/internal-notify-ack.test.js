@@ -73,3 +73,26 @@ test('legacy callers keep 200 and the gateway-owned retry', async () => {
   expect(mockSendAlert).toHaveBeenCalledTimes(1);
   expect(mockSendAlertOnce).not.toHaveBeenCalled();
 });
+
+test('best effort: a message over the Telegram limit goes out as numbered parts (O9-M1)', async () => {
+  mockSendAlert.mockResolvedValue(true);
+  const long = Array.from({ length: 300 }, (_, i) => `line ${i}: ${'x'.repeat(40)}`).join('\n');
+  const res = await post({ message: long });
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({ success: true, delivered: true });
+  const sent = mockSendAlert.mock.calls.map(([text]) => text);
+  expect(sent.length).toBeGreaterThan(1);
+  sent.forEach((text, i) => {
+    expect(text.length).toBeLessThanOrEqual(4096);
+    expect(text.startsWith(`[part ${i + 1}/${sent.length}] `)).toBe(true);
+  });
+  const rebuilt = sent.map((t) => t.replace(/^\[part \d+\/\d+\] /, '')).join('\n');
+  expect(rebuilt).toBe(`🚨 [SYSTEM ALERT]\n${long}`);
+});
+
+test('best effort: one failed part reports delivered false (O9-M1)', async () => {
+  mockSendAlert.mockResolvedValueOnce(true).mockResolvedValue(false);
+  const res = await post({ message: 'y'.repeat(9000) });
+  expect(res.body).toEqual({ success: true, delivered: false });
+  expect(mockSendAlert.mock.calls.length).toBeGreaterThan(1);
+});

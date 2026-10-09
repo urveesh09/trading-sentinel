@@ -5,6 +5,25 @@
 
 
 
+## October 9 (evening) — open items closed (done, Dev, commit pending)
+
+- Problem: the Oct 9 audit's remaining items: F&O profit-lock floor missed by
+  the 90 s sample; gateway 413 for any oversized notify; unexplained
+  ledger/position gaps; two Smart positions OPEN.
+- Files: `config.py`, `tests/test_fno_fast_exit.py`, `tests/main_surface_golden.json`,
+  `node-gateway/server/app.js`, `routes/internal.js`, `utils/split-message.js`
+  (new), gateway tests (2 new files, 2 new notify tests),
+  `docs/2026-10-09-ledger-position-reconciliation.md` (new).
+- Acceptance: fast exit registered by default (surface golden lists
+  `fno_fast_exit` 10 s); 30 KB notify accepted and other routes still 413;
+  long best-effort alert sent as parts, each ≤ 4,096 and rebuilt exactly;
+  every ledger gap matched row by row (sums equal the audit deltas).
+- Rollout: merge, rebuild the engine and the gateway. Rollback:
+  `FNO_FAST_EXIT_ENABLED=false`; revert the gateway commit.
+- Next: after deploy, watch `fno_fast_exit` telemetry, `fno_tick_skip
+  reason=fno_pass_in_progress`, and quote `over_documented_limit` on
+  `/ops/provider-budget`.
+
 ## October 9 — Production audit fixes O9-R1/S1/M1/O1/Q1-Q3/E1 (done, Dev, commit `959392a`, pushed, not deployed)
 
 - Problem: a DNS failure on the 11:19 restart left the symbol cache empty

@@ -14,6 +14,36 @@
 
 
 
+## October 9 (evening) — open items closed: F&O fast exit ON, gateway notify parts, ledger gaps explained (actual behavior, Dev)
+
+- **F&O fast exit ON** (`config.FNO_FAST_EXIT_ENABLED=True`). Single-leg
+  management (no entries) runs every 10 s through `run_fno_fast_exit`,
+  serialised with the 90 s tick by the F&O lock. One DB read when flat, and
+  about 2 management-lane quotes per 10 s while a leg is open. Reason: Oct 9's
+  NIFTY call armed a profit-lock floor of 123.875, and the next 90 s sample
+  was 115.65 (net −₹22.75, roughly ₹534 gross below the floor). The Oct 4
+  replay could not show this at 60 s resolution and recommended paper-enabling
+  it. The bar-close entry trigger stays OFF. Roll back with
+  `FNO_FAST_EXIT_ENABLED=false`.
+- **Gateway `/api/internal/notify`.**
+  - It takes bodies up to 64 KB through a route-specific parser registered
+    before the general 10 KB one; other routes keep 10 KB.
+  - `message` is capped at 60,000 characters.
+  - A best-effort (non-`require_delivery`) alert over 4,000 UTF-16 units is
+    sent as "[part i/n]" parts (`utils/split-message.js`), and `delivered` is
+    false if any part failed.
+  - Durable outboxes already split before sending.
+- **Ledger versus positions (audit item 11).** All four gaps are historical
+  and explained row by row in `docs/2026-10-09-ledger-position-reconciliation.md`:
+  - Momentum Jul 20 double close;
+  - Penny AMDIND Aug 31 double close;
+  - EDGE paper/live Jul 1–20 closes from before EDGE wrote `positions` rows.
+  No gap after Sep 1. Ledger left as written.
+- **Smart stuck positions.** No code needed beyond `959392a`: on a new session
+  `step_book` exits any prior-day position at the first executable bid
+  (`SMART_SESSION_DEADLINE`) before rolling the book over. The symbol-key
+  quote makes that bid reachable without the token cache.
+
 ## October 9 — Production audit fixes: lost symbol cache recovery and the paths it broke (actual behavior, Dev)
 
 Source: `Production_Trading-sentinel/docs/2026-10-09-production-deep-audit.md`

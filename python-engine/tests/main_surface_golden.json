@@ -49,6 +49,12 @@
       "trigger": "cron[hour='15', minute='45']"
     },
     {
+      "func": "_run_fno_fast_exit_safe",
+      "id": "fno_fast_exit",
+      "kwargs": [],
+      "trigger": "interval[0:00:10]"
+    },
+    {
       "func": "_run_fno_hourly_report_safe",
       "id": "fno_hourly_report",
       "kwargs": [],

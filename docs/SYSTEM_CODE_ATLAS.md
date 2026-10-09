@@ -2470,7 +2470,7 @@ Local routes: `GET /`
 
 ## `node-gateway/server/routes/internal.js`
 
-Dependencies: `../config`, `../db`, `../middleware/auth`, `../middleware/validate`, `../services/cas-eligibility`, `../services/momentum-execution`, `../services/telegram`, `../utils/market-hours`, `express`, `pino`, `zod`
+Dependencies: `../config`, `../db`, `../middleware/auth`, `../middleware/validate`, `../services/cas-eligibility`, `../services/momentum-execution`, `../services/telegram`, `../utils/market-hours`, `../utils/split-message`, `express`, `pino`, `zod`
 
 Local routes: `POST /notify`, `POST /register-signal`, `POST /momentum-auto-execute`
 
@@ -2564,6 +2564,10 @@ Dependencies: `../config`, `../utils/logger`, `./market-hours`
 Dependencies: none extracted
 
 ## `node-gateway/server/utils/sanitise.js`
+
+Dependencies: none extracted
+
+## `node-gateway/server/utils/split-message.js`
 
 Dependencies: none extracted
 
