@@ -7,6 +7,7 @@ import re
 import sqlite3
 from types import SimpleNamespace
 
+import httpx
 import pytest
 
 import expiry_paper as xp
@@ -950,20 +951,58 @@ async def test_a_permanently_refused_notice_no_longer_blocks_later_ones(tmp_path
             raise RuntimeError("refused")
         delivered.append(message)
 
-    for _ in range(xp.NOTICE_STEP_OVER_AFTER - 1):                                # in order while it may be transient
-        assert await xp.flush_notices(refuses_poison, store) == 0
-    assert await xp.flush_notices(refuses_poison, store) == 2                     # then stepped over
+    import notice_outbox
+    for _ in range(notice_outbox.STEP_OVER_AFTER - 1):                            # unknown cause: in order for a while
+        assert await xp.flush_notices(refuses_poison, store, now=now) == 0
+    assert await xp.flush_notices(refuses_poison, store, now=now) == 2            # then stepped over
     assert delivered == ["SELL 1 lot", "BUY 1 lot"]
     pending = [(k, sent) for k, _, sent in _notices(store) if sent is None]
-    assert pending == [("a-poison", None)]                                        # kept, still retried
+    assert pending == [("a-poison", None)]                                        # kept, retried on a backoff
 
     async def down(message):
-        raise RuntimeError("gateway down")
+        raise httpx.ConnectError("gateway down")
 
     with xp._store(xp.expiry_db_path(store)) as conn:
         xp._notice(conn, "d-trade", "BUY 2 lot", _at(TUESDAY, 15, 46))
         xp._notice(conn, "e-trade", "SELL 2 lot", _at(TUESDAY, 15, 47))
-    assert await xp.flush_notices(down, store) == 0
+    assert await xp.flush_notices(down, store, now=now) == 0                      # poison not yet due; outage stops
     with closing(sqlite3.connect(xp.expiry_db_path(store))) as conn:
         attempts = dict(conn.execute("SELECT key, attempts FROM expiry_paper_notices WHERE sent_at IS NULL"))
-    assert attempts == {"a-poison": 4, "d-trade": 1, "e-trade": 0}                # two failures in a row: stop
+    assert attempts == {"a-poison": 3, "d-trade": 1, "e-trade": 0}
+
+
+def _http_error(status):
+    request = httpx.Request("POST", "http://gateway/api/internal/notify")
+    return httpx.HTTPStatusError("refused", request=request, response=httpx.Response(status, request=request))
+
+
+@pytest.mark.asyncio
+async def test_two_rejected_notices_cannot_block_a_healthy_third(tmp_path):
+    """O9-E1: the Oct 9 audit's probe -- two 422 rows ahead of a healthy one."""
+    store = str(tmp_path / "x.db")
+    now = _at(TUESDAY, 15, 45)
+    with xp._store(xp.expiry_db_path(store)) as conn:
+        xp._notice(conn, "a-bad", "BAD1", now)
+        xp._notice(conn, "b-bad", "BAD2", now)
+        xp._notice(conn, "c-trade", "BUY 1 lot", now)
+    delivered = []
+
+    async def gateway(message):
+        if message.startswith("BAD"):
+            raise _http_error(422)
+        delivered.append(message)
+
+    assert await xp.flush_notices(gateway, store, now=now) == 1                   # first round already delivers
+    assert delivered == ["BUY 1 lot"]
+    with closing(sqlite3.connect(xp.expiry_db_path(store))) as conn:
+        rows = {k: (a, n is not None, e) for k, a, n, e in conn.execute(
+            "SELECT key, attempts, next_attempt_at, last_error FROM expiry_paper_notices WHERE sent_at IS NULL")}
+    assert rows == {"a-bad": (1, True, "content:HTTPStatusError"), "b-bad": (1, True, "content:HTTPStatusError")}
+    assert await xp.flush_notices(gateway, store, now=now) == 0                   # backing off: not resent at once
+
+
+def test_notice_parts_measure_utf16_like_telegram():
+    message = "\n".join(["\U0001F4C8" * 100] * 30)                                # 3,000 emoji = 6,029 UTF-16 units
+    parts = xp.notice_parts(message)
+    assert len(parts) >= 2
+    assert all(len(p.encode("utf-16-le")) // 2 <= xp.NOTICE_MAX_CHARS for p in parts)

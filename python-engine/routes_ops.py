@@ -358,6 +358,21 @@ async def health_check():
             reasons.append("scheduler_not_running")
         if snap.get("halted"):
             reasons.append("circuit_breaker_halted")
+        # [O9-R1 2026-10-09] A connected token and a ticking scheduler did not
+        # mean usable equity data on Oct 9: the symbol->token cache was empty
+        # after the 11:19 restart and every equity scan was a no-op.
+        try:
+            cache_status = dict(_main.kite.instrument_cache_status())
+        except Exception as exc:
+            cache_status = {"usable": False, "error_type": type(exc).__name__}
+        snap["instrument_cache"] = cache_status
+        if not cache_status.get("usable"):
+            reasons.append("instrument_cache_unavailable")
+        try:
+            from penny_smart_shadow import smart_exposure_snapshot
+            snap["smart_penny"] = smart_exposure_snapshot(settings.DB_PATH)
+        except Exception as exc:
+            snap["smart_penny"] = {"status": "UNREADABLE", "error_type": type(exc).__name__}
         try:
             from halt_switch import halt_state
             entry_halted, halt_attribution = halt_state(None)

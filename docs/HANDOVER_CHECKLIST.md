@@ -12,6 +12,22 @@
 
 
 
+## October 9 — Production audit fixes (commit pending, Dev)
+
+- [x] O9-R1 symbol cache snapshot + 2-min recovery job + `/health` + watchdog.
+- [x] O9-S1 Smart held exits quoted by symbol; `smart_penny` on `/health`.
+- [x] O9-M1 Momentum skips on unusable cache; heartbeat bounded; non-2xx logged.
+- [x] O9-O1 overnight symbol fallback; DATA_UNAVAILABLE receipt after the last retry.
+- [x] O9-Q1/Q2/Q3 dispatch gate, instrument-path status counting, 500-key chunks.
+- [x] O9-E1 expiry outbox on `notice_outbox`; UTF-16 part lengths.
+- [x] Engine suite (expiry file run separately): 5,039 pass, 4 skip, 1 fail —
+  `test_s5_provider_lanes::test_without_bulk_waiters_ordering_is_unchanged_from_s2`,
+  a 200/s timing test on the unchanged `RateLimiter`; it passed 6/6 re-runs
+  alone (load flake). `test_expiry_paper.py`: 51 pass. `test_oct9_audit_fixes.py`: 14 pass.
+- [x] Oct 8 expiry replay (925 packets) re-run on this code: identical trades,
+  summary parts 3,472 + 826.
+- [ ] Deployed: no (owner merges and rebuilds).
+
 ## October 8 (late night, 2) — follow-up review F1–F3 (commit `1f4321b`, Dev, pushed, not deployed)
 
 - [x] F1 overnight decision clock, cutoff recheck, actual entry time, snapshot TTL.

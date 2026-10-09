@@ -14,6 +14,64 @@
 
 
 
+## October 9 — Production audit fixes: lost symbol cache recovery and the paths it broke (actual behavior, Dev)
+
+Source: `Production_Trading-sentinel/docs/2026-10-09-production-deep-audit.md`
+and `2026-10-09-expiry-followup-audit.md`. After the 11:19 restart a DNS
+failure left the NSE symbol->token cache empty for the rest of the session:
+Momentum (14 scans, 6,958 "Unknown ticker" rows), Penny, Smart exits (two
+positions OPEN and unpriced past the deadline) and the 15:20 overnight entry
+(0 of 971 quoted, stored as a completed day) were all blind.
+
+- **Symbol cache recovery (O9-R1, `kite_client.py`).**
+  - A provider refresh writes `nse_instrument_cache.json` beside the DB
+    (only when the dump has at least 1,000 symbols).
+  - A failed refresh with an empty cache loads that snapshot if it is at most
+    7 days old and has at least 1,000 symbols (in place, so universes that
+    hold the dict see it).
+  - `ensure_instrument_cache()` runs every 2 min, weekdays 07:00-15:58
+    (`instrument_cache_recovery` job): one provider attempt until today's
+    refresh succeeds, then a no-op.
+  - `instrument_cache_status()` (source PROVIDER/SNAPSHOT/EMPTY, size,
+    usable, failures, last error type) is on `/health` as `instrument_cache`;
+    an unusable cache adds `instrument_cache_unavailable` to
+    `not_trading_reasons` and makes the readiness watchdog page.
+  - Penny's startup cache wait returns at once when the refresh already
+    failed (source EMPTY, failures > 0) instead of stalling 60 s past its
+    own 60 s trigger (95 max-instance skips on Oct 9).
+- **Smart held exits (O9-S1, `penny_smart_shadow.py`).** A held symbol with
+  no token is quoted by `NSE:<SYMBOL>` through `get_quote_by_instruments`;
+  a missing answer stays unavailable (no stale fill). Monitor timeout 2 s ->
+  5 s. `smart_exposure_snapshot()` is on `/health` as `smart_penny`
+  (FLAT/OPEN/ATTENTION with exit_pending, minutes since managed, mark status)
+  so the classic Penny "open 0" cannot hide Smart exposure.
+- **Momentum (O9-M1, `main.py`).** A scan with an unusable cache tries one
+  recovery, else skips with `momentum_screener_skipped
+  reason=instrument_cache_unavailable` (no error rows). The heartbeat groups
+  reasons by family (`exception: Unknown ticker: X` -> `exception: Unknown
+  ticker`), shows the top 12 plus an "other reasons" line, caps the body at
+  3,500 characters, and logs `momentum_heartbeat_rejected status=...` on a
+  non-2xx answer. Entry gates, selective entry, sizing and exits are unchanged.
+- **Overnight entry (O9-O1, `edge_overnight_paper.py`).** Names the cache
+  cannot resolve are quoted by symbol in 500-key chunks. With quotes for
+  fewer than half the universe the scan does not run: no receipt while a
+  later catch-up slot (every 5 min) fits before 15:29, else a
+  `status: DATA_UNAVAILABLE` receipt and the notice "NO ENTRY - quotes
+  unavailable ... Not a no-signal day".
+- **Quote budget (O9-Q1/Q2/Q3, `kite_client.py`).** `QuoteBudget.dispatch_gate()`
+  runs after the shared limiter, right before each `/quote` HTTP call, so
+  sends stay at least `1/rate` apart (`dispatch_gate_waits` in the snapshot).
+  Instrument-keyed non-2xx answers (429 included) are counted. Token requests
+  over 500 are split into 500-key chunks.
+- **Expiry outbox (O9-E1, `expiry_paper.py`).** `flush_notices` uses
+  `notice_outbox` like the overnight book: a 422 steps over at once with
+  backoff, a transport failure stops in order, an unknown failure keeps order
+  for 3 tries. Two new nullable columns on `expiry_paper_notices`
+  (`next_attempt_at`, `last_error`), added on open. `notice_parts` measures
+  UTF-16 units (Telegram's measure). `NOTICE_STEP_OVER_AFTER` is removed.
+- **Not changed:** strategy thresholds, sizing, F&O, the frozen expiry plays,
+  the gateway 10 KB body limit.
+
 ## October 8 (late night, 2) — follow-up review F1–F3: entry clock, outbox classification, quote budget (actual behavior, Dev)
 
 - **Overnight entry `visible-asks-v3` (F1).**

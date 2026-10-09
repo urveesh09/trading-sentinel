@@ -285,10 +285,22 @@ async def monitor_smart_shadow(db_path, kite, *, now):
     # A corrupted/oversized state must not turn into an unbounded provider job.
     if len(tickers) > 3:
         raise ValueError("smart shadow exceeds hard three-position observation bound")
-    tokens = {t: getattr(kite, "instrument_cache", {}).get(t) for t in tickers}
+    tokens = {t: (getattr(kite, "instrument_cache", {}) or {}).get(t) for t in tickers}
     requested = [int(v) for v in tokens.values() if v is not None]
     batch = await kite.get_quote(requested) if requested else {}
     raw = {t: batch.get(int(token), {}) for t, token in tokens.items() if token is not None}
+    # [O9-S1 2026-10-09] Held exits must not depend on the discovery cache.
+    # On Oct 9 the post-restart cache stayed empty, so STEELXIND/TATSILV got
+    # no quote after 11:17 and their session-deadline exits never filled.
+    # A held symbol without a token is quoted by its documented
+    # EXCHANGE:SYMBOL key instead; a missing answer stays unavailable.
+    missing = [t for t, token in tokens.items() if token is None]
+    if missing and hasattr(kite, "get_quote_by_instruments"):
+        keyed = {-(index + 1): f"NSE:{ticker}" for index, ticker in enumerate(missing)}
+        by_symbol = await kite.get_quote_by_instruments(keyed)
+        for key, ticker in zip(keyed, missing):
+            if key in by_symbol:
+                raw[ticker] = by_symbol[key]
     frozen = state["binding"]
     return await observe_smart_shadow(
         db_path,
@@ -300,3 +312,51 @@ async def monitor_smart_shadow(db_path, kite, *, now):
         stock_cap=frozen["stock_cap"],
         max_positions=frozen["max_positions"],
     )
+
+
+def smart_exposure_snapshot(ledger_path, *, now=None):
+    """Read-only view of the independent Smart book for /health.
+
+    The classic Penny open count is a different book; on Oct 9 it read 0
+    while two Smart positions sat OPEN, unpriced and past their deadline.
+    """
+    import sqlite3
+
+    now = (now or datetime.now(IST)).astimezone(IST)
+    path = smart_db_path(ledger_path)
+    if not Path(path).exists():
+        return {"status": "NO_BOOK", "open": 0, "positions": []}
+    with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=2.0) as conn:
+        try:
+            row = conn.execute(
+                "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (SMART_VERSION,)
+            ).fetchone()
+        except sqlite3.OperationalError:
+            row = None
+    if not row:
+        return {"status": "NO_BOOK", "open": 0, "positions": []}
+    state = json.loads(row[0])
+    positions = []
+    for ticker, pos in sorted(state.get("positions", {}).items()):
+        managed = pos.get("managed_at")
+        age = None
+        if managed:
+            age = round((now - datetime.fromisoformat(managed).astimezone(IST)).total_seconds() / 60, 1)
+        positions.append({
+            "ticker": ticker,
+            "exit_pending": pos.get("exit_pending"),
+            "managed_at": managed,
+            "minutes_since_managed": age,
+        })
+    unpriced = state.get("mark_status") == "UNAVAILABLE"
+    stale = any(p["minutes_since_managed"] is None or p["minutes_since_managed"] > 10 for p in positions)
+    pending = any(p["exit_pending"] for p in positions)
+    status = "FLAT" if not positions else ("ATTENTION" if (unpriced or stale or pending) else "OPEN")
+    return {
+        "status": status,
+        "open": len(positions),
+        "mark_status": state.get("mark_status"),
+        "marked_pnl": state.get("marked_pnl"),
+        "book_day": state.get("day"),
+        "positions": positions,
+    }

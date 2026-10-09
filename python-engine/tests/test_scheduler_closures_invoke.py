@@ -191,6 +191,7 @@ async def test_closure_resolves_its_globals_when_called(closure_name, monkeypatc
 # hit Kite or rewrite state, and they were never moved between modules anyway.
 _NOT_INVOKED = {
     "refresh_instrument_cache",
+    "ensure_instrument_cache",
     "clear_intraday_cache",
     "_penny_daily_reset",
     "_scheduler_tick_job",     # writes a heartbeat file; covered by its own test

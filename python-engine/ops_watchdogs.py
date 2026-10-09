@@ -350,7 +350,13 @@ async def _trading_readiness_tick():
         execution = order_readiness()
         execution_blocked = execution["status"] == BLOCKED
         entry_halted, halt_attribution = halt_state(None)
-        ready = armed and scheduler_running and not execution_blocked and not entry_halted
+        # [O9-R1 2026-10-09] Token + scheduler said "ready" all Oct 9 afternoon
+        # while the empty symbol cache made every equity scan a no-op.
+        status_of = getattr(_main.kite, "instrument_cache_status", None)
+        cache = status_of() if callable(status_of) else {"usable": True}
+        cache_ok = bool(cache.get("usable"))
+        ready = (armed and scheduler_running and not execution_blocked
+                 and not entry_halted and cache_ok)
 
         recovered = ready and not _readiness_state["was_ready"]
         _readiness_state["was_ready"] = ready
@@ -381,6 +387,12 @@ async def _trading_readiness_tick():
                 "Kite order authorization is BLOCKED: "
                 + str(execution.get("reason") or "permission/static-IP rejection")
             )
+        if not cache_ok:
+            reasons.append(
+                f"the NSE symbol list is unavailable (size {cache.get('size')}, "
+                f"last error {cache.get('last_error_type') or 'none'}); "
+                "equity scans and Smart exits cannot quote -- recovery retries every 2 min"
+            )
         if entry_halted:
             reasons.append(
                 "global entry halt is active: "
@@ -389,8 +401,8 @@ async def _trading_readiness_tick():
 
         logger.error(
             "trading_readiness_failed armed=%s scheduler_running=%s "
-            "execution_status=%s entry_halted=%s",
-            armed, scheduler_running, execution["status"], entry_halted,
+            "execution_status=%s entry_halted=%s instrument_cache_size=%s",
+            armed, scheduler_running, execution["status"], entry_halted, cache.get("size"),
         )
         await notify_operator(
             "🔴 NOT TRADING — the market is open and the engine cannot trade.\n\n"
