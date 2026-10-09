@@ -5,6 +5,23 @@
 
 
 
+## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (done, Dev, commit pending)
+
+- Problem: the owner asked for more profit / less loss. The paper spreads
+  outperform the naked options per rupee of risk but stay 1 lot.
+- Files: `fno_spread_tilt.py` (new), `fno_hourly_report.py`, `routes_ops.py`,
+  `tests/test_fno_spread_tilt.py` (new, 4), `tests/main_surface_golden.json`
+  (one route).
+- Acceptance (met): pairing by tick and option type; lot cap and never below
+  the actual lots; cash net, not model net; forward/in-sample split; report
+  line; read-only (`can_place_orders: false`).
+- Decision rule (frozen now): after 20 forward paired signals, compare paired
+  net, worst trade and drawdown. The owner decides whether the real book
+  tilts. Not tuned further on seen days.
+- Owner decisions recorded: no re-entry ban after a stop; no early cut of
+  any expiry play (the 10-expiry rule is the decision point); Momentum and
+  EDGE are left as they are unless a genuine improvement appears.
+
 ## October 9 (evening) — open items closed (done, Dev, commit `68e965a`, pushed, not deployed)
 
 - Problem: the Oct 9 audit's remaining items: F&O profit-lock floor missed by

@@ -726,7 +726,7 @@ Engine dependencies: `config`, `fno_risk`
 
 Top-level declarations: `is_in_report_window` (line 35), `_day_signal_stats` (line 39), `build_hourly_report` (line 66)
 
-Engine dependencies: `config`, `performance`
+Engine dependencies: `config`, `fno_spread_tilt`, `performance`
 
 ## `python-engine/fno_instruments.py`
 
@@ -839,6 +839,16 @@ Top-level declarations: `UnderlyingScan` (line 42), `_liquidity_reasons` (line 7
 Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_models`, `fno_underlyings`, `partner_decision_clock`
 
 Related tests: `python-engine/tests/test_fno_signal_scan.py`
+
+## `python-engine/fno_spread_tilt.py`
+
+Frozen F&O shadow ``FNO_SPREAD_TILT_V1``: the single option's risk budget spent on spread lots. [O9 2026-10-09, owner-approved shadow] The paper book opens a naked option and a debit spread on the same directional signal. Since Sep 1 the spread made +₹4,756 over 15 trades (worst −₹851) and the naked options +₹3,080 over 14 (worst −₹3,228), yet every spread was one lot: the drawdown multiplier shrinks it while the naked option keeps its own larger stop budget. The variant asks, per signal where both were opened: what if the naked option's max-loss budget had bought extra spread lots instead? extra lots = floor(naked max loss / spread max loss per lot) variant lots = min(actual spread lots + e
+
+Top-level declarations: `Single` (line 40), `Spread` (line 49), `SignalOutcome` (line 59), `pair_and_score` (line 68), `_summary` (line 91), `_load` (line 108), `spread_tilt_report` (line 133), `report_line` (line 145)
+
+Engine dependencies: `config`
+
+Related tests: `python-engine/tests/test_fno_spread_tilt.py`
 
 ## `python-engine/fno_underlyings.py`
 
@@ -2266,9 +2276,9 @@ Engine dependencies: `config`, `engine_auth`, `market_calendar`, `owner_entry_ha
 
 [ROADMAP-4.1 stage 3, 2026-07-13] Ops, token and circuit-breaker endpoints. Extracted verbatim from main.py. Registered on the app via `app.include_router(router)`, so the route table -- paths, methods, endpoint names, response models -- is byte-identical; the 24-route characterization golden proves it. EVERY business name is reached through `_main` at CALL time, not imported. That is not stylistic. Two independent reasons, both load-bearing: 1. Eight of main's globals are REBOUND at runtime via `global` statements (current_signals, market_regime, momentum_signals_today, last_run, rejected_signals, current_momentum_signals, last_momentum_date, _last_regime_state). `from main import current_s
 
-Top-level declarations: `FnoExitRecoveryRequest` (line 44), `get_fno_exit_intents` (line 54), `post_fno_exit_resolution` (line 63), `OptionalAiStatusPayload` (line 78), `get_momentum_experiment` (line 97), `post_optional_ai_status` (line 140), `get_optional_ai_status` (line 150), `inject_token` (line 159), `get_current_token` (line 207), `invalidate_token` (line 228), `get_ops_metrics` (line 253), `get_provider_budget` (line 271), `get_circuit_breaker` (line 285), `reset_circuit_breaker` (line 293), `health_check` (line 310), `test_momentum_screener` (line 425)
+Top-level declarations: `FnoExitRecoveryRequest` (line 44), `get_fno_spread_tilt` (line 54), `get_fno_exit_intents` (line 62), `post_fno_exit_resolution` (line 71), `OptionalAiStatusPayload` (line 86), `get_momentum_experiment` (line 105), `post_optional_ai_status` (line 148), `get_optional_ai_status` (line 158), `inject_token` (line 167), `get_current_token` (line 215), `invalidate_token` (line 236), `get_ops_metrics` (line 261), `get_provider_budget` (line 279), `get_circuit_breaker` (line 293), `reset_circuit_breaker` (line 301), `health_check` (line 318), `test_momentum_screener` (line 433)
 
-Engine dependencies: `config`, `fno_exit_recovery`, `halt_switch`, `ops_metrics`, `optional_ai_status`, `order_execution_readiness`, `penny_health`, `penny_smart_shadow`, `performance`, `release_identity`, `token_lifecycle`
+Engine dependencies: `config`, `fno_exit_recovery`, `fno_spread_tilt`, `halt_switch`, `ops_metrics`, `optional_ai_status`, `order_execution_readiness`, `penny_health`, `penny_smart_shadow`, `performance`, `release_identity`, `token_lifecycle`
 
 ## `python-engine/routes_penny_experiments.py`
 

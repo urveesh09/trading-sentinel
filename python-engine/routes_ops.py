@@ -50,6 +50,14 @@ class FnoExitRecoveryRequest(BaseModel):
     confirm: str = Field(pattern="^RECONCILE_VERIFIED_BROKER_EXIT$")
 
 
+@router.get("/ops/fno-spread-tilt")
+async def get_fno_spread_tilt(request: Request):
+    """Frozen shadow FNO_SPREAD_TILT_V1 (read-only; never trades)."""
+    _main._check_internal_secret(request, "get_fno_spread_tilt")
+    from fno_spread_tilt import spread_tilt_report
+    return await asyncio.to_thread(spread_tilt_report, settings.DB_PATH)
+
+
 @router.get("/ops/fno-exit-intents")
 async def get_fno_exit_intents(request: Request):
     _main._check_internal_secret(request, "get_fno_exit_intents")

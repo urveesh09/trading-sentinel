@@ -14,6 +14,31 @@
 
 
 
+## October 9 (night) — frozen F&O shadow `FNO_SPREAD_TILT_V1` (actual behavior, Dev)
+
+- **What it is.** `fno_spread_tilt.py`, read-only. For each signal where the
+  paper book opened both a naked option and a debit spread (entries within
+  120 s, matching option type), the variant drops the naked option and spends
+  its max-loss budget on extra spread lots, capped at `FNO_DR_MAX_LOTS` (3).
+  Formula: lots = min(actual + floor(naked max loss / spread max loss per lot), 3);
+  variant net = spread cash net per lot × lots. Signals with one vehicle keep
+  their actual result. It never trades or changes the real book.
+- **Why.** Since Sep 1 the spread made +₹4,756 over 15 trades (worst −₹851)
+  and naked options +₹3,080 over 14 (worst −₹3,228). Every spread was 1 lot,
+  because the drawdown multiplier shrinks it (unchanged; it is a safety limit).
+  The owner approved testing the tilt as a shadow and refused loss-reaction
+  rules such as a re-entry ban.
+- **Scoring.** Forward only, from signals on 2026-10-12. Earlier pairs are
+  shown as in-sample context and never used to qualify it. Context on
+  Production (read-only):
+  - 22 lifetime pairs: actual −₹9,240 vs variant −₹5,109, worst trade
+    −₹4,088 vs −₹6,061;
+  - 10 pairs since Sep 1: +₹1,934 vs +₹6,300.
+  The lifetime signal total reconciles to the F&O ledger (−₹26,369.94).
+- **Where.** One line in the F&O hourly report; `GET /ops/fno-spread-tilt`
+  (internal secret). Approximations: scaling realised net per lot overcounts
+  flat brokerage (against the variant); three-lot depth is assumed.
+
 ## October 9 (evening) — open items closed: F&O fast exit ON, gateway notify parts, ledger gaps explained (actual behavior, Dev)
 
 - **F&O fast exit ON** (`config.FNO_FAST_EXIT_ENABLED=True`). Single-leg

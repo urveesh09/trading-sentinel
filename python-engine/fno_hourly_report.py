@@ -128,4 +128,10 @@ async def build_hourly_report(
             "WARNING: zero evaluations so far -- check fno_orchestrator_tick "
             "breadcrumbs (dead engine != quiet market)."
         )
+    # Frozen shadow scored beside the real book (fno_spread_tilt.py); never trades.
+    try:
+        from fno_spread_tilt import report_line, spread_tilt_report
+        lines.append(report_line(spread_tilt_report(db_path)))
+    except Exception as exc:                          # a shadow must never break the report
+        logger.warning("fno_spread_tilt_report_failed err=%s", type(exc).__name__)
     return "\n".join(lines)

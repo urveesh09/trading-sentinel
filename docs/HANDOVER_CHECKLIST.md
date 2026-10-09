@@ -12,6 +12,13 @@
 
 
 
+## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (commit pending, Dev)
+
+- [x] Shadow module, hourly report line, `/ops/fno-spread-tilt`; 4 tests.
+- [x] Checked read-only on Production data (reconciles to the F&O ledger).
+- [x] F&O/routes/ops/surface tests: 607 pass.
+- [ ] Deployed: no.
+
 ## October 9 (evening) — open items closed (commit `68e965a`, Dev, pushed, not deployed)
 
 - [x] F&O fast exit ON by default (10 s management only).

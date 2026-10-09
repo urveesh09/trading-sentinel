@@ -553,6 +553,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_fno_spread_tilt",
+      "methods": [
+        "GET"
+      ],
+      "path": "/ops/fno-spread-tilt",
+      "response_model": null
+    },
+    {
       "endpoint": "get_ops_metrics",
       "methods": [
         "GET"
