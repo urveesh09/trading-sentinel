@@ -14,6 +14,119 @@
 
 
 
+## October 9 (night) — frozen F&O shadow `FNO_SPREAD_TILT_V1` (actual behavior, Dev)
+
+- **What it is.** `fno_spread_tilt.py`, read-only. For each signal where the
+  paper book opened both a naked option and a debit spread (entries within
+  120 s, matching option type), the variant drops the naked option and spends
+  its max-loss budget on extra spread lots, capped at `FNO_DR_MAX_LOTS` (3).
+  Formula: lots = min(actual + floor(naked max loss / spread max loss per lot), 3);
+  variant net = spread cash net per lot × lots. Signals with one vehicle keep
+  their actual result. It never trades or changes the real book.
+- **Why.** Since Sep 1 the spread made +₹4,756 over 15 trades (worst −₹851)
+  and naked options +₹3,080 over 14 (worst −₹3,228). Every spread was 1 lot,
+  because the drawdown multiplier shrinks it (unchanged; it is a safety limit).
+  The owner approved testing the tilt as a shadow and refused loss-reaction
+  rules such as a re-entry ban.
+- **Scoring.** Forward only, from signals on 2026-10-12. Earlier pairs are
+  shown as in-sample context and never used to qualify it. Context on
+  Production (read-only):
+  - 22 lifetime pairs: actual −₹9,240 vs variant −₹5,109, worst trade
+    −₹4,088 vs −₹6,061;
+  - 10 pairs since Sep 1: +₹1,934 vs +₹6,300.
+  The lifetime signal total reconciles to the F&O ledger (−₹26,369.94).
+- **Where.** One line in the F&O hourly report; `GET /ops/fno-spread-tilt`
+  (internal secret). Approximations: scaling realised net per lot overcounts
+  flat brokerage (against the variant); three-lot depth is assumed.
+
+## October 9 (evening) — open items closed: F&O fast exit ON, gateway notify parts, ledger gaps explained (actual behavior, Dev)
+
+- **F&O fast exit ON** (`config.FNO_FAST_EXIT_ENABLED=True`). Single-leg
+  management (no entries) runs every 10 s through `run_fno_fast_exit`,
+  serialised with the 90 s tick by the F&O lock. One DB read when flat, and
+  about 2 management-lane quotes per 10 s while a leg is open. Reason: Oct 9's
+  NIFTY call armed a profit-lock floor of 123.875, and the next 90 s sample
+  was 115.65 (net −₹22.75, roughly ₹534 gross below the floor). The Oct 4
+  replay could not show this at 60 s resolution and recommended paper-enabling
+  it. The bar-close entry trigger stays OFF. Roll back with
+  `FNO_FAST_EXIT_ENABLED=false`.
+- **Gateway `/api/internal/notify`.**
+  - It takes bodies up to 64 KB through a route-specific parser registered
+    before the general 10 KB one; other routes keep 10 KB.
+  - `message` is capped at 60,000 characters.
+  - A best-effort (non-`require_delivery`) alert over 4,000 UTF-16 units is
+    sent as "[part i/n]" parts (`utils/split-message.js`), and `delivered` is
+    false if any part failed.
+  - Durable outboxes already split before sending.
+- **Ledger versus positions (audit item 11).** All four gaps are historical
+  and explained row by row in `docs/2026-10-09-ledger-position-reconciliation.md`:
+  - Momentum Jul 20 double close;
+  - Penny AMDIND Aug 31 double close;
+  - EDGE paper/live Jul 1–20 closes from before EDGE wrote `positions` rows.
+  No gap after Sep 1. Ledger left as written.
+- **Smart stuck positions.** No code needed beyond `959392a`: on a new session
+  `step_book` exits any prior-day position at the first executable bid
+  (`SMART_SESSION_DEADLINE`) before rolling the book over. The symbol-key
+  quote makes that bid reachable without the token cache.
+
+## October 9 — Production audit fixes: lost symbol cache recovery and the paths it broke (actual behavior, Dev)
+
+Source: `Production_Trading-sentinel/docs/2026-10-09-production-deep-audit.md`
+and `2026-10-09-expiry-followup-audit.md`. After the 11:19 restart a DNS
+failure left the NSE symbol->token cache empty for the rest of the session:
+Momentum (14 scans, 6,958 "Unknown ticker" rows), Penny, Smart exits (two
+positions OPEN and unpriced past the deadline) and the 15:20 overnight entry
+(0 of 971 quoted, stored as a completed day) were all blind.
+
+- **Symbol cache recovery (O9-R1, `kite_client.py`).**
+  - A provider refresh writes `nse_instrument_cache.json` beside the DB
+    (only when the dump has at least 1,000 symbols).
+  - A failed refresh with an empty cache loads that snapshot if it is at most
+    7 days old and has at least 1,000 symbols (in place, so universes that
+    hold the dict see it).
+  - `ensure_instrument_cache()` runs every 2 min, weekdays 07:00-15:58
+    (`instrument_cache_recovery` job): one provider attempt until today's
+    refresh succeeds, then a no-op.
+  - `instrument_cache_status()` (source PROVIDER/SNAPSHOT/EMPTY, size,
+    usable, failures, last error type) is on `/health` as `instrument_cache`;
+    an unusable cache adds `instrument_cache_unavailable` to
+    `not_trading_reasons` and makes the readiness watchdog page.
+  - Penny's startup cache wait returns at once when the refresh already
+    failed (source EMPTY, failures > 0) instead of stalling 60 s past its
+    own 60 s trigger (95 max-instance skips on Oct 9).
+- **Smart held exits (O9-S1, `penny_smart_shadow.py`).** A held symbol with
+  no token is quoted by `NSE:<SYMBOL>` through `get_quote_by_instruments`;
+  a missing answer stays unavailable (no stale fill). Monitor timeout 2 s ->
+  5 s. `smart_exposure_snapshot()` is on `/health` as `smart_penny`
+  (FLAT/OPEN/ATTENTION with exit_pending, minutes since managed, mark status)
+  so the classic Penny "open 0" cannot hide Smart exposure.
+- **Momentum (O9-M1, `main.py`).** A scan with an unusable cache tries one
+  recovery, else skips with `momentum_screener_skipped
+  reason=instrument_cache_unavailable` (no error rows). The heartbeat groups
+  reasons by family (`exception: Unknown ticker: X` -> `exception: Unknown
+  ticker`), shows the top 12 plus an "other reasons" line, caps the body at
+  3,500 characters, and logs `momentum_heartbeat_rejected status=...` on a
+  non-2xx answer. Entry gates, selective entry, sizing and exits are unchanged.
+- **Overnight entry (O9-O1, `edge_overnight_paper.py`).** Names the cache
+  cannot resolve are quoted by symbol in 500-key chunks. With quotes for
+  fewer than half the universe the scan does not run: no receipt while a
+  later catch-up slot (every 5 min) fits before 15:29, else a
+  `status: DATA_UNAVAILABLE` receipt and the notice "NO ENTRY - quotes
+  unavailable ... Not a no-signal day".
+- **Quote budget (O9-Q1/Q2/Q3, `kite_client.py`).** `QuoteBudget.dispatch_gate()`
+  runs after the shared limiter, right before each `/quote` HTTP call, so
+  sends stay at least `1/rate` apart (`dispatch_gate_waits` in the snapshot).
+  Instrument-keyed non-2xx answers (429 included) are counted. Token requests
+  over 500 are split into 500-key chunks.
+- **Expiry outbox (O9-E1, `expiry_paper.py`).** `flush_notices` uses
+  `notice_outbox` like the overnight book: a 422 steps over at once with
+  backoff, a transport failure stops in order, an unknown failure keeps order
+  for 3 tries. Two new nullable columns on `expiry_paper_notices`
+  (`next_attempt_at`, `last_error`), added on open. `notice_parts` measures
+  UTF-16 units (Telegram's measure). `NOTICE_STEP_OVER_AFTER` is removed.
+- **Not changed:** strategy thresholds, sizing, F&O, the frozen expiry plays,
+  the gateway 10 KB body limit.
+
 ## October 8 (late night, 2) — follow-up review F1–F3: entry clock, outbox classification, quote budget (actual behavior, Dev)
 
 - **Overnight entry `visible-asks-v3` (F1).**

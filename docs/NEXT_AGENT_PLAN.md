@@ -5,6 +5,78 @@
 
 
 
+## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (done, Dev, commit `2d658b8`, pushed, not deployed)
+
+- Problem: the owner asked for more profit / less loss. The paper spreads
+  outperform the naked options per rupee of risk but stay 1 lot.
+- Files: `fno_spread_tilt.py` (new), `fno_hourly_report.py`, `routes_ops.py`,
+  `tests/test_fno_spread_tilt.py` (new, 4), `tests/main_surface_golden.json`
+  (one route).
+- Acceptance (met): pairing by tick and option type; lot cap and never below
+  the actual lots; cash net, not model net; forward/in-sample split; report
+  line; read-only (`can_place_orders: false`).
+- Decision rule (frozen now): after 20 forward paired signals, compare paired
+  net, worst trade and drawdown. The owner decides whether the real book
+  tilts. Not tuned further on seen days.
+- Owner decisions recorded: no re-entry ban after a stop; no early cut of
+  any expiry play (the 10-expiry rule is the decision point); Momentum and
+  EDGE are left as they are unless a genuine improvement appears.
+
+## October 9 (evening) — open items closed (done, Dev, commit `68e965a`, pushed, not deployed)
+
+- Problem: the Oct 9 audit's remaining items: F&O profit-lock floor missed by
+  the 90 s sample; gateway 413 for any oversized notify; unexplained
+  ledger/position gaps; two Smart positions OPEN.
+- Files: `config.py`, `tests/test_fno_fast_exit.py`, `tests/main_surface_golden.json`,
+  `node-gateway/server/app.js`, `routes/internal.js`, `utils/split-message.js`
+  (new), gateway tests (2 new files, 2 new notify tests),
+  `docs/2026-10-09-ledger-position-reconciliation.md` (new).
+- Acceptance: fast exit registered by default (surface golden lists
+  `fno_fast_exit` 10 s); 30 KB notify accepted and other routes still 413;
+  long best-effort alert sent as parts, each ≤ 4,096 and rebuilt exactly;
+  every ledger gap matched row by row (sums equal the audit deltas).
+- Rollout: merge, rebuild the engine and the gateway. Rollback:
+  `FNO_FAST_EXIT_ENABLED=false`; revert the gateway commit.
+- Next: after deploy, watch `fno_fast_exit` telemetry, `fno_tick_skip
+  reason=fno_pass_in_progress`, and quote `over_documented_limit` on
+  `/ops/provider-budget`.
+
+## October 9 — Production audit fixes O9-R1/S1/M1/O1/Q1-Q3/E1 (done, Dev, commit `959392a`, pushed, not deployed)
+
+- Problem: a DNS failure on the 11:19 restart left the symbol cache empty
+  all afternoon (no retry); Smart held exits, Momentum, Penny and the
+  overnight entry went blind; Momentum heartbeats hit HTTP 413; quote sends
+  could bunch past 1/s; instrument-keyed 429s were uncounted; >500-token
+  requests were unchunked; two bad expiry notices could block a healthy one.
+- Files: `kite_client.py`, `main.py`, `ops_watchdogs.py`, `routes_ops.py`,
+  `penny_smart_shadow.py`, `penny_scanner.py`, `edge_overnight_paper.py`, `expiry_paper.py`,
+  tests `test_oct9_audit_fixes.py` (new, 14), `test_expiry_paper.py`,
+  `test_penny_cron_gating.py`, `test_scheduler_closures_invoke.py`.
+- Acceptance (met in Dev tests): restart + DNS failure loads the snapshot and
+  the recovery job restores a provider refresh, then no-ops; no snapshot ->
+  unusable and the watchdog pages; Smart held symbols quoted by symbol with
+  an empty cache; 497 unknown tickers give one family line under 10 KB and
+  a 413 is logged; overnight with no quotes retries at 15:25 then records
+  DATA_UNAVAILABLE; 1,100 symbols quoted in 500/500/100; a delayed shared
+  limiter no longer lets two sends fall within 1/rate; 429 on the instrument
+  path counted; 971 tokens chunked; two 422 expiry notices do not block a
+  healthy third in the first round; Penny skips at once after a failed
+  refresh. The 13 tests written first all fail on the old code.
+- Config/migration: no new setting; new file `/data/nse_instrument_cache.json`;
+  two nullable columns on `expiry_paper_notices`; new scheduler job
+  `instrument_cache_recovery`.
+- Rollout: merge, rebuild the engine. Rollback: revert (the snapshot file
+  and columns are inert to the old code).
+- Next:
+  1. After deploy, check `/health.instrument_cache` (source PROVIDER, size
+     ~9k) and that the snapshot file exists after 08:00.
+  2. Two Smart positions (STEELXIND, TATSILV) are still OPEN in Production;
+     they will be quoted by symbol and their pending deadline exits retried
+     at the next session's first executable bid. Watch `smart_penny` on /health.
+  3. `/ops/provider-budget`: quote `over_documented_limit` should be 0.
+  4. Still open: gateway-side 413 handling for other senders; historical
+     position-store mismatches (O9 #11); C4/C7 deferred items.
+
 ## October 8 (late night, 2) — follow-up review F1–F3 (done, Dev, commit `1f4321b`, pushed, not deployed)
 
 - Problem: overnight admission used the pre-scan clock (could enter after

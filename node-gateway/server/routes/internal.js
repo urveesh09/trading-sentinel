@@ -13,9 +13,10 @@ const { stampSessionPhaseForSignal } = require('../utils/market-hours');
 const config = require('../config');
 const { entrySessionVerdict } = require('../services/cas-eligibility');
 const { executeMomentum } = require('../services/momentum-execution');
+const { splitMessage } = require('../utils/split-message');
 
 const notifySchema = z.object({
-  message: z.string().min(1),
+  message: z.string().min(1).max(60000),
   require_delivery: z.boolean().optional()
 });
 
@@ -51,7 +52,13 @@ router.post('/notify', requireInternalSecret, validate(notifySchema, 'body'), as
         success: false, delivered: false, rejected: Boolean(result.rejected), telegram_status: result.status ?? null,
       });
     }
-    const delivered = await telegram.sendAlert(text);
+    // [O9-M1 2026-10-09] Best-effort alerts over Telegram's limit go out as
+    // numbered parts instead of one message Telegram would refuse. (Durable
+    // outboxes split before sending and use require_delivery above.)
+    let delivered = true;
+    for (const part of splitMessage(text)) {
+      delivered = (await telegram.sendAlert(part)) && delivered;
+    }
     res.json({ success: true, delivered });
   } catch (err) {
     next(err);

@@ -35,6 +35,11 @@ if (config.TELEGRAM_MODE === 'webhook' && config.TELEGRAM_WEBHOOK_PATH) {
 }
 
 // 4. Body Parser for Standard APIs
+// [O9-M1 2026-10-09] Internal notify takes up to 64 KB (secret-protected,
+// engine only): oversized operator reports were refused with HTTP 413 before
+// the route could split them into Telegram-sized parts. Registered first so
+// the general 10 KB parser skips the already-parsed body.
+app.use('/api/internal/notify', express.json({ limit: '64kb' }));
 app.use(express.json({ limit: '10kb' }));
 
 // 5. Secure Session Management (SQLite Persistent)

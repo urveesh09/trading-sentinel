@@ -175,6 +175,15 @@ trade notice. Two fixes:
   go out. A second failure straight after a step-over means the transport is
   down, and the flush stops, keeping order. Delivery stays at-least-once.
 
+**Superseded on October 9 (audit O9-E1).** The audit showed that two bad rows
+in a row still looked like "gateway down" forever. `flush_notices` now uses
+`notice_outbox`, like the overnight book. A 422 (Telegram refused this
+message) is stepped over at once and retried on a backoff from 1 minute up to
+30 minutes. A network failure or any other HTTP status stops the round in
+order. An unknown failure keeps order for 3 tries, then backs off. Any number
+of bad rows can no longer block a healthy one. Part lengths are measured in
+UTF-16 units, Telegram's own measure, so emoji count double.
+
 ## Chain context `expiry-context-v1` (record-only, from October 7)
 
 The owner asked whether the option chain, OI, change in OI and current IV can

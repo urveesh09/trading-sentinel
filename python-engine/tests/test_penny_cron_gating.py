@@ -86,6 +86,9 @@ FINANCIAL_RISK = {
 # from the gate requirement entirely.
 NO_GATE_NEEDED = {
     "kite.refresh_instrument_cache",  # needed for token bootstrap; pure data layer
+    # [O9-R1 2026-10-09] Recovery for a failed startup refresh; no-op once
+    # today's provider refresh succeeded. Weekday cron, pure data layer.
+    "kite.ensure_instrument_cache",
     "kite.clear_intraday_cache",      # DB cleanup, hour-agnostic
     "_penny_daily_reset",             # risk-engine singleton reset at 00:05 IST
     # [ROADMAP-2.4 2026-07-12] Loop-progress tick for the agent's freeze

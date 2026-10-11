@@ -245,6 +245,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "kite.ensure_instrument_cache",
+    "id": "'instrument_cache_recovery'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "kite.refresh_instrument_cache",
     "id": null,
     "trigger": "'cron'"

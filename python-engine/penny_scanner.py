@@ -269,6 +269,15 @@ class PennyScanner:
         # Fast path: cache already populated.
         if len(self.kite.instrument_cache) >= min_count:
             return True
+        # [O9-R1 2026-10-09] After a FAILED refresh nothing is in flight, so a
+        # 60 s wait only stalls the wrapper past its own 60 s trigger (95
+        # max-instance skips on Oct 9). The recovery job refills the cache.
+        status_of = getattr(self.kite, "instrument_cache_status", None)
+        status = status_of() if callable(status_of) else {}
+        if isinstance(status, dict) and status.get("failures") and status.get("source") == "EMPTY":
+            logger.warning("penny_instrument_cache_unavailable failures=%s last_error=%s -- skipping tick",
+                           status.get("failures"), status.get("last_error_type"))
+            return False
         # Slow path: wait up to `timeout` seconds for refresh.
         deadline = asyncio.get_event_loop().time() + timeout
         poll_interval = 1.0

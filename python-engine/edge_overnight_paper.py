@@ -142,6 +142,8 @@ def _price_exit(quote: dict, *, today: str, auction: bool, trade_date: str, tick
     return item, None
 ENTRY_CATCHUP_START = time(15, 21)  # after the 15:20 job's own run
 ENTRY_LATEST = time(15, 29)
+CATCHUP_EVERY_MINUTES = 5           # scheduler_setup edge_overnight_catchup cadence
+ENTRY_MIN_QUOTE_COVERAGE = 0.5      # normal days quote ~90% of the universe (877/967 Oct 8)
 
 _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS edge_overnight_paper_trades (
@@ -376,16 +378,33 @@ def build_scan_db(cache_path: str, tickers: list[str], bars_today: dict, today: 
     return path
 
 
+SYMBOL_QUOTE_CHUNK = 500           # Kite full-quote limit per request
+
+
 async def _quotes(kite, tickers: list[str]) -> dict:
-    tokens = {}
+    tokens, missing = {}, []
+    cache = getattr(kite, "instrument_cache", None) or {}
     for ticker in tickers:
-        token = kite.instrument_cache.get(ticker)
+        token = cache.get(ticker)
         if token is not None:
             tokens[int(token)] = ticker
-    if not tokens:
-        return {}
-    raw = await kite.get_quote(list(tokens))
-    return {tokens[int(token)]: quote for token, quote in (raw or {}).items() if int(token) in tokens}
+        else:
+            missing.append(ticker)
+    out = {}
+    if tokens:
+        raw = await kite.get_quote(list(tokens))
+        out = {tokens[int(token)]: quote for token, quote in (raw or {}).items() if int(token) in tokens}
+    # [O9-O1 2026-10-09] The empty post-restart cache left the Oct 9 entry
+    # with 0 of 971 names quoted. A name the cache cannot resolve is quoted
+    # by its documented EXCHANGE:SYMBOL key, in chunks of the 500-key limit.
+    if missing and hasattr(kite, "get_quote_by_instruments"):
+        for start in range(0, len(missing), SYMBOL_QUOTE_CHUNK):
+            chunk = missing[start:start + SYMBOL_QUOTE_CHUNK]
+            keyed = {-(start + i + 1): f"NSE:{ticker}" for i, ticker in enumerate(chunk)}
+            raw = await kite.get_quote_by_instruments(keyed)
+            out.update({chunk[-key - start - 1]: quote for key, quote in (raw or {}).items()
+                        if key in keyed})
+    return out
 
 
 def base_symbol(ticker: str) -> str:
@@ -542,6 +561,8 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
     tickers = universe_from_cache(db_path)
     quotes = await _quotes(kite, [*tickers, NIFTY_PROXY])
     bars_today = {t: bar for t, q in quotes.items() if (bar := provisional_bar(q, today)) is not None}
+    if tickers and len(bars_today) < ENTRY_MIN_QUOTE_COVERAGE * len(tickers):
+        return _entry_data_unavailable(store, today, tickers, bars_today, now, clock())
     scan_path = build_scan_db(db_path, tickers, bars_today, today)
     try:
         # Rank deeper than the slots so a refused pick is replaced by the next
@@ -640,6 +661,38 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         _record_run(conn, today, "ENTRY", summary, decided, format_entry_telegram(summary))
     logger.info("edge_overnight_entry date=%s quoted=%d candidates=%d opened=%d",
                 today, len(bars_today), len(scan["candidates"]), len(opened))
+    return summary
+
+
+def _entry_data_unavailable(store: str, today: str, tickers: list, bars_today: dict,
+                            started: datetime, decided: datetime) -> dict:
+    """[O9-O1 2026-10-09] Missing input is not a valid zero-candidate day.
+
+    Oct 9 stored "971 names, 0 quoted, 0 candidates" as a completed ENTRY, so
+    the catch-up never retried. Below ENTRY_MIN_QUOTE_COVERAGE no receipt is
+    written while a later catch-up slot still fits before ENTRY_LATEST; the
+    last attempt records an explicit DATA_UNAVAILABLE receipt and notice.
+    """
+    summary = {"date": today, "phase": "ENTRY", "status": "DATA_UNAVAILABLE", "universe": len(tickers),
+               "quoted": len(bars_today), "candidates": 0, "opened": [], "skipped": [],
+               "fill_contract": ENTRY_FILL_CONTRACT, "started_at": started.isoformat(),
+               "decided_at": decided.isoformat()}
+    nxt = (decided.replace(second=0, microsecond=0)
+           + timedelta(minutes=CATCHUP_EVERY_MINUTES - decided.minute % CATCHUP_EVERY_MINUTES))
+    if decided.date().isoformat() == today and nxt.time() <= ENTRY_LATEST:
+        logger.warning("edge_overnight_entry_data_unavailable date=%s quoted=%d universe=%d retry_at=%s",
+                       today, len(bars_today), len(tickers), nxt.strftime("%H:%M"))
+        return {**summary, "retry": True}
+    with _store(store) as conn:
+        if _already_ran(conn, today, "ENTRY") is not None:
+            return {**_already_ran(conn, today, "ENTRY"), "repeat": True}
+        state = book_state(conn, float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL))
+        summary.update(equity=state["equity"], cash_after=state["cash"])
+        _record_run(conn, today, "ENTRY", summary, decided,
+                    f"EDGE overnight (paper) {today}: NO ENTRY - quotes unavailable "
+                    f"({len(bars_today)} of {len(tickers)} names quoted). Not a no-signal day.")
+    logger.error("edge_overnight_entry_data_unavailable date=%s quoted=%d universe=%d final=true",
+                 today, len(bars_today), len(tickers))
     return summary
 
 

@@ -18,10 +18,12 @@ def _registered(monkeypatch, **flags):
     return {job.id: job for job in probe.get_jobs()}
 
 
-def test_speedups_ship_disabled_and_register_only_when_enabled(monkeypatch):
+def test_speedups_register_only_when_enabled(monkeypatch):
     from config import settings
-    assert settings.FNO_FAST_EXIT_ENABLED is False and settings.FNO_BAR_CLOSE_TRIGGER_ENABLED is False
-    off = _registered(monkeypatch)
+    # Fast exit ships ON since the Oct 9 audit (profit-lock floor missed by a
+    # 90 s sample); the bar-close entry trigger stays OFF.
+    assert settings.FNO_FAST_EXIT_ENABLED is True and settings.FNO_BAR_CLOSE_TRIGGER_ENABLED is False
+    off = _registered(monkeypatch, FNO_FAST_EXIT_ENABLED=False)
     assert "fno_tick" in off and "fno_fast_exit" not in off and "fno_bar_close_tick" not in off
     on = _registered(monkeypatch, FNO_FAST_EXIT_ENABLED=True, FNO_BAR_CLOSE_TRIGGER_ENABLED=True)
     assert on["fno_fast_exit"].trigger.interval.total_seconds() == settings.FNO_FAST_EXIT_INTERVAL_SEC

@@ -390,13 +390,35 @@ class QuoteBudget:
         self.batches = 0
         self.merged_requests = 0
         self.max_wait_sec = {lane: 0.0 for lane in _LANE_RANK}
+        self._gate: Optional[asyncio.Lock] = None
+        self._last_dispatch = float("-inf")
+        self.gate_waits = 0
 
     def limiter(self) -> RateLimiter:
         loop = asyncio.get_running_loop()
         if self._limiter is None or self._loop is not loop:
             self._limiter, self._loop = RateLimiter(rate=self.rate, burst=1), loop
             self._pending, self._dispatcher = [], None
+            self._gate, self._last_dispatch = asyncio.Lock(), float("-inf")
         return self._limiter
+
+    async def dispatch_gate(self) -> float:
+        """Space actual ``/quote`` sends at least ``1/rate`` apart; returns the wait.
+
+        [O9-Q1 2026-10-09] The slot is taken BEFORE the shared 3/s limiter, so
+        a slot held up there could send moments before the next slot's call:
+        Oct 9 counted 7 quote sends inside one second of another (a probe saw
+        0.336 s). This gate runs after the shared limiter, right before the
+        HTTP call, so the documented 1/s holds at actual dispatch.
+        """
+        self.limiter()
+        async with self._gate:
+            wait = self._last_dispatch + 1.0 / self.rate - time.monotonic()
+            if wait > 0:
+                self.gate_waits += 1
+                await asyncio.sleep(wait)
+            self._last_dispatch = time.monotonic()
+            return max(wait, 0.0)
 
     async def slot(self, lane: Optional[str] = None) -> float:
         """Wait for one quote request slot; returns the seconds waited."""
@@ -462,6 +484,7 @@ class QuoteBudget:
 
     def snapshot(self) -> dict:
         return {"rate_per_sec": self.rate, "batches": self.batches, "merged_requests": self.merged_requests,
+                "dispatch_gate_waits": self.gate_waits,
                 "max_wait_sec": {lane: round(v, 3) for lane, v in self.max_wait_sec.items()}}
 
 
@@ -747,12 +770,86 @@ class KiteClient:
         )
 
 
-    async def refresh_instrument_cache(self):
-        if not self.access_token:
+    # [O9-R1 2026-10-09] On Oct 9 the 11:19 restart hit a DNS failure on the
+    # one-shot startup refresh. The cache stayed EMPTY for the rest of the
+    # session (the only other refresh is the 08:00 cron), which blinded
+    # Momentum, Penny, Smart exits and the overnight entry. A refresh failure
+    # now (a) falls back to the last good snapshot on /data -- NSE equity
+    # tokens are stable day to day -- and (b) is retried by
+    # ensure_instrument_cache() on a short market-hours cadence until a
+    # provider refresh succeeds. The status is published on /health.
+    INSTRUMENT_SNAPSHOT_MAX_AGE_DAYS = 7
+    INSTRUMENT_CACHE_MIN_SIZE = 1000   # a real NSE dump is ~9,000 symbols
+
+    def _instrument_snapshot_path(self) -> Optional[str]:
+        if not self.db_path or self.db_path == ":memory:":
+            return None
+        return os.path.join(os.path.dirname(self.db_path) or ".", "nse_instrument_cache.json")
+
+    def _instrument_status(self) -> dict:
+        status = getattr(self, "_instrument_cache_status", None)
+        if status is None:
+            status = {"source": "EMPTY", "provider_refreshed_at": None, "snapshot_date": None,
+                      "last_attempt_at": None, "last_error_type": None, "failures": 0}
+            self._instrument_cache_status = status
+        return status
+
+    def instrument_cache_status(self) -> dict:
+        """Read-only view for /health and the readiness watchdog."""
+        status = dict(self._instrument_status())
+        status["size"] = len(self.instrument_cache)
+        status["usable"] = status["size"] >= self.INSTRUMENT_CACHE_MIN_SIZE
+        return status
+
+    def _save_instrument_snapshot(self, mapping: dict) -> None:
+        path = self._instrument_snapshot_path()
+        if path is None:
             return
+        tmp = path + ".tmp"
+        try:
+            import json as _json
+            with open(tmp, "w", encoding="utf-8") as fh:
+                _json.dump({"saved_at": datetime.now(timezone.utc).isoformat(), "tokens": mapping}, fh)
+            os.replace(tmp, path)
+        except OSError as exc:
+            logger.warning("instrument_snapshot_save_failed error_type=%s", type(exc).__name__)
+
+    def _load_instrument_snapshot(self) -> bool:
+        """Fill an EMPTY cache from the last good snapshot. Never overwrites provider data."""
+        path = self._instrument_snapshot_path()
+        if path is None or self.instrument_cache or not os.path.exists(path):
+            return False
+        try:
+            import json as _json
+            with open(path, encoding="utf-8") as fh:
+                saved = _json.load(fh)
+            saved_at = datetime.fromisoformat(saved["saved_at"])
+            tokens = {str(k).upper(): int(v) for k, v in saved["tokens"].items()}
+        except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+            logger.warning("instrument_snapshot_unreadable error_type=%s", type(exc).__name__)
+            return False
+        age_days = (datetime.now(timezone.utc) - saved_at).total_seconds() / 86400
+        if age_days > self.INSTRUMENT_SNAPSHOT_MAX_AGE_DAYS or len(tokens) < self.INSTRUMENT_CACHE_MIN_SIZE:
+            logger.warning("instrument_snapshot_rejected age_days=%.1f size=%d", age_days, len(tokens))
+            return False
+        # Mutate in place: universes and scanners hold a reference to this dict.
+        self.instrument_cache.update(tokens)
+        status = self._instrument_status()
+        status["source"] = "SNAPSHOT"
+        status["snapshot_date"] = saved_at.date().isoformat()
+        logger.warning("instrument_cache_from_snapshot size=%d saved_at=%s", len(tokens), saved["saved_at"])
+        return True
+
+    async def refresh_instrument_cache(self) -> bool:
+        """Refresh NSE symbol->token. Returns True only for a provider refresh."""
+        if not self.access_token:
+            return False
+        status = self._instrument_status()
+        status["last_attempt_at"] = datetime.now(timezone.utc).isoformat()
         async with self._cache_lock:
             try:
                 # Fetch NSE instruments only -- INDICES segment returns 403 on this plan
+                fresh: dict[str, int] = {}
                 for segment in ["NSE"]:
                     _record_endpoint(self, "other")
                     resp = await self.client.get(f"/instruments/{segment}")
@@ -776,15 +873,52 @@ class KiteClient:
                                 # cache was full.
                                 raw_token = parts[0].strip('"') if parts[0] else ""
                                 try:
-                                    self.instrument_cache[symbol] = int(raw_token)
+                                    fresh[symbol] = int(raw_token)
                                 except ValueError:
                                     # Malformed row (header line, blank
                                     # row, partial parse). Skip silently.
                                     continue
+                if not fresh:
+                    raise ValueError("instrument dump contained no symbols")
+                self.instrument_cache.update(fresh)
+                status.update(source="PROVIDER", provider_refreshed_at=status["last_attempt_at"],
+                              snapshot_date=None, last_error_type=None, failures=0)
                 logger.info("instruments_refreshed", count=len(self.instrument_cache))
+            except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as e:
+                status["failures"] = int(status.get("failures") or 0) + 1
+                status["last_error_type"] = type(e).__name__
+                logger.error("instrument_refresh_failed", error_type=type(e).__name__,
+                             failures=status["failures"])
+                if not self.instrument_cache:
+                    self._load_instrument_snapshot()
+                return False
+        if len(fresh) >= self.INSTRUMENT_CACHE_MIN_SIZE:   # never persist a truncated dump
+            self._save_instrument_snapshot(fresh)
+        return True
 
-            except (httpx.RequestError, httpx.HTTPStatusError) as e:
-                logger.error("instrument_refresh_failed", error=str(e))
+    async def ensure_instrument_cache(self) -> bool:
+        """Bounded recovery job: one provider attempt when today's refresh is missing.
+
+        Cheap no-op once a provider refresh succeeded on the current IST date,
+        so it can run every few minutes through the session.
+        """
+        status = self._instrument_status()
+        refreshed = status.get("provider_refreshed_at")
+        if refreshed:
+            import pytz as _pytz
+            ist = _pytz.timezone("Asia/Kolkata")
+            if datetime.fromisoformat(refreshed).astimezone(ist).date() == datetime.now(ist).date():
+                return True
+        if not self.access_token:
+            if not self.instrument_cache:
+                self._load_instrument_snapshot()
+            return False
+        failed_before = int(status.get("failures") or 0)
+        ok = await self.refresh_instrument_cache()
+        if ok and failed_before:
+            logger.info("instrument_cache_recovered size=%d after_failures=%d",
+                        len(self.instrument_cache), failed_before)
+        return ok
 
 
     async def get_historical(self, ticker: str, from_date: str, to_date: str) -> pd.DataFrame:
@@ -1140,7 +1274,23 @@ class KiteClient:
             tokens = [tokens]
         tokens = [int(t) for t in tokens] if tokens else []
         budget = getattr(self, "quote_budget", None)
-        if not tokens or budget is None or len(tokens) > QuoteBudget.MAX_INSTRUMENTS:
+        if len(tokens) > QuoteBudget.MAX_INSTRUMENTS:
+            # [O9-Q3 2026-10-09] Kite's full quote takes at most 500 keys; a
+            # larger request (the ~970-name overnight universe) was sent whole.
+            # Each chunk goes through the normal (budgeted) path in turn.
+            merged, timing = {}, {}
+            size = QuoteBudget.MAX_INSTRUMENTS
+            for start in range(0, len(tokens), size):
+                part, part_timing = await self.get_quote_with_timing(
+                    tokens[start:start + size], priority=priority)
+                merged.update(part)
+                for key, value in part_timing.items():
+                    if isinstance(value, (int, float)) and not isinstance(value, bool):
+                        timing[key] = round(timing.get(key, 0) + value, 6)
+                    else:
+                        timing.setdefault(key, value)
+            return merged, timing
+        if not tokens or budget is None:
             return await self._quote_direct(tokens, priority=priority)
         lane = priority if priority in _LANE_RANK else _provider_lane.get()
         return await budget.submit(
@@ -1211,7 +1361,6 @@ class KiteClient:
                 await budget.slot(priority)
             try:
                 await self.limiter.acquire(priority=priority)
-                _record_endpoint(self, "quote")
             except TypeError as exc:
                 # Small broker adapters used by replay/tests may still expose
                 # the pre-S2 no-argument limiter contract.  They retain their
@@ -1220,7 +1369,9 @@ class KiteClient:
                 if "priority" not in str(exc):
                     raise
                 await self.limiter.acquire()
-                _record_endpoint(self, "quote")
+            if budget is not None:
+                await budget.dispatch_gate()
+            _record_endpoint(self, "quote")
             timing["limiter_wait_sec"] += time.monotonic() - limiter_started
             try:
                 transport_started = time.monotonic()
@@ -1358,6 +1509,8 @@ class KiteClient:
         if budget is not None:
             await budget.slot()                       # shares the 1/s quote budget (ambient lane)
         await self.limiter.acquire()
+        if budget is not None:
+            await budget.dispatch_gate()
         _record_endpoint(self, "quote")
         timing["limiter_wait_sec"] = time.monotonic() - limiter_started
         timing["attempt_count"] = 1
@@ -1378,7 +1531,13 @@ class KiteClient:
         except (httpx.HTTPStatusError, httpx.RequestError) as exc:
             if not timing["transport_sec"]:
                 timing["transport_sec"] = time.monotonic() - transport_started
-            logger.warning("kite_quote_instrument_failed requested=%d err=%s", len(requested), str(exc))
+            # [O9-Q2 2026-10-09] This path's non-2xx answers (429 included)
+            # were never counted, so http_429=0 did not cover it.
+            if isinstance(exc, httpx.HTTPStatusError):
+                _record_status(self, "quote", exc.response.status_code)
+                timing["http_status"] = exc.response.status_code
+            logger.warning("kite_quote_instrument_failed requested=%d err=%s", len(requested),
+                           type(exc).__name__)
             timing["outcome"] = "FAILED"
             return _finish({})
 

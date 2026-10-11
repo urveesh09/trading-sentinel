@@ -1282,7 +1282,7 @@ async def run_penny_paper_stop_monitor() -> dict:
             try:
                 from penny_smart_shadow import monitor_smart_shadow, smart_db_path
                 await asyncio.wait_for(monitor_smart_shadow(
-                    smart_db_path(settings.DB_PATH), scanner.kite, now=datetime.now(IST)), timeout=2.0)
+                    smart_db_path(settings.DB_PATH), scanner.kite, now=datetime.now(IST)), timeout=5.0)
             except Exception as exc:
                 logger.error("penny_smart_shadow_monitor_failed error=%s", str(exc))
     if executor is None or not bool(getattr(executor, "paper_mode", False)):
@@ -2127,6 +2127,11 @@ async def lifespan(app: FastAPI):
 
     asyncio.create_task(kite.refresh_instrument_cache())
     scheduler.add_job(kite.refresh_instrument_cache, 'cron', hour=8, minute=0)
+    # [O9-R1 2026-10-09] Recovery for a failed startup refresh: one provider
+    # attempt every 2 minutes until today's refresh succeeds, then a no-op.
+    scheduler.add_job(kite.ensure_instrument_cache, 'cron', day_of_week='mon-fri',
+                      hour='7-15', minute='*/2', id="instrument_cache_recovery",
+                      max_instances=1, coalesce=True)
     scheduler.add_job(run_screener, 'cron', hour=9, minute=20)
     scheduler.add_job(run_screener, 'cron', hour=14, minute=45)
     scheduler.add_job(daily_post_market, 'cron', hour=15, minute=45)
@@ -3023,6 +3028,18 @@ async def _run_momentum_screener_impl(t0):
     if not kite.access_token:
         logger.warning("momentum_screener_skipped", reason="no_access_token")
         return
+
+    # [O9-R1 2026-10-09] With an empty symbol->token cache every ticker raises
+    # "Unknown ticker": 14 afternoon scans on Oct 9 wrote 6,958 exception rows
+    # that read like strategy rejections. Try one recovery, else skip the scan
+    # as a data outage (the readiness watchdog pages the operator).
+    _cache_status = getattr(kite, "instrument_cache_status", None)
+    if callable(_cache_status) and not _cache_status().get("usable"):
+        await kite.ensure_instrument_cache()
+        if not _cache_status().get("usable"):
+            logger.error("momentum_screener_skipped reason=instrument_cache_unavailable size=%s",
+                         _cache_status().get("size"))
+            return
 
     # Strict separation: momentum pool sized off Nifty-subsystem balance,
     # not the last ledger row (which could be a penny close).
@@ -4532,16 +4549,23 @@ async def _notify_momentum_heartbeat(
         msg += "❌ No new signals - all gates filtered out.\n"
 
     if rejected:
-        # Group rejections by reason
+        # Group rejections by reason family. [O9-M1 2026-10-09] Exception
+        # reasons embed the ticker ("exception: Unknown ticker: ABC"), so 497
+        # data errors became 497 one-count lines and a >10 KB body that the
+        # gateway refused with HTTP 413 fourteen times.
         reason_counts: dict = {}
         for r in rejected:
-            reason = r.get("reject_reason", "unknown")
+            reason = _momentum_reason_family(r.get("reject_reason", "unknown"))
             reason_counts[reason] = reason_counts.get(reason, 0) + 1
 
         msg += "\n[STATS] **Gate Rejection Breakdown:**\n"
-        for reason, count in sorted(reason_counts.items(), key=lambda x: x[1], reverse=True):
+        ranked = sorted(reason_counts.items(), key=lambda x: x[1], reverse=True)
+        for reason, count in ranked[:MOMENTUM_HEARTBEAT_MAX_REASONS]:
             display = reason.replace("_", " ").title()
             msg += f"* {display}: `{count}`\n"
+        if len(ranked) > MOMENTUM_HEARTBEAT_MAX_REASONS:
+            other = sum(count for _, count in ranked[MOMENTUM_HEARTBEAT_MAX_REASONS:])
+            msg += f"* (+{len(ranked) - MOMENTUM_HEARTBEAT_MAX_REASONS} other reasons): `{other}`\n"
 
         # Show up to 8 informative rejected tickers (skip trivial data-missing reasons)
         _skip = {
@@ -4569,16 +4593,43 @@ async def _notify_momentum_heartbeat(
                     detail = ""
                 msg += f"* **{ticker}**: {reason}{detail}\n"
 
+    if len(msg) > MOMENTUM_HEARTBEAT_MAX_CHARS:
+        msg = msg[:MOMENTUM_HEARTBEAT_MAX_CHARS].rsplit("\n", 1)[0] + "\n… (truncated)\n"
     try:
         async with _httpx.AsyncClient() as _client:
-            await _client.post(
+            resp = await _client.post(
                 f"{settings.CONTAINER_A_URL}/api/internal/notify",
                 json={"message": msg},
                 headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
                 timeout=5.0
             )
+        # A refused POST is not a delivered heartbeat (O9-M1).
+        status = getattr(resp, "status_code", 200)
+        if isinstance(status, int) and status >= 400:
+            logger.error("momentum_heartbeat_rejected status=%s chars=%d",
+                         resp.status_code, len(msg))
     except Exception as e:
-        logger.error("momentum_heartbeat_failed", error=str(e))
+        logger.error("momentum_heartbeat_failed", error_type=type(e).__name__)
+
+
+MOMENTUM_HEARTBEAT_MAX_REASONS = 12
+MOMENTUM_HEARTBEAT_MAX_CHARS = 3500
+
+
+def _momentum_reason_family(reason) -> str:
+    """Collapse per-ticker detail so the breakdown has bounded cardinality.
+
+    ``exception: Unknown ticker: ABC`` -> ``exception: Unknown ticker``; other
+    exception text is cut at its first detail separator and 60 characters.
+    Ordinary gate reasons are already families and pass through unchanged.
+    """
+    import re
+    text = str(reason or "unknown")
+    if not text.startswith("exception:"):
+        return text
+    detail = text[len("exception:"):].strip()
+    head = re.split(r"[:(\[{'\"]", detail, maxsplit=1)[0].strip()
+    return "exception: " + (head[:60] or "error")
 
 
 async def compute_performance_report(db_path: str) -> PerformanceReport:
