@@ -12,7 +12,7 @@
 
 
 
-## October 12 (evening) — O12-PB partner messages for an option buyer (commit pending, Dev, not deployed)
+## October 12 (evening) — O12-PB partner messages for an option buyer (commit `304ad70`, Dev, pushed, not deployed)
 
 - [x] Buyer card (about 300 characters vs 1,670): one option, buy-up-to limit,
   skip time, stop and target on the index plus option premium, risk per lot,

@@ -14,7 +14,7 @@
 
 
 
-## October 12 (evening) — partner messages for an option buyer (`PARTNER_BUYER_MESSAGES`, on) (actual behavior, Dev)
+## October 12 (evening) — partner messages for an option buyer (`PARTNER_BUYER_MESSAGES`, on) (actual behavior, Dev, commit `304ad70`)
 
 Owner: the partner no longer hedges and only buys options, and the messages
 could not be read in market time. Production (read-only, Oct 6–12):

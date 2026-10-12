@@ -5,7 +5,7 @@
 
 
 
-## October 12 (evening) — O12-PB partner messages for an option buyer (done, Dev, commit pending, not deployed)
+## October 12 (evening) — O12-PB partner messages for an option buyer (done, Dev, commit `304ad70`, pushed, not deployed)
 
 - Problem:
   - the partner only buys options now and no longer hedges;
