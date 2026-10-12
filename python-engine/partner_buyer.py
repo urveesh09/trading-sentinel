@@ -10,20 +10,38 @@ can be acted on in a few seconds during market hours:
   - updates: one line each (exit, book, square off);
   - morning plan, OI flow pulse and close wrap: two lines per index.
 
+The partner trades with real money, so every number below was checked
+against Production's own market records before release (read-only, Oct 5-12).
+
 Levels. The signal reads 5-minute bars of the front-month FUTURE, which
-trades 50-150 points above the index the partner watches (Oct 9: about 60
-points, more than that card's 47-point stop distance). Levels are therefore
-shifted to the index using the option chain's put-call parity forward,
-discounted to spot, and marked "≈". When parity is unavailable the levels
-stay on the future and say "fut".
+trades above the index the partner watches: NIFTY by about 60 points on
+Oct 9 (more than that card's 47-point stop distance), SENSEX by 330-430 on
+Oct 8. Levels are shifted to the index by future minus spot, with spot
+estimated as the chain's put-call parity forward discounted at
+RISK_FREE_RATE, and marked "≈". Against the real SENSEX index on Oct 8 (184
+samples) the estimate's median error was +0.4 points and its mean absolute
+error 16 points (about 0.02%). When parity is unavailable the levels stay on
+the future and say "fut".
 
-Premiums at stop/target are Black-76 estimates at today's implied
-volatility. The stop estimate errs early (theta only lowers the premium).
-The target estimate can overstate: on Oct 9 the option was ₹125 when the
-future reached the target, against about ₹147 at constant volatility. So
-the target is quoted on the index first and the premium is marked "≈".
+Premiums at stop and target are Black-76 values at the option's mid implied
+volatility, with PREMIUM_DECAY_MINUTES of time decay. Checked on 41,950 later
+NIFTY/SENSEX snapshots:
+  - target-like moves: median error 0.0% (NIFTY) and -1.7% (SENSEX), p10
+    about -13%. The target is therefore quoted on the index first, with the
+    premium as a range down to TARGET_PREMIUM_LOW_FACTOR.
+  - stop-like moves: the real premium sits a median 3-4% under the model,
+    so a premium stop fires a little before the index stop. That errs
+    toward a smaller loss.
+"Loss at SL" runs from the buy-up-to limit down to the premium stop, plus
+one current bid-ask spread on exit and round-trip charges. With the premium
+stop placed as an order, model error changes when the stop fires, not the
+size of the loss. A fast fall can still fill below the trigger. On Oct 7 an
+option went from ₹166 to ₹158 between two 5-minute prints, so it is shown
+with "≈" and never called a maximum. Replayed on the five Oct 6-9 cards
+(read-only), the premium stop protected every losing card. The index stop
+alone was confirmed up to 28 minutes later, with the option ₹40 lower.
 
-Pure functions only: no network, database or settings reads.
+Pure functions only: no network or database reads.
 """
 from __future__ import annotations
 
@@ -33,13 +51,22 @@ from typing import Optional
 
 import options_math
 from fno_chain import RISK_FREE_RATE, years_to_expiry
+from fno_costs import calc_fno_costs
 
-VERSION = "BUYER_VIEW_V1"
+VERSION = "BUYER_VIEW_V2"
 BUY_LIMIT_RISK_SHARE = 0.15     # chase at most 15% of the per-unit stop distance
 BUY_LIMIT_MAX_PCT = 0.04        # and never more than 4% above the ask
 BUY_LIMIT_NO_STOP_PCT = 0.02    # limit when no premium stop could be estimated
 MAX_PARITY_GAP_PCT = 0.02       # a futures-to-index gap above 2% is a bad parity read
+PREMIUM_DECAY_MINUTES = 60      # time decay priced into the stop/target premiums
+# Low end of the target premium range. Bulk p10 of target-like moves was
+# -13.6% (NIFTY) and -11.9% (SENSEX). At the moment the index reached target,
+# the Oct 6/8/9 cards' options were 10%, 14% and 15% under the model (each
+# reached the model value later).
+TARGET_PREMIUM_LOW_FACTOR = 0.85
+NEAR_STOP_PCT = 0.05            # a premium stop within 5% of the ask is noise distance
 FLOW_LEAN_VOTES = 2             # net OI-flow votes needed to name a side
+_MINUTES_PER_YEAR = 365.0 * 24 * 60
 
 
 def _px(value: float) -> str:
@@ -85,6 +112,19 @@ def level_label(name: str, value: Optional[float], basis: str) -> str:
     return f"{name} ≈{_lvl(value)}" if basis == "INDEX" else f"{name} fut {_lvl(value)}"
 
 
+def max_loss_per_lot(buy_limit: float, sl_premium: Optional[float], spread: float, lot_size: int) -> Optional[float]:
+    """Loss per lot if filled at the limit and stopped at the premium stop.
+
+    The exit sells one current bid-ask spread under the stop, and both legs
+    pay round-trip charges. ``None`` when no premium stop exists, because an
+    index-only stop has no rupee bound.
+    """
+    if sl_premium is None or lot_size <= 0:
+        return None
+    exit_price = max(sl_premium - max(spread, 0.0), 0.0)
+    return round((buy_limit - exit_price) * lot_size + calc_fno_costs(buy_limit, exit_price, lot_size), 2)
+
+
 def buyer_plan(candidate, snapshot, now: datetime, *, entry_window_min: int) -> Optional[dict]:
     """The single option a buyer takes on a directional card, with prices.
 
@@ -108,6 +148,8 @@ def buyer_plan(candidate, snapshot, now: datetime, *, entry_window_min: int) -> 
     T = years_to_expiry(date.fromisoformat(leg.expiry), now)
     mid = (leg.bid + leg.ask) / 2.0 if leg.bid > 0 else leg.ask
     iv = options_math.implied_vol(mid, option_forward, leg.strike, T, RISK_FREE_RATE, is_call) if T > 0 else None
+    # Price the levels an hour on; never past the expiry cutoff.
+    T_level = max(T - PREMIUM_DECAY_MINUTES / _MINUTES_PER_YEAR, T / 2)
 
     def premium_at(fut_level: Optional[float]) -> Optional[float]:
         if iv is None or not fut_level or fut_level <= 0:
@@ -115,7 +157,7 @@ def buyer_plan(candidate, snapshot, now: datetime, *, entry_window_min: int) -> 
         moved = option_forward + (float(fut_level) - fut)
         if moved <= 0:
             return None
-        value = options_math.black76_price(moved, leg.strike, T, iv, RISK_FREE_RATE, is_call)
+        value = options_math.black76_price(moved, leg.strike, T_level, iv, RISK_FREE_RATE, is_call)
         return value if math.isfinite(value) and value > 0 else None
 
     tick = leg.tick_size if leg.tick_size and leg.tick_size > 0 else 0.05
@@ -147,7 +189,10 @@ def buyer_plan(candidate, snapshot, now: datetime, *, entry_window_min: int) -> 
         "lot_size": leg.lot_size, "tick_size": tick,
         "bid": leg.bid, "ask": leg.ask, "buy_limit": limit,
         "sl_premium": stop, "target_premium": target,
-        "risk_per_lot": round((leg.ask - stop) * leg.lot_size, 2) if stop is not None else None,
+        "target_premium_low": (_round_to_tick(target * TARGET_PREMIUM_LOW_FACTOR, tick)
+                               if target is not None else None),
+        "max_loss_per_lot": max_loss_per_lot(limit, stop, leg.ask - leg.bid if leg.bid > 0 else tick,
+                                             leg.lot_size),
         "iv": round(iv, 4) if iv is not None else None,
         "level_basis": basis, "fut_to_index_offset": offset,
         "trigger_index": to_index(candidate.trigger_level),
@@ -192,22 +237,31 @@ def render_buyer_card(label: str, view: dict, *, underlying: str, direction: str
         level = _lvl(view["trigger_index"])
         lines[-1] += (f" or if {underlying} {side} ≈{level}" if basis == "INDEX"
                       else f" or if {underlying} fut {side} {level}")
-    stop_line = f"🛑 SL: {level_label(underlying, view['invalidation_index'], basis)}"
+    index_stop = level_label(underlying, view["invalidation_index"], basis)
     if view.get("sl_premium") is not None:
-        stop_line += f" or option ₹{_est(view['sl_premium'])}, whichever first"
-    lines.append(stop_line)
+        # The premium stop is the protection: the index stop is only confirmed
+        # on a 5-minute close (Oct 7: ₹158 premium stop at 14:02, the index
+        # stop seen at 14:30 with the put at ₹117).
+        lines.append(f"🛑 SL order at ₹{_px(view['sl_premium'])} right after buying "
+                     f"(or exit if {index_stop} breaks)")
+    else:
+        lines.append(f"🛑 SL: exit if {index_stop} breaks")
     target_line = f"🎯 Target: {level_label(underlying, view['target_index'], basis)}"
-    if view.get("target_premium") is not None:
-        target_line += f" (option ≈₹{_est(view['target_premium'])})"
+    low, high = view.get("target_premium_low"), view.get("target_premium")
+    if low is not None and high is not None:
+        target_line += f" (option ≈₹{_est(low)}–{_est(high)})"
     lines.append(target_line)
-    risk = f"Risk ≈₹{view['risk_per_lot']:,.0f}/lot ({view['lot_size']} qty) · " if view.get("risk_per_lot") else ""
+    risk = (f"Loss at SL ≈₹{view['max_loss_per_lot']:,.0f}/lot ({view['lot_size']} qty, incl. charges) · "
+            if view.get("max_loss_per_lot") else "")
     lines.append(f"{risk}exit by {_hhmm(management_deadline)} latest")
     why = [f"5-min close {'above' if long_view else 'below'} the opening range"]
     note = _dte_note(view.get("dte"))
     if note:
         why.append(note)
-    stop, target, ask = view.get("sl_premium"), view.get("target_premium"), view["ask"]
-    if stop is not None and target is not None and (target - ask) < (ask - stop):
+    stop, paid = view.get("sl_premium"), view["buy_limit"]
+    if stop is not None and (view["ask"] - stop) < NEAR_STOP_PCT * view["ask"]:
+        why.append(f"⚠ stop only ₹{_px(view['ask'] - stop)} under the price, skip or tiny size")
+    elif stop is not None and low is not None and (low - paid) < (paid - stop):
         why.append("⚠ reward < risk in premium, size small")
     lines.append("Why: " + " · ".join(why))
     return "\n".join(lines)
@@ -225,7 +279,7 @@ def render_buyer_update(view: dict, event_type: str, *, underlying: str, observe
     if event_type == "INVALIDATION":
         return f"🛑 EXIT {name} now: stop level hit ({seen}). Idea closed."
     return (f"🎯 {name}: target reached ({seen}). Book profit; on anything you keep, "
-            f"move SL to ₹{_px(view['ask'])} (cost).")
+            "move SL to your entry price.")
 
 
 def _premium_read(iv_read: str) -> str:
@@ -261,7 +315,7 @@ def render_buyer_brief(day_label: str, rows: list[dict], *, crisis: bool, events
         if row.get("support") and row.get("resistance"):
             detail.append(f"OI walls {_lvl(row['support'])} / {_lvl(row['resistance'])}")
         if row.get("pcr") is not None:
-            detail.append(f"PCR {row['pcr']:.2f}")
+            detail.append(f"near-money PCR {row['pcr']:.2f}")
         if detail:
             lines.append("   " + " · ".join(detail))
     lines.append("Cards come only on a 5-min close past a level. Flat by 15:15.")

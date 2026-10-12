@@ -14,6 +14,49 @@
 
 
 
+## October 12 (night) — option-buyer card numbers verified on Production data (O12-PB2, actual behavior, Dev)
+
+Owner: the partner trades real money, so the card's numbers must be the most
+correct the system can produce. Every number was checked read-only against
+Production records. The changes in `partner_buyer.py` (`BUYER_VIEW_V2`):
+
+- **Index conversion confirmed, and essential.** Oct 8 SENSEX futures traded
+  330–430 points over the index. The parity-forward estimate against the
+  real index (184 tick samples): median error +0.4 points, mean absolute
+  16 points, p90 31. Averaging 3 or 5 strikes did not help: the scatter is
+  index-print timing.
+- **Premium model calibrated.** Black-76 at the entry implied volatility was
+  replayed on 41,950 later NIFTY/SENSEX snapshot pairs (Oct 5–12). Real
+  premiums ran below the model, more so with time (median −7% after 3 h).
+  With `PREMIUM_DECAY_MINUTES` = 60 priced in:
+  - target-like moves: median 0.0% (NIFTY) and −1.7% (SENSEX);
+  - stop-like moves: −3.4% and −4.1%, so the premium stop fires slightly
+    early (toward a smaller loss).
+- **Target is a range** (`TARGET_PREMIUM_LOW_FACTOR` 0.85). Bulk p10 was
+  −13.6% / −11.9%. When the index reached target, the Oct 6/8/9 cards'
+  options were 10%, 14% and 15% under the model; each got there later.
+  "Reward < risk" is judged on the low end.
+- **"Loss at SL ≈₹X/lot"** runs from the buy-up-to limit down to the premium
+  stop, plus one current spread and round-trip charges (`fno_costs`). It
+  replaces "Risk ≈" from the ask, and is shown at the exact stop price
+  (`₹73.25`, not a rounded `₹73`). It is not called a maximum, because fast
+  falls fill below the trigger (Oct 7: ₹166 → ₹158 between 5-minute prints).
+- **The stop line now reads "SL order at ₹X right after buying (or exit if
+  <index> ≈Y breaks)".** On the Oct 7 14:00 card the premium stop (₹158.4)
+  traded at 14:02. The index stop was confirmed on the 14:30 bar, with the
+  put at ₹117 (about ₹3,700 a lot worse).
+- **A stop within `NEAR_STOP_PCT` (5%) of the ask is flagged** "skip or tiny
+  size". The Oct 7 13:11 card had its stop ₹3.25 under ₹169.65.
+- **Target update:** "move SL to your entry price" (the partner's own fill),
+  not the card's ask. The brief and pulse say "near-money PCR": it is
+  computed over ±15 strikes, not NSE's whole chain.
+- **Replay of the five delivered Oct 6–9 cards:**
+  - every published level matched what happened;
+  - the premium stop protected each losing card;
+  - 4 of 5 cards now carry "reward < risk". The signals' 1.5R index targets
+    are often under 1R in premium at the low end. That is a property of
+    the signal, now shown to the partner, not hidden.
+
 ## October 12 (evening) — partner messages for an option buyer (`PARTNER_BUYER_MESSAGES`, on) (actual behavior, Dev, commit `304ad70`)
 
 Owner: the partner no longer hedges and only buys options, and the messages

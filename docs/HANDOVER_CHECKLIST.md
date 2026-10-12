@@ -12,6 +12,15 @@
 
 
 
+## October 12 (night) — O12-PB2 card numbers verified (commit pending, Dev, not deployed)
+
+- [x] Index conversion vs real SENSEX index (Oct 8): median +0.4, mean |16| points.
+- [x] Premium model on 41,950 pairs; 60-minute decay; target range 0.85–1.0.
+- [x] Loss at SL from the buy limit plus spread and charges; exact stop price; near-stop flag.
+- [x] Five real Oct 6–9 cards replayed: levels correct; the premium stop protected every loss.
+- [x] Tests: full engine suite 5,141 pass, 4 skip, 0 fail (7 min 24 s); partner, hedge and identity suites 231 pass.
+- [ ] Deployed: no (merge, rebuild the engine).
+
 ## October 12 (evening) — O12-PB partner messages for an option buyer (commit `304ad70`, Dev, pushed, not deployed)
 
 - [x] Buyer card (about 300 characters vs 1,670): one option, buy-up-to limit,

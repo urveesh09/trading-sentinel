@@ -5,6 +5,34 @@
 
 
 
+## October 12 (night) — O12-PB2 card numbers verified on Production data (done, Dev, commit pending, not deployed)
+
+- Problem: the partner trades real money, so each number on the card must
+  be checked against what markets actually did, not just modelled.
+- Evidence (read-only, Production):
+  - 41,950 snapshot pairs (premium model);
+  - 184 SENSEX index samples (index conversion);
+  - replay of the five delivered Oct 6–9 cards.
+- Files: `partner_buyer.py` (`BUYER_VIEW_V2`: decay 60 min, target range
+  0.85, loss at SL from the limit with spread and charges, exact stop price,
+  near-stop flag, SL-order wording); `partner_orchestrator.py` (near-money
+  PCR label); `tests/test_partner_buyer.py` (20 tests).
+- Acceptance (met):
+  - decay pinned to Black-76 at T − 60 min;
+  - loss at SL equals the hand formula;
+  - stop printed at its exact price;
+  - Oct 7 13:11 card flagged near-stop;
+  - "reward < risk" judged on the low end.
+- Calibrations are in-sample (6 sessions) and documented with their samples.
+  They are display estimates, not strategy parameters. Re-measure after
+  20 more sessions.
+- Remaining:
+  - [ ] After deploy: compare each card's `≈` index levels with the real
+    index, and each target range with the option at the target event.
+  - [ ] Owner: 4 of 5 recent cards are reward < risk in premium terms. A
+    premium-aware target or strike choice for buyers is a strategy change,
+    so it needs frozen rules and forward scoring.
+
 ## October 12 (evening) — O12-PB partner messages for an option buyer (done, Dev, commit `304ad70`, pushed, not deployed)
 
 - Problem:

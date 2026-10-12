@@ -70,9 +70,25 @@ def test_buyer_plan_prices_the_long_leg_on_index_levels():
     assert view["sl_premium"] < view["ask"] < view["target_premium"]
     assert view["ask"] < view["buy_limit"] <= round(view["ask"] * 1.04, 2) + 0.05
     assert round(view["buy_limit"] / 0.05, 6) == int(round(view["buy_limit"] / 0.05))
-    assert view["risk_per_lot"] == pytest.approx((view["ask"] - view["sl_premium"]) * 65)
+    # Max loss: filled at the limit, out one spread under the premium stop, plus charges.
+    from fno_costs import calc_fno_costs
+    exit_price = view["sl_premium"] - (view["ask"] - view["bid"])
+    assert view["max_loss_per_lot"] == pytest.approx(
+        (view["buy_limit"] - exit_price) * 65 + calc_fno_costs(view["buy_limit"], exit_price, 65), abs=0.01)
     assert view["fill_by"] == "2026-10-09T10:04:50+05:30"
     json.dumps(view)
+
+
+def test_level_premiums_carry_an_hour_of_decay():
+    # Calibrated on 41,950 Production snapshot pairs (Oct 5-12): with an hour
+    # of decay the target-like median error is 0.0% (NIFTY), -1.7% (SENSEX).
+    import options_math
+    candidate, snap = _setup()
+    view = pb.buyer_plan(candidate, snap, NOW, entry_window_min=10)
+    T = years_to_expiry(EXPIRY, NOW) - 60 / (365 * 24 * 60)
+    forward = snap.parity_forward + (22628.22 - FUT)
+    expected = options_math.black76_price(forward, 22550, T, view["iv"], RISK_FREE_RATE, True)
+    assert view["target_premium"] == pytest.approx(expected, abs=0.1)
 
 
 def test_buyer_card_is_short_and_actionable():
@@ -84,10 +100,14 @@ def test_buyer_card_is_short_and_actionable():
     assert lines[0] == ADVICE_LABEL_UNCHECKED
     assert lines[1] == "🟢 BUY NIFTY 22550 CE (13 Oct) @ ₹97.35"
     assert lines[2].startswith(f"Buy up to ₹{pb._px(view['buy_limit'])} · skip after 10:04 or if NIFTY drops under ≈22,46")
-    assert lines[3].startswith("🛑 SL: NIFTY ≈22,41") and "whichever first" in lines[3]
-    assert lines[4].startswith("🎯 Target: NIFTY ≈22,57") and "(option ≈₹" in lines[4]
-    assert "exit by 15:15 latest" in lines[5]
-    assert len(card) < 400          # the spread card was 1,671 characters
+    assert lines[3] == (f"🛑 SL order at ₹{pb._px(view['sl_premium'])} right after buying "
+                        "(or exit if NIFTY ≈22,417 breaks)")
+    assert lines[4] == (f"🎯 Target: NIFTY ≈22,570 (option ≈₹{pb._est(view['target_premium_low'])}"
+                        f"–{pb._est(view['target_premium'])})")
+    assert view["target_premium_low"] == pytest.approx(view["target_premium"] * 0.85, abs=0.05)
+    assert lines[5] == (f"Loss at SL ≈₹{view['max_loss_per_lot']:,.0f}/lot (65 qty, incl. charges) · "
+                        "exit by 15:15 latest")
+    assert len(card) < 450          # the spread card was 1,671 characters
 
 
 def test_put_card_uses_put_language():
@@ -106,7 +126,7 @@ def test_without_parity_levels_stay_on_the_future_and_say_so():
     assert view["invalidation_index"] == pytest.approx(22475.43)
     card = pb.render_buyer_card(ADVICE_LABEL_UNCHECKED, view, underlying="NIFTY", direction="LONG",
                                 management_deadline=candidate.management_deadline)
-    assert "NIFTY fut drops under 22,522" in card and "SL: NIFTY fut 22,475" in card
+    assert "NIFTY fut drops under 22,522" in card and "exit if NIFTY fut 22,475 breaks" in card
 
 
 def test_implausible_parity_is_refused():
@@ -124,21 +144,34 @@ def test_updates_are_one_line_actions():
     assert stop.startswith("🛑 EXIT NIFTY 22550 CE now") and "NIFTY ≈22,41" in stop and "13:50" in stop
     target = pb.render_buyer_update(view, "TARGET_ZONE", underlying="NIFTY", observed_fut=22633.0,
                                     observed_at=at, management_deadline=candidate.management_deadline)
-    assert "target reached" in target and "SL to ₹97.35 (cost)" in target
+    assert "target reached" in target and "move SL to your entry price" in target
     reminder = pb.render_buyer_update(view, "SESSION_EXIT_REMINDER", underlying="NIFTY", observed_fut=0.0,
                                       observed_at=at, management_deadline=candidate.management_deadline)
     assert reminder == "⏰ NIFTY 22550 CE: square off by 15:15. No overnight hold."
     assert all("\n" not in text for text in (stop, target, reminder))
 
 
-def test_reward_below_risk_is_flagged():
+def _view(**changes):
     view = {"strike": 22550, "opt_type": "CE", "expiry": "2026-10-13", "dte": 1, "ask": 100.0,
-            "buy_limit": 103.0, "sl_premium": 60.0, "target_premium": 120.0, "risk_per_lot": 2600.0,
-            "lot_size": 65, "level_basis": "INDEX", "trigger_index": 22464.0, "invalidation_index": 22417.0,
-            "target_index": 22570.0, "fill_by": "2026-10-09T10:04:50+05:30"}
-    card = pb.render_buyer_card("L", view, underlying="NIFTY", direction="LONG",
+            "buy_limit": 103.0, "sl_premium": 80.0, "target_premium": 140.0, "target_premium_low": 119.0,
+            "max_loss_per_lot": 1600.0, "lot_size": 65, "level_basis": "INDEX", "trigger_index": 22464.0,
+            "invalidation_index": 22417.0, "target_index": 22570.0, "fill_by": "2026-10-09T10:04:50+05:30"}
+    view.update(changes)
+    return pb.render_buyer_card("L", view, underlying="NIFTY", direction="LONG",
                                 management_deadline=NOW.replace(hour=15, minute=15))
+
+
+def test_reward_is_judged_on_the_low_end_of_the_target_range():
+    # Low end 119 - 103 paid = 16 reward vs 103 - 80 = 23 risk.
+    card = _view()
     assert "⚠ reward < risk in premium" in card and "expiry tomorrow" in card
+    assert "⚠" not in _view(target_premium_low=130.0, target_premium=153.0)
+
+
+def test_a_stop_hugging_the_price_is_flagged():
+    # Oct 7 13:11 card: put ask 169.65, premium stop 166.4.
+    card = _view(ask=169.65, buy_limit=170.15, sl_premium=166.4, target_premium=233.25, target_premium_low=198.25)
+    assert "⚠ stop only ₹3.25 under the price, skip or tiny size" in card
 
 
 def test_flow_lean_needs_two_net_votes():

@@ -1386,11 +1386,11 @@ Related tests: `python-engine/tests/test_partner_bot.py`
 
 ## `python-engine/partner_buyer.py`
 
-[O12-PB 2026-10-12] Partner messages for an intraday option BUYER. The partner no longer hedges and trades only long calls/puts. The advice pipeline (signal, validation, caps, dedup, lifecycle, outcome tracking) is unchanged; this module only decides what the partner reads, so each message can be acted on in a few seconds during market hours: - entry card: one option to buy, a price limit, stop and target, risk per lot and a fill-by time, in about six short lines; - updates: one line each (exit, book, square off); - morning plan, OI flow pulse and close wrap: two lines per index. Levels. The signal reads 5-minute bars of the front-month FUTURE, which trades 50-150 points above the index the
+[O12-PB 2026-10-12] Partner messages for an intraday option BUYER. The partner no longer hedges and trades only long calls/puts. The advice pipeline (signal, validation, caps, dedup, lifecycle, outcome tracking) is unchanged; this module only decides what the partner reads, so each message can be acted on in a few seconds during market hours: - entry card: one option to buy, a price limit, stop and target, risk per lot and a fill-by time, in about six short lines; - updates: one line each (exit, book, square off); - morning plan, OI flow pulse and close wrap: two lines per index. The partner trades with real money, so every number below was checked against Production's own market records bef
 
-Top-level declarations: `_px` (line 45), `_est` (line 50), `_lvl` (line 55), `_round_to_tick` (line 59), `fut_to_index_offset` (line 64), `level_label` (line 82), `buyer_plan` (line 88), `_option_name` (line 161), `_hhmm` (line 165), `_dte_note` (line 171), `render_buyer_card` (line 179), `render_buyer_update` (line 216), `_premium_read` (line 231), `render_buyer_brief` (line 236), `flow_lean` (line 271), `render_flow_pulse` (line 279), `render_buyer_eod` (line 286), `premium_path` (line 314), `range_line` (line 324)
+Top-level declarations: `_px` (line 72), `_est` (line 77), `_lvl` (line 82), `_round_to_tick` (line 86), `fut_to_index_offset` (line 91), `level_label` (line 109), `max_loss_per_lot` (line 115), `buyer_plan` (line 128), `_option_name` (line 206), `_hhmm` (line 210), `_dte_note` (line 216), `render_buyer_card` (line 224), `render_buyer_update` (line 270), `_premium_read` (line 285), `render_buyer_brief` (line 290), `flow_lean` (line 325), `render_flow_pulse` (line 333), `render_buyer_eod` (line 340), `premium_path` (line 368), `range_line` (line 378)
 
-Engine dependencies: `fno_chain`
+Engine dependencies: `fno_chain`, `fno_costs`
 
 Related tests: `python-engine/tests/test_partner_buyer.py`
 

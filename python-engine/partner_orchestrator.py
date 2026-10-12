@@ -1243,7 +1243,7 @@ async def _buyer_flow_pulse(spec, snap, pcr: Optional[float], iv: Optional[float
             votes += 1 if shift > 0 else -1
             last_pcr = _last_pcr_reported.get(name)
             if last_pcr is None or abs(pcr - last_pcr) >= settings.PARTNER_PCR_ALERT_DELTA:
-                facts.append(f"PCR {open_row['pcr']:.2f}→{pcr:.2f} "
+                facts.append(f"near-money PCR {open_row['pcr']:.2f}→{pcr:.2f} "
                              + ("(put writing)" if shift > 0 else "(call writing)"))
                 pending["pcr"] = pcr
     buildup = "NEUTRAL"
