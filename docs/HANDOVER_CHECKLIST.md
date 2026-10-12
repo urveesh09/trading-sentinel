@@ -12,6 +12,61 @@
 
 
 
+## October 12 (night) — O12-PB2 card numbers verified (commit `feed23e`, Dev, pushed, not deployed)
+
+- [x] Index conversion vs real SENSEX index (Oct 8): median +0.4, mean |16| points.
+- [x] Premium model on 41,950 pairs; 60-minute decay; target range 0.85–1.0.
+- [x] Loss at SL from the buy limit plus spread and charges; exact stop price; near-stop flag.
+- [x] Five real Oct 6–9 cards replayed: levels correct; the premium stop protected every loss.
+- [x] Tests: full engine suite 5,141 pass, 4 skip, 0 fail (7 min 24 s); partner, hedge and identity suites 231 pass.
+- [ ] Deployed: no (merge, rebuild the engine).
+
+## October 12 (evening) — O12-PB partner messages for an option buyer (commit `304ad70`, Dev, pushed, not deployed)
+
+- [x] Buyer card (about 300 characters vs 1,670): one option, buy-up-to limit,
+  skip time, stop and target on the index plus option premium, risk per lot,
+  exit time. Dispatch label and identity unchanged.
+- [x] One-line updates (exit / book + SL to cost / square off); a malformed
+  view falls back to the old wording.
+- [x] Brief and wrap for NIFTY/SENSEX in two lines each; the wrap shows each
+  card's option premium path.
+- [x] OI flow pulse: one message per index per new fact, 30-minute gap,
+  6 a day; crisis-only regime notice; own-book caution notice off.
+- [x] Tests: full engine suite 5,139 pass, 4 skip, 0 fail (7 min 22 s).
+  `test_partner_buyer.py` 14; orchestrator buyer tests 5; partner, hedge,
+  qualification, policy identity, scheduler and goldens: 681 pass.
+  Agent and gateway untouched.
+- [x] Checked against Production (read-only): Oct 6–12 card and update
+  lengths; Oct 9 22550 CE premium path (₹97 at the card, ₹125 at the target
+  time, ₹141 peak).
+- [ ] After deploy, first session: read the `partner_msg` log lines; check
+  the card's `≈` index levels against the real index; count pulses.
+- [ ] Deployed: no (merge, rebuild the engine). Rollback
+  `PARTNER_BUYER_MESSAGES=false`.
+
+## October 12 — Oct 12 audit fixes (commit `d4a75fc`, Dev, pushed, not deployed)
+
+- [x] O12-F1 flat fast exit off the lock and out of telemetry; regular tick waits for a fast pass.
+- [x] O12-R1 anchored chain (1 request), DR/fired-signal reads in the management lane, per-stage read timing.
+- [x] O12-Q1/Q2 shared → quote bucket → send; post-wait batch lane; bounded fairness; cancel-safe; keyed 500 chunks.
+- [x] O12-C1/C2 truncated dump retried; usable-only no-op; stale symbols dropped; snapshot clocks validated.
+- [x] O12-T1/T2/T3 tilt identity pairing, frozen manifest, open/unavailable, drawdown, hourly offload.
+- [x] O12-S1 Smart exit-date total on `/health`; rec 10 overnight ladder receipt; O12-D1 wording.
+- [x] Engine suite (all files): 5,118 pass, 4 skip, 2 fail. Both pass when
+  re-run:
+  - `test_kite_client_methods::test_methods_go_through_rate_limiter`, an
+    `inspect.getsource` test: `kite_client.py` was edited during the run.
+    Files a–k re-run in order: 2,399 pass.
+  - `test_mark_to_market::TestFnoMark::test_actual_fno_writer_qty_is_not_multiplied_twice`,
+    the known order/date-dependent mark test; it passes alone.
+
+  `test_oct12_audit_fixes.py`: 25 pass. Quote/lanes/Oct 9 files: 53 pass.
+  F&O, chain users, scheduler and goldens: 293 + 88 pass. Agent and gateway
+  untouched.
+- [x] Tilt checked on a read-only copy of Production F&O rows: same 22
+  pairs and nets; drawdown added.
+- [ ] Deployed: no (merge, rebuild the engine).
+
 ## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (commit `2d658b8`, Dev, pushed, not deployed)
 
 - [x] Shadow module, hourly report line, `/ops/fno-spread-tilt`; 4 tests.

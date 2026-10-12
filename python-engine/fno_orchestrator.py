@@ -39,6 +39,7 @@ from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_shadow
 from config import settings
 from fno_chain import ChainSnapshot, take_chain_snapshot
+from kite_client import provider_lane
 from fno_costs import calc_fno_costs
 from fno_engine_mom import MomSignal, evaluate_fno_mom
 from fno_adaptive_risk import policy_from_settings as adaptive_policy, read_book_closes, risk_stance
@@ -237,7 +238,8 @@ def _fno_pool_live() -> float:
 
 async def _load_dr_entry_inputs(
     kite, instruments, fut_token: int, regime: str, now_ist: datetime,
-    snapshot: Optional[ChainSnapshot] = None,
+    snapshot: Optional[ChainSnapshot] = None, anchor_price: Optional[float] = None,
+    stages: Optional[dict] = None,
 ) -> tuple[Optional[ChainSnapshot], Optional[object], Optional[MomSignal], str]:
     """Load only the cancellable inputs needed to *open* a paper DR idea.
 
@@ -253,6 +255,13 @@ async def _load_dr_entry_inputs(
     two independent full waits and crowding out the next 90-second tick.
     ``asyncio.wait_for`` waits for cancellation to finish, so this never
     detaches a late request onto the shared Kite client.
+
+    [O12-R1 2026-10-12] Oct 12 lost 10 passes to this budget (median read
+    5.4 s, p90 15 s) while queued behind research and advisory reads on the
+    1/s quote budget. These reads have a hard deadline and a freshness check
+    (a late chain is discarded), so they now run in the management lane
+    (bounded: 3 consecutive grants, then lower lanes get a turn), and the
+    tick's own futures price anchors the chain window, saving one request.
     """
     budget = max(0.1, float(settings.FNO_DR_ENTRY_MARKET_DATA_MAX_SEC))
     deadline = monotonic() + budget
@@ -260,30 +269,39 @@ async def _load_dr_entry_inputs(
     def _remaining() -> float:
         return max(0.001, deadline - monotonic())
 
+    stages = stages if stages is not None else {}
     if snapshot is None:
+        stage_started = monotonic()
         try:
-            snapshot = await asyncio.wait_for(
-                take_chain_snapshot(kite, instruments, now_ist),
-                timeout=_remaining(),
-            )
+            with provider_lane("management"):
+                snapshot = await asyncio.wait_for(
+                    take_chain_snapshot(kite, instruments, now_ist, anchor_price=anchor_price),
+                    timeout=_remaining(),
+                )
         except asyncio.TimeoutError:
             return None, None, None, "chain_snapshot_deadline"
         except Exception as exc:
             logger.error("fno_dr_entry_snapshot_failed err=%s", str(exc))
             return None, None, None, "chain_snapshot_failed"
+        finally:
+            stages["chain_snapshot"] = round(monotonic() - stage_started, 3)
     if snapshot is None:
         return None, None, None, "chain_snapshot_unavailable"
 
+    stage_started = monotonic()
     try:
-        bars = await asyncio.wait_for(
-            _fetch_futures_bars(kite, fut_token, now_ist),
-            timeout=_remaining(),
-        )
+        with provider_lane("management"):
+            bars = await asyncio.wait_for(
+                _fetch_futures_bars(kite, fut_token, now_ist),
+                timeout=_remaining(),
+            )
     except asyncio.TimeoutError:
         return snapshot, None, None, "futures_history_deadline"
     except Exception as exc:
         logger.error("fno_dr_entry_bars_failed err=%s", str(exc))
         return snapshot, None, None, "futures_history_failed"
+    finally:
+        stages["futures_history"] = round(monotonic() - stage_started, 3)
 
     return snapshot, bars, evaluate_fno_mom(bars, regime, now_ist), ""
 
@@ -1198,7 +1216,8 @@ async def run_fno_tick(
             if in_dr_window and not remaining_open_dr:
                 entry_inputs_started = monotonic()
                 entry_snap, entry_bars, entry_sig, entry_skip_reason = await _load_dr_entry_inputs(
-                    kite, instruments, fut.token, regime, evaluation_now_ist, snap,
+                    kite, instruments, fut.token, regime, evaluation_now_ist, snap, anchor_price=fut_price,
+                    stages=summary.setdefault("defined_risk_entry_read_sec", {}),
                 )
                 summary["stage_durations_sec"]["defined_risk_entry_inputs"] = round(
                     monotonic() - entry_inputs_started, 3
@@ -1206,9 +1225,10 @@ async def run_fno_tick(
                 if entry_skip_reason:
                     summary["dr_entry_skip_reason"] = entry_skip_reason
                     logger.warning(
-                        "fno_dr_entry_skipped reason=%s budget_sec=%.3f",
+                        "fno_dr_entry_skipped reason=%s budget_sec=%.3f read_sec=%s",
                         entry_skip_reason,
                         float(settings.FNO_DR_ENTRY_MARKET_DATA_MAX_SEC),
+                        summary.get("defined_risk_entry_read_sec"),
                     )
                 elif entry_snap is not None and entry_sig is not None:
                     # Preserve the original tick-local reuse contract: a
@@ -1259,6 +1279,7 @@ async def run_fno_tick(
         if name == settings.FNO_UNDERLYING.upper():
             note, nifty_bars = await _single_leg_entries(
                 kite, db_path, name, instruments, fut, summary, bars=bars, sig=sig, snap=snap, rvol_bars=None,
+                fut_anchor=fut_price,
                 regime=regime, now_ist=now_ist, evaluation_now_ist=evaluation_now_ist, scan_id=scan_id,
                 is_trading_day=is_trading_day, action_clock=action_clock,
                 paper_exec=paper_exec, live_exec=live_exec,
@@ -1293,6 +1314,7 @@ async def _single_leg_entries(
     kite, db_path: str, name: str, book, fut, summary: dict, *, bars, sig, snap, rvol_bars,
     regime: str, now_ist: datetime, evaluation_now_ist: datetime, scan_id: str, is_trading_day: bool,
     action_clock: Optional[Callable[[], datetime]], paper_exec: FnoExecutor, live_exec: FnoExecutor,
+    fut_anchor: Optional[float] = None,
 ) -> tuple[str, object]:
     """One underlying's single-leg entry pass; returns (note, futures bars).
 
@@ -1346,8 +1368,11 @@ async def _single_leg_entries(
         return f"no_signal:{sig.reject_reason}", bars
 
     # Signal fired: snapshot the chain once, then run both legs off it.
+    # A fired signal is a pending entry decision: management lane, and this
+    # tick's futures price (when it is this book's future) anchors the window.
     if snap is None:
-        snap = await take_chain_snapshot(kite, book, now_ist)
+        with provider_lane("management"):
+            snap = await take_chain_snapshot(kite, book, now_ist, anchor_price=fut_anchor)
     if snap is None:
         shadow(db_path, bars, regime, now_ist)
         await log_fno_signal(
@@ -1442,6 +1467,23 @@ async def _single_leg_entries(
     return "", bars
 
 
+async def fast_exit_has_work(db_path: Optional[str] = None) -> bool:
+    """True when an enabled single-leg book holds an OPEN position.
+
+    [O12-F1 2026-10-12] The scheduler asks this before taking the F&O lock,
+    so a flat fast pass (one read, no provider call) never holds the lock a
+    regular entry pass needs.
+    """
+    db_path = db_path or settings.DB_PATH
+    sources = [] if settings.FNO_DISABLE_PAPER else [FnoSource.FNO_PAPER.value]
+    if not settings.FNO_DISABLE_LIVE:
+        sources.append(FnoSource.FNO_LIVE.value)
+    for source in sources:
+        if await fpos.open_positions(db_path, source):
+            return True
+    return False
+
+
 async def run_fno_fast_exit(kite, db_path: Optional[str] = None, now_ist: Optional[datetime] = None) -> dict:
     """[FAST-EXIT 2026-10-04] Manage open single-leg positions between ticks.
 
@@ -1462,13 +1504,7 @@ async def run_fno_fast_exit(kite, db_path: Optional[str] = None, now_ist: Option
                      "management_read_outcomes": {},
                      "database_stage_timing": {"measurement": "operation_elapsed_includes_sqlite_lock_wait",
                                                "stages": {}}}
-    sources = [] if settings.FNO_DISABLE_PAPER else [FnoSource.FNO_PAPER.value]
-    if not settings.FNO_DISABLE_LIVE:
-        sources.append(FnoSource.FNO_LIVE.value)
-    open_count = 0
-    for source in sources:
-        open_count += len(await fpos.open_positions(db_path, source))
-    if not open_count:
+    if not await fast_exit_has_work(db_path):
         summary["note"] = "no_open_positions"
         return summary
     instruments = get_fno_instruments()

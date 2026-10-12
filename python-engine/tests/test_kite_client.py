@@ -127,6 +127,10 @@ class TestKiteClientInit:
 # KiteClient - refresh_instrument_cache
 # ---------------------------------------------------------------------
 
+# Enough extra symbols for a dump to count as a real catalogue (>= 1,000).
+_FILLER_ROWS = "".join(f'\n{900000 + i},{i},"FILL{i}","Filler {i}"' for i in range(1000))
+
+
 class TestRefreshInstrumentCache:
 
     @pytest.mark.asyncio
@@ -144,6 +148,7 @@ class TestRefreshInstrumentCache:
         client.access_token = "valid_token"
 
         nse_csv = 'instrument_token,exchange_token,tradingsymbol,name\n123,10,"RELIANCE","Reliance"\n456,20,"TCS","TCS Ltd"'
+        nse_csv += _FILLER_ROWS          # [O12-C1] a dump below 1,000 symbols is refused as truncated
 
         mock_responses = {
             "/instruments/NSE": MagicMock(status_code=200, text=nse_csv, raise_for_status=MagicMock()),
@@ -180,8 +185,8 @@ class TestRefreshInstrumentCache:
             'instrument_token,exchange_token,tradingsymbol,name,last_price,'
             'tick_size,lot_size,instrument_type,segment,exchange\n'
             '738561,10,"RELIANCE","Reliance Industries",2500.0,0.05,1,EQ,NSE,NSE\n'
-            '2953217,20,"TCS","Tata Consultancy",3450.5,0.05,1,EQ,NSE,NSE\n'
-        )
+            '2953217,20,"TCS","Tata Consultancy",3450.5,0.05,1,EQ,NSE,NSE'
+        ) + _FILLER_ROWS + "\n"
 
         async def mock_get(url, **kwargs):
             return MagicMock(

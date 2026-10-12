@@ -315,8 +315,9 @@ async def test_quote_sends_stay_spaced_when_the_shared_limiter_delays_one(tmp_pa
     monkeypatch.setattr(client.client, "get", fake_get)
     await asyncio.gather(client.get_quote_by_instruments({1: "NSE:A"}),
                          client.get_quote_by_instruments({2: "NSE:B"}))
-    assert len(sends) == 2 and sends[1] - sends[0] >= (1 / rate) * 0.98
-    assert client.quote_budget.snapshot()["dispatch_gate_waits"] == 1
+    # [O12-Q1] the quote bucket now admits after the shared limiter, right
+    # before the send, so the delayed slot cannot bunch with the next one.
+    assert len(sends) == 2 and sends[1] - sends[0] >= 1 / rate
 
 
 @pytest.mark.asyncio

@@ -5,6 +5,127 @@
 
 
 
+## October 12 (night) — O12-PB2 card numbers verified on Production data (done, Dev, commit `feed23e`, pushed, not deployed)
+
+- Problem: the partner trades real money, so each number on the card must
+  be checked against what markets actually did, not just modelled.
+- Evidence (read-only, Production):
+  - 41,950 snapshot pairs (premium model);
+  - 184 SENSEX index samples (index conversion);
+  - replay of the five delivered Oct 6–9 cards.
+- Files: `partner_buyer.py` (`BUYER_VIEW_V2`: decay 60 min, target range
+  0.85, loss at SL from the limit with spread and charges, exact stop price,
+  near-stop flag, SL-order wording); `partner_orchestrator.py` (near-money
+  PCR label); `tests/test_partner_buyer.py` (20 tests).
+- Acceptance (met):
+  - decay pinned to Black-76 at T − 60 min;
+  - loss at SL equals the hand formula;
+  - stop printed at its exact price;
+  - Oct 7 13:11 card flagged near-stop;
+  - "reward < risk" judged on the low end.
+- Calibrations are in-sample (6 sessions) and documented with their samples.
+  They are display estimates, not strategy parameters. Re-measure after
+  20 more sessions.
+- Remaining:
+  - [ ] After deploy: compare each card's `≈` index levels with the real
+    index, and each target range with the option at the target event.
+  - [ ] Owner: 4 of 5 recent cards are reward < risk in premium terms. A
+    premium-aware target or strike choice for buyers is a strategy change,
+    so it needs frozen rules and forward scoring.
+
+## October 12 (evening) — O12-PB partner messages for an option buyer (done, Dev, commit `304ad70`, pushed, not deployed)
+
+- Problem:
+  - the partner only buys options now and no longer hedges;
+  - cards were 1,670-character debit-spread texts valid for 30 s, with
+    levels on the future (about 60 points over the index on Oct 9);
+  - updates spoke of "the paired structure";
+  - OI alerts were silenced, or else came five to a minute.
+- Files:
+  - `partner_buyer.py` (new, pure);
+  - `partner_manual_advisory.py` (`persist_candidate(buyer_view=)`, update
+    and reminder wording);
+  - `partner_orchestrator.py` (buyer view in the advisory tick, flow pulse,
+    pin helper, crisis-only regime notice, brief and wrap);
+  - `config.py`: `PARTNER_BUYER_MESSAGES`, `PARTNER_BUYER_INDICES`,
+    `PARTNER_BUYER_ENTRY_WINDOW_MIN`, `PARTNER_FLOW_PULSE_DAILY_CAP`;
+  - tests: `test_partner_buyer.py` (new, 13); `test_partner_orchestrator.py`
+    (+5, legacy fixture pins the flag off).
+- Acceptance (met in Dev tests):
+  - card under 400 characters, still opening with the dispatch label;
+  - identity unchanged; index levels shifted by the parity offset, or
+    marked `fut` without parity;
+  - one-line updates; one pulse per tick with throttle and carry-over;
+  - brief under 500 characters; wrap with the option premium path.
+- Rollout: merge, rebuild the engine. No schema change (`buyer_view` lives
+  in the JSON payload). Rollback: `PARTNER_BUYER_MESSAGES=false`.
+- Remaining:
+  - [ ] First live day after deploy: read the partner log lines (cards,
+    pulses, brief, wrap). Check the card's index levels against the actual
+    NIFTY/SENSEX index, and count pulses per index.
+  - [ ] Option (owner decision): pick the buyer's strike at the parity
+    forward's ATM instead of the future's. It would need its own quote
+    validation.
+  - [ ] Option: align the scan with bar closes (every 5 min at :50 plus a
+    retry). That first needs the collection-completeness slot model
+    updated.
+
+## October 12 — Oct 12 audit fixes O12-F1/R1/Q1/Q2/C1/C2/T1–T3/S1/D1 (done, Dev, commit `d4a75fc`, pushed, not deployed)
+
+- Problem (Production audit, PR #107 deployed):
+  - flat 10 s fast-exit passes took the F&O lock from 4 regular entry
+    passes;
+  - 10 DR entry passes ended at the 20 s read budget;
+  - quote merger lane and fairness gaps; keyed requests > 500 unbounded;
+  - a truncated instrument dump counted as a success, and naive or future
+    snapshot clocks were not refused;
+  - spread-tilt pairing lacked identity, used a live lot cap and had no
+    drawdown, and its hourly read was synchronous;
+  - the Smart day total omitted carried exits.
+- Files:
+  - `fno_orchestrator.py`, `fno_chain.py`, `scheduler_setup.py`,
+    `kite_client.py`, `config.py` (`FNO_TICK_FAST_EXIT_WAIT_SEC`);
+  - `fno_spread_tilt.py`, `fno_hourly_report.py`, `penny_smart_shadow.py`,
+    `edge_overnight_paper.py`, `ops_watchdogs.py`;
+  - tests: `test_oct12_audit_fixes.py` (new, 25), `test_fno_fast_exit.py`,
+    `test_fno_orchestrator.py` (2 quote calls, not 3), `test_oct9_audit_fixes.py`,
+    `test_kite_client.py` (dumps padded to ≥ 1,000), `test_edge_overnight_paper.py`.
+- Acceptance (met in Dev tests):
+  - a regular tick waits for a running fast pass and then runs;
+  - a flat fast pass never calls management;
+  - a regular tick still skips behind a regular tick;
+  - an anchored chain makes 1 request, and a moved anchor retakes it;
+  - DR reads run in the management lane, which does not leak to the caller;
+  - a management read arriving during a bulk wait rides the next batch,
+    labelled management;
+  - a streaming management load cannot hold a 500-token bulk read beyond 3
+    batches;
+  - a cancelled batch releases its callers;
+  - 501 keyed requests go as 500 + 1;
+  - a truncated dump retries and then recovers, and a full dump drops
+    delisted symbols;
+  - naive, future and garbage snapshot clocks are refused;
+  - the tilt does not pair across underlyings or expiries, an ambiguous
+    spread is UNAVAILABLE, the frozen cap ignores runtime 9, open sides wait,
+    and drawdown is in close order;
+  - the hourly report keeps the loop alive and reports a late read;
+  - the Smart exit date shows 12 closes / −₹11.44.
+- Config/migration: one new setting (`FNO_TICK_FAST_EXIT_WAIT_SEC=20`); no
+  schema change; new JSON fields only.
+- Rollout: merge, rebuild the engine. Rollback: revert (no stored-state
+  change).
+- Next (after deploy):
+  1. `fno_tick_skip reason=fno_pass_in_progress` should be ~0, and
+     `fno_tick_wait` appears only with an open leg.
+  2. `fno_dr_entry_skipped` count and `dr_entry_read_sec` per stage should
+     be far below 10/day, with entry-read median well under 5 s.
+  3. `/ops/provider-budget` quote: over_documented_limit 0, plus
+     `fairness_promotions` and `spacing_waits`.
+  4. Tilt: first forward pair; review at 20 with net, worst and drawdown
+     (owner decides).
+  5. Still open: C4/C7/finalizer deferred items; next expiry (NIFTY Oct 13,
+     SENSEX Oct 15) is the expiry agent's.
+
 ## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (done, Dev, commit `2d658b8`, pushed, not deployed)
 
 - Problem: the owner asked for more profit / less loss. The paper spreads

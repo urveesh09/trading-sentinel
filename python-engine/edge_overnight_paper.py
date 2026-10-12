@@ -639,11 +639,20 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
             continue
         charges = buy_charges(entry_price, shares)
         cash -= entry_price * shares + charges
+        _filled, walked_avg = walk_asks(asks, shares)
+        # [O12 rec 10 2026-10-12] The receipt keeps the whole visible ladder,
+        # the walked average and which floor set the price, so an audit can
+        # re-walk the fill instead of seeing only the best ask and a total.
         opened.append({"ticker": pick.ticker, "kind": pick.signal_subtype,
                        "strength": round(float(pick.adjusted_strength), 4), "entry_ltp": ltp,
                        "entry_price": entry_price, "shares": shares, "buy_charges": charges,
                        "planned": int(pick.shares), "visible_ask_qty": visible,
                        "best_ask": asks[0][0] if asks else None, "best_bid": _best_bid(quote),
+                       "ask_levels": [[price, qty] for price, qty in asks],
+                       "walked_avg": round(walked_avg, 4) if walked_avg is not None else None,
+                       "price_basis": ("ask_walk" if walked_avg is not None and walked_avg > model_price
+                                       else "slippage_floor"),
+                       "capacity": capacity,
                        "quote_ts": str(quote.get("timestamp") or quote.get("last_trade_time") or "")})
 
     summary = {"date": today, "phase": "ENTRY", "universe": len(tickers), "quoted": len(bars_today),

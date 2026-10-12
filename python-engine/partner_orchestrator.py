@@ -96,6 +96,16 @@ _last_walls_reported: Dict[str, tuple] = {}
 _last_wall_flow_reported: Dict[tuple, float] = {}
 _last_regime_reported: Optional[str] = None
 _halt_reported_on: Optional[str] = None
+# [O12-PB 2026-10-12] Flow pulse state (buyer mode): PCR level and OI-flow
+# lean last reported per underlying. Like the maps above, a restart costs at
+# most one repeated fact.
+_last_pcr_reported: Dict[str, float] = {}
+_last_lean_reported: Dict[str, str] = {}
+_BUILDUP_VOTES = {"LONG_BUILDUP": 1, "SHORT_COVERING": 1, "SHORT_BUILDUP": -1, "LONG_UNWINDING": -1}
+
+
+def _buyer_indices() -> set[str]:
+    return {name.strip().upper() for name in settings.PARTNER_BUYER_INDICES.split(",") if name.strip()}
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS partner_messages (
@@ -264,11 +274,11 @@ async def _legacy_info_retired(now: datetime, hedge_suppress: bool, *, context: 
 
 
 async def _todays_card_outcomes(db_path: str, underlying: str, day_iso: str,
-                                close: Optional[float]) -> tuple[list[dict], str]:
+                                close: Optional[float], counts: Optional[dict] = None) -> tuple[list[dict], str]:
     """Delivered advice cards for the day and what happened to each, plus a
     30-day record line. Outcomes come from the published levels only (the
     same public observations that sent the updates); no partner fill or P&L
-    is inferred."""
+    is inferred. ``counts``, when given, receives the 30-day tallies."""
     try:
         async with aiosqlite.connect(db_path) as db:
             ideas = await (await db.execute(
@@ -317,7 +327,12 @@ async def _todays_card_outcomes(db_path: str, underlying: str, day_iso: str,
         else:
             outcome = "no target/invalidation observed"
         cards.append({"time": str(payload.get("signal_at") or "")[11:16], "direction": direction,
-                      "outcome": outcome})
+                      "outcome": outcome, "signal_at": payload.get("signal_at"),
+                      "event": event[0] if event else None,
+                      "event_time": str(event[1])[11:16] if event else None,
+                      "buyer_view": payload.get("buyer_view")})
+    if counts is not None:
+        counts.update(record)
     record_line = ""
     if record["n"]:
         record_line = (f"{underlying} advice cards, last 30 days: {record['n']} sent, "
@@ -575,6 +590,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
     specs.extend(SPECS[name] for name in INDEX_EXCHANGES if name not in seen)
     market_candidates = []
     protection_candidates = []
+    buyer_views: dict = {}   # thesis_id -> partner_buyer.buyer_plan
     decision_clocks = {
         spec.name: start_clock(underlying=spec.name,
                                account_id=f"manual-profile:{profile.profile_id}",
@@ -1093,6 +1109,16 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
                 await finish_attempt(spec.name, "REJECTED", "candidate_validation_rejected")
                 continue
             market_candidates.append(candidate)
+            if settings.PARTNER_BUYER_MESSAGES:
+                # [O12-PB] The partner buys options only: price the card's long
+                # leg from the same chain. A failure leaves the full card.
+                try:
+                    from partner_buyer import buyer_plan
+                    buyer_views[candidate.thesis_id] = buyer_plan(
+                        candidate, snapshot, candidate_clock.candidate_constructed_at,
+                        entry_window_min=settings.PARTNER_BUYER_ENTRY_WINDOW_MIN)
+                except Exception as exc:
+                    logger.warning("partner_buyer_plan_failed underlying=%s err=%s", spec.name, type(exc).__name__)
             await record_advisory_input_status(
                 settings.DB_PATH, underlying=spec.name, attempted_at=now,
                 stage="CANDIDATE_VALIDATED", reason="awaiting_profile_and_delivery_gates",
@@ -1134,6 +1160,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
                 "min_depth_units": settings.PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS,
             },
             queue_for_delivery=bool(settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED),
+            buyer_view=buyer_views.get(candidate.thesis_id),
         )
         if stored["status"] == "QUEUED":
             delivered = await dispatch_queued_advisory(settings.DB_PATH, stored, profile, now=now)
@@ -1167,6 +1194,142 @@ async def partner_manual_advisory_lifecycle_tick(now: Optional[datetime] = None)
 # ---------------------------------------------------------------------------
 # job: analytics tick (wide chain -> OI store -> events)
 # ---------------------------------------------------------------------------
+
+async def _pulse_count_today(db_path: str, name: str, day_iso: str) -> int:
+    async with _partner_db(db_path) as db:
+        row = await (await db.execute(
+            "SELECT detail FROM partner_messages WHERE kind='flow_pulse' AND dedup_key=?", (name,),
+        )).fetchone()
+    try:
+        detail = json.loads(row[0]) if row and row[0] else {}
+    except (TypeError, json.JSONDecodeError):
+        detail = {}
+    return int(detail.get("count", 0)) if detail.get("day") == day_iso else 0
+
+
+async def _buyer_flow_pulse(spec, snap, pcr: Optional[float], iv: Optional[float],
+                            now: datetime, day_iso: str, metrics: dict) -> None:
+    """[O12-PB 2026-10-12] One short OI-flow message per index instead of
+    separate PCR / IV / wall / wall-flow alerts (Oct 10: five lines in one
+    minute, two of them the same PCR read).
+
+    A pulse goes out when at least one fact is new since the last pulse (same
+    thresholds as the old alerts), at most every PARTNER_EVENT_MIN_GAP_MIN and
+    PARTNER_FLOW_PULSE_DAILY_CAP times a day per index. Its first line names
+    the side the open-relative OI flow favours: PCR shift, wall build/unwind
+    and the futures build-up each cast one vote and two net votes name a side.
+    That is a read of writers' positioning, not a validated signal. Fact
+    state is committed only after a delivered pulse, so a throttled or failed
+    fact is reported in the next one.
+    """
+    name = spec.name
+    facts: list[str] = []
+    pending: dict = {}
+    votes = 0
+    if iv is not None:
+        last_iv = _last_iv_reported.get(name)
+        if last_iv is None:
+            _last_iv_reported[name] = iv
+        elif last_iv > 0 and abs(iv - last_iv) / last_iv >= settings.PARTNER_IV_MOVE_ALERT_PCT:
+            facts.append(f"IV {last_iv * 100:.1f}%→{iv * 100:.1f}% "
+                         + ("(premiums pricier)" if iv > last_iv else "(premium crush, longs bleed)"))
+            pending["iv"] = iv
+    if (now.hour * 60 + now.minute) < 10 * 60:   # OI is delayed early; IV facts wait too
+        return
+    open_row = await fno_oi_store.first_fut_row_today(settings.DB_PATH, name, day_iso)
+    if open_row is not None and pcr is not None and open_row.get("pcr") is not None:
+        shift = pcr - open_row["pcr"]
+        if abs(shift) >= settings.PARTNER_PCR_ALERT_DELTA:
+            votes += 1 if shift > 0 else -1
+            last_pcr = _last_pcr_reported.get(name)
+            if last_pcr is None or abs(pcr - last_pcr) >= settings.PARTNER_PCR_ALERT_DELTA:
+                facts.append(f"near-money PCR {open_row['pcr']:.2f}→{pcr:.2f} "
+                             + ("(put writing)" if shift > 0 else "(call writing)"))
+                pending["pcr"] = pcr
+    buildup = "NEUTRAL"
+    if snap.fut_quote and open_row and open_row.get("fut_ltp") and open_row.get("fut_oi"):
+        buildup = fno_analytics.classify_buildup(
+            snap.forward - open_row["fut_ltp"], (snap.fut_quote.oi or 0) - open_row["fut_oi"])
+        votes += _BUILDUP_VOTES.get(buildup, 0)
+    support, resistance = fno_analytics.oi_walls(snap)
+    if support is not None and resistance is not None:
+        prev = _last_walls_reported.get(name)
+        if prev is None:
+            _last_walls_reported[name] = (support, resistance)
+        elif (support, resistance) != prev:
+            facts.append(f"OI walls {prev[0]:,.0f}/{prev[1]:,.0f} → {support:,.0f}/{resistance:,.0f}")
+            pending["walls"] = (support, resistance)
+    baseline = await fno_oi_store.open_baseline(settings.DB_PATH, name, day_iso)
+    if baseline:
+        deltas = fno_analytics.strike_oi_deltas(snap, baseline)
+        for strike, ot, side in ((support, "PE", "support"), (resistance, "CE", "resistance")):
+            if strike is None or not baseline.get((strike, ot)) or deltas.get((strike, ot)) is None:
+                continue
+            pct = deltas[(strike, ot)] / baseline[(strike, ot)]
+            if abs(pct) < settings.PARTNER_WALL_DELTA_PCT:
+                continue
+            building = pct > 0
+            # Put writers adding below = support; call writers adding above = a cap.
+            votes += (1 if building else -1) if ot == "PE" else (-1 if building else 1)
+            key = (name, strike, ot)
+            if abs(pct - _last_wall_flow_reported.get(key, 0.0)) >= settings.PARTNER_WALL_DELTA_PCT:
+                verb = ("held" if building else "weakening") if ot == "PE" else ("capping" if building else "giving way")
+                facts.append(f"{side} {strike:,.0f} {verb} ({ot} OI {pct:+.0%})")
+                pending.setdefault("flows", {})[key] = pct
+    from partner_buyer import flow_lean, fut_to_index_offset, render_flow_pulse
+    lean = flow_lean(votes)
+    previous_lean = _last_lean_reported.get(name)
+    if lean != "NEUTRAL" and previous_lean not in (None, "NEUTRAL", lean):
+        facts.insert(0, f"flipped from {previous_lean}")
+    if not facts:
+        return
+    if buildup != "NEUTRAL":
+        facts.append(f"futures {buildup.replace('_', ' ').lower()}")
+    if await _throttled(settings.DB_PATH, "flow_pulse", name, now) or (
+            await _pulse_count_today(settings.DB_PATH, name, day_iso) >= settings.PARTNER_FLOW_PULSE_DAILY_CAP):
+        metrics["throttled"] = metrics.get("throttled", 0) + 1
+        return
+    offset = fut_to_index_offset(snap, now)
+    price = f"≈{snap.forward - offset:,.0f}" if offset is not None else f"fut {snap.forward:,.0f}"
+    text = render_flow_pulse(name, now.strftime("%H:%M"), lean, price, facts)
+    ok = await send_partner(text, kind="flow_pulse")
+    count = await _pulse_count_today(settings.DB_PATH, name, day_iso) + 1
+    await _record(settings.DB_PATH, "flow_pulse", name, ok, detail={"day": day_iso, "count": count}, now=now)
+    metrics["sent" if ok else "send_failed"] = metrics.get("sent" if ok else "send_failed", 0) + 1
+    if not ok:
+        return
+    if "iv" in pending:
+        _last_iv_reported[name] = pending["iv"]
+    if "pcr" in pending:
+        _last_pcr_reported[name] = pending["pcr"]
+    if "walls" in pending:
+        _last_walls_reported[name] = pending["walls"]
+    _last_wall_flow_reported.update(pending.get("flows", {}))
+    _last_lean_reported[name] = lean
+
+
+async def _send_pin_note(spec, book, snap, max_pain, now: datetime, day_iso: str) -> None:
+    """Once per expiry afternoon: where the future sits against max pain."""
+    if not (book.is_expiry_day(now.date()) and (now.hour * 60 + now.minute) >= 13 * 60 + 30
+            and max_pain is not None and snap.forward > 0):
+        return
+    pin_key = f"{spec.name}:{day_iso}"
+    if await _seen(settings.DB_PATH, "pin", pin_key):
+        return
+    dist = snap.forward - max_pain
+    ok = await send_partner(
+        format_event(
+            "pin", spec.name,
+            f"expiry pin watch: fut {snap.forward:,.0f} vs "
+            f"max pain {max_pain:,.0f} ({dist:+,.0f} pts) — "
+            "price often gravitates toward max pain into the "
+            "close; chasing moves away from it is fighting "
+            "the writers",
+        ),
+        kind="pin",
+    )
+    await _record(settings.DB_PATH, "pin", pin_key, ok, now=now)
+
 
 async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
     global _last_regime_reported, _halt_reported_on
@@ -1205,6 +1368,14 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                 settings.DB_PATH, spec.name, snap, pcr, max_pain, iv,
             )
             metrics["snapshots_persisted"] += 1
+
+            if settings.PARTNER_BUYER_MESSAGES:
+                # [O12-PB] One flow pulse per buyer index; snapshots for the
+                # others are still stored above.
+                if spec.name in _buyer_indices():
+                    await _buyer_flow_pulse(spec, snap, pcr, iv, now, day_iso, metrics)
+                    await _send_pin_note(spec, book, snap, max_pain, now, day_iso)
+                continue
 
             # --- IV spike/crush vs last reported ------------------------
             if iv is not None:
@@ -1317,28 +1488,8 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
 
             # --- expiry-day pin note ------------------------------------
             # [PARTNER-ENRICH 2026-07-19] T3a: once per expiry afternoon.
-            if (
-                not metrics["analytics_suppression_enabled"]
-                and
-                book.is_expiry_day(now.date())
-                and (now.hour * 60 + now.minute) >= 13 * 60 + 30
-                and max_pain is not None and snap.forward > 0
-            ):
-                pin_key = f"{spec.name}:{day_iso}"
-                if not await _seen(settings.DB_PATH, "pin", pin_key):
-                    dist = snap.forward - max_pain
-                    ok = await send_partner(
-                        format_event(
-                            "pin", spec.name,
-                            f"expiry pin watch: fut {snap.forward:,.0f} vs "
-                            f"max pain {max_pain:,.0f} ({dist:+,.0f} pts) — "
-                            "price often gravitates toward max pain into the "
-                            "close; chasing moves away from it is fighting "
-                            "the writers",
-                        ),
-                        kind="pin",
-                    )
-                    await _record(settings.DB_PATH, "pin", pin_key, ok, now=now)
+            if not metrics["analytics_suppression_enabled"]:
+                await _send_pin_note(spec, book, snap, max_pain, now, day_iso)
         except Exception as exc:
             metrics["snapshot_errors"] += 1
             logger.error(
@@ -1349,7 +1500,19 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
     # --- regime transition (index-level, one per tick) -------------------
     try:
         regime = _main._fno_regime_str()
+        crisis = "REGIME_3_CRISIS"
         if _last_regime_reported is None:
+            _last_regime_reported = regime
+        elif regime != _last_regime_reported and settings.PARTNER_BUYER_MESSAGES:
+            # [O12-PB] Regime names are our internals; a buyer only needs the
+            # crisis switch, which stops new cards.
+            if crisis in (regime, _last_regime_reported):
+                await _send_event(
+                    settings.DB_PATH, "regime_change", "",
+                    "Crisis regime: no new cards; avoid fresh long premium" if regime == crisis
+                    else "Crisis regime over: cards resume on clean breaks",
+                    now, metrics=metrics,
+                )
             _last_regime_reported = regime
         elif regime != _last_regime_reported:
             await _send_event(
@@ -1378,8 +1541,11 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
     # behaviour is not. Reword to what the signal actually means and keep the
     # ledger honest upstream (see auto_square_momentum).
     try:
-        async with _main.state_lock:
-            halted, reasons = await _main.check_circuit_breakers(settings.DB_PATH)
+        # [O12-PB] Our own book's loss streaks tell an option buyer nothing.
+        halted, reasons = False, []
+        if not settings.PARTNER_BUYER_MESSAGES:
+            async with _main.state_lock:
+                halted, reasons = await _main.check_circuit_breakers(settings.DB_PATH)
         if halted and _halt_reported_on != day_iso:
             _halt_reported_on = day_iso
             await _send_event(
@@ -1494,7 +1660,10 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
         score = None
 
     rows: List[Dict] = []
+    buyer = settings.PARTNER_BUYER_MESSAGES
     for spec in analytics_underlyings():
+        if buyer and spec.name not in _buyer_indices():
+            continue
         row: Dict = {"name": spec.name}
         try:
             book = get_instruments_for(spec.name)
@@ -1539,6 +1708,9 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
                 )
                 if skew is not None:
                     row.update(skew_ce=skew[0], skew_pe=skew[1])
+                if buyer:
+                    from partner_buyer import fut_to_index_offset
+                    row["offset"] = fut_to_index_offset(snap, now)
             elif "fut" not in row:
                 row["error"] = scan.error or "no data"
         except Exception as exc:
@@ -1549,10 +1721,24 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
             row["error"] = "internal error"
         rows.append(row)
 
-    msg = format_morning_brief(
-        f"{day_iso} {now.strftime('%H:%M')} IST", regime, score, rows,
-        events_note=event_note_for(now.date()),
-    )
+    if buyer:
+        from partner_buyer import render_buyer_brief
+        for row in rows:
+            # Levels come from futures bars; shift them to the index when the
+            # chain gave a usable parity read.
+            offset = row.get("offset")
+            row["basis"] = "INDEX" if offset is not None else "FUTURES"
+            shift = offset or 0.0
+            for key, out in (("fut", "index_px"), ("long_level", "long_level"), ("short_level", "short_level")):
+                if row.get(key) is not None:
+                    row[out] = row[key] - shift
+        msg = render_buyer_brief(now.strftime("%a %d %b"), rows, crisis=regime == "REGIME_3_CRISIS",
+                                 events_note=event_note_for(now.date()))
+    else:
+        msg = format_morning_brief(
+            f"{day_iso} {now.strftime('%H:%M')} IST", regime, score, rows,
+            events_note=event_note_for(now.date()),
+        )
     ok = await send_partner(msg, kind="brief")
     await _record(settings.DB_PATH, "brief", day_iso, ok, now=now)
 
@@ -1686,6 +1872,32 @@ async def _track_record_overall(db_path: str, now: datetime) -> str:
     )
 
 
+async def _buyer_card_outcome(name: str, day_iso: str, card: dict) -> dict:
+    """[O12-PB] A card's outcome for the buyer wrap: the first published level
+    reached and what its option's premium did (5-minute snapshot LTPs from the
+    analytics tick; empty when that strike was not in the window)."""
+    from partner_buyer import premium_path
+    view = card.get("buyer_view") or {}
+    option = f"{view['strike']:g} {view['opt_type']}" if view.get("strike") else card.get("direction", "?")
+    if card.get("event") == "TARGET_ZONE":
+        outcome = f"🎯 target hit {card['event_time']}"
+    elif card.get("event") == "INVALIDATION":
+        outcome = f"🛑 stopped {card['event_time']}"
+    else:
+        outcome = "no level hit"
+    premium = ""
+    if view.get("strike") and view.get("ask") and card.get("signal_at"):
+        try:
+            start = datetime.fromisoformat(str(card["signal_at"])).astimezone(IST).strftime("%Y-%m-%d %H:%M:%S")
+            series = await fno_oi_store.strike_ltp_series(
+                settings.DB_PATH, name, day_iso, str(view["expiry"]), float(view["strike"]),
+                str(view["opt_type"]), from_ts=start)
+            premium = premium_path(float(view["ask"]), series)
+        except (ValueError, TypeError, aiosqlite.Error) as exc:
+            logger.warning("partner_buyer_premium_path_failed underlying=%s err=%s", name, type(exc).__name__)
+    return {"time": card.get("time", ""), "option": option, "outcome": outcome, "premium": premium}
+
+
 async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
     if not await _gates_open(now, 0, 24 * 60):
@@ -1698,7 +1910,10 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
     await _log_non_momentum_open_positions(settings.DB_PATH, now)
 
     rows: List[Dict] = []
+    buyer = settings.PARTNER_BUYER_MESSAGES
     for spec in analytics_underlyings():
+        if buyer and spec.name not in _buyer_indices():
+            continue
         row: Dict = {"name": spec.name}
         try:
             book = get_instruments_for(spec.name)
@@ -1756,14 +1971,19 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
                     "option_line": await _option_outcome_line(detail, day_iso),
                 })
             row["signals"] = sig_rows
+            counts: dict = {}
             row["cards"], row["card_record"] = await _todays_card_outcomes(
-                settings.DB_PATH, spec.name, day_iso, row.get("close"))
+                settings.DB_PATH, spec.name, day_iso, row.get("close"), counts=counts)
+            row["counts"] = counts
+            if buyer:
+                row["buyer_cards"] = [await _buyer_card_outcome(spec.name, day_iso, card) for card in row["cards"]]
 
             last = await fno_oi_store.latest_fut_row(settings.DB_PATH, spec.name)
             if last is not None and last["snap_ts"].startswith(day_iso):
                 row.update(pcr=last["pcr"], max_pain=last["max_pain"])
             if book.is_expiry_day(now.date() + timedelta(days=1)):
                 row["tomorrow_note"] = (
+                    "expiry tomorrow: theta is fast, keep trades short" if buyer else
                     f"{spec.name} expiry TOMORROW — theta burns fast, "
                     "avoid holding long premium overnight"
                 )
@@ -1776,10 +1996,28 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
         rows.append(row)
 
     if not await _legacy_info_retired(now, settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD, context=True):
-        msg = format_eod(
-            day_iso, rows,
-            record_line=await _track_record_overall(settings.DB_PATH, now),
-        )
+        if buyer:
+            from partner_buyer import range_line, render_buyer_eod
+            buyer_rows, record = [], []
+            for row in rows:
+                tallies = row.get("counts") or {}
+                if tallies.get("n"):
+                    record.append(f"{row['name']} {tallies['n']} (🎯{tallies['target']} 🛑{tallies['invalidation']})")
+                if row.get("error") or row.get("close") is None:
+                    buyer_rows.append({"name": row["name"], "error": row.get("error") or "no bars"})
+                    continue
+                buyer_rows.append({
+                    "name": row["name"], "cards": row.get("buyer_cards") or [],
+                    "range_line": range_line(row["day_low"], row["day_high"], row["close"]),
+                    "tomorrow_note": row.get("tomorrow_note"),
+                })
+            msg = render_buyer_eod(now.strftime("%a %d %b"), buyer_rows,
+                                   record_line=("Cards, last 30 days: " + " · ".join(record)) if record else "")
+        else:
+            msg = format_eod(
+                day_iso, rows,
+                record_line=await _track_record_overall(settings.DB_PATH, now),
+            )
         ok = await send_partner(msg, kind="eod")
         await _record(settings.DB_PATH, "eod", day_iso, ok, now=now)
 

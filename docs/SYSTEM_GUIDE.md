@@ -14,6 +14,201 @@
 
 
 
+## October 12 (night) — option-buyer card numbers verified on Production data (O12-PB2, actual behavior, Dev, commit `feed23e`)
+
+Owner: the partner trades real money, so the card's numbers must be the most
+correct the system can produce. Every number was checked read-only against
+Production records. The changes in `partner_buyer.py` (`BUYER_VIEW_V2`):
+
+- **Index conversion confirmed, and essential.** Oct 8 SENSEX futures traded
+  330–430 points over the index. The parity-forward estimate against the
+  real index (184 tick samples): median error +0.4 points, mean absolute
+  16 points, p90 31. Averaging 3 or 5 strikes did not help: the scatter is
+  index-print timing.
+- **Premium model calibrated.** Black-76 at the entry implied volatility was
+  replayed on 41,950 later NIFTY/SENSEX snapshot pairs (Oct 5–12). Real
+  premiums ran below the model, more so with time (median −7% after 3 h).
+  With `PREMIUM_DECAY_MINUTES` = 60 priced in:
+  - target-like moves: median 0.0% (NIFTY) and −1.7% (SENSEX);
+  - stop-like moves: −3.4% and −4.1%, so the premium stop fires slightly
+    early (toward a smaller loss).
+- **Target is a range** (`TARGET_PREMIUM_LOW_FACTOR` 0.85). Bulk p10 was
+  −13.6% / −11.9%. When the index reached target, the Oct 6/8/9 cards'
+  options were 10%, 14% and 15% under the model; each got there later.
+  "Reward < risk" is judged on the low end.
+- **"Loss at SL ≈₹X/lot"** runs from the buy-up-to limit down to the premium
+  stop, plus one current spread and round-trip charges (`fno_costs`). It
+  replaces "Risk ≈" from the ask, and is shown at the exact stop price
+  (`₹73.25`, not a rounded `₹73`). It is not called a maximum, because fast
+  falls fill below the trigger (Oct 7: ₹166 → ₹158 between 5-minute prints).
+- **The stop line now reads "SL order at ₹X right after buying (or exit if
+  <index> ≈Y breaks)".** On the Oct 7 14:00 card the premium stop (₹158.4)
+  traded at 14:02. The index stop was confirmed on the 14:30 bar, with the
+  put at ₹117 (about ₹3,700 a lot worse).
+- **A stop within `NEAR_STOP_PCT` (5%) of the ask is flagged** "skip or tiny
+  size". The Oct 7 13:11 card had its stop ₹3.25 under ₹169.65.
+- **Target update:** "move SL to your entry price" (the partner's own fill),
+  not the card's ask. The brief and pulse say "near-money PCR": it is
+  computed over ±15 strikes, not NSE's whole chain.
+- **Replay of the five delivered Oct 6–9 cards:**
+  - every published level matched what happened;
+  - the premium stop protected each losing card;
+  - 4 of 5 cards now carry "reward < risk". The signals' 1.5R index targets
+    are often under 1R in premium at the low end. That is a property of
+    the signal, now shown to the partner, not hidden.
+
+## October 12 (evening) — partner messages for an option buyer (`PARTNER_BUYER_MESSAGES`, on) (actual behavior, Dev, commit `304ad70`)
+
+Owner: the partner no longer hedges and only buys options, and the messages
+could not be read in market time. Production (read-only, Oct 6–12):
+- each advice card was a 1,646–1,676 character debit-spread card with a
+  30-second "Valid until";
+- updates were 283–295 characters about "the paired structure";
+- intraday OI alerts were suppressed by the dormant hedge bot. Earlier they
+  arrived as separate lines, up to five in one minute (two the same PCR read).
+
+The advice pipeline is unchanged: signal, validation, economic identity,
+caps (2 cards, 4 updates a day), dispatch gates, re-entry rule, lifecycle,
+research capture and the 2-minute cadence. Only the text differs.
+
+- **Entry card (`partner_buyer.buyer_plan` / `render_buyer_card`).**
+  - It names the spread's BUY leg as a single option to buy.
+  - Lines: the PURE ADVICE label (still required by `_authorize_dispatch`);
+    `BUY NIFTY 22550 CE (13 Oct) @ ₹97.35`; a buy-up-to limit; the skip time;
+    stop and target; risk per lot; the exit time; one line of why. About 300
+    characters.
+  - Buy limit: ask + 15% of the premium stop distance, capped at ask + 4%,
+    rounded up to the tick (+2% when no premium stop could be modelled).
+  - Skip after quote time + `PARTNER_BUYER_ENTRY_WINDOW_MIN` (10), capped at
+    the entry deadline.
+  - Premiums at the stop and target are Black-76 estimates at the option's
+    mid implied volatility, shown in whole rupees with "≈" on the target.
+    On Oct 9 the constant-volatility target estimate was about ₹147 against
+    an actual ₹125.
+  - The card warns "reward < risk in premium" when the modelled reward is
+    smaller than the modelled risk.
+  - `payload.buyer_view` stores every number. `advisory_id` and
+    `economic_version` are unchanged (a test proves it).
+- **Levels on the index.**
+  - The signal reads front-month futures bars. On Oct 9 the future was about
+    60 points over the index, more than that card's 47-point stop.
+  - Levels shift by future − spot, where spot is the chain's parity forward
+    discounted by `RISK_FREE_RATE`. They are shown as `NIFTY ≈22,417`.
+  - With no parity forward, or a gap above 2%, levels stay on the future and
+    say `fut`.
+- **Updates (one line each).**
+  - `🛑 EXIT NIFTY 22550 CE now: stop level hit (NIFTY ≈22,412 at 13:50).`
+  - `🎯 … target reached (…). Book profit; on anything you keep, move SL to
+    ₹97.35 (cost).`
+  - `⏰ … square off by 15:15. No overnight hold.`
+  - Ideas without a `buyer_view` keep the old wording.
+- **Morning brief (09:50).**
+  - `PARTNER_BUYER_INDICES` (NIFTY, SENSEX) only.
+  - Per index: index level, CE-above and PE-below break levels (index terms),
+    then premium read, expiry note, OI walls and PCR.
+  - It also carries the crisis line and the event calendar note.
+- **OI flow pulse (analytics tick, buyer indices).**
+  - One message per index replaces the separate PCR, IV, wall and wall-flow
+    alerts. It uses the same thresholds and is sent when a fact is new,
+    at most every `PARTNER_EVENT_MIN_GAP_MIN` (30) and
+    `PARTNER_FLOW_PULSE_DAILY_CAP` (6) times a day.
+  - Line 1 says whether the open-relative OI flow leans to CALLS or PUTS.
+    The PCR shift, each wall build or unwind, and the futures build-up cast
+    one vote each; two net votes name a side. This is a read of writer
+    positioning, not a validated signal.
+  - Fact state is committed only after a delivered pulse.
+  - The expiry pin note is kept. Regime notices go out only on entering or
+    leaving crisis. The "risk limits flagging caution" notice is off, because
+    it describes our own book.
+  - Snapshots for all analytics underlyings are still stored.
+- **Close wrap (15:40).**
+  - Per index: the futures range and where it closed.
+  - For each card: the first level reached, and what its option did, from
+    the 5-minute snapshot LTPs, e.g.
+    `option ₹97.35 → peak ₹140.6 (+44%), last ₹109.25 (+12%)`.
+  - The tomorrow-expiry note and a 30-day tally:
+    `NIFTY n (🎯t 🛑s)`.
+- Rollback: `PARTNER_BUYER_MESSAGES=false` restores the previous text.
+- Not changed, noted:
+  - The card's strike is the ATM of the *future* (about one strike OTM for
+    calls and ITM for puts when the future trades 60 over).
+  - Cards arrive 50–110 s after a bar closes. The collection-completeness
+    journal assumes 2-minute slots at :50, so the cadence was left alone.
+
+## October 12 — Oct 12 audit fixes: F&O lock and read deadlines, quote fairness, cache validation, tilt identity (actual behavior, Dev)
+
+Source: `Production_Trading-sentinel/docs/2026-10-12-production-deep-audit.md`
+(PR #107 deployed; no F&O trade; Smart −₹11.44 and Penny −₹6.98 by exit date;
+3 overnight positions OPEN). Expiry code untouched (expiry agent).
+
+- **F&O lock (O12-F1).** `fno_orchestrator.fast_exit_has_work()` checks for an
+  OPEN single leg. The 10 s fast-exit job checks it **without** the F&O lock
+  and without durable telemetry; only a pass with an open leg runs the
+  telemetered `_fno_fast_exit_pass` under the lock. A regular tick that finds
+  the lock held by a fast pass now **waits** (≤ `FNO_TICK_FAST_EXIT_WAIT_SEC`,
+  20 s) instead of skipping; it still skips behind another regular pass
+  (bar-close trigger). `fno_tick_complete` logs `lock_wait_sec`. Oct 12 lost
+  4/247 entry passes this way, and flat fast passes filled 3,101 of the 5,000
+  retained telemetry rows.
+- **Defined-risk read deadlines (O12-R1).** Oct 12: 10 DR passes ended at the
+  20 s budget (8 chain, 2 futures history); the entry-read median was 5.4 s,
+  p90 15 s, two quote calls queued on the 1/s quote budget. Now:
+  `take_chain_snapshot(anchor_price=...)` centres the strike window on the
+  tick's own futures quote, which saves one request (the fresh future is still
+  quoted with the ladder, and a move of more than half the window retakes it
+  the old way). DR entry reads and the single-leg chain read after a fired
+  signal run in the **management** lane (bounded at 3 consecutive grants).
+  Each tick records `defined_risk_entry_read_sec` {chain_snapshot,
+  futures_history}, and the skip warning carries it.
+- **Quote budget (O12-Q1/Q2).** Admission is shared limiter → 1/s quote
+  bucket (priority lanes) → send, with nothing awaited in between (the FIFO
+  dispatch gate is gone; a strict spacing check keeps sends ≥ 1/rate + 2 ms
+  apart). The merged batch is built after admission, and its lane is the best
+  lane in it (`quote_batch_lane`). After 3 batches led by a higher lane while
+  a lower-lane request waits, the oldest lower request leads
+  (`fairness_promotions`). In-flight batches are tracked; a cancelled batch
+  raises `QuoteBatchCancelled` to every caller. `quote_batch_wait_sec` is now
+  queue wait to admission only; `quote_batch_elapsed_sec` runs to the
+  response. Instrument-keyed requests over 500 keys are chunked like tokens.
+  Chunk timing sums waits and attempts, and reports the largest request
+  size, not a sum. `/ops/provider-budget` quote budget shows
+  `spacing_waits`, `fairness_promotions`, `cancelled_batches` and `in_flight`
+  (`dispatch_gate_waits` removed).
+- **Instrument cache (O12-C1/C2).** A dump under 1,000 symbols is a failed
+  refresh (`_TruncatedInstrumentDump`, `last_dump_size`). It is not merged or
+  saved, and the recovery job keeps retrying. `ensure_instrument_cache` is
+  done for the day only when refreshed today **and** usable. A full dump
+  replaces the catalogue in place, dropping symbols the provider no longer
+  lists. Snapshot `saved_at` must be timezone-aware and not more than 300 s
+  in the future; bad clocks are refused inside the handler (no TypeError).
+- **Spread tilt (O12-T1/T2/T3).**
+  - Pairs need the same underlying, option type and expiry (when both sides
+    record one) within 120 s; the nearest entry wins. An ambiguous spread is
+    `UNAVAILABLE`, never a wildcard.
+  - Pre-binding spread rows are NIFTY with an unknown expiry
+    (`identity: legacy`).
+  - `MANIFEST` (lot cap 3, window, rules) and `manifest_fingerprint` freeze
+    the terms; runtime `FNO_DR_MAX_LOTS` is shown but no longer used.
+  - OPEN sides make a signal OPEN.
+  - The summary adds `open`, `unavailable` and chronological
+    `paired_*_max_drawdown`.
+  - The hourly report reads it in a worker thread with a 10 s deadline
+    ("report unavailable this hour" on timeout).
+  - Forward sample was 0, so no score changed. Checked on a read-only copy
+    of Production's F&O rows: the same 22 in-sample pairs and the same nets
+    (31 spreads, 28 legacy and 3 contract-bound; 41 NIFTY singles). New
+    in-sample drawdown: paired actual ₹16,331 vs variant ₹16,416. The tilt
+    does not lower drawdown in-sample.
+- **Smart exit-date total (O12-S1).** `/health.smart_penny.exit_date` =
+  {date, closes, net, carried_closes, book_day_realized}, joined from today's
+  durable `EXIT_FILLED` events. Oct 12 would read 12 closes / −₹11.44 (2
+  carried) beside `marked_pnl` −₹18.01.
+- **Overnight receipt (rec 10).** Each opened entry also stores `ask_levels`
+  (the visible ladder), `walked_avg`, `price_basis` (ask_walk or
+  slippage_floor) and `capacity`. Fill contract unchanged (`visible-asks-v3`).
+- **Wording (O12-D1).** The cache watchdog says new-entry scans cannot resolve
+  symbols while Smart held exits fall back to symbol quotes.
+
 ## October 9 (night) — frozen F&O shadow `FNO_SPREAD_TILT_V1` (actual behavior, Dev)
 
 - **What it is.** `fno_spread_tilt.py`, read-only. For each signal where the
