@@ -65,6 +65,8 @@ def wired(tmp_path, monkeypatch):
     # Hedge-first mode is the runtime default and suppresses these messages.
     monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", False)
     monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", False)
+    # Legacy text; the option-buyer messages (O12-PB) are tested at the end.
+    monkeypatch.setattr(settings, "PARTNER_BUYER_MESSAGES", False)
     monkeypatch.setattr(settings, "PARTNER_TELEGRAM_BOT_TOKEN", "t")
     monkeypatch.setattr(settings, "PARTNER_TELEGRAM_CHAT_ID", "c")
 
@@ -1191,3 +1193,164 @@ async def test_rv_refresh_passes_full_datetimes(wired, monkeypatch):
     for frm, to in calls:
         datetime.strptime(frm, "%Y-%m-%d %H:%M:%S")
         datetime.strptime(to, "%Y-%m-%d %H:%M:%S")
+
+
+# ---------------------------------------------------------------------------
+# [O12-PB 2026-10-12] option-buyer messages
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_advisory_tick_stores_the_buyer_view_and_short_card(wired, monkeypatch):
+    import aiosqlite
+    await _init(wired.db)
+    tick = IST.localize(datetime(2026, 9, 7, 10, 0, 0))
+    chain_received = tick.replace(second=20)
+    monkeypatch.setattr(settings, "PARTNER_BUYER_MESSAGES", True)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_ENABLED", False)
+    await _save_intraday_profile(wired.db, tick)
+    _late_chain_candidate_fixture(monkeypatch, tick=tick, chain_received=chain_received)
+    await po.partner_manual_advisory_tick(tick, clock=lambda: chain_received)
+    async with aiosqlite.connect(wired.db) as conn:
+        status, card, payload = await (await conn.execute(
+            "SELECT status, rendered_card, payload FROM partner_advisory_ideas")).fetchone()
+    view = json.loads(payload)["buyer_view"]
+    assert status == "VALIDATED_SHADOW"
+    assert view["symbol"] == "NIFTYLONG" and view["level_basis"] == "FUTURES"   # fixture has no parity
+    assert "BUY NIFTY 25000 CE" in card and "Structure:" not in card
+
+
+@pytest.mark.asyncio
+async def test_buyer_flow_pulse_merges_facts_and_throttles(analytics_wired, monkeypatch):
+    import fno_oi_store
+    w = analytics_wired
+    monkeypatch.setattr(settings, "PARTNER_BUYER_MESSAGES", True)
+    monkeypatch.setattr(po, "_last_pcr_reported", {})
+    monkeypatch.setattr(po, "_last_lean_reported", {})
+    await _init(w.db)
+    await fno_oi_store.init_oi_db(w.db)
+    w.analytics["snap"] = _mk_snap(BASE_CHAIN)
+    await po.partner_analytics_tick(NOW)                 # baseline, nothing new
+    assert w.sent == []
+    grown = dict(BASE_CHAIN)
+    grown[(24900, "PE")] = (13000, 40.0)                 # support PE +30%
+    grown[(25100, "CE")] = (13000, 110.0)                # resistance CE +30%
+    later = IST.localize(datetime(2026, 7, 20, 10, 33))
+    w.analytics["snap"] = _mk_snap(grown, now=later)
+    await po.partner_analytics_tick(later)
+    assert [kind for kind, _ in w.sent] == ["flow_pulse"]  # one message, not one per wall
+    text = w.sent[0][1]
+    assert text.splitlines()[0] == "📊 NIFTY 10:33 · OI flow mixed, no side (fut 25,100)"
+    assert "support 24,900 held (PE OI +30%)" in text and "resistance 25,100 capping (CE OI +30%)" in text
+    # Unchanged reads: nothing new to say.
+    await po.partner_analytics_tick(IST.localize(datetime(2026, 7, 20, 10, 38)))
+    assert len(w.sent) == 1
+    # A new fact inside the gap waits, then goes out with the next pulse.
+    grown[(24900, "PE")] = (16500, 40.0)                 # support PE +65%
+    at = IST.localize(datetime(2026, 7, 20, 10, 43))
+    w.analytics["snap"] = _mk_snap(grown, now=at)
+    await po.partner_analytics_tick(at)
+    assert len(w.sent) == 1
+    at = IST.localize(datetime(2026, 7, 20, 11, 8))
+    w.analytics["snap"] = _mk_snap(grown, now=at)
+    await po.partner_analytics_tick(at)
+    assert len(w.sent) == 2 and "support 24,900 held (PE OI +65%)" in w.sent[1][1]
+
+
+@pytest.mark.asyncio
+async def test_buyer_flow_pulse_skips_indices_without_cards(analytics_wired, monkeypatch):
+    import fno_oi_store
+    w = analytics_wired
+    monkeypatch.setattr(settings, "PARTNER_BUYER_MESSAGES", True)
+    monkeypatch.setattr(settings, "PARTNER_BUYER_INDICES", "SENSEX")
+    await _init(w.db)
+    await fno_oi_store.init_oi_db(w.db)
+    w.analytics["snap"] = _mk_snap(BASE_CHAIN)
+    await po.partner_analytics_tick(NOW)
+    grown = dict(BASE_CHAIN)
+    grown[(24900, "PE")] = (13000, 40.0)
+    later = IST.localize(datetime(2026, 7, 20, 10, 33))
+    w.analytics["snap"] = _mk_snap(grown, now=later)
+    await po.partner_analytics_tick(later)
+    assert w.sent == []
+
+
+@pytest.mark.asyncio
+async def test_buyer_brief_puts_levels_on_the_index(wired, monkeypatch):
+    import fno_oi_store
+    from partner_buyer import fut_to_index_offset
+    await _init(wired.db)
+    await fno_oi_store.init_oi_db(wired.db)
+    monkeypatch.setattr(settings, "PARTNER_BUYER_MESSAGES", True)
+    snap = _mk_snap(BASE_CHAIN)
+    snap.parity_forward = 25050.0
+
+    async def _chain(kite, book, now, strike_window=None):
+        return snap
+
+    monkeypatch.setattr(po, "take_chain_snapshot", _chain)
+    wired.state["scan"] = UnderlyingScan(name="NIFTY", sig=MomSignal(
+        bar_ts="", or_high=25010.0, or_low=24990.0, atr=30.0, close=25000.0,
+    ))
+    await po.partner_morning_brief(NOW)
+    (kind, text), = wired.sent
+    offset = fut_to_index_offset(snap, NOW)
+    assert kind == "brief" and text.startswith("☀️ Buyer plan · Mon 20 Jul")
+    assert f"▲ CE above {25010.0 + 0.25 * 30.0 - offset:,.0f}" in text
+    assert f"▼ PE below {24990.0 - 0.25 * 30.0 - offset:,.0f}" in text
+    assert "OI walls 24,900 / 25,100" in text and "Flat by 15:15" in text
+    assert len(text) < 500
+
+
+@pytest.mark.asyncio
+async def test_buyer_eod_reports_each_card_in_option_terms(wired, monkeypatch):
+    import aiosqlite
+    import fno_oi_store
+    import main
+    from partner_manual_advisory import init_partner_advisory_db
+
+    db = settings.DB_PATH
+    monkeypatch.setattr(settings, "PARTNER_BUYER_MESSAGES", True)
+    await _init(db)
+    await init_partner_advisory_db(db)
+    await fno_oi_store.init_oi_db(db)
+    view = {"strike": 25100.0, "opt_type": "CE", "expiry": "2026-07-23", "ask": 110.5}
+    payload = {"direction": "LONG", "session_date": "2026-07-20", "signal_at": "2026-07-20T10:05:30+05:30",
+               "trigger_level": 25010.0, "invalidation_level": 24960.0, "target_level": 25090.0,
+               "buyer_view": view}
+    async with aiosqlite.connect(db) as conn:
+        await conn.execute(
+            "INSERT INTO partner_advisory_ideas VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            ("a", "v", "MARKET_SETUP", "NIFTY", "NSE", "RETIRED_SESSION_END", "RESEARCH_ONLY",
+             "p", 1, "d", "d", "card", json.dumps(payload), None, "d", "d"))
+        await conn.execute(
+            "INSERT INTO partner_advisory_updates (update_id, advisory_id, event_type, observed_at, "
+            "observed_underlying, rendered_update, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
+            ("u", "a", "TARGET_ZONE", "2026-07-20T12:40:00+05:30", 25095.0, "u", "DELIVERED_ACKNOWLEDGED", "d", "d"))
+        for ts, ltp in (("10:02:00", 100.0), ("10:07:00", 118.0), ("12:42:00", 150.0), ("15:27:00", 131.0)):
+            await conn.execute(
+                "INSERT INTO fno_chain_oi (snap_ts, underlying, expiry, strike, opt_type, oi, volume, ltp, iv) "
+                "VALUES (?,?,?,?,?,?,?,?,?)",
+                (f"2026-07-20 {ts}", "NIFTY", "2026-07-23", 25100.0, "CE", 1, 1, ltp, 0.1))
+        await conn.commit()
+
+    class _FutBook(_Book):
+        def front_future(self, today):
+            return SimpleNamespace(token=1)
+
+    async def _fetch(token, frm, to, interval="5minute"):
+        return pd.DataFrame(
+            {"open": [25000.0, 25050.0], "high": [25060.0, 25120.0], "low": [24980.0, 25040.0],
+             "close": [25050.0, 25110.0]},
+            index=pd.to_datetime(["2026-07-20 09:15", "2026-07-20 15:25"]))
+
+    monkeypatch.setattr(po, "get_instruments_for", lambda name: _FutBook())
+    monkeypatch.setattr(main, "kite", SimpleNamespace(access_token="tok", get_intraday_by_token=_fetch))
+    await po.partner_eod_wrap(IST.localize(datetime(2026, 7, 20, 15, 40)))
+    (kind, text), = [s for s in wired.sent if s[0] == "eod"]
+    assert text.splitlines() == [
+        "🌙 Wrap · Mon 20 Jul",
+        "NIFTY fut range 24,980–25,120, closed 25,110 (near the high)",
+        "   10:05 25100 CE: 🎯 target hit 12:40 · option ₹110.5 → peak ₹150 (+36%), last ₹131 (+19%)",
+        "Cards, last 30 days: NIFTY 1 (🎯1 🛑0)",
+    ]

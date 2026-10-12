@@ -14,6 +14,84 @@
 
 
 
+## October 12 (evening) — partner messages for an option buyer (`PARTNER_BUYER_MESSAGES`, on) (actual behavior, Dev)
+
+Owner: the partner no longer hedges and only buys options, and the messages
+could not be read in market time. Production (read-only, Oct 6–12):
+- each advice card was a 1,646–1,676 character debit-spread card with a
+  30-second "Valid until";
+- updates were 283–295 characters about "the paired structure";
+- intraday OI alerts were suppressed by the dormant hedge bot. Earlier they
+  arrived as separate lines, up to five in one minute (two the same PCR read).
+
+The advice pipeline is unchanged: signal, validation, economic identity,
+caps (2 cards, 4 updates a day), dispatch gates, re-entry rule, lifecycle,
+research capture and the 2-minute cadence. Only the text differs.
+
+- **Entry card (`partner_buyer.buyer_plan` / `render_buyer_card`).**
+  - It names the spread's BUY leg as a single option to buy.
+  - Lines: the PURE ADVICE label (still required by `_authorize_dispatch`);
+    `BUY NIFTY 22550 CE (13 Oct) @ ₹97.35`; a buy-up-to limit; the skip time;
+    stop and target; risk per lot; the exit time; one line of why. About 300
+    characters.
+  - Buy limit: ask + 15% of the premium stop distance, capped at ask + 4%,
+    rounded up to the tick (+2% when no premium stop could be modelled).
+  - Skip after quote time + `PARTNER_BUYER_ENTRY_WINDOW_MIN` (10), capped at
+    the entry deadline.
+  - Premiums at the stop and target are Black-76 estimates at the option's
+    mid implied volatility, shown in whole rupees with "≈" on the target.
+    On Oct 9 the constant-volatility target estimate was about ₹147 against
+    an actual ₹125.
+  - The card warns "reward < risk in premium" when the modelled reward is
+    smaller than the modelled risk.
+  - `payload.buyer_view` stores every number. `advisory_id` and
+    `economic_version` are unchanged (a test proves it).
+- **Levels on the index.**
+  - The signal reads front-month futures bars. On Oct 9 the future was about
+    60 points over the index, more than that card's 47-point stop.
+  - Levels shift by future − spot, where spot is the chain's parity forward
+    discounted by `RISK_FREE_RATE`. They are shown as `NIFTY ≈22,417`.
+  - With no parity forward, or a gap above 2%, levels stay on the future and
+    say `fut`.
+- **Updates (one line each).**
+  - `🛑 EXIT NIFTY 22550 CE now: stop level hit (NIFTY ≈22,412 at 13:50).`
+  - `🎯 … target reached (…). Book profit; on anything you keep, move SL to
+    ₹97.35 (cost).`
+  - `⏰ … square off by 15:15. No overnight hold.`
+  - Ideas without a `buyer_view` keep the old wording.
+- **Morning brief (09:50).**
+  - `PARTNER_BUYER_INDICES` (NIFTY, SENSEX) only.
+  - Per index: index level, CE-above and PE-below break levels (index terms),
+    then premium read, expiry note, OI walls and PCR.
+  - It also carries the crisis line and the event calendar note.
+- **OI flow pulse (analytics tick, buyer indices).**
+  - One message per index replaces the separate PCR, IV, wall and wall-flow
+    alerts. It uses the same thresholds and is sent when a fact is new,
+    at most every `PARTNER_EVENT_MIN_GAP_MIN` (30) and
+    `PARTNER_FLOW_PULSE_DAILY_CAP` (6) times a day.
+  - Line 1 says whether the open-relative OI flow leans to CALLS or PUTS.
+    The PCR shift, each wall build or unwind, and the futures build-up cast
+    one vote each; two net votes name a side. This is a read of writer
+    positioning, not a validated signal.
+  - Fact state is committed only after a delivered pulse.
+  - The expiry pin note is kept. Regime notices go out only on entering or
+    leaving crisis. The "risk limits flagging caution" notice is off, because
+    it describes our own book.
+  - Snapshots for all analytics underlyings are still stored.
+- **Close wrap (15:40).**
+  - Per index: the futures range and where it closed.
+  - For each card: the first level reached, and what its option did, from
+    the 5-minute snapshot LTPs, e.g.
+    `option ₹97.35 → peak ₹140.6 (+44%), last ₹109.25 (+12%)`.
+  - The tomorrow-expiry note and a 30-day tally:
+    `NIFTY n (🎯t 🛑s)`.
+- Rollback: `PARTNER_BUYER_MESSAGES=false` restores the previous text.
+- Not changed, noted:
+  - The card's strike is the ATM of the *future* (about one strike OTM for
+    calls and ITM for puts when the future trades 60 over).
+  - Cards arrive 50–110 s after a bar closes. The collection-completeness
+    journal assumes 2-minute slots at :50, so the cadence was left alone.
+
 ## October 12 — Oct 12 audit fixes: F&O lock and read deadlines, quote fairness, cache validation, tilt identity (actual behavior, Dev)
 
 Source: `Production_Trading-sentinel/docs/2026-10-12-production-deep-audit.md`

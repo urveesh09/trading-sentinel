@@ -12,6 +12,29 @@
 
 
 
+## October 12 (evening) — O12-PB partner messages for an option buyer (commit pending, Dev, not deployed)
+
+- [x] Buyer card (about 300 characters vs 1,670): one option, buy-up-to limit,
+  skip time, stop and target on the index plus option premium, risk per lot,
+  exit time. Dispatch label and identity unchanged.
+- [x] One-line updates (exit / book + SL to cost / square off); a malformed
+  view falls back to the old wording.
+- [x] Brief and wrap for NIFTY/SENSEX in two lines each; the wrap shows each
+  card's option premium path.
+- [x] OI flow pulse: one message per index per new fact, 30-minute gap,
+  6 a day; crisis-only regime notice; own-book caution notice off.
+- [x] Tests: full engine suite 5,139 pass, 4 skip, 0 fail (7 min 22 s).
+  `test_partner_buyer.py` 14; orchestrator buyer tests 5; partner, hedge,
+  qualification, policy identity, scheduler and goldens: 681 pass.
+  Agent and gateway untouched.
+- [x] Checked against Production (read-only): Oct 6–12 card and update
+  lengths; Oct 9 22550 CE premium path (₹97 at the card, ₹125 at the target
+  time, ₹141 peak).
+- [ ] After deploy, first session: read the `partner_msg` log lines; check
+  the card's `≈` index levels against the real index; count pulses.
+- [ ] Deployed: no (merge, rebuild the engine). Rollback
+  `PARTNER_BUYER_MESSAGES=false`.
+
 ## October 12 — Oct 12 audit fixes (commit `d4a75fc`, Dev, pushed, not deployed)
 
 - [x] O12-F1 flat fast exit off the lock and out of telemetry; regular tick waits for a fast pass.

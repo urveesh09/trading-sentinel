@@ -1375,6 +1375,18 @@ class Settings(BaseSettings):
     # portfolio, so it sent nothing but silenced both. Analytics alerts stay
     # under the suppression rule above.
     PARTNER_CONTEXT_WITH_ADVISORY: bool = True
+    # [O12-PB 2026-10-12] Owner: the partner no longer hedges and only buys
+    # options, and the 1,700-character spread card could not be read in market
+    # time. On: cards name one option with a buy limit, stop, target, risk per
+    # lot and fill-by time (partner_buyer.py); updates are one line; the brief
+    # and EOD are two lines per index; intraday OI events go out as one
+    # consolidated flow pulse per index (gap PARTNER_EVENT_MIN_GAP_MIN, daily
+    # cap below) instead of separate alerts. Off restores the previous text.
+    # The advice pipeline, caps and gates are the same either way.
+    PARTNER_BUYER_MESSAGES: bool = True
+    PARTNER_BUYER_INDICES: str = "NIFTY,SENSEX"   # the indices cards are built for
+    PARTNER_BUYER_ENTRY_WINDOW_MIN: int = 10      # card's "skip after" time
+    PARTNER_FLOW_PULSE_DAILY_CAP: int = 6         # per index
 
     # Scoped manual-trader advisory for NIFTY 50 (NSE) and SENSEX (BSE).
     # Owner-approved delivery remains advisory-only: the hardened transport

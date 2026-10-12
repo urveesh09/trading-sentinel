@@ -1021,13 +1021,18 @@ def render_advisory_card(candidate: AdvisoryCandidate, advisory_id: str) -> str:
 async def persist_candidate(
     db_path: str, candidate: AdvisoryCandidate, profile: PartnerAdvisoryProfile,
     now: Optional[datetime] = None, *, validation_options: Optional[dict] = None,
-    queue_for_delivery: bool = False,
+    queue_for_delivery: bool = False, buyer_view: Optional[dict] = None,
 ) -> dict:
     """Persist a validated shadow card with conservative dedup/version links.
 
     This does not send, create an order, fabricate a position or grant any
     execution authority.  Research-only evidence is intentionally previewable
     but never delivery-eligible.
+
+    ``buyer_view`` (partner_buyer.buyer_plan) is stored on the payload and,
+    while PARTNER_BUYER_MESSAGES is on, the partner's card is the short
+    single-option text instead of the full structure. Validation, identity
+    and every gate are computed exactly as before.
     """
     now = now or datetime.now(IST)
     validation = validate_candidate(candidate, now, **(validation_options or {}))
@@ -1081,8 +1086,20 @@ async def persist_candidate(
             # archive must not make an otherwise safe card more actionable.
             import structlog
             structlog.get_logger().error("research_candidate_archive_failed err=%s", str(exc))
-    card = (payload["advice_label"] + "\n" + render_advisory_card(candidate, advisory_id)
-            if validation.valid else "")
+    card = ""
+    if validation.valid and settings.PARTNER_BUYER_MESSAGES and buyer_view and (
+            candidate.scope == AdvisoryScope.MARKET_SETUP and candidate.management_deadline):
+        try:
+            from partner_buyer import render_buyer_card
+            card = render_buyer_card(payload["advice_label"], buyer_view, underlying=candidate.underlying,
+                                     direction=str(candidate.direction),
+                                     management_deadline=candidate.management_deadline)
+            payload["buyer_view"] = buyer_view
+        except (KeyError, TypeError, ValueError) as exc:
+            import structlog
+            structlog.get_logger().warning("partner_buyer_card_render_failed err=%s", type(exc).__name__)
+    if validation.valid and not card:
+        card = payload["advice_label"] + "\n" + render_advisory_card(candidate, advisory_id)
     status = "QUEUED" if validation.valid and queue_for_delivery and deliverable else (
         "VALIDATED_SHADOW" if validation.valid else "REJECTED"
     )
@@ -1251,6 +1268,26 @@ async def invalidated_reentry_levels(db_path: str, *, underlying: str, session_d
     return levels
 
 
+def _buyer_update_text(payload: dict, event_type: str, *, underlying: str, observed_fut: float,
+                       observed_at: datetime, management_deadline: datetime) -> Optional[str]:
+    """[O12-PB] One-line buyer wording, or ``None`` for the full wording.
+
+    A malformed stored view must never cost the partner a stop update.
+    """
+    view = payload.get("buyer_view") if settings.PARTNER_BUYER_MESSAGES else None
+    if not isinstance(view, dict):
+        return None
+    try:
+        from partner_buyer import render_buyer_update
+        return render_buyer_update(view, event_type, underlying=underlying, observed_fut=observed_fut,
+                                   observed_at=observed_at.astimezone(IST),
+                                   management_deadline=management_deadline)
+    except (KeyError, TypeError, ValueError) as exc:
+        import structlog
+        structlog.get_logger().warning("partner_buyer_update_render_failed err=%s", type(exc).__name__)
+        return None
+
+
 async def queue_management_updates(
     db_path: str, *, underlying: str, observed_underlying: float, observed_at: datetime,
 ) -> list[dict]:
@@ -1303,7 +1340,10 @@ async def queue_management_updates(
         if event_type is None or not isinstance(profile_id, str):
             continue
         update_id = hashlib.sha256(f"{advisory_id}:{event_type}".encode()).hexdigest()[:24]
-        wording = (
+        wording = _buyer_update_text(payload, event_type, underlying=underlying.upper(),
+                                     observed_fut=observed_underlying, observed_at=observed_at,
+                                     management_deadline=management_deadline)
+        wording = wording or (
             f"Update to published idea {advisory_id}: underlying observed at {observed_underlying:,.2f} "
             f"at {_iso(observed_at)}. "
             + (f"It reached the published invalidation level {level:,.2f}." if event_type == "INVALIDATION"
@@ -1363,11 +1403,14 @@ async def run_intraday_session_lifecycle(db_path: str, *, now: datetime) -> list
         if now.astimezone(IST) < reminder or now.astimezone(IST).date().isoformat() != session_date:
             continue
         update_id = hashlib.sha256(f"{advisory_id}:SESSION_EXIT_REMINDER".encode()).hexdigest()[:24]
-        text = (
-            f"Intraday reminder for published idea {advisory_id}: the same-day exit/reassessment deadline is "
-            f"{_iso(deadline)}. If you took the idea, reassess and manually exit or manage it before then; "
-            "do not carry overnight. This system has not observed any order or position."
-        )
+        text = _buyer_update_text(payload, "SESSION_EXIT_REMINDER", underlying=str(payload.get("underlying", "")),
+                                  observed_fut=0.0, observed_at=now, management_deadline=deadline)
+        if not text:
+            text = (
+                f"Intraday reminder for published idea {advisory_id}: the same-day exit/reassessment deadline is "
+                f"{_iso(deadline)}. If you took the idea, reassess and manually exit or manage it before then; "
+                "do not carry overnight. This system has not observed any order or position."
+            )
         stamp = _iso(now)
         async with aiosqlite.connect(db_path) as db:
             await db.execute("BEGIN IMMEDIATE")

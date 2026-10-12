@@ -5,6 +5,43 @@
 
 
 
+## October 12 (evening) — O12-PB partner messages for an option buyer (done, Dev, commit pending, not deployed)
+
+- Problem:
+  - the partner only buys options now and no longer hedges;
+  - cards were 1,670-character debit-spread texts valid for 30 s, with
+    levels on the future (about 60 points over the index on Oct 9);
+  - updates spoke of "the paired structure";
+  - OI alerts were silenced, or else came five to a minute.
+- Files:
+  - `partner_buyer.py` (new, pure);
+  - `partner_manual_advisory.py` (`persist_candidate(buyer_view=)`, update
+    and reminder wording);
+  - `partner_orchestrator.py` (buyer view in the advisory tick, flow pulse,
+    pin helper, crisis-only regime notice, brief and wrap);
+  - `config.py`: `PARTNER_BUYER_MESSAGES`, `PARTNER_BUYER_INDICES`,
+    `PARTNER_BUYER_ENTRY_WINDOW_MIN`, `PARTNER_FLOW_PULSE_DAILY_CAP`;
+  - tests: `test_partner_buyer.py` (new, 13); `test_partner_orchestrator.py`
+    (+5, legacy fixture pins the flag off).
+- Acceptance (met in Dev tests):
+  - card under 400 characters, still opening with the dispatch label;
+  - identity unchanged; index levels shifted by the parity offset, or
+    marked `fut` without parity;
+  - one-line updates; one pulse per tick with throttle and carry-over;
+  - brief under 500 characters; wrap with the option premium path.
+- Rollout: merge, rebuild the engine. No schema change (`buyer_view` lives
+  in the JSON payload). Rollback: `PARTNER_BUYER_MESSAGES=false`.
+- Remaining:
+  - [ ] First live day after deploy: read the partner log lines (cards,
+    pulses, brief, wrap). Check the card's index levels against the actual
+    NIFTY/SENSEX index, and count pulses per index.
+  - [ ] Option (owner decision): pick the buyer's strike at the parity
+    forward's ATM instead of the future's. It would need its own quote
+    validation.
+  - [ ] Option: align the scan with bar closes (every 5 min at :50 plus a
+    retry). That first needs the collection-completeness slot model
+    updated.
+
 ## October 12 — Oct 12 audit fixes O12-F1/R1/Q1/Q2/C1/C2/T1–T3/S1/D1 (done, Dev, commit `d4a75fc`, pushed, not deployed)
 
 - Problem (Production audit, PR #107 deployed):
