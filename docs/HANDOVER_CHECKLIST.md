@@ -12,7 +12,7 @@
 
 
 
-## October 12 — Oct 12 audit fixes (commit pending, Dev, not deployed)
+## October 12 — Oct 12 audit fixes (commit `d4a75fc`, Dev, pushed, not deployed)
 
 - [x] O12-F1 flat fast exit off the lock and out of telemetry; regular tick waits for a fast pass.
 - [x] O12-R1 anchored chain (1 request), DR/fired-signal reads in the management lane, per-stage read timing.

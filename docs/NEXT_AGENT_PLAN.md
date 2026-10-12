@@ -5,7 +5,7 @@
 
 
 
-## October 12 — Oct 12 audit fixes O12-F1/R1/Q1/Q2/C1/C2/T1–T3/S1/D1 (done, Dev, commit pending, not deployed)
+## October 12 — Oct 12 audit fixes O12-F1/R1/Q1/Q2/C1/C2/T1–T3/S1/D1 (done, Dev, commit `d4a75fc`, pushed, not deployed)
 
 - Problem (Production audit, PR #107 deployed):
   - flat 10 s fast-exit passes took the F&O lock from 4 regular entry
