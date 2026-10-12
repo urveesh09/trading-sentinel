@@ -116,9 +116,14 @@ def register_fno_scheduler_jobs(scheduler):
 
     # [FAST-EXIT 2026-10-04] One lock for every F&O pass: the 90-second tick,
     # the optional bar-close tick and the optional fast exit loop never overlap.
-    # A pass that finds the lock held is skipped (the running pass is doing the
-    # same work), so management cannot run twice against one position.
+    # Management never runs twice against one position.
+    # [O12-F1 2026-10-12] Only a regular pass skips on a held lock, and only
+    # when the holder is another regular pass (same work). A fast pass does
+    # no entry or defined-risk work, so a regular tick waits for it (bounded
+    # by FNO_TICK_FAST_EXIT_WAIT_SEC), and a flat fast pass never takes the
+    # lock at all.
     fno_lock = asyncio.Lock()
+    fno_pass = {"holder": None, "tick_started": float("-inf")}
 
     async def _notify_fno(summary: dict) -> None:
         from fno_orchestrator import format_fno_telegram
@@ -157,19 +162,39 @@ def register_fno_scheduler_jobs(scheduler):
         if not _main.kite.access_token:
             logger.warning("fno_tick_skip reason=no_access_token")
             return
-        if fno_lock.locked():
+        if fno_lock.locked() and fno_pass["holder"] != "fast_exit":
             logger.info("fno_tick_skip reason=fno_pass_in_progress")
             return
+        waiting_since = monotonic()
+        if fno_lock.locked():
+            logger.info("fno_tick_wait reason=fast_exit_pass_in_progress")
+        try:
+            await asyncio.wait_for(fno_lock.acquire(),
+                                   timeout=max(0.1, float(settings.FNO_TICK_FAST_EXIT_WAIT_SEC)))
+        except asyncio.TimeoutError:
+            logger.warning("fno_tick_skip reason=fno_lock_wait_timeout waited_sec=%.3f",
+                           monotonic() - waiting_since)
+            return
+        if fno_pass["tick_started"] >= waiting_since:
+            # Another regular pass (bar-close trigger) ran while this one waited.
+            fno_lock.release()
+            logger.info("fno_tick_skip reason=fno_pass_in_progress")
+            return
+        lock_wait = monotonic() - waiting_since
         started = monotonic()
         summary = None
         outcome = "ok"
         try:
-            async with fno_lock:
+            try:
+                fno_pass["holder"], fno_pass["tick_started"] = "tick", started
                 summary = await run_fno_tick(
                     _main.kite,
                     regime=_main._fno_regime_str(),
                     is_trading_day=True,
                 )
+            finally:
+                fno_pass["holder"] = None
+                fno_lock.release()
             await _notify_fno(summary)
         except Exception as exc:
             outcome = "failed"
@@ -179,6 +204,7 @@ def register_fno_scheduler_jobs(scheduler):
             fields = {
                 "outcome": outcome,
                 "elapsed_sec": round(elapsed, 3),
+                "lock_wait_sec": round(lock_wait, 3),
                 "cadence_sec": settings.FNO_SCAN_INTERVAL_SEC,
                 "note": (summary or {}).get("note") or "none",
                 "entries": len((summary or {}).get("entries") or []),
@@ -187,6 +213,7 @@ def register_fno_scheduler_jobs(scheduler):
                 "dr_exits": int((summary or {}).get("dr_exits") or 0),
                 "dr_entry_skip_reason": (summary or {}).get("dr_entry_skip_reason") or "none",
                 "stage_durations_sec": (summary or {}).get("stage_durations_sec") or {},
+                "dr_entry_read_sec": (summary or {}).get("defined_risk_entry_read_sec") or {},
                 "management_read_outcomes": (summary or {}).get("management_read_outcomes") or {},
                 "action_clock_ist": (summary or {}).get("action_clock_ist"),
                 "management_lag_sec": (summary or {}).get("management_lag_sec"),
@@ -212,9 +239,32 @@ def register_fno_scheduler_jobs(scheduler):
     )
 
     @telemetry_job(settings.DB_PATH, "fno_fast_exit")
-    async def _run_fno_fast_exit_safe():
-        """Manage open single-leg positions every FNO_FAST_EXIT_INTERVAL_SEC."""
+    async def _fno_fast_exit_pass():
+        """One recorded management pass; called only while a single leg is open."""
         from fno_orchestrator import run_fno_fast_exit
+        if fno_lock.locked():                         # a regular pass took it meanwhile
+            return {"status": "SKIPPED", "reason": "fno_pass_in_progress"}
+        async with fno_lock:
+            fno_pass["holder"] = "fast_exit"
+            try:
+                summary = await run_fno_fast_exit(_main.kite)
+            finally:
+                fno_pass["holder"] = None
+        if summary.get("exits"):
+            logger.info("fno_fast_exit_closed exits=%d", len(summary["exits"]))
+        await _notify_fno(summary)
+        return {"status": "COMPLETED", "stage_durations_sec": summary.get("stage_durations_sec") or {}}
+
+    async def _run_fno_fast_exit_safe():
+        """Manage open single-leg positions every FNO_FAST_EXIT_INTERVAL_SEC.
+
+        [O12-F1/W1 2026-10-12] The flat check runs without the F&O lock and
+        without durable telemetry: on Oct 12 the 10-second flat passes took
+        the lock from 4 regular passes and filled 3,101 of the 5,000 retained
+        telemetry rows (two completion writes hit a SQLite lock). Only a pass
+        with an open single leg takes the lock and is recorded.
+        """
+        from fno_orchestrator import fast_exit_has_work
         now_ist = datetime.now(IST)
         nm = now_ist.hour * 60 + now_ist.minute
         if not (9 * 60 + 15 <= nm <= 15 * 60 + 25) or fno_lock.locked():
@@ -222,11 +272,9 @@ def register_fno_scheduler_jobs(scheduler):
         if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH) or not _main.kite.access_token:
             return
         try:
-            async with fno_lock:
-                summary = await run_fno_fast_exit(_main.kite)
-            if summary.get("exits"):
-                logger.info("fno_fast_exit_closed exits=%d", len(summary["exits"]))
-            await _notify_fno(summary)
+            if not await fast_exit_has_work() or fno_lock.locked():
+                return
+            await _fno_fast_exit_pass()
         except Exception as exc:
             logger.error("fno_fast_exit_failed err=%s", exc, exc_info=True)
 

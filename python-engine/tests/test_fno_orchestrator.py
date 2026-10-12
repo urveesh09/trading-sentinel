@@ -307,9 +307,10 @@ async def test_defined_risk_and_directional_books_share_tick_market_data(
 
     assert summary["entries"]  # prove the directional consumer also ran
     assert kite.bar_calls == 1
-    # One future mark + the chain's anchor and batched ladder.  A second chain
-    # fetch for the directional book would add two more calls.
-    assert kite.quote_calls == 3
+    # One future mark + the batched ladder: [O12-R1] the tick's own future
+    # mark anchors the chain window, so the chain's separate anchor quote is
+    # gone. A second chain fetch for the directional book would add more.
+    assert kite.quote_calls == 2
 
 
 @pytest.mark.asyncio

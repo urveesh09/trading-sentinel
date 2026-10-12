@@ -365,20 +365,57 @@ class EndpointBudget:
 _LANE_RANK = {"management": 0, "normal": 1, "bulk": 2}
 
 
+class _TruncatedInstrumentDump(ValueError):
+    """An HTTP 200 instrument dump with fewer symbols than a real NSE catalogue."""
+
+
+class QuoteBatchCancelled(RuntimeError):
+    """A merged quote request was cancelled before its response arrived."""
+
+
+async def _acquire_shared(limiter, lane: Optional[str]) -> None:
+    """Shared all-endpoint limiter; tolerates pre-lane test/broker adapters."""
+    try:
+        await limiter.acquire(priority=lane)
+    except TypeError as exc:
+        # Small adapters used by replay/tests may expose the pre-S2
+        # no-argument contract; only the lane annotation is lost there.
+        if "priority" not in str(exc):
+            raise
+        await limiter.acquire()
+
+
 class QuoteBudget:
     """Kite's quote budget (1 request/s) with transparent request batching.
 
     [FOLLOW-UP-F3 2026-10-08] Kite documents 1 quote request per second and
     up to 500 instruments per request, while the shared limiter allows 3/s on
-    every endpoint. Every ``/quote`` HTTP attempt now takes a slot from this
-    budget (management lane first), and concurrent token requests waiting for
-    a slot are merged into one call of up to ``MAX_INSTRUMENTS``, each caller
-    receiving only its own tokens. So the documented rate holds without
-    queueing callers one second apart. The shared limiter still applies on
-    top. The limiter is rebuilt per event loop (tests run several loops).
+    every endpoint. Concurrent token requests waiting for a slot are merged
+    into one call of up to ``MAX_INSTRUMENTS``, each caller receiving only
+    its own tokens. The limiter is rebuilt per event loop (tests run several
+    loops).
+
+    [O12-Q1 2026-10-12] Admission order is now: the shared all-endpoint
+    limiter, then this 1/s quote bucket (priority lanes), then the send, with
+    nothing awaited in between. The Oct 9 version took the quote slot first
+    and spaced sends with a first-come lock after the shared limiter, so a
+    management read could queue behind research at that lock, and the batch
+    lane was chosen before the wait (a stale label). Now:
+
+    * priority decides who sends next, and sends stay >= 1/rate apart on the
+      endpoint counter's clock (a strict spacing check guards rounding);
+    * the batch is built after admission, so everything that arrived during
+      the wait is merged, and its lane is the best lane it contains;
+    * fairness counts the real waiting callers: after ``FAIRNESS_BURST``
+      batches led by a higher lane while a lower-lane request waits, the
+      oldest lower-lane request leads the next batch;
+    * in-flight batches are tracked, and a cancelled batch hands every
+      waiting caller ``QuoteBatchCancelled`` instead of leaving it hanging.
     """
 
     MAX_INSTRUMENTS = 500
+    FAIRNESS_BURST = 3
+    SPACING_MARGIN_SEC = 0.002
 
     def __init__(self, rate: float = 1.0):
         self.rate = rate
@@ -386,47 +423,45 @@ class QuoteBudget:
         self._loop = None
         self._pending: list = []
         self._dispatcher: Optional[asyncio.Task] = None
+        self._inflight: set = set()
         self._seq = 0
+        self._streak = 0
+        self._last_dispatch = float("-inf")
         self.batches = 0
         self.merged_requests = 0
         self.max_wait_sec = {lane: 0.0 for lane in _LANE_RANK}
-        self._gate: Optional[asyncio.Lock] = None
-        self._last_dispatch = float("-inf")
-        self.gate_waits = 0
+        self.spacing_waits = 0
+        self.fairness_promotions = 0
+        self.cancelled_batches = 0
 
     def limiter(self) -> RateLimiter:
         loop = asyncio.get_running_loop()
         if self._limiter is None or self._loop is not loop:
             self._limiter, self._loop = RateLimiter(rate=self.rate, burst=1), loop
-            self._pending, self._dispatcher = [], None
-            self._gate, self._last_dispatch = asyncio.Lock(), float("-inf")
+            self._pending, self._dispatcher, self._inflight = [], None, set()
+            self._last_dispatch = float("-inf")
         return self._limiter
 
-    async def dispatch_gate(self) -> float:
-        """Space actual ``/quote`` sends at least ``1/rate`` apart; returns the wait.
+    async def admit(self, shared, lane: Optional[str] = None) -> float:
+        """Admit one ``/quote`` HTTP attempt; the caller sends immediately.
 
-        [O9-Q1 2026-10-09] The slot is taken BEFORE the shared 3/s limiter, so
-        a slot held up there could send moments before the next slot's call:
-        Oct 9 counted 7 quote sends inside one second of another (a probe saw
-        0.336 s). This gate runs after the shared limiter, right before the
-        HTTP call, so the documented 1/s holds at actual dispatch.
+        ``lane`` None uses the ambient ``provider_lane``. Returns the seconds
+        spent waiting (shared limiter + quote bucket + spacing).
         """
-        self.limiter()
-        async with self._gate:
-            wait = self._last_dispatch + 1.0 / self.rate - time.monotonic()
-            if wait > 0:
-                self.gate_waits += 1
-                await asyncio.sleep(wait)
-            self._last_dispatch = time.monotonic()
-            return max(wait, 0.0)
-
-    async def slot(self, lane: Optional[str] = None) -> float:
-        """Wait for one quote request slot; returns the seconds waited."""
         started = time.monotonic()
+        if shared is not None:
+            await _acquire_shared(shared, lane)
         await self.limiter().acquire(priority=lane)
-        return time.monotonic() - started
+        interval = 1.0 / self.rate + self.SPACING_MARGIN_SEC
+        wait = self._last_dispatch + interval - time.monotonic()
+        while wait > 0:
+            self.spacing_waits += 1
+            await asyncio.sleep(wait)
+            wait = self._last_dispatch + interval - time.monotonic()
+        self._last_dispatch = time.monotonic()
+        return self._last_dispatch - started
 
-    async def submit(self, fetch, tokens: list, lane: str) -> tuple:
+    async def submit(self, fetch, tokens: list, lane: str, shared=None) -> tuple:
         """Queue ``tokens``; the dispatcher merges queued requests per slot."""
         self.limiter()
         loop = asyncio.get_running_loop()
@@ -434,22 +469,34 @@ class QuoteBudget:
         self._seq += 1
         self._pending.append((_LANE_RANK.get(lane, 1), self._seq, lane, tokens, future, time.monotonic()))
         if self._dispatcher is None or self._dispatcher.done():
-            self._dispatcher = loop.create_task(self._dispatch(fetch))
+            self._dispatcher = loop.create_task(self._dispatch(fetch, shared))
         return await future
 
-    def _live(self) -> list:
-        self._pending = sorted((item for item in self._pending if not item[4].done()),
-                               key=lambda item: (item[0], item[1]))
-        return self._pending
+    def _order(self) -> tuple[list, bool]:
+        """Live requests in send order and whether fairness promoted one."""
+        live = sorted((item for item in self._pending if not item[4].done()),
+                      key=lambda item: (item[0], item[1]))
+        self._pending = live
+        if live and self._streak >= self.FAIRNESS_BURST:
+            lower = [item for item in live if item[0] > live[0][0]]
+            if lower:
+                oldest = min(lower, key=lambda item: item[1])
+                return [oldest] + [item for item in live if item is not oldest], True
+        return live, False
 
-    async def _dispatch(self, fetch) -> None:
-        while self._live():
-            lane = self._pending[0][2]
-            await self.limiter().acquire(priority=lane)
-            if not self._live():
+    async def _dispatch(self, fetch, shared) -> None:
+        loop = asyncio.get_running_loop()
+        while True:
+            order, _promoted = self._order()
+            if not order:
                 return
+            await self.admit(shared, order[0][2])
+            admitted_at = time.monotonic()
+            order, promoted = self._order()
+            if not order:
+                return                                 # every waiter left; the slot goes unused
             batch, merged, seen = [], [], set()
-            for item in self._pending:
+            for item in order:
                 new = [t for t in item[3] if t not in seen]
                 if batch and len(merged) + len(new) > self.MAX_INSTRUMENTS:
                     continue
@@ -458,34 +505,82 @@ class QuoteBudget:
                 seen.update(new)
             taken = {id(item) for item in batch}
             self._pending = [item for item in self._pending if id(item) not in taken]
-            now = time.monotonic()
+            lane = min((item[2] for item in batch), key=lambda name: _LANE_RANK.get(name, 1))
+            if promoted:
+                self.fairness_promotions += 1
+                self._streak = 0
+            elif any(item[0] > batch[0][0] for item in self._pending):
+                self._streak += 1
+            else:
+                self._streak = 0
             for item in batch:
-                self.max_wait_sec[item[2]] = max(self.max_wait_sec.get(item[2], 0.0), now - item[5])
+                self.max_wait_sec[item[2]] = max(self.max_wait_sec.get(item[2], 0.0), admitted_at - item[5])
             self.batches += 1
             self.merged_requests += len(batch)
-            asyncio.get_running_loop().create_task(self._run(fetch, batch, merged, lane))
+            task = loop.create_task(self._run(fetch, batch, merged, lane, admitted_at))
+            self._inflight.add(task)
+            task.add_done_callback(self._inflight.discard)
 
-    async def _run(self, fetch, batch, merged, lane) -> None:
+    async def _run(self, fetch, batch, merged, lane, admitted_at) -> None:
         try:
             result, timing = await fetch(merged, lane)
-        except Exception as exc:                      # noqa: BLE001 - hand the failure to every caller
+        except BaseException as exc:                  # noqa: BLE001 - hand the outcome to every caller
+            failure = exc if isinstance(exc, Exception) else QuoteBatchCancelled(
+                "quote batch cancelled before its response")
             for item in batch:
                 if not item[4].done():
-                    item[4].set_exception(exc)
+                    item[4].set_exception(failure)
+            if not isinstance(exc, Exception):
+                self.cancelled_batches += 1
+                raise
             return
+        finished = time.monotonic()
         for item in batch:
             if item[4].done():
                 continue
             mine = {t: result[t] for t in item[3] if t in result}
+            # quote_batch_wait_sec is the queue wait up to admission (no
+            # transport); quote_batch_elapsed_sec runs to the response. The
+            # caller's own admission wait also counts as its limiter wait.
+            queued = admitted_at - item[5]
             item[4].set_result((mine, {**timing,
-                                       "quote_batch_wait_sec": round(time.monotonic() - item[5], 6),
+                                       "limiter_wait_sec": round(float(timing.get("limiter_wait_sec") or 0.0)
+                                                                 + queued, 6),
+                                       "quote_batch_wait_sec": round(queued, 6),
+                                       "quote_batch_elapsed_sec": round(finished - item[5], 6),
+                                       "quote_batch_lane": lane,
                                        "quote_batch_requests": len(batch),
                                        "quote_batch_instruments": len(merged)}))
 
     def snapshot(self) -> dict:
         return {"rate_per_sec": self.rate, "batches": self.batches, "merged_requests": self.merged_requests,
-                "dispatch_gate_waits": self.gate_waits,
+                "spacing_waits": self.spacing_waits, "fairness_promotions": self.fairness_promotions,
+                "cancelled_batches": self.cancelled_batches, "in_flight": len(self._inflight),
                 "max_wait_sec": {lane: round(v, 3) for lane, v in self.max_wait_sec.items()}}
+
+
+_SUMMED_TIMING = ("limiter_wait_sec", "transport_sec", "parse_sec", "retry_backoff_sec",
+                  "attempt_count", "retry_count")
+
+
+def _aggregate_chunk_timing(parts: list) -> dict:
+    """Timing of a request split into ``MAX_INSTRUMENTS`` chunks.
+
+    Waits, transport and attempts add up across chunks; batch sizes are the
+    largest single request (never a sum, so they still describe one HTTP
+    call); queue waits are the longest chunk's.
+    """
+    out: dict = {"chunks": len(parts)}
+    for part in parts:
+        for key, value in part.items():
+            numeric = isinstance(value, (int, float)) and not isinstance(value, bool)
+            if key in _SUMMED_TIMING and numeric:
+                out[key] = round(out.get(key, 0) + value, 6)
+            elif numeric:
+                out[key] = max(out.get(key, value), value)
+            else:
+                out.setdefault(key, value)
+    return out
 
 
 def _record_endpoint(client, endpoint: str) -> None:
@@ -779,6 +874,7 @@ class KiteClient:
     # ensure_instrument_cache() on a short market-hours cadence until a
     # provider refresh succeeds. The status is published on /health.
     INSTRUMENT_SNAPSHOT_MAX_AGE_DAYS = 7
+    INSTRUMENT_SNAPSHOT_MAX_SKEW_SEC = 300   # a saved_at later than now + this is refused
     INSTRUMENT_CACHE_MIN_SIZE = 1000   # a real NSE dump is ~9,000 symbols
 
     def _instrument_snapshot_path(self) -> Optional[str]:
@@ -825,10 +921,18 @@ class KiteClient:
                 saved = _json.load(fh)
             saved_at = datetime.fromisoformat(saved["saved_at"])
             tokens = {str(k).upper(): int(v) for k, v in saved["tokens"].items()}
-        except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+            # [O12-C2 2026-10-12] A naive clock made the age subtraction below
+            # raise outside this handler, and a future clock passed the age
+            # check with a negative age. Both are refused here.
+            if saved_at.tzinfo is None or saved_at.utcoffset() is None:
+                raise ValueError("snapshot saved_at has no timezone")
+        except (OSError, ValueError, KeyError, TypeError, AttributeError, OverflowError) as exc:
             logger.warning("instrument_snapshot_unreadable error_type=%s", type(exc).__name__)
             return False
         age_days = (datetime.now(timezone.utc) - saved_at).total_seconds() / 86400
+        if age_days < -self.INSTRUMENT_SNAPSHOT_MAX_SKEW_SEC / 86400:
+            logger.warning("instrument_snapshot_rejected reason=future_saved_at age_days=%.3f", age_days)
+            return False
         if age_days > self.INSTRUMENT_SNAPSHOT_MAX_AGE_DAYS or len(tokens) < self.INSTRUMENT_CACHE_MIN_SIZE:
             logger.warning("instrument_snapshot_rejected age_days=%.1f size=%d", age_days, len(tokens))
             return False
@@ -880,20 +984,33 @@ class KiteClient:
                                     continue
                 if not fresh:
                     raise ValueError("instrument dump contained no symbols")
+                if len(fresh) < self.INSTRUMENT_CACHE_MIN_SIZE:
+                    # [O12-C1 2026-10-12] A truncated HTTP 200 dump used to be
+                    # a provider success: refreshed today, failures 0, so the
+                    # recovery job stopped retrying while the cache stayed
+                    # unusable. It is now a failed attempt and is not merged.
+                    raise _TruncatedInstrumentDump(f"instrument dump had {len(fresh)} symbols")
+                # A full dump replaces the catalogue in place (scanners hold
+                # this dict): symbols the provider no longer lists are dropped.
+                stale = [symbol for symbol in self.instrument_cache if symbol not in fresh]
+                for symbol in stale:
+                    del self.instrument_cache[symbol]
                 self.instrument_cache.update(fresh)
                 status.update(source="PROVIDER", provider_refreshed_at=status["last_attempt_at"],
-                              snapshot_date=None, last_error_type=None, failures=0)
-                logger.info("instruments_refreshed", count=len(self.instrument_cache))
+                              snapshot_date=None, last_error_type=None, failures=0,
+                              last_dump_size=len(fresh))
+                logger.info("instruments_refreshed", count=len(self.instrument_cache), dropped=len(stale))
             except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as e:
                 status["failures"] = int(status.get("failures") or 0) + 1
                 status["last_error_type"] = type(e).__name__
+                if isinstance(e, _TruncatedInstrumentDump):
+                    status["last_dump_size"] = len(fresh)
                 logger.error("instrument_refresh_failed", error_type=type(e).__name__,
                              failures=status["failures"])
                 if not self.instrument_cache:
                     self._load_instrument_snapshot()
                 return False
-        if len(fresh) >= self.INSTRUMENT_CACHE_MIN_SIZE:   # never persist a truncated dump
-            self._save_instrument_snapshot(fresh)
+        self._save_instrument_snapshot(fresh)
         return True
 
     async def ensure_instrument_cache(self) -> bool:
@@ -904,7 +1021,8 @@ class KiteClient:
         """
         status = self._instrument_status()
         refreshed = status.get("provider_refreshed_at")
-        if refreshed:
+        # [O12-C1] Done for the day only while the catalogue is also usable.
+        if refreshed and len(self.instrument_cache) >= self.INSTRUMENT_CACHE_MIN_SIZE:
             import pytz as _pytz
             ist = _pytz.timezone("Asia/Kolkata")
             if datetime.fromisoformat(refreshed).astimezone(ist).date() == datetime.now(ist).date():
@@ -1278,27 +1396,23 @@ class KiteClient:
             # [O9-Q3 2026-10-09] Kite's full quote takes at most 500 keys; a
             # larger request (the ~970-name overnight universe) was sent whole.
             # Each chunk goes through the normal (budgeted) path in turn.
-            merged, timing = {}, {}
+            merged, parts = {}, []
             size = QuoteBudget.MAX_INSTRUMENTS
             for start in range(0, len(tokens), size):
                 part, part_timing = await self.get_quote_with_timing(
                     tokens[start:start + size], priority=priority)
                 merged.update(part)
-                for key, value in part_timing.items():
-                    if isinstance(value, (int, float)) and not isinstance(value, bool):
-                        timing[key] = round(timing.get(key, 0) + value, 6)
-                    else:
-                        timing.setdefault(key, value)
-            return merged, timing
+                parts.append(part_timing)
+            return merged, _aggregate_chunk_timing(parts)
         if not tokens or budget is None:
             return await self._quote_direct(tokens, priority=priority)
         lane = priority if priority in _LANE_RANK else _provider_lane.get()
         return await budget.submit(
-            lambda merged, batch_lane: self._quote_direct(merged, priority=batch_lane, slot_held=True),
-            tokens, lane)
+            lambda merged, batch_lane: self._quote_direct(merged, priority=batch_lane, admitted=True),
+            tokens, lane, shared=self.limiter)
 
     async def _quote_direct(self, tokens, *, priority: Optional[str] = None,
-                            slot_held: bool = False) -> tuple[dict, dict]:
+                            admitted: bool = False) -> tuple[dict, dict]:
         """Fetch live quote for one or more instrument tokens.
         Kite endpoint: GET /quote?i={token1}&i={token2}...
         Returns: dict {token_int: {last_price, ohlc, volume, depth, ...}, ...}
@@ -1355,22 +1469,14 @@ class KiteClient:
         for attempt in range(1, max_attempts + 1):
             timing["attempt_count"] = attempt
             limiter_started = time.monotonic()
-            # Every HTTP attempt spends a quote slot; the batch dispatcher
-            # already holds the first one.
-            if budget is not None and not (slot_held and attempt == 1):
-                await budget.slot(priority)
-            try:
-                await self.limiter.acquire(priority=priority)
-            except TypeError as exc:
-                # Small broker adapters used by replay/tests may still expose
-                # the pre-S2 no-argument limiter contract.  They retain their
-                # existing limiting semantics; only the priority annotation is
-                # unavailable on those adapters.
-                if "priority" not in str(exc):
-                    raise
-                await self.limiter.acquire()
-            if budget is not None:
-                await budget.dispatch_gate()
+            # Every HTTP attempt is admitted (shared limiter, then the quote
+            # bucket) right before it is sent; the batch dispatcher already
+            # admitted the first one.
+            if not (admitted and attempt == 1):
+                if budget is not None:
+                    await budget.admit(self.limiter, priority)
+                else:
+                    await _acquire_shared(self.limiter, priority)
             _record_endpoint(self, "quote")
             timing["limiter_wait_sec"] += time.monotonic() - limiter_started
             try:
@@ -1504,13 +1610,27 @@ class KiteClient:
         requested = {int(token): str(key) for token, key in instruments.items() if str(key).strip()}
         if not requested:
             return _finish({})
+        if len(requested) > QuoteBudget.MAX_INSTRUMENTS:
+            # [O12-Q2 2026-10-12] Kite's full quote takes at most 500 keys;
+            # bound every caller here, as the token path already does.
+            items, merged, parts = list(requested.items()), {}, []
+            size = QuoteBudget.MAX_INSTRUMENTS
+            for start in range(0, len(items), size):
+                part, part_timing = await self.get_quote_by_instruments_with_timing(
+                    dict(items[start:start + size]))
+                merged.update(part)
+                parts.append(part_timing)
+            timing = _aggregate_chunk_timing(parts)
+            outcomes = {part.get("outcome") for part in parts}
+            timing["outcome"] = ("COMPLETE" if outcomes == {"COMPLETE"} else
+                                 "FAILED" if outcomes == {"FAILED"} else "PARTIAL")
+            return merged, timing
         limiter_started = time.monotonic()
         budget = getattr(self, "quote_budget", None)
         if budget is not None:
-            await budget.slot()                       # shares the 1/s quote budget (ambient lane)
-        await self.limiter.acquire()
-        if budget is not None:
-            await budget.dispatch_gate()
+            await budget.admit(self.limiter)          # ambient lane, shares the 1/s quote budget
+        else:
+            await _acquire_shared(self.limiter, None)
         _record_endpoint(self, "quote")
         timing["limiter_wait_sec"] = time.monotonic() - limiter_started
         timing["attempt_count"] = 1

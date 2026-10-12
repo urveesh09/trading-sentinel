@@ -14,6 +14,7 @@ as penny edge).
 """
 from __future__ import annotations
 
+import asyncio
 from collections import Counter
 from datetime import datetime
 from typing import Optional
@@ -30,6 +31,7 @@ IST = pytz.timezone("Asia/Kolkata")
 
 REPORT_START_HOUR = 10   # first brief at 10:00 IST
 REPORT_END_HOUR = 15     # last at 15:00 IST (after that the EOD story is closed)
+SPREAD_TILT_REPORT_TIMEOUT_SEC = 10.0
 
 
 def is_in_report_window(now_ist: datetime) -> bool:
@@ -129,9 +131,16 @@ async def build_hourly_report(
             "breadcrumbs (dead engine != quiet market)."
         )
     # Frozen shadow scored beside the real book (fno_spread_tilt.py); never trades.
+    # [O12-T3 2026-10-12] Synchronous SQLite research runs in a worker thread
+    # with a deadline: a locked store blocked the event loop for 5 s in an
+    # isolated probe. A late or failed read is reported as unavailable.
     try:
-        from fno_spread_tilt import report_line, spread_tilt_report
-        lines.append(report_line(spread_tilt_report(db_path)))
+        from fno_spread_tilt import VERSION, report_line, spread_tilt_report
+        lines.append(report_line(await asyncio.wait_for(
+            asyncio.to_thread(spread_tilt_report, db_path), timeout=SPREAD_TILT_REPORT_TIMEOUT_SEC)))
+    except asyncio.TimeoutError:
+        logger.warning("fno_spread_tilt_report_timeout timeout_sec=%.1f", SPREAD_TILT_REPORT_TIMEOUT_SEC)
+        lines.append(f"Shadow {VERSION}: report unavailable this hour (read timed out)")
     except Exception as exc:                          # a shadow must never break the report
         logger.warning("fno_spread_tilt_report_failed err=%s", type(exc).__name__)
     return "\n".join(lines)

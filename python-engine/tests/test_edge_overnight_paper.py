@@ -396,6 +396,10 @@ async def test_entry_is_capped_by_visible_asks_and_priced_at_their_average(tmp_p
     assert o["planned"] > 200 and o["shares"] == 200 and o["visible_ask_qty"] == 200
     assert o["entry_price"] == pytest.approx((120 * 20.10 + 80 * 20.30) / 200)   # walked, above the 25 bps model
     assert o["best_ask"] == 20.10 and o["best_bid"] == 19.9
+    # O12 rec 10: the receipt keeps the ladder it walked, so the fill can be re-walked.
+    assert o["ask_levels"] == [[20.10, 120], [20.30, 80]] and o["price_basis"] == "ask_walk"
+    assert o["walked_avg"] == pytest.approx(o["entry_price"])
+    assert all(r["price_basis"] == "slippage_floor" for r in summary["opened"] if r["ticker"] != "AAA")
     # Fewer than a quarter of the planned shares on offer: refused, not shrunk to dust.
     dust = dict(thin, depth={"sell": [{"price": 20.10, "quantity": 30}]})
     summary = await eop.run_overnight_entry(_Kite({**entry_quotes, "AAA": dust}), _cache(_fresh(tmp_path / "b")),

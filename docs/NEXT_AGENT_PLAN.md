@@ -5,6 +5,62 @@
 
 
 
+## October 12 — Oct 12 audit fixes O12-F1/R1/Q1/Q2/C1/C2/T1–T3/S1/D1 (done, Dev, commit pending, not deployed)
+
+- Problem (Production audit, PR #107 deployed):
+  - flat 10 s fast-exit passes took the F&O lock from 4 regular entry
+    passes;
+  - 10 DR entry passes ended at the 20 s read budget;
+  - quote merger lane and fairness gaps; keyed requests > 500 unbounded;
+  - a truncated instrument dump counted as a success, and naive or future
+    snapshot clocks were not refused;
+  - spread-tilt pairing lacked identity, used a live lot cap and had no
+    drawdown, and its hourly read was synchronous;
+  - the Smart day total omitted carried exits.
+- Files:
+  - `fno_orchestrator.py`, `fno_chain.py`, `scheduler_setup.py`,
+    `kite_client.py`, `config.py` (`FNO_TICK_FAST_EXIT_WAIT_SEC`);
+  - `fno_spread_tilt.py`, `fno_hourly_report.py`, `penny_smart_shadow.py`,
+    `edge_overnight_paper.py`, `ops_watchdogs.py`;
+  - tests: `test_oct12_audit_fixes.py` (new, 25), `test_fno_fast_exit.py`,
+    `test_fno_orchestrator.py` (2 quote calls, not 3), `test_oct9_audit_fixes.py`,
+    `test_kite_client.py` (dumps padded to ≥ 1,000), `test_edge_overnight_paper.py`.
+- Acceptance (met in Dev tests):
+  - a regular tick waits for a running fast pass and then runs;
+  - a flat fast pass never calls management;
+  - a regular tick still skips behind a regular tick;
+  - an anchored chain makes 1 request, and a moved anchor retakes it;
+  - DR reads run in the management lane, which does not leak to the caller;
+  - a management read arriving during a bulk wait rides the next batch,
+    labelled management;
+  - a streaming management load cannot hold a 500-token bulk read beyond 3
+    batches;
+  - a cancelled batch releases its callers;
+  - 501 keyed requests go as 500 + 1;
+  - a truncated dump retries and then recovers, and a full dump drops
+    delisted symbols;
+  - naive, future and garbage snapshot clocks are refused;
+  - the tilt does not pair across underlyings or expiries, an ambiguous
+    spread is UNAVAILABLE, the frozen cap ignores runtime 9, open sides wait,
+    and drawdown is in close order;
+  - the hourly report keeps the loop alive and reports a late read;
+  - the Smart exit date shows 12 closes / −₹11.44.
+- Config/migration: one new setting (`FNO_TICK_FAST_EXIT_WAIT_SEC=20`); no
+  schema change; new JSON fields only.
+- Rollout: merge, rebuild the engine. Rollback: revert (no stored-state
+  change).
+- Next (after deploy):
+  1. `fno_tick_skip reason=fno_pass_in_progress` should be ~0, and
+     `fno_tick_wait` appears only with an open leg.
+  2. `fno_dr_entry_skipped` count and `dr_entry_read_sec` per stage should
+     be far below 10/day, with entry-read median well under 5 s.
+  3. `/ops/provider-budget` quote: over_documented_limit 0, plus
+     `fairness_promotions` and `spacing_waits`.
+  4. Tilt: first forward pair; review at 20 with net, worst and drawdown
+     (owner decides).
+  5. Still open: C4/C7/finalizer deferred items; next expiry (NIFTY Oct 13,
+     SENSEX Oct 15) is the expiry agent's.
+
 ## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (done, Dev, commit `2d658b8`, pushed, not deployed)
 
 - Problem: the owner asked for more profit / less loss. The paper spreads

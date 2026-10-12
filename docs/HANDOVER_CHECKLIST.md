@@ -12,6 +12,29 @@
 
 
 
+## October 12 — Oct 12 audit fixes (commit pending, Dev, not deployed)
+
+- [x] O12-F1 flat fast exit off the lock and out of telemetry; regular tick waits for a fast pass.
+- [x] O12-R1 anchored chain (1 request), DR/fired-signal reads in the management lane, per-stage read timing.
+- [x] O12-Q1/Q2 shared → quote bucket → send; post-wait batch lane; bounded fairness; cancel-safe; keyed 500 chunks.
+- [x] O12-C1/C2 truncated dump retried; usable-only no-op; stale symbols dropped; snapshot clocks validated.
+- [x] O12-T1/T2/T3 tilt identity pairing, frozen manifest, open/unavailable, drawdown, hourly offload.
+- [x] O12-S1 Smart exit-date total on `/health`; rec 10 overnight ladder receipt; O12-D1 wording.
+- [x] Engine suite (all files): 5,118 pass, 4 skip, 2 fail. Both pass when
+  re-run:
+  - `test_kite_client_methods::test_methods_go_through_rate_limiter`, an
+    `inspect.getsource` test: `kite_client.py` was edited during the run.
+    Files a–k re-run in order: 2,399 pass.
+  - `test_mark_to_market::TestFnoMark::test_actual_fno_writer_qty_is_not_multiplied_twice`,
+    the known order/date-dependent mark test; it passes alone.
+
+  `test_oct12_audit_fixes.py`: 25 pass. Quote/lanes/Oct 9 files: 53 pass.
+  F&O, chain users, scheduler and goldens: 293 + 88 pass. Agent and gateway
+  untouched.
+- [x] Tilt checked on a read-only copy of Production F&O rows: same 22
+  pairs and nets; drawdown added.
+- [ ] Deployed: no (merge, rebuild the engine).
+
 ## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (commit `2d658b8`, Dev, pushed, not deployed)
 
 - [x] Shadow module, hourly report line, `/ops/fno-spread-tilt`; 4 tests.

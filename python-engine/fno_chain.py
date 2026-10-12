@@ -112,11 +112,21 @@ async def take_chain_snapshot(
     kite, instruments: FnoInstruments, now_ist: Optional[datetime] = None,
     strike_window: Optional[int] = None,
     option_expiry: Optional[date] = None,
+    anchor_price: Optional[float] = None,
 ) -> Optional[ChainSnapshot]:
     """One batched /quote for the front future + ATM+/-N CE/PE ladder.
 
     Returns None (loudly) when the prerequisites are missing -- callers
-    treat None as "no new entries this tick" (staleness kill switch)."""
+    treat None as "no new entries this tick" (staleness kill switch).
+
+    [O12-R1 2026-10-12] ``anchor_price`` is a futures price the caller read
+    moments ago (the F&O tick's own management quote). It only centres the
+    strike window, so the separate first-pass futures /quote is skipped: one
+    quote request instead of two on a 1/s budget. The snapshot's forward
+    still comes from the fresh future quoted together with the ladder; if
+    that forward has moved more than half the window away from the anchor,
+    the snapshot is retaken the normal two-call way.
+    """
     now_ist = now_ist or datetime.now(IST)
     today = now_ist.date()
 
@@ -137,13 +147,17 @@ async def take_chain_snapshot(
         )
         return None
 
-    # First pass: futures LTP anchors the strike window.
-    fut_data = await kite.get_quote([fut.token])
-    fut_q = fut_data.get(fut.token)
-    if not fut_q or not fut_q.get("last_price"):
-        logger.warning("fno_chain_unavailable reason=fut_quote_empty token=%d", fut.token)
-        return None
-    forward = float(fut_q["last_price"])
+    anchored = anchor_price is not None and anchor_price > 0
+    if anchored:
+        forward = float(anchor_price)
+    else:
+        # First pass: futures LTP anchors the strike window.
+        fut_data = await kite.get_quote([fut.token])
+        fut_q = fut_data.get(fut.token)
+        if not fut_q or not fut_q.get("last_price"):
+            logger.warning("fno_chain_unavailable reason=fut_quote_empty token=%d", fut.token)
+            return None
+        forward = float(fut_q["last_price"])
 
     # [PARTNER-TIPS 2026-07-18] strike_window param lets the analytics
     # tick request a wide ladder (PCR/max-pain need +/-15) without
@@ -178,6 +192,12 @@ async def take_chain_snapshot(
             quotes[(c.strike, c.instrument_type)] = _parse_quote_entry(c, q)
 
     fut_quote = _parse_quote_entry(fut, data[fut.token]) if fut.token in data else None
+    if anchored and fut_quote and fut_quote.ltp > 0 and instruments.strike_step > 0:
+        drift_strikes = abs(instruments.atm_strike(fut_quote.ltp) - instruments.atm_strike(forward))             / instruments.strike_step
+        if drift_strikes > max(1, window // 2):
+            logger.info("fno_chain_anchor_moved anchor=%.1f fresh=%.1f strikes=%.0f -- retaking",
+                        forward, fut_quote.ltp, drift_strikes)
+            return await take_chain_snapshot(kite, instruments, now_ist, strike_window, option_expiry)
     if fut_quote and fut_quote.ltp > 0:
         forward = fut_quote.ltp
 

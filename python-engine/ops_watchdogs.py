@@ -391,7 +391,8 @@ async def _trading_readiness_tick():
             reasons.append(
                 f"the NSE symbol list is unavailable (size {cache.get('size')}, "
                 f"last error {cache.get('last_error_type') or 'none'}); "
-                "equity scans and Smart exits cannot quote -- recovery retries every 2 min"
+                "new-entry equity scans cannot resolve symbols; Smart exits for held "
+                "names fall back to symbol quotes -- recovery retries every 2 min"
             )
         if entry_halted:
             reasons.append(

@@ -57,6 +57,7 @@ async def test_fast_exit_and_tick_share_one_lock(monkeypatch):
     fast = AsyncMock(return_value={"exits": []})
     monkeypatch.setattr(fno_orchestrator, "run_fno_tick", slow_tick)
     monkeypatch.setattr(fno_orchestrator, "run_fno_fast_exit", fast)
+    monkeypatch.setattr(fno_orchestrator, "fast_exit_has_work", AsyncMock(return_value=True))
     await jobs["fno_tick"].func()
     assert seen == ["tick"] and fast.await_count == 0      # skipped, never concurrent
     await jobs["fno_fast_exit"].func()

@@ -326,6 +326,7 @@ def smart_exposure_snapshot(ledger_path, *, now=None):
     path = smart_db_path(ledger_path)
     if not Path(path).exists():
         return {"status": "NO_BOOK", "open": 0, "positions": []}
+    exits = []
     with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=2.0) as conn:
         try:
             row = conn.execute(
@@ -333,6 +334,13 @@ def smart_exposure_snapshot(ledger_path, *, now=None):
             ).fetchone()
         except sqlite3.OperationalError:
             row = None
+        try:
+            day_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+            exits = [r[0] for r in conn.execute(
+                "SELECT payload_json FROM penny_smart_paper_events WHERE policy=? AND kind='EXIT_FILLED' "
+                "AND at >= ?", (SMART_VERSION, day_start))]
+        except sqlite3.OperationalError:
+            exits = []
     if not row:
         return {"status": "NO_BOOK", "open": 0, "positions": []}
     state = json.loads(row[0])
@@ -359,4 +367,31 @@ def smart_exposure_snapshot(ledger_path, *, now=None):
         "marked_pnl": state.get("marked_pnl"),
         "book_day": state.get("day"),
         "positions": positions,
+        "exit_date": _exit_date_realized(exits, state, now),
+    }
+
+
+def _exit_date_realized(payloads, state, now):
+    """Every Smart close dated today, including prior-day holdings settled today.
+
+    [O12-S1 2026-10-12] Day rollover clears the trade list after settling the
+    carried positions, so ``marked_pnl`` covers the new day's entries only.
+    Oct 12 showed -18.01 there while the exit-date total was -11.44: two
+    Friday holdings closed Monday for +6.58 and lived only in the durable
+    events. This joins them so a reader of /health sees both numbers.
+    """
+    nets = []
+    for raw in payloads:
+        try:
+            nets.append(float(json.loads(raw)["net_pnl"]))
+        except (ValueError, KeyError, TypeError):
+            continue
+    same_day = state.get("day") == now.date().isoformat()
+    day_trades = len(state.get("trades") or []) if same_day else 0
+    return {
+        "date": now.date().isoformat(),
+        "closes": len(nets),
+        "net": round(sum(nets), 4),
+        "carried_closes": max(0, len(nets) - day_trades),
+        "book_day_realized": round(float(state.get("realized") or 0.0), 4) if same_day else None,
     }

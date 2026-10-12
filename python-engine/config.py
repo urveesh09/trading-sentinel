@@ -1178,6 +1178,11 @@ class Settings(BaseSettings):
     # the 1/s quote budget. Roll back with FNO_FAST_EXIT_ENABLED=false.
     FNO_FAST_EXIT_ENABLED:          bool = True
     FNO_FAST_EXIT_INTERVAL_SEC:     int  = 10
+    # [O12-F1 2026-10-12] Oct 12 dropped 4 of 247 regular passes because a
+    # flat fast pass held the F&O lock for its DB read. A flat book is now
+    # checked outside the lock, and a regular tick that finds a fast pass
+    # running waits up to this long instead of skipping its entry work.
+    FNO_TICK_FAST_EXIT_WAIT_SEC:    float = 20.0
     FNO_BAR_CLOSE_TRIGGER_ENABLED:  bool = False
     FNO_BAR_CLOSE_DELAY_SEC:        int  = 3
 

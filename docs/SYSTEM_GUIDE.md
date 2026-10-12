@@ -14,6 +14,80 @@
 
 
 
+## October 12 — Oct 12 audit fixes: F&O lock and read deadlines, quote fairness, cache validation, tilt identity (actual behavior, Dev)
+
+Source: `Production_Trading-sentinel/docs/2026-10-12-production-deep-audit.md`
+(PR #107 deployed; no F&O trade; Smart −₹11.44 and Penny −₹6.98 by exit date;
+3 overnight positions OPEN). Expiry code untouched (expiry agent).
+
+- **F&O lock (O12-F1).** `fno_orchestrator.fast_exit_has_work()` checks for an
+  OPEN single leg. The 10 s fast-exit job checks it **without** the F&O lock
+  and without durable telemetry; only a pass with an open leg runs the
+  telemetered `_fno_fast_exit_pass` under the lock. A regular tick that finds
+  the lock held by a fast pass now **waits** (≤ `FNO_TICK_FAST_EXIT_WAIT_SEC`,
+  20 s) instead of skipping; it still skips behind another regular pass
+  (bar-close trigger). `fno_tick_complete` logs `lock_wait_sec`. Oct 12 lost
+  4/247 entry passes this way, and flat fast passes filled 3,101 of the 5,000
+  retained telemetry rows.
+- **Defined-risk read deadlines (O12-R1).** Oct 12: 10 DR passes ended at the
+  20 s budget (8 chain, 2 futures history); the entry-read median was 5.4 s,
+  p90 15 s, two quote calls queued on the 1/s quote budget. Now:
+  `take_chain_snapshot(anchor_price=...)` centres the strike window on the
+  tick's own futures quote, which saves one request (the fresh future is still
+  quoted with the ladder, and a move of more than half the window retakes it
+  the old way). DR entry reads and the single-leg chain read after a fired
+  signal run in the **management** lane (bounded at 3 consecutive grants).
+  Each tick records `defined_risk_entry_read_sec` {chain_snapshot,
+  futures_history}, and the skip warning carries it.
+- **Quote budget (O12-Q1/Q2).** Admission is shared limiter → 1/s quote
+  bucket (priority lanes) → send, with nothing awaited in between (the FIFO
+  dispatch gate is gone; a strict spacing check keeps sends ≥ 1/rate + 2 ms
+  apart). The merged batch is built after admission, and its lane is the best
+  lane in it (`quote_batch_lane`). After 3 batches led by a higher lane while
+  a lower-lane request waits, the oldest lower request leads
+  (`fairness_promotions`). In-flight batches are tracked; a cancelled batch
+  raises `QuoteBatchCancelled` to every caller. `quote_batch_wait_sec` is now
+  queue wait to admission only; `quote_batch_elapsed_sec` runs to the
+  response. Instrument-keyed requests over 500 keys are chunked like tokens.
+  Chunk timing sums waits and attempts, and reports the largest request
+  size, not a sum. `/ops/provider-budget` quote budget shows
+  `spacing_waits`, `fairness_promotions`, `cancelled_batches` and `in_flight`
+  (`dispatch_gate_waits` removed).
+- **Instrument cache (O12-C1/C2).** A dump under 1,000 symbols is a failed
+  refresh (`_TruncatedInstrumentDump`, `last_dump_size`). It is not merged or
+  saved, and the recovery job keeps retrying. `ensure_instrument_cache` is
+  done for the day only when refreshed today **and** usable. A full dump
+  replaces the catalogue in place, dropping symbols the provider no longer
+  lists. Snapshot `saved_at` must be timezone-aware and not more than 300 s
+  in the future; bad clocks are refused inside the handler (no TypeError).
+- **Spread tilt (O12-T1/T2/T3).**
+  - Pairs need the same underlying, option type and expiry (when both sides
+    record one) within 120 s; the nearest entry wins. An ambiguous spread is
+    `UNAVAILABLE`, never a wildcard.
+  - Pre-binding spread rows are NIFTY with an unknown expiry
+    (`identity: legacy`).
+  - `MANIFEST` (lot cap 3, window, rules) and `manifest_fingerprint` freeze
+    the terms; runtime `FNO_DR_MAX_LOTS` is shown but no longer used.
+  - OPEN sides make a signal OPEN.
+  - The summary adds `open`, `unavailable` and chronological
+    `paired_*_max_drawdown`.
+  - The hourly report reads it in a worker thread with a 10 s deadline
+    ("report unavailable this hour" on timeout).
+  - Forward sample was 0, so no score changed. Checked on a read-only copy
+    of Production's F&O rows: the same 22 in-sample pairs and the same nets
+    (31 spreads, 28 legacy and 3 contract-bound; 41 NIFTY singles). New
+    in-sample drawdown: paired actual ₹16,331 vs variant ₹16,416. The tilt
+    does not lower drawdown in-sample.
+- **Smart exit-date total (O12-S1).** `/health.smart_penny.exit_date` =
+  {date, closes, net, carried_closes, book_day_realized}, joined from today's
+  durable `EXIT_FILLED` events. Oct 12 would read 12 closes / −₹11.44 (2
+  carried) beside `marked_pnl` −₹18.01.
+- **Overnight receipt (rec 10).** Each opened entry also stores `ask_levels`
+  (the visible ladder), `walked_avg`, `price_basis` (ask_walk or
+  slippage_floor) and `capacity`. Fill contract unchanged (`visible-asks-v3`).
+- **Wording (O12-D1).** The cache watchdog says new-entry scans cannot resolve
+  symbols while Smart held exits fall back to symbol quotes.
+
 ## October 9 (night) — frozen F&O shadow `FNO_SPREAD_TILT_V1` (actual behavior, Dev)
 
 - **What it is.** `fno_spread_tilt.py`, read-only. For each signal where the
