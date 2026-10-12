@@ -14,7 +14,7 @@
 
 
 
-## October 12 (night) — option-buyer card numbers verified on Production data (O12-PB2, actual behavior, Dev)
+## October 12 (night) — option-buyer card numbers verified on Production data (O12-PB2, actual behavior, Dev, commit `feed23e`)
 
 Owner: the partner trades real money, so the card's numbers must be the most
 correct the system can produce. Every number was checked read-only against

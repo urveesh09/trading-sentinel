@@ -5,7 +5,7 @@
 
 
 
-## October 12 (night) — O12-PB2 card numbers verified on Production data (done, Dev, commit pending, not deployed)
+## October 12 (night) — O12-PB2 card numbers verified on Production data (done, Dev, commit `feed23e`, pushed, not deployed)
 
 - Problem: the partner trades real money, so each number on the card must
   be checked against what markets actually did, not just modelled.

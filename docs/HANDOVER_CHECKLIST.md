@@ -12,7 +12,7 @@
 
 
 
-## October 12 (night) — O12-PB2 card numbers verified (commit pending, Dev, not deployed)
+## October 12 (night) — O12-PB2 card numbers verified (commit `feed23e`, Dev, pushed, not deployed)
 
 - [x] Index conversion vs real SENSEX index (Oct 8): median +0.4, mean |16| points.
 - [x] Premium model on 41,950 pairs; 60-minute decay; target range 0.85–1.0.
