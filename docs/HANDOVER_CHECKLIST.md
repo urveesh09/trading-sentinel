@@ -12,7 +12,7 @@
 
 
 
-## October 15 — expiry-v2 (C takes CX's failed-break exit) and expiry-shadow-v4 (commit `XV4_COMMIT`, Dev, pushed, not deployed)
+## October 15 — expiry-v2 (C takes CX's failed-break exit) and expiry-shadow-v4 (commit `5458d2d`, Dev, pushed, not deployed)
 
 - [x] C (main) sells its ticket on A's failed break. CX's rule was never worse
   than C on any of the 4 expiries (Oct 15 forward +₹2,018.54).

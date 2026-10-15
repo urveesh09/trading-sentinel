@@ -5,7 +5,7 @@
 
 
 
-## October 15 — expiry-v2 (C takes CX's exit), expiry-shadow-v4 and Oct 15 expiry-audit fixes (done, Dev, commit `XV4_COMMIT`, pushed, not deployed)
+## October 15 — expiry-v2 (C takes CX's exit), expiry-shadow-v4 and Oct 15 expiry-audit fixes (done, Dev, commit `5458d2d`, pushed, not deployed)
 
 - Problem:
   - Owner order: "replace the main with shadow if it worked", and improve the

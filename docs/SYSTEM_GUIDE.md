@@ -14,7 +14,7 @@
 
 
 
-## October 15 — expiry-v2: C takes CX's failed-break exit; expiry-shadow-v4 and Oct 15 expiry-audit fixes (actual behavior, Dev, commit `XV4_COMMIT`)
+## October 15 — expiry-v2: C takes CX's failed-break exit; expiry-shadow-v4 and Oct 15 expiry-audit fixes (actual behavior, Dev, commit `5458d2d`)
 
 Audit: Production `docs/2026-10-15-expiry-system-deep-audit.md`. The owner
 ordered that a shadow which worked should replace its main play. Design, the
