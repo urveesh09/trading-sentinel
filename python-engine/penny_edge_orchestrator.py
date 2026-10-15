@@ -287,6 +287,8 @@ async def _run_one_leg(
     bankroll: float,       # paper: 100k, live: 1k (or whatever config)
     paper_mode: bool,      # whether to actually place broker orders
     candidates,            # List[SignalCandidate] from pel.scan_today(...)
+    *, entry_cutoff: Optional[dtime] = None,
+    now_fn: Optional[Callable[[], datetime]] = None,
 ) -> dict:
     if source_tag == SOURCE_LIVE and not paper_mode:
         # Live EDGE still lacks the reservation/broker-recovery transaction used
@@ -326,10 +328,21 @@ async def _run_one_leg(
     executor = _executor_for(kite, paper_mode)
     submitted = []
     skipped = []
-    for pos in leg_scan:
+    clock = now_fn or (lambda: datetime.now(_IST))
+    for index, pos in enumerate(leg_scan):
         if await _already_entered_today(db_path, pos.ticker, source_tag, today_str):
             skipped.append((pos.ticker, "already-entered-today"))
             continue
+        # [review R1 2026-10-15] Re-check the scheduled cutoff right before
+        # each admission: an earlier fill (or the journal/DB wait above) can
+        # carry the batch past 15:15. Fills already accepted stay recorded
+        # and managed; only new admissions stop.
+        if entry_cutoff is not None and not edge_entry_window_open(clock(), entry_cutoff):
+            for late in leg_scan[index:]:
+                skipped.append((late.ticker, "after-entry-cutoff"))
+            logger.warning("penny_edge_%s_entry_cutoff_reached remaining=%d",
+                           leg_name.lower(), len(leg_scan) - index)
+            break
         order_result = await executor.execute_entry(
             ticker=pos.ticker,
             leg=EDGE_PRODUCT_TYPE,
@@ -742,6 +755,7 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None, *,
             bankroll=paper_bankroll,
             paper_mode=True,   # paper leg is ALWAYS paper (no broker)
             candidates=candidates,
+            entry_cutoff=entry_cutoff, now_fn=clock,
         )
 
     # Never label simulated fills as EDGE_LIVE: that contaminates live
@@ -755,6 +769,7 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None, *,
             bankroll=live_bankroll,
             paper_mode=False,
             candidates=candidates,
+            entry_cutoff=entry_cutoff, now_fn=clock,
         )
     elif not live_disabled:
         live_summary["skipped"].append(("ALL", "live-master-disabled"))

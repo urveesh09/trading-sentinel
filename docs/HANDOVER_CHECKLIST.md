@@ -12,6 +12,15 @@
 
 
 
+## October 15 — second review R1/R2 (commit `COMMIT_ID`, Dev, pushed, not deployed)
+
+- [x] R1: EDGE cutoff checked before every candidate admission; an accepted
+  fill is kept.
+- [x] R2: outbox changes are row-scoped; a page queued mid-send survives
+  and is delivered.
+- [x] Tests: full engine suite 5,188 pass, 4 skip, 2 fail, 1 known flake deselected (7 min 56 s). Both failures are in `test_expiry_paper.py` and come from the expiry agent's uncommitted shadow-v3 work in progress (with the committed `expiry_paper.py` a v3 test fails instead). None touch R1/R2 code. `test_oct13_audit_fixes.py` 49 pass; EDGE suites pass.
+- [ ] Deployed: no (merge, rebuild the engine).
+
 ## October 15 — review F1–F5 of the Oct 13 fixes (commit `ec1d5a2`, Dev, pushed, not deployed)
 
 - [x] F1 EDGE catch-up re-checks the 15:15 cutoff after the token wait; the

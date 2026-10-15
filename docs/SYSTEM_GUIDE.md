@@ -14,6 +14,23 @@
 
 
 
+## October 15 — second review R1/R2 (actual behavior, Dev, commit `COMMIT_ID`)
+
+Review: `docs/2026-10-15-oct13-fixes-second-review.md` (on the F1–F5 tree).
+
+- **EDGE cutoff inside the batch (R1).** `_run_one_leg(…, entry_cutoff=,
+  now_fn=)` re-checks the 15:15 cutoff before every admission. A slow
+  earlier fill can no longer carry the batch past 15:15: the remaining
+  candidates are skipped `after-entry-cutoff`. A fill already accepted is
+  recorded and managed as usual. Live EDGE entries stay fail-closed, so the
+  per-admission check is the last gate before the paper fill. Manual and
+  replay callers pass no cutoff.
+- **Restart outbox race (R2).** Every outbox change is reload → change one
+  row → save, with no await in between (`_update_alert`), and queuing is a
+  synchronous append. A page queued while another page's send is in flight
+  is kept and sent by the next tick. Before, the stale whole-list save
+  dropped it. Delivery stays at-least-once.
+
 ## October 15 — independent review F1–F5 of the Oct 13 fixes (actual behavior, Dev, commit `ec1d5a2`)
 
 Review: `docs/2026-10-15-oct13-fixes-independent-review.md` (on `433a81a`).

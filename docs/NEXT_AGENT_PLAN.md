@@ -5,6 +5,24 @@
 
 
 
+## October 15 — second review R1/R2 (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
+
+- Problem:
+  - R1: a slow first EDGE fill let a second admission happen at 15:16;
+  - R2: a restart page queued during another page's send was lost by a
+    stale whole-list save.
+- Files: `penny_edge_orchestrator.py` (`_run_one_leg` cutoff and clock),
+  `lifecycle_receipts.py` (`_update_alert`, row-scoped saves); 3 tests in
+  `tests/test_oct13_audit_fixes.py` (49 total).
+- Acceptance (met):
+  - a delayed first fill blocks the second admission and keeps its own
+    position; no cutoff means no change;
+  - pause an old send, queue a new page, acknowledge the old → both kept,
+    and the new one delivers next;
+  - a failed send with a concurrent caller keeps both pages and respects
+    the backoff.
+- Remaining: first-day observation as in the F1–F5 entry.
+
 ## October 15 — review F1–F5 of the Oct 13 fixes (done, Dev, commit `ec1d5a2`, pushed, not deployed)
 
 - Problem (independent review of `433a81a`):

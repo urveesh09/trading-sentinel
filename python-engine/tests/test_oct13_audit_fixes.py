@@ -921,3 +921,104 @@ async def test_hourly_fill_is_unknown_rather_than_guessed(tmp_path):
     body = await _hourly(await _hourly_db(tmp_path / "b", attempts=("pen-a", "pen-b"),
                                           positions=(("pen-a", "UNITEDPOLY", 51.92), ("pen-b", "UNITEDPOLY", 52.10))))
     assert "fill n/a" in body
+
+
+# ---------------------------------------------------------------------------
+# Second review R1: the cutoff holds inside the entry batch
+# ---------------------------------------------------------------------------
+
+class _Pos:
+    def __init__(self, ticker):
+        self.ticker, self.entry_price, self.stop_loss, self.target = ticker, 10.0, 9.5, 11.0
+        self.shares, self.signal_subtype, self.adjusted_strength, self.hold_days = 5, "MR", 1.0, 3
+
+
+@pytest.mark.asyncio
+async def test_a_slow_first_fill_stops_later_admissions_but_keeps_its_own(tmp_path, monkeypatch):
+    import penny_edge_orchestrator as peo
+    from datetime import time as dtime
+    clock = _Clock(IST.localize(datetime(2026, 10, 15, 15, 14, 59)))
+    written = []
+
+    class Executor:
+        async def execute_entry(self, **kw):
+            clock.now = IST.localize(datetime(2026, 10, 15, 15, 16))   # the fill acknowledgement is slow
+            return {"entry_status": "paper", "fill_price": 10.0}
+
+    async def not_entered(*_a):
+        return False
+
+    async def write(**kw):
+        written.append(kw["ticker"])
+
+    monkeypatch.setattr(peo.pel, "_rank_for_leg", lambda **kw: [_Pos("AAA"), _Pos("BBB")])
+    monkeypatch.setattr(peo, "_executor_for", lambda *_a: Executor())
+    monkeypatch.setattr(peo, "_already_entered_today", not_entered)
+    monkeypatch.setattr(peo, "_write_edge_position", write)
+    summary = await peo._run_one_leg(object(), str(tmp_path / "x.db"), "2026-10-15", "PAPER", peo.SOURCE_PAPER,
+                                     100000.0, True, [object()], entry_cutoff=dtime(15, 15), now_fn=clock)
+    assert written == ["AAA"] and summary["entered"] == 1                 # the accepted fill is kept
+    assert ("BBB", "after-entry-cutoff") in summary["skipped"]           # no admission at 15:16
+    # Manual/replay callers (no cutoff) are unchanged.
+    clock.now = IST.localize(datetime(2026, 10, 15, 15, 14, 59))
+    written.clear()
+    summary = await peo._run_one_leg(object(), str(tmp_path / "x.db"), "2026-10-15", "PAPER", peo.SOURCE_PAPER,
+                                     100000.0, True, [object()], now_fn=clock)
+    assert written == ["AAA", "BBB"]
+
+
+# ---------------------------------------------------------------------------
+# Second review R2: a page queued during a send is never lost
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_a_page_queued_while_another_is_sending_survives(tmp_path):
+    db = str(tmp_path / "cache.db")
+    release = asyncio.Event()
+    started = asyncio.Event()
+    sent = []
+
+    async def slow_post(text):
+        sent.append(text)
+        if text == "old":
+            started.set()
+            await release.wait()
+        return "delivered"
+
+    lr.queue_restart_alert(db, "old-boot", "old", 1000.0)
+    delivery = asyncio.create_task(lr.deliver_restart_alerts(db, slow_post, 1000.0))
+    await started.wait()
+    assert lr.queue_restart_alert(db, "new-boot", "new", 1001.0)          # queued mid-send
+    release.set()
+    await delivery
+    states = {row["id"]: row["state"] for row in lr._load_outbox(db)}
+    assert states == {"old-boot": "DELIVERED", "new-boot": "PENDING"}
+    assert await lr.deliver_restart_alerts(db, slow_post, 1002.0) == 0       # the next tick sends it
+    assert sent == ["old", "new"] and not lr.has_pending_alerts(db)
+
+
+@pytest.mark.asyncio
+async def test_a_failed_send_with_a_concurrent_caller_keeps_both_pages(tmp_path):
+    db = str(tmp_path / "cache.db")
+    release = asyncio.Event()
+    started = asyncio.Event()
+    calls = []
+
+    async def failing_post(text):
+        calls.append(text)
+        started.set()
+        await release.wait()
+        return "failed"
+
+    lr.queue_restart_alert(db, "old-boot", "old", 1000.0)
+    first = asyncio.create_task(lr.deliver_restart_alerts(db, failing_post, 1000.0))
+    await started.wait()
+    second = asyncio.create_task(lr.deliver_restart_alerts(db, failing_post, 1000.0))   # waits on the lock
+    lr.queue_restart_alert(db, "new-boot", "new", 1000.5)
+    release.set()
+    await asyncio.gather(first, second)
+    rows = {row["id"]: row for row in lr._load_outbox(db)}
+    assert set(rows) == {"old-boot", "new-boot"}
+    assert rows["old-boot"]["attempts"] == 1                 # the second caller respected the backoff
+    assert rows["new-boot"]["state"] == "PENDING" and rows["new-boot"]["attempts"] == 1
+    assert calls.count("old") == 1

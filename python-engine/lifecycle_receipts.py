@@ -305,7 +305,10 @@ def _save_outbox(db_path: str, rows: list) -> None:
 
 
 def queue_restart_alert(db_path: str, alert_id: str, text: str, now_epoch: float) -> bool:
-    """Queue one page per ``alert_id`` (the boot id); False if already queued."""
+    """Queue one page per ``alert_id`` (the boot id); False if already queued.
+
+    Synchronous load-append-save: within the event loop it cannot interleave
+    with a delivery's own row updates (see ``_update_alert``)."""
     rows = _load_outbox(db_path)
     if any(row.get("id") == alert_id for row in rows):
         return False
@@ -333,36 +336,44 @@ async def deliver_restart_alerts(db_path: str, post, now_epoch: float) -> int:
         return await _deliver_locked(db_path, post, now_epoch)
 
 
-async def _deliver_locked(db_path: str, post, now_epoch: float) -> int:
+def _update_alert(db_path: str, alert_id: str, **changes) -> None:
+    """Reload, change one row, save, with no await in between. Any row
+    queued meanwhile (e.g. by the startup task while a send was in flight)
+    is kept; review R2 found a stale whole-list save dropping it."""
     rows = _load_outbox(db_path)
-    pending = 0
     for row in rows:
+        if row.get("id") == alert_id:
+            row.update(changes)
+    _save_outbox(db_path, rows)
+
+
+async def _deliver_locked(db_path: str, post, now_epoch: float) -> int:
+    pending = 0
+    for row in _load_outbox(db_path):
         if row.get("state") != "PENDING":
             continue
+        alert_id = row.get("id")
         attempts = int(row.get("attempts") or 0)
         if now_epoch - float(row.get("created_epoch") or 0) > ALERT_MAX_AGE_SEC or attempts >= ALERT_MAX_ATTEMPTS:
-            row["state"] = "EXPIRED"
-            record_event(db_path, "restart_alert_expired", alert_id=row.get("id"), attempts=attempts)
-            _save_outbox(db_path, rows)
+            _update_alert(db_path, alert_id, state="EXPIRED")
+            record_event(db_path, "restart_alert_expired", alert_id=alert_id, attempts=attempts)
             continue
         last = row.get("last_attempt_epoch")
         if last is not None and now_epoch - float(last) < _backoff_sec(attempts):
             pending += 1
             continue
-        row["attempts"] = attempts + 1
-        row["last_attempt_epoch"] = now_epoch
-        _save_outbox(db_path, rows)       # count the attempt before the send: a crash cannot loop it
+        # Count the attempt before the send: a crash cannot loop it.
+        _update_alert(db_path, alert_id, attempts=attempts + 1, last_attempt_epoch=now_epoch)
         try:
             outcome = await post(row["text"])
         except Exception:  # noqa: BLE001 - a transport error is a retryable failure
             outcome = "failed"
         if outcome == "delivered":
-            row["state"], row["sent_epoch"] = "DELIVERED", now_epoch
+            _update_alert(db_path, alert_id, state="DELIVERED", sent_epoch=now_epoch)
         elif outcome == "rejected":
-            row["state"] = "REJECTED"
+            _update_alert(db_path, alert_id, state="REJECTED")
         else:
             pending += 1
-        record_event(db_path, "restart_alert_attempt", alert_id=row.get("id"), outcome=outcome,
-                     attempts=row["attempts"])
-        _save_outbox(db_path, rows)
+        record_event(db_path, "restart_alert_attempt", alert_id=alert_id, outcome=outcome,
+                     attempts=attempts + 1)
     return pending
