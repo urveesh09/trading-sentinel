@@ -12,6 +12,80 @@
 
 
 
+## October 15 — expiry-shadow-v3 and expiry-audit diagnostics (commit `db6e028`, Dev, pushed, not deployed)
+
+- [x] CX: C plus a sale on A's failed break; same entry as C, one ticket a
+  day.
+- [x] BR: B plus a 50% per-leg premium stop; same strangle as B.
+- [x] Summary: mark denominators with unmarked-leg reasons, context field
+  availability, the paired shadow − primary line, and per-play rupees in the
+  owner tally.
+- [x] Primary `expiry-v1`, `expiry-exec-v2`, Telegram trade lines and the
+  owner rule are unchanged.
+- [x] Replay of Production Oct 6/8/13 packets through Dev: 0 row mismatches;
+  diagnostics equal the audit's independent counts. In-sample only, not
+  evidence of profit.
+- [x] Tests: `tests/test_expiry_paper.py` 57 pass; full engine suite
+  5,197 pass, 4 skip, 0 fail (8 min 22 s, on the shared working tree).
+- [ ] Deployed: no (merge, rebuild the engine). Scoring starts at the first
+  expiry after deploy.
+
+## October 15 — second review R1/R2 (commit `934aa2c`, Dev, pushed, not deployed)
+
+- [x] R1: EDGE cutoff checked before every candidate admission; an accepted
+  fill is kept.
+- [x] R2: outbox changes are row-scoped; a page queued mid-send survives
+  and is delivered.
+- [x] Tests: full engine suite 5,188 pass, 4 skip, 2 fail, 1 known flake deselected (7 min 56 s). Both failures are in `test_expiry_paper.py` and come from the expiry agent's uncommitted shadow-v3 work in progress (with the committed `expiry_paper.py` a v3 test fails instead). None touch R1/R2 code. `test_oct13_audit_fixes.py` 49 pass; EDGE suites pass.
+- [ ] Deployed: no (merge, rebuild the engine).
+
+## October 15 — review F1–F5 of the Oct 13 fixes (commit `ec1d5a2`, Dev, pushed, not deployed)
+
+- [x] F1 EDGE catch-up re-checks the 15:15 cutoff after the token wait; the
+  scan re-checks it at the entry boundary.
+- [x] F2 only a COMPLETED EDGE scan writes the atomic daily receipt; the
+  cron and catch-up share one lock.
+- [x] F3 the wrap carries the stop time separately from first-event
+  scoring.
+- [x] F4 the restart page counts every book (unknown is not zero) and is
+  delivered through an acknowledged, backed-off, deduplicated outbox.
+- [x] F5 the hourly Penny fill is joined by execution-attempt identity;
+  otherwise "fill n/a". Checked against Production's Oct 13 UNITEDPOLY rows
+  (read-only).
+- [x] Tests: full engine suite 5,187 pass, 4 skip, 0 fail (7 min 45 s; known mark-to-market flake deselected); `test_oct13_audit_fixes.py` 46 pass. Expiry code untouched.
+- [ ] Deployed: no (merge, rebuild the engine).
+
+## October 13 — Oct 13 audit fixes (commit `433a81a`, Dev, pushed, not deployed)
+
+- [x] O13-B1: a stop closes the buyer idea (`CLOSED_INVALIDATED`); no later
+  target, reminder or authorizer pass; the stop itself still sends;
+  pre-change rows close on the next pass.
+- [x] O13-B1/B4 wrap: the held premium path ends at the stop, then "after
+  exit (not held)"; no event reads "no level seen (5-min samples)".
+- [x] Buyer fallback is a one-option card (`BUYER_VIEW_FALLBACK_V1`), never
+  the SELL-leg spread card.
+- [x] O13-B2: failed pulses keep the delivered cap; 5-minute retry; 12
+  failures a day at most.
+- [x] O13-B3: SENSEX option fees on BFO for exit, admission reserve, fee
+  reserve, buyer loss at SL, protection card and shadow. Ledger history
+  unchanged.
+- [x] O13-Q1: `before_send` gate on every quote attempt; admission waits for
+  the last send. O13-Q2: cancelled or failed dispatcher releases queued
+  callers.
+- [x] O13-R1: `lifecycle_events.jsonl` with host_suspend, thread_stall,
+  clean_shutdown and startup receipts; operator page on a market-hours gap
+  with open positions.
+- [x] Penny: Avg R from the position row ("n/a" if unknown); hourly report
+  shows the fill price; paper exit provenance fields.
+- [x] Liquidity filter: unlisted names drop in one line.
+- [x] EDGE startup catch-up waits for the token (10 min max) and skips a day
+  whose scan already completed.
+- [x] Tests: full engine suite 5,174 pass, 4 skip, 0 fail (7 min 44 s; known mark-to-market flake deselected); `test_oct13_audit_fixes.py` 33 pass. Expiry code untouched.
+- [ ] Deployed: no (merge, rebuild the engine).
+- [ ] After deploy: no `TARGET_ZONE` or reminder after an `INVALIDATION` for
+  the same idea; quote `over_documented_limit` 0; one
+  `lifecycle_startup_receipt` line at boot.
+
 ## October 12 (night) — O12-PB2 card numbers verified (commit `feed23e`, Dev, pushed, not deployed)
 
 - [x] Index conversion vs real SENSEX index (Oct 8): median +0.4, mean |16| points.

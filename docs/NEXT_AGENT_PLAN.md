@@ -5,6 +5,163 @@
 
 
 
+## October 15 — expiry-shadow-v3 and Oct 13 expiry-audit diagnostics (done, Dev, commit `db6e028`, pushed, not deployed)
+
+- Problem:
+  - The owner wants the expiry book to profit more consistently and never
+    lose "like crazy".
+  - The Oct 13 audit: losing expiries were lost by bought options riding to
+    zero (C's ticket on Oct 6 and 8; B's legs on all three days).
+  - Medium findings: an OK context hid missing fields (903/966); path marks
+    hid their denominators (95/159); paired shadow results were not printed.
+- Files: `python-engine/expiry_paper.py`; `tests/test_expiry_paper.py` (57,
+  6 new); `docs/2026-10-05-expiry-day-paper-book.md`.
+- Contracts: `SHADOW_VERSION = expiry-shadow-v3`; `SHADOW_PLAYS` gains CX and
+  BR; `PAIRED_WITH`, `STRUCTURE_PLAYS`, `BR_LEG_STOP = 0.50`. New day-state
+  keys: `marks[*].held`, `marks[*].unmarked`, `context_fields`. No schema
+  change; no new store or config.
+- Acceptance (met in Dev):
+  - CX sells at the first tick back past A's failed-break level, while C
+    holds;
+  - BR sells a decaying leg at ≤ 50% of entry and keeps B's exits on the
+    other leg;
+  - unmarked reasons are named; context fields are counted;
+  - paired lines skip expiries where only one side traded;
+  - the replay of the three retained expiries reproduces Production rows (0
+    mismatches), and the diagnostics equal the audit's counts.
+- Rollout: merge and rebuild the engine. Scoring starts at the first expiry
+  after deploy. Today's SENSEX expiry (Oct 15) runs the old code. A day
+  begun before the rebuild is labelled "+expiry-shadow-v3 joined mid-day".
+- Rollback: revert the commit. Stored CX/BR rows stay in the store and
+  print as plays; nothing reads them.
+- Remaining:
+  - [ ] After deploy, on the first expiry: CX and BR rows exist with their
+    primary's entry; the summary shows "held ticks marked", "available on
+    ticks" and "paired with its primary".
+  - [ ] At the owner's 10-expiry review: present CX−C and BR−B to date with
+    the per-play tally. Any promotion is `expiry-v2`, scored on later
+    expiries only.
+
+## October 15 — second review R1/R2 (done, Dev, commit `934aa2c`, pushed, not deployed)
+
+- Problem:
+  - R1: a slow first EDGE fill let a second admission happen at 15:16;
+  - R2: a restart page queued during another page's send was lost by a
+    stale whole-list save.
+- Files: `penny_edge_orchestrator.py` (`_run_one_leg` cutoff and clock),
+  `lifecycle_receipts.py` (`_update_alert`, row-scoped saves); 3 tests in
+  `tests/test_oct13_audit_fixes.py` (49 total).
+- Acceptance (met):
+  - a delayed first fill blocks the second admission and keeps its own
+    position; no cutoff means no change;
+  - pause an old send, queue a new page, acknowledge the old → both kept,
+    and the new one delivers next;
+  - a failed send with a concurrent caller keeps both pages and respects
+    the backoff.
+- Remaining: first-day observation as in the F1–F5 entry.
+
+## October 15 — review F1–F5 of the Oct 13 fixes (done, Dev, commit `ec1d5a2`, pushed, not deployed)
+
+- Problem (independent review of `433a81a`):
+  - F1: the EDGE catch-up could scan at 15:20;
+  - F2: an EDGE error wrote the daily completion marker;
+  - F3: target → stop → recovery still showed the recovery as held;
+  - F4: restart exposure skipped the sibling books, and the page had no
+    acknowledgement or retry;
+  - F5: the hourly fill could be taken from an unrelated EDGE position.
+- Files: `penny_edge_orchestrator.py`, `scheduler_setup.py`,
+  `partner_orchestrator.py`, `lifecycle_receipts.py`, `main.py`,
+  `ops_watchdogs.py`, `penny_hourly_report.py`; tests in
+  `tests/test_oct13_audit_fixes.py` (46 total, 14 new for F1–F5).
+- Acceptance (met in Dev tests, with fake clock, provider and gateway):
+  - F1: a token at 15:20 after a 15:14:59 start gives no scan; a token
+    before the cutoff gives one scan; a scan crossing 15:15 enters nothing;
+  - F2: error then healthy run retries once, then is idempotent; a
+    zero-candidate day counts as completed; a torn receipt allows recovery;
+  - F3: target → stop → recovery is labelled not held, and target-only
+    keeps the whole path;
+  - F4: a sibling-only overnight position is counted; an unreadable store
+    shows "unknown"; 503 then 200 delivers once; a 422 or stale page stops
+    retrying;
+  - F5: the fill matches by attempt identity; the unrelated EDGE ₹70 fill
+    is never used; unfilled or ambiguous signals show "fill n/a".
+- Rollout: merge, rebuild. New files `restart_alert_outbox.json` (last 50
+  rows) and `penny_edge_scan_state.json` (now carries `status`). A
+  pre-change state file has no status and reads as not completed, so at
+  worst there is one extra catch-up scan on deploy day (entries are deduped
+  per ticker per day).
+- Remaining:
+  - [ ] After deploy: one `penny_edge_scan_state.json` with
+    `status: COMPLETED` a day; no EDGE entry after 15:15; on a market-hours
+    restart, one acknowledged page listing every book.
+
+## October 13 — Oct 13 audit fixes O13-B1/B2/B3/B4/Q1/Q2/R1/P1 (done, Dev, commit `433a81a`, pushed, not deployed)
+
+- Problem (Production audit of the clean Oct 13 run, PR #108; expiry
+  excluded):
+  - buyer ideas got "Book profit" after "EXIT … Idea closed";
+  - one quote over-limit came from a late batch task;
+  - a dispatcher cancelled during admission stranded callers;
+  - failed pulses used up the cap;
+  - SENSEX was charged NSE option fees;
+  - the wrap said "no level hit";
+  - Penny Avg R read 0.0 and the hourly report showed the signal price;
+  - a 94-minute market gap had no cause on record.
+- Files:
+  - `partner_manual_advisory.py`, `hedge_advisory.py`,
+    `partner_delivery_blockers.py`, `partner_buyer.py`,
+    `partner_orchestrator.py`;
+  - `kite_client.py`;
+  - `fno_costs.py`, `fno_orchestrator.py`, `fno_positions.py`,
+    `fno_shadow.py`;
+  - `lifecycle_receipts.py` (new), `main.py`, `ops_watchdogs.py`,
+    `scheduler_setup.py` (EDGE catch-up);
+  - `penny_daily_attribution.py`, `penny_hourly_report.py`,
+    `penny_executor.py`;
+  - tests: `tests/test_oct13_audit_fixes.py` (32 new) plus updates to
+    `test_partner_buyer.py`, `test_partner_manual_advisory.py` and
+    `test_scheduler_tick.py`.
+- Acceptance (met in Dev tests):
+  - after a stop: no target, reminder or authorizer pass, while the stop
+    itself still sends;
+  - pre-change rows are closed on the next pass;
+  - the delayed-task probe keeps sends ≥ 1/rate apart; every numeric and
+    keyed attempt goes through the gate;
+  - a cancelled dispatcher releases queued callers;
+  - six failed pulses leave the success cap intact;
+  - BFO fees match the audit's same-fill figures;
+  - Penny R = −3.72 and the hourly report shows "@ 51.92 (signal 52.92)";
+  - restart receipts tell host sleep, stall and VM restart apart;
+  - the EDGE catch-up waits for the token and runs at most once a day.
+- Rollout: merge, rebuild the engine. No schema change: the new idea status
+  is a TEXT value, and pulse detail is JSON. A new file,
+  `lifecycle_events.jsonl`, is bounded to about 2,000 lines.
+- Rollback: revert the commit. Ideas already `CLOSED_INVALIDATED` stay
+  terminal, which is safe.
+- Remaining:
+  - [ ] After deploy:
+    - no `TARGET_ZONE` or `SESSION_EXIT_REMINDER` after an `INVALIDATION`
+      for the same `advisory_id`;
+    - `/ops/provider-budget` quote `over_documented_limit` 0;
+    - `send_gate_waits` small;
+    - the restart receipt line `lifecycle_startup_receipt` at boot.
+  - [ ] Ops: if a market-hours restart page fires, use the cause field plus
+    host logs (Windows sleep and power settings) to stop it recurring.
+    Oct 13's gap fits host sleep (container restarted at 11:40:05 after
+    no output since 10:05).
+  - [ ] Research collection whole-job p95 rose to 22 s (from 7.5 s) on an
+    expiry day with held positions. It is under its 55 s misfire window;
+    watch it after deploy, and do not move it to bulk (see
+    `kite-provider-lanes`).
+  - [ ] Data: deploy `/data/nifty500.csv` and the curated
+    `penny_company_data.json`. The in-code universe still lists renamed
+    names.
+  - [ ] Option (needs a frozen comparison): a Penny paper exit at the
+    visible bid walk instead of a 1 % fixed decrement.
+  - [ ] Classic Penny positions close as `CLOSED_TIME` even on a stop
+    (`main.py` settle path). This is a label only, since the ledger notes
+    hold the true reason; change it only with consumers checked.
+
 ## October 12 (night) — O12-PB2 card numbers verified on Production data (done, Dev, commit `feed23e`, pushed, not deployed)
 
 - Problem: the partner trades real money, so each number on the card must

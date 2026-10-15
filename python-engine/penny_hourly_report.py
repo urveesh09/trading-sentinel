@@ -57,6 +57,27 @@ class PennyHourlyReport:
     def __init__(self, db_path: str):
         self.db_path = db_path
 
+    @staticmethod
+    async def _matched_fill(db, entry: dict) -> Optional[float]:
+        """The fill of exactly this signal's execution attempt, else None
+        (no journal, no position yet, or more than one attempt)."""
+        try:
+            async with db.execute(
+                "SELECT DISTINCT attempt_id FROM penny_execution_events "
+                "WHERE scan_id=? AND ticker=? AND leg=? AND event_type='CANDIDATE_ACCEPTED'",
+                (entry.get("scan_id"), entry["ticker"], entry["leg"]),
+            ) as cur:
+                attempts = [row[0] for row in await cur.fetchall()]
+            if len(attempts) != 1:
+                return None
+            async with db.execute(
+                "SELECT entry_price FROM positions WHERE penny_attempt_id=?", (attempts[0],),
+            ) as cur:
+                rows = await cur.fetchall()
+        except Exception:  # noqa: BLE001 - a missing journal/table just means unknown
+            return None
+        return float(rows[0][0]) if len(rows) == 1 and rows[0][0] else None
+
     async def build_report(
         self,
         now: datetime,
@@ -117,14 +138,14 @@ class PennyHourlyReport:
             async with aiosqlite.connect(self.db_path) as db:
                 async with db.execute(
                     "SELECT ticker, leg, close, stop_loss, target_1, shares, "
-                    "  scanned_at, reject_reason "
+                    "  scanned_at, reject_reason, scan_id "
                     "FROM penny_signals "
                     "WHERE scanned_at >= ? AND scanned_at <= ?",
                     (hour_start, query_now),
                 ) as cur:
                     rows = await cur.fetchall()
             for row in rows:
-                ticker, leg, close, sl, t1, shares, scanned_at, reject_reason = row
+                ticker, leg, close, sl, t1, shares, scanned_at, reject_reason, scan_id = row
                 if reject_reason:
                     rejections_count += 1
                     reject_reasons[reject_reason] = reject_reasons.get(reject_reason, 0) + 1
@@ -132,7 +153,18 @@ class PennyHourlyReport:
                     entries.append({
                         "ticker": ticker, "leg": leg, "close": close,
                         "stop_loss": sl, "target_1": t1, "shares": shares,
+                        "scan_id": scan_id, "fill": None,
                     })
+            if entries:
+                # [O13 2026-10-15] Show the paper fill, not the signal bar's
+                # close: Oct 13 reported UNITEDPOLY "@ 52.92" while the
+                # position was filled at 51.92. [review F5] The fill is
+                # joined by trade identity only: signal (scan_id, ticker,
+                # leg) -> execution attempt -> position.penny_attempt_id.
+                # Ticker-and-hour matching borrowed an unrelated EDGE fill.
+                async with aiosqlite.connect(self.db_path) as db:
+                    for entry in entries:
+                        entry["fill"] = await self._matched_fill(db, entry)
         except Exception as e:
             logger.error("penny_hourly_query_failed error=%s", str(e))
 
@@ -161,8 +193,14 @@ class PennyHourlyReport:
         if entries:
             lines.append(f"Entries ({len(entries)}):")
             for e in entries[:5]:
+                if e.get("fill") is None:
+                    price = f"signal {e['close']:.2f}, fill n/a"
+                elif abs(e["fill"] - e["close"]) >= 0.005:
+                    price = f"@ {e['fill']:.2f} (signal {e['close']:.2f})"
+                else:
+                    price = f"@ {e['fill']:.2f}"
                 lines.append(
-                    f"  {e['ticker']} {e['leg']} x{e['shares']} @ {e['close']:.2f} "
+                    f"  {e['ticker']} {e['leg']} x{e['shares']} {price} "
                     f"sl={e['stop_loss']:.2f} t1={e['target_1']:.2f}"
                 )
 

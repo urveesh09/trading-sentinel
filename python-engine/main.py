@@ -1108,7 +1108,9 @@ async def _execute_scheduled_penny_exit(
         await _append_penny_exit_event(
             attempt_id, context, "EXIT_SIMULATED",
             {"order_id": result.get("order_id"), "quantity": quantity,
-             "fill_price": result.get("fill_price")},
+             "fill_price": result.get("fill_price"),
+             **{key: result[key] for key in ("reference_price", "fill_model", "slip_pct",
+                                             "model_decrement_per_share") if key in result}},
         )
     elif not (sl_order_id and 'result' in locals() and result.get("message") == "protective stop filled"):
         if not order_id:
@@ -1929,6 +1931,18 @@ async def _filter_by_liquidity(
 
     kept_rows = []
     dropped = 0
+    # [O13 2026-10-15] Names the provider catalogue no longer lists (renamed,
+    # moved to the trade-for-trade BE series, delisted) cannot be priced.
+    # Drop them once per scan with one line instead of one warning each
+    # (Oct 13: HEG/HFCL/JBCHEPHARM, 54 warnings). Only with a usable cache.
+    known = getattr(kite, "instrument_cache", None)
+    unknown: list = []
+    if isinstance(known, dict) and len(known) >= 1000:
+        unknown = [t for t in universe["tradingsymbol"] if t not in known]
+        if unknown:
+            universe = universe[~universe["tradingsymbol"].isin(unknown)]
+            dropped += len(unknown)
+            logger.info("liquidity_filter_unlisted_symbols", count=len(unknown), symbols=unknown[:10])
     for _, row in universe.iterrows():
         ticker = row["tradingsymbol"]
         try:
@@ -2327,10 +2341,23 @@ async def lifespan(app: FastAPI):
         import threading as _threading
         import time as _time
         from memory_metrics import current_rss_kb, peak_rss_kb
+        from lifecycle_receipts import clock_jump, record_event
         tick_count = 0
+        last_clocks = None
         while not _LIVENESS_TICK_STOP.is_set():
             try:
                 tick_count += 1
+                # [O13-R1] Host sleep shows as wall time jumping ahead of
+                # monotonic time; a frozen process as monotonic overrun.
+                clocks = (_time.time(), _time.monotonic())
+                if last_clocks is not None:
+                    jump = clock_jump(*last_clocks, *clocks, period_sec=60.0)
+                    if jump is not None:
+                        from ops_watchdogs import _scheduler_tick_state
+                        record_event(settings.DB_PATH, jump.pop("kind"), **jump,
+                                     boot_id=_scheduler_tick_state.get("boot_id"))
+                        _liveness_log.warning("process_clock_jump %s", jump)
+                last_clocks = clocks
                 # `rss_kb` is deliberately the *current* resident set.  Keep
                 # the non-decreasing ru_maxrss separately so a temporary
                 # scanner peak is not misdiagnosed as a live memory leak.
@@ -2399,6 +2426,7 @@ async def lifespan(app: FastAPI):
         startup_tick["recovered_previous"],
         startup_tick["prior_gap_seconds"],
     )
+    asyncio.create_task(_restart_gap_receipt(startup_tick))
     yield
 
     # [LIVENESS-HEARTBEAT 2026-07-07] On shutdown, signal the heartbeat
@@ -2407,6 +2435,68 @@ async def lifespan(app: FastAPI):
     # makes the exit deterministic.
     _LIVENESS_TICK_STOP.set()
     _liveness_thread.join(timeout=10)
+    # [O13-R1] Last: the next startup can tell a deliberate stop from a death.
+    try:
+        from lifecycle_receipts import mark_clean_shutdown
+        mark_clean_shutdown(settings.DB_PATH, str(startup_tick.get("boot_id") or ""))
+    except Exception as e:
+        logger.warning("clean_shutdown_mark_failed error=%s", str(e))
+
+
+async def _post_required_notice(text: str) -> str:
+    """One acknowledged gateway send: delivered / rejected / failed."""
+    import httpx as _httpx
+    try:
+        async with _httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": text, "require_delivery": True},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                timeout=10.0,
+            )
+    except _httpx.HTTPError:
+        return "failed"
+    if resp.status_code == 200:
+        try:
+            return "delivered" if resp.json().get("delivered") is True else "failed"
+        except ValueError:
+            return "failed"
+    return "rejected" if resp.status_code == 422 else "failed"
+
+
+async def _restart_gap_receipt(startup_tick: dict) -> None:
+    """[O13-R1 2026-10-15] Record why/when the previous process ended and
+    page the operator when the gap covered market hours. Oct 13: 94 minutes
+    (10:05-11:40) with a NIFTY spread open and no cause on record.
+
+    [review F4] Every book is counted (sibling stores included; unreadable =
+    unknown), and the page goes through the acknowledged outbox with bounded
+    retries. Pages left pending by an earlier boot are retried here too."""
+    import time as _time
+    from lifecycle_receipts import (
+        deliver_restart_alerts, open_exposure_counts, queue_restart_alert,
+        restart_alert_text, startup_receipt,
+    )
+    try:
+        receipt = startup_receipt(settings.DB_PATH, startup_tick.get("prior"), _time.time(),
+                                  str(startup_tick.get("boot_id") or ""))
+        logger.info("lifecycle_startup_receipt", **receipt)
+        if (receipt.get("market_overlap_sec") or 0) > 0 and await is_trading_day(
+                datetime.now(IST).date(), settings.DB_PATH):
+            exposure = await asyncio.to_thread(open_exposure_counts, settings.DB_PATH)
+            text = restart_alert_text(receipt, exposure)
+            if text is not None:
+                logger.warning("market_restart_gap", gap_sec=receipt.get("gap_sec"),
+                               market_overlap_sec=receipt.get("market_overlap_sec"),
+                               cause=receipt.get("cause"), open_exposure=exposure)
+                queue_restart_alert(settings.DB_PATH, f"restart:{receipt.get('boot_id')}", text, _time.time())
+    except Exception as e:
+        logger.warning("restart_gap_receipt_failed error=%s", str(e))
+    # First attempt now; the 60 s scheduler tick retries with backoff.
+    try:
+        await deliver_restart_alerts(settings.DB_PATH, _post_required_notice, _time.time())
+    except Exception as e:
+        logger.warning("restart_alert_delivery_failed error=%s", str(e))
 
 app = FastAPI(title="Quant Engine Container B", lifespan=lifespan)
 # (Delete the old @app.on_event("startup") and async def startup(): lines completely)

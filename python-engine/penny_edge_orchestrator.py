@@ -39,8 +39,11 @@ import hashlib
 import logging
 import sqlite3
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import List, Optional
+import json
+import os
+from datetime import date, datetime, time as dtime, timezone
+from typing import Awaitable, Callable, List, Optional
+from zoneinfo import ZoneInfo
 
 import penny_edge_engine as pee
 import penny_edge_live as pel
@@ -284,6 +287,8 @@ async def _run_one_leg(
     bankroll: float,       # paper: 100k, live: 1k (or whatever config)
     paper_mode: bool,      # whether to actually place broker orders
     candidates,            # List[SignalCandidate] from pel.scan_today(...)
+    *, entry_cutoff: Optional[dtime] = None,
+    now_fn: Optional[Callable[[], datetime]] = None,
 ) -> dict:
     if source_tag == SOURCE_LIVE and not paper_mode:
         # Live EDGE still lacks the reservation/broker-recovery transaction used
@@ -323,10 +328,21 @@ async def _run_one_leg(
     executor = _executor_for(kite, paper_mode)
     submitted = []
     skipped = []
-    for pos in leg_scan:
+    clock = now_fn or (lambda: datetime.now(_IST))
+    for index, pos in enumerate(leg_scan):
         if await _already_entered_today(db_path, pos.ticker, source_tag, today_str):
             skipped.append((pos.ticker, "already-entered-today"))
             continue
+        # [review R1 2026-10-15] Re-check the scheduled cutoff right before
+        # each admission: an earlier fill (or the journal/DB wait above) can
+        # carry the batch past 15:15. Fills already accepted stay recorded
+        # and managed; only new admissions stop.
+        if entry_cutoff is not None and not edge_entry_window_open(clock(), entry_cutoff):
+            for late in leg_scan[index:]:
+                skipped.append((late.ticker, "after-entry-cutoff"))
+            logger.warning("penny_edge_%s_entry_cutoff_reached remaining=%d",
+                           leg_name.lower(), len(leg_scan) - index)
+            break
         order_result = await executor.execute_entry(
             ticker=pos.ticker,
             leg=EDGE_PRODUCT_TYPE,
@@ -451,7 +467,94 @@ async def _log_edge_signals(db_path: str, today_str: str, candidates, live_summa
         logger.warning("penny_edge_signal_log_failed date=%s err=%s", today_str, exc)
 
 
-async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
+# [O13-F1/F2 2026-10-15] Scheduled EDGE scans (09:30 cron and the startup
+# catch-up) may enter only before the 15:15 exit pass, and only a scan that
+# really finished counts as the day's scan.
+_IST = ZoneInfo("Asia/Kolkata")
+EDGE_ENTRY_CUTOFF = dtime(15, 15)
+SCAN_COMPLETED = "COMPLETED"
+
+
+def edge_entry_window_open(now: datetime, cutoff: dtime = EDGE_ENTRY_CUTOFF) -> bool:
+    return now.astimezone(_IST).time() < cutoff
+
+
+def edge_scan_receipt_path(db_path: str) -> str:
+    return os.path.join(os.path.dirname(db_path) or ".", "penny_edge_scan_state.json")
+
+
+def edge_scan_completed_on(db_path: str, day: date) -> bool:
+    """True only for a durable receipt of a COMPLETED scan on ``day``. A
+    missing, torn or non-completed receipt means the scan may still run."""
+    try:
+        with open(edge_scan_receipt_path(db_path), encoding="utf-8") as fh:
+            receipt = json.load(fh)
+        return receipt.get("date") == day.isoformat() and receipt.get("status") == SCAN_COMPLETED
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
+def mark_edge_scan_completed(db_path: str, day: date, summary: dict) -> bool:
+    """Atomically record a completed scan (tmp file + rename)."""
+    path = edge_scan_receipt_path(db_path)
+    receipt = {"date": day.isoformat(), "status": SCAN_COMPLETED,
+               "completed_at": datetime.now(_IST).isoformat(),
+               "candidates": summary.get("candidates_total"),
+               "paper_entered": (summary.get("paper") or {}).get("entered"),
+               "live_entered": (summary.get("live") or {}).get("entered")}
+    try:
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(receipt, fh)
+        os.replace(tmp, path)
+        return True
+    except OSError as exc:
+        logger.warning("penny_edge_scan_receipt_write_failed err=%s", exc)
+        return False
+
+
+async def run_edge_catchup(
+    *, now_fn: Callable[[], datetime], token_ready: Callable[[], bool],
+    run_scan: Callable[[], Awaitable[object]], max_wait_sec: float = 600.0, poll_sec: float = 10.0,
+    sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+) -> str:
+    """Startup catch-up for a missed 09:30 scan; returns what it did.
+
+    Jobs register before the same-day token is restored (Oct 13 11:40:
+    ``no_access_token``), so wait for it, bounded. The clock is read again
+    after the wait: a token arriving at or after the 15:15 cutoff must not
+    start a scan (review F1: a wait begun at 15:14:59 scanned at 15:20).
+    ``run_scan`` owns the completed-today check under its lock.
+    """
+    waited = 0.0
+    while not token_ready() and waited < max_wait_sec:
+        if not edge_entry_window_open(now_fn()):
+            break
+        await sleep(poll_sec)
+        waited += poll_sec
+    if not edge_entry_window_open(now_fn()):
+        logger.warning("penny_edge_scan_catchup_skip reason=after_entry_cutoff now_ist=%s",
+                       now_fn().astimezone(_IST).strftime("%H:%M:%S"))
+        return "after_cutoff"
+    if not token_ready():
+        logger.warning("penny_edge_scan_catchup_skip reason=no_access_token waited_sec=%.0f", waited)
+        return "no_token"
+    await run_scan()
+    return "ran"
+
+
+def _not_completed(today_str: str, status: str, reason: str) -> dict:
+    return {
+        "date": today_str, "status": status, "candidates_total": 0, "universe": 0,
+        "regime": status, "paper": {"entered": 0, "trades": [], "skipped": []},
+        "live": {"entered": 0, "trades": [], "skipped": []},
+        "skipped": [("*scan*", reason)],
+    }
+
+
+async def run_penny_edge_scan(kite, db_path: Optional[str] = None, *,
+                              entry_cutoff: Optional[dtime] = None,
+                              now_fn: Optional[Callable[[], datetime]] = None) -> dict:
     """Daily 09:30 IST scan. Runs both paper and live legs.
 
     Returns a dict with both leg summaries + the unified candidate
@@ -547,10 +650,14 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
     if paper_disabled and live_disabled:
         logger.info("penny_edge_scan_both_legs_disabled date=%s", today_str)
         return {
-            "date": today_str, "candidates_total": 0, "universe": 0,
+            "date": today_str, "status": "DISABLED", "candidates_total": 0, "universe": 0,
             "regime": "BOTH", "paper": {"entered": 0, "trades": []},
             "live": {"entered": 0, "trades": []}, "skipped": [],
         }
+    clock = now_fn or (lambda: datetime.now(_IST))
+    if entry_cutoff is not None and not edge_entry_window_open(clock(), entry_cutoff):
+        logger.warning("penny_edge_scan_after_cutoff stage=start date=%s", today_str)
+        return _not_completed(today_str, "AFTER_CUTOFF", "entry_cutoff_passed_before_scan")
 
     # Single shared scan uses the larger bankroll so it returns the
     # largest possible candidate set; each leg then re-ranks with its
@@ -596,7 +703,7 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
             exc_info=True,
         )
         return {
-            "date": today_str, "candidates_total": 0, "universe": 0,
+            "date": today_str, "status": "ERROR", "candidates_total": 0, "universe": 0,
             "regime": "ERROR", "paper": {"entered": 0, "trades": [], "skipped": []},
             "live": {"entered": 0, "trades": [], "skipped": []},
             "skipped": [("*engine*", f"engine_failed: {engine_exc}")],
@@ -632,6 +739,13 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
                       sorted(reasons.items(), key=lambda kv: -kv[1])) or "none",
         )
 
+    # The signal pass can take minutes; re-check the cutoff at the entry
+    # boundary itself so a scan that crosses 15:15 enters nothing.
+    if entry_cutoff is not None and not edge_entry_window_open(clock(), entry_cutoff):
+        logger.warning("penny_edge_scan_after_cutoff stage=entry date=%s candidates=%d",
+                       today_str, len(candidates))
+        return _not_completed(today_str, "AFTER_CUTOFF", "entry_cutoff_passed_during_scan")
+
     # Run paper leg
     paper_summary = {"leg": "PAPER", "entered": 0, "trades": [], "skipped": []}
     if not paper_disabled:
@@ -641,6 +755,7 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
             bankroll=paper_bankroll,
             paper_mode=True,   # paper leg is ALWAYS paper (no broker)
             candidates=candidates,
+            entry_cutoff=entry_cutoff, now_fn=clock,
         )
 
     # Never label simulated fills as EDGE_LIVE: that contaminates live
@@ -654,6 +769,7 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
             bankroll=live_bankroll,
             paper_mode=False,
             candidates=candidates,
+            entry_cutoff=entry_cutoff, now_fn=clock,
         )
     elif not live_disabled:
         live_summary["skipped"].append(("ALL", "live-master-disabled"))
@@ -675,6 +791,7 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
 
     summary = {
         "date": today_str,
+        "status": SCAN_COMPLETED,
         "candidates_total": len(candidates),
         "universe":         universe,
         "regime":           regime.preferred_signal,

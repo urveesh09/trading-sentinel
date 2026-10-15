@@ -59,10 +59,24 @@ def calc_fno_costs_from_snapshot(
     return brokerage + stt + exchange_txn + sebi + stamp + ipft + gst
 
 
-def calc_fno_costs(entry_premium: float, exit_premium: float, qty: int) -> float:
-    """Operational cost using the current versioned settings snapshot."""
+def options_exchange_for(underlying: object) -> str:
+    """The options segment an underlying trades on: BFO for SENSEX, else NFO.
+
+    [O13-B3 2026-10-15] SENSEX options are BSE contracts. Their exchange fee
+    is 0.0325% of premium, not NSE's 0.03553%; Oct 13 SENSEX paper calls and
+    the buyer card's loss line were charged the NSE rate.
+    """
+    from fno_underlyings import SPECS
+    spec = SPECS.get(str(underlying or "").strip().upper())
+    return spec.segment if spec is not None else "NFO"
+
+
+def calc_fno_costs(entry_premium: float, exit_premium: float, qty: int,
+                   exchange: str = "NFO") -> float:
+    """Operational cost using the current versioned settings snapshot for
+    the contract's segment (``NFO`` or ``BFO``)."""
     return calc_fno_costs_from_snapshot(
-        entry_premium, exit_premium, qty, options_cost_snapshot(),
+        entry_premium, exit_premium, qty, options_cost_snapshot(exchange),
     )
 
 

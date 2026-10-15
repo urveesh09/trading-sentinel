@@ -94,6 +94,7 @@ async def _scheduler_tick_job(*, recover_previous: bool = False):
     import os as _os
     previous_wall_gap = None
     recovered_previous = False
+    prior = None
     now_epoch = time.time()
     path = _scheduler_tick_path()
     tick_count = int(_scheduler_tick_state.get("count", 0)) + 1
@@ -145,12 +146,23 @@ async def _scheduler_tick_job(*, recover_previous: bool = False):
         await record_scheduler_tick(settings.DB_PATH, datetime.now(IST), gap)
     except Exception as e:
         logger.warning("scheduler_tick_record_failed error=%s", str(e))
+    # [review F4] Retry any unacknowledged restart page (backoff inside).
+    try:
+        from lifecycle_receipts import deliver_restart_alerts, has_pending_alerts
+        if has_pending_alerts(settings.DB_PATH):
+            import main as _main_mod
+            await deliver_restart_alerts(settings.DB_PATH, _main_mod._post_required_notice, time.time())
+    except Exception as e:
+        logger.warning("restart_alert_retry_failed error=%s", str(e))
     # This is deliberately distinct from penny_liveness_tick: it is emitted
     # by the APScheduler loop, whereas the latter is a process-thread pulse.
     logger.info("scheduler_progress_tick count=%s boot_id=%s", tick_count, boot_id)
     return {
         "recovered_previous": recovered_previous,
         "prior_gap_seconds": previous_wall_gap,
+        # [O13-R1] the prior heartbeat as read, for the lifecycle receipt.
+        "prior": prior if recover_previous else None,
+        "boot_id": boot_id,
     }
 
 

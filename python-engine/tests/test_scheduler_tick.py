@@ -123,10 +123,11 @@ async def test_startup_tick_recovers_midmarket_process_gap(tmp_path, monkeypatch
         tmp_path, monkeypatch, now, prior
     )
 
-    assert attestation == {
+    assert {k: attestation[k] for k in ("recovered_previous", "prior_gap_seconds")} == {
         "recovered_previous": True,
         "prior_gap_seconds": 900.0,
     }
+    assert attestation["prior"]["ts_epoch"] and attestation["boot_id"]
     assert row == (900.0, 900.0)
 
 
@@ -158,8 +159,9 @@ async def test_startup_tick_without_prior_file_starts_clean_baseline(
         tmp_path, monkeypatch, now
     )
 
-    assert attestation == {
+    assert {k: attestation[k] for k in ("recovered_previous", "prior_gap_seconds", "prior")} == {
         "recovered_previous": False,
         "prior_gap_seconds": None,
+        "prior": None,
     }
     assert row == (0.0, 0.0)

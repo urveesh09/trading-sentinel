@@ -59,9 +59,11 @@ let later expiries test whether the context separates winners from losers.
 
 Every open entry is also marked on each tick at what selling all of it on the
 visible depth would net after fees (``liquidation_net``). The summary prints
-each entry's best and worst mark beside its finish. The marks are not fills,
-and BP's pair target is the only rule that reads one. Shadow plays
-(``SHADOW_VERSION``) run on the same quotes and are listed only in the summary.
+each entry's best and worst mark beside its finish, with how many held ticks
+could be marked and why the rest could not. The marks are not fills, and BP's
+pair target is the only rule that reads one. Shadow plays (``SHADOW_VERSION``)
+run on the same quotes and are listed only in the summary, each beside its
+paired difference from the primary whose entry it shares.
 
 Telegram lines go to an outbox in the same transaction as the tick and are
 marked sent when a 2xx acknowledgement arrives (``flush_notices``); flushes
@@ -139,10 +141,29 @@ EXERCISE_STT_PCT = 0.0015           # STT on the settlement value of an exercise
 #   BP    B's strangle managed as one trade: no per-leg bank or trail; both
 #         legs are sold once selling the pair on the visible bids would net
 #         BP_TARGET of the premium paid, after all charges; else sold at 15:38.
-SHADOW_VERSION = "expiry-shadow-v2"
-MAIN_PLAYS, SHADOW_PLAYS = ("A", "B", "C"), ("BH", "C500", "D", "AL", "BP")
+#
+# expiry-shadow-v3 adds two loss-shaping plays, frozen on 2026-10-15 after the
+# October 13 audit and scored only on expiries after their deployment (the
+# three expiries already seen are not evidence for them). The losing days were
+# lost by bought options riding to zero: C's whole ticket on October 6 and 8,
+# and one or both strangle legs on all three days, with the late bids gone from
+# about 15:29. Each keeps its primary's entry, so the comparison is paired.
+#   CX    C whose ticket is sold when the break it was bought on fails: A's
+#         FAILED_BREAK (the index back inside the box by a quarter of its
+#         width). The lottery's reason is the break running on; once the
+#         index is back inside the box, the remaining premium is recovered
+#         instead of held to zero. Otherwise C's exits.
+#   BR    B whose each leg is sold once its bid has lost BR_LEG_STOP of the
+#         premium paid (a bought option's half-premium stop), recovering the
+#         dead leg while it still has bids. Otherwise B's exits.
+SHADOW_VERSION = "expiry-shadow-v3"
+MAIN_PLAYS, SHADOW_PLAYS = ("A", "B", "C"), ("BH", "C500", "D", "AL", "BP", "CX", "BR")
+# Each shadow and the primary whose entry it shares: their difference is paired.
+PAIRED_WITH = {"AL": "A", "BH": "B", "BP": "B", "BR": "B", "CX": "C"}
+STRUCTURE_PLAYS = ("A", "AL", "CX")         # plays that close on A's failed break
 AL_LOCK_GAIN = 0.5                  # fraction of the peak gain a banked one-lot AL keeps
 BP_TARGET = 0.20                    # pair liquidation net, as a fraction of the premium paid
+BR_LEG_STOP = 0.50                  # a BR leg is sold once its bid is down this share of its entry
 C500_BUDGET = 500.0
 D_ENTRY_START, D_ENTRY_END = time(14, 30), time(14, 45)
 D_SHORT_STEPS, D_WING_STEPS, D_MAX_LOTS = 2, 1, 4  # widest sold strikes tried first
@@ -202,6 +223,8 @@ POLICIES = {
 POLICIES["C500"] = POLICIES["C"]
 POLICIES["AL"] = replace(POLICIES["A"], lock_gain=AL_LOCK_GAIN)
 POLICIES["BP"] = POLICIES["BH"]                 # its exits are the pair's (see _pair_target)
+POLICIES["CX"] = POLICIES["C"]                  # plus A's failed break (STRUCTURE_PLAYS)
+POLICIES["BR"] = replace(POLICIES["B"], hard_stop=BR_LEG_STOP)
 
 _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS expiry_paper_positions (
@@ -827,6 +850,33 @@ def liquidation_net(legs: list[dict], quotes: dict, now: datetime) -> Optional[f
     return round(total, 2)
 
 
+def unmarkable_legs(legs: list[dict], quotes: dict, now: datetime) -> list[str]:
+    """Why each open leg cannot be marked now ("22750CE NO_BID"); empty when every one can.
+
+    The same tests as ``liquidation_net``, named: no quote, a stale or
+    future-dated provider time, an empty side, or depth short of the open lots.
+    """
+    reasons = []
+    for leg in legs:
+        if leg["status"] != "OPEN" or not leg["lots_open"]:
+            continue
+        quote = quotes.get(leg["token"])
+        short = leg.get("side") == "SHORT"
+        levels = () if quote is None else (quote.asks if short else quote.bids)
+        if quote is None:
+            why = "NO_QUOTE"
+        elif not quote.fresh(now):
+            why = quote.age_status(now)
+        elif not levels:
+            why = "NO_ASK" if short else "NO_BID"
+        elif walk(levels, leg["lots_open"], leg["lot_size"])[0] < leg["lots_open"]:
+            why = "THIN"
+        else:
+            continue
+        reasons.append(f"{leg['strike']:g}{leg['opt_type']} {why}")
+    return reasons
+
+
 def _pair_target(pair: list[dict], quotes: dict, now: datetime) -> bool:
     """BP: both legs open and the pair, sold now on the visible bids, nets BP_TARGET of its premium."""
     if len(pair) != 2 or any(leg["exit_pending"] or leg["status"] != "OPEN" for leg in pair):
@@ -843,7 +893,10 @@ def _mark_paths(conn, state: dict, day: str, underlying: str, quotes: dict, now:
     An entry is a play's legs bought together (one A or C leg, a B strangle,
     a D condor), so a pair is marked as one trade at one moment. An entry in
     ``was_open`` (open when the tick began) that closed this tick is marked at
-    its fills.
+    its fills. ``held`` counts the ticks the entry was held and ``unmarked``
+    names, per leg, why a held tick could not be marked (Oct 13 audit: 95 of
+    159 strangle ticks were marked, the rest had no bids); a leg's counts
+    overlap with its partner's, so they are not a count of unmarked ticks.
     """
     entries: dict[str, list[dict]] = {}
     for leg in _rows(conn, "SELECT * FROM expiry_paper_positions WHERE day=? AND underlying=?", (day, underlying)):
@@ -852,15 +905,18 @@ def _mark_paths(conn, state: dict, day: str, underlying: str, quotes: dict, now:
     for key, legs in entries.items():
         if key not in was_open and not any(leg["status"] == "OPEN" for leg in legs):
             continue
+        mark = marks.setdefault(key, {"n": 0, "best": None, "best_ts": None, "worst": None, "worst_ts": None})
+        mark["held"] = mark.get("held", 0) + 1
         value = liquidation_net(legs, quotes, now)
         if value is None:
+            unmarked = mark.setdefault("unmarked", {})
+            for reason in unmarkable_legs(legs, quotes, now):
+                unmarked[reason] = unmarked.get(reason, 0) + 1
             continue
-        mark = marks.setdefault(key, {"n": 0, "best": value, "best_ts": now.isoformat(),
-                                      "worst": value, "worst_ts": now.isoformat()})
         mark["n"] += 1
-        if value > mark["best"]:
+        if mark["best"] is None or value > mark["best"]:
             mark["best"], mark["best_ts"] = value, now.isoformat()
-        if value < mark["worst"]:
+        if mark["worst"] is None or value < mark["worst"]:
             mark["worst"], mark["worst_ts"] = value, now.isoformat()
 
 
@@ -964,6 +1020,24 @@ def chain_context(state: dict, quoted_chain: dict, spot: Optional[float], step: 
     return ctx
 
 
+# Per-field availability over the day's ticks (Oct 13 audit: the context was OK
+# on 966 of 966 ticks while the straddle and IV existed on 903, because the ATM
+# book lost its bids from 15:29:30). An OK status never implies every field.
+CONTEXT_FIELDS = (("straddle", "straddle"), ("iv", "IV"), ("rv", "realized"), ("iv_rv", "IV/RV"),
+                  ("pcr", "PCR"), ("fut_buildup", "future build-up"))
+
+
+def count_context_fields(state: dict, ctx: dict) -> None:
+    """Count, on the day state, the ticks whose context was OK, had each field, and had every OI quote fresh."""
+    seen = state.setdefault("context_fields", {})
+    present = ["ok"] if ctx.get("status") == "OK" else []
+    present += [field for field, _ in CONTEXT_FIELDS if ctx.get(field) is not None]
+    if ctx.get("oi_window") and ctx.get("oi_fresh") == ctx["oi_window"]:
+        present.append("oi_full")
+    for field in present:
+        seen[field] = seen.get(field, 0) + 1
+
+
 def _context_text(ctx: dict) -> str:
     def pct(value):
         return f"{value * 100:.1f}%" if value is not None else "n/a"
@@ -990,6 +1064,11 @@ def context_lines(state: dict, settle: Optional[float]) -> list[str]:
     """The record-only chain context at the D and B entry times, and how the close met it."""
     snaps = state.get("context_at") or {}
     lines = [f"  context ({state.get('context', CONTEXT_VERSION)}, record-only, no rule uses it):"]
+    seen = state.get("context_fields")
+    if seen is not None:
+        lines.append(f"    available on ticks (of {state.get('ticks', 0)}): OK {seen.get('ok', 0)}, "
+                     + ", ".join(f"{label} {seen.get(field, 0)}" for field, label in CONTEXT_FIELDS)
+                     + f", every OI quote fresh {seen.get('oi_full', 0)}")
     for moment, at in CONTEXT_MOMENTS.items():
         ctx = snaps.get(moment)
         lines.append(f"    {_moment(moment, at, ctx)}: " + (_context_text(ctx) if ctx else "not recorded"))
@@ -1260,6 +1339,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
     except Exception as exc:
         logger.warning("expiry chain context failed: %s", type(exc).__name__)
         context = {"status": "ERROR", "ts": now.isoformat(), "error": type(exc).__name__}
+    count_context_fields(state, context)
     snaps = state.setdefault("context_at", {})
     for moment, at in CONTEXT_MOMENTS.items():
         if clock_now >= at and moment not in snaps and context["status"] == "OK":
@@ -1296,7 +1376,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
         if pos["exit_pending"]:
             event = _try_exit(pos, quote, pos["lots_open"], pos["exit_pending"], now)
         elif quote is not None and quote.fresh(now) and quote.bid is not None:
-            structure = pos["play"] in ("A", "AL") and failed_break(state, pos["opt_type"], spot)
+            structure = pos["play"] in STRUCTURE_PLAYS and failed_break(state, pos["opt_type"], spot)
             action = manage_position(pos, POLICIES[pos["play"]], quote.bid, now, structure_broken=structure)
             event = _try_exit(pos, quote, *action, now) if action else None
         elif clock_now >= POLICIES[pos["play"]].flat_at:
@@ -1344,7 +1424,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
                 break
             if reason:
                 _bump(state, "refusals", f"{play}:{reason}")
-        for play, ceiling in (("C", budget), ("C500", C500_BUDGET)):
+        for play, ceiling in (("C", budget), ("C500", C500_BUDGET), ("CX", budget)):
             if state["trades"][play] >= 1:
                 continue
             strike = pick_lottery_strike(quoted_chain, direction, spot, now)
@@ -1359,8 +1439,8 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
             else:
                 _bump(state, "refusals", f"{play}:DEPTH_OR_BUDGET")
 
-    # 3. B and its shadows BH and BP: the same auction strangle, managed differently
-    for play in ("B", "BH", "BP"):
+    # 3. B and its shadows BH, BP and BR: the same auction strangle, managed differently
+    for play in ("B", "BH", "BP", "BR"):
         if state["trades"][play] or not B_ENTRY_START <= clock_now < B_ENTRY_END:
             continue
         if spot is None:
@@ -1428,6 +1508,46 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
     _save_state(conn, day, underlying, state, now)
 
 
+def _path_text(mark: dict, clock: Callable[[str], str]) -> str:
+    """An entry's best and worst mark with its denominators: ticks marked of ticks held, and why the rest were not."""
+    held = mark.get("held")                     # absent on days marked before the denominators were kept
+    count = f"{mark['n']} of {held} held ticks marked" if held is not None else f"{mark['n']} marks"
+    unmarked = mark.get("unmarked") or {}
+    if unmarked:
+        count += "; unmarked legs: " + ", ".join(f"{reason} {n}" for reason, n in sorted(unmarked.items()))
+    if mark.get("best") is None:
+        return f"never marked ({count})"
+    return (f"best Rs {mark['best']:+,.2f} at {clock(mark['best_ts'])}, "
+            f"worst Rs {mark['worst']:+,.2f} at {clock(mark['worst_ts'])} ({count})")
+
+
+def paired_lines(conn, day: str, underlying: str) -> list[str]:
+    """Each shadow minus the primary whose entry it shares, today and over this underlying's expiries.
+
+    Both sides are whole modeled (filled + assumed) after their own fees; an
+    expiry counts only when both traded, so a difference is the exits' (or
+    the ceiling's) doing on one market path. C500 is excluded: its ceiling
+    changes the quantity, so its difference is size, not management.
+    """
+    whole: dict[tuple[str, str], float] = {}
+    for d, play, value in conn.execute(
+            "SELECT day, play, SUM(net_pnl + COALESCE(assumed_pnl, 0)) FROM expiry_paper_positions "
+            "WHERE underlying=? AND day <= ? AND status != 'OPEN' GROUP BY day, play", (underlying, day)):
+        whole[(d, play)] = value
+    parts = []
+    for shadow, primary in PAIRED_WITH.items():
+        days = [d for d, p in whole if p == shadow and (d, primary) in whole]
+        if not days:
+            continue
+        total = sum(whole[(d, shadow)] - whole[(d, primary)] for d in days)
+        today = f"today Rs {whole[(day, shadow)] - whole[(day, primary)]:+,.2f}, " if day in days else ""
+        parts.append(f"{shadow}-{primary} {today}to date Rs {total:+,.2f} over {len(days)}")
+    if not parts:
+        return []
+    return ["  paired with its primary (same entry, own exits; positive = the shadow did better): "
+            + "; ".join(parts)]
+
+
 def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
     """The day's ledger in rupees and paise: fees, filled net and assumed values each shown.
 
@@ -1484,9 +1604,7 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
                 if mark is None:
                     continue
                 finished = sum(r["net_pnl"] + (r["assumed_pnl"] or 0.0) for r in rows if r["entry_ts"] == entry_ts)
-                lines.append(f"    entry {clock(entry_ts)}: best Rs {mark['best']:+,.2f} at {clock(mark['best_ts'])}, "
-                             f"worst Rs {mark['worst']:+,.2f} at {clock(mark['worst_ts'])} ({mark['n']} marks), "
-                             f"finished Rs {finished:+,.2f}")
+                lines.append(f"    entry {clock(entry_ts)}: {_path_text(mark, clock)}, finished Rs {finished:+,.2f}")
         return total_filled, total_assumed, total_fees
 
     day_filled, day_assumed, day_fees = section(MAIN_PLAYS)
@@ -1494,6 +1612,7 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
                  f"Rs {day_filled + day_assumed:+,.2f} (fees Rs {day_fees:,.2f})")
     lines.append(f"  shadow plays ({state.get('shadow', SHADOW_VERSION)}, frozen, no Telegram trades):")
     section(SHADOW_PLAYS)
+    lines += paired_lines(conn, day, underlying)
     totals = conn.execute(
         "SELECT play, COALESCE(SUM(net_pnl), 0), COALESCE(SUM(assumed_pnl), 0) FROM expiry_paper_positions "
         "WHERE underlying=? AND status != 'OPEN' GROUP BY play", (underlying,)).fetchall()
@@ -1537,14 +1656,15 @@ def owner_rule_lines(conn, through: str) -> list[str]:
     for play in MAIN_PLAYS + SHADOW_PLAYS:
         traded = [value for (_, _, p), value in whole.items() if p == play]
         if traded:
-            per_play.append(f"{play} {sum(value < 0 for value in traded)}/{len(traded)}")
+            per_play.append(f"{play} {sum(value < 0 for value in traded)}/{len(traded)} "
+                            f"(Rs {sum(traded):+,.0f})")
     met = len(results) >= OWNER_REVIEW_EXPIRIES and lost == len(results)
     verdict = "RULE MET: every expiry lost, stop expiry-day F&O" if met else \
         f"{max(0, OWNER_REVIEW_EXPIRIES - len(results))} expiries left to observe"
     return [f"  owner rule ({OWNER_RULE_SET}): expiry {len(results)} of {OWNER_REVIEW_EXPIRIES}, main book lost "
             f"{lost} of {len(results)}, losing streak {streak}; {verdict}",
-            "  losing expiries / expiries traded, per play (a play that keeps losing is dropped): "
-            + (", ".join(per_play) or "none")]
+            "  losing expiries / expiries traded (whole modeled to date), per play "
+            "(a play that keeps losing is dropped): " + (", ".join(per_play) or "none")]
 
 
 async def run_expiry_tick(kite, db_path: Optional[str] = None, now: Optional[datetime] = None,

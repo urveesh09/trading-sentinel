@@ -112,17 +112,28 @@ def level_label(name: str, value: Optional[float], basis: str) -> str:
     return f"{name} ≈{_lvl(value)}" if basis == "INDEX" else f"{name} fut {_lvl(value)}"
 
 
-def max_loss_per_lot(buy_limit: float, sl_premium: Optional[float], spread: float, lot_size: int) -> Optional[float]:
+def max_loss_per_lot(buy_limit: float, sl_premium: Optional[float], spread: float, lot_size: int,
+                     exchange: str = "NFO") -> Optional[float]:
     """Loss per lot if filled at the limit and stopped at the premium stop.
 
     The exit sells one current bid-ask spread under the stop, and both legs
-    pay round-trip charges. ``None`` when no premium stop exists, because an
-    index-only stop has no rupee bound.
+    pay round-trip charges on the contract's own exchange (BFO for SENSEX,
+    O13-B3). ``None`` when no premium stop exists, because an index-only stop
+    has no rupee bound.
     """
     if sl_premium is None or lot_size <= 0:
         return None
     exit_price = max(sl_premium - max(spread, 0.0), 0.0)
-    return round((buy_limit - exit_price) * lot_size + calc_fno_costs(buy_limit, exit_price, lot_size), 2)
+    return round((buy_limit - exit_price) * lot_size
+                 + calc_fno_costs(buy_limit, exit_price, lot_size, exchange=exchange), 2)
+
+
+def _segment(candidate) -> str:
+    segment = str(getattr(candidate, "segment", "") or "").upper()
+    if segment in ("NFO", "BFO"):
+        return segment
+    from fno_costs import options_exchange_for
+    return options_exchange_for(getattr(candidate, "underlying", ""))
 
 
 def buyer_plan(candidate, snapshot, now: datetime, *, entry_window_min: int) -> Optional[dict]:
@@ -192,7 +203,8 @@ def buyer_plan(candidate, snapshot, now: datetime, *, entry_window_min: int) -> 
         "target_premium_low": (_round_to_tick(target * TARGET_PREMIUM_LOW_FACTOR, tick)
                                if target is not None else None),
         "max_loss_per_lot": max_loss_per_lot(limit, stop, leg.ask - leg.bid if leg.bid > 0 else tick,
-                                             leg.lot_size),
+                                             leg.lot_size, exchange=_segment(candidate)),
+        "fee_segment": _segment(candidate),
         "iv": round(iv, 4) if iv is not None else None,
         "level_basis": basis, "fut_to_index_offset": offset,
         "trigger_index": to_index(candidate.trigger_level),
@@ -200,6 +212,41 @@ def buyer_plan(candidate, snapshot, now: datetime, *, entry_window_min: int) -> 
         "target_index": to_index(candidate.target_level),
         "trigger_fut": candidate.trigger_level,
         "quote_at": quote_at.isoformat(), "fill_by": fill_by.isoformat(),
+    }
+
+
+FALLBACK_VERSION = "BUYER_VIEW_FALLBACK_V1"
+
+
+def fallback_view(candidate, now: datetime, *, entry_window_min: int) -> Optional[dict]:
+    """[O13 2026-10-15] An unpriced one-option view from the card's own BUY
+    leg and published levels, for when ``buyer_plan`` fails or its view
+    cannot be rendered. Levels stay on the future; there is no premium stop,
+    target premium or loss-per-lot estimate. Before this, such a card fell
+    back to the two-leg spread card, which tells an option buyer to SELL.
+    """
+    if getattr(candidate, "direction", None) not in ("LONG", "SHORT"):
+        return None
+    legs = [leg for leg in candidate.legs if leg.side == "BUY"]
+    if not legs or legs[0].ask <= 0 or legs[0].lot_size <= 0:
+        return None
+    leg = legs[0]
+    tick = leg.tick_size if leg.tick_size and leg.tick_size > 0 else 0.05
+    fill_by = candidate.quote_time + timedelta(minutes=entry_window_min)
+    if candidate.entry_deadline is not None:
+        fill_by = min(fill_by, candidate.entry_deadline)
+    return {
+        "version": FALLBACK_VERSION,
+        "symbol": leg.tradingsymbol, "strike": leg.strike, "opt_type": leg.option_type,
+        "expiry": leg.expiry, "dte": (date.fromisoformat(leg.expiry) - now.date()).days,
+        "lot_size": leg.lot_size, "tick_size": tick, "bid": leg.bid, "ask": leg.ask,
+        "buy_limit": _round_to_tick(leg.ask * (1 + BUY_LIMIT_NO_STOP_PCT), tick, up=True),
+        "sl_premium": None, "target_premium": None, "target_premium_low": None,
+        "max_loss_per_lot": None, "iv": None,
+        "level_basis": "FUTURES", "fut_to_index_offset": None,
+        "trigger_index": candidate.trigger_level, "invalidation_index": candidate.invalidation_level,
+        "target_index": candidate.target_level, "trigger_fut": candidate.trigger_level,
+        "quote_at": candidate.quote_time.isoformat(), "fill_by": fill_by.isoformat(),
     }
 
 
@@ -259,7 +306,9 @@ def render_buyer_card(label: str, view: dict, *, underlying: str, direction: str
     if note:
         why.append(note)
     stop, paid = view.get("sl_premium"), view["buy_limit"]
-    if stop is not None and (view["ask"] - stop) < NEAR_STOP_PCT * view["ask"]:
+    if view.get("version") == FALLBACK_VERSION:
+        why.append("⚠ premium stop not priced, size small")
+    elif stop is not None and (view["ask"] - stop) < NEAR_STOP_PCT * view["ask"]:
         why.append(f"⚠ stop only ₹{_px(view['ask'] - stop)} under the price, skip or tiny size")
     elif stop is not None and low is not None and (low - paid) < (paid - stop):
         why.append("⚠ reward < risk in premium, size small")
@@ -365,10 +414,27 @@ def render_buyer_eod(day_label: str, rows: list[dict], record_line: str = "") ->
     return "\n".join(lines)
 
 
-def premium_path(paid: float, series: list) -> str:
-    """'option ₹97 → peak ₹141, close ₹109' from 5-minute snapshot LTPs."""
+def premium_path(paid: float, series: list, stopped_at: Optional[str] = None) -> str:
+    """'option ₹97 → peak ₹141, close ₹109' from 5-minute snapshot LTPs.
+
+    [O13-B1] ``stopped_at`` ('YYYY-MM-DD HH:MM:SS', same clock as the
+    series) ends the held path at the stop: the card told the buyer to exit
+    there, so a later recovery is shown as after-exit, not held, never as
+    the card's peak. Oct 13: both cards stopped at 11:45 and recovered past
+    target by 14:40.
+    """
     if not paid or paid <= 0 or not series:
         return ""
+    if stopped_at:
+        held = [ltp for ts, ltp in series if str(ts) <= stopped_at]
+        after = [ltp for ts, ltp in series if str(ts) > stopped_at]
+        if not held:
+            return ""
+        text = f"option ₹{_px(paid)} → ₹{_px(held[-1])} at the stop ({(held[-1] - paid) / paid:+.0%})"
+        if after:
+            peak = max(after)
+            text += f"; after exit (not held) peak ₹{_px(peak)} ({(peak - paid) / paid:+.0%})"
+        return text
     ltps = [ltp for _, ltp in series]
     peak, last = max(ltps), ltps[-1]
     return (f"option ₹{_px(paid)} → peak ₹{_px(peak)} ({(peak - paid) / paid:+.0%}), "

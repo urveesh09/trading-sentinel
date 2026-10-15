@@ -244,6 +244,36 @@ def _iso(value: datetime) -> str:
     return value.astimezone(IST).isoformat()
 
 
+# [O13-B1 2026-10-15] A published idea whose invalidation was observed is
+# closed for good: its EXIT update may still be delivered, but no later
+# target, reminder or other management wording may follow for that identity.
+# Oct 13: both delivered cards got "EXIT ... Idea closed" at 11:45, then
+# "Book profit; move SL to your entry price" for the same ideas at 14:40/14:50.
+# A fresh setup after the stop is a new card with a new identity.
+CLOSED_INVALIDATED = "CLOSED_INVALIDATED"
+DELIVERED_IDEA_STATUSES = ("DELIVERED_ACKNOWLEDGED", CLOSED_INVALIDATED, "RETIRED_SESSION_END")
+
+
+async def _close_invalidated_ideas(db, now: datetime) -> set:
+    """Close still-live ideas that already have an INVALIDATION update.
+
+    Covers rows written before the terminal status existed and any crash
+    between the update insert and the status change. Returns closed ids.
+    """
+    rows = await (await db.execute(
+        "SELECT DISTINCT i.advisory_id FROM partner_advisory_ideas i JOIN partner_advisory_updates u "
+        "ON u.advisory_id=i.advisory_id WHERE i.status='DELIVERED_ACKNOWLEDGED' AND u.event_type='INVALIDATION'"
+    )).fetchall()
+    ids = {row[0] for row in rows}
+    for advisory_id in ids:
+        await db.execute(
+            "UPDATE partner_advisory_ideas SET status=?,updated_at=? WHERE advisory_id=? "
+            "AND status='DELIVERED_ACKNOWLEDGED'", (CLOSED_INVALIDATED, _iso(now), advisory_id))
+    if ids:
+        await db.commit()
+    return ids
+
+
 def _parse_status_clock(value: str) -> datetime:
     parsed = datetime.fromisoformat(value)
     if parsed.tzinfo is None or parsed.utcoffset() is None:
@@ -790,7 +820,8 @@ def build_conditional_index_protective_put(
         policy_version=policy_version, evidence=evidence, legs=(_leg("BUY", quote, snapshot),),
         thesis_id=thesis_id or f"{underlying}:PROTECTION:{snapshot.expiry.isoformat()}",
         net_debit_rs=round(premium_risk, 2), net_credit_rs=None,
-        estimated_round_trip_cost_rs=round(calc_fno_costs(quote.ask, quote.ask, contract.lot_size), 2),
+        estimated_round_trip_cost_rs=round(calc_fno_costs(quote.ask, quote.ask, contract.lot_size,
+                                                         exchange=book.segment), 2),
         # This bound is the option premium only, not the loss of the unknown
         # protected position.  The renderer says this explicitly.
         max_loss_rs=round(premium_risk, 2), max_profit_rs=None,
@@ -1087,17 +1118,34 @@ async def persist_candidate(
             import structlog
             structlog.get_logger().error("research_candidate_archive_failed err=%s", str(exc))
     card = ""
-    if validation.valid and settings.PARTNER_BUYER_MESSAGES and buyer_view and (
+    if validation.valid and settings.PARTNER_BUYER_MESSAGES and (
             candidate.scope == AdvisoryScope.MARKET_SETUP and candidate.management_deadline):
+        from partner_buyer import fallback_view, render_buyer_card
+        views = [buyer_view]
         try:
-            from partner_buyer import render_buyer_card
-            card = render_buyer_card(payload["advice_label"], buyer_view, underlying=candidate.underlying,
-                                     direction=str(candidate.direction),
-                                     management_deadline=candidate.management_deadline)
-            payload["buyer_view"] = buyer_view
-        except (KeyError, TypeError, ValueError) as exc:
-            import structlog
-            structlog.get_logger().warning("partner_buyer_card_render_failed err=%s", type(exc).__name__)
+            views.append(fallback_view(candidate, now, entry_window_min=settings.PARTNER_BUYER_ENTRY_WINDOW_MIN))
+        except (AttributeError, KeyError, TypeError, ValueError):
+            pass
+        for view in views:
+            if not isinstance(view, dict):
+                continue
+            try:
+                card = render_buyer_card(payload["advice_label"], view, underlying=candidate.underlying,
+                                         direction=str(candidate.direction),
+                                         management_deadline=candidate.management_deadline)
+                payload["buyer_view"] = view
+                break
+            except (KeyError, TypeError, ValueError) as exc:
+                import structlog
+                structlog.get_logger().warning("partner_buyer_card_render_failed err=%s version=%s",
+                                               type(exc).__name__, view.get("version"))
+    if (validation.valid and not card and settings.PARTNER_BUYER_MESSAGES
+            and candidate.scope == AdvisoryScope.MARKET_SETUP):
+        # [O13 2026-10-15] The partner only buys options. Without a priced
+        # one-option view the old two-leg card (with a SELL leg) would go out
+        # instead, so the idea stays a recorded shadow and is not sent.
+        deliverable = False
+        payload["delivery_reasons"] = sorted(set(payload["delivery_reasons"]) | {"buyer_view_unavailable"})
     if validation.valid and not card:
         card = payload["advice_label"] + "\n" + render_advisory_card(candidate, advisory_id)
     status = "QUEUED" if validation.valid and queue_for_delivery and deliverable else (
@@ -1300,6 +1348,7 @@ async def queue_management_updates(
         return []
     await init_partner_advisory_db(db_path)
     async with aiosqlite.connect(db_path) as db:
+        await _close_invalidated_ideas(db, observed_at)
         rows = await (await db.execute(
             "SELECT advisory_id,payload FROM partner_advisory_ideas WHERE underlying=? "
             "AND status='DELIVERED_ACKNOWLEDGED'", (underlying.upper(),)
@@ -1359,6 +1408,11 @@ async def queue_management_updates(
                 "VALUES(?,?,?,?,? ,?,'QUEUED',?,?)",
                 (update_id, advisory_id, event_type, stamp, observed_underlying, wording, stamp, stamp),
             )
+            if event_type == "INVALIDATION":
+                # Same transaction: the idea is never live with its stop recorded.
+                await db.execute(
+                    "UPDATE partner_advisory_ideas SET status=?,updated_at=? WHERE advisory_id=? "
+                    "AND status='DELIVERED_ACKNOWLEDGED'", (CLOSED_INVALIDATED, stamp, advisory_id))
             await db.commit()
         if cur.rowcount == 1:
             queued.append({"update_id": update_id, "advisory_id": advisory_id, "profile_id": profile_id,
@@ -1377,6 +1431,7 @@ async def run_intraday_session_lifecycle(db_path: str, *, now: datetime) -> list
         raise ValueError("now must be timezone-aware")
     await init_partner_advisory_db(db_path)
     async with aiosqlite.connect(db_path) as db:
+        await _close_invalidated_ideas(db, now)
         rows = await (await db.execute(
             "SELECT advisory_id,payload FROM partner_advisory_ideas WHERE status='DELIVERED_ACKNOWLEDGED'"
         )).fetchall()
@@ -1468,9 +1523,11 @@ async def pending_management_updates(
                 observed_at = datetime.fromisoformat(str(observed)).astimezone(IST)
             except ValueError:
                 observed_at = None
+            stop_of_closed_idea = idea_status == CLOSED_INVALIDATED and event_type == "INVALIDATION"
             if delivered == 1:
                 closed.append(("DELIVERED_ACKNOWLEDGED", "acknowledged_claim_reconciled", update_id))
-            elif idea_status != "DELIVERED_ACKNOWLEDGED":
+            elif idea_status != "DELIVERED_ACKNOWLEDGED" and not stop_of_closed_idea:
+                # A closed idea still sends its own stop, and nothing after it.
                 closed.append(("EXPIRED_UNSENT", f"idea_{str(idea_status).lower()}", update_id))
             elif observed_at is None or not management_observation_fresh(observed_at, now):
                 closed.append(("EXPIRED_UNSENT", "observation_older_than_management_bound", update_id))
@@ -1600,7 +1657,8 @@ async def load_advisory_diagnostics(db_path: str) -> dict:
             bucket["validated_shadow"] += 1
         elif status == "QUEUED":
             bucket["queued"] += 1
-        elif status == "DELIVERED_ACKNOWLEDGED":
+        elif status in DELIVERED_IDEA_STATUSES:
+            # A stopped or session-retired card was still delivered.
             bucket["delivered"] += 1
         elif status == "REJECTED":
             bucket["rejected"] += 1

@@ -14,6 +14,191 @@
 
 
 
+## October 15 — expiry-shadow-v3 (CX, BR) and Oct 13 expiry-audit diagnostics (actual behavior, Dev, commit `db6e028`)
+
+Audit: Production `docs/2026-10-13-expiry-system-deep-audit.md`. Design and
+honesty notes: `docs/2026-10-05-expiry-day-paper-book.md`, section
+"expiry-shadow-v3". Primary rules (`expiry-v1`), the execution contract
+(`expiry-exec-v2`), the context (`expiry-context-v1.1`), Telegram trade
+lines and the owner's 10-expiry rule are unchanged.
+
+- **CX (shadow).** CX takes C's entry, sizing, ceiling, bank and trail. Its
+  ticket is also sold (`FAILED_BREAK`) when A's frozen failed-break test fires
+  (`STRUCTURE_PLAYS = A, AL, CX`). It buys one ticket a day.
+- **BR (shadow).** BR takes B's strangle, bank and trail. Each leg is also
+  sold once its bid is down `BR_LEG_STOP = 0.50` of entry: `POLICIES["BR"]`
+  is B with `hard_stop=0.50`, and it exits through `manage_position`'s STOP.
+  Stops inside 15:15–15:40 are AUCTION_WINDOW fills (unverified).
+- **Paired comparison.** `PAIRED_WITH` maps each shadow to its primary.
+  `paired_lines` prints shadow − primary whole modeled, today and to date for
+  this underlying, over expiries where both traded. C500 is excluded (its
+  difference is size, not management).
+- **Mark denominators.** `_mark_paths` keeps `held` and `unmarked` (per-leg
+  reasons from `unmarkable_legs`: `NO_QUOTE`, `STALE`/`AHEAD`/`NO_TIMESTAMP`,
+  `NO_BID`/`NO_ASK`, `THIN`). The summary prints "n of N held ticks marked;
+  unmarked legs: …", or "never marked". Day states from before this change
+  print the old "(n marks)".
+- **Context availability.** `count_context_fields` keeps per-field tick
+  counts in `state["context_fields"]`. The context block prints "available on
+  ticks (of N): OK, straddle, IV, realized, IV/RV, PCR, future build-up,
+  every OI quote fresh".
+- **Owner tally.** Each play shows whole modeled rupees to date beside its
+  losing/traded count. The rule and verdict are unchanged.
+- **Verification.** A scratch replay of the retained Production packets for
+  Oct 6, 8 and 13 through Dev reproduced every Production row with zero
+  mismatches. The new diagnostics equal the audit's independent counts
+  (B 95/159 marked, NO_BID 64/63; D 352/420; context 903/900/837 of 966).
+  In-sample shadow results, not evidence: CX −₹986.46 / −₹2,138.48 /
+  +₹10,288.54 against C −₹2,156.56 / −₹2,138.48 / +₹10,288.54; BR −₹396.84 /
+  −₹1,242.41 / −₹1,097.85 against B −₹846.83 / −₹720.75 / −₹1,894.03. The
+  Oct 13 summary grows to 5,374 UTF-16 units, which is 2 acknowledged parts.
+
+## October 15 — second review R1/R2 (actual behavior, Dev, commit `934aa2c`)
+
+Review: `docs/2026-10-15-oct13-fixes-second-review.md` (on the F1–F5 tree).
+
+- **EDGE cutoff inside the batch (R1).** `_run_one_leg(…, entry_cutoff=,
+  now_fn=)` re-checks the 15:15 cutoff before every admission. A slow
+  earlier fill can no longer carry the batch past 15:15: the remaining
+  candidates are skipped `after-entry-cutoff`. A fill already accepted is
+  recorded and managed as usual. Live EDGE entries stay fail-closed, so the
+  per-admission check is the last gate before the paper fill. Manual and
+  replay callers pass no cutoff.
+- **Restart outbox race (R2).** Every outbox change is reload → change one
+  row → save, with no await in between (`_update_alert`), and queuing is a
+  synchronous append. A page queued while another page's send is in flight
+  is kept and sent by the next tick. Before, the stale whole-list save
+  dropped it. Delivery stays at-least-once.
+
+## October 15 — independent review F1–F5 of the Oct 13 fixes (actual behavior, Dev, commit `ec1d5a2`)
+
+Review: `docs/2026-10-15-oct13-fixes-independent-review.md` (on `433a81a`).
+
+- **EDGE cutoff (F1).** `penny_edge_orchestrator.run_edge_catchup` waits
+  (bounded) for the restored token, but re-reads the clock after the wait:
+  at or after `EDGE_ENTRY_CUTOFF` (15:15 IST, the exit pass) it does not
+  scan. Scheduled scans call `run_penny_edge_scan(…, entry_cutoff=15:15)`,
+  which checks the cutoff before the signal pass and again at the entry
+  boundary, so a scan that crosses 15:15 enters nothing (`AFTER_CUTOFF`).
+  Manual and replay callers pass no cutoff, so their behaviour is unchanged.
+- **EDGE completion (F2).** Every scan result now has a `status`:
+  `COMPLETED`, `ERROR`, `DISABLED` or `AFTER_CUTOFF`. Only `COMPLETED` writes
+  the atomic receipt `penny_edge_scan_state.json` ({date, status,
+  completed_at, counts}); a valid zero-candidate day counts as completed.
+  The cron and the catch-up share one `asyncio.Lock`, and both check the
+  receipt under it. An error, disabled legs or the cutoff leave the day
+  recoverable; a torn or old-format receipt reads as not completed.
+- **Wrap after a later stop (F3).** `_todays_card_outcomes` keeps
+  first-event scoring and also carries `stop_at`, the first INVALIDATION. A
+  card that went target → stop → recovery reads "🎯 target hit 11:40, 🛑
+  stopped 11:45", and its held premium path ends at the stop.
+- **Restart page (F4).**
+  - `lifecycle_receipts.open_exposure_counts` reads every book read-only:
+    F&O singles and spreads, equity/Penny/EDGE, overnight, expiry and
+    Smart. A missing store or table counts 0; any other read failure is
+    `None` and shows as "unknown", never flat.
+  - The page goes into `restart_alert_outbox.json`, one id per boot. It is
+    sent with `require_delivery` and counts only when the gateway confirms
+    `delivered: true`. A 422 is final; anything else retries (30 s
+    doubling to 10 min, 20 attempts, 6 h max) from the 60 s scheduler tick
+    under one lock. The attempt is persisted before each send.
+  - Delivery is at-least-once: a lost acknowledgement can repeat a page.
+  - The wording names a *likely* cause, since a clock step can look like a
+    host sleep.
+- **Hourly Penny fill (F5).** The fill is joined by identity: signal
+  (scan_id, ticker, leg) → `penny_execution_events` `CANDIDATE_ACCEPTED`
+  attempt → `positions.penny_attempt_id`. With no attempt, several
+  attempts, or no position, the line reads "signal 52.92, fill n/a"; a fill
+  is never guessed from ticker and hour. Checked on Production (read-only):
+  Oct 13 UNITEDPOLY signal `penny-01ac0535` → attempt `pen-ae2e…` → 51.92.
+  Exit events reuse the scan id under `-exit-N` attempt ids, so only the
+  entry attempt is matched.
+
+## October 13 — Oct 13 audit fixes: terminal buyer ideas, quote send gate, exchange fees, restart receipts (actual behavior, Dev, commit `433a81a`)
+
+Source: `Production_Trading-sentinel/docs/2026-10-13-production-deep-audit.md`
+(Oct 13 clean session, PR #108). Expiry items are owned by the expiry agent
+and are not touched here.
+
+- **Buyer ideas end at their stop (O13-B1, P1).** Oct 13: both delivered
+  cards got "EXIT … Idea closed" at 11:45, then "Book profit; move SL to your
+  entry price" for the same ideas at 14:40/14:50. Now:
+  - queuing an `INVALIDATION` sets the idea to `CLOSED_INVALIDATED` in the
+    same transaction;
+  - `queue_management_updates` and `run_intraday_session_lifecycle` only
+    work on `DELIVERED_ACKNOWLEDGED` ideas, so no later target or reminder;
+  - `_close_invalidated_ideas` closes older rows that already have a stop;
+  - `pending_management_updates` still sends the stop itself, and expires a
+    queued target as `idea_closed_invalidated`;
+  - the final authorizer (`hedge_advisory._authorize_dispatch`, phase
+    `manual_update_v1`) refuses any non-stop update once a stop is
+    recorded for the idea.
+  A fresh setup after a stop is a new card with a new identity (re-entry
+  levels unchanged). Diagnostics and the blocker report count
+  `CLOSED_INVALIDATED` and `RETIRED_SESSION_END` as delivered.
+- **Wrap after a stop (O13-B1/B4).** `partner_buyer.premium_path(…,
+  stopped_at=)` ends the held path at the stop and shows the later peak as
+  "after exit (not held)". No event reads "no level seen (5-min samples)",
+  not "no level hit".
+- **Buyer fallback.** If the priced view is missing or will not render, the
+  card is `BUYER_VIEW_FALLBACK_V1`: the same BUY leg, levels on the future,
+  limit ask + 2 %, "premium stop not priced, size small". The two-leg card,
+  which has a SELL leg, is never sent to the buyer. If even that fails, the
+  idea stays a shadow (`buyer_view_unavailable`).
+- **Flow pulse failures (O13-B2).** `partner_messages(flow_pulse)` detail
+  now holds `count` (delivered), `failed` and `last_delivered_at`. The
+  30-minute gap and the 6-a-day cap count delivered pulses only. A failed
+  send retries after `PULSE_RETRY_MIN` = 5 minutes, at most
+  `PULSE_MAX_FAILED_ATTEMPTS` = 12 failures a day. Facts still commit only
+  on delivery.
+- **Exchange fees (O13-B3).** `fno_costs.calc_fno_costs(…, exchange=)` and
+  `options_exchange_for(underlying)` (SENSEX → BFO). Used by the single-leg
+  exit cost and admission reserve (`fno_orchestrator`), the position fee
+  reserve (`fno_positions._with_entry_baselines`), the buyer loss-at-SL and
+  `fee_segment`, the protection card estimate and the F&O shadow scenario.
+  Oct 13 same-fill check: call 42 ₹62.2894 (NSE) vs ₹61.8421 (BSE); card
+  ₹1,691.07 vs ₹1,690.74. Recorded ledger rows are not repriced.
+- **Quote send gate (O13-Q1).** `QuoteBudget.before_send()` runs right
+  before the endpoint counter and the HTTP call, on every attempt (merged
+  batches, retries, keyed calls), and holds a send until ≥ 1/rate + 2 ms
+  after the previous send. Admission also waits for the last real send.
+  The Oct 13 over-limit came from a batch task that started late after
+  admission. New counter: `send_gate_waits`.
+- **Dispatcher cancellation (O13-Q2).** `_dispatch` wraps the loop: if it is
+  cancelled or fails while waiting for admission, every queued caller gets
+  `QuoteBatchCancelled` (or the error). Counter: `cancelled_queued`. One
+  caller cancelling does not affect others.
+- **Restart receipts (O13-R1).** New `lifecycle_receipts.py`, writing to
+  `lifecycle_events.jsonl` beside the DB:
+  - the heartbeat thread records `host_suspend` (wall clock ran ahead of
+    monotonic) and `thread_stall`;
+  - a graceful shutdown flags `scheduler_tick.json` with `clean_shutdown`;
+  - startup writes a receipt: gap, market-hours overlap, prior shutdown
+    flag, host/VM uptime, cause (`clean_shutdown`,
+    `host_or_vm_restarted`, `unclean_stop`);
+  - a gap over 5 market minutes on a trading day pages the operator with
+    the open positions per book.
+  Nothing is backfilled or traded for the gap.
+- **Penny reports.**
+  - Daily attribution reads R from the settled position row (ledger notes
+    never carry `r=`). Oct 13 printed "Avg R: 0.0" for a −3.72R stop; a day
+    with no known R now prints "n/a".
+  - The hourly report shows the paper fill, plus the signal close when they
+    differ (Oct 13 showed 52.92 for a 51.92 fill).
+- **Penny paper exit provenance (O13-P1).** The paper exit result and the
+  `EXIT_SIMULATED` event carry `reference_price`, `fill_model`
+  (`PAPER_LIMIT_FLOOR_V1`), `slip_pct` and `model_decrement_per_share`. The
+  fill model itself is unchanged: ref × 0.99, tick-floored. Changing it
+  would need a frozen comparison.
+- **EDGE startup catch-up.** Jobs register before the token is restored, so
+  the Oct 13 11:40 catch-up skipped (`no_access_token`). It now waits up to
+  10 minutes for the token. It also does nothing when today's scan already
+  completed: `penny_edge_scan_state.json` is written after a scan returns.
+- **Liquidity filter.** Universe names missing from a usable (≥ 1,000
+  symbol) catalogue drop in one `liquidity_filter_unlisted_symbols` line, not
+  one warning each. Oct 13 had 54 warnings: HEG, HFCL (now `HFCL-BE`) and
+  JBCHEPHARM.
+
 ## October 12 (night) — option-buyer card numbers verified on Production data (O12-PB2, actual behavior, Dev, commit `feed23e`)
 
 Owner: the partner trades real money, so the card's numbers must be the most

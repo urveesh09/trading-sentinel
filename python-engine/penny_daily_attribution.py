@@ -117,9 +117,23 @@ def _read_today_penny_trades(db_path: str, today_iso: str,
                 "ORDER BY timestamp ASC",
                 (source, today_iso),
             )
-            for r in cur.fetchall():
+            ledger_rows = cur.fetchall()
+            # [O13 2026-10-15] Classic Penny closes carry notes like
+            # "confirmed_exit:protective_stop_paper", never "r=": the R lives
+            # on the settled position row, stamped with the same clock as the
+            # ledger row. Oct 13 showed "Avg R: 0.0" for a -3.72R stop.
+            position_r: dict = {}
+            try:
+                for ticker, exit_date, r_value in con.execute(
+                        "SELECT ticker, exit_date, r_multiple FROM positions "
+                        "WHERE source = ? AND DATE(exit_date) = ? AND r_multiple IS NOT NULL",
+                        (source, today_iso)):
+                    position_r[(ticker, exit_date)] = float(r_value)
+            except sqlite3.Error:
+                position_r = {}
+            for r in ledger_rows:
                 # r_multiple is encoded in notes like "r=2.4" by upstream
-                # callers -- parse if present, else None.
+                # callers -- parse if present, else the settled position's R.
                 r_mult = None
                 notes = r["notes"] or ""
                 if "r=" in notes:
@@ -127,6 +141,8 @@ def _read_today_penny_trades(db_path: str, today_iso: str,
                         r_mult = float(notes.split("r=")[1].split()[0])
                     except (ValueError, IndexError):
                         r_mult = None
+                if r_mult is None:
+                    r_mult = position_r.get((r["ticker"], r["timestamp"]))
                 rows.append(TradeRow(
                     ticker=r["ticker"],
                     pnl=float(r["pnl"]),
@@ -232,8 +248,10 @@ def build_daily_attribution(db_path: str, now: Optional[datetime] = None,
     lines.append(
         f"P&L (net): {pnl_sign}Rs {m.total_pnl:.0f}"
     )
+    # No known R is "n/a", never a 0.0 that reads as breakeven.
+    avg_r = f"{m.avg_r_multiple}" if m.r_multiples else "n/a"
     lines.append(
-        f"Win rate: {m.win_rate}%  |  Avg R: {m.avg_r_multiple}"
+        f"Win rate: {m.win_rate}%  |  Avg R: {avg_r}"
     )
     if m.best_trade and m.worst_trade:
         lines.append(

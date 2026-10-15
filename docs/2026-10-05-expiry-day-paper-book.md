@@ -136,6 +136,73 @@ Honesty notes:
   Every D entry records its context, so after enough expiries the gate can be
   tested on D's own record and frozen as `expiry-context-v2` if it holds.
 
+## Shadow plays `expiry-shadow-v3` (frozen October 15, scored from the first expiry after deployment)
+
+Built after the October 13 audit (Production
+`docs/2026-10-13-expiry-system-deep-audit.md`). The owner asked for a book
+that earns more consistently and never loses "like crazy". On the two losing
+expiries the damage came from bought options riding to zero:
+- C's whole ticket (−₹2,156.56 on October 6, −₹2,138.48 on October 8);
+- B's strangle legs: the put on October 6 and 8, and both legs on October 13,
+  when the late bids disappeared from about 15:29.
+
+A lost only ₹221 and ₹75 on those days. Both new plays reuse their primary's
+entry, so each comparison is paired on the same market path. A, B and C stay
+`expiry-v1`; AL, BP, BH, C500 and D carry on unchanged. October 6, 8 and 13
+were all seen and count for neither play.
+
+| Play | Weakness found | Rule |
+|---|---|---|
+| **CX** | C holds its lottery ticket to the close even after the break it was bought on has failed. On October 6 the index was back inside the box by 14:18. The ticket was still bid at 2.30 (entry 4.10), then expired worthless. | C's entry, sizing, ceiling, bank and trail. In addition, the ticket is sold (`FAILED_BREAK`) when A's frozen failed-break test fires: the index is back inside the box by a quarter of its width. No re-entry: CX buys one ticket a day, like C. |
+| **BR** | B's legs have no stop, so a dead leg decays to no bid and settles at zero. | B's strangle (same strikes and entry), with B's bank and trail. In addition, each leg is sold once its bid is down 50% of its entry premium (`BR_LEG_STOP`, the standard half-premium stop for a bought option). |
+
+Honesty notes:
+- **No threshold was fitted.** CX reuses A's failed-break test unchanged. 50%
+  is the conventional half-premium stop, picked before the replay.
+- **Dev replay of all three retained expiries** (in-sample, a mechanics check,
+  not evidence). The same run reproduced every Production row on all three
+  days with zero mismatches.
+
+  | Play | Oct 6 | Oct 8 | Oct 13 | Total |
+  |---|---|---|---|---|
+  | C | −₹2,156.56 | −₹2,138.48 | +₹10,288.54 | +₹5,993.50 |
+  | CX | −₹986.46 | −₹2,138.48 | +₹10,288.54 | +₹7,163.60 |
+  | B | −₹846.83 | −₹720.75 | −₹1,894.03 | −₹3,461.61 |
+  | BR | −₹396.84 | −₹1,242.41 | −₹1,097.85 | −₹2,737.10 |
+
+  - **CX** sold October 6's ticket at the failed break (14:18:10, 2.30). On
+    October 8 the break never failed while the ticket was held, so CX is C.
+    October 13's winner is untouched: the break never failed.
+  - **BR's cost is real:** on October 8 its call was stopped at 22.20
+    (15:23:20) three minutes before the same call bid 142 (BP's pair target).
+    A half-premium stop cuts dead legs and late whipsaw winners alike.
+- **BR's stops fill inside 15:15–15:40.** Fills there are labelled
+  AUCTION_WINDOW and are unverified, like B's own trails.
+- **A "buy only when cheap" gate on B was considered and rejected.** The ATM
+  straddle priced 3.17×, 1.68× and 2.32× the realized volatility at B's three
+  entries; at every 15-minute read it was above 1.2×. An IV ≤ RV gate would
+  never trade. That is no smarter than stopping B, which is the owner's call
+  under the 10-expiry rule.
+- **Promotion:** neither play replaces its primary automatically. At the
+  owner's 10-expiry review, the summary's paired line ("CX-C … to date") and
+  the per-play tally are the evidence. Any promotion becomes `expiry-v2` and
+  is scored only on later expiries.
+
+**Summary diagnostics added with v3** (from the audit's medium findings; no
+strategy effect):
+- **Path marks per entry:** "n of N held ticks marked" plus each unmarkable
+  leg's reason (`NO_BID`, `NO_ASK`, `THIN`, `STALE`, `NO_QUOTE`). Leg counts
+  overlap, so they are not a count of unmarked ticks. On the October 13 replay:
+  B 95 of 159 held ticks marked (22750CE NO_BID 64, 22700PE NO_BID 63); D 352
+  of 420 (22550PE NO_BID 68). These equal the audit's independent counts.
+- **Context fields:** how many ticks had each field. October 13: OK 966,
+  straddle/IV 903, realized 900, IV/RV 837, every OI quote fresh 966 (the
+  audit's counts).
+- **Paired line:** each shadow minus its primary, today and to date (C500
+  excluded, since its difference is size).
+- **Owner tally:** whole modeled rupees to date beside each play's
+  losing/traded count.
+
 ## October 8 audit corrections (Dev, no strategy change)
 
 - **Slot count (audit T5).** `EXPECTED_SLOTS` is 966 (12:59:00–15:39:50). The

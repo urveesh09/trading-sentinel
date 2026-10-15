@@ -175,7 +175,10 @@ def test_same_direction_nifty_and_sensex_are_overlap_suppressed_by_economics():
 
 
 @pytest.mark.asyncio
-async def test_no_holdings_market_card_persists_without_send_or_order(db_path):
+async def test_no_holdings_market_card_persists_without_send_or_order(db_path, monkeypatch):
+    from config import settings
+    # The legacy (non-buyer) card contract; buyer cards are in test_partner_buyer.
+    monkeypatch.setattr(settings, "PARTNER_BUYER_MESSAGES", False)
     profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     stored = await persist_candidate(db_path, _candidate(), profile, now=NOW)
@@ -294,6 +297,7 @@ async def test_material_economics_create_linked_generation_without_quote_time_ch
 @pytest.mark.asyncio
 async def test_market_condition_management_update_never_reads_partner_orders(db_path, monkeypatch):
     from config import settings
+    monkeypatch.setattr(settings, "PARTNER_BUYER_MESSAGES", False)   # legacy wording contract
     import aiosqlite
     import hedge_advisory
 
@@ -329,8 +333,10 @@ async def test_market_condition_management_update_never_reads_partner_orders(db_
 
 
 @pytest.mark.asyncio
-async def test_session_exit_reminder_and_next_day_retirement(db_path):
+async def test_session_exit_reminder_and_next_day_retirement(db_path, monkeypatch):
     import aiosqlite
+    from config import settings
+    monkeypatch.setattr(settings, "PARTNER_BUYER_MESSAGES", False)   # legacy wording contract
     profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     stored = await persist_candidate(db_path, _candidate(), profile, now=NOW)
