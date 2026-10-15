@@ -12,7 +12,7 @@
 
 
 
-## October 15 — second review R1/R2 (commit `COMMIT_ID`, Dev, pushed, not deployed)
+## October 15 — second review R1/R2 (commit `934aa2c`, Dev, pushed, not deployed)
 
 - [x] R1: EDGE cutoff checked before every candidate admission; an accepted
   fill is kept.

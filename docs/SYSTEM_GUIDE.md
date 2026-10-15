@@ -14,7 +14,7 @@
 
 
 
-## October 15 — second review R1/R2 (actual behavior, Dev, commit `COMMIT_ID`)
+## October 15 — second review R1/R2 (actual behavior, Dev, commit `934aa2c`)
 
 Review: `docs/2026-10-15-oct13-fixes-second-review.md` (on the F1–F5 tree).
 

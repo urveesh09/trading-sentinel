@@ -5,7 +5,7 @@
 
 
 
-## October 15 — second review R1/R2 (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
+## October 15 — second review R1/R2 (done, Dev, commit `934aa2c`, pushed, not deployed)
 
 - Problem:
   - R1: a slow first EDGE fill let a second admission happen at 15:16;
