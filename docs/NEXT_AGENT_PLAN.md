@@ -5,6 +5,51 @@
 
 
 
+## October 15 — expiry-v2 (C takes CX's exit), expiry-shadow-v4 and Oct 15 expiry-audit fixes (done, Dev, commit `XV4_COMMIT`, pushed, not deployed)
+
+- Problem:
+  - Owner order: "replace the main with shadow if it worked", and improve the
+    expiry section.
+  - Oct 15 audit: CX − C +₹2,018.54 on its first forward entry; B's whole
+    entry window had no data (DNS), and the whole-day tick count hid it.
+  - Paired lines could pair different entries. "B entry 15:13:30" read like a
+    trade.
+- Files: `python-engine/expiry_paper.py`; `tests/test_expiry_paper.py` (60
+  tests; CX test became the v2 C/CH test; paired test rewritten; 4 new);
+  `docs/2026-10-05-expiry-day-paper-book.md`.
+- Contracts:
+  - `RULES_VERSION = expiry-v2`; `SHADOW_VERSION = expiry-shadow-v4`;
+  - `SHADOW_PLAYS` replaces CX with CH; new `RETIRED_PLAYS = ("CX",)`;
+  - `STRUCTURE_PLAYS = A, AL, C, CX`; `PAIRED_WITH` gains `CH: C`;
+  - `ENTRY_WINDOWS`; day-state keys `window_ticks` and a mid-day `rules`
+    mark.
+  - No schema, config or store change.
+- Acceptance (met in Dev):
+  - C sells on the failed break, while CH and C500 hold;
+  - C's buy and sell lines reach Telegram; CH sends none;
+  - window counts show B 0 of 9 when B's quotes are missing;
+  - paired lines match per entry (unmatched and open entries are named);
+  - retired CX still prints;
+  - the replay of four retained expiries changes only C's rows, exactly to
+    CX's Production and replay results.
+- Rollout: merge and rebuild the engine before the next expiry (NIFTY
+  Oct 19 per the catalogue). Scoring of v2 starts with the first expiry after
+  the rebuild. A day begun before it is labelled "expiry-v1+expiry-v2 from
+  mid-day".
+- Rollback: revert the commit. C returns to v1 and CX to the shadows; stored
+  CH rows stay and print nothing.
+- Remaining:
+  - [ ] After deploy, on the first expiry: the header reads `rules
+    expiry-v2`; a C row exists beside a CH row with the same entry; the
+    summary shows "window ticks with a fresh index" and "CH-C … over n
+    entries".
+  - [ ] B is the weakest play (lost 3 of 3 traded). BP is the leading
+    replacement (in-sample −₹1,185.33 against B −₹3,461.61), but it has no
+    forward win. Promote only after BP − B is positive on later forward
+    expiries, by the same per-entry paired line.
+  - [ ] The Oct 15 B window was lost to DNS. Provider and DNS resilience is
+    outside the expiry module; the owner is handling the rest of the system.
+
 ## October 15 (evening) — Oct 15 audit fixes O15-N1/H1/M1/R1/B2/D1/D2 (done, Dev, commit `a6d820d`, pushed, not deployed)
 
 - Problem (Oct 15 audit, Production PR #109):
@@ -74,12 +119,12 @@
   - the replay of the three retained expiries reproduces Production rows (0
     mismatches), and the diagnostics equal the audit's counts.
 - Rollout: merge and rebuild the engine. Scoring starts at the first expiry
-  after deploy. Today's SENSEX expiry (Oct 15) runs the old code. A day
+  after deploy. It was deployed before the Oct 15 SENSEX expiry (audit: CX row, v3 state). A day
   begun before the rebuild is labelled "+expiry-shadow-v3 joined mid-day".
 - Rollback: revert the commit. Stored CX/BR rows stay in the store and
   print as plays; nothing reads them.
 - Remaining:
-  - [ ] After deploy, on the first expiry: CX and BR rows exist with their
+  - [x] (Oct 15 audit; BR had no entry, DNS outage) After deploy, on the first expiry: CX and BR rows exist with their
     primary's entry; the summary shows "held ticks marked", "available on
     ticks" and "paired with its primary".
   - [ ] At the owner's 10-expiry review: present CX−C and BR−B to date with

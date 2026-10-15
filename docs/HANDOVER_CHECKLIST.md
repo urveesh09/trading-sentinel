@@ -12,6 +12,25 @@
 
 
 
+## October 15 — expiry-v2 (C takes CX's failed-break exit) and expiry-shadow-v4 (commit `XV4_COMMIT`, Dev, pushed, not deployed)
+
+- [x] C (main) sells its ticket on A's failed break. CX's rule was never worse
+  than C on any of the 4 expiries (Oct 15 forward +₹2,018.54).
+- [x] CH (shadow) = v1's held C on the same entry; CX retired, its history
+  still prints.
+- [x] A, B, budgets, execution, context and the owner's 10-expiry rule are
+  unchanged. AL, BP and BR are not promoted (AL worse; BP/BR no forward
+  entry).
+- [x] Summary: per-window fresh-index counts (B 0 of 9 on Oct 15); paired
+  lines matched per entry; context "window" labels; each day's own rules in
+  the header.
+- [x] Replay of Production Oct 6/8/13/15 through Dev: only C's rows change,
+  exactly to CX's results; main book in-sample +₹7,836.98 (v1 +₹4,648.34),
+  still 3 losing expiries of 4. In-sample, not evidence of profit.
+- [x] Tests: `tests/test_expiry_paper.py` 60 pass; full engine suite
+  5,228 pass, 4 skip, 0 fail (8 min 7 s, on the shared working tree with a6d820d).
+- [ ] Deployed: no (merge, rebuild the engine before the next expiry).
+
 ## October 15 (evening) — Oct 15 audit fixes (commit `a6d820d`, Dev, pushed, not deployed)
 
 - [x] O15-N1 no-answer provider calls counted by kind; outages paged at

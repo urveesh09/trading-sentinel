@@ -14,6 +14,56 @@
 
 
 
+## October 15 — expiry-v2: C takes CX's failed-break exit; expiry-shadow-v4 and Oct 15 expiry-audit fixes (actual behavior, Dev, commit `XV4_COMMIT`)
+
+Audit: Production `docs/2026-10-15-expiry-system-deep-audit.md`. The owner
+ordered that a shadow which worked should replace its main play. Design, the
+per-shadow evidence table and honesty notes are in
+`docs/2026-10-05-expiry-day-paper-book.md`, section "expiry-v2". Execution
+(`expiry-exec-v2`), context (`expiry-context-v1.1`), A, B, the budgets and
+the owner's 10-expiry rule are unchanged.
+
+- **C (main, `RULES_VERSION = expiry-v2`).** C is now in `STRUCTURE_PLAYS`
+  (A, AL, C, CX). Its ticket is sold (`FAILED_BREAK`) when A's frozen
+  failed-break test fires; otherwise C's v1 entry, sizing, bank, trail and
+  15:38 flat apply. Why: CX − C was +₹1,170.10, ₹0, ₹0 on the seen Oct 6/8/13
+  replays and +₹2,018.54 on the first forward expiry (Oct 15). It was never
+  worse. C's buy notice says "sold if the break fails, else held into the
+  auction". Its failed-break sell is a main-book Telegram line.
+- **CH (shadow, `SHADOW_VERSION = expiry-shadow-v4`).** expiry-v1's C (held,
+  no failed-break exit), on C's entry, with `POLICIES["CH"] = POLICIES["C"]`.
+  CH − C keeps scoring the promotion. **CX** is in `RETIRED_PLAYS`: no new
+  entries, but its rows still print in the shadow section (when present), the
+  to-date line and the owner tally. Not promoted: AL (−₹4,914.29 against A on
+  Oct 13), BP and BR (no forward entry yet; Oct 15's outage emptied the B
+  window).
+- **Rules version per day.** `_load_state` marks a day begun under older rules
+  as "expiry-v1+expiry-v2 from mid-day", once. The summary header prints the
+  day's own rules (it used to print the module constant).
+- **Entry-window coverage.** `ENTRY_WINDOWS` (box 13:00–13:30, A/C
+  13:30–15:05, D 14:30–14:45, B 15:13:30–15:15). `_record_tick` keeps
+  `state["window_ticks"][name] = [fresh index, ticks]`. The summary prints
+  "window ticks with a fresh index: box n of N, A/C …, D …, B …" (absent on
+  older days).
+- **Paired comparisons bound per entry.** `paired_lines` groups legs by
+  (day, play, entry_ts). A shadow entry pairs only with the primary entry
+  with the same clock and the same legs (symbol, side, lots, entry price).
+  It prints "over n entries on m expiries", plus "k not the same entry" and
+  "k still open" when they occur. C500 stays excluded.
+- **Context labels.** `_moment` prints "D window 14:30:00, read …" and "B
+  window 15:13:30, read …"; the label never implies a trade.
+- **Verification.** A scratch replay of the four retained Production expiries
+  (Oct 6/8/13/15) through Dev produced:
+  - before the change, 0 row mismatches on all four days;
+  - after it, the only differences are C's rows. C now finishes as CX did:
+    −₹986.46 / −₹2,138.48 / +₹10,288.54 / −₹281.00, total +₹6,882.60.
+    CH reproduces v1 C: −₹2,156.56 / −₹2,138.48 / +₹10,288.54 / −₹2,299.54,
+    total +₹3,693.96. Oct 15 has no CX row (retired).
+  - main book, in-sample: +₹7,836.98 under v2 against +₹4,648.34 under v1.
+    Still 3 losing expiries of 4.
+  - the Oct 15 summary prints "B 0 of 9" and CH−C −₹2,018.54, in 2 parts of
+    3,416 and 1,145 UTF-16 units.
+
 ## October 15 (evening) — Oct 15 audit fixes: outage pages, unsent-retry, held restart page, historical gate (actual behavior, Dev, commit `a6d820d`)
 
 Audit: `Production_Trading-sentinel/docs/2026-10-15-production-deep-audit.md`
@@ -69,7 +119,7 @@ book and are not touched here.
   day is sent as "[Wed 14 Oct, delivered late] …"; the stored row is
   unchanged.
 
-## October 15 — expiry-shadow-v3 (CX, BR) and Oct 13 expiry-audit diagnostics (actual behavior, Dev, commit `db6e028`)
+## October 15 — expiry-shadow-v3 (CX, BR) and Oct 13 expiry-audit diagnostics (actual behavior, commit `db6e028`, deployed by PR #109)
 
 Audit: Production `docs/2026-10-13-expiry-system-deep-audit.md`. Design and
 honesty notes: `docs/2026-10-05-expiry-day-paper-book.md`, section

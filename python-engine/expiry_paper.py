@@ -21,8 +21,8 @@ B  Auction strangle: at 15:13:30-15:15 buy the strikes either side of spot and
    hold through the closing auction; a leg that doubles banks half and trails;
    sold from 15:38.
 C  Lottery ticket: on A's signal, the nearest strike priced 0.004%-0.03% of
-   spot in that direction, held into the auction; bank half at 3x, trail after
-   5x; sold from 15:38.
+   spot in that direction; sold on A's failed break (expiry-v2), else held
+   into the auction; bank half at 3x, trail after 5x; sold from 15:38.
 
 Loss ceiling: every entry is sized so that losing the whole premium plus its
 charges fits the play's remaining ``EXPIRY_PAPER_BUDGET`` for the day. Stops are
@@ -89,7 +89,13 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 IST = ZoneInfo("Asia/Kolkata")
-RULES_VERSION = "expiry-v1"             # strategy thresholds, frozen for forward comparison
+# Strategy thresholds, frozen for forward comparison. expiry-v2 (owner order,
+# 2026-10-15): C also sells its ticket on A's failed break, the rule shadow CX
+# ran. On every retained expiry CX finished at or above C on the same entry
+# (Oct 6 +Rs 1,170.10, Oct 8 and 13 equal, first forward Oct 15 +Rs 2,018.54);
+# only Oct 15 was scored forward, so v2 is scored on later expiries and the
+# old held C keeps running as shadow CH. A and B are unchanged from v1.
+RULES_VERSION = "expiry-v2"
 EXECUTION_VERSION = "expiry-exec-v2"    # clock/data/fill contract; v1 judged freshness at request start
 
 INDEX_QUOTE_KEYS = {"NIFTY": "NSE:NIFTY 50", "SENSEX": "BSE:SENSEX"}
@@ -156,11 +162,19 @@ EXERCISE_STT_PCT = 0.0015           # STT on the settlement value of an exercise
 #   BR    B whose each leg is sold once its bid has lost BR_LEG_STOP of the
 #         premium paid (a bought option's half-premium stop), recovering the
 #         dead leg while it still has bids. Otherwise B's exits.
-SHADOW_VERSION = "expiry-shadow-v3"
-MAIN_PLAYS, SHADOW_PLAYS = ("A", "B", "C"), ("BH", "C500", "D", "AL", "BP", "CX", "BR")
+#
+# expiry-shadow-v4 goes with expiry-v2 (2026-10-15): CX's rule is now C's, so
+# CX is retired (its rows stay and print in the to-date lines), and
+#   CH    expiry-v1's C: the same ticket held into the auction, with no
+#         failed-break exit, so the promotion keeps being scored on a paired
+#         entry (CH - C positive means holding would have done better).
+# C500 keeps the held v1 rule; its difference from CH is size.
+SHADOW_VERSION = "expiry-shadow-v4"
+MAIN_PLAYS, SHADOW_PLAYS = ("A", "B", "C"), ("BH", "C500", "D", "AL", "BP", "BR", "CH")
+RETIRED_PLAYS = ("CX",)                     # no new entries; their history still prints
 # Each shadow and the primary whose entry it shares: their difference is paired.
-PAIRED_WITH = {"AL": "A", "BH": "B", "BP": "B", "BR": "B", "CX": "C"}
-STRUCTURE_PLAYS = ("A", "AL", "CX")         # plays that close on A's failed break
+PAIRED_WITH = {"AL": "A", "BH": "B", "BP": "B", "BR": "B", "CH": "C", "CX": "C"}
+STRUCTURE_PLAYS = ("A", "AL", "C", "CX")    # plays that close on A's failed break
 AL_LOCK_GAIN = 0.5                  # fraction of the peak gain a banked one-lot AL keeps
 BP_TARGET = 0.20                    # pair liquidation net, as a fraction of the premium paid
 BR_LEG_STOP = 0.50                  # a BR leg is sold once its bid is down this share of its entry
@@ -189,6 +203,11 @@ TRADING_YEAR_SEC = 252 * 375 * 60
 RV_SAMPLE_SEC = 60.0                # index returns sampled at least a minute apart (less tick noise)
 RV_MIN_SEC = 600.0                  # realized volatility needs ten minutes of samples
 CONTEXT_MOMENTS = {"d_entry": D_ENTRY_START, "b_entry": B_ENTRY_START}
+# Each decision window and its clock: the summary counts the ticks inside it
+# that had a fresh index. On Oct 15 a DNS outage emptied all nine B ticks; the
+# whole-day tick count (963 of 966) did not show that B never had a chance.
+ENTRY_WINDOWS = (("box", BOX_START, BOX_END), ("A/C", BOX_END, A_ENTRY_END),
+                 ("D", D_ENTRY_START, D_ENTRY_END), ("B", B_ENTRY_START, B_ENTRY_END))
 
 # The owner's decision rule, set on 2026-10-08 after two losing expiries
 # (October 6 NIFTY, October 8 SENSEX): observe up to OWNER_REVIEW_EXPIRIES
@@ -225,6 +244,7 @@ POLICIES["AL"] = replace(POLICIES["A"], lock_gain=AL_LOCK_GAIN)
 POLICIES["BP"] = POLICIES["BH"]                 # its exits are the pair's (see _pair_target)
 POLICIES["CX"] = POLICIES["C"]                  # plus A's failed break (STRUCTURE_PLAYS)
 POLICIES["BR"] = replace(POLICIES["B"], hard_stop=BR_LEG_STOP)
+POLICIES["CH"] = POLICIES["C"]                  # without the failed break: expiry-v1's C
 
 _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS expiry_paper_positions (
@@ -1056,7 +1076,7 @@ def _context_text(ctx: dict) -> str:
 
 def _moment(name: str, at: time, ctx: Optional[dict]) -> str:
     """A snapshot's label with the time it was actually read (the first tick at or after ``at``)."""
-    label = f"{name.split('_')[0].upper()} entry {at:%H:%M:%S}"
+    label = f"{name.split('_')[0].upper()} window {at:%H:%M:%S}"     # a window, not proof of an entry
     return f"{label}, read {datetime.fromisoformat(ctx['ts']):%H:%M:%S}" if ctx else label
 
 
@@ -1178,6 +1198,9 @@ def _load_state(conn, day: str, underlying: str) -> dict:
     if row is None:
         return new_day_state()
     state = json.loads(row["state"])
+    rules = state.setdefault("rules", "expiry-v1")
+    if RULES_VERSION not in rules:                      # a day begun under older rules
+        state["rules"] = f"{rules}+{RULES_VERSION} from mid-day"
     contract = state.get("execution", "expiry-exec-v1")
     if not contract.endswith(EXECUTION_VERSION):        # a day begun under an older contract
         state["execution"] = f"{contract}+{EXECUTION_VERSION}"
@@ -1246,6 +1269,12 @@ def _record_tick(conn, state: dict, day: str, underlying: str, started: datetime
                  spot: Optional[float], fut: Optional[float], payload: dict) -> None:
     """Count the tick and its data quality in the day state and store its full packet."""
     state["ticks"] = state.get("ticks", 0) + 1
+    windows = state.setdefault("window_ticks", {})
+    for name, start, end in ENTRY_WINDOWS:
+        if start <= now.time() < end:
+            seen = windows.setdefault(name, [0, 0])
+            seen[0] += spot is not None
+            seen[1] += 1
     for name, value, observation in (("spot", spot, payload["index"]), ("fut", fut, payload["future"])):
         if value is None:
             state[f"stale_{name}"] = state.get(f"stale_{name}", 0) + 1
@@ -1424,7 +1453,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
                 break
             if reason:
                 _bump(state, "refusals", f"{play}:{reason}")
-        for play, ceiling in (("C", budget), ("C500", C500_BUDGET), ("CX", budget)):
+        for play, ceiling in (("C", budget), ("C500", C500_BUDGET), ("CH", budget)):
             if state["trades"][play] >= 1:
                 continue
             strike = pick_lottery_strike(quoted_chain, direction, spot, now)
@@ -1435,7 +1464,9 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
             lots, prices = affordable_fill([(quote, contract.lot_size)], ceiling, C_MAX_LOTS, schedule)
             if lots:
                 pos = open_position(play, contract, prices[0], lots)
-                notify(pos, _buy_text(pos, f"lottery {direction}, held into the auction"))
+                plan = "sold if the break fails, else held into the auction" if play in STRUCTURE_PLAYS \
+                    else "held into the auction"
+                notify(pos, _buy_text(pos, f"lottery {direction}, {plan}"))
             else:
                 _bump(state, "refusals", f"{play}:DEPTH_OR_BUDGET")
 
@@ -1524,24 +1555,48 @@ def _path_text(mark: dict, clock: Callable[[str], str]) -> str:
 def paired_lines(conn, day: str, underlying: str) -> list[str]:
     """Each shadow minus the primary whose entry it shares, today and over this underlying's expiries.
 
-    Both sides are whole modeled (filled + assumed) after their own fees; an
-    expiry counts only when both traded, so a difference is the exits' (or
-    the ceiling's) doing on one market path. C500 is excluded: its ceiling
-    changes the quantity, so its difference is size, not management.
+    Pairs are bound entry by entry: a shadow entry counts only beside the
+    primary entry with the same clock and the same legs (contract, side,
+    lots, entry price), so the difference is the exits' doing on one market
+    path. Both sides are whole modeled (filled + assumed) after their own
+    fees. A shadow entry with no identical primary entry is counted as
+    unmatched, and an entry with an open leg waits until it is finished
+    (Oct 15 audit: day totals alone could pair different trades). C500 is
+    excluded: its ceiling changes the quantity, so its difference is size.
     """
-    whole: dict[tuple[str, str], float] = {}
-    for d, play, value in conn.execute(
-            "SELECT day, play, SUM(net_pnl + COALESCE(assumed_pnl, 0)) FROM expiry_paper_positions "
-            "WHERE underlying=? AND day <= ? AND status != 'OPEN' GROUP BY day, play", (underlying, day)):
-        whole[(d, play)] = value
+    entries: dict[tuple[str, str, str], dict] = {}
+    for row in conn.execute(
+            "SELECT day, play, entry_ts, symbol, side, lots, entry_price, status, "
+            "net_pnl + COALESCE(assumed_pnl, 0) FROM expiry_paper_positions WHERE underlying=? AND day <= ?",
+            (underlying, day)):
+        d, play, entry_ts, symbol, side, lots, price, status, value = tuple(row)
+        entry = entries.setdefault((d, play, entry_ts), {"legs": [], "whole": 0.0, "open": False})
+        entry["legs"].append((symbol, side, lots, round(price, 4)))
+        entry["whole"] += value
+        entry["open"] |= status == "OPEN"
     parts = []
     for shadow, primary in PAIRED_WITH.items():
-        days = [d for d, p in whole if p == shadow and (d, primary) in whole]
-        if not days:
+        diffs, unmatched, waiting = [], 0, 0
+        for (d, play, entry_ts), entry in sorted(entries.items()):
+            if play != shadow:
+                continue
+            twin = entries.get((d, primary, entry_ts))
+            if twin is None or sorted(twin["legs"]) != sorted(entry["legs"]):
+                unmatched += 1
+            elif entry["open"] or twin["open"]:
+                waiting += 1
+            else:
+                diffs.append((d, entry["whole"] - twin["whole"]))
+        if not (diffs or unmatched or waiting):
             continue
-        total = sum(whole[(d, shadow)] - whole[(d, primary)] for d in days)
-        today = f"today Rs {whole[(day, shadow)] - whole[(day, primary)]:+,.2f}, " if day in days else ""
-        parts.append(f"{shadow}-{primary} {today}to date Rs {total:+,.2f} over {len(days)}")
+        today = [v for d, v in diffs if d == day]
+        text = f"{shadow}-{primary} " + (f"today Rs {sum(today):+,.2f}, " if today else "")
+        text += (f"to date Rs {sum(v for _, v in diffs):+,.2f} over {len(diffs)} "
+                 f"entr{'y' if len(diffs) == 1 else 'ies'} on {len({d for d, _ in diffs})} expir"
+                 f"{'y' if len({d for d, _ in diffs}) == 1 else 'ies'}")
+        text += f", {unmatched} not the same entry" if unmatched else ""
+        text += f", {waiting} still open" if waiting else ""
+        parts.append(text)
     if not parts:
         return []
     return ["  paired with its primary (same entry, own exits; positive = the shadow did better): "
@@ -1555,7 +1610,7 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
     unfilled legs, never fills, so they are always shown beside it.
     """
     index_why = ", ".join(f"{k} {v}" for k, v in sorted(state.get("spot_refusals", {}).items()))
-    lines = [f"Expiry paper {underlying} {day} (rules {RULES_VERSION}, execution "
+    lines = [f"Expiry paper {underlying} {day} (rules {state.get('rules', 'expiry-v1')}, execution "
              f"{state.get('execution', 'expiry-exec-v1')}), box {state['box_status']}, "
              f"signals {len(state['signals'])}",
              f"  data: ticks {state.get('ticks', 0)} of {EXPECTED_SLOTS} slots, max gap "
@@ -1564,6 +1619,11 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
              f"after start, index refused {state.get('stale_spot', 0)}"
              + (f" ({index_why})" if index_why else "")
              + f", future refused {state.get('stale_fut', 0)}"]
+    windows = state.get("window_ticks")
+    if windows is not None:                     # absent on days recorded before it was counted
+        lines.append("  window ticks with a fresh index: " + ", ".join(
+            f"{name} {windows.get(name, [0, 0])[0]} of {windows.get(name, [0, 0])[1]}"
+            for name, _, _ in ENTRY_WINDOWS))
     lines += context_lines(state, _settlement_spot(conn, day, underlying))
     lines.append("  path per entry: best and worst net if sold on the visible depth at a tick, after all fees "
                  "(marks, not fills); finished = filled + assumed")
@@ -1580,6 +1640,8 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
                                 (day, underlying, play)).fetchall()
             why = ", ".join(f"{k.split(':', 1)[1]} {v}" for k, v in sorted(refusals.items())
                             if k.startswith(f"{play}:"))
+            if not rows and play in RETIRED_PLAYS:
+                continue
             if not rows:
                 lines.append(f"  {play}: no trade" + (f" (refused: {why})" if why else ""))
                 continue
@@ -1611,13 +1673,13 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
     lines.append(f"  day: filled net Rs {day_filled:+,.2f} + assumed Rs {day_assumed:+,.2f} = whole modeled "
                  f"Rs {day_filled + day_assumed:+,.2f} (fees Rs {day_fees:,.2f})")
     lines.append(f"  shadow plays ({state.get('shadow', SHADOW_VERSION)}, frozen, no Telegram trades):")
-    section(SHADOW_PLAYS)
+    section(SHADOW_PLAYS + RETIRED_PLAYS)
     lines += paired_lines(conn, day, underlying)
     totals = conn.execute(
         "SELECT play, COALESCE(SUM(net_pnl), 0), COALESCE(SUM(assumed_pnl), 0) FROM expiry_paper_positions "
         "WHERE underlying=? AND status != 'OPEN' GROUP BY play", (underlying,)).fetchall()
     main = [r for r in totals if r[0] in MAIN_PLAYS]
-    shadow = [r for r in totals if r[0] in SHADOW_PLAYS]
+    shadow = [r for r in totals if r[0] in SHADOW_PLAYS + RETIRED_PLAYS]
     expiries = conn.execute("SELECT COUNT(*) FROM expiry_paper_days WHERE underlying=?", (underlying,)).fetchone()[0]
     if main:
         lines.append(f"  {underlying} to date over {expiries} expiries, filled: " + ", ".join(
@@ -1653,7 +1715,7 @@ def owner_rule_lines(conn, through: str) -> list[str]:
             break
         streak += 1
     per_play = []
-    for play in MAIN_PLAYS + SHADOW_PLAYS:
+    for play in MAIN_PLAYS + SHADOW_PLAYS + RETIRED_PLAYS:
         traded = [value for (_, _, p), value in whole.items() if p == play]
         if traded:
             per_play.append(f"{play} {sum(value < 0 for value in traded)}/{len(traded)} "
