@@ -358,8 +358,9 @@ def _with_entry_baselines(fields: dict) -> dict:
     if fields.get("risk_fee_reserve_rupees") is None:
         entry, qty = fields.get("entry_premium"), fields.get("qty")
         if isinstance(entry, (int, float)) and isinstance(qty, int) and entry > 0 and qty > 0:
-            from fno_costs import calc_fno_costs
-            fields["risk_fee_reserve_rupees"] = calc_fno_costs(float(entry), 0.0, qty)
+            from fno_costs import calc_fno_costs, options_exchange_for
+            fields["risk_fee_reserve_rupees"] = calc_fno_costs(
+                float(entry), 0.0, qty, exchange=options_exchange_for(fields.get("underlying") or "NIFTY"))
     return fields
 
 

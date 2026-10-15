@@ -65,6 +65,8 @@ MAX_ENTRY_DRIFT_PCT = 0.02
 # API) instead of MARKET orders (which it rejects without market protection).
 STOP_LIMIT_SLIP_PCT = 0.01
 UNWIND_LIMIT_SLIP_PCT = 0.01
+# Paper exits fill at the live unwind's protected-limit boundary, ref x (1 - slip), tick-floored.
+PAPER_EXIT_FILL_MODEL = "PAPER_LIMIT_FLOOR_V1"
 
 
 # [RETRY-STORM 2026-07-31] Per-ticker entry circuit breaker.
@@ -833,6 +835,14 @@ class PennyExecutor:
                 order_id=f"PAPER-EXIT-{digest}",
                 confirmed_qty=quantity,
                 fill_price=fill,
+                # [O13-P1 2026-10-15] Provenance: the observed price and the
+                # model's fixed decrement, so a large negative R can be split
+                # into market move and paper penalty (Oct 13 UNITEDPOLY: stop
+                # 51.65, LTP 51.49, fill 50.97 = 0.16 market + 0.52 model).
+                reference_price=ref,
+                fill_model=PAPER_EXIT_FILL_MODEL,
+                slip_pct=UNWIND_LIMIT_SLIP_PCT,
+                model_decrement_per_share=round(ref - fill, 4),
             )
             return result
 

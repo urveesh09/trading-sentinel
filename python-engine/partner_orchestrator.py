@@ -330,6 +330,7 @@ async def _todays_card_outcomes(db_path: str, underlying: str, day_iso: str,
                       "outcome": outcome, "signal_at": payload.get("signal_at"),
                       "event": event[0] if event else None,
                       "event_time": str(event[1])[11:16] if event else None,
+                      "event_at": str(event[1]) if event else None,
                       "buyer_view": payload.get("buyer_view")})
     if counts is not None:
         counts.update(record)
@@ -1195,16 +1196,59 @@ async def partner_manual_advisory_lifecycle_tick(now: Optional[datetime] = None)
 # job: analytics tick (wide chain -> OI store -> events)
 # ---------------------------------------------------------------------------
 
-async def _pulse_count_today(db_path: str, name: str, day_iso: str) -> int:
+# [O13-B2 2026-10-15] A failed pulse reached no one, so it must not use up
+# the daily cap or the 30-minute gap: it is retried after a short backoff,
+# with a daily bound on failed attempts so a gateway outage cannot loop.
+PULSE_RETRY_MIN = 5
+PULSE_MAX_FAILED_ATTEMPTS = 12
+
+
+async def _pulse_state(db_path: str, name: str, day_iso: str) -> dict:
+    """Today's flow-pulse record for one index: delivered ``count``,
+    ``failed`` attempts, ``last_delivered_at`` and the last attempt's
+    clock/outcome. Empty counters on a new day."""
     async with _partner_db(db_path) as db:
         row = await (await db.execute(
-            "SELECT detail FROM partner_messages WHERE kind='flow_pulse' AND dedup_key=?", (name,),
+            "SELECT detail, sent_at, delivered FROM partner_messages WHERE kind='flow_pulse' AND dedup_key=?",
+            (name,),
         )).fetchone()
     try:
         detail = json.loads(row[0]) if row and row[0] else {}
     except (TypeError, json.JSONDecodeError):
         detail = {}
-    return int(detail.get("count", 0)) if detail.get("day") == day_iso else 0
+    if detail.get("day") != day_iso:
+        return {"count": 0, "failed": 0, "last_delivered_at": None, "last_attempt_at": None, "last_ok": None}
+    return {
+        "count": int(detail.get("count", 0)),
+        "failed": int(detail.get("failed", 0)),
+        # Rows written before O13-B2 stored only a count: their last attempt
+        # clock stands in for the last delivery, as the old throttle did.
+        "last_delivered_at": detail.get("last_delivered_at", row[1] if row else None),
+        "last_attempt_at": row[1] if row else None,
+        "last_ok": bool(row[2]) if row else None,
+    }
+
+
+async def _pulse_count_today(db_path: str, name: str, day_iso: str) -> int:
+    """Delivered pulses today (failed attempts are not counted)."""
+    return (await _pulse_state(db_path, name, day_iso))["count"]
+
+
+def _pulse_blocked(state: dict, now: datetime) -> bool:
+    if state["count"] >= settings.PARTNER_FLOW_PULSE_DAILY_CAP or state["failed"] >= PULSE_MAX_FAILED_ATTEMPTS:
+        return True
+
+    def since(stamp) -> Optional[timedelta]:
+        try:
+            return now.replace(tzinfo=None) - datetime.strptime(str(stamp), "%Y-%m-%d %H:%M:%S")
+        except (TypeError, ValueError):
+            return None
+
+    delivered_ago = since(state["last_delivered_at"]) if state["last_delivered_at"] else None
+    if delivered_ago is not None and delivered_ago < timedelta(minutes=settings.PARTNER_EVENT_MIN_GAP_MIN):
+        return True
+    attempt_ago = since(state["last_attempt_at"]) if state["last_ok"] is False else None
+    return attempt_ago is not None and attempt_ago < timedelta(minutes=PULSE_RETRY_MIN)
 
 
 async def _buyer_flow_pulse(spec, snap, pcr: Optional[float], iv: Optional[float],
@@ -1285,16 +1329,20 @@ async def _buyer_flow_pulse(spec, snap, pcr: Optional[float], iv: Optional[float
         return
     if buildup != "NEUTRAL":
         facts.append(f"futures {buildup.replace('_', ' ').lower()}")
-    if await _throttled(settings.DB_PATH, "flow_pulse", name, now) or (
-            await _pulse_count_today(settings.DB_PATH, name, day_iso) >= settings.PARTNER_FLOW_PULSE_DAILY_CAP):
+    state = await _pulse_state(settings.DB_PATH, name, day_iso)
+    if _pulse_blocked(state, now):
         metrics["throttled"] = metrics.get("throttled", 0) + 1
         return
     offset = fut_to_index_offset(snap, now)
     price = f"≈{snap.forward - offset:,.0f}" if offset is not None else f"fut {snap.forward:,.0f}"
     text = render_flow_pulse(name, now.strftime("%H:%M"), lean, price, facts)
     ok = await send_partner(text, kind="flow_pulse")
-    count = await _pulse_count_today(settings.DB_PATH, name, day_iso) + 1
-    await _record(settings.DB_PATH, "flow_pulse", name, ok, detail={"day": day_iso, "count": count}, now=now)
+    stamp = now.strftime("%Y-%m-%d %H:%M:%S")
+    await _record(settings.DB_PATH, "flow_pulse", name, ok, detail={
+        "day": day_iso, "count": state["count"] + (1 if ok else 0),
+        "failed": state["failed"] + (0 if ok else 1),
+        "last_delivered_at": stamp if ok else state["last_delivered_at"],
+    }, now=now)
     metrics["sent" if ok else "send_failed"] = metrics.get("sent" if ok else "send_failed", 0) + 1
     if not ok:
         return
@@ -1884,7 +1932,14 @@ async def _buyer_card_outcome(name: str, day_iso: str, card: dict) -> dict:
     elif card.get("event") == "INVALIDATION":
         outcome = f"🛑 stopped {card['event_time']}"
     else:
-        outcome = "no level hit"
+        # 5-minute samples cannot prove a level was never touched (O13-B4).
+        outcome = "no level seen (5-min samples)"
+    stopped_at = None
+    if card.get("event") == "INVALIDATION" and card.get("event_at"):
+        try:
+            stopped_at = datetime.fromisoformat(str(card["event_at"])).astimezone(IST).strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            stopped_at = None
     premium = ""
     if view.get("strike") and view.get("ask") and card.get("signal_at"):
         try:
@@ -1892,7 +1947,7 @@ async def _buyer_card_outcome(name: str, day_iso: str, card: dict) -> dict:
             series = await fno_oi_store.strike_ltp_series(
                 settings.DB_PATH, name, day_iso, str(view["expiry"]), float(view["strike"]),
                 str(view["opt_type"]), from_ts=start)
-            premium = premium_path(float(view["ask"]), series)
+            premium = premium_path(float(view["ask"]), series, stopped_at=stopped_at)
         except (ValueError, TypeError, aiosqlite.Error) as exc:
             logger.warning("partner_buyer_premium_path_failed underlying=%s err=%s", name, type(exc).__name__)
     return {"time": card.get("time", ""), "option": option, "outcome": outcome, "premium": premium}

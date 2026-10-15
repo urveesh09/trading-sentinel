@@ -32,6 +32,8 @@ IST = ZoneInfo("Asia/Kolkata")
 REPORT_FORMAT = "partner_delivery_blocker_report_v1"
 QUALIFIED_EVIDENCE = "QUALIFIED_FOR_ADVISORY"
 DELIVERED_STATUS = "DELIVERED_ACKNOWLEDGED"
+# Statuses an idea reaches only after its card was delivered (O13-B1).
+DELIVERED_STATUSES = frozenset({DELIVERED_STATUS, "CLOSED_INVALIDATED", "RETIRED_SESSION_END"})
 _STATUS_BLOCKERS = {
     "VALIDATED_SHADOW": None,  # explained by evidence/qualification/delivery reasons
     "REJECTED": None,  # explained by validation reasons
@@ -96,7 +98,7 @@ def candidate_blockers(row: Mapping[str, Any]) -> Dict[str, Any]:
     blockers: List[str] = []
     validation = [str(reason) for reason in payload.get("validation_reasons") or []]
     blockers.extend(f"VALIDATION:{reason}" for reason in validation)
-    if status != DELIVERED_STATUS:
+    if status not in DELIVERED_STATUSES:
         if evidence != QUALIFIED_EVIDENCE:
             blockers.append(f"EVIDENCE:{evidence or 'MISSING'}")
         if not payload.get("qualification_registry_match"):
@@ -111,7 +113,7 @@ def candidate_blockers(row: Mapping[str, Any]) -> Dict[str, Any]:
             # A non-delivered idea without any retained reason is itself a finding.
             blockers.append("UNEXPLAINED_NOT_DELIVERED")
     return {
-        "delivered": status == DELIVERED_STATUS,
+        "delivered": status in DELIVERED_STATUSES,
         "primary_blocker": blockers[0] if blockers else None,
         "blockers": blockers,
         "status": status,

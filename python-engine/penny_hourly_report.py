@@ -132,7 +132,25 @@ class PennyHourlyReport:
                     entries.append({
                         "ticker": ticker, "leg": leg, "close": close,
                         "stop_loss": sl, "target_1": t1, "shares": shares,
+                        "fill": None,
                     })
+            if entries:
+                # [O13 2026-10-15] Show the paper fill, not the signal bar's
+                # close: Oct 13 reported UNITEDPOLY "@ 52.92" while the
+                # position was filled at 51.92.
+                async with aiosqlite.connect(self.db_path) as db:
+                    for entry in entries:
+                        try:
+                            async with db.execute(
+                                "SELECT entry_price FROM positions WHERE ticker=? AND entry_date>=? "
+                                "AND entry_date<=? ORDER BY entry_date DESC LIMIT 1",
+                                (entry["ticker"], hour_start, query_now),
+                            ) as cur:
+                                found = await cur.fetchone()
+                        except aiosqlite.Error:
+                            found = None
+                        if found and found[0]:
+                            entry["fill"] = float(found[0])
         except Exception as e:
             logger.error("penny_hourly_query_failed error=%s", str(e))
 
@@ -161,8 +179,11 @@ class PennyHourlyReport:
         if entries:
             lines.append(f"Entries ({len(entries)}):")
             for e in entries[:5]:
+                price = (f"@ {e['fill']:.2f} (signal {e['close']:.2f})"
+                         if e.get("fill") and abs(e["fill"] - e["close"]) >= 0.005
+                         else f"@ {(e.get('fill') or e['close']):.2f}")
                 lines.append(
-                    f"  {e['ticker']} {e['leg']} x{e['shares']} @ {e['close']:.2f} "
+                    f"  {e['ticker']} {e['leg']} x{e['shares']} {price} "
                     f"sl={e['stop_loss']:.2f} t1={e['target_1']:.2f}"
                 )
 

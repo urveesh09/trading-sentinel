@@ -5,6 +5,73 @@
 
 
 
+## October 13 — Oct 13 audit fixes O13-B1/B2/B3/B4/Q1/Q2/R1/P1 (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
+
+- Problem (Production audit of the clean Oct 13 run, PR #108; expiry
+  excluded):
+  - buyer ideas got "Book profit" after "EXIT … Idea closed";
+  - one quote over-limit came from a late batch task;
+  - a dispatcher cancelled during admission stranded callers;
+  - failed pulses used up the cap;
+  - SENSEX was charged NSE option fees;
+  - the wrap said "no level hit";
+  - Penny Avg R read 0.0 and the hourly report showed the signal price;
+  - a 94-minute market gap had no cause on record.
+- Files:
+  - `partner_manual_advisory.py`, `hedge_advisory.py`,
+    `partner_delivery_blockers.py`, `partner_buyer.py`,
+    `partner_orchestrator.py`;
+  - `kite_client.py`;
+  - `fno_costs.py`, `fno_orchestrator.py`, `fno_positions.py`,
+    `fno_shadow.py`;
+  - `lifecycle_receipts.py` (new), `main.py`, `ops_watchdogs.py`,
+    `scheduler_setup.py` (EDGE catch-up);
+  - `penny_daily_attribution.py`, `penny_hourly_report.py`,
+    `penny_executor.py`;
+  - tests: `tests/test_oct13_audit_fixes.py` (32 new) plus updates to
+    `test_partner_buyer.py`, `test_partner_manual_advisory.py` and
+    `test_scheduler_tick.py`.
+- Acceptance (met in Dev tests):
+  - after a stop: no target, reminder or authorizer pass, while the stop
+    itself still sends;
+  - pre-change rows are closed on the next pass;
+  - the delayed-task probe keeps sends ≥ 1/rate apart; every numeric and
+    keyed attempt goes through the gate;
+  - a cancelled dispatcher releases queued callers;
+  - six failed pulses leave the success cap intact;
+  - BFO fees match the audit's same-fill figures;
+  - Penny R = −3.72 and the hourly report shows "@ 51.92 (signal 52.92)";
+  - restart receipts tell host sleep, stall and VM restart apart;
+  - the EDGE catch-up waits for the token and runs at most once a day.
+- Rollout: merge, rebuild the engine. No schema change: the new idea status
+  is a TEXT value, and pulse detail is JSON. A new file,
+  `lifecycle_events.jsonl`, is bounded to about 2,000 lines.
+- Rollback: revert the commit. Ideas already `CLOSED_INVALIDATED` stay
+  terminal, which is safe.
+- Remaining:
+  - [ ] After deploy:
+    - no `TARGET_ZONE` or `SESSION_EXIT_REMINDER` after an `INVALIDATION`
+      for the same `advisory_id`;
+    - `/ops/provider-budget` quote `over_documented_limit` 0;
+    - `send_gate_waits` small;
+    - the restart receipt line `lifecycle_startup_receipt` at boot.
+  - [ ] Ops: if a market-hours restart page fires, use the cause field plus
+    host logs (Windows sleep and power settings) to stop it recurring.
+    Oct 13's gap fits host sleep (container restarted at 11:40:05 after
+    no output since 10:05).
+  - [ ] Research collection whole-job p95 rose to 22 s (from 7.5 s) on an
+    expiry day with held positions. It is under its 55 s misfire window;
+    watch it after deploy, and do not move it to bulk (see
+    `kite-provider-lanes`).
+  - [ ] Data: deploy `/data/nifty500.csv` and the curated
+    `penny_company_data.json`. The in-code universe still lists renamed
+    names.
+  - [ ] Option (needs a frozen comparison): a Penny paper exit at the
+    visible bid walk instead of a 1 % fixed decrement.
+  - [ ] Classic Penny positions close as `CLOSED_TIME` even on a stop
+    (`main.py` settle path). This is a label only, since the ledger notes
+    hold the true reason; change it only with consumers checked.
+
 ## October 12 (night) — O12-PB2 card numbers verified on Production data (done, Dev, commit `feed23e`, pushed, not deployed)
 
 - Problem: the partner trades real money, so each number on the card must

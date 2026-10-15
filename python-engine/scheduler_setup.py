@@ -604,6 +604,7 @@ def register_penny_scheduler_jobs(scheduler):
             return
         try:
             summary = await run_penny_edge_scan(_main.kite)
+            _mark_edge_scan_done(today)
             try:
                 msg = format_telegram(summary, header="Penny Edge scan")
                 async with _httpx.AsyncClient() as _client:
@@ -617,6 +618,44 @@ def register_penny_scheduler_jobs(scheduler):
                 logger.warning("penny_edge_notify_failed err=%s", notify_exc)
         except Exception as exc:
             logger.error("penny_edge_scan_failed err=%s", exc, exc_info=True)
+
+    def _edge_scan_state_path() -> str:
+        import os as _os
+        return _os.path.join(_os.path.dirname(settings.DB_PATH) or ".", "penny_edge_scan_state.json")
+
+    def _mark_edge_scan_done(day) -> None:
+        import json as _json
+        try:
+            with open(_edge_scan_state_path(), "w", encoding="utf-8") as fh:
+                _json.dump({"date": day.isoformat()}, fh)
+        except OSError as exc:
+            logger.warning("penny_edge_scan_state_write_failed err=%s", exc)
+
+    def _edge_scan_done_today(day) -> bool:
+        import json as _json
+        try:
+            with open(_edge_scan_state_path(), encoding="utf-8") as fh:
+                return _json.load(fh).get("date") == day.isoformat()
+        except (OSError, ValueError, AttributeError):
+            return False
+
+    async def _run_penny_edge_scan_catchup(max_wait_sec: float = 600.0, poll_sec: float = 10.0):
+        """[O13 2026-10-15] Startup catch-up for a missed 09:30 EDGE scan.
+
+        Jobs register before the same-day token is restored, so the Oct 13
+        11:40 catch-up skipped with ``no_access_token``. Wait (bounded) for
+        the token, and do nothing when today's scan already completed, so a
+        midday restart does not repeat the morning scan and its message.
+        """
+        today = datetime.now(IST).date()
+        if _edge_scan_done_today(today):
+            logger.info("penny_edge_scan_catchup_skip reason=already_ran_today")
+            return
+        waited = 0.0
+        while not _main.kite.access_token and waited < max_wait_sec:
+            await asyncio.sleep(poll_sec)
+            waited += poll_sec
+        await _run_penny_edge_scan_safe()
 
     # [PENNY-EDGE-CRON-GUARD 2026-07-01] Single-instance + coalesce.
     # Rule 39 (trading-sentinel-ops): any cron sharing the scheduler
@@ -688,7 +727,7 @@ def register_penny_scheduler_jobs(scheduler):
                     "reason=no_running_event_loop"
                 )
             else:
-                _startup_loop.create_task(_run_penny_edge_scan_safe())
+                _startup_loop.create_task(_run_penny_edge_scan_catchup())
         elif _now_ist >= _today_1515:
             logger.warning(
                 "penny_edge_scan_startup_skipped "

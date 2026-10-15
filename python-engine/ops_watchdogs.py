@@ -94,6 +94,7 @@ async def _scheduler_tick_job(*, recover_previous: bool = False):
     import os as _os
     previous_wall_gap = None
     recovered_previous = False
+    prior = None
     now_epoch = time.time()
     path = _scheduler_tick_path()
     tick_count = int(_scheduler_tick_state.get("count", 0)) + 1
@@ -151,6 +152,9 @@ async def _scheduler_tick_job(*, recover_previous: bool = False):
     return {
         "recovered_previous": recovered_previous,
         "prior_gap_seconds": previous_wall_gap,
+        # [O13-R1] the prior heartbeat as read, for the lifecycle receipt.
+        "prior": prior if recover_previous else None,
+        "boot_id": boot_id,
     }
 
 

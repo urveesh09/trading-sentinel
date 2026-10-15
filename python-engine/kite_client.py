@@ -411,6 +411,19 @@ class QuoteBudget:
       oldest lower-lane request leads the next batch;
     * in-flight batches are tracked, and a cancelled batch hands every
       waiting caller ``QuoteBatchCancelled`` instead of leaving it hanging.
+
+    [O13-Q1 2026-10-15] Spacing is enforced at the send itself.
+    ``before_send`` runs on the same path as the endpoint counter and the
+    HTTP call, with nothing awaited between them, for every attempt (merged
+    batches, retries and instrument-keyed calls). Admission alone could not
+    guarantee it: the batch runs as a new task, and an event-loop stall
+    between admission and that task let two sends go out ~2 ms apart (Oct 13:
+    one over-limit quote call after the 11:40 restart, two in the morning
+    process). Admission also waits for the last real send.
+
+    [O13-Q2 2026-10-15] A dispatcher that is cancelled or fails while
+    waiting for admission hands every queued caller the outcome
+    (``QuoteBatchCancelled`` or the error) instead of leaving it pending.
     """
 
     MAX_INSTRUMENTS = 500
@@ -427,20 +440,40 @@ class QuoteBudget:
         self._seq = 0
         self._streak = 0
         self._last_dispatch = float("-inf")
+        self._last_send = float("-inf")
         self.batches = 0
         self.merged_requests = 0
         self.max_wait_sec = {lane: 0.0 for lane in _LANE_RANK}
         self.spacing_waits = 0
         self.fairness_promotions = 0
         self.cancelled_batches = 0
+        self.send_gate_waits = 0
+        self.cancelled_queued = 0
 
     def limiter(self) -> RateLimiter:
         loop = asyncio.get_running_loop()
         if self._limiter is None or self._loop is not loop:
             self._limiter, self._loop = RateLimiter(rate=self.rate, burst=1), loop
             self._pending, self._dispatcher, self._inflight = [], None, set()
-            self._last_dispatch = float("-inf")
+            self._last_dispatch = self._last_send = float("-inf")
         return self._limiter
+
+    def _interval(self) -> float:
+        return 1.0 / self.rate + self.SPACING_MARGIN_SEC
+
+    async def before_send(self) -> float:
+        """Hold one ``/quote`` HTTP attempt until it is >= 1/rate after the
+        previous send, then stamp it. The caller records the endpoint and
+        sends with nothing awaited in between. Returns seconds waited."""
+        self.limiter()
+        started = time.monotonic()
+        wait = self._last_send + self._interval() - started
+        while wait > 0:
+            self.send_gate_waits += 1
+            await asyncio.sleep(wait)
+            wait = self._last_send + self._interval() - time.monotonic()
+        self._last_send = time.monotonic()
+        return self._last_send - started
 
     async def admit(self, shared, lane: Optional[str] = None) -> float:
         """Admit one ``/quote`` HTTP attempt; the caller sends immediately.
@@ -452,12 +485,11 @@ class QuoteBudget:
         if shared is not None:
             await _acquire_shared(shared, lane)
         await self.limiter().acquire(priority=lane)
-        interval = 1.0 / self.rate + self.SPACING_MARGIN_SEC
-        wait = self._last_dispatch + interval - time.monotonic()
+        wait = max(self._last_dispatch, self._last_send) + self._interval() - time.monotonic()
         while wait > 0:
             self.spacing_waits += 1
             await asyncio.sleep(wait)
-            wait = self._last_dispatch + interval - time.monotonic()
+            wait = max(self._last_dispatch, self._last_send) + self._interval() - time.monotonic()
         self._last_dispatch = time.monotonic()
         return self._last_dispatch - started
 
@@ -485,6 +517,21 @@ class QuoteBudget:
         return live, False
 
     async def _dispatch(self, fetch, shared) -> None:
+        try:
+            await self._dispatch_loop(fetch, shared)
+        except BaseException as exc:                  # noqa: BLE001 - no queued caller may hang
+            failure = exc if isinstance(exc, Exception) else QuoteBatchCancelled(
+                "quote dispatcher cancelled before this request was sent")
+            waiting = [item for item in self._pending if not item[4].done()]
+            self._pending = []
+            for item in waiting:
+                item[4].set_exception(failure)
+            if not isinstance(exc, Exception):
+                self.cancelled_queued += len(waiting)
+                raise
+            logger.warning("kite_quote_dispatcher_failed err=%s queued=%d", type(exc).__name__, len(waiting))
+
+    async def _dispatch_loop(self, fetch, shared) -> None:
         loop = asyncio.get_running_loop()
         while True:
             order, _promoted = self._order()
@@ -555,7 +602,8 @@ class QuoteBudget:
     def snapshot(self) -> dict:
         return {"rate_per_sec": self.rate, "batches": self.batches, "merged_requests": self.merged_requests,
                 "spacing_waits": self.spacing_waits, "fairness_promotions": self.fairness_promotions,
-                "cancelled_batches": self.cancelled_batches, "in_flight": len(self._inflight),
+                "cancelled_batches": self.cancelled_batches, "cancelled_queued": self.cancelled_queued,
+                "send_gate_waits": self.send_gate_waits, "in_flight": len(self._inflight),
                 "max_wait_sec": {lane: round(v, 3) for lane, v in self.max_wait_sec.items()}}
 
 
@@ -1477,6 +1525,8 @@ class KiteClient:
                     await budget.admit(self.limiter, priority)
                 else:
                     await _acquire_shared(self.limiter, priority)
+            if budget is not None:
+                await budget.before_send()
             _record_endpoint(self, "quote")
             timing["limiter_wait_sec"] += time.monotonic() - limiter_started
             try:
@@ -1629,6 +1679,7 @@ class KiteClient:
         budget = getattr(self, "quote_budget", None)
         if budget is not None:
             await budget.admit(self.limiter)          # ambient lane, shares the 1/s quote budget
+            await budget.before_send()
         else:
             await _acquire_shared(self.limiter, None)
         _record_endpoint(self, "quote")

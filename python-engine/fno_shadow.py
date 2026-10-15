@@ -259,7 +259,8 @@ def attach_resolved_cost_estimates(
         )
         qty = int(snapshot.lot_size or quote.contract.lot_size)
         gross = (estimated_exit - quote.ask) * qty
-        execution = options_cost_snapshot()
+        from fno_costs import options_exchange_for
+        execution = options_cost_snapshot(options_exchange_for(result.get("underlying") or "NIFTY"))
         costs = calc_fno_costs_from_snapshot(quote.ask, estimated_exit, qty, execution)
         result["post_cost_outcome"] = {
             "available": True,

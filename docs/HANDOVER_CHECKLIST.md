@@ -12,6 +12,37 @@
 
 
 
+## October 13 — Oct 13 audit fixes (commit `COMMIT_ID`, Dev, pushed, not deployed)
+
+- [x] O13-B1: a stop closes the buyer idea (`CLOSED_INVALIDATED`); no later
+  target, reminder or authorizer pass; the stop itself still sends;
+  pre-change rows close on the next pass.
+- [x] O13-B1/B4 wrap: the held premium path ends at the stop, then "after
+  exit (not held)"; no event reads "no level seen (5-min samples)".
+- [x] Buyer fallback is a one-option card (`BUYER_VIEW_FALLBACK_V1`), never
+  the SELL-leg spread card.
+- [x] O13-B2: failed pulses keep the delivered cap; 5-minute retry; 12
+  failures a day at most.
+- [x] O13-B3: SENSEX option fees on BFO for exit, admission reserve, fee
+  reserve, buyer loss at SL, protection card and shadow. Ledger history
+  unchanged.
+- [x] O13-Q1: `before_send` gate on every quote attempt; admission waits for
+  the last send. O13-Q2: cancelled or failed dispatcher releases queued
+  callers.
+- [x] O13-R1: `lifecycle_events.jsonl` with host_suspend, thread_stall,
+  clean_shutdown and startup receipts; operator page on a market-hours gap
+  with open positions.
+- [x] Penny: Avg R from the position row ("n/a" if unknown); hourly report
+  shows the fill price; paper exit provenance fields.
+- [x] Liquidity filter: unlisted names drop in one line.
+- [x] EDGE startup catch-up waits for the token (10 min max) and skips a day
+  whose scan already completed.
+- [x] Tests: full engine suite 5,174 pass, 4 skip, 0 fail (7 min 44 s; known mark-to-market flake deselected); `test_oct13_audit_fixes.py` 33 pass. Expiry code untouched.
+- [ ] Deployed: no (merge, rebuild the engine).
+- [ ] After deploy: no `TARGET_ZONE` or reminder after an `INVALIDATION` for
+  the same idea; quote `over_documented_limit` 0; one
+  `lifecycle_startup_receipt` line at boot.
+
 ## October 12 (night) — O12-PB2 card numbers verified (commit `feed23e`, Dev, pushed, not deployed)
 
 - [x] Index conversion vs real SENSEX index (Oct 8): median +0.4, mean |16| points.

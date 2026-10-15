@@ -40,7 +40,7 @@ import fno_shadow
 from config import settings
 from fno_chain import ChainSnapshot, take_chain_snapshot
 from kite_client import provider_lane
-from fno_costs import calc_fno_costs
+from fno_costs import calc_fno_costs, options_exchange_for
 from fno_engine_mom import MomSignal, evaluate_fno_mom
 from fno_adaptive_risk import policy_from_settings as adaptive_policy, read_book_closes, risk_stance
 from fno_entry_plan import EntryState, plan_single_leg_entry
@@ -596,7 +596,8 @@ async def _manage_open_positions(
 
         fill = float(result["fill_price"])
         gross = (fill - p.entry_premium) * p.qty
-        costs = calc_fno_costs(p.entry_premium, fill, p.qty)
+        costs = calc_fno_costs(p.entry_premium, fill, p.qty,
+                               exchange=spec.segment if spec is not None else "NFO")
         pnl = gross - costs
         risk_rupees = p.entry_premium * settings.FNO_STOP_PREMIUM_PCT * p.qty
         r_mult = pnl / risk_rupees if risk_rupees > 0 else 0.0
@@ -787,7 +788,7 @@ async def _try_entry_for_leg(
         import fno_dr_book as _dr
         await _dr.init_dr_db(db_path)
         reservation_key = f"single:{source}:{contract.token}:{sig.bar_ts}"
-        worst_case_cash = ml + calc_fno_costs(ask, 0.0, qty)
+        worst_case_cash = ml + calc_fno_costs(ask, 0.0, qty, exchange=options_exchange_for(underlying))
         admission = await reserve_shared_fno_risk(
             db_path, source=source, pool_rs=shared_pool_rs,
             reservation_key=reservation_key, book="SINGLE_LEG",

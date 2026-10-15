@@ -239,11 +239,15 @@ async def test_a_malformed_view_falls_back_and_never_drops_a_card_or_stop(store,
     candidate, _snap = _setup()
     stored = await persist_candidate(store, candidate, PartnerAdvisoryProfile(holding_period="INTRADAY"),
                                      now=NOW, queue_for_delivery=True, buyer_view={"strike": 22550})
-    assert stored["status"] == "QUEUED" and "Structure:" in stored["rendered_card"]
+    # [O13] Falls back to an unpriced ONE-option card, never the spread card
+    # with its SELL leg.
+    card = stored["rendered_card"]
+    assert stored["status"] == "QUEUED" and "BUY NIFTY 22550 CE" in card
+    assert "Structure:" not in card and "SELL" not in card and "premium stop not priced" in card
     async with aiosqlite.connect(store) as db:
         payload = json.loads((await (await db.execute(
             "SELECT payload FROM partner_advisory_ideas WHERE advisory_id=?", (stored["advisory_id"],))).fetchone())[0])
-        assert "buyer_view" not in payload
+        assert payload["buyer_view"]["version"] == pb.FALLBACK_VERSION
         payload["buyer_view"] = {"strike": 22550}        # as if stored by an older build
         await db.execute("UPDATE partner_advisory_ideas SET status='DELIVERED_ACKNOWLEDGED', payload=? "
                          "WHERE advisory_id=?", (json.dumps(payload), stored["advisory_id"]))
@@ -264,5 +268,17 @@ async def test_management_updates_use_buyer_wording(store, monkeypatch):
                                             observed_at=NOW.replace(hour=13, minute=50, second=0))
     assert [q["event_type"] for q in queued] == ["INVALIDATION"]
     assert queued[0]["rendered_update"].startswith("🛑 EXIT NIFTY 22550 CE now")
+    # [O13-B1] The stop closed the idea: no square-off reminder follows it.
+    reminders = await run_intraday_session_lifecycle(store, now=NOW.replace(hour=15, minute=10, second=5))
+    assert reminders == []
+
+
+@pytest.mark.asyncio
+async def test_session_reminder_uses_buyer_wording_for_a_live_idea(store, monkeypatch):
+    _candidate, _view, stored = await _persist(store, True, monkeypatch)
+    async with aiosqlite.connect(store) as db:
+        await db.execute("UPDATE partner_advisory_ideas SET status='DELIVERED_ACKNOWLEDGED' WHERE advisory_id=?",
+                         (stored["advisory_id"],))
+        await db.commit()
     reminders = await run_intraday_session_lifecycle(store, now=NOW.replace(hour=15, minute=10, second=5))
     assert [r["rendered_update"] for r in reminders] == ["⏰ NIFTY 22550 CE: square off by 15:15. No overnight hold."]

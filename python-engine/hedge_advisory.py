@@ -1081,7 +1081,9 @@ async def _authorize_dispatch(
         try:
             async with aiosqlite.connect(db_path, timeout=30) as db:
                 row = await (await db.execute(
-                    "SELECT u.advisory_id,u.status,u.rendered_update,i.status,i.payload,p.version "
+                    "SELECT u.advisory_id,u.status,u.rendered_update,i.status,i.payload,p.version,u.event_type,"
+                    "(SELECT COUNT(*) FROM partner_advisory_updates x WHERE x.advisory_id=u.advisory_id "
+                    "AND x.event_type='INVALIDATION') "
                     "FROM partner_advisory_updates u JOIN partner_advisory_ideas i ON i.advisory_id=u.advisory_id "
                     "LEFT JOIN partner_advisory_profiles p ON p.profile_id=? WHERE u.update_id=?",
                     (profile_id, update_id),
@@ -1092,7 +1094,14 @@ async def _authorize_dispatch(
                 )).fetchone()
             if row is None or claim is None or claim[0] != token:
                 return False
-            if row[0] != advisory_id or row[1] != "QUEUED" or row[3] != "DELIVERED_ACKNOWLEDGED":
+            if row[0] != advisory_id or row[1] != "QUEUED":
+                return False
+            # [O13-B1] Terminal guard: once a stop is recorded for the idea,
+            # only that stop's own update may still go out.
+            if row[6] == "INVALIDATION":
+                if row[3] not in ("DELIVERED_ACKNOWLEDGED", "CLOSED_INVALIDATED"):
+                    return False
+            elif row[3] != "DELIVERED_ACKNOWLEDGED" or int(row[7] or 0) > 0:
                 return False
             payload = json.loads(row[4])
             if payload.get("profile_id") != profile_id or row[5] is None:
