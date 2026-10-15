@@ -5,6 +5,41 @@
 
 
 
+## October 15 — review F1–F5 of the Oct 13 fixes (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
+
+- Problem (independent review of `433a81a`):
+  - F1: the EDGE catch-up could scan at 15:20;
+  - F2: an EDGE error wrote the daily completion marker;
+  - F3: target → stop → recovery still showed the recovery as held;
+  - F4: restart exposure skipped the sibling books, and the page had no
+    acknowledgement or retry;
+  - F5: the hourly fill could be taken from an unrelated EDGE position.
+- Files: `penny_edge_orchestrator.py`, `scheduler_setup.py`,
+  `partner_orchestrator.py`, `lifecycle_receipts.py`, `main.py`,
+  `ops_watchdogs.py`, `penny_hourly_report.py`; tests in
+  `tests/test_oct13_audit_fixes.py` (46 total, 14 new for F1–F5).
+- Acceptance (met in Dev tests, with fake clock, provider and gateway):
+  - F1: a token at 15:20 after a 15:14:59 start gives no scan; a token
+    before the cutoff gives one scan; a scan crossing 15:15 enters nothing;
+  - F2: error then healthy run retries once, then is idempotent; a
+    zero-candidate day counts as completed; a torn receipt allows recovery;
+  - F3: target → stop → recovery is labelled not held, and target-only
+    keeps the whole path;
+  - F4: a sibling-only overnight position is counted; an unreadable store
+    shows "unknown"; 503 then 200 delivers once; a 422 or stale page stops
+    retrying;
+  - F5: the fill matches by attempt identity; the unrelated EDGE ₹70 fill
+    is never used; unfilled or ambiguous signals show "fill n/a".
+- Rollout: merge, rebuild. New files `restart_alert_outbox.json` (last 50
+  rows) and `penny_edge_scan_state.json` (now carries `status`). A
+  pre-change state file has no status and reads as not completed, so at
+  worst there is one extra catch-up scan on deploy day (entries are deduped
+  per ticker per day).
+- Remaining:
+  - [ ] After deploy: one `penny_edge_scan_state.json` with
+    `status: COMPLETED` a day; no EDGE entry after 15:15; on a market-hours
+    restart, one acknowledged page listing every book.
+
 ## October 13 — Oct 13 audit fixes O13-B1/B2/B3/B4/Q1/Q2/R1/P1 (done, Dev, commit `433a81a`, pushed, not deployed)
 
 - Problem (Production audit of the clean Oct 13 run, PR #108; expiry

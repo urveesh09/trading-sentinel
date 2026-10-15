@@ -2443,53 +2443,60 @@ async def lifespan(app: FastAPI):
         logger.warning("clean_shutdown_mark_failed error=%s", str(e))
 
 
-async def _open_exposure_counts(db_path: str) -> dict:
-    """Positions open at startup, per book (missing tables count as 0)."""
-    queries = {
-        "F&O singles": "SELECT COUNT(*) FROM fno_positions WHERE status='OPEN'",
-        "F&O spreads": "SELECT COUNT(*) FROM fno_dr_positions WHERE status IN ('OPEN','UNRESOLVED')",
-        "equity/Penny": "SELECT COUNT(*) FROM positions WHERE status='OPEN'",
-    }
-    counts = {}
-    async with aiosqlite.connect(db_path) as db:
-        for name, sql in queries.items():
-            try:
-                counts[name] = int((await (await db.execute(sql)).fetchone())[0])
-            except aiosqlite.Error:
-                counts[name] = 0
-    return counts
+async def _post_required_notice(text: str) -> str:
+    """One acknowledged gateway send: delivered / rejected / failed."""
+    import httpx as _httpx
+    try:
+        async with _httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": text, "require_delivery": True},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                timeout=10.0,
+            )
+    except _httpx.HTTPError:
+        return "failed"
+    if resp.status_code == 200:
+        try:
+            return "delivered" if resp.json().get("delivered") is True else "failed"
+        except ValueError:
+            return "failed"
+    return "rejected" if resp.status_code == 422 else "failed"
 
 
 async def _restart_gap_receipt(startup_tick: dict) -> None:
     """[O13-R1 2026-10-15] Record why/when the previous process ended and
     page the operator when the gap covered market hours. Oct 13: 94 minutes
-    (10:05-11:40) with a NIFTY spread open and no cause on record."""
+    (10:05-11:40) with a NIFTY spread open and no cause on record.
+
+    [review F4] Every book is counted (sibling stores included; unreadable =
+    unknown), and the page goes through the acknowledged outbox with bounded
+    retries. Pages left pending by an earlier boot are retried here too."""
+    import time as _time
+    from lifecycle_receipts import (
+        deliver_restart_alerts, open_exposure_counts, queue_restart_alert,
+        restart_alert_text, startup_receipt,
+    )
     try:
-        import time as _time
-        from lifecycle_receipts import restart_alert_text, startup_receipt
         receipt = startup_receipt(settings.DB_PATH, startup_tick.get("prior"), _time.time(),
                                   str(startup_tick.get("boot_id") or ""))
         logger.info("lifecycle_startup_receipt", **receipt)
-        if (receipt.get("market_overlap_sec") or 0) <= 0 or not await is_trading_day(
+        if (receipt.get("market_overlap_sec") or 0) > 0 and await is_trading_day(
                 datetime.now(IST).date(), settings.DB_PATH):
-            return
-        exposure = await _open_exposure_counts(settings.DB_PATH)
-        text = restart_alert_text(receipt, exposure)
-        if text is None:
-            return
-        logger.warning("market_restart_gap", gap_sec=receipt.get("gap_sec"),
-                       market_overlap_sec=receipt.get("market_overlap_sec"),
-                       cause=receipt.get("cause"), open_exposure=exposure)
-        import httpx as _httpx
-        async with _httpx.AsyncClient() as client:
-            await client.post(
-                f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": text},
-                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                timeout=5.0,
-            )
+            exposure = await asyncio.to_thread(open_exposure_counts, settings.DB_PATH)
+            text = restart_alert_text(receipt, exposure)
+            if text is not None:
+                logger.warning("market_restart_gap", gap_sec=receipt.get("gap_sec"),
+                               market_overlap_sec=receipt.get("market_overlap_sec"),
+                               cause=receipt.get("cause"), open_exposure=exposure)
+                queue_restart_alert(settings.DB_PATH, f"restart:{receipt.get('boot_id')}", text, _time.time())
     except Exception as e:
         logger.warning("restart_gap_receipt_failed error=%s", str(e))
+    # First attempt now; the 60 s scheduler tick retries with backoff.
+    try:
+        await deliver_restart_alerts(settings.DB_PATH, _post_required_notice, _time.time())
+    except Exception as e:
+        logger.warning("restart_alert_delivery_failed error=%s", str(e))
 
 app = FastAPI(title="Quant Engine Container B", lifespan=lifespan)
 # (Delete the old @app.on_event("startup") and async def startup(): lines completely)

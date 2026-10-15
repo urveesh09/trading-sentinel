@@ -19,8 +19,19 @@ observable from inside the container:
   uptime, and whether the gap overlapped market hours.
 
 Events append to ``lifecycle_events.jsonl`` beside the database (bounded).
-Nothing here trades, retries or backfills: a gap's missed fills are never
-invented.
+Nothing here trades or backfills: a gap's missed fills are never invented.
+
+Evidence limits (review 2026-10-15): wall time running ahead of monotonic
+time fits a host sleep, but a stepped realtime clock looks the same; a
+heartbeat-thread stall does not prove the asyncio loop froze. The page
+therefore names a *likely* cause, to be checked against host logs.
+
+[review F4] Open positions are read from every book, including the
+overnight, expiry and Smart sibling stores, read-only. A store that cannot
+be read is UNKNOWN, never zero. The page goes through a small durable
+outbox with acknowledged delivery (``require_delivery``), bounded retries
+and one id per boot. A lost acknowledgement can still repeat a page; it is
+at-least-once, not exactly-once.
 """
 from __future__ import annotations
 
@@ -188,14 +199,170 @@ def startup_receipt(db_path: str, prior: Optional[dict], now_epoch: float, boot_
 
 
 def restart_alert_text(receipt: dict, open_exposure: dict) -> Optional[str]:
-    """Operator page for a market-hours restart gap, else ``None``."""
+    """Operator page for a market-hours restart gap, else ``None``.
+
+    ``open_exposure`` maps book -> open count, or ``None`` when that book
+    could not be read (shown as "unknown", never as flat).
+    """
     overlap = receipt.get("market_overlap_sec") or 0.0
     if overlap < MARKET_GAP_ALERT_SEC:
         return None
-    held = ", ".join(f"{name} {count}" for name, count in open_exposure.items() if count) or "none"
+    parts = [f"{name} {'unknown' if count is None else count}"
+             for name, count in open_exposure.items() if count is None or count]
+    held = ", ".join(parts) or "none in any book"
     since = (receipt.get("prior_heartbeat_ist") or "?")[11:16]
-    suspend = (f" Host sleep of {receipt['prior_host_suspend_sec']:.0f}s was seen first."
+    suspend = (f" The wall clock jumped {receipt['prior_host_suspend_sec']:.0f}s ahead of the monotonic "
+               "clock first (host sleep or a clock step)."
                if receipt.get("prior_host_suspend_sec") else "")
     return (f"⚠️ Engine restarted after a {overlap / 60:.0f}-min market-hours gap (last heartbeat {since} IST). "
-            f"Cause seen: {receipt.get('cause')}.{suspend} Open at restart: {held}. "
+            f"Likely cause: {receipt.get('cause')}; check host logs.{suspend} "
+            f"Open at recovery: {held}. "
             "Exits resume now; nothing was traded or monitored during the gap.")
+
+
+# --- open exposure across every book -------------------------------------
+
+def _count(path: str, sql: str) -> Optional[int]:
+    """COUNT from a store opened read-only. A missing store or table means
+    the book never existed (0); any other failure is UNKNOWN (None)."""
+    import sqlite3
+    if not os.path.exists(path):
+        return 0
+    try:
+        conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=2.0)
+        try:
+            return int(conn.execute(sql).fetchone()[0])
+        finally:
+            conn.close()
+    except sqlite3.OperationalError as exc:
+        return 0 if "no such table" in str(exc) else None
+    except sqlite3.Error:
+        return None
+
+
+def open_exposure_counts(db_path: str) -> dict:
+    """Open positions per book, observed now (not an atomic snapshot)."""
+    from edge_overnight_paper import overnight_db_path
+    from expiry_paper import expiry_db_path
+    counts = {
+        "F&O singles": _count(db_path, "SELECT COUNT(*) FROM fno_positions WHERE status='OPEN'"),
+        "F&O spreads": _count(db_path, "SELECT COUNT(*) FROM fno_dr_positions "
+                                       "WHERE status IN ('OPEN','UNRESOLVED')"),
+        "equity/Penny/EDGE": _count(db_path, "SELECT COUNT(*) FROM positions WHERE status='OPEN'"),
+        "overnight": _count(overnight_db_path(db_path),
+                            "SELECT COUNT(*) FROM edge_overnight_paper_trades WHERE status='OPEN'"),
+        "expiry": _count(expiry_db_path(db_path),
+                         "SELECT COUNT(*) FROM expiry_paper_positions WHERE status='OPEN'"),
+    }
+    try:
+        from penny_smart_shadow import smart_exposure_snapshot
+        snap = smart_exposure_snapshot(db_path)
+        counts["Smart"] = int(snap.get("open", 0)) if snap.get("status") != "ERROR" else None
+    except Exception:  # noqa: BLE001 - unreadable is unknown, not flat
+        counts["Smart"] = None
+    return counts
+
+
+# --- acknowledged restart-page outbox -------------------------------------
+
+ALERT_MAX_AGE_SEC = 6 * 3600     # a restart page older than this is stale news
+ALERT_MAX_ATTEMPTS = 20
+ALERT_BACKOFF_CAP_SEC = 600.0
+_OUTBOX_LOCK = None
+
+
+def _outbox_lock():
+    import asyncio
+    global _OUTBOX_LOCK
+    if _OUTBOX_LOCK is None:
+        _OUTBOX_LOCK = asyncio.Lock()
+    return _OUTBOX_LOCK
+
+
+def _backoff_sec(attempts: int) -> float:
+    return 0.0 if attempts <= 0 else min(30.0 * 2 ** (attempts - 1), ALERT_BACKOFF_CAP_SEC)
+
+
+def outbox_path(db_path: str) -> str:
+    return os.path.join(os.path.dirname(db_path) or ".", "restart_alert_outbox.json")
+
+
+def _load_outbox(db_path: str) -> list:
+    try:
+        with open(outbox_path(db_path), encoding="utf-8") as fh:
+            rows = json.load(fh)
+        return rows if isinstance(rows, list) else []
+    except (OSError, ValueError):
+        return []
+
+
+def _save_outbox(db_path: str, rows: list) -> None:
+    path = outbox_path(db_path)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(rows[-50:], fh)
+    os.replace(tmp, path)
+
+
+def queue_restart_alert(db_path: str, alert_id: str, text: str, now_epoch: float) -> bool:
+    """Queue one page per ``alert_id`` (the boot id); False if already queued."""
+    rows = _load_outbox(db_path)
+    if any(row.get("id") == alert_id for row in rows):
+        return False
+    rows.append({"id": alert_id, "text": text, "created_epoch": now_epoch, "attempts": 0,
+                 "state": "PENDING", "sent_epoch": None, "last_attempt_epoch": None})
+    _save_outbox(db_path, rows)
+    return True
+
+
+def has_pending_alerts(db_path: str) -> bool:
+    return any(row.get("state") == "PENDING" for row in _load_outbox(db_path))
+
+
+async def deliver_restart_alerts(db_path: str, post, now_epoch: float) -> int:
+    """Attempt each pending page whose backoff has elapsed; returns how many
+    stay pending. Called once at startup, then from the 60 s scheduler tick,
+    under one lock so two callers never send the same row.
+
+    ``post(text)`` returns ``"delivered"`` (gateway acknowledged),
+    ``"rejected"`` (Telegram refused this text; never retried) or
+    ``"failed"`` (retried with backoff 30 s doubling to 10 min, at most
+    ``ALERT_MAX_ATTEMPTS`` times and within ``ALERT_MAX_AGE_SEC``).
+    """
+    async with _outbox_lock():
+        return await _deliver_locked(db_path, post, now_epoch)
+
+
+async def _deliver_locked(db_path: str, post, now_epoch: float) -> int:
+    rows = _load_outbox(db_path)
+    pending = 0
+    for row in rows:
+        if row.get("state") != "PENDING":
+            continue
+        attempts = int(row.get("attempts") or 0)
+        if now_epoch - float(row.get("created_epoch") or 0) > ALERT_MAX_AGE_SEC or attempts >= ALERT_MAX_ATTEMPTS:
+            row["state"] = "EXPIRED"
+            record_event(db_path, "restart_alert_expired", alert_id=row.get("id"), attempts=attempts)
+            _save_outbox(db_path, rows)
+            continue
+        last = row.get("last_attempt_epoch")
+        if last is not None and now_epoch - float(last) < _backoff_sec(attempts):
+            pending += 1
+            continue
+        row["attempts"] = attempts + 1
+        row["last_attempt_epoch"] = now_epoch
+        _save_outbox(db_path, rows)       # count the attempt before the send: a crash cannot loop it
+        try:
+            outcome = await post(row["text"])
+        except Exception:  # noqa: BLE001 - a transport error is a retryable failure
+            outcome = "failed"
+        if outcome == "delivered":
+            row["state"], row["sent_epoch"] = "DELIVERED", now_epoch
+        elif outcome == "rejected":
+            row["state"] = "REJECTED"
+        else:
+            pending += 1
+        record_event(db_path, "restart_alert_attempt", alert_id=row.get("id"), outcome=outcome,
+                     attempts=row["attempts"])
+        _save_outbox(db_path, rows)
+    return pending

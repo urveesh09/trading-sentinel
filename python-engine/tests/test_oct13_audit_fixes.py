@@ -463,24 +463,6 @@ def test_daily_attribution_says_na_when_no_r_is_known(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_hourly_report_shows_the_paper_fill_not_the_signal_close(tmp_path):
-    from penny_hourly_report import PennyHourlyReport
-    from penny_signal_log import init_penny_signal_db
-    db = str(tmp_path / "h.db")
-    await init_penny_signal_db(db)
-    async with aiosqlite.connect(db) as con:
-        await con.execute("INSERT INTO penny_signals(ticker,leg,close,stop_loss,target_1,shares,scanned_at,reject_reason) "
-                          "VALUES('UNITEDPOLY','MIS',52.92,51.65,55.46,9,'2026-10-13T08:06:30+00:00',NULL)")
-        await con.execute("CREATE TABLE IF NOT EXISTS positions (ticker TEXT, entry_date TEXT, entry_price REAL)")
-        await con.execute("INSERT INTO positions VALUES('UNITEDPOLY','2026-10-13T08:06:38.625733+00:00',51.92)")
-        await con.commit()
-    body = await PennyHourlyReport(db).build_report(
-        now=datetime(2026, 10, 13, 8, 30, tzinfo=timezone.utc), regime="PR1_CALM", open_positions=[],
-        deployed_capital=0.0, unrealised_pnl=0.0, kill_switch_active=False, circuit_blocks=0)
-    assert "UNITEDPOLY MIS x9 @ 51.92 (signal 52.92)" in body
-
-
-@pytest.mark.asyncio
 async def test_paper_exit_records_reference_price_and_model_decrement():
     from penny_executor import PAPER_EXIT_FILL_MODEL, PennyExecutor
     from penny_models import PennyLeg
@@ -536,7 +518,8 @@ def test_unclean_market_gap_pages_with_open_exposure(tmp_path, monkeypatch):
     receipt = lr.startup_receipt(db, {"ts_epoch": gap_start, "boot_id": "old"}, now, "new")
     assert receipt["cause"] == "unclean_stop" and receipt["prior_host_suspend_sec"] == 5600.0
     text = lr.restart_alert_text(receipt, {"F&O singles": 0, "F&O spreads": 1, "equity/Penny": 0})
-    assert "94-min market-hours gap" in text and "F&O spreads 1" in text and "Host sleep" in text
+    assert "94-min market-hours gap" in text and "F&O spreads 1" in text and "host sleep or a clock step" in text
+    assert "Likely cause: unclean_stop" in text
     assert lr.restart_alert_text({**receipt, "market_overlap_sec": 60.0}, {}) is None
 
 
@@ -569,16 +552,372 @@ async def test_liquidity_filter_drops_unlisted_symbols_without_fetching(monkeypa
 
 
 # ---------------------------------------------------------------------------
-# EDGE startup catch-up waits for the token and runs once a day
+# Review F1/F2: EDGE catch-up cutoff and completion receipts
 # ---------------------------------------------------------------------------
 
-def test_edge_catchup_waits_for_token_and_skips_a_completed_day():
-    import inspect
+class _Clock:
+    def __init__(self, start):
+        self.now = start
+
+    def __call__(self):
+        return self.now
+
+
+@pytest.mark.asyncio
+async def test_edge_catchup_token_after_cutoff_never_scans():
+    """Review F1: a wait starting 15:14:59 with the token at 15:20 scanned."""
+    from penny_edge_orchestrator import run_edge_catchup
+    clock = _Clock(IST.localize(datetime(2026, 10, 15, 15, 14, 59)))
+    token = {"ready": False}
+    scans = []
+
+    async def sleep(sec):
+        clock.now = clock.now + pd.Timedelta(seconds=sec)
+        if clock.now >= IST.localize(datetime(2026, 10, 15, 15, 20)):
+            token["ready"] = True
+
+    async def scan():
+        scans.append(clock.now)
+
+    outcome = await run_edge_catchup(now_fn=clock, token_ready=lambda: token["ready"], run_scan=scan,
+                                     max_wait_sec=600, poll_sec=10, sleep=sleep)
+    assert outcome == "after_cutoff" and scans == []
+
+
+@pytest.mark.asyncio
+async def test_edge_catchup_token_before_cutoff_scans_once():
+    from penny_edge_orchestrator import run_edge_catchup
+    clock = _Clock(IST.localize(datetime(2026, 10, 13, 11, 40, 11)))
+    token = {"ready": False}
+    scans = []
+
+    async def sleep(sec):
+        clock.now = clock.now + pd.Timedelta(seconds=sec)
+        token["ready"] = True
+
+    async def scan():
+        scans.append(clock.now)
+
+    assert await run_edge_catchup(now_fn=clock, token_ready=lambda: token["ready"], run_scan=scan,
+                                  sleep=sleep) == "ran"
+    assert len(scans) == 1
+
+
+@pytest.mark.asyncio
+async def test_edge_catchup_without_a_token_gives_up_after_the_bound():
+    from penny_edge_orchestrator import run_edge_catchup
+    clock = _Clock(IST.localize(datetime(2026, 10, 13, 10, 0)))
+
+    async def sleep(sec):
+        clock.now = clock.now + pd.Timedelta(seconds=sec)
+
+    async def scan():
+        raise AssertionError("must not scan without a token")
+
+    assert await run_edge_catchup(now_fn=clock, token_ready=lambda: False, run_scan=scan,
+                                  max_wait_sec=60, poll_sec=10, sleep=sleep) == "no_token"
+
+
+@pytest.mark.asyncio
+async def test_a_scan_crossing_the_cutoff_enters_nothing(tmp_path, monkeypatch):
+    """The entry boundary re-checks the cutoff after the slow signal pass."""
+    import penny_edge_orchestrator as peo
+    from datetime import time as dtime
+    clock = _Clock(IST.localize(datetime(2026, 10, 15, 15, 14)))
+    legs = []
+
+    class Regime:
+        preferred_signal, trend_strength, vol_percentile = "MR", 0.1, 0.5
+
+    def slow_scan(**_kw):
+        clock.now = IST.localize(datetime(2026, 10, 15, 15, 16))      # the pass took two minutes
+        return {"candidates": [object()], "eligible_tickers": 10, "regime": Regime()}
+
+    async def leg(**kw):
+        legs.append(kw)
+        return {"entered": 1, "trades": [], "skipped": []}
+
+    async def equity(*_a):
+        return 100000.0
+
+    monkeypatch.setattr(peo.pel, "scan_today", slow_scan)
+    monkeypatch.setattr(peo, "_run_one_leg", leg)
+    monkeypatch.setattr(peo, "_edge_equity", equity)
+    monkeypatch.setattr(peo, "_edge_paper_disabled", lambda: False)
+    monkeypatch.setattr(peo, "_edge_live_disabled", lambda: True)
+    summary = await peo.run_penny_edge_scan(object(), str(tmp_path / "x.db"),
+                                            entry_cutoff=dtime(15, 15), now_fn=clock)
+    assert summary["status"] == "AFTER_CUTOFF" and legs == []
+    # Without a cutoff (manual/replay callers) behaviour is unchanged.
+    clock.now = IST.localize(datetime(2026, 10, 15, 15, 14))
+    summary = await peo.run_penny_edge_scan(object(), str(tmp_path / "x.db"), now_fn=clock)
+    assert summary["status"] == "COMPLETED" and len(legs) == 1
+
+
+def test_only_a_completed_scan_writes_the_daily_receipt(tmp_path):
+    import penny_edge_orchestrator as peo
+    from datetime import date
+    db = str(tmp_path / "cache.db")
+    day = date(2026, 10, 15)
+    assert peo.edge_scan_completed_on(db, day) is False
+    with open(peo.edge_scan_receipt_path(db), "w") as fh:         # an old-format / non-completed receipt
+        json.dump({"date": "2026-10-15"}, fh)
+    assert peo.edge_scan_completed_on(db, day) is False
+    with open(peo.edge_scan_receipt_path(db), "w") as fh:          # torn write
+        fh.write("{\"date\": \"2026-10")
+    assert peo.edge_scan_completed_on(db, day) is False
+    assert peo.mark_edge_scan_completed(db, day, {"candidates_total": 0, "paper": {"entered": 0}})
+    assert peo.edge_scan_completed_on(db, day) is True             # a valid zero-candidate day counts
+    assert peo.edge_scan_completed_on(db, date(2026, 10, 16)) is False
+
+
+@pytest.mark.asyncio
+async def test_error_then_healthy_scan_retries_and_completed_day_is_idempotent(tmp_path, monkeypatch):
+    """Review F2: an engine error used to write the receipt and block recovery."""
+    import penny_edge_orchestrator as peo
     import scheduler_setup
-    src = inspect.getsource(scheduler_setup.register_penny_scheduler_jobs)
-    assert "_startup_loop.create_task(_run_penny_edge_scan_catchup())" in src
-    assert "while not _main.kite.access_token and waited < max_wait_sec" in src
-    assert "if _edge_scan_done_today(today):" in src
-    # The mark is written only after a scan returns, never on a skip.
-    body = src[src.index("async def _run_penny_edge_scan_safe"):src.index("def _edge_scan_state_path")]
-    assert body.index("_mark_edge_scan_done(today)") > body.index("summary = await run_penny_edge_scan(")
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    import main
+
+    monkeypatch.setattr(settings, "DB_PATH", str(tmp_path / "cache.db"))
+    results = [{"status": "ERROR", "regime": "ERROR"}, {"status": "COMPLETED", "candidates_total": 0}]
+    calls = []
+
+    async def fake_scan(kite, db_path=None, *, entry_cutoff=None, now_fn=None):
+        calls.append(entry_cutoff)
+        return results[len(calls) - 1]
+
+    async def trading_day(*_a):
+        return True
+
+    monkeypatch.setattr(peo, "run_penny_edge_scan", fake_scan)
+    monkeypatch.setattr(peo, "format_telegram", lambda *_a, **_k: "msg")
+    monkeypatch.setattr(main, "is_trading_day", trading_day)
+    monkeypatch.setattr(main.kite, "access_token", "t", raising=False)
+
+    class _NoPost:
+        def __init__(self, *a, **k):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+        async def post(self, *a, **k):
+            return None
+
+    import httpx
+    monkeypatch.setattr(httpx, "AsyncClient", _NoPost)
+    sched = AsyncIOScheduler(timezone="Asia/Kolkata")
+    from unittest.mock import patch
+    with patch("scheduler_setup.asyncio.get_running_loop",
+               side_effect=RuntimeError("no catch-up in this test")):      # registration only
+        scheduler_setup.register_penny_scheduler_jobs(sched)
+    job = sched.get_job("penny_edge_scan").func
+    await job()                                    # engine error -> no receipt
+    today = datetime.now(IST).date()
+    assert peo.edge_scan_completed_on(settings.DB_PATH, today) is False
+    await job()                                    # healthy retry -> receipt
+    assert peo.edge_scan_completed_on(settings.DB_PATH, today) is True
+    await job()                                    # completed day: no third scan
+    assert len(calls) == 2 and all(c == peo.EDGE_ENTRY_CUTOFF for c in calls)
+
+
+# ---------------------------------------------------------------------------
+# Review F3: target -> stop -> recovery keeps the held path at the stop
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_target_then_stop_then_recovery_is_not_held(store, monkeypatch):
+    import fno_oi_store
+    import partner_orchestrator as po
+    advisory_id = await _delivered(store, monkeypatch)
+    await queue_management_updates(store, underlying="NIFTY", observed_underlying=22900.0,
+                                   observed_at=NOW.replace(hour=11, minute=40, second=0))
+    await queue_management_updates(store, underlying="NIFTY", observed_underlying=22470.0,
+                                   observed_at=NOW.replace(hour=11, minute=45, second=0))
+    day = NOW.date().isoformat()
+    cards, _record = await po._todays_card_outcomes(store, "NIFTY", day, None)
+    assert len(cards) == 1 and cards[0]["event"] == "TARGET_ZONE"         # first-event scoring kept
+    assert cards[0]["stop_at"].startswith(f"{day}T11:45")
+
+    async def series(*_a, **_k):
+        return [(f"{day} 10:00:00", 120.0), (f"{day} 11:45:00", 80.0), (f"{day} 14:40:00", 200.0)]
+
+    monkeypatch.setattr(fno_oi_store, "strike_ltp_series", series)
+    out = await po._buyer_card_outcome("NIFTY", day, cards[0])
+    assert "🎯 target hit 11:40, 🛑 stopped 11:45" == out["outcome"]
+    assert "at the stop" in out["premium"] and "after exit (not held) peak ₹200" in out["premium"]
+    assert advisory_id
+
+
+@pytest.mark.asyncio
+async def test_target_without_a_later_stop_keeps_the_whole_path(store, monkeypatch):
+    import fno_oi_store
+    import partner_orchestrator as po
+    await _delivered(store, monkeypatch)
+    await queue_management_updates(store, underlying="NIFTY", observed_underlying=22900.0,
+                                   observed_at=NOW.replace(hour=11, minute=40, second=0))
+    day = NOW.date().isoformat()
+    cards, _record = await po._todays_card_outcomes(store, "NIFTY", day, None)
+    assert cards[0]["stop_at"] is None
+
+    async def series(*_a, **_k):
+        return [(f"{day} 10:00:00", 120.0), (f"{day} 14:40:00", 200.0)]
+
+    monkeypatch.setattr(fno_oi_store, "strike_ltp_series", series)
+    out = await po._buyer_card_outcome("NIFTY", day, cards[0])
+    assert "peak ₹200" in out["premium"] and "not held" not in out["premium"]
+
+
+# ---------------------------------------------------------------------------
+# Review F4: every book counted; unknown is not zero; acknowledged outbox
+# ---------------------------------------------------------------------------
+
+def test_sibling_only_overnight_exposure_is_counted(tmp_path):
+    from edge_overnight_paper import overnight_db_path
+    db = str(tmp_path / "cache.db")
+    con = sqlite3.connect(overnight_db_path(db))
+    con.execute("CREATE TABLE edge_overnight_paper_trades (ticker TEXT, status TEXT)")
+    con.execute("INSERT INTO edge_overnight_paper_trades VALUES ('USK','OPEN')")
+    con.commit()
+    con.close()
+    counts = lr.open_exposure_counts(db)
+    assert counts["overnight"] == 1
+    assert counts["F&O singles"] == 0 and counts["expiry"] == 0 and counts["Smart"] == 0
+    assert "overnight 1" in lr.restart_alert_text({"market_overlap_sec": 900.0, "cause": "unclean_stop"}, counts)
+
+
+def test_an_unreadable_book_is_unknown_not_flat(tmp_path):
+    from expiry_paper import expiry_db_path
+    db = str(tmp_path / "cache.db")
+    with open(expiry_db_path(db), "wb") as fh:
+        fh.write(b"this is not a sqlite database" * 100)
+    counts = lr.open_exposure_counts(db)
+    assert counts["expiry"] is None
+    text = lr.restart_alert_text({"market_overlap_sec": 900.0, "cause": "unclean_stop"}, counts)
+    assert "expiry unknown" in text and "none in any book" not in text
+
+
+@pytest.mark.asyncio
+async def test_restart_page_retries_after_503_and_delivers_once(tmp_path):
+    db = str(tmp_path / "cache.db")
+    outcomes = ["failed", "delivered"]
+    sent = []
+
+    async def post(text):
+        sent.append(text)
+        return outcomes[len(sent) - 1]
+
+    assert lr.queue_restart_alert(db, "restart:b1", "page", 1000.0)
+    assert lr.queue_restart_alert(db, "restart:b1", "page", 1000.0) is False      # one per boot
+    assert await lr.deliver_restart_alerts(db, post, 1000.0) == 1                 # 503 -> pending
+    assert await lr.deliver_restart_alerts(db, post, 1010.0) == 1 and len(sent) == 1   # backoff 30 s
+    assert await lr.deliver_restart_alerts(db, post, 1031.0) == 0 and len(sent) == 2
+    assert await lr.deliver_restart_alerts(db, post, 2000.0) == 0 and len(sent) == 2   # never resent
+    assert lr.has_pending_alerts(db) is False
+
+
+@pytest.mark.asyncio
+async def test_rejected_or_stale_pages_stop_retrying(tmp_path):
+    db = str(tmp_path / "cache.db")
+
+    async def reject(_text):
+        return "rejected"
+
+    lr.queue_restart_alert(db, "a", "page", 0.0)
+    assert await lr.deliver_restart_alerts(db, reject, 1.0) == 0
+    lr.queue_restart_alert(db, "b", "page", 0.0)
+
+    async def never(_text):
+        raise AssertionError("stale page must not be sent")
+
+    assert await lr.deliver_restart_alerts(db, never, lr.ALERT_MAX_AGE_SEC + 10) == 0
+    states = {row["id"]: row["state"] for row in lr._load_outbox(db)}
+    assert states == {"a": "REJECTED", "b": "EXPIRED"}
+
+
+@pytest.mark.asyncio
+async def test_gateway_post_requires_an_acknowledged_delivery(monkeypatch):
+    import httpx
+    import main
+
+    replies = iter([(503, {}), (200, {"delivered": False}), (200, {"delivered": True}), (422, {})])
+    bodies = []
+
+    class Client:
+        def __init__(self, *a, **k):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+        async def post(self, url, json=None, headers=None, timeout=None):
+            bodies.append(json)
+            status, body = next(replies)
+            return httpx.Response(status, json=body, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx, "AsyncClient", Client)
+    assert [await main._post_required_notice("x") for _ in range(4)] == ["failed", "failed", "delivered", "rejected"]
+    assert all(body["require_delivery"] is True for body in bodies)
+
+
+# ---------------------------------------------------------------------------
+# Review F5: hourly Penny fill joined by trade identity
+# ---------------------------------------------------------------------------
+
+async def _hourly_db(tmp_path, *, attempts=("pen-a",), positions=(("pen-a", "UNITEDPOLY", 51.92),)):
+    from penny_signal_log import init_penny_signal_db
+    db = str(tmp_path / "h.db")
+    await init_penny_signal_db(db)
+    async with aiosqlite.connect(db) as con:
+        await con.execute("INSERT INTO penny_signals(scan_id,ticker,leg,close,stop_loss,target_1,shares,scanned_at,"
+                          "reject_reason) VALUES('penny-1','UNITEDPOLY','MIS',52.92,51.65,55.46,9,"
+                          "'2026-10-13T08:06:30+00:00',NULL)")
+        await con.execute("CREATE TABLE penny_execution_events (attempt_id TEXT, scan_id TEXT, ticker TEXT, "
+                          "leg TEXT, event_type TEXT)")
+        for attempt in attempts:
+            await con.execute("INSERT INTO penny_execution_events VALUES(?, 'penny-1', 'UNITEDPOLY', 'MIS', "
+                              "'CANDIDATE_ACCEPTED')", (attempt,))
+            await con.execute("INSERT INTO penny_execution_events VALUES(?, 'penny-1', 'UNITEDPOLY', 'MIS', "
+                              "'EXIT_SIMULATED')", (attempt + "-exit-9",))
+        await con.execute("CREATE TABLE positions (ticker TEXT, entry_date TEXT, entry_price REAL, "
+                          "source TEXT, product_type TEXT, penny_attempt_id TEXT)")
+        for attempt, ticker, price in positions:
+            await con.execute("INSERT INTO positions VALUES(?, '2026-10-13T08:06:38+00:00', ?, 'PENNY_PAPER', "
+                              "'MIS', ?)", (ticker, price, attempt))
+        # The unrelated EDGE CNC position in the same ticker and hour.
+        await con.execute("INSERT INTO positions VALUES('UNITEDPOLY', '2026-10-13T08:20:00+00:00', 70.0, "
+                          "'EDGE_PAPER', 'CNC', NULL)")
+        await con.commit()
+    return db
+
+
+async def _hourly(db):
+    from penny_hourly_report import PennyHourlyReport
+    return await PennyHourlyReport(db).build_report(
+        now=datetime(2026, 10, 13, 8, 30, tzinfo=timezone.utc), regime="PR1_CALM", open_positions=[],
+        deployed_capital=0.0, unrealised_pnl=0.0, kill_switch_active=False, circuit_blocks=0)
+
+
+@pytest.mark.asyncio
+async def test_hourly_fill_comes_from_this_signals_own_attempt(tmp_path):
+    body = await _hourly(await _hourly_db(tmp_path))
+    assert "UNITEDPOLY MIS x9 @ 51.92 (signal 52.92)" in body and "70.00" not in body
+
+
+@pytest.mark.asyncio
+async def test_hourly_fill_is_unknown_rather_than_guessed(tmp_path):
+    # Accepted but never filled: no position for the attempt.
+    body = await _hourly(await _hourly_db(tmp_path, positions=()))
+    assert "UNITEDPOLY MIS x9 signal 52.92, fill n/a" in body and "70.00" not in body
+    # Two entry attempts under one signal row: ambiguous, so unknown.
+    (tmp_path / "b").mkdir()
+    body = await _hourly(await _hourly_db(tmp_path / "b", attempts=("pen-a", "pen-b"),
+                                          positions=(("pen-a", "UNITEDPOLY", 51.92), ("pen-b", "UNITEDPOLY", 52.10))))
+    assert "fill n/a" in body

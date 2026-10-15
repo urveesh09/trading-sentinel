@@ -292,8 +292,14 @@ async def _todays_card_outcomes(db_path: str, underlying: str, day_iso: str,
     except aiosqlite.Error:
         return [], ""
     first_event: dict = {}
+    # The first event scores the card; the stop time is kept separately so a
+    # target -> stop -> recovery card still ends its held path at the stop
+    # (review F3, O13-B1).
+    stop_at: dict = {}
     for advisory_id, event_type, observed_at, level in events:
         first_event.setdefault(advisory_id, (event_type, observed_at, level))
+        if event_type == "INVALIDATION":
+            stop_at.setdefault(advisory_id, observed_at)
     cards, record = [], {"n": 0, "target": 0, "invalidation": 0}
     # 30 calendar dates including today (O8-P1: day-30 counted 31).
     cutoff = (date.fromisoformat(day_iso) - timedelta(days=29)).isoformat()
@@ -331,6 +337,7 @@ async def _todays_card_outcomes(db_path: str, underlying: str, day_iso: str,
                       "event": event[0] if event else None,
                       "event_time": str(event[1])[11:16] if event else None,
                       "event_at": str(event[1]) if event else None,
+                      "stop_at": str(stop_at[advisory_id]) if advisory_id in stop_at else None,
                       "buyer_view": payload.get("buyer_view")})
     if counts is not None:
         counts.update(record)
@@ -1929,15 +1936,18 @@ async def _buyer_card_outcome(name: str, day_iso: str, card: dict) -> dict:
     option = f"{view['strike']:g} {view['opt_type']}" if view.get("strike") else card.get("direction", "?")
     if card.get("event") == "TARGET_ZONE":
         outcome = f"🎯 target hit {card['event_time']}"
+        if card.get("stop_at"):
+            outcome += f", 🛑 stopped {str(card['stop_at'])[11:16]}"
     elif card.get("event") == "INVALIDATION":
         outcome = f"🛑 stopped {card['event_time']}"
     else:
         # 5-minute samples cannot prove a level was never touched (O13-B4).
         outcome = "no level seen (5-min samples)"
     stopped_at = None
-    if card.get("event") == "INVALIDATION" and card.get("event_at"):
+    stop_clock = card.get("stop_at") or (card.get("event_at") if card.get("event") == "INVALIDATION" else None)
+    if stop_clock:
         try:
-            stopped_at = datetime.fromisoformat(str(card["event_at"])).astimezone(IST).strftime("%Y-%m-%d %H:%M:%S")
+            stopped_at = datetime.fromisoformat(str(stop_clock)).astimezone(IST).strftime("%Y-%m-%d %H:%M:%S")
         except ValueError:
             stopped_at = None
     premium = ""

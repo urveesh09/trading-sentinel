@@ -14,6 +14,50 @@
 
 
 
+## October 15 — independent review F1–F5 of the Oct 13 fixes (actual behavior, Dev, commit `COMMIT_ID`)
+
+Review: `docs/2026-10-15-oct13-fixes-independent-review.md` (on `433a81a`).
+
+- **EDGE cutoff (F1).** `penny_edge_orchestrator.run_edge_catchup` waits
+  (bounded) for the restored token, but re-reads the clock after the wait:
+  at or after `EDGE_ENTRY_CUTOFF` (15:15 IST, the exit pass) it does not
+  scan. Scheduled scans call `run_penny_edge_scan(…, entry_cutoff=15:15)`,
+  which checks the cutoff before the signal pass and again at the entry
+  boundary, so a scan that crosses 15:15 enters nothing (`AFTER_CUTOFF`).
+  Manual and replay callers pass no cutoff, so their behaviour is unchanged.
+- **EDGE completion (F2).** Every scan result now has a `status`:
+  `COMPLETED`, `ERROR`, `DISABLED` or `AFTER_CUTOFF`. Only `COMPLETED` writes
+  the atomic receipt `penny_edge_scan_state.json` ({date, status,
+  completed_at, counts}); a valid zero-candidate day counts as completed.
+  The cron and the catch-up share one `asyncio.Lock`, and both check the
+  receipt under it. An error, disabled legs or the cutoff leave the day
+  recoverable; a torn or old-format receipt reads as not completed.
+- **Wrap after a later stop (F3).** `_todays_card_outcomes` keeps
+  first-event scoring and also carries `stop_at`, the first INVALIDATION. A
+  card that went target → stop → recovery reads "🎯 target hit 11:40, 🛑
+  stopped 11:45", and its held premium path ends at the stop.
+- **Restart page (F4).**
+  - `lifecycle_receipts.open_exposure_counts` reads every book read-only:
+    F&O singles and spreads, equity/Penny/EDGE, overnight, expiry and
+    Smart. A missing store or table counts 0; any other read failure is
+    `None` and shows as "unknown", never flat.
+  - The page goes into `restart_alert_outbox.json`, one id per boot. It is
+    sent with `require_delivery` and counts only when the gateway confirms
+    `delivered: true`. A 422 is final; anything else retries (30 s
+    doubling to 10 min, 20 attempts, 6 h max) from the 60 s scheduler tick
+    under one lock. The attempt is persisted before each send.
+  - Delivery is at-least-once: a lost acknowledgement can repeat a page.
+  - The wording names a *likely* cause, since a clock step can look like a
+    host sleep.
+- **Hourly Penny fill (F5).** The fill is joined by identity: signal
+  (scan_id, ticker, leg) → `penny_execution_events` `CANDIDATE_ACCEPTED`
+  attempt → `positions.penny_attempt_id`. With no attempt, several
+  attempts, or no position, the line reads "signal 52.92, fill n/a"; a fill
+  is never guessed from ticker and hour. Checked on Production (read-only):
+  Oct 13 UNITEDPOLY signal `penny-01ac0535` → attempt `pen-ae2e…` → 51.92.
+  Exit events reuse the scan id under `-exit-N` attempt ids, so only the
+  entry attempt is matched.
+
 ## October 13 — Oct 13 audit fixes: terminal buyer ideas, quote send gate, exchange fees, restart receipts (actual behavior, Dev, commit `433a81a`)
 
 Source: `Production_Trading-sentinel/docs/2026-10-13-production-deep-audit.md`

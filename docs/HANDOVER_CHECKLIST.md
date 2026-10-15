@@ -12,6 +12,22 @@
 
 
 
+## October 15 — review F1–F5 of the Oct 13 fixes (commit `COMMIT_ID`, Dev, pushed, not deployed)
+
+- [x] F1 EDGE catch-up re-checks the 15:15 cutoff after the token wait; the
+  scan re-checks it at the entry boundary.
+- [x] F2 only a COMPLETED EDGE scan writes the atomic daily receipt; the
+  cron and catch-up share one lock.
+- [x] F3 the wrap carries the stop time separately from first-event
+  scoring.
+- [x] F4 the restart page counts every book (unknown is not zero) and is
+  delivered through an acknowledged, backed-off, deduplicated outbox.
+- [x] F5 the hourly Penny fill is joined by execution-attempt identity;
+  otherwise "fill n/a". Checked against Production's Oct 13 UNITEDPOLY rows
+  (read-only).
+- [x] Tests: full engine suite 5,187 pass, 4 skip, 0 fail (7 min 45 s; known mark-to-market flake deselected); `test_oct13_audit_fixes.py` 46 pass. Expiry code untouched.
+- [ ] Deployed: no (merge, rebuild the engine).
+
 ## October 13 — Oct 13 audit fixes (commit `433a81a`, Dev, pushed, not deployed)
 
 - [x] O13-B1: a stop closes the buyer idea (`CLOSED_INVALIDATED`); no later

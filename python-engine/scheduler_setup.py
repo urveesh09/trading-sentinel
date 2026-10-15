@@ -570,12 +570,10 @@ def register_penny_scheduler_jobs(scheduler):
     # positions table (source='EDGE_PAPER' vs 'EDGE_LIVE') so they
     # don't double up or see each other's idempotency rows.
     # Fires at 09:30 IST daily, in parallel with the connors scan.
+    from penny_edge_orchestrator import edge_scan_completed_on
+    _edge_scan_lock = asyncio.Lock()
+
     async def _run_penny_edge_scan_safe():
-        import httpx as _httpx
-        from penny_edge_orchestrator import (
-            run_penny_edge_scan,
-            format_telegram,
-        )
         # [PENNY-EDGE-BREADCRUMB 2026-07-06] First-line diagnostic log.
         # Today's incident: penny_edge_scan was registered at 07:09 IST
         # but NEVER FIRED at 09:30 IST. Without this breadcrumb there is
@@ -602,9 +600,27 @@ def register_penny_scheduler_jobs(scheduler):
         if not _main.kite.access_token:
             logger.warning("penny_edge_scan_skip reason=no_access_token")
             return
+        # [O13-F2] The cron and the startup catch-up share one lock and one
+        # durable receipt; only a COMPLETED scan writes it, so an engine
+        # error, disabled legs or the cutoff leave the day recoverable.
+        async with _edge_scan_lock:
+            if edge_scan_completed_on(settings.DB_PATH, today):
+                logger.info("penny_edge_scan_skip reason=completed_today")
+                return
+            await _edge_scan_body(today)
+
+    async def _edge_scan_body(today):
+        import httpx as _httpx
+        from penny_edge_orchestrator import (
+            EDGE_ENTRY_CUTOFF, SCAN_COMPLETED, format_telegram, mark_edge_scan_completed, run_penny_edge_scan,
+        )
         try:
-            summary = await run_penny_edge_scan(_main.kite)
-            _mark_edge_scan_done(today)
+            summary = await run_penny_edge_scan(_main.kite, entry_cutoff=EDGE_ENTRY_CUTOFF)
+            if isinstance(summary, dict) and summary.get("status") == SCAN_COMPLETED:
+                mark_edge_scan_completed(settings.DB_PATH, today, summary)
+            else:
+                logger.warning("penny_edge_scan_not_completed status=%s",
+                               summary.get("status") if isinstance(summary, dict) else type(summary).__name__)
             try:
                 msg = format_telegram(summary, header="Penny Edge scan")
                 async with _httpx.AsyncClient() as _client:
@@ -619,43 +635,17 @@ def register_penny_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("penny_edge_scan_failed err=%s", exc, exc_info=True)
 
-    def _edge_scan_state_path() -> str:
-        import os as _os
-        return _os.path.join(_os.path.dirname(settings.DB_PATH) or ".", "penny_edge_scan_state.json")
-
-    def _mark_edge_scan_done(day) -> None:
-        import json as _json
-        try:
-            with open(_edge_scan_state_path(), "w", encoding="utf-8") as fh:
-                _json.dump({"date": day.isoformat()}, fh)
-        except OSError as exc:
-            logger.warning("penny_edge_scan_state_write_failed err=%s", exc)
-
-    def _edge_scan_done_today(day) -> bool:
-        import json as _json
-        try:
-            with open(_edge_scan_state_path(), encoding="utf-8") as fh:
-                return _json.load(fh).get("date") == day.isoformat()
-        except (OSError, ValueError, AttributeError):
-            return False
-
-    async def _run_penny_edge_scan_catchup(max_wait_sec: float = 600.0, poll_sec: float = 10.0):
-        """[O13 2026-10-15] Startup catch-up for a missed 09:30 EDGE scan.
-
-        Jobs register before the same-day token is restored, so the Oct 13
-        11:40 catch-up skipped with ``no_access_token``. Wait (bounded) for
-        the token, and do nothing when today's scan already completed, so a
-        midday restart does not repeat the morning scan and its message.
-        """
-        today = datetime.now(IST).date()
-        if _edge_scan_done_today(today):
-            logger.info("penny_edge_scan_catchup_skip reason=already_ran_today")
+    async def _run_penny_edge_scan_catchup():
+        """[O13 2026-10-15] Startup catch-up for a missed 09:30 EDGE scan:
+        waits (bounded) for the restored token, re-checks the 15:15 entry
+        cutoff after the wait, then runs the locked, receipt-checked scan."""
+        from penny_edge_orchestrator import run_edge_catchup
+        if edge_scan_completed_on(settings.DB_PATH, datetime.now(IST).date()):
+            logger.info("penny_edge_scan_catchup_skip reason=completed_today")
             return
-        waited = 0.0
-        while not _main.kite.access_token and waited < max_wait_sec:
-            await asyncio.sleep(poll_sec)
-            waited += poll_sec
-        await _run_penny_edge_scan_safe()
+        await run_edge_catchup(now_fn=lambda: datetime.now(IST),
+                               token_ready=lambda: bool(_main.kite.access_token),
+                               run_scan=_run_penny_edge_scan_safe)
 
     # [PENNY-EDGE-CRON-GUARD 2026-07-01] Single-instance + coalesce.
     # Rule 39 (trading-sentinel-ops): any cron sharing the scheduler
