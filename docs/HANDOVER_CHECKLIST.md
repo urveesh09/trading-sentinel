@@ -12,7 +12,7 @@
 
 
 
-## October 15 — expiry-shadow-v3 and expiry-audit diagnostics (commit `XV3_COMMIT`, Dev, pushed, not deployed)
+## October 15 — expiry-shadow-v3 and expiry-audit diagnostics (commit `db6e028`, Dev, pushed, not deployed)
 
 - [x] CX: C plus a sale on A's failed break; same entry as C, one ticket a
   day.

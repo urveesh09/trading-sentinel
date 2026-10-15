@@ -14,7 +14,7 @@
 
 
 
-## October 15 — expiry-shadow-v3 (CX, BR) and Oct 13 expiry-audit diagnostics (actual behavior, Dev, commit `XV3_COMMIT`)
+## October 15 — expiry-shadow-v3 (CX, BR) and Oct 13 expiry-audit diagnostics (actual behavior, Dev, commit `db6e028`)
 
 Audit: Production `docs/2026-10-13-expiry-system-deep-audit.md`. Design and
 honesty notes: `docs/2026-10-05-expiry-day-paper-book.md`, section

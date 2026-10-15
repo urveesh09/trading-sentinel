@@ -5,7 +5,7 @@
 
 
 
-## October 15 — expiry-shadow-v3 and Oct 13 expiry-audit diagnostics (done, Dev, commit `XV3_COMMIT`, pushed, not deployed)
+## October 15 — expiry-shadow-v3 and Oct 13 expiry-audit diagnostics (done, Dev, commit `db6e028`, pushed, not deployed)
 
 - Problem:
   - The owner wants the expiry book to profit more consistently and never
