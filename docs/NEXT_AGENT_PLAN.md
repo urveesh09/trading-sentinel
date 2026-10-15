@@ -5,7 +5,7 @@
 
 
 
-## October 13 — Oct 13 audit fixes O13-B1/B2/B3/B4/Q1/Q2/R1/P1 (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
+## October 13 — Oct 13 audit fixes O13-B1/B2/B3/B4/Q1/Q2/R1/P1 (done, Dev, commit `433a81a`, pushed, not deployed)
 
 - Problem (Production audit of the clean Oct 13 run, PR #108; expiry
   excluded):

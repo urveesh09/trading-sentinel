@@ -14,7 +14,7 @@
 
 
 
-## October 13 — Oct 13 audit fixes: terminal buyer ideas, quote send gate, exchange fees, restart receipts (actual behavior, Dev, commit `COMMIT_ID`)
+## October 13 — Oct 13 audit fixes: terminal buyer ideas, quote send gate, exchange fees, restart receipts (actual behavior, Dev, commit `433a81a`)
 
 Source: `Production_Trading-sentinel/docs/2026-10-13-production-deep-audit.md`
 (Oct 13 clean session, PR #108). Expiry items are owned by the expiry agent

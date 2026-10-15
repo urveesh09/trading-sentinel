@@ -12,7 +12,7 @@
 
 
 
-## October 13 — Oct 13 audit fixes (commit `COMMIT_ID`, Dev, pushed, not deployed)
+## October 13 — Oct 13 audit fixes (commit `433a81a`, Dev, pushed, not deployed)
 
 - [x] O13-B1: a stop closes the buyer idea (`CLOSED_INVALIDATED`); no later
   target, reminder or authorizer pass; the stop itself still sends;
