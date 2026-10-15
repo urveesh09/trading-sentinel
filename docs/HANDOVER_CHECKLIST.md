@@ -12,6 +12,24 @@
 
 
 
+## October 15 — expiry-shadow-v3 and expiry-audit diagnostics (commit `XV3_COMMIT`, Dev, pushed, not deployed)
+
+- [x] CX: C plus a sale on A's failed break; same entry as C, one ticket a
+  day.
+- [x] BR: B plus a 50% per-leg premium stop; same strangle as B.
+- [x] Summary: mark denominators with unmarked-leg reasons, context field
+  availability, the paired shadow − primary line, and per-play rupees in the
+  owner tally.
+- [x] Primary `expiry-v1`, `expiry-exec-v2`, Telegram trade lines and the
+  owner rule are unchanged.
+- [x] Replay of Production Oct 6/8/13 packets through Dev: 0 row mismatches;
+  diagnostics equal the audit's independent counts. In-sample only, not
+  evidence of profit.
+- [x] Tests: `tests/test_expiry_paper.py` 57 pass; full engine suite
+  5,197 pass, 4 skip, 0 fail (8 min 22 s, on the shared working tree).
+- [ ] Deployed: no (merge, rebuild the engine). Scoring starts at the first
+  expiry after deploy.
+
 ## October 15 — second review R1/R2 (commit `934aa2c`, Dev, pushed, not deployed)
 
 - [x] R1: EDGE cutoff checked before every candidate admission; an accepted

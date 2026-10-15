@@ -5,6 +5,43 @@
 
 
 
+## October 15 — expiry-shadow-v3 and Oct 13 expiry-audit diagnostics (done, Dev, commit `XV3_COMMIT`, pushed, not deployed)
+
+- Problem:
+  - The owner wants the expiry book to profit more consistently and never
+    lose "like crazy".
+  - The Oct 13 audit: losing expiries were lost by bought options riding to
+    zero (C's ticket on Oct 6 and 8; B's legs on all three days).
+  - Medium findings: an OK context hid missing fields (903/966); path marks
+    hid their denominators (95/159); paired shadow results were not printed.
+- Files: `python-engine/expiry_paper.py`; `tests/test_expiry_paper.py` (57,
+  6 new); `docs/2026-10-05-expiry-day-paper-book.md`.
+- Contracts: `SHADOW_VERSION = expiry-shadow-v3`; `SHADOW_PLAYS` gains CX and
+  BR; `PAIRED_WITH`, `STRUCTURE_PLAYS`, `BR_LEG_STOP = 0.50`. New day-state
+  keys: `marks[*].held`, `marks[*].unmarked`, `context_fields`. No schema
+  change; no new store or config.
+- Acceptance (met in Dev):
+  - CX sells at the first tick back past A's failed-break level, while C
+    holds;
+  - BR sells a decaying leg at ≤ 50% of entry and keeps B's exits on the
+    other leg;
+  - unmarked reasons are named; context fields are counted;
+  - paired lines skip expiries where only one side traded;
+  - the replay of the three retained expiries reproduces Production rows (0
+    mismatches), and the diagnostics equal the audit's counts.
+- Rollout: merge and rebuild the engine. Scoring starts at the first expiry
+  after deploy. Today's SENSEX expiry (Oct 15) runs the old code. A day
+  begun before the rebuild is labelled "+expiry-shadow-v3 joined mid-day".
+- Rollback: revert the commit. Stored CX/BR rows stay in the store and
+  print as plays; nothing reads them.
+- Remaining:
+  - [ ] After deploy, on the first expiry: CX and BR rows exist with their
+    primary's entry; the summary shows "held ticks marked", "available on
+    ticks" and "paired with its primary".
+  - [ ] At the owner's 10-expiry review: present CX−C and BR−B to date with
+    the per-play tally. Any promotion is `expiry-v2`, scored on later
+    expiries only.
+
 ## October 15 — second review R1/R2 (done, Dev, commit `934aa2c`, pushed, not deployed)
 
 - Problem:

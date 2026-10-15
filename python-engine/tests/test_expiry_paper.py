@@ -456,7 +456,7 @@ async def test_entry_windows_and_phase_labels_use_the_decision_time(tmp_path):
     db, *_ = await _one_tick(tmp_path / "in", _Market(_book(), _breakout_day),
                              _at(TUESDAY, 15, 13, 25), _at(TUESDAY, 15, 13, 35))
     legs = _positions(db)
-    assert [r["play"] for r in legs] == ["B", "B", "BH", "BH", "BP", "BP"]
+    assert [r["play"] for r in legs] == ["B", "B", "BH", "BH", "BP", "BP", "BR", "BR"]
     assert all(r["entry_ts"] == _at(TUESDAY, 15, 13, 35).isoformat() for r in legs)
 
 
@@ -609,7 +609,7 @@ async def test_shadow_plays_run_beside_the_main_book_without_telegram_trades(tmp
     trades = [m for k, m, _ in _notices(db) if ":summary" not in k]
     assert trades and all(any(f"NIFTY {p}:" in m for p in xp.MAIN_PLAYS) for m in trades)
     summary = _summary(db)
-    assert "shadow plays (expiry-shadow-v2" in summary and f"sold NIFTY26OCT{atm + out:.0f}CE" in summary
+    assert "shadow plays (expiry-shadow-v3" in summary and f"sold NIFTY26OCT{atm + out:.0f}CE" in summary
 
 
 @pytest.mark.asyncio
@@ -885,6 +885,129 @@ async def test_bp_sells_the_strangle_as_one_trade_at_its_target(tmp_path):
     assert "D entry 14:30:00, read 14:30:00" in summary
 
 
+# --------------------------------------------------------------------------- expiry-shadow-v3 (Oct 13 audit)
+
+def _failed_break_day(now):
+    """Quiet box 24,990-25,010, a 13:40 break up to 25,060, then back inside the box from 14:10."""
+    minutes = now.hour * 60 + now.minute + now.second / 60.0
+    if minutes < 13 * 60 + 40:
+        return 25000.0 + 10.0 * math.sin(minutes)
+    if minutes < 13 * 60 + 50:
+        return 25030.0 + (minutes - (13 * 60 + 40)) * 3.0           # 25,030 -> 25,060
+    if minutes < 14 * 60 + 10:
+        return 25060.0 - (minutes - (13 * 60 + 50)) * 3.0           # back to 25,000
+    return 25000.0
+
+
+@pytest.mark.asyncio
+async def test_cx_sells_the_lottery_when_the_break_fails_and_c_holds_it(tmp_path):
+    db = await _run_day(tmp_path, _Market(_book(), _failed_break_day))
+    rows = _positions(db)
+    (c,), (cx,) = [r for r in rows if r["play"] == "C"], [r for r in rows if r["play"] == "CX"]
+    assert (cx["symbol"], cx["entry_ts"], cx["entry_price"], cx["lots"]) == \
+        (c["symbol"], c["entry_ts"], c["entry_price"], c["lots"])               # C's entry: a paired comparison
+    exits = json.loads(cx["events"])[1:]
+    assert [e["action"] for e in exits] == ["FAILED_BREAK"] and cx["status"] == "CLOSED"
+    with closing(sqlite3.connect(xp.expiry_db_path(db))) as conn:
+        box = json.loads(conn.execute("SELECT state FROM expiry_paper_days").fetchone()[0])["box"]
+    level = box["hi"] - xp.FAIL_BACK_WIDTH * (box["hi"] - box["lo"])                # A's failed-break level
+    sold = datetime.fromisoformat(exits[0]["ts"])
+    assert _failed_break_day(sold) < level <= _failed_break_day(sold - timedelta(seconds=10))   # first tick back
+    assert "FAILED_BREAK" not in [e["action"] for e in json.loads(c["events"])]
+    assert _whole([cx]) > _whole([c])                         # premium recovered, not held to the close
+    assert not [k for k, m, _ in _notices(db) if " CX:" in m and ":summary" not in k]          # summary only
+
+
+@pytest.mark.asyncio
+async def test_br_sells_a_strangle_leg_at_half_its_premium_and_keeps_b_exits_otherwise(tmp_path):
+    def late_run(now):
+        minutes = now.hour * 60 + now.minute
+        if minutes < 15 * 60 + 16:
+            return 25000.0 + 10.0 * math.sin(minutes)                 # quiet: no break, B enters at 15:13:30
+        return 25000.0 + min(150.0, (minutes - (15 * 60 + 16)) * 10.0)   # the call side runs, the put decays
+
+    db = await _run_day(tmp_path, _Market(_book(), late_run))
+    rows = _positions(db)
+    b, br = [r for r in rows if r["play"] == "B"], [r for r in rows if r["play"] == "BR"]
+    assert [(r["symbol"], r["entry_ts"], r["entry_price"]) for r in br] == \
+        [(r["symbol"], r["entry_ts"], r["entry_price"]) for r in b]
+    by_kind = {r["opt_type"]: r for r in br}
+    put_exit = json.loads(by_kind["PE"]["events"])[1]
+    assert put_exit["action"] == "STOP" and put_exit["price"] <= by_kind["PE"]["entry_price"] * xp.BR_LEG_STOP
+    assert by_kind["PE"]["status"] == "CLOSED"
+    b_call = next(r for r in b if r["opt_type"] == "CE")
+    assert json.loads(by_kind["CE"]["events"]) == json.loads(b_call["events"])  # the winning leg: B's exits
+    b_put = next(r for r in b if r["opt_type"] == "PE")
+    assert _whole([by_kind["PE"]]) > _whole([b_put])                             # the dead leg recovered
+
+
+def test_unmarkable_legs_name_each_reason():
+    now = _at(TUESDAY, 15, 30)
+    leg = {"status": "OPEN", "lots_open": 2, "lot_size": 65, "strike": 25050.0, "opt_type": "CE", "token": 1}
+    short = dict(leg, token=2, side="SHORT", opt_type="PE", strike=24950.0)
+    deep = ((10.0, 130),)
+    assert xp.unmarkable_legs([leg], {}, now) == ["25050CE NO_QUOTE"]
+    assert xp.unmarkable_legs([leg], {1: xp.Quote((), deep, 10.0, now)}, now) == ["25050CE NO_BID"]
+    assert xp.unmarkable_legs([leg], {1: xp.Quote(((10.0, 65),), deep, 10.0, now)}, now) == ["25050CE THIN"]
+    old = now - timedelta(seconds=xp.QUOTE_MAX_AGE_SEC + 1)
+    assert xp.unmarkable_legs([leg], {1: xp.Quote(deep, deep, 10.0, old)}, now) == ["25050CE STALE"]
+    assert xp.unmarkable_legs([short], {2: xp.Quote(deep, (), 10.0, now)}, now) == ["24950PE NO_ASK"]
+    assert xp.unmarkable_legs([leg, short], {1: xp.Quote(deep, deep, 10.0, now),
+                                             2: xp.Quote(deep, deep, 10.0, now)}, now) == []
+    assert xp.unmarkable_legs([dict(leg, status="CLOSED")], {}, now) == []
+
+
+@pytest.mark.asyncio
+async def test_path_marks_keep_their_denominators_and_name_the_unmarked_legs(tmp_path):
+    def quiet(now):
+        return 25000.0 + 10.0 * math.sin(now.hour * 60 + now.minute)
+
+    from datetime import time as clock_time
+    db = await _run_day(tmp_path, _Market(_book(), quiet, no_bid_after=clock_time(15, 30)))
+    with closing(sqlite3.connect(xp.expiry_db_path(db))) as conn:
+        state = json.loads(conn.execute("SELECT state FROM expiry_paper_days").fetchone()[0])
+    b = [r for r in _positions(db) if r["play"] == "B"]
+    mark = state["marks"][f"B {b[0]['entry_ts']}"]
+    assert mark["held"] > mark["n"] > 0
+    names = {f"{r['strike']:g}{r['opt_type']}" for r in b}
+    assert set(mark["unmarked"]) == {f"{name} NO_BID" for name in names}
+    assert max(mark["unmarked"].values()) == mark["held"] - mark["n"]           # every bidless tick named
+    summary = _summary(db)
+    assert f"({mark['n']} of {mark['held']} held ticks marked; unmarked legs: " in summary
+
+
+def test_context_fields_are_counted_one_by_one():
+    state = {}
+    xp.count_context_fields(state, {"status": "OK", "straddle": 50.0, "iv": 0.18, "rv": 0.08, "iv_rv": 2.3,
+                                    "pcr": 1.0, "fut_buildup": "LONG_BUILDUP", "oi_fresh": 34, "oi_window": 34})
+    xp.count_context_fields(state, {"status": "OK", "pcr": 1.1, "oi_fresh": 30, "oi_window": 34})   # no ATM book
+    xp.count_context_fields(state, {"status": "NO_FRESH_INDEX"})
+    assert state["context_fields"] == {"ok": 2, "straddle": 1, "iv": 1, "rv": 1, "iv_rv": 1, "pcr": 2,
+                                       "fut_buildup": 1, "oi_full": 1}
+    state["ticks"] = 3
+    assert "    available on ticks (of 3): OK 2, straddle 1, IV 1, realized 1, IV/RV 1, PCR 2, " \
+           "future build-up 1, every OI quote fresh 1" in xp.context_lines(state, None)
+
+
+def test_paired_lines_subtract_the_primary_on_days_both_traded(tmp_path):
+    store = str(tmp_path / "x.db")
+    with xp._store(store) as conn:
+        rows = (("2026-10-06", "C", -2000.0), ("2026-10-06", "CX", -900.0), ("2026-10-13", "C", 900.0),
+                ("2026-10-13", "CX", 900.0), ("2026-10-13", "B", -1800.0), ("2026-10-13", "BR", -1000.0),
+                ("2026-10-13", "C500", 200.0))
+        for i, (day, play, net) in enumerate(rows):
+            conn.execute("INSERT INTO expiry_paper_positions (day, underlying, play, exchange, symbol, token, "
+                         "strike, opt_type, lot_size, lots, lots_open, entry_ts, entry_price, max_loss, peak, "
+                         "stop, status, net_pnl) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                         (day, "NIFTY", play, "NFO", f"S{i}", i, 1.0, "CE", 65, 1, 0, day, 1.0, 1.0, 1.0,
+                          0.0, "CLOSED", net))
+        (line,) = xp.paired_lines(conn, "2026-10-13", "NIFTY")
+        assert line.endswith("BR-B today Rs +800.00, to date Rs +800.00 over 1; "
+                             "CX-C today Rs +0.00, to date Rs +1,100.00 over 2")
+        assert "C500" not in line and "AL-A" not in line
+        assert xp.paired_lines(conn, "2026-10-05", "NIFTY") == []
+
+
 def test_the_owner_stop_rule_is_tallied_in_every_summary(tmp_path):
     # Owner, 2026-10-08: if the main book loses on all of 10 expiries, stop expiry-day F&O.
     store = str(tmp_path / "x.db")
@@ -900,7 +1023,8 @@ def test_the_owner_stop_rule_is_tallied_in_every_summary(tmp_path):
         assert xp.owner_rule_lines(conn, "2026-10-08") == [
             "  owner rule (2026-10-08): expiry 2 of 10, main book lost 2 of 2, losing streak 2; "
             "8 expiries left to observe",
-            "  losing expiries / expiries traded, per play (a play that keeps losing is dropped): A 2/2"]
+            "  losing expiries / expiries traded (whole modeled to date), per play "
+            "(a play that keeps losing is dropped): A 2/2 (Rs -800)"]
         assert "losing streak 0" in xp.owner_rule_lines(conn, "2026-10-13")[0]    # a day without a loss
 
 

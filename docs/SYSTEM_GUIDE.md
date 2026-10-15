@@ -14,6 +14,45 @@
 
 
 
+## October 15 — expiry-shadow-v3 (CX, BR) and Oct 13 expiry-audit diagnostics (actual behavior, Dev, commit `XV3_COMMIT`)
+
+Audit: Production `docs/2026-10-13-expiry-system-deep-audit.md`. Design and
+honesty notes: `docs/2026-10-05-expiry-day-paper-book.md`, section
+"expiry-shadow-v3". Primary rules (`expiry-v1`), the execution contract
+(`expiry-exec-v2`), the context (`expiry-context-v1.1`), Telegram trade
+lines and the owner's 10-expiry rule are unchanged.
+
+- **CX (shadow).** CX takes C's entry, sizing, ceiling, bank and trail. Its
+  ticket is also sold (`FAILED_BREAK`) when A's frozen failed-break test fires
+  (`STRUCTURE_PLAYS = A, AL, CX`). It buys one ticket a day.
+- **BR (shadow).** BR takes B's strangle, bank and trail. Each leg is also
+  sold once its bid is down `BR_LEG_STOP = 0.50` of entry: `POLICIES["BR"]`
+  is B with `hard_stop=0.50`, and it exits through `manage_position`'s STOP.
+  Stops inside 15:15–15:40 are AUCTION_WINDOW fills (unverified).
+- **Paired comparison.** `PAIRED_WITH` maps each shadow to its primary.
+  `paired_lines` prints shadow − primary whole modeled, today and to date for
+  this underlying, over expiries where both traded. C500 is excluded (its
+  difference is size, not management).
+- **Mark denominators.** `_mark_paths` keeps `held` and `unmarked` (per-leg
+  reasons from `unmarkable_legs`: `NO_QUOTE`, `STALE`/`AHEAD`/`NO_TIMESTAMP`,
+  `NO_BID`/`NO_ASK`, `THIN`). The summary prints "n of N held ticks marked;
+  unmarked legs: …", or "never marked". Day states from before this change
+  print the old "(n marks)".
+- **Context availability.** `count_context_fields` keeps per-field tick
+  counts in `state["context_fields"]`. The context block prints "available on
+  ticks (of N): OK, straddle, IV, realized, IV/RV, PCR, future build-up,
+  every OI quote fresh".
+- **Owner tally.** Each play shows whole modeled rupees to date beside its
+  losing/traded count. The rule and verdict are unchanged.
+- **Verification.** A scratch replay of the retained Production packets for
+  Oct 6, 8 and 13 through Dev reproduced every Production row with zero
+  mismatches. The new diagnostics equal the audit's independent counts
+  (B 95/159 marked, NO_BID 64/63; D 352/420; context 903/900/837 of 966).
+  In-sample shadow results, not evidence: CX −₹986.46 / −₹2,138.48 /
+  +₹10,288.54 against C −₹2,156.56 / −₹2,138.48 / +₹10,288.54; BR −₹396.84 /
+  −₹1,242.41 / −₹1,097.85 against B −₹846.83 / −₹720.75 / −₹1,894.03. The
+  Oct 13 summary grows to 5,374 UTF-16 units, which is 2 acknowledged parts.
+
 ## October 15 — second review R1/R2 (actual behavior, Dev, commit `934aa2c`)
 
 Review: `docs/2026-10-15-oct13-fixes-second-review.md` (on the F1–F5 tree).
