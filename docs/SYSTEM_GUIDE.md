@@ -14,7 +14,7 @@
 
 
 
-## October 15 — independent review F1–F5 of the Oct 13 fixes (actual behavior, Dev, commit `COMMIT_ID`)
+## October 15 — independent review F1–F5 of the Oct 13 fixes (actual behavior, Dev, commit `ec1d5a2`)
 
 Review: `docs/2026-10-15-oct13-fixes-independent-review.md` (on `433a81a`).
 

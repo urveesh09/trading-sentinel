@@ -12,7 +12,7 @@
 
 
 
-## October 15 — review F1–F5 of the Oct 13 fixes (commit `COMMIT_ID`, Dev, pushed, not deployed)
+## October 15 — review F1–F5 of the Oct 13 fixes (commit `ec1d5a2`, Dev, pushed, not deployed)
 
 - [x] F1 EDGE catch-up re-checks the 15:15 cutoff after the token wait; the
   scan re-checks it at the entry boundary.

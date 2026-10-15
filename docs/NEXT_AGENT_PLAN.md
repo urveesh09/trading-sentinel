@@ -5,7 +5,7 @@
 
 
 
-## October 15 — review F1–F5 of the Oct 13 fixes (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
+## October 15 — review F1–F5 of the Oct 13 fixes (done, Dev, commit `ec1d5a2`, pushed, not deployed)
 
 - Problem (independent review of `433a81a`):
   - F1: the EDGE catch-up could scan at 15:20;
