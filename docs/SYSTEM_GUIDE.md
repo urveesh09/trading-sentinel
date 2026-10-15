@@ -14,7 +14,7 @@
 
 
 
-## October 15 (evening) — Oct 15 audit fixes: outage pages, unsent-retry, held restart page, historical gate (actual behavior, Dev, commit `COMMIT_ID`)
+## October 15 (evening) — Oct 15 audit fixes: outage pages, unsent-retry, held restart page, historical gate (actual behavior, Dev, commit `a6d820d`)
 
 Audit: `Production_Trading-sentinel/docs/2026-10-15-production-deep-audit.md`
 (Production on PR #109 / `4e5836e`). Expiry findings belong to the expiry

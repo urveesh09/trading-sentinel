@@ -5,7 +5,7 @@
 
 
 
-## October 15 (evening) — Oct 15 audit fixes O15-N1/H1/M1/R1/B2/D1/D2 (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
+## October 15 (evening) — Oct 15 audit fixes O15-N1/H1/M1/R1/B2/D1/D2 (done, Dev, commit `a6d820d`, pushed, not deployed)
 
 - Problem (Oct 15 audit, Production PR #109):
   - N1: a 14:57–15:15 DNS outage blanked quotes; `http_errors` was `{}`,

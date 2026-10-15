@@ -12,7 +12,7 @@
 
 
 
-## October 15 (evening) — Oct 15 audit fixes (commit `COMMIT_ID`, Dev, pushed, not deployed)
+## October 15 (evening) — Oct 15 audit fixes (commit `a6d820d`, Dev, pushed, not deployed)
 
 - [x] O15-N1 no-answer provider calls counted by kind; outages paged at
   start and end through the acknowledged outbox (≥ 120 s market overlap,
