@@ -12,7 +12,43 @@
 
 
 
-## October 15 — expiry-shadow-v3 and expiry-audit diagnostics (commit `db6e028`, Dev, pushed, not deployed)
+## October 15 — expiry-v2 (C takes CX's failed-break exit) and expiry-shadow-v4 (commit `5458d2d`, Dev, pushed, not deployed)
+
+- [x] C (main) sells its ticket on A's failed break. CX's rule was never worse
+  than C on any of the 4 expiries (Oct 15 forward +₹2,018.54).
+- [x] CH (shadow) = v1's held C on the same entry; CX retired, its history
+  still prints.
+- [x] A, B, budgets, execution, context and the owner's 10-expiry rule are
+  unchanged. AL, BP and BR are not promoted (AL worse; BP/BR no forward
+  entry).
+- [x] Summary: per-window fresh-index counts (B 0 of 9 on Oct 15); paired
+  lines matched per entry; context "window" labels; each day's own rules in
+  the header.
+- [x] Replay of Production Oct 6/8/13/15 through Dev: only C's rows change,
+  exactly to CX's results; main book in-sample +₹7,836.98 (v1 +₹4,648.34),
+  still 3 losing expiries of 4. In-sample, not evidence of profit.
+- [x] Tests: `tests/test_expiry_paper.py` 60 pass; full engine suite
+  5,228 pass, 4 skip, 0 fail (8 min 7 s, on the shared working tree with a6d820d).
+- [ ] Deployed: no (merge, rebuild the engine before the next expiry).
+
+## October 15 (evening) — Oct 15 audit fixes (commit `a6d820d`, Dev, pushed, not deployed)
+
+- [x] O15-N1 no-answer provider calls counted by kind; outages paged at
+  start and end through the acknowledged outbox (≥ 120 s market overlap,
+  ≥ 5 failures).
+- [x] O15-H1 historical sends gated at send time (3 per 1.05 s).
+- [x] O15-M1 partner sends that never connected retry within their
+  validity; ambiguous failures stay manual.
+- [x] O15-R1 a restart with a held/unknown book pages from 60 s; EDGE token
+  wait bounded in elapsed time.
+- [x] O15-B2 stop samples carry their time (stale ⇒ "no price seen near the
+  stop"); wrap paths end at the 15:15 exit.
+- [x] O15-D1 deployed status recorded for PR #107/#108/#109 entries below.
+- [x] O15-D2 late overnight notices dated in the sent text.
+- [x] Tests: new `tests/test_oct15_audit_fixes.py` 28 pass; full engine suite 5,168 pass, 4 skip, 0 fail (5 min 22 s), `tests/test_expiry_paper.py` excluded because the expiry agent's uncommitted work is in the shared tree.
+- [ ] Deployed: no (merge, rebuild the engine).
+
+## October 15 — expiry-shadow-v3 and expiry-audit diagnostics (commit `db6e028`, Dev, pushed, deployed by PR #109)
 
 - [x] CX: C plus a sale on A's failed break; same entry as C, one ticket a
   day.
@@ -27,19 +63,19 @@
   evidence of profit.
 - [x] Tests: `tests/test_expiry_paper.py` 57 pass; full engine suite
   5,197 pass, 4 skip, 0 fail (8 min 22 s, on the shared working tree).
-- [ ] Deployed: no (merge, rebuild the engine). Scoring starts at the first
+- [x] Deployed by PR #109 (merge `4e5836e`, Oct 15 07:39 IST; recorded Oct 15 from the Production audit). Was: no (merge, rebuild the engine). Scoring starts at the first
   expiry after deploy.
 
-## October 15 — second review R1/R2 (commit `934aa2c`, Dev, pushed, not deployed)
+## October 15 — second review R1/R2 (commit `934aa2c`, Dev, pushed, deployed by PR #109)
 
 - [x] R1: EDGE cutoff checked before every candidate admission; an accepted
   fill is kept.
 - [x] R2: outbox changes are row-scoped; a page queued mid-send survives
   and is delivered.
 - [x] Tests: full engine suite 5,188 pass, 4 skip, 2 fail, 1 known flake deselected (7 min 56 s). Both failures are in `test_expiry_paper.py` and come from the expiry agent's uncommitted shadow-v3 work in progress (with the committed `expiry_paper.py` a v3 test fails instead). None touch R1/R2 code. `test_oct13_audit_fixes.py` 49 pass; EDGE suites pass.
-- [ ] Deployed: no (merge, rebuild the engine).
+- [x] Deployed by PR #109 (merge `4e5836e`, Oct 15 07:39 IST; recorded Oct 15 from the Production audit). Was: no (merge, rebuild the engine).
 
-## October 15 — review F1–F5 of the Oct 13 fixes (commit `ec1d5a2`, Dev, pushed, not deployed)
+## October 15 — review F1–F5 of the Oct 13 fixes (commit `ec1d5a2`, Dev, pushed, deployed by PR #109)
 
 - [x] F1 EDGE catch-up re-checks the 15:15 cutoff after the token wait; the
   scan re-checks it at the entry boundary.
@@ -53,9 +89,9 @@
   otherwise "fill n/a". Checked against Production's Oct 13 UNITEDPOLY rows
   (read-only).
 - [x] Tests: full engine suite 5,187 pass, 4 skip, 0 fail (7 min 45 s; known mark-to-market flake deselected); `test_oct13_audit_fixes.py` 46 pass. Expiry code untouched.
-- [ ] Deployed: no (merge, rebuild the engine).
+- [x] Deployed by PR #109 (merge `4e5836e`, Oct 15 07:39 IST; recorded Oct 15 from the Production audit). Was: no (merge, rebuild the engine).
 
-## October 13 — Oct 13 audit fixes (commit `433a81a`, Dev, pushed, not deployed)
+## October 13 — Oct 13 audit fixes (commit `433a81a`, Dev, pushed, deployed by PR #109)
 
 - [x] O13-B1: a stop closes the buyer idea (`CLOSED_INVALIDATED`); no later
   target, reminder or authorizer pass; the stop itself still sends;
@@ -81,21 +117,21 @@
 - [x] EDGE startup catch-up waits for the token (10 min max) and skips a day
   whose scan already completed.
 - [x] Tests: full engine suite 5,174 pass, 4 skip, 0 fail (7 min 44 s; known mark-to-market flake deselected); `test_oct13_audit_fixes.py` 33 pass. Expiry code untouched.
-- [ ] Deployed: no (merge, rebuild the engine).
+- [x] Deployed by PR #109 (merge `4e5836e`, Oct 15 07:39 IST; recorded Oct 15 from the Production audit). Was: no (merge, rebuild the engine).
 - [ ] After deploy: no `TARGET_ZONE` or reminder after an `INVALIDATION` for
   the same idea; quote `over_documented_limit` 0; one
   `lifecycle_startup_receipt` line at boot.
 
-## October 12 (night) — O12-PB2 card numbers verified (commit `feed23e`, Dev, pushed, not deployed)
+## October 12 (night) — O12-PB2 card numbers verified (commit `feed23e`, Dev, pushed, deployed by PR #108)
 
 - [x] Index conversion vs real SENSEX index (Oct 8): median +0.4, mean |16| points.
 - [x] Premium model on 41,950 pairs; 60-minute decay; target range 0.85–1.0.
 - [x] Loss at SL from the buy limit plus spread and charges; exact stop price; near-stop flag.
 - [x] Five real Oct 6–9 cards replayed: levels correct; the premium stop protected every loss.
 - [x] Tests: full engine suite 5,141 pass, 4 skip, 0 fail (7 min 24 s); partner, hedge and identity suites 231 pass.
-- [ ] Deployed: no (merge, rebuild the engine).
+- [x] Deployed by PR #108 (merge `4fd45f3`, Oct 12 21:45 IST; recorded Oct 15 from the Production audit). Was: no (merge, rebuild the engine).
 
-## October 12 (evening) — O12-PB partner messages for an option buyer (commit `304ad70`, Dev, pushed, not deployed)
+## October 12 (evening) — O12-PB partner messages for an option buyer (commit `304ad70`, Dev, pushed, deployed by PR #108)
 
 - [x] Buyer card (about 300 characters vs 1,670): one option, buy-up-to limit,
   skip time, stop and target on the index plus option premium, risk per lot,
@@ -115,10 +151,10 @@
   time, ₹141 peak).
 - [ ] After deploy, first session: read the `partner_msg` log lines; check
   the card's `≈` index levels against the real index; count pulses.
-- [ ] Deployed: no (merge, rebuild the engine). Rollback
+- [x] Deployed by PR #108 (merge `4fd45f3`, Oct 12 21:45 IST; recorded Oct 15 from the Production audit). Was: no (merge, rebuild the engine). Rollback
   `PARTNER_BUYER_MESSAGES=false`.
 
-## October 12 — Oct 12 audit fixes (commit `d4a75fc`, Dev, pushed, not deployed)
+## October 12 — Oct 12 audit fixes (commit `d4a75fc`, Dev, pushed, deployed by PR #108)
 
 - [x] O12-F1 flat fast exit off the lock and out of telemetry; regular tick waits for a fast pass.
 - [x] O12-R1 anchored chain (1 request), DR/fired-signal reads in the management lane, per-stage read timing.
@@ -139,16 +175,16 @@
   untouched.
 - [x] Tilt checked on a read-only copy of Production F&O rows: same 22
   pairs and nets; drawdown added.
-- [ ] Deployed: no (merge, rebuild the engine).
+- [x] Deployed by PR #108 (merge `4fd45f3`, Oct 12 21:45 IST; recorded Oct 15 from the Production audit). Was: no (merge, rebuild the engine).
 
-## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (commit `2d658b8`, Dev, pushed, not deployed)
+## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (commit `2d658b8`, Dev, pushed, deployed by PR #107)
 
 - [x] Shadow module, hourly report line, `/ops/fno-spread-tilt`; 4 tests.
 - [x] Checked read-only on Production data (reconciles to the F&O ledger).
 - [x] F&O/routes/ops/surface tests: 607 pass.
-- [ ] Deployed: no.
+- [x] Deployed by PR #107 (merge `df55f80`, Oct 11 23:47 IST; recorded Oct 15 from the Production audit). Was: no.
 
-## October 9 (evening) — open items closed (commit `68e965a`, Dev, pushed, not deployed)
+## October 9 (evening) — open items closed (commit `68e965a`, Dev, pushed, deployed by PR #107)
 
 - [x] F&O fast exit ON by default (10 s management only).
 - [x] Gateway notify 64 KB body; best-effort alerts split into parts.
@@ -160,9 +196,9 @@
   see the Oct 4 slice). Gateway jest: 484 pass, 18 fail in `db.test.js` /
   `backlog-reconciliation.test.js` (the same pre-existing Windows baseline);
   the new split/limit/notify tests pass.
-- [ ] Deployed: no (merge, rebuild engine + gateway).
+- [x] Deployed by PR #107 (merge `df55f80`, Oct 11 23:47 IST; recorded Oct 15 from the Production audit). Was: no (merge, rebuild engine + gateway).
 
-## October 9 — Production audit fixes (commit `959392a`, Dev, pushed, not deployed)
+## October 9 — Production audit fixes (commit `959392a`, Dev, pushed, deployed by PR #107)
 
 - [x] O9-R1 symbol cache snapshot + 2-min recovery job + `/health` + watchdog.
 - [x] O9-S1 Smart held exits quoted by symbol; `smart_penny` on `/health`.
@@ -176,7 +212,7 @@
   alone (load flake). `test_expiry_paper.py`: 51 pass. `test_oct9_audit_fixes.py`: 14 pass.
 - [x] Oct 8 expiry replay (925 packets) re-run on this code: identical trades,
   summary parts 3,472 + 826.
-- [ ] Deployed: no (owner merges `codex/production-correction-hedge-p0` and rebuilds the engine).
+- [x] Deployed by PR #107 (merge `df55f80`, Oct 11 23:47 IST; recorded Oct 15 from the Production audit). Was: no (owner merges `codex/production-correction-hedge-p0` and rebuilds the engine).
 
 ## October 8 (late night, 2) — follow-up review F1–F3 (commit `1f4321b`, Dev, pushed, not deployed)
 

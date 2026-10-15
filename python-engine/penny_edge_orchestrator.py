@@ -525,13 +525,20 @@ async def run_edge_catchup(
     after the wait: a token arriving at or after the 15:15 cutoff must not
     start a scan (review F1: a wait begun at 15:14:59 scanned at 15:20).
     ``run_scan`` owns the completed-today check under its lock.
+
+    [O15-R1 2026-10-15] ``max_wait_sec`` is elapsed time on ``now_fn``, not
+    a count of polls: a late wake (scheduler delay, host sleep) used to
+    stretch a 60 s budget to 360 s. The nominal poll count still bounds the
+    loop in case the clock does not move.
     """
-    waited = 0.0
-    while not token_ready() and waited < max_wait_sec:
+    started = now_fn()
+    waited = nominal = 0.0
+    while not token_ready() and waited < max_wait_sec and nominal < max_wait_sec:
         if not edge_entry_window_open(now_fn()):
             break
-        await sleep(poll_sec)
-        waited += poll_sec
+        await sleep(min(poll_sec, max_wait_sec - waited))
+        nominal += poll_sec
+        waited = max(0.0, (now_fn() - started).total_seconds())
     if not edge_entry_window_open(now_fn()):
         logger.warning("penny_edge_scan_catchup_skip reason=after_entry_cutoff now_ist=%s",
                        now_fn().astimezone(_IST).strftime("%H:%M:%S"))

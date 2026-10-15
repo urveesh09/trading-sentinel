@@ -1351,6 +1351,7 @@ async def test_buyer_eod_reports_each_card_in_option_terms(wired, monkeypatch):
     assert text.splitlines() == [
         "🌙 Wrap · Mon 20 Jul",
         "NIFTY fut range 24,980–25,120, closed 25,110 (near the high)",
-        "   10:05 25100 CE: 🎯 target hit 12:40 · option ₹110.5 → peak ₹150 (+36%), last ₹131 (+19%)",
+        # [O15] the 15:27 print came after the 15:15 exit, so it is not the card's result
+        "   10:05 25100 CE: 🎯 target hit 12:40 · option ₹110.5 → peak ₹150 (+36%), ₹150 at 12:42 before the 15:15 exit (+36%)",
         "Cards, last 30 days: NIFTY 1 (🎯1 🛑0)",
     ]

@@ -175,7 +175,7 @@ def test_wrap_ends_the_held_premium_path_at_the_stop():
     series = [("2026-10-13 09:55:00", 263.8), ("2026-10-13 11:00:00", 240.0),
               ("2026-10-13 11:45:00", 190.0), ("2026-10-13 14:40:00", 340.0)]
     text = pb.premium_path(263.8, series, stopped_at="2026-10-13 11:45:00")
-    assert text.startswith("option ₹263.8 → ₹190 at the stop (-28%)")
+    assert text.startswith("option ₹263.8 → ₹190 at 11:45, just before the stop (-28%)")
     assert "after exit (not held) peak ₹340" in text
     assert "peak ₹340 (+29%), last" not in text
     # A target-first card keeps the whole path.
@@ -749,7 +749,7 @@ async def test_target_then_stop_then_recovery_is_not_held(store, monkeypatch):
     monkeypatch.setattr(fno_oi_store, "strike_ltp_series", series)
     out = await po._buyer_card_outcome("NIFTY", day, cards[0])
     assert "🎯 target hit 11:40, 🛑 stopped 11:45" == out["outcome"]
-    assert "at the stop" in out["premium"] and "after exit (not held) peak ₹200" in out["premium"]
+    assert "just before the stop" in out["premium"] and "after exit (not held) peak ₹200" in out["premium"]
     assert advisory_id
 
 

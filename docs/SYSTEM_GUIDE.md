@@ -14,7 +14,112 @@
 
 
 
-## October 15 — expiry-shadow-v3 (CX, BR) and Oct 13 expiry-audit diagnostics (actual behavior, Dev, commit `db6e028`)
+## October 15 — expiry-v2: C takes CX's failed-break exit; expiry-shadow-v4 and Oct 15 expiry-audit fixes (actual behavior, Dev, commit `5458d2d`)
+
+Audit: Production `docs/2026-10-15-expiry-system-deep-audit.md`. The owner
+ordered that a shadow which worked should replace its main play. Design, the
+per-shadow evidence table and honesty notes are in
+`docs/2026-10-05-expiry-day-paper-book.md`, section "expiry-v2". Execution
+(`expiry-exec-v2`), context (`expiry-context-v1.1`), A, B, the budgets and
+the owner's 10-expiry rule are unchanged.
+
+- **C (main, `RULES_VERSION = expiry-v2`).** C is now in `STRUCTURE_PLAYS`
+  (A, AL, C, CX). Its ticket is sold (`FAILED_BREAK`) when A's frozen
+  failed-break test fires; otherwise C's v1 entry, sizing, bank, trail and
+  15:38 flat apply. Why: CX − C was +₹1,170.10, ₹0, ₹0 on the seen Oct 6/8/13
+  replays and +₹2,018.54 on the first forward expiry (Oct 15). It was never
+  worse. C's buy notice says "sold if the break fails, else held into the
+  auction". Its failed-break sell is a main-book Telegram line.
+- **CH (shadow, `SHADOW_VERSION = expiry-shadow-v4`).** expiry-v1's C (held,
+  no failed-break exit), on C's entry, with `POLICIES["CH"] = POLICIES["C"]`.
+  CH − C keeps scoring the promotion. **CX** is in `RETIRED_PLAYS`: no new
+  entries, but its rows still print in the shadow section (when present), the
+  to-date line and the owner tally. Not promoted: AL (−₹4,914.29 against A on
+  Oct 13), BP and BR (no forward entry yet; Oct 15's outage emptied the B
+  window).
+- **Rules version per day.** `_load_state` marks a day begun under older rules
+  as "expiry-v1+expiry-v2 from mid-day", once. The summary header prints the
+  day's own rules (it used to print the module constant).
+- **Entry-window coverage.** `ENTRY_WINDOWS` (box 13:00–13:30, A/C
+  13:30–15:05, D 14:30–14:45, B 15:13:30–15:15). `_record_tick` keeps
+  `state["window_ticks"][name] = [fresh index, ticks]`. The summary prints
+  "window ticks with a fresh index: box n of N, A/C …, D …, B …" (absent on
+  older days).
+- **Paired comparisons bound per entry.** `paired_lines` groups legs by
+  (day, play, entry_ts). A shadow entry pairs only with the primary entry
+  with the same clock and the same legs (symbol, side, lots, entry price).
+  It prints "over n entries on m expiries", plus "k not the same entry" and
+  "k still open" when they occur. C500 stays excluded.
+- **Context labels.** `_moment` prints "D window 14:30:00, read …" and "B
+  window 15:13:30, read …"; the label never implies a trade.
+- **Verification.** A scratch replay of the four retained Production expiries
+  (Oct 6/8/13/15) through Dev produced:
+  - before the change, 0 row mismatches on all four days;
+  - after it, the only differences are C's rows. C now finishes as CX did:
+    −₹986.46 / −₹2,138.48 / +₹10,288.54 / −₹281.00, total +₹6,882.60.
+    CH reproduces v1 C: −₹2,156.56 / −₹2,138.48 / +₹10,288.54 / −₹2,299.54,
+    total +₹3,693.96. Oct 15 has no CX row (retired).
+  - main book, in-sample: +₹7,836.98 under v2 against +₹4,648.34 under v1.
+    Still 3 losing expiries of 4.
+  - the Oct 15 summary prints "B 0 of 9" and CH−C −₹2,018.54, in 2 parts of
+    3,416 and 1,145 UTF-16 units.
+
+## October 15 (evening) — Oct 15 audit fixes: outage pages, unsent-retry, held restart page, historical gate (actual behavior, Dev, commit `a6d820d`)
+
+Audit: `Production_Trading-sentinel/docs/2026-10-15-production-deep-audit.md`
+(Production on PR #109 / `4e5836e`). Expiry findings belong to the expiry
+book and are not touched here.
+
+- **Provider outage visibility (O15-N1).** `EndpointBudget` now counts calls
+  that got no HTTP answer per endpoint and kind (`dns`, `connect`,
+  `connect_timeout`, `timeout`, `other`; `transport_error_kind`), shown as
+  `transport_errors` beside `http_errors` on `/ops/provider-budget`. The
+  first such failure opens an outage; the next provider answer (any status)
+  closes it (`connectivity()`: current + last 20). Quote and historical
+  paths feed it. Oct 15 14:57–15:15 had 154 quote failures while
+  `http_errors` read `{}`.
+- **Outage pages.** The 60 s scheduler tick calls
+  `lifecycle_receipts.provider_outage_alerts` on trading days. An outage with
+  ≥ 5 failures and ≥ 120 s of market-hours overlap queues one "Market data
+  down since HH:MM" page (with open exposure per book, unknown ≠ flat) and,
+  when it ends, one "Market data back" page with the window and counts. The
+  end page retires an undelivered start page (`SUPERSEDED`). Both go
+  through the acknowledged restart-alert outbox (same retries/backoff).
+  Nothing is priced or filled from data seen after the window.
+- **Restart page for a held book (O15-R1).** A market-hours restart now
+  pages from 60 s of overlap when any book is open or unreadable; a flat
+  book keeps the 300 s bar. Oct 15's 168 s host restart with a NIFTY spread
+  held paged nobody. Gaps under 10 min are shown with one decimal.
+- **Historical send gate (O15-H1).** `SendWindowGate(limit=3,
+  window_sec=1.05)` sits right before every historical HTTP send (three call
+  sites), after the shared limiter, like the quote `before_send` gate. Oct
+  15 recorded a historical peak of 4/s (documented 3/s) and one 504. Waits
+  show as `historical_gate_waits`.
+- **Partner sends that never connected (O15-M1).** `partner_bot` returns
+  `unsent_connect` for `httpx.ConnectError` / `ConnectTimeout` (DNS,
+  refused, connect timeout): no byte left the process. `_fail_claim` makes
+  that an ordinary `retry_scheduled` (+30 s, `unsent_proven`), still bounded
+  by the claim's validity, the management observation age (360 s) and
+  `PARTNER_HEDGE_DELIVERY_MAX_ATTEMPTS`. Read timeouts and other transport
+  errors stay ambiguous → manual recovery (no duplicate). Oct 15's 15:10
+  square-off reminder failed this way and expired unsent.
+- **Buyer wrap honesty (O15-B2 and the 15:15 residual).**
+  `partner_buyer.premium_path(..., exit_by=)`: the held path ends at the
+  card's management deadline (payload `management_deadline`, else the
+  configured 15:15), so later prints are not the card's result; the last
+  held print carries its own time ("₹177.25 at 14:57 before the 15:15
+  exit"). Before a stop, a sample within 10 min reads "₹X at HH:MM, just
+  before the stop"; an older one reads "last seen ₹X at HH:MM; no price seen
+  near the stop". No exit price is made up.
+- **EDGE catch-up wait (S15-R1).** `run_edge_catchup` bounds the token wait
+  in elapsed time on `now_fn` (a late wake no longer stretches it), and
+  still stops after the nominal poll count if the clock does not move. The
+  15:15 cutoff checks are unchanged.
+- **Late notices dated (O15-D2).** An overnight notice delivered on a later
+  day is sent as "[Wed 14 Oct, delivered late] …"; the stored row is
+  unchanged.
+
+## October 15 — expiry-shadow-v3 (CX, BR) and Oct 13 expiry-audit diagnostics (actual behavior, commit `db6e028`, deployed by PR #109)
 
 Audit: Production `docs/2026-10-13-expiry-system-deep-audit.md`. Design and
 honesty notes: `docs/2026-10-05-expiry-day-paper-book.md`, section

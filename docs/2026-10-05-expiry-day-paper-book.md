@@ -203,6 +203,65 @@ strategy effect):
 - **Owner tally:** whole modeled rupees to date beside each play's
   losing/traded count.
 
+## `expiry-v2`: C takes CX's failed-break exit; shadows `expiry-shadow-v4` (owner order, October 15)
+
+After the October 15 audit (Production
+`docs/2026-10-15-expiry-system-deep-audit.md`) the owner ordered: replace a
+main play with its shadow where the shadow worked. Each shadow was judged
+against its own primary on the same entries:
+
+| Shadow − primary | Oct 6 | Oct 8 | Oct 13 | Oct 15 (forward) | Decision |
+|---|---|---|---|---|---|
+| CX − C | +₹1,170.10 | ₹0.00 | ₹0.00 | **+₹2,018.54** | **Promoted**: never worse, on every day |
+| AL − A | +₹0.00 | +₹576.91 | **−₹4,914.29** | ₹0.00 | Kept A |
+| BP − B | +₹768.77 | +₹1,507.51 | ₹0.00 | no entry (outage) | Kept B; leading candidate, unproven forward |
+| BR − B | +₹449.99 | −₹521.66 | +₹796.18 | no entry (outage) | Kept B; mixed |
+
+Oct 6/8/13 rows for CX, BR and the pre-deployment AL/BP days come from the
+Dev replay of the retained packets (in-sample). Oct 13 AL/BP and Oct 15 CX
+are Production rows.
+
+- **C (`expiry-v2`).** C's entry, sizing, ceiling, bank and trail are
+  unchanged. Its ticket is also sold (`FAILED_BREAK`) when A's failed-break
+  test fires (`STRUCTURE_PLAYS = A, AL, C`). This is CX's rule unchanged; no
+  number was fitted. C's buy notice now says "sold if the break fails, else
+  held into the auction", and its failed-break sell goes to Telegram like any
+  main-book exit.
+- **Why it is safe to promote.** The rule only adds an exit on a structure
+  signal that A already trades on. It cannot touch a winner whose break never
+  fails (October 13's +₹10,288.54 was untouched). It cost nothing on any of
+  the four expiries. Its risk is a break that fails and then resumes: the
+  ticket is sold and the later run is missed. That is what CH keeps measuring.
+- **CH (shadow).** expiry-v1's C, with the same entry, held into the auction
+  with no failed-break exit. CH − C is the promotion's running score; positive
+  means holding would have done better.
+- **CX retired.** It takes no new entries; its rows and to-date line still
+  print.
+- **Not promoted.** AL lost ₹4,914.29 against A on its first forward expiry.
+  B is the weakest play (lost 3 of 3 traded), but BP and BR have no forward
+  entry yet: Oct 15's DNS outage emptied the whole B window. BP is the leading
+  candidate: in-sample −₹1,185.33 against B's −₹3,461.61 over the four days.
+- **Replayed main book under v2** (in-sample): Oct 6 −₹2,054.37 (v1
+  −₹3,224.47), Oct 8 −₹2,934.51 (same), Oct 13 +₹13,780.74 (same), Oct 15
+  −₹954.88 (v1 −₹2,973.42). Total +₹7,836.98 against v1's +₹4,648.34. It is
+  still 3 losing expiries of 4: v2 makes losses smaller, it does not make
+  every expiry win.
+- **Owner rule unchanged.** The 10-expiry tally keeps counting A, B and C as
+  the main book. Days before the rebuild were v1, and the per-play tally for C
+  mixes v1 and v2 days. The summary header names each day's rules.
+
+**Summary changes from the October 15 audit** (no strategy effect):
+- **Entry-window coverage.** "window ticks with a fresh index: box n of N,
+  A/C, D, B". On October 15 the whole-day count (963 of 966) hid that all
+  nine B ticks were empty.
+- **Paired comparisons are matched entry by entry.** A shadow entry counts
+  only beside the primary entry with the same clock and legs (contract, side,
+  lots, entry price). Others print as "not the same entry"; an entry with an
+  open leg prints "still open". Day totals alone could pair different trades
+  (the audit's counterexample).
+- **Context snapshots are labelled "window", not "entry"**: "B window
+  15:13:30, read 15:16:00" no longer reads like a B trade.
+
 ## October 8 audit corrections (Dev, no strategy change)
 
 - **Slot count (audit T5).** `EXPECTED_SLOTS` is 966 (12:59:00–15:39:50). The

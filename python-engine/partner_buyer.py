@@ -414,7 +414,18 @@ def render_buyer_eod(day_label: str, rows: list[dict], record_line: str = "") ->
     return "\n".join(lines)
 
 
-def premium_path(paid: float, series: list, stopped_at: Optional[str] = None) -> str:
+STOP_SAMPLE_MAX_AGE_SEC = 600      # two 5-minute samples
+
+
+def _sample_age_sec(sample_ts: str, at: str) -> Optional[float]:
+    try:
+        return (datetime.fromisoformat(str(at)) - datetime.fromisoformat(str(sample_ts))).total_seconds()
+    except ValueError:
+        return None
+
+
+def premium_path(paid: float, series: list, stopped_at: Optional[str] = None,
+                 exit_by: Optional[str] = None) -> str:
     """'option ₹97 → peak ₹141, close ₹109' from 5-minute snapshot LTPs.
 
     [O13-B1] ``stopped_at`` ('YYYY-MM-DD HH:MM:SS', same clock as the
@@ -422,23 +433,51 @@ def premium_path(paid: float, series: list, stopped_at: Optional[str] = None) ->
     there, so a later recovery is shown as after-exit, not held, never as
     the card's peak. Oct 13: both cards stopped at 11:45 and recovered past
     target by 14:40.
+
+    [O15-B2] The last sample before the stop carries its own time. One
+    older than STOP_SAMPLE_MAX_AGE_SEC is not a stop price (the review
+    probe showed a 10:00 print labelled "at the stop" for an 11:45 stop),
+    so the line says no price was seen near the stop.
+
+    [O15] ``exit_by`` (the card's square-off deadline, same clock) ends a
+    path with no stop: prints after it are not the card's result (Oct 15:
+    the last print, 15:27, came after the 15:15 exit).
     """
     if not paid or paid <= 0 or not series:
         return ""
+
+    def pct(price: float) -> str:
+        return f"{(price - paid) / paid:+.0%}"
+
+    def before_exit(ts) -> bool:
+        return not exit_by or str(ts) <= exit_by
+
     if stopped_at:
-        held = [ltp for ts, ltp in series if str(ts) <= stopped_at]
-        after = [ltp for ts, ltp in series if str(ts) > stopped_at]
+        held = [(ts, ltp) for ts, ltp in series if str(ts) <= stopped_at]
+        after = [ltp for ts, ltp in series if str(ts) > stopped_at and before_exit(ts)]
         if not held:
             return ""
-        text = f"option ₹{_px(paid)} → ₹{_px(held[-1])} at the stop ({(held[-1] - paid) / paid:+.0%})"
+        ts, ltp = held[-1]
+        age = _sample_age_sec(ts, stopped_at)
+        if age is not None and age <= STOP_SAMPLE_MAX_AGE_SEC:
+            text = f"option ₹{_px(paid)} → ₹{_px(ltp)} at {str(ts)[11:16]}, just before the stop ({pct(ltp)})"
+        else:
+            text = (f"option ₹{_px(paid)} → last seen ₹{_px(ltp)} at {str(ts)[11:16]} ({pct(ltp)}); "
+                    "no price seen near the stop")
         if after:
             peak = max(after)
-            text += f"; after exit (not held) peak ₹{_px(peak)} ({(peak - paid) / paid:+.0%})"
+            text += f"; after exit (not held) peak ₹{_px(peak)} ({pct(peak)})"
         return text
-    ltps = [ltp for _, ltp in series]
-    peak, last = max(ltps), ltps[-1]
-    return (f"option ₹{_px(paid)} → peak ₹{_px(peak)} ({(peak - paid) / paid:+.0%}), "
-            f"last ₹{_px(last)} ({(last - paid) / paid:+.0%})")
+    held = [(ts, ltp) for ts, ltp in series if before_exit(ts)]
+    if not held:
+        return ""
+    peak = max(ltp for _, ltp in held)
+    last_ts, last = held[-1]
+    if len(held) < len(series):
+        return (f"option ₹{_px(paid)} → peak ₹{_px(peak)} ({pct(peak)}), "
+                f"₹{_px(last)} at {str(last_ts)[11:16]} before the {exit_by[11:16]} exit ({pct(last)})")
+    return (f"option ₹{_px(paid)} → peak ₹{_px(peak)} ({pct(peak)}), "
+            f"last ₹{_px(last)} ({pct(last)})")
 
 
 def range_line(day_low: float, day_high: float, close: float) -> str:

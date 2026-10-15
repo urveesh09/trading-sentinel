@@ -146,6 +146,22 @@ async def _scheduler_tick_job(*, recover_previous: bool = False):
         await record_scheduler_tick(settings.DB_PATH, datetime.now(IST), gap)
     except Exception as e:
         logger.warning("scheduler_tick_record_failed error=%s", str(e))
+    # [O15-N1] Page a market-hours provider outage (start and end), through
+    # the same acknowledged outbox; delivered by the retry just below.
+    try:
+        import main as _main_mod
+        budget = getattr(getattr(_main_mod, "kite", None), "endpoint_budget", None)
+        connectivity = budget.connectivity() if hasattr(budget, "connectivity") else None
+        if connectivity and (connectivity.get("current") or connectivity.get("recent")):
+            from lifecycle_receipts import open_exposure_counts, provider_outage_alerts
+            if await is_trading_day(datetime.now(IST).date(), settings.DB_PATH):
+                queued = provider_outage_alerts(
+                    settings.DB_PATH, connectivity, time.time(),
+                    exposure_fn=lambda: open_exposure_counts(settings.DB_PATH))
+                if queued:
+                    logger.warning("provider_outage_alert_queued ids=%s", ",".join(queued))
+    except Exception as e:
+        logger.warning("provider_outage_alert_failed error=%s", str(e))
     # [review F4] Retry any unacknowledged restart page (backoff inside).
     try:
         from lifecycle_receipts import deliver_restart_alerts, has_pending_alerts

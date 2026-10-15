@@ -244,6 +244,20 @@ def _record_run(conn: sqlite3.Connection, day: str, phase: str, summary: dict, n
                          "VALUES (?,?,?,?)", [(day, key, part, now.isoformat()) for key, part in zip(keys, parts)])
 
 
+def _dated_for_delivery(message: str, run_date: str, now: datetime) -> str:
+    """[O15-D2 2026-10-15] A notice delivered on a later day says whose day it
+    is. Oct 15 09:00 delivered Oct 14's "NO ENTRY - quotes unavailable" with
+    no date, reading like that morning's result. The stored text is unchanged."""
+    from datetime import date
+    try:
+        day = date.fromisoformat(str(run_date))
+    except ValueError:
+        return message
+    if day >= now.astimezone(IST).date():
+        return message
+    return f"[{day.strftime('%a %d %b')}, delivered late] {message}"
+
+
 _FLUSH_LOCKS: dict[str, asyncio.Lock] = {}
 NOTICE_STEP_OVER_AFTER = 3          # unknown-cause failures before a notice may be stepped over
 
@@ -278,7 +292,7 @@ async def flush_notices(send: Callable[[str], Awaitable[None]], db_path: Optiona
             if not notice_outbox.is_due(next_attempt_at, clock):
                 continue
             try:
-                await send(message)
+                await send(_dated_for_delivery(message, day, clock))
             except Exception as exc:
                 kind = notice_outbox.classify_send_failure(exc)
                 go_on, retry_at = notice_outbox.after_failure(kind, attempts + 1, clock)

@@ -47,6 +47,9 @@ IST = pytz.timezone("Asia/Kolkata")
 SUSPEND_THRESHOLD_SEC = 30.0       # wall-ahead-of-monotonic jump that counts as host sleep
 STALL_THRESHOLD_SEC = 120.0        # extra monotonic time between heartbeat ticks
 MARKET_GAP_ALERT_SEC = 300.0       # matches ops_metrics.LIVENESS_MAX_GAP_SEC
+HELD_GAP_ALERT_SEC = 60.0          # any book open (or unknown): a shorter gap still pages
+PROVIDER_OUTAGE_ALERT_SEC = 120.0  # market-hours provider silence that pages the operator
+PROVIDER_OUTAGE_MIN_FAILURES = 5   # one stray failure is not an outage
 MAX_EVENTS = 2000
 MARKET_OPEN = dtime(9, 15)
 MARKET_CLOSE = dtime(15, 30)
@@ -205,16 +208,20 @@ def restart_alert_text(receipt: dict, open_exposure: dict) -> Optional[str]:
     could not be read (shown as "unknown", never as flat).
     """
     overlap = receipt.get("market_overlap_sec") or 0.0
-    if overlap < MARKET_GAP_ALERT_SEC:
-        return None
     parts = [f"{name} {'unknown' if count is None else count}"
              for name, count in open_exposure.items() if count is None or count]
+    # [O15-R1] Oct 15 10:35-10:37: a 168 s host restart with a NIFTY spread
+    # held paged nobody (bar was 300 s). Held or unknown exposure pages from
+    # 60 s; a flat book keeps the 300 s bar.
+    if overlap < (HELD_GAP_ALERT_SEC if parts else MARKET_GAP_ALERT_SEC):
+        return None
     held = ", ".join(parts) or "none in any book"
     since = (receipt.get("prior_heartbeat_ist") or "?")[11:16]
     suspend = (f" The wall clock jumped {receipt['prior_host_suspend_sec']:.0f}s ahead of the monotonic "
                "clock first (host sleep or a clock step)."
                if receipt.get("prior_host_suspend_sec") else "")
-    return (f"⚠️ Engine restarted after a {overlap / 60:.0f}-min market-hours gap (last heartbeat {since} IST). "
+    gap = f"{overlap / 60:.0f}-min" if overlap >= 600 else f"{overlap / 60:.1f}-min"
+    return (f"⚠️ Engine restarted after a {gap} market-hours gap (last heartbeat {since} IST). "
             f"Likely cause: {receipt.get('cause')}; check host logs.{suspend} "
             f"Open at recovery: {held}. "
             "Exits resume now; nothing was traded or monitored during the gap.")
@@ -377,3 +384,85 @@ async def _deliver_locked(db_path: str, post, now_epoch: float) -> int:
         record_event(db_path, "restart_alert_attempt", alert_id=alert_id, outcome=outcome,
                      attempts=attempts + 1)
     return pending
+
+
+def supersede_alert(db_path: str, alert_id: str) -> bool:
+    """Retire a still-pending page that a newer one replaces."""
+    rows = _load_outbox(db_path)
+    if not any(row.get("id") == alert_id and row.get("state") == "PENDING" for row in rows):
+        return False
+    _update_alert(db_path, alert_id, state="SUPERSEDED")
+    return True
+
+
+def alert_queued(db_path: str, alert_id: str) -> bool:
+    return any(row.get("id") == alert_id for row in _load_outbox(db_path))
+
+
+# --- provider (market data) outage pages ----------------------------------
+
+def _kinds(outage: dict) -> str:
+    return ", ".join(f"{kind} {n}" for kind, n in sorted((outage.get("kinds") or {}).items()))
+
+
+def outage_lost_text(outage: dict, now_epoch: float, open_exposure: dict) -> str:
+    since = datetime.fromtimestamp(float(outage["start_epoch"]), IST).strftime("%H:%M")
+    mins = (now_epoch - float(outage["start_epoch"])) / 60
+    parts = [f"{name} {'unknown' if count is None else count}"
+             for name, count in open_exposure.items() if count is None or count]
+    held = ", ".join(parts) or "none"
+    return (f"⚠️ Market data down since {since} IST ({mins:.0f} min): {outage.get('failures', 0)} "
+            f"broker calls got no answer ({_kinds(outage)}). Quotes and bars are missing, so "
+            f"entries and marks wait; nothing is priced from old data. Open: {held}.")
+
+
+def outage_restored_text(outage: dict) -> str:
+    start = datetime.fromtimestamp(float(outage["start_epoch"]), IST)
+    end = datetime.fromtimestamp(float(outage["end_epoch"]), IST)
+    mins = (float(outage["end_epoch"]) - float(outage["start_epoch"])) / 60
+    return (f"✅ Market data back {end.strftime('%H:%M')} IST after {mins:.0f} min "
+            f"({start.strftime('%H:%M')}-{end.strftime('%H:%M')}): {outage.get('failures', 0)} broker "
+            f"calls got no answer ({_kinds(outage)}). Decisions in that window had no data; "
+            "they were skipped, not judged.")
+
+
+def provider_outage_alerts(db_path: str, connectivity: dict, now_epoch: float,
+                           exposure_fn=None) -> list[str]:
+    """[O15-N1 2026-10-15] Queue outage pages from
+    ``EndpointBudget.connectivity()``; returns the ids queued now.
+
+    Oct 15 14:57-15:15: DNS failures blanked quotes for 18 minutes (101
+    expiry decisions, every B-window entry, a partner reminder) and nobody
+    was told; the engine's health read OK again afterwards. An outage that
+    covers >= PROVIDER_OUTAGE_ALERT_SEC of market time with at least
+    PROVIDER_OUTAGE_MIN_FAILURES failures pages once while it lasts and once
+    when it ends; the end page retires an undelivered start page (it carries
+    the whole window). Delivery is the acknowledged outbox above.
+    """
+    queued = []
+    current = (connectivity or {}).get("current")
+    if current and int(current.get("failures") or 0) >= PROVIDER_OUTAGE_MIN_FAILURES:
+        start = float(current["start_epoch"])
+        if market_overlap_sec(start, now_epoch) >= PROVIDER_OUTAGE_ALERT_SEC:
+            alert_id = f"provider-outage:{int(start)}:lost"
+            if not alert_queued(db_path, alert_id):
+                exposure = exposure_fn() if exposure_fn is not None else {}
+                if queue_restart_alert(db_path, alert_id, outage_lost_text(current, now_epoch, exposure),
+                                       now_epoch):
+                    queued.append(alert_id)
+    for outage in (connectivity or {}).get("recent") or []:
+        try:
+            start, end = float(outage["start_epoch"]), float(outage["end_epoch"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if (int(outage.get("failures") or 0) < PROVIDER_OUTAGE_MIN_FAILURES
+                or market_overlap_sec(start, end) < PROVIDER_OUTAGE_ALERT_SEC
+                or now_epoch - end > ALERT_MAX_AGE_SEC):
+            continue
+        alert_id = f"provider-outage:{int(start)}:restored"
+        if queue_restart_alert(db_path, alert_id, outage_restored_text(outage), now_epoch):
+            queued.append(alert_id)
+            supersede_alert(db_path, f"provider-outage:{int(start)}:lost")
+            record_event(db_path, "provider_outage", start_epoch=start, end_epoch=end,
+                         failures=outage.get("failures"), kinds=outage.get("kinds"))
+    return queued
