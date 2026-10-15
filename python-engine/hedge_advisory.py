@@ -754,6 +754,12 @@ async def _fail_claim(
                                   "next_attempt_at": (now + timedelta(seconds=max(delay, 1))).isoformat()})
         elif delivery_state in {"rejected", "invalid_recipient"}:
             failed_detail.update({"state": "permanently_rejected", "next_attempt_at": None})
+        elif delivery_state == "unsent_connect":
+            # [O15-M1] The connection never opened, so nothing reached the
+            # partner: an ordinary bounded retry, still subject to the
+            # message's validity, observation age and attempt cap.
+            failed_detail.update({"state": "retry_scheduled", "unsent_proven": True,
+                                  "next_attempt_at": (now + timedelta(seconds=30)).isoformat()})
         else:
             failed_detail.update({"state": "retry_scheduled",
                                   "next_attempt_at": (now + timedelta(minutes=1)).isoformat()})

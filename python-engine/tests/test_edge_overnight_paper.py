@@ -19,6 +19,12 @@ def _sessions(end: date, n: int) -> list[str]:
 
 
 TODAY = date(2026, 10, 6)                       # Tuesday
+
+
+def _plain(message: str) -> str:
+    """The notice body without the O15-D2 "[date, delivered late]" label that
+    a flush on the real (later) clock adds to these dated fixtures."""
+    return message.split("delivered late] ", 1)[-1]
 NEXT = date(2026, 10, 7)
 HISTORY = _sessions(TODAY - timedelta(days=1), 40)
 
@@ -152,7 +158,7 @@ async def test_notice_outbox_retries_until_a_send_succeeds(tmp_path, entry_quote
     assert await eop.flush_notices(fail, cache) == 0
     assert await eop.flush_notices(ok, cache) == 1
     assert await eop.flush_notices(ok, cache) == 0                   # sent once
-    assert sent[0].startswith(f"EDGE overnight (paper) {TODAY.isoformat()}: bought 1")
+    assert _plain(sent[0]).startswith(f"EDGE overnight (paper) {TODAY.isoformat()}: bought 1")
     with sqlite3.connect(eop.overnight_db_path(cache)) as conn:
         assert conn.execute("SELECT COUNT(*) FROM edge_overnight_paper_trades").fetchone()[0] == 1
 
@@ -496,6 +502,7 @@ async def test_a_refused_notice_stops_blocking_later_ones(tmp_path):
     sent = []
 
     async def picky(message):
+        message = _plain(message)
         if message == "bad":
             raise RuntimeError("HTTP 400")
         sent.append(message)
@@ -514,7 +521,7 @@ async def test_a_down_gateway_still_stops_the_flush_after_a_step_over(tmp_path):
     calls = []
 
     async def down(message):
-        calls.append(message)
+        calls.append(_plain(message))
         raise RuntimeError("connection refused")
 
     for _ in range(eop.NOTICE_STEP_OVER_AFTER):

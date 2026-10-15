@@ -313,8 +313,10 @@ class EndpointBudget:
     WINDOW_SEC = 1.0
     LOG_EVERY_SEC = 60.0
 
-    def __init__(self, clock: Callable[[], float] = time.monotonic):
+    def __init__(self, clock: Callable[[], float] = time.monotonic,
+                 wall_clock: Callable[[], float] = time.time):
         self._clock = clock
+        self._wall = wall_clock
         self._recent: dict[str, collections.deque] = {k: collections.deque() for k in self.DOCUMENTED_LIMITS}
         self.calls = {k: 0 for k in self.DOCUMENTED_LIMITS}
         self.peak_per_sec = {k: 0 for k in self.DOCUMENTED_LIMITS}
@@ -322,6 +324,11 @@ class EndpointBudget:
         self._last_log = {k: float("-inf") for k in self.DOCUMENTED_LIMITS}
         self.statuses: dict[str, dict[int, int]] = {}
         self.started_at = datetime.now(timezone.utc).isoformat()
+        # [O15-N1] Failures with no HTTP answer (DNS, connect, timeout) and
+        # the outage they form: first failure -> next provider answer.
+        self.transport_errors: dict[str, dict[str, int]] = {}
+        self.current_outage: Optional[dict] = None
+        self.recent_outages: collections.deque = collections.deque(maxlen=20)
 
     def record(self, endpoint: str) -> int:
         """Count one admitted call; return the calls seen in the last second."""
@@ -354,12 +361,105 @@ class EndpointBudget:
         if int(status) == 429:
             logger.warning("kite_endpoint_http_429 endpoint=%s total=%d", endpoint, bucket[429])
 
+    def record_transport(self, endpoint: str, exc: BaseException) -> str:
+        """[O15-N1] Count a call that got no HTTP answer and fold it into the
+        current outage. Oct 15 14:57-15:15: DNS failures left 154 instruments
+        and 101 expiry decisions without quotes while ``http_errors`` read
+        ``{}``. Returns the failure kind."""
+        if endpoint not in self.DOCUMENTED_LIMITS:
+            endpoint = "other"
+        kind = transport_error_kind(exc)
+        bucket = self.transport_errors.setdefault(endpoint, {})
+        bucket[kind] = bucket.get(kind, 0) + 1
+        now = self._wall()
+        outage = self.current_outage
+        if outage is None:
+            outage = self.current_outage = {"start_epoch": now, "failures": 0, "kinds": {},
+                                            "endpoints": {}}
+            logger.warning("provider_connectivity_lost endpoint=%s kind=%s", endpoint, kind)
+        outage["failures"] += 1
+        outage["last_failure_epoch"] = now
+        outage["kinds"][kind] = outage["kinds"].get(kind, 0) + 1
+        outage["endpoints"][endpoint] = outage["endpoints"].get(endpoint, 0) + 1
+        return kind
+
+    def record_answer(self) -> None:
+        """Any HTTP answer from the provider (2xx or not) ends an outage."""
+        outage = self.current_outage
+        if outage is None:
+            return
+        self.current_outage = None
+        outage["end_epoch"] = self._wall()
+        self.recent_outages.append(outage)
+        logger.warning("provider_connectivity_restored outage_sec=%.1f failures=%d kinds=%s",
+                       outage["end_epoch"] - outage["start_epoch"], outage["failures"],
+                       ",".join(f"{k}:{n}" for k, n in sorted(outage["kinds"].items())))
+
+    def connectivity(self) -> dict:
+        return {"current": dict(self.current_outage) if self.current_outage else None,
+                "recent": [dict(o) for o in self.recent_outages]}
+
     def snapshot(self) -> dict:
         return {k: {"calls": self.calls[k], "peak_per_sec": self.peak_per_sec[k],
                     "over_documented_limit": self.over_limit[k], "documented_limit_per_sec": v,
                     "http_errors": {str(code): n for code, n in sorted(self.statuses.get(k, {}).items())},
-                    "http_429": self.statuses.get(k, {}).get(429, 0)}
+                    "http_429": self.statuses.get(k, {}).get(429, 0),
+                    "transport_errors": dict(sorted(self.transport_errors.get(k, {}).items()))}
                 for k, v in self.DOCUMENTED_LIMITS.items()}
+
+
+_DNS_MARKERS = ("name or service not known", "temporary failure in name resolution",
+                "nodename nor servname", "getaddrinfo failed", "no address associated")
+
+
+def transport_error_kind(exc: BaseException) -> str:
+    """``dns`` / ``connect_timeout`` / ``connect`` / ``timeout`` / ``other``."""
+    import socket
+    chain, seen = [], exc
+    while seen is not None and len(chain) < 6:
+        chain.append(seen)
+        seen = seen.__cause__ or seen.__context__
+    if any(isinstance(e, socket.gaierror) for e in chain) or any(
+            marker in str(e).lower() for e in chain for marker in _DNS_MARKERS):
+        return "dns"
+    if isinstance(exc, httpx.ConnectTimeout):
+        return "connect_timeout"
+    if isinstance(exc, httpx.ConnectError):
+        return "connect"
+    if isinstance(exc, httpx.TimeoutException):
+        return "timeout"
+    return "other"
+
+
+class SendWindowGate:
+    """[O15-H1 2026-10-15] At most ``limit`` real sends in any
+    ``window_sec``, stamped right before the HTTP call.
+
+    The shared limiter admits at 3/s, but an admitted task can be scheduled
+    late and then go out next to the following one: Oct 15 recorded 4
+    historical calls inside one second (documented 3/s) and one HTTP 504.
+    Same idea as the quote ``before_send`` gate. The caller records the
+    endpoint and sends with nothing awaited in between.
+    """
+
+    def __init__(self, limit: int, window_sec: float, clock: Callable[[], float] = time.monotonic):
+        self.limit = limit
+        self.window_sec = window_sec
+        self._clock = clock
+        self._sends: collections.deque = collections.deque()
+        self.waits = 0
+
+    async def before_send(self) -> float:
+        started = self._clock()
+        while True:
+            now = self._clock()
+            while self._sends and now - self._sends[0] >= self.window_sec:
+                self._sends.popleft()
+            if len(self._sends) < self.limit:
+                self._sends.append(now)
+                return now - started
+            self.waits += 1
+            await asyncio.sleep(max(0.001, self._sends[0] + self.window_sec - now))
 
 
 _LANE_RANK = {"management": 0, "normal": 1, "bulk": 2}
@@ -642,6 +742,28 @@ def _record_status(client, endpoint: str, status: int) -> None:
     budget = getattr(client, "endpoint_budget", None)
     if budget is not None:
         budget.record_status(endpoint, status)
+        if hasattr(budget, "record_answer"):
+            budget.record_answer()
+
+
+def _record_answer(client) -> None:
+    """A provider HTTP answer arrived (ends a connectivity outage)."""
+    budget = getattr(client, "endpoint_budget", None)
+    if budget is not None and hasattr(budget, "record_answer"):
+        budget.record_answer()
+
+
+def _record_transport(client, endpoint: str, exc: BaseException) -> None:
+    """[O15-N1] A call that got no HTTP answer (DNS/connect/timeout)."""
+    budget = getattr(client, "endpoint_budget", None)
+    if budget is not None and hasattr(budget, "record_transport"):
+        budget.record_transport(endpoint, exc)
+
+
+async def _historical_send_gate(client) -> None:
+    gate = getattr(client, "historical_gate", None)
+    if gate is not None:
+        await gate.before_send()
 
 
 class KiteClient:
@@ -651,6 +773,8 @@ class KiteClient:
         self.token_set_ist_date = None  # [BOOTSTRAP-2026-07-17] see set_token
         self.limiter = RateLimiter(rate=3.0, burst=1)
         self.endpoint_budget = EndpointBudget()
+        # 3/s documented, with a small margin for provider-side clock jitter.
+        self.historical_gate = SendWindowGate(limit=3, window_sec=1.05)
         self.quote_budget = QuoteBudget(rate=float(getattr(settings, "KITE_QUOTE_RATE_PER_SEC", 1.0)))
         self.instrument_cache = {}
         self._cache_lock = asyncio.Lock()
@@ -1201,12 +1325,14 @@ class KiteClient:
         
         for attempt in range(5):
             await self.limiter.acquire()
+            await _historical_send_gate(self)
             _record_endpoint(self, "historical")
             try:
                 resp = await self.client.get(
                     f"/instruments/historical/{instrument_token}/day",
                     params={"from": from_date, "to": to_date}
                 )
+                _record_answer(self)
                 resp.raise_for_status()
                 data = resp.json().get("data", {}).get("candles", [])
                 if not data:
@@ -1233,7 +1359,8 @@ class KiteClient:
                     await asyncio.sleep(2 ** attempt)
                     continue
                 raise
-            except httpx.RequestError:
+            except httpx.RequestError as e:
+                _record_transport(self, "historical", e)
                 await asyncio.sleep(2 ** attempt)
                 continue
         
@@ -1368,12 +1495,14 @@ class KiteClient:
 
         for attempt in range(5):
             await self.limiter.acquire()
+            await _historical_send_gate(self)
             _record_endpoint(self, "historical")
             try:
                 resp = await self.client.get(
                     f"/instruments/historical/{instrument_token}/{interval}",
                     params={"from": from_datetime, "to": to_datetime}
                 )
+                _record_answer(self)
                 resp.raise_for_status()
                 data = resp.json().get("data", {}).get("candles", [])
                 if not data:
@@ -1409,7 +1538,8 @@ class KiteClient:
                     await asyncio.sleep(2 ** attempt)
                     continue
                 raise
-            except httpx.RequestError:
+            except httpx.RequestError as e:
+                _record_transport(self, "historical", e)
                 await asyncio.sleep(2 ** attempt)
                 continue
 
@@ -1536,6 +1666,7 @@ class KiteClient:
                     params=[("i", str(t)) for t in tokens],
                 )
                 timing["transport_sec"] += time.monotonic() - transport_started
+                _record_answer(self)
                 resp.raise_for_status()
                 parse_started = time.monotonic()
                 data = resp.json().get("data", {})
@@ -1607,6 +1738,7 @@ class KiteClient:
                 return _finish({})
             except httpx.RequestError as e:
                 last_exc = e
+                _record_transport(self, "quote", e)
                 if attempt < max_attempts:
                     timing["retry_count"] += 1
                     logger.warning(
@@ -1689,6 +1821,7 @@ class KiteClient:
             transport_started = time.monotonic()
             response = await self.client.get("/quote", params=[("i", key) for key in requested.values()])
             timing["transport_sec"] = time.monotonic() - transport_started
+            _record_answer(self)
             response.raise_for_status()
             parse_started = time.monotonic()
             payload = response.json().get("data", {})
@@ -1707,6 +1840,8 @@ class KiteClient:
             if isinstance(exc, httpx.HTTPStatusError):
                 _record_status(self, "quote", exc.response.status_code)
                 timing["http_status"] = exc.response.status_code
+            else:
+                _record_transport(self, "quote", exc)
             logger.warning("kite_quote_instrument_failed requested=%d err=%s", len(requested),
                            type(exc).__name__)
             timing["outcome"] = "FAILED"
@@ -2035,12 +2170,14 @@ class KiteClient:
         )
         for attempt in range(5):
             await self.limiter.acquire()
+            await _historical_send_gate(self)
             _record_endpoint(self, "historical")
             try:
                 resp = await self.client.get(
                     f"/instruments/historical/{int(instrument_token)}/{interval}",
                     params={"from": from_datetime, "to": to_datetime},
                 )
+                _record_answer(self)
                 resp.raise_for_status()
                 data = resp.json().get("data", {}).get("candles", [])
                 if not data:
@@ -2092,7 +2229,8 @@ class KiteClient:
                     instrument_token, e.response.status_code,
                 )
                 return pd.DataFrame()
-            except httpx.RequestError:
+            except httpx.RequestError as e:
+                _record_transport(self, "historical", e)
                 await asyncio.sleep(2 ** attempt)
                 continue
         logger.error("max_retries_exceeded_intraday_token token=%d", instrument_token)

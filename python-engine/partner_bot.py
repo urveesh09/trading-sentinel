@@ -129,14 +129,22 @@ async def send_partner_result(text: str, *, kind: str = "partner_msg") -> Partne
             # from this transport call; the advisory ledger records it as an
             # ambiguity requiring conservative recovery.
             # A transport failure may arrive after Telegram accepted the POST.
-            # The API supplies no client idempotency key, so no httpx transport
-            # exception is evidence that a retry is safe.
-            state = "ambiguous_timeout" if isinstance(exc, httpx.TimeoutException) else "ambiguous_transport"
+            # The API supplies no client idempotency key, so a failure after
+            # the connection opened is never evidence that a retry is safe.
+            # [O15-M1 2026-10-15] Except a failure to CONNECT (DNS, refused,
+            # connect timeout): no request byte left this process, so it is
+            # provably unsent and the ledger may retry it within the message's
+            # own validity. Oct 15: the 15:10 square-off reminder failed with
+            # a DNS ConnectError, went to manual recovery and expired unsent.
+            if isinstance(exc, (httpx.ConnectError, httpx.ConnectTimeout)):
+                state = "unsent_connect"
+            else:
+                state = "ambiguous_timeout" if isinstance(exc, httpx.TimeoutException) else "ambiguous_transport"
             result = PartnerSendResult(False, state=state, error=type(exc).__name__)
 
     logger.error(
-        "partner_send_failed kind=%s chat=%s err=%s -- message preserved "
-        "in the partner_msg log line above", kind, _masked_chat(), result.error,
+        "partner_send_failed kind=%s chat=%s state=%s err=%s -- message preserved "
+        "in the partner_msg log line above", kind, _masked_chat(), result.state, result.error,
     )
     return result
 

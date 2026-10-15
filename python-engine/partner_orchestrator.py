@@ -338,6 +338,7 @@ async def _todays_card_outcomes(db_path: str, underlying: str, day_iso: str,
                       "event_time": str(event[1])[11:16] if event else None,
                       "event_at": str(event[1]) if event else None,
                       "stop_at": str(stop_at[advisory_id]) if advisory_id in stop_at else None,
+                      "exit_by": payload.get("management_deadline"),
                       "buyer_view": payload.get("buyer_view")})
     if counts is not None:
         counts.update(record)
@@ -1943,13 +1944,19 @@ async def _buyer_card_outcome(name: str, day_iso: str, card: dict) -> dict:
     else:
         # 5-minute samples cannot prove a level was never touched (O13-B4).
         outcome = "no level seen (5-min samples)"
-    stopped_at = None
-    stop_clock = card.get("stop_at") or (card.get("event_at") if card.get("event") == "INVALIDATION" else None)
-    if stop_clock:
+    def series_clock(value) -> Optional[str]:
         try:
-            stopped_at = datetime.fromisoformat(str(stop_clock)).astimezone(IST).strftime("%Y-%m-%d %H:%M:%S")
+            return datetime.fromisoformat(str(value)).astimezone(IST).strftime("%Y-%m-%d %H:%M:%S")
         except ValueError:
-            stopped_at = None
+            return None
+
+    stop_clock = card.get("stop_at") or (card.get("event_at") if card.get("event") == "INVALIDATION" else None)
+    stopped_at = series_clock(stop_clock) if stop_clock else None
+    # [O15] The held path ends at the card's square-off deadline (15:15).
+    exit_by = series_clock(card["exit_by"]) if card.get("exit_by") else None
+    if exit_by is None:
+        exit_minute = settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE
+        exit_by = f"{day_iso} {exit_minute // 60:02d}:{exit_minute % 60:02d}:00"
     premium = ""
     if view.get("strike") and view.get("ask") and card.get("signal_at"):
         try:
@@ -1957,7 +1964,7 @@ async def _buyer_card_outcome(name: str, day_iso: str, card: dict) -> dict:
             series = await fno_oi_store.strike_ltp_series(
                 settings.DB_PATH, name, day_iso, str(view["expiry"]), float(view["strike"]),
                 str(view["opt_type"]), from_ts=start)
-            premium = premium_path(float(view["ask"]), series, stopped_at=stopped_at)
+            premium = premium_path(float(view["ask"]), series, stopped_at=stopped_at, exit_by=exit_by)
         except (ValueError, TypeError, aiosqlite.Error) as exc:
             logger.warning("partner_buyer_premium_path_failed underlying=%s err=%s", name, type(exc).__name__)
     return {"time": card.get("time", ""), "option": option, "outcome": outcome, "premium": premium}

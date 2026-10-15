@@ -286,6 +286,9 @@ async def get_provider_budget(request: Request):
             "started_at": getattr(budget, "started_at", None),
             "endpoints": budget.snapshot() if budget is not None else {},
             "quote_budget": quote_budget.snapshot() if quote_budget is not None else None,
+            # [O15-N1] calls with no HTTP answer, and the outages they formed
+            "connectivity": (budget.connectivity() if hasattr(budget, "connectivity") else None),
+            "historical_gate_waits": getattr(getattr(_main.kite, "historical_gate", None), "waits", None),
             "shared_limiter_rate_per_sec": getattr(getattr(_main.kite, "limiter", None), "rate", None)}
 
 

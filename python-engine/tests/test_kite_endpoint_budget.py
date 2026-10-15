@@ -24,7 +24,8 @@ def test_budget_counts_per_second_rate_and_over_limit_calls():
     assert budget.record("mystery") == 1               # unknown -> other
     snap = budget.snapshot()
     assert snap["quote"] == {"calls": 3, "peak_per_sec": 2, "over_documented_limit": 1,
-                             "documented_limit_per_sec": 1, "http_errors": {}, "http_429": 0}
+                             "documented_limit_per_sec": 1, "http_errors": {}, "http_429": 0,
+                             "transport_errors": {}}
     budget.record_status("quote", 429)
     budget.record_status("quote", 503)
     assert budget.snapshot()["quote"]["http_429"] == 1

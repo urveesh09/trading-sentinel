@@ -5,7 +5,51 @@
 
 
 
-## October 15 — expiry-shadow-v3 and Oct 13 expiry-audit diagnostics (done, Dev, commit `db6e028`, pushed, not deployed)
+## October 15 (evening) — Oct 15 audit fixes O15-N1/H1/M1/R1/B2/D1/D2 (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
+
+- Problem (Oct 15 audit, Production PR #109):
+  - N1: a 14:57–15:15 DNS outage blanked quotes; `http_errors` was `{}`,
+    health read OK afterwards, nobody was paged;
+  - H1: historical peak 4/s against the documented 3/s, one 504;
+  - M1: the 15:10 buyer reminder failed with a DNS `ConnectError`, went to
+    manual recovery and expired unsent;
+  - R1: a 168 s host restart with a spread held did not page (300 s bar);
+    the EDGE token wait counted polls, not elapsed time;
+  - B2: a stale sample could be labelled "at the stop"; wrap paths ran past
+    the 15:15 exit;
+  - D1: docs still said "not deployed" for code running since PR #109;
+  - D2: Oct 14's NO ENTRY notice arrived Oct 15 with no date.
+- Files: `kite_client.py`, `routes_ops.py`, `lifecycle_receipts.py`,
+  `ops_watchdogs.py`, `partner_bot.py`, `hedge_advisory.py`,
+  `partner_buyer.py`, `partner_orchestrator.py`, `penny_edge_orchestrator.py`,
+  `edge_overnight_paper.py`; tests `tests/test_oct15_audit_fixes.py` (28),
+  updated `test_oct13_audit_fixes.py`, `test_partner_orchestrator.py`,
+  `test_kite_endpoint_budget.py`, `test_edge_overnight_paper.py`.
+- Acceptance (Dev tests, fake clocks/transports):
+  - DNS errors count as `transport_errors.dns`; any answer closes the
+    outage; a 19-min market outage queues one start and one end page, the
+    end retiring the start; < 120 s, < 5 failures or after hours: no page;
+  - no 4 historical sends inside one window; all three call sites gated;
+  - `ConnectError`/`ConnectTimeout` → `unsent_connect` → retried once after
+    30 s and delivered; `ReadTimeout`/protocol errors stay manual;
+  - 168 s gap with a spread open pages; flat book under 300 s does not;
+  - a 10:00 sample is not "at the stop" for 11:45; 15:27 prints are not
+    the card's result; EDGE wait ends by elapsed time and on a frozen clock;
+  - late overnight notices are dated in the sent text only.
+- Rollout: merge, rebuild the engine. No migration; no config change. The
+  outbox file `restart_alert_outbox.json` also carries outage pages.
+  Rollback: revert the commit; no stored state depends on it.
+- Remaining:
+  - [ ] After deploy: a provider outage ≥ 2 min in market hours gives one
+    "down" and one "back" page; `/ops/provider-budget` shows
+    `transport_errors`, `connectivity` and `historical_gate_waits`;
+    historical `over_documented_limit` stays 0.
+  - [ ] A buyer reminder that hits a connect failure is delivered on retry
+    (`unsent_proven` in its claim detail).
+  - [ ] Ops: the outage cause (host network/router/DNS) is outside the
+    container; check the host when the page arrives.
+
+## October 15 — expiry-shadow-v3 and Oct 13 expiry-audit diagnostics (done, Dev, commit `db6e028`, pushed, deployed by PR #109)
 
 - Problem:
   - The owner wants the expiry book to profit more consistently and never
@@ -42,7 +86,7 @@
     the per-play tally. Any promotion is `expiry-v2`, scored on later
     expiries only.
 
-## October 15 — second review R1/R2 (done, Dev, commit `934aa2c`, pushed, not deployed)
+## October 15 — second review R1/R2 (done, Dev, commit `934aa2c`, pushed, deployed by PR #109)
 
 - Problem:
   - R1: a slow first EDGE fill let a second admission happen at 15:16;
@@ -60,7 +104,7 @@
     the backoff.
 - Remaining: first-day observation as in the F1–F5 entry.
 
-## October 15 — review F1–F5 of the Oct 13 fixes (done, Dev, commit `ec1d5a2`, pushed, not deployed)
+## October 15 — review F1–F5 of the Oct 13 fixes (done, Dev, commit `ec1d5a2`, pushed, deployed by PR #109)
 
 - Problem (independent review of `433a81a`):
   - F1: the EDGE catch-up could scan at 15:20;
@@ -95,7 +139,7 @@
     `status: COMPLETED` a day; no EDGE entry after 15:15; on a market-hours
     restart, one acknowledged page listing every book.
 
-## October 13 — Oct 13 audit fixes O13-B1/B2/B3/B4/Q1/Q2/R1/P1 (done, Dev, commit `433a81a`, pushed, not deployed)
+## October 13 — Oct 13 audit fixes O13-B1/B2/B3/B4/Q1/Q2/R1/P1 (done, Dev, commit `433a81a`, pushed, deployed by PR #109)
 
 - Problem (Production audit of the clean Oct 13 run, PR #108; expiry
   excluded):
@@ -162,7 +206,7 @@
     (`main.py` settle path). This is a label only, since the ledger notes
     hold the true reason; change it only with consumers checked.
 
-## October 12 (night) — O12-PB2 card numbers verified on Production data (done, Dev, commit `feed23e`, pushed, not deployed)
+## October 12 (night) — O12-PB2 card numbers verified on Production data (done, Dev, commit `feed23e`, pushed, deployed by PR #108)
 
 - Problem: the partner trades real money, so each number on the card must
   be checked against what markets actually did, not just modelled.
@@ -190,7 +234,7 @@
     premium-aware target or strike choice for buyers is a strategy change,
     so it needs frozen rules and forward scoring.
 
-## October 12 (evening) — O12-PB partner messages for an option buyer (done, Dev, commit `304ad70`, pushed, not deployed)
+## October 12 (evening) — O12-PB partner messages for an option buyer (done, Dev, commit `304ad70`, pushed, deployed by PR #108)
 
 - Problem:
   - the partner only buys options now and no longer hedges;
@@ -227,7 +271,7 @@
     retry). That first needs the collection-completeness slot model
     updated.
 
-## October 12 — Oct 12 audit fixes O12-F1/R1/Q1/Q2/C1/C2/T1–T3/S1/D1 (done, Dev, commit `d4a75fc`, pushed, not deployed)
+## October 12 — Oct 12 audit fixes O12-F1/R1/Q1/Q2/C1/C2/T1–T3/S1/D1 (done, Dev, commit `d4a75fc`, pushed, deployed by PR #108)
 
 - Problem (Production audit, PR #107 deployed):
   - flat 10 s fast-exit passes took the F&O lock from 4 regular entry
@@ -283,7 +327,7 @@
   5. Still open: C4/C7/finalizer deferred items; next expiry (NIFTY Oct 13,
      SENSEX Oct 15) is the expiry agent's.
 
-## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (done, Dev, commit `2d658b8`, pushed, not deployed)
+## October 9 (night) — F&O shadow FNO_SPREAD_TILT_V1 (done, Dev, commit `2d658b8`, pushed, deployed by PR #107)
 
 - Problem: the owner asked for more profit / less loss. The paper spreads
   outperform the naked options per rupee of risk but stay 1 lot.
@@ -300,7 +344,7 @@
   any expiry play (the 10-expiry rule is the decision point); Momentum and
   EDGE are left as they are unless a genuine improvement appears.
 
-## October 9 (evening) — open items closed (done, Dev, commit `68e965a`, pushed, not deployed)
+## October 9 (evening) — open items closed (done, Dev, commit `68e965a`, pushed, deployed by PR #107)
 
 - Problem: the Oct 9 audit's remaining items: F&O profit-lock floor missed by
   the 90 s sample; gateway 413 for any oversized notify; unexplained
@@ -319,7 +363,7 @@
   reason=fno_pass_in_progress`, and quote `over_documented_limit` on
   `/ops/provider-budget`.
 
-## October 9 — Production audit fixes O9-R1/S1/M1/O1/Q1-Q3/E1 (done, Dev, commit `959392a`, pushed, not deployed)
+## October 9 — Production audit fixes O9-R1/S1/M1/O1/Q1-Q3/E1 (done, Dev, commit `959392a`, pushed, deployed by PR #107)
 
 - Problem: a DNS failure on the 11:19 restart left the symbol cache empty
   all afternoon (no retry); Smart held exits, Momentum, Penny and the
