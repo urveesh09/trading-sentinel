@@ -1,6 +1,7 @@
 """[B2 2026-10-03] Classic Penny MIS lifecycle replay: parity with shipped runtime."""
 import asyncio
 from datetime import date, datetime, timedelta
+import math
 
 import pandas as pd
 import pytest
@@ -166,7 +167,12 @@ def test_paper_stop_polls_ltp_while_live_broker_stop_sees_the_wick():
 def test_paper_stop_fills_at_the_polled_ltp_and_live_gap_fills_at_open():
     gap = {"11:00": (97.0, 97.5, 96.5, 97.0, 1000.0)}
     paper = _run(_breakout_day(overrides=gap), book="PENNY_PAPER")["trades"][0]
-    assert (paper["exit_reason"], paper["exit_fill_price"]) == ("PAPER_STOP_LTP", 97.0)
+    # Polled LTP 97.00, filled like the runtime paper executor: 97.00 x 0.99 floored.
+    assert (paper["exit_reason"], paper["exit_reference_price"], paper["exit_fill_price"]) == (
+        "PAPER_STOP_LTP", 97.0, 96.03)
+    reference = _run(_breakout_day(overrides=gap), book="PENNY_PAPER", paper_exit_fill="REFERENCE")["trades"][0]
+    assert reference["exit_fill_price"] == 97.0 and "exit_reference_price" not in reference
+    assert paper["net_pnl"] < reference["net_pnl"]
     live = _run(_breakout_day(overrides=gap), book="PENNY")["trades"][0]
     assert (live["exit_reason"], live["exit_fill_price"]) == ("BROKER_STOP_GAP", 97.0)
     assert paper["net_pnl"] < 0 and paper["r_multiple"] < -1
@@ -182,7 +188,8 @@ def test_1430_job_uses_runtime_branch_order(price, reason):
                                     for h in (14,) for m in range(0, 60)})
     trade = _run(rows)["trades"][0]
     assert trade["exit_reason"] == reason
-    assert trade["exit_fill_ts"] == "2026-08-10T14:30:00+05:30" and trade["exit_fill_price"] == price
+    assert trade["exit_fill_ts"] == "2026-08-10T14:30:00+05:30" and trade["exit_reference_price"] == price
+    assert trade["exit_fill_price"] == pytest.approx(math.floor(price * 0.99 * 100 + 1e-9) / 100)
 
 
 def test_fresh_loss_holds_at_1430_then_force_closes():

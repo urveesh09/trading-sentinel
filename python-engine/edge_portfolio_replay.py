@@ -33,6 +33,15 @@ This candidate keeps the shipped scan, ranking and sizing, but:
 
 There is no stop, because nothing can execute overnight. A missing or
 zero-volume next session delays the sale to that ticker's next open.
+
+EDGE_OVERNIGHT_RUNTIME (October 18, 2026) is the runtime overnight book as
+far as daily bars can show it (``edge_overnight_paper``): the scan ranks
+``RANK_DEPTH`` deep, ``PENNY_EDGE_MAX_POSITIONS`` slots are filled in rank
+order, and a pick refused by the runtime's own daily-bar realism rules
+(``series_refusal``: SME / duplicate series / weak kind; ``day_high_refusal``:
+a close locked at the day's high after a >= 1.9% rise) is replaced by the
+next. Quote-only refusals (circuit limit, depth, staleness) are not visible
+in daily bars and are not replayed.
 """
 from __future__ import annotations
 
@@ -49,7 +58,8 @@ from daily_portfolio import (
     calendar_from, penny_cnc_costs, run_daily_book, summarize,
 )
 
-EDGE_POLICIES = ("BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT")
+EDGE_POLICIES = ("BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT", "EDGE_OVERNIGHT_RUNTIME")
+OVERNIGHT_POLICIES = ("EDGE_OVERNIGHT", "EDGE_OVERNIGHT_RUNTIME")
 MO_GAP_TOLERANCE = 0.005     # MO open may be at most 0.5% below the signal close
 BREAKEVEN_R = 1.0
 
@@ -135,6 +145,10 @@ def run_edge_portfolio(rows: list[tuple], *, start: str, end: str, config: EdgeR
         raise PortfolioUnavailable("missing required daily history: " + ", ".join(missing))
     calendar = calendar_from(bars, config.nifty_ticker, start)
     costs = penny_cnc_costs
+    runtime_overnight = config.policy == "EDGE_OVERNIGHT_RUNTIME"
+    if runtime_overnight:
+        from edge_overnight_paper import RANK_DEPTH
+    scan_depth = RANK_DEPTH if runtime_overnight else config.max_positions
     policy = (EdgeTraderPolicy if config.policy == "EDGE_TRADER_V1" else EdgeBaselinePolicy)(config.max_hold_days)
     fd, path = tempfile.mkstemp(prefix="sentinel-edge-portfolio-", suffix=".sqlite")
     os.close(fd)
@@ -149,7 +163,7 @@ def run_edge_portfolio(rows: list[tuple], *, start: str, end: str, config: EdgeR
         def signals(day: str, equity: float) -> list[DailySignal]:
             nonlocal scans
             scans += 1
-            scan = scan_today(bankroll=equity, max_positions=config.max_positions, min_strength=config.min_strength,
+            scan = scan_today(bankroll=equity, max_positions=scan_depth, min_strength=config.min_strength,
                               db_path=path, as_of_date=day, nifty_ticker=config.nifty_ticker)
             out = []
             for candidate in scan["positions"]:
@@ -164,8 +178,9 @@ def run_edge_portfolio(rows: list[tuple], *, start: str, end: str, config: EdgeR
                              "adjusted_strength": round(candidate.adjusted_strength, 6)}))
             return out
 
-        if config.policy == "EDGE_OVERNIGHT":
-            result = run_overnight_book(bars, calendar, end=end, signals_at_close=signals, config=config, costs=costs)
+        if config.policy in OVERNIGHT_POLICIES:
+            result = run_overnight_book(bars, calendar, end=end, signals_at_close=signals, config=config, costs=costs,
+                                        refuse=runtime_realism_refusal(bars) if runtime_overnight else None)
         else:
             result = run_daily_book(
                 bars, calendar, end=end, signals_after_close=signals, policy=policy, costs=costs,
@@ -176,16 +191,33 @@ def run_edge_portfolio(rows: list[tuple], *, start: str, end: str, config: EdgeR
             os.remove(path)
         except FileNotFoundError:
             pass
-    clock = ("scan_at_D_close; entry_D_close_as_1520_proxy; exit_next_session_open" if config.policy == "EDGE_OVERNIGHT"
+    clock = ("scan_at_D_close; entry_D_close_as_1520_proxy; exit_next_session_open" if config.policy in OVERNIGHT_POLICIES
              else "scan_after_D_close; entry_D+1_open_as_0930_proxy; stop_before_target; time_exit_at_close")
     return {"scope": "PORTFOLIO_PROXY", "policy": config.policy,
             "config": {**asdict(config), "tickers": list(config.tickers)},
             "clock": clock, "scans": scans, **result}
 
 
+def runtime_realism_refusal(bars):
+    """The runtime overnight book's daily-bar refusals, as ``(signal, bar, taken_bases) -> reason``."""
+    from edge_overnight_paper import day_high_refusal, series_refusal
+
+    def refuse(signal: DailySignal, bar: dict, taken_bases: set) -> str | None:
+        series = series_refusal(signal.ticker, signal.kind, taken_bases)
+        if series is not None:
+            return series
+        earlier = [d for d in bars[signal.ticker] if d < signal.signal_date]
+        prev_close = bars[signal.ticker][max(earlier)]["close"] if earlier else None
+        return day_high_refusal((bar["open"], bar["high"], bar["low"], bar["close"], bar["volume"]), prev_close)
+    return refuse
+
+
 def run_overnight_book(bars, calendar, *, end: str, signals_at_close, config: EdgeReplayConfig, costs,
-                       min_fill_fraction: float = 0.25, buy_cost_buffer: float = 0.002) -> dict:
-    """Own-cash book: buy at session D's close, sell at the ticker's next open."""
+                       min_fill_fraction: float = 0.25, buy_cost_buffer: float = 0.002, refuse=None) -> dict:
+    """Own-cash book: buy at session D's close, sell at the ticker's next open.
+
+    ``refuse`` (EDGE_OVERNIGHT_RUNTIME) skips a pick without using its slot,
+    as the runtime does, so the next-ranked pick can fill it."""
     if not [day for day in calendar if day <= end]:
         raise PortfolioUnavailable("no sessions in requested window")
     entry_slip, exit_slip = config.overnight_entry_slippage_bps / 10000.0, config.slippage_bps / 10000.0
@@ -226,6 +258,12 @@ def run_overnight_book(bars, calendar, *, end: str, signals_at_close, config: Ed
                 if bar is None or bar["volume"] <= 0:
                     outcomes["NO_FILL_MISSING_OR_ZERO_VOLUME_SESSION"] += 1
                     continue
+                if refuse is not None:
+                    from edge_overnight_paper import base_symbol
+                    reason = refuse(signal, bar, {base_symbol(t) for t in held})
+                    if reason is not None:
+                        outcomes[f"REALISM_{reason}"] += 1
+                        continue
                 entry_price = bar["close"] * (1 + entry_slip)
                 if signal.stop >= entry_price:
                     outcomes["STOP_ALREADY_BREACHED"] += 1

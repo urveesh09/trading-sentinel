@@ -28,6 +28,15 @@ paper books). The replay seeds equity with every close before the window and
 adds the defined-risk book's actual historical closes at their close times,
 identically for every arm; the single-leg book's cash is the replay's own.
 
+Expiry calendar: the live tick asks its dated instrument catalogue
+(``FnoInstruments.nearest_option_expiry`` / ``is_expiry_day``), never the
+series one quote batch happens to carry. The replay's calendar is every NIFTY
+option expiry the archive ever quoted (the export manifest's
+``option_expiries`` when present, else one scan of the archive), so a batch
+that omits the same-day series cannot turn an expiry into a regular day or
+silently trade the next series. A batch without the calendar expiry's quotes
+is ``chain_unavailable:calendar_expiry_not_archived``.
+
 Not replayed: the defined-risk book's decisions, shared-risk reservations
 across books, broker rejections and scheduler jitter. A held contract that
 drifts outside the archived ATM±5 window has no quote; it cannot be priced
@@ -83,6 +92,20 @@ POLICIES = {
 }
 
 
+def resolve_policy(name: str) -> ReplayPolicy:
+    """A declared arm, or CURRENT: the live switches as configured right now.
+
+    Only FNO_FAST_EXIT_ENABLED has a live switch (~60 s management here); the
+    partial, pyramid and trend-day arms are research-only and stay off.
+    """
+    if name == "CURRENT":
+        from config import settings
+        return ReplayPolicy(name="CURRENT", manage_every_observation=bool(settings.FNO_FAST_EXIT_ENABLED))
+    if name not in POLICIES:
+        raise FnoReplayError(f"unknown policy {name!r}; choose CURRENT or one of {sorted(POLICIES)}")
+    return POLICIES[name]
+
+
 # ---- data ------------------------------------------------------------------
 
 @dataclass(frozen=True)
@@ -91,7 +114,6 @@ class Observation:
     at: datetime                                   # IST receipt clock
     future: object                                 # ContractQuote of the front future
     options: dict                                  # token -> ContractQuote
-    expiries: tuple                                # option expiries present, ascending
 
 
 class ReplayData:
@@ -102,6 +124,7 @@ class ReplayData:
         if not self.db.is_file():
             raise FnoReplayError(f"missing {self.db}")
         self._regimes: Optional[dict[str, str]] = None
+        self._expiries: Optional[tuple[tuple[date, ...], str]] = None
 
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(f"file:{self.db.resolve().as_posix()}?mode=ro", uri=True)
@@ -109,6 +132,23 @@ class ReplayData:
     @property
     def days(self) -> list[str]:
         return list(self.manifest["quote_days"])
+
+    def option_expiries(self) -> tuple[tuple[date, ...], str]:
+        """(ascending NIFTY option expiries, source) — the replay's dated calendar."""
+        if self._expiries is None:
+            exported = (self.manifest.get("option_expiries") or {}).get("NIFTY")
+            if exported:
+                self._expiries = tuple(sorted(date.fromisoformat(e) for e in exported)), "export_manifest"
+            else:
+                from intraday_spread_archive_adapter import read_archived_quote_events
+                seen: set[date] = set()
+                for day in self.days:
+                    for event in read_archived_quote_events(self.root, days=[day]):
+                        contract = event.get("contract") or {}
+                        if contract.get("underlying") == "NIFTY" and contract.get("instrument_type") in ("CE", "PE"):
+                            seen.add(date.fromisoformat(contract["expiry"]))
+                self._expiries = tuple(sorted(seen)), "archive_scan"
+        return self._expiries
 
     def observations(self, day: str) -> tuple[list[Observation], Counter]:
         """Verified NIFTY batches for one session, ascending by receipt."""
@@ -147,8 +187,7 @@ class ReplayData:
                 excluded["batch_without_future"] += 1
                 continue
             at = datetime.fromisoformat(received.replace("Z", "+00:00")).astimezone(IST)
-            expiries = tuple(sorted({q.contract.expiry for q in options.values()}))
-            out.append(Observation(at, future, options, expiries))
+            out.append(Observation(at, future, options))
         return out, excluded
 
     def futures_frame(self, token: int, day: date) -> pd.DataFrame:
@@ -457,12 +496,16 @@ class SingleLegReplay:
         if self.policy.trend_day_filter and not self._trend_day_ok(frame, today, sig.or_high, sig.or_low):
             self.funnel["candidate:not_trend_day"] += 1
             return
-        expiry = next((e for e in obs.expiries if e >= today), None)
+        calendar, _ = self.data.option_expiries()
+        expiry = next((e for e in calendar if e >= today), None)
         if expiry is None:
             self.funnel["chain_unavailable"] += 1
             return
         quotes = {(q.contract.strike, q.contract.instrument_type): q
                   for q in obs.options.values() if q.contract.expiry == expiry}
+        if not quotes:
+            self.funnel["chain_unavailable:calendar_expiry_not_archived"] += 1
+            return
         forward = obs.future.ltp
         strikes = sorted({k for k, _ in quotes})
         atm = min(strikes, key=lambda k: abs(k - forward)) if strikes else forward
@@ -486,7 +529,7 @@ class SingleLegReplay:
                                                            t["stop_underlying"], settings.FNO_REENTRY_MARGIN_R)
         state = EntryState(pool=book.equity, open_premium=open_premium, open_positions=len(book.open),
                            trades_today=book.entries_today[today], active_kill_switches=halts,
-                           held_symbols=held, is_trading_day=True, is_expiry_day=today in obs.expiries,
+                           held_symbols=held, is_trading_day=True, is_expiry_day=today in calendar,
                            risk_multiplier=stance.multiplier, reentry_levels=levels)
         plan = plan_single_leg_entry(sig, snap, regime, now, state)
         self.decisions.append({"at": now.isoformat(), "bar_ts": sig.bar_ts, "direction": sig.direction.value,
@@ -597,9 +640,12 @@ def parity_report(replayed: list[dict], live: list[dict]) -> dict:
 
 def run_replay(root: str | Path, *, start: str, end: str, policy: str = "BASELINE") -> dict:
     data = ReplayData(root)
-    result = SingleLegReplay(data, POLICIES[policy]).run(start, end)
+    result = SingleLegReplay(data, resolve_policy(policy)).run(start, end)
     result["parity_vs_live"] = parity_report(result["trades"], data.live_single_leg(start, end))
     result["dataset"] = {k: data.manifest[k] for k in ("schema", "source", "quote_days", "unsealed_days")}
+    calendar, source = data.option_expiries()
+    result["expiry_calendar"] = {"source": source, "window_expiry_days": [
+        e.isoformat() for e in calendar if start <= e.isoformat() <= end]}
     return result
 
 
@@ -610,7 +656,7 @@ if __name__ == "__main__":  # pragma: no cover - research CLI
     cli.add_argument("--data", required=True)
     cli.add_argument("--start", required=True)
     cli.add_argument("--end", required=True)
-    cli.add_argument("--policy", default="BASELINE", choices=sorted(POLICIES))
+    cli.add_argument("--policy", default="BASELINE", choices=["CURRENT", *sorted(POLICIES)])
     args = cli.parse_args()
     json.dump(run_replay(args.data, start=args.start, end=args.end, policy=args.policy), sys.stdout,
               indent=2, default=str)

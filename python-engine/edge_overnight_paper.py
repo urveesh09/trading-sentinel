@@ -529,13 +529,10 @@ def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases
     ``MR_mid`` kind, the book was positive in every quarter
     (+0.62% a trade, max drawdown 13.4% from peak, Jul 2025-Oct 2026).
     """
-    if ticker.endswith(SME_SUFFIXES):
-        return "sme_series"
-    if base_symbol(ticker) in taken_bases:
-        return "duplicate_series"
-    if kind in SKIP_KINDS:
-        return f"weak_kind_{kind}"
-    _open, high, _low, ltp, _volume = bar
+    series = series_refusal(ticker, kind, taken_bases)
+    if series is not None:
+        return series
+    ltp = bar[3]
     upper = quote.get("upper_circuit_limit")
     if _finite_positive(upper) and ltp >= float(upper) * (1 - 0.005):
         return "at_upper_circuit"
@@ -544,7 +541,24 @@ def realism_refusal(ticker: str, kind: str, quote: dict, bar: tuple, taken_bases
         return "no_depth"
     if not asks:
         return "no_sellers"
-    prev_close = (quote.get("ohlc") or {}).get("close")
+    return day_high_refusal(bar, (quote.get("ohlc") or {}).get("close"))
+
+
+# The two parts of realism_refusal a daily bar decides on its own; the EDGE
+# portfolio replay (EDGE_OVERNIGHT_RUNTIME) applies them unchanged.
+def series_refusal(ticker: str, kind: str, taken_bases: set) -> Optional[str]:
+    if ticker.endswith(SME_SUFFIXES):
+        return "sme_series"
+    if base_symbol(ticker) in taken_bases:
+        return "duplicate_series"
+    if kind in SKIP_KINDS:
+        return f"weak_kind_{kind}"
+    return None
+
+
+def day_high_refusal(bar: tuple, prev_close) -> Optional[str]:
+    """A close locked at the day's high after a >= 1.9% rise has no sellers."""
+    _open, high, _low, ltp, _volume = bar
     if _finite_positive(prev_close) and ltp >= high * 0.999 and ltp / float(prev_close) - 1 >= 0.019:
         return "at_day_high_after_rise"
     return None

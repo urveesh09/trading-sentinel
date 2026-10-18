@@ -1,16 +1,19 @@
 # Handover receipt and operator checklist
 
+## October 18 — simulation-report fixes (commit `COMMIT_ID`, Dev, pushed, not deployed)
 
-
-
-
-
-
-
-
-
-
-
+- [x] O18-F1 F&O replay dated expiry calendar; `CURRENT` arm; exporter
+  `option_expiries`.
+- [x] O18-P1 classic Penny PENNY_PAPER exits fill like the runtime paper
+  executor (lifecycle v5; `REFERENCE` for old receipts).
+- [x] O18-E1 `EDGE_OVERNIGHT_RUNTIME` replay arm; runtime realism refusal
+  split without behaviour change.
+- [x] O18-R1..R3 runner: EDGE/Swing/Range lifecycle jobs, bounded daily tail,
+  entry-dated windows, `penny-smart`, current Momentum contract + index.
+- [x] No strategy threshold, runtime config or schema changed.
+- [x] Tests: full suite `pytest tests ../scripts/tests` 5,512 passed, 4 skipped, 0 failed (9 min 10 s); new tests/test_oct18_sim_fidelity.py 8, runner tests 20.
+- [ ] Deployed: not needed for the engine (research tooling); merge to keep
+  Production's `scripts/` in step.
 
 ## October 15 — expiry-v2 (C takes CX's failed-break exit) and expiry-shadow-v4 (commit `5458d2d`, Dev, pushed, not deployed)
 

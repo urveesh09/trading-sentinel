@@ -618,12 +618,12 @@ _PORTFOLIO_LIMITS = (
 
 
 class EdgePortfolioReplayAdapter(DailyPortfolioAdapter):
-    """R2 own-cash EDGE portfolio replay (BASELINE live clocks or EDGE_TRADER_V1)."""
-    policies = ("BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT")
+    """R2 own-cash EDGE portfolio replay (BASELINE live clocks, candidates, or the runtime overnight book)."""
+    policies = ("BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT", "EDGE_OVERNIGHT_RUNTIME")
     tail_days = 10
     metadata = StrategyMetadata(
         strategy_id="penny_edge_portfolio_replay", name="Adaptive Penny EDGE (own-cash portfolio replay)",
-        version="1.2.0", description="Shipped EDGE scan with causal next-session entries, persistent cash/positions, CNC costs and marked equity.",
+        version="1.3.0", description="Shipped EDGE scan with causal next-session entries, persistent cash/positions, CNC costs and marked equity.",
         engine="edge_portfolio_replay.run_edge_portfolio", timeframe="1 day", scope="PROXY",
         capabilities=("universe", "shipped_scanner", "shipped_ranking", "next_session_open", "costs",
                       "own_cash_portfolio", "marked_equity", "candidate_policy"),
@@ -632,6 +632,7 @@ class EdgePortfolioReplayAdapter(DailyPortfolioAdapter):
             *_PORTFOLIO_LIMITS,
             "The operator event calendar is the current file, not a point-in-time snapshot; scheduler misfires and broker admission are not replayed.",
             "Runtime EDGE_PAPER also passes through the daily OHLC position tracker; that mixed paper bookkeeping is not reproduced.",
+            "EDGE_OVERNIGHT_RUNTIME applies the runtime overnight book's daily-bar realism refusals; its quote-only refusals (circuit limit, depth, staleness) and 15:20 provisional bar are not visible in daily bars.",
         ),
         default_config={"tickers": [], "nifty_ticker": "NIFTYBEES", "bankroll": 100000.0, "max_positions": 3,
                         "min_strength": 0.45, "policy": "BASELINE"},
@@ -640,7 +641,7 @@ class EdgePortfolioReplayAdapter(DailyPortfolioAdapter):
         parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
                           "nifty_ticker": {"type": "string"}, "bankroll": {"type": "number", "minimum": 0.01},
                           "max_positions": {"type": "integer", "minimum": 1}, "min_strength": {"type": "number", "minimum": 0, "maximum": 1},
-                          "policy": {"enum": ["BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT"]}},
+                          "policy": {"enum": ["BASELINE", "EDGE_TRADER_V1", "EDGE_OVERNIGHT", "EDGE_OVERNIGHT_RUNTIME"]}},
     )
 
     def snapshot_config(self, supplied):
@@ -1181,7 +1182,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
     """[B2 2026-10-03] Exact classic Penny MIS lifecycle over B1-validated bars."""
     metadata = StrategyMetadata(
         strategy_id="penny_breakout_mis_lifecycle_1m",
-        name="Penny Breakout MIS (exact lifecycle, 1-minute)", version="1.3.0",
+        name="Penny Breakout MIS (exact lifecycle, 1-minute)", version="1.4.0",
         description=("Replays the shipped classic Penny MIS book: live completed-bar clock, real "
                      "PennyRiskEngine sizing, circuit filter, capacity, executor drift/stop checks, "
                      "paper LTP or broker stop, 14:30 smart-EOD/time stop and 15:00 force close."),
@@ -1200,9 +1201,11 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
         ),
         default_config={"tickers": [], "book": "PENNY_PAPER", "regime": "PR1_CALM",
                         "session_policy": "complete_only", "candidate_policy": "BASELINE",
-                        "stop_policy": "RUNTIME", "bankroll": None,"benchmark_ticker":None},
+                        "stop_policy": "RUNTIME", "bankroll": None,"benchmark_ticker":None,
+                        "paper_exit_fill": "RUNTIME_LIMIT_FLOOR"},
         default_assumptions={
             "clock": "bar_k_minus_1_evaluated_at_boundary_k", "fills": "ltp_on_traded_bar_only",
+            "paper_exits": "runtime_paper_limit_floor_1pct_unless_REFERENCE",
             "costs": "frozen_real_equity_MIS", "target_exit": "none_smart_eod_only",
         },
         parameter_schema={
@@ -1213,6 +1216,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             "stop_policy": {"enum": ["RUNTIME", "BAR_LOW", "NOISE_FLOOR"]},
             "bankroll": {"type": ["number", "null"], "exclusiveMinimum": 0},
             "benchmark_ticker": {"type":["string","null"]},
+            "paper_exit_fill": {"enum": ["RUNTIME_LIMIT_FLOOR", "REFERENCE"]},
             "candidate_policy": {"enum": ["BASELINE", "PEN_CONTEXT", "PEN_TRADER_V1", "PEN_TRADER_V1_THESIS", "PEN_BASE_THESIS", "PEN_TRADER_V2",
                                           "PEN_NOISE_STOP", "PEN_NOISE_STOP_BE", "PEN_STRENGTH_RANK",
                                           "PEN_SMART_ENTRY", "PEN_SMART_EXIT", "PEN_SMART_TRADER"]},
@@ -1227,6 +1231,7 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
             session_policy=values["session_policy"], candidate_policy=values["candidate_policy"],
             stop_policy=values.get("stop_policy", "RUNTIME"), bankroll=values.get("bankroll"),
             benchmark_ticker=values.get("benchmark_ticker"),
+            paper_exit_fill=values.get("paper_exit_fill", "RUNTIME_LIMIT_FLOOR"),
         )
 
     def snapshot_config(self, supplied):
@@ -1237,7 +1242,8 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
         cfg = self._config({**merged, "tickers": tickers})
         return {"tickers": list(cfg.tickers), "book": cfg.book, "regime": cfg.regime,
                 "session_policy": cfg.session_policy, "candidate_policy": cfg.candidate_policy,
-                "stop_policy": cfg.stop_policy, "bankroll": cfg.bankroll,"benchmark_ticker":cfg.benchmark_ticker}
+                "stop_policy": cfg.stop_policy, "bankroll": cfg.bankroll,"benchmark_ticker":cfg.benchmark_ticker,
+                "paper_exit_fill": cfg.paper_exit_fill}
 
     def prepare(self, db_path, request):
         from research_data_contracts import (

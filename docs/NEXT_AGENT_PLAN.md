@@ -1,9 +1,42 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 18 — simulation-report fixes O18-F1/P1/E1/R1-R3 (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
 
-
-
-
+- Problem (Oct 13 current-strategy simulation report):
+  - F1: the F&O replay read expiry days from one batch's series (INVALID
+    −Rs 2,269.70 regular trade on Oct 13's expiry);
+  - P1: the classic Penny replay filled paper exits at the reference price,
+    the runtime 1% lower;
+  - E1: EDGE overnight had no replay of the runtime book's ranking and
+    realism refusals;
+  - R1: EDGE/Swing/Range were entry-only ("P&L unavailable");
+  - R2: no post-window data, so held positions could not resolve;
+  - R3: Smart Penny and current Momentum needed hand-written scripts; the
+    runner used the old Momentum T1 proxy and lacked the index context.
+- Files: `fno_policy_replay.py`, `scripts/export_fno_replay_dataset.py`,
+  `penny_lifecycle_replay.py`, `backtest_lab.py`, `edge_portfolio_replay.py`,
+  `edge_overnight_paper.py` (refactor only), `scripts/backtest_all_yahoo.py`;
+  tests `tests/test_oct18_sim_fidelity.py` (8), `scripts/tests/
+  test_backtest_all_yahoo.py` (+5), updated `test_penny_lifecycle_replay.py`.
+- Acceptance:
+  - calendar day without archived 0DTE quotes → no trade,
+    `chain_unavailable:calendar_expiry_not_archived`; archived 0DTE day →
+    `expiry_day_block`; regular day unchanged; exporter records expiries;
+  - PENNY_PAPER exit 97.00 → 96.03; REFERENCE keeps 97.00; broker book
+    unchanged; Oct 13 REFERENCE reproduces −Rs 10.5226;
+  - runtime overnight arm refuses SME/MR_mid/duplicate/day-high picks and
+    fills the next ranked; study arm unchanged;
+  - tail only in the portfolio snapshot; entry-dated windows; Smart/Momentum
+    contracts follow settings; the index probe is reused, not re-requested.
+- Rollout: none for the engine (research tools; the realism split keeps
+  runtime behaviour). Next simulation: rerun Oct 13, then Oct 14, with the
+  default module list. Rollback: revert the commit.
+- Remaining:
+  - [ ] Rerun the Oct 13 and Oct 14 simulations with this runner and the
+    F&O `CURRENT` arm; compare per-module entry-dated results.
+  - [ ] SENSEX single-leg and defined-risk F&O replay adapters (still
+    unavailable); runtime Swing/Range bankrolls are declared defaults.
+  - [ ] Strategy changes only from a multi-day window, not one seen day.
 
 ## October 15 — expiry-v2 (C takes CX's exit), expiry-shadow-v4 and Oct 15 expiry-audit fixes (done, Dev, commit `5458d2d`, pushed, not deployed)
 
