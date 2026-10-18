@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 18 — simulation-report fixes O18-F1/P1/E1/R1-R3 (done, Dev, commit `COMMIT_ID`, pushed, not deployed)
+## October 18 — simulation-report fixes O18-F1/P1/E1/R1-R3 (done, Dev, commit `a0a3fd8`, pushed, not deployed)
 
 - Problem (Oct 13 current-strategy simulation report):
   - F1: the F&O replay read expiry days from one batch's series (INVALID

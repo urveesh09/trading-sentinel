@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 18 — simulation-report fixes: replays answer like the runtime (actual behavior, Dev, commit `COMMIT_ID`)
+## October 18 — simulation-report fixes: replays answer like the runtime (actual behavior, Dev, commit `a0a3fd8`)
 
 Source: the Oct 13 current-strategy simulation
 (`docs/research/simulation/2026-10-18-oct13-current-7238676/REPORT.md`).

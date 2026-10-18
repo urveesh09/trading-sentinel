@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 18 — simulation-report fixes (commit `COMMIT_ID`, Dev, pushed, not deployed)
+## October 18 — simulation-report fixes (commit `a0a3fd8`, Dev, pushed, not deployed)
 
 - [x] O18-F1 F&O replay dated expiry calendar; `CURRENT` arm; exporter
   `option_expiries`.
