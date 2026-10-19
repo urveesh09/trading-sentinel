@@ -162,6 +162,51 @@ def _exit_observations(state, observations, now):
     return result
 
 
+def _explain_halts(events, state, quotes, *, observations, allow_entries, drift):
+    """[O19-S2] Name the condition(s) behind each ENTRY_HALTED.
+
+    The frozen book reports one merged reason. Exit-only batches (the stop
+    monitor: sampled bars, no entry candidate) are not entry decisions and
+    record no halt; Oct 19 logged 235 merged halts, most of them those.
+    """
+    if not any(obs.get("entry_allowed", True) for obs in observations.values()):
+        return [e for e in events if e.get("kind") != "ENTRY_HALTED"]
+    unmarked = sorted(t for t in state["positions"] if not quotes.get(t, {}).get("executable"))
+    reasons = [name for name, held in (
+        ("configuration_drift", drift),
+        ("entries_not_allowed", not allow_entries),
+        ("held_mark_unavailable", bool(unmarked)),
+        ("daily_loss_latched", bool(state.get("daily_loss_latched"))),
+    ) if held]
+    for e in events:
+        if e.get("kind") == "ENTRY_HALTED":
+            e["reason"] = "+".join(reasons) or e["reason"]
+            if unmarked:
+                e["unmarked"] = unmarked
+    return events
+
+
+def smart_held_tickers(db_path):
+    """Symbols the Smart book holds (read-only; empty when there is no book).
+
+    The entry scan quotes them with its batch so a held name that left the
+    scan's universe still has an executable mark (the frozen book halts all
+    entries while any held position cannot be marked).
+    """
+    import sqlite3
+
+    if not Path(db_path).exists():
+        return []
+    try:
+        with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=2.0) as conn:
+            row = conn.execute(
+                "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (SMART_VERSION,)
+            ).fetchone()
+    except sqlite3.Error:
+        return []
+    return sorted(json.loads(row[0]).get("positions", {})) if row else []
+
+
 async def observe_smart_shadow(
     db_path,
     observations,
@@ -234,6 +279,10 @@ async def observe_smart_shadow(
             ):
                 samples[ticker] = {"at": q["quote_at"], "price": q["exit"]}
         updated["quote_samples"] = samples
+        events = _explain_halts(events, updated, quotes, observations=converted,
+                                allow_entries=allow_entries, drift=drift)
+        updated["events"] = [e for e in updated["events"] if e.get("kind") != "ENTRY_HALTED"
+                             or any(e is kept for kept in events)]
         for ticker in invalid:
             events.append(
                 {

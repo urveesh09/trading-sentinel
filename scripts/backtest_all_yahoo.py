@@ -17,7 +17,9 @@ of the signal session itself.
 Smart Penny's PEN_SMART_TRADER book at its shadow bankroll, and Momentum's
 configured entry gate (MOM_SELECTIVE while MOMENTUM_SELECTIVE_ENTRY_ENABLED)
 with the shipped exit lifecycle, next-bar-open fills and the NIFTY 50
-15-minute context its gate reads.
+15-minute context its gate reads. ``momentum-pullback`` runs the shadow
+candidate MOM_RS_PULLBACK (a market leader's VWAP pullback) on the same
+contract, reported apart from the live gate.
 
 No broker, Production cache, trade history, strategy tuning or qualification.
 Yahoo chart responses are archived; interval/identity/clock errors are not repaired.
@@ -58,6 +60,7 @@ MODULES = {
     "edge": "penny_edge_daily_evaluator",
     "swing": "swing_regime_daily_evaluator",
     "momentum": "momentum_intraday_15m_replay",
+    "momentum-pullback": "momentum_intraday_15m_replay",
     "range": "range_reversion_daily_evaluator",
     "edge-portfolio": "penny_edge_portfolio_replay",
     "edge-overnight": "penny_edge_portfolio_replay",
@@ -69,7 +72,8 @@ PORTFOLIO = ("edge-portfolio", "edge-overnight", "swing-portfolio", "range-portf
 PORTFOLIO_CONTEXT = {"edge-portfolio": ("NIFTYBEES",), "edge-overnight": ("NIFTYBEES",),
                      "swing-portfolio": ("NIFTY 50", "NIFTY BANK"), "range-portfolio": ("NIFTY 50",)}
 NEXT_OPEN_ENTRY = ("edge-portfolio", "swing-portfolio", "range-portfolio")
-INTRADAY = {"penny-mis": "1m", "penny-smart": "1m", "penny-cnc": "1m", "penny-joint": "1m", "momentum": "15m"}
+INTRADAY = {"penny-mis": "1m", "penny-smart": "1m", "penny-cnc": "1m", "penny-joint": "1m", "momentum": "15m",
+            "momentum-pullback": "15m"}
 MOMENTUM_INDEX = "NIFTY 50"
 CONTEXT = {"NIFTY 50": "^NSEI", "NIFTY BANK": "^NSEBANK", "NIFTYBEES": "NIFTYBEES.NS"}
 
@@ -253,14 +257,16 @@ def fetch_chart(local: Path, symbol: str, mapped: str, interval: str,
 def supplied_config(module: str, universe: dict) -> dict:
     if module == "penny-joint":
         return {"mis_tickers": universe["penny"], "cnc_tickers": universe["penny"]}
-    if module in ("penny-smart", "momentum"):
+    if module in ("penny-smart", "momentum", "momentum-pullback"):
         from config import settings
     if module == "penny-smart":
         return {"tickers": universe["penny"], "book": "PENNY_PAPER", "candidate_policy": "PEN_SMART_TRADER",
                 "stop_policy": "RUNTIME", "bankroll": float(settings.PENNY_SMART_SHADOW_BANKROLL)}
-    if module == "momentum":
+    if module in ("momentum", "momentum-pullback"):
+        variant = ("MOM_RS_PULLBACK" if module == "momentum-pullback"
+                   else "MOM_SELECTIVE" if settings.MOMENTUM_SELECTIVE_ENTRY_ENABLED else "MOM_BASE")
         return {"tickers": universe["stock"],
-                "variants": ["MOM_SELECTIVE" if settings.MOMENTUM_SELECTIVE_ENTRY_ENABLED else "MOM_BASE"],
+                "variants": [variant],
                 "exit_model": "LIVE_EXIT_LIFECYCLE", "entry_clock": "NEXT_BAR_OPEN", "index_ticker": MOMENTUM_INDEX,
                 "bankroll": float(settings.MOMENTUM_PAPER_BANKROLL),
                 "momentum_pool": float(settings.MOMENTUM_PAPER_BANKROLL)}
@@ -524,7 +530,7 @@ def execute_module(out: Path, module: str, kind: str, start: str, end: str,
                       coverage_status="PARTIAL_UNIVERSE" if quality["daily_exclusions"] else "DATA_PRESENT_NOT_FULL_SYSTEM")
         if result.get("status") == "UNAVAILABLE":
             report.update(state="UNAVAILABLE", reason="no usable ticker-days after shipped lifecycle history/context checks", metrics=None)
-        if module == "momentum":
+        if module in ("momentum", "momentum-pullback"):
             report["exit_fidelity"] = {"reasons": dict(Counter(t.get("exit_reason", "OPEN") for t in result["trades"])),
                                        "not_live_lifecycle": True}
             if report["exit_fidelity"]["reasons"].get("overnight_gap_exit"):

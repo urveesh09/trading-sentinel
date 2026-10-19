@@ -41,7 +41,8 @@ order, and a pick refused by the runtime's own daily-bar realism rules
 (``series_refusal``: SME / duplicate series / weak kind; ``day_high_refusal``:
 a close locked at the day's high after a >= 1.9% rise) is replaced by the
 next. Quote-only refusals (circuit limit, depth, staleness) are not visible
-in daily bars and are not replayed.
+in daily bars and are not replayed. Since October 19 each pick may use at
+most the free cash divided by the open slots (runtime O19-O1).
 """
 from __future__ import annotations
 
@@ -180,7 +181,8 @@ def run_edge_portfolio(rows: list[tuple], *, start: str, end: str, config: EdgeR
 
         if config.policy in OVERNIGHT_POLICIES:
             result = run_overnight_book(bars, calendar, end=end, signals_at_close=signals, config=config, costs=costs,
-                                        refuse=runtime_realism_refusal(bars) if runtime_overnight else None)
+                                        refuse=runtime_realism_refusal(bars) if runtime_overnight else None,
+                                        split_cash=runtime_overnight)
         else:
             result = run_daily_book(
                 bars, calendar, end=end, signals_after_close=signals, policy=policy, costs=costs,
@@ -213,11 +215,14 @@ def runtime_realism_refusal(bars):
 
 
 def run_overnight_book(bars, calendar, *, end: str, signals_at_close, config: EdgeReplayConfig, costs,
-                       min_fill_fraction: float = 0.25, buy_cost_buffer: float = 0.002, refuse=None) -> dict:
+                       min_fill_fraction: float = 0.25, buy_cost_buffer: float = 0.002, refuse=None,
+                       split_cash: bool = False) -> dict:
     """Own-cash book: buy at session D's close, sell at the ticker's next open.
 
     ``refuse`` (EDGE_OVERNIGHT_RUNTIME) skips a pick without using its slot,
-    as the runtime does, so the next-ranked pick can fill it."""
+    as the runtime does, so the next-ranked pick can fill it. ``split_cash``
+    (runtime arm) caps each pick at the free cash divided by the open slots,
+    as the runtime does since October 19."""
     if not [day for day in calendar if day <= end]:
         raise PortfolioUnavailable("no sessions in requested window")
     entry_slip, exit_slip = config.overnight_entry_slippage_bps / 10000.0, config.slippage_bps / 10000.0
@@ -275,7 +280,8 @@ def run_overnight_book(bars, calendar, *, end: str, signals_at_close, config: Ed
                 shares = min(signal.planned_shares, capacity)
                 if shares < signal.planned_shares:
                     outcomes["LIQUIDITY_LIMITED_RESIZE"] += 1
-                affordable = int(cash // (entry_price * (1 + buy_cost_buffer)))
+                budget = cash / (config.max_positions - entered) if split_cash else cash
+                affordable = int(budget // (entry_price * (1 + buy_cost_buffer)))
                 if affordable < shares:
                     if affordable < min_fill_fraction * shares:
                         outcomes["CASH_REJECTED_DUST"] += 1

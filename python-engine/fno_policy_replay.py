@@ -89,6 +89,19 @@ POLICIES = {
     "FNO_TREND_DAY": ReplayPolicy(name="FNO_TREND_DAY", trend_day_filter=True),
     "FNO_TRADER_V1": ReplayPolicy(name="FNO_TRADER_V1", manage_every_observation=True, partial_at_target=True,
                                   pyramid_house_money=True, trend_day_filter=True),
+    # [O19-F1 2026-10-19] Profit-lock shadow arms, frozen before any scoring.
+    # Oct 15 (NIFTY CE) and Oct 19 (SENSEX 74300PE, +Rs 316 at 12:17 while the
+    # option's later 5-minute LTP ran ~Rs 147 higher and the thesis target
+    # printed at 15:10) closed on the lock within minutes on trend days. Each
+    # arm is the live ladder at fast-exit cadence with one lock change; the
+    # comparison is CURRENT. Score only on sessions after this declaration
+    # (or untouched archive sessions); a win authorizes nothing by itself.
+    "FNO_LOCK_LATE_ARM": ReplayPolicy(name="FNO_LOCK_LATE_ARM", manage_every_observation=True,
+                                      exit_overrides=(("FNO_PROFIT_LOCK_ARM_R", 0.80),)),
+    "FNO_LOCK_LOOSE_KEEP": ReplayPolicy(name="FNO_LOCK_LOOSE_KEEP", manage_every_observation=True,
+                                        exit_overrides=(("FNO_PROFIT_LOCK_KEEP_FRACTION", 0.25),)),
+    "FNO_LOCK_OFF": ReplayPolicy(name="FNO_LOCK_OFF", manage_every_observation=True,
+                                 exit_overrides=(("FNO_PROFIT_LOCK_ENABLED", False),)),
 }
 
 

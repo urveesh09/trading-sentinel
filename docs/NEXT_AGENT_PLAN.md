@@ -1,5 +1,46 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 19 — Oct 19 audit fixes O19-E1/P1/P2/S1/S2/O1/F1/M1/M2/B1 (done, Dev, commit `this commit`, pushed, not deployed)
+
+- Problem (Production deep audit 2026-10-19, non-expiry; owner: partner
+  quality must not deteriorate, EDGE investigate/fix, profit-lock shadow,
+  Smart fix and smarter, overnight and housekeeping at our call, Momentum/
+  Penny smarter, DR-on-expiry and expiry left to the owner):
+  - E1: EDGE morning scan scored today's partial bar (499 names) since late Sept;
+  - P1/P2: partner updates 1 per 2 min across cards, cap could drop a reminder;
+    never-sent cards stayed `can_send`;
+  - S1/S2: Smart halted entries when a held name was unquoted; merged halt reason;
+  - O1: overnight book 50% in one name;
+  - F1: profit lock exits early on trend days (Oct 15, Oct 19);
+  - M2: Momentum 0 accepts on red days (crossover-only entry);
+  - B1/M1: F&O catalogue waited for the penny refresh; 19 heartbeat messages.
+- Files: `penny_edge_live.py`, `penny_edge_orchestrator.py`, `hedge_advisory.py`,
+  `partner_manual_advisory.py`, `penny_smart_shadow.py`, `penny_scanner.py`,
+  `edge_overnight_paper.py`, `edge_portfolio_replay.py`, `fno_policy_replay.py`,
+  new `momentum_rs_pullback.py`, `momentum_shadow.py`, `momentum_replay.py`,
+  `backtest_lab.py`, `daily_bootstrap.py`, `main.py`, `scripts/backtest_all_yahoo.py`;
+  tests `tests/test_oct19_audit_fixes.py` (17), `tests/test_momentum_shadow.py`.
+- Acceptance:
+  - next 09:30 EDGE scan logs `penny_edge_scan_data_window date=<previous session>`
+    and a universe of ~940 band names (not 499);
+  - two cards' 15:10 reminders leave in the same tick; a same-card update
+    after 45 s; reminders never refused by the cap;
+  - Smart `ENTRY_HALTED` rows name their condition; none from monitor batches;
+  - overnight receipts: no pick above cash / open slots;
+  - Momentum shadow rows include `MOM_RS_PULLBACK`;
+  - `daily_bootstrap_task_done task=fno_instruments` before `penny_universe`.
+- Rollout: merge to `evolve/smart-strategies`, rebuild the engine image.
+  No schema migration, no new setting. Rollback: revert the commit.
+- Remaining:
+  - [ ] Verify the acceptance lines on the first session after deploy.
+  - [ ] Score `FNO_LOCK_*` vs `CURRENT` on an export of post-Oct-7 NIFTY sessions.
+  - [ ] Score `MOM_RS_PULLBACK` forward (shadow rows) and in the owner's
+    simulations (`momentum-pullback` job); no promotion from one day.
+  - [ ] Owner decision: DR spreads on expiry day (T-3).
+  - [ ] Penny-universe refresh fetches daily history for ~10k instruments
+    including bonds (60 min); an EQ-only filter would shorten it but changes
+    the cache EDGE/overnight read (not done).
+
 ## October 18 — simulation-report fixes O18-F1/P1/E1/R1-R3 (done, Dev, commit `a0a3fd8`, pushed, not deployed)
 
 - Problem (Oct 13 current-strategy simulation report):
@@ -38,7 +79,7 @@
     unavailable); runtime Swing/Range bankrolls are declared defaults.
   - [ ] Strategy changes only from a multi-day window, not one seen day.
 
-## October 15 — expiry-v2 (C takes CX's exit), expiry-shadow-v4 and Oct 15 expiry-audit fixes (done, Dev, commit `5458d2d`, pushed, not deployed)
+## October 15 — expiry-v2 (C takes CX's exit), expiry-shadow-v4 and Oct 15 expiry-audit fixes (done, Dev, commit `5458d2d`, pushed, deployed by PR #110)
 
 - Problem:
   - Owner order: "replace the main with shadow if it worked", and improve the
@@ -83,7 +124,7 @@
   - [ ] The Oct 15 B window was lost to DNS. Provider and DNS resilience is
     outside the expiry module; the owner is handling the rest of the system.
 
-## October 15 (evening) — Oct 15 audit fixes O15-N1/H1/M1/R1/B2/D1/D2 (done, Dev, commit `a6d820d`, pushed, not deployed)
+## October 15 (evening) — Oct 15 audit fixes O15-N1/H1/M1/R1/B2/D1/D2 (done, Dev, commit `a6d820d`, pushed, deployed by PR #110)
 
 - Problem (Oct 15 audit, Production PR #109):
   - N1: a 14:57–15:15 DNS outage blanked quotes; `http_errors` was `{}`,

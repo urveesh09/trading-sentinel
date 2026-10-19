@@ -51,9 +51,11 @@ logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
 
 # Task name -> short human label used in logs / the reminder message.
+# Run order: the F&O catalogue (one dump, seconds) before the penny refresh
+# (~60 min of daily fetches) [O19-B1: Oct 19 F&O readiness waited to 08:51].
 TASK_LABELS = {
-    "penny_universe": "penny universe + corp fundamentals refresh",
     "fno_instruments": "F&O NFO instruments snapshot",
+    "penny_universe": "penny universe + corp fundamentals refresh",
 }
 
 _run_lock = asyncio.Lock()

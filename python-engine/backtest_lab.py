@@ -1469,7 +1469,7 @@ class PennyJointPortfolioAdapter(BacktestAdapter):
 class Momentum15MinuteReplayAdapter(BacktestAdapter):
     metadata = StrategyMetadata(
         strategy_id="momentum_intraday_15m_replay", name="Momentum (true 15-minute replay)",
-        version="1.1.0", description="Chronological production-evaluator replay using explicit 15-minute cache provenance.",
+        version="1.2.0", description="Chronological production-evaluator replay using explicit 15-minute cache provenance.",
         engine="momentum_replay", timeframe="15 minute", scope="EVALUATOR",
         capabilities=("universe", "true_intraday", "gate_funnel", "costs", "risk_metrics", "chronological_oos"),
         data_requirements=("intraday_cache interval='15minute'", "strictly prior ohlcv_cache daily history"),
@@ -1495,7 +1495,8 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
             "lunchtime_volume_threshold": {"type": "number", "minimum": 0},
             "lunchtime_start": {"type": "string", "format": "HH:MM"},
             "lunchtime_end": {"type": "string", "format": "HH:MM"},
-            "variants": {"type": "array", "items": {"enum": ["MOM_BASE", "MOM_RECENCY_5", "MOM_SELECTIVE"]}},
+            "variants": {"type": "array", "items": {"enum": ["MOM_BASE", "MOM_RECENCY_5", "MOM_SELECTIVE",
+                                                                      "MOM_RS_PULLBACK"]}},
             "exit_model": {"type": "string", "enum": ["TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE", "THESIS_EXIT",
                                                       "RUNNER_EXIT"]},
             "entry_clock": {"type": "string", "enum": ["ACCEPTED_CLOSE", "NEXT_BAR_OPEN"]},

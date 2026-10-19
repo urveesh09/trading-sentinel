@@ -36,12 +36,16 @@ class ReplayVariant:
     # momentum_selective.selective_gate (market up, relative strength,
     # above yesterday's high) against the index ticker's bars.
     selective: bool = False
+    # MOM_RS_PULLBACK [O19-M2]: momentum_rs_pullback's own entry rule (a
+    # market leader's VWAP pullback-and-reclaim) instead of the crossover.
+    rs_pullback: bool = False
 
 
 VARIANTS: Mapping[str, ReplayVariant] = {
     "MOM_BASE": ReplayVariant("MOM_BASE", 3, None),
     "MOM_RECENCY_5": ReplayVariant("MOM_RECENCY_5", 5, 0.50),
     "MOM_SELECTIVE": ReplayVariant("MOM_SELECTIVE", 3, None, selective=True),
+    "MOM_RS_PULLBACK": ReplayVariant("MOM_RS_PULLBACK", 3, None, rs_pullback=True),
 }
 
 
@@ -113,7 +117,7 @@ class MomentumReplayConfig:
 
     @property
     def needs_index(self) -> bool:
-        return any(VARIANTS[name].selective for name in self.variants)
+        return any(VARIANTS[name].selective or VARIANTS[name].rs_pullback for name in self.variants)
 
 
 def _settings_snapshot() -> dict:
@@ -712,7 +716,7 @@ def run_momentum_replay(
         index_bars = intra[intra["ticker"] == index_ticker]
         intra = intra[intra["ticker"] != index_ticker]
         if index_bars.empty:
-            raise ReplayDataError(f"selective variants need {index_ticker} 15-minute bars in the snapshot")
+            raise ReplayDataError(f"index-context variants need {index_ticker} 15-minute bars in the snapshot")
         index_bars = index_bars.set_index("datetime").sort_index()
     # Retain only daily rows that could be consumed by at least one replay day;
     # neither evaluator input nor the dataset fingerprint includes later history.
@@ -739,6 +743,12 @@ def run_momentum_replay(
     if any(VARIANTS[name].selective for name in config.variants):
         from momentum_selective import DEFAULT_POLICY
         config_snapshot["selective_policy"] = asdict(DEFAULT_POLICY)
+    if any(VARIANTS[name].rs_pullback for name in config.variants):
+        import momentum_rs_pullback as rsp
+        config_snapshot["rs_pullback_policy"] = {
+            name: getattr(rsp, name) for name in (
+                "RS_MIN_EXCESS", "VWAP_SHARE_MIN", "TOUCH_TOLERANCE", "CLOSE_LOCATION_MIN", "VOLUME_MULT",
+                "MIN_SESSION_BARS", "WINDOW_START_MIN", "WINDOW_END_MIN")}
     if config.exit_model == "THESIS_EXIT":
         config_snapshot["thesis_exit"] = {
             "breakeven_r": THESIS_BREAKEVEN_R, "trail_start_r": THESIS_TRAIL_START_R, "trail_r": THESIS_TRAIL_R,
@@ -770,15 +780,21 @@ def run_momentum_replay(
             stamp = pd.Timestamp(prefix.index[-1])
             for name in config.variants:
                 variant = VARIANTS[name]
-                fired, decision = evaluate_momentum_signal(
-                    ticker=ticker, df=prefix, prev_day_high=prev_high,
-                    bankroll=config.bankroll, momentum_pool=config.momentum_pool,
-                    min_candles=config.min_candles, df_daily=daily_prior,
-                    vol_surge_threshold=_volume_threshold(stamp, config),
-                    market_regime=config.market_regime, regime=regime,
-                    crossover_lookback=variant.crossover_lookback,
-                    max_vwap_distance_atr=variant.max_vwap_distance_atr,
-                )
+                if variant.rs_pullback:
+                    from momentum_rs_pullback import rs_pullback_signal
+                    fired, decision = rs_pullback_signal(
+                        prefix, index_today, momentum_pool=config.momentum_pool, df_daily=daily_prior,
+                        regime=regime, market_regime=config.market_regime)
+                else:
+                    fired, decision = evaluate_momentum_signal(
+                        ticker=ticker, df=prefix, prev_day_high=prev_high,
+                        bankroll=config.bankroll, momentum_pool=config.momentum_pool,
+                        min_candles=config.min_candles, df_daily=daily_prior,
+                        vol_surge_threshold=_volume_threshold(stamp, config),
+                        market_regime=config.market_regime, regime=regime,
+                        crossover_lookback=variant.crossover_lookback,
+                        max_vwap_distance_atr=variant.max_vwap_distance_atr,
+                    )
                 funnel[name]["evaluations"] += 1
                 if fired and variant.selective:
                     from momentum_selective import selective_gate

@@ -1011,9 +1011,21 @@ class PennyScanner:
         # two strategies. Failure here falls back to the per-ticker path
         # inside _evaluate_ticker_breakout (quote_map=None entries).
         quote_map: dict = {}
-        if surviving:
+        # [O19-S1] Smart's held names ride in the same batch: the frozen Smart
+        # book halts every entry while a held position has no executable mark,
+        # and a held name can leave the surviving universe (volume, regime).
+        smart_held: list = []
+        if settings.PENNY_SMART_SHADOW_ENABLED:
+            try:
+                from penny_smart_shadow import smart_db_path, smart_held_tickers
+                smart_held = smart_held_tickers(smart_db_path(settings.DB_PATH))
+            except Exception as exc:
+                logger.warning("penny_smart_held_lookup_failed error=%s", str(exc))
+        surviving_symbols = {t["symbol"] for t in surviving}
+        quoted = [*surviving, *({"symbol": h} for h in smart_held if h not in surviving_symbols)]
+        if quoted:
             batch_tokens = []
-            for t in surviving:
+            for t in quoted:
                 tok = self.kite.instrument_cache.get(t["symbol"])
                 if tok is None:
                     continue
@@ -1062,7 +1074,7 @@ class PennyScanner:
                 from penny_smart_shadow import observe_smart_shadow, smart_db_path, IST
                 await asyncio.wait_for(observe_smart_shadow(smart_db_path(settings.DB_PATH), self._smart_collect,
                     {t["symbol"]: quote_map.get(int(self.kite.instrument_cache[t["symbol"]]), {})
-                     for t in surviving if self.kite.instrument_cache.get(t["symbol"]) is not None},
+                     for t in quoted if self.kite.instrument_cache.get(t["symbol"]) is not None},
                     now=smart_datetime.now(IST), bankroll=settings.PENNY_SMART_SHADOW_BANKROLL,
                     stock_cap=settings.PENNY_PER_STOCK_CAP,
                     max_positions=min(3, settings.PENNY_MAX_POSITIONS_MIS, settings.PENNY_MAX_POSITIONS_TOTAL)), timeout=2.0)

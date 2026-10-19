@@ -1,5 +1,75 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 19 — Oct 19 audit fixes: EDGE morning scan, partner pacing, Smart marks, overnight split, Momentum/F&O shadows (actual behavior, Dev, commit `this commit`)
+
+Source: `Production_Trading-sentinel/docs/2026-10-19-production-deep-audit.md`
+(first full session on PR #110). Expiry items are not in this slice.
+
+- **EDGE morning scan scored today's unfinished bar (O19-E1).** The 09:20
+  `run_screener` daily fetch caches today's partial candle for ~500 NIFTY 500
+  names, so `penny_edge_live.scan_today` ("newest cached date") scored date =
+  today with only those names (Oct 16/19 logs: `date=<today> universe=499`,
+  482 `price_out_of_range`): zero EDGE candidates since late September. The
+  orchestrator now passes `before_date=<IST today>` and the scan scores the
+  newest date strictly before it (the last completed session, ~940 band names
+  refreshed by the pre-open penny-universe fetch). `as_of_date` callers and
+  the 15:20 overnight scan are unchanged.
+- **Partner update pacing (O19-P1).** `dispatch_queued_management_update`
+  spaced every card's updates by one shared 1-minute gap on a 1-minute tick,
+  so tick jitter allowed one update per 2 minutes across all cards (Oct 19:
+  15:10/15:12/15:14). Now `MANAGEMENT_UPDATE_GAP` = 45 s per card
+  (`gap_counts` by `advisory_id`); the daily cap (4) counts target/
+  invalidation updates only and the `SESSION_EXIT_REMINDER` (one per card) is
+  never refused by it (`cap_counts`). `hedge_advisory._claim` /
+  `_send_claimed_review` gained the optional `gap_counts`/`cap_counts`
+  selectors (default: every delivered row of the kind, as before). Pending
+  updates are dispatched oldest observation first. Message wording unchanged.
+- **Unsendable cards expire (O19-P2).** `run_intraday_session_lifecycle`
+  marks a QUEUED card past its entry deadline (or from an earlier session)
+  `EXPIRED_UNSENT`, so the dashboard stops offering it (`can_send`).
+- **Smart Penny held marks and halt reasons (O19-S1/S2).** The frozen book
+  halts all entries while a held position has no executable quote, and the
+  scanner quoted only the surviving universe. The scanner now adds Smart's
+  held names (`penny_smart_shadow.smart_held_tickers`) to its one quote batch.
+  `_explain_halts` replaces the merged `regime_or_missing_marks_or_daily_loss`
+  with the condition(s) (`configuration_drift`, `entries_not_allowed`,
+  `held_mark_unavailable` + `unmarked`, `daily_loss_latched`) and drops the
+  halt from exit-only stop-monitor batches (most of Oct 19's 235). The hashed
+  Smart policy files (`penny_smart_policy/book.py`, `adaptive_penny_policy.py`,
+  `penny_prices.py`) are untouched: editing them is binding drift that stops
+  Smart entries for good (test guards it).
+- **Overnight cash split (O19-O1).** `edge_overnight_paper.run_overnight_entry`
+  caps each pick at the free cash / open slots (cash a smaller pick leaves
+  passes on); the quarter-of-plan dust floor is measured against the plan
+  capped at equity / slots, so the cap never refuses a pick. Oct 19 KMSUGAR
+  took 50% of the book. `edge_portfolio_replay` EDGE_OVERNIGHT_RUNTIME mirrors
+  it (`split_cash`).
+- **F&O profit-lock shadow arms (O19-F1).** `fno_policy_replay` arms
+  `FNO_LOCK_LATE_ARM` (arm 0.8R), `FNO_LOCK_LOOSE_KEEP` (keep 25%),
+  `FNO_LOCK_OFF`, each the live ladder at fast-exit cadence with one lock
+  change; compare with `CURRENT`. Frozen before scoring. On the seen Sep 10 –
+  Oct 7 archive all four equal CURRENT (11 closes, +Rs 6,919.53): the lock
+  armed on 4 legs but never fired. Scoring needs post-Oct-7 NIFTY sessions
+  (Oct 15 lock exit); SENSEX single-leg (Oct 19) is not replayable. No live
+  change.
+- **MOM_RS_PULLBACK shadow (O19-M2).** `momentum_rs_pullback.rs_pullback_signal`:
+  stock up on the session and >= 0.75% above NIFTY's session return, >= 60%
+  of earlier bars closed above VWAP, a dip to VWAP (0.3%) reclaimed on the
+  last bar (close > VWAP and prior close, upper-half close, volume >= 1.2x the
+  prior 8 bars), 10:15-14:15; shipped stop floors, regime R target/risk and
+  pool cap. Registered in `momentum_shadow.VARIANTS` (old variants' configs
+  and fingerprints unchanged) and `momentum_replay.VARIANTS`; lab adapter
+  1.2.0. Simulation runner job `momentum-pullback`. Shadow evidence only.
+- **Smaller.** Bootstrap runs `fno_instruments` before `penny_universe`
+  (O19-B1: Oct 19 F&O readiness waited to 08:51). Momentum's silent-scan
+  heartbeat goes out on the first silent scan of each clock hour (O19-M1: 19
+  of 46 owner messages). Plan/checklist receipts for `a6d820d`/`5458d2d` now
+  read "deployed by PR #110".
+- **Not changed.** No threshold of a live strategy; the Smart −1% daily
+  latch and F&O quarter sizing stay. Same-day-expiry DR spreads (T-3) are the
+  owner's decision. The telemetry writer already retries and replays (4
+  locked writes, none lost).
+
 ## October 18 — simulation-report fixes: replays answer like the runtime (actual behavior, Dev, commit `a0a3fd8`)
 
 Source: the Oct 13 current-strategy simulation

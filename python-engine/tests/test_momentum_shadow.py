@@ -120,9 +120,10 @@ def test_registry_is_immutable_and_shadow_evaluation_has_no_side_effect(tmp_path
         "TEST", intra, 100, 100000, 100000,
         df_daily=daily, trading_date="2026-08-10", bar_ts="2026-08-10T11:00:00",
     )
-    assert len(rows) == 3
+    assert len(rows) == 4
     assert not untouched.exists()
-    assert [row["config"]["name"] for row in rows] == ["MOM_BASE", "MOM_RECENCY_5", "MOM_SELECTIVE"]
+    assert [row["config"]["name"] for row in rows] == ["MOM_BASE", "MOM_RECENCY_5", "MOM_SELECTIVE",
+                                                       "MOM_RS_PULLBACK"]
     assert "selective" not in rows[0]["config"] and rows[2]["config"]["selective"] is True
 
 
@@ -150,7 +151,7 @@ def test_selective_variant_gates_the_shipped_signal_on_market_context(index_kind
     intra, daily, index_up = _selective_frames()
     index = {"up": index_up, "missing": None,
              "down": index_up.assign(close=[100.0, 99.9, 99.8, 99.7, 99.6, 99.5])}[index_kind]
-    base, _, selective = evaluate_momentum_shadows(
+    base, _, selective, _pullback = evaluate_momentum_shadows(
         "TEST", intra, prev_high, 100000, 100000, df_daily=daily, index_today=index)
     assert base["accepted"] is True
     assert (selective["accepted"], selective["reject_reason"]) == expected

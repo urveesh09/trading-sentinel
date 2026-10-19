@@ -656,8 +656,16 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         # [O1 2026-10-06] Each admission fits premium plus its own buy charges
         # inside the cash left after earlier picks. The asks are re-walked for
         # the final share count, so price and fees match what is bought.
-        shares, entry_price = price_for_cash(asks, wanted, model_price, cash)
-        if shares < 1 or shares < MIN_FILL_FRACTION * int(pick.shares):
+        # [O19-O1] Each pick may use at most an equal share of the cash still
+        # free (cash / open slots), so cash a smaller pick leaves passes to the
+        # later picks. Risk sizing alone let one name take half the book (Oct 19
+        # KMSUGAR, 50%) and left the third pick cash-limited.
+        # The quarter-of-plan dust floor is measured against the plan capped at
+        # an equal share of equity, so the cap itself never refuses a pick.
+        share_cash = cash / (slots - len(opened))
+        plan = min(int(pick.shares), int(state["equity"] / slots // model_price))
+        shares, entry_price = price_for_cash(asks, wanted, model_price, share_cash)
+        if shares < 1 or shares < MIN_FILL_FRACTION * plan:
             reason = ("cash" if shares < wanted
                       else "thin_asks" if visible == wanted < int(pick.shares)
                       else "liquidity")

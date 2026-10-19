@@ -16,7 +16,7 @@ import weakref
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Iterable, Literal, Optional
+from typing import Callable, Iterable, Literal, Optional
 
 import aiosqlite
 import pytz
@@ -357,8 +357,15 @@ async def _claim(
     daily_cap: Optional[int] = None,
     lease: timedelta = timedelta(hours=1),
     detail: Optional[dict] = None,
+    gap_counts: Optional[Callable[[dict], bool]] = None,
+    cap_counts: Optional[Callable[[dict], bool]] = None,
 ) -> Optional[str]:
-    """Atomically reserve one send and enforce delivered-message limits."""
+    """Atomically reserve one send and enforce delivered-message limits.
+
+    ``gap_counts`` / ``cap_counts`` select, by a delivered row's detail, the
+    prior sends that ``min_gap`` / ``daily_cap`` measure (default: all of
+    this kind and underlying).
+    """
     now = _aware(now, "now").astimezone(IST)
     await init_hedge_advisory_db(db_path)
     async with aiosqlite.connect(db_path) as db:
@@ -574,23 +581,30 @@ async def _claim(
                 return None
 
         cur = await db.execute(
-            "SELECT dedup_key, sent_at FROM partner_hedge_messages "
+            "SELECT dedup_key, sent_at, detail FROM partner_hedge_messages "
             "WHERE kind=? AND delivered=1", (kind,),
         )
         delivered_rows = await cur.fetchall()
-        applicable: list[datetime] = []
-        for prior_key, raw_stamp in delivered_rows:
+        applicable: list[tuple[datetime, dict]] = []
+        for prior_key, raw_stamp, raw_prior in delivered_rows:
             if underlying and not str(prior_key).startswith(f"{underlying}:"):
                 continue
             try:
-                applicable.append(datetime.fromisoformat(raw_stamp).astimezone(IST))
+                stamp = datetime.fromisoformat(raw_stamp).astimezone(IST)
             except (TypeError, ValueError):
                 continue
-        today_rows = [stamp for stamp in applicable if stamp.date() == now.date()]
-        if daily_cap is not None and daily_cap >= 0 and len(today_rows) >= daily_cap:
+            try:
+                prior = json.loads(raw_prior or "{}")
+            except (TypeError, json.JSONDecodeError):
+                prior = {}
+            applicable.append((stamp, prior if isinstance(prior, dict) else {}))
+        capped = [stamp for stamp, prior in applicable
+                  if stamp.date() == now.date() and (cap_counts is None or cap_counts(prior))]
+        if daily_cap is not None and daily_cap >= 0 and len(capped) >= daily_cap:
             await db.rollback()
             return None
-        if min_gap is not None and applicable and now - max(applicable) < min_gap:
+        spaced = [stamp for stamp, prior in applicable if gap_counts is None or gap_counts(prior)]
+        if min_gap is not None and spaced and now - max(spaced) < min_gap:
             await db.rollback()
             return None
 
@@ -1203,6 +1217,8 @@ async def _send_claimed_review(
     db_path: str, kind: str, key: str, text: str, *,
     detail: dict, now: datetime, underlying: Optional[str] = None,
     min_gap: Optional[timedelta] = None, daily_cap: Optional[int] = None, clock=None,
+    gap_counts: Optional[Callable[[dict], bool]] = None,
+    cap_counts: Optional[Callable[[dict], bool]] = None,
 ) -> bool:
     # Persist enough proposal context for a bounded recovery worker; it still
     # must re-check expiry and lease state before any network call.
@@ -1210,6 +1226,7 @@ async def _send_claimed_review(
     token = await _claim(
         db_path, kind, key, now=now, underlying=underlying,
         min_gap=min_gap, daily_cap=daily_cap, detail=claim_detail,
+        gap_counts=gap_counts, cap_counts=cap_counts,
     )
     if token is None:
         return False
