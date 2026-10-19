@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 19 — Oct 19 audit fixes (commit `this commit`, Dev, pushed, not deployed)
+## October 19 — Oct 19 audit fixes (commit `d12bb1d`, Dev, pushed, not deployed)
 
 - [x] O19-E1 EDGE morning scan scores the last completed session (`before_date`).
 - [x] O19-P1 partner update gap per card (45 s), reminder outside the daily cap.

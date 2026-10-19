@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 19 — Oct 19 audit fixes O19-E1/P1/P2/S1/S2/O1/F1/M1/M2/B1 (done, Dev, commit `this commit`, pushed, not deployed)
+## October 19 — Oct 19 audit fixes O19-E1/P1/P2/S1/S2/O1/F1/M1/M2/B1 (done, Dev, commit `d12bb1d`, pushed, not deployed)
 
 - Problem (Production deep audit 2026-10-19, non-expiry; owner: partner
   quality must not deteriorate, EDGE investigate/fix, profit-lock shadow,

@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 19 — Oct 19 audit fixes: EDGE morning scan, partner pacing, Smart marks, overnight split, Momentum/F&O shadows (actual behavior, Dev, commit `this commit`)
+## October 19 — Oct 19 audit fixes: EDGE morning scan, partner pacing, Smart marks, overnight split, Momentum/F&O shadows (actual behavior, Dev, commit `d12bb1d`)
 
 Source: `Production_Trading-sentinel/docs/2026-10-19-production-deep-audit.md`
 (first full session on PR #110). Expiry items are not in this slice.
