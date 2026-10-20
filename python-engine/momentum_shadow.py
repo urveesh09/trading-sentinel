@@ -24,6 +24,7 @@ from cost_schedules import (
     EQUITY_INTRADAY_VERIFIED_AS_OF,
 )
 from engine import evaluate_momentum_signal
+from momentum_rs_pullback import rs_pullback_signal
 from momentum_selective import selective_gate
 
 
@@ -35,12 +36,16 @@ class MomentumShadowVariant:
     # Round-3 MOM_SELECTIVE context gate (momentum_selective.py) on top of the
     # shipped evaluator: forward paper evidence for the untested candidate.
     selective: bool = False
+    # [O19-M2] Its own entry rule (momentum_rs_pullback.py) instead of the
+    # shipped crossover evaluator; shipped stop/target/size rules.
+    rs_pullback: bool = False
 
 
 _VARIANT_ROWS = (
     MomentumShadowVariant("MOM_BASE", 3, None),
     MomentumShadowVariant("MOM_RECENCY_5", 5, 0.50),
     MomentumShadowVariant("MOM_SELECTIVE", 3, None, selective=True),
+    MomentumShadowVariant("MOM_RS_PULLBACK", 3, None, rs_pullback=True),
 )
 VARIANTS: Mapping[str, MomentumShadowVariant] = MappingProxyType({
     variant.name: variant for variant in _VARIANT_ROWS
@@ -209,21 +214,30 @@ def evaluate_momentum_shadows(
     day_text, bar_text = _identity(df, trading_date, bar_ts)
     results = []
     for variant in _selected_variants(variants):
-        accepted, decision = evaluate_momentum_signal(
-            ticker=ticker,
-            df=df,
-            prev_day_high=prev_day_high,
-            bankroll=bankroll,
-            momentum_pool=momentum_pool,
-            min_candles=min_candles,
-            df_daily=df_daily,
-            vol_surge_threshold=vol_surge_threshold,
-            market_regime=market_regime,
-            regime=regime,
-            crossover_lookback=variant.crossover_lookback,
-            max_vwap_distance_atr=variant.max_vwap_distance_atr,
-        )
+        if variant.rs_pullback:
+            accepted, decision = rs_pullback_signal(
+                df, index_today, momentum_pool=momentum_pool, df_daily=df_daily,
+                regime=regime, market_regime=market_regime,
+            )
+        else:
+            accepted, decision = evaluate_momentum_signal(
+                ticker=ticker,
+                df=df,
+                prev_day_high=prev_day_high,
+                bankroll=bankroll,
+                momentum_pool=momentum_pool,
+                min_candles=min_candles,
+                df_daily=df_daily,
+                vol_surge_threshold=vol_surge_threshold,
+                market_regime=market_regime,
+                regime=regime,
+                crossover_lookback=variant.crossover_lookback,
+                max_vwap_distance_atr=variant.max_vwap_distance_atr,
+            )
         variant_config = asdict(variant)
+        if not variant.rs_pullback:
+            # Keeps pre-existing variant configs (and fingerprints) unchanged.
+            variant_config.pop("rs_pullback")
         if variant.selective:
             if accepted:
                 accepted, reason, evidence = _selective_decision(df, index_today, prev_day_high)

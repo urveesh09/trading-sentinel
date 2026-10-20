@@ -3,6 +3,24 @@
 python scripts/backtest_all_yahoo.py --start 2026-07-01 --end 2026-09-30
 python scripts/backtest_all_yahoo.py --start 2026-09-24 --end 2026-09-30 --tickers PCJEWELLER,SOUTHBANK,RELIANCE
 
+The ``*-portfolio`` and ``edge-overnight`` jobs run the own-cash daily
+lifecycle replays (entry to exit, marked equity) beside the entry-only
+evaluators. Their positions may resolve after ``--end``: daily bars are also
+fetched for a bounded tail after the window (never past the last completed
+session) into a separate validated snapshot that only these jobs read. Each
+reports the trades *entered* on the requested dates: the next-open books
+(EDGE baseline, Swing, Range) decide on the previous session's close, so their
+signal window is shifted back one session; EDGE overnight buys at the close
+of the signal session itself.
+
+``penny-smart`` and ``momentum`` run the contracts the runtime trades today:
+Smart Penny's PEN_SMART_TRADER book at its shadow bankroll, and Momentum's
+configured entry gate (MOM_SELECTIVE while MOMENTUM_SELECTIVE_ENTRY_ENABLED)
+with the shipped exit lifecycle, next-bar-open fills and the NIFTY 50
+15-minute context its gate reads. ``momentum-pullback`` runs the shadow
+candidate MOM_RS_PULLBACK (a market leader's VWAP pullback) on the same
+contract, reported apart from the live gate.
+
 No broker, Production cache, trade history, strategy tuning or qualification.
 Yahoo chart responses are archived; interval/identity/clock errors are not repaired.
 """
@@ -19,6 +37,7 @@ import json
 import math
 from pathlib import Path
 import shutil
+import sqlite3
 import sys
 import time
 from urllib.error import HTTPError, URLError
@@ -35,15 +54,27 @@ SOURCE = "YAHOO_FINANCE_CHART_ONLY"
 ENDPOINT = "https://query1.finance.yahoo.com/v8/finance/chart/"
 MODULES = {
     "penny-mis": "penny_breakout_mis_lifecycle_1m",
+    "penny-smart": "penny_breakout_mis_lifecycle_1m",
     "penny-cnc": "penny_cnc_connors_lifecycle_1d",
     "penny-joint": "penny_joint_lifecycle_portfolio",
     "edge": "penny_edge_daily_evaluator",
     "swing": "swing_regime_daily_evaluator",
     "momentum": "momentum_intraday_15m_replay",
+    "momentum-pullback": "momentum_intraday_15m_replay",
     "range": "range_reversion_daily_evaluator",
+    "edge-portfolio": "penny_edge_portfolio_replay",
+    "edge-overnight": "penny_edge_portfolio_replay",
+    "swing-portfolio": "swing_regime_portfolio_replay",
+    "range-portfolio": "range_reversion_portfolio_replay",
     "partner": None,
 }
-INTRADAY = {"penny-mis": "1m", "penny-cnc": "1m", "penny-joint": "1m", "momentum": "15m"}
+PORTFOLIO = ("edge-portfolio", "edge-overnight", "swing-portfolio", "range-portfolio")
+PORTFOLIO_CONTEXT = {"edge-portfolio": ("NIFTYBEES",), "edge-overnight": ("NIFTYBEES",),
+                     "swing-portfolio": ("NIFTY 50", "NIFTY BANK"), "range-portfolio": ("NIFTY 50",)}
+NEXT_OPEN_ENTRY = ("edge-portfolio", "swing-portfolio", "range-portfolio")
+INTRADAY = {"penny-mis": "1m", "penny-smart": "1m", "penny-cnc": "1m", "penny-joint": "1m", "momentum": "15m",
+            "momentum-pullback": "15m"}
+MOMENTUM_INDEX = "NIFTY 50"
 CONTEXT = {"NIFTY 50": "^NSEI", "NIFTY BANK": "^NSEBANK", "NIFTYBEES": "NIFTYBEES.NS"}
 
 
@@ -226,7 +257,37 @@ def fetch_chart(local: Path, symbol: str, mapped: str, interval: str,
 def supplied_config(module: str, universe: dict) -> dict:
     if module == "penny-joint":
         return {"mis_tickers": universe["penny"], "cnc_tickers": universe["penny"]}
+    if module in ("penny-smart", "momentum", "momentum-pullback"):
+        from config import settings
+    if module == "penny-smart":
+        return {"tickers": universe["penny"], "book": "PENNY_PAPER", "candidate_policy": "PEN_SMART_TRADER",
+                "stop_policy": "RUNTIME", "bankroll": float(settings.PENNY_SMART_SHADOW_BANKROLL)}
+    if module in ("momentum", "momentum-pullback"):
+        variant = ("MOM_RS_PULLBACK" if module == "momentum-pullback"
+                   else "MOM_SELECTIVE" if settings.MOMENTUM_SELECTIVE_ENTRY_ENABLED else "MOM_BASE")
+        return {"tickers": universe["stock"],
+                "variants": [variant],
+                "exit_model": "LIVE_EXIT_LIFECYCLE", "entry_clock": "NEXT_BAR_OPEN", "index_ticker": MOMENTUM_INDEX,
+                "bankroll": float(settings.MOMENTUM_PAPER_BANKROLL),
+                "momentum_pool": float(settings.MOMENTUM_PAPER_BANKROLL)}
+    if module in ("edge-portfolio", "edge-overnight"):
+        from config import settings
+        runtime = module == "edge-overnight"
+        return {"tickers": universe["penny"], "policy": "EDGE_OVERNIGHT_RUNTIME" if runtime else "BASELINE",
+                "bankroll": float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL if runtime else settings.PENNY_EDGE_PAPER_BANKROLL),
+                "max_positions": int(settings.PENNY_EDGE_MAX_POSITIONS),
+                "min_strength": float(settings.PENNY_EDGE_MIN_STRENGTH)}
     return {"tickers": universe["penny" if module in ("penny-mis", "penny-cnc", "edge") else "stock"]}
+
+
+def daily_tail_end(end: str, modules: list[str], now: datetime) -> str:
+    """Last daily bar fetched: ``end``, or for lifecycle portfolio jobs a bounded
+    tail after it so held positions can resolve, never an unfinished session."""
+    if not any(module in PORTFOLIO for module in modules):
+        return end
+    days = max(STRATEGY_REGISTRY[MODULES[module]].tail_days for module in modules if module in PORTFOLIO)
+    completed = now.date() if now.time() >= day_time(15, 30) else now.date() - timedelta(days=1)
+    return max(iso_day(end), min(iso_day(end) + timedelta(days=days), completed)).isoformat()
 
 
 def acquire(out: Path, args, universe: dict, mappings: dict) -> dict:
@@ -239,28 +300,33 @@ def acquire(out: Path, args, universe: dict, mappings: dict) -> dict:
     windows = [("primary", args.start, args.end)]
     if args.intraday_diagnostic_days and diagnostic_start != args.start:
         windows.append(("recent-diagnostic", diagnostic_start, args.end))
+    probes = {}
     for kind, start, end in windows:
         for interval in intervals:
             first, last = chunks(start, end, interval)[0]
-            _, receipt = fetch_chart(local, "NIFTY 50", "^NSEI", interval, first, last)
+            probes[(kind, interval)], receipt = fetch_chart(local, MOMENTUM_INDEX, "^NSEI", interval, first, last)
             records.append(receipt)
             availability[f"{kind}:{interval}"] = {"start": start, "end": end, "state": receipt["state"],
                                                     "reason": receipt.get("reason")}
             print(f"Yahoo {kind} {interval}: {receipt['state']} {receipt.get('reason', '')}", flush=True)
     tasks = []
     history_start = (iso_day(args.start) - timedelta(days=900)).isoformat()
+    tail_end = daily_tail_end(args.end, args.modules, datetime.now(IST))
     for name in requested_names:
-        tasks.append((name, "1d", history_start, args.end))
+        tasks.append((name, "1d", history_start, tail_end))
     # Primary data covers diagnostic dates too. Otherwise download only the
     # explicitly declared diagnostic; never silently clip the primary request.
     for interval in intervals:
         key = f"primary:{interval}"
-        window = availability[key]
+        window, window_kind = availability[key], "primary"
         if window["state"] != "AVAILABLE":
-            window = availability.get(f"recent-diagnostic:{interval}", {})
+            window, window_kind = availability.get(f"recent-diagnostic:{interval}", {}), "recent-diagnostic"
         if window.get("state") != "AVAILABLE":
             continue
         names_for_interval = universe["penny"] if interval == "1m" else universe["stock"]
+        if interval == "15m":
+            # The 15-minute probe (whole window, one request) is Momentum's index context.
+            intraday.extend(probes[(window_kind, interval)])
         for name in names_for_interval:
             for start, end in chunks(window["start"], window["end"], interval):
                 tasks.append((name, interval, start, end))
@@ -281,7 +347,7 @@ def acquire(out: Path, args, universe: dict, mappings: dict) -> dict:
                                            "tickers": requested_names}}, str(local / "yahoo.sqlite"), source=SOURCE)
     manifest = {"source": SOURCE, "requested": [args.start, args.end], "universe": universe,
                 "symbol_mapping": mappings, "snapshot": snapshot, "availability": availability,
-                "windows": windows, "records": records, "history_start": history_start,
+                "windows": windows, "records": records, "history_start": history_start, "daily_tail_end": tail_end,
                 "adjustment": "Provider quote OHLCV, no local adjustment or repair; action receipts retained",
                 "retention_reference": "https://ranaroussi.github.io/yfinance/reference/api/yfinance.download.html"}
     _atomic_json_new(str(out / "provider-manifest.json"), manifest)
@@ -321,13 +387,7 @@ def data_quality(out: Path, universe: dict, manifest: dict) -> tuple[dict, dict]
                "membership": "current explicitly configured symbols; historical membership unavailable",
                "intraday": {}}
     validated_intraday = {}
-    for key, window in manifest["availability"].items():
-        interval = key.split(":")[1]
-        requested = universe["penny" if interval == "1m" else "stock"]
-        data = load_intraday_dataset(db, interval="minute" if interval == "1m" else "15minute",
-                                     start=window["start"], end=window["end"], tickers=requested)
-        quality["intraday"][key] = {"provider_state": window["state"], "manifest": data.manifest,
-                                   "coverage": data.coverage}
+    def keep(data):
         for (symbol, _), bars in data.bars.items():
             for bar in bars:
                 identity = (symbol, data.interval.label, bar.start.isoformat())
@@ -336,11 +396,40 @@ def data_quality(out: Path, universe: dict, manifest: dict) -> tuple[dict, dict]
                 if previous is not None and previous != row:
                     raise ValueError("conflicting validated interval identity")
                 validated_intraday[identity] = row
+
+    for key, window in manifest["availability"].items():
+        interval = key.split(":")[1]
+        requested = universe["penny" if interval == "1m" else "stock"]
+        label = "minute" if interval == "1m" else "15minute"
+        data = load_intraday_dataset(db, interval=label, start=window["start"], end=window["end"], tickers=requested)
+        quality["intraday"][key] = {"provider_state": window["state"], "manifest": data.manifest,
+                                   "coverage": data.coverage}
+        keep(data)
+        if interval == "15m":
+            # Momentum's index context, validated by the same B1 contract but counted apart.
+            context = load_intraday_dataset(db, interval=label, start=window["start"], end=window["end"],
+                                            tickers=[MOMENTUM_INDEX])
+            quality["intraday_context"] = {**quality.get("intraday_context", {}),
+                                           key: {"ticker": MOMENTUM_INDEX, "manifest": context.manifest}}
+            keep(context)
     validated_daily = [[symbol, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume]
                        for symbol, bars in daily.bars.items() if symbol not in excluded for bar in bars]
     quality["validated_snapshot"] = write_snapshot({"daily": validated_daily,
         "intraday": list(validated_intraday.values()), "request": manifest["snapshot"]["request"]},
         str(out / "_local/validated-yahoo.sqlite"), source=SOURCE + "; B1 whole-invalid-day exclusion; raw snapshot retained")
+    tail_end = manifest.get("daily_tail_end", manifest["requested"][1])
+    if tail_end > manifest["requested"][1]:
+        # Only lifecycle portfolio jobs read past --end; every other job keeps the bounded snapshot.
+        tail = load_daily_dataset(db, tickers=all_names, before=(iso_day(tail_end) + timedelta(days=1)).isoformat())
+        tail_excluded = sorted(name for name in all_names if name not in excluded and name in tail.invalid)
+        quality["daily_tail"] = {"end": tail_end, "manifest": tail.manifest,
+                                 "excluded_invalid_in_tail": tail_excluded}
+        quality["validated_tail_snapshot"] = write_snapshot({"daily": [
+            [symbol, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume]
+            for symbol, bars in tail.bars.items() if symbol not in excluded and symbol not in tail_excluded
+            for bar in bars], "intraday": [], "request": manifest["snapshot"]["request"]},
+            str(out / "_local/validated-yahoo-tail.sqlite"),
+            source=SOURCE + f"; B1 daily through {tail_end} for lifecycle portfolio jobs only")
     _atomic_json_new(str(out / "coverage.json"), quality)
     return effective, quality
 
@@ -372,10 +461,14 @@ def execute_module(out: Path, module: str, kind: str, start: str, end: str,
         _atomic_json_new(str(out / f"{job}.json"), record)
         return record
     adapter = STRATEGY_REGISTRY[strategy]
+    portfolio = module in PORTFOLIO
+    snapshot_key = "validated_tail_snapshot" if portfolio and "validated_tail_snapshot" in quality else "validated_snapshot"
+    database = out / "_local" / ("validated-yahoo-tail.sqlite" if snapshot_key == "validated_tail_snapshot"
+                                 else "validated-yahoo.sqlite")
     report = {"job": job, "module": module, "strategy_id": strategy, "window_kind": kind,
               "dates": [start, end], "scope": adapter.metadata.scope, "source": SOURCE,
               "qualification": "NOT_ASSESSED", "can_place_orders": False,
-              "policy": policy_manifest(strategy, adapter), "snapshot": quality["validated_snapshot"],
+              "policy": policy_manifest(strategy, adapter), "snapshot": quality[snapshot_key],
               "orchestration_sha256": sha(Path(__file__)), "limitations": list(adapter.metadata.limitations),
               "requested_universe": quality["requested_universe"], "effective_universe": effective}
     config_input = supplied_config(module, effective)
@@ -401,12 +494,17 @@ def execute_module(out: Path, module: str, kind: str, start: str, end: str,
         if interval and manifest["availability"].get(f"{kind}:{interval}", {}).get("state") != "AVAILABLE":
             reason = manifest["availability"].get(f"{kind}:{interval}", {}).get("reason", "no native interval evidence")
             raise BacktestUnavailable(f"Yahoo rejected requested {interval} window: {reason}")
-        if module in ("swing", "edge"):
-            context = ("NIFTY 50", "NIFTY BANK") if module == "swing" else ("NIFTYBEES",)
-            missing = [name for name in context if name in quality["daily_exclusions"]]
+        if module in ("swing", "edge") or portfolio:
+            context = (PORTFOLIO_CONTEXT[module] if portfolio
+                       else ("NIFTY 50", "NIFTY BANK") if module == "swing" else ("NIFTYBEES",))
+            missing = [name for name in context if name in quality["daily_exclusions"]
+                       or name in quality.get("daily_tail", {}).get("excluded_invalid_in_tail", ())]
             if missing:
                 raise BacktestUnavailable("missing/invalid market context: " + ", ".join(missing))
-        request = BacktestRequest(strategy, start, end, config, assumptions)
+        signal_start, signal_end = signal_window(module, start, end, database) if portfolio else (start, end)
+        if portfolio:
+            report["entry_window"] = {"entry_sessions": [start, end], "book_window": [signal_start, signal_end]}
+        request = BacktestRequest(strategy, signal_start, signal_end, config, assumptions)
         if module == "penny-joint":
             from dataclasses import asdict
             from portfolio_parity import reconcile_shared_cash
@@ -420,16 +518,19 @@ def execute_module(out: Path, module: str, kind: str, start: str, end: str,
                       "warnings": ["Reuses same-window shipped lifecycles with UTC-normalized clocks; not live P1 fee/buffer admission."]}
             report["dataset_fingerprint"] = quality["validated_snapshot"]["rows_sha256"]
         else:
-            prepared = adapter.prepare(str(out / "_local/validated-yahoo.sqlite"), request)
+            prepared = adapter.prepare(str(database), request)
             result = adapter.execute(prepared, request)
             report.update(dataset_fingerprint=prepared.fingerprint, dataset=prepared.details)
+            if portfolio:
+                report["lifecycle_tail"] = {"daily_through": quality.get("daily_tail", {}).get("end", end),
+                                            "open_marked": open_marked(result)}
         metrics, warnings = adapter.normalize(result, request)
         check_policy(policy_manifest(strategy, adapter), baseline, orchestration_hash)
         report.update(state="SUCCEEDED", result=result, metrics=metrics, warnings=warnings,
                       coverage_status="PARTIAL_UNIVERSE" if quality["daily_exclusions"] else "DATA_PRESENT_NOT_FULL_SYSTEM")
         if result.get("status") == "UNAVAILABLE":
             report.update(state="UNAVAILABLE", reason="no usable ticker-days after shipped lifecycle history/context checks", metrics=None)
-        if module == "momentum":
+        if module in ("momentum", "momentum-pullback"):
             report["exit_fidelity"] = {"reasons": dict(Counter(t.get("exit_reason", "OPEN") for t in result["trades"])),
                                        "not_live_lifecycle": True}
             if report["exit_fidelity"]["reasons"].get("overnight_gap_exit"):
@@ -443,11 +544,36 @@ def execute_module(out: Path, module: str, kind: str, start: str, end: str,
     _atomic_json_new(str(raw), report)
     receipt = {key: value for key, value in report.items() if key in (
         "job", "module", "strategy_id", "window_kind", "dates", "state", "scope", "reason", "metrics",
-        "coverage_status", "exit_fidelity", "warnings", "qualification", "can_place_orders")}
+        "coverage_status", "exit_fidelity", "lifecycle_tail", "entry_window", "warnings", "qualification",
+        "can_place_orders")}
     receipt.update(report_file=str(raw.relative_to(out)), report_sha256=sha(raw))
     _atomic_json_new(str(out / f"{job}.json"), receipt)
     print(f"{job}: {receipt['state']}; metrics={json.dumps(receipt.get('metrics'), separators=(',', ':'))[:300]}", flush=True)
     return receipt
+
+
+def previous_session(database: Path, ticker: str, day: str) -> str:
+    """The last session before ``day`` in the validated daily evidence of ``ticker``."""
+    with closing(sqlite3.connect(f"file:{database.resolve().as_posix()}?mode=ro", uri=True)) as con:
+        row = con.execute("SELECT MAX(date) FROM ohlcv_cache WHERE ticker=? AND date<?", (ticker, day)).fetchone()
+    if not row or not row[0]:
+        raise BacktestUnavailable(f"no {ticker} session before {day} to decide its entries")
+    return row[0]
+
+
+def signal_window(module: str, start: str, end: str, database: Path) -> tuple[str, str]:
+    """Book window whose entries fall on ``start``..``end`` (entry-dated reporting).
+
+    ``run_daily_book`` only takes a signal whose next session is inside its
+    window, so a next-open book starts one session earlier and keeps ``end``."""
+    if module not in NEXT_OPEN_ENTRY:
+        return start, end
+    return previous_session(database, PORTFOLIO_CONTEXT[module][0], start), end
+
+
+def open_marked(result: dict) -> int:
+    """Positions still held when the tail ran out (valued at their last close, not sold)."""
+    return sum(1 for trade in result.get("trades", []) if trade.get("status") == "OPEN_MARKED")
 
 
 def check_policy(actual: dict, expected: dict | None, orchestration_hash: str | None) -> None:
@@ -479,6 +605,11 @@ def render_summary(out: Path, records: list[dict], manifest: dict, quality: dict
             result = f"{metrics['candidate_count']} candidates; {metrics['selected_count']} selections; P&L unavailable"
         elif record["scope"] == "EVALUATOR" and "entry_decisions" in metrics:
             result = f"{metrics['entry_decisions']} ENTER decisions; P&L unavailable"
+        elif "open_marked" in metrics:
+            net = metrics.get("net_pnl")
+            tail = (record.get("lifecycle_tail") or {}).get("daily_through", "?")
+            result = (f"closed={metrics.get('trade_count')}; net={'unavailable' if net is None else round(net, 2)}; "
+                      f"open_marked={metrics['open_marked']} (daily through {tail})")
         else:
             net = metrics.get("net_pnl")
             result = f"count={metrics.get('trade_count')}; net={'unavailable' if net is None else round(net, 2)}; unresolved={metrics.get('unresolved_trades', metrics.get('shared_cash', {}).get('unresolved', 'see report'))}"
@@ -486,8 +617,9 @@ def render_summary(out: Path, records: list[dict], manifest: dict, quality: dict
     lines += ["", f"Daily names excluded for missing/invalid evidence: {len(quality['daily_exclusions'])}.",
               "Coverage, per-symbol errors, raw hashes, policy/defaults and costs are archived beside this report.",
               "Recent diagnostics are separate shorter windows; evaluator results are not entry-to-exit portfolio performance.",
-              "Momentum uses a virtual full-quantity T1 exit; inspect exit_fidelity for any later-day fallback settlements.",
+              "Momentum runs the configured entry gate with the shipped exit lifecycle; inspect exit_fidelity for any later-day fallback settlements.",
               "Joint Penny count is admitted entries, not closed trades; locked notional is not marked equity.",
+              "Portfolio jobs are daily-bar lifecycle proxies (next open / close clocks); open_marked positions are valued at their last close, not sold.",
               "No qualification, aggregate system return, orders or deployment."]
     with (out / "summary.md").open("x", encoding="utf-8") as handle:
         handle.write("\n".join(lines) + "\n")
@@ -562,7 +694,7 @@ def run(args) -> Path:
                 continue
             receipts.append(execute_module(out, module, kind, start, end, effective, manifest, quality, results,
                                            baseline=baseline.get(module), orchestration_hash=orchestration_hash))
-            if module in ("penny-mis", "penny-joint"):
+            if module in ("penny-mis", "penny-smart", "penny-joint"):
                 receipts.append(execute_module(out, module, kind, start, end, effective, manifest, quality, results,
                                                gap_sensitivity=True, baseline=baseline.get(module), orchestration_hash=orchestration_hash))
     verify_snapshot(str(out / "_local/yahoo.sqlite"))

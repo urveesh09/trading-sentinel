@@ -166,3 +166,88 @@ def test_unfinished_current_session_and_midrun_policy_drift_rejected(tmp_path, m
     with pytest.raises(yahoo.BacktestUnavailable, match="source/settings changed"):
         yahoo.check_policy({"engine_sha256": "changed", "settings_sha256": "same"},
                            {"engine_sha256": "before", "settings_sha256": "same"}, None)
+
+
+def test_daily_tail_reaches_past_the_window_only_for_lifecycle_jobs():
+    after_close = datetime(2026, 10, 18, 16, 0, tzinfo=yahoo.IST)
+    before_close = datetime(2026, 10, 16, 12, 0, tzinfo=yahoo.IST)
+    assert yahoo.daily_tail_end("2026-10-13", ["edge", "range"], after_close) == "2026-10-13"
+    assert yahoo.daily_tail_end("2026-10-13", ["edge-overnight"], after_close) == "2026-10-18"
+    # Never an unfinished session: before 15:30 the tail stops at yesterday.
+    assert yahoo.daily_tail_end("2026-10-13", ["range-portfolio"], before_close) == "2026-10-15"
+    # Bounded by the job's own tail (EDGE 10 days) on old windows.
+    assert yahoo.daily_tail_end("2026-09-01", ["edge-portfolio"], after_close) == "2026-09-11"
+
+
+def fixture_fetch_with_tail(local, symbol, mapped, interval, start, end, **kwargs):
+    days = ["2026-09-29T09:15:00", "2026-09-30T09:15:00", "2026-10-01T09:15:00"]
+    payload = fixture_chart(days, symbol=mapped)
+    rows, receipt = yahoo.parse_chart(payload, symbol, mapped, interval, start, end)
+    target = local / "raw" / f"{mapped}_{interval}.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(payload))
+    return rows, {**receipt, "interval": interval, "symbol": symbol, "state": "AVAILABLE",
+                  "raw_file": str(target.relative_to(local.parent)), "raw_sha256": yahoo.sha(target)}
+
+
+def test_portfolio_jobs_read_a_separate_tail_snapshot_evaluators_never_see_it(tmp_path, monkeypatch):
+    import sqlite3
+    monkeypatch.setattr(yahoo, "fetch_chart", fixture_fetch_with_tail)
+    out = yahoo.run(fake_request(tmp_path, "range,range-portfolio"))
+    def last_day(name):
+        with sqlite3.connect(out / "_local" / name) as con:
+            return con.execute("SELECT MAX(date) FROM ohlcv_cache").fetchone()[0]
+    assert last_day("validated-yahoo.sqlite") == "2026-09-30"
+    assert last_day("validated-yahoo-tail.sqlite") == "2026-10-01"
+    coverage = json.loads((out / "coverage.json").read_text())
+    reports = {name: json.loads((out / "_local" / f"{name}-report.json").read_text())
+               for name in ("range", "range-portfolio")}
+    assert reports["range"]["snapshot"] == coverage["validated_snapshot"]
+    assert reports["range-portfolio"]["snapshot"] == coverage["validated_tail_snapshot"]
+    assert coverage["daily_tail"]["end"] >= "2026-10-01"
+
+
+def test_next_open_books_report_trades_entered_on_the_requested_dates(tmp_path):
+    out = tmp_path / "run"
+    (out / "_local").mkdir(parents=True)
+    database = out / "_local/validated.sqlite"
+    yahoo.write_snapshot({"daily": [[name, day, 10, 11, 9, 10.5, 100]
+                                    for name in ("NIFTY 50", "NIFTYBEES")
+                                    for day in ("2026-10-09", "2026-10-12", "2026-10-13", "2026-10-14")],
+                          "intraday": [], "request": {"start": "2026-10-13", "end": "2026-10-14"}},
+                         str(database), source=yahoo.SOURCE)
+    # Swing decides before the open from prior bars; Range/EDGE baseline buy the next open.
+    for module in ("swing-portfolio", "range-portfolio", "edge-portfolio"):
+        assert yahoo.signal_window(module, "2026-10-13", "2026-10-14", database) == ("2026-10-12", "2026-10-14")
+    # EDGE overnight buys at the signal session's own close.
+    assert yahoo.signal_window("edge-overnight", "2026-10-13", "2026-10-14", database) == ("2026-10-13", "2026-10-14")
+    with pytest.raises(yahoo.BacktestUnavailable, match="no NIFTY 50 session before 2026-10-09"):
+        yahoo.signal_window("range-portfolio", "2026-10-09", "2026-10-09", database)
+
+
+def test_runtime_contracts_for_smart_penny_and_momentum(monkeypatch):
+    from config import settings
+    universe = {"stock": ["RELIANCE"], "penny": ["AAA"]}
+    smart = yahoo.supplied_config("penny-smart", universe)
+    assert smart == {"tickers": ["AAA"], "book": "PENNY_PAPER", "candidate_policy": "PEN_SMART_TRADER",
+                     "stop_policy": "RUNTIME", "bankroll": float(settings.PENNY_SMART_SHADOW_BANKROLL)}
+    monkeypatch.setattr(settings, "MOMENTUM_SELECTIVE_ENTRY_ENABLED", True)
+    momentum = yahoo.supplied_config("momentum", universe)
+    assert (momentum["variants"], momentum["exit_model"], momentum["entry_clock"], momentum["index_ticker"]) == (
+        ["MOM_SELECTIVE"], "LIVE_EXIT_LIFECYCLE", "NEXT_BAR_OPEN", "NIFTY 50")
+    monkeypatch.setattr(settings, "MOMENTUM_SELECTIVE_ENTRY_ENABLED", False)
+    assert yahoo.supplied_config("momentum", universe)["variants"] == ["MOM_BASE"]
+
+
+def test_momentum_index_context_comes_from_the_15m_probe(tmp_path, monkeypatch):
+    import sqlite3
+    calls = []
+    def fetch(local, symbol, mapped, interval, start, end, **kwargs):
+        calls.append((symbol, interval))
+        return fixture_fetch(local, symbol, mapped, interval, start, end)
+    monkeypatch.setattr(yahoo, "fetch_chart", fetch)
+    out = yahoo.run(fake_request(tmp_path, "momentum"))
+    assert calls.count(("NIFTY 50", "15m")) == 1          # the probe is reused, never re-requested
+    with sqlite3.connect(out / "_local/validated-yahoo.sqlite") as con:
+        names = {row[0] for row in con.execute("SELECT DISTINCT ticker FROM intraday_cache WHERE interval='15minute'")}
+    assert names == {"AAA", "NIFTY 50"}

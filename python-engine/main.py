@@ -3506,11 +3506,17 @@ async def _run_momentum_screener_impl(t0):
                 await notify_screener_results("MOMENTUM", new_alerts, all_rejected_mom, market_regime, bankroll, momentum_pool)
             else:
                 logger.info("momentum_scan_silent", reason="no_new_signals_found")
-                # Heartbeat: notify user the scan ran even with no signals
-                await _notify_momentum_heartbeat(
-                    now_ist, len(universe), len(raw_momentum),
-                    len(accepted), all_rejected_mom, momentum_pool
-                )
+                # Heartbeat: notify user the scan ran even with no signals --
+                # [O19-M1] the first silent scan of each clock hour only (Oct 19:
+                # 19 of 46 owner messages were "no signals" every 15 minutes).
+                global _momentum_heartbeat_slot
+                slot = now_ist.strftime("%Y-%m-%d %H")
+                if slot != _momentum_heartbeat_slot:
+                    _momentum_heartbeat_slot = slot
+                    await _notify_momentum_heartbeat(
+                        now_ist, len(universe), len(raw_momentum),
+                        len(accepted), all_rejected_mom, momentum_pool
+                    )
         else:
             logger.info("momentum_scan_pre_market", reason="outside_market_hours_notification_suppressed",
                         accepted=len(accepted), scan_time=now_ist.isoformat())
@@ -4703,6 +4709,7 @@ async def _notify_momentum_heartbeat(
 
 
 MOMENTUM_HEARTBEAT_MAX_REASONS = 12
+_momentum_heartbeat_slot: str | None = None   # "YYYY-MM-DD HH" of the last silent-scan heartbeat
 MOMENTUM_HEARTBEAT_MAX_CHARS = 3500
 
 

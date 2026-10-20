@@ -694,11 +694,16 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None, *,
     from memory_metrics import current_rss_kb
     scan_rss_before_kb = current_rss_kb()
     try:
+        # [O19-E1] Score the last completed session. The 09:20 screener's
+        # daily fetch caches today's unfinished candle for ~500 NIFTY 500
+        # names, so "newest date" was today and only those names (482 of
+        # 499 priced out of the band) were scanned from late September.
         scan = pel.scan_today(
             bankroll=scan_bankroll,
             max_positions=_edge_max_positions(),
             min_strength=_edge_min_strength(),
             db_path=db_path,
+            before_date=clock().astimezone(_IST).date().isoformat(),
         )
     except Exception as engine_exc:
         logger.error(

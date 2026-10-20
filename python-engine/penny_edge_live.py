@@ -51,9 +51,15 @@ def scan_today(
     db_path: str = "/data/cache.db",
     as_of_date: Optional[str] = None,
     nifty_ticker: str = "NIFTYBEES",
+    before_date: Optional[str] = None,
 ) -> dict:
     """One-shot scanner. Pulls latest bars from the DB, computes
     signals, returns the top-N candidate Positions for as_of_date.
+
+    Without ``as_of_date`` the scan scores the newest cached date, or with
+    ``before_date`` the newest date strictly before it (the last completed
+    session: an intraday daily fetch caches today's unfinished candle for
+    the names it touched).
 
     Returns dict with:
       - 'date': the as-of date used
@@ -109,9 +115,12 @@ def scan_today(
             raise
 
         if as_of_date is None:
-            # Use the most recent date in ohlcv_cache
+            # Use the most recent (completed, with before_date) date in ohlcv_cache
             cur = conn.cursor()
-            cur.execute("SELECT MAX(date) FROM ohlcv_cache")
+            if before_date is None:
+                cur.execute("SELECT MAX(date) FROM ohlcv_cache")
+            else:
+                cur.execute("SELECT MAX(date) FROM ohlcv_cache WHERE date < ?", (before_date,))
             row = cur.fetchone()
             if not row or row[0] is None:
                 # [PENNY-EDGE-ENGINE-GRACEFUL 2026-07-06] Same DB-unready

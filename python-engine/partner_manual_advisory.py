@@ -1420,6 +1420,30 @@ async def queue_management_updates(
     return queued
 
 
+async def _expire_unsendable_ideas(db, now: datetime) -> None:
+    """[O19-P2] A QUEUED card past its entry deadline (or from an earlier
+    session) can never be sent; mark it ``EXPIRED_UNSENT`` so the dashboard
+    stops offering it (``can_send``). Re-generated cards of a delivered thesis
+    used to stay QUEUED for ever."""
+    today = now.astimezone(IST).date().isoformat()
+    rows = await (await db.execute(
+        "SELECT advisory_id,payload FROM partner_advisory_ideas WHERE status='QUEUED'"
+    )).fetchall()
+    for advisory_id, raw_payload in rows:
+        try:
+            payload = json.loads(raw_payload)
+            deadline = datetime.fromisoformat(str(payload["entry_deadline"])).astimezone(IST)
+            session_date = str(payload["session_date"])
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+        if today > session_date or now.astimezone(IST) > deadline:
+            await db.execute(
+                "UPDATE partner_advisory_ideas SET status='EXPIRED_UNSENT',updated_at=? "
+                "WHERE advisory_id=? AND status='QUEUED'", (_iso(now), advisory_id),
+            )
+    await db.commit()
+
+
 async def run_intraday_session_lifecycle(db_path: str, *, now: datetime) -> list[dict]:
     """Run clock-based reminders/retirement without quotes or a new signal.
 
@@ -1432,6 +1456,7 @@ async def run_intraday_session_lifecycle(db_path: str, *, now: datetime) -> list
     await init_partner_advisory_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         await _close_invalidated_ideas(db, now)
+        await _expire_unsendable_ideas(db, now)
         rows = await (await db.execute(
             "SELECT advisory_id,payload FROM partner_advisory_ideas WHERE status='DELIVERED_ACKNOWLEDGED'"
         )).fetchall()
@@ -1481,6 +1506,11 @@ async def run_intraday_session_lifecycle(db_path: str, *, now: datetime) -> list
     return queued
 
 
+# Minimum spacing between two updates about the same card; below the
+# one-minute lifecycle tick so tick jitter cannot skip a slot.
+MANAGEMENT_UPDATE_GAP = timedelta(seconds=45)
+
+
 def management_observation_fresh(observed_at: datetime, now: datetime) -> bool:
     """A management update reports a completed public bar, not an executable
     quote, so it carries the management observation age bound (not the
@@ -1497,7 +1527,7 @@ def management_observation_fresh(observed_at: datetime, now: datetime) -> bool:
 async def pending_management_updates(
     db_path: str, *, now: datetime, underlying: Optional[str] = None,
 ) -> list[dict]:
-    """QUEUED updates that may still be sent, oldest first.
+    """QUEUED updates that may still be sent, oldest observation first.
 
     Every QUEUED row ends in a recorded state instead of waiting silently:
     a row whose claim was already acknowledged is marked delivered; a row
@@ -1509,7 +1539,7 @@ async def pending_management_updates(
     sql = ("SELECT u.update_id,u.advisory_id,u.event_type,u.observed_at,u.rendered_update,i.status,i.payload,{acked} "
            "FROM partner_advisory_updates u JOIN partner_advisory_ideas i ON i.advisory_id=u.advisory_id "
            "WHERE u.status='QUEUED'" + (" AND i.underlying=?" if underlying is not None else "")
-           + " ORDER BY u.created_at")
+           + " ORDER BY u.observed_at, u.created_at")
     args = (underlying.upper(),) if underlying is not None else ()
     async with aiosqlite.connect(db_path) as db:
         has_claims = await (await db.execute(
@@ -1562,6 +1592,8 @@ async def dispatch_queued_management_update(db_path: str, update: dict, *, now: 
         return False
     from hedge_advisory import _send_claimed_review
     update_id = str(update["update_id"])
+    advisory_id = str(update["advisory_id"])
+    reminder = str(update["event_type"]) == "SESSION_EXIT_REMINDER"
     sent = await _send_claimed_review(
         db_path, "manual_advisory_update", update_id, str(update["rendered_update"]),
         detail={
@@ -1570,8 +1602,16 @@ async def dispatch_queued_management_update(db_path: str, update: dict, *, now: 
             "profile_id": str(update["profile_id"]), "event_type": str(update["event_type"]),
             "observed_at": str(update["observed_at"]), "decision_id": update_id,
             "generation_id": update_id, "exposure_lifecycle_id": "manual-advisory-update",
-        }, now=final_now, min_gap=timedelta(minutes=1),
-        daily_cap=settings.PARTNER_MANUAL_ADVISORY_UPDATE_DAILY_CAP,
+        }, now=final_now,
+        # [O19-P1] Spacing is per card and shorter than the one-minute tick:
+        # a shared 1-minute gap refused every second tick, so 15:10 facts for
+        # two cards left at 15:10/15:12/15:14. The square-off reminder (one
+        # per card) is never refused by the daily cap, which still bounds the
+        # target/invalidation updates.
+        min_gap=MANAGEMENT_UPDATE_GAP,
+        gap_counts=lambda prior: prior.get("advisory_id") == advisory_id,
+        daily_cap=None if reminder else settings.PARTNER_MANUAL_ADVISORY_UPDATE_DAILY_CAP,
+        cap_counts=lambda prior: prior.get("event_type") != "SESSION_EXIT_REMINDER",
         clock=clock or (lambda: datetime.now(IST)),
     )
     if sent:

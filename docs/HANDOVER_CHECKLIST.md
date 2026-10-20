@@ -1,18 +1,35 @@
 # Handover receipt and operator checklist
 
+## October 19 — Oct 19 audit fixes (commit `d12bb1d`, Dev, pushed, not deployed)
 
+- [x] O19-E1 EDGE morning scan scores the last completed session (`before_date`).
+- [x] O19-P1 partner update gap per card (45 s), reminder outside the daily cap.
+- [x] O19-P2 unsendable QUEUED cards → `EXPIRED_UNSENT`.
+- [x] O19-S1/S2 Smart held names quoted in the scan batch; halt reasons named;
+  hashed Smart policy files untouched.
+- [x] O19-O1 overnight pick ≤ free cash / open slots (replay mirrors it).
+- [x] O19-F1 `FNO_LOCK_LATE_ARM` / `FNO_LOCK_LOOSE_KEEP` / `FNO_LOCK_OFF` replay arms.
+- [x] O19-M2 `MOM_RS_PULLBACK` shadow + replay variant + `momentum-pullback` job.
+- [x] O19-B1 bootstrap order; O19-M1 hourly silent-scan heartbeat.
+- [x] Tests: full suite 5,527 passed, 4 skipped (9 min 23 s); new tests/test_oct19_audit_fixes.py 17
+- [ ] Deployed (merge + engine rebuild) and verified on the next session.
 
+## October 18 — simulation-report fixes (commit `a0a3fd8`, Dev, pushed, not deployed)
 
+- [x] O18-F1 F&O replay dated expiry calendar; `CURRENT` arm; exporter
+  `option_expiries`.
+- [x] O18-P1 classic Penny PENNY_PAPER exits fill like the runtime paper
+  executor (lifecycle v5; `REFERENCE` for old receipts).
+- [x] O18-E1 `EDGE_OVERNIGHT_RUNTIME` replay arm; runtime realism refusal
+  split without behaviour change.
+- [x] O18-R1..R3 runner: EDGE/Swing/Range lifecycle jobs, bounded daily tail,
+  entry-dated windows, `penny-smart`, current Momentum contract + index.
+- [x] No strategy threshold, runtime config or schema changed.
+- [x] Tests: full suite `pytest tests ../scripts/tests` 5,512 passed, 4 skipped, 0 failed (9 min 10 s); new tests/test_oct18_sim_fidelity.py 8, runner tests 20.
+- [ ] Deployed: not needed for the engine (research tooling); merge to keep
+  Production's `scripts/` in step.
 
-
-
-
-
-
-
-
-
-## October 15 — expiry-v2 (C takes CX's failed-break exit) and expiry-shadow-v4 (commit `5458d2d`, Dev, pushed, not deployed)
+## October 15 — expiry-v2 (C takes CX's failed-break exit) and expiry-shadow-v4 (commit `5458d2d`, Dev, pushed, deployed by PR #110)
 
 - [x] C (main) sells its ticket on A's failed break. CX's rule was never worse
   than C on any of the 4 expiries (Oct 15 forward +₹2,018.54).
@@ -31,7 +48,7 @@
   5,228 pass, 4 skip, 0 fail (8 min 7 s, on the shared working tree with a6d820d).
 - [ ] Deployed: no (merge, rebuild the engine before the next expiry).
 
-## October 15 (evening) — Oct 15 audit fixes (commit `a6d820d`, Dev, pushed, not deployed)
+## October 15 (evening) — Oct 15 audit fixes (commit `a6d820d`, Dev, pushed, deployed by PR #110)
 
 - [x] O15-N1 no-answer provider calls counted by kind; outages paged at
   start and end through the acknowledged outbox (≥ 120 s market overlap,

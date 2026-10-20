@@ -19,7 +19,8 @@ What it copies (nothing in /data is modified; SQLite is opened mode=ro):
   futures token the archive identifies as a NIFTY or SENSEX future, the ``fno_signals`` evaluation log (point-in-
   time regime and live accept/reject decisions) and the single-leg / defined-
   risk paper positions (for replay parity checks);
-* ``manifest.json`` with source, SHA-256 of every copied file and row counts.
+* ``manifest.json`` with source, SHA-256 of every copied file, row counts and
+  ``option_expiries`` (per underlying, every option expiry the archive quoted).
 
 Standard library only, so it runs inside the engine image without the repo.
 """
@@ -45,19 +46,25 @@ def _sha(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _future_tokens(quote_root: Path) -> dict[int, str]:
-    """Token -> tradingsymbol of every archived index futures contract (NIFTY, SENSEX)."""
+def _scan_contracts(quote_root: Path) -> tuple[dict[int, str], dict[str, list[str]]]:
+    """Archived index contracts (NIFTY, SENSEX): futures token -> tradingsymbol,
+    and per underlying every option expiry ever quoted (the replay's dated
+    expiry calendar; one batch may omit a series, the archive as a whole not)."""
     tokens: dict[int, str] = {}
+    expiries: dict[str, set[str]] = {}
     for segment in sorted([*quote_root.glob("*/quotes-*.jsonl.gz"), *quote_root.glob("*/quotes.jsonl.open")]):
         opener = gzip.open if segment.suffix == ".gz" else open
         with opener(segment, "rt", encoding="utf-8") as handle:
             for line in handle:
-                if '"instrument_type":"FUT"' not in line:
-                    continue
                 contract = json.loads(line).get("contract") or {}
-                if contract.get("underlying") in {"NIFTY", "SENSEX"} and contract.get("instrument_type") == "FUT":
+                underlying, kind = contract.get("underlying"), contract.get("instrument_type")
+                if underlying not in {"NIFTY", "SENSEX"}:
+                    continue
+                if kind == "FUT":
                     tokens[int(contract["instrument_token"])] = contract["tradingsymbol"]
-    return tokens
+                elif kind in ("CE", "PE") and contract.get("expiry"):
+                    expiries.setdefault(underlying, set()).add(str(contract["expiry"]))
+    return tokens, {name: sorted(values) for name, values in sorted(expiries.items())}
 
 
 def export(data: Path, out: Path) -> dict:
@@ -79,7 +86,7 @@ def export(data: Path, out: Path) -> dict:
         shutil.copyfile(segment, target)
         files[str(target.relative_to(out)).replace("\\", "/")] = _sha(target)
 
-    futures = _future_tokens(quote_root)
+    futures, option_expiries = _scan_contracts(quote_root)
     source = sqlite3.connect(f"file:{data / 'cache.db'}?mode=ro", uri=True)
     replay_db = out / "fno-replay.sqlite"
     target = sqlite3.connect(replay_db)
@@ -112,6 +119,7 @@ def export(data: Path, out: Path) -> dict:
                 "quote_days": sorted({path.split("/")[1] for path in files if path.startswith("quotes/")}),
                 "unsealed_days": unsealed,
                 "nifty_future_tokens": {str(k): v for k, v in sorted(futures.items())},
+                "option_expiries": option_expiries,
                 "row_counts": counts, "files_sha256": files}
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
     return manifest

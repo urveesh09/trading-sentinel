@@ -39,7 +39,7 @@ from research_data_contracts import (
     COVERAGE_REQUIREMENTS, IST, DailyDataset, IntradayDataset,
 )
 
-LIFECYCLE_VERSION = "penny_mis_breakout_lifecycle_v4"
+LIFECYCLE_VERSION = "penny_mis_breakout_lifecycle_v5"
 SCOPE = "LIFECYCLE"
 BOOKS = ("PENNY_PAPER", "PENNY")
 REGIMES = ("PR1_CALM", "PR2_ELEVATED", "PR3_HOT")
@@ -55,6 +55,12 @@ NOISE_POLICIES = ("PEN_NOISE_STOP", "PEN_NOISE_STOP_BE")
 NOISE_BREAKEVEN_R = 1.0
 CANDIDATE_POLICIES = ("BASELINE", "PEN_CONTEXT", RANK_POLICY, "PEN_SMART_EXIT") + TRADER_POLICIES + NOISE_POLICIES + SMART_POLICIES
 STOP_POLICIES = ("RUNTIME", "BAR_LOW", "NOISE_FLOOR")
+# [O18-P1 2026-10-18] PENNY_PAPER exits fill like the runtime paper executor
+# (``PennyExecutor.execute_exit``: reference x (1 - UNWIND_LIMIT_SLIP_PCT),
+# tick-floored; PAPER_LIMIT_FLOOR_V1). REFERENCE is the pre-v5 fill at the
+# observed price, kept only to reproduce older receipts.
+PAPER_EXIT_FILLS = ("RUNTIME_LIMIT_FLOOR", "REFERENCE")
+RESEARCH_TICK = 0.01
 
 
 def noise_floored_decision(decision: dict, target_r: float) -> dict:
@@ -138,6 +144,7 @@ class PennyLifecycleConfig:
     stop_policy: str = "RUNTIME"
     bankroll: float | None = None
     benchmark_ticker: str | None = None
+    paper_exit_fill: str = "RUNTIME_LIMIT_FLOOR"
 
     def __post_init__(self):
         clean = tuple(sorted({str(t).strip().upper() for t in self.tickers if str(t).strip()}))
@@ -154,6 +161,8 @@ class PennyLifecycleConfig:
             raise ValueError(f"candidate_policy must be one of {CANDIDATE_POLICIES}")
         if self.stop_policy not in STOP_POLICIES:
             raise ValueError(f"stop_policy must be one of {STOP_POLICIES}")
+        if self.paper_exit_fill not in PAPER_EXIT_FILLS:
+            raise ValueError(f"paper_exit_fill must be one of {PAPER_EXIT_FILLS}")
         if self.candidate_policy in NOISE_POLICIES and self.stop_policy == "BAR_LOW":
             raise ValueError("noise candidate cannot select BAR_LOW stop")
         if self.bankroll is not None:
@@ -438,6 +447,14 @@ class _Replay:
     def _close(self, trade, td, exit_index, exit_price, reason, decided_at):
         from penny_shadow import _costs_from_snapshot
         exit_bar = td.bars[exit_index]
+        executor = self.snapshot["executor"]
+        floored = self.config.book == "PENNY_PAPER" and self.config.paper_exit_fill == "RUNTIME_LIMIT_FLOOR"
+        if floored:
+            # Every PENNY_PAPER exit here (LTP stop, smart-EOD, 15:00, thesis) is a
+            # runtime ``execute_exit`` market exit; resting partial legs are not.
+            from penny_executor import snap_to_tick
+            trade["exit_reference_price"] = round(float(exit_price), 4)
+            exit_price = snap_to_tick(float(exit_price) * (1.0 - executor["UNWIND_LIMIT_SLIP_PCT"]), -1, RESEARCH_TICK)
         for i in range(trade["_fill_index"], exit_index + 1):
             bar = td.bars[i]
             if bar.executable:
@@ -452,11 +469,13 @@ class _Replay:
         costs = round(sum(_costs_from_snapshot(entry, price, quantity, self.execution)
                           for price, quantity in legs), 4)
         net = gross - costs
-        executor = self.snapshot["executor"]
         worst_entry = entry * executor["LIVE_ENTRY_LIMIT_MULTIPLIER"]
         slip = 1 - max(executor["STOP_LIMIT_SLIP_PCT"], executor["UNWIND_LIMIT_SLIP_PCT"])
-        adverse = sum((price * slip - worst_entry) * quantity - _costs_from_snapshot(
-            worst_entry, price * slip, quantity, self.execution) for price, quantity in legs)
+        # The floored final leg already sits at the protected-limit boundary.
+        worst = [(price * slip, quantity) for price, quantity in partials] + [
+            (legs[-1][0] if floored else legs[-1][0] * slip, legs[-1][1])]
+        adverse = sum((price - worst_entry) * quantity - _costs_from_snapshot(
+            worst_entry, price, quantity, self.execution) for price, quantity in worst)
         trade.update({
             "status": "CLOSED", "exit_reason": reason, "exit_decided_at": decided_at.isoformat(),
             "exit_fill_ts": exit_bar.start.isoformat(), "exit_fill_price": round(float(exit_price), 4),
@@ -1087,7 +1106,10 @@ def run_penny_lifecycle(
         "clock": "bar k-1 evaluated at minute boundary k (forming bar dropped, as the live scanner does)",
         "ltp": "open of bar k if it traded, else last traded close (mark only)",
         "entry_fill": "LTP at k after executor drift/stop checks; requires a traded bar k",
-        "exit_fill": ("paper stop and scheduled exits fill at the first traded bar at/after the decision"
+        "exit_fill": (("paper stop and scheduled exits fill at the first traded bar at/after the decision"
+                       + (", then the runtime paper model: reference x (1 - UNWIND_LIMIT_SLIP_PCT), floored to "
+                          "INR 0.01 (PAPER_LIMIT_FLOOR_V1)" if config.paper_exit_fill == "RUNTIME_LIMIT_FLOOR"
+                          else " at the observed reference price (pre-v5 receipts)"))
                       if config.book == "PENNY_PAPER" else
                       "broker stop fills at the stop (or the bar open on a gap); stop-limit non-fill unmodelled"),
         "stop_model": "PAPER_LTP_POLL_60S" if config.book == "PENNY_PAPER" else "BROKER_STOP_APPROXIMATION",
