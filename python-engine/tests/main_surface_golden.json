@@ -471,6 +471,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_edge_overnight_experiment",
+      "methods": [
+        "GET"
+      ],
+      "path": "/experiments/edge-overnight",
+      "response_model": null
+    },
+    {
       "endpoint": "get_fno_opening_range_experiment",
       "methods": [
         "GET"

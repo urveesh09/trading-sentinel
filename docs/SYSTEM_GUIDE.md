@@ -1,5 +1,83 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+Owner (Oct 21): act on the Oct 21 Production audit
+(`Production_Trading-sentinel/docs/2026-10-21-production-deep-audit.md`):
+fix what it found, and add shadows where a better approach is supported.
+No live strategy rule, sizing, Smart policy file, expiry rule or live
+switch changed; everything below is a bug fix, telemetry, or research.
+
+- **S21-R1 Momentum shadow terminal pass.** Virtual trades advanced only on
+  a later scan's bars; scans run 10:15–14:45, so the declared 15:15 time
+  exit never arrived (Oct 21: 9 of 13 MOM_RS_PULLBACK trades unresolved).
+  Job `momentum_shadow_terminal` (15:32 IST, Mon–Fri, trading days,
+  `MOMENTUM_SHADOW_ENABLED`) fetches each open ticker's completed 15-minute
+  bars for the session and calls `resolve_momentum_shadow_day`. Bars after
+  the 15:15 bar are not passed; the usual stop/target/time-exit rules decide
+  (the time exit uses only the 15:15 open). Table
+  `momentum_shadow_terminal_receipts`: CLOSED or CENSORED with why
+  (`fetch_failed:<Class>`, `no_terminal_bar`); a later pass may close a
+  censored trade, never the reverse. The comparison adds `censored_trades`.
+- **S21-R2 RS_PULLBACK identity.** The RS variant's config now carries
+  `rules` (`rs_pullback_rules()`: every constant and sizing setting, version
+  `rs_pullback_v1`) and `momentum_pool`; its fingerprint also hashes the
+  index bars the rule could see (`rs_index_known`) and the daily bars (ATR
+  floor). A different index or constant gives a different identity. The
+  other variants' configs and fingerprints are byte-identical.
+- **S21-R3 Overnight replay parity.** On the `EDGE_OVERNIGHT_RUNTIME` arm the
+  replay now measures the quarter-of-plan dust floor against the plan capped
+  at an equal share of equity, with the pick's share of free cash, as the
+  runtime does (`edge_overnight_paper`). The audit's counterexample (₹25,000,
+  3 slots, plan 2,000 at 20.05) now fills 414 (runtime 415; the 0.2% buffer).
+  Other replay arms are unchanged.
+- **S21-E1 EDGE entry-day event check.** `_run_one_leg` re-checks
+  `event_block(ticker, entry date)` before each admission (skip reason
+  `entry_day_event_window: ...`). The scan's signal-date check stays.
+- **S21-L1 Restart overlap.** `startup_receipt` writes `market_overlap_sec`
+  over trading sessions only (`is_trading_day_sync` per day; an unreadable
+  calendar counts the weekday) and keeps the raw weekday figure as
+  `weekday_overlap_sec`. Oct 19 night → Oct 21 pre-market: 0 (was 22,500 s).
+- **R21-M1 EDGE signal rows and the zero-accept alarm.** Candidates were
+  logged against the live leg, which is off by design, so all 96 read
+  `not_selected_by_live_leg` and the alarm said "unsatisfiable gate". Each
+  row now carries the real outcome (`edge_candidate_outcome`): accepted if
+  either leg entered it; else the per-ticker refusal (paper first), or
+  `rank_not_selected`. The watchdog leaves `rank_not_selected` out of the
+  dead-gate test (`NOT_A_GATE`, shown as "Not a gate (selection by design)"),
+  says "the last N evaluation day(s)" (not "consecutive"), and words a
+  dominant gate as a check to make, not a verdict.
+- **R21-M2 F&O hourly.** `allocation=` and `equity=` (`division_equity`:
+  allocation + realised P&L) replace `pool=`.
+- **O19-M1 follow-up.** `_notify_momentum_heartbeat` returns whether the
+  gateway accepted it; the hour's slot is set only then, so a failed send is
+  retried by the next silent scan that hour.
+- **T21-X Transport kinds.** `transport_error_kind` adds `pool_timeout` (this
+  process's own pool, not the provider), `read`, `write`, `protocol`, and
+  `other:<ExceptionClass>` instead of a bare `other`.
+- **O21-ON Overnight forward shadows (`edge_overnight_paper.py`).** From
+  Production's own record (16 trades with a recorded split): close→open
+  +₹986.97 (about +0.77% a trade), entry spread paid at the ask −₹462.11
+  (about 0.36%; 15:20→close drift only −₹108.41 with mixed signs), delivery
+  charges about ₹33 a trade (about 0.42% at ₹8k; the DP charge is fixed per
+  scrip): the edge is real and the costs take it. Two shadows were declared
+  on 2026-10-21 before any scoring (`OVERNIGHT_SHADOWS`):
+  - `ON_TWO_LARGER`: two equal positions of half the book each
+    (`fill_cash_share`), so the fixed DP charge weighs less per rupee;
+  - `ON_TIGHT_SPREAD`: the book's sizing, but a pick filled more than 0.35%
+    above LTP is refused (`entry_cost_above_limit`, no slot used).
+  The admission loop moved into `_admit` (the book calls it with its exact
+  previous behaviour); each shadow calls it with its declared fields on the
+  same ranked picks, re-quote and decision time, with its own cash
+  (`EDGE_OVERNIGHT_PAPER_BANKROLL` + its realised P&L, `shadow_state`).
+  Exits use the same quotes and `_price_exit` (EXIT phase and same-day
+  retries). Table `edge_overnight_shadow_trades`; the ENTRY summary gains a
+  compact `shadows` key; the book's notices are unchanged. Read-only
+  `GET /experiments/edge-overnight` compares each shadow with the book on
+  the same nights (closed, net, PF, average net, charges, average entry cost
+  %, average position value). Setting `EDGE_OVERNIGHT_SHADOWS_ENABLED`
+  (True).
+
 ## October 21 (night) — the partner's own review page; lessons that explain each mistake (actual behavior, Dev, commit `6f882f0`)
 
 Owner (Oct 21): the partner logs in from the Telegram button and lands on

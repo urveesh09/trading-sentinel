@@ -280,6 +280,19 @@ async def _write_edge_position(
 
 # ----- per-leg runner ------------------------------------------------
 
+def _entry_day_event_block(ticker: str, today_str: str) -> tuple[bool, str]:
+    """(blocked, reason) from the curated event calendar on the entry date.
+    Every failure allows, as the scan-time check does."""
+    try:
+        from datetime import date as _date
+
+        from event_calendar import event_block
+        return event_block(ticker, _date.fromisoformat(today_str))
+    except Exception as exc:
+        logger.warning("edge_entry_day_event_check_failed ticker=%s err=%s", ticker, exc)
+        return False, ""
+
+
 async def _run_one_leg(
     kite, db_path: str, today_str: str,
     leg_name: str,         # "PAPER" or "LIVE"
@@ -300,7 +313,7 @@ async def _run_one_leg(
         return {
             "leg": leg_name, "source": source_tag, "bankroll": bankroll,
             "paper_mode": False, "n_candidates": len(candidates),
-            "entered": 0, "trades": [],
+            "entered": 0, "trades": [], "selected": [],
             "skipped": [("ALL", "reservation-lifecycle-not-ready")],
         }
     """Submit entries for ONE leg (paper or live) of the engine.
@@ -313,7 +326,7 @@ async def _run_one_leg(
             "leg": leg_name, "source": source_tag,
             "bankroll": bankroll, "paper_mode": paper_mode,
             "n_candidates": 0, "entered": 0,
-            "trades": [], "skipped": [],
+            "trades": [], "skipped": [], "selected": [],
         }
     # Run the engine once with this leg's bankroll so the position
     # sizing reflects the leg's capital, not the unified list.
@@ -343,6 +356,15 @@ async def _run_one_leg(
             logger.warning("penny_edge_%s_entry_cutoff_reached remaining=%d",
                            leg_name.lower(), len(leg_scan) - index)
             break
+        # [S21-E1] The scan checks the event calendar on the signal session (the
+        # last completed one); the entry is today, maybe days later across a
+        # weekend or holiday. Re-check the curated window on the entry date.
+        blocked, why = _entry_day_event_block(pos.ticker, today_str)
+        if blocked:
+            skipped.append((pos.ticker, f"entry_day_{why}"))
+            logger.info("penny_edge_%s_entry_day_event_blocked ticker=%s reason=%s",
+                        leg_name.lower(), pos.ticker, why)
+            continue
         order_result = await executor.execute_entry(
             ticker=pos.ticker,
             leg=EDGE_PRODUCT_TYPE,
@@ -419,20 +441,44 @@ async def _run_one_leg(
         "bankroll": bankroll, "paper_mode": paper_mode,
         "n_candidates": len(leg_scan), "entered": len(submitted),
         "trades": submitted, "skipped": skipped,
+        "selected": [pos.ticker for pos in leg_scan],
     }
 
 
 # ----- main runner ---------------------------------------------------
 
-async def _log_edge_signals(db_path: str, today_str: str, candidates, live_summary: dict) -> None:
+def edge_candidate_outcome(ticker: str, paper_summary: dict, live_summary: dict) -> Optional[str]:
+    """[R21-M1] ``None`` when a leg entered the candidate, else why not.
+
+    A per-ticker refusal (entry drift, cutoff, event window...) comes first,
+    paper then live; a candidate the ranking did not take is
+    ``rank_not_selected`` (a selection, not a gate). The live leg is off by
+    design while its reservation lifecycle is unwired, so it alone must not
+    decide: Oct 21 logged 96 rows "not_selected_by_live_leg" against 94 real
+    candidates and 3 drift refusals, and the watchdog called it a dead gate."""
+    for summary in (paper_summary, live_summary):
+        for trade in summary.get("trades", []):
+            if (trade["ticker"] if isinstance(trade, dict) else trade) == ticker:
+                return None
+    for summary in (paper_summary, live_summary):
+        for name, reason in summary.get("skipped", []):
+            if name == ticker:
+                return str(reason)
+    if any(ticker in summary.get("selected", []) for summary in (paper_summary, live_summary)):
+        return "selected_not_entered"
+    return "rank_not_selected"
+
+
+async def _log_edge_signals(db_path: str, today_str: str, candidates, paper_summary: dict,
+                            live_summary: dict) -> None:
     """
     [TIER0-0.5 2026-07-14] Write one penny_signals row per EDGE candidate, under
     leg='EDGE', so the zero-accept watchdog and the hourly report can see this
     book at all.
 
-    A candidate is ACCEPTED if the live leg actually entered it. Everything else
-    is a reject, with the reason the leg recorded (below min strength, already
-    entered today, position cap, sizing to zero shares...).
+    [R21-M1] A candidate is ACCEPTED if either leg entered it (analytics reads
+    these rows for EDGE_PAPER and EDGE_LIVE alike); everything else is a
+    reject with its real reason (``edge_candidate_outcome``).
 
     Failures here are swallowed deliberately: this is observability, and it must
     never be able to break a scan that is placing real orders.
@@ -441,25 +487,19 @@ async def _log_edge_signals(db_path: str, today_str: str, candidates, live_summa
         from penny_signal_log import init_penny_signal_db, log_penny_signal
 
         await init_penny_signal_db(db_path)
-
-        entered = {t["ticker"] if isinstance(t, dict) else t
-                   for t in live_summary.get("trades", [])}
-        skip_reasons = {t: r for t, r in live_summary.get("skipped", [])}
         scan_id = f"EDGE-{today_str}"
 
         for cand in candidates:
-            accepted = cand.ticker in entered
+            reason = edge_candidate_outcome(cand.ticker, paper_summary, live_summary)
             await log_penny_signal(
                 db_path=db_path,
                 scan_id=scan_id,
                 ticker=cand.ticker,
                 leg="EDGE",
-                accepted=accepted,
+                accepted=reason is None,
                 regime=cand.signal_subtype,
                 close=cand.entry_price,
-                reject_reason=None if accepted else skip_reasons.get(
-                    cand.ticker, "not_selected_by_live_leg",
-                ),
+                reject_reason=reason,
                 stop_loss=cand.stop_loss,
                 target_1=cand.target,
             )
@@ -799,7 +839,7 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None, *,
     # queries penny_signals), and its closed trades landed in trade_outcomes
     # tagged `no_matched_signal` because the outcome matcher had no signal row to
     # join to. A strategy nothing can see is a strategy nothing can audit.
-    await _log_edge_signals(db_path, today_str, candidates, live_summary)
+    await _log_edge_signals(db_path, today_str, candidates, paper_summary, live_summary)
 
     summary = {
         "date": today_str,

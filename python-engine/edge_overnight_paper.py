@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import closing, contextmanager
+from dataclasses import asdict, dataclass
 from datetime import datetime, time, timedelta
 import json
 import logging
@@ -79,6 +80,36 @@ SKIP_KINDS = ("MR_mid",)
 # quote snapshot must itself be fresh (ENTRY_QUOTE_TTL), separately from the
 # last-trade activity rule (ENTRY_MAX_TRADE_AGE).
 ENTRY_FILL_CONTRACT = "visible-asks-v3"
+
+
+@dataclass(frozen=True)
+class OvernightShadow:
+    """[O21-ON] A forward shadow of this book (research only; it never
+    changes the book). ``slots`` None means the book's slot count."""
+    name: str
+    slots: Optional[int]
+    fill_cash_share: bool
+    max_entry_cost_pct: Optional[float]
+    rationale: str
+
+
+# [O21-ON 2026-10-21] Declared before any scoring, from the book's own cost
+# structure. Over the 16 trades with a recorded split, close->open earned
+# +Rs 986.97 (about +0.77% a trade); the spread paid at the ask cost Rs 462.11
+# (about 0.36%; 15:20->close drift only -Rs 108, mixed signs) and delivery
+# charges about Rs 33 a trade (about 0.42% at Rs 8k, the DP charge being fixed
+# per scrip). The edge is real; the costs take it. Each shadow uses the same
+# ranked picks, re-quote and decision time at entry and the same exit quotes,
+# with its own cash (EDGE_OVERNIGHT_PAPER_BANKROLL + its realised P&L).
+OVERNIGHT_SHADOWS_DECLARED = "2026-10-21"
+OVERNIGHT_SHADOWS = (
+    OvernightShadow("ON_TWO_LARGER", 2, True, None,
+                    "two equal positions of half the book each: the fixed DP charge and the per-order "
+                    "minimums weigh less per rupee"),
+    OvernightShadow("ON_TIGHT_SPREAD", None, False, 0.0035,
+                    "only picks filled within 0.35% of LTP (edge 0.77% less charges 0.42%), so the spread "
+                    "cannot take the edge"),
+)
 ENTRY_MAX_TRADE_AGE = timedelta(minutes=30)     # activity: the stock traded recently
 ENTRY_QUOTE_TTL = timedelta(seconds=120)        # snapshot: the displayed depth is current
 ENTRY_QUOTE_MAX_AHEAD = timedelta(seconds=5)    # provider clock may lead ours by this much
@@ -158,6 +189,12 @@ _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS edge_overnight_paper_notices (
         run_date TEXT NOT NULL, phase TEXT NOT NULL, message TEXT NOT NULL, created_at TEXT NOT NULL,
         sent_at TEXT, attempts INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (run_date, phase))""",
+    # [O21-ON] Shadow books: one row per variant and position.
+    """CREATE TABLE IF NOT EXISTS edge_overnight_shadow_trades (
+        variant TEXT NOT NULL, trade_date TEXT NOT NULL, ticker TEXT NOT NULL, kind TEXT NOT NULL,
+        entry_ltp REAL NOT NULL, entry_price REAL NOT NULL, shares INTEGER NOT NULL, entry_ts TEXT NOT NULL,
+        status TEXT NOT NULL, exit_date TEXT, exit_open REAL, exit_price REAL, costs REAL, net_pnl REAL,
+        exit_reason TEXT, entry_day_close REAL, PRIMARY KEY (variant, trade_date, ticker))""",
 )
 
 
@@ -221,6 +258,68 @@ def book_state(conn: sqlite3.Connection, bankroll: float) -> dict:
             "wins": int(realized[2]), "held": {ticker: price * shares for ticker, price, shares in held},
             "reserved_buy_charges": round(reserved, 4),
             "cash": round(equity - sum(price * shares for _, price, shares in held) - reserved, 4)}
+
+
+def shadows_enabled() -> bool:
+    return bool(getattr(settings, "EDGE_OVERNIGHT_SHADOWS_ENABLED", True))
+
+
+def shadow_state(conn: sqlite3.Connection, variant: str, bankroll: float) -> dict:
+    """A shadow's own book: the same equity/cash rule as ``book_state``."""
+    realized = conn.execute("SELECT COALESCE(SUM(net_pnl), 0) FROM edge_overnight_shadow_trades "
+                            "WHERE variant=? AND status='CLOSED'", (variant,)).fetchone()[0]
+    held = conn.execute("SELECT ticker, entry_price, shares FROM edge_overnight_shadow_trades "
+                        "WHERE variant=? AND status='OPEN'", (variant,)).fetchall()
+    equity = bankroll + float(realized)
+    reserved = sum(buy_charges(price, shares) for _, price, shares in held)
+    return {"equity": round(equity, 4), "held": {ticker: price * shares for ticker, price, shares in held},
+            "cash": round(equity - sum(price * shares for _, price, shares in held) - reserved, 4)}
+
+
+def _shadow_entries(picks, fresh: dict, shadow_states: dict, *, today: str, decided: datetime,
+                    late: Optional[dict]) -> dict:
+    out = {}
+    for shadow in OVERNIGHT_SHADOWS:
+        state = shadow_states.get(shadow.name)
+        if state is None:
+            continue
+        slots = shadow.slots or int(settings.PENNY_EDGE_MAX_POSITIONS)
+        opened, skipped, cash = _admit(picks, fresh, state, slots=slots, today=today, decided=decided, late=late,
+                                       fill_cash_share=shadow.fill_cash_share,
+                                       max_entry_cost_pct=shadow.max_entry_cost_pct)
+        out[shadow.name] = {"opened": opened, "skipped": skipped, "cash_after": round(cash, 4)}
+    return out
+
+
+def _shadow_open(conn: sqlite3.Connection, today: str) -> list:
+    if not shadows_enabled():
+        return []
+    return conn.execute("SELECT variant, trade_date, ticker, entry_price, shares FROM edge_overnight_shadow_trades "
+                        "WHERE status='OPEN' AND trade_date < ?", (today,)).fetchall()
+
+
+def _price_shadows(rows: list, quotes: dict, *, today: str, auction: bool, session_before: Optional[str],
+                   retry: bool) -> list[dict]:
+    """Shadow exits priced exactly as the book's (``_price_exit``) on the same quotes."""
+    closed = []
+    for variant, trade_date, ticker, entry_price, shares in rows:
+        first = trade_date == session_before
+        item, _wait = _price_exit(quotes.get(ticker), today=today, auction=auction, trade_date=trade_date,
+                                  ticker=ticker, entry_price=entry_price, shares=shares, delayed=not first,
+                                  entry_session_prior=first, retry=retry)
+        if item is not None:
+            closed.append({**item, "variant": variant})
+    return closed
+
+
+def _close_shadow_items(conn: sqlite3.Connection, today: str, closed: list[dict]) -> None:
+    for c in closed:
+        conn.execute(
+            "UPDATE edge_overnight_shadow_trades SET status='CLOSED', exit_date=?, exit_open=?, exit_price=?, "
+            "costs=?, net_pnl=?, exit_reason=?, entry_day_close=? "
+            "WHERE variant=? AND trade_date=? AND ticker=? AND status='OPEN'",
+            (today, c["exit_open"], c["exit_price"], c["costs"], c["net_pnl"], c["reason"],
+             c.get("entry_day_close"), c["variant"], c["trade_date"], c["ticker"]))
 
 
 def _already_ran(conn: sqlite3.Connection, day: str, phase: str) -> Optional[dict]:
@@ -564,61 +663,19 @@ def day_high_refusal(bar: tuple, prev_close) -> Optional[str]:
     return None
 
 
-async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional[datetime] = None,
-                              clock: Optional[Callable[[], datetime]] = None) -> dict:
-    """15:20 IST: score today's provisional bars and open the paper picks.
+def _admit(picks, fresh: dict, state: dict, *, slots: int, today: str, decided: datetime,
+           late: Optional[dict], fill_cash_share: bool = False,
+           max_entry_cost_pct: Optional[float] = None) -> tuple[list, list, float]:
+    """Admit ranked picks into one book: (opened, skipped, cash left).
 
-    ``now`` starts the run; ``clock`` gives the admission decision time after
-    the scan and re-quote (defaults to the wall clock, or to ``now`` when only
-    ``now`` is injected).
+    The book calls it with the defaults. [O21-ON] A shadow changes only its
+    declared fields: ``fill_cash_share`` sizes each pick to its equal share
+    of equity instead of the scan's risk plan; ``max_entry_cost_pct`` refuses
+    a pick whose fill is further above LTP (it does not use a slot).
     """
-    from penny_edge_live import scan_today
-
-    db_path = db_path or settings.DB_PATH
-    if clock is None:
-        clock = (lambda: now) if now is not None else (lambda: datetime.now(IST))
-    now = now or clock()
-    today = now.date().isoformat()
-    store = overnight_db_path(db_path)
-    with _store(store) as conn:
-        previous = _already_ran(conn, today, "ENTRY")
-        if previous is not None:
-            return {**previous, "repeat": True}
-        state = book_state(conn, float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL))
-
-    tickers = universe_from_cache(db_path)
-    quotes = await _quotes(kite, [*tickers, NIFTY_PROXY])
-    bars_today = {t: bar for t, q in quotes.items() if (bar := provisional_bar(q, today)) is not None}
-    if tickers and len(bars_today) < ENTRY_MIN_QUOTE_COVERAGE * len(tickers):
-        return _entry_data_unavailable(store, today, tickers, bars_today, now, clock())
-    scan_path = build_scan_db(db_path, tickers, bars_today, today)
-    try:
-        # Rank deeper than the slots so a refused pick is replaced by the next
-        # one (sizing is risk-based per pick, independent of the slot count).
-        scan = await asyncio.to_thread(
-            scan_today, bankroll=state["equity"], max_positions=RANK_DEPTH,
-            min_strength=float(settings.PENNY_EDGE_MIN_STRENGTH), db_path=scan_path, as_of_date=today,
-            nifty_ticker=NIFTY_PROXY)
-    finally:
-        os.remove(scan_path)
-
-    # The scan takes minutes; price and refuse on a fresh quote of the shortlist.
-    try:
-        fresh = await _quotes(kite, [pick.ticker for pick in scan["positions"]])
-    except Exception as exc:                          # noqa: BLE001 - a failed refresh refuses, never stale fills
-        logger.warning("edge_overnight_entry_requote_failed error=%s", type(exc).__name__)
-        fresh = {}
-    # Decide on the clock after the scan and re-quote, not the start time.
-    decided = clock()
-    if decided.date().isoformat() != today or decided.time() > ENTRY_LATEST:
-        fresh = {}
-        late = {"reason": "past_entry_cutoff", "decided_at": decided.isoformat()}
-    else:
-        late = None
-    slots = int(settings.PENNY_EDGE_MAX_POSITIONS)
     held_bases = {base_symbol(t) for t in state["held"]}
     cash, opened, skipped = state["cash"], [], []
-    for pick in scan["positions"]:
+    for pick in picks:
         if late is not None:
             skipped.append({"ticker": pick.ticker, **late})
             continue
@@ -652,7 +709,8 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         visible = sum(qty for _price, qty in asks)
         model_price = ltp * (1 + ENTRY_SLIPPAGE_BPS / 10000.0)
         capacity = int(MAX_PARTICIPATION * ltp * volume // model_price)
-        wanted = min(int(pick.shares), capacity, visible)
+        planned = int(state["equity"] / slots // model_price) if fill_cash_share else int(pick.shares)
+        wanted = min(planned, capacity, visible)
         # [O1 2026-10-06] Each admission fits premium plus its own buy charges
         # inside the cash left after earlier picks. The asks are re-walked for
         # the final share count, so price and fees match what is bought.
@@ -663,15 +721,19 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         # The quarter-of-plan dust floor is measured against the plan capped at
         # an equal share of equity, so the cap itself never refuses a pick.
         share_cash = cash / (slots - len(opened))
-        plan = min(int(pick.shares), int(state["equity"] / slots // model_price))
+        plan = min(planned, int(state["equity"] / slots // model_price))
         shares, entry_price = price_for_cash(asks, wanted, model_price, share_cash)
         if shares < 1 or shares < MIN_FILL_FRACTION * plan:
             reason = ("cash" if shares < wanted
-                      else "thin_asks" if visible == wanted < int(pick.shares)
+                      else "thin_asks" if visible == wanted < planned
                       else "liquidity")
             skipped.append({"ticker": pick.ticker, "reason": f"{reason}_below_quarter_of_plan",
-                            "planned": int(pick.shares), "capacity": capacity, "affordable": shares,
+                            "planned": planned, "capacity": capacity, "affordable": shares,
                             "visible_ask_qty": visible})
+            continue
+        if max_entry_cost_pct is not None and entry_price > ltp * (1 + max_entry_cost_pct):
+            skipped.append({"ticker": pick.ticker, "reason": "entry_cost_above_limit",
+                            "entry_cost_pct": round(entry_price / ltp - 1, 6)})
             continue
         charges = buy_charges(entry_price, shares)
         cash -= entry_price * shares + charges
@@ -682,7 +744,7 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         opened.append({"ticker": pick.ticker, "kind": pick.signal_subtype,
                        "strength": round(float(pick.adjusted_strength), 4), "entry_ltp": ltp,
                        "entry_price": entry_price, "shares": shares, "buy_charges": charges,
-                       "planned": int(pick.shares), "visible_ask_qty": visible,
+                       "planned": planned, "visible_ask_qty": visible,
                        "best_ask": asks[0][0] if asks else None, "best_bid": _best_bid(quote),
                        "ask_levels": [[price, qty] for price, qty in asks],
                        "walked_avg": round(walked_avg, 4) if walked_avg is not None else None,
@@ -690,11 +752,76 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
                                        else "slippage_floor"),
                        "capacity": capacity,
                        "quote_ts": str(quote.get("timestamp") or quote.get("last_trade_time") or "")})
+    return opened, skipped, cash
+
+
+async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional[datetime] = None,
+                              clock: Optional[Callable[[], datetime]] = None) -> dict:
+    """15:20 IST: score today's provisional bars and open the paper picks.
+
+    ``now`` starts the run; ``clock`` gives the admission decision time after
+    the scan and re-quote (defaults to the wall clock, or to ``now`` when only
+    ``now`` is injected).
+    """
+    from penny_edge_live import scan_today
+
+    db_path = db_path or settings.DB_PATH
+    if clock is None:
+        clock = (lambda: now) if now is not None else (lambda: datetime.now(IST))
+    now = now or clock()
+    today = now.date().isoformat()
+    store = overnight_db_path(db_path)
+    with _store(store) as conn:
+        previous = _already_ran(conn, today, "ENTRY")
+        if previous is not None:
+            return {**previous, "repeat": True}
+        state = book_state(conn, float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL))
+        shadow_states = ({shadow.name: shadow_state(conn, shadow.name, float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL))
+                          for shadow in OVERNIGHT_SHADOWS} if shadows_enabled() else {})
+
+    tickers = universe_from_cache(db_path)
+    quotes = await _quotes(kite, [*tickers, NIFTY_PROXY])
+    bars_today = {t: bar for t, q in quotes.items() if (bar := provisional_bar(q, today)) is not None}
+    if tickers and len(bars_today) < ENTRY_MIN_QUOTE_COVERAGE * len(tickers):
+        return _entry_data_unavailable(store, today, tickers, bars_today, now, clock())
+    scan_path = build_scan_db(db_path, tickers, bars_today, today)
+    try:
+        # Rank deeper than the slots so a refused pick is replaced by the next
+        # one (sizing is risk-based per pick, independent of the slot count).
+        scan = await asyncio.to_thread(
+            scan_today, bankroll=state["equity"], max_positions=RANK_DEPTH,
+            min_strength=float(settings.PENNY_EDGE_MIN_STRENGTH), db_path=scan_path, as_of_date=today,
+            nifty_ticker=NIFTY_PROXY)
+    finally:
+        os.remove(scan_path)
+
+    # The scan takes minutes; price and refuse on a fresh quote of the shortlist.
+    try:
+        fresh = await _quotes(kite, [pick.ticker for pick in scan["positions"]])
+    except Exception as exc:                          # noqa: BLE001 - a failed refresh refuses, never stale fills
+        logger.warning("edge_overnight_entry_requote_failed error=%s", type(exc).__name__)
+        fresh = {}
+    # Decide on the clock after the scan and re-quote, not the start time.
+    decided = clock()
+    if decided.date().isoformat() != today or decided.time() > ENTRY_LATEST:
+        fresh = {}
+        late = {"reason": "past_entry_cutoff", "decided_at": decided.isoformat()}
+    else:
+        late = None
+    slots = int(settings.PENNY_EDGE_MAX_POSITIONS)
+    opened, skipped, cash = _admit(scan["positions"], fresh, state, slots=slots, today=today,
+                                   decided=decided, late=late)
+    shadows = _shadow_entries(scan["positions"], fresh, shadow_states, today=today, decided=decided, late=late)
 
     summary = {"date": today, "phase": "ENTRY", "universe": len(tickers), "quoted": len(bars_today),
                "candidates": len(scan["candidates"]), "opened": opened, "skipped": skipped,
                "equity": state["equity"], "cash_after": round(cash, 4), "fill_contract": ENTRY_FILL_CONTRACT,
                "started_at": now.isoformat(), "decided_at": decided.isoformat()}
+    if shadows:
+        summary["shadows"] = {name: {"opened": [{"ticker": o["ticker"], "shares": o["shares"],
+                                                 "entry_price": o["entry_price"]} for o in result["opened"]],
+                                     "skipped": len(result["skipped"]), "cash_after": result["cash_after"]}
+                              for name, result in shadows.items()}
     with _store(store) as conn:
         if _already_ran(conn, today, "ENTRY") is not None:      # a concurrent run won
             return {**_already_ran(conn, today, "ENTRY"), "repeat": True}
@@ -703,6 +830,12 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
             "shares, entry_ts, status) VALUES (?,?,?,?,?,?,?,?, 'OPEN')",
             [(today, o["ticker"], o["kind"], o["strength"], o["entry_ltp"], o["entry_price"], o["shares"],
               decided.isoformat()) for o in opened])
+        for name, result in shadows.items():
+            conn.executemany(
+                "INSERT OR IGNORE INTO edge_overnight_shadow_trades (variant, trade_date, ticker, kind, entry_ltp, "
+                "entry_price, shares, entry_ts, status) VALUES (?,?,?,?,?,?,?,?, 'OPEN')",
+                [(name, today, o["ticker"], o["kind"], o["entry_ltp"], o["entry_price"], o["shares"],
+                  decided.isoformat()) for o in result["opened"]])
         _record_run(conn, today, "ENTRY", summary, decided, format_entry_telegram(summary))
     logger.info("edge_overnight_entry date=%s quoted=%d candidates=%d opened=%d",
                 today, len(bars_today), len(scan["candidates"]), len(opened))
@@ -754,8 +887,10 @@ async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[
         held = conn.execute(
             "SELECT trade_date, ticker, entry_price, shares, exit_attempts FROM edge_overnight_paper_trades "
             "WHERE status='OPEN' AND trade_date < ?", (today,)).fetchall()
-    quotes = await _quotes(kite, sorted({row[1] for row in held})) if held else {}
-    session_before = prior_session(today, db_path) if held else None
+        shadow_held = _shadow_open(conn, today)
+    names = sorted({row[1] for row in held} | {row[2] for row in shadow_held})
+    quotes = await _quotes(kite, names) if names else {}
+    session_before = prior_session(today, db_path) if names else None
 
     closed, waiting = [], []
     auction = now.time() <= AUCTION_EXIT_LATEST
@@ -768,11 +903,14 @@ async def run_overnight_exit(kite, db_path: Optional[str] = None, now: Optional[
             waiting.append(wait)
         else:
             closed.append(item)
+    shadow_closed = _price_shadows(shadow_held, quotes, today=today, auction=auction,
+                                   session_before=session_before, retry=False)
 
     with _store(store) as conn:
         if _already_ran(conn, today, "EXIT") is not None:
             return {**_already_ran(conn, today, "EXIT"), "repeat": True}
         _close_items(conn, today, closed)
+        _close_shadow_items(conn, today, shadow_closed)
         for w in waiting:
             conn.execute("UPDATE edge_overnight_paper_trades SET exit_attempts = exit_attempts + 1 "
                          "WHERE trade_date=? AND ticker=? AND status='OPEN'", (w["trade_date"], w["ticker"]))
@@ -805,11 +943,17 @@ async def retry_waiting_exits(kite, db_path: Optional[str] = None, now: Optional
         held = conn.execute(
             "SELECT trade_date, ticker, entry_price, shares, exit_attempts FROM edge_overnight_paper_trades "
             "WHERE status='OPEN' AND trade_date < ?", (today,)).fetchall()
-    if not held:
+        shadow_held = _shadow_open(conn, today)
+    if not held and not shadow_held:
         return {"closed": [], "waiting": []}
-    quotes = await _quotes(kite, sorted({row[1] for row in held}))
+    quotes = await _quotes(kite, sorted({row[1] for row in held} | {row[2] for row in shadow_held}))
     session_before = prior_session(today, db_path)
     auction = now.time() <= AUCTION_EXIT_LATEST
+    shadow_closed = _price_shadows(shadow_held, quotes, today=today, auction=auction,
+                                   session_before=session_before, retry=True)
+    if shadow_closed:
+        with _store(store) as conn:
+            _close_shadow_items(conn, today, shadow_closed)
     closed, waiting = [], []
     for trade_date, ticker, entry_price, shares, attempts in held:
         first_session = trade_date == session_before
@@ -834,6 +978,54 @@ async def retry_waiting_exits(kite, db_path: Optional[str] = None, now: Optional
     logger.info("edge_overnight_exit_retry date=%s closed=%d still_waiting=%d session_pnl=%.2f",
                 today, len(closed), len(waiting), summary["session_pnl"])
     return summary
+
+
+def _book_stats(rows: list) -> dict:
+    """rows: (entry_ltp, entry_price, shares, status, net_pnl, costs)."""
+    closed = [r for r in rows if r[3] == "CLOSED" and r[4] is not None]
+    nets = [float(r[4]) for r in closed]
+    wins, losses = [n for n in nets if n > 0], [n for n in nets if n < 0]
+    costs = [float(r[5] or 0) for r in closed]
+    spreads = [float(r[1]) / float(r[0]) - 1 for r in rows if r[0]]
+    values = [float(r[1]) * int(r[2]) for r in rows]
+    return {"closed": len(closed), "open": sum(1 for r in rows if r[3] == "OPEN"),
+            "net_pnl": round(sum(nets), 2), "wins": len(wins), "losses": len(losses),
+            "profit_factor": round(sum(wins) / -sum(losses), 3) if losses else None,
+            "avg_net_per_trade": round(sum(nets) / len(nets), 2) if nets else None,
+            "charges": round(sum(costs), 2),
+            "avg_entry_cost_pct": round(100 * sum(spreads) / len(spreads), 3) if spreads else None,
+            "avg_position_value": round(sum(values) / len(values), 2) if values else None}
+
+
+def overnight_shadow_comparison(db_path: Optional[str] = None) -> dict:
+    """[O21-ON] Each shadow against the book on the same nights (since the
+    first shadow entry). Paper and research only: nothing here is a fill."""
+    store = overnight_db_path(db_path or settings.DB_PATH)
+    out = {"declared": OVERNIGHT_SHADOWS_DECLARED, "enabled": shadows_enabled(), "since": None,
+           "book": None, "shadows": [], "research_only": True,
+           "notes": ["Same picks, quotes and decision time at entry and the same exit quotes as the book; "
+                     "each shadow has its own cash.",
+                     "Declared before scoring; compare only on the nights since the first shadow entry."]}
+    if not os.path.exists(store):
+        return out
+    try:
+        with _read_only(store) as conn:
+            since = conn.execute("SELECT MIN(trade_date) FROM edge_overnight_shadow_trades").fetchone()[0]
+            if since is None:
+                return out
+            cols = "entry_ltp, entry_price, shares, status, net_pnl, costs"
+            book = conn.execute(f"SELECT {cols} FROM edge_overnight_paper_trades WHERE trade_date >= ?",
+                                (since,)).fetchall()
+            shadows = {shadow.name: conn.execute(
+                f"SELECT {cols} FROM edge_overnight_shadow_trades WHERE variant=? AND trade_date >= ?",
+                (shadow.name, since)).fetchall() for shadow in OVERNIGHT_SHADOWS}
+    except sqlite3.OperationalError:
+        return out
+    out.update(since=since, book=_book_stats(book), shadows=[
+        {"variant": shadow.name, "rationale": shadow.rationale,
+         "config": {k: v for k, v in asdict(shadow).items() if k not in ("name", "rationale")},
+         **_book_stats(shadows[shadow.name])} for shadow in OVERNIGHT_SHADOWS])
+    return out
 
 
 def _close_items(conn: sqlite3.Connection, today: str, closed: list[dict]) -> None:

@@ -1360,6 +1360,9 @@ class Settings(BaseSettings):
     # With Zerodha fills the Bought/Skipped/Sold buttons are redundant, so
     # cards go out without them unless this is on. Typed replies still work.
     PARTNER_FILL_BUTTONS_WITH_ZERODHA: bool = False
+    # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
+    # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
+    EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True
 
     # Hedge-first partner advisory. This is deliberately independent from
     # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings

@@ -8,6 +8,15 @@ from config import settings
 router = APIRouter()
 
 
+@router.get("/experiments/edge-overnight")
+async def get_edge_overnight_experiment(request: Request):
+    """[O21-ON] The overnight book's forward shadows against the book (read-only)."""
+    _main = importlib.import_module("main")
+    _main._check_internal_secret(request, "get_edge_overnight_experiment")
+    from edge_overnight_paper import overnight_shadow_comparison
+    return overnight_shadow_comparison(settings.DB_PATH)
+
+
 @router.get("/experiments/penny")
 async def get_penny_experiment(request: Request):
     # Resolve at call time: tests and operational reload tooling may replace

@@ -47,6 +47,7 @@ from models import PerformanceReport, OpenPosition
 from breadth import BreadthEngine
 from universe import Universe
 from momentum_shadow import (
+    resolve_momentum_shadow_day,
     _selective_decision as _momentum_selective_decision,
     VARIANTS as MOMENTUM_SHADOW_VARIANTS,
     evaluate_momentum_shadows,
@@ -2197,6 +2198,10 @@ async def lifespan(app: FastAPI):
             if hour == 10 and minute == 0:
                 continue
             scheduler.add_job(run_momentum_screener, 'cron', hour=hour, minute=minute, id=f"momentum_scan_{hour}{minute}")
+    # [S21-R1] After the close: the day's open virtual Momentum shadow trades
+    # get the bars the scans never passed them (their 15:15 time exit).
+    scheduler.add_job(run_momentum_shadow_terminal, 'cron', day_of_week='mon-fri', hour=15, minute=32,
+                      id="momentum_shadow_terminal", max_instances=1, coalesce=True, misfire_grace_time=1800)
 
     scheduler.add_job(kite.clear_intraday_cache, 'cron', hour=0, minute=5, id="intraday_cache_cleanup")
 
@@ -3086,6 +3091,30 @@ async def daily_post_market():
 _momentum_scan_in_progress: bool = False
 
 
+async def run_momentum_shadow_terminal(now: datetime | None = None) -> dict | None:
+    """[S21-R1] Resolve today's open virtual Momentum shadow trades after the
+    close. Research only: it fetches each open ticker's completed bars for the
+    session and never touches a paper or live position."""
+    if not getattr(settings, "MOMENTUM_SHADOW_ENABLED", True):
+        return None
+    now = (now or datetime.now(IST)).astimezone(IST)
+    if not await is_trading_day(now.date(), settings.DB_PATH):
+        return None
+    day = now.date().isoformat()
+
+    async def fetch(ticker: str):
+        return await kite.get_intraday(ticker, f"{day} 09:15:00", f"{day} 15:30:00")
+
+    try:
+        with _kite_provider_lane("bulk"):
+            summary = await resolve_momentum_shadow_day(settings.DB_PATH, day, fetch)
+    except Exception as exc:
+        logger.warning("momentum_shadow_terminal_failed", error=type(exc).__name__)
+        return None
+    logger.info("momentum_shadow_terminal", day=day, **summary)
+    return summary
+
+
 async def run_momentum_screener():
     """
     Hourly intraday momentum scanner.
@@ -3512,14 +3541,16 @@ async def _run_momentum_screener_impl(t0):
                 # Heartbeat: notify user the scan ran even with no signals --
                 # [O19-M1] the first silent scan of each clock hour only (Oct 19:
                 # 19 of 46 owner messages were "no signals" every 15 minutes).
+                # The hour is marked only once a heartbeat is delivered, so a
+                # failed send is retried by the next silent scan that hour.
                 global _momentum_heartbeat_slot
                 slot = now_ist.strftime("%Y-%m-%d %H")
                 if slot != _momentum_heartbeat_slot:
-                    _momentum_heartbeat_slot = slot
-                    await _notify_momentum_heartbeat(
+                    if await _notify_momentum_heartbeat(
                         now_ist, len(universe), len(raw_momentum),
                         len(accepted), all_rejected_mom, momentum_pool
-                    )
+                    ):
+                        _momentum_heartbeat_slot = slot
         else:
             logger.info("momentum_scan_pre_market", reason="outside_market_hours_notification_suppressed",
                         accepted=len(accepted), scan_time=now_ist.isoformat())
@@ -4633,8 +4664,9 @@ async def _notify_momentum_heartbeat(
     accepted_count: int,
     rejected: list,
     momentum_pool: float
-):
-    """Send a detailed heartbeat to Telegram showing per-gate rejection breakdown."""
+) -> bool:
+    """Send a detailed heartbeat to Telegram showing per-gate rejection
+    breakdown. True only when the gateway accepted it."""
     import httpx as _httpx
     time_str      = scan_time.strftime("%H:%M IST")
     rejected_count = len(rejected)
@@ -4707,8 +4739,11 @@ async def _notify_momentum_heartbeat(
         if isinstance(status, int) and status >= 400:
             logger.error("momentum_heartbeat_rejected status=%s chars=%d",
                          resp.status_code, len(msg))
+            return False
+        return True
     except Exception as e:
         logger.error("momentum_heartbeat_failed", error_type=type(e).__name__)
+        return False
 
 
 MOMENTUM_HEARTBEAT_MAX_REASONS = 12

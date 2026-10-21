@@ -280,6 +280,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "run_momentum_shadow_terminal",
+    "id": "'momentum_shadow_terminal'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "run_penny_connors_scan",
     "id": "'penny_connors_scan'",
     "trigger": "'cron'"

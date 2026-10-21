@@ -1,5 +1,32 @@
 # Handover receipt and operator checklist
 
+## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit pending (recorded in the next docs commit), Dev, branch `codex/oct21-audit-fixes`, pushed, not deployed)
+
+- [x] S21-R1 15:32 terminal pass for virtual Momentum trades (receipts
+  CLOSED / CENSORED); S21-R2 RS identity binds index, daily bars, rules,
+  pool; S21-R3 replay runtime arm admits like the runtime; S21-E1 EDGE
+  entry-day event check; S21-L1 restart overlap on trading sessions.
+- [x] R21-M1 EDGE rows carry real outcomes, ranking is not a gate, alarm
+  wording; R21-M2 hourly allocation and equity; heartbeat slot on
+  delivery; T21-X transport kinds.
+- [x] O21-ON shadows `ON_TWO_LARGER` and `ON_TIGHT_SPREAD` on the overnight
+  book (declared 2026-10-21 from the book's own cost split; research only,
+  own cash) and `GET /experiments/edge-overnight`.
+- [x] Docs drift: the Oct 19 fix tests are 15 (collected), not 17.
+- [x] Tests: new `tests/test_oct21_audit_fixes.py` 18 pass;
+  `tests/test_oct15_audit_fixes.py` updated (transport kinds); related
+  suites 223 pass; goldens regenerated (one route, one job); full engine
+  suite 5,386 passed, 4 skipped, 0 failed (9 min 2 s); `scripts/tests` 276 pass.
+- [x] Evidence used (read-only, Production engine container): the overnight
+  store's 16 split exits (close→open +₹986.97, entry spread −₹462.11,
+  15:20→close −₹108.41, charges ₹677.78 over 20 closes, net −₹991.05).
+- [ ] Deployed: no. Merge order: `codex/production-correction-hedge-p0`,
+  `codex/partner-coach-standard-capital`, then this branch (it contains
+  both); rebuild the engine.
+- [ ] After deploy: `momentum_shadow_terminal` at 15:32 with closed/censored
+  counts; shadow rows at the 15:20 overnight entry; the 15:45 EDGE alarm
+  quiet when the paper leg enters, or naming the real refusal.
+
 ## October 21 (night) — the partner's review page + explained lessons (commit `6f882f0`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - [x] O21-PL each flag: what happened, why it matters (this trade's
@@ -138,7 +165,7 @@
 - [x] O19-F1 `FNO_LOCK_LATE_ARM` / `FNO_LOCK_LOOSE_KEEP` / `FNO_LOCK_OFF` replay arms.
 - [x] O19-M2 `MOM_RS_PULLBACK` shadow + replay variant + `momentum-pullback` job.
 - [x] O19-B1 bootstrap order; O19-M1 hourly silent-scan heartbeat.
-- [x] Tests: full suite 5,527 passed, 4 skipped (9 min 23 s); new tests/test_oct19_audit_fixes.py 17
+- [x] Tests: full suite 5,527 passed, 4 skipped (9 min 23 s); new tests/test_oct19_audit_fixes.py 15 (collected; recorded as 17 until Oct 21)
 - [x] Deployed by PR #111 (merge `2fc12ee`, Oct 20 22:56 IST; engine image built 22:59 IST; the
   running container has the `before_date` scan fix, checked Oct 21). Was: no.
 

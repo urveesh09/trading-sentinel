@@ -413,7 +413,12 @@ _DNS_MARKERS = ("name or service not known", "temporary failure in name resoluti
 
 
 def transport_error_kind(exc: BaseException) -> str:
-    """``dns`` / ``connect_timeout`` / ``connect`` / ``timeout`` / ``other``."""
+    """``dns`` / ``connect_timeout`` / ``connect`` / ``pool_timeout`` /
+    ``timeout`` / ``read`` / ``write`` / ``protocol`` / ``other:<Class>``.
+
+    [T21-X] Oct 21 kept two failures as a bare ``other``. ``pool_timeout`` is
+    this process's own connection pool (not the provider); the class name of
+    anything else is kept (a class name carries no credential)."""
     import socket
     chain, seen = [], exc
     while seen is not None and len(chain) < 6:
@@ -426,9 +431,17 @@ def transport_error_kind(exc: BaseException) -> str:
         return "connect_timeout"
     if isinstance(exc, httpx.ConnectError):
         return "connect"
+    if isinstance(exc, httpx.PoolTimeout):
+        return "pool_timeout"
     if isinstance(exc, httpx.TimeoutException):
         return "timeout"
-    return "other"
+    if isinstance(exc, httpx.ReadError):
+        return "read"
+    if isinstance(exc, httpx.WriteError):
+        return "write"
+    if isinstance(exc, httpx.RemoteProtocolError):
+        return "protocol"
+    return f"other:{type(exc).__name__}"
 
 
 class SendWindowGate:

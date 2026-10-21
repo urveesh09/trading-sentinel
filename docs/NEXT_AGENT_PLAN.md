@@ -1,5 +1,58 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 21 (late) — Oct 21 audit fixes S21-R1/R2/R3/E1/L1, R21-M1/M2, T21-X; O21-ON overnight shadows (done, Dev, commit pending (recorded in the next docs commit), branch `codex/oct21-audit-fixes` on top of `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- Problem: the Oct 21 Production audit (read-only; Production HEAD
+  `2fc12ee`, PR #111 deployed) found: nine censored virtual Momentum trades
+  (no terminal bar), an RS fingerprint that ignores the index and rule
+  constants, a replay/runtime overnight admission mismatch, no entry-day
+  event check in EDGE, a holiday counted as market time in restart
+  receipts, a misleading EDGE dead-gate alarm, a "pool" label hiding the
+  F&O drawdown, a generic transport error class, stale docs; the owner
+  asked for fixes and for shadows where a better approach is supported.
+- Files: `momentum_shadow.py`, `momentum_rs_pullback.py`, `main.py`,
+  `edge_portfolio_replay.py`, `penny_edge_orchestrator.py`,
+  `lifecycle_receipts.py`, `penny_accept_watchdog.py`,
+  `fno_hourly_report.py`, `kite_client.py`, `edge_overnight_paper.py`,
+  `routes_penny_experiments.py`, `config.py`; tests
+  `tests/test_oct21_audit_fixes.py` (new), `tests/test_oct15_audit_fixes.py`.
+- Contracts:
+  - New tables `momentum_shadow_terminal_receipts`,
+    `edge_overnight_shadow_trades`; new job `momentum_shadow_terminal`;
+    route `GET /experiments/edge-overnight`; setting
+    `EDGE_OVERNIGHT_SHADOWS_ENABLED`; goldens regenerated (one route, one
+    job; additions only).
+  - Startup receipt adds `weekday_overlap_sec`; `market_overlap_sec` is
+    trading-session time. EDGE `penny_signals` rows: accepted = either leg
+    entered; reasons `rank_not_selected`, `selected_not_entered`, or the
+    leg's refusal. `transport_error_kind` kinds added. Hourly F&O line:
+    `allocation=` / `equity=`.
+  - RS shadow records from now on have a new identity (rules + pool +
+    index + daily bars); earlier records are immutable and keep theirs.
+- Acceptance (met in Dev): each audit counterexample has a test that now
+  passes (terminal time exit and stop on missed bars, censored then closed;
+  index/constant change alters the RS identity while older variants keep
+  theirs; replay admits 414 at the dust boundary; entry-day event refusal;
+  holiday overlap 0 with the raw 22,500 s kept; a 94-candidate/3-drift day
+  names the drift and not the ranking; allocation and equity both shown;
+  heartbeat delivery result); shadows open from the same picks with their
+  declared rules, exit on the same quotes, and are compared with the book.
+- Rollout: merge after `codex/production-correction-hedge-p0` and
+  `codex/partner-coach-standard-capital` (this branch contains both);
+  rebuild the engine. First evening: `momentum_shadow_terminal` log line;
+  first 15:20: shadow rows in `edge_overnight_shadow_trades`.
+- Rollback: `EDGE_OVERNIGHT_SHADOWS_ENABLED=false` (no shadow rows);
+  `MOMENTUM_SHADOW_ENABLED=false` (no Momentum shadow or terminal pass);
+  revert the commit for the rest. New tables are inert when unused.
+- Remaining:
+  - [ ] Score the overnight shadows only on nights after 2026-10-21; judge
+    after at least 20 closed trades each, with the owner. No promotion from
+    a few nights.
+  - [ ] T21-B (penny universe refresh about 60 min) and F21-S (Smart 8W/40L)
+    are not changed here: Smart's policy files are hashed and stay as they
+    are; profile the refresh's symbol types separately.
+  - [ ] F21-Q (old pending signals, unsynced orders, September deadletters)
+    needs the owner's dated disposition; nothing is resent automatically.
 ## October 21 (night) — O21-PL the partner's review page and explained lessons (done, Dev, commit `6f882f0`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - Problem:
@@ -248,7 +301,7 @@
   `edge_overnight_paper.py`, `edge_portfolio_replay.py`, `fno_policy_replay.py`,
   new `momentum_rs_pullback.py`, `momentum_shadow.py`, `momentum_replay.py`,
   `backtest_lab.py`, `daily_bootstrap.py`, `main.py`, `scripts/backtest_all_yahoo.py`;
-  tests `tests/test_oct19_audit_fixes.py` (17), `tests/test_momentum_shadow.py`.
+  tests `tests/test_oct19_audit_fixes.py` (15), `tests/test_momentum_shadow.py`.
 - Acceptance:
   - next 09:30 EDGE scan logs `penny_edge_scan_data_window date=<previous session>`
     and a universe of ~940 band names (not 499);

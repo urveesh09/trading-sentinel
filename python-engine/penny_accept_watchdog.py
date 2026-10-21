@@ -41,6 +41,9 @@ DEAD_GATE_DOMINANCE = 0.90
 # alert. Zero accepts + one reason taking most of the rejects is never "healthy",
 # and reporting `dead_gate=none` made it read that way.
 SUSPECT_GATE_DOMINANCE = 0.60
+# [R21-M1] Reasons that are a selection by design, not a gate (EDGE ranks ~90
+# candidates and takes the top few). Shown in the alert, never a dead gate.
+NOT_A_GATE = frozenset({"rank_not_selected"})
 
 # Reasons whose *prefix* groups many distinct messages into one gate.
 # reject_reason strings carry per-ticker numbers ("volume 1234 < ..."),
@@ -194,15 +197,18 @@ async def zero_accept_scan(
             # dominance over the WINDOW (which is the question being asked), and
             # keep a per-day check only that the same reason leads every day --
             # that is what actually rules out a one-day spike.
-            total_rejects = sum(overall.values())
+            gates = {k: v for k, v in overall.items() if k not in NOT_A_GATE}
+            gate_days = {d: {k: v for k, v in counts.items() if k not in NOT_A_GATE}
+                         for d, counts in by_day.items()}
+            total_rejects = sum(gates.values())
             dead_gate = None
             suspect_gate = None
-            if top and total_rejects:
-                candidate, candidate_count = top[0]
+            if gates and total_rejects:
+                candidate, candidate_count = max(gates.items(), key=lambda kv: kv[1])
                 window_share = candidate_count / total_rejects
                 leads_every_day = all(
-                    by_day[d]
-                    and max(by_day[d], key=by_day[d].get) == candidate
+                    gate_days[d]
+                    and max(gate_days[d], key=gate_days[d].get) == candidate
                     for d in days
                 )
                 if leads_every_day:
@@ -221,6 +227,7 @@ async def zero_accept_scan(
                 "top_reasons": top_reasons,
                 "dead_gate": dead_gate,
                 "suspect_gate": suspect_gate,
+                "not_a_gate": {k: v for k, v in overall.items() if k in NOT_A_GATE},
                 "per_day": per_day,
                 "leg": leg or "ALL",
             }
@@ -243,17 +250,16 @@ def format_zero_accept_alert(payload: dict) -> str:
         header,
         (
             f"{payload.get('evaluations', 0)} evaluations, 0 accepts "
-            f"across {len(days)} consecutive day(s) "
+            f"across the last {len(days)} evaluation day(s) "
             f"({days[0]} → {days[-1]}, leg={payload.get('leg', 'ALL')})."
         ),
     ]
     if payload.get("dead_gate"):
         lines.append(
-            f"One gate rejects ≥{int(DEAD_GATE_DOMINANCE * 100)}% of all "
+            f"One gate rejects ≥{int(DEAD_GATE_DOMINANCE * 100)}% of the gate "
             f"rejects across the window and leads EVERY day: "
-            f"`{payload['dead_gate']}`. "
-            "This is the BUG-1 signature (unsatisfiable gate), not a "
-            "quiet market."
+            f"`{payload['dead_gate']}`. That is the BUG-1 pattern: check that "
+            "this gate can pass at all before reading it as a quiet market."
         )
     elif payload.get("suspect_gate"):
         # [TIER0-0.5] Never report "no dominant gate" when one reason is taking
@@ -268,6 +274,8 @@ def format_zero_accept_alert(payload: dict) -> str:
     lines.append("Top reject reasons:")
     for reason, count, pct in payload.get("top_reasons", []):
         lines.append(f"  • {count} ({pct}%) — {reason}")
+    for reason, count in sorted((payload.get("not_a_gate") or {}).items()):
+        lines.append(f"Not a gate (selection by design): {count} {reason}.")
     lines.append(
         "Ground truth: /data/penny_signals.csv (ops rule 75). "
         "If the histogram never varies day-to-day, suspect a dead gate."

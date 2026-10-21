@@ -50,7 +50,11 @@ def test_transport_failures_are_classified():
     assert transport_error_kind(httpx.ConnectError("[Errno 111] Connection refused")) == "connect"
     assert transport_error_kind(httpx.ConnectTimeout("timed out")) == "connect_timeout"
     assert transport_error_kind(httpx.ReadTimeout("read timed out")) == "timeout"
-    assert transport_error_kind(httpx.RemoteProtocolError("closed")) == "other"
+    # [T21-X] the class is kept instead of a bare "other"
+    assert transport_error_kind(httpx.RemoteProtocolError("closed")) == "protocol"
+    assert transport_error_kind(httpx.ReadError("reset")) == "read"
+    assert transport_error_kind(httpx.PoolTimeout("pool")) == "pool_timeout"
+    assert transport_error_kind(ValueError("x")) == "other:ValueError"
 
 
 def test_an_outage_runs_from_the_first_failure_to_the_next_answer():
