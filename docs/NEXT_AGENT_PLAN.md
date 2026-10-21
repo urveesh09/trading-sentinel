@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 21 (night) — O21-PX the partner's deeper review (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 21 (night) — O21-PX the partner's deeper review (done, Dev, commit `68eec28`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: the owner merged PR #112 and asked that every evening, after the
   brief, the partner gets a review link (login, then the review), and that

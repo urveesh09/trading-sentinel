@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 21 (night) — O21-PX the partner's deeper review (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 21 (night) — O21-PX the partner's deeper review (actual behavior, Dev, commit `68eec28`)
 
 Owner (Oct 21 night, after merging PR #112): after the day's ending brief the
 partner gets one message with the review link, the link goes to the Zerodha

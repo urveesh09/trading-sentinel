@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 21 (night) — O21-PX partner's deeper review (commit pending (recorded in the next docs commit), Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 21 (night) — O21-PX partner's deeper review (commit `68eec28`, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - [x] One review link every trading day after the brief
   (`ensure_review_message`: the coach note's button, else the prompt).
