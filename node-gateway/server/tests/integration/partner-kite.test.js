@@ -30,12 +30,12 @@ const engineReply = (status, data) => ({ status, json: async () => data });
 
 beforeEach(() => jest.clearAllMocks());
 
-test('a completed login opens a coach-only session and the coach page', async () => {
+test('a completed login opens a coach-only session and the review page', async () => {
   global.fetch.mockResolvedValue(engineReply(200, { connected: true, account: 'AB***34', note: 'sent' }));
   const { app, session } = makeApp();
   const response = await request(app).get('/api/partner-kite/callback?status=success&request_token=abcDEF123456');
   expect(response.status).toBe(302);
-  expect(response.headers.location).toBe('/?view=coach');
+  expect(response.headers.location).toBe('/?view=review');
   const [url, options] = global.fetch.mock.calls[0];
   expect(url).toBe('http://python-engine:8000/partner/broker/session');
   expect(JSON.parse(options.body)).toEqual({ request_token: 'abcDEF123456' });
@@ -94,6 +94,25 @@ test('the coach view needs a partner or owner session and forwards only days', a
     'http://python-engine:8000/partner/coach?days=1',
     'http://python-engine:8000/partner/coach?days=30',
   ]);
+});
+
+test('the review forwards a valid day and a bounded window only', async () => {
+  const denied = await request(makeApp().app).get('/api/partner-kite/review');
+  expect(denied.status).toBe(401);
+  global.fetch.mockResolvedValue(engineReply(200, { review: {} }));
+  const partner = makeApp({ partner_view: { since: 'x' } }).app;
+  await request(partner).get('/api/partner-kite/review');
+  await request(partner).get('/api/partner-kite/review?day=2026-10-19&days=500&evil=1');
+  await request(partner).get('/api/partner-kite/review?days=3');
+  expect(global.fetch.mock.calls.map(([url]) => url)).toEqual([
+    'http://python-engine:8000/partner/review?days=30',
+    'http://python-engine:8000/partner/review?day=2026-10-19&days=120',
+    'http://python-engine:8000/partner/review?days=14',
+  ]);
+  for (const bad of ['19-10-2026', '2026-10-19%27%3B', '']) {
+    expect((await request(partner).get(`/api/partner-kite/review?day=${bad}`)).status).toBe(400);
+  }
+  expect(global.fetch).toHaveBeenCalledTimes(3);
 });
 
 test('a partner session opens nothing behind /api/proxy', async () => {

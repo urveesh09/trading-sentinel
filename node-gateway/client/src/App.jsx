@@ -6,15 +6,17 @@ import Positions from './pages/Positions';
 import BacktestLab from './pages/BacktestLab';
 import ResearchCenter from './pages/ResearchCenter';
 import PartnerCoach from './pages/PartnerCoach';
+import PartnerReview from './pages/PartnerReview';
 import StandardCapital from './pages/StandardCapital';
 import { useHealth } from './hooks/useHealth';
 import { fetcher } from './api/client';
 import { evidenceModeEnabled } from './evidenceMode';
 
-// "/?view=coach" (where the partner's Zerodha login lands) opens the coach page.
+// "/?view=review" is where the partner's Zerodha login lands; for the owner
+// it opens the partner's view, and "/?view=coach" the coach page.
+const VIEWS = { review: 'REVIEW', coach: 'COACH' };
 const initialView = () => (
-  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'coach'
-    ? 'COACH' : 'DASHBOARD'
+  (typeof window !== 'undefined' && VIEWS[new URLSearchParams(window.location.search).get('view')]) || 'DASHBOARD'
 );
 
 export default function App() {
@@ -26,7 +28,7 @@ export default function App() {
   const [currentView, setCurrentView] = useState(initialView);
 
   if (authStatus?.partner_view && !authStatus?.authenticated) {
-    return <PartnerCoach partnerView />;
+    return <PartnerReview />;
   }
 
   // Show a dark loading screen while strictly checking session auth
@@ -55,7 +57,10 @@ export default function App() {
     return <Positions navigateToDashboard={() => setCurrentView('DASHBOARD')} />;
   }
   if (currentView === 'COACH') {
-    return <PartnerCoach navigateToDashboard={() => setCurrentView('DASHBOARD')} />;
+    return <PartnerCoach navigateToDashboard={() => setCurrentView('DASHBOARD')} navigateToReview={() => setCurrentView('REVIEW')} />;
+  }
+  if (currentView === 'REVIEW') {
+    return <PartnerReview navigateBack={() => setCurrentView('COACH')} />;
   }
   if (currentView === 'CAPITAL') {
     return <StandardCapital navigateToDashboard={() => setCurrentView('DASHBOARD')} />;

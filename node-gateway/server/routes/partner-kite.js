@@ -14,6 +14,7 @@ const { limiters } = require('../middleware/security');
 const router = express.Router();
 
 const REQUEST_TOKEN = /^[A-Za-z0-9]{8,64}$/;
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const SESSION_TIMEOUT_MS = 30000; // session exchange + two order-book reads + the coach note
 
 // Fixed texts only: nothing from the query or the engine reaches the page.
@@ -79,7 +80,7 @@ router.get('/callback', limiters.authCallback, async (req, res) => {
   }
   req.session.partner_view = { since: new Date().toISOString(), account: result.data?.account || null };
   logger.info({ event_type: 'partner_kite_login', note: result.data?.note }, 'Partner Zerodha login; coach view opened');
-  return res.redirect('/?view=coach');
+  return res.redirect('/?view=review');
 });
 
 const allowCoach = (req, res, next) => {
@@ -87,16 +88,33 @@ const allowCoach = (req, res, next) => {
   return res.status(401).json({ error: 'unauthorized', message: 'Open the review from the Telegram button' });
 };
 
-// The coach view only. `days` is the one parameter passed on.
-router.get('/coach', allowCoach, async (req, res) => {
-  const days = Math.min(Math.max(Number.parseInt(req.query.days, 10) || 1, 1), 120);
+async function forward(res, path) {
   try {
-    const result = await engine(`/partner/coach?days=${days}`);
+    const result = await engine(path);
     return res.status(result.status).json(result.data);
   } catch (err) {
-    logger.error({ event_type: 'proxy_error', path: '/partner/coach', err: err.message });
+    logger.error({ event_type: 'proxy_error', path: path.split('?')[0], err: err.message });
     return res.status(502).json({ error: 'bad_gateway', message: 'Quant Engine is unreachable.' });
   }
+}
+
+// The coach view only. `days` is the one parameter passed on.
+router.get('/coach', allowCoach, (req, res) => {
+  const days = Math.min(Math.max(Number.parseInt(req.query.days, 10) || 1, 1), 120);
+  return forward(res, `/partner/coach?days=${days}`);
+});
+
+// [O21-PL] The partner's day review (today's learnings) and progress.
+router.get('/review', allowCoach, (req, res) => {
+  const params = new URLSearchParams();
+  if (req.query.day !== undefined) {
+    if (typeof req.query.day !== 'string' || !DAY.test(req.query.day)) {
+      return res.status(400).json({ error: 'bad_request', message: 'day must be YYYY-MM-DD' });
+    }
+    params.set('day', req.query.day);
+  }
+  params.set('days', String(Math.min(Math.max(Number.parseInt(req.query.days, 10) || 30, 14), 120)));
+  return forward(res, `/partner/review?${params}`);
 });
 
 module.exports = router;

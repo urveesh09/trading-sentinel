@@ -1,5 +1,50 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 21 (night) — O21-PL the partner's review page and explained lessons (done, Dev, commit pending (recorded in the next docs commit), branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- Problem:
+  - Owner (Oct 21): log in from Telegram, land on their own dashboard, "a
+    branch of our dashboard main one", showing the day's learnings first and
+    more on demand; the teachings must be top quality, comprehensive,
+    correct and well tested so the partner understands their mistakes and
+    what would have been better.
+  - Facts: flags said what happened and a generic rule, not why it mattered
+    or what the better action would have paid; stop orders were not read;
+    one trade with three mistakes read as three lessons with the same loss.
+- Files: `partner_lessons.py` (new), `partner_coach.py`,
+  `partner_broker_sync.py`, `routes_partner_coach.py`; gateway
+  `routes/partner-kite.js`; client `App.jsx`, `pages/PartnerReview.jsx`
+  (new), `pages/PartnerCoach.jsx`, `utils/partnerReview.js` (new).
+- Contracts:
+  - Flag fields `why`, `better`, `better_pnl`, `actual_pnl`; `impact_rs` =
+    actual − better. New codes NO_STOP_ORDER, STOP_WIDER_THAN_CARD,
+    STOP_CANCELLED; positives STOP_PLACED, EXITED_BEFORE_STOP,
+    PAUSED_AFTER_LOSS; `item.stops`. `_rs(0)` is "₹0".
+  - `analyse(..., stops=, stops_known_days=)`; `card_entry` basis
+    PRINT_AT_STOP.
+  - Zerodha: allowlist + GET `/gtt/triggers`; table `partner_stop_orders`;
+    `partner_broker_days.stops_known` (the table was created only in Dev).
+  - Engine GET `/partner/review`; golden regenerated (one addition).
+    Gateway GET `/api/partner-kite/review`; login redirect `/?view=review`.
+- Acceptance (met in Dev): every lesson figure in the tests is recomputed
+  from prices with the same charges schedule; chased-entry risk, revenge,
+  size-up, averaging, stop, early-exit, gave-back, square-off, overtrading
+  and the three stop checks each have an exact-text test; stops are claimed
+  only on complete days with GTTs read; one trade's mistakes fold into one
+  lesson; a clean day says so; the page renders the real payload
+  (server-side render check).
+- Rollout: with this branch (expiry-v3 first). No new settings. The
+  partner's app: recommended in their own developer account (owner's call).
+- Rollback: revert the commit; the review falls back to the coach page and
+  the older note text. `partner_stop_orders` is inert when unused.
+- Remaining:
+  - [ ] First Zerodha evening on Production: read the lesson against the
+    partner's Kite order book and the 5-minute prices; adjust wording or
+    thresholds only with the owner.
+  - [ ] Check how Kite reports a modified SL order's `order_timestamp`; the
+    stop checks use it as the time the stop was placed.
+  - [ ] After two weeks of reads, check the Progress patterns against what
+    the partner says they did.
 ## October 21 (evening) — O21-PK the partner's Zerodha fills and a coach-only review page (done, Dev, commit `9648f95`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - Problem:
@@ -48,7 +93,8 @@
      the rest of this branch; rebuild engine and gateway.
   2. Partner: developers.kite.trade → create a Personal app on their own
      Zerodha account; redirect URL `https://<NGROK_URL>/api/partner-kite/callback`;
-     leave static IP empty. The owner puts the key, secret and partner's
+     IP empty if the form allows (recommended: the partner's own developer
+     account; owner's call, Oct 21 night). The owner puts the key, secret and partner's
      Zerodha user ID in the root `.env`, never in chat. The owner also puts
      `PARTNER_KITE_USER_ID` (and their own `ZERODHA_USER_ID`) in
      `node-gateway/.env`, then restarts the engine and gateway.

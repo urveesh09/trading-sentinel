@@ -1,5 +1,35 @@
 # Handover receipt and operator checklist
 
+## October 21 (night) — the partner's review page + explained lessons (commit pending (recorded in the next docs commit), Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- [x] O21-PL each flag: what happened, why it matters (this trade's
+  numbers), the better action and what it would have paid, the rule;
+  impact = actual − better, same order count; a profitable rule-break is
+  still a lesson.
+- [x] Stop discipline from Zerodha (SL orders + GTTs, GET `/gtt/triggers`
+  read-only): no stop, stop wider than the card, stop cancelled; only on
+  complete days with the GTT list read.
+- [x] `partner_lessons.py`: the day review (lesson of the day with the same
+  trade's other mistakes folded in, what went well, trade stories, cards not
+  taken, data notes), progress (this week against last, clean streak), the
+  evening note.
+- [x] Partner dashboard `PartnerReview.jsx` (Today / Progress / All
+  details); Zerodha login lands on it; owner "Partner's view" button.
+- [x] Tests: `tests/test_partner_coach.py` rewritten (21, every figure
+  recomputed), new `tests/test_partner_lessons.py` 10,
+  `tests/test_partner_broker_sync.py` 32; with
+  `tests/test_partner_fill_capture.py` 89 pass; golden regenerated (one
+  route); full engine suite 5,368 passed, 4 skipped, 0 failed (9 min 1 s). Gateway
+  `tests/integration/partner-kite.test.js` 7 pass; full jest 498 pass, 18 fail in `tests/unit/db.test.js` and `tests/unit/backlog-reconciliation.test.js` (better-sqlite3 has no native binary on this Windows host; environment, as before).
+  Client `node --test tests/*.test.mjs` 56 pass (new
+  `tests/partnerReview.test.mjs` 4); `vite build` ok; the page was
+  server-rendered with a real `/partner/review` payload (no runtime error).
+- [x] Environment: Windows `python-engine/winvenv` (pytest 8.0.0); no
+  browser in this session (render checked server-side, not on screen).
+- [ ] Deployed: no. Same order as below.
+- [ ] First Zerodha evening: open the review on a phone; check the lesson
+  against the partner's Kite order book.
+
 ## October 21 (evening) — the partner's Zerodha fills + coach-only review page (commit `9648f95`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - [x] O21-PK `partner_broker_sync.py`: evening "Open today's review" button
@@ -27,7 +57,8 @@
   yet exercised against the partner's account.
 - [ ] Deployed: no. Same order as below (expiry-v3 first, then this branch).
 - [ ] Setup: the partner creates the Personal app (redirect
-  `https://<NGROK_URL>/api/partner-kite/callback`, no static IP). The owner
+  `https://<NGROK_URL>/api/partner-kite/callback`, in their own developer
+  account, IP empty if allowed). The owner
   adds `PARTNER_KITE_API_KEY`, `PARTNER_KITE_API_SECRET` and
   `PARTNER_KITE_USER_ID` to the root `.env`, and `PARTNER_KITE_USER_ID`
   (plus their own `ZERODHA_USER_ID`) to `node-gateway/.env`. Then restart

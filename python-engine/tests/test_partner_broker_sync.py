@@ -73,7 +73,7 @@ def partner_app(monkeypatch):
 @pytest.fixture
 def kite(monkeypatch):
     """Fake Kite: records calls, serves the session, orders and trades."""
-    state = {"calls": [], "user_id": "AB1234", "orders": [], "trades": []}
+    state = {"calls": [], "user_id": "AB1234", "orders": [], "trades": [], "gtts": []}
 
     async def fake(method, path, *, data=None, params=None, token=None):
         assert (method, path) in zerodha._ALLOWED_CALLS
@@ -82,7 +82,7 @@ def kite(monkeypatch):
             return {"access_token": "tok-secret-123", "user_id": state["user_id"], "user_name": "Partner"}
         if path == "/session/token":
             return True
-        return state["orders"] if path == "/orders" else state["trades"]
+        return {"/orders": state["orders"], "/trades": state["trades"], "/gtt/triggers": state["gtts"]}[path]
 
     monkeypatch.setattr(zerodha, "_kite_call", fake)
     monkeypatch.setattr(zerodha, "resolve_option", _resolve)
@@ -208,14 +208,15 @@ async def test_bad_or_unconfigured_logins_are_refused(kite, monkeypatch):
 @pytest.mark.asyncio
 async def test_only_read_calls_can_leave_the_process():
     assert zerodha._ALLOWED_CALLS == {("POST", "/session/token"), ("DELETE", "/session/token"),
-                                      ("GET", "/orders"), ("GET", "/trades")}
+                                      ("GET", "/orders"), ("GET", "/trades"), ("GET", "/gtt/triggers")}
     for method, path in (("POST", "/orders/regular"), ("PUT", "/orders/regular/1"), ("POST", "/gtt/triggers"),
-                         ("DELETE", "/orders/regular/1"), ("GET", "/portfolio/positions")):
+                         ("PUT", "/gtt/triggers/7"), ("DELETE", "/gtt/triggers/7"), ("DELETE", "/orders/regular/1"),
+                         ("GET", "/portfolio/positions")):
         with pytest.raises(zerodha.BrokerError) as err:
             await zerodha._kite_call(method, path)
         assert err.value.code == "not_allowed"
     source = Path(zerodha.__file__).read_text(encoding="utf-8")
-    assert "/orders/" not in source and "/gtt" not in source
+    assert "/orders/" not in source and "/gtt/triggers/" not in source
 
 
 def test_login_url_carries_only_the_api_key():
@@ -257,7 +258,8 @@ async def test_rereads_refresh_the_same_report_and_mark_the_day(kite):
     kite["orders"] = [_order("O1", "BUY", 40, T(12, 9, 5), status="OPEN", filled_quantity=20)]
     kite["trades"] = [_trade("O1", 20, 518.0, T(12, 9, 10))]
     first = await zerodha.sync_book(T(12, 30))
-    assert first["days"] == {"2026-10-19": {"option_orders": 1, "complete": False}} and first["on_card"] == 1
+    assert first["days"] == {"2026-10-19": {"option_orders": 1, "complete": False, "stops_known": True}}
+    assert first["on_card"] == 1
     [(report_id, key, lots, price, status, advisory)] = await _zerodha_rows(db)
     assert (key, lots, price, advisory) == ("kite:O1", 1, 518.0, CARD_ID)
     kite["orders"] = [_order("O1", "BUY", 40, T(12, 9, 5))]
@@ -404,6 +406,93 @@ def test_card_buttons_stay_off_with_zerodha(monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_FILL_BUTTONS_WITH_ZERODHA", False)
     monkeypatch.setattr(settings, "PARTNER_KITE_API_KEY", "")
     assert pfc.keyboard_for("manual_market_advisory", {"advisory_id": CARD_ID}) is not None
+
+
+# ---------------------------------------------------------------------------
+# stops (O21-PL)
+# ---------------------------------------------------------------------------
+
+def test_sl_sell_orders_on_options_become_stops_with_their_state():
+    orders = [
+        _order("S1", "SELL", 20, T(12, 10), order_type="SL", status="TRIGGER PENDING", trigger_price=465.0),
+        _order("S2", "SELL", 20, T(12, 11), order_type="SL-M", status="CANCELLED", trigger_price=460.0,
+               exchange_update_timestamp=_ts(T(12, 38))),
+        _order("S3", "SELL", 20, T(12, 12), order_type="SL", status="CANCELLED", trigger_price=455.0,
+               filled_quantity=20),
+        _order("S4", "SELL", 20, T(12, 13), order_type="SL", status="COMPLETE", trigger_price=450.0),
+        _order("S5", "SELL", 20, T(12, 14), order_type="LIMIT", status="OPEN", price=600.0),
+        _order("S6", "BUY", 20, T(12, 15), order_type="SL", status="TRIGGER PENDING", trigger_price=530.0),
+        _order("S7", "SELL", 1, T(12, 16), symbol="RELIANCE", exchange="NSE", order_type="SL", trigger_price=1.0),
+        _order("S8", "SELL", 20, T(12, 17), order_type="SL", status="REJECTED", trigger_price=470.0),
+    ]
+    stops = zerodha.stops_from_orders(orders, resolve=_resolve)
+    # A target (LIMIT), a buy stop and an equity order are not stops; a part-filled cancel did sell.
+    assert [(s["source_id"], s["status"], s["trigger_price"]) for s in stops] == [
+        ("kite:S1", "PENDING", 465.0), ("kite:S2", "CANCELLED", 460.0), ("kite:S3", "TRIGGERED", 455.0),
+        ("kite:S4", "TRIGGERED", 450.0), ("kite:S8", "REJECTED", 470.0)]
+    assert stops[1]["updated_at"] == T(12, 38).isoformat() and stops[0]["kind"] == "SL_ORDER"
+
+
+def _gtt(gid, triggers, last, status="active", side="SELL", kind="single"):
+    return {"id": gid, "type": kind, "status": status, "created_at": _ts(T(12, 11)), "updated_at": _ts(T(12, 40)),
+            "condition": {"exchange": "BFO", "tradingsymbol": SYMBOL, "trigger_values": triggers, "last_price": last},
+            "orders": [{"transaction_type": side, "quantity": 20, "order_type": "LIMIT", "price": triggers[0]}]}
+
+
+def test_sell_gtts_that_protect_the_position_become_stops():
+    gtts = [_gtt(1, [465.0], 518.0), _gtt(2, [600.0], 518.0),
+            _gtt(3, [460.0, 620.0], 518.0, kind="two-leg", status="triggered"),
+            _gtt(4, [465.0], 518.0, side="BUY"), _gtt(5, [465.0], 518.0, status="deleted")]
+    stops = zerodha.stops_from_gtts(gtts, resolve=_resolve)
+    # A single trigger above the price is a target; an OCO's stop is its lower leg.
+    assert [(s["source_id"], s["kind"], s["trigger_price"], s["status"]) for s in stops] == [
+        ("gtt:1", "GTT", 465.0, "PENDING"), ("gtt:3", "GTT", 460.0, "TRIGGERED"),
+        ("gtt:5", "GTT", 465.0, "CANCELLED")]
+
+
+@pytest.mark.asyncio
+async def test_a_zerodha_day_checks_stops_from_the_order_book(kite):
+    db = settings.DB_PATH
+    await _seed(db)
+    await zerodha.create_session("reqtok12", T(15, 41))
+    kite["orders"] = [_order("O1", "BUY", 20, T(12, 9, 5)),
+                      _order("S1", "SELL", 20, T(12, 10), order_type="SL", status="CANCELLED", trigger_price=465.0,
+                             exchange_update_timestamp=_ts(T(12, 38))),
+                      _order("O2", "SELL", 20, T(12, 56), order_type="MARKET")]
+    kite["trades"] = [_trade("O1", 20, 518.0, T(12, 9, 10)), _trade("O2", 20, 430.0, T(12, 56, 2))]
+    result = await zerodha.sync_book(T(15, 45))
+    assert result["option_orders"] == 2 and result["unfilled_orders"] == 1
+    stops = await zerodha.stop_orders(db, "2026-10-19", "2026-10-19")
+    assert [(s["source_id"], s["status"], s["updated_at"]) for s in stops] == [
+        ("kite:S1", "CANCELLED", T(12, 38).isoformat())]
+    view = await pc.load_partner_coach(db, days=3, now=T(16, 0))
+    item = view["days"][0]["cards"][0]
+    codes = [f["code"] for f in item["flags"]]
+    assert "STOP_CANCELLED" in codes and "NO_STOP_ORDER" not in codes
+    assert view["zerodha"]["days"]["2026-10-19"]["stops_known"] is True
+
+
+@pytest.mark.asyncio
+async def test_unreadable_gtts_turn_the_stop_checks_off(kite, monkeypatch):
+    db = settings.DB_PATH
+    await _seed(db)
+    await zerodha.create_session("reqtok12", T(15, 41))
+    fake = zerodha._kite_call
+
+    async def no_gtts(method, path, **kwargs):
+        if path == "/gtt/triggers":
+            raise zerodha.BrokerError("PermissionException", "not on this plan")
+        return await fake(method, path, **kwargs)
+
+    monkeypatch.setattr(zerodha, "_kite_call", no_gtts)
+    kite["orders"] = [_order("O1", "BUY", 20, T(12, 9, 5)), _order("O2", "SELL", 20, T(12, 56))]
+    kite["trades"] = [_trade("O1", 20, 518.0, T(12, 9, 10)), _trade("O2", 20, 430.0, T(12, 56, 2))]
+    result = await zerodha.sync_book(T(15, 45))
+    assert result["days"]["2026-10-19"] == {"option_orders": 2, "complete": True, "stops_known": False}
+    view = await pc.load_partner_coach(db, days=3, now=T(16, 0))
+    item = view["days"][0]["cards"][0]
+    # Without the GTT list a missing SL order may be a GTT stop: say nothing about stops.
+    assert "NO_STOP_ORDER" not in [f["code"] for f in item["flags"]] and "stops" not in item
 
 
 # ---------------------------------------------------------------------------

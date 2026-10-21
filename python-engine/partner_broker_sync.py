@@ -11,21 +11,23 @@ evening:
   2. Kite redirects to the gateway's /api/partner-kite/callback, which hands
      the one-time request_token to POST /partner/broker/session;
   3. the engine exchanges it, refuses any account other than
-     PARTNER_KITE_USER_ID, reads GET /orders and GET /trades, and stores one
-     report per filled option order (source ZERODHA, exact fill price and
-     exchange time) in partner_trade_reports;
+     PARTNER_KITE_USER_ID, reads GET /orders, GET /trades and GET
+     /gtt/triggers, and stores one report per filled option order (source
+     ZERODHA, exact fill price and exchange time) in partner_trade_reports,
+     plus every stop the partner set (SL/SL-M sell orders and sell GTTs) in
+     partner_stop_orders, so the coach can see whether a trade had a stop;
   4. after the close it sends the coach note, and the gateway opens the
      coach page with a coach-only session.
 
 A login earlier in the day is kept in memory and the 15:40 wrap reads the
 final book itself, so no tap is needed that evening.
 
-Read-only by construction: ``_kite_call`` allows only the session exchange,
-GET /orders and GET /trades, so there is no order, GTT or modify path. The
-exchange's static-IP rule applies to API order endpoints only, so a partner
-app with no static IP registered cannot place API orders at all. The access
-token lives in memory until Kite's 06:00 expiry and never reaches a log
-line, the DB or a response.
+Read-only by construction: ``_kite_call`` allows only the session exchange
+and GET /orders, /trades and /gtt/triggers, so there is no place, modify or
+cancel path for orders or GTTs. Reads need no static IP (the exchange rule
+covers API order endpoints), so they go direct, not through the relay. The
+access token lives in memory until Kite's 06:00 expiry and never reaches a
+log line, the DB or a response.
 
 On a day with a Zerodha read the coach scores these fills and ignores
 Telegram/dashboard BUY/SELL reports for that day (partner_coach.py). Nothing
@@ -61,7 +63,7 @@ CARD_CLOCK_SLACK = timedelta(seconds=60)   # a fill this close before the card's
 PROMPT_KIND = "zerodha_prompt"
 _REQUEST_TOKEN = re.compile(r"^[A-Za-z0-9]{8,64}$")
 _ALLOWED_CALLS = {("POST", "/session/token"), ("DELETE", "/session/token"),
-                  ("GET", "/orders"), ("GET", "/trades")}
+                  ("GET", "/orders"), ("GET", "/trades"), ("GET", "/gtt/triggers")}
 _MONTHS = {m: i for i, m in enumerate(
     ("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"), start=1)}
 _WEEKLY_MONTH = {**{str(i): i for i in range(1, 10)}, "O": 10, "N": 11, "D": 12}
@@ -77,9 +79,29 @@ CREATE TABLE IF NOT EXISTS partner_broker_days (
   complete INTEGER NOT NULL,
   option_orders INTEGER NOT NULL,
   other_orders INTEGER NOT NULL,
-  account TEXT
-)
+  account TEXT,
+  stops_known INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS partner_stop_orders (
+  source_id TEXT PRIMARY KEY,
+  session_date TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  exchange TEXT NOT NULL,
+  tradingsymbol TEXT NOT NULL,
+  trigger_price REAL NOT NULL,
+  quantity INTEGER,
+  status TEXT NOT NULL,
+  placed_at TEXT NOT NULL,
+  updated_at TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_partner_stop_orders_day ON partner_stop_orders(session_date, tradingsymbol);
 """
+# A stop's state: PENDING (resting), TRIGGERED (it sold), CANCELLED, REJECTED.
+_ORDER_STOP_STATUS = {"COMPLETE": "TRIGGERED", "OPEN": "TRIGGERED", "CANCELLED": "CANCELLED",
+                      "REJECTED": "REJECTED"}
+_GTT_STOP_STATUS = {"active": "PENDING", "triggered": "TRIGGERED", "cancelled": "CANCELLED",
+                    "deleted": "CANCELLED", "disabled": "CANCELLED", "expired": "CANCELLED",
+                    "rejected": "REJECTED"}
 
 
 class BrokerError(Exception):
@@ -346,6 +368,67 @@ def build_reports(orders: list, trades: list, cards: list, *, received_at: datet
     return reports, counts
 
 
+def _stop_row(source_id: str, kind: str, exchange: str, symbol: str, trigger: float, quantity,
+              status: str, placed_at: datetime, updated_at: Optional[datetime]) -> dict:
+    return {"source_id": source_id, "session_date": placed_at.date().isoformat(), "kind": kind,
+            "exchange": exchange, "tradingsymbol": symbol, "trigger_price": round(float(trigger), 2),
+            "quantity": int(quantity) if quantity else None, "status": status,
+            "placed_at": placed_at.isoformat(), "updated_at": updated_at.isoformat() if updated_at else None}
+
+
+def stops_from_orders(orders: list, resolve: Optional[Callable] = None) -> list:
+    """Every SL / SL-M SELL order on an option: the partner's resting stops."""
+    resolve = resolve or resolve_option
+    rows = []
+    for order in orders or []:
+        if (str(order.get("transaction_type") or "").upper() != "SELL"
+                or str(order.get("order_type") or "").upper() not in ("SL", "SL-M")
+                or not float(order.get("trigger_price") or 0) > 0):
+            continue
+        exchange = str(order.get("exchange") or "").upper()
+        symbol = str(order.get("tradingsymbol") or "").upper()
+        placed_at = kite_time(order.get("order_timestamp"))
+        if exchange not in ("NFO", "BFO") or placed_at is None or resolve(symbol, exchange) is None:
+            continue
+        raw = str(order.get("status") or "").upper()
+        status = _ORDER_STOP_STATUS.get(raw, "PENDING")
+        if raw == "CANCELLED" and int(order.get("filled_quantity") or 0) > 0:
+            status = "TRIGGERED"          # it sold part before the cancel
+        updated = kite_time(order.get("exchange_update_timestamp") or order.get("exchange_timestamp")) or placed_at
+        rows.append(_stop_row(f"kite:{order.get('order_id')}", "SL_ORDER", exchange, symbol,
+                              float(order["trigger_price"]), order.get("quantity"), status, placed_at, updated))
+    return rows
+
+
+def stops_from_gtts(gtts: list, resolve: Optional[Callable] = None) -> list:
+    """Sell GTTs on an option that work as a stop: an OCO's lower leg, or a
+    single trigger set below the price at creation (a single one above it is
+    a target, not a stop)."""
+    resolve = resolve or resolve_option
+    rows = []
+    for gtt in gtts or []:
+        condition = gtt.get("condition") or {}
+        exchange = str(condition.get("exchange") or "").upper()
+        symbol = str(condition.get("tradingsymbol") or "").upper()
+        triggers = [float(v) for v in condition.get("trigger_values") or [] if v]
+        sells = [o for o in gtt.get("orders") or [] if str(o.get("transaction_type") or "").upper() == "SELL"]
+        placed_at = kite_time(gtt.get("created_at"))
+        if (exchange not in ("NFO", "BFO") or not triggers or not sells or placed_at is None
+                or resolve(symbol, exchange) is None):
+            continue
+        if str(gtt.get("type") or "").lower() == "two-leg":
+            trigger = min(triggers)
+        else:
+            last = float(condition.get("last_price") or 0)
+            if not (last and triggers[0] < last):
+                continue
+            trigger = triggers[0]
+        status = _GTT_STOP_STATUS.get(str(gtt.get("status") or "").lower(), "PENDING")
+        rows.append(_stop_row(f"gtt:{gtt.get('id')}", "GTT", exchange, symbol, trigger, sells[0].get("quantity"),
+                              status, placed_at, kite_time(gtt.get("updated_at"))))
+    return rows
+
+
 # ---------------------------------------------------------------------------
 # storage
 # ---------------------------------------------------------------------------
@@ -360,8 +443,34 @@ async def init_partner_broker_db(db_path: str) -> None:
     from partner_fill_capture import init_partner_fill_db
     await init_partner_fill_db(db_path)
     async with aiosqlite.connect(db_path) as db:
-        await db.execute(_DDL)
+        await db.executescript(_DDL)
         await db.commit()
+
+
+_STOP_COLS = ("source_id", "session_date", "kind", "exchange", "tradingsymbol", "trigger_price", "quantity",
+              "status", "placed_at", "updated_at")
+
+
+async def store_stops(db_path: str, stops: list) -> None:
+    if not stops:
+        return
+    sql = (f"INSERT INTO partner_stop_orders ({', '.join(_STOP_COLS)}) VALUES ({', '.join('?' for _ in _STOP_COLS)}) "
+           f"ON CONFLICT(source_id) DO UPDATE SET "
+           f"{', '.join(f'{c}=excluded.{c}' for c in _STOP_COLS if c != 'source_id')}")
+    async with aiosqlite.connect(db_path) as db:
+        for stop in stops:
+            await db.execute(sql, tuple(stop.get(c) for c in _STOP_COLS))
+        await db.commit()
+
+
+async def stop_orders(db_path: str, first_day: str, last_day: str) -> list:
+    """The partner's stops placed in the window, oldest first."""
+    await init_partner_broker_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            f"SELECT {', '.join(_STOP_COLS)} FROM partner_stop_orders WHERE session_date>=? AND session_date<=? "
+            "ORDER BY placed_at", (first_day, last_day))).fetchall()
+    return [dict(zip(_STOP_COLS, row)) for row in rows]
 
 
 async def store_reports(db_path: str, reports: list) -> int:
@@ -384,10 +493,11 @@ async def broker_days(db_path: str, first_day: str, last_day: str) -> dict:
     await init_partner_broker_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         rows = await (await db.execute(
-            "SELECT session_date, synced_at, complete, option_orders, other_orders FROM partner_broker_days "
-            "WHERE session_date>=? AND session_date<=?", (first_day, last_day))).fetchall()
-    return {day: {"synced_at": synced_at, "complete": bool(complete), "option_orders": n, "other_orders": other}
-            for day, synced_at, complete, n, other in rows}
+            "SELECT session_date, synced_at, complete, option_orders, other_orders, stops_known "
+            "FROM partner_broker_days WHERE session_date>=? AND session_date<=?", (first_day, last_day))).fetchall()
+    return {day: {"synced_at": synced_at, "complete": bool(complete), "option_orders": n, "other_orders": other,
+                  "stops_known": bool(stops_known)}
+            for day, synced_at, complete, n, other, stops_known in rows}
 
 
 async def _day_cards(db_path: str, first_day: str, last_day: str) -> list:
@@ -435,6 +545,17 @@ async def sync_book(now: Optional[datetime] = None, *, db_path: Optional[str] = 
         # Orders alone still carry the average price and exchange time.
         logger.warning("partner_zerodha_trades_unavailable code=%s", exc.code)
         trades = []
+    # Stops: SL orders are in the order book; a GTT stop only shows here. If
+    # the GTT list cannot be read, "no stop" is unknown and never flagged.
+    try:
+        gtts = await _read("/gtt/triggers")
+        stops_known = True
+    except BrokerError as exc:
+        if exc.code in ("TokenException", "not_connected"):
+            raise
+        logger.warning("partner_zerodha_gtts_unavailable code=%s", exc.code)
+        gtts, stops_known = [], False
+    await store_stops(db_path, stops_from_orders(orders) + stops_from_gtts(gtts))
     today = now.date().isoformat()
     stamps = [kite_time(o.get("order_timestamp")) for o in orders or []]
     days = {s.date().isoformat() for s in stamps if s}
@@ -451,12 +572,14 @@ async def sync_book(now: Optional[datetime] = None, *, db_path: Optional[str] = 
             other = counts["other_orders"] if day == today else 0
             complete = _complete(day, now)
             await db.execute(
-                "INSERT INTO partner_broker_days(session_date,synced_at,complete,option_orders,other_orders,account) "
-                "VALUES(?,?,?,?,?,?) ON CONFLICT(session_date) DO UPDATE SET synced_at=excluded.synced_at, "
-                "complete=MAX(partner_broker_days.complete, excluded.complete), "
-                "option_orders=excluded.option_orders, other_orders=excluded.other_orders, account=excluded.account",
-                (day, now.isoformat(), int(complete), len(day_reports), other, _session.account if _session else None))
-            result_days[day] = {"option_orders": len(day_reports), "complete": complete}
+                "INSERT INTO partner_broker_days(session_date,synced_at,complete,option_orders,other_orders,account,"
+                "stops_known) VALUES(?,?,?,?,?,?,?) ON CONFLICT(session_date) DO UPDATE SET "
+                "synced_at=excluded.synced_at, complete=MAX(partner_broker_days.complete, excluded.complete), "
+                "option_orders=excluded.option_orders, other_orders=excluded.other_orders, "
+                "account=excluded.account, stops_known=excluded.stops_known",
+                (day, now.isoformat(), int(complete), len(day_reports), other,
+                 _session.account if _session else None, int(stops_known)))
+            result_days[day] = {"option_orders": len(day_reports), "complete": complete, "stops_known": stops_known}
         await db.commit()
     logger.info("partner_zerodha_synced days=%s option_orders=%d other=%d unfilled=%d on_card=%d",
                 ",".join(days), counts["option_orders"], counts["other_orders"], counts["unfilled_orders"],

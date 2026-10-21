@@ -1,6 +1,7 @@
 """[O21-PC 2026-10-21] Partner coach and standard-capital views (read-mostly).
 
 GET  /partner/coach                      the coach view (partner_coach.py)
+GET  /partner/review                     [O21-PL] the partner's day review + progress (partner_lessons.py)
 POST /partner/coach/reports              owner-entered fill (the partner told them)
 POST /partner/coach/reports/{id}/void    remove a wrong report
 GET  /performance/standard-capital       every book on one capital (standard_capital.py)
@@ -12,10 +13,10 @@ All routes need the internal secret. None places an order or changes a card.
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 import main as _main
@@ -59,6 +60,33 @@ async def get_partner_coach(request: Request, days: int = 30):
     _main._check_internal_secret(request, "get_partner_coach")
     from partner_coach import load_partner_coach
     return await load_partner_coach(settings.DB_PATH, days=days)
+
+
+@router.get("/partner/review")
+async def get_partner_review(request: Request, day: Optional[str] = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+                             days: int = 30):
+    """[O21-PL] The partner's own review: one day's learnings (default: today,
+    else the latest day with a card or trade) and progress over the window."""
+    _main._check_internal_secret(request, "get_partner_review")
+    from datetime import date
+    from partner_coach import IST, load_partner_coach
+    from partner_lessons import active_days, day_review, progress
+    now = datetime.now(IST)
+    today = now.date()
+    try:
+        asked = date.fromisoformat(day) if day else None
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="day must be a date") from exc
+    if asked is not None and not (today - timedelta(days=119) <= asked <= today):
+        raise HTTPException(status_code=422, detail="day must be within the last 120 days")
+    window = max(14, min(int(days), 120), (today - asked).days + 1 if asked else 0)
+    view = await load_partner_coach(settings.DB_PATH, days=window, now=now)
+    available = active_days(view)
+    chosen = asked.isoformat() if asked else (today.isoformat() if today.isoformat() in available
+                                              else (available[0] if available else today.isoformat()))
+    return {"day": chosen, "days_available": available, "review": day_review(view, chosen),
+            "progress": progress(view, today.isoformat()), "zerodha": view["zerodha"], "window": view["window"],
+            "as_of": view["as_of"], "automatic_execution": False}
 
 
 @router.post("/partner/coach/reports")

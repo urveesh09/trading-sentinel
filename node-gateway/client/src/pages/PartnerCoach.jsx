@@ -33,6 +33,8 @@ function Flag({ flag }) {
         {flag.impact_rs != null && <span className={`font-mono text-xs ${pnlTone(flag.impact_rs)}`}>{formatRs(flag.impact_rs)}</span>}
       </div>
       <p className="mt-1 text-xs text-gray-300">{flag.reason}</p>
+      {flag.why && <p className="mt-1 text-xs text-gray-400">{flag.why}</p>}
+      {flag.better && <p className="mt-1 text-xs text-emerald-200">{flag.better}</p>}
       <p className="mt-1 text-[11px] text-gray-500">Next time: {flag.advice}</p>
     </li>
   );
@@ -157,7 +159,7 @@ function ReportForm({ cards, onSaved }) {
   );
 }
 
-export default function PartnerCoach({ navigateToDashboard, partnerView = false }) {
+export default function PartnerCoach({ navigateToDashboard, navigateToReview, partnerView = false }) {
   const [days, setDays] = useState(partnerView ? 1 : 30);
   const [syncNote, setSyncNote] = useState('');
   const { data, error, isLoading, mutate } = useSWR(coachUrl(partnerView, days), fetcher,
@@ -185,7 +187,7 @@ export default function PartnerCoach({ navigateToDashboard, partnerView = false 
       <div className="mx-auto max-w-6xl space-y-5">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            {!partnerView && <button onClick={navigateToDashboard} className="rounded border border-gray-700 p-2 text-gray-300 hover:bg-gray-800" aria-label="Back"><ArrowLeft size={16} /></button>}
+            {navigateToDashboard && <button onClick={navigateToDashboard} className="rounded border border-gray-700 p-2 text-gray-300 hover:bg-gray-800" aria-label="Back"><ArrowLeft size={16} /></button>}
             <div>
               <h1 className="flex items-center gap-2 text-2xl font-bold text-white"><GraduationCap size={22} /> {partnerView ? 'Your trading review' : 'Partner Coach'}</h1>
               <p className="text-sm text-gray-400">{partnerView
@@ -197,6 +199,7 @@ export default function PartnerCoach({ navigateToDashboard, partnerView = false 
             {WINDOWS.map((value) => (
               <button key={value} onClick={() => setDays(value)} className={`rounded border px-3 py-1.5 text-xs font-bold ${days === value ? 'border-teal-500 bg-teal-950 text-teal-100' : 'border-gray-700 text-gray-300'}`}>{value === 1 ? 'Today' : `${value}d`}</button>
             ))}
+            {navigateToReview && <button onClick={navigateToReview} className="rounded border border-teal-700 px-3 py-1.5 text-xs font-bold text-teal-100">Partner's view</button>}
             <span className="rounded border border-red-700 bg-red-950 px-2 py-1 text-[10px] font-black text-red-100">COACHING ONLY · NO ORDERS</span>
           </div>
         </header>

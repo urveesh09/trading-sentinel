@@ -1416,13 +1416,13 @@ Related tests: `python-engine/tests/test_partner_bot.py`
 
 [O21-PK 2026-10-21] The partner's own Zerodha fills, read once a day. The partner trades by hand and will not log trades during the day, so the coach reads them from the partner's Zerodha account instead. The partner creates a free Kite Connect "Personal" app on their own account (orders and portfolio APIs, no market data) and taps one Telegram button in the evening: 1. the 15:40 wrap sends "Open today's review": a Kite login link for the partner's app (only when no login is held for today); 2. Kite redirects to the gateway's /api/partner-kite/callback, which hands the one-time request_token to POST /partner/broker/session; 3. the engine exchanges it, refuses any account other than PARTNER_K
 
-Top-level declarations: `BrokerError` (line 85), `_Session` (line 94), `configured` (line 108), `login_url` (line 113), `mask_account` (line 119), `next_expiry` (line 124), `connected` (line 131), `disconnect` (line 136), `_kite_call` (line 141), `create_session` (line 164), `_read` (line 193), `kite_time` (line 208), `parse_option_symbol` (line 219), `resolve_option` (line 235), `_filled_orders` (line 256), `build_reports` (line 298), `init_partner_broker_db` (line 359), `store_reports` (line 367), `broker_days` (line 382), `_day_cards` (line 393), `_complete` (line 416), `sync_book` (line 421), `review_keyboard` (line 472), `partner_broker_eod` (line 485), `on_login` (line 507), `status` (line 524)
+Top-level declarations: `BrokerError` (line 107), `_Session` (line 116), `configured` (line 130), `login_url` (line 135), `mask_account` (line 141), `next_expiry` (line 146), `connected` (line 153), `disconnect` (line 158), `_kite_call` (line 163), `create_session` (line 186), `_read` (line 215), `kite_time` (line 230), `parse_option_symbol` (line 241), `resolve_option` (line 257), `_filled_orders` (line 278), `build_reports` (line 320), `_stop_row` (line 371), `stops_from_orders` (line 379), `stops_from_gtts` (line 403), `init_partner_broker_db` (line 442), `store_stops` (line 454), `stop_orders` (line 466), `store_reports` (line 476), `broker_days` (line 491), `_day_cards` (line 503), `_complete` (line 526), `sync_book` (line 531), `review_keyboard` (line 595), `partner_broker_eod` (line 608), `on_login` (line 630), `status` (line 647)
 
 Engine dependencies: `config`, `fno_underlyings`, `partner_bot`, `partner_coach`, `partner_fill_capture`, `partner_orchestrator`
 
 Related tests: `python-engine/tests/test_partner_broker_sync.py`
 
-Declared tables: `partner_broker_days`
+Declared tables: `partner_broker_days`, `partner_stop_orders`
 
 ## `python-engine/partner_buyer.py`
 
@@ -1446,9 +1446,9 @@ Related tests: `python-engine/tests/test_partner_card_renderer.py`
 
 [O21-PC 2026-10-21] Partner coach: what the partner did, what each card said, and the difference in rupees with a reason. The partner is a manual trader, so every card instruction is priced PARTNER_COACH_REACTION_SEC (default 120 s) after the message reached them, using the 5-minute option prints the analytics tick already stores (fno_chain_oi). The coach never compares the partner with the engine's 10-second clock, and it never blocks or changes a card. Three numbers per traded card: - actual: the partner's reported prices, after charges; - card exits on your entry: same entry, exits where the card said (premium SL order, exit/target update, square-off). The gap to actual is what the exit b
 
-Top-level declarations: `_dt` (line 108), `_hhmm` (line 121), `_rs` (line 125), `_px` (line 132), `round_trip_costs` (line 138), `print_at` (line 147), `last_print_before` (line 155), `card_exit` (line 169), `card_entry` (line 205), `build_trades` (line 223), `_option_label` (line 275), `_fill` (line 282), `_flag` (line 292), `_pnl` (line 297), `analyse_card` (line 303), `analyse_off_card` (line 448), `_sequence_flags` (line 457), `analyse` (line 481), `_public` (line 598), `init_partner_coach_db` (line 616), `_live_series` (line 624), `load_cards` (line 636), `freeze_card_paths` (line 698), `load_partner_coach` (line 716), `zerodha_first` (line 737), `render_coach_note` (line 758), `partner_coach_eod` (line 794)
+Top-level declarations: `_dt` (line 137), `_hhmm` (line 150), `_rs` (line 154), `_px` (line 163), `round_trip_costs` (line 169), `print_at` (line 178), `last_print_before` (line 186), `card_exit` (line 200), `card_entry` (line 236), `build_trades` (line 259), `_option_label` (line 312), `_fill` (line 319), `_flag` (line 329), `_positive` (line 346), `_pnl` (line 350), `_orders` (line 359), `_amt` (line 364), `_instead` (line 369), `_gap` (line 376), `_worked` (line 380), `_day_close` (line 387), `_first_under` (line 391), `_limit_print_after` (line 396), `_chased` (line 404), `trade_stops` (line 433), `_stop_checks` (line 450), `analyse_card` (line 518), `analyse_off_card` (line 737), `_sequence_flags` (line 761), `_overtrading` (line 810), `analyse` (line 828), `_public` (line 955), `init_partner_coach_db` (line 973), `_live_series` (line 981), `load_cards` (line 993), `freeze_card_paths` (line 1055), `load_partner_coach` (line 1073), `zerodha_first` (line 1096), `render_coach_note` (line 1117), `partner_coach_eod` (line 1123)
 
-Engine dependencies: `config`, `cost_schedules`, `fno_costs`, `partner_bot`, `partner_fill_capture`, `partner_orchestrator`
+Engine dependencies: `config`, `cost_schedules`, `fno_costs`, `partner_bot`, `partner_fill_capture`, `partner_lessons`, `partner_orchestrator`
 
 Related tests: `python-engine/tests/test_partner_coach.py`
 
@@ -1533,6 +1533,16 @@ Top-level declarations: `_timestamp` (line 30), `_greeks` (line 42), `_finite_po
 Engine dependencies: `config`, `hedge_advisory`, `hedge_analytics`
 
 Related tests: `python-engine/tests/test_partner_input_refresh.py`
+
+## `python-engine/partner_lessons.py`
+
+[O21-PL 2026-10-21] The partner's daily review: today's learnings first. partner_coach.analyse() finds what happened on each card and why it mattered. This module turns one day of that into what the partner reads in the evening, in this order: 1. the day in one line: trades, P&L after charges, and the cards as written on the same trades; 2. the lesson of the day: the mistake that cost the most (or, when nothing was lost, the most important rule broken), with what happened, why it matters, what would have been better and what it would have paid, and the rule for next time; repeated mistakes are grouped; 3. the other lessons, shorter; 4. what went well (so the habits to keep are said out loud)
+
+Top-level declarations: `_priority` (line 50), `_px` (line 54), `_lots` (line 60), `_traded` (line 65), `lessons` (line 74), `_rank` (line 98), `_fold` (line 103), `_well_done` (line 125), `_fill_text` (line 146), `story` (line 153), `day_review` (line 206), `active_days` (line 263), `progress` (line 272), `render_note` (line 326)
+
+Engine dependencies: `partner_coach`
+
+Related tests: `python-engine/tests/test_partner_lessons.py`
 
 ## `python-engine/partner_lifecycle_demo.py`
 
@@ -2356,11 +2366,11 @@ Engine dependencies: `config`, `fno_exit_recovery`, `fno_spread_tilt`, `halt_swi
 
 ## `python-engine/routes_partner_coach.py`
 
-[O21-PC 2026-10-21] Partner coach and standard-capital views (read-mostly). GET /partner/coach the coach view (partner_coach.py) POST /partner/coach/reports owner-entered fill (the partner told them) POST /partner/coach/reports/{id}/void remove a wrong report GET /performance/standard-capital every book on one capital (standard_capital.py) POST /partner/broker/session [O21-PK] the partner's Kite login (gateway callback) GET /partner/broker/status whether a partner login is held (never the token) POST /partner/broker/sync read the partner's order book now (owner button) All routes need the internal secret. None places an order or changes a card.
+[O21-PC 2026-10-21] Partner coach and standard-capital views (read-mostly). GET /partner/coach the coach view (partner_coach.py) GET /partner/review [O21-PL] the partner's day review + progress (partner_lessons.py) POST /partner/coach/reports owner-entered fill (the partner told them) POST /partner/coach/reports/{id}/void remove a wrong report GET /performance/standard-capital every book on one capital (standard_capital.py) POST /partner/broker/session [O21-PK] the partner's Kite login (gateway callback) GET /partner/broker/status whether a partner login is held (never the token) POST /partner/broker/sync read the partner's order book now (owner button) All routes need the internal secret. N
 
-Top-level declarations: `PartnerReportPayload` (line 27), `VoidPayload` (line 39), `BrokerSessionPayload` (line 43), `_broker_http_error` (line 53), `get_partner_coach` (line 58), `post_partner_coach_report` (line 65), `post_partner_coach_report_void` (line 79), `post_partner_broker_session` (line 89), `get_partner_broker_status` (line 99), `post_partner_broker_sync` (line 106), `get_standard_capital` (line 116)
+Top-level declarations: `PartnerReportPayload` (line 28), `VoidPayload` (line 40), `BrokerSessionPayload` (line 44), `_broker_http_error` (line 54), `get_partner_coach` (line 59), `get_partner_review` (line 66), `post_partner_coach_report` (line 93), `post_partner_coach_report_void` (line 107), `post_partner_broker_session` (line 117), `get_partner_broker_status` (line 127), `post_partner_broker_sync` (line 134), `get_standard_capital` (line 144)
 
-Engine dependencies: `config`, `partner_coach`, `partner_fill_capture`, `standard_capital`
+Engine dependencies: `config`, `partner_coach`, `partner_fill_capture`, `partner_lessons`, `standard_capital`
 
 ## `python-engine/routes_penny_experiments.py`
 
@@ -2586,7 +2596,7 @@ Local routes: `GET /ltp`, `POST /square-off`, `POST /execute`
 
 Dependencies: `../config`, `../middleware/logger`, `../middleware/security`, `express`
 
-Local routes: `GET /callback`, `GET /coach`
+Local routes: `GET /callback`, `GET /coach`, `GET /review`
 
 ## `node-gateway/server/routes/proxy.js`
 
@@ -2685,7 +2695,7 @@ Dependencies: none extracted
 
 ## `node-gateway/client/src/App.jsx`
 
-Dependencies: `./api/client`, `./evidenceMode`, `./hooks/useHealth`, `./pages/BacktestLab`, `./pages/Dashboard`, `./pages/Login`, `./pages/PartnerCoach`, `./pages/Positions`, `./pages/ResearchCenter`, `./pages/StandardCapital`, `react`, `swr`
+Dependencies: `./api/client`, `./evidenceMode`, `./hooks/useHealth`, `./pages/BacktestLab`, `./pages/Dashboard`, `./pages/Login`, `./pages/PartnerCoach`, `./pages/PartnerReview`, `./pages/Positions`, `./pages/ResearchCenter`, `./pages/StandardCapital`, `react`, `swr`
 
 ## `node-gateway/client/src/components/CircuitBreaker.jsx`
 
@@ -2803,6 +2813,10 @@ Dependencies: `lucide-react`, `react`
 
 Dependencies: `../api/client`, `../utils/partnerCoach`, `lucide-react`, `react`, `swr`
 
+## `node-gateway/client/src/pages/PartnerReview.jsx`
+
+Dependencies: `../api/client`, `../utils/partnerCoach`, `../utils/partnerReview`, `./PartnerCoach`, `lucide-react`, `react`, `swr`
+
 ## `node-gateway/client/src/pages/Positions.jsx`
 
 Dependencies: `../components/PositionRow`, `../components/StatusBar`, `../hooks/usePositions`, `react`
@@ -2828,6 +2842,10 @@ Dependencies: none extracted
 Dependencies: none extracted
 
 ## `node-gateway/client/src/utils/partnerCoach.js`
+
+Dependencies: none extracted
+
+## `node-gateway/client/src/utils/partnerReview.js`
 
 Dependencies: none extracted
 

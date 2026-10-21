@@ -21,6 +21,18 @@ quick re-entry after a loss (revenge pattern), size up after a loss, adding
 to a losing option, holding past the stop, exiting before the plan, giving
 back after the target, holding past square-off and more trades than cards.
 
+[O21-PL] Each flag explains itself to the partner: ``reason`` (what
+happened, with times and prices), ``why`` (why it matters, with this
+trade's numbers, e.g. the extra risk a chased entry took to the same stop),
+``better`` and ``better_pnl`` (the better action and what it would have paid
+after charges, charged for the same number of orders), and ``advice`` (the
+rule). ``impact_rs`` = actual - better. A rule-break that made money says so
+and is still flagged (process over outcome). On Zerodha days whose stops are
+fully known (SL orders and GTTs read), stop discipline is checked too:
+NO_STOP_ORDER, STOP_WIDER_THAN_CARD, STOP_CANCELLED; placing the stop, a
+pause after a loss and an exit ahead of the stop are positives.
+partner_lessons.py turns a day of this into the partner's review.
+
 Honesty rules (paper-fill-honesty): reported prices are the partner's;
 "≈" prices came from a quote at the tap; a plan exit is a 5-minute print,
 not a fill; nothing is called a maximum or breakeven. 5-minute prints can
@@ -58,27 +70,38 @@ SQUARE_OFF_GRACE_MIN = 5
 REENTRY_WINDOW_MIN = 30                  # a buy this soon after a losing exit
 AVERAGED_DOWN_PCT = 0.02
 OVERTRADE_MIN_BUYS = 3
+# [O21-PL] Stop discipline, from Zerodha's order book (SL orders and GTTs).
+STOP_CLOCK_SLACK = timedelta(seconds=60)  # a stop placed this close before the buy is for it
+STOP_CHECK_MIN_HOLD_MIN = 5               # "no stop" only for a trade held at least this long
+STOP_PROMPT_MIN = 5                       # a stop this soon after the buy earns the positive
+STOP_WIDER_PCT = 0.03                     # a stop this far under the card's SL is "wider"
+STOP_CANCEL_SLIP_PCT = 0.01               # sold this far under a cancelled stop
+SQUARE_OFF_MIN = 15 * 60 + 15             # a stop cancelled after this may be the broker's square-off
+EXIT_LABELS = {"TARGET_MESSAGE": "target message", "SQUARE_OFF_MESSAGE": "square-off message",
+               "EXIT_BY": "exit-by time"}
 
+# The rule for next time: one short line the partner can remember.
 ADVICE = {
-    "ENTRY_ABOVE_LIMIT": "If the price is above the card's buy-up-to, skip it. A chased entry moves the "
-                         "stop further away and raises the loss at SL.",
-    "LATE_ENTRY": "After the card's skip-after time the move has mostly happened; let it go.",
-    "AFTER_CARD_CLOSED": "Once the card's exit or target message has come, the idea is finished.",
-    "OFF_CARD": "A trade without a card has no stop or target written down. If you take one, "
-                "decide the SL before buying.",
-    "QUICK_REENTRY_AFTER_LOSS": "After a loss, wait for the next card instead of re-entering. "
-                                "A 30-minute pause stops a revenge trade.",
+    "ENTRY_ABOVE_LIMIT": "Above the buy-up-to price, skip. Use a LIMIT order at the card's price instead "
+                         "of chasing.",
+    "LATE_ENTRY": "After the skip-after time the card is over; wait for the next one.",
+    "AFTER_CARD_CLOSED": "Once the card's exit or target message has come, the idea is finished; do not buy it.",
+    "OFF_CARD": "No card, no trade. If you take one, write down the stop before buying.",
+    "QUICK_REENTRY_AFTER_LOSS": "After a loss, take a 30-minute break and trade only the next card.",
     "SIZE_UP_AFTER_LOSS": "Keep the same size after a loss. Size up only after a run of trades that "
                           "followed the card.",
-    "AVERAGED_DOWN": "Don't add to an option that is falling. The card's SL is the plan.",
+    "AVERAGED_DOWN": "Never add to a falling option. One entry, one stop.",
     "HELD_PAST_STOP": "Place the SL order right after buying, as the card says. It exits for you, "
                       "even when you are busy.",
-    "EARLY_EXIT": "Let the card's target or exit message decide. Keep the SL order in place "
-                  "instead of selling on a wobble.",
-    "GAVE_BACK_AFTER_TARGET": "When the target message comes, book at least part and move the SL to "
-                              "your entry on the rest.",
-    "HELD_PAST_SQUARE_OFF": "Be flat by the card's exit-by time. Options lose value fast late in the day.",
-    "OVERTRADING": "More trades than cards usually means trading on feel. Stick to the cards.",
+    "EARLY_EXIT": "Let the SL order protect you and exit on the card's message, not on a wobble.",
+    "GAVE_BACK_AFTER_TARGET": "At the target message, book at least half and move the SL to your entry on "
+                              "the rest.",
+    "HELD_PAST_SQUARE_OFF": "Be flat by the card's exit-by time; set an alarm for it.",
+    "OVERTRADING": "Trade the cards only; close the app between cards.",
+    "NO_STOP_ORDER": "Place the SL order right after the buy fills, every time. It exits for you even when "
+                     "you are busy or the price falls fast.",
+    "STOP_WIDER_THAN_CARD": "Put the SL order at the card's price.",
+    "STOP_CANCELLED": "Never cancel or lower a stop once it is placed. Move it only up, to lock in profit.",
 }
 TITLES = {
     "ENTRY_ABOVE_LIMIT": "Chased the entry (FOMO)",
@@ -93,11 +116,17 @@ TITLES = {
     "GAVE_BACK_AFTER_TARGET": "Gave back after the target",
     "HELD_PAST_SQUARE_OFF": "Held past square-off",
     "OVERTRADING": "More trades than cards",
+    "NO_STOP_ORDER": "No stop-loss order",
+    "STOP_WIDER_THAN_CARD": "Stop wider than the card",
+    "STOP_CANCELLED": "Cancelled the stop",
 }
 POSITIVE_TITLES = {
     "BOUGHT_IN_LIMIT": "Bought inside the limit and on time",
     "EXITED_WITH_CARD": "Exited with the card",
     "SKIP_SAVED": "Skipping saved money",
+    "STOP_PLACED": "Placed the stop-loss order",
+    "EXITED_BEFORE_STOP": "Got out before the stop",
+    "PAUSED_AFTER_LOSS": "Paused after a loss",
 }
 
 
@@ -125,6 +154,8 @@ def _hhmm(value: Optional[datetime]) -> str:
 def _rs(value: Optional[float]) -> str:
     if value is None:
         return "n/a"
+    if round(value) == 0:
+        return "₹0"
     sign = "−" if value < 0 else "+"
     return f"{sign}₹{abs(value):,.0f}"
 
@@ -213,6 +244,11 @@ def card_entry(card: dict, reaction: timedelta) -> dict:
     if limit and found[1] > limit:
         return {"price": None, "at": found[0], "basis": "PRINT_ABOVE_LIMIT", "skip": True,
                 "note": f"print {_px(found[1])} at {_hhmm(found[0])} was above the buy-up-to {_px(limit)}"}
+    sl = card.get("sl_premium")
+    if sl and found[1] <= sl:
+        # The option was already at the stop: the card's setup had failed.
+        return {"price": None, "at": found[0], "basis": "PRINT_AT_STOP", "skip": True,
+                "note": f"print {_px(found[1])} at {_hhmm(found[0])} was already at or under the SL {_px(sl)}"}
     return {"price": found[1], "at": found[0], "basis": "5MIN_PRINT", "skip": False}
 
 
@@ -258,6 +294,7 @@ def build_trades(reports: list[dict]) -> dict:
                         - round_trip_costs(avg_entry, avg_exit, qty, exchange, orders=len(buys) + len(sells)), 2)
         trades[key] = {
             "key": key, "advisory_id": rows[0].get("advisory_id"),
+            "tradingsymbol": next((r.get("tradingsymbol") for r in rows if r.get("tradingsymbol")), None),
             "session_date": rows[0]["session_date"], "underlying": rows[0].get("underlying"),
             "option": _option_label(rows[0]), "exchange": exchange, "lot_size": lot_size,
             "skipped": any(r["action"] == "SKIP" for r in rows) and not buys,
@@ -289,22 +326,202 @@ def _fill(report: dict) -> dict:
 # analysis
 # ---------------------------------------------------------------------------
 
-def _flag(code: str, reason: str, impact: Optional[float] = None) -> dict:
-    return {"code": code, "title": TITLES[code], "reason": reason,
+def _flag(code: str, reason: str, impact: Optional[float] = None, *, why: str = "", better: str = "",
+          better_pnl: Optional[float] = None, actual_pnl: Optional[float] = None) -> dict:
+    """One mistake, explained for the partner:
+
+    reason  what happened, with times and prices;
+    why     why it matters, with the numbers of this trade;
+    better  the better action and what it would have paid (after charges);
+    advice  the rule for next time.
+
+    ``impact_rs`` is actual minus better where both are known: the rupees
+    this behaviour changed. Impacts of different flags can overlap."""
+    return {"code": code, "title": TITLES[code], "reason": reason, "why": why, "better": better,
+            "better_pnl": round(better_pnl, 2) if better_pnl is not None else None,
+            "actual_pnl": round(actual_pnl, 2) if actual_pnl is not None else None,
             "impact_rs": round(impact, 2) if impact is not None else None, "advice": ADVICE[code]}
 
 
-def _pnl(entry: Optional[float], exit_: Optional[float], qty: Optional[int], exchange: str) -> Optional[float]:
+def _positive(code: str, reason: str) -> dict:
+    return {"code": code, "title": POSITIVE_TITLES[code], "reason": reason}
+
+
+def _pnl(entry: Optional[float], exit_: Optional[float], qty: Optional[int], exchange: str,
+         orders: int = 2) -> Optional[float]:
+    """Net P&L after charges; ``orders`` keeps a what-if on the same position
+    charged for the same number of orders as what was done."""
     if entry is None or exit_ is None or not qty:
         return None
-    return round((exit_ - entry) * qty - round_trip_costs(entry, exit_, qty, exchange), 2)
+    return round((exit_ - entry) * qty - round_trip_costs(entry, exit_, qty, exchange, orders=orders), 2)
 
 
-def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_known: bool = False) -> dict:
+def _orders(trade: dict) -> int:
+    """Orders in this trade, counting the exit still to come on an open one."""
+    return max(len(trade["buys"]) + max(len(trade["sells"]), 1), 2)
+
+
+def _amt(value: float) -> str:
+    """An unsigned amount: ₹1,506."""
+    return f"₹{abs(value):,.0f}"
+
+
+def _instead(better: Optional[float], actual: Optional[float]) -> str:
+    """'₹0 instead of −₹1,906', or just the better figure when the actual is unknown."""
+    if better is None:
+        return ""
+    return f"{_rs(better)} instead of {_rs(actual)}" if actual is not None else _rs(better)
+
+
+def _gap(actual: Optional[float], better: Optional[float]) -> Optional[float]:
+    return round(actual - better, 2) if actual is not None and better is not None else None
+
+
+def _worked(actual: Optional[float]) -> str:
+    """Process over outcome: a rule-break that made money is still a rule-break."""
+    if actual is not None and actual > 0:
+        return f" It made {_rs(actual)} this time; the rule is about the risk taken, not about this result."
+    return ""
+
+
+def _day_close(day: str) -> datetime:
+    return IST.localize(datetime.fromisoformat(day) + timedelta(hours=15, minutes=30))
+
+
+def _first_under(series: list, after: datetime, level: float):
+    """The first 5-minute print at or under ``level`` after ``after``."""
+    return next(((ts, px) for ts, px in series if ts >= after and px <= level), None)
+
+
+def _limit_print_after(card: dict, after: datetime):
+    """A print at or under the buy-up-to after ``after`` and before the skip-after time."""
+    limit, fill_by = card.get("buy_limit"), card.get("fill_by")
+    if not (limit and fill_by and after):
+        return None
+    return next(((ts, px) for ts, px in card["series"] if after < ts <= fill_by and px <= limit), None)
+
+
+def _chased(card: dict, trade: dict, first_px: float, first_qty: Optional[int]) -> dict:
+    """ENTRY_ABOVE_LIMIT with the risk arithmetic of this entry."""
+    limit, sl, target_low = card["buy_limit"], card.get("sl_premium"), card.get("target_low")
+    first_at = _dt(trade["buys"][0]["at"])
+    actual = trade["pnl"]
+    over = first_px - limit
+    reason = (f"The card said buy up to {_px(limit)}. You paid {_px(first_px)} at {_hhmm(first_at)}, "
+              f"{_px(over)} ({over / limit:.1%}) more.")
+    why = "Paying above the limit buys the same stop and target from a worse price."
+    if sl and first_qty and limit > sl and first_px > sl:
+        risk_card, risk_you = (limit - sl) * first_qty, (first_px - sl) * first_qty
+        why = (f"The stop stays at {_px(sl)}, so a stop-out loses {_amt(risk_you)} instead of {_amt(risk_card)} "
+               f"on {first_qty} qty ({risk_you / risk_card - 1:.0%} more)")
+        if target_low:
+            room_you, room_card = target_low - first_px, target_low - limit
+            why += (f", while the first target {_px(target_low)} is {_px(room_you)} away instead of {_px(room_card)}."
+                    if room_you > 0 else f", and you paid more than the first target {_px(target_low)}.")
+        else:
+            why += "."
+    why += _worked(actual)
+    better = f"Skip it, as the card says above the limit: {_instead(0.0, actual)}."
+    wait = _limit_print_after(card, first_at)
+    if wait:
+        better += (f" Or wait with a limit order at {_px(limit)}: the option traded at {_px(wait[1])} at "
+                   f"{_hhmm(wait[0])}, before the skip-after time.")
+    return _flag("ENTRY_ABOVE_LIMIT", reason, _gap(actual, 0.0), why=why, better=better, better_pnl=0.0,
+                 actual_pnl=actual)
+
+
+def trade_stops(trade: dict, stops: list) -> list:
+    """The partner's stops on this option placed while the trade was open."""
+    first = trade.get("first_buy_at")
+    if first is None or not trade.get("tradingsymbol"):
+        return []
+    end = (trade["last_sell_at"] if trade.get("last_sell_at") and not trade.get("open_lots")
+           else _day_close(trade["session_date"]))
+    out = []
+    for stop in stops:
+        placed = _dt(stop["placed_at"])
+        if (stop["exchange"] == trade.get("exchange") and stop["tradingsymbol"] == trade["tradingsymbol"]
+                and stop["status"] != "REJECTED" and placed is not None
+                and first - STOP_CLOCK_SLACK <= placed <= end):
+            out.append(stop | {"placed_dt": placed, "updated_dt": _dt(stop.get("updated_at"))})
+    return sorted(out, key=lambda s: s["placed_dt"])
+
+
+def _stop_checks(out: dict, trade: dict, card: Optional[dict], stops: Optional[list], qty: Optional[int],
+                 exchange: str) -> None:
+    """Stop discipline from Zerodha's order book. ``stops`` is None when the
+    day's stops are unknown (no complete read, or GTTs unreadable): then
+    nothing about stops is claimed."""
+    first = trade.get("first_buy_at")
+    if stops is None or first is None:
+        return
+    out["stops"] = [{"kind": s["kind"], "trigger": float(s["trigger_price"]), "status": s["status"],
+                     "placed": _hhmm(s["placed_dt"]), "updated": _hhmm(s["updated_dt"])} for s in stops]
+    flags, positives = out["flags"], out["positives"]
+    actual, entry, exit_px, last_sell = trade["pnl"], trade["avg_entry"], trade["avg_exit"], trade["last_sell_at"]
+    end = last_sell if last_sell and not trade["open_lots"] else _day_close(trade["session_date"])
+    held = (end - first).total_seconds() / 60
+    sl = (card or {}).get("sl_premium")
+    n_orders = _orders(trade)
+    if not stops:
+        if held >= STOP_CHECK_MIN_HOLD_MIN:
+            flags.append(_flag(
+                "NO_STOP_ORDER",
+                f"You bought at {_hhmm(first)} and held {held:.0f} min with no stop-loss order in Zerodha "
+                f"(no SL order or GTT on this option).", None,
+                why="Without a resting stop the exit depends on watching the screen; one distraction or a "
+                    "fast fall and the loss has no floor.",
+                better=(f"Place an SL order at the card's {_px(sl)} right after the buy fills." if sl else
+                        "Decide the stop before buying and place the SL order right after the buy fills.")))
+        return
+    stop = stops[0]
+    prompt = None
+    trigger = float(stop["trigger_price"])
+    after = (stop["placed_dt"] - first).total_seconds() / 60
+    kind = "GTT" if stop["kind"] == "GTT" else "SL order"
+    if sl and trigger < sl * (1 - STOP_WIDER_PCT):
+        triggered = stop["status"] == "TRIGGERED"
+        at_card = _pnl(entry, sl, qty, exchange, n_orders) if triggered else None
+        why = "A wider stop is a bigger loss, not a safer trade."
+        if entry is not None and qty and entry > trigger and entry > sl:
+            why = (f"Your stop risked {_amt((entry - trigger) * qty)} instead of {_amt((entry - sl) * qty)} on "
+                   f"{qty} qty. " + why)
+        flags.append(_flag(
+            "STOP_WIDER_THAN_CARD", f"Your {kind} was at {_px(trigger)}; the card's SL was {_px(sl)}.",
+            _gap(actual, at_card), why=why,
+            better=(f"The stop at the card's {_px(sl)}: {_instead(at_card, actual)}." if at_card is not None
+                    else f"Put the stop at the card's {_px(sl)}."),
+            better_pnl=at_card, actual_pnl=actual if at_card is not None else None))
+    elif after <= STOP_PROMPT_MIN:
+        prompt = _positive("STOP_PLACED", f"{kind} at {_px(trigger)} placed {max(after, 0):.0f} min after buying.")
+    cancelled = [s for s in stops if s["status"] == "CANCELLED" and s["updated_dt"] and last_sell
+                 and s["updated_dt"] < last_sell and s["updated_dt"].hour * 60 + s["updated_dt"].minute < SQUARE_OFF_MIN]
+    protected_after = any(s["status"] in ("PENDING", "TRIGGERED") for s in stops
+                          if cancelled and s["placed_dt"] > cancelled[-1]["updated_dt"])
+    if cancelled and not protected_after and exit_px is not None:
+        gone = cancelled[-1]
+        level = float(gone["trigger_price"])
+        if exit_px < level * (1 - STOP_CANCEL_SLIP_PCT):
+            at_level = _pnl(entry, level, qty, exchange, n_orders)
+            flags.append(_flag(
+                "STOP_CANCELLED",
+                f"You cancelled your stop at {_px(level)} at {_hhmm(gone['updated_dt'])} and sold at "
+                f"{_px(exit_px)} at {_hhmm(last_sell)}.", _gap(actual, at_level),
+                why="Cancelling a stop as the price gets close is hoping, not planning: the stop exists for "
+                    "exactly that moment.",
+                better=f"Leaving it in place: about {_instead(at_level, actual)}.", better_pnl=at_level,
+                actual_pnl=actual))
+    if prompt is not None and not any(f["code"] == "STOP_CANCELLED" for f in flags):
+        positives.append(prompt)
+
+
+def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_known: bool = False,
+                 stops: Optional[list] = None) -> dict:
     """One delivered card: the partner's action, the card's plan and the flags.
 
     ``traded_known``: the day's whole Zerodha book was read, so a card with
-    no order was not traded (NOT_TRADED) rather than not reported."""
+    no order was not traded (NOT_TRADED) rather than not reported.
+    ``stops``: the partner's stops on this trade (None: unknown)."""
     out = {
         "advisory_id": card["advisory_id"], "underlying": card["underlying"], "day": card["day"],
         "time": _hhmm(card["delivered_at"]), "option": card["option"], "direction": card.get("direction"),
@@ -332,8 +549,8 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
                             note=ex["note"], pnl=_pnl(entry["price"], ex["price"], lot_size, exchange))
         out.update(partner={"status": status}, plan=plan)
         if status in ("SKIPPED", "NOT_TRADED") and (plan.get("pnl") or 0) < 0:
-            out["positives"].append({"code": "SKIP_SAVED", "title": POSITIVE_TITLES["SKIP_SAVED"],
-                                     "reason": f"Following it would have been {_rs(plan['pnl'])} on 1 lot."})
+            out["positives"].append(_positive("SKIP_SAVED", f"Following it would have been {_rs(plan['pnl'])} "
+                                                            f"on 1 lot."))
         out["verdict"] = (f"{label}; the card on 1 lot: {_rs(plan.get('pnl'))}" if plan.get("pnl") is not None
                           else f"{label}; no option prices to score the card")
         return out
@@ -344,6 +561,10 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
     qty = trade["qty"] or (trade["bought_lots"] * lot_size if lot_size else None)
     first_buy = trade["first_buy_at"]
     entry = trade["avg_entry"]
+    actual = trade["pnl"]
+    first_px = next((b["price"] for b in trade["buys"][:1] if b["price"] is not None), entry)
+    n_orders = _orders(trade)
+    first_qty = (trade["buys"][0].get("lots") or 1) * lot_size if trade["buys"] and lot_size else qty
     # Card exits on the partner's own entry.
     same_entry = None
     if first_buy is not None and entry is not None:
@@ -352,28 +573,42 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
             same_entry = {"exit": ex["price"], "exit_at": _hhmm(ex["at"]), "exit_at_dt": ex["at"],
                           "reason": ex["reason"], "note": ex["note"], "pnl": _pnl(entry, ex["price"], qty, exchange)}
     # Whole-card plan: a chased, late or after-close entry was a skip.
-    closed_by = min((u["delivered_at"] for u in card.get("updates") or []
-                     if u.get("delivered_at") and u["event_type"] in ("INVALIDATION", "TARGET_ZONE")), default=None)
+    closing = min((u for u in card.get("updates") or []
+                   if u.get("delivered_at") and u["event_type"] in ("INVALIDATION", "TARGET_ZONE")),
+                  key=lambda u: u["delivered_at"], default=None)
     tick = card.get("tick_size") or 0.05
     flags, positives = out["flags"], out["positives"]
     skip_reasons = []
     limit = card.get("buy_limit")
-    if entry is not None and limit and entry > limit + LIMIT_TOLERANCE_TICKS * tick:
-        extra = (entry - limit) * (qty or 0)
+    sl = card.get("sl_premium")
+    if first_px is not None and limit and first_px > limit + LIMIT_TOLERANCE_TICKS * tick:
         skip_reasons.append("price above the limit")
-        flags.append(_flag("ENTRY_ABOVE_LIMIT",
-                           f"Paid {_px(entry)}, {_px(entry - limit)} ({(entry - limit) / limit:.1%}) above the "
-                           f"card's buy-up-to {_px(limit)}.", -extra if qty else None))
+        flags.append(_chased(card, trade, first_px, first_qty))
     fill_by = card.get("fill_by")
     if first_buy and fill_by and first_buy > fill_by + reaction:
         late = int((first_buy - fill_by).total_seconds() // 60)
         skip_reasons.append("after the skip-after time")
-        flags.append(_flag("LATE_ENTRY", f"Bought at {_hhmm(first_buy)}, {late} min after the card's skip-after "
-                                         f"time {_hhmm(fill_by)}.", trade["pnl"]))
-    if first_buy and closed_by and first_buy > closed_by:
+        moved = (f" At {_hhmm(first_buy)} the option was {_px(first_px)} against the card's "
+                 f"{_px(card.get('ask'))}, so the plan no longer fitted the price."
+                 if first_px is not None and card.get("ask") else " After it the plan no longer fits the price.")
+        flags.append(_flag(
+            "LATE_ENTRY", f"The card's skip-after time was {_hhmm(fill_by)}. You bought at {_hhmm(first_buy)}, "
+                          f"{late} min later.", _gap(actual, 0.0),
+            why=f"The card's price, stop and target were set for an entry by {_hhmm(fill_by)}." + moved
+                + _worked(actual),
+            better=f"Let it go: {_instead(0.0, actual)}.", better_pnl=0.0, actual_pnl=actual))
+    if first_buy and closing and first_buy > closing["delivered_at"]:
+        failed = closing["event_type"] == "INVALIDATION"
         skip_reasons.append("after the card closed")
-        flags.append(_flag("AFTER_CARD_CLOSED", f"Bought at {_hhmm(first_buy)}; the card's exit/target message "
-                                                f"came at {_hhmm(closed_by)}.", trade["pnl"]))
+        flags.append(_flag(
+            "AFTER_CARD_CLOSED", f"You bought at {_hhmm(first_buy)}; the card's "
+                                 f"{'exit' if failed else 'target'} message came at {_hhmm(closing['delivered_at'])}.",
+            _gap(actual, 0.0),
+            why=("An exit message means the card's idea failed; buying after it trades an idea that is "
+                 "already wrong." if failed else
+                 "A target message means the planned move is mostly done; buying after it pays for a move "
+                 "that has already happened.") + _worked(actual),
+            better=f"No trade: {_instead(0.0, actual)}.", better_pnl=0.0, actual_pnl=actual))
     if skip_reasons:
         plan = {"pnl": 0.0, "note": "card said skip (" + ", ".join(skip_reasons) + ")"}
     elif same_entry is not None:
@@ -386,56 +621,110 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
     plan["qty"] = qty
     out["plan"] = plan
     out["same_entry"] = {k: v for k, v in (same_entry or {}).items() if k != "exit_at_dt"} or None
-    if len(trade["buys"]) >= 2:
-        first_px = trade["buys"][0]["price"]
-        lower = [b for b in trade["buys"][1:] if b["price"] is not None and first_px
+    exit_px, last_sell = trade["avg_exit"], trade["last_sell_at"]
+    if len(trade["buys"]) >= 2 and first_px:
+        lower = [b for b in trade["buys"][1:] if b["price"] is not None
                  and b["price"] < first_px * (1 - AVERAGED_DOWN_PCT)]
         if lower:
-            flags.append(_flag("AVERAGED_DOWN", f"First buy {_px(first_px)}, added at {_px(lower[0]['price'])} "
-                                                f"({str(lower[0]['at'])[11:16]}) while it was falling."))
-    exit_px, last_sell = trade["avg_exit"], trade["last_sell_at"]
-    sl = card.get("sl_premium")
+            add = lower[0]
+            first_lots = trade["buys"][0].get("lots") or 1
+            only_first = (_pnl(first_px, exit_px, first_lots * lot_size, exchange, max(1 + len(trade["sells"]), 2))
+                          if lot_size and not trade["open_lots"] else None)
+            why = "Adding to a falling option raises the size exactly when the trade is going wrong"
+            why += (f": {qty} qty were exposed instead of {first_lots * lot_size}." if qty and lot_size else ".")
+            if sl:
+                why += f" The card's stop at {_px(sl)} was the plan for a fall."
+            flags.append(_flag(
+                "AVERAGED_DOWN", f"First buy {_px(first_px)} at {str(trade['buys'][0]['at'])[11:16]}; you added "
+                                 f"at {_px(add['price'])} at {str(add['at'])[11:16]}, "
+                                 f"{1 - add['price'] / first_px:.1%} lower.", _gap(actual, only_first),
+                why=why,
+                better=(f"Only the first buy: {_instead(only_first, actual)}." if only_first is not None
+                        else "Keep only the first buy and let the stop decide."),
+                better_pnl=only_first, actual_pnl=actual))
     if exit_px is not None and qty:
         if sl and exit_px < sl * (1 - STOP_SLIPPAGE_PCT):
-            flags.append(_flag("HELD_PAST_STOP", f"Sold at {_px(exit_px)}; the card's SL was {_px(sl)} "
-                                                 f"({_rs((exit_px - sl) * qty)} more on {qty} qty).",
-                               (exit_px - sl) * qty))
+            under = _first_under(card["series"], first_buy, sl) if first_buy else None
+            at_sl = _pnl(entry, sl, qty, exchange, n_orders)
+            flags.append(_flag(
+                "HELD_PAST_STOP",
+                f"The card's SL was {_px(sl)}. You sold at {_px(exit_px)} at {_hhmm(last_sell)}"
+                + (f"; the option was under the SL by {_hhmm(under[0])} (5-minute print {_px(under[1])})"
+                   if under else "") + ".", _gap(actual, at_sl),
+                why="The SL is the price where the card's idea is wrong. Holding past it turns a planned loss "
+                    "into a bigger one, and options fall fast.",
+                better=f"An SL order at {_px(sl)} right after buying would have sold near {_px(sl)} (a fast "
+                       f"fall can fill a little lower): {_instead(at_sl, actual)}.",
+                better_pnl=at_sl, actual_pnl=actual))
         elif (same_entry and same_entry["reason"] in ("STOP", "EXIT_MESSAGE") and last_sell
               and last_sell > same_entry["exit_at_dt"] + timedelta(minutes=STOP_LATE_MIN)
               and exit_px < same_entry["exit"]):
-            flags.append(_flag("HELD_PAST_STOP", f"The card's exit came at {same_entry['exit_at']} "
-                                                 f"({_px(same_entry['exit'])}); you sold at {_hhmm(last_sell)} for "
-                                                 f"{_px(exit_px)}.", (exit_px - same_entry["exit"]) * qty))
+            word = "stop" if same_entry["reason"] == "STOP" else "exit message"
+            at_card = _pnl(entry, same_entry["exit"], qty, exchange, n_orders)
+            flags.append(_flag(
+                "HELD_PAST_STOP",
+                f"The card's {word} came at {same_entry['exit_at']} with the option at "
+                f"{_px(same_entry['exit'])}; you sold at {_hhmm(last_sell)} for {_px(exit_px)}.",
+                _gap(actual, at_card),
+                why="Once the card says the idea is over, waiting is hoping for a comeback the plan does not "
+                    "expect, and options fall fast.",
+                better=f"Selling at the card's {word}: {_instead(at_card, actual)}.",
+                better_pnl=at_card, actual_pnl=actual))
         if (same_entry and same_entry["reason"] in ("TARGET_MESSAGE", "SQUARE_OFF_MESSAGE", "EXIT_BY")
                 and last_sell and last_sell < same_entry["exit_at_dt"] - timedelta(minutes=EARLY_EXIT_MIN)
                 and same_entry["exit"] >= exit_px * (1 + EARLY_EXIT_PCT)):
-            flags.append(_flag("EARLY_EXIT", f"Sold at {_hhmm(last_sell)} for {_px(exit_px)}; the card's "
-                                             f"{same_entry['reason'].replace('_', ' ').lower()} came at "
-                                             f"{same_entry['exit_at']} with the option at {_px(same_entry['exit'])}.",
-                               (exit_px - same_entry["exit"]) * qty))
+            label = EXIT_LABELS[same_entry["reason"]]
+            held = _pnl(entry, same_entry["exit"], qty, exchange, n_orders)
+            flags.append(_flag(
+                "EARLY_EXIT", f"You sold at {_hhmm(last_sell)} for {_px(exit_px)}. The card's {label} came at "
+                              f"{same_entry['exit_at']} with the option at {_px(same_entry['exit'])}.",
+                _gap(actual, held),
+                why="Selling early on a wobble keeps the wins small while the stop still allows a full loss, so "
+                    "the wins stop paying for the losses.",
+                better=f"Holding with the SL order in place until the card's {label}: {_instead(held, actual)}.",
+                better_pnl=held, actual_pnl=actual))
         target = next((u for u in card.get("updates") or [] if u["event_type"] == "TARGET_ZONE"
                        and u.get("delivered_at") and first_buy and u["delivered_at"] > first_buy), None)
         if target and last_sell and last_sell > target["delivered_at"] + timedelta(minutes=GAVE_BACK_MIN):
             at_target = print_at(card["series"], target["delivered_at"] + reaction)
             if at_target and exit_px <= at_target[1] * (1 - GAVE_BACK_PCT):
-                flags.append(_flag("GAVE_BACK_AFTER_TARGET", f"Target message at {_hhmm(target['delivered_at'])} "
-                                                             f"(option {_px(at_target[1])}); you sold at "
-                                                             f"{_hhmm(last_sell)} for {_px(exit_px)}.",
-                                   (exit_px - at_target[1]) * qty))
+                booked = _pnl(entry, at_target[1], qty, exchange, n_orders)
+                flags.append(_flag(
+                    "GAVE_BACK_AFTER_TARGET",
+                    f"The target message came at {_hhmm(target['delivered_at'])} with the option at "
+                    f"{_px(at_target[1])}. You sold at {_hhmm(last_sell)} for {_px(exit_px)}.",
+                    _gap(actual, booked),
+                    why="A target message means most of the planned move is done; after it the option can fall "
+                        "back as fast as it rose.",
+                    better=f"Booking at the message: {_instead(booked, actual)}. Booking half and moving the SL "
+                           f"to your entry also protects the rest.", better_pnl=booked, actual_pnl=actual))
     exit_by = card.get("exit_by")
     if exit_by and ((last_sell and last_sell > exit_by + timedelta(minutes=SQUARE_OFF_GRACE_MIN))
                     or (trade["open_lots"] and card.get("day_over"))):
-        flags.append(_flag("HELD_PAST_SQUARE_OFF",
-                           f"Exit-by was {_hhmm(exit_by)}; " + (f"you sold at {_hhmm(last_sell)}."
-                                                              if last_sell else "no exit reported.")))
+        at_eb = last_print_before(card["series"], exit_by)
+        eb_pnl = (_pnl(entry, at_eb[1], qty, exchange, n_orders)
+                  if at_eb and first_buy and at_eb[0] >= first_buy and not trade["open_lots"] else None)
+        flags.append(_flag(
+            "HELD_PAST_SQUARE_OFF",
+            f"Exit-by was {_hhmm(exit_by)}; " + (f"you sold at {_hhmm(last_sell)}." if last_sell and
+                                                 not trade["open_lots"] else "no exit by the close."),
+            _gap(actual, eb_pnl),
+            why="Late in the day options lose time value fast and spreads widen; the card's plan ends at exit-by.",
+            better=(f"Selling at {_hhmm(exit_by)} (option {_px(at_eb[1])}): {_instead(eb_pnl, actual)}."
+                    if eb_pnl is not None and actual is not None and abs(eb_pnl - actual) >= 1
+                    else f"Be out by {_hhmm(exit_by)}."),
+            better_pnl=eb_pnl, actual_pnl=actual if eb_pnl is not None else None))
+    _stop_checks(out, trade, card, stops, qty, exchange)
     if entry is not None and not skip_reasons:
-        positives.append({"code": "BOUGHT_IN_LIMIT", "title": POSITIVE_TITLES["BOUGHT_IN_LIMIT"],
-                          "reason": f"Paid {_px(entry)} with the limit at {_px(limit)}."})
+        positives.append(_positive("BOUGHT_IN_LIMIT", f"Paid {_px(first_px)} with the limit at {_px(limit)}."))
     if (same_entry and last_sell and exit_px is not None
             and abs((last_sell - same_entry["exit_at_dt"]).total_seconds()) <= EARLY_EXIT_MIN * 60):
-        positives.append({"code": "EXITED_WITH_CARD", "title": POSITIVE_TITLES["EXITED_WITH_CARD"],
-                          "reason": f"Sold at {_hhmm(last_sell)} with the card's {same_entry['exit_at']} exit."})
-    actual = trade["pnl"]
+        positives.append(_positive("EXITED_WITH_CARD", f"Sold at {_hhmm(last_sell)} with the card's "
+                                                       f"{same_entry['exit_at']} exit."))
+    elif (same_entry and same_entry["reason"] == "STOP" and last_sell and exit_px is not None and sl
+          and last_sell < same_entry["exit_at_dt"] and exit_px > sl):
+        positives.append(_positive("EXITED_BEFORE_STOP", f"Sold at {_px(exit_px)} before the stop {_px(sl)} was "
+                                                         f"hit: {_instead(actual, same_entry['pnl'])} at the stop."))
     if actual is not None and plan.get("pnl") is not None:
         out["verdict"] = f"You {_rs(actual)} · card plan {_rs(plan['pnl'])} · gap {_rs(actual - plan['pnl'])}"
     elif actual is not None:
@@ -445,53 +734,121 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
     return out
 
 
-def analyse_off_card(trade: dict) -> dict:
+def analyse_off_card(trade: dict, stops: Optional[list] = None) -> dict:
+    actual = trade["pnl"]
     out = {"key": trade["key"], "day": trade["session_date"], "option": trade["option"],
            "time": _hhmm(trade["first_buy_at"] or trade["last_sell_at"]), "partner": {
                k: trade[k] for k in ("buys", "sells", "avg_entry", "avg_exit", "qty", "pnl", "estimated")},
-           "flags": [_flag("OFF_CARD", "No card was sent for this option.", trade["pnl"])], "positives": []}
-    out["verdict"] = f"Off-card trade {_rs(trade['pnl'])}" if trade["pnl"] is not None else "Off-card trade, prices incomplete"
+           "flags": [], "positives": []}
+    if trade["buys"]:
+        what = f"You bought {trade['option']} at {_hhmm(trade['first_buy_at'])} without a card."
+    else:
+        what = f"You sold {trade['option']} at {_hhmm(trade['last_sell_at'])}; no card was sent for this option."
+    out["flags"].append(_flag(
+        "OFF_CARD", what, _gap(actual, 0.0),
+        why="Without a card there is no written stop, target or exit time, so nothing limits the loss except "
+            "a decision in the moment." + _worked(actual),
+        better=f"No trade: {_instead(0.0, actual)}." if actual is None or actual <= 0 else
+               "If you take one, decide the stop before buying and place it right after.",
+        better_pnl=0.0, actual_pnl=actual))
+    if trade["buys"]:
+        qty = trade["qty"] or (trade["bought_lots"] * trade["lot_size"] if trade["lot_size"] else None)
+        _stop_checks(out, trade, None, stops, qty, trade["exchange"])
+    out["verdict"] = f"Off-card trade {_rs(actual)}" if actual is not None else "Off-card trade, prices incomplete"
     return out
 
 
 def _sequence_flags(day_trades: list[dict]) -> None:
-    """Re-entry soon after a loss and size up after a loss, in time order."""
+    """Re-entry soon after a loss and size up after a loss, in time order;
+    a pause after a loss before the next card is a positive."""
     ordered = sorted((t for t in day_trades if t["_first_buy"] is not None), key=lambda t: t["_first_buy"])
     previous = None
     for item in ordered:
         if previous is not None and previous["_pnl"] is not None and previous["_pnl"] < 0 and previous["_last_sell"]:
             gap = (item["_first_buy"] - previous["_last_sell"]).total_seconds() / 60
+            trade, actual = item["_trade"], item["_pnl"]
             if 0 <= gap <= REENTRY_WINDOW_MIN:
                 extra = []
                 if item.get("advisory_id") is None:
                     extra.append("without a card")
                 if item["_lots"] > previous["_lots"]:
                     extra.append(f"with {item['_lots']} lots after {previous['_lots']}")
+                why = ("A buy straight after a loss is the revenge pattern: the aim is to win the money back "
+                       "quickly, not to follow a setup.")
+                if actual is not None:
+                    why += (f" This trade {'made' if actual > 0 else 'lost'} {_amt(actual)}, so the two trades "
+                            f"together came to {_rs(previous['_pnl'] + actual)}.")
                 item["flags"].append(_flag(
                     "QUICK_REENTRY_AFTER_LOSS",
-                    f"Bought {gap:.0f} min after a {_rs(previous['_pnl'])} exit on {previous['option']}"
-                    + (" (" + ", ".join(extra) + ")" if extra else "") + ".", item["_pnl"]))
+                    f"You closed {previous['option']} at {_hhmm(previous['_last_sell'])} for "
+                    f"{_rs(previous['_pnl'])} and bought {item['option']} {gap:.0f} min later"
+                    + (" (" + ", ".join(extra) + ")" if extra else "") + ".", _gap(actual, 0.0),
+                    why=why, better=f"Pause 30 minutes and wait for the next card. Without this trade: "
+                                    f"{_instead(0.0, actual)}.", better_pnl=0.0, actual_pnl=actual))
+            elif gap > REENTRY_WINDOW_MIN and item.get("advisory_id"):
+                item["positives"].append(_positive(
+                    "PAUSED_AFTER_LOSS", f"After the {_rs(previous['_pnl'])} exit at "
+                                         f"{_hhmm(previous['_last_sell'])} you waited {gap:.0f} min and took a card."))
             if item["_lots"] > previous["_lots"]:
+                lot = trade.get("lot_size")
+                same_size = (_pnl(trade["avg_entry"], trade["avg_exit"], previous["_lots"] * lot, trade["exchange"],
+                                  _orders(trade)) if lot and not trade["open_lots"] else None)
+                why = "A bigger size after a loss makes the next loss bigger too."
+                if lot:
+                    why = (f"Each ₹1 move in the option was {_amt(item['_lots'] * lot)} instead of "
+                           f"{_amt(previous['_lots'] * lot)}. " + why)
                 item["flags"].append(_flag(
                     "SIZE_UP_AFTER_LOSS", f"{item['_lots']} lots right after a {_rs(previous['_pnl'])} trade "
-                                          f"with {previous['_lots']}.", item["_pnl"]))
+                                          f"with {previous['_lots']}.", _gap(actual, same_size),
+                    why=why, better=(f"The same {previous['_lots']} lot{'s' if previous['_lots'] != 1 else ''}: "
+                                     f"{_instead(same_size, actual)}." if same_size is not None
+                                     else "Keep the size you had before the loss."),
+                    better_pnl=same_size, actual_pnl=actual))
         previous = item
 
 
+def _overtrading(buys: int, cards: int, traded: list[dict]) -> dict:
+    """Day flag: more buys than cards, with the charges and the cards-only day."""
+    priced = [i["_trade"] for i in traded if i["_trade"]["pnl"] is not None]
+    actual = round(sum(t["pnl"] for t in priced), 2) if priced and len(priced) == len(traded) else None
+    charges = 0.0
+    for t in priced:
+        if t["avg_entry"] is not None and t["avg_exit"] is not None and t["qty"]:
+            charges += (t["avg_exit"] - t["avg_entry"]) * t["qty"] - t["pnl"]
+    card_only = (round(sum(i["_trade"]["pnl"] for i in traded if i.get("advisory_id")), 2)
+                 if actual is not None else None)
+    return _flag(
+        "OVERTRADING", f"{buys} buys against {cards} card{'s' if cards != 1 else ''}.", _gap(actual, card_only),
+        why="Extra trades come from watching the screen rather than from a setup"
+            + (f"; today's trades paid {_amt(charges)} in charges." if charges > 0 else ".") + _worked(actual),
+        better=(f"Only the card trades: {_instead(card_only, actual)}." if card_only is not None
+                else "Trade the cards only."), better_pnl=card_only, actual_pnl=actual)
+
+
 def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: datetime,
-            complete_days: frozenset = frozenset()) -> dict:
+            complete_days: frozenset = frozenset(), stops: Optional[list] = None,
+            stops_known_days: frozenset = frozenset()) -> dict:
     """The coach view for the cards and reports in a window (pure).
 
-    ``complete_days``: days whose whole Zerodha book was read after the close."""
+    ``complete_days``: days whose whole Zerodha book was read after the close.
+    ``stops`` / ``stops_known_days``: the partner's stop orders, and the days
+    on which they are fully known (stop flags only on those days)."""
     reaction = timedelta(seconds=reaction_sec)
     trades = build_trades(reports)
+
+    def stops_for(trade):
+        if not trade or trade["session_date"] not in stops_known_days:
+            return None
+        return trade_stops(trade, stops or [])
+
     items = []
     by_card = {card["advisory_id"]: card for card in cards}
     for card in cards:
         card["day_over"] = now.astimezone(IST).date().isoformat() > card["day"] or (
             card.get("exit_by") is not None and now > card["exit_by"] + timedelta(minutes=SQUARE_OFF_GRACE_MIN))
         trade = trades.get(card["advisory_id"])
-        item = analyse_card(card, trade, reaction, traded_known=card["day"] in complete_days)
+        item = analyse_card(card, trade, reaction, traded_known=card["day"] in complete_days,
+                            stops=stops_for(trade))
         item["_trade"] = trade
         items.append(item)
     off_card = []
@@ -500,7 +857,7 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
             continue
         if trade["advisory_id"]:
             continue   # a card outside the window
-        item = analyse_off_card(trade)
+        item = analyse_off_card(trade, stops_for(trade))
         item["_trade"] = trade
         item["advisory_id"] = None
         off_card.append(item)
@@ -525,9 +882,9 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         traded = [i for i in day_cards + day_off if i.get("_trade") and i["_trade"]["buys"]]
         day_flags = []
         buys = sum(len(i["_trade"]["buys"]) for i in traded)
-        if buys >= OVERTRADE_MIN_BUYS and buys > len(day_cards) + 1:
-            day_flags.append(_flag("OVERTRADING", f"{buys} buys against {len(day_cards)} card(s)."))
         actual = [i["_trade"]["pnl"] for i in traded if i["_trade"]["pnl"] is not None]
+        if buys >= OVERTRADE_MIN_BUYS and buys > len(day_cards) + 1:
+            day_flags.append(_overtrading(buys, len(day_cards), traded))
         plans = [i["plan"]["pnl"] for i in day_cards if i.get("_trade") and i["_trade"]["buys"]
                  and i.get("plan", {}).get("pnl") is not None and i["_trade"]["pnl"] is not None]
         day_rows.append({
@@ -724,8 +1081,10 @@ async def load_partner_coach(db_path: str, *, days: int = 30, now: Optional[date
     broker = await zerodha.broker_days(db_path, first_day, last_day)
     reports, superseded = zerodha_first(await reports_between(db_path, first_day, last_day), broker)
     complete = frozenset(day for day, row in broker.items() if row["complete"])
+    known = frozenset(day for day, row in broker.items() if row["complete"] and row["stops_known"])
     view = analyse(cards, reports, reaction_sec=int(settings.PARTNER_COACH_REACTION_SEC), now=now,
-                   complete_days=complete)
+                   complete_days=complete, stops=await zerodha.stop_orders(db_path, first_day, last_day),
+                   stops_known_days=known)
     view["data_quality"]["superseded_by_zerodha"] = superseded
     view["window"] = {"first_day": first_day, "last_day": last_day, "days": days}
     view["capture_enabled"] = bool(settings.PARTNER_FILL_CAPTURE_ENABLED)
@@ -756,39 +1115,9 @@ def zerodha_first(reports: list[dict], broker: dict) -> tuple[list[dict], int]:
 # ---------------------------------------------------------------------------
 
 def render_coach_note(view: dict, day: str) -> Optional[str]:
-    """Four or five short lines for a day with reported trades, else ``None``."""
-    row = next((r for r in view["days"] if r["day"] == day), None)
-    if row is None:
-        return None
-    traded = [i for i in row["cards"] + row["off_card"] if i.get("partner", {}).get("buys")]
-    if not traded:
-        return None
-    from_zerodha = any(f.get("source") == "ZERODHA" for i in traded
-                       for f in i["partner"].get("buys", []) + i["partner"].get("sells", []))
-    lines = ["📒 Your trades today (from Zerodha)" if from_zerodha
-             else "📒 Your trades today (from your taps and replies)"]
-    head = f"{len(traded)} trade{'s' if len(traded) != 1 else ''}"
-    if row["actual_pnl"] is not None:
-        head += f" · {_rs(row['actual_pnl'])} after charges"
-    if row["plan_pnl_on_traded_cards"] is not None:
-        head += f" · card plan {_rs(row['plan_pnl_on_traded_cards'])}"
-    lines.append(head)
-    flags = [(f, i) for i in traded for f in i["flags"]] + [(f, None) for f in row["day_flags"]]
-    priced = [(f, i) for f, i in flags if f["impact_rs"] is not None and f["impact_rs"] < 0]
-    if priced:
-        flag, item = min(priced, key=lambda pair: pair[0]["impact_rs"])
-        lines.append(f"Biggest gap: {item['option'] + ' · ' if item else ''}{flag['reason']}")
-        lines.append(f"Next time: {flag['advice']}")
-    elif flags:
-        flag, item = flags[0]
-        lines.append(f"Watch: {flag['title']} · {flag['reason']}")
-    goods = [p for i in traded for p in i.get("positives", [])]
-    if goods:
-        names = sorted({p["title"] for p in goods})
-        lines.append("✅ " + " · ".join(names[:2]))
-    if any(i["partner"].get("estimated") for i in traded):
-        lines.append("≈ prices came from your taps; reply to a card with your price to correct.")
-    return "\n".join(lines[:6])
+    """The evening Telegram note: the day's lesson first (partner_lessons.py)."""
+    from partner_lessons import day_review, render_note
+    return render_note(day_review(view, day))
 
 
 async def partner_coach_eod(now: Optional[datetime] = None) -> dict:

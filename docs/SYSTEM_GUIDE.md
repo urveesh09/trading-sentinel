@@ -1,5 +1,81 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 (night) — the partner's own review page; lessons that explain each mistake (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+Owner (Oct 21): the partner logs in from the Telegram button and lands on
+their own dashboard, a branch of the main one, opening on the day's
+learnings; more is there if they want it. The lessons must be top quality,
+comprehensive, correct and well tested, so the partner understands each
+mistake and what would have been better. Where the partner's app lives is
+the owner's call; recommended: the partner's own developer account (a free
+Personal app, IP empty if allowed), because static IPs on the owner's
+developer account apply to all of its apps and Zerodha warns against
+sharing an IP outside immediate family. Reads do not need the IP. Built on O21-PK below. No strategy rule, card
+text or gate, sizing, Smart policy file or live switch changed.
+
+- **Each mistake explained (`partner_coach.py`, O21-PL).** Every flag now
+  carries `reason` (what happened, times and prices), `why` (why it matters,
+  with this trade's numbers), `better` + `better_pnl` (the better action and
+  what it would have paid after charges) and `advice` (the rule).
+  `impact_rs` = actual − better (was mixed; ENTRY_ABOVE_LIMIT was the extra
+  premium paid). What-ifs on the same position are charged for the same
+  number of orders (`_pnl(..., orders)`), so an extra order's brokerage never
+  shows up as a behaviour cost. Examples:
+  - chased entry: the stop-out loss from the partner's price against the
+    card's limit (e.g. ₹1,506 instead of ₹1,153 on 20 qty, 31% more) and the
+    room left to the first target; "skip it: ₹0 instead of −₹2,268"; when a
+    5-minute print came back inside the limit before the skip-after time, "or
+    wait with a limit order at ₹522.35: it traded at ₹518 at 12:15";
+  - held past the stop: when the option first printed under the SL, and the
+    result of an SL order at the card's price;
+  - revenge re-entry: the earlier loss, the minutes between, the two trades
+    together; size-up: per-₹1 exposure and the same trade at the old size;
+    averaged down: the result with only the first buy; early exit, gave back
+    after target, held past square-off: the card's exit priced on the
+    partner's entry; overtrading: the day's charges and the cards-only day.
+  - A rule-break that made money says "It made +₹X this time; the rule is
+    about the risk taken, not about this result" and stays a lesson.
+- **Stop discipline (Zerodha days).** The read now also takes GET
+  `/gtt/triggers` (allowlisted; no GTT or order write path).
+  `partner_stop_orders` keeps every SL / SL-M SELL order on an option and
+  every sell GTT that protects (an OCO's lower leg; a single trigger set
+  below the price at creation; a single one above it is a target).
+  `partner_broker_days.stops_known` is set only when the GTT list was read.
+  On complete days with stops known: NO_STOP_ORDER (held ≥ 5 min with no SL
+  order or GTT placed from 60 s before the buy), STOP_WIDER_THAN_CARD (> 3%
+  under the card SL; priced when it fired), STOP_CANCELLED (cancelled before
+  the exit and before 15:15, no new stop after it, sold > 1% under it).
+  Positives: STOP_PLACED (within 5 min of the buy, not later cancelled),
+  EXITED_BEFORE_STOP, PAUSED_AFTER_LOSS (> 30 min after a loss, then a card).
+  Unknown stops: nothing is said about stops.
+- **Card plan fix.** A card whose first print after delivery was already at
+  or under its SL is "card said skip" (₹0), not an entry under its own stop.
+- **The day review (`partner_lessons.py`).** `day_review(view, day)`:
+  headline ("2 trades · −₹5,345 after charges · following the cards exactly:
+  ₹0 · 1 without a card"); the lesson of the day = the costliest group of
+  the same mistake, ties by `LESSON_PRIORITY` (revenge and size first, then
+  entries breaking the card, then stops); mistakes on the same trade fold
+  into it as "also on this trade" (one revenge trade is one story); up to 4
+  more lessons; what went well (CLEAN_DAY when every trade followed its
+  card); each trade as a time-ordered story (card, buys, stops placed and
+  cancelled, the card's SL being reached, card messages, sells, result);
+  cards not taken, neutrally ("Not taking a card is always allowed"); data
+  notes (taps are estimates; a read before the close; stops unknown; 5-minute
+  prices). `progress(view, today)`: per pattern this week against last week
+  with a trend, trades that followed their card, clean-day streak, per-day
+  rows. `render_note` writes the evening Telegram note from the same review:
+  headline, "Lesson:", "Better:", "Next time:", ✅ habits, at most six lines.
+- **Route and pages.** Engine GET `/partner/review?day=&days=` (internal
+  secret; default today, else the latest day with a card or trade; window
+  14–120 days). Gateway GET `/api/partner-kite/review` (partner or owner
+  session; day YYYY-MM-DD only). The Zerodha login now lands on
+  `/?view=review`. Client `PartnerReview.jsx` is the partner's dashboard:
+  "Today" (headline, lesson of the day with what/why/better/rule, what went
+  well, more to learn, trades step by step, cards not taken, notes), then
+  "Progress" and "All details" (the coach page, read-only). The owner opens
+  it from the Coach page ("Partner's view"); the owner's flags also show the
+  why and better lines.
+
 ## October 21 (evening) — the partner's Zerodha fills read once a day, coach-only review page (actual behavior, Dev, commit `9648f95`)
 
 Owner (Oct 21): the partner will not log entries during the day; fetch their
@@ -12,8 +88,10 @@ switch changed; nothing places, modifies or cancels an order.
   portfolio APIs but no market data; the order book can be read from any IP
   (the exchange static-IP rule covers API order endpoints only). The partner
   creates the app on their own Zerodha account with redirect URL
-  `<public URL>/api/partner-kite/callback` and no static IP, so API orders on
-  that key are rejected by Zerodha. Settings (root `.env`, read by the engine): `PARTNER_KITE_API_KEY`,
+  `<public URL>/api/partner-kite/callback`. Recommended in the partner's own
+  developer account, IP field empty if Zerodha allows: reads need no static
+  IP, and IPs whitelisted on the owner's developer account cover all of its
+  apps. The code has no order path either way. Settings (root `.env`, read by the engine): `PARTNER_KITE_API_KEY`,
   `PARTNER_KITE_API_SECRET`, `PARTNER_KITE_USER_ID` (all three, else off),
   `PARTNER_KITE_BASE_URL` (`https://api.kite.trade`, direct, not the relay),
   `PARTNER_ZERODHA_SYNC_ENABLED` (True). Tests pin the three keys empty

@@ -815,6 +815,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_partner_review",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/review",
+      "response_model": null
+    },
+    {
       "endpoint": "penny_command_get",
       "methods": [
         "GET"
