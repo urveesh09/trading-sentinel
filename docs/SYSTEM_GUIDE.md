@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 21 (night) — the partner's own review page; lessons that explain each mistake (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 21 (night) — the partner's own review page; lessons that explain each mistake (actual behavior, Dev, commit `6f882f0`)
 
 Owner (Oct 21): the partner logs in from the Telegram button and lands on
 their own dashboard, a branch of the main one, opening on the day's

@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 21 (night) — the partner's review page + explained lessons (commit pending (recorded in the next docs commit), Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (night) — the partner's review page + explained lessons (commit `6f882f0`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - [x] O21-PL each flag: what happened, why it matters (this trade's
   numbers), the better action and what it would have paid, the rule;

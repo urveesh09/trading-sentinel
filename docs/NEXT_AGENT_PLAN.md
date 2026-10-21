@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 21 (night) — O21-PL the partner's review page and explained lessons (done, Dev, commit pending (recorded in the next docs commit), branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (night) — O21-PL the partner's review page and explained lessons (done, Dev, commit `6f882f0`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - Problem:
   - Owner (Oct 21): log in from Telegram, land on their own dashboard, "a
