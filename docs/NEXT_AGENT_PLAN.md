@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 21 (evening) — O21-PK the partner's Zerodha fills and a coach-only review page (done, Dev, commit pending (recorded in the next docs commit), branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (evening) — O21-PK the partner's Zerodha fills and a coach-only review page (done, Dev, commit `9648f95`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - Problem:
   - Owner (Oct 21): "the partner won't go on the dashboard for tracking his

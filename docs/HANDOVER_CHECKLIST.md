@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 21 (evening) — the partner's Zerodha fills + coach-only review page (commit pending (recorded in the next docs commit), Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (evening) — the partner's Zerodha fills + coach-only review page (commit `9648f95`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - [x] O21-PK `partner_broker_sync.py`: evening "Open today's review" button
   (Kite login for the partner's own Personal app); the callback reads GET

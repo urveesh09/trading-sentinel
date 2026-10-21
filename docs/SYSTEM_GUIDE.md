@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 21 (evening) — the partner's Zerodha fills read once a day, coach-only review page (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 21 (evening) — the partner's Zerodha fills read once a day, coach-only review page (actual behavior, Dev, commit `9648f95`)
 
 Owner (Oct 21): the partner will not log entries during the day; fetch their
 orders from the free API and let them open the dashboard only at the end of
