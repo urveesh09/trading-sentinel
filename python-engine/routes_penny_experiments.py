@@ -17,6 +17,15 @@ async def get_edge_overnight_experiment(request: Request):
     return overnight_shadow_comparison(settings.DB_PATH)
 
 
+@router.get("/experiments/penny-smart")
+async def get_penny_smart_experiment(request: Request):
+    """[SX-P2] PEN_SMART_V1 against PEN_SMART_V2 from V2's first session (read-only)."""
+    _main = importlib.import_module("main")
+    _main._check_internal_secret(request, "get_penny_smart_experiment")
+    from penny_smart_shadow import smart_policy_comparison
+    return smart_policy_comparison(settings.DB_PATH)
+
+
 @router.get("/experiments/penny")
 async def get_penny_experiment(request: Request):
     # Resolve at call time: tests and operational reload tooling may replace

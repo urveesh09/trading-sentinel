@@ -20,6 +20,15 @@ back below a floor of entry + ``FNO_PROFIT_LOCK_FLOOR_R`` premium-R. With
 ``FNO_PROFIT_LOCK_KEEP_FRACTION`` > 0 the floor also ratchets to keep that
 fraction of the best gain. Archived sessions showed 5 of 9 trades that were
 +Rs 700-1,560 in profit before giving it all back on the time stop.
+
+[SX-F1 2026-10-21] Confirmed lock: the lock was validated on 90-second
+samples, but live checks the bid every 10 seconds, where one flickering bid
+under the floor sold a winner (Oct 15: live +Rs 663 at 10:03; the same trade
+held by the replay's 90 s clock trailed out at +Rs 3,515). With
+``FNO_PROFIT_LOCK_CONFIRM_SEC`` > 0 the price must still be at or under the
+floor at a later look at least that many seconds after the first one
+(``lock_breach_since`` is the caller's state). Protective exits (underlying
+stop, trail, premium backstop, hard flat) stay immediate.
 """
 from __future__ import annotations
 
@@ -44,6 +53,7 @@ class SingleLegExitDecision:
     profit_lock_floor: Optional[float] = None
     entry_time_unparseable: bool = False
     time_stop_deferred: Optional[dict] = None
+    lock_breach_since: Optional[datetime] = None   # first look under the lock floor (None: above it)
 
 
 def live_single_leg_exit_params(settings: Any) -> dict:
@@ -58,6 +68,7 @@ def live_single_leg_exit_params(settings: Any) -> dict:
         "FNO_PROFIT_LOCK_ARM_R": float(settings.FNO_PROFIT_LOCK_ARM_R),
         "FNO_PROFIT_LOCK_FLOOR_R": float(settings.FNO_PROFIT_LOCK_FLOOR_R),
         "FNO_PROFIT_LOCK_KEEP_FRACTION": float(settings.FNO_PROFIT_LOCK_KEEP_FRACTION),
+        "FNO_PROFIT_LOCK_CONFIRM_SEC": float(settings.FNO_PROFIT_LOCK_CONFIRM_SEC),
     }
 
 
@@ -95,6 +106,7 @@ def _age_minutes(entry_time: Any, now_ist: datetime) -> tuple[float, bool]:
 def evaluate_single_leg_exit(
     position: Any, *, now_ist: datetime, fut_price: Optional[float],
     exit_px_basis: float, hard_flat: bool, params: Mapping[str, Any],
+    lock_breach_since: Optional[datetime] = None,
 ) -> SingleLegExitDecision:
     """Return the exit reason (or ``""``) and the trail state to persist.
 
@@ -111,10 +123,17 @@ def evaluate_single_leg_exit(
     # cannot both arm the lock and fire it.
     floor = profit_lock_floor(p.entry_premium, prior_best_premium, params)
     locked = floor is not None and 0 < exit_px_basis <= floor
+    breach_since = None
+    if locked:
+        breach_since = lock_breach_since or now_ist
+        confirm = float(params.get("FNO_PROFIT_LOCK_CONFIRM_SEC", 0.0) or 0.0)
+        if confirm > 0 and (now_ist - breach_since).total_seconds() < confirm:
+            locked = False   # a first look under the floor waits for a second one
     if hard_flat:
         return SingleLegExitDecision("hard_flat_1510", bool(p.trail_active),
                                      p.trail_stop_underlying, p.best_underlying, False,
-                                     best_premium=best_premium, profit_lock_floor=floor)
+                                     best_premium=best_premium, profit_lock_floor=floor,
+                                     lock_breach_since=breach_since)
     if fut_price is None or not fut_price > 0:
         # No futures quote this tick: only the premium backstop and the
         # premium-based profit lock can still protect the position.
@@ -122,7 +141,8 @@ def evaluate_single_leg_exit(
                   else "profit_lock" if locked else "")
         return SingleLegExitDecision(reason, bool(p.trail_active),
                                      p.trail_stop_underlying, p.best_underlying, False,
-                                     best_premium=best_premium, profit_lock_floor=floor)
+                                     best_premium=best_premium, profit_lock_floor=floor,
+                                     lock_breach_since=breach_since)
 
     long_view = p.direction == "LONG"
     best = p.best_underlying or p.entry_underlying
@@ -186,6 +206,7 @@ def evaluate_single_leg_exit(
         reason, trail_active, trail_stop, best, persist_trail=not reason,
         trail_newly_armed=newly_armed, entry_time_unparseable=unparseable,
         time_stop_deferred=deferred, best_premium=best_premium, profit_lock_floor=floor,
+        lock_breach_since=breach_since,
     )
 
 

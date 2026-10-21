@@ -139,7 +139,8 @@ def test_smart_shadow_flag_reuses_provider_inputs_and_failure_isolated(
     fake_kite.get_intraday.reset_mock();fake_kite.get_historical.reset_mock();fake_kite.get_quote.reset_mock()
     monkeypatch.setattr(settings,'PENNY_SMART_SHADOW_ENABLED',True)
     asyncio.run(_run_scanner_with(tmp_paths,fake_kite,fake_universe))
-    observer.assert_awaited_once()
+    # [SX-P2] Once per Smart book on the same inputs; V1 failing does not stop V2.
+    assert [c.kwargs['policy'] for c in observer.await_args_list]==list(penny_smart_shadow.smart_policies())
     assert counts==(fake_kite.get_intraday.await_count,fake_kite.get_historical.await_count,fake_kite.get_quote.await_count)
 
 @pytest.mark.parametrize("hour,minute", [(9, 15), (10, 29), (14, 30), (15, 30)])

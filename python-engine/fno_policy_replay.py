@@ -305,6 +305,7 @@ class OpenLeg:
     initial_qty: int = 0
     fills: list = field(default_factory=list)       # partial / pyramid legs
     pyramided: bool = False
+    lock_breach_since: Optional[datetime] = None    # [SX-F1] first look under the lock floor
 
     @property
     def qty(self) -> int:
@@ -396,7 +397,9 @@ class SingleLegReplay:
             basis = bid if bid > 0 else ltp
             params = {**live_single_leg_exit_params(settings), **dict(self.policy.exit_overrides)}
             decision = evaluate_single_leg_exit(leg, now_ist=now, fut_price=fut_price, exit_px_basis=basis,
-                                                hard_flat=hard_flat, params=params)
+                                                hard_flat=hard_flat, params=params,
+                                                lock_breach_since=getattr(leg, "lock_breach_since", None))
+            leg.lock_breach_since = decision.lock_breach_since
             leg.best_premium = decision.best_premium
             if decision.persist_trail:
                 leg.trail_active = 1 if decision.trail_active else 0

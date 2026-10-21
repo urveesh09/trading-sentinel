@@ -1,5 +1,13 @@
 # Handover receipt and operator checklist
 
+## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] F&O profit lock needs a second look ≥ 8 s after the first under its floor (rollback `FNO_PROFIT_LOCK_CONFIRM_SEC=0`).
+- [x] Every F&O exit look recorded (`fno_exit_paths`), exported, and replayable by arm (`fno_exit_cadence.py`).
+- [x] PEN_SMART_V2 (wider noise-aware stop, three-close thesis failure) runs beside unchanged V1; `GET /experiments/penny-smart`.
+- [x] Partner cards and expiry promotions: no change, with the reasons in SYSTEM_GUIDE.
+- [x] Tests: new 14; full engine suite 5,433 passed, 4 skipped, 0 failed (9 min).
+- [ ] Deployed: no. After deploy: exit-path lines on the first F&O position; two Smart state rows after the first Penny scan.
 ## October 21 (night, 2) — SX-M1 Momentum shadow scoring (commit `27ee87b`, Dev, pushed, not deployed)
 
 - [x] Gap-exit closes shown apart and never scored; promotion gate counts scored closes. Related tests 58 pass; full suite not rerun.

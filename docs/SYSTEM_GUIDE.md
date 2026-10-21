@@ -1,5 +1,55 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 (night, 3) — SX-F1 confirmed F&O profit lock + live-clock exit evidence; SX-P2 PEN_SMART_V2 (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+Owner (Oct 21 night): "take the relevant calls … make it smart, not a
+blocking and filtering system". Calls taken, each with its evidence, a
+shadow of the old behaviour and a one-line rollback:
+
+- **SX-F1 F&O profit lock waits for a second look (live paper change).** The
+  lock (arm 0.4 premium-R, keep half the best gain) was validated on 90 s
+  samples (Oct 7 replay, ₹6,041 vs ₹5,323) but live checks the bid every
+  10 s. Production since Oct 9: four lock exits at +₹288 to +₹663 (0.1–0.3 R),
+  while the two best trades before the lock trailed out at +₹4,711 and
+  +₹7,435; Oct 15 live sold at 10:03 for +₹663 where the 90 s replay of the
+  same trade trailed out at +₹3,515. `FNO_PROFIT_LOCK_CONFIRM_SEC = 8`: the
+  price must still be at/under the floor at a look ≥ 8 s after the first
+  (`lock_breach_since`, kept per position in `fno_orchestrator`; a restart
+  forgets it, so never an earlier exit). Underlying stop, trail, premium
+  backstop and hard flat stay immediate. Thresholds unchanged. Rollback:
+  `FNO_PROFIT_LOCK_CONFIRM_SEC=0`.
+- **SX-F1 live-clock evidence.** `fno_exit_paths.py` appends every exit look
+  of a held option (bid/ask/LTP, future, decision, lock state) to
+  `<RESEARCH_ARCHIVE_PATH>/fno_exit_paths/<day>.jsonl` in a worker thread
+  (never awaited, never raises; `FNO_EXIT_PATH_RECORDING`). The export copies
+  finished sessions. `fno_exit_cadence.py` replays declared arms (CURRENT,
+  LOCK_FIRST_LOOK = the old lock, FNO_LOCK_OFF, FNO_LOCK_LATE_ARM,
+  FNO_LOCK_LOOSE_KEEP) from each live entry on the recorded looks, then on
+  the archive's verified quotes after the live exit; still open at the end =
+  unresolved. Declared 2026-10-21; judge after ≥ 20 matched trades. The
+  post-Oct-5 archive replay of the lock arms was inconclusive (3 NIFTY
+  trades; arms differ on one trade by ≤ ₹400).
+- **SX-P2 PEN_SMART_V2 beside V1.** V1's Production record Oct 5–21: 68 closes,
+  9 wins, 59 losses, −₹163 on ₹2,000; median stop 0.86% under entry (inside
+  a ₹3–50 stock's spread/tick noise), many exits within 0.4–2 min, 33 thesis
+  failures after two 1-minute closes; wins only from trails. V2
+  (`penny_smart_v2.py`) changes three numbers: `noise_atr_mult` 1.0→1.5,
+  `min_noise_pct` 0.004→0.012, `failed_breakout_closes` 2→3 (same code,
+  inputs, caps, costs; fewer shares for a wider stop). Own state row,
+  events, ₹2,000 paper bankroll and binding (V1's four hashed files plus
+  `penny_smart_v2.py`); V1's binding is byte-identical, so V1 sees no
+  configuration drift. Scanner and stop monitor run each book in turn with
+  its own time budget (V1 first); held names are the union; `/health`-style
+  snapshot adds `smart_penny_v2`; `GET /experiments/penny-smart` compares
+  closes from 2026-10-22. Setting `PENNY_SMART_V2_ENABLED` (True).
+- **Partner cards: no change (call taken).** Five buyer cards since Oct 12
+  (all low-end premium reward/risk < 1, a range that is the premium
+  estimate's uncertainty, not two targets); the card already warns and its
+  target update says book profit and move the SL to entry. Too few cards to
+  change a real-money card; the owner reported the partner is happy with
+  them; the coach (O21-PX) teaches the management.
+- **Expiry book: no promotion yet.** Five expiries; A (+₹3,560) and C (+₹9,004)
+  are carried by Oct 13; the owner's 10-expiry review stands.
 ## October 21 (night, 2) — SX-M1 Momentum shadow scoring excludes missed-exit closes (actual behavior, Dev, commit `27ee87b`)
 
 - Production read-only (Oct 21): 72 of MOM_BASE's 92 virtual closes (88 of

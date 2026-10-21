@@ -503,6 +503,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_penny_smart_experiment",
+      "methods": [
+        "GET"
+      ],
+      "path": "/experiments/penny-smart",
+      "response_model": null
+    },
+    {
       "endpoint": "health_check",
       "methods": [
         "GET"

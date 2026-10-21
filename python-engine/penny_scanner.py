@@ -1071,13 +1071,20 @@ class PennyScanner:
         if self._smart_collect is not None:
             try:
                 from datetime import datetime as smart_datetime
-                from penny_smart_shadow import observe_smart_shadow, smart_db_path, IST
-                await asyncio.wait_for(observe_smart_shadow(smart_db_path(settings.DB_PATH), self._smart_collect,
-                    {t["symbol"]: quote_map.get(int(self.kite.instrument_cache[t["symbol"]]), {})
-                     for t in quoted if self.kite.instrument_cache.get(t["symbol"]) is not None},
-                    now=smart_datetime.now(IST), bankroll=settings.PENNY_SMART_SHADOW_BANKROLL,
-                    stock_cap=settings.PENNY_PER_STOCK_CAP,
-                    max_positions=min(3, settings.PENNY_MAX_POSITIONS_MIS, settings.PENNY_MAX_POSITIONS_TOTAL)), timeout=2.0)
+                from penny_smart_shadow import observe_smart_shadow, smart_db_path, smart_policies, IST
+                smart_quotes = {t["symbol"]: quote_map.get(int(self.kite.instrument_cache[t["symbol"]]), {})
+                                for t in quoted if self.kite.instrument_cache.get(t["symbol"]) is not None}
+                # [SX-P2] Each Smart book in turn, V1 first, each with its own
+                # time budget, so a second book can never cut the first short.
+                for smart_policy in smart_policies():
+                    try:
+                        await asyncio.wait_for(observe_smart_shadow(smart_db_path(settings.DB_PATH), self._smart_collect,
+                            smart_quotes, now=smart_datetime.now(IST), bankroll=settings.PENNY_SMART_SHADOW_BANKROLL,
+                            stock_cap=settings.PENNY_PER_STOCK_CAP,
+                            max_positions=min(3, settings.PENNY_MAX_POSITIONS_MIS, settings.PENNY_MAX_POSITIONS_TOTAL),
+                            policy=smart_policy), timeout=2.0)
+                    except Exception as exc:
+                        logger.error("penny_smart_shadow_failed policy=%s error=%s", smart_policy, str(exc))
             except Exception as exc:
                 logger.error("penny_smart_shadow_failed error=%s", str(exc))
 

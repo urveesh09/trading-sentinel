@@ -1,5 +1,35 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 21 (night, 3) — SX-F1 confirmed lock + exit evidence, SX-P2 PEN_SMART_V2 (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem: owner delegated the open calls (profit lock, Smart Penny, partner
+  cards) with "make it smart, not a blocking and filtering system".
+- Files: `fno_exit_rules.py` (`FNO_PROFIT_LOCK_CONFIRM_SEC`,
+  `lock_breach_since`), `fno_orchestrator.py` (breach state, recorder call,
+  ask), `fno_policy_replay.py`, `fno_exit_experiment.py` (state threaded),
+  `fno_exit_paths.py` (new), `fno_exit_cadence.py` (new),
+  `scripts/export_fno_replay_dataset.py` (copies exit paths),
+  `penny_smart_v2.py` (new), `penny_smart_shadow.py` (policy parameter,
+  comparison), `penny_scanner.py`, `main.py`, `routes_ops.py`,
+  `routes_penny_experiments.py`, `config.py`; tests
+  `tests/test_fno_exit_cadence.py` (9), `tests/test_penny_smart_v2.py` (5),
+  `tests/test_penny_smart_policy.py`, `tests/test_penny_scanner.py` (one
+  call per book); golden adds `/experiments/penny-smart`.
+- Acceptance (Dev): one look under the floor waits, a second ≥ 8 s later
+  sells, a recovery clears it, protective stops never wait; the recorder
+  writes one line per look off the exit path; the evaluator reproduces the
+  old lock on the flicker and the confirmed one holding to a later exit
+  from verified archive quotes; unresolved never filled; V2 stop 9.88 vs V1
+  9.94 on the fixture; V1 binding unchanged, both books enter once each.
+- Rollout: merge, rebuild engine. First F&O lock event: `fno_exit_paths`
+  lines for the held position; a lock exit at least one look after the
+  first breach. First Penny scan: two `penny_smart_paper_state` rows.
+- Rollback: `FNO_PROFIT_LOCK_CONFIRM_SEC=0`; `FNO_EXIT_PATH_RECORDING=false`;
+  `PENNY_SMART_V2_ENABLED=false`.
+- Remaining:
+  - [ ] Score `fno_exit_cadence` after ≥ 20 matched F&O trades recorded after
+    deploy (CURRENT vs LOCK_FIRST_LOOK vs lock arms).
+  - [ ] Score V2 vs V1 from 2026-10-22 (≥ 30 V2 closes, the four checks).
 ## October 21 (night, 2) — SX-M1 honest Momentum shadow scoring (done, Dev, commit `27ee87b`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: next-open gap exits (missed 15:15 bar) were scored as variant results.
