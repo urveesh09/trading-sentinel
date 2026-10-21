@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit `ace52ab`, Dev, pushed, not deployed)
 
 - [x] F&O profit lock needs a second look ≥ 8 s after the first under its floor (rollback `FNO_PROFIT_LOCK_CONFIRM_SEC=0`).
 - [x] Every F&O exit look recorded (`fno_exit_paths`), exported, and replayable by arm (`fno_exit_cadence.py`).
