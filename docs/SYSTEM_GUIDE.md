@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, Dev, commit `462d28f`)
 
 Owner (Oct 21): act on the Oct 21 Production audit
 (`Production_Trading-sentinel/docs/2026-10-21-production-deep-audit.md`):

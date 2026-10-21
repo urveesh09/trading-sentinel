@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit pending (recorded in the next docs commit), Dev, branch `codex/oct21-audit-fixes`, pushed, not deployed)
+## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit `462d28f`, Dev, branch `codex/oct21-audit-fixes`, pushed, not deployed)
 
 - [x] S21-R1 15:32 terminal pass for virtual Momentum trades (receipts
   CLOSED / CENSORED); S21-R2 RS identity binds index, daily bars, rules,
