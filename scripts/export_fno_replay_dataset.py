@@ -32,7 +32,7 @@ import hashlib
 import json
 import shutil
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 TABLES = ("fno_signals", "fno_positions", "fno_dr_positions")
@@ -84,6 +84,19 @@ def export(data: Path, out: Path) -> dict:
         target = out / "quotes" / segment.parent.name / segment.name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(segment, target)
+        files[str(target.relative_to(out)).replace("\\", "/")] = _sha(target)
+
+    # [SX-F1] The exit loop's own looks at each held option (fno_exit_paths.py),
+    # for replaying exit rules at the live clock. Finished sessions only (the
+    # files are named by IST date; the exit loop stops at the 15:30 close).
+    ist = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+    for path in sorted((data / "research" / "fno_exit_paths").glob("*.jsonl")):
+        if path.stem > ist.date().isoformat() or (path.stem == ist.date().isoformat()
+                                                   and ist.hour * 60 + ist.minute < 15 * 60 + 35):
+            continue
+        target = out / "fno_exit_paths" / path.name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, target)
         files[str(target.relative_to(out)).replace("\\", "/")] = _sha(target)
 
     futures, option_expiries = _scan_contracts(quote_root)

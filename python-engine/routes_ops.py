@@ -384,6 +384,14 @@ async def health_check():
             snap["smart_penny"] = smart_exposure_snapshot(settings.DB_PATH)
         except Exception as exc:
             snap["smart_penny"] = {"status": "UNREADABLE", "error_type": type(exc).__name__}
+        if getattr(settings, "PENNY_SMART_V2_ENABLED", False):
+            # [SX-P2] The V2 paper book's own exposure (same health rules as V1).
+            try:
+                from penny_smart_shadow import smart_exposure_snapshot
+                from penny_smart_v2 import SMART_V2_VERSION
+                snap["smart_penny_v2"] = smart_exposure_snapshot(settings.DB_PATH, policy=SMART_V2_VERSION)
+            except Exception as exc:
+                snap["smart_penny_v2"] = {"status": "UNREADABLE", "error_type": type(exc).__name__}
         try:
             from halt_switch import halt_state
             entry_halted, halt_attribution = halt_state(None)

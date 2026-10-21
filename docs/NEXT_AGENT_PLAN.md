@@ -1,5 +1,99 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 21 (night, 3) — SX-F1 confirmed lock + exit evidence, SX-P2 PEN_SMART_V2 (done, Dev, commit `ace52ab`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem: owner delegated the open calls (profit lock, Smart Penny, partner
+  cards) with "make it smart, not a blocking and filtering system".
+- Files: `fno_exit_rules.py` (`FNO_PROFIT_LOCK_CONFIRM_SEC`,
+  `lock_breach_since`), `fno_orchestrator.py` (breach state, recorder call,
+  ask), `fno_policy_replay.py`, `fno_exit_experiment.py` (state threaded),
+  `fno_exit_paths.py` (new), `fno_exit_cadence.py` (new),
+  `scripts/export_fno_replay_dataset.py` (copies exit paths),
+  `penny_smart_v2.py` (new), `penny_smart_shadow.py` (policy parameter,
+  comparison), `penny_scanner.py`, `main.py`, `routes_ops.py`,
+  `routes_penny_experiments.py`, `config.py`; tests
+  `tests/test_fno_exit_cadence.py` (9), `tests/test_penny_smart_v2.py` (5),
+  `tests/test_penny_smart_policy.py`, `tests/test_penny_scanner.py` (one
+  call per book); golden adds `/experiments/penny-smart`.
+- Acceptance (Dev): one look under the floor waits, a second ≥ 8 s later
+  sells, a recovery clears it, protective stops never wait; the recorder
+  writes one line per look off the exit path; the evaluator reproduces the
+  old lock on the flicker and the confirmed one holding to a later exit
+  from verified archive quotes; unresolved never filled; V2 stop 9.88 vs V1
+  9.94 on the fixture; V1 binding unchanged, both books enter once each.
+- Rollout: merge, rebuild engine. First F&O lock event: `fno_exit_paths`
+  lines for the held position; a lock exit at least one look after the
+  first breach. First Penny scan: two `penny_smart_paper_state` rows.
+- Rollback: `FNO_PROFIT_LOCK_CONFIRM_SEC=0`; `FNO_EXIT_PATH_RECORDING=false`;
+  `PENNY_SMART_V2_ENABLED=false`.
+- Remaining:
+  - [ ] Score `fno_exit_cadence` after ≥ 20 matched F&O trades recorded after
+    deploy (CURRENT vs LOCK_FIRST_LOOK vs lock arms).
+  - [ ] Score V2 vs V1 from 2026-10-22 (≥ 30 V2 closes, the four checks).
+## October 21 (night, 2) — SX-M1 honest Momentum shadow scoring (done, Dev, commit `27ee87b`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem: next-open gap exits (missed 15:15 bar) were scored as variant results.
+- Files: `momentum_shadow.py`, `promotion_readiness.py`, test in `tests/test_momentum_shadow.py`.
+- Acceptance: a gap-exit close is counted apart, excluded from every metric and the promotion sample gate.
+- Verification: related suites 58 pass (momentum shadow, Oct 21 fixes, promotion readiness); full suite not rerun (usage limit).
+- Remaining:
+  - [ ] SX-F1 (designed, not built): record the 10-second exit loop's quotes of held F&O options (fire-and-forget JSONL under `/data/research/fno_exit_paths`) and an offline evaluator replaying CURRENT (parity), FNO_LOCK_OFF, FNO_LOCK_LATE_ARM, FNO_LOCK_LOOSE_KEEP and a declared FNO_LOCK_CONFIRM_2 at live cadence (archive after the live exit). Why: Oct 15 live profit-lock exit +₹663 vs replay trail exit +₹3,515 on the same trade; post-Oct-5 archive replay of the lock arms differs only on one trade (3 NIFTY trades, inconclusive).
+## October 21 (night) — O21-PX the partner's deeper review (done, Dev, commit `68eec28`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem: the owner merged PR #112 and asked that every evening, after the
+  brief, the partner gets a review link (login, then the review), and that
+  the feedback be enriched from everything the API offers. Gaps found: no
+  link on a held-login day without trades; the coach saw only fills (no
+  order changes, refusals, positions or cash) and no prices around a trade;
+  a re-buy of the same option merged into one trade (a false "added to a
+  losing option" and a hidden revenge re-entry); after the split, a re-entry
+  under the card's SL would have been told to "sell at the SL" for a profit.
+- Files: `partner_broker_sync.py` (allowlist, details, prompt,
+  `ensure_review_message`), `partner_trade_paths.py` (new),
+  `partner_insights.py` (new), `partner_coach.py` (round trips, re-entries,
+  ENTRY_UNDER_STOP, context), `partner_lessons.py` (rules kept, option lines,
+  day and window statistics, focus, fold cap), `partner_orchestrator.py`
+  (wrap step); gateway `routes/partner-kite.js` (45 s); client
+  `PartnerReview.jsx`, `utils/partnerReview.js`; tests
+  `tests/test_partner_insights.py` (new), `tests/test_partner_broker_sync.py`,
+  `tests/test_partner_lessons.py`, client `tests/partnerReview.test.mjs`.
+- Contracts:
+  - Kite allowlist adds GET `/portfolio/positions`, `/user/margins/equity`,
+    `/orders/<digits>`; nothing else.
+  - New tables `partner_orders`, `partner_order_changes`,
+    `partner_broker_positions` (`partner_positions` is the hedge module's),
+    `partner_account_days`, `partner_trade_paths`.
+  - `sync_book` result adds `details` and `paths`. `analyse(...,
+    context=None)`; trades split by round trip (`<key>#2`); card items may
+    carry `reentry`/`card_time`; items carry `insight`; day rows `account`,
+    `orders`, `open_positions`, `carried_in`, `stops_known`; summary
+    `card_reentries`.
+  - Review adds `score`, `stats`, `account`, `orders`, `open_positions`;
+    stories add `reentry`, `checks`, `option_lines`, `chart`, `numbers`;
+    progress adds `focus`, `stats`, per-day `rules_kept_pct`. The note's
+    headline adds "rules kept k/n".
+  - No new route, job or setting; no owner-facing behaviour or card text
+    changed.
+- Acceptance (met in Dev): every new lesson and positive has a firing and a
+  non-firing test with recomputed rupees; spike only on 1-minute candles and
+  off-card; give-back only off-card; a raise inside the card's limit is not
+  chasing; the allowlist refuses POST/PUT/DELETE on order paths and GET of
+  non-numeric ones; details survive a failed history; positions and cash are
+  not read before the open; paths are read once after the close, fall back
+  to prints and stop at the budget; one review link a day (prompt, or the
+  coach note); a synthetic day was read end to end and its wording fixed
+  (re-entry under the SL, card-SL risk, fold cap, same-minute order).
+- Rollout: merge, rebuild engine and gateway. First evening: the 15:40 link
+  (prompt or note); after the partner's login, `partner_paths_stored` and
+  `partner_zerodha_synced` log lines; the review's charts and rules kept.
+- Rollback: revert the commit (tables are inert); the partner flow itself is
+  off with a blank `PARTNER_KITE_API_KEY`.
+- Remaining:
+  - [ ] Check the first real days on Production: the lessons' thresholds
+    (20% spike, 20% give-back, 10% of cash) are declared, not fitted; change
+    them only with the owner.
+  - [ ] A re-entry on a card is its own item; a split position kept across
+    days (carry-in) is shown as a note, not scored.
 ## October 21 (late) — Oct 21 audit fixes S21-R1/R2/R3/E1/L1, R21-M1/M2, T21-X; O21-ON overnight shadows (done, Dev, commit `462d28f`, branch `codex/oct21-audit-fixes` on top of `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - Problem: the Oct 21 Production audit (read-only; Production HEAD

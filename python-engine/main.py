@@ -1283,9 +1283,15 @@ async def run_penny_paper_stop_monitor() -> dict:
     async def observe_smart_exits():
         if settings.PENNY_SMART_SHADOW_ENABLED and scanner is not None:
             try:
-                from penny_smart_shadow import monitor_smart_shadow, smart_db_path
-                await asyncio.wait_for(monitor_smart_shadow(
-                    smart_db_path(settings.DB_PATH), scanner.kite, now=datetime.now(IST)), timeout=5.0)
+                from penny_smart_shadow import monitor_smart_shadow, smart_db_path, smart_policies
+                # [SX-P2] Each Smart book's held names, each in its own budget.
+                for smart_policy in smart_policies():
+                    try:
+                        await asyncio.wait_for(monitor_smart_shadow(
+                            smart_db_path(settings.DB_PATH), scanner.kite, now=datetime.now(IST),
+                            policy=smart_policy), timeout=5.0)
+                    except Exception as exc:
+                        logger.error("penny_smart_shadow_monitor_failed policy=%s error=%s", smart_policy, str(exc))
             except Exception as exc:
                 logger.error("penny_smart_shadow_monitor_failed error=%s", str(exc))
     if executor is None or not bool(getattr(executor, "paper_mode", False)):

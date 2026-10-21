@@ -441,3 +441,28 @@ async def test_slippage_cannot_create_entry_at_or_above_target(tmp_path):
             "SELECT COUNT(*) FROM momentum_shadow_trades"
         )).fetchone())[0]
     assert count == 0
+
+
+@pytest.mark.asyncio
+async def test_a_close_at_the_next_open_is_shown_apart_and_never_scored(tmp_path):
+    """[SX-M1] Before the terminal pass, 72 of MOM_BASE's 92 Production closes
+    came at the next open because the 15:15 exit bar was never read: they
+    measure the overnight gap, not the variant."""
+    db_path = str(tmp_path / "missed.db")
+    await persist_momentum_shadow_results(db_path, [_accepted_trade("AAA", "2026-08-10T14:45:00", [])])
+    next_day = _record("MOM_BASE", "2026-08-11T09:15:00", False, "candidate_reject", ticker="AAA")
+    next_day["trading_date"] = "2026-08-11"
+    next_day["bars"] = [{"bar_ts": "2026-08-11T09:15:00", "open": 92, "high": 120, "low": 90, "close": 115}]
+    await persist_momentum_shadow_results(db_path, [next_day])
+    base = next(row for row in (await momentum_shadow_comparison(db_path))["variants"]
+                if row["variant"] == "MOM_BASE")
+    assert (base["closed_trades"], base["scored_closes"], base["missed_time_exit_closes"]) == (1, 0, 1)
+    assert base["missed_time_exit_net_pnl"] < 0
+    assert base["net_pnl"] is None and base["wins"] is None
+    assert any("excluded from every outcome metric" in warning for warning in base["warnings"])
+    from promotion_readiness import assess_promotion_readiness
+    report = assess_promotion_readiness("MOMENTUM", "MOM_BASE", shadow_comparison={"variants": [base]},
+                                        backtest_runs=[], reconciliation=None, legacy_promotion=None,
+                                        source_timestamps={})
+    gate = next(b for b in report["blockers"] if b["gate"] == "closed_trades")
+    assert gate["observed"] == 0

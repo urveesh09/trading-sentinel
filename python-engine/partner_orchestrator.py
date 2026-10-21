@@ -2110,6 +2110,14 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
         logger.info("partner_coach_eod frozen=%s note=%s", coach.get("frozen"), coach.get("note"))
     except Exception as exc:
         logger.warning("partner_coach_eod_failed err=%s", str(exc))
+    # [O21-PX] Every trading day ends with one review link for the partner:
+    # the coach note's button, or else the login prompt.
+    try:
+        from partner_broker_sync import ensure_review_message
+        review = await ensure_review_message(now)
+        logger.info("partner_review_message status=%s", review.get("status"))
+    except Exception as exc:
+        logger.warning("partner_review_message_failed err=%s", type(exc).__name__)
 
     # Retention: OI snapshots + old dedup rows. Disk at 86% -- this is
     # part of the job, not housekeeping that can silently stop running.

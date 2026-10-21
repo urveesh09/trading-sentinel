@@ -1,5 +1,40 @@
 # Handover receipt and operator checklist
 
+## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit `ace52ab`, Dev, pushed, not deployed)
+
+- [x] F&O profit lock needs a second look ≥ 8 s after the first under its floor (rollback `FNO_PROFIT_LOCK_CONFIRM_SEC=0`).
+- [x] Every F&O exit look recorded (`fno_exit_paths`), exported, and replayable by arm (`fno_exit_cadence.py`).
+- [x] PEN_SMART_V2 (wider noise-aware stop, three-close thesis failure) runs beside unchanged V1; `GET /experiments/penny-smart`.
+- [x] Partner cards and expiry promotions: no change, with the reasons in SYSTEM_GUIDE.
+- [x] Tests: new 14; full engine suite 5,433 passed, 4 skipped, 0 failed (9 min).
+- [ ] Deployed: no. After deploy: exit-path lines on the first F&O position; two Smart state rows after the first Penny scan.
+## October 21 (night, 2) — SX-M1 Momentum shadow scoring (commit `27ee87b`, Dev, pushed, not deployed)
+
+- [x] Gap-exit closes shown apart and never scored; promotion gate counts scored closes. Related tests 58 pass; full suite not rerun.
+- [ ] SX-F1 F&O live-cadence exit evidence: designed only (see NEXT_AGENT_PLAN).
+## October 21 (night) — O21-PX partner's deeper review (commit `68eec28`, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- [x] One review link every trading day after the brief
+  (`ensure_review_message`: the coach note's button, else the prompt).
+- [x] Partner's Zerodha read adds order history (numeric id GET), positions
+  and equity margins, best effort; new tables `partner_orders`,
+  `partner_order_changes`, `partner_broker_positions`,
+  `partner_account_days`.
+- [x] Traded options' 1-minute candles from the owner's market data (prints
+  fallback), `partner_trade_paths`; gateway login wait 45 s.
+- [x] Round trips split (re-entries are their own trades); ENTRY_UNDER_STOP;
+  new lessons CHASED_SPIKE, GAVE_BACK_PROFIT, STOP_LOWERED,
+  PRICE_RAISED_TO_FILL, BIG_RISK, HELD_OVERNIGHT, INSUFFICIENT_FUNDS;
+  positives CUT_LOSS_SAVED, STOP_TRAILED.
+- [x] Review: rules kept, per-trade chart and "what the option did", day
+  numbers, orders, window statistics with plain lines, tomorrow's focus.
+- [x] Tests: `tests/test_partner_insights.py` 31 pass; partner suites 120
+  pass; full engine suite 5,417 passed, 4 skipped, 0 failed (9 min 24 s); client `node --test` 59 pass;
+  `npx vite build` OK; gateway partner jest 10 pass.
+- [ ] Deployed: no. Merge the branch, rebuild engine and gateway (no new
+  setting; the partner's keys as already listed).
+- [ ] After deploy: the 15:40 link; after the partner's login the
+  `partner_paths_stored` line and charts on the review.
 ## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit `462d28f`, Dev, branch `codex/oct21-audit-fixes`, pushed, not deployed)
 
 - [x] S21-R1 15:32 terminal pass for virtual Momentum trades (receipts

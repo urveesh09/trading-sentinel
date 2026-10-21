@@ -3,6 +3,10 @@
 Separate tables and virtual allocation; cannot reserve actual capital or order.
 The existing stop-monitor cadence observes at most three held paper symbols in
 one quote batch. No extra historical fetch, subscription or scheduler job.
+
+[SX-P2 2026-10-21] Every function takes ``policy``: PEN_SMART_V1 (default,
+unchanged binding) or PEN_SMART_V2 (penny_smart_v2.py, its own state row,
+events, bankroll and binding). ``smart_policies()`` lists the enabled ones.
 """
 
 from dataclasses import asdict
@@ -20,6 +24,7 @@ from adaptive_penny_policy import CompletedBar, TraderParams
 from penny_shadow import _execution_snapshot, _costs_from_snapshot
 from penny_smart_book import new_book, step_book
 from penny_smart_policy import SMART_PARAMS, SMART_VERSION, visible_bars
+from penny_smart_v2 import SMART_V2_PARAMS, SMART_V2_VERSION
 
 IST = ZoneInfo("Asia/Kolkata")
 
@@ -27,6 +32,31 @@ IST = ZoneInfo("Asia/Kolkata")
 def smart_db_path(ledger_path):
     """A separate store prevents shadow write locks on the operational ledger."""
     return str(ledger_path) + ".penny-smart-paper.db"
+
+
+def smart_policies() -> dict:
+    """{policy: params} for the enabled Smart books, V1 first."""
+    from config import settings
+    out = {SMART_VERSION: SMART_PARAMS}
+    if getattr(settings, "PENNY_SMART_V2_ENABLED", False):
+        out[SMART_V2_VERSION] = SMART_V2_PARAMS
+    return out
+
+
+def _params_for(policy):
+    if policy == SMART_VERSION:
+        return SMART_PARAMS
+    if policy == SMART_V2_VERSION:
+        return SMART_V2_PARAMS
+    raise ValueError(f"unknown smart policy {policy!r}")
+
+
+def _digest_for(policy):
+    """V1's binding digest is exactly as before; V2 adds its declaration file."""
+    if policy == SMART_VERSION:
+        return _policy_digest()
+    root = Path(__file__).resolve().parent
+    return {**_policy_digest(), "penny_smart_v2.py": hashlib.sha256((root / "penny_smart_v2.py").read_bytes()).hexdigest()}
 
 
 @lru_cache(maxsize=1)
@@ -187,7 +217,7 @@ def _explain_halts(events, state, quotes, *, observations, allow_entries, drift)
 
 
 def smart_held_tickers(db_path):
-    """Symbols the Smart book holds (read-only; empty when there is no book).
+    """Symbols any enabled Smart book holds (read-only; empty without a book).
 
     The entry scan quotes them with its batch so a held name that left the
     scan's universe still has an executable mark (the frozen book halts all
@@ -197,14 +227,18 @@ def smart_held_tickers(db_path):
 
     if not Path(db_path).exists():
         return []
+    held = set()
     try:
         with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=2.0) as conn:
-            row = conn.execute(
-                "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (SMART_VERSION,)
-            ).fetchone()
+            for policy in smart_policies():
+                row = conn.execute(
+                    "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (policy,)
+                ).fetchone()
+                if row:
+                    held.update(json.loads(row[0]).get("positions", {}))
     except sqlite3.Error:
-        return []
-    return sorted(json.loads(row[0]).get("positions", {})) if row else []
+        return sorted(held)
+    return sorted(held)
 
 
 async def observe_smart_shadow(
@@ -216,9 +250,11 @@ async def observe_smart_shadow(
     bankroll=2000.0,
     allow_entries=True,
     stock_cap=500.0,
-    max_positions=3
+    max_positions=3,
+    policy=SMART_VERSION,
 ):
     """One atomic paper transition, deduplicated across concurrent/restarted jobs."""
+    policy_params = _params_for(policy)
     now = now.replace(tzinfo=IST) if now.tzinfo is None else now.astimezone(IST)
     converted, invalid = await asyncio.to_thread(_convert_observations, observations, now)
     quotes = {ticker: quote_evidence(raw, now) for ticker, raw in raw_quotes.items()}
@@ -227,7 +263,7 @@ async def observe_smart_shadow(
         await db.execute("BEGIN IMMEDIATE")
         row = await (
             await db.execute(
-                "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (SMART_VERSION,)
+                "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (policy,)
             )
         ).fetchone()
         state = (
@@ -239,9 +275,9 @@ async def observe_smart_shadow(
             "bankroll": bankroll,
             "stock_cap": stock_cap,
             "max_positions": max_positions,
-            "params": asdict(SMART_PARAMS),
+            "params": asdict(policy_params),
             "execution": _execution_snapshot("SMART_PAPER"),
-            "policy_sha256": _policy_digest(),
+            "policy_sha256": _digest_for(policy),
         }
         frozen = state.get("binding", binding)
         state["binding"] = frozen
@@ -294,18 +330,18 @@ async def observe_smart_shadow(
             )
         for event in events:
             payload = json.dumps(event, sort_keys=True, allow_nan=False)
-            key = hashlib.sha256((SMART_VERSION + payload).encode()).hexdigest()
+            key = hashlib.sha256((policy + payload).encode()).hexdigest()
             await db.execute(
                 "INSERT OR IGNORE INTO penny_smart_paper_events VALUES (?,?,?,?,?,?)",
-                (key, SMART_VERSION, event["at"], event["ticker"], event["kind"], payload),
+                (key, policy, event["at"], event["ticker"], event["kind"], payload),
             )
         await db.execute(
             "INSERT OR REPLACE INTO penny_smart_paper_state VALUES (?,?)",
-            (SMART_VERSION, json.dumps(updated, sort_keys=True, allow_nan=False)),
+            (policy, json.dumps(updated, sort_keys=True, allow_nan=False)),
         )
         await db.commit()
     return {
-        "policy": SMART_VERSION,
+        "policy": policy,
         "events": len(events),
         "open": len(updated["positions"]),
         "realized": updated["realized"],
@@ -315,13 +351,13 @@ async def observe_smart_shadow(
     }
 
 
-async def monitor_smart_shadow(db_path, kite, *, now):
+async def monitor_smart_shadow(db_path, kite, *, now, policy=SMART_VERSION):
     """Bounded quote-only exit observation; independent of all entry brakes."""
     async with aiosqlite.connect(db_path, timeout=10.0) as db:
         await _schema(db)
         row = await (
             await db.execute(
-                "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (SMART_VERSION,)
+                "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (policy,)
             )
         ).fetchone()
         await db.commit()
@@ -360,10 +396,47 @@ async def monitor_smart_shadow(db_path, kite, *, now):
         bankroll=frozen["bankroll"],
         stock_cap=frozen["stock_cap"],
         max_positions=frozen["max_positions"],
+        policy=policy,
     )
 
 
-def smart_exposure_snapshot(ledger_path, *, now=None):
+def smart_policy_comparison(ledger_path, *, since="2026-10-22"):
+    """[SX-P2] Each Smart book's closes from ``since`` (V2's first scored
+    session): count, wins, losses, net, average, profit factor, exit reasons."""
+    import sqlite3
+    path = smart_db_path(ledger_path)
+    out = {"since": since, "policies": []}
+    if not Path(path).exists():
+        return out
+    with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=2.0) as conn:
+        for policy in smart_policies():
+            try:
+                rows = conn.execute(
+                    "SELECT payload_json FROM penny_smart_paper_events WHERE policy=? AND kind='EXIT_FILLED' "
+                    "AND at >= ? ORDER BY at", (policy, since)).fetchall()
+            except sqlite3.OperationalError:
+                rows = []
+            nets, reasons = [], {}
+            for (raw,) in rows:
+                try:
+                    payload = json.loads(raw)
+                    nets.append(float(payload["net_pnl"]))
+                except (ValueError, KeyError, TypeError):
+                    continue
+                reason = payload.get("reason") or "?"
+                reasons[reason] = reasons.get(reason, 0) + 1
+            gains, losses = sum(n for n in nets if n > 0), -sum(n for n in nets if n < 0)
+            out["policies"].append({
+                "policy": policy, "closes": len(nets), "wins": sum(n > 0 for n in nets),
+                "losses": sum(n < 0 for n in nets), "net": round(sum(nets), 4),
+                "average": round(sum(nets) / len(nets), 4) if nets else None,
+                "profit_factor": round(gains / losses, 4) if losses else None,
+                "exit_reasons": reasons,
+            })
+    return out
+
+
+def smart_exposure_snapshot(ledger_path, *, now=None, policy=SMART_VERSION):
     """Read-only view of the independent Smart book for /health.
 
     The classic Penny open count is a different book; on Oct 9 it read 0
@@ -379,7 +452,7 @@ def smart_exposure_snapshot(ledger_path, *, now=None):
     with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=2.0) as conn:
         try:
             row = conn.execute(
-                "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (SMART_VERSION,)
+                "SELECT state_json FROM penny_smart_paper_state WHERE policy=?", (policy,)
             ).fetchone()
         except sqlite3.OperationalError:
             row = None
@@ -387,7 +460,7 @@ def smart_exposure_snapshot(ledger_path, *, now=None):
             day_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
             exits = [r[0] for r in conn.execute(
                 "SELECT payload_json FROM penny_smart_paper_events WHERE policy=? AND kind='EXIT_FILLED' "
-                "AND at >= ?", (SMART_VERSION, day_start))]
+                "AND at >= ?", (policy, day_start))]
         except sqlite3.OperationalError:
             exits = []
     if not row:

@@ -481,7 +481,9 @@ async def test_existing_stop_job_observes_shadow_even_without_incumbent_paper_bo
     monkeypatch.setattr(penny_smart_shadow, "monitor_smart_shadow", monitor)
     result = await main.run_penny_paper_stop_monitor()
     assert result["checked"] == 0
-    monitor.assert_awaited_once()
+    # [SX-P2] once per Smart book (V1 first).
+    assert monitor.await_count == len(penny_smart_shadow.smart_policies())
+    assert monitor.await_args_list[0].kwargs["policy"] == "PEN_SMART_V1"
 
 
 @pytest.mark.asyncio

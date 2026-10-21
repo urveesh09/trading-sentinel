@@ -311,11 +311,14 @@ def simulate(entry: FnoEntry, path: Sequence[Observation], policy: str) -> dict[
     banked = False
     replaced: list[dict[str, str]] = []
     hard_flat = _hard_flat_at(entry)
+    breach_since = None
     for obs in path:
         decision = evaluate_single_leg_exit(
             position, now_ist=obs.observed_at, fut_price=obs.fut_price,
             exit_px_basis=obs.exit_basis, hard_flat=obs.observed_at >= hard_flat, params=params,
+            lock_breach_since=breach_since,
         )
+        breach_since = decision.lock_breach_since
         reason = decision.exit_reason
         if (policy == PARTIAL_POLICY and decision.trail_newly_armed and not banked
                 and not reason and obs.exit_basis > 0):

@@ -33,6 +33,12 @@ NO_STOP_ORDER, STOP_WIDER_THAN_CARD, STOP_CANCELLED; placing the stop, a
 pause after a loss and an exit ahead of the stop are positives.
 partner_lessons.py turns a day of this into the partner's review.
 
+[O21-PX] partner_insights.py adds what the option did around each trade (the
+owner's 1-minute candles), what the partner's Zerodha book shows (order
+changes, rejections, positions, the day's cash) and the lessons that follow
+from them: CHASED_SPIKE, GAVE_BACK_PROFIT, STOP_LOWERED, PRICE_RAISED_TO_FILL,
+BIG_RISK, HELD_OVERNIGHT and INSUFFICIENT_FUNDS.
+
 Honesty rules (paper-fill-honesty): reported prices are the partner's;
 "≈" prices came from a quote at the tap; a plan exit is a 5-minute print,
 not a fill; nothing is called a maximum or breakeven. 5-minute prints can
@@ -102,6 +108,15 @@ ADVICE = {
                      "you are busy or the price falls fast.",
     "STOP_WIDER_THAN_CARD": "Put the SL order at the card's price.",
     "STOP_CANCELLED": "Never cancel or lower a stop once it is placed. Move it only up, to lock in profit.",
+    # [O21-PX] partner_insights.py
+    "CHASED_SPIKE": "Do not buy an option that has just jumped. Wait for a card, or let the price settle first.",
+    "GAVE_BACK_PROFIT": "Once a trade is up 20%, move the SL order to your buy price.",
+    "STOP_LOWERED": "Never cancel or lower a stop once it is placed. Move it only up, to lock in profit.",
+    "PRICE_RAISED_TO_FILL": "Set the buy price once. If it does not fill, let the trade go.",
+    "BIG_RISK": "Keep what one trade can lose (to its stop) under a tenth of the cash in your account.",
+    "HELD_OVERNIGHT": "Be out of every intraday option buy before the close.",
+    "INSUFFICIENT_FUNDS": "Decide the lots before the trade, from the cash you have; never try the whole balance.",
+    "ENTRY_UNDER_STOP": "If the option is already at or under the card's SL, the card is over; do not buy it.",
 }
 TITLES = {
     "ENTRY_ABOVE_LIMIT": "Chased the entry (FOMO)",
@@ -119,6 +134,14 @@ TITLES = {
     "NO_STOP_ORDER": "No stop-loss order",
     "STOP_WIDER_THAN_CARD": "Stop wider than the card",
     "STOP_CANCELLED": "Cancelled the stop",
+    "CHASED_SPIKE": "Bought after a spike (FOMO)",
+    "GAVE_BACK_PROFIT": "A winning trade turned into a loss",
+    "STOP_LOWERED": "Moved the stop down",
+    "PRICE_RAISED_TO_FILL": "Raised the buy price to get filled",
+    "BIG_RISK": "Too much of the account on one trade",
+    "HELD_OVERNIGHT": "Held an option past the close",
+    "INSUFFICIENT_FUNDS": "Order refused: not enough money",
+    "ENTRY_UNDER_STOP": "Bought under the card's SL",
 }
 POSITIVE_TITLES = {
     "BOUGHT_IN_LIMIT": "Bought inside the limit and on time",
@@ -127,6 +150,8 @@ POSITIVE_TITLES = {
     "STOP_PLACED": "Placed the stop-loss order",
     "EXITED_BEFORE_STOP": "Got out before the stop",
     "PAUSED_AFTER_LOSS": "Paused after a loss",
+    "CUT_LOSS_SAVED": "Cut the loss in time",
+    "STOP_TRAILED": "Moved the stop up",
 }
 
 
@@ -256,8 +281,44 @@ def card_entry(card: dict, reaction: timedelta) -> dict:
 # the partner's trades
 # ---------------------------------------------------------------------------
 
+def round_trips(rows: list[dict]) -> list[list[dict]]:
+    """[O21-PX] One option's fills split where the position is flat again.
+
+    A buy after a full exit is a new trade (a re-entry), not an addition to
+    the old one: before, a stop-out and a re-buy of the same option read as
+    "added to a losing option" and hid the re-entry. Scaling in or out keeps
+    one trade. A sale with nothing bought before it (a position from an
+    earlier day) is kept apart, last; skips stay with the first trade."""
+    if not any(r["action"] == "BUY" for r in rows):
+        return [rows]
+    trips, current, held, strays, skips = [], [], 0, [], []
+    for row in rows:
+        if row["action"] == "SKIP":
+            skips.append(row)
+            continue
+        if row["action"] == "SELL" and held <= 0:
+            strays.append(row)
+            continue
+        current.append(row)
+        if row["action"] == "BUY":
+            held += row.get("lots") or 1
+        elif row["action"] == "SELL":
+            held = 0 if row.get("lots") is None else held - row["lots"]
+            if held <= 0:
+                trips.append(current)
+                current, held = [], 0
+    if current:
+        trips.append(current)
+    trips[0] = skips + trips[0]
+    if strays:
+        trips.append(strays)
+    return trips
+
+
 def build_trades(reports: list[dict]) -> dict:
-    """Group ACTIVE reports into one trade per card (or off-card contract/day)."""
+    """Group ACTIVE reports into trades: one per card (or off-card contract
+    and day), then [O21-PX] one per round trip. The first round trip keeps
+    the group's key; a later one is "<key>#2", "#3"..."""
     groups: dict = defaultdict(list)
     for report in reports:
         if report.get("status") != "ACTIVE":
@@ -265,9 +326,13 @@ def build_trades(reports: list[dict]) -> dict:
         key = report.get("advisory_id") or (
             f"off:{report['session_date']}:{report.get('underlying')}:{report.get('strike')}:{report.get('opt_type')}")
         groups[key].append(report)
-    trades = {}
+    trips: dict = {}
     for key, rows in groups.items():
         rows.sort(key=lambda r: (str(r["trade_at"]), r["report_id"]))
+        for n, trip in enumerate(round_trips(rows)):
+            trips[key if n == 0 else f"{key}#{n + 1}"] = trip
+    trades = {}
+    for key, rows in trips.items():
         lot_size = next((r.get("lot_size") for r in rows if r.get("lot_size")), None)
         buys = [r for r in rows if r["action"] == "BUY"]
         sells = [r for r in rows if r["action"] == "SELL"]
@@ -296,6 +361,7 @@ def build_trades(reports: list[dict]) -> dict:
             "key": key, "advisory_id": rows[0].get("advisory_id"),
             "tradingsymbol": next((r.get("tradingsymbol") for r in rows if r.get("tradingsymbol")), None),
             "session_date": rows[0]["session_date"], "underlying": rows[0].get("underlying"),
+            "expiry": next((r.get("expiry") for r in rows if r.get("expiry")), None),
             "option": _option_label(rows[0]), "exchange": exchange, "lot_size": lot_size,
             "skipped": any(r["action"] == "SKIP" for r in rows) and not buys,
             "buys": [_fill(r) for r in buys], "sells": [_fill(r) for r in sells],
@@ -317,9 +383,11 @@ def _option_label(report: dict) -> str:
 
 
 def _fill(report: dict) -> dict:
+    key = str(report.get("dedup_key") or "")
     return {"report_id": report["report_id"], "at": report["trade_at"], "lots": report.get("lots"),
             "price": report.get("price"), "price_basis": report.get("price_basis"),
-            "source": report.get("source"), "time_basis": report.get("trade_at_basis")}
+            "source": report.get("source"), "time_basis": report.get("trade_at_basis"),
+            "order_id": key[5:] if key.startswith("kite:") else None}
 
 
 # ---------------------------------------------------------------------------
@@ -597,6 +665,17 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
             why=f"The card's price, stop and target were set for an entry by {_hhmm(fill_by)}." + moved
                 + _worked(actual),
             better=f"Let it go: {_instead(0.0, actual)}.", better_pnl=0.0, actual_pnl=actual))
+    if first_px is not None and sl and first_px <= sl:
+        # [O21-PX] The card's idea had failed before this buy: its stop is
+        # above the entry, so none of its exits describe this trade.
+        skip_reasons.append("price at or under the card's SL")
+        same_entry = None
+        flags.append(_flag(
+            "ENTRY_UNDER_STOP", f"You bought at {_px(first_px)} at {_hhmm(first_buy)}; the card's SL was {_px(sl)}, so "
+                                f"the card's idea had already failed.", _gap(actual, 0.0),
+            why="Under the SL the card's plan no longer applies: there is no stop under you and no target that "
+                "fits this price." + _worked(actual),
+            better=f"No trade: {_instead(0.0, actual)}.", better_pnl=0.0, actual_pnl=actual))
     if first_buy and closing and first_buy > closing["delivered_at"]:
         failed = closing["event_type"] == "INVALIDATION"
         skip_reasons.append("after the card closed")
@@ -643,7 +722,7 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
                         else "Keep only the first buy and let the stop decide."),
                 better_pnl=only_first, actual_pnl=actual))
     if exit_px is not None and qty:
-        if sl and exit_px < sl * (1 - STOP_SLIPPAGE_PCT):
+        if sl and entry is not None and entry > sl and exit_px < sl * (1 - STOP_SLIPPAGE_PCT):
             under = _first_under(card["series"], first_buy, sl) if first_buy else None
             at_sl = _pnl(entry, sl, qty, exchange, n_orders)
             flags.append(_flag(
@@ -815,7 +894,7 @@ def _overtrading(buys: int, cards: int, traded: list[dict]) -> dict:
     for t in priced:
         if t["avg_entry"] is not None and t["avg_exit"] is not None and t["qty"]:
             charges += (t["avg_exit"] - t["avg_entry"]) * t["qty"] - t["pnl"]
-    card_only = (round(sum(i["_trade"]["pnl"] for i in traded if i.get("advisory_id")), 2)
+    card_only = (round(sum(i["_trade"]["pnl"] for i in traded if i.get("advisory_id") and not i.get("reentry")), 2)
                  if actual is not None else None)
     return _flag(
         "OVERTRADING", f"{buys} buys against {cards} card{'s' if cards != 1 else ''}.", _gap(actual, card_only),
@@ -827,12 +906,16 @@ def _overtrading(buys: int, cards: int, traded: list[dict]) -> dict:
 
 def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: datetime,
             complete_days: frozenset = frozenset(), stops: Optional[list] = None,
-            stops_known_days: frozenset = frozenset()) -> dict:
+            stops_known_days: frozenset = frozenset(), context: Optional[dict] = None) -> dict:
     """The coach view for the cards and reports in a window (pure).
 
     ``complete_days``: days whose whole Zerodha book was read after the close.
     ``stops`` / ``stops_known_days``: the partner's stop orders, and the days
-    on which they are fully known (stop flags only on those days)."""
+    on which they are fully known (stop flags only on those days).
+    ``context``: [O21-PX] price paths and the Zerodha book's details
+    (partner_insights.Context); without it the analysis is as before."""
+    import partner_insights as insights
+    ctx = insights.Context.of(context, complete_days, now)
     reaction = timedelta(seconds=reaction_sec)
     trades = build_trades(reports)
 
@@ -849,8 +932,23 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         trade = trades.get(card["advisory_id"])
         item = analyse_card(card, trade, reaction, traded_known=card["day"] in complete_days,
                             stops=stops_for(trade))
+        insights.apply(item, trade, card, stops_for(trade), ctx)
         item["_trade"] = trade
         items.append(item)
+    # [O21-PX] The card's option bought again after a closed round trip: its
+    # own trade, checked against the same card (late, after the card closed,
+    # above the limit) and in the day's sequence (a re-entry after a loss).
+    reentries = []
+    for key, trade in trades.items():
+        card = by_card.get(trade["advisory_id"]) if trade["advisory_id"] else None
+        if card is None or key == trade["advisory_id"] or not trade["buys"]:
+            continue
+        item = analyse_card(card, trade, reaction, traded_known=card["day"] in complete_days,
+                            stops=stops_for(trade))
+        item.update(reentry=True, card_time=item["time"], time=_hhmm(trade["first_buy_at"]))
+        insights.apply(item, trade, card, stops_for(trade), ctx)
+        item["_trade"] = trade
+        reentries.append(item)
     off_card = []
     for key, trade in trades.items():
         if trade["advisory_id"] in by_card:
@@ -858,12 +956,13 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         if trade["advisory_id"]:
             continue   # a card outside the window
         item = analyse_off_card(trade, stops_for(trade))
+        insights.apply(item, trade, None, stops_for(trade), ctx)
         item["_trade"] = trade
         item["advisory_id"] = None
         off_card.append(item)
     # Sequence flags need every traded item of a day in time order.
     days: dict = defaultdict(list)
-    for item in items + off_card:
+    for item in items + reentries + off_card:
         trade = item.get("_trade")
         if not trade or not trade["buys"]:
             continue
@@ -878,21 +977,26 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
     all_days = sorted({c["day"] for c in cards} | {i["day"] for i in off_card}, reverse=True)
     for day in all_days:
         day_cards = [i for i in items if i["day"] == day]
+        day_again = sorted((i for i in reentries if i["day"] == day), key=lambda i: i["time"])
         day_off = [i for i in off_card if i["day"] == day]
-        traded = [i for i in day_cards + day_off if i.get("_trade") and i["_trade"]["buys"]]
+        traded = [i for i in day_cards + day_again + day_off if i.get("_trade") and i["_trade"]["buys"]]
         day_flags = []
         buys = sum(len(i["_trade"]["buys"]) for i in traded)
         actual = [i["_trade"]["pnl"] for i in traded if i["_trade"]["pnl"] is not None]
         if buys >= OVERTRADE_MIN_BUYS and buys > len(day_cards) + 1:
             day_flags.append(_overtrading(buys, len(day_cards), traded))
-        plans = [i["plan"]["pnl"] for i in day_cards if i.get("_trade") and i["_trade"]["buys"]
+        plans = [i["plan"]["pnl"] for i in day_cards + day_again if i.get("_trade") and i["_trade"]["buys"]
                  and i.get("plan", {}).get("pnl") is not None and i["_trade"]["pnl"] is not None]
-        day_rows.append({
-            "day": day, "cards": [_public(i) for i in day_cards], "off_card": [_public(i) for i in day_off],
+        row = {
+            "day": day, "cards": [_public(i) for i in day_cards + day_again],
+            "off_card": [_public(i) for i in day_off],
             "day_flags": day_flags,
             "actual_pnl": round(sum(actual), 2) if actual else None,
             "plan_pnl_on_traded_cards": round(sum(plans), 2) if plans else None,
-        })
+            "stops_known": day in stops_known_days,
+        }
+        insights.day_details(row, ctx)
+        day_rows.append(row)
     flagged = [f for row in day_rows for i in row["cards"] + row["off_card"] for f in i["flags"]] + \
               [f for row in day_rows for f in row["day_flags"]]
     leaks: dict = {}
@@ -903,9 +1007,10 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         if flag["impact_rs"] is not None:
             leak["impact_rs"] = round(leak["impact_rs"] + flag["impact_rs"], 2)
             leak["priced"] += 1
-    traded_items = [i for i in items + off_card if i.get("_trade") and i["_trade"]["buys"]]
+    traded_items = [i for i in items + reentries + off_card if i.get("_trade") and i["_trade"]["buys"]]
     scored = [i for i in traded_items if i["_trade"]["pnl"] is not None]
-    plan_pairs = [(i["_trade"]["pnl"], i["plan"]["pnl"]) for i in items if i.get("_trade") and i["_trade"]["buys"]
+    plan_pairs = [(i["_trade"]["pnl"], i["plan"]["pnl"]) for i in items + reentries
+                  if i.get("_trade") and i["_trade"]["buys"]
                   and i["_trade"]["pnl"] is not None and i.get("plan", {}).get("pnl") is not None]
     reported = [r for r in reports if r.get("status") == "ACTIVE"]
     summary = {
@@ -915,6 +1020,7 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         "cards_not_reported": sum(1 for i in items if i["partner"]["status"] == "NOT_REPORTED"),
         "cards_not_traded": sum(1 for i in items if i["partner"]["status"] == "NOT_TRADED"),
         "off_card_trades": len(off_card),
+        "card_reentries": len(reentries),
         "trades_scored": len(scored),
         "actual_pnl": round(sum(i["_trade"]["pnl"] for i in scored), 2) if scored else None,
         "actual_pnl_on_cards": round(sum(a for a, _ in plan_pairs), 2) if plan_pairs else None,
@@ -1082,9 +1188,12 @@ async def load_partner_coach(db_path: str, *, days: int = 30, now: Optional[date
     reports, superseded = zerodha_first(await reports_between(db_path, first_day, last_day), broker)
     complete = frozenset(day for day, row in broker.items() if row["complete"])
     known = frozenset(day for day, row in broker.items() if row["complete"] and row["stops_known"])
+    from partner_trade_paths import load_paths
+    context = await zerodha.book_details(db_path, first_day, last_day)
+    context["paths"] = await load_paths(db_path, first_day, last_day)
     view = analyse(cards, reports, reaction_sec=int(settings.PARTNER_COACH_REACTION_SEC), now=now,
                    complete_days=complete, stops=await zerodha.stop_orders(db_path, first_day, last_day),
-                   stops_known_days=known)
+                   stops_known_days=known, context=context)
     view["data_quality"]["superseded_by_zerodha"] = superseded
     view["window"] = {"first_day": first_day, "last_day": last_day, "days": days}
     view["capture_enabled"] = bool(settings.PARTNER_FILL_CAPTURE_ENABLED)

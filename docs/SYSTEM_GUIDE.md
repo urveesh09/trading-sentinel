@@ -1,5 +1,144 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 (night, 3) — SX-F1 confirmed F&O profit lock + live-clock exit evidence; SX-P2 PEN_SMART_V2 (actual behavior, Dev, commit `ace52ab`)
+
+Owner (Oct 21 night): "take the relevant calls … make it smart, not a
+blocking and filtering system". Calls taken, each with its evidence, a
+shadow of the old behaviour and a one-line rollback:
+
+- **SX-F1 F&O profit lock waits for a second look (live paper change).** The
+  lock (arm 0.4 premium-R, keep half the best gain) was validated on 90 s
+  samples (Oct 7 replay, ₹6,041 vs ₹5,323) but live checks the bid every
+  10 s. Production since Oct 9: four lock exits at +₹288 to +₹663 (0.1–0.3 R),
+  while the two best trades before the lock trailed out at +₹4,711 and
+  +₹7,435; Oct 15 live sold at 10:03 for +₹663 where the 90 s replay of the
+  same trade trailed out at +₹3,515. `FNO_PROFIT_LOCK_CONFIRM_SEC = 8`: the
+  price must still be at/under the floor at a look ≥ 8 s after the first
+  (`lock_breach_since`, kept per position in `fno_orchestrator`; a restart
+  forgets it, so never an earlier exit). Underlying stop, trail, premium
+  backstop and hard flat stay immediate. Thresholds unchanged. Rollback:
+  `FNO_PROFIT_LOCK_CONFIRM_SEC=0`.
+- **SX-F1 live-clock evidence.** `fno_exit_paths.py` appends every exit look
+  of a held option (bid/ask/LTP, future, decision, lock state) to
+  `<RESEARCH_ARCHIVE_PATH>/fno_exit_paths/<day>.jsonl` in a worker thread
+  (never awaited, never raises; `FNO_EXIT_PATH_RECORDING`). The export copies
+  finished sessions. `fno_exit_cadence.py` replays declared arms (CURRENT,
+  LOCK_FIRST_LOOK = the old lock, FNO_LOCK_OFF, FNO_LOCK_LATE_ARM,
+  FNO_LOCK_LOOSE_KEEP) from each live entry on the recorded looks, then on
+  the archive's verified quotes after the live exit; still open at the end =
+  unresolved. Declared 2026-10-21; judge after ≥ 20 matched trades. The
+  post-Oct-5 archive replay of the lock arms was inconclusive (3 NIFTY
+  trades; arms differ on one trade by ≤ ₹400).
+- **SX-P2 PEN_SMART_V2 beside V1.** V1's Production record Oct 5–21: 68 closes,
+  9 wins, 59 losses, −₹163 on ₹2,000; median stop 0.86% under entry (inside
+  a ₹3–50 stock's spread/tick noise), many exits within 0.4–2 min, 33 thesis
+  failures after two 1-minute closes; wins only from trails. V2
+  (`penny_smart_v2.py`) changes three numbers: `noise_atr_mult` 1.0→1.5,
+  `min_noise_pct` 0.004→0.012, `failed_breakout_closes` 2→3 (same code,
+  inputs, caps, costs; fewer shares for a wider stop). Own state row,
+  events, ₹2,000 paper bankroll and binding (V1's four hashed files plus
+  `penny_smart_v2.py`); V1's binding is byte-identical, so V1 sees no
+  configuration drift. Scanner and stop monitor run each book in turn with
+  its own time budget (V1 first); held names are the union; `/health`-style
+  snapshot adds `smart_penny_v2`; `GET /experiments/penny-smart` compares
+  closes from 2026-10-22. Setting `PENNY_SMART_V2_ENABLED` (True).
+- **Partner cards: no change (call taken).** Five buyer cards since Oct 12
+  (all low-end premium reward/risk < 1, a range that is the premium
+  estimate's uncertainty, not two targets); the card already warns and its
+  target update says book profit and move the SL to entry. Too few cards to
+  change a real-money card; the owner reported the partner is happy with
+  them; the coach (O21-PX) teaches the management.
+- **Expiry book: no promotion yet.** Five expiries; A (+₹3,560) and C (+₹9,004)
+  are carried by Oct 13; the owner's 10-expiry review stands.
+## October 21 (night, 2) — SX-M1 Momentum shadow scoring excludes missed-exit closes (actual behavior, Dev, commit `27ee87b`)
+
+- Production read-only (Oct 21): 72 of MOM_BASE's 92 virtual closes (88 of
+  MOM_RECENCY_5's 108) were `overnight_gap_exit`: the declared 15:15 exit bar
+  was never read (fixed forward by S21-R1's terminal pass), so the close
+  measured the overnight gap, not the variant.
+- `momentum_shadow_comparison` now scores only rule exits; it adds
+  `scored_closes`, `missed_time_exit_closes`, `missed_time_exit_net_pnl` and a
+  warning. `promotion_readiness` counts `scored_closes` (when present) for its
+  closed-trades sample gate. `closed_trades` keeps its meaning (all closes).
+## October 21 (night) — O21-PX the partner's deeper review (actual behavior, Dev, commit `68eec28`)
+
+Owner (Oct 21 night, after merging PR #112): after the day's ending brief the
+partner gets one message with the review link, the link goes to the Zerodha
+login and the login lands on the review; "improve the feedback ... from
+whatever available resources the API can provide ... ensure that the review
+dashboard becomes even better". Coaching only: nothing places an order,
+blocks a card or changes card text.
+
+- **One review link every trading day.** `partner_eod_wrap` (15:40): the brief,
+  then `partner_broker_eod` (read the book if a login is held, else the
+  prompt), then `partner_coach_eod`, then `ensure_review_message`: when the
+  coach note (whose button is the same login) was not delivered, the prompt
+  "📒 Review your day (Mon 19 Oct)" goes out (once a day). Before, a login held
+  since the morning on a day without trades meant no link at all.
+- **More from the partner's Zerodha app (read-only).** The allowlist adds GET
+  `/portfolio/positions`, GET `/user/margins/equity` and GET `/orders/<numeric
+  id>` (one order's history). Placing (POST /orders/{variety}), modifying
+  (PUT) and cancelling (DELETE /orders/{variety}/{id}) still cannot match.
+  `sync_book` keeps, best effort (a failed part never fails the read):
+  `partner_orders` (every option order, status, Zerodha's rejection text),
+  `partner_order_changes` (price/trigger changes of orders Kite marks
+  `modified`, from confirmed history states; at most 40 per read),
+  `partner_broker_positions` and `partner_account_days` (opening balance +
+  intraday pay-in = the day's cash; read only from the open).
+- **The traded options' prices (`partner_trade_paths.py`).** After a read of a
+  finished day, each option the partner bought or sold gets the session's
+  1-minute candles from the owner's market data
+  (`get_intraday_by_token(..., "minute")`, token from the morning books),
+  else the analytics tick's 5-minute prints (`5MIN_PRINTS`, retried on the
+  next read). At most 12 contracts, 8 s each, 20 s a day. Table
+  `partner_trade_paths`. The gateway's login wait is 45 s (was 30 s).
+- **Round trips (`partner_coach.round_trips`).** One option's fills split where
+  the position is flat again. Before, a stop-out and a re-buy of the same
+  option was one trade ("added to a losing option") and the re-entry was
+  invisible. A card's later round trip is its own item (`reentry`,
+  checked against the same card); an off-card one is its own trade. Summary
+  `card_reentries`; "only the card trades" excludes re-entries.
+- **New lessons (`partner_insights.py`, each with what/why/better/rule):**
+  `CHASED_SPIKE` (off-card, 1-minute candles: up ≥ 20% in the 15 minutes
+  before the buy and within 5% of the day's high so far; told, not priced),
+  `GAVE_BACK_PROFIT` (off-card: up ≥ 20% while held, closed under the entry;
+  priced with the stop moved to the entry, 3% slippage), `STOP_LOWERED` (an
+  SL order moved down while held; priced at the original level when the
+  option traded there), `PRICE_RAISED_TO_FILL` (≥ 2 raises or ≥ 5%; on a card
+  only past its buy-up-to), `BIG_RISK` (> 10% of the day's cash at risk: to
+  the partner's stop; the premium without one; the card's SL when stops are
+  unknown on a card trade; priced with the lots that fit), `HELD_OVERNIGHT`
+  (off-card, open at the close, confirmed by positions when read),
+  `INSUFFICIENT_FUNDS` (day: a buy refused for money), `ENTRY_UNDER_STOP` (a
+  card trade bought at or under the card's SL: the card's idea had failed,
+  plan = skip, and no "sell at the SL" advice). Positives `CUT_LOSS_SAVED`
+  (30 minutes after a losing exit the option was ≥ 15% lower) and
+  `STOP_TRAILED`. Hindsight only shows what happened and praises a
+  disciplined exit; it never says to hold a loser.
+- **Per trade (`insight`):** hold time, best and worst price while held (open
+  ₹), the run before the buy, the price 30 minutes after the sale, money at
+  risk against the day's cash, gross move and charges, order changes and
+  refusals in the timeline (ordered to the second), and a chart (1-minute
+  closes, buys/sells, card buy-up-to/SL/target and the partner's stop).
+- **The review (`partner_lessons.py`).** Rules kept: each trade checked on six
+  rules (card, entry, stop — only when stops are known or a stop moved —
+  exit, calm after a loss, size) plus the day's own (only the cards; orders
+  within the cash when the book was read); the score counts process, not
+  money. Day numbers (wins, losses, charges, time in the market, the day as a
+  share of the cash). The lesson of the day folds at most 3 other mistakes
+  on its trades; the rest stay as their own lessons. Progress adds the window
+  statistics (win rate, average win/loss, per trade, charges, card against
+  no-card, within 30 minutes of a loss, median hold of winners against
+  losers, four time-of-day buckets) with one plain line per pattern (≥ 3
+  trades a side) and "Tomorrow, focus on one thing": the rule broken most in
+  the last 7 days. The Telegram note's headline adds "rules kept k/n".
+- **Dashboard (`PartnerReview.jsx`).** Today: headline with rules kept,
+  wins/losses, charges, time in the market and the share of the account;
+  the focus card; the lesson; rules kept; each trade with its rule checks, an
+  SVG price chart (`chartGeometry`; a far level is listed, not drawn) and
+  "what the option did" lines; the day's orders with refusals. Progress: the
+  statistics, "what your numbers say", where the results came from, and
+  rules kept per day.
 ## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, Dev, commit `462d28f`)
 
 Owner (Oct 21): act on the Oct 21 Production audit

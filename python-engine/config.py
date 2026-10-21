@@ -1150,6 +1150,18 @@ class Settings(BaseSettings):
     FNO_PROFIT_LOCK_ARM_R:     float = 0.40
     FNO_PROFIT_LOCK_FLOOR_R:   float = 0.10
     FNO_PROFIT_LOCK_KEEP_FRACTION: float = 0.5
+    # [SX-F1 2026-10-21] The lock was validated on 90 s samples; live looks at
+    # the bid every 10 s. The price must still be at/under the floor at a look
+    # this many seconds after the first one (0 = the first look sells, as
+    # before). Protective stops stay immediate. fno_exit_rules.
+    FNO_PROFIT_LOCK_CONFIRM_SEC: float = 8.0
+    # [SX-F1] Keep every exit check of a held option (fno_exit_paths.py) so
+    # exit rules can be replayed at the live clock. Research only.
+    FNO_EXIT_PATH_RECORDING: bool = True
+    # [SX-P2 2026-10-21] Run PEN_SMART_V2 (penny_smart_v2.py: wider,
+    # noise-aware stop and a three-close thesis failure) beside V1 as its own
+    # Rs 2,000 paper book. Research only; V1 is unchanged.
+    PENNY_SMART_V2_ENABLED: bool = True
     # [FNO-REENTRY 2026-10-07] After a same-day stop in one direction, a new
     # entry in that direction must be beyond the stopped trade's entry level
     # (fno_entry_plan.reentry_confirmed). Never blocks the other direction.

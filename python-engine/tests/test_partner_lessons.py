@@ -64,7 +64,8 @@ def test_a_clean_day_says_so_and_names_the_habits():
     assert review["well_done"][0]["reason"] == "1 trade today and no mistakes flagged. This is the habit to repeat."
     note = pl.render_note(review).split("\n")
     assert note == ["📒 Your trades today (from your taps and replies)",
-                    f"1 trade · {rs(_net(518.0, 598.0, 20))} after charges · card plan {rs(_net(518.0, 600.0, 20))}",
+                    f"1 trade · {rs(_net(518.0, 598.0, 20))} after charges · card plan {rs(_net(518.0, 600.0, 20))}"
+                    " · rules kept 6/6",
                     "✅ Every trade followed its card · Bought inside the limit and on time"]
 
 
@@ -138,8 +139,9 @@ def test_progress_compares_this_week_with_last_and_counts_the_clean_streak():
     assert progress["trades"] == 4 and progress["clean_trades"] == 2 and progress["clean_rate"] == 0.5
     assert progress["clean_streak_days"] == 2
     assert [d["day"] for d in progress["days"]] == ["2026-10-19", "2026-10-16", "2026-10-13", "2026-10-06"]
+    # [O21-PX] Rules kept: card, entry (broken: late), exit, calm, size, only the cards -> 5 of 6.
     assert progress["days"][2] == {"day": "2026-10-13", "trades": 1, "pnl": _net(518.0, 598.0, 20),
-                                   "plan_pnl": 0.0, "mistakes": 1, "clean": False}
+                                   "plan_pnl": 0.0, "mistakes": 1, "clean": False, "rules_kept_pct": 83}
     assert pl.active_days(view) == ["2026-10-19", "2026-10-16", "2026-10-13", "2026-10-06"]
 
 

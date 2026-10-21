@@ -37,6 +37,7 @@ import structlog
 import fno_broker_backstop
 import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
+import fno_exit_paths
 import fno_shadow
 from config import settings
 from fno_chain import ChainSnapshot, take_chain_snapshot
@@ -390,6 +391,9 @@ def _schedule_shadow_observation(
 # position management (exits)
 # ---------------------------------------------------------------------------
 
+# [SX-F1] (source, position id) -> first look under the profit-lock floor.
+_LOCK_BREACH_SINCE: dict = {}
+
 async def _manage_open_positions(
     kite, db_path: str, source: str, executor: FnoExecutor,
     now_ist: datetime, fut_price: Optional[float], *, read_observations: Optional[dict] = None,
@@ -479,6 +483,8 @@ async def _manage_open_positions(
         depth = q.get("depth") or {}
         buys = depth.get("buy") or []
         bid = float(buys[0]["price"]) if buys and buys[0].get("price") else 0.0
+        sells = depth.get("sell") or []
+        ask = float(sells[0]["price"]) if sells and sells[0].get("price") else 0.0
         ltp = float(q.get("last_price") or 0.0)
         exit_px_basis = bid if bid > 0 else ltp
 
@@ -489,11 +495,21 @@ async def _manage_open_positions(
         # since the Oct 8 put-sign fix; see config.FNO_TIME_STOP_RESPECTS_PREMIUM.
         position_fut = (fut_prices.get((p.underlying or "NIFTY").upper()) if fut_prices is not None
                         else fut_price)
+        breach_key = (source, p.id)
         decision = evaluate_single_leg_exit(
             p, now_ist=now_ist, fut_price=position_fut, exit_px_basis=exit_px_basis,
             hard_flat=hard_flat, params=live_single_leg_exit_params(settings),
+            lock_breach_since=_LOCK_BREACH_SINCE.get(breach_key),
         )
         exit_reason = decision.exit_reason
+        # [SX-F1] The lock's first look under its floor, kept between checks
+        # (a restart forgets it, so the next two looks decide: never earlier).
+        if decision.lock_breach_since is not None and not exit_reason:
+            _LOCK_BREACH_SINCE[breach_key] = decision.lock_breach_since
+        else:
+            _LOCK_BREACH_SINCE.pop(breach_key, None)
+        fno_exit_paths.record(now_ist, source, p, bid=bid, ask=ask, ltp=ltp, fut=position_fut,
+                              decision=decision)
         if decision.trail_newly_armed:
             logger.info(
                 "fno_trail_armed id=%d symbol=%s fut=%.1f target=%.1f",
