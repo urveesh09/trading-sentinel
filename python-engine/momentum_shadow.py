@@ -702,16 +702,25 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
                       AND e.variant=r.variant AND e.event_type='CLOSED')
             """, (variant,))).fetchone())[0]
             closes = await (await db.execute("""
-                SELECT e.gross_pnl,e.costs,e.net_pnl,e.r_multiple
+                SELECT e.gross_pnl,e.costs,e.net_pnl,e.r_multiple,e.reason
                 FROM momentum_shadow_trade_events e
                 WHERE e.variant=? AND e.event_type='CLOSED'
                 ORDER BY e.bar_ts,e.trading_date,e.ticker
             """, (variant,))).fetchall()
+            # [SX-M1 2026-10-21] A close at the next session's open means the
+            # declared 15:15 exit never got its bar (before the terminal pass,
+            # 72 of MOM_BASE's 92 closes on Production). It measures the
+            # overnight gap, not the variant: shown apart, never scored.
+            missed = [row for row in closes if row[4] == "overnight_gap_exit"]
+            closes = [row for row in closes if row[4] != "overnight_gap_exit"]
             outcome = {
                 "paper_entries": entries,
                 "open_trades": open_count,
                 "censored_trades": int(censored or 0),
                 "closed_trades": closed_count,
+                "scored_closes": len(closes),
+                "missed_time_exit_closes": len(missed),
+                "missed_time_exit_net_pnl": round(sum(float(row[2]) for row in missed), 6) if missed else None,
                 "gross_pnl": None,
                 "costs": None,
                 "net_pnl": None,
@@ -768,6 +777,9 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
                     warnings.append("Win rate excludes breakevens and is unavailable without a win or loss.")
             else:
                 warnings.append("No virtual trades have closed; realised outcome metrics are unavailable.")
+            if missed:
+                warnings.append(f"{len(missed)} close(s) came at the next session's open because the 15:15 exit "
+                                "bar was never read; they are excluded from every outcome metric above.")
             if open_count:
                 warnings.append(f"{open_count} virtual trade(s) remain unresolved from available bars"
                                 + (f", {censored} of them censored by the terminal pass." if censored else "."))

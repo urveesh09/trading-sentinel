@@ -170,7 +170,10 @@ def assess_promotion_readiness(
     quality_source = "shadow" if shadow else ("backtest" if replay else None)
     distinct = _integer(_first(quality.get("distinct_candidates"), quality.get("entries")))
     raw_accepts = _integer(_first(quality.get("raw_accepts"), quality.get("accepts"), quality.get("accepted_evaluations")))
-    closed = _integer(quality.get("closed_trades"))
+    # [SX-M1] A shadow's scored closes exclude closes that only measured an
+    # overnight gap (the declared exit bar was never read); the sample gate
+    # counts what the quality metrics were computed from.
+    closed = _integer(_first(quality.get("scored_closes"), quality.get("closed_trades")))
     expectancy = _finite(_first(quality.get("net_expectancy"), quality.get("expectancy")))
     profit_factor = _finite(quality.get("profit_factor"))
     drawdown = _finite(quality.get("max_drawdown"))

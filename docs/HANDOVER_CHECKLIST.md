@@ -1,5 +1,9 @@
 # Handover receipt and operator checklist
 
+## October 21 (night, 2) — SX-M1 Momentum shadow scoring (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] Gap-exit closes shown apart and never scored; promotion gate counts scored closes. Related tests 58 pass; full suite not rerun.
+- [ ] SX-F1 F&O live-cadence exit evidence: designed only (see NEXT_AGENT_PLAN).
 ## October 21 (night) — O21-PX partner's deeper review (commit `68eec28`, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - [x] One review link every trading day after the brief

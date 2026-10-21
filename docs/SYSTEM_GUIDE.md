@@ -1,5 +1,15 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 (night, 2) — SX-M1 Momentum shadow scoring excludes missed-exit closes (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- Production read-only (Oct 21): 72 of MOM_BASE's 92 virtual closes (88 of
+  MOM_RECENCY_5's 108) were `overnight_gap_exit`: the declared 15:15 exit bar
+  was never read (fixed forward by S21-R1's terminal pass), so the close
+  measured the overnight gap, not the variant.
+- `momentum_shadow_comparison` now scores only rule exits; it adds
+  `scored_closes`, `missed_time_exit_closes`, `missed_time_exit_net_pnl` and a
+  warning. `promotion_readiness` counts `scored_closes` (when present) for its
+  closed-trades sample gate. `closed_trades` keeps its meaning (all closes).
 ## October 21 (night) — O21-PX the partner's deeper review (actual behavior, Dev, commit `68eec28`)
 
 Owner (Oct 21 night, after merging PR #112): after the day's ending brief the

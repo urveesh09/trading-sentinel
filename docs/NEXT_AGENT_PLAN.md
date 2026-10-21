@@ -1,5 +1,13 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 21 (night, 2) — SX-M1 honest Momentum shadow scoring (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem: next-open gap exits (missed 15:15 bar) were scored as variant results.
+- Files: `momentum_shadow.py`, `promotion_readiness.py`, test in `tests/test_momentum_shadow.py`.
+- Acceptance: a gap-exit close is counted apart, excluded from every metric and the promotion sample gate.
+- Verification: related suites 58 pass (momentum shadow, Oct 21 fixes, promotion readiness); full suite not rerun (usage limit).
+- Remaining:
+  - [ ] SX-F1 (designed, not built): record the 10-second exit loop's quotes of held F&O options (fire-and-forget JSONL under `/data/research/fno_exit_paths`) and an offline evaluator replaying CURRENT (parity), FNO_LOCK_OFF, FNO_LOCK_LATE_ARM, FNO_LOCK_LOOSE_KEEP and a declared FNO_LOCK_CONFIRM_2 at live cadence (archive after the live exit). Why: Oct 15 live profit-lock exit +₹663 vs replay trail exit +₹3,515 on the same trade; post-Oct-5 archive replay of the lock arms differs only on one trade (3 NIFTY trades, inconclusive).
 ## October 21 (night) — O21-PX the partner's deeper review (done, Dev, commit `68eec28`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: the owner merged PR #112 and asked that every evening, after the
