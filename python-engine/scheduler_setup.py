@@ -1343,6 +1343,20 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_morning_brief_crashed err=%s", exc, exc_info=True)
 
+    async def _run_partner_inbox_tick_safe():
+        # [CALENDAR-GATE 2026-07-03] exception: the partner may report a fill
+        # after the close or on a holiday. partner_inbox_tick self-gates on
+        # PARTNER_FILL_CAPTURE_ENABLED and a 09:00-21:00 IST window; the only
+        # provider call (one quote at a tap) checks market hours itself, and
+        # the only sends answer the partner's own taps and replies.
+        # [O21-PC 2026-10-21] Not telemetry-wrapped: a 20 s cadence would
+        # churn the per-run telemetry table; failures log here.
+        try:
+            from partner_fill_capture import partner_inbox_tick
+            await partner_inbox_tick()
+        except Exception as exc:
+            logger.error("partner_inbox_tick_crashed err=%s", exc, exc_info=True)
+
     async def _run_partner_eod_wrap_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
         # _gates_open checks PARTNER_BOT_ENABLED, the session window,
@@ -1542,13 +1556,19 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     scheduler.add_job(
+        _run_partner_inbox_tick_safe, "interval",
+        seconds=settings.PARTNER_INBOX_POLL_SEC,
+        id="partner_inbox_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=30,
+    )
+    scheduler.add_job(
         _run_proactive_shadow_workflow_safe, "cron",
         minute="*/5", second=55,
         id="proactive_shadow_workflow",
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )
     logger.info(
-        "partner_cron_registered jobs=15 enabled=%s hedge_enabled=%s "
+        "partner_cron_registered jobs=16 enabled=%s hedge_enabled=%s "
         "hedge_phase2_enabled=%s hedge_phase3_enabled=%s shadow_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
         settings.PARTNER_HEDGE_ENABLED,

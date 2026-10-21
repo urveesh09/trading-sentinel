@@ -1,5 +1,102 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 (afternoon) — partner fill capture and coach, standard-capital view, F&O broker backstop (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+Owner (Oct 21): before real money, standardise every book on one capital
+(₹2L / ₹5L) and scale down later; a broker-side stop for live F&O; capture
+the partner's real fills and add a coaching dashboard so the manual partner
+can learn from FOMO and revenge trades. Host reliability (UPS or cloud VM)
+is the owner's call and is not done. No strategy rule, card text, card gate,
+book sizing, Smart policy file or live switch changed.
+
+- **Partner fill capture (O21-PC, `partner_fill_capture.py`).** Until now
+  `partner_positions` and `partner_advisory_feedback` had 0 rows.
+  - Entry cards (`manual_market_advisory`) carry inline buttons Bought 1 lot
+    / 2 lots / Skipped; exit-type updates (INVALIDATION, TARGET_ZONE,
+    SESSION_EXIT_REMINDER) carry Sold all / Sold 1 lot. `keyboard_for(kind,
+    detail)` is called in `hedge_advisory._send_claimed_review`; the text and
+    every gate are unchanged. `send_partner_result(..., reply_markup=)`.
+  - Job `partner_inbox_tick` (interval `PARTNER_INBOX_POLL_SEC` 20 s,
+    09:00–21:00 IST any day) long-polls `getUpdates`
+    (`PARTNER_INBOX_LONG_POLL_SEC` 15) on the partner bot, offset in
+    `partner_inbox_state`; a failed poll (409 webhook, network) backs off 10
+    min. Only `PARTNER_TELEGRAM_CHAT_ID` is read.
+  - A tap records the option's ask (buy) / bid (sell) from one
+    management-lane quote (`ASK_AT_TAP` / `BID_AT_TAP`, shown "≈"), market
+    hours only; a double tap within 10 s is one tap. The card's buttons then
+    show the recorded state, with Undo.
+  - A reply to a card or update records or corrects in the partner's words:
+    "518.5", "b 518.5 x2", "s 560 @14:42", "skip", "undo"
+    (`parse_report_text`). A bare price within 30 min of a Bought/Sold tap
+    replaces the estimate (`PARTNER_STATED`, the old row VOIDED). Off-card:
+    "b NIFTY 22950 PE 120 x2" (or "/b ..." in a group). Bad input gets one
+    help line per 10 minutes; ordinary chat is ignored. Reactions (👍)
+    acknowledge typed reports.
+  - Table `partner_trade_reports` (append-only, `dedup_key` per Telegram
+    update, status ACTIVE/VOIDED). No price is ever taken from the card.
+- **Partner coach (`partner_coach.py`).** Per delivered buyer card: the
+  partner's fills and P&L after charges; "card exits on your entry" (premium
+  SL order, the 5-minute print `PARTNER_COACH_REACTION_SEC` = 120 s after an
+  exit/target/square-off message, else the exit-by print); the card plan
+  (a chased, late or after-close entry was a skip on the card: ₹0). Flags
+  with the numbers that fired them and a fixed "next time" line:
+  ENTRY_ABOVE_LIMIT (FOMO), LATE_ENTRY, AFTER_CARD_CLOSED, OFF_CARD,
+  QUICK_REENTRY_AFTER_LOSS (≤ 30 min, revenge pattern), SIZE_UP_AFTER_LOSS,
+  AVERAGED_DOWN, HELD_PAST_STOP (> 3% under the SL, or > 10 min after the
+  exit message), EARLY_EXIT, GAVE_BACK_AFTER_TARGET, HELD_PAST_SQUARE_OFF,
+  OVERTRADING (day). Positives: bought inside the limit, exited with the
+  card, a skip that saved money. Leaks are ranked by rupee effect (they
+  overlap). `partner_eod_wrap` calls `partner_coach_eod`: it freezes the
+  day's card price paths (`partner_coach_card_paths`, past the 7-day OI
+  purge) and, when the partner reported a trade, sends a note of at most six
+  lines (`PARTNER_COACH_NOTE_ENABLED`, dedup `partner_messages` kind
+  `coach`). Coaching never blocks a card or a trade.
+- **Standard capital (O21-SC, `standard_capital.py`).** Replays each book's
+  own closed paper trades on one capital S (default `STANDARD_CAPITAL_INR`
+  ₹2L, any ₹1k–₹1cr): units = round(book units × S / reference) in whole
+  lots/shares (0 = too small, skipped and counted); own cash only (sized
+  down or skipped); charges recomputed at the new size (real F&O/equity
+  schedules where prices are stored, else flat ₹20/order kept fixed);
+  `since` scores the current version of a book. References: F&O single and
+  spreads `FNO_PAPER_BANKROLL`; expiry 3 × `EXPIRY_PAPER_BUDGET` /
+  `FNO_MAX_RISK_PCT` = ₹3.75L (its peak cash, ~₹9k, would scale it 22×);
+  overnight, Momentum, Penny, EDGE morning their paper bankrolls. Identity:
+  at its own reference a book's replay equals its own net P&L unless it held
+  more than its pool at once (flagged; Momentum MIS). Penny rows closed
+  since September store shares=0: sized from `PENNY_PER_STOCK_CAP` (noted).
+  EDGE morning positions hold 9 of the ledger's 19 closes (noted). An 8-byte
+  blob price (numpy int64, VPRPL Aug 11) is decoded. Production trial
+  (read-only, Oct 21): at own references F&O single −₹23,012.32, spreads
+  −₹189.95, expiry +₹2,567.95, overnight −₹991.05 reproduce the books; since
+  Sep 1 at ₹2L each: spreads +₹7,238.41 (3.62%, DD 0.52%), single
+  +₹3,764.84 (1.88%), Momentum +₹702.81, overnight −₹5,780.76 (×8 flagged);
+  at ₹10k/₹12.5k every F&O trade is too small.
+- **F&O broker backstop (O21-BS, `fno_broker_backstop.py`).** After a LIVE
+  single-leg fill the orchestrator calls `arm()`: one SELL SL (stop-limit,
+  MIS, `intent="exit"`, never halt-blocked) at trigger = fill × (1 −
+  `FNO_STOP_PREMIUM_PCT` − `FNO_BACKSTOP_EXTRA_PCT` 0.10), limit 10% under
+  (`FNO_BACKSTOP_LIMIT_GAP_PCT`, clamped to NSE circular 54/2023 OPTIDX
+  range: ₹10 up to a ₹50 trigger, else 20%). Table `fno_broker_backstops`.
+  Before any engine exit `before_exit()` cancels and re-reads it: cancelled
+  unfilled → exit as before; fully filled → booked as the exit
+  (`broker_backstop`, no order sent); part-filled → sells only the rest;
+  unprovable → nothing sold, paged once (no exit intent claimed). While no
+  exit is due `check_filled()` re-reads each minute, every tick within 2% of
+  the trigger. PLACE_UNKNOWN is resolved from `orders_snapshot`. Paper never
+  places one; `REENTRY_STOP_REASONS` includes `broker_backstop`. The live
+  leg is still behind `FNO_DISABLE_LIVE` and the go-live bar.
+- **Routes and dashboard.** Engine `routes_partner_coach.py`: GET
+  `/partner/coach?days=`, POST `/partner/coach/reports`, POST
+  `/partner/coach/reports/{id}/void`, GET
+  `/performance/standard-capital?capital=&since=` (internal secret). Gateway
+  proxies them under `/api/proxy/` (void id digits only). Client pages
+  Partner Coach and Standard Capital, buttons on the dashboard.
+- **Deployment drift corrected.** `d12bb1d` and its docs commit `e5621f7`
+  were deployed by PR #111 (merge `2fc12ee`, Oct 20 22:56 IST; engine image
+  built 22:59 IST; the running container has the `before_date` scan fix,
+  checked Oct 21). `a88da98` (expiry-v3) was not merged: the container runs
+  `RULES_VERSION = "expiry-v2"`.
+
 ## October 21 — expiry-v3: B takes BP's pair target; expiry-shadow-v5 (BL, CI) and Oct 19 expiry-audit fixes (actual behavior, Dev, commit `a88da98`)
 
 Audit: Production `docs/2026-10-19-expiry-system-deep-audit.md` (first expiry

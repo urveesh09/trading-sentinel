@@ -1,0 +1,310 @@
+"""[O21-BS 2026-10-21] A resting broker stop under every LIVE F&O option.
+
+The F&O stop is engine-managed because Zerodha refuses SL-M on options
+(VERIFY-1). If the engine is down, nothing protects a live option: the host
+restarted on Oct 16 (twice), 17, 18, 19 and 21, and Oct 16 lost 321 minutes
+of market time. This module rests one SELL stop-limit (SL) order at the
+broker right after a live entry fills:
+
+  trigger = entry x (1 - FNO_STOP_PREMIUM_PCT - FNO_BACKSTOP_EXTRA_PCT)
+            (default 35% under the fill, 10 points under the engine's 25% stop)
+  limit   = trigger - FNO_BACKSTOP_LIMIT_GAP_PCT x trigger (default 10%),
+            inside the exchange's permitted trigger-limit range for index
+            options (NSE circular 54/2023: ₹10 up to a ₹50 trigger, else 20%).
+
+The engine's own stops still act first. Before the engine sends any exit it
+cancels the backstop and reads its final state, because an exit plus a
+filled backstop would sell twice and leave a naked short option:
+  - cancelled with nothing filled -> the engine exits as before;
+  - fully filled -> the position is already flat: the backstop's fill is
+    booked as the exit and no order is sent;
+  - partly filled -> only the rest is sold;
+  - unreadable -> nothing is sold this tick (critical log and operator page);
+    the resting order still protects the position.
+While no exit is due the engine re-reads the order each minute, and every
+tick once the price is within 2% of the trigger, so a backstop fill is
+booked even if the engine was down when it happened.
+
+Paper books never place one (the executor returns ``paper``). The live leg
+stays behind FNO_DISABLE_LIVE and the go-live bar; this adds no entry path.
+"""
+from __future__ import annotations
+
+import json
+import math
+from datetime import datetime
+from typing import Optional
+
+import aiosqlite
+import pytz
+import structlog
+
+from config import settings
+
+logger = structlog.get_logger()
+IST = pytz.timezone("Asia/Kolkata")
+
+PASSIVE_CHECK_SEC = 60
+# States that prove no backstop share can execute: cancelled with nothing
+# filled, never placed, or no level. Every other state is re-read at the
+# broker before an exit (a broker-cancelled order may have part-filled).
+SETTLED_SAFE_STATES = ("CANCELLED", "NO_LEVEL", "PLACE_REJECTED", "NOT_ARMED")
+NEAR_TRIGGER_PCT = 0.02
+# NSE circular 54/2023, OPTIDX: trigger up to ₹50 -> ₹10 range, above -> 20%.
+SMALL_TRIGGER_RS, SMALL_RANGE_RS, RANGE_PCT = 50.0, 10.0, 0.20
+
+_DDL = """
+CREATE TABLE IF NOT EXISTS fno_broker_backstops (
+  position_id INTEGER PRIMARY KEY,
+  source TEXT NOT NULL,
+  tradingsymbol TEXT NOT NULL,
+  exchange TEXT NOT NULL,
+  qty INTEGER NOT NULL,
+  trigger_price REAL,
+  limit_price REAL,
+  order_id TEXT,
+  state TEXT NOT NULL,
+  placed_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  evidence TEXT
+)
+"""
+_last_check: dict = {}
+
+
+async def init_backstop_db(db_path: str) -> None:
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(_DDL)
+        await db.commit()
+
+
+def _down(value: float, tick: float) -> float:
+    return round(math.floor(round(value / tick, 6)) * tick, 2)
+
+
+def backstop_levels(entry_fill: float, tick: float, *, stop_pct: float, extra_pct: float,
+                    gap_pct: float) -> Optional[tuple[float, float]]:
+    """(trigger, limit) for a SELL SL order, or ``None`` when no sane level exists."""
+    if entry_fill <= 0 or tick <= 0 or not 0 < stop_pct + extra_pct < 1 or gap_pct <= 0:
+        return None
+    trigger = _down(entry_fill * (1.0 - stop_pct - extra_pct), tick)
+    allowed = SMALL_RANGE_RS if trigger <= SMALL_TRIGGER_RS else RANGE_PCT * trigger
+    gap = max(min(gap_pct * trigger, allowed), tick)
+    limit = _down(trigger - gap, tick)
+    if trigger < 2 * tick or limit < tick or trigger - limit > allowed + 1e-9:
+        return None
+    return trigger, limit
+
+
+async def _write(db_path: str, position_id: int, **fields) -> None:
+    now = datetime.now(IST).isoformat()
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(_DDL)
+        row = await (await db.execute(
+            "SELECT 1 FROM fno_broker_backstops WHERE position_id=?", (position_id,))).fetchone()
+        if row is None:
+            fields.setdefault("placed_at", now)
+            fields["updated_at"] = now
+            cols = ["position_id", *fields]
+            await db.execute(f"INSERT INTO fno_broker_backstops ({', '.join(cols)}) "
+                             f"VALUES ({', '.join('?' for _ in cols)})", (position_id, *fields.values()))
+        else:
+            fields["updated_at"] = now
+            await db.execute(f"UPDATE fno_broker_backstops SET {', '.join(f'{k}=?' for k in fields)} "
+                             "WHERE position_id=?", (*fields.values(), position_id))
+        await db.commit()
+
+
+async def load_backstop(db_path: str, position_id: int) -> Optional[dict]:
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            db.row_factory = aiosqlite.Row
+            row = await (await db.execute(
+                "SELECT * FROM fno_broker_backstops WHERE position_id=?", (position_id,))).fetchone()
+    except aiosqlite.OperationalError:
+        return None
+    return dict(row) if row else None
+
+
+async def _page(text: str, event: str) -> None:
+    try:
+        from operator_alert import notify_operator
+        await notify_operator(text, event=event)
+    except Exception as exc:
+        logger.error("fno_backstop_page_failed event=%s err=%s", event, str(exc))
+
+
+async def arm(db_path: str, executor, *, position_id: int, source: str, tradingsymbol: str,
+              exchange: str, qty: int, fill: float, tick: float) -> dict:
+    """Rest the backstop for a filled LIVE entry. Never raises."""
+    if getattr(executor, "paper_mode", True) or not settings.FNO_BROKER_BACKSTOP_ENABLED:
+        return {"state": "NOT_ARMED"}
+    try:
+        levels = backstop_levels(fill, tick, stop_pct=settings.FNO_STOP_PREMIUM_PCT,
+                                 extra_pct=settings.FNO_BACKSTOP_EXTRA_PCT,
+                                 gap_pct=settings.FNO_BACKSTOP_LIMIT_GAP_PCT)
+        if levels is None:
+            await _write(db_path, position_id, source=source, tradingsymbol=tradingsymbol, exchange=exchange,
+                         qty=qty, state="NO_LEVEL", evidence=json.dumps({"fill": fill}))
+            logger.critical("fno_backstop_no_level id=%d symbol=%s fill=%.2f -- engine stop only",
+                            position_id, tradingsymbol, fill)
+            return {"state": "NO_LEVEL"}
+        trigger, limit = levels
+        result = await executor.place_stop_limit(tradingsymbol, qty, trigger, limit, exchange=exchange)
+        state = {"placed": "PLACED", "rejected": "PLACE_REJECTED"}.get(result["status"], "PLACE_UNKNOWN")
+        await _write(db_path, position_id, source=source, tradingsymbol=tradingsymbol, exchange=exchange,
+                     qty=qty, trigger_price=trigger, limit_price=limit, order_id=result.get("order_id"),
+                     state=state, evidence=json.dumps(result.get("evidence") or {}))
+        if state == "PLACED":
+            logger.info("fno_backstop_placed id=%d symbol=%s qty=%d trigger=%.2f limit=%.2f order_id=%s",
+                        position_id, tradingsymbol, qty, trigger, limit, result.get("order_id"))
+        else:
+            logger.critical("fno_backstop_not_placed id=%d symbol=%s state=%s -- engine stop only",
+                            position_id, tradingsymbol, state)
+            await _page(f"⚠️ F&O backstop not placed\nid={position_id} {tradingsymbol} state={state}\n"
+                        f"Engine stop still active. Check the order book for a stray SL order.",
+                        "fno_backstop_not_placed")
+        return {"state": state, "trigger": trigger, "limit": limit, "order_id": result.get("order_id")}
+    except Exception as exc:
+        logger.critical("fno_backstop_arm_failed id=%d symbol=%s err=%s", position_id, tradingsymbol, str(exc))
+        return {"state": "ARM_FAILED"}
+
+
+def _fill_of(latest: dict) -> tuple[Optional[int], Optional[float]]:
+    filled = latest.get("filled_quantity")
+    filled = filled if type(filled) is int and filled >= 0 else None
+    try:
+        average = float(latest.get("average_price") or 0) or None
+    except (TypeError, ValueError):
+        average = None
+    return filled, average
+
+
+async def before_exit(db_path: str, executor, position_id: int, qty: int) -> dict:
+    """Cancel the backstop before an engine exit and say what is left to sell.
+
+    Returns {"action": "proceed"} (no backstop or cancelled unfilled),
+    {"action": "filled", "fill_price", "order_id"} (already flat),
+    {"action": "partial", "filled_qty", "fill_price", "remaining"} or
+    {"action": "hold", "reason"} (state unknown: send nothing).
+    """
+    row = await load_backstop(db_path, position_id)
+    if row is None or executor.paper_mode or row["state"] in SETTLED_SAFE_STATES:
+        return {"action": "proceed"}
+    order_id = row.get("order_id")
+    if row["state"] == "FILLED" and order_id:
+        # Booked as executed by check_filled, but the exit was not settled
+        # (e.g. a receipt write failed): settle from the stored fill.
+        try:
+            average = float(json.loads(row.get("evidence") or "{}").get("average_price") or 0)
+        except (TypeError, ValueError):
+            average = 0.0
+        if average > 0:
+            return {"action": "filled", "fill_price": average, "order_id": order_id}
+    if not order_id:
+        # PLACE_UNKNOWN without an id: the broker may hold an SL order this
+        # process cannot name. Look for it in today's order book; only a
+        # readable book without it proves nothing rests there.
+        found = await _find_in_order_book(executor, row)
+        if found == "absent":
+            await _write(db_path, position_id, state="CANCELLED", evidence=json.dumps({"order_book": "absent"}))
+            return {"action": "proceed"}
+        if found in (None, "ambiguous"):
+            await _page_once(position_id, "unknown",
+                             f"⚠️ F&O exit held: backstop dispatch for id={position_id} {row['tradingsymbol']} "
+                             "is unknown. Check the order book, cancel any SL order, then use F&O exit recovery.")
+            return {"action": "hold", "reason": "backstop_dispatch_unknown"}
+        order_id = found
+        await _write(db_path, position_id, order_id=order_id, state="PLACED")
+    latest, cancel_error = await executor.cancel_and_read(order_id)
+    status = latest.get("status")
+    filled, average = _fill_of(latest)
+    evidence = json.dumps({"final_status": status, "filled_quantity": filled, "average_price": average,
+                           "cancel_error": cancel_error})
+    if status == "COMPLETE" and average:
+        await _write(db_path, position_id, state="FILLED", evidence=evidence)
+        logger.warning("fno_backstop_filled_before_exit id=%d order_id=%s avg=%.2f", position_id, order_id, average)
+        return {"action": "filled", "fill_price": average, "order_id": order_id}
+    if status in ("CANCELLED", "REJECTED") and filled == 0:
+        await _write(db_path, position_id, state="CANCELLED", evidence=evidence)
+        return {"action": "proceed"}
+    if status in ("CANCELLED", "REJECTED") and filled and 0 < filled < qty and average:
+        await _write(db_path, position_id, state="PARTIAL", evidence=evidence)
+        return {"action": "partial", "filled_qty": filled, "fill_price": average,
+                "remaining": qty - filled, "order_id": order_id}
+    await _write(db_path, position_id, state="UNKNOWN", evidence=evidence)
+    logger.critical("fno_backstop_state_unknown id=%d order_id=%s status=%s filled=%s -- exit held",
+                    position_id, order_id, status, filled)
+    await _page_once(position_id, "unknown",
+                     f"⚠️ F&O exit held: backstop {order_id} for id={position_id} has state {status!r}. "
+                     "Reconcile at the broker before any exit.")
+    return {"action": "hold", "reason": f"backstop_state_{status}"}
+
+
+_paged: set = set()
+
+
+async def _page_once(position_id: int, reason: str, text: str) -> None:
+    """One page per position and reason; the hold repeats every tick."""
+    if (position_id, reason) in _paged:
+        return
+    _paged.add((position_id, reason))
+    await _page(text, f"fno_backstop_{reason}")
+
+
+async def _find_in_order_book(executor, row: dict):
+    """The backstop's order id from today's book, "absent", "ambiguous" or None (unreadable)."""
+    snapshot = getattr(executor.kite, "orders_snapshot", None)
+    if snapshot is None:
+        return None
+    try:
+        book = await snapshot()
+    except Exception:
+        return None
+    if book is None:
+        return None
+    trigger = float(row.get("trigger_price") or 0)
+    matches = [o for o in book
+               if o.get("tradingsymbol") == row["tradingsymbol"] and o.get("transaction_type") == "SELL"
+               and o.get("order_type") == "SL" and abs(float(o.get("trigger_price") or 0) - trigger) < 0.001]
+    if not matches:
+        return "absent"
+    if len(matches) > 1:
+        return "ambiguous"
+    return matches[0].get("order_id")
+
+
+async def check_filled(db_path: str, executor, position_id: int, *, price: float,
+                       now: Optional[datetime] = None) -> Optional[dict]:
+    """Read (never cancel) a resting backstop; the fill when it has executed."""
+    if executor.paper_mode:
+        return None
+    row = await load_backstop(db_path, position_id)
+    if row is None or row["state"] != "PLACED" or not row.get("order_id"):
+        return None
+    now = now or datetime.now(IST)
+    trigger = float(row.get("trigger_price") or 0)
+    near = price <= 0 or (trigger > 0 and price <= trigger * (1 + NEAR_TRIGGER_PCT))
+    last = _last_check.get(position_id)
+    if not near and last is not None and (now - last).total_seconds() < PASSIVE_CHECK_SEC:
+        return None
+    _last_check[position_id] = now
+    latest = await executor.order_state(row["order_id"])
+    status = latest.get("status")
+    filled, average = _fill_of(latest)
+    if status == "COMPLETE" and average:
+        await _write(db_path, position_id, state="FILLED",
+                     evidence=json.dumps({"final_status": status, "filled_quantity": filled, "average_price": average}))
+        logger.warning("fno_backstop_executed id=%d order_id=%s avg=%.2f", position_id, row["order_id"], average)
+        return {"fill_price": average, "order_id": row["order_id"]}
+    if status in ("CANCELLED", "REJECTED"):
+        # Not CANCELLED/safe: a broker-cancelled order may have part-filled,
+        # so before_exit re-reads it and sells only the rest.
+        await _write(db_path, position_id, state=f"BROKER_{status}",
+                     evidence=json.dumps({"final_status": status, "filled_quantity": filled,
+                                          "status_message": str(latest.get("status_message") or "")[:200]}))
+        logger.critical("fno_backstop_dropped id=%d order_id=%s status=%s -- engine stop only",
+                        position_id, row["order_id"], status)
+        await _page_once(position_id, "dropped", f"⚠️ F&O backstop {status.lower()} by the broker for "
+                         f"id={position_id} {row['tradingsymbol']}. Engine stop still active.")
+    return None

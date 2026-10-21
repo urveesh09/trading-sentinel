@@ -636,7 +636,7 @@ async def test_complete_snapshot_reaches_real_phase1_builder_formatter_and_sende
     async def chain(*args, **kwargs):
         return _snapshot()
 
-    async def acknowledged(text, *, kind):
+    async def acknowledged(text, *, kind, **_unused):
         sent.append((kind, text))
         return PartnerSendResult(True, message_id=len(sent), state="acknowledged")
 

@@ -4,6 +4,8 @@ import Dashboard from './pages/Dashboard';
 import Positions from './pages/Positions';
 import BacktestLab from './pages/BacktestLab';
 import ResearchCenter from './pages/ResearchCenter';
+import PartnerCoach from './pages/PartnerCoach';
+import StandardCapital from './pages/StandardCapital';
 import { useHealth } from './hooks/useHealth';
 
 export default function App() {
@@ -35,12 +37,20 @@ export default function App() {
   if (currentView === 'POSITIONS') {
     return <Positions navigateToDashboard={() => setCurrentView('DASHBOARD')} />;
   }
+  if (currentView === 'COACH') {
+    return <PartnerCoach navigateToDashboard={() => setCurrentView('DASHBOARD')} />;
+  }
+  if (currentView === 'CAPITAL') {
+    return <StandardCapital navigateToDashboard={() => setCurrentView('DASHBOARD')} />;
+  }
   return (
     <Dashboard
       healthData={health}
       navigateToPositions={() => setCurrentView('POSITIONS')}
       navigateToBacktests={() => setCurrentView('BACKTESTS')}
       navigateToResearch={() => setCurrentView('RESEARCH')}
+      navigateToCoach={() => setCurrentView('COACH')}
+      navigateToCapital={() => setCurrentView('CAPITAL')}
     />
   );
 }

@@ -1,5 +1,42 @@
 # Handover receipt and operator checklist
 
+## October 21 (afternoon) — partner fill capture + coach, standard capital, F&O broker backstop (commit pending (recorded in the next docs commit), Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- [x] O21-PC cards carry Bought/Skipped buttons, exit updates Sold; replies
+  record or correct prices; off-card "b NIFTY 22950 PE 120 x2"; only the
+  partner chat is read; card text and gates unchanged.
+- [x] Partner Coach page + `GET /partner/coach`: did vs card plan, flags with
+  reasons and rupee effect, manual reaction allowance 120 s; evening note
+  only on days with reported trades; card price paths frozen at the wrap.
+- [x] O21-SC Standard Capital page + `GET /performance/standard-capital`:
+  every book on one capital (₹10k / ₹12.5k / ₹2L / ₹5L / custom), `since`
+  for the current version; read-only, paper, not a forecast.
+- [x] O21-BS live F&O entries rest a broker SL backstop; exits cancel and
+  read it first; paper never places one.
+- [x] Tests: new `tests/test_partner_fill_capture.py` 26,
+  `tests/test_partner_coach.py` 9, `tests/test_standard_capital.py` 8,
+  `tests/test_fno_broker_backstop.py` 17; goldens regenerated (additions
+  only); full engine suite 5,314 passed, 4 skipped, 0 failed (9 min 15 s). Clean baseline at `561ae70` in a
+  scratch worktree: 5,254 passed, 4 skipped (9 min 8 s). Gateway: new
+  `tests/integration/partner-coach-proxy.test.js` 4 pass; full jest 488
+  pass, 18 fail in `tests/unit/db.test.js` and
+  `tests/unit/backlog-reconciliation.test.js` (better-sqlite3 has no native
+  binary on this Windows host: "Could not locate the bindings file";
+  environment, not code). Client: `node --test` 51 pass; `vite build` ok.
+- [x] `tests/test_mark_to_market.py` clock race fixed: one fixed instant per
+  module (a quote stamped after `now` had a negative age and read STALE);
+  46/46 three runs in a row. The Oct 19 receipt's 5,527 vs Oct 21's 5,253:
+  the Oct 19 run also included `scripts/tests` (276 tests, all pass today);
+  no engine test disappeared.
+- [x] Environment: tests ran with `python-engine/winvenv` (Windows, pytest
+  8.0.0); the Production trial ran read-only inside the engine container
+  (`-u quantuser`, SQLite `mode=ro`).
+- [ ] Deployed: no. Merge `codex/production-correction-hedge-p0` first
+  (expiry-v3, before Thursday's SENSEX expiry), then this branch; rebuild
+  engine and gateway outside 12:59–15:40 on an expiry day.
+- [ ] After deploy: `partner_cron_registered jobs=16`; no getUpdates 409;
+  tell the partner about the buttons.
+
 ## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `a88da98`, Dev, pushed, not deployed)
 
 - [x] B (main) sells both legs once the pair nets 20% after fees (BP's rule).
@@ -23,7 +60,7 @@
 - [ ] Deployed: no (merge, rebuild the engine before the SENSEX expiry on
   Thursday Oct 22, outside the 12:59–15:40 window).
 
-## October 19 — Oct 19 audit fixes (commit `d12bb1d`, Dev, pushed, not deployed)
+## October 19 — Oct 19 audit fixes (commit `d12bb1d`, Dev, pushed, deployed by PR #111)
 
 - [x] O19-E1 EDGE morning scan scores the last completed session (`before_date`).
 - [x] O19-P1 partner update gap per card (45 s), reminder outside the daily cap.
@@ -35,9 +72,10 @@
 - [x] O19-M2 `MOM_RS_PULLBACK` shadow + replay variant + `momentum-pullback` job.
 - [x] O19-B1 bootstrap order; O19-M1 hourly silent-scan heartbeat.
 - [x] Tests: full suite 5,527 passed, 4 skipped (9 min 23 s); new tests/test_oct19_audit_fixes.py 17
-- [ ] Deployed (merge + engine rebuild) and verified on the next session.
+- [x] Deployed by PR #111 (merge `2fc12ee`, Oct 20 22:56 IST; engine image built 22:59 IST; the
+  running container has the `before_date` scan fix, checked Oct 21). Was: no.
 
-## October 18 — simulation-report fixes (commit `a0a3fd8`, Dev, pushed, not deployed)
+## October 18 — simulation-report fixes (commit `a0a3fd8`, Dev, pushed, merged by PR #111)
 
 - [x] O18-F1 F&O replay dated expiry calendar; `CURRENT` arm; exporter
   `option_expiries`.

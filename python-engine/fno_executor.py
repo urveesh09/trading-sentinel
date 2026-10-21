@@ -17,11 +17,13 @@ first-order term and pretending mid-fills would make the paper leg lie
 
 Every order is tagged with the leg source (spec §10.1).
 
-There is no SL order type anywhere in this module: Zerodha does not
-support SL-M on options (VERIFY-1), so the stop is engine-managed. We
-accept that ONLY because the long-option structure already bounds the
-loss at the premium paid -- a frozen engine costs the premium, nothing
-more. This reasoning does not survive a short leg (spec §8.4).
+Zerodha does not support SL-M on options (VERIFY-1), so the stop is
+engine-managed. A long option bounds the loss at the premium paid, but a
+frozen engine still costs the whole premium: Oct 16 had a 321-minute
+outage in market hours. [O21-BS 2026-10-21] ``place_stop_limit`` rests one
+SL (stop-limit) SELL at the broker below the engine's stop as a backstop
+for LIVE positions (fno_broker_backstop.py); the engine stop still acts
+first. This reasoning does not survive a short leg (spec §8.4).
 """
 from __future__ import annotations
 
@@ -295,6 +297,57 @@ class FnoExecutor:
             await asyncio.sleep(self.poll_interval_sec)
             elapsed += self.poll_interval_sec
         return None
+
+    # ------------------------------------------------------------------
+    # broker backstop (O21-BS)
+    # ------------------------------------------------------------------
+
+    async def place_stop_limit(
+        self, tradingsymbol: str, qty: int, trigger: float, limit: float, *, exchange: str = "NFO",
+    ) -> dict:
+        """Rest one SELL SL (stop-limit) order. Returns {status, order_id, evidence}.
+
+        status: paper | placed | rejected | unknown. ``intent="exit"``: a
+        protective order is never blocked by an entry halt."""
+        if self.paper_mode:
+            return {"status": "paper", "order_id": None}
+        try:
+            resp = await self.kite.place_order(
+                variety="regular", exchange=exchange, tradingsymbol=tradingsymbol,
+                transaction_type="SELL", quantity=qty, product="MIS", order_type="SL",
+                price=round(limit, 2), trigger_price=round(trigger, 2), validity="DAY",
+                tag=self.source_tag[:20], intent="exit", channel="fno",
+            )
+        except Exception as e:
+            return {"status": "unknown", "order_id": None,
+                    "evidence": {"dispatch_certainty": "AMBIGUOUS", "message": f"{type(e).__name__}: {e}"[:300]}}
+        order_id = resp.get("order_id")
+        if order_id:
+            return {"status": "placed", "order_id": order_id, "evidence": {"dispatch_certainty": "ACCEPTED"}}
+        certainty = resp.get("dispatch_certainty") or "AMBIGUOUS"
+        return {"status": "rejected" if certainty in ("NOT_SENT", "BROKER_REJECTED") else "unknown",
+                "order_id": None,
+                "evidence": {"dispatch_certainty": certainty, "message": str(resp.get("message") or "")[:300]}}
+
+    async def order_state(self, order_id: str) -> dict:
+        """Latest broker state of one order; {} when it cannot be read."""
+        try:
+            return latest_order_state(await self.kite.order_history(order_id=order_id) or [])
+        except Exception as e:
+            logger.error("fno_order_state_failed order_id=%s error=%s", order_id, str(e))
+            return {}
+
+    async def cancel_and_read(self, order_id: str) -> tuple[dict, Optional[str]]:
+        """Cancel, then re-read until a terminal state (3 tries)."""
+        cancel_error = await self._cancel_quietly(order_id)
+        latest: dict = {}
+        for attempt in range(3):
+            latest = await self.order_state(order_id)
+            if latest.get("status") in ("COMPLETE", "CANCELLED", "REJECTED"):
+                break
+            if attempt < 2:
+                await asyncio.sleep(self.poll_interval_sec)
+        return latest, cancel_error
 
     async def _cancel_quietly(self, order_id: str) -> Optional[str]:
         """Cancel; return the error text (``None`` on success) for evidence."""

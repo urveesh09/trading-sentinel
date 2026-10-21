@@ -125,6 +125,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_inbox_tick_safe",
+    "id": "'partner_inbox_tick'",
+    "trigger": "'interval'"
+  },
+  {
     "func": "_run_partner_input_refresh_safe",
     "id": "'partner_input_refresh'",
     "trigger": "'cron'"

@@ -2311,6 +2311,9 @@ async def lifespan(app: FastAPI):
         await init_oi_db(settings.DB_PATH)
         await init_partner_db(settings.DB_PATH)
         await init_hedge_advisory_db(settings.DB_PATH)
+        # [O21-PC] partner fill reports + frozen card price paths.
+        from partner_coach import init_partner_coach_db
+        await init_partner_coach_db(settings.DB_PATH)
     except Exception as _fno_db_exc:
         logger.warning("fno_db_init_failed err=%s", str(_fno_db_exc))
 
@@ -4900,6 +4903,7 @@ from routes_promotion_readiness import router as _promotion_readiness_router
 from routes_hedge import router as _hedge_router
 from routes_holidays import router as _holidays_router  # WORKFLOW-J.5
 from routes_market_session import router as _market_session_router
+from routes_partner_coach import router as _partner_coach_router  # O21-PC
 
 app.include_router(_ops_router)
 app.include_router(_portfolio_router)
@@ -4911,3 +4915,4 @@ app.include_router(_promotion_readiness_router)
 app.include_router(_hedge_router)
 app.include_router(_holidays_router)  # WORKFLOW-J.5
 app.include_router(_market_session_router)
+app.include_router(_partner_coach_router)  # O21-PC

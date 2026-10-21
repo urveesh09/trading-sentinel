@@ -596,6 +596,18 @@ Engine dependencies: `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_
 
 Related tests: `python-engine/tests/test_fno_backtest.py`
 
+## `python-engine/fno_broker_backstop.py`
+
+[O21-BS 2026-10-21] A resting broker stop under every LIVE F&O option. The F&O stop is engine-managed because Zerodha refuses SL-M on options (VERIFY-1). If the engine is down, nothing protects a live option: the host restarted on Oct 16 (twice), 17, 18, 19 and 21, and Oct 16 lost 321 minutes of market time. This module rests one SELL stop-limit (SL) order at the broker right after a live entry fills: trigger = entry x (1 - FNO_STOP_PREMIUM_PCT - FNO_BACKSTOP_EXTRA_PCT) (default 35% under the fill, 10 points under the engine's 25% stop) limit = trigger - FNO_BACKSTOP_LIMIT_GAP_PCT x trigger (default 10%), inside the exchange's permitted trigger-limit range for index options (NSE circular 54/
+
+Top-level declarations: `init_backstop_db` (line 75), `_down` (line 81), `backstop_levels` (line 85), `_write` (line 99), `load_backstop` (line 118), `_page` (line 129), `arm` (line 137), `_fill_of` (line 173), `before_exit` (line 183), `_page_once` (line 247), `_find_in_order_book` (line 255), `check_filled` (line 277)
+
+Engine dependencies: `config`, `operator_alert`
+
+Related tests: `python-engine/tests/test_fno_broker_backstop.py`
+
+Declared tables: `fno_broker_backstops`
+
 ## `python-engine/fno_chain.py`
 
 [FNO-CHAIN 2026-07-10] Option-chain snapshot for the F&O subsystem (spec §6.2). ATM +/- FNO_STRIKE_WINDOW strikes, both CE and PE (22 contracts), plus the front-month future = 23 tokens in ONE batched /quote call -- well inside Kite's 500-instrument batch limit (VERIFY-7). The penny scanner's per-ticker /quote pattern is a known production bug (BUG-2); do not repeat it. Pricing basis: the synthetic forward. We use the front-month futures LTP directly as F (spec §6.2 sanctions this alternative to put-call parity), and ALSO back a parity forward out of the ATM straddle as a cross-check; a >0.5% disagreement is logged loudly because it usually means a stale leg. Using spot for index options wou
@@ -662,7 +674,7 @@ Related tests: `python-engine/tests/test_fno_engine_mom.py`
 
 Pure single-leg F&O entry planning shared by the live tick and research replay. Extracted from ``fno_orchestrator._try_entry_for_leg`` so the replay evaluates *the same* decision instead of a copy that could drift. Given a fired signal, a chain snapshot and the book's current state, it performs, in the shipped order: strike selection (|delta| closest to FNO_TARGET_DELTA, ATM-or-ITM), the §7 gate ladder, the no-pyramid same-contract refusal, pool sizing under the risk and open-premium caps, the §4 max-loss constitution and the net reward/ risk check. No I/O: the caller reads state, logs the outcome and performs any reservation and dispatch.
 
-Top-level declarations: `EntryState` (line 27), `reentry_level` (line 58), `reentry_confirmed` (line 64), `EntryPlan` (line 73), `quote_age_sec` (line 90), `plan_single_leg_entry` (line 94)
+Top-level declarations: `EntryState` (line 27), `reentry_level` (line 59), `reentry_confirmed` (line 65), `EntryPlan` (line 74), `quote_age_sec` (line 91), `plan_single_leg_entry` (line 95)
 
 Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_gates`, `fno_models`, `fno_risk`
 
@@ -672,7 +684,7 @@ Related tests: `python-engine/tests/test_fno_entry_plan.py`
 
 [FNO-EXECUTOR 2026-07-10] Order path for the F&O subsystem (spec §10.1). LIMIT orders only. Never market. The bid-ask spread on an option is the single largest controllable cost. Entry: LIMIT at ask, FNO_FILL_TIMEOUT_SEC then cancel. NEVER chase -- a missed fill is free; a chased fill is not. Exit: LIMIT at bid, escalating to bid - 3 ticks after 15s. Hard flat (15:10): a marketable limit wide enough to guarantee the fill -- the position MUST close. Paper mode fills honestly against the REAL book: entry at ask, exit at bid. Paying the spread in paper is deliberate -- it is the cost model's first-order term and pretending mid-fills would make the paper leg lie (same reasoning as the missing FN
 
-Top-level declarations: `FnoExecutor` (line 45)
+Top-level declarations: `FnoExecutor` (line 47)
 
 Engine dependencies: `config`, `kite_client`
 
@@ -760,7 +772,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 69), `_read_cap` (line 73), `_record_management_read` (line 78), `_timed_database_operation` (line 108), `_management_quote` (line 129), `_oldest_quote_age_sec` (line 145), `_settle_exit_receipt` (line 162), `_fno_pool_paper` (line 223), `_fno_pool_live` (line 228), `_load_dr_entry_inputs` (line 239), `_fno_equity` (line 309), `_fno_halted` (line 315), `_fetch_futures_bars` (line 337), `_record_shadow_observation` (line 345), `_schedule_shadow_observation` (line 362), `_manage_open_positions` (line 392), `_try_entry_for_leg` (line 641), `post_admission_entry_reject` (line 931), `_insert_entry_position` (line 949), `_manage_single_leg_books` (line 960), `run_fno_tick` (line 1059), `_single_leg_entries` (line 1314), `fast_exit_has_work` (line 1471), `run_fno_fast_exit` (line 1488), `_bar_already_logged` (line 1530), `format_fno_telegram` (line 1552)
+Top-level declarations: `_now_min` (line 70), `_read_cap` (line 74), `_record_management_read` (line 79), `_timed_database_operation` (line 109), `_management_quote` (line 130), `_oldest_quote_age_sec` (line 146), `_settle_exit_receipt` (line 163), `_fno_pool_paper` (line 224), `_fno_pool_live` (line 229), `_load_dr_entry_inputs` (line 240), `_fno_equity` (line 310), `_fno_halted` (line 316), `_fetch_futures_bars` (line 338), `_record_shadow_observation` (line 346), `_schedule_shadow_observation` (line 363), `_manage_open_positions` (line 393), `_try_entry_for_leg` (line 680), `post_admission_entry_reject` (line 978), `_insert_entry_position` (line 996), `_manage_single_leg_books` (line 1007), `run_fno_tick` (line 1106), `_single_leg_entries` (line 1361), `fast_exit_has_work` (line 1518), `run_fno_fast_exit` (line 1535), `_bar_already_logged` (line 1577), `format_fno_telegram` (line 1599)
 
 Engine dependencies: `affordability`, `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `fno_underlyings`, `kite_client`, `operator_alert`, `performance`
 
@@ -880,9 +892,9 @@ Related tests: `python-engine/tests/test_halt_switch.py`
 
 Hedge-first partner advisory orchestration. Only reconciled positions and live, two-sided exchange quotes can produce a review. This module has no execution path. Missing positions, stale prices, unsupported expiries and incomplete volatility data all fail closed.
 
-Top-level declarations: `Phase2MarketContext` (line 73), `Phase3MarketContext` (line 100), `_aware` (line 182), `init_hedge_advisory_db` (line 188), `record_vix_observation` (line 206), `load_vix_observations` (line 231), `_set_service_state` (line 248), `_record_shadow_evaluation` (line 268), `load_hedge_service_state` (line 292), `_decision_identity` (line 311), `_parse_ist` (line 322), `_ledger_underlying` (line 329), `_quarantine_ledger_row` (line 335), `_claim` (line 349), `_record` (line 644), `_complete_claim` (line 660), `_mark_transport_started` (line 686), `_release_claim` (line 722), `_fail_claim` (line 739), `_mark_acknowledgement_recovery_required` (line 812), `load_hedge_delivery_backlog` (line 839), `load_partner_hedge_cards` (line 872), `resolve_hedge_delivery_backlog` (line 924), `_authorize_dispatch` (line 999), `_send_claimed_review` (line 1216), `recover_pending_hedge_deliveries` (line 1355), `_sweep_abandoned_delivery_claims` (line 1403), `_retire_pending_delivery` (line 1446), `_recovery_retirement_reason` (line 1465), `_settings_kwargs` (line 1505), `build_hedge_reviews` (line 1514), `_snapshot_underlying` (line 1594), `_phase2_positions_valid` (line 1604), `send_partner_telegram_diagnostic` (line 1616), `_verified_deliverable_units` (line 1637), `build_phase2_hedge_reviews` (line 1665), `_format_review` (line 1796), `build_phase3_hedge_reviews` (line 1812), `_phase2_trigger_quote_current` (line 1880), `_fresh_oi_walls` (line 1901), `_phase2_market_context` (line 1917), `_phase2_context_text` (line 2028), `_format_phase2_review` (line 2043), `_format_phase3_review` (line 2058), `_phase2_dedup_key` (line 2082), `_send_vix_review` (line 2097), `_portfolio_input_reason` (line 2118), `_whole_portfolio_input_reason` (line 2136), `_proposal_identity` (line 2166), `_advanced_proposal_identity` (line 2189), `_record_no_advice` (line 2204), `partner_hedge_daily_summary` (line 2222), `partner_hedge_tick` (line 2261), `partner_hedge_phase2_tick` (line 2381), `partner_hedge_phase3_tick` (line 2522)
+Top-level declarations: `Phase2MarketContext` (line 73), `Phase3MarketContext` (line 100), `_aware` (line 182), `init_hedge_advisory_db` (line 188), `record_vix_observation` (line 206), `load_vix_observations` (line 231), `_set_service_state` (line 248), `_record_shadow_evaluation` (line 268), `load_hedge_service_state` (line 292), `_decision_identity` (line 311), `_parse_ist` (line 322), `_ledger_underlying` (line 329), `_quarantine_ledger_row` (line 335), `_claim` (line 349), `_record` (line 644), `_complete_claim` (line 660), `_mark_transport_started` (line 686), `_release_claim` (line 722), `_fail_claim` (line 739), `_mark_acknowledgement_recovery_required` (line 812), `load_hedge_delivery_backlog` (line 839), `load_partner_hedge_cards` (line 872), `resolve_hedge_delivery_backlog` (line 924), `_authorize_dispatch` (line 999), `_send_claimed_review` (line 1216), `recover_pending_hedge_deliveries` (line 1360), `_sweep_abandoned_delivery_claims` (line 1408), `_retire_pending_delivery` (line 1451), `_recovery_retirement_reason` (line 1470), `_settings_kwargs` (line 1510), `build_hedge_reviews` (line 1519), `_snapshot_underlying` (line 1599), `_phase2_positions_valid` (line 1609), `send_partner_telegram_diagnostic` (line 1621), `_verified_deliverable_units` (line 1642), `build_phase2_hedge_reviews` (line 1670), `_format_review` (line 1801), `build_phase3_hedge_reviews` (line 1817), `_phase2_trigger_quote_current` (line 1885), `_fresh_oi_walls` (line 1906), `_phase2_market_context` (line 1922), `_phase2_context_text` (line 2033), `_format_phase2_review` (line 2048), `_format_phase3_review` (line 2063), `_phase2_dedup_key` (line 2087), `_send_vix_review` (line 2102), `_portfolio_input_reason` (line 2123), `_whole_portfolio_input_reason` (line 2141), `_proposal_identity` (line 2171), `_advanced_proposal_identity` (line 2194), `_record_no_advice` (line 2209), `partner_hedge_daily_summary` (line 2227), `partner_hedge_tick` (line 2266), `partner_hedge_phase2_tick` (line 2386), `partner_hedge_phase3_tick` (line 2527)
 
-Engine dependencies: `config`, `event_calendar`, `fno_chain`, `fno_underlyings`, `hedge_analytics`, `hedge_formatters`, `hedge_readiness`, `hedge_strategies`, `macro_events`, `partner_bot`, `partner_manual_advisory`
+Engine dependencies: `config`, `event_calendar`, `fno_chain`, `fno_underlyings`, `hedge_analytics`, `hedge_formatters`, `hedge_readiness`, `hedge_strategies`, `macro_events`, `partner_bot`, `partner_fill_capture`, `partner_manual_advisory`
 
 Related tests: `python-engine/tests/test_hedge_advisory.py`
 
@@ -1086,9 +1098,9 @@ Related tests: `python-engine/tests/test_macro_events.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_is_intraday_from_product_type` (line 138), `_classic_penny_source` (line 212), `_make_penny_ledger_writer` (line 226), `_get_penny_universe` (line 237), `_get_penny_scanner` (line 254), `_within_penny_market_hours` (line 296), `sync_penny_daily_brake` (line 304), `run_penny_scanner_once` (line 339), `run_penny_connors_scan` (line 474), `run_penny_universe_refresh` (line 768), `run_penny_regime_compute` (line 840), `run_penny_regime_refresh` (line 865), `_penny_ltp` (line 885), `_penny_exit_event_context` (line 914), `_append_penny_exit_event` (line 949), `_settle_confirmed_penny_exit` (line 967), `_execute_scheduled_penny_exit` (line 1043), `_apply_penny_profit_lock` (line 1241), `run_penny_paper_stop_monitor` (line 1270), `run_penny_eod_check` (line 1352), `run_penny_force_close_mis` (line 1448), `_run_penny_daily_attribution` (line 1531), `_run_penny_eod_digest` (line 1569), `_run_penny_heatmap` (line 1616), `run_penny_hourly_report` (line 1668), `build_breadth_engine` (line 1838), `build_breadth_kwargs` (line 1884), `_filter_by_liquidity` (line 1903), `snap_to_tick` (line 1974), `_momentum_exit_clock` (line 1999), `_fno_regime_str` (line 2093), `lifespan` (line 2107), `_post_required_notice` (line 2446), `_restart_gap_receipt` (line 2467), `post_login_initialization` (line 2560), `_load_universe_with_fallback` (line 2631), `run_screener` (line 2688), `daily_post_market` (line 3007), `run_momentum_screener` (line 3086), `_run_momentum_screener_impl` (line 3105), `_momentum_initial_risk` (line 3581), `_aggregate_momentum_close` (line 3592), `_close_momentum_position` (line 3599), `_record_momentum_scale_out` (line 3653), `_square_off_fill_evidence` (line 3711), `_cancel_order_truth` (line 3737), `_momentum_square_off_key` (line 3767), `_record_confirmed_momentum_partial` (line 3779), `_page_unconfirmed_square_off` (line 3818), `_post_square_off_with_reconcile` (line 3829), `_rearm_momentum_residual_stop` (line 3859), `momentum_intraday_monitor` (line 3885), `_momentum_intraday_monitor_owned` (line 3905), `_restore_momentum_protection_after_eod_abort` (line 4186), `auto_square_momentum` (line 4225), `_auto_square_momentum_owned` (line 4257), `_paper_ltp` (line 4533), `_run_momentum_paper_monitor` (line 4553), `_run_momentum_paper_square_off` (line 4568), `momentum_eod_warning` (line 4578), `_notify_telegram_square_off_failure` (line 4610), `_notify_momentum_heartbeat` (line 4626), `_momentum_reason_family` (line 4716), `compute_performance_report` (line 4732), `notify_screener_results` (line 4794)
+Top-level declarations: `_is_intraday_from_product_type` (line 138), `_classic_penny_source` (line 212), `_make_penny_ledger_writer` (line 226), `_get_penny_universe` (line 237), `_get_penny_scanner` (line 254), `_within_penny_market_hours` (line 296), `sync_penny_daily_brake` (line 304), `run_penny_scanner_once` (line 339), `run_penny_connors_scan` (line 474), `run_penny_universe_refresh` (line 768), `run_penny_regime_compute` (line 840), `run_penny_regime_refresh` (line 865), `_penny_ltp` (line 885), `_penny_exit_event_context` (line 914), `_append_penny_exit_event` (line 949), `_settle_confirmed_penny_exit` (line 967), `_execute_scheduled_penny_exit` (line 1043), `_apply_penny_profit_lock` (line 1241), `run_penny_paper_stop_monitor` (line 1270), `run_penny_eod_check` (line 1352), `run_penny_force_close_mis` (line 1448), `_run_penny_daily_attribution` (line 1531), `_run_penny_eod_digest` (line 1569), `_run_penny_heatmap` (line 1616), `run_penny_hourly_report` (line 1668), `build_breadth_engine` (line 1838), `build_breadth_kwargs` (line 1884), `_filter_by_liquidity` (line 1903), `snap_to_tick` (line 1974), `_momentum_exit_clock` (line 1999), `_fno_regime_str` (line 2093), `lifespan` (line 2107), `_post_required_notice` (line 2449), `_restart_gap_receipt` (line 2470), `post_login_initialization` (line 2563), `_load_universe_with_fallback` (line 2634), `run_screener` (line 2691), `daily_post_market` (line 3010), `run_momentum_screener` (line 3089), `_run_momentum_screener_impl` (line 3108), `_momentum_initial_risk` (line 3584), `_aggregate_momentum_close` (line 3595), `_close_momentum_position` (line 3602), `_record_momentum_scale_out` (line 3656), `_square_off_fill_evidence` (line 3714), `_cancel_order_truth` (line 3740), `_momentum_square_off_key` (line 3770), `_record_confirmed_momentum_partial` (line 3782), `_page_unconfirmed_square_off` (line 3821), `_post_square_off_with_reconcile` (line 3832), `_rearm_momentum_residual_stop` (line 3862), `momentum_intraday_monitor` (line 3888), `_momentum_intraday_monitor_owned` (line 3908), `_restore_momentum_protection_after_eod_abort` (line 4189), `auto_square_momentum` (line 4228), `_auto_square_momentum_owned` (line 4260), `_paper_ltp` (line 4536), `_run_momentum_paper_monitor` (line 4556), `_run_momentum_paper_square_off` (line 4571), `momentum_eod_warning` (line 4581), `_notify_telegram_square_off_failure` (line 4613), `_notify_momentum_heartbeat` (line 4629), `_momentum_reason_family` (line 4719), `compute_performance_report` (line 4735), `notify_screener_results` (line 4797)
 
-Engine dependencies: `analytics`, `backtest`, `breadth`, `config`, `engine`, `engine_auth`, `fno_oi_store`, `fno_positions`, `fno_signal_log`, `hedge_advisory`, `kite_client`, `lifecycle_receipts`, `logging_setup`, `mark_to_market`, `market_calendar`, `memory_metrics`, `models`, `momentum_exits`, `momentum_paper`, `momentum_shadow`, `operator_alert`, `operator_status`, `ops_metrics`, `ops_watchdogs`, `partner_orchestrator`, `penny_daily_attribution`, `penny_engine_breakout`, `penny_execution_journal`, `penny_executor`, `penny_heatmap`, `penny_hourly_report`, `penny_models`, `penny_position_reservations`, `penny_profit_lock`, `penny_regime`, `penny_risk`, `penny_scanner`, `penny_shadow`, `penny_signal_log`, `penny_smart_shadow`, `penny_universe`, `performance`, `portfolio`, `position_tracker`, `regime`, `risk_engine`, `routes_backtest`, `routes_commands`, `routes_fno_experiments`, `routes_hedge`, `routes_holidays`, `routes_market_session`, `routes_ops`, `routes_penny_experiments`, `routes_portfolio`, `routes_promotion_readiness`, `scheduler_setup`, `scheduler_telemetry`, `signal_log`, `token_lifecycle`, `universe`
+Engine dependencies: `analytics`, `backtest`, `breadth`, `config`, `engine`, `engine_auth`, `fno_oi_store`, `fno_positions`, `fno_signal_log`, `hedge_advisory`, `kite_client`, `lifecycle_receipts`, `logging_setup`, `mark_to_market`, `market_calendar`, `memory_metrics`, `models`, `momentum_exits`, `momentum_paper`, `momentum_shadow`, `operator_alert`, `operator_status`, `ops_metrics`, `ops_watchdogs`, `partner_coach`, `partner_orchestrator`, `penny_daily_attribution`, `penny_engine_breakout`, `penny_execution_journal`, `penny_executor`, `penny_heatmap`, `penny_hourly_report`, `penny_models`, `penny_position_reservations`, `penny_profit_lock`, `penny_regime`, `penny_risk`, `penny_scanner`, `penny_shadow`, `penny_signal_log`, `penny_smart_shadow`, `penny_universe`, `performance`, `portfolio`, `position_tracker`, `regime`, `risk_engine`, `routes_backtest`, `routes_commands`, `routes_fno_experiments`, `routes_hedge`, `routes_holidays`, `routes_market_session`, `routes_ops`, `routes_partner_coach`, `routes_penny_experiments`, `routes_portfolio`, `routes_promotion_readiness`, `scheduler_setup`, `scheduler_telemetry`, `signal_log`, `token_lifecycle`, `universe`
 
 Related tests: `python-engine/tests/test_main_api.py`, `python-engine/tests/test_main_breadth_helpers.py`, `python-engine/tests/test_main_breadth_integration.py`, `python-engine/tests/test_main_surface_characterization.py`
 
@@ -1392,9 +1404,9 @@ Engine dependencies: `config`
 
 ## `python-engine/partner_bot.py`
 
-[PARTNER-TIPS 2026-07-18] Outbound-only partner Telegram sender (WS4). A SECOND bot token + a SECOND chat id, wholly separate from the operator bot that node-gateway owns. Design rules (plan WS4): - Direct POST to api.telegram.org (the penny_hourly_report tier-2 pattern), NEVER through node-gateway's /api/internal/notify: the operator relay is hard-wired to the operator chat and a partner tip landing there -- or worse, an operator alert landing in the partner chat -- is a misroute we make structurally impossible. - NO fallback transport. A dropped partner message is an INFO problem; a misrouted one is a trust problem. Tier-1 local log is the record. - Plain text, no parse_mode: option tradin
+[PARTNER-TIPS 2026-07-18] Outbound partner Telegram sender (WS4). [O21-PC 2026-10-21] Cards may carry inline buttons (``reply_markup``) and ``partner_api`` makes the few other Bot API calls the fill capture needs (getUpdates, answerCallbackQuery, editMessageReplyMarkup, setMessageReaction, a one-line reply). The same rules hold: partner chat only, plain text, the token never logged. See partner_fill_capture.py. A SECOND bot token + a SECOND chat id, wholly separate from the operator bot that node-gateway owns. Design rules (plan WS4): - Direct POST to api.telegram.org (the penny_hourly_report tier-2 pattern), NEVER through node-gateway's /api/internal/notify: the operator relay is hard-wired
 
-Top-level declarations: `PartnerSendResult` (line 37), `partner_enabled` (line 51), `_masked_chat` (line 59), `_post_once` (line 64), `send_partner_result` (line 101), `send_partner` (line 152)
+Top-level declarations: `PartnerSendResult` (line 43), `partner_enabled` (line 57), `_masked_chat` (line 65), `_post_once` (line 70), `send_partner_result` (line 111), `send_partner` (line 164), `partner_api` (line 173)
 
 Engine dependencies: `config`
 
@@ -1417,6 +1429,18 @@ Related tests: `python-engine/tests/test_partner_buyer.py`
 Top-level declarations: `CardRenderError` (line 44), `_iso` (line 54), `_format_rupees` (line 74), `_format_strike` (line 81), `render_card` (line 92), `validate_rendered_card` (line 269), `render_and_validate` (line 332)
 
 Related tests: `python-engine/tests/test_partner_card_renderer.py`
+
+## `python-engine/partner_coach.py`
+
+[O21-PC 2026-10-21] Partner coach: what the partner did, what each card said, and the difference in rupees with a reason. The partner is a manual trader, so every card instruction is priced PARTNER_COACH_REACTION_SEC (default 120 s) after the message reached them, using the 5-minute option prints the analytics tick already stores (fno_chain_oi). The coach never compares the partner with the engine's 10-second clock, and it never blocks or changes a card. Three numbers per traded card: - actual: the partner's reported prices, after charges; - card exits on your entry: same entry, exits where the card said (premium SL order, exit/target update, square-off). The gap to actual is what the exit b
+
+Top-level declarations: `_dt` (line 108), `_hhmm` (line 121), `_rs` (line 125), `_px` (line 132), `round_trip_costs` (line 138), `print_at` (line 147), `last_print_before` (line 155), `card_exit` (line 169), `card_entry` (line 205), `build_trades` (line 223), `_option_label` (line 275), `_fill` (line 282), `_flag` (line 292), `_pnl` (line 297), `analyse_card` (line 303), `analyse_off_card` (line 444), `_sequence_flags` (line 453), `analyse` (line 477), `_public` (line 589), `init_partner_coach_db` (line 607), `_live_series` (line 615), `load_cards` (line 627), `freeze_card_paths` (line 689), `load_partner_coach` (line 707), `render_coach_note` (line 726), `partner_coach_eod` (line 759)
+
+Engine dependencies: `config`, `cost_schedules`, `fno_costs`, `partner_bot`, `partner_fill_capture`, `partner_orchestrator`
+
+Related tests: `python-engine/tests/test_partner_coach.py`
+
+Declared tables: `partner_coach_card_paths`
 
 ## `python-engine/partner_collection_attempts.py`
 
@@ -1455,6 +1479,18 @@ Read-only per-candidate partner delivery-blocker diagnostic (S5c). Explains, for
 Top-level declarations: `_open_read_only` (line 47), `_tables` (line 61), `_in_window` (line 65), `_ist_day` (line 75), `candidate_blockers` (line 87), `_idea_rows` (line 123), `_attempt_summary` (line 148), `_qualification_rows` (line 168), `build_delivery_blocker_report` (line 176), `_session_summary` (line 238)
 
 Related tests: `python-engine/tests/test_partner_delivery_blockers.py`
+
+## `python-engine/partner_fill_capture.py`
+
+[O21-PC 2026-10-21] Partner fill capture: what the partner actually did. The partner trades real money by hand. Until now the system knew what it advised but never what was bought, at what price or when: ``partner_positions`` and ``partner_advisory_feedback`` both had 0 rows on Oct 21. This module is the inbound half of the partner bot, so a fill can be reported in one tap: - every entry card carries buttons: Bought 1 lot / Bought 2 lots / Skipped; - every exit-type update (stop, target, square-off) carries Sold buttons; - after a tap the buttons change to show what was recorded, with Undo; - a reply to a card or update records or corrects in the partner's words: "518.5", "b 518.5 x2", "s 56
+
+Top-level declarations: `init_partner_fill_db` (line 111), `ParsedReport` (line 122), `parse_report_text` (line 146), `position_state` (line 234), `_button` (line 260), `_price_text` (line 264), `entry_keyboard` (line 271), `exit_keyboard` (line 278), `state_keyboard` (line 284), `keyboard_for` (line 307), `_iso` (line 325), `_row` (line 332), `card_reports` (line 336), `reports_between` (line 344), `insert_report` (line 354), `void_report` (line 375), `_get_state` (line 384), `_set_state` (line 391), `load_card` (line 404), `delivered_messages` (line 435), `_chat_id` (line 464), `_answer` (line 468), `_set_keyboard` (line 472), `_react` (line 477), `_reply` (line 483), `refresh_keyboards` (line 489), `_market_open` (line 505), `quote_at_tap` (line 510), `_estimate` (line 542), `_base_report` (line 558), `_recent_same` (line 571), `describe` (line 584), `apply_tap` (line 594), `_stated_trade_at` (line 660), `_latest` (line 669), `apply_text` (line 674), `off_card_contract` (line 743), `_off_card_lot_size` (line 753), `_in_partner_chat` (line 778), `_help_allowed` (line 782), `handle_update` (line 794), `partner_inbox_tick` (line 860), `record_dashboard_report` (line 901)
+
+Engine dependencies: `config`, `fno_underlyings`, `partner_bot`
+
+Related tests: `python-engine/tests/test_partner_fill_capture.py`
+
+Declared tables: `partner_inbox_state`, `partner_trade_reports`
 
 ## `python-engine/partner_fixture_adapter.py`
 
@@ -1512,9 +1548,9 @@ Declared tables: `partner_advisory_feedback`, `partner_advisory_ideas`, `partner
 
 [PARTNER-TIPS 2026-07-18] Partner tips bot orchestration (WS5). Owns the partner-facing jobs (wired in scheduler_setup.register_partner_ scheduler_jobs) and the partner_messages dedup/throttle table: - partner_scan_tick cron */2min at :40s, 09:45-15:05 -> ORB signal tips - partner_analytics_tick cron minute 2-57/5, 09:20-15:30 -> wide-chain snapshot -> OI store -> PCR/IV/OI-wall/regime/halt/momentum events - partner_morning_brief 09:50 -> per-underlying levels + options context - partner_eod_wrap 15:40 -> day recap + signal outcomes + OI purge - partner_rv_refresh 09:10 -> per-underlying 20d realized vol cache Scheduling is deliberately OFF the quarter-hour grid: the momentum screener and pe
 
-Top-level declarations: `_closed_bar_observation` (line 63), `_buyer_indices` (line 107), `_partner_db` (line 128), `init_partner_db` (line 132), `_seen` (line 144), `_record` (line 153), `_throttled` (line 168), `_send_event` (line 190), `_advisory_can_deliver` (line 232), `_legacy_info_retired` (line 260), `_todays_card_outcomes` (line 276), `_gates_open` (line 353), `_expiry_note_for` (line 369), `_dte_for` (line 376), `_track_record` (line 385), `partner_scan_tick` (line 432), `partner_manual_advisory_tick` (line 557), `partner_manual_advisory_lifecycle_tick` (line 1188), `_pulse_state` (line 1214), `_pulse_count_today` (line 1240), `_pulse_blocked` (line 1245), `_buyer_flow_pulse` (line 1262), `_send_pin_note` (line 1367), `partner_analytics_tick` (line 1390), `_log_non_momentum_open_positions` (line 1661), `partner_morning_brief` (line 1698), `_signal_outcome` (line 1806), `_stamp_outcome` (line 1847), `_option_outcome_line` (line 1865), `_track_record_overall` (line 1893), `_buyer_card_outcome` (line 1931), `partner_eod_wrap` (line 1973), `partner_rv_refresh` (line 2132)
+Top-level declarations: `_closed_bar_observation` (line 63), `_buyer_indices` (line 107), `_partner_db` (line 128), `init_partner_db` (line 132), `_seen` (line 144), `_record` (line 153), `_throttled` (line 168), `_send_event` (line 190), `_advisory_can_deliver` (line 232), `_legacy_info_retired` (line 260), `_todays_card_outcomes` (line 276), `_gates_open` (line 353), `_expiry_note_for` (line 369), `_dte_for` (line 376), `_track_record` (line 385), `partner_scan_tick` (line 432), `partner_manual_advisory_tick` (line 557), `partner_manual_advisory_lifecycle_tick` (line 1188), `_pulse_state` (line 1214), `_pulse_count_today` (line 1240), `_pulse_blocked` (line 1245), `_buyer_flow_pulse` (line 1262), `_send_pin_note` (line 1367), `partner_analytics_tick` (line 1390), `_log_non_momentum_open_positions` (line 1661), `partner_morning_brief` (line 1698), `_signal_outcome` (line 1806), `_stamp_outcome` (line 1847), `_option_outcome_line` (line 1865), `_track_record_overall` (line 1893), `_buyer_card_outcome` (line 1931), `partner_eod_wrap` (line 1973), `partner_rv_refresh` (line 2142)
 
-Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_entry_plan`, `fno_models`, `fno_signal_scan`, `fno_underlyings`, `macro_events`, `partner_bot`, `partner_buyer`, `partner_collection_attempts`, `partner_content`, `partner_decision_clock`, `partner_manual_advisory`, `partner_research_capture`
+Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_entry_plan`, `fno_models`, `fno_signal_scan`, `fno_underlyings`, `macro_events`, `partner_bot`, `partner_buyer`, `partner_coach`, `partner_collection_attempts`, `partner_content`, `partner_decision_clock`, `partner_manual_advisory`, `partner_research_capture`
 
 Related tests: `python-engine/tests/test_partner_orchestrator.py`
 
@@ -2306,6 +2342,14 @@ Top-level declarations: `FnoExitRecoveryRequest` (line 44), `get_fno_spread_tilt
 
 Engine dependencies: `config`, `fno_exit_recovery`, `fno_spread_tilt`, `halt_switch`, `ops_metrics`, `optional_ai_status`, `order_execution_readiness`, `penny_health`, `penny_smart_shadow`, `performance`, `release_identity`, `token_lifecycle`
 
+## `python-engine/routes_partner_coach.py`
+
+[O21-PC 2026-10-21] Partner coach and standard-capital views (read-mostly). GET /partner/coach the coach view (partner_coach.py) POST /partner/coach/reports owner-entered fill (the partner told them) POST /partner/coach/reports/{id}/void remove a wrong report GET /performance/standard-capital every book on one capital (standard_capital.py) All routes need the internal secret. None places an order or changes a card.
+
+Top-level declarations: `PartnerReportPayload` (line 24), `VoidPayload` (line 36), `get_partner_coach` (line 41), `post_partner_coach_report` (line 48), `post_partner_coach_report_void` (line 62), `get_standard_capital` (line 72)
+
+Engine dependencies: `config`, `partner_coach`, `partner_fill_capture`, `standard_capital`
+
 ## `python-engine/routes_penny_experiments.py`
 
 Authenticated read-only surface for classic Penny paper experiments.
@@ -2344,7 +2388,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 374), `register_partner_scheduler_jobs` (line 1243)
 
-Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
+Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 
 ## `python-engine/scheduler_telemetry.py`
 
@@ -2397,6 +2441,16 @@ Engine dependencies: `config`, `session_csv`
 Top-level declarations: `TradeSpec` (line 86), `skill_threshold` (line 101), `run_control` (line 117), `categorise` (line 231), `format_report` (line 288), `_verdict_meaning` (line 333), `_percentile` (line 348), `split_by_day` (line 358)
 
 Related tests: `python-engine/tests/test_skill_test.py`
+
+## `python-engine/standard_capital.py`
+
+[O21-SC 2026-10-21] Every paper book on one standard capital. Each book trades its own notional (F&O ₹2.5L, Momentum ₹50k, overnight ₹25k, Penny ₹1L...), so their rupee results cannot be compared, and none answers "what would ₹2L in this book have done?". The owner's plan is to give a proven book a standard amount (₹2L or ₹5L), then test real money scaled down. This module replays each book's own closed trades on one capital S, without changing any book: - every trade keeps the book's exposure relative to its own reference capital: units at S = round(book units x S / reference), whole lots or shares, so a trade too small for S (one NIFTY lot at ₹10k) is skipped and counted, not shrunk to a f
+
+Top-level declarations: `TradeRow` (line 52), `BookSpec` (line 66), `_round_units` (line 80), `scaled_pnl` (line 84), `peak_deployment` (line 92), `replay` (line 106), `combine_curves` (line 177), `_dt` (line 196), `_num` (line 210), `_close_time` (line 222), `_ro` (line 234), `_scaled_costs` (line 243), `_fno_single` (line 249), `_fno_spreads` (line 275), `_expiry` (line 295), `_overnight` (line 317), `_positions` (line 332), `_ledger_closes` (line 360), `load_books` (line 368), `load_standard_capital` (line 424), `standard_capital_view` (line 440)
+
+Engine dependencies: `config`, `fno_costs`, `penny_risk`
+
+Related tests: `python-engine/tests/test_standard_capital.py`
 
 ## `python-engine/strategy_health.py`
 
@@ -2520,7 +2574,7 @@ Local routes: `GET /ltp`, `POST /square-off`, `POST /execute`
 
 Dependencies: `../config`, `../middleware/auth`, `../middleware/logger`, `express`
 
-Local routes: `GET /signals`, `GET /rejected`, `GET /positions`, `GET /performance`, `GET /performance/divisions`, `GET /health-b`, `GET /bankroll`, `GET /circuit-breaker`, `POST /circuit-breaker/reset`, `GET /experiments/momentum`, `GET /experiments/penny`, `GET /experiments/fno-opening-range`, `GET /research/promotion-readiness`, `GET /analytics/proactive-activity`, `GET /analytics/proactive-comparison`, `GET /analytics/proactive-research-comparison`, `GET /analytics/optional-ai-status`, `GET /analytics/proactive-session-diagnostics`, `GET /analytics/scheduler-timing`, `GET /analytics/operational-coverage`, `GET /analytics/reconciliation-evidence`, `GET /partner/hedge/cards`, `GET /partner/hedge/delivery-backlog`, `GET /partner/advisory/setup`, `GET /partner/advisory/diagnostics`, `GET /partner/advisory/research-readiness`, `PUT /partner/advisory/profile`, `GET /backtests/strategies`, `POST /backtests/runs`, `GET /backtests/runs`, `GET /backtests/runs/:runId`
+Local routes: `GET /signals`, `GET /rejected`, `GET /positions`, `GET /performance`, `GET /performance/divisions`, `GET /health-b`, `GET /bankroll`, `GET /circuit-breaker`, `POST /circuit-breaker/reset`, `GET /experiments/momentum`, `GET /experiments/penny`, `GET /experiments/fno-opening-range`, `GET /research/promotion-readiness`, `GET /analytics/proactive-activity`, `GET /analytics/proactive-comparison`, `GET /analytics/proactive-research-comparison`, `GET /analytics/optional-ai-status`, `GET /analytics/proactive-session-diagnostics`, `GET /analytics/scheduler-timing`, `GET /analytics/operational-coverage`, `GET /analytics/reconciliation-evidence`, `GET /partner/hedge/cards`, `GET /partner/hedge/delivery-backlog`, `GET /partner/advisory/setup`, `GET /partner/advisory/diagnostics`, `GET /partner/advisory/research-readiness`, `PUT /partner/advisory/profile`, `GET /partner/coach`, `POST /partner/coach/reports`, `POST /partner/coach/reports/:reportId/void`, `GET /performance/standard-capital`, `GET /backtests/strategies`, `POST /backtests/runs`, `GET /backtests/runs`, `GET /backtests/runs/:runId`
 
 ## `node-gateway/server/routes/signals.js`
 
@@ -2613,7 +2667,7 @@ Dependencies: none extracted
 
 ## `node-gateway/client/src/App.jsx`
 
-Dependencies: `./hooks/useHealth`, `./pages/BacktestLab`, `./pages/Dashboard`, `./pages/Login`, `./pages/Positions`, `./pages/ResearchCenter`, `react`
+Dependencies: `./hooks/useHealth`, `./pages/BacktestLab`, `./pages/Dashboard`, `./pages/Login`, `./pages/PartnerCoach`, `./pages/Positions`, `./pages/ResearchCenter`, `./pages/StandardCapital`, `react`
 
 ## `node-gateway/client/src/components/CircuitBreaker.jsx`
 
@@ -2727,6 +2781,10 @@ Dependencies: `../api/client`, `../components/CircuitBreaker`, `../components/Po
 
 Dependencies: `lucide-react`, `react`
 
+## `node-gateway/client/src/pages/PartnerCoach.jsx`
+
+Dependencies: `../api/client`, `../utils/partnerCoach`, `lucide-react`, `react`, `swr`
+
 ## `node-gateway/client/src/pages/Positions.jsx`
 
 Dependencies: `../components/PositionRow`, `../components/StatusBar`, `../hooks/usePositions`, `react`
@@ -2734,6 +2792,10 @@ Dependencies: `../components/PositionRow`, `../components/StatusBar`, `../hooks/
 ## `node-gateway/client/src/pages/ResearchCenter.jsx`
 
 Dependencies: `../hooks/useResearchExperiments`, `../utils/promotionReadiness`, `../utils/researchExperiments`, `lucide-react`, `react`
+
+## `node-gateway/client/src/pages/StandardCapital.jsx`
+
+Dependencies: `../api/client`, `../utils/partnerCoach`, `../utils/standardCapital`, `lucide-react`, `react`, `swr`
 
 ## `node-gateway/client/src/utils/advisoryCollectionCoverage.js`
 
@@ -2744,6 +2806,10 @@ Dependencies: none extracted
 Dependencies: none extracted
 
 ## `node-gateway/client/src/utils/divisionPerformance.js`
+
+Dependencies: none extracted
+
+## `node-gateway/client/src/utils/partnerCoach.js`
 
 Dependencies: none extracted
 
@@ -2760,6 +2826,10 @@ Dependencies: none extracted
 Dependencies: none extracted
 
 ## `node-gateway/client/src/utils/sessionPhase.js`
+
+Dependencies: none extracted
+
+## `node-gateway/client/src/utils/standardCapital.js`
 
 Dependencies: none extracted
 

@@ -287,7 +287,7 @@ async def test_the_15_10_reminder_is_retried_after_a_dns_failure(tmp_path, monke
                 PartnerSendResult(True, message_id=7, state="acknowledged")]
     sends = []
 
-    async def transport(text, *, kind):
+    async def transport(text, *, kind, **_unused):
         sends.append(text)
         return outcomes.pop(0)
 

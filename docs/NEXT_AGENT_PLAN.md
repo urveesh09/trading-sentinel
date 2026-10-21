@@ -1,5 +1,65 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 21 (afternoon) — O21-PC partner fill capture + coach, O21-SC standard capital, O21-BS F&O broker backstop (done, Dev, commit pending (recorded in the next docs commit), branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- Problem:
+  - Owner (Oct 21, planning ₹10k–12.5k real money): standardise the books on
+    one capital (₹2L/₹5L) to test properly, scale down later; "the broker
+    side thing sure"; capture the partner's real fills and coach the manual
+    partner on FOMO/revenge mistakes; the rest at our call. Host reliability
+    (point 4) is the owner's decision, not done.
+  - Facts: no partner fill was ever recorded (0 rows); every book uses a
+    different notional; live F&O stops exist only in the engine (Oct 16:
+    321-minute outage in market hours).
+- Files: `partner_fill_capture.py`, `partner_coach.py`, `standard_capital.py`,
+  `fno_broker_backstop.py`, `routes_partner_coach.py` (new); `partner_bot.py`,
+  `hedge_advisory.py`, `partner_orchestrator.py`, `scheduler_setup.py`,
+  `main.py`, `fno_executor.py`, `fno_orchestrator.py`, `fno_entry_plan.py`,
+  `config.py`; gateway `server/routes/proxy.js`; client `App.jsx`,
+  `pages/Dashboard.jsx`, `pages/PartnerCoach.jsx`, `pages/StandardCapital.jsx`,
+  `utils/partnerCoach.js`, `utils/standardCapital.js`.
+- Contracts:
+  - New tables (idempotent DDL): `partner_trade_reports`,
+    `partner_inbox_state`, `partner_coach_card_paths`, `fno_broker_backstops`.
+  - New settings: `PARTNER_FILL_CAPTURE_ENABLED` (True),
+    `PARTNER_INBOX_POLL_SEC` 20, `PARTNER_INBOX_LONG_POLL_SEC` 15,
+    `PARTNER_COACH_REACTION_SEC` 120, `PARTNER_COACH_NOTE_ENABLED` (True),
+    `STANDARD_CAPITAL_INR` 200000, `FNO_BROKER_BACKSTOP_ENABLED` (True),
+    `FNO_BACKSTOP_EXTRA_PCT` 0.10, `FNO_BACKSTOP_LIMIT_GAP_PCT` 0.10.
+  - New job `partner_inbox_tick` (interval); four routes; goldens
+    `tests/main_surface_golden.json` and `tests/add_job_census_golden.json`
+    regenerated (additions only).
+  - `send_partner_result(text, *, kind, reply_markup=None)`;
+    `FnoExecutor.place_stop_limit / order_state / cancel_and_read`;
+    exit reason `broker_backstop`.
+- Acceptance (met in Dev): see the handover receipt for tests; the
+  standard-capital replay reproduces each book's own P&L at its own capital
+  on Production data (read-only trial); a filled backstop is the exit and no
+  sell is sent; an unprovable backstop holds the exit without claiming it.
+- Rollout: merge after `codex/production-correction-hedge-p0` (expiry-v3,
+  needed before the Thursday Oct 22 SENSEX expiry), rebuild engine and
+  gateway outside 12:59–15:40 on an expiry day. Partner: tell them the new
+  buttons ("tap Bought when you buy, Sold when you exit; reply with your
+  price to correct").
+- Rollback: `PARTNER_FILL_CAPTURE_ENABLED=false` (no buttons, no polling),
+  `PARTNER_COACH_NOTE_ENABLED=false`, `FNO_BROKER_BACKSTOP_ENABLED=false`;
+  or revert the commit. New tables are inert when unused.
+- Remaining:
+  - [ ] After deploy: `partner_cron_registered jobs=16`; no
+    `partner_api_rejected method=getUpdates status=409` (a webhook on the
+    partner bot would block polling); the first card shows buttons; a tap
+    logs `partner_fill_tap`.
+  - [ ] First reported day: the Partner Coach page shows the card, plan and
+    flags; the evening note arrives after the wrap; check the reasons read
+    right to the partner and adjust wording only with the owner.
+  - [ ] Live F&O (when the owner arms it): place-and-cancel one far SL on
+    NFO to prove the order type and range before the first live entry.
+  - [ ] Standard capital: EDGE morning positions cover 9 of 19 ledger closes;
+    Smart Penny (event-sourced) is not in the replay; the expiry reference is
+    a modelling choice (3 × budget at 2% risk) — revisit with the owner.
+  - [ ] Owner decisions: host reliability (UPS / cloud VM with its own
+    static IP); the standard amount to use for promotion (₹2L or ₹5L).
+
 ## October 21 — expiry-v3 (B takes BP's pair target), expiry-shadow-v5 and Oct 19 expiry-audit fixes (done, Dev, commit `a88da98`, pushed, not deployed)
 
 - Problem:
@@ -52,7 +112,7 @@
     line 32.47 filled at 28.15). A faster tick in the B window is an execution
     change (`expiry-exec-v3`), not done.
 
-## October 19 — Oct 19 audit fixes O19-E1/P1/P2/S1/S2/O1/F1/M1/M2/B1 (done, Dev, commit `d12bb1d`, pushed, not deployed)
+## October 19 — Oct 19 audit fixes O19-E1/P1/P2/S1/S2/O1/F1/M1/M2/B1 (done, Dev, commit `d12bb1d`, pushed, deployed by PR #111)
 
 - Problem (Production deep audit 2026-10-19, non-expiry; owner: partner
   quality must not deteriorate, EDGE investigate/fix, profit-lock shadow,
@@ -93,7 +153,7 @@
     including bonds (60 min); an EQ-only filter would shorten it but changes
     the cache EDGE/overnight read (not done).
 
-## October 18 — simulation-report fixes O18-F1/P1/E1/R1-R3 (done, Dev, commit `a0a3fd8`, pushed, not deployed)
+## October 18 — simulation-report fixes O18-F1/P1/E1/R1-R3 (done, Dev, commit `a0a3fd8`, pushed, merged by PR #111)
 
 - Problem (Oct 13 current-strategy simulation report):
   - F1: the F&O replay read expiry days from one batch's series (INVALID

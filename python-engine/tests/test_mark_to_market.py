@@ -36,9 +36,15 @@ from mark_to_market import (
 
 # ---- helpers ---------------------------------------------------------------
 
+# [O21] One instant for the whole module. A fresh clock read per call let a
+# quote built just after ``now = _now()`` carry a later stamp: its age came
+# out negative and read STALE (flaky failures Oct 19 and Oct 21).
+_FIXED_NOW = datetime.now(timezone.utc)
+
+
 def _now() -> datetime:
-    """Return a fresh tz-aware UTC reference instant."""
-    return datetime.now(timezone.utc)
+    """Return the module's fixed tz-aware UTC reference instant."""
+    return _FIXED_NOW
 
 
 def _quote(last_price: float, age_seconds: int = 0) -> QuoteTick:

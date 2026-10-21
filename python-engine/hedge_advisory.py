@@ -1264,7 +1264,12 @@ async def _send_claimed_review(
         if not await _mark_transport_started(db_path, kind, key, token, now=transport_now):
             return False
         post_dispatch = True
-        result = await send_partner_result(text, kind=kind)
+        # [O21-PC] Entry cards and exit updates carry fill-capture buttons;
+        # the text and every gate above are unchanged.
+        from partner_fill_capture import keyboard_for
+        markup = keyboard_for(kind, detail)
+        result = await (send_partner_result(text, kind=kind, reply_markup=markup) if markup
+                        else send_partner_result(text, kind=kind))
         attempt = {
             "kind": kind, "dedup_key": key, "state": result.state,
             "acknowledged": result.delivered, "message_id": result.message_id,

@@ -1,0 +1,221 @@
+"""[O21-BS] Resting broker SL under live F&O options: levels, arming and never selling twice."""
+import sqlite3
+import sys
+from contextlib import closing
+from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+
+import fno_broker_backstop as bs
+from config import settings
+from fno_executor import FnoExecutor
+from tests.test_atomic_settlement import _insert_open_position, fno_db  # noqa: F401 (fixture)
+
+
+@pytest.fixture(autouse=True)
+def _pages(monkeypatch):
+    pages = []
+
+    async def notify(message, **kwargs):
+        pages.append((kwargs.get("event"), message))
+        return True
+
+    alert = MagicMock()
+    alert.notify_operator = notify
+    monkeypatch.setitem(sys.modules, "operator_alert", alert)
+    monkeypatch.setattr(bs, "_paged", set())
+    monkeypatch.setattr(bs, "_last_check", {})
+    monkeypatch.setattr(settings, "FNO_BROKER_BACKSTOP_ENABLED", True)
+    return pages
+
+
+@pytest.mark.parametrize("fill, expected", [
+    (100.0, (65.0, 58.5)),       # 35% under; 10% gap inside the 20% range
+    (40.0, (26.0, 23.4)),        # small trigger: gap well inside the ₹10 range
+    (1000.0, (650.0, 585.0)),
+    (101.37, (65.85, 59.25)),    # rounded down to the 0.05 tick
+])
+def test_backstop_levels(fill, expected):
+    assert bs.backstop_levels(fill, 0.05, stop_pct=0.25, extra_pct=0.10, gap_pct=0.10) == expected
+
+
+def test_no_level_for_a_worthless_option_or_a_bad_config():
+    assert bs.backstop_levels(0.10, 0.05, stop_pct=0.25, extra_pct=0.10, gap_pct=0.10) is None
+    assert bs.backstop_levels(100.0, 0.05, stop_pct=0.6, extra_pct=0.5, gap_pct=0.10) is None
+    # A 30% gap on a ₹200 trigger exceeds NSE's 20% range: clamped to 20%.
+    trigger, limit = bs.backstop_levels(400.0, 0.05, stop_pct=0.25, extra_pct=0.25, gap_pct=0.30)
+    assert (trigger, limit) == (200.0, 160.0)
+
+
+def _live(kite=None) -> FnoExecutor:
+    executor = FnoExecutor(kite or AsyncMock(), paper_mode=False, source_tag="FNO_LIVE")
+    executor.poll_interval_sec = 0
+    return executor
+
+
+@pytest.mark.asyncio
+async def test_arm_places_a_protective_sell_sl_and_records_it(fno_db):
+    kite = AsyncMock()
+    kite.place_order.return_value = {"order_id": "SL-1", "dispatch_certainty": "ACCEPTED"}
+    out = await bs.arm(fno_db, _live(kite), position_id=7, source="FNO_LIVE", tradingsymbol="NIFTY26O2322950PE",
+                       exchange="NFO", qty=75, fill=100.0, tick=0.05)
+    assert out["state"] == "PLACED"
+    kwargs = kite.place_order.await_args.kwargs
+    assert (kwargs["transaction_type"], kwargs["order_type"], kwargs["trigger_price"], kwargs["price"]) == \
+        ("SELL", "SL", 65.0, 58.5)
+    assert kwargs["intent"] == "exit" and kwargs["product"] == "MIS" and kwargs["quantity"] == 75
+    row = await bs.load_backstop(fno_db, 7)
+    assert (row["state"], row["order_id"], row["trigger_price"]) == ("PLACED", "SL-1", 65.0)
+
+
+@pytest.mark.asyncio
+async def test_arm_is_inert_on_paper_and_pages_when_rejected(fno_db, _pages):
+    paper = FnoExecutor(AsyncMock(), paper_mode=True, source_tag="FNO_PAPER")
+    assert (await bs.arm(fno_db, paper, position_id=1, source="FNO_PAPER", tradingsymbol="X", exchange="NFO",
+                         qty=75, fill=100.0, tick=0.05))["state"] == "NOT_ARMED"
+    paper.kite.place_order.assert_not_awaited()
+    kite = AsyncMock()
+    kite.place_order.return_value = {"order_id": None, "dispatch_certainty": "BROKER_REJECTED", "message": "range"}
+    out = await bs.arm(fno_db, _live(kite), position_id=2, source="FNO_LIVE", tradingsymbol="X", exchange="NFO",
+                       qty=75, fill=100.0, tick=0.05)
+    assert out["state"] == "PLACE_REJECTED" and _pages[0][0] == "fno_backstop_not_placed"
+
+
+async def _armed(db, position_id=5, state="PLACED", order_id="SL-1"):
+    await bs._write(db, position_id, source="FNO_LIVE", tradingsymbol="NIFTY26O2322950PE", exchange="NFO", qty=75,
+                    trigger_price=65.0, limit_price=58.5, order_id=order_id, state=state)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("final, expected", [
+    ({"status": "CANCELLED", "filled_quantity": 0}, {"action": "proceed"}),
+    ({"status": "COMPLETE", "filled_quantity": 75, "average_price": 63.2},
+     {"action": "filled", "fill_price": 63.2, "order_id": "SL-1"}),
+    ({"status": "CANCELLED", "filled_quantity": 25, "average_price": 64.0},
+     {"action": "partial", "filled_qty": 25, "fill_price": 64.0, "remaining": 50, "order_id": "SL-1"}),
+])
+async def test_before_exit_cancels_and_reports_what_is_left(fno_db, final, expected):
+    await _armed(fno_db)
+    executor = _live()
+    executor.kite.order_history.return_value = [final]
+    assert await bs.before_exit(fno_db, executor, 5, 75) == expected
+    executor.kite.cancel_order.assert_awaited_once_with("SL-1")
+
+
+@pytest.mark.asyncio
+async def test_before_exit_holds_when_the_state_cannot_be_proven(fno_db, _pages):
+    await _armed(fno_db)
+    executor = _live()
+    executor.kite.order_history.return_value = [{"status": "OPEN", "filled_quantity": 0}]
+    assert (await bs.before_exit(fno_db, executor, 5, 75))["action"] == "hold"
+    assert (await bs.before_exit(fno_db, executor, 5, 75))["action"] == "hold"
+    assert [event for event, _ in _pages] == ["fno_backstop_unknown"]        # paged once
+
+
+@pytest.mark.asyncio
+async def test_unknown_dispatch_is_resolved_from_the_order_book(fno_db):
+    await _armed(fno_db, state="PLACE_UNKNOWN", order_id=None)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = []
+    assert await bs.before_exit(fno_db, executor, 5, 75) == {"action": "proceed"}
+    await _armed(fno_db, position_id=6, state="PLACE_UNKNOWN", order_id=None)
+    executor.kite.orders_snapshot.return_value = [
+        {"order_id": "SL-9", "tradingsymbol": "NIFTY26O2322950PE", "transaction_type": "SELL", "order_type": "SL",
+         "trigger_price": 65.0}]
+    executor.kite.order_history.return_value = [{"status": "CANCELLED", "filled_quantity": 0}]
+    assert await bs.before_exit(fno_db, executor, 6, 75) == {"action": "proceed"}
+    executor.kite.cancel_order.assert_awaited_once_with("SL-9")
+    await _armed(fno_db, position_id=8, state="PLACE_UNKNOWN", order_id=None)
+    executor.kite.orders_snapshot.return_value = None      # unreadable book
+    assert (await bs.before_exit(fno_db, executor, 8, 75))["action"] == "hold"
+
+
+@pytest.mark.asyncio
+async def test_passive_check_books_an_executed_backstop_and_notices_a_drop(fno_db, _pages):
+    await _armed(fno_db)
+    executor = _live()
+    now = datetime(2026, 10, 21, 10, 0, tzinfo=timezone.utc)
+    executor.kite.order_history.return_value = [{"status": "TRIGGER PENDING", "filled_quantity": 0}]
+    assert await bs.check_filled(fno_db, executor, 5, price=90.0, now=now) is None
+    # Far from the trigger and checked a moment ago: no broker read.
+    assert await bs.check_filled(fno_db, executor, 5, price=90.0, now=now) is None
+    assert executor.kite.order_history.await_count == 1
+    executor.kite.order_history.return_value = [{"status": "COMPLETE", "filled_quantity": 75, "average_price": 62.0}]
+    assert await bs.check_filled(fno_db, executor, 5, price=66.0, now=now) == {"fill_price": 62.0, "order_id": "SL-1"}
+    await _armed(fno_db, position_id=9)
+    executor.kite.order_history.return_value = [{"status": "CANCELLED", "filled_quantity": 30}]
+    assert await bs.check_filled(fno_db, executor, 9, price=0.0, now=now) is None
+    assert (await bs.load_backstop(fno_db, 9))["state"] == "BROKER_CANCELLED"
+    assert _pages[-1][0] == "fno_backstop_dropped"
+    # The part-fill is not "safe": the exit re-reads it and sells only the rest.
+    executor.kite.order_history.return_value = [{"status": "CANCELLED", "filled_quantity": 30, "average_price": 64.0}]
+    assert (await bs.before_exit(fno_db, executor, 9, 75))["remaining"] == 45
+
+
+def _exit_executor():
+    kite = AsyncMock()
+    kite.get_quote.return_value = {1: {"last_price": 110, "depth": {"buy": [{"price": 110}]}}}
+    executor = AsyncMock()
+    executor.paper_mode = False
+    executor.execute_exit.return_value = {"status": "filled", "order_id": "broker-1", "fill_price": 110}
+    return kite, executor
+
+
+NOW = datetime(2026, 9, 13, 15, 20, tzinfo=timezone.utc)      # past the 15:10 hard flat
+
+
+@pytest.mark.asyncio
+async def test_a_filled_backstop_is_the_exit_and_no_sell_is_sent(fno_db):
+    from fno_orchestrator import _manage_open_positions
+    position_id = await _insert_open_position(fno_db, source="FNO_LIVE")
+    await _armed(fno_db, position_id=position_id)
+    kite, executor = _exit_executor()
+    executor.cancel_and_read.return_value = ({"status": "COMPLETE", "filled_quantity": 75, "average_price": 62.0}, None)
+    closed = await _manage_open_positions(kite, fno_db, "FNO_LIVE", executor, NOW, 19500)
+    assert len(closed) == 1
+    executor.execute_exit.assert_not_awaited()
+    with closing(sqlite3.connect(fno_db)) as db:
+        exit_premium, reason, order_id = db.execute(
+            "SELECT exit_premium, exit_reason, exit_order_id FROM fno_positions WHERE id=?", (position_id,)).fetchone()
+    assert (exit_premium, reason, order_id) == (62.0, "broker_backstop", "SL-1")
+
+
+@pytest.mark.asyncio
+async def test_engine_exit_cancels_the_backstop_first_and_partial_sells_only_the_rest(fno_db):
+    from fno_orchestrator import _manage_open_positions
+    position_id = await _insert_open_position(fno_db, source="FNO_LIVE")
+    await _armed(fno_db, position_id=position_id)
+    kite, executor = _exit_executor()
+    executor.cancel_and_read.return_value = ({"status": "CANCELLED", "filled_quantity": 25, "average_price": 64.0}, None)
+    closed = await _manage_open_positions(kite, fno_db, "FNO_LIVE", executor, NOW, 19500)
+    assert len(closed) == 1
+    assert executor.execute_exit.await_args.args[:2] == ("NIFTY26SEP19500CE", 50)
+    with closing(sqlite3.connect(fno_db)) as db:
+        exit_premium = db.execute("SELECT exit_premium FROM fno_positions WHERE id=?", (position_id,)).fetchone()[0]
+    assert exit_premium == pytest.approx((25 * 64.0 + 50 * 110.0) / 75)
+
+
+@pytest.mark.asyncio
+async def test_an_unproven_backstop_holds_the_exit_without_claiming_it(fno_db):
+    from fno_orchestrator import _manage_open_positions
+    position_id = await _insert_open_position(fno_db, source="FNO_LIVE")
+    await _armed(fno_db, position_id=position_id)
+    kite, executor = _exit_executor()
+    executor.cancel_and_read.return_value = ({}, "TimeoutError")
+    assert await _manage_open_positions(kite, fno_db, "FNO_LIVE", executor, NOW, 19500) == []
+    executor.execute_exit.assert_not_awaited()
+    with closing(sqlite3.connect(fno_db)) as db:
+        assert db.execute("SELECT COUNT(*) FROM fno_exit_intents").fetchone()[0] == 0
+        assert db.execute("SELECT status FROM fno_positions WHERE id=?", (position_id,)).fetchone()[0] == "OPEN"
+
+
+@pytest.mark.asyncio
+async def test_paper_positions_never_touch_the_backstop(fno_db):
+    from fno_orchestrator import _manage_open_positions
+    await _insert_open_position(fno_db)
+    kite, executor = _exit_executor()
+    executor.paper_mode = True
+    assert len(await _manage_open_positions(kite, fno_db, "FNO_PAPER", executor, NOW, 19500)) == 1
+    executor.cancel_and_read.assert_not_awaited()
+    executor.execute_exit.assert_awaited_once()

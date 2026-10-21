@@ -52,7 +52,8 @@ class EntryState:
     reentry_levels: Optional[Mapping[str, float]] = None
 
 
-REENTRY_STOP_REASONS = ("underlying_stop", "premium_backstop")
+# [O21-BS] A resting broker SL that executed is a stop too.
+REENTRY_STOP_REASONS = ("underlying_stop", "premium_backstop", "broker_backstop")
 
 
 def reentry_level(direction: str, entry_underlying: float, stop_underlying: float, margin_r: float) -> float:

@@ -1025,6 +1025,13 @@ class Settings(BaseSettings):
     # --- sizing / risk -----------------------------------------------------
     FNO_MAX_RISK_PCT:          float = 0.02       # per trade, of pool
     FNO_STOP_PREMIUM_PCT:      float = 0.25       # premium backstop (-25%)
+    # [O21-BS 2026-10-21] Resting broker SL (stop-limit) under each LIVE
+    # option (fno_broker_backstop.py): trigger 10 points under the engine's
+    # premium stop, limit 10% under the trigger (inside NSE's 20% range).
+    # Paper never places one. False = engine-managed stop only, as before.
+    FNO_BROKER_BACKSTOP_ENABLED: bool = True
+    FNO_BACKSTOP_EXTRA_PCT:    float = 0.10
+    FNO_BACKSTOP_LIMIT_GAP_PCT: float = 0.10
     FNO_MAX_OPEN_PREMIUM_PCT:  float = 0.15       # total committed premium
     FNO_MAX_CONCURRENT:        int   = 2          # implied by the premium cap
     FNO_MAX_TRADES_PER_DAY:    int   = 3
@@ -1323,6 +1330,22 @@ class Settings(BaseSettings):
     # fraction vs the open baseline (and again on each further move of
     # the same size).
     PARTNER_WALL_DELTA_PCT:     float = 0.15
+    # [O21-SC 2026-10-21] Default capital for the standard-capital view
+    # (standard_capital.py): every paper book replayed on this one amount.
+    # Read-only reporting; no book's sizing changes.
+    STANDARD_CAPITAL_INR:          float = 200000.0
+    # [O21-PC 2026-10-21] Partner fill capture + coach (partner_fill_capture.py,
+    # partner_coach.py). Cards get Bought/Skip buttons and exit updates a Sold
+    # button; replies with a price record or correct a fill. Off -> no buttons
+    # and no inbound polling (cards unchanged). Coaching never blocks a card.
+    PARTNER_FILL_CAPTURE_ENABLED:  bool  = True
+    PARTNER_INBOX_POLL_SEC:        int   = 20     # job interval
+    PARTNER_INBOX_LONG_POLL_SEC:   int   = 15     # getUpdates wait inside a job
+    # A manual trader needs time to read, open the app and place the order:
+    # the coach prices the card's plan this many seconds after each message.
+    PARTNER_COACH_REACTION_SEC:    int   = 120
+    # Short evening note to the partner on days they reported a trade.
+    PARTNER_COACH_NOTE_ENABLED:    bool  = True
 
     # Hedge-first partner advisory. This is deliberately independent from
     # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings
