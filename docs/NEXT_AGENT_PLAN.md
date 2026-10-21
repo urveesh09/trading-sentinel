@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 21 — expiry-v3 (B takes BP's pair target), expiry-shadow-v5 and Oct 19 expiry-audit fixes (done, Dev, commit `XV5_COMMIT`, pushed, not deployed)
+## October 21 — expiry-v3 (B takes BP's pair target), expiry-shadow-v5 and Oct 19 expiry-audit fixes (done, Dev, commit `a88da98`, pushed, not deployed)
 
 - Problem:
   - Owner order (Oct 21): apply the Oct 19 audit's expiry fixes, keep

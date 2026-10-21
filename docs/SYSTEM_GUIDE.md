@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 21 — expiry-v3: B takes BP's pair target; expiry-shadow-v5 (BL, CI) and Oct 19 expiry-audit fixes (actual behavior, Dev, commit `XV5_COMMIT`)
+## October 21 — expiry-v3: B takes BP's pair target; expiry-shadow-v5 (BL, CI) and Oct 19 expiry-audit fixes (actual behavior, Dev, commit `a88da98`)
 
 Audit: Production `docs/2026-10-19-expiry-system-deep-audit.md` (first expiry
 on v2). Owner order: apply the fixes, keep observing, and promote a shadow that

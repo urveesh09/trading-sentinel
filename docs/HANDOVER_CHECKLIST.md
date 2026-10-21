@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `XV5_COMMIT`, Dev, pushed, not deployed)
+## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `a88da98`, Dev, pushed, not deployed)
 
 - [x] B (main) sells both legs once the pair nets 20% after fees (BP's rule).
   BP was never worse than B on any expiry B traded (+₹2,998.74 over four;
