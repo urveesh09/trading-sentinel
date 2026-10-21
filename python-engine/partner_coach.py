@@ -300,8 +300,11 @@ def _pnl(entry: Optional[float], exit_: Optional[float], qty: Optional[int], exc
     return round((exit_ - entry) * qty - round_trip_costs(entry, exit_, qty, exchange), 2)
 
 
-def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta) -> dict:
-    """One delivered card: the partner's action, the card's plan and the flags."""
+def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_known: bool = False) -> dict:
+    """One delivered card: the partner's action, the card's plan and the flags.
+
+    ``traded_known``: the day's whole Zerodha book was read, so a card with
+    no order was not traded (NOT_TRADED) rather than not reported."""
     out = {
         "advisory_id": card["advisory_id"], "underlying": card["underlying"], "day": card["day"],
         "time": _hhmm(card["delivered_at"]), "option": card["option"], "direction": card.get("direction"),
@@ -315,7 +318,9 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta) -> dict
     lot_size = card.get("lot_size") or (trade or {}).get("lot_size")
     exchange = card.get("exchange") or "NFO"
     if trade is None or (not trade["buys"] and not trade["sells"]):
-        status = "SKIPPED" if trade is not None and trade["skipped"] else "NOT_REPORTED"
+        status = ("SKIPPED" if trade is not None and trade["skipped"]
+                  else "NOT_TRADED" if traded_known else "NOT_REPORTED")
+        label = {"SKIPPED": "Skipped", "NOT_TRADED": "Not traded", "NOT_REPORTED": "Not reported"}[status]
         entry = card_entry(card, reaction)
         plan = {"qty": lot_size, "entry": entry["price"], "entry_basis": entry["basis"]}
         if entry["skip"]:
@@ -326,12 +331,11 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta) -> dict
                 plan.update(exit=ex["price"], exit_at=_hhmm(ex["at"]), exit_reason=ex["reason"],
                             note=ex["note"], pnl=_pnl(entry["price"], ex["price"], lot_size, exchange))
         out.update(partner={"status": status}, plan=plan)
-        if status == "SKIPPED" and (plan.get("pnl") or 0) < 0:
+        if status in ("SKIPPED", "NOT_TRADED") and (plan.get("pnl") or 0) < 0:
             out["positives"].append({"code": "SKIP_SAVED", "title": POSITIVE_TITLES["SKIP_SAVED"],
                                      "reason": f"Following it would have been {_rs(plan['pnl'])} on 1 lot."})
-        out["verdict"] = (f"{'Skipped' if status == 'SKIPPED' else 'Not reported'}; the card on 1 lot: "
-                          f"{_rs(plan.get('pnl'))}" if plan.get("pnl") is not None
-                          else f"{'Skipped' if status == 'SKIPPED' else 'Not reported'}; no option prices to score the card")
+        out["verdict"] = (f"{label}; the card on 1 lot: {_rs(plan.get('pnl'))}" if plan.get("pnl") is not None
+                          else f"{label}; no option prices to score the card")
         return out
 
     out["partner"] = {k: trade[k] for k in ("buys", "sells", "bought_lots", "sold_lots", "open_lots", "avg_entry",
@@ -474,8 +478,11 @@ def _sequence_flags(day_trades: list[dict]) -> None:
         previous = item
 
 
-def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: datetime) -> dict:
-    """The coach view for the cards and reports in a window (pure)."""
+def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: datetime,
+            complete_days: frozenset = frozenset()) -> dict:
+    """The coach view for the cards and reports in a window (pure).
+
+    ``complete_days``: days whose whole Zerodha book was read after the close."""
     reaction = timedelta(seconds=reaction_sec)
     trades = build_trades(reports)
     items = []
@@ -484,7 +491,7 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         card["day_over"] = now.astimezone(IST).date().isoformat() > card["day"] or (
             card.get("exit_by") is not None and now > card["exit_by"] + timedelta(minutes=SQUARE_OFF_GRACE_MIN))
         trade = trades.get(card["advisory_id"])
-        item = analyse_card(card, trade, reaction)
+        item = analyse_card(card, trade, reaction, traded_known=card["day"] in complete_days)
         item["_trade"] = trade
         items.append(item)
     off_card = []
@@ -549,13 +556,14 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         "cards_bought": sum(1 for i in items if i["partner"]["status"] == "BOUGHT"),
         "cards_skipped": sum(1 for i in items if i["partner"]["status"] == "SKIPPED"),
         "cards_not_reported": sum(1 for i in items if i["partner"]["status"] == "NOT_REPORTED"),
+        "cards_not_traded": sum(1 for i in items if i["partner"]["status"] == "NOT_TRADED"),
         "off_card_trades": len(off_card),
         "trades_scored": len(scored),
         "actual_pnl": round(sum(i["_trade"]["pnl"] for i in scored), 2) if scored else None,
         "actual_pnl_on_cards": round(sum(a for a, _ in plan_pairs), 2) if plan_pairs else None,
         "plan_pnl_on_same_cards": round(sum(p for _, p in plan_pairs), 2) if plan_pairs else None,
         "unreported_cards_plan_pnl": round(sum(i["plan"]["pnl"] for i in items
-                                               if i["partner"]["status"] in ("NOT_REPORTED", "SKIPPED")
+                                               if i["partner"]["status"] in ("NOT_REPORTED", "SKIPPED", "NOT_TRADED")
                                                and i["plan"].get("pnl") is not None), 2),
         "followed_cards": sum(1 for i in items if not i["flags"] and i["partner"]["status"] == "BOUGHT"),
     }
@@ -577,7 +585,8 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         "assumptions": {
             "reaction_sec": reaction_sec,
             "card_prices": "5-minute option prints stored by the analytics tick; a touch between prints can be missed",
-            "partner_prices": "as reported; ≈ prices came from a quote at the tap",
+            "partner_prices": "Zerodha fills (exact price and exchange time) where the partner logged in; "
+                              "otherwise as reported, and ≈ prices came from a quote at the tap",
             "plan_entry_for_unbought_cards": "the first 5-minute print after the card plus the reaction time",
             "costs": "current F&O charges per contract segment, ₹20 per order",
         },
@@ -710,13 +719,36 @@ async def load_partner_coach(db_path: str, *, days: int = 30, now: Optional[date
     last_day = now.date().isoformat()
     first_day = (now.date() - timedelta(days=days - 1)).isoformat()
     from partner_fill_capture import reports_between
+    import partner_broker_sync as zerodha
     cards = await load_cards(db_path, first_day, last_day)
-    reports = await reports_between(db_path, first_day, last_day)
-    view = analyse(cards, reports, reaction_sec=int(settings.PARTNER_COACH_REACTION_SEC), now=now)
+    broker = await zerodha.broker_days(db_path, first_day, last_day)
+    reports, superseded = zerodha_first(await reports_between(db_path, first_day, last_day), broker)
+    complete = frozenset(day for day, row in broker.items() if row["complete"])
+    view = analyse(cards, reports, reaction_sec=int(settings.PARTNER_COACH_REACTION_SEC), now=now,
+                   complete_days=complete)
+    view["data_quality"]["superseded_by_zerodha"] = superseded
     view["window"] = {"first_day": first_day, "last_day": last_day, "days": days}
     view["capture_enabled"] = bool(settings.PARTNER_FILL_CAPTURE_ENABLED)
+    view["zerodha"] = zerodha.status(now) | {"days": broker}
     view["as_of"] = now.isoformat()
     return view
+
+
+def zerodha_first(reports: list[dict], broker: dict) -> tuple[list[dict], int]:
+    """On a day read from Zerodha its fills replace typed or tapped BUY/SELL
+    reports up to the read (the whole day once the read was after the close).
+    Skips stay: Zerodha cannot tell a decision to skip from a missed card."""
+    kept, superseded = [], 0
+    for report in reports:
+        day = broker.get(report.get("session_date"))
+        traded_at = _dt(report.get("trade_at"))
+        if (day and report.get("status") == "ACTIVE" and report.get("source") != "ZERODHA"
+                and report.get("action") in ("BUY", "SELL")
+                and (day["complete"] or (traded_at is not None and traded_at <= _dt(day["synced_at"])))):
+            superseded += 1
+            continue
+        kept.append(report)
+    return kept, superseded
 
 
 # ---------------------------------------------------------------------------
@@ -731,7 +763,10 @@ def render_coach_note(view: dict, day: str) -> Optional[str]:
     traded = [i for i in row["cards"] + row["off_card"] if i.get("partner", {}).get("buys")]
     if not traded:
         return None
-    lines = ["📒 Your trades today (from your taps and replies)"]
+    from_zerodha = any(f.get("source") == "ZERODHA" for i in traded
+                       for f in i["partner"].get("buys", []) + i["partner"].get("sells", []))
+    lines = ["📒 Your trades today (from Zerodha)" if from_zerodha
+             else "📒 Your trades today (from your taps and replies)"]
     head = f"{len(traded)} trade{'s' if len(traded) != 1 else ''}"
     if row["actual_pnl"] is not None:
         head += f" · {_rs(row['actual_pnl'])} after charges"
@@ -757,8 +792,13 @@ def render_coach_note(view: dict, day: str) -> Optional[str]:
 
 
 async def partner_coach_eod(now: Optional[datetime] = None) -> dict:
-    """Freeze today's card prices, then send the note when trades were reported."""
-    from partner_bot import partner_enabled, send_partner
+    """Freeze today's card prices, then send the note when trades were reported.
+
+    With Zerodha configured the note waits for a read of the whole day (the
+    partner's evening login, or the wrap's own read when a login is held),
+    so it is never built from a partial book."""
+    from partner_bot import partner_enabled, send_partner, send_partner_result
+    import partner_broker_sync as zerodha
     now = (now or datetime.now(IST)).astimezone(IST)
     day = now.date().isoformat()
     db_path = settings.DB_PATH
@@ -768,10 +808,16 @@ async def partner_coach_eod(now: Optional[datetime] = None) -> dict:
     from partner_orchestrator import _record, _seen
     if await _seen(db_path, "coach", day):
         return {"frozen": frozen, "note": "already_sent"}
+    if zerodha.configured() and not (await zerodha.broker_days(db_path, day, day)).get(day, {}).get("complete"):
+        return {"frozen": frozen, "note": "awaiting_zerodha"}
     view = await load_partner_coach(db_path, days=1, now=now)
     text = render_coach_note(view, day)
     if text is None:
         return {"frozen": frozen, "note": "no_reported_trades"}
-    ok = await send_partner(text, kind="coach")
+    keyboard = zerodha.review_keyboard("📒 Open full review")
+    if keyboard is not None:
+        ok = (await send_partner_result(text, kind="coach", reply_markup=keyboard)).delivered
+    else:
+        ok = await send_partner(text, kind="coach")
     await _record(db_path, "coach", day, ok, now=now)
     return {"frozen": frozen, "note": "sent" if ok else "failed"}

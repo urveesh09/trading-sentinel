@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildCoachModel, buildReportBody, fillLabel, formatRs, istIsoFromLocal } from '../src/utils/partnerCoach.js';
+import {
+  STATUS_LABEL, buildCoachModel, buildReportBody, coachUrl, fillLabel, fillSource, formatRs, istIsoFromLocal,
+  zerodhaLine,
+} from '../src/utils/partnerCoach.js';
 import { formatCapital, formatPct, rowsByReturn, standardCapitalUrl } from '../src/utils/standardCapital.js';
 
 test('rupees carry a sign and a true minus', () => {
@@ -50,4 +53,23 @@ test('standard capital labels, url and ordering', () => {
     '/api/proxy/performance/standard-capital?capital=500000&since=2026-09-01');
   assert.deepEqual(rowsByReturn([{ key: 'a', return_pct: -1 }, { key: 'b', return_pct: null }, { key: 'c', return_pct: 3 }])
     .map((row) => row.key), ['c', 'a', 'b']);
+});
+
+test('[O21-PK] Zerodha fills, the partner url and the owner status line', () => {
+  assert.equal(fillSource({ source: 'ZERODHA' }), 'from Zerodha');
+  assert.equal(fillSource({ source: 'DASHBOARD' }), 'entered here');
+  assert.equal(fillSource({ source: 'TELEGRAM_BUTTON' }), 'from Telegram');
+  assert.equal(fillLabel({ price: 518.5, price_basis: 'BROKER_FILL', lots: 2, at: '2026-10-19T12:09:10+05:30' }),
+    '2 lots ₹518.5 at 12:09');
+  assert.equal(STATUS_LABEL.NOT_TRADED, 'Not traded');
+  assert.equal(coachUrl(true, 1), '/api/partner-kite/coach?days=1');
+  assert.equal(coachUrl(false, 30), '/api/proxy/partner/coach?days=30');
+  assert.match(zerodhaLine(null, '2026-10-19'), /not set up/);
+  const read = { configured: true, connected: true, account: 'AB***34',
+    days: { '2026-10-19': { synced_at: '2026-10-19T15:41:02+05:30', complete: true, option_orders: 2 } } };
+  assert.equal(zerodhaLine(read, '2026-10-19'),
+    'Zerodha connected (AB***34) · today read at 15:41, whole day · 2 option order(s)');
+  assert.match(zerodhaLine({ configured: true, connected: false, days: {} }, '2026-10-19'),
+    /^Zerodha not connected now · today not read yet/);
+  assert.deepEqual(buildCoachModel({ zerodha: read }).zerodha, read);
 });

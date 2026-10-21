@@ -1,5 +1,40 @@
 # Handover receipt and operator checklist
 
+## October 21 (evening) — the partner's Zerodha fills + coach-only review page (commit pending (recorded in the next docs commit), Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- [x] O21-PK `partner_broker_sync.py`: evening "Open today's review" button
+  (Kite login for the partner's own Personal app); the callback reads GET
+  `/orders` + `/trades` only, refuses any account but
+  `PARTNER_KITE_USER_ID`, token in memory until 06:00; one ZERODHA report
+  per filled option order, matched to cards; `partner_broker_days`.
+- [x] Coach: Zerodha fills replace taps on read days; NOT_TRADED after a
+  complete read; the note waits for the read and says "(from Zerodha)".
+  Card buttons off while Zerodha is configured.
+- [x] Gateway `/api/partner-kite/callback` + `/coach`: coach-only session
+  (`partner_view`, never `authenticated`); client "Your trading review".
+- [x] Owner `/api/auth/callback` refuses the partner's account (or every
+  account but `ZERODHA_USER_ID`). It never checked the account before.
+- [x] Tests: new `tests/test_partner_broker_sync.py` 28; with
+  `tests/test_partner_coach.py` and `tests/test_partner_fill_capture.py`
+  63 pass; golden regenerated (3 route additions); full engine suite
+  5,341 passed, 4 skipped, 0 failed (9 min 12 s; collected before the 28th Zerodha test, which passes on its own). Gateway: new `tests/integration/partner-kite.test.js` 6 and
+  `tests/unit/auth-account-guard.test.js` 3 pass;
+  full jest 497 pass, 18 fail in `tests/unit/db.test.js` and `tests/unit/backlog-reconciliation.test.js` (better-sqlite3 has no native binary on this Windows host; environment, as in the afternoon receipt). Client: `node --test tests/*.test.mjs` 52 pass;
+  `vite build` ok.
+- [x] Environment: Windows `python-engine/winvenv` (pytest 8.0.0); Kite
+  behaviour from Zerodha's docs (Personal plan: order and portfolio APIs, no
+  market data; static IP for order endpoints only; token expiry 06:00), not
+  yet exercised against the partner's account.
+- [ ] Deployed: no. Same order as below (expiry-v3 first, then this branch).
+- [ ] Setup: the partner creates the Personal app (redirect
+  `https://<NGROK_URL>/api/partner-kite/callback`, no static IP). The owner
+  adds `PARTNER_KITE_API_KEY`, `PARTNER_KITE_API_SECRET` and
+  `PARTNER_KITE_USER_ID` to the root `.env`, and `PARTNER_KITE_USER_ID`
+  (plus their own `ZERODHA_USER_ID`) to `node-gateway/.env`. Then restart
+  the engine and gateway.
+- [ ] First evening: the prompt arrives after 15:40; the login lands on the
+  review; `partner_zerodha_synced` count matches the partner's order book.
+
 ## October 21 (afternoon) — partner fill capture + coach, standard capital, F&O broker backstop (commit `b580af2`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - [x] O21-PC cards carry Bought/Skipped buttons, exit updates Sold; replies
@@ -35,7 +70,8 @@
   (expiry-v3, before Thursday's SENSEX expiry), then this branch; rebuild
   engine and gateway outside 12:59–15:40 on an expiry day.
 - [ ] After deploy: `partner_cron_registered jobs=16`; no getUpdates 409;
-  tell the partner about the buttons.
+  tell the partner about the buttons (only without Zerodha; with it the
+  evening "Open today's review" button replaces them, O21-PK above).
 
 ## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `a88da98`, Dev, pushed, not deployed)
 

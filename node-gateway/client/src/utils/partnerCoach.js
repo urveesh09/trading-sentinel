@@ -36,8 +36,33 @@ export const STATUS_LABEL = {
   BOUGHT: 'Bought',
   EXIT_ONLY: 'Exit reported, buy missing',
   SKIPPED: 'Skipped',
+  NOT_TRADED: 'Not traded',
   NOT_REPORTED: 'Not reported',
 };
+
+// [O21-PK] Where a fill came from; Zerodha fills are exact and cannot be removed.
+export function fillSource(fill) {
+  if (fill?.source === 'ZERODHA') return 'from Zerodha';
+  if (fill?.source === 'DASHBOARD') return 'entered here';
+  return 'from Telegram';
+}
+
+// The partner's coach-only session reads through /api/partner-kite; the owner's through /api/proxy.
+export function coachUrl(partnerView, days) {
+  const base = partnerView ? '/api/partner-kite/coach' : '/api/proxy/partner/coach';
+  return `${base}?days=${days}`;
+}
+
+// One line on the partner's Zerodha link for the owner.
+export function zerodhaLine(zerodha, today) {
+  if (!zerodha?.configured) return 'Zerodha not set up: fills come from Telegram replies and this page.';
+  const read = zerodha.days?.[today];
+  const when = read ? String(read.synced_at || '').slice(11, 16) : null;
+  const parts = [zerodha.connected ? `Zerodha connected (${zerodha.account})` : 'Zerodha not connected now'];
+  if (read) parts.push(`today read at ${when}${read.complete ? ', whole day' : ', before the close'} · ${read.option_orders} option order(s)`);
+  else parts.push('today not read yet: the partner taps “Open today’s review” in Telegram after 15:40');
+  return parts.join(' · ');
+}
 
 // A datetime-local value ("2026-10-21T12:09") read as IST wall-clock time.
 export function istIsoFromLocal(value) {
@@ -87,6 +112,7 @@ export function buildCoachModel(payload) {
     quality: payload?.data_quality || {},
     assumptions: payload?.assumptions || {},
     captureEnabled: payload?.capture_enabled !== false,
+    zerodha: payload?.zerodha || null,
     noOrders: payload?.automatic_execution === false && payload?.blocks_cards === false,
   };
 }

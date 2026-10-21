@@ -1346,6 +1346,20 @@ class Settings(BaseSettings):
     PARTNER_COACH_REACTION_SEC:    int   = 120
     # Short evening note to the partner on days they reported a trade.
     PARTNER_COACH_NOTE_ENABLED:    bool  = True
+    # [O21-PK 2026-10-21] The partner's own Kite Connect "Personal" app (free:
+    # orders and portfolio, no market data), read-only (partner_broker_sync.py).
+    # The evening wrap sends a Kite login button; after the login the day's
+    # filled option orders feed the coach. All three values must be set, and
+    # a session for any account other than PARTNER_KITE_USER_ID is refused.
+    # The app's redirect URL is <public URL>/api/partner-kite/callback.
+    PARTNER_KITE_API_KEY:          str   = ""
+    PARTNER_KITE_API_SECRET:       str   = ""
+    PARTNER_KITE_USER_ID:          str   = ""
+    PARTNER_KITE_BASE_URL:         str   = "https://api.kite.trade"   # reads need no static IP
+    PARTNER_ZERODHA_SYNC_ENABLED:  bool  = True
+    # With Zerodha fills the Bought/Skipped/Sold buttons are redundant, so
+    # cards go out without them unless this is on. Typed replies still work.
+    PARTNER_FILL_BUTTONS_WITH_ZERODHA: bool = False
 
     # Hedge-first partner advisory. This is deliberately independent from
     # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings

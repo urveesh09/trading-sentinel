@@ -107,6 +107,10 @@ router.post('/partner/coach/reports/:reportId/void', (req, res) => {
   }
   return proxyToEngine(req, res, `/partner/coach/reports/${req.params.reportId}/void`, 'POST');
 });
+// [O21-PK] Re-read the partner's Zerodha order book while their login is held
+// (read-only: GET /orders and /trades on the partner's own app).
+router.post('/partner/broker/sync', (req, res) =>
+  proxyToEngine(req, res, '/partner/broker/sync', 'POST', { timeoutMs: 30000 }));
 // [O21-SC] Every paper book replayed on one standard capital (read-only).
 router.get('/performance/standard-capital', (req, res) =>
   proxyToEngine(req, res, withQuery('/performance/standard-capital',

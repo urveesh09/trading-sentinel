@@ -1,5 +1,73 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 21 (evening) — O21-PK the partner's Zerodha fills and a coach-only review page (done, Dev, commit pending (recorded in the next docs commit), branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- Problem:
+  - Owner (Oct 21): "the partner won't go on the dashboard for tracking his
+    entries of the day ... fetch his orders and all from the free api? The
+    partner should only go to dashboard at end of day to get his learnings."
+  - Facts: O21-PC needs a tap or reply per trade; the dashboard needs the
+    owner's Zerodha session, so the partner could not open it at all; Kite
+    Connect Personal (free) reads orders and trades (no market data), and
+    reads need no static IP.
+- Files: `partner_broker_sync.py`, gateway `server/routes/partner-kite.js`
+  (new); `partner_coach.py`, `partner_fill_capture.py`,
+  `partner_orchestrator.py`, `routes_partner_coach.py`, `config.py`,
+  `tests/conftest.py`; gateway `app.js`, `config.js`, `routes/auth.js`,
+  `routes/proxy.js`, `services/kite.js`;
+  client `App.jsx`, `pages/PartnerCoach.jsx`, `utils/partnerCoach.js`.
+- Contracts:
+  - New table `partner_broker_days`; reports in `partner_trade_reports` with
+    `source` ZERODHA, `price_basis` BROKER_FILL, `trade_at_basis`
+    EXCHANGE_FILL, `dedup_key` `kite:<order_id>` (upsert while ACTIVE).
+  - New settings: `PARTNER_KITE_API_KEY`, `PARTNER_KITE_API_SECRET`,
+    `PARTNER_KITE_USER_ID` (empty: feature off), `PARTNER_KITE_BASE_URL`,
+    `PARTNER_ZERODHA_SYNC_ENABLED` (True), `PARTNER_FILL_BUTTONS_WITH_ZERODHA`
+    (False).
+  - Engine routes POST `/partner/broker/session`, GET `/partner/broker/status`,
+    POST `/partner/broker/sync`; golden `tests/main_surface_golden.json`
+    regenerated (three additions only). No new job: `partner_eod_wrap` calls
+    `partner_broker_eod` before `partner_coach_eod`.
+  - Gateway: `/api/partner-kite/callback`, `/api/partner-kite/coach`,
+    `/api/proxy/partner/broker/sync`; session flag `partner_view`;
+    `/api/auth/status.partner_view`. Owner callback guard: optional
+    `ZERODHA_USER_ID` and `PARTNER_KITE_USER_ID` in `node-gateway/.env`; a
+    refused account redirects to `/login?error=wrong_account`.
+  - Coach: status NOT_TRADED, `summary.cards_not_traded`,
+    `data_quality.superseded_by_zerodha`, `view.zerodha`, note
+    `awaiting_zerodha`; `analyse(..., complete_days=)`.
+- Acceptance (met in Dev): only the four allowlisted Kite calls can be made;
+  a session for another account is refused and logged out; the token is in
+  no response or status; one report per filled option order with exact
+  prices and first-fill time; re-reads refresh the same row; Zerodha fills
+  replace taps; untraded cards are NOT_TRADED only after a complete read;
+  the note waits for the read and is sent once; a partner session opens only
+  the coach view (gateway tests).
+- Rollout:
+  1. Merge after `codex/production-correction-hedge-p0` (expiry-v3), with
+     the rest of this branch; rebuild engine and gateway.
+  2. Partner: developers.kite.trade → create a Personal app on their own
+     Zerodha account; redirect URL `https://<NGROK_URL>/api/partner-kite/callback`;
+     leave static IP empty. The owner puts the key, secret and partner's
+     Zerodha user ID in the root `.env`, never in chat. The owner also puts
+     `PARTNER_KITE_USER_ID` (and their own `ZERODHA_USER_ID`) in
+     `node-gateway/.env`, then restarts the engine and gateway.
+  3. Tell the partner: after 15:40 tap "Open today's review", log in to
+     Zerodha, read the review. The same day: Kite's order book holds only
+     the current day's orders.
+- Rollback: blank `PARTNER_KITE_API_KEY` or `PARTNER_ZERODHA_SYNC_ENABLED=false`
+  (cards get their buttons back, the note goes back to tap-based); or revert.
+  The table is inert when unused.
+- Remaining:
+  - [ ] First live login on Production: `partner_zerodha_login account=..`,
+    `partner_zerodha_synced` with the partner's order count; compare the
+    Coach page with the partner's Kite order book for that day.
+  - [ ] Confirm the Personal plan returns `/trades` (Zerodha lists order
+    management). If it is refused, `partner_zerodha_trades_unavailable` is
+    logged and each order's own average price and exchange time are used.
+  - [ ] Check whether ngrok shows its browser warning page on the callback;
+    if it does, the partner taps "Visit site" once per login.
+  - [ ] The O21-PC rows below still apply (flag wording only with the owner).
 ## October 21 (afternoon) — O21-PC partner fill capture + coach, O21-SC standard capital, O21-BS F&O broker backstop (done, Dev, commit `b580af2`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - Problem:
@@ -40,7 +108,8 @@
   needed before the Thursday Oct 22 SENSEX expiry), rebuild engine and
   gateway outside 12:59–15:40 on an expiry day. Partner: tell them the new
   buttons ("tap Bought when you buy, Sold when you exit; reply with your
-  price to correct").
+  price to correct"). With O21-PK Zerodha set up the buttons are off and
+  the partner only taps the evening "Open today's review" button.
 - Rollback: `PARTNER_FILL_CAPTURE_ENABLED=false` (no buttons, no polling),
   `PARTNER_COACH_NOTE_ENABLED=false`, `FNO_BROKER_BACKSTOP_ENABLED=false`;
   or revert the commit. New tables are inert when unused.

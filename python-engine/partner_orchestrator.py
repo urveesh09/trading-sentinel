@@ -2096,6 +2096,14 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
     # [O21-PC 2026-10-21] Coach: keep today's card prices past the 7-day OI
     # purge below, then send the partner's short evening note on days they
     # reported a trade (partner_coach.py). Never blocks the wrap or purge.
+    # [O21-PK] First the partner's Zerodha book: read it when a login is
+    # held, else send the one "Open today's review" login button.
+    try:
+        from partner_broker_sync import partner_broker_eod
+        zerodha = await partner_broker_eod(now)
+        logger.info("partner_zerodha_eod status=%s", zerodha.get("status"))
+    except Exception as exc:
+        logger.warning("partner_zerodha_eod_failed err=%s", type(exc).__name__)
     try:
         from partner_coach import partner_coach_eod
         coach = await partner_coach_eod(now)

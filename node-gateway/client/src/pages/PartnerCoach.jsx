@@ -3,12 +3,15 @@ import useSWR from 'swr';
 import { ArrowLeft, GraduationCap } from 'lucide-react';
 import { fetcher, postClient } from '../api/client';
 import {
-  STATUS_LABEL, buildCoachModel, buildReportBody, fillLabel, formatPrice, formatRs, pnlTone,
+  STATUS_LABEL, buildCoachModel, buildReportBody, coachUrl, fillLabel, fillSource, formatPrice, formatRs, pnlTone,
+  zerodhaLine,
 } from '../utils/partnerCoach';
 
 // [O21-PC] What the partner did with each card, what the card said, and the
 // difference with a reason. Coaching only: nothing here places an order or
 // changes a card.
+// [O21-PK] `partnerView`: the partner's own coach-only session (opened by
+// their Zerodha login). Read-only: no report form, no remove, no navigation.
 
 const WINDOWS = [1, 7, 30, 90];
 
@@ -44,8 +47,8 @@ function Fills({ title, fills, onVoid }) {
         {fills.map((fill) => (
           <li key={fill.report_id} className="flex flex-wrap items-center gap-2 text-xs text-gray-200">
             <span className="font-mono">{fillLabel(fill)}</span>
-            <span className="text-[10px] text-gray-500">{fill.source === 'DASHBOARD' ? 'entered here' : 'from Telegram'}</span>
-            <button onClick={() => onVoid(fill.report_id)} className="text-[10px] text-red-300 hover:text-red-200">remove</button>
+            <span className="text-[10px] text-gray-500">{fillSource(fill)}</span>
+            {onVoid && fill.source !== 'ZERODHA' && <button onClick={() => onVoid(fill.report_id)} className="text-[10px] text-red-300 hover:text-red-200">remove</button>}
           </li>
         ))}
       </ul>
@@ -53,7 +56,7 @@ function Fills({ title, fills, onVoid }) {
   );
 }
 
-function CardRow({ item, onVoid }) {
+function CardRow({ item, onVoid, who = 'Partner' }) {
   const card = item.card || {};
   const partner = item.partner || {};
   const plan = item.plan || {};
@@ -77,7 +80,7 @@ function CardRow({ item, onVoid }) {
         <div className="space-y-2">
           <Fills title="Bought" fills={partner.buys} onVoid={onVoid} />
           <Fills title="Sold" fills={partner.sells} onVoid={onVoid} />
-          {partner.pnl != null && <p className={`text-sm font-bold ${pnlTone(partner.pnl)}`}>Partner: {formatRs(partner.pnl)} after charges{partner.estimated ? ' (≈ prices)' : ''}</p>}
+          {partner.pnl != null && <p className={`text-sm font-bold ${pnlTone(partner.pnl)}`}>{who}: {formatRs(partner.pnl)} after charges{partner.estimated ? ' (≈ prices)' : ''}</p>}
         </div>
         <div className="space-y-1 text-xs text-gray-300">
           {item.card_messages?.length > 0 && <p className="text-[11px] text-gray-500">Card messages: {item.card_messages.map((m) => `${m.type.replaceAll('_', ' ').toLowerCase()} ${m.at}`).join(' · ')}</p>}
@@ -154,26 +157,40 @@ function ReportForm({ cards, onSaved }) {
   );
 }
 
-export default function PartnerCoach({ navigateToDashboard }) {
-  const [days, setDays] = useState(30);
-  const { data, error, isLoading, mutate } = useSWR(`/api/proxy/partner/coach?days=${days}`, fetcher,
+export default function PartnerCoach({ navigateToDashboard, partnerView = false }) {
+  const [days, setDays] = useState(partnerView ? 1 : 30);
+  const [syncNote, setSyncNote] = useState('');
+  const { data, error, isLoading, mutate } = useSWR(coachUrl(partnerView, days), fetcher,
     { refreshInterval: 60000, dedupingInterval: 20000 });
   const model = buildCoachModel(data);
   const s = model.summary;
-  const voidReport = async (reportId) => {
+  const today = String(data?.as_of || '').slice(0, 10);
+  const voidReport = partnerView ? null : async (reportId) => {
     if (!window.confirm('Remove this report?')) return;
     await postClient(`/api/proxy/partner/coach/reports/${reportId}/void`, { note: 'removed from dashboard' });
     mutate();
+  };
+  const rereadZerodha = async () => {
+    setSyncNote('Reading…');
+    try {
+      await postClient('/api/proxy/partner/broker/sync');
+      setSyncNote('Read.');
+      mutate();
+    } catch (err) {
+      setSyncNote(err.info?.detail?.code === 'not_connected' ? 'No partner login held now.' : err.message);
+    }
   };
   return (
     <div className="min-h-screen bg-gray-950 p-4 text-gray-100 sm:p-6">
       <div className="mx-auto max-w-6xl space-y-5">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <button onClick={navigateToDashboard} className="rounded border border-gray-700 p-2 text-gray-300 hover:bg-gray-800" aria-label="Back"><ArrowLeft size={16} /></button>
+            {!partnerView && <button onClick={navigateToDashboard} className="rounded border border-gray-700 p-2 text-gray-300 hover:bg-gray-800" aria-label="Back"><ArrowLeft size={16} /></button>}
             <div>
-              <h1 className="flex items-center gap-2 text-2xl font-bold text-white"><GraduationCap size={22} /> Partner Coach</h1>
-              <p className="text-sm text-gray-400">What the partner did with each card, what the card said, and why the difference matters.</p>
+              <h1 className="flex items-center gap-2 text-2xl font-bold text-white"><GraduationCap size={22} /> {partnerView ? 'Your trading review' : 'Partner Coach'}</h1>
+              <p className="text-sm text-gray-400">{partnerView
+                ? 'Your Zerodha trades against each card: what went well, what cost money, and what to do next time.'
+                : 'What the partner did with each card, what the card said, and why the difference matters.'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -186,14 +203,21 @@ export default function PartnerCoach({ navigateToDashboard }) {
 
         {error && <div className="rounded border border-red-800 bg-red-950/40 p-3 text-sm text-red-200">Coach data unavailable: {error.message}</div>}
         {isLoading && !data && <p className="text-sm text-gray-500">Loading…</p>}
-        {data && !model.captureEnabled && <div className="rounded border border-amber-700 bg-amber-950/30 p-3 text-sm text-amber-200">Fill capture is off (PARTNER_FILL_CAPTURE_ENABLED): cards carry no buttons and only reports entered here are scored.</div>}
+        {data && !partnerView && (
+          <div className="flex flex-wrap items-center gap-3 rounded border border-gray-800 bg-gray-900/60 p-3 text-xs text-gray-300">
+            <span>{zerodhaLine(model.zerodha, today)}</span>
+            {model.zerodha?.connected && <button onClick={rereadZerodha} className="rounded border border-teal-700 px-2 py-1 font-bold text-teal-100">Re-read Zerodha</button>}
+            {syncNote && <span className="text-gray-500">{syncNote}</span>}
+          </div>
+        )}
+        {data && !partnerView && !model.captureEnabled && <div className="rounded border border-amber-700 bg-amber-950/30 p-3 text-sm text-amber-200">Fill capture is off (PARTNER_FILL_CAPTURE_ENABLED): cards carry no buttons and only reports entered here are scored.</div>}
 
         {data && <>
           <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
             <Tile label="Cards sent" value={s.cards_delivered ?? 0} />
-            <Tile label="Bought / skipped" value={`${s.cards_bought ?? 0} / ${s.cards_skipped ?? 0}`} hint={`${s.cards_not_reported ?? 0} not reported`} />
+            <Tile label="Bought / skipped" value={`${s.cards_bought ?? 0} / ${(s.cards_skipped ?? 0) + (s.cards_not_traded ?? 0)}`} hint={`${s.cards_not_reported ?? 0} not reported`} />
             <Tile label="Off-card trades" value={s.off_card_trades ?? 0} />
-            <Tile label="Partner P&L" value={formatRs(s.actual_pnl)} tone={pnlTone(s.actual_pnl)} hint={`${s.trades_scored ?? 0} trades with prices`} />
+            <Tile label={partnerView ? 'Your P&L' : 'Partner P&L'} value={formatRs(s.actual_pnl)} tone={pnlTone(s.actual_pnl)} hint={`${s.trades_scored ?? 0} trades with prices`} />
             <Tile label="Card plan, same cards" value={formatRs(s.plan_pnl_on_same_cards)} tone={pnlTone(s.plan_pnl_on_same_cards)} />
             <Tile label="Gap vs plan" value={formatRs(s.gap_vs_plan)} tone={pnlTone(s.gap_vs_plan)} />
             <Tile label="Cards followed" value={s.followed_cards ?? 0} hint={`unbought cards' plan: ${formatRs(s.unreported_cards_plan_pnl)}`} />
@@ -225,12 +249,12 @@ export default function PartnerCoach({ navigateToDashboard }) {
                 <p className="text-xs text-gray-400">Partner <span className={pnlTone(day.actual_pnl)}>{formatRs(day.actual_pnl)}</span> · card plan on the same cards <span className={pnlTone(day.plan_pnl_on_traded_cards)}>{formatRs(day.plan_pnl_on_traded_cards)}</span></p>
               </div>
               {day.day_flags?.length > 0 && <ul className="space-y-2">{day.day_flags.map((flag, index) => <Flag key={`${flag.code}-${index}`} flag={flag} />)}</ul>}
-              {day.cards.map((item) => <CardRow key={item.advisory_id} item={item} onVoid={voidReport} />)}
-              {day.off_card.map((item) => <CardRow key={item.key} item={item} onVoid={voidReport} />)}
+              {day.cards.map((item) => <CardRow key={item.advisory_id} item={item} onVoid={voidReport} who={partnerView ? 'You' : 'Partner'} />)}
+              {day.off_card.map((item) => <CardRow key={item.key} item={item} onVoid={voidReport} who={partnerView ? 'You' : 'Partner'} />)}
             </section>
           ))}
 
-          <ReportForm cards={model.cardOptions} onSaved={() => mutate()} />
+          {!partnerView && <ReportForm cards={model.cardOptions} onSaved={() => mutate()} />}
 
           <section className="grid gap-3 text-xs text-gray-400 sm:grid-cols-2">
             <div className="rounded border border-gray-800 p-3">
@@ -239,7 +263,7 @@ export default function PartnerCoach({ navigateToDashboard }) {
             </div>
             <div className="rounded border border-gray-800 p-3">
               <p className="font-bold text-gray-300">Data gaps</p>
-              <p className="mt-1">{model.quality.estimated_prices ?? 0} estimated price(s) from taps · {model.quality.missing_prices ?? 0} missing · {model.quality.exits_without_buy ?? 0} exit(s) without a buy · {model.quality.open_without_exit ?? 0} open without an exit · {model.quality.cards_without_prices ?? 0} card(s) without option prices.</p>
+              <p className="mt-1">{model.quality.superseded_by_zerodha ? `${model.quality.superseded_by_zerodha} Telegram report(s) replaced by Zerodha fills · ` : ''}{model.quality.estimated_prices ?? 0} estimated price(s) from taps · {model.quality.missing_prices ?? 0} missing · {model.quality.exits_without_buy ?? 0} exit(s) without a buy · {model.quality.open_without_exit ?? 0} open without an exit · {model.quality.cards_without_prices ?? 0} card(s) without option prices.</p>
             </div>
           </section>
         </>}

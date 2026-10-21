@@ -1,5 +1,100 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 (evening) — the partner's Zerodha fills read once a day, coach-only review page (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+Owner (Oct 21): the partner will not log entries during the day; fetch their
+orders from the free API and let them open the dashboard only at the end of
+the day for the learnings. Built on O21-PC (afternoon section below). No
+strategy rule, card text, card gate, book sizing, Smart policy file or live
+switch changed; nothing places, modifies or cancels an order.
+
+- **The partner's own app.** Kite Connect "Personal" (free) gives order and
+  portfolio APIs but no market data; the order book can be read from any IP
+  (the exchange static-IP rule covers API order endpoints only). The partner
+  creates the app on their own Zerodha account with redirect URL
+  `<public URL>/api/partner-kite/callback` and no static IP, so API orders on
+  that key are rejected by Zerodha. Settings (root `.env`, read by the engine): `PARTNER_KITE_API_KEY`,
+  `PARTNER_KITE_API_SECRET`, `PARTNER_KITE_USER_ID` (all three, else off),
+  `PARTNER_KITE_BASE_URL` (`https://api.kite.trade`, direct, not the relay),
+  `PARTNER_ZERODHA_SYNC_ENABLED` (True). Tests pin the three keys empty
+  (`tests/conftest.py`) so real keys in the repo `.env` change nothing.
+- **Evening flow (`partner_broker_sync.py`, O21-PK).**
+  - `partner_eod_wrap` (15:40) calls `partner_broker_eod` before the coach:
+    with a login held it reads the book; otherwise it sends one message per
+    day (`partner_messages` kind `zerodha_prompt`) with a URL button
+    "📒 Open today's review" = the Kite login link
+    (`https://kite.zerodha.com/connect/login?v=3&api_key=...`).
+  - Kite redirects to the gateway callback with a one-time `request_token`;
+    the gateway POSTs it to `/partner/broker/session`. `create_session`
+    exchanges it (checksum SHA-256 of key + token + secret), refuses any
+    `user_id` other than `PARTNER_KITE_USER_ID` (and logs that token out),
+    and keeps the access token in memory only until 06:00 IST (Kite's
+    expiry). It never reaches a log line, the DB or a response; accounts are
+    shown masked (`AB***34`).
+  - `sync_book` reads GET `/orders` and `/trades` (if `/trades` is refused,
+    each order's own average price and exchange time are used). `_kite_call`
+    allows only POST/DELETE `/session/token`, GET `/orders`, GET `/trades`;
+    anything else raises `not_allowed` before a request is built. A
+    `TokenException` drops the session.
+  - One report per filled NFO/BFO option order into `partner_trade_reports`:
+    `source` ZERODHA, `price_basis` BROKER_FILL (quantity-weighted average of
+    the order's trades), `trade_at` the first fill's exchange time
+    (EXCHANGE_FILL), lots = quantity / lot size (instrument book, else the
+    card; a quantity that is not whole lots is scored as units with a note).
+    Partly filled then cancelled orders count their filled part. Rejected or
+    unfilled orders, equity and futures are counted, not stored.
+    `dedup_key` `kite:<order_id>`; a re-read refreshes the same row (an order
+    that filled more); a row the owner voided stays voided.
+  - Card matching: a BUY belongs to the latest card for the same Kite symbol
+    and exchange sent before it (60 s clock slack); a SELL to the latest such
+    card still holding quantity, else the latest such card; anything else is
+    off-card (contract read from the symbol, e.g. `NIFTY25O2122950PE`).
+  - `partner_broker_days` records each read: `complete` once a read happened
+    at or after 15:30 IST that day. An empty book before 09:15 records
+    nothing.
+  - `on_login`: session, read, and after the close the coach note
+    (`partner_coach_eod`). A login before the close is kept, and the 15:40
+    wrap reads the final book with no tap.
+- **Coach on Zerodha days (`partner_coach.py`).** On a day read from
+  Zerodha, Telegram and dashboard BUY/SELL reports up to the read time (the
+  whole day once complete) are ignored (`zerodha_first`;
+  `data_quality.superseded_by_zerodha`). SKIP taps stay. On a complete day
+  a card with no order is NOT_TRADED (counted in `cards_not_traded`, earns
+  "Skipping saved money" when the card lost); before a complete read it
+  stays NOT_REPORTED. With Zerodha configured the evening note waits for a
+  complete read (`awaiting_zerodha`), says "(from Zerodha)", and carries an
+  "📒 Open full review" button. The view carries `zerodha` (configured,
+  connected, masked account, per-day reads; never the token).
+- **Card buttons.** With Zerodha configured, cards and exit updates go out
+  without the Bought/Skipped/Sold buttons (`PARTNER_FILL_BUTTONS_WITH_ZERODHA`
+  False); typed replies still record. Without Zerodha nothing changes.
+- **Gateway and review page.** `server/routes/partner-kite.js`: GET
+  `/api/partner-kite/callback` (callback rate limiter; fixed-text pages
+  only; success sets `req.session.partner_view`, never `authenticated`, and
+  redirects to `/?view=coach`); GET `/api/partner-kite/coach?days=` (1–120,
+  partner or owner session; the only route a partner session opens). Every
+  `/api/proxy`, `/api/orders`, `/api/token` route still needs
+  `authenticated`. `/api/auth/status` adds `partner_view`. Owner proxy: POST
+  `/api/proxy/partner/broker/sync` (re-read while a login is held). Engine
+  routes: POST `/partner/broker/session`, GET `/partner/broker/status`, POST
+  `/partner/broker/sync` (internal secret; errors are a `code` only). The
+  client opens `PartnerCoach partnerView` for a partner-only session: title
+  "Your trading review", default Today, no report form, no remove, no
+  navigation; Zerodha fills show "from Zerodha" and cannot be removed. The
+  owner's page shows a Zerodha status line and "Re-read Zerodha".
+- **Owner login guard (gateway `routes/auth.js`).** The owner's
+  `/api/auth/callback` never checked which Zerodha account logged in. Now
+  that the partner opens the dashboard URL, a partner whose review session
+  expired could press the Login page's Zerodha button. If Zerodha allowed
+  that account on the owner's app, its token would have become the system
+  token with an owner session. The callback now reads the account
+  (`generateSessionWithUser`) and refuses `PARTNER_KITE_USER_ID`, or every
+  account but `ZERODHA_USER_ID` when that is set. Both are in
+  `node-gateway/.env`, which is separate from the engine's root `.env`. A
+  refused login stores, provisions and authenticates nothing and redirects
+  to `/login?error=wrong_account`. With neither set the callback is
+  unchanged.
+
 ## October 21 (afternoon) — partner fill capture and coach, standard-capital view, F&O broker backstop (actual behavior, Dev, commit `b580af2`)
 
 Owner (Oct 21): before real money, standardise every book on one capital

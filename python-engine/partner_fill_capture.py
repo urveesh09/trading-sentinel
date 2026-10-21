@@ -308,6 +308,10 @@ def keyboard_for(kind: str, detail: dict) -> Optional[dict]:
     """Buttons for a ledger delivery; ``None`` keeps the message unchanged."""
     if not settings.PARTNER_FILL_CAPTURE_ENABLED:
         return None
+    # [O21-PK] Zerodha reads the partner's fills; taps would only add noise.
+    from partner_broker_sync import configured as zerodha_configured
+    if zerodha_configured() and not settings.PARTNER_FILL_BUTTONS_WITH_ZERODHA:
+        return None
     advisory_id = str(detail.get("advisory_id") or "")
     if not _ADVISORY_ID.match(advisory_id):
         return None

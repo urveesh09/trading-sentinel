@@ -679,6 +679,30 @@
       "response_model": null
     },
     {
+      "endpoint": "post_partner_broker_session",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/broker/session",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_broker_status",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/broker/status",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_partner_broker_sync",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/broker/sync",
+      "response_model": null
+    },
+    {
       "endpoint": "get_partner_coach",
       "methods": [
         "GET"

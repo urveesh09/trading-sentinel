@@ -100,6 +100,8 @@ app.use(session({
 // remain reachable even when repeated login clicks exhaust that quota; sharing
 // one limiter caused a valid Zerodha callback to be rejected with HTTP 429.
 app.use('/api/auth', require('./routes/auth'));
+// [O21-PK] The partner's Zerodha login callback and their coach-only view.
+app.use('/api/partner-kite', require('./routes/partner-kite'));
 app.use('/api/signals', security.limiters.signals, require('./routes/signals'));
 app.use('/api/orders', security.limiters.orders, require('./routes/orders'));
 app.use('/api/token', security.limiters.token, require('./routes/token'));
