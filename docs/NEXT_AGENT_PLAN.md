@@ -34,7 +34,7 @@
   lesson; a clean day says so; the page renders the real payload
   (server-side render check).
 - Rollout: with this branch (expiry-v3 first). No new settings. The
-  partner's app: recommended in their own developer account (owner's call).
+  partner's app: a separate app in the owner's developer account (owner).
 - Rollback: revert the commit; the review falls back to the coach page and
   the older note text. `partner_stop_orders` is inert when unused.
 - Remaining:
@@ -91,10 +91,12 @@
 - Rollout:
   1. Merge after `codex/production-correction-hedge-p0` (expiry-v3), with
      the rest of this branch; rebuild engine and gateway.
-  2. Partner: developers.kite.trade → create a Personal app on their own
-     Zerodha account; redirect URL `https://<NGROK_URL>/api/partner-kite/callback`;
-     IP empty if the form allows (recommended: the partner's own developer
-     account; owner's call, Oct 21 night). The owner puts the key, secret and partner's
+  2. Owner: in their developer account, create a separate app with the
+     partner's Zerodha client ID (the partner is the owner's parent:
+     immediate family under Zerodha's static-IP rule; owner's decision,
+     Oct 21 night); redirect URL
+     `https://<NGROK_URL>/api/partner-kite/callback`; the free Personal type
+     if the console offers it. The owner puts the key, secret and partner's
      Zerodha user ID in the root `.env`, never in chat. The owner also puts
      `PARTNER_KITE_USER_ID` (and their own `ZERODHA_USER_ID`) in
      `node-gateway/.env`, then restarts the engine and gateway.

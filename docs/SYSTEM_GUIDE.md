@@ -6,11 +6,11 @@ Owner (Oct 21): the partner logs in from the Telegram button and lands on
 their own dashboard, a branch of the main one, opening on the day's
 learnings; more is there if they want it. The lessons must be top quality,
 comprehensive, correct and well tested, so the partner understands each
-mistake and what would have been better. Where the partner's app lives is
-the owner's call; recommended: the partner's own developer account (a free
-Personal app, IP empty if allowed), because static IPs on the owner's
-developer account apply to all of its apps and Zerodha warns against
-sharing an IP outside immediate family. Reads do not need the IP. Built on O21-PK below. No strategy rule, card
+mistake and what would have been better. Owner's decision (Oct 21 night): the
+partner's app is a separate app in the owner's developer account with the
+partner's client ID; the partner is the owner's parent, immediate family
+under Zerodha's static-IP rule (spouse, dependent children, dependent
+parents), declared when the IPs were whitelisted. Reads do not need the IP. Built on O21-PK below. No strategy rule, card
 text or gate, sizing, Smart policy file or live switch changed.
 
 - **Each mistake explained (`partner_coach.py`, O21-PL).** Every flag now
@@ -87,11 +87,10 @@ switch changed; nothing places, modifies or cancels an order.
 - **The partner's own app.** Kite Connect "Personal" (free) gives order and
   portfolio APIs but no market data; the order book can be read from any IP
   (the exchange static-IP rule covers API order endpoints only). The partner
-  creates the app on their own Zerodha account with redirect URL
-  `<public URL>/api/partner-kite/callback`. Recommended in the partner's own
-  developer account, IP field empty if Zerodha allows: reads need no static
-  IP, and IPs whitelisted on the owner's developer account cover all of its
-  apps. The code has no order path either way. Settings (root `.env`, read by the engine): `PARTNER_KITE_API_KEY`,
+  app is a separate app in the owner's developer account with the partner's
+  client ID (owner's decision; the partner is the owner's parent) and
+  redirect URL `<public URL>/api/partner-kite/callback`. Reads need no
+  static IP; the code has no order path. Settings (root `.env`, read by the engine): `PARTNER_KITE_API_KEY`,
   `PARTNER_KITE_API_SECRET`, `PARTNER_KITE_USER_ID` (all three, else off),
   `PARTNER_KITE_BASE_URL` (`https://api.kite.trade`, direct, not the relay),
   `PARTNER_ZERODHA_SYNC_ENABLED` (True). Tests pin the three keys empty

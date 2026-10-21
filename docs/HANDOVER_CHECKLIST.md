@@ -56,9 +56,9 @@
   market data; static IP for order endpoints only; token expiry 06:00), not
   yet exercised against the partner's account.
 - [ ] Deployed: no. Same order as below (expiry-v3 first, then this branch).
-- [ ] Setup: the partner creates the Personal app (redirect
-  `https://<NGROK_URL>/api/partner-kite/callback`, in their own developer
-  account, IP empty if allowed). The owner
+- [ ] Setup: the owner creates a separate app in their developer account
+  with the partner's client ID (redirect
+  `https://<NGROK_URL>/api/partner-kite/callback`; Personal if offered). The owner
   adds `PARTNER_KITE_API_KEY`, `PARTNER_KITE_API_SECRET` and
   `PARTNER_KITE_USER_ID` to the root `.env`, and `PARTNER_KITE_USER_ID`
   (plus their own `ZERODHA_USER_ID`) to `node-gateway/.env`. Then restart
