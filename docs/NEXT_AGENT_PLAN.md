@@ -1,6 +1,288 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 19 — Oct 19 audit fixes O19-E1/P1/P2/S1/S2/O1/F1/M1/M2/B1 (done, Dev, commit `d12bb1d`, pushed, not deployed)
+## October 21 (late) — Oct 21 audit fixes S21-R1/R2/R3/E1/L1, R21-M1/M2, T21-X; O21-ON overnight shadows (done, Dev, commit `462d28f`, branch `codex/oct21-audit-fixes` on top of `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- Problem: the Oct 21 Production audit (read-only; Production HEAD
+  `2fc12ee`, PR #111 deployed) found: nine censored virtual Momentum trades
+  (no terminal bar), an RS fingerprint that ignores the index and rule
+  constants, a replay/runtime overnight admission mismatch, no entry-day
+  event check in EDGE, a holiday counted as market time in restart
+  receipts, a misleading EDGE dead-gate alarm, a "pool" label hiding the
+  F&O drawdown, a generic transport error class, stale docs; the owner
+  asked for fixes and for shadows where a better approach is supported.
+- Files: `momentum_shadow.py`, `momentum_rs_pullback.py`, `main.py`,
+  `edge_portfolio_replay.py`, `penny_edge_orchestrator.py`,
+  `lifecycle_receipts.py`, `penny_accept_watchdog.py`,
+  `fno_hourly_report.py`, `kite_client.py`, `edge_overnight_paper.py`,
+  `routes_penny_experiments.py`, `config.py`; tests
+  `tests/test_oct21_audit_fixes.py` (new), `tests/test_oct15_audit_fixes.py`.
+- Contracts:
+  - New tables `momentum_shadow_terminal_receipts`,
+    `edge_overnight_shadow_trades`; new job `momentum_shadow_terminal`;
+    route `GET /experiments/edge-overnight`; setting
+    `EDGE_OVERNIGHT_SHADOWS_ENABLED`; goldens regenerated (one route, one
+    job; additions only).
+  - Startup receipt adds `weekday_overlap_sec`; `market_overlap_sec` is
+    trading-session time. EDGE `penny_signals` rows: accepted = either leg
+    entered; reasons `rank_not_selected`, `selected_not_entered`, or the
+    leg's refusal. `transport_error_kind` kinds added. Hourly F&O line:
+    `allocation=` / `equity=`.
+  - RS shadow records from now on have a new identity (rules + pool +
+    index + daily bars); earlier records are immutable and keep theirs.
+- Acceptance (met in Dev): each audit counterexample has a test that now
+  passes (terminal time exit and stop on missed bars, censored then closed;
+  index/constant change alters the RS identity while older variants keep
+  theirs; replay admits 414 at the dust boundary; entry-day event refusal;
+  holiday overlap 0 with the raw 22,500 s kept; a 94-candidate/3-drift day
+  names the drift and not the ranking; allocation and equity both shown;
+  heartbeat delivery result); shadows open from the same picks with their
+  declared rules, exit on the same quotes, and are compared with the book.
+- Rollout: merge after `codex/production-correction-hedge-p0` and
+  `codex/partner-coach-standard-capital` (this branch contains both);
+  rebuild the engine. First evening: `momentum_shadow_terminal` log line;
+  first 15:20: shadow rows in `edge_overnight_shadow_trades`.
+- Rollback: `EDGE_OVERNIGHT_SHADOWS_ENABLED=false` (no shadow rows);
+  `MOMENTUM_SHADOW_ENABLED=false` (no Momentum shadow or terminal pass);
+  revert the commit for the rest. New tables are inert when unused.
+- Remaining:
+  - [ ] Score the overnight shadows only on nights after 2026-10-21; judge
+    after at least 20 closed trades each, with the owner. No promotion from
+    a few nights.
+  - [ ] T21-B (penny universe refresh about 60 min) and F21-S (Smart 8W/40L)
+    are not changed here: Smart's policy files are hashed and stay as they
+    are; profile the refresh's symbol types separately.
+  - [ ] F21-Q (old pending signals, unsynced orders, September deadletters)
+    needs the owner's dated disposition; nothing is resent automatically.
+## October 21 (night) — O21-PL the partner's review page and explained lessons (done, Dev, commit `6f882f0`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- Problem:
+  - Owner (Oct 21): log in from Telegram, land on their own dashboard, "a
+    branch of our dashboard main one", showing the day's learnings first and
+    more on demand; the teachings must be top quality, comprehensive,
+    correct and well tested so the partner understands their mistakes and
+    what would have been better.
+  - Facts: flags said what happened and a generic rule, not why it mattered
+    or what the better action would have paid; stop orders were not read;
+    one trade with three mistakes read as three lessons with the same loss.
+- Files: `partner_lessons.py` (new), `partner_coach.py`,
+  `partner_broker_sync.py`, `routes_partner_coach.py`; gateway
+  `routes/partner-kite.js`; client `App.jsx`, `pages/PartnerReview.jsx`
+  (new), `pages/PartnerCoach.jsx`, `utils/partnerReview.js` (new).
+- Contracts:
+  - Flag fields `why`, `better`, `better_pnl`, `actual_pnl`; `impact_rs` =
+    actual − better. New codes NO_STOP_ORDER, STOP_WIDER_THAN_CARD,
+    STOP_CANCELLED; positives STOP_PLACED, EXITED_BEFORE_STOP,
+    PAUSED_AFTER_LOSS; `item.stops`. `_rs(0)` is "₹0".
+  - `analyse(..., stops=, stops_known_days=)`; `card_entry` basis
+    PRINT_AT_STOP.
+  - Zerodha: allowlist + GET `/gtt/triggers`; table `partner_stop_orders`;
+    `partner_broker_days.stops_known` (the table was created only in Dev).
+  - Engine GET `/partner/review`; golden regenerated (one addition).
+    Gateway GET `/api/partner-kite/review`; login redirect `/?view=review`.
+- Acceptance (met in Dev): every lesson figure in the tests is recomputed
+  from prices with the same charges schedule; chased-entry risk, revenge,
+  size-up, averaging, stop, early-exit, gave-back, square-off, overtrading
+  and the three stop checks each have an exact-text test; stops are claimed
+  only on complete days with GTTs read; one trade's mistakes fold into one
+  lesson; a clean day says so; the page renders the real payload
+  (server-side render check).
+- Rollout: with this branch (expiry-v3 first). No new settings. The
+  partner's app: a separate app in the owner's developer account (owner).
+- Rollback: revert the commit; the review falls back to the coach page and
+  the older note text. `partner_stop_orders` is inert when unused.
+- Remaining:
+  - [ ] First Zerodha evening on Production: read the lesson against the
+    partner's Kite order book and the 5-minute prices; adjust wording or
+    thresholds only with the owner.
+  - [ ] Check how Kite reports a modified SL order's `order_timestamp`; the
+    stop checks use it as the time the stop was placed.
+  - [ ] After two weeks of reads, check the Progress patterns against what
+    the partner says they did.
+## October 21 (evening) — O21-PK the partner's Zerodha fills and a coach-only review page (done, Dev, commit `9648f95`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- Problem:
+  - Owner (Oct 21): "the partner won't go on the dashboard for tracking his
+    entries of the day ... fetch his orders and all from the free api? The
+    partner should only go to dashboard at end of day to get his learnings."
+  - Facts: O21-PC needs a tap or reply per trade; the dashboard needs the
+    owner's Zerodha session, so the partner could not open it at all; Kite
+    Connect Personal (free) reads orders and trades (no market data), and
+    reads need no static IP.
+- Files: `partner_broker_sync.py`, gateway `server/routes/partner-kite.js`
+  (new); `partner_coach.py`, `partner_fill_capture.py`,
+  `partner_orchestrator.py`, `routes_partner_coach.py`, `config.py`,
+  `tests/conftest.py`; gateway `app.js`, `config.js`, `routes/auth.js`,
+  `routes/proxy.js`, `services/kite.js`;
+  client `App.jsx`, `pages/PartnerCoach.jsx`, `utils/partnerCoach.js`.
+- Contracts:
+  - New table `partner_broker_days`; reports in `partner_trade_reports` with
+    `source` ZERODHA, `price_basis` BROKER_FILL, `trade_at_basis`
+    EXCHANGE_FILL, `dedup_key` `kite:<order_id>` (upsert while ACTIVE).
+  - New settings: `PARTNER_KITE_API_KEY`, `PARTNER_KITE_API_SECRET`,
+    `PARTNER_KITE_USER_ID` (empty: feature off), `PARTNER_KITE_BASE_URL`,
+    `PARTNER_ZERODHA_SYNC_ENABLED` (True), `PARTNER_FILL_BUTTONS_WITH_ZERODHA`
+    (False).
+  - Engine routes POST `/partner/broker/session`, GET `/partner/broker/status`,
+    POST `/partner/broker/sync`; golden `tests/main_surface_golden.json`
+    regenerated (three additions only). No new job: `partner_eod_wrap` calls
+    `partner_broker_eod` before `partner_coach_eod`.
+  - Gateway: `/api/partner-kite/callback`, `/api/partner-kite/coach`,
+    `/api/proxy/partner/broker/sync`; session flag `partner_view`;
+    `/api/auth/status.partner_view`. Owner callback guard: optional
+    `ZERODHA_USER_ID` and `PARTNER_KITE_USER_ID` in `node-gateway/.env`; a
+    refused account redirects to `/login?error=wrong_account`.
+  - Coach: status NOT_TRADED, `summary.cards_not_traded`,
+    `data_quality.superseded_by_zerodha`, `view.zerodha`, note
+    `awaiting_zerodha`; `analyse(..., complete_days=)`.
+- Acceptance (met in Dev): only the four allowlisted Kite calls can be made;
+  a session for another account is refused and logged out; the token is in
+  no response or status; one report per filled option order with exact
+  prices and first-fill time; re-reads refresh the same row; Zerodha fills
+  replace taps; untraded cards are NOT_TRADED only after a complete read;
+  the note waits for the read and is sent once; a partner session opens only
+  the coach view (gateway tests).
+- Rollout:
+  1. Merge after `codex/production-correction-hedge-p0` (expiry-v3), with
+     the rest of this branch; rebuild engine and gateway.
+  2. Owner: in their developer account, create a separate app with the
+     partner's Zerodha client ID (the partner is the owner's parent:
+     immediate family under Zerodha's static-IP rule; owner's decision,
+     Oct 21 night); redirect URL
+     `https://<NGROK_URL>/api/partner-kite/callback`; the free Personal type
+     if the console offers it. The owner puts the key, secret and partner's
+     Zerodha user ID in the root `.env`, never in chat. The owner also puts
+     `PARTNER_KITE_USER_ID` (and their own `ZERODHA_USER_ID`) in
+     `node-gateway/.env`, then restarts the engine and gateway.
+  3. Tell the partner: after 15:40 tap "Open today's review", log in to
+     Zerodha, read the review. The same day: Kite's order book holds only
+     the current day's orders.
+- Rollback: blank `PARTNER_KITE_API_KEY` or `PARTNER_ZERODHA_SYNC_ENABLED=false`
+  (cards get their buttons back, the note goes back to tap-based); or revert.
+  The table is inert when unused.
+- Remaining:
+  - [ ] First live login on Production: `partner_zerodha_login account=..`,
+    `partner_zerodha_synced` with the partner's order count; compare the
+    Coach page with the partner's Kite order book for that day.
+  - [ ] Confirm the Personal plan returns `/trades` (Zerodha lists order
+    management). If it is refused, `partner_zerodha_trades_unavailable` is
+    logged and each order's own average price and exchange time are used.
+  - [ ] Check whether ngrok shows its browser warning page on the callback;
+    if it does, the partner taps "Visit site" once per login.
+  - [ ] The O21-PC rows below still apply (flag wording only with the owner).
+## October 21 (afternoon) — O21-PC partner fill capture + coach, O21-SC standard capital, O21-BS F&O broker backstop (done, Dev, commit `b580af2`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- Problem:
+  - Owner (Oct 21, planning ₹10k–12.5k real money): standardise the books on
+    one capital (₹2L/₹5L) to test properly, scale down later; "the broker
+    side thing sure"; capture the partner's real fills and coach the manual
+    partner on FOMO/revenge mistakes; the rest at our call. Host reliability
+    (point 4) is the owner's decision, not done.
+  - Facts: no partner fill was ever recorded (0 rows); every book uses a
+    different notional; live F&O stops exist only in the engine (Oct 16:
+    321-minute outage in market hours).
+- Files: `partner_fill_capture.py`, `partner_coach.py`, `standard_capital.py`,
+  `fno_broker_backstop.py`, `routes_partner_coach.py` (new); `partner_bot.py`,
+  `hedge_advisory.py`, `partner_orchestrator.py`, `scheduler_setup.py`,
+  `main.py`, `fno_executor.py`, `fno_orchestrator.py`, `fno_entry_plan.py`,
+  `config.py`; gateway `server/routes/proxy.js`; client `App.jsx`,
+  `pages/Dashboard.jsx`, `pages/PartnerCoach.jsx`, `pages/StandardCapital.jsx`,
+  `utils/partnerCoach.js`, `utils/standardCapital.js`.
+- Contracts:
+  - New tables (idempotent DDL): `partner_trade_reports`,
+    `partner_inbox_state`, `partner_coach_card_paths`, `fno_broker_backstops`.
+  - New settings: `PARTNER_FILL_CAPTURE_ENABLED` (True),
+    `PARTNER_INBOX_POLL_SEC` 20, `PARTNER_INBOX_LONG_POLL_SEC` 15,
+    `PARTNER_COACH_REACTION_SEC` 120, `PARTNER_COACH_NOTE_ENABLED` (True),
+    `STANDARD_CAPITAL_INR` 200000, `FNO_BROKER_BACKSTOP_ENABLED` (True),
+    `FNO_BACKSTOP_EXTRA_PCT` 0.10, `FNO_BACKSTOP_LIMIT_GAP_PCT` 0.10.
+  - New job `partner_inbox_tick` (interval); four routes; goldens
+    `tests/main_surface_golden.json` and `tests/add_job_census_golden.json`
+    regenerated (additions only).
+  - `send_partner_result(text, *, kind, reply_markup=None)`;
+    `FnoExecutor.place_stop_limit / order_state / cancel_and_read`;
+    exit reason `broker_backstop`.
+- Acceptance (met in Dev): see the handover receipt for tests; the
+  standard-capital replay reproduces each book's own P&L at its own capital
+  on Production data (read-only trial); a filled backstop is the exit and no
+  sell is sent; an unprovable backstop holds the exit without claiming it.
+- Rollout: merge after `codex/production-correction-hedge-p0` (expiry-v3,
+  needed before the Thursday Oct 22 SENSEX expiry), rebuild engine and
+  gateway outside 12:59–15:40 on an expiry day. Partner: tell them the new
+  buttons ("tap Bought when you buy, Sold when you exit; reply with your
+  price to correct"). With O21-PK Zerodha set up the buttons are off and
+  the partner only taps the evening "Open today's review" button.
+- Rollback: `PARTNER_FILL_CAPTURE_ENABLED=false` (no buttons, no polling),
+  `PARTNER_COACH_NOTE_ENABLED=false`, `FNO_BROKER_BACKSTOP_ENABLED=false`;
+  or revert the commit. New tables are inert when unused.
+- Remaining:
+  - [ ] After deploy: `partner_cron_registered jobs=16`; no
+    `partner_api_rejected method=getUpdates status=409` (a webhook on the
+    partner bot would block polling); the first card shows buttons; a tap
+    logs `partner_fill_tap`.
+  - [ ] First reported day: the Partner Coach page shows the card, plan and
+    flags; the evening note arrives after the wrap; check the reasons read
+    right to the partner and adjust wording only with the owner.
+  - [ ] Live F&O (when the owner arms it): place-and-cancel one far SL on
+    NFO to prove the order type and range before the first live entry.
+  - [ ] Standard capital: EDGE morning positions cover 9 of 19 ledger closes;
+    Smart Penny (event-sourced) is not in the replay; the expiry reference is
+    a modelling choice (3 × budget at 2% risk) — revisit with the owner.
+  - [ ] Owner decisions: host reliability (UPS / cloud VM with its own
+    static IP); the standard amount to use for promotion (₹2L or ₹5L).
+
+## October 21 — expiry-v3 (B takes BP's pair target), expiry-shadow-v5 and Oct 19 expiry-audit fixes (done, Dev, commit `a88da98`, pushed, not deployed)
+
+- Problem:
+  - Owner order (Oct 21): apply the Oct 19 audit's expiry fixes, keep
+    observing, promote a shadow that keeps beating its main (main becomes a
+    shadow), add shadows where useful.
+  - Oct 19 audit: BP − B +₹722.46 on the first full B window; B lost 4 of 4;
+    X-1 15:38 sale read as unreachable; X-2 still index counted fresh; X-3
+    tallies mixed C's v1 and v2; X-4 B's call line hid the dead put; X-5
+    failed-break margin invisible.
+- Files: `python-engine/expiry_paper.py`; `tests/test_expiry_paper.py` (63
+  tests: BP test became the v3 B/BL test, paired test rewritten with rule
+  versions, 3 new); `docs/2026-10-05-expiry-day-paper-book.md`.
+- Contracts:
+  - `RULES_VERSION = expiry-v3`; `SHADOW_VERSION = expiry-shadow-v5`;
+    `CONTEXT_VERSION = expiry-context-v1.2`.
+  - `POLICIES["B"]` = hold + pair target (`PAIR_PLAYS = B, BP`;
+    `BP_TARGET` renamed `PAIR_TARGET`); `POLICIES["BL"]` = v2's B; BR = BL +
+    leg stop.
+  - `SHADOW_PLAYS` gains BL and CI and loses BP; `RETIRED_PLAYS = CX, BP`;
+    `PAIRED_WITH` gains BL: B, CI: C; `STRUCTURE_BACK` (CI 0.0, others 0.25)
+    with `STRUCTURE_PLAYS = tuple(STRUCTURE_BACK)`; `RULE_SINCE`.
+  - Day-state keys `index_value`, `index_unchanged`, third `window_ticks`
+    element; event keys `index`/`line` (FAILED_BREAK) and `intrinsic`
+    (settlement). No schema, config or store change.
+- Acceptance (met in Dev):
+  - B sells both legs at the pair target and its two sell lines say "whole
+    trade closed"; BL keeps per-leg exits; BP takes no entry;
+  - CI sells at the box edge before C, while its ticket is worth more;
+  - a still index is counted (before/from 15:15) and RV stops at 15:15;
+  - tallies and paired lines split at each primary's rule change;
+  - the five-expiry replay changes nothing except B = old BP, BL = old B and
+    the new CI rows.
+- Rollout: merge and rebuild the engine before the next expiry (SENSEX
+  Thursday Oct 22). Scoring of v3 starts with the first expiry after the
+  rebuild. Deploy outside 12:59–15:40 on an expiry day.
+- Rollback: revert the commit. B returns to per-leg exits and BP to the
+  shadows; stored BL/CI rows stay and print nothing.
+- Remaining:
+  - [ ] After deploy, on the first expiry: the header reads `rules
+    expiry-v3`; B, BL, BH and BR share one strangle; the summary shows "index
+    unchanged from the previous tick", "BL-B …", "CI-C …" and "B …/… (…;
+    since expiry-v3 …)".
+  - [ ] Promotion rule going forward (owner): a shadow that keeps beating its
+    main on the paired line becomes the main. Watch CI − C and BL − B per
+    entry; CI needs forward expiries (its rule was drawn from seen data).
+  - [ ] A is unchanged (lost 4 of 5, +₹3,559.57 lifetime); AE was tested and
+    rejected in-sample. Look for an A idea from new forward days only.
+  - [ ] The ten-second clock costs money in 15:15–15:30 (Oct 19: B's trail
+    line 32.47 filled at 28.15). A faster tick in the B window is an execution
+    change (`expiry-exec-v3`), not done.
+
+## October 19 — Oct 19 audit fixes O19-E1/P1/P2/S1/S2/O1/F1/M1/M2/B1 (done, Dev, commit `d12bb1d`, pushed, deployed by PR #111)
 
 - Problem (Production deep audit 2026-10-19, non-expiry; owner: partner
   quality must not deteriorate, EDGE investigate/fix, profit-lock shadow,
@@ -19,7 +301,7 @@
   `edge_overnight_paper.py`, `edge_portfolio_replay.py`, `fno_policy_replay.py`,
   new `momentum_rs_pullback.py`, `momentum_shadow.py`, `momentum_replay.py`,
   `backtest_lab.py`, `daily_bootstrap.py`, `main.py`, `scripts/backtest_all_yahoo.py`;
-  tests `tests/test_oct19_audit_fixes.py` (17), `tests/test_momentum_shadow.py`.
+  tests `tests/test_oct19_audit_fixes.py` (15), `tests/test_momentum_shadow.py`.
 - Acceptance:
   - next 09:30 EDGE scan logs `penny_edge_scan_data_window date=<previous session>`
     and a universe of ~940 band names (not 499);
@@ -41,7 +323,7 @@
     including bonds (60 min); an EQ-only filter would shorten it but changes
     the cache EDGE/overnight read (not done).
 
-## October 18 — simulation-report fixes O18-F1/P1/E1/R1-R3 (done, Dev, commit `a0a3fd8`, pushed, not deployed)
+## October 18 — simulation-report fixes O18-F1/P1/E1/R1-R3 (done, Dev, commit `a0a3fd8`, pushed, merged by PR #111)
 
 - Problem (Oct 13 current-strategy simulation report):
   - F1: the F&O replay read expiry days from one batch's series (INVALID

@@ -29,6 +29,29 @@ VOLUME_MULT = 1.2             # reclaim bar volume vs the prior 8 bars' mean
 MIN_SESSION_BARS = 6
 WINDOW_START_MIN = 10 * 60 + 15
 WINDOW_END_MIN = 14 * 60 + 15
+RULES_VERSION = "rs_pullback_v1"
+
+
+def rs_pullback_rules() -> dict:
+    """[S21-R2] Every constant and setting the decision reads, with a version,
+    so a shadow record says exactly which rule produced it."""
+    return {
+        "version": RULES_VERSION, "rs_min_excess": RS_MIN_EXCESS, "vwap_share_min": VWAP_SHARE_MIN,
+        "touch_tolerance": TOUCH_TOLERANCE, "close_location_min": CLOSE_LOCATION_MIN,
+        "volume_mult": VOLUME_MULT, "min_session_bars": MIN_SESSION_BARS,
+        "window_start_min": WINDOW_START_MIN, "window_end_min": WINDOW_END_MIN,
+        "min_stop_pct": float(settings.MOMENTUM_MIN_STOP_PCT),
+        "min_stop_atr_mult": float(settings.MOMENTUM_MIN_STOP_ATR_MULT),
+        "risk_pct": float(settings.MOMENTUM_RISK_PCT), "r_target": float(settings.MOMENTUM_R_TARGET),
+        "r_target_bear": float(settings.MOMENTUM_R_TARGET_BEAR),
+    }
+
+
+def rs_index_known(index_today: Optional[pd.DataFrame], signal_ts) -> Optional[pd.DataFrame]:
+    """The index bars the rule can see at ``signal_ts`` (same session, not later)."""
+    if index_today is None or index_today.empty or not isinstance(index_today.index, pd.DatetimeIndex):
+        return None
+    return index_today[(index_today.index.date == signal_ts.date()) & (index_today.index <= signal_ts)]
 
 
 def _vwap(frame: pd.DataFrame) -> pd.Series:
@@ -53,10 +76,8 @@ def rs_pullback_signal(df: pd.DataFrame, index_today: Optional[pd.DataFrame], *,
     minute = signal_ts.hour * 60 + signal_ts.minute
     if not WINDOW_START_MIN <= minute <= WINDOW_END_MIN:
         return False, {"reject_reason": "outside_pullback_window", "minute": minute}
-    if index_today is None or index_today.empty or not isinstance(index_today.index, pd.DatetimeIndex):
-        return False, {"reject_reason": "index_bar_unavailable"}
-    index_known = index_today[(index_today.index.date == session) & (index_today.index <= signal_ts)]
-    if index_known.empty or index_known.index[-1] != signal_ts:
+    index_known = rs_index_known(index_today, signal_ts)
+    if index_known is None or index_known.empty or index_known.index[-1] != signal_ts:
         return False, {"reject_reason": "index_bar_unavailable"}
 
     first_open, close = float(today["open"].iloc[0]), float(today["close"].iloc[-1])

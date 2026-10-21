@@ -139,10 +139,11 @@ def host_uptime_sec() -> Optional[float]:
         return None
 
 
-def market_overlap_sec(start_epoch: float, end_epoch: float) -> float:
-    """Seconds of [start, end] inside 09:15-15:30 IST on weekdays.
+def market_overlap_sec(start_epoch: float, end_epoch: float, is_session=None) -> float:
+    """Seconds of [start, end] inside 09:15-15:30 IST on session days.
 
-    Holidays are not excluded here; the caller decides with the calendar.
+    ``is_session(date) -> bool`` decides each day (the exchange calendar);
+    without it every weekday counts, which is the raw wall-clock measure.
     """
     if end_epoch <= start_epoch:
         return 0.0
@@ -150,13 +151,25 @@ def market_overlap_sec(start_epoch: float, end_epoch: float) -> float:
     end = datetime.fromtimestamp(end_epoch, IST)
     total, day = 0.0, start.date()
     while day <= end.date():
-        if day.weekday() < 5:
+        if day.weekday() < 5 and (is_session is None or is_session(day)):
             lo = IST.localize(datetime.combine(day, MARKET_OPEN))
             hi = IST.localize(datetime.combine(day, MARKET_CLOSE))
             overlap = (min(hi, end) - max(lo, start)).total_seconds()
             total += max(0.0, overlap)
         day += timedelta(days=1)
     return total
+
+
+def _session_day(db_path: str):
+    """A dated exchange-calendar check for each day of a gap; a calendar that
+    cannot be read counts the weekday (never hides a market-hours gap)."""
+    def is_session(day) -> bool:
+        try:
+            from market_calendar import is_trading_day_sync
+            return is_trading_day_sync(day, db_path)
+        except Exception:
+            return True
+    return is_session
 
 
 def classify_restart(prior: Optional[dict], gap_sec: Optional[float],
@@ -181,12 +194,16 @@ def startup_receipt(db_path: str, prior: Optional[dict], now_epoch: float, boot_
         prior_epoch = None
     gap = max(0.0, now_epoch - prior_epoch) if prior_epoch else None
     uptime = host_uptime_sec()
+    # [S21-L1] The restart page uses trading sessions only: Oct 20 (Dussehra)
+    # read as 375 market minutes. The raw weekday figure stays as evidence.
     receipt = {
         "boot_id": boot_id,
         "prior_boot_id": (prior or {}).get("boot_id"),
         "prior_heartbeat_ist": (datetime.fromtimestamp(prior_epoch, IST).isoformat() if prior_epoch else None),
         "gap_sec": round(gap, 1) if gap is not None else None,
-        "market_overlap_sec": round(market_overlap_sec(prior_epoch, now_epoch), 1) if prior_epoch else 0.0,
+        "market_overlap_sec": (round(market_overlap_sec(prior_epoch, now_epoch, _session_day(db_path)), 1)
+                               if prior_epoch else 0.0),
+        "weekday_overlap_sec": round(market_overlap_sec(prior_epoch, now_epoch), 1) if prior_epoch else 0.0,
         "prior_clean_shutdown": bool((prior or {}).get("clean_shutdown")),
         "host_uptime_sec": round(uptime, 1) if uptime is not None else None,
         "cause": classify_restart(prior, gap, uptime),

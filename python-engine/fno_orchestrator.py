@@ -34,6 +34,7 @@ from uuid import uuid4
 import pytz
 import structlog
 
+import fno_broker_backstop
 import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_shadow
@@ -534,10 +535,19 @@ async def _manage_open_positions(
                 ),
             )
 
+        # [O21-BS] A live position's resting broker SL may have executed
+        # (engine down, or a gap between ticks): book its fill, send nothing.
+        live_backstop = not getattr(executor, "paper_mode", True)
+        backstop_fill = None
+        if not exit_reason and live_backstop:
+            backstop_fill = await fno_broker_backstop.check_filled(
+                db_path, executor, p.id, price=exit_px_basis, now=now_ist)
+            if backstop_fill is not None:
+                exit_reason = "broker_backstop"
         if not exit_reason:
             continue
 
-        if exit_px_basis <= 0:
+        if exit_px_basis <= 0 and backstop_fill is None:
             # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking: a hard
             # flat with no quote would otherwise silently `continue` and
             # leave the position open through the weekend (MIS auto-sq-off
@@ -567,6 +577,19 @@ async def _manage_open_positions(
             )
             continue
 
+        # [O21-BS] Cancel the resting backstop and read its final state before
+        # any exit order: both executing would sell twice (a naked short).
+        backstop = None
+        if backstop_fill is None and live_backstop:
+            backstop = await fno_broker_backstop.before_exit(db_path, executor, p.id, p.qty)
+            if backstop["action"] == "hold":
+                logger.critical("fno_exit_held_by_backstop id=%d symbol=%s reason=%s -- reconcile at broker",
+                                p.id, p.tradingsymbol, backstop["reason"])
+                continue
+            if backstop["action"] == "filled":
+                backstop_fill = {"fill_price": backstop["fill_price"], "order_id": backstop["order_id"]}
+                exit_reason = "broker_backstop"
+
         claimed = await _timed_database_operation(
             db_timing, f"exit_intent_claim:{source}", fpos.claim_exit_intent(
                 db_path, p.id, source, evaluation_started_at=evaluation_started_at,
@@ -578,12 +601,28 @@ async def _manage_open_positions(
         try:
             spec = SPECS.get((p.underlying or "NIFTY").upper())
             exchange_kw = {} if spec is None or spec.segment == "NFO" else {"exchange": spec.segment}
-            result = await executor.execute_exit(
-                p.tradingsymbol, p.qty, exit_px_basis,
-                tick_size=settings.FNO_TICK_SIZE,
-                hard_flat=exit_reason.startswith("hard_flat"),
-                **exchange_kw,
-            )
+            if backstop_fill is not None:
+                result = {"status": "filled", "fill_price": backstop_fill["fill_price"],
+                          "order_id": backstop_fill["order_id"]}
+            elif backstop is not None and backstop["action"] == "partial":
+                rest = await executor.execute_exit(
+                    p.tradingsymbol, backstop["remaining"], exit_px_basis,
+                    tick_size=settings.FNO_TICK_SIZE,
+                    hard_flat=exit_reason.startswith("hard_flat"),
+                    **exchange_kw,
+                )
+                result = rest if rest["status"] != "filled" else {
+                    "status": "filled", "order_id": f"{backstop['order_id']}+{rest.get('order_id')}",
+                    "fill_price": (backstop["filled_qty"] * backstop["fill_price"]
+                                   + backstop["remaining"] * float(rest["fill_price"])) / p.qty,
+                }
+            else:
+                result = await executor.execute_exit(
+                    p.tradingsymbol, p.qty, exit_px_basis,
+                    tick_size=settings.FNO_TICK_SIZE,
+                    hard_flat=exit_reason.startswith("hard_flat"),
+                    **exchange_kw,
+                )
         except Exception:
             logger.exception("fno_exit_dispatch_ambiguous id=%s; reconcile before retry", p.id)
             continue
@@ -871,7 +910,7 @@ async def _try_entry_for_leg(
     premium_stop = round((1.0 - settings.FNO_STOP_PREMIUM_PCT) * fill, 2)
     inserter = fpos.insert_position_with_risk_reservation if reservation_key else fpos.insert_position
     try:
-        await _insert_entry_position(inserter, db_path, reservation_key, dict(
+        position_id = await _insert_entry_position(inserter, db_path, reservation_key, dict(
         source=source,
         tradingsymbol=contract.tradingsymbol,
         token=contract.token,
@@ -910,6 +949,14 @@ async def _try_entry_for_leg(
                           "receipt": "position_insert_failed"},
             )
         raise
+    if result["status"] == "filled":
+        # [O21-BS] A live fill gets its resting broker stop before anything
+        # else; arm() never raises and pages the operator if it fails.
+        await fno_broker_backstop.arm(
+            db_path, executor, position_id=position_id, source=source,
+            tradingsymbol=contract.tradingsymbol, exchange=instruments.segment,
+            qty=qty, fill=fill, tick=settings.FNO_TICK_SIZE,
+        )
     await _log(
         True, "", **contract_fields, lots=lots, max_loss_rupees=ml,
         **gate_audit_fields,

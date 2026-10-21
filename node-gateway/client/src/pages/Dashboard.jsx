@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AlertTriangle, BarChart3, FlaskConical, Microscope } from 'lucide-react';
+import { AlertTriangle, BarChart3, FlaskConical, GraduationCap, Microscope, Scale } from 'lucide-react';
 import StatusBar from '../components/StatusBar';
 import SignalCard from '../components/SignalCard';
 import PositionRow from '../components/PositionRow';
@@ -385,7 +385,9 @@ function SessionDiagnostics({ sessionDiagnostics, isLoading, isError }) {
   );
 }
 
-export default function Dashboard({ healthData, navigateToPositions, navigateToBacktests, navigateToResearch }) {
+export default function Dashboard({
+  healthData, navigateToPositions, navigateToBacktests, navigateToResearch, navigateToCoach, navigateToCapital,
+}) {
   const { signals, mutate: refreshSignals } = useSignals();
   const { positions } = usePositions();
   const { divisionPerformance, isLoading, isError } = useDivisionPerformance();
@@ -425,6 +427,8 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
           <div className="flex flex-wrap gap-2">
             <button onClick={navigateToResearch} className="flex items-center gap-2 rounded-lg border border-violet-600 bg-violet-950 px-4 py-2.5 text-sm font-bold text-violet-100 hover:bg-violet-900"><Microscope size={17} /> Experiment Center <span className="rounded bg-violet-900 px-1.5 py-0.5 text-[9px] tracking-wider">PAPER</span></button>
             <button onClick={navigateToBacktests} className="flex items-center gap-2 rounded-lg border border-cyan-600 bg-cyan-950 px-4 py-2.5 text-sm font-bold text-cyan-100 hover:bg-cyan-900"><FlaskConical size={17} /> Backtest Lab <span className="rounded bg-cyan-900 px-1.5 py-0.5 text-[9px] tracking-wider">RESEARCH ONLY</span></button>
+            <button onClick={navigateToCapital} className="flex items-center gap-2 rounded-lg border border-amber-600 bg-amber-950 px-4 py-2.5 text-sm font-bold text-amber-100 hover:bg-amber-900"><Scale size={17} /> Standard Capital <span className="rounded bg-amber-900 px-1.5 py-0.5 text-[9px] tracking-wider">PAPER</span></button>
+            <button onClick={navigateToCoach} className="flex items-center gap-2 rounded-lg border border-teal-600 bg-teal-950 px-4 py-2.5 text-sm font-bold text-teal-100 hover:bg-teal-900"><GraduationCap size={17} /> Partner Coach</button>
           </div>
         </header>
 

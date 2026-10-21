@@ -95,6 +95,26 @@ router.get('/partner/advisory/research-readiness', (req, res) =>
   proxyToEngine(req, res, '/partner/advisory/research-readiness'));
 router.put('/partner/advisory/profile', (req, res) =>
   proxyToEngine(req, res, withQuery('/partner/advisory/profile', req.query), 'PUT'));
+// [O21-PC] Partner coach: what the partner did against each card. The two
+// POSTs record or void a partner-reported fill; neither places an order.
+router.get('/partner/coach', (req, res) =>
+  proxyToEngine(req, res, withQuery('/partner/coach', { days: req.query.days })));
+router.post('/partner/coach/reports', (req, res) =>
+  proxyToEngine(req, res, '/partner/coach/reports', 'POST'));
+router.post('/partner/coach/reports/:reportId/void', (req, res) => {
+  if (!/^\d{1,12}$/.test(req.params.reportId)) {
+    return res.status(400).json({ error: 'bad_request', message: 'report id must be a number' });
+  }
+  return proxyToEngine(req, res, `/partner/coach/reports/${req.params.reportId}/void`, 'POST');
+});
+// [O21-PK] Re-read the partner's Zerodha order book while their login is held
+// (read-only: GET /orders and /trades on the partner's own app).
+router.post('/partner/broker/sync', (req, res) =>
+  proxyToEngine(req, res, '/partner/broker/sync', 'POST', { timeoutMs: 30000 }));
+// [O21-SC] Every paper book replayed on one standard capital (read-only).
+router.get('/performance/standard-capital', (req, res) =>
+  proxyToEngine(req, res, withQuery('/performance/standard-capital',
+    { capital: req.query.capital, since: req.query.since })));
 
 // Backtest Lab submits background work, so requests never hold an HTTP socket
 // for the duration of a replay. The longer budget protects SQLite contention

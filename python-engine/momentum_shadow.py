@@ -24,7 +24,7 @@ from cost_schedules import (
     EQUITY_INTRADAY_VERIFIED_AS_OF,
 )
 from engine import evaluate_momentum_signal
-from momentum_rs_pullback import rs_pullback_signal
+from momentum_rs_pullback import rs_index_known, rs_pullback_rules, rs_pullback_signal
 from momentum_selective import selective_gate
 
 
@@ -113,13 +113,22 @@ def _normalise_timestamp(value) -> str:
     return str(value)
 
 
-def _frame_fingerprint(ticker: str, df: pd.DataFrame, config: dict) -> str:
+def _frame_fingerprint(ticker: str, df: pd.DataFrame, config: dict,
+                       extra_frames: Sequence[tuple[str, pd.DataFrame | None]] = ()) -> str:
+    """Identity of one decision's inputs. ``extra_frames`` binds other data
+    the rule read (index bars, daily bars); none keeps older identities."""
     digest = hashlib.sha256()
     digest.update(ticker.encode("utf-8"))
     digest.update(json.dumps(
         _json_safe(config), sort_keys=True, separators=(",", ":"), allow_nan=False,
     ).encode("utf-8"))
     digest.update(pd.util.hash_pandas_object(df, index=True).values.tobytes())
+    for name, frame in extra_frames:
+        digest.update(f"|{name}:".encode("utf-8"))
+        if frame is None or frame.empty:
+            digest.update(b"none")
+        else:
+            digest.update(pd.util.hash_pandas_object(frame, index=True).values.tobytes())
     return f"sha256:{digest.hexdigest()}"
 
 
@@ -254,6 +263,16 @@ def evaluate_momentum_shadows(
             "market_regime": market_regime,
             "regime": getattr(regime, "name", None),
         }
+        extra_frames: tuple = ()
+        if variant.rs_pullback:
+            # [S21-R2] The RS rule also reads the index, the daily bars (ATR
+            # stop floor), its constants and the sizing pool: all of them are
+            # in its identity. Older variants keep their exact fingerprints.
+            config["rules"] = rs_pullback_rules()
+            config["momentum_pool"] = round(float(momentum_pool), 4)
+            signal_ts = df.index[-1] if isinstance(df.index, pd.DatetimeIndex) and not df.empty else None
+            extra_frames = (("index_known", rs_index_known(index_today, signal_ts) if signal_ts is not None
+                             else None), ("daily", df_daily))
         feature_names = (
             "close", "vwap", "volume_ratio", "intraday_high", "intraday_low",
             "daily_atr", "vwap_distance", "vwap_distance_atr",
@@ -276,7 +295,7 @@ def evaluate_momentum_shadows(
             "features": features,
             "config": config,
             "decision": decision,
-            "dataset_fingerprint": _frame_fingerprint(ticker, df, config),
+            "dataset_fingerprint": _frame_fingerprint(ticker, df, config, extra_frames),
             # Transient lifecycle evidence. Persistence stores observations as
             # immutable events, not this duplicated frame blob.
             "bars": _bars(df),
@@ -346,6 +365,20 @@ async def init_momentum_shadow_db(db_path: str) -> None:
                 r_multiple REAL,
                 created_at TEXT NOT NULL,
                 PRIMARY KEY (trading_date,ticker,variant,bar_ts,event_type)
+            )
+        """)
+        # [S21-R1] One receipt per virtual trade from the after-close terminal
+        # pass: CLOSED, or CENSORED with why (no bar, fetch failed).
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS momentum_shadow_terminal_receipts (
+                trading_date TEXT NOT NULL,
+                ticker TEXT NOT NULL,
+                variant TEXT NOT NULL,
+                status TEXT NOT NULL CHECK(status IN ('CLOSED','CENSORED')),
+                detail TEXT NOT NULL,
+                terminal_bar_ts TEXT,
+                created_at TEXT NOT NULL,
+                PRIMARY KEY (trading_date,ticker,variant)
             )
         """)
         await db.execute("""
@@ -511,6 +544,80 @@ async def _advance_and_open(db, result: dict, created_at: str) -> None:
           fingerprint, created_at))
 
 
+def _at_or_after_time_exit(bar_ts: str) -> bool:
+    parsed = datetime.fromisoformat(str(bar_ts).replace("Z", "+00:00"))
+    return (parsed.hour, parsed.minute) >= (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute)
+
+
+async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bars) -> dict:
+    """[S21-R1] After the close, give each still-open virtual trade of the day
+    the bars the scans never passed it.
+
+    Scans run 10:15-14:45, so the newest completed bar a virtual trade sees is
+    the 14:30 one and the declared 15:15 time exit never arrives (Oct 21: 9 of
+    13 MOM_RS_PULLBACK trades unresolved). ``fetch_bars(ticker)`` returns that
+    session's completed 15-minute bars; run it after 15:30 so the 15:15 bar
+    is complete (only its open is used, as at 15:15). Bars after the 15:15
+    bar are not passed. The usual stop/target/time-exit rules decide each
+    trade; a trade still open afterwards gets a CENSORED receipt saying why.
+    Nothing is invented: a missing bar or a failed fetch stays censored.
+    """
+    await init_momentum_shadow_db(db_path)
+    created_at = datetime.now(timezone.utc).isoformat()
+    summary = {"open": 0, "closed": 0, "censored": 0, "tickers": 0}
+    async with aiosqlite.connect(db_path) as db:
+        db.row_factory = aiosqlite.Row
+        rows = await (await db.execute("""
+            SELECT t.ticker, t.variant FROM momentum_shadow_trades t
+            WHERE t.trading_date=? AND NOT EXISTS (
+                SELECT 1 FROM momentum_shadow_trade_events e
+                WHERE e.trading_date=t.trading_date AND e.ticker=t.ticker
+                  AND e.variant=t.variant AND e.event_type='CLOSED')
+            ORDER BY t.ticker, t.variant
+        """, (trading_date,))).fetchall()
+        by_ticker: dict = {}
+        for row in rows:
+            by_ticker.setdefault(row["ticker"], []).append(row["variant"])
+        summary.update(open=len(rows), tickers=len(by_ticker))
+        for ticker, variants in by_ticker.items():
+            error = None
+            try:
+                frame = await fetch_bars(ticker)
+                bars = [bar for bar in _bars(frame if frame is not None else pd.DataFrame())
+                        if bar["bar_ts"][:10] == trading_date]
+                terminal = next((bar for bar in bars if _at_or_after_time_exit(bar["bar_ts"])), None)
+                if terminal is not None:
+                    bars = [bar for bar in bars if bar["bar_ts"] <= terminal["bar_ts"]]
+            except Exception as exc:     # a failed fetch is a censored outcome, not a crash
+                bars, terminal, error = [], None, type(exc).__name__
+            for variant in variants:
+                await _advance_and_open(db, {"trading_date": trading_date, "ticker": ticker,
+                                             "variant": variant, "accepted": False, "bars": bars}, created_at)
+                db.row_factory = aiosqlite.Row
+                closed = await (await db.execute(
+                    "SELECT reason, bar_ts FROM momentum_shadow_trade_events WHERE trading_date=? AND ticker=? "
+                    "AND variant=? AND event_type='CLOSED'", (trading_date, ticker, variant))).fetchone()
+                if closed is not None:
+                    status, detail, bar_ts = "CLOSED", str(closed["reason"]), closed["bar_ts"]
+                    summary["closed"] += 1
+                else:
+                    status, bar_ts = "CENSORED", None
+                    detail = (f"fetch_failed:{error}" if error else
+                              "no_terminal_bar" if terminal is None else "unresolved_after_terminal_bar")
+                    summary["censored"] += 1
+                await db.execute("""
+                    INSERT INTO momentum_shadow_terminal_receipts
+                        (trading_date,ticker,variant,status,detail,terminal_bar_ts,created_at)
+                    VALUES (?,?,?,?,?,?,?)
+                    ON CONFLICT(trading_date,ticker,variant) DO UPDATE SET
+                        status=excluded.status, detail=excluded.detail,
+                        terminal_bar_ts=excluded.terminal_bar_ts, created_at=excluded.created_at
+                    WHERE momentum_shadow_terminal_receipts.status='CENSORED'
+                """, (trading_date, ticker, variant, status, detail, bar_ts, created_at))
+        await db.commit()
+    return summary
+
+
 async def persist_momentum_shadow_results(db_path: str, results: Iterable[dict]) -> int:
     """Insert unseen evaluations and return the number of new rows."""
     await init_momentum_shadow_db(db_path)
@@ -587,6 +694,13 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
                 WHERE t.variant=?
             """, (variant,))).fetchone()
             entries, open_count, closed_count = (int(value or 0) for value in trades)
+            censored = (await (await db.execute("""
+                SELECT COUNT(*) FROM momentum_shadow_terminal_receipts r
+                WHERE r.variant=? AND r.status='CENSORED' AND NOT EXISTS (
+                    SELECT 1 FROM momentum_shadow_trade_events e
+                    WHERE e.trading_date=r.trading_date AND e.ticker=r.ticker
+                      AND e.variant=r.variant AND e.event_type='CLOSED')
+            """, (variant,))).fetchone())[0]
             closes = await (await db.execute("""
                 SELECT e.gross_pnl,e.costs,e.net_pnl,e.r_multiple
                 FROM momentum_shadow_trade_events e
@@ -596,6 +710,7 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
             outcome = {
                 "paper_entries": entries,
                 "open_trades": open_count,
+                "censored_trades": int(censored or 0),
                 "closed_trades": closed_count,
                 "gross_pnl": None,
                 "costs": None,
@@ -613,7 +728,8 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
             warnings = [
                 "Virtual paper outcomes use declared slippage/cost assumptions; they are not broker fills.",
                 "The virtual book exits the full quantity at target 1; live partial exits, runners, and trailing stops are not modelled.",
-                "Time exits require a later already-fetched bar at or after 15:15; unresolved entries remain open.",
+                "After the close a terminal pass gives each open virtual trade its remaining bars up to the "
+                "15:15 open; a trade it cannot resolve is CENSORED (no bar or fetch failed), never filled.",
             ]
             if closes:
                 gross_values = [float(row[0]) for row in closes]
@@ -653,7 +769,8 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
             else:
                 warnings.append("No virtual trades have closed; realised outcome metrics are unavailable.")
             if open_count:
-                warnings.append(f"{open_count} virtual trade(s) remain unresolved from available bars.")
+                warnings.append(f"{open_count} virtual trade(s) remain unresolved from available bars"
+                                + (f", {censored} of them censored by the terminal pass." if censored else "."))
             rows.append({
                 "variant": variant,
                 "evaluations": int(evaluations),

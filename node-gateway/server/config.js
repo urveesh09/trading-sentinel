@@ -9,6 +9,11 @@ const configSchema = z.object({
   ZERODHA_API_KEY: z.string().min(8),
   ZERODHA_API_SECRET: z.string().min(8),
   ZERODHA_REDIRECT_URL: z.string().url().endsWith('/api/auth/callback'),
+  // [O21-PK] Who may log in through the owner's app. When ZERODHA_USER_ID is
+  // set only that account is accepted; PARTNER_KITE_USER_ID (the partner's
+  // own account, also read by the engine) is always refused here.
+  ZERODHA_USER_ID: z.string().optional(),
+  PARTNER_KITE_USER_ID: z.string().optional(),
   
   TELEGRAM_BOT_TOKEN: z.string().regex(/^\d+:[A-Za-z0-9_-]+$/),
   TELEGRAM_CHAT_ID: z.string().min(5),

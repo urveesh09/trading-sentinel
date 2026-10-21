@@ -54,6 +54,12 @@ def patch_settings(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "CONTAINER_A_URL", "http://localhost:9999")
     monkeypatch.setattr(settings, "INTERNAL_API_SECRET", "test_secret")
     monkeypatch.setattr(settings, "STRATEGY_VERSION", "1.0.0-test")
+    # [O21-PK 2026-10-21] The partner's Zerodha app is off unless a test
+    # turns it on: real keys in the repo .env must not change card buttons
+    # or the coach note in unrelated tests.
+    monkeypatch.setattr(settings, "PARTNER_KITE_API_KEY", "")
+    monkeypatch.setattr(settings, "PARTNER_KITE_API_SECRET", "")
+    monkeypatch.setattr(settings, "PARTNER_KITE_USER_ID", "")
     # [FNO 2026-07-10] Keep every F&O artefact inside tmp_path so no test
     # can touch /data on a dev machine.
     monkeypatch.setattr(settings, "FNO_SIGNAL_LOG_PATH", str(tmp_path / "fno_signals.csv"))

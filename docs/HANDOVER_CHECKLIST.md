@@ -1,6 +1,160 @@
 # Handover receipt and operator checklist
 
-## October 19 — Oct 19 audit fixes (commit `d12bb1d`, Dev, pushed, not deployed)
+## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit `462d28f`, Dev, branch `codex/oct21-audit-fixes`, pushed, not deployed)
+
+- [x] S21-R1 15:32 terminal pass for virtual Momentum trades (receipts
+  CLOSED / CENSORED); S21-R2 RS identity binds index, daily bars, rules,
+  pool; S21-R3 replay runtime arm admits like the runtime; S21-E1 EDGE
+  entry-day event check; S21-L1 restart overlap on trading sessions.
+- [x] R21-M1 EDGE rows carry real outcomes, ranking is not a gate, alarm
+  wording; R21-M2 hourly allocation and equity; heartbeat slot on
+  delivery; T21-X transport kinds.
+- [x] O21-ON shadows `ON_TWO_LARGER` and `ON_TIGHT_SPREAD` on the overnight
+  book (declared 2026-10-21 from the book's own cost split; research only,
+  own cash) and `GET /experiments/edge-overnight`.
+- [x] Docs drift: the Oct 19 fix tests are 15 (collected), not 17.
+- [x] Tests: new `tests/test_oct21_audit_fixes.py` 18 pass;
+  `tests/test_oct15_audit_fixes.py` updated (transport kinds); related
+  suites 223 pass; goldens regenerated (one route, one job); full engine
+  suite 5,386 passed, 4 skipped, 0 failed (9 min 2 s); `scripts/tests` 276 pass.
+- [x] Evidence used (read-only, Production engine container): the overnight
+  store's 16 split exits (close→open +₹986.97, entry spread −₹462.11,
+  15:20→close −₹108.41, charges ₹677.78 over 20 closes, net −₹991.05).
+- [ ] Deployed: no. Merge order: `codex/production-correction-hedge-p0`,
+  `codex/partner-coach-standard-capital`, then this branch (it contains
+  both); rebuild the engine.
+- [ ] After deploy: `momentum_shadow_terminal` at 15:32 with closed/censored
+  counts; shadow rows at the 15:20 overnight entry; the 15:45 EDGE alarm
+  quiet when the paper leg enters, or naming the real refusal.
+
+## October 21 (night) — the partner's review page + explained lessons (commit `6f882f0`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- [x] O21-PL each flag: what happened, why it matters (this trade's
+  numbers), the better action and what it would have paid, the rule;
+  impact = actual − better, same order count; a profitable rule-break is
+  still a lesson.
+- [x] Stop discipline from Zerodha (SL orders + GTTs, GET `/gtt/triggers`
+  read-only): no stop, stop wider than the card, stop cancelled; only on
+  complete days with the GTT list read.
+- [x] `partner_lessons.py`: the day review (lesson of the day with the same
+  trade's other mistakes folded in, what went well, trade stories, cards not
+  taken, data notes), progress (this week against last, clean streak), the
+  evening note.
+- [x] Partner dashboard `PartnerReview.jsx` (Today / Progress / All
+  details); Zerodha login lands on it; owner "Partner's view" button.
+- [x] Tests: `tests/test_partner_coach.py` rewritten (21, every figure
+  recomputed), new `tests/test_partner_lessons.py` 10,
+  `tests/test_partner_broker_sync.py` 32; with
+  `tests/test_partner_fill_capture.py` 89 pass; golden regenerated (one
+  route); full engine suite 5,368 passed, 4 skipped, 0 failed (9 min 1 s). Gateway
+  `tests/integration/partner-kite.test.js` 7 pass; full jest 498 pass, 18 fail in `tests/unit/db.test.js` and `tests/unit/backlog-reconciliation.test.js` (better-sqlite3 has no native binary on this Windows host; environment, as before).
+  Client `node --test tests/*.test.mjs` 56 pass (new
+  `tests/partnerReview.test.mjs` 4); `vite build` ok; the page was
+  server-rendered with a real `/partner/review` payload (no runtime error).
+- [x] Environment: Windows `python-engine/winvenv` (pytest 8.0.0); no
+  browser in this session (render checked server-side, not on screen).
+- [ ] Deployed: no. Same order as below.
+- [ ] First Zerodha evening: open the review on a phone; check the lesson
+  against the partner's Kite order book.
+
+## October 21 (evening) — the partner's Zerodha fills + coach-only review page (commit `9648f95`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- [x] O21-PK `partner_broker_sync.py`: evening "Open today's review" button
+  (Kite login for the partner's own Personal app); the callback reads GET
+  `/orders` + `/trades` only, refuses any account but
+  `PARTNER_KITE_USER_ID`, token in memory until 06:00; one ZERODHA report
+  per filled option order, matched to cards; `partner_broker_days`.
+- [x] Coach: Zerodha fills replace taps on read days; NOT_TRADED after a
+  complete read; the note waits for the read and says "(from Zerodha)".
+  Card buttons off while Zerodha is configured.
+- [x] Gateway `/api/partner-kite/callback` + `/coach`: coach-only session
+  (`partner_view`, never `authenticated`); client "Your trading review".
+- [x] Owner `/api/auth/callback` refuses the partner's account (or every
+  account but `ZERODHA_USER_ID`). It never checked the account before.
+- [x] Tests: new `tests/test_partner_broker_sync.py` 28; with
+  `tests/test_partner_coach.py` and `tests/test_partner_fill_capture.py`
+  63 pass; golden regenerated (3 route additions); full engine suite
+  5,341 passed, 4 skipped, 0 failed (9 min 12 s; collected before the 28th Zerodha test, which passes on its own). Gateway: new `tests/integration/partner-kite.test.js` 6 and
+  `tests/unit/auth-account-guard.test.js` 3 pass;
+  full jest 497 pass, 18 fail in `tests/unit/db.test.js` and `tests/unit/backlog-reconciliation.test.js` (better-sqlite3 has no native binary on this Windows host; environment, as in the afternoon receipt). Client: `node --test tests/*.test.mjs` 52 pass;
+  `vite build` ok.
+- [x] Environment: Windows `python-engine/winvenv` (pytest 8.0.0); Kite
+  behaviour from Zerodha's docs (Personal plan: order and portfolio APIs, no
+  market data; static IP for order endpoints only; token expiry 06:00), not
+  yet exercised against the partner's account.
+- [ ] Deployed: no. Same order as below (expiry-v3 first, then this branch).
+- [ ] Setup: the owner creates a separate app in their developer account
+  with the partner's client ID (redirect
+  `https://<NGROK_URL>/api/partner-kite/callback`; Personal if offered). The owner
+  adds `PARTNER_KITE_API_KEY`, `PARTNER_KITE_API_SECRET` and
+  `PARTNER_KITE_USER_ID` to the root `.env`, and `PARTNER_KITE_USER_ID`
+  (plus their own `ZERODHA_USER_ID`) to `node-gateway/.env`. Then restart
+  the engine and gateway.
+- [ ] First evening: the prompt arrives after 15:40; the login lands on the
+  review; `partner_zerodha_synced` count matches the partner's order book.
+
+## October 21 (afternoon) — partner fill capture + coach, standard capital, F&O broker backstop (commit `b580af2`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+
+- [x] O21-PC cards carry Bought/Skipped buttons, exit updates Sold; replies
+  record or correct prices; off-card "b NIFTY 22950 PE 120 x2"; only the
+  partner chat is read; card text and gates unchanged.
+- [x] Partner Coach page + `GET /partner/coach`: did vs card plan, flags with
+  reasons and rupee effect, manual reaction allowance 120 s; evening note
+  only on days with reported trades; card price paths frozen at the wrap.
+- [x] O21-SC Standard Capital page + `GET /performance/standard-capital`:
+  every book on one capital (₹10k / ₹12.5k / ₹2L / ₹5L / custom), `since`
+  for the current version; read-only, paper, not a forecast.
+- [x] O21-BS live F&O entries rest a broker SL backstop; exits cancel and
+  read it first; paper never places one.
+- [x] Tests: new `tests/test_partner_fill_capture.py` 26,
+  `tests/test_partner_coach.py` 9, `tests/test_standard_capital.py` 8,
+  `tests/test_fno_broker_backstop.py` 17; goldens regenerated (additions
+  only); full engine suite 5,314 passed, 4 skipped, 0 failed (9 min 15 s). Clean baseline at `561ae70` in a
+  scratch worktree: 5,254 passed, 4 skipped (9 min 8 s). Gateway: new
+  `tests/integration/partner-coach-proxy.test.js` 4 pass; full jest 488
+  pass, 18 fail in `tests/unit/db.test.js` and
+  `tests/unit/backlog-reconciliation.test.js` (better-sqlite3 has no native
+  binary on this Windows host: "Could not locate the bindings file";
+  environment, not code). Client: `node --test` 51 pass; `vite build` ok.
+- [x] `tests/test_mark_to_market.py` clock race fixed: one fixed instant per
+  module (a quote stamped after `now` had a negative age and read STALE);
+  46/46 three runs in a row. The Oct 19 receipt's 5,527 vs Oct 21's 5,253:
+  the Oct 19 run also included `scripts/tests` (276 tests, all pass today);
+  no engine test disappeared.
+- [x] Environment: tests ran with `python-engine/winvenv` (Windows, pytest
+  8.0.0); the Production trial ran read-only inside the engine container
+  (`-u quantuser`, SQLite `mode=ro`).
+- [ ] Deployed: no. Merge `codex/production-correction-hedge-p0` first
+  (expiry-v3, before Thursday's SENSEX expiry), then this branch; rebuild
+  engine and gateway outside 12:59–15:40 on an expiry day.
+- [ ] After deploy: `partner_cron_registered jobs=16`; no getUpdates 409;
+  tell the partner about the buttons (only without Zerodha; with it the
+  evening "Open today's review" button replaces them, O21-PK above).
+
+## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `a88da98`, Dev, pushed, not deployed)
+
+- [x] B (main) sells both legs once the pair nets 20% after fees (BP's rule).
+  BP was never worse than B on any expiry B traded (+₹2,998.74 over four;
+  Oct 19 forward +₹722.46).
+- [x] BL (shadow) = v2's per-leg B on the same strangle; BP retired, its
+  history still prints. BR is BL plus its leg stop.
+- [x] CI (new shadow) = C sold once the index is back inside the box
+  (in-sample +₹2,429.99 against C); AE tested and not added (−₹167.32).
+- [x] A, C, D, budgets, execution and the owner's 10-expiry rule unchanged.
+- [x] Oct 19 audit fixes: X-1 settled legs labelled worthless/intrinsic (the
+  15:38 sale does fill ITM legs); X-2 still-index counts and RV to 15:15; X-3
+  rule-version split in tallies and paired lines; X-4 strangle leg lines name
+  the open partner; X-5 failed-break index and line printed.
+- [x] Replay of Production Oct 6/8/13/15/19 through Dev: only B (= old BP), BL
+  (= old B) and the new CI rows change; main book in-sample +₹8,755.33 (v2
+  +₹5,756.59), still 4 losing expiries of 5. In-sample, not evidence of
+  profit.
+- [x] Tests: `tests/test_expiry_paper.py` 63 pass; full engine suite
+  5,253 pass, 4 skip, 1 fail (8 min 40 s). The failure, `test_mark_to_market.py::TestEquityMark::test_zero_shares_position_is_flat`, is a clock race in that test (its quote is stamped after `now`, so the age is negative and reads STALE); it does not touch the expiry module, passes alone, and a different test of the same file failed the same way in an earlier run.
+- [ ] Deployed: no (merge, rebuild the engine before the SENSEX expiry on
+  Thursday Oct 22, outside the 12:59–15:40 window).
+
+## October 19 — Oct 19 audit fixes (commit `d12bb1d`, Dev, pushed, deployed by PR #111)
 
 - [x] O19-E1 EDGE morning scan scores the last completed session (`before_date`).
 - [x] O19-P1 partner update gap per card (45 s), reminder outside the daily cap.
@@ -11,10 +165,11 @@
 - [x] O19-F1 `FNO_LOCK_LATE_ARM` / `FNO_LOCK_LOOSE_KEEP` / `FNO_LOCK_OFF` replay arms.
 - [x] O19-M2 `MOM_RS_PULLBACK` shadow + replay variant + `momentum-pullback` job.
 - [x] O19-B1 bootstrap order; O19-M1 hourly silent-scan heartbeat.
-- [x] Tests: full suite 5,527 passed, 4 skipped (9 min 23 s); new tests/test_oct19_audit_fixes.py 17
-- [ ] Deployed (merge + engine rebuild) and verified on the next session.
+- [x] Tests: full suite 5,527 passed, 4 skipped (9 min 23 s); new tests/test_oct19_audit_fixes.py 15 (collected; recorded as 17 until Oct 21)
+- [x] Deployed by PR #111 (merge `2fc12ee`, Oct 20 22:56 IST; engine image built 22:59 IST; the
+  running container has the `before_date` scan fix, checked Oct 21). Was: no.
 
-## October 18 — simulation-report fixes (commit `a0a3fd8`, Dev, pushed, not deployed)
+## October 18 — simulation-report fixes (commit `a0a3fd8`, Dev, pushed, merged by PR #111)
 
 - [x] O18-F1 F&O replay dated expiry calendar; `CURRENT` arm; exporter
   `option_expiries`.

@@ -1,5 +1,11 @@
 """
-[PARTNER-TIPS 2026-07-18] Outbound-only partner Telegram sender (WS4).
+[PARTNER-TIPS 2026-07-18] Outbound partner Telegram sender (WS4).
+
+[O21-PC 2026-10-21] Cards may carry inline buttons (``reply_markup``) and
+``partner_api`` makes the few other Bot API calls the fill capture needs
+(getUpdates, answerCallbackQuery, editMessageReplyMarkup, setMessageReaction,
+a one-line reply). The same rules hold: partner chat only, plain text, the
+token never logged. See partner_fill_capture.py.
 
 A SECOND bot token + a SECOND chat id, wholly separate from the operator
 bot that node-gateway owns. Design rules (plan WS4):
@@ -61,15 +67,19 @@ def _masked_chat() -> str:
     return f"...{cid[-4:]}" if len(cid) >= 4 else "****"
 
 
-async def _post_once(client: httpx.AsyncClient, text: str) -> tuple:
+async def _post_once(client: httpx.AsyncClient, text: str,
+                     reply_markup: Optional[dict] = None) -> tuple:
     """One sendMessage attempt. Returns (result, retry_after_sec_or_None)."""
+    body = {
+        "chat_id": settings.PARTNER_TELEGRAM_CHAT_ID,
+        "text": text,
+        "disable_web_page_preview": True,
+    }
+    if reply_markup:
+        body["reply_markup"] = reply_markup
     resp = await client.post(
         f"https://api.telegram.org/bot{settings.PARTNER_TELEGRAM_BOT_TOKEN}/sendMessage",
-        json={
-            "chat_id": settings.PARTNER_TELEGRAM_CHAT_ID,
-            "text": text,
-            "disable_web_page_preview": True,
-        },
+        json=body,
         timeout=10.0,
     )
     if resp.status_code == 429:
@@ -98,7 +108,8 @@ async def _post_once(client: httpx.AsyncClient, text: str) -> tuple:
     ), None
 
 
-async def send_partner_result(text: str, *, kind: str = "partner_msg") -> PartnerSendResult:
+async def send_partner_result(text: str, *, kind: str = "partner_msg",
+                              reply_markup: Optional[dict] = None) -> PartnerSendResult:
     """Deliver one partner message with a bounded, auditable outcome.
 
     Tier 1: mandatory local log BEFORE any network attempt. Tier 2: one
@@ -118,7 +129,8 @@ async def send_partner_result(text: str, *, kind: str = "partner_msg") -> Partne
 
     async with httpx.AsyncClient() as client:
         try:
-            result, retry_after = await _post_once(client, text)
+            result, retry_after = await (_post_once(client, text, reply_markup) if reply_markup
+                                         else _post_once(client, text))
             if retry_after:
                 return PartnerSendResult(
                     False, state="rate_limited", error=f"telegram_429_retry_after_{retry_after}",
@@ -156,3 +168,27 @@ async def send_partner(text: str, *, kind: str = "partner_msg") -> bool:
     acknowledgement.  Existing non-hedge callers retain their boolean API.
     """
     return (await send_partner_result(text, kind=kind)).delivered
+
+
+async def partner_api(method: str, payload: dict, *, timeout: float = 10.0) -> Optional[object]:
+    """[O21-PC] One Bot API call on the partner bot; ``result`` or ``None``.
+
+    Used only by partner_fill_capture. Failures are logged by method and
+    error class, never with the token or the payload."""
+    if not partner_enabled():
+        return None
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"https://api.telegram.org/bot{settings.PARTNER_TELEGRAM_BOT_TOKEN}/{method}",
+                json=payload, timeout=timeout,
+            )
+        body = resp.json()
+    except Exception as exc:
+        logger.warning("partner_api_failed method=%s err=%s", method, type(exc).__name__)
+        return None
+    if resp.status_code == 200 and body.get("ok"):
+        return body.get("result")
+    logger.warning("partner_api_rejected method=%s status=%s desc=%s", method, resp.status_code,
+                   str(body.get("description") or "")[:120])
+    return None

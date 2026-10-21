@@ -143,6 +143,13 @@ module.exports = {
     const response = await kite.generateSession(requestToken, apiSecret);
     return response.access_token;
   },
+
+  // [O21-PK] The session plus the Zerodha account it belongs to, so the
+  // login callback can refuse an account that is not the owner's.
+  generateSessionWithUser: async (requestToken, apiSecret) => {
+    const response = await kite.generateSession(requestToken, apiSecret);
+    return { accessToken: response.access_token, userId: response.user_id || '' };
+  },
   
   getLTP: async (instruments) => {
     // Bypass the kiteconnect SDK for LTP — the SDK's response interceptor silently

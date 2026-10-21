@@ -115,6 +115,12 @@
       "trigger": "cron[minute='7-52/15', second='10']"
     },
     {
+      "func": "_run_partner_inbox_tick_safe",
+      "id": "partner_inbox_tick",
+      "kwargs": [],
+      "trigger": "interval[0:00:20]"
+    },
+    {
       "func": "_run_partner_input_refresh_safe",
       "id": "partner_input_refresh",
       "kwargs": [],
@@ -465,6 +471,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_edge_overnight_experiment",
+      "methods": [
+        "GET"
+      ],
+      "path": "/experiments/edge-overnight",
+      "response_model": null
+    },
+    {
       "endpoint": "get_fno_opening_range_experiment",
       "methods": [
         "GET"
@@ -673,6 +687,54 @@
       "response_model": null
     },
     {
+      "endpoint": "post_partner_broker_session",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/broker/session",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_broker_status",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/broker/status",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_partner_broker_sync",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/broker/sync",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_coach",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/coach",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_partner_coach_report",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/coach/reports",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_partner_coach_report_void",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/coach/reports/{report_id}/void",
+      "response_model": null
+    },
+    {
       "endpoint": "get_partner_hedge_cards",
       "methods": [
         "GET"
@@ -761,6 +823,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_partner_review",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/review",
+      "response_model": null
+    },
+    {
       "endpoint": "penny_command_get",
       "methods": [
         "GET"
@@ -790,6 +860,14 @@
         "GET"
       ],
       "path": "/performance/divisions",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_standard_capital",
+      "methods": [
+        "GET"
+      ],
+      "path": "/performance/standard-capital",
       "response_model": null
     },
     {

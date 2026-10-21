@@ -125,6 +125,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_inbox_tick_safe",
+    "id": "'partner_inbox_tick'",
+    "trigger": "'interval'"
+  },
+  {
     "func": "_run_partner_input_refresh_safe",
     "id": "'partner_input_refresh'",
     "trigger": "'cron'"
@@ -272,6 +277,11 @@
   {
     "func": "run_momentum_screener",
     "id": "f'momentum_scan_{hour}{minute}'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_momentum_shadow_terminal",
+    "id": "'momentum_shadow_terminal'",
     "trigger": "'cron'"
   },
   {

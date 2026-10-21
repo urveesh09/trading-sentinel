@@ -274,20 +274,38 @@ def run_overnight_book(bars, calendar, *, end: str, signals_at_close, config: Ed
                     outcomes["STOP_ALREADY_BREACHED"] += 1
                     continue
                 capacity = int(config.overnight_max_participation * bar["close"] * bar["volume"] // entry_price)
-                if capacity < min_fill_fraction * signal.planned_shares:
-                    outcomes["LIQUIDITY_REJECTED"] += 1
-                    continue
-                shares = min(signal.planned_shares, capacity)
-                if shares < signal.planned_shares:
-                    outcomes["LIQUIDITY_LIMITED_RESIZE"] += 1
-                budget = cash / (config.max_positions - entered) if split_cash else cash
-                affordable = int(budget // (entry_price * (1 + buy_cost_buffer)))
-                if affordable < shares:
-                    if affordable < min_fill_fraction * shares:
-                        outcomes["CASH_REJECTED_DUST"] += 1
+                if split_cash:
+                    # [S21-R3] Runtime admission, mirrored: the pick may use
+                    # its share of the free cash, and the quarter-of-plan dust
+                    # floor is measured against the plan capped at an equal
+                    # share of equity (edge_overnight_paper.run_overnight_entry),
+                    # so the cap itself never refuses a pick the runtime admits.
+                    plan = min(signal.planned_shares,
+                               int((config.bankroll + realized) / config.max_positions // entry_price))
+                    wanted = min(signal.planned_shares, capacity)
+                    budget = cash / (config.max_positions - entered)
+                    affordable = int(budget // (entry_price * (1 + buy_cost_buffer)))
+                    shares = min(wanted, affordable)
+                    cash_bound = affordable < wanted
+                    if shares < 1 or shares < min_fill_fraction * plan:
+                        outcomes["CASH_REJECTED_DUST" if cash_bound else "LIQUIDITY_REJECTED"] += 1
                         continue
-                    outcomes["CASH_LIMITED_RESIZE"] += 1
-                    shares = affordable
+                    if shares < signal.planned_shares:
+                        outcomes["CASH_LIMITED_RESIZE" if cash_bound else "LIQUIDITY_LIMITED_RESIZE"] += 1
+                else:
+                    if capacity < min_fill_fraction * signal.planned_shares:
+                        outcomes["LIQUIDITY_REJECTED"] += 1
+                        continue
+                    shares = min(signal.planned_shares, capacity)
+                    if shares < signal.planned_shares:
+                        outcomes["LIQUIDITY_LIMITED_RESIZE"] += 1
+                    affordable = int(cash // (entry_price * (1 + buy_cost_buffer)))
+                    if affordable < shares:
+                        if affordable < min_fill_fraction * shares:
+                            outcomes["CASH_REJECTED_DUST"] += 1
+                            continue
+                        outcomes["CASH_LIMITED_RESIZE"] += 1
+                        shares = affordable
                 cash -= entry_price * shares
                 entered += 1
                 outcomes["FILLED"] += 1

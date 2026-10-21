@@ -8,6 +8,16 @@ const { requireSession } = require('../middleware/auth');
 const { limiters } = require('../middleware/security');
 const { withRetry } = require('../utils/retry');
 
+// [O21-PK] The partner now logs in to Zerodha for their review. Their account
+// (or any account that is not the owner's) must never become the system's
+// token or an owner session through this callback.
+const sameAccount = (a, b) => String(a || '').trim().toUpperCase() === String(b || '').trim().toUpperCase();
+function ownerAccount(userId) {
+  if (config.ZERODHA_USER_ID) return sameAccount(userId, config.ZERODHA_USER_ID);
+  if (config.PARTNER_KITE_USER_ID) return !sameAccount(userId, config.PARTNER_KITE_USER_ID);
+  return true;
+}
+
 // Generate Zerodha login URL
 router.get('/login', limiters.authLogin, (req, res) => {
   logger.info({ event_type: 'auth_initiated' }, 'Zerodha OAuth initiated');
@@ -25,7 +35,13 @@ router.get('/callback', limiters.authCallback, async (req, res, next) => {
     }
 
     // Generate session token
-    const accessToken = await kite.generateSession(request_token, config.ZERODHA_API_SECRET);
+    const { accessToken, userId } = await kite.generateSessionWithUser(request_token, config.ZERODHA_API_SECRET);
+    if (!ownerAccount(userId)) {
+      // Nothing is stored, provisioned or authenticated; every gateway Kite
+      // call re-arms the stored owner token, so the SDK state is harmless.
+      logger.warn({ event_type: 'auth_wrong_account' }, 'Zerodha login by a non-owner account refused');
+      return res.redirect('/login?error=wrong_account');
+    }
     tokenStore.setToken(accessToken);
 
     // Setup secure session
@@ -75,6 +91,8 @@ router.get('/status', (req, res) => {
 
   res.json({
     authenticated: req.session?.authenticated || false,
+    // [O21-PK] A coach-only session from the partner's Zerodha login.
+    partner_view: Boolean(req.session?.partner_view),
     login_time: req.session?.login_time || null,
     token_age_min: ageMinutes
   });

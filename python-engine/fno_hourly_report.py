@@ -83,18 +83,22 @@ async def build_hourly_report(
         open_pos = await fpos.open_positions(db_path, source)
         closed = await fpos.closed_today(db_path, source, today_iso)
         day_pnl = sum(c["pnl"] or 0.0 for c in closed)
-        pool = (
+        allocation = (
             settings.FNO_PAPER_BANKROLL if source == "FNO_PAPER"
             else settings.FNO_LIVE_BANKROLL
         )
         # [PAPER-MARKING 2026-08-04] Mark the leg and every rupee in it. This
         # report's numbers are an order of magnitude larger than the live
         # book's and used to render identically -- see performance.fmt_money.
-        from performance import fmt_money, is_paper_source
+        from performance import division_equity, fmt_money, is_paper_source
         paper = is_paper_source(source)
+        # [R21-M2] "pool=250,000" was the allocation while the book stood at
+        # ₹226,797.73 (Oct 21): show both, so a drawdown is never hidden.
+        equity = await division_equity(db_path, source)
         lines.append(
             f"--- *{source}*{' (PAPER MONEY)' if paper else ''} "
-            f"pool={fmt_money(pool, source)} | open={len(open_pos)} "
+            f"allocation={fmt_money(allocation, source)} equity={fmt_money(equity, source)} "
+            f"| open={len(open_pos)} "
             f"closed_today={len(closed)} day_pnl={fmt_money(day_pnl, source)} ---"
         )
         for p in open_pos:

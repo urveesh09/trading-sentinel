@@ -262,6 +262,94 @@ are Production rows.
 - **Context snapshots are labelled "window", not "entry"**: "B window
   15:13:30, read 15:16:00" no longer reads like a B trade.
 
+## `expiry-v3`: B takes BP's pair target; shadows `expiry-shadow-v5` (owner order, October 21)
+
+After the October 19 audit (Production
+`docs/2026-10-19-expiry-system-deep-audit.md`, the first expiry on v2) the
+owner ordered: apply the fixes, keep observing, and make a shadow that keeps
+beating its main the main (and the main a shadow). Every shadow was judged
+against its own primary on the same entries, over all five retained expiries
+(replayed through Dev: 0 row mismatches against Production on Oct 8, 13 and
+19; Oct 6 and 15 differ only where v2's C replaced v1's):
+
+| Shadow − primary | Oct 6 | Oct 8 | Oct 13 | Oct 15 | Oct 19 (forward) | Total | Decision |
+|---|---|---|---|---|---|---|---|
+| BP − B | +₹768.77 | +₹1,507.51 | ₹0.00 | no entry (outage) | **+₹722.46** | +₹2,998.74 | **Promoted**: never worse, on every day B traded |
+| BR − B | +₹449.99 | −₹521.66 | +₹796.18 | no entry | +₹297.53 | +₹1,022.04 | Kept as shadow: lost on Oct 8 |
+| BH − B | +₹768.77 | +₹259.51 | ₹0.00 | no entry | −₹1,802.64 | −₹774.36 | Kept as shadow (the hold control) |
+| AL − A | ₹0.00 | +₹576.91 | −₹4,914.29 | ₹0.00 | ₹0.00 | −₹4,337.38 | Kept A |
+| CH − C (v2) | −₹1,170.10 | ₹0.00 | ₹0.00 | −₹2,018.54 | **−₹1,089.01** | −₹4,277.65 | v2's C stays: holding never did better |
+
+Oct 6/8 rows for BP, BR and BH, and every CH row before Oct 19, are Dev
+replays (in-sample); Oct 13 and Oct 19 BP/BR/BH/AL and Oct 19 CH are
+Production rows. BP's 20% target was frozen after seeing Oct 8, so only Oct 13
+(equal) and Oct 19 (+₹722.46) were scored forward.
+
+- **B (`expiry-v3`).** B's entry, strikes, sizing and ceiling are unchanged.
+  Its exit is BP's rule unchanged: both legs are sold together once selling the
+  pair on the visible bids would net `PAIR_TARGET` (20%) of the premium paid,
+  after all charges; otherwise both are held into the auction (sold from 15:38
+  if bid). No number was fitted. B's buy notice says "both sold once the pair
+  nets 20% after fees, else held into the auction".
+- **Why it is safe to promote.** In 15:15–15:30 the strangle trades the
+  closing auction's outcome: one leg spikes, then usually collapses (Oct 19:
+  the 22900CE bid ran 15.05 → 49.95 → 0.05 in 16 minutes). The pair target
+  takes the spike; v2's per-leg rules needed one leg to double before banking
+  (a one-lot leg cannot bank half) and gave most of it back. The cost: on a
+  day one leg runs very far, B now takes about 20–50% instead of trailing the
+  run. No such day has happened in five expiries; BL keeps measuring it.
+- **BL (shadow).** expiry-v2's B on the same strangle: each leg banks half at
+  ×2 and trails 65% of its peak (80% from 15:30), sold from 15:38. BL − B is
+  the promotion's running score; positive means the per-leg exits would have
+  done better. BR stays BL plus its 50% leg stop, now paired with the new B.
+- **BP retired.** No new entries; its rows and paired line still print, under
+  "before B's expiry-v3 rule".
+- **CI (new shadow).** C whose ticket is sold once the index is back inside
+  the box at all (C sells a quarter of the width inside). Mechanism: the
+  lottery is worth something only while the break runs; on Oct 19 the index
+  was back in the box 90 s after entry and only reached C's line 15 minutes
+  later (C sold at 2.45 of 5.00). In-sample CI − C: +₹129.75, +₹1,813.93,
+  ₹0.00 (the Oct 13 winner never came back to the box), −₹35.93, +₹522.24 =
+  +₹2,429.99. This was drawn from seen data, so only later expiries score it.
+- **Considered and not added: AE** (A entering only after the break clears
+  the box by a second buffer). In-sample it finished ₹167.32 below A: it
+  skipped Oct 19's two losers (+₹856.42) but entered later and lost more on
+  Oct 8 (−₹675.90) and Oct 15 (−₹300.59). A is not changed. Its record (lost
+  4 of 5, +₹3,559.57 lifetime) is a breakout's: small losses and one large
+  trend day.
+- **Replayed main book under v3** (in-sample): Oct 6 −₹1,285.60, Oct 8
+  −₹1,427.00, Oct 13 +₹13,780.74, Oct 15 −₹954.88, Oct 19 −₹1,357.93. Total
+  +₹8,755.33 against v2's +₹5,756.59 and the +₹2,567.95 actually run. Worst
+  day −₹1,427.00 (actually run: −₹3,224.47). It is still 4 losing expiries of
+  5: v3 makes losses smaller, it does not make every expiry win, and the
+  in-sample numbers are not evidence of profit.
+
+**Fixes from the October 19 audit** (no strategy effect):
+- **X-1, the 15:38 sale.** The audit read "bids vanish about 15:30" as "15:38
+  can never fill". On all five expiries an in-the-money leg stayed bid to
+  15:39:50 and sold at 15:38 (Oct 8 BH 71500CE at 93.05 in Production; Oct 6
+  BH 22750CE at 26.00 in replay); only worthless legs lost their bids (last 0.05 bids 15:28:30–15:35:10),
+  and they settle at zero, the same as a sale at 0.05 after its ₹20 order fee.
+  No rule changes. The summary now labels each settled leg "(worthless)" or
+  "(intrinsic x)", and the module docstring says so.
+- **X-2, the still index.** On all five expiries the index stood still from
+  about 15:15 to 15:28–15:29:40 (74–88 ticks), then printed the close. Ticks
+  whose fresh index equals the previous one are counted (before and from
+  15:15, with the longest run before 15:15 and the last change); realized
+  volatility stops sampling at 15:15 (`expiry-context-v1.2`). Window counts
+  keep the unchanged ticks in the day state.
+- **X-3, version-mixed tallies.** `RULE_SINCE = {A: 1, B: 3, C: 2}`. The
+  per-play owner tally adds the part since the play's current rule ("C 4/5
+  (Rs +2,483; since expiry-v2 1/1 Rs -1,211)"); a paired line totals entries
+  from before the primary's rule apart ("before B's expiry-v3 rule …"). A day
+  keeps the version it began under.
+- **X-4, one leg's sale.** A strangle leg's sell line says "leg closed",
+  names any leg still open and gives the whole trade's net, so B can no longer
+  read +₹800.35 while its put rides to zero.
+- **X-5, trigger margin.** A failed-break sale stores and prints the index
+  and the line ("FAILED_BREAK at index 22,889.30, line 22,889.29"); Oct 19's C
+  fired by 0.0125 points.
+
 ## October 8 audit corrections (Dev, no strategy change)
 
 - **Slot count (audit T5).** `EXPECTED_SLOTS` is 966 (12:59:00–15:39:50). The

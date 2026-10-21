@@ -1,5 +1,413 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, Dev, commit `462d28f`)
+
+Owner (Oct 21): act on the Oct 21 Production audit
+(`Production_Trading-sentinel/docs/2026-10-21-production-deep-audit.md`):
+fix what it found, and add shadows where a better approach is supported.
+No live strategy rule, sizing, Smart policy file, expiry rule or live
+switch changed; everything below is a bug fix, telemetry, or research.
+
+- **S21-R1 Momentum shadow terminal pass.** Virtual trades advanced only on
+  a later scan's bars; scans run 10:15–14:45, so the declared 15:15 time
+  exit never arrived (Oct 21: 9 of 13 MOM_RS_PULLBACK trades unresolved).
+  Job `momentum_shadow_terminal` (15:32 IST, Mon–Fri, trading days,
+  `MOMENTUM_SHADOW_ENABLED`) fetches each open ticker's completed 15-minute
+  bars for the session and calls `resolve_momentum_shadow_day`. Bars after
+  the 15:15 bar are not passed; the usual stop/target/time-exit rules decide
+  (the time exit uses only the 15:15 open). Table
+  `momentum_shadow_terminal_receipts`: CLOSED or CENSORED with why
+  (`fetch_failed:<Class>`, `no_terminal_bar`); a later pass may close a
+  censored trade, never the reverse. The comparison adds `censored_trades`.
+- **S21-R2 RS_PULLBACK identity.** The RS variant's config now carries
+  `rules` (`rs_pullback_rules()`: every constant and sizing setting, version
+  `rs_pullback_v1`) and `momentum_pool`; its fingerprint also hashes the
+  index bars the rule could see (`rs_index_known`) and the daily bars (ATR
+  floor). A different index or constant gives a different identity. The
+  other variants' configs and fingerprints are byte-identical.
+- **S21-R3 Overnight replay parity.** On the `EDGE_OVERNIGHT_RUNTIME` arm the
+  replay now measures the quarter-of-plan dust floor against the plan capped
+  at an equal share of equity, with the pick's share of free cash, as the
+  runtime does (`edge_overnight_paper`). The audit's counterexample (₹25,000,
+  3 slots, plan 2,000 at 20.05) now fills 414 (runtime 415; the 0.2% buffer).
+  Other replay arms are unchanged.
+- **S21-E1 EDGE entry-day event check.** `_run_one_leg` re-checks
+  `event_block(ticker, entry date)` before each admission (skip reason
+  `entry_day_event_window: ...`). The scan's signal-date check stays.
+- **S21-L1 Restart overlap.** `startup_receipt` writes `market_overlap_sec`
+  over trading sessions only (`is_trading_day_sync` per day; an unreadable
+  calendar counts the weekday) and keeps the raw weekday figure as
+  `weekday_overlap_sec`. Oct 19 night → Oct 21 pre-market: 0 (was 22,500 s).
+- **R21-M1 EDGE signal rows and the zero-accept alarm.** Candidates were
+  logged against the live leg, which is off by design, so all 96 read
+  `not_selected_by_live_leg` and the alarm said "unsatisfiable gate". Each
+  row now carries the real outcome (`edge_candidate_outcome`): accepted if
+  either leg entered it; else the per-ticker refusal (paper first), or
+  `rank_not_selected`. The watchdog leaves `rank_not_selected` out of the
+  dead-gate test (`NOT_A_GATE`, shown as "Not a gate (selection by design)"),
+  says "the last N evaluation day(s)" (not "consecutive"), and words a
+  dominant gate as a check to make, not a verdict.
+- **R21-M2 F&O hourly.** `allocation=` and `equity=` (`division_equity`:
+  allocation + realised P&L) replace `pool=`.
+- **O19-M1 follow-up.** `_notify_momentum_heartbeat` returns whether the
+  gateway accepted it; the hour's slot is set only then, so a failed send is
+  retried by the next silent scan that hour.
+- **T21-X Transport kinds.** `transport_error_kind` adds `pool_timeout` (this
+  process's own pool, not the provider), `read`, `write`, `protocol`, and
+  `other:<ExceptionClass>` instead of a bare `other`.
+- **O21-ON Overnight forward shadows (`edge_overnight_paper.py`).** From
+  Production's own record (16 trades with a recorded split): close→open
+  +₹986.97 (about +0.77% a trade), entry spread paid at the ask −₹462.11
+  (about 0.36%; 15:20→close drift only −₹108.41 with mixed signs), delivery
+  charges about ₹33 a trade (about 0.42% at ₹8k; the DP charge is fixed per
+  scrip): the edge is real and the costs take it. Two shadows were declared
+  on 2026-10-21 before any scoring (`OVERNIGHT_SHADOWS`):
+  - `ON_TWO_LARGER`: two equal positions of half the book each
+    (`fill_cash_share`), so the fixed DP charge weighs less per rupee;
+  - `ON_TIGHT_SPREAD`: the book's sizing, but a pick filled more than 0.35%
+    above LTP is refused (`entry_cost_above_limit`, no slot used).
+  The admission loop moved into `_admit` (the book calls it with its exact
+  previous behaviour); each shadow calls it with its declared fields on the
+  same ranked picks, re-quote and decision time, with its own cash
+  (`EDGE_OVERNIGHT_PAPER_BANKROLL` + its realised P&L, `shadow_state`).
+  Exits use the same quotes and `_price_exit` (EXIT phase and same-day
+  retries). Table `edge_overnight_shadow_trades`; the ENTRY summary gains a
+  compact `shadows` key; the book's notices are unchanged. Read-only
+  `GET /experiments/edge-overnight` compares each shadow with the book on
+  the same nights (closed, net, PF, average net, charges, average entry cost
+  %, average position value). Setting `EDGE_OVERNIGHT_SHADOWS_ENABLED`
+  (True).
+
+## October 21 (night) — the partner's own review page; lessons that explain each mistake (actual behavior, Dev, commit `6f882f0`)
+
+Owner (Oct 21): the partner logs in from the Telegram button and lands on
+their own dashboard, a branch of the main one, opening on the day's
+learnings; more is there if they want it. The lessons must be top quality,
+comprehensive, correct and well tested, so the partner understands each
+mistake and what would have been better. Owner's decision (Oct 21 night): the
+partner's app is a separate app in the owner's developer account with the
+partner's client ID; the partner is the owner's parent, immediate family
+under Zerodha's static-IP rule (spouse, dependent children, dependent
+parents), declared when the IPs were whitelisted. Reads do not need the IP. Built on O21-PK below. No strategy rule, card
+text or gate, sizing, Smart policy file or live switch changed.
+
+- **Each mistake explained (`partner_coach.py`, O21-PL).** Every flag now
+  carries `reason` (what happened, times and prices), `why` (why it matters,
+  with this trade's numbers), `better` + `better_pnl` (the better action and
+  what it would have paid after charges) and `advice` (the rule).
+  `impact_rs` = actual − better (was mixed; ENTRY_ABOVE_LIMIT was the extra
+  premium paid). What-ifs on the same position are charged for the same
+  number of orders (`_pnl(..., orders)`), so an extra order's brokerage never
+  shows up as a behaviour cost. Examples:
+  - chased entry: the stop-out loss from the partner's price against the
+    card's limit (e.g. ₹1,506 instead of ₹1,153 on 20 qty, 31% more) and the
+    room left to the first target; "skip it: ₹0 instead of −₹2,268"; when a
+    5-minute print came back inside the limit before the skip-after time, "or
+    wait with a limit order at ₹522.35: it traded at ₹518 at 12:15";
+  - held past the stop: when the option first printed under the SL, and the
+    result of an SL order at the card's price;
+  - revenge re-entry: the earlier loss, the minutes between, the two trades
+    together; size-up: per-₹1 exposure and the same trade at the old size;
+    averaged down: the result with only the first buy; early exit, gave back
+    after target, held past square-off: the card's exit priced on the
+    partner's entry; overtrading: the day's charges and the cards-only day.
+  - A rule-break that made money says "It made +₹X this time; the rule is
+    about the risk taken, not about this result" and stays a lesson.
+- **Stop discipline (Zerodha days).** The read now also takes GET
+  `/gtt/triggers` (allowlisted; no GTT or order write path).
+  `partner_stop_orders` keeps every SL / SL-M SELL order on an option and
+  every sell GTT that protects (an OCO's lower leg; a single trigger set
+  below the price at creation; a single one above it is a target).
+  `partner_broker_days.stops_known` is set only when the GTT list was read.
+  On complete days with stops known: NO_STOP_ORDER (held ≥ 5 min with no SL
+  order or GTT placed from 60 s before the buy), STOP_WIDER_THAN_CARD (> 3%
+  under the card SL; priced when it fired), STOP_CANCELLED (cancelled before
+  the exit and before 15:15, no new stop after it, sold > 1% under it).
+  Positives: STOP_PLACED (within 5 min of the buy, not later cancelled),
+  EXITED_BEFORE_STOP, PAUSED_AFTER_LOSS (> 30 min after a loss, then a card).
+  Unknown stops: nothing is said about stops.
+- **Card plan fix.** A card whose first print after delivery was already at
+  or under its SL is "card said skip" (₹0), not an entry under its own stop.
+- **The day review (`partner_lessons.py`).** `day_review(view, day)`:
+  headline ("2 trades · −₹5,345 after charges · following the cards exactly:
+  ₹0 · 1 without a card"); the lesson of the day = the costliest group of
+  the same mistake, ties by `LESSON_PRIORITY` (revenge and size first, then
+  entries breaking the card, then stops); mistakes on the same trade fold
+  into it as "also on this trade" (one revenge trade is one story); up to 4
+  more lessons; what went well (CLEAN_DAY when every trade followed its
+  card); each trade as a time-ordered story (card, buys, stops placed and
+  cancelled, the card's SL being reached, card messages, sells, result);
+  cards not taken, neutrally ("Not taking a card is always allowed"); data
+  notes (taps are estimates; a read before the close; stops unknown; 5-minute
+  prices). `progress(view, today)`: per pattern this week against last week
+  with a trend, trades that followed their card, clean-day streak, per-day
+  rows. `render_note` writes the evening Telegram note from the same review:
+  headline, "Lesson:", "Better:", "Next time:", ✅ habits, at most six lines.
+- **Route and pages.** Engine GET `/partner/review?day=&days=` (internal
+  secret; default today, else the latest day with a card or trade; window
+  14–120 days). Gateway GET `/api/partner-kite/review` (partner or owner
+  session; day YYYY-MM-DD only). The Zerodha login now lands on
+  `/?view=review`. Client `PartnerReview.jsx` is the partner's dashboard:
+  "Today" (headline, lesson of the day with what/why/better/rule, what went
+  well, more to learn, trades step by step, cards not taken, notes), then
+  "Progress" and "All details" (the coach page, read-only). The owner opens
+  it from the Coach page ("Partner's view"); the owner's flags also show the
+  why and better lines.
+
+## October 21 (evening) — the partner's Zerodha fills read once a day, coach-only review page (actual behavior, Dev, commit `9648f95`)
+
+Owner (Oct 21): the partner will not log entries during the day; fetch their
+orders from the free API and let them open the dashboard only at the end of
+the day for the learnings. Built on O21-PC (afternoon section below). No
+strategy rule, card text, card gate, book sizing, Smart policy file or live
+switch changed; nothing places, modifies or cancels an order.
+
+- **The partner's own app.** Kite Connect "Personal" (free) gives order and
+  portfolio APIs but no market data; the order book can be read from any IP
+  (the exchange static-IP rule covers API order endpoints only). The partner
+  app is a separate app in the owner's developer account with the partner's
+  client ID (owner's decision; the partner is the owner's parent) and
+  redirect URL `<public URL>/api/partner-kite/callback`. Reads need no
+  static IP; the code has no order path. Settings (root `.env`, read by the engine): `PARTNER_KITE_API_KEY`,
+  `PARTNER_KITE_API_SECRET`, `PARTNER_KITE_USER_ID` (all three, else off),
+  `PARTNER_KITE_BASE_URL` (`https://api.kite.trade`, direct, not the relay),
+  `PARTNER_ZERODHA_SYNC_ENABLED` (True). Tests pin the three keys empty
+  (`tests/conftest.py`) so real keys in the repo `.env` change nothing.
+- **Evening flow (`partner_broker_sync.py`, O21-PK).**
+  - `partner_eod_wrap` (15:40) calls `partner_broker_eod` before the coach:
+    with a login held it reads the book; otherwise it sends one message per
+    day (`partner_messages` kind `zerodha_prompt`) with a URL button
+    "📒 Open today's review" = the Kite login link
+    (`https://kite.zerodha.com/connect/login?v=3&api_key=...`).
+  - Kite redirects to the gateway callback with a one-time `request_token`;
+    the gateway POSTs it to `/partner/broker/session`. `create_session`
+    exchanges it (checksum SHA-256 of key + token + secret), refuses any
+    `user_id` other than `PARTNER_KITE_USER_ID` (and logs that token out),
+    and keeps the access token in memory only until 06:00 IST (Kite's
+    expiry). It never reaches a log line, the DB or a response; accounts are
+    shown masked (`AB***34`).
+  - `sync_book` reads GET `/orders` and `/trades` (if `/trades` is refused,
+    each order's own average price and exchange time are used). `_kite_call`
+    allows only POST/DELETE `/session/token`, GET `/orders`, GET `/trades`;
+    anything else raises `not_allowed` before a request is built. A
+    `TokenException` drops the session.
+  - One report per filled NFO/BFO option order into `partner_trade_reports`:
+    `source` ZERODHA, `price_basis` BROKER_FILL (quantity-weighted average of
+    the order's trades), `trade_at` the first fill's exchange time
+    (EXCHANGE_FILL), lots = quantity / lot size (instrument book, else the
+    card; a quantity that is not whole lots is scored as units with a note).
+    Partly filled then cancelled orders count their filled part. Rejected or
+    unfilled orders, equity and futures are counted, not stored.
+    `dedup_key` `kite:<order_id>`; a re-read refreshes the same row (an order
+    that filled more); a row the owner voided stays voided.
+  - Card matching: a BUY belongs to the latest card for the same Kite symbol
+    and exchange sent before it (60 s clock slack); a SELL to the latest such
+    card still holding quantity, else the latest such card; anything else is
+    off-card (contract read from the symbol, e.g. `NIFTY25O2122950PE`).
+  - `partner_broker_days` records each read: `complete` once a read happened
+    at or after 15:30 IST that day. An empty book before 09:15 records
+    nothing.
+  - `on_login`: session, read, and after the close the coach note
+    (`partner_coach_eod`). A login before the close is kept, and the 15:40
+    wrap reads the final book with no tap.
+- **Coach on Zerodha days (`partner_coach.py`).** On a day read from
+  Zerodha, Telegram and dashboard BUY/SELL reports up to the read time (the
+  whole day once complete) are ignored (`zerodha_first`;
+  `data_quality.superseded_by_zerodha`). SKIP taps stay. On a complete day
+  a card with no order is NOT_TRADED (counted in `cards_not_traded`, earns
+  "Skipping saved money" when the card lost); before a complete read it
+  stays NOT_REPORTED. With Zerodha configured the evening note waits for a
+  complete read (`awaiting_zerodha`), says "(from Zerodha)", and carries an
+  "📒 Open full review" button. The view carries `zerodha` (configured,
+  connected, masked account, per-day reads; never the token).
+- **Card buttons.** With Zerodha configured, cards and exit updates go out
+  without the Bought/Skipped/Sold buttons (`PARTNER_FILL_BUTTONS_WITH_ZERODHA`
+  False); typed replies still record. Without Zerodha nothing changes.
+- **Gateway and review page.** `server/routes/partner-kite.js`: GET
+  `/api/partner-kite/callback` (callback rate limiter; fixed-text pages
+  only; success sets `req.session.partner_view`, never `authenticated`, and
+  redirects to `/?view=coach`); GET `/api/partner-kite/coach?days=` (1–120,
+  partner or owner session; the only route a partner session opens). Every
+  `/api/proxy`, `/api/orders`, `/api/token` route still needs
+  `authenticated`. `/api/auth/status` adds `partner_view`. Owner proxy: POST
+  `/api/proxy/partner/broker/sync` (re-read while a login is held). Engine
+  routes: POST `/partner/broker/session`, GET `/partner/broker/status`, POST
+  `/partner/broker/sync` (internal secret; errors are a `code` only). The
+  client opens `PartnerCoach partnerView` for a partner-only session: title
+  "Your trading review", default Today, no report form, no remove, no
+  navigation; Zerodha fills show "from Zerodha" and cannot be removed. The
+  owner's page shows a Zerodha status line and "Re-read Zerodha".
+- **Owner login guard (gateway `routes/auth.js`).** The owner's
+  `/api/auth/callback` never checked which Zerodha account logged in. Now
+  that the partner opens the dashboard URL, a partner whose review session
+  expired could press the Login page's Zerodha button. If Zerodha allowed
+  that account on the owner's app, its token would have become the system
+  token with an owner session. The callback now reads the account
+  (`generateSessionWithUser`) and refuses `PARTNER_KITE_USER_ID`, or every
+  account but `ZERODHA_USER_ID` when that is set. Both are in
+  `node-gateway/.env`, which is separate from the engine's root `.env`. A
+  refused login stores, provisions and authenticates nothing and redirects
+  to `/login?error=wrong_account`. With neither set the callback is
+  unchanged.
+
+## October 21 (afternoon) — partner fill capture and coach, standard-capital view, F&O broker backstop (actual behavior, Dev, commit `b580af2`)
+
+Owner (Oct 21): before real money, standardise every book on one capital
+(₹2L / ₹5L) and scale down later; a broker-side stop for live F&O; capture
+the partner's real fills and add a coaching dashboard so the manual partner
+can learn from FOMO and revenge trades. Host reliability (UPS or cloud VM)
+is the owner's call and is not done. No strategy rule, card text, card gate,
+book sizing, Smart policy file or live switch changed.
+
+- **Partner fill capture (O21-PC, `partner_fill_capture.py`).** Until now
+  `partner_positions` and `partner_advisory_feedback` had 0 rows.
+  - Entry cards (`manual_market_advisory`) carry inline buttons Bought 1 lot
+    / 2 lots / Skipped; exit-type updates (INVALIDATION, TARGET_ZONE,
+    SESSION_EXIT_REMINDER) carry Sold all / Sold 1 lot. `keyboard_for(kind,
+    detail)` is called in `hedge_advisory._send_claimed_review`; the text and
+    every gate are unchanged. `send_partner_result(..., reply_markup=)`.
+  - Job `partner_inbox_tick` (interval `PARTNER_INBOX_POLL_SEC` 20 s,
+    09:00–21:00 IST any day) long-polls `getUpdates`
+    (`PARTNER_INBOX_LONG_POLL_SEC` 15) on the partner bot, offset in
+    `partner_inbox_state`; a failed poll (409 webhook, network) backs off 10
+    min. Only `PARTNER_TELEGRAM_CHAT_ID` is read.
+  - A tap records the option's ask (buy) / bid (sell) from one
+    management-lane quote (`ASK_AT_TAP` / `BID_AT_TAP`, shown "≈"), market
+    hours only; a double tap within 10 s is one tap. The card's buttons then
+    show the recorded state, with Undo.
+  - A reply to a card or update records or corrects in the partner's words:
+    "518.5", "b 518.5 x2", "s 560 @14:42", "skip", "undo"
+    (`parse_report_text`). A bare price within 30 min of a Bought/Sold tap
+    replaces the estimate (`PARTNER_STATED`, the old row VOIDED). Off-card:
+    "b NIFTY 22950 PE 120 x2" (or "/b ..." in a group). Bad input gets one
+    help line per 10 minutes; ordinary chat is ignored. Reactions (👍)
+    acknowledge typed reports.
+  - Table `partner_trade_reports` (append-only, `dedup_key` per Telegram
+    update, status ACTIVE/VOIDED). No price is ever taken from the card.
+- **Partner coach (`partner_coach.py`).** Per delivered buyer card: the
+  partner's fills and P&L after charges; "card exits on your entry" (premium
+  SL order, the 5-minute print `PARTNER_COACH_REACTION_SEC` = 120 s after an
+  exit/target/square-off message, else the exit-by print); the card plan
+  (a chased, late or after-close entry was a skip on the card: ₹0). Flags
+  with the numbers that fired them and a fixed "next time" line:
+  ENTRY_ABOVE_LIMIT (FOMO), LATE_ENTRY, AFTER_CARD_CLOSED, OFF_CARD,
+  QUICK_REENTRY_AFTER_LOSS (≤ 30 min, revenge pattern), SIZE_UP_AFTER_LOSS,
+  AVERAGED_DOWN, HELD_PAST_STOP (> 3% under the SL, or > 10 min after the
+  exit message), EARLY_EXIT, GAVE_BACK_AFTER_TARGET, HELD_PAST_SQUARE_OFF,
+  OVERTRADING (day). Positives: bought inside the limit, exited with the
+  card, a skip that saved money. Leaks are ranked by rupee effect (they
+  overlap). `partner_eod_wrap` calls `partner_coach_eod`: it freezes the
+  day's card price paths (`partner_coach_card_paths`, past the 7-day OI
+  purge) and, when the partner reported a trade, sends a note of at most six
+  lines (`PARTNER_COACH_NOTE_ENABLED`, dedup `partner_messages` kind
+  `coach`). Coaching never blocks a card or a trade.
+- **Standard capital (O21-SC, `standard_capital.py`).** Replays each book's
+  own closed paper trades on one capital S (default `STANDARD_CAPITAL_INR`
+  ₹2L, any ₹1k–₹1cr): units = round(book units × S / reference) in whole
+  lots/shares (0 = too small, skipped and counted); own cash only (sized
+  down or skipped); charges recomputed at the new size (real F&O/equity
+  schedules where prices are stored, else flat ₹20/order kept fixed);
+  `since` scores the current version of a book. References: F&O single and
+  spreads `FNO_PAPER_BANKROLL`; expiry 3 × `EXPIRY_PAPER_BUDGET` /
+  `FNO_MAX_RISK_PCT` = ₹3.75L (its peak cash, ~₹9k, would scale it 22×);
+  overnight, Momentum, Penny, EDGE morning their paper bankrolls. Identity:
+  at its own reference a book's replay equals its own net P&L unless it held
+  more than its pool at once (flagged; Momentum MIS). Penny rows closed
+  since September store shares=0: sized from `PENNY_PER_STOCK_CAP` (noted).
+  EDGE morning positions hold 9 of the ledger's 19 closes (noted). An 8-byte
+  blob price (numpy int64, VPRPL Aug 11) is decoded. Production trial
+  (read-only, Oct 21): at own references F&O single −₹23,012.32, spreads
+  −₹189.95, expiry +₹2,567.95, overnight −₹991.05 reproduce the books; since
+  Sep 1 at ₹2L each: spreads +₹7,238.41 (3.62%, DD 0.52%), single
+  +₹3,764.84 (1.88%), Momentum +₹702.81, overnight −₹5,780.76 (×8 flagged);
+  at ₹10k/₹12.5k every F&O trade is too small.
+- **F&O broker backstop (O21-BS, `fno_broker_backstop.py`).** After a LIVE
+  single-leg fill the orchestrator calls `arm()`: one SELL SL (stop-limit,
+  MIS, `intent="exit"`, never halt-blocked) at trigger = fill × (1 −
+  `FNO_STOP_PREMIUM_PCT` − `FNO_BACKSTOP_EXTRA_PCT` 0.10), limit 10% under
+  (`FNO_BACKSTOP_LIMIT_GAP_PCT`, clamped to NSE circular 54/2023 OPTIDX
+  range: ₹10 up to a ₹50 trigger, else 20%). Table `fno_broker_backstops`.
+  Before any engine exit `before_exit()` cancels and re-reads it: cancelled
+  unfilled → exit as before; fully filled → booked as the exit
+  (`broker_backstop`, no order sent); part-filled → sells only the rest;
+  unprovable → nothing sold, paged once (no exit intent claimed). While no
+  exit is due `check_filled()` re-reads each minute, every tick within 2% of
+  the trigger. PLACE_UNKNOWN is resolved from `orders_snapshot`. Paper never
+  places one; `REENTRY_STOP_REASONS` includes `broker_backstop`. The live
+  leg is still behind `FNO_DISABLE_LIVE` and the go-live bar.
+- **Routes and dashboard.** Engine `routes_partner_coach.py`: GET
+  `/partner/coach?days=`, POST `/partner/coach/reports`, POST
+  `/partner/coach/reports/{id}/void`, GET
+  `/performance/standard-capital?capital=&since=` (internal secret). Gateway
+  proxies them under `/api/proxy/` (void id digits only). Client pages
+  Partner Coach and Standard Capital, buttons on the dashboard.
+- **Deployment drift corrected.** `d12bb1d` and its docs commit `e5621f7`
+  were deployed by PR #111 (merge `2fc12ee`, Oct 20 22:56 IST; engine image
+  built 22:59 IST; the running container has the `before_date` scan fix,
+  checked Oct 21). `a88da98` (expiry-v3) was not merged: the container runs
+  `RULES_VERSION = "expiry-v2"`.
+
+## October 21 — expiry-v3: B takes BP's pair target; expiry-shadow-v5 (BL, CI) and Oct 19 expiry-audit fixes (actual behavior, Dev, commit `a88da98`)
+
+Audit: Production `docs/2026-10-19-expiry-system-deep-audit.md` (first expiry
+on v2). Owner order: apply the fixes, keep observing, and promote a shadow that
+keeps beating its main (the main becomes a shadow). Design, the five-expiry
+evidence table and honesty notes are in
+`docs/2026-10-05-expiry-day-paper-book.md`, section "expiry-v3". Execution
+(`expiry-exec-v2`), A, C, D, the budgets and the owner's 10-expiry rule are
+unchanged.
+
+- **B (main, `RULES_VERSION = expiry-v3`).** `POLICIES["B"]` is the hold
+  policy and `PAIR_PLAYS = (B, BP)`: both legs are sold together
+  (`PAIR_TARGET`, 0.20) once the pair's liquidation net after all charges
+  reaches 20% of the premium paid; else held into the auction and sold from
+  15:38 if bid. Why: BP − B was +₹768.77, +₹1,507.51 (replays), ₹0.00 and
+  +₹722.46 (forward) on the four expiries B traded, never worse. B's buy
+  notice says "both sold once the pair nets 20% after fees, else held into the
+  auction".
+- **Shadows (`SHADOW_VERSION = expiry-shadow-v5`).** `SHADOW_PLAYS = BH, C500,
+  D, AL, BR, CH, BL, CI`; `RETIRED_PLAYS = CX, BP` (no new entries, history
+  prints).
+  - **BL** = v2's B (`POLICIES["BL"]`: bank half at ×2, trail 65%, 80% from
+    15:30), paired with B. **BR** = BL plus its 50% leg stop.
+  - **CI** = C sold once the index is back inside the box at all
+    (`STRUCTURE_BACK["CI"] = 0.0`; A, AL, C and CX keep 0.25), paired with C.
+    In-sample CI − C +₹2,429.99 over five expiries; scored only forward.
+  - AE (A after a second buffer) was replayed and not added (−₹167.32 against
+    A in-sample).
+- **Fixes (Oct 19 audit X-1–X-5).**
+  - X-1: the 15:38 sale does fill a leg with a bid (ITM legs were bid to
+    15:39:50 on all five expiries); worthless legs have no bids and settle at
+    zero. Settlement events store `intrinsic`; the summary labels settled legs
+    "(worthless)" or "(intrinsic x)".
+  - X-2: `_record_tick` counts a fresh index equal to the previous one in
+    `state["index_unchanged"]` (before/from 15:15, longest run before 15:15,
+    last change) and as a third `window_ticks` element. The summary prints
+    "index unchanged from the previous tick: …". `update_realized` stops at
+    15:15 (`CONTEXT_VERSION = expiry-context-v1.2`).
+  - X-3: `RULE_SINCE = {A: 1, B: 3, C: 2}` and `day_rules()`. The owner
+    per-play tally adds "since expiry-vN a/b Rs x" when a record spans a rule
+    change. Paired lines total entries from before the primary's rule apart
+    ("before B's expiry-v3 rule …"). A mixed day counts as the version it
+    began under.
+  - X-4: sell lines are composed after every leg has moved; a strangle leg
+    says "leg closed", names the open partner and gives the whole trade's net.
+  - X-5: a `FAILED_BREAK` event stores `index` and `line`; the sell line
+    prints both.
+- **Rules version per day.** A day begun under older rules is marked
+  "expiry-v2+expiry-v3 from mid-day" (B's open legs would then switch to the
+  pair rule; deploy after the session).
+- **Verification.** A replay of the five retained Production expiries through
+  Dev (scratch `xv5/replay_all.py`, `compare.py`):
+  - before the change, 0 row mismatches on Oct 8, 13 and 19 (Oct 6 and 15
+    differ only where v2's C replaced v1's);
+  - after it, every existing row and event is identical except that B's rows
+    equal the old BP rows and BL's equal the old B rows; the only new rows
+    are CI's.
+  - main book in-sample under v3: −₹1,285.60 / −₹1,427.00 / +₹13,780.74 /
+    −₹954.88 / −₹1,357.93 = +₹8,755.33 (v2 +₹5,756.59; as run +₹2,567.95).
+    Still 4 losing expiries of 5. In-sample, not evidence of profit.
+
 ## October 19 — Oct 19 audit fixes: EDGE morning scan, partner pacing, Smart marks, overnight split, Momentum/F&O shadows (actual behavior, Dev, commit `d12bb1d`)
 
 Source: `Production_Trading-sentinel/docs/2026-10-19-production-deep-audit.md`
@@ -139,7 +547,7 @@ Research tooling only; no runtime strategy, threshold or config changed.
   −Rs 8.74. The replays now measure what the runtime would do, so the Oct 13
   rerun and the Oct 14 run can show which modules earn.
 
-## October 15 — expiry-v2: C takes CX's failed-break exit; expiry-shadow-v4 and Oct 15 expiry-audit fixes (actual behavior, Dev, commit `5458d2d`)
+## October 15 — expiry-v2: C takes CX's failed-break exit; expiry-shadow-v4 and Oct 15 expiry-audit fixes (actual behavior, commit `5458d2d`, deployed by PR #110)
 
 Audit: Production `docs/2026-10-15-expiry-system-deep-audit.md`. The owner
 ordered that a shadow which worked should replace its main play. Design, the
