@@ -1,5 +1,28 @@
 # Handover receipt and operator checklist
 
+## October 21 (night) — O21-PX partner's deeper review (commit pending (recorded in the next docs commit), Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- [x] One review link every trading day after the brief
+  (`ensure_review_message`: the coach note's button, else the prompt).
+- [x] Partner's Zerodha read adds order history (numeric id GET), positions
+  and equity margins, best effort; new tables `partner_orders`,
+  `partner_order_changes`, `partner_broker_positions`,
+  `partner_account_days`.
+- [x] Traded options' 1-minute candles from the owner's market data (prints
+  fallback), `partner_trade_paths`; gateway login wait 45 s.
+- [x] Round trips split (re-entries are their own trades); ENTRY_UNDER_STOP;
+  new lessons CHASED_SPIKE, GAVE_BACK_PROFIT, STOP_LOWERED,
+  PRICE_RAISED_TO_FILL, BIG_RISK, HELD_OVERNIGHT, INSUFFICIENT_FUNDS;
+  positives CUT_LOSS_SAVED, STOP_TRAILED.
+- [x] Review: rules kept, per-trade chart and "what the option did", day
+  numbers, orders, window statistics with plain lines, tomorrow's focus.
+- [x] Tests: `tests/test_partner_insights.py` 31 pass; partner suites 120
+  pass; full engine suite 5,417 passed, 4 skipped, 0 failed (9 min 24 s); client `node --test` 59 pass;
+  `npx vite build` OK; gateway partner jest 10 pass.
+- [ ] Deployed: no. Merge the branch, rebuild engine and gateway (no new
+  setting; the partner's keys as already listed).
+- [ ] After deploy: the 15:40 link; after the partner's login the
+  `partner_paths_stored` line and charts on the review.
 ## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit `462d28f`, Dev, branch `codex/oct21-audit-fixes`, pushed, not deployed)
 
 - [x] S21-R1 15:32 terminal pass for virtual Momentum trades (receipts

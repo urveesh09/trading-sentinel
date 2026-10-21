@@ -1,5 +1,61 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 21 (night) — O21-PX the partner's deeper review (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem: the owner merged PR #112 and asked that every evening, after the
+  brief, the partner gets a review link (login, then the review), and that
+  the feedback be enriched from everything the API offers. Gaps found: no
+  link on a held-login day without trades; the coach saw only fills (no
+  order changes, refusals, positions or cash) and no prices around a trade;
+  a re-buy of the same option merged into one trade (a false "added to a
+  losing option" and a hidden revenge re-entry); after the split, a re-entry
+  under the card's SL would have been told to "sell at the SL" for a profit.
+- Files: `partner_broker_sync.py` (allowlist, details, prompt,
+  `ensure_review_message`), `partner_trade_paths.py` (new),
+  `partner_insights.py` (new), `partner_coach.py` (round trips, re-entries,
+  ENTRY_UNDER_STOP, context), `partner_lessons.py` (rules kept, option lines,
+  day and window statistics, focus, fold cap), `partner_orchestrator.py`
+  (wrap step); gateway `routes/partner-kite.js` (45 s); client
+  `PartnerReview.jsx`, `utils/partnerReview.js`; tests
+  `tests/test_partner_insights.py` (new), `tests/test_partner_broker_sync.py`,
+  `tests/test_partner_lessons.py`, client `tests/partnerReview.test.mjs`.
+- Contracts:
+  - Kite allowlist adds GET `/portfolio/positions`, `/user/margins/equity`,
+    `/orders/<digits>`; nothing else.
+  - New tables `partner_orders`, `partner_order_changes`,
+    `partner_broker_positions` (`partner_positions` is the hedge module's),
+    `partner_account_days`, `partner_trade_paths`.
+  - `sync_book` result adds `details` and `paths`. `analyse(...,
+    context=None)`; trades split by round trip (`<key>#2`); card items may
+    carry `reentry`/`card_time`; items carry `insight`; day rows `account`,
+    `orders`, `open_positions`, `carried_in`, `stops_known`; summary
+    `card_reentries`.
+  - Review adds `score`, `stats`, `account`, `orders`, `open_positions`;
+    stories add `reentry`, `checks`, `option_lines`, `chart`, `numbers`;
+    progress adds `focus`, `stats`, per-day `rules_kept_pct`. The note's
+    headline adds "rules kept k/n".
+  - No new route, job or setting; no owner-facing behaviour or card text
+    changed.
+- Acceptance (met in Dev): every new lesson and positive has a firing and a
+  non-firing test with recomputed rupees; spike only on 1-minute candles and
+  off-card; give-back only off-card; a raise inside the card's limit is not
+  chasing; the allowlist refuses POST/PUT/DELETE on order paths and GET of
+  non-numeric ones; details survive a failed history; positions and cash are
+  not read before the open; paths are read once after the close, fall back
+  to prints and stop at the budget; one review link a day (prompt, or the
+  coach note); a synthetic day was read end to end and its wording fixed
+  (re-entry under the SL, card-SL risk, fold cap, same-minute order).
+- Rollout: merge, rebuild engine and gateway. First evening: the 15:40 link
+  (prompt or note); after the partner's login, `partner_paths_stored` and
+  `partner_zerodha_synced` log lines; the review's charts and rules kept.
+- Rollback: revert the commit (tables are inert); the partner flow itself is
+  off with a blank `PARTNER_KITE_API_KEY`.
+- Remaining:
+  - [ ] Check the first real days on Production: the lessons' thresholds
+    (20% spike, 20% give-back, 10% of cash) are declared, not fitted; change
+    them only with the owner.
+  - [ ] A re-entry on a card is its own item; a split position kept across
+    days (carry-in) is shown as a note, not scored.
 ## October 21 (late) — Oct 21 audit fixes S21-R1/R2/R3/E1/L1, R21-M1/M2, T21-X; O21-ON overnight shadows (done, Dev, commit `462d28f`, branch `codex/oct21-audit-fixes` on top of `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - Problem: the Oct 21 Production audit (read-only; Production HEAD

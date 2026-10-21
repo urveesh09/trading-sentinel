@@ -15,7 +15,10 @@ const router = express.Router();
 
 const REQUEST_TOKEN = /^[A-Za-z0-9]{8,64}$/;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const SESSION_TIMEOUT_MS = 30000; // session exchange + two order-book reads + the coach note
+// Session exchange, the order-book reads, [O21-PX] order histories and the
+// traded options' prices (the engine caps those at 20 s), then the coach
+// note. Under nginx's 60 s proxy timeout, so the page always gets an answer.
+const SESSION_TIMEOUT_MS = 45000;
 
 // Fixed texts only: nothing from the query or the engine reaches the page.
 const MESSAGES = {

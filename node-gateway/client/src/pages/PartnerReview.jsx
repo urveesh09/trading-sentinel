@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import { ArrowLeft, BookOpen, GraduationCap, Lightbulb, ListChecks, Minus, ShieldAlert, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowLeft, BarChart3, BookOpen, ClipboardList, Crosshair, GraduationCap, Lightbulb, ListChecks, Minus, ShieldAlert, TrendingDown, TrendingUp } from 'lucide-react';
 import { fetcher } from '../api/client';
 import { formatRs, pnlTone } from '../utils/partnerCoach';
-import { buildReviewModel, formatDay, percent, reviewUrl, trendOf } from '../utils/partnerReview';
+import {
+  LEVEL_STYLE, LEVEL_TEXT, buildReviewModel, chartGeometry, formatDay, formatPrice, minutesLabel, percent, reviewUrl,
+  scoreTone, signedPercent, trendOf,
+} from '../utils/partnerReview';
 import PartnerCoach from './PartnerCoach';
 
 // [O21-PL] The partner's own dashboard: today's learnings first. The lesson
@@ -11,6 +14,10 @@ import PartnerCoach from './PartnerCoach';
 // rule), what went well, each trade as a story and the cards not taken.
 // "Progress" and "All details" are there for more. Read-only: nothing here
 // places an order or changes a card.
+// [O21-PX] Also: the one rule to focus on tomorrow, rules kept today (process,
+// not money), each trade's price chart with the buys, sells and stops, what
+// the option did before, during and after the trade, the day's orders, and
+// the window's statistics with a plain line for each pattern they show.
 
 const TABS = [['today', 'Today'], ['progress', 'Progress'], ['details', 'All details']];
 
@@ -29,6 +36,16 @@ function Labeled({ label, children, tone = 'text-gray-200' }) {
     <div>
       <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">{label}</p>
       <p className={`mt-0.5 text-sm ${tone}`}>{children}</p>
+    </div>
+  );
+}
+
+function Stat({ label, value, tone = 'text-white', note }) {
+  return (
+    <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-3">
+      <p className="text-[10px] uppercase tracking-wide text-gray-500">{label}</p>
+      <p className={`mt-1 text-lg font-bold ${tone}`}>{value}</p>
+      {note && <p className="text-[10px] text-gray-500">{note}</p>}
     </div>
   );
 }
@@ -91,13 +108,66 @@ function SmallLesson({ lesson }) {
   );
 }
 
+// [O21-PX] The option's price around the trade: the line, your buys (green)
+// and sells (red), and the card's and your own levels as dashed lines.
+export function PriceChart({ chart }) {
+  const geo = chartGeometry(chart);
+  if (!geo) return null;
+  return (
+    <figure className="mt-2 rounded border border-gray-800 bg-gray-950/60 p-2">
+      <svg viewBox={`0 0 ${geo.width} ${geo.height}`} className="h-40 w-full" role="img"
+        aria-label={`Option price from ${geo.start} to ${geo.end}, with your buys and sells`}>
+        {geo.levels.map((level) => (
+          <g key={`${level.label}-${level.price}`}>
+            <line x1="0" x2={geo.width} y1={level.y} y2={level.y} className={LEVEL_STYLE[level.kind] || 'stroke-gray-500'} strokeDasharray="4 3" strokeWidth="1" />
+            <text x={geo.width - 2} y={level.y - 2} textAnchor="end" fontSize="8" className={LEVEL_TEXT[level.kind] || 'fill-gray-400'}>{level.label} {formatPrice(level.price)}</text>
+          </g>
+        ))}
+        <path d={geo.path} fill="none" className="stroke-gray-200" strokeWidth="1.5" strokeLinejoin="round" />
+        {geo.marks.map((mark, index) => (
+          <g key={`${mark.kind}-${index}`}>
+            <circle cx={mark.x} cy={mark.y} r="4" className={mark.kind === 'buy' ? 'fill-emerald-400' : 'fill-red-400'} />
+            <title>{`${mark.kind === 'buy' ? 'You bought' : 'You sold'} at ${formatPrice(mark.price)} (${mark.at})`}</title>
+          </g>
+        ))}
+      </svg>
+      <figcaption className="mt-1 flex flex-wrap justify-between gap-2 text-[10px] text-gray-500">
+        <span>{geo.start}</span>
+        <span><span className="text-emerald-300">●</span> your buy · <span className="text-red-300">●</span> your sell{geo.hiddenLevels.length ? ` · off the chart: ${geo.hiddenLevels.map((l) => `${l.label} ${formatPrice(l.price)}`).join(', ')}` : ''}</span>
+        <span>{geo.end}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
+function Checks({ checks }) {
+  if (!checks?.length) return null;
+  return (
+    <p className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
+      {checks.map((check) => (
+        <span key={check.key} className={`rounded border px-1.5 py-0.5 ${check.kept ? 'border-emerald-800 text-emerald-200' : 'border-red-800 text-red-200'}`}>
+          {check.kept ? '✓' : '✗'} {check.name}
+        </span>
+      ))}
+    </p>
+  );
+}
+
 function Story({ story }) {
+  const label = story.reentry ? ' · bought again on the card' : (story.on_card ? '' : ' · no card');
   return (
     <article className="rounded-lg border border-gray-800 bg-gray-950 p-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-mono text-sm font-bold text-white">{story.time} · {story.option}{story.on_card ? '' : ' · no card'}</h3>
+        <h3 className="font-mono text-sm font-bold text-white">{story.time} · {story.option}{label}</h3>
         {story.pnl != null && <span className={`font-mono text-sm font-bold ${pnlTone(story.pnl)}`}>{formatRs(story.pnl)}</span>}
       </div>
+      <Checks checks={story.checks} />
+      {story.chart && <PriceChart chart={story.chart} />}
+      {story.option_lines?.length > 0 && (
+        <ul className="mt-2 space-y-0.5 text-xs text-gray-300">
+          {story.option_lines.map((line) => <li key={line}>{line}</li>)}
+        </ul>
+      )}
       <ol className="mt-2 space-y-1 border-l border-gray-800 pl-3">
         {story.timeline.map((event, index) => (
           <li key={index} className={`text-xs ${event.who === 'card' ? 'text-sky-200' : 'text-gray-200'}`}>
@@ -116,15 +186,89 @@ function Story({ story }) {
   );
 }
 
+function Focus({ focus }) {
+  if (!focus) return null;
+  return (
+    <section className="rounded-lg border border-teal-600 bg-teal-950/40 p-4">
+      <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-teal-300"><Crosshair size={14} /> Tomorrow, focus on one thing</p>
+      <p className="mt-1 text-base font-bold text-teal-50">{focus.rule}</p>
+      <p className="mt-1 text-xs text-teal-200/80">{focus.text}</p>
+    </section>
+  );
+}
+
+function Headline({ model }) {
+  const { headline, score, stats, account } = model;
+  return (
+    <section className="rounded-lg border border-gray-800 bg-gray-900/70 p-4">
+      <p className="text-xs text-gray-400">{formatDay(model.day)}{model.source === 'ZERODHA' ? ' · from your Zerodha orders' : ''}</p>
+      <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
+        {headline.pnl != null && <p className={`text-3xl font-black ${pnlTone(headline.pnl)}`}>{formatRs(headline.pnl)}</p>}
+        {score && (
+          <div className="text-right">
+            <p className={`text-2xl font-black ${scoreTone(score.pct)}`}>{score.kept}/{score.of}</p>
+            <p className="text-[10px] uppercase tracking-wide text-gray-500">rules kept</p>
+          </div>
+        )}
+      </div>
+      <p className="mt-1 text-sm text-gray-200">{headline.text}</p>
+      {(stats || account) && (
+        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400">
+          {stats && <span>{stats.wins} win{stats.wins === 1 ? '' : 's'} · {stats.losses} loss{stats.losses === 1 ? '' : 'es'}</span>}
+          {stats?.charges != null && <span>Charges {formatRs(stats.charges, { signed: false })}</span>}
+          {stats?.time_in_market_min != null && <span>In the market {minutesLabel(stats.time_in_market_min)}</span>}
+          {account?.pnl_pct != null && <span className={pnlTone(account.pnl_pct)}>{signedPercent(account.pnl_pct)} of your account</span>}
+        </p>
+      )}
+    </section>
+  );
+}
+
+function RulesKept({ score }) {
+  if (!score) return null;
+  return (
+    <Section title="Rules kept today" icon={ListChecks}>
+      <p className="text-xs text-gray-400">Each trade is checked against the same rules. This counts how you traded, not whether it made money.</p>
+      <ul className="grid gap-1 sm:grid-cols-2">
+        {score.rules.map((rule) => (
+          <li key={rule.key} className="flex items-baseline justify-between gap-2 rounded border border-gray-800 bg-gray-950 px-2 py-1 text-sm">
+            <span className={rule.kept === rule.of ? 'text-emerald-200' : 'text-amber-200'}>{rule.kept === rule.of ? '✓' : '✗'} {rule.name}</span>
+            <span className="font-mono text-xs text-gray-400">{rule.kept}/{rule.of}</span>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+function Orders({ orders }) {
+  if (!orders) return null;
+  return (
+    <Section title="Your orders today" icon={ClipboardList}>
+      <p className="text-sm text-gray-300">
+        {orders.placed} placed · {orders.filled} filled · {orders.rejected.length} refused · {orders.cancelled_unfilled} cancelled unfilled
+        {orders.modified ? ` · ${orders.modified} changed after placing` : ''}{orders.market ? ` · ${orders.market} at market price` : ''}
+      </p>
+      {orders.rejected.length > 0 && (
+        <ul className="space-y-1">
+          {orders.rejected.map((order, index) => (
+            <li key={index} className="text-xs text-red-200">
+              <span className="mr-2 font-mono text-gray-500">{order.at}</span>{order.side === 'BUY' ? 'Buy' : 'Sell'} {order.quantity} {order.tradingsymbol} refused{order.reason ? `: ${order.reason}` : ''}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Section>
+  );
+}
+
 export function Today({ model }) {
-  const { headline, lesson } = model;
+  const { lesson } = model;
   return (
     <div className="space-y-4">
-      <section className="rounded-lg border border-gray-800 bg-gray-900/70 p-4">
-        <p className="text-xs text-gray-400">{formatDay(model.day)}{model.source === 'ZERODHA' ? ' · from your Zerodha orders' : ''}</p>
-        {headline.pnl != null && <p className={`mt-1 text-3xl font-black ${pnlTone(headline.pnl)}`}>{formatRs(headline.pnl)}</p>}
-        <p className="mt-1 text-sm text-gray-200">{headline.text}</p>
-      </section>
+      <Headline model={model} />
+
+      <Focus focus={model.focus} />
 
       {lesson && (
         <Section title="Your lesson for today" icon={Lightbulb}>
@@ -150,11 +294,15 @@ export function Today({ model }) {
         </Section>
       )}
 
+      <RulesKept score={model.score} />
+
       {model.trades.length > 0 && (
         <Section title="Your trades, step by step" icon={BookOpen}>
           {model.trades.map((story, index) => <Story key={`${story.option}-${index}`} story={story} />)}
         </Section>
       )}
+
+      <Orders orders={model.orders} />
 
       {model.untaken.cards?.length > 0 && (
         <Section title="Cards you did not take">
@@ -182,22 +330,63 @@ function TrendIcon({ trend }) {
   return <Minus size={14} className="text-gray-500" />;
 }
 
-export function Progress({ progress }) {
+function Split({ label, bucket }) {
+  return (
+    <li className="flex items-baseline justify-between gap-2 text-sm">
+      <span className="text-gray-300">{label}</span>
+      <span className="font-mono text-xs text-gray-400">{bucket?.trades ?? 0} trade{bucket?.trades === 1 ? '' : 's'} · <span className={pnlTone(bucket?.pnl)}>{formatRs(bucket?.pnl)}</span></span>
+    </li>
+  );
+}
+
+function WindowStats({ stats }) {
+  if (!stats || !stats.trades) return null;
+  return (
+    <>
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="Win rate" value={percent(stats.win_rate)} note={`${stats.wins} won · ${stats.losses} lost`} />
+        <Stat label="Average win" value={formatRs(stats.avg_win)} tone={pnlTone(stats.avg_win)} />
+        <Stat label="Average loss" value={formatRs(stats.avg_loss)} tone={pnlTone(stats.avg_loss)} />
+        <Stat label="Per trade" value={formatRs(stats.per_trade)} tone={pnlTone(stats.per_trade)} note={stats.charges != null ? `after ${formatRs(stats.charges, { signed: false })} charges` : undefined} />
+      </section>
+      {stats.insights?.length > 0 && (
+        <Section title="What your numbers say" icon={BarChart3}>
+          <ul className="space-y-2">
+            {stats.insights.map((line) => <li key={line} className="rounded border border-gray-800 bg-gray-950 p-2 text-sm text-gray-200">{line}</li>)}
+          </ul>
+        </Section>
+      )}
+      <Section title="Where the results came from">
+        <ul className="space-y-1">
+          <Split label="With a card" bucket={stats.on_card} />
+          <Split label="Without a card" bucket={stats.off_card} />
+          <Split label="Within 30 min of a loss" bucket={stats.after_loss} />
+          <Split label="All other trades" bucket={stats.other} />
+        </ul>
+        <ul className="space-y-1 border-t border-gray-800 pt-2">
+          {stats.by_time.map((bucket) => <Split key={bucket.label} label={bucket.label} bucket={bucket} />)}
+        </ul>
+        {(stats.hold_min?.wins != null || stats.hold_min?.losses != null) && (
+          <p className="border-t border-gray-800 pt-2 text-xs text-gray-400">
+            Typical hold: winners {minutesLabel(stats.hold_min.wins)} · losers {minutesLabel(stats.hold_min.losses)}
+          </p>
+        )}
+      </Section>
+    </>
+  );
+}
+
+export function Progress({ progress, focus }) {
   return (
     <div className="space-y-4">
+      <Focus focus={focus} />
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          ['Trades', progress.trades, 'text-white'],
-          ['Followed the card', `${percent(progress.cleanRate)} (${progress.cleanTrades})`, 'text-emerald-200'],
-          ['Clean days in a row', progress.streak, 'text-emerald-200'],
-          ['Your P&L', formatRs(progress.pnl), pnlTone(progress.pnl)],
-        ].map(([label, value, tone]) => (
-          <div key={label} className="rounded-lg border border-gray-800 bg-gray-900/80 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-gray-500">{label}</p>
-            <p className={`mt-1 text-lg font-bold ${tone}`}>{value}</p>
-          </div>
-        ))}
+        <Stat label="Trades" value={progress.trades} />
+        <Stat label="Followed the card" value={`${percent(progress.cleanRate)} (${progress.cleanTrades})`} tone="text-emerald-200" />
+        <Stat label="Clean days in a row" value={progress.streak} tone="text-emerald-200" />
+        <Stat label="Your P&L" value={formatRs(progress.pnl)} tone={pnlTone(progress.pnl)} />
       </section>
+      <WindowStats stats={progress.stats} />
       <Section title="Your patterns: this week against last week" icon={ShieldAlert}>
         {progress.patterns.length === 0 ? <p className="text-sm text-gray-400">No mistakes flagged in this window.</p> : (
           <ul className="space-y-2">
@@ -227,6 +416,7 @@ export function Progress({ progress }) {
               <span>{day.trades} trade{day.trades === 1 ? '' : 's'}</span>
               <span className={`font-mono ${pnlTone(day.pnl)}`}>{formatRs(day.pnl)}</span>
               <span className={day.clean ? 'text-emerald-300' : 'text-amber-300'}>{day.trades ? (day.clean ? '✓ clean' : `${day.mistakes} mistake${day.mistakes === 1 ? '' : 's'}`) : 'no trades'}</span>
+              {day.rules_kept_pct != null && <span className={scoreTone(day.rules_kept_pct)}>rules kept {day.rules_kept_pct}%</span>}
             </li>
           ))}
         </ul>
@@ -265,7 +455,7 @@ export default function PartnerReview({ navigateBack }) {
         {error && <div className="rounded border border-red-800 bg-red-950/40 p-3 text-sm text-red-200">Your review is unavailable: {error.message}</div>}
         {isLoading && !data && <p className="text-sm text-gray-500">Loading your review…</p>}
         {data && tab === 'today' && <Today model={model} />}
-        {data && tab === 'progress' && <Progress progress={model.progress} />}
+        {data && tab === 'progress' && <Progress progress={model.progress} focus={model.focus} />}
         <p className="text-center text-[10px] text-gray-600">Coaching only. Nothing here places an order.</p>
       </div>
     </div>

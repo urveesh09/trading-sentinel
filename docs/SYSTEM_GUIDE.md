@@ -1,5 +1,84 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 (night) — O21-PX the partner's deeper review (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+Owner (Oct 21 night, after merging PR #112): after the day's ending brief the
+partner gets one message with the review link, the link goes to the Zerodha
+login and the login lands on the review; "improve the feedback ... from
+whatever available resources the API can provide ... ensure that the review
+dashboard becomes even better". Coaching only: nothing places an order,
+blocks a card or changes card text.
+
+- **One review link every trading day.** `partner_eod_wrap` (15:40): the brief,
+  then `partner_broker_eod` (read the book if a login is held, else the
+  prompt), then `partner_coach_eod`, then `ensure_review_message`: when the
+  coach note (whose button is the same login) was not delivered, the prompt
+  "📒 Review your day (Mon 19 Oct)" goes out (once a day). Before, a login held
+  since the morning on a day without trades meant no link at all.
+- **More from the partner's Zerodha app (read-only).** The allowlist adds GET
+  `/portfolio/positions`, GET `/user/margins/equity` and GET `/orders/<numeric
+  id>` (one order's history). Placing (POST /orders/{variety}), modifying
+  (PUT) and cancelling (DELETE /orders/{variety}/{id}) still cannot match.
+  `sync_book` keeps, best effort (a failed part never fails the read):
+  `partner_orders` (every option order, status, Zerodha's rejection text),
+  `partner_order_changes` (price/trigger changes of orders Kite marks
+  `modified`, from confirmed history states; at most 40 per read),
+  `partner_broker_positions` and `partner_account_days` (opening balance +
+  intraday pay-in = the day's cash; read only from the open).
+- **The traded options' prices (`partner_trade_paths.py`).** After a read of a
+  finished day, each option the partner bought or sold gets the session's
+  1-minute candles from the owner's market data
+  (`get_intraday_by_token(..., "minute")`, token from the morning books),
+  else the analytics tick's 5-minute prints (`5MIN_PRINTS`, retried on the
+  next read). At most 12 contracts, 8 s each, 20 s a day. Table
+  `partner_trade_paths`. The gateway's login wait is 45 s (was 30 s).
+- **Round trips (`partner_coach.round_trips`).** One option's fills split where
+  the position is flat again. Before, a stop-out and a re-buy of the same
+  option was one trade ("added to a losing option") and the re-entry was
+  invisible. A card's later round trip is its own item (`reentry`,
+  checked against the same card); an off-card one is its own trade. Summary
+  `card_reentries`; "only the card trades" excludes re-entries.
+- **New lessons (`partner_insights.py`, each with what/why/better/rule):**
+  `CHASED_SPIKE` (off-card, 1-minute candles: up ≥ 20% in the 15 minutes
+  before the buy and within 5% of the day's high so far; told, not priced),
+  `GAVE_BACK_PROFIT` (off-card: up ≥ 20% while held, closed under the entry;
+  priced with the stop moved to the entry, 3% slippage), `STOP_LOWERED` (an
+  SL order moved down while held; priced at the original level when the
+  option traded there), `PRICE_RAISED_TO_FILL` (≥ 2 raises or ≥ 5%; on a card
+  only past its buy-up-to), `BIG_RISK` (> 10% of the day's cash at risk: to
+  the partner's stop; the premium without one; the card's SL when stops are
+  unknown on a card trade; priced with the lots that fit), `HELD_OVERNIGHT`
+  (off-card, open at the close, confirmed by positions when read),
+  `INSUFFICIENT_FUNDS` (day: a buy refused for money), `ENTRY_UNDER_STOP` (a
+  card trade bought at or under the card's SL: the card's idea had failed,
+  plan = skip, and no "sell at the SL" advice). Positives `CUT_LOSS_SAVED`
+  (30 minutes after a losing exit the option was ≥ 15% lower) and
+  `STOP_TRAILED`. Hindsight only shows what happened and praises a
+  disciplined exit; it never says to hold a loser.
+- **Per trade (`insight`):** hold time, best and worst price while held (open
+  ₹), the run before the buy, the price 30 minutes after the sale, money at
+  risk against the day's cash, gross move and charges, order changes and
+  refusals in the timeline (ordered to the second), and a chart (1-minute
+  closes, buys/sells, card buy-up-to/SL/target and the partner's stop).
+- **The review (`partner_lessons.py`).** Rules kept: each trade checked on six
+  rules (card, entry, stop — only when stops are known or a stop moved —
+  exit, calm after a loss, size) plus the day's own (only the cards; orders
+  within the cash when the book was read); the score counts process, not
+  money. Day numbers (wins, losses, charges, time in the market, the day as a
+  share of the cash). The lesson of the day folds at most 3 other mistakes
+  on its trades; the rest stay as their own lessons. Progress adds the window
+  statistics (win rate, average win/loss, per trade, charges, card against
+  no-card, within 30 minutes of a loss, median hold of winners against
+  losers, four time-of-day buckets) with one plain line per pattern (≥ 3
+  trades a side) and "Tomorrow, focus on one thing": the rule broken most in
+  the last 7 days. The Telegram note's headline adds "rules kept k/n".
+- **Dashboard (`PartnerReview.jsx`).** Today: headline with rules kept,
+  wins/losses, charges, time in the market and the share of the account;
+  the focus card; the lesson; rules kept; each trade with its rule checks, an
+  SVG price chart (`chartGeometry`; a far level is listed, not drawn) and
+  "what the option did" lines; the day's orders with refusals. Progress: the
+  statistics, "what your numbers say", where the results came from, and
+  rules kept per day.
 ## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, Dev, commit `462d28f`)
 
 Owner (Oct 21): act on the Oct 21 Production audit

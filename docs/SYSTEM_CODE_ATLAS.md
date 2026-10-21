@@ -1414,15 +1414,15 @@ Related tests: `python-engine/tests/test_partner_bot.py`
 
 ## `python-engine/partner_broker_sync.py`
 
-[O21-PK 2026-10-21] The partner's own Zerodha fills, read once a day. The partner trades by hand and will not log trades during the day, so the coach reads them from the partner's Zerodha account instead. The partner creates a free Kite Connect "Personal" app on their own account (orders and portfolio APIs, no market data) and taps one Telegram button in the evening: 1. the 15:40 wrap sends "Open today's review": a Kite login link for the partner's app (only when no login is held for today); 2. Kite redirects to the gateway's /api/partner-kite/callback, which hands the one-time request_token to POST /partner/broker/session; 3. the engine exchanges it, refuses any account other than PARTNER_K
+[O21-PK 2026-10-21] The partner's own Zerodha fills, read once a day. The partner trades by hand and will not log trades during the day, so the coach reads them from the partner's Zerodha account instead. The partner creates a free Kite Connect "Personal" app on their own account (orders and portfolio APIs, no market data) and taps one Telegram button in the evening: 1. after the 15:40 wrap's brief the partner gets "Review your day": a Kite login link for the partner's app. [O21-PX] One review link goes out every trading day: the coach note's button when it was sent, else this prompt (before, a login held all day meant no link on a day without trades); 2. Kite redirects to the gateway's /api
 
-Top-level declarations: `BrokerError` (line 107), `_Session` (line 116), `configured` (line 130), `login_url` (line 135), `mask_account` (line 141), `next_expiry` (line 146), `connected` (line 153), `disconnect` (line 158), `_kite_call` (line 163), `create_session` (line 186), `_read` (line 215), `kite_time` (line 230), `parse_option_symbol` (line 241), `resolve_option` (line 257), `_filled_orders` (line 278), `build_reports` (line 320), `_stop_row` (line 371), `stops_from_orders` (line 379), `stops_from_gtts` (line 403), `init_partner_broker_db` (line 442), `store_stops` (line 454), `stop_orders` (line 466), `store_reports` (line 476), `broker_days` (line 491), `_day_cards` (line 503), `_complete` (line 526), `sync_book` (line 531), `review_keyboard` (line 595), `partner_broker_eod` (line 608), `on_login` (line 630), `status` (line 647)
+Top-level declarations: `BrokerError` (line 182), `_Session` (line 191), `configured` (line 205), `login_url` (line 210), `mask_account` (line 216), `next_expiry` (line 221), `connected` (line 228), `disconnect` (line 233), `allowed` (line 238), `_kite_call` (line 243), `create_session` (line 266), `_read` (line 295), `kite_time` (line 310), `parse_option_symbol` (line 321), `resolve_option` (line 337), `_filled_orders` (line 358), `build_reports` (line 400), `_stop_row` (line 451), `stops_from_orders` (line 459), `stops_from_gtts` (line 483), `_num` (line 512), `option_orders` (line 519), `order_changes` (line 553), `option_positions` (line 575), `account_row` (line 593), `init_partner_broker_db` (line 617), `store_stops` (line 629), `stop_orders` (line 641), `_upsert_sql` (line 660), `store_orders` (line 666), `store_changes` (line 676), `store_positions` (line 687), `store_account` (line 699), `book_details` (line 707), `store_reports` (line 739), `broker_days` (line 754), `_day_cards` (line 766), `_complete` (line 789), `sync_book` (line 794), `_read_details` (line 856), `_store_paths` (line 912), `review_keyboard` (line 929), `prompt_text` (line 937), `_sent_today` (line 944), `_send_prompt` (line 952), `partner_broker_eod` (line 965), `ensure_review_message` (line 979), `on_login` (line 992), `status` (line 1009)
 
-Engine dependencies: `config`, `fno_underlyings`, `partner_bot`, `partner_coach`, `partner_fill_capture`, `partner_orchestrator`
+Engine dependencies: `config`, `fno_underlyings`, `partner_bot`, `partner_coach`, `partner_fill_capture`, `partner_orchestrator`, `partner_trade_paths`
 
 Related tests: `python-engine/tests/test_partner_broker_sync.py`
 
-Declared tables: `partner_broker_days`, `partner_stop_orders`
+Declared tables: `partner_account_days`, `partner_broker_days`, `partner_broker_positions`, `partner_order_changes`, `partner_orders`, `partner_stop_orders`
 
 ## `python-engine/partner_buyer.py`
 
@@ -1446,9 +1446,9 @@ Related tests: `python-engine/tests/test_partner_card_renderer.py`
 
 [O21-PC 2026-10-21] Partner coach: what the partner did, what each card said, and the difference in rupees with a reason. The partner is a manual trader, so every card instruction is priced PARTNER_COACH_REACTION_SEC (default 120 s) after the message reached them, using the 5-minute option prints the analytics tick already stores (fno_chain_oi). The coach never compares the partner with the engine's 10-second clock, and it never blocks or changes a card. Three numbers per traded card: - actual: the partner's reported prices, after charges; - card exits on your entry: same entry, exits where the card said (premium SL order, exit/target update, square-off). The gap to actual is what the exit b
 
-Top-level declarations: `_dt` (line 137), `_hhmm` (line 150), `_rs` (line 154), `_px` (line 163), `round_trip_costs` (line 169), `print_at` (line 178), `last_print_before` (line 186), `card_exit` (line 200), `card_entry` (line 236), `build_trades` (line 259), `_option_label` (line 312), `_fill` (line 319), `_flag` (line 329), `_positive` (line 346), `_pnl` (line 350), `_orders` (line 359), `_amt` (line 364), `_instead` (line 369), `_gap` (line 376), `_worked` (line 380), `_day_close` (line 387), `_first_under` (line 391), `_limit_print_after` (line 396), `_chased` (line 404), `trade_stops` (line 433), `_stop_checks` (line 450), `analyse_card` (line 518), `analyse_off_card` (line 737), `_sequence_flags` (line 761), `_overtrading` (line 810), `analyse` (line 828), `_public` (line 955), `init_partner_coach_db` (line 973), `_live_series` (line 981), `load_cards` (line 993), `freeze_card_paths` (line 1055), `load_partner_coach` (line 1073), `zerodha_first` (line 1096), `render_coach_note` (line 1117), `partner_coach_eod` (line 1123)
+Top-level declarations: `_dt` (line 162), `_hhmm` (line 175), `_rs` (line 179), `_px` (line 188), `round_trip_costs` (line 194), `print_at` (line 203), `last_print_before` (line 211), `card_exit` (line 225), `card_entry` (line 261), `round_trips` (line 284), `build_trades` (line 318), `_option_label` (line 378), `_fill` (line 385), `_flag` (line 397), `_positive` (line 414), `_pnl` (line 418), `_orders` (line 427), `_amt` (line 432), `_instead` (line 437), `_gap` (line 444), `_worked` (line 448), `_day_close` (line 455), `_first_under` (line 459), `_limit_print_after` (line 464), `_chased` (line 472), `trade_stops` (line 501), `_stop_checks` (line 518), `analyse_card` (line 586), `analyse_off_card` (line 816), `_sequence_flags` (line 840), `_overtrading` (line 889), `analyse` (line 907), `_public` (line 1061), `init_partner_coach_db` (line 1079), `_live_series` (line 1087), `load_cards` (line 1099), `freeze_card_paths` (line 1161), `load_partner_coach` (line 1179), `zerodha_first` (line 1205), `render_coach_note` (line 1226), `partner_coach_eod` (line 1232)
 
-Engine dependencies: `config`, `cost_schedules`, `fno_costs`, `partner_bot`, `partner_fill_capture`, `partner_lessons`, `partner_orchestrator`
+Engine dependencies: `config`, `cost_schedules`, `fno_costs`, `partner_bot`, `partner_fill_capture`, `partner_lessons`, `partner_orchestrator`, `partner_trade_paths`
 
 Related tests: `python-engine/tests/test_partner_coach.py`
 
@@ -1534,11 +1534,21 @@ Engine dependencies: `config`, `hedge_advisory`, `hedge_analytics`
 
 Related tests: `python-engine/tests/test_partner_input_refresh.py`
 
+## `python-engine/partner_insights.py`
+
+[O21-PX 2026-10-21] A deeper review: what the option did around each of the partner's trades, what their order book shows, and the account behind it. Sources, all read after the fact (nothing here places or changes an order): - the option's 1-minute candles for the session (the owner's market data, partner_trade_paths.py), else the 5-minute prints the analytics tick stored, marked as such; - the partner's Zerodha book: every option order with Zerodha's reason for a rejection, the price and trigger changes of modified orders, the positions and the day's cash (partner_broker_sync.py). partner_coach.analyse() calls ``apply`` on each traded card or off-card trade and ``day_details`` on each day.
+
+Top-level declarations: `Context` (line 65), `_minute` (line 88), `_session` (line 92), `_t` (line 96), `_clock` (line 101), `_pct` (line 105), `_lots` (line 110), `cash_of` (line 114), `_window` (line 122), `apply` (line 137), `_path_facts` (line 184), `_chart` (line 207), `_stop_orders_of` (line 234), `_order_events` (line 245), `_risk` (line 275), `_chased_spike` (line 323), `_gave_back` (line 352), `_stop_moves` (line 376), `_price_raised` (line 414), `_held_overnight` (line 441), `day_details` (line 468)
+
+Engine dependencies: `partner_coach`
+
+Related tests: `python-engine/tests/test_partner_insights.py`
+
 ## `python-engine/partner_lessons.py`
 
 [O21-PL 2026-10-21] The partner's daily review: today's learnings first. partner_coach.analyse() finds what happened on each card and why it mattered. This module turns one day of that into what the partner reads in the evening, in this order: 1. the day in one line: trades, P&L after charges, and the cards as written on the same trades; 2. the lesson of the day: the mistake that cost the most (or, when nothing was lost, the most important rule broken), with what happened, why it matters, what would have been better and what it would have paid, and the rule for next time; repeated mistakes are grouped; 3. the other lessons, shorter; 4. what went well (so the habits to keep are said out loud)
 
-Top-level declarations: `_priority` (line 50), `_px` (line 54), `_lots` (line 60), `_traded` (line 65), `lessons` (line 74), `_rank` (line 98), `_fold` (line 103), `_well_done` (line 125), `_fill_text` (line 146), `story` (line 153), `day_review` (line 206), `active_days` (line 263), `progress` (line 272), `render_note` (line 326)
+Top-level declarations: `_priority` (line 86), `_px` (line 90), `_lots` (line 96), `_traded` (line 101), `lessons` (line 110), `_rank` (line 134), `_fold` (line 139), `_well_done` (line 169), `trade_checks` (line 190), `score` (line 203), `option_lines` (line 231), `_fill_text` (line 260), `story` (line 267), `day_review` (line 329), `day_stats` (line 400), `active_days` (line 418), `progress` (line 427), `_bucket` (line 489), `_mean` (line 493), `window_stats` (line 497), `render_note` (line 579)
 
 Engine dependencies: `partner_coach`
 
@@ -1570,7 +1580,7 @@ Declared tables: `partner_advisory_feedback`, `partner_advisory_ideas`, `partner
 
 [PARTNER-TIPS 2026-07-18] Partner tips bot orchestration (WS5). Owns the partner-facing jobs (wired in scheduler_setup.register_partner_ scheduler_jobs) and the partner_messages dedup/throttle table: - partner_scan_tick cron */2min at :40s, 09:45-15:05 -> ORB signal tips - partner_analytics_tick cron minute 2-57/5, 09:20-15:30 -> wide-chain snapshot -> OI store -> PCR/IV/OI-wall/regime/halt/momentum events - partner_morning_brief 09:50 -> per-underlying levels + options context - partner_eod_wrap 15:40 -> day recap + signal outcomes + OI purge - partner_rv_refresh 09:10 -> per-underlying 20d realized vol cache Scheduling is deliberately OFF the quarter-hour grid: the momentum screener and pe
 
-Top-level declarations: `_closed_bar_observation` (line 63), `_buyer_indices` (line 107), `_partner_db` (line 128), `init_partner_db` (line 132), `_seen` (line 144), `_record` (line 153), `_throttled` (line 168), `_send_event` (line 190), `_advisory_can_deliver` (line 232), `_legacy_info_retired` (line 260), `_todays_card_outcomes` (line 276), `_gates_open` (line 353), `_expiry_note_for` (line 369), `_dte_for` (line 376), `_track_record` (line 385), `partner_scan_tick` (line 432), `partner_manual_advisory_tick` (line 557), `partner_manual_advisory_lifecycle_tick` (line 1188), `_pulse_state` (line 1214), `_pulse_count_today` (line 1240), `_pulse_blocked` (line 1245), `_buyer_flow_pulse` (line 1262), `_send_pin_note` (line 1367), `partner_analytics_tick` (line 1390), `_log_non_momentum_open_positions` (line 1661), `partner_morning_brief` (line 1698), `_signal_outcome` (line 1806), `_stamp_outcome` (line 1847), `_option_outcome_line` (line 1865), `_track_record_overall` (line 1893), `_buyer_card_outcome` (line 1931), `partner_eod_wrap` (line 1973), `partner_rv_refresh` (line 2150)
+Top-level declarations: `_closed_bar_observation` (line 63), `_buyer_indices` (line 107), `_partner_db` (line 128), `init_partner_db` (line 132), `_seen` (line 144), `_record` (line 153), `_throttled` (line 168), `_send_event` (line 190), `_advisory_can_deliver` (line 232), `_legacy_info_retired` (line 260), `_todays_card_outcomes` (line 276), `_gates_open` (line 353), `_expiry_note_for` (line 369), `_dte_for` (line 376), `_track_record` (line 385), `partner_scan_tick` (line 432), `partner_manual_advisory_tick` (line 557), `partner_manual_advisory_lifecycle_tick` (line 1188), `_pulse_state` (line 1214), `_pulse_count_today` (line 1240), `_pulse_blocked` (line 1245), `_buyer_flow_pulse` (line 1262), `_send_pin_note` (line 1367), `partner_analytics_tick` (line 1390), `_log_non_momentum_open_positions` (line 1661), `partner_morning_brief` (line 1698), `_signal_outcome` (line 1806), `_stamp_outcome` (line 1847), `_option_outcome_line` (line 1865), `_track_record_overall` (line 1893), `_buyer_card_outcome` (line 1931), `partner_eod_wrap` (line 1973), `partner_rv_refresh` (line 2158)
 
 Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_entry_plan`, `fno_models`, `fno_signal_scan`, `fno_underlyings`, `macro_events`, `partner_bot`, `partner_broker_sync`, `partner_buyer`, `partner_coach`, `partner_collection_attempts`, `partner_content`, `partner_decision_clock`, `partner_manual_advisory`, `partner_research_capture`
 
@@ -1657,6 +1667,16 @@ Pure public-price thesis rules shared by advisory and research.
 Top-level declarations: `public_thesis_event` (line 5)
 
 Related tests: `python-engine/tests/test_partner_thesis.py`
+
+## `python-engine/partner_trade_paths.py`
+
+[O21-PX 2026-10-21] What each option the partner traded did that day. The partner's free Kite app has no market data, so after a read of a finished day (partner_broker_sync.sync_book) this module stores the session's 1-minute candles of every option the partner bought or sold, from the owner's market data (KiteClient.get_intraday_by_token, interval "minute"). When a contract is not in the morning instrument books or the candle read fails, the 5-minute prints the analytics tick stored for that strike (fno_chain_oi) are kept instead, marked as such. A later read retries a contract that only has prints. partner_insights.py reads these paths to show the best and worst price while the partner hel
+
+Top-level declarations: `init_partner_paths_db` (line 53), `_day_over` (line 59), `traded_contracts` (line 64), `contract_token` (line 79), `kite_minutes` (line 94), `stored_prints` (line 104), `_stored` (line 118), `_save` (line 125), `ensure_paths` (line 135), `load_paths` (line 189)
+
+Engine dependencies: `fno_underlyings`
+
+Declared tables: `partner_trade_paths`
 
 ## `python-engine/penny_accept_watchdog.py`
 

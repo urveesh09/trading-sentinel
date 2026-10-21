@@ -72,17 +72,22 @@ def partner_app(monkeypatch):
 
 @pytest.fixture
 def kite(monkeypatch):
-    """Fake Kite: records calls, serves the session, orders and trades."""
-    state = {"calls": [], "user_id": "AB1234", "orders": [], "trades": [], "gtts": []}
+    """Fake Kite: records calls, serves the session, orders, trades, GTTs and
+    [O21-PX] order histories, positions and margins."""
+    state = {"calls": [], "user_id": "AB1234", "orders": [], "trades": [], "gtts": [], "histories": {},
+             "positions": {"net": [], "day": []}, "margins": {}}
 
     async def fake(method, path, *, data=None, params=None, token=None):
-        assert (method, path) in zerodha._ALLOWED_CALLS
+        assert zerodha.allowed(method, path)
         state["calls"].append((method, path, data, params, token))
         if path == "/session/token" and method == "POST":
             return {"access_token": "tok-secret-123", "user_id": state["user_id"], "user_name": "Partner"}
         if path == "/session/token":
             return True
-        return {"/orders": state["orders"], "/trades": state["trades"], "/gtt/triggers": state["gtts"]}[path]
+        if path.startswith("/orders/"):
+            return state["histories"].get(path.rsplit("/", 1)[1], [])
+        return {"/orders": state["orders"], "/trades": state["trades"], "/gtt/triggers": state["gtts"],
+                "/portfolio/positions": state["positions"], "/user/margins/equity": state["margins"]}[path]
 
     monkeypatch.setattr(zerodha, "_kite_call", fake)
     monkeypatch.setattr(zerodha, "resolve_option", _resolve)
@@ -208,15 +213,25 @@ async def test_bad_or_unconfigured_logins_are_refused(kite, monkeypatch):
 @pytest.mark.asyncio
 async def test_only_read_calls_can_leave_the_process():
     assert zerodha._ALLOWED_CALLS == {("POST", "/session/token"), ("DELETE", "/session/token"),
-                                      ("GET", "/orders"), ("GET", "/trades"), ("GET", "/gtt/triggers")}
+                                      ("GET", "/orders"), ("GET", "/trades"), ("GET", "/gtt/triggers"),
+                                      ("GET", "/portfolio/positions"), ("GET", "/user/margins/equity")}
+    # [O21-PX] One order's history is a GET with a numeric id; placing (POST
+    # /orders/{variety}), modifying (PUT) and cancelling (DELETE
+    # /orders/{variety}/{id}) can never match.
+    assert zerodha.allowed("GET", "/orders/251021000123456")
     for method, path in (("POST", "/orders/regular"), ("PUT", "/orders/regular/1"), ("POST", "/gtt/triggers"),
                          ("PUT", "/gtt/triggers/7"), ("DELETE", "/gtt/triggers/7"), ("DELETE", "/orders/regular/1"),
-                         ("GET", "/portfolio/positions")):
+                         ("POST", "/orders/251021000123456"), ("PUT", "/orders/251021000123456"),
+                         ("DELETE", "/orders/251021000123456"), ("GET", "/orders/regular"),
+                         ("GET", "/orders/251021000123456/trades"), ("GET", "/orders/1?x=1"),
+                         ("POST", "/portfolio/positions"), ("PUT", "/portfolio/positions"), ("GET", "/user/margins"),
+                         ("POST", "/margins/orders"), ("POST", "/charges/orders")):
+        assert not zerodha.allowed(method, path), (method, path)
         with pytest.raises(zerodha.BrokerError) as err:
             await zerodha._kite_call(method, path)
         assert err.value.code == "not_allowed"
     source = Path(zerodha.__file__).read_text(encoding="utf-8")
-    assert "/orders/" not in source and "/gtt/triggers/" not in source
+    assert "/orders/regular" not in source and "/gtt/triggers/" not in source and '"PUT"' not in source
 
 
 def test_login_url_carries_only_the_api_key():
