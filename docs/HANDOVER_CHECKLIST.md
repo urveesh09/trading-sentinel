@@ -1,5 +1,28 @@
 # Handover receipt and operator checklist
 
+## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `XV5_COMMIT`, Dev, pushed, not deployed)
+
+- [x] B (main) sells both legs once the pair nets 20% after fees (BP's rule).
+  BP was never worse than B on any expiry B traded (+₹2,998.74 over four;
+  Oct 19 forward +₹722.46).
+- [x] BL (shadow) = v2's per-leg B on the same strangle; BP retired, its
+  history still prints. BR is BL plus its leg stop.
+- [x] CI (new shadow) = C sold once the index is back inside the box
+  (in-sample +₹2,429.99 against C); AE tested and not added (−₹167.32).
+- [x] A, C, D, budgets, execution and the owner's 10-expiry rule unchanged.
+- [x] Oct 19 audit fixes: X-1 settled legs labelled worthless/intrinsic (the
+  15:38 sale does fill ITM legs); X-2 still-index counts and RV to 15:15; X-3
+  rule-version split in tallies and paired lines; X-4 strangle leg lines name
+  the open partner; X-5 failed-break index and line printed.
+- [x] Replay of Production Oct 6/8/13/15/19 through Dev: only B (= old BP), BL
+  (= old B) and the new CI rows change; main book in-sample +₹8,755.33 (v2
+  +₹5,756.59), still 4 losing expiries of 5. In-sample, not evidence of
+  profit.
+- [x] Tests: `tests/test_expiry_paper.py` 63 pass; full engine suite
+  5,253 pass, 4 skip, 1 fail (8 min 40 s). The failure, `test_mark_to_market.py::TestEquityMark::test_zero_shares_position_is_flat`, is a clock race in that test (its quote is stamped after `now`, so the age is negative and reads STALE); it does not touch the expiry module, passes alone, and a different test of the same file failed the same way in an earlier run.
+- [ ] Deployed: no (merge, rebuild the engine before the SENSEX expiry on
+  Thursday Oct 22, outside the 12:59–15:40 window).
+
 ## October 19 — Oct 19 audit fixes (commit `d12bb1d`, Dev, pushed, not deployed)
 
 - [x] O19-E1 EDGE morning scan scores the last completed session (`before_date`).

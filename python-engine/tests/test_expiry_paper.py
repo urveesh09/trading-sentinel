@@ -362,6 +362,9 @@ async def test_missing_bids_latch_the_exit_and_settle_as_assumed_after_the_sessi
     assert c["assumed_pnl"] == pytest.approx(
         (intrinsic * (1 - xp.EXERCISE_STT_PCT) - c["entry_price"]) * c["lots_open"] * 65, abs=0.01)
     assert settle["settlement_source"] == "SAMPLED_INDEX_QUOTE"
+    assert settle["intrinsic"] == pytest.approx(intrinsic)
+    label = "(worthless)" if intrinsic == 0 else f"(intrinsic {intrinsic:,.2f})"
+    assert f"{c['symbol']} SETTLED_ASSUMED {label}" in _summary(db)
 
 
 @pytest.mark.asyncio
@@ -456,7 +459,7 @@ async def test_entry_windows_and_phase_labels_use_the_decision_time(tmp_path):
     db, *_ = await _one_tick(tmp_path / "in", _Market(_book(), _breakout_day),
                              _at(TUESDAY, 15, 13, 25), _at(TUESDAY, 15, 13, 35))
     legs = _positions(db)
-    assert [r["play"] for r in legs] == ["B", "B", "BH", "BH", "BP", "BP", "BR", "BR"]
+    assert [r["play"] for r in legs] == ["B", "B", "BL", "BL", "BH", "BH", "BR", "BR"]
     assert all(r["entry_ts"] == _at(TUESDAY, 15, 13, 35).isoformat() for r in legs)
 
 
@@ -609,7 +612,7 @@ async def test_shadow_plays_run_beside_the_main_book_without_telegram_trades(tmp
     trades = [m for k, m, _ in _notices(db) if ":summary" not in k]
     assert trades and all(any(f"NIFTY {p}:" in m for p in xp.MAIN_PLAYS) for m in trades)
     summary = _summary(db)
-    assert "shadow plays (expiry-shadow-v4" in summary and f"sold NIFTY26OCT{atm + out:.0f}CE" in summary
+    assert "shadow plays (expiry-shadow-v5" in summary and f"sold NIFTY26OCT{atm + out:.0f}CE" in summary
 
 
 @pytest.mark.asyncio
@@ -721,7 +724,7 @@ async def test_chain_context_is_recorded_and_changes_no_trade(tmp_path):
     assert snaps["d_entry"]["rv"] > 0 and snaps["d_entry"]["iv"] > 0
     assert all(s["context"]["status"] == "OK" for s in state["signals"])
     summary = _summary(with_oi)
-    assert "context (expiry-context-v1.1, record-only" in summary
+    assert "context (expiry-context-v1.2, record-only" in summary
     assert "walls 24,900 PE / 25,200 CE" in summary and "close 25,060.00 (our sample)" in summary
     assert "inside the walls yes" in summary
 
@@ -857,7 +860,7 @@ async def test_al_takes_a_entries_with_its_own_exits(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_bp_sells_the_strangle_as_one_trade_at_its_target(tmp_path):
+async def test_b_sells_the_strangle_as_one_trade_at_its_target_and_bl_keeps_per_leg_exits_v3(tmp_path):
     def late_run(now):
         minutes = now.hour * 60 + now.minute
         if minutes < 15 * 60 + 16:
@@ -866,26 +869,36 @@ async def test_bp_sells_the_strangle_as_one_trade_at_its_target(tmp_path):
 
     db = await _run_day(tmp_path, _Market(_book(), late_run))
     rows = _positions(db)
-    bp, bh = [r for r in rows if r["play"] == "BP"], [r for r in rows if r["play"] == "BH"]
-    assert len(bp) == 2 and [r["symbol"] for r in bp] == [r["symbol"] for r in bh]
-    exits = [json.loads(r["events"])[-1] for r in bp]
-    assert all(r["status"] == "CLOSED" for r in bp)
+    b, bh, bl = ([r for r in rows if r["play"] == play] for play in ("B", "BH", "BL"))
+    assert len(b) == 2 and [r["symbol"] for r in b] == [r["symbol"] for r in bh] == [r["symbol"] for r in bl]
+    assert not [r for r in rows if r["play"] == "BP"]                            # retired: its rule is B's
+    exits = [json.loads(r["events"])[-1] for r in b]
+    assert all(r["status"] == "CLOSED" for r in b)
     assert {e["action"] for e in exits} == {"PAIR_TARGET"} and {e["ts"] for e in exits} == {
         _at(TUESDAY, 15, 16).isoformat()}                             # both legs, the first tick at target
-    paid = sum(r["entry_price"] * r["lots"] * r["lot_size"] for r in bp)
-    assert _whole(bp) >= xp.BP_TARGET * paid
+    paid = sum(r["entry_price"] * r["lots"] * r["lot_size"] for r in b)
+    assert _whole(b) >= xp.PAIR_TARGET * paid
     assert all(json.loads(r["events"])[-1]["action"] in ("FLAT_TIME", "SETTLED_ASSUMED") for r in bh)
+    for leg in bl:                                                    # v2's B: each leg on its own exits
+        assert "PAIR_TARGET" not in [e["action"] for e in json.loads(leg["events"])]
     with closing(sqlite3.connect(xp.expiry_db_path(db))) as conn:
         state = json.loads(conn.execute("SELECT state FROM expiry_paper_days").fetchone()[0])
-    mark = state["marks"][f"BP {bp[0]['entry_ts']}"]
-    assert mark["best"] == pytest.approx(_whole(bp)) and mark["best_ts"] == exits[0]["ts"]   # marked at its fills
+    mark = state["marks"][f"B {b[0]['entry_ts']}"]
+    assert mark["best"] == pytest.approx(_whole(b)) and mark["best_ts"] == exits[0]["ts"]   # marked at its fills
+    trades = [m for k, m, _ in _notices(db) if ":summary" not in k]
+    assert any(" B: BUY 1 lot strangle" in m and "both sold once the pair nets 20% after fees" in m for m in trades)
+    sells = [m for m in trades if " B: SELL" in m]
+    assert len(sells) == 2 and all("(PAIR_TARGET, auction window)" in m for m in sells)
+    assert all(f"whole trade closed, net Rs {_whole(b):+,.2f} after all fees" in m for m in sells)
+    assert not [m for m in trades if " BL:" in m]                                # shadow: summary only
     summary = _summary(db)
-    assert "  BP: filled net" in summary and "    entry 15:13:30: best Rs" in summary
+    assert "  B: filled net" in summary and "  BL: filled net" in summary and "    entry 15:13:30: best Rs" in summary
+    assert f"BL-B today Rs {_whole(bl) - _whole(b):+,.2f}, " in summary
     assert "path per entry" in summary and "D WINDOW" not in summary
     assert "D window 14:30:00, read 14:30:00" in summary
 
 
-# ------------------------------------------- expiry-shadow-v3 (Oct 13 audit), expiry-v2 + shadow-v4 (Oct 15)
+# ------------------------- expiry-shadow-v3 (Oct 13 audit), expiry-v2 + shadow-v4 (Oct 15), v3 + v5 (Oct 21)
 
 def _failed_break_day(now):
     """Quiet box 24,990-25,010, a 13:40 break up to 25,060, then back inside the box from 14:10."""
@@ -918,13 +931,16 @@ async def test_c_sells_the_lottery_when_the_break_fails_and_ch_holds_it_v2(tmp_p
     for held in (ch, c500):                                                     # expiry-v1's C, held
         assert "FAILED_BREAK" not in [e["action"] for e in json.loads(held["events"])]
     assert _whole([c]) > _whole([ch])                          # premium recovered, not held to the close
-    assert state["rules"] == "expiry-v2" and state["shadow"] == "expiry-shadow-v4"
+    assert state["rules"] == "expiry-v3" and state["shadow"] == "expiry-shadow-v5"
     trades = [m for k, m, _ in _notices(db) if ":summary" not in k]
     assert any(" C: BUY" in m and "sold if the break fails, else held into the auction" in m for m in trades)
-    assert any(" C: SELL" in m and "(FAILED_BREAK)" in m for m in trades)       # the main book reports its exit
+    spot = _failed_break_day(sold)
+    assert exits[0]["index"] == spot and exits[0]["line"] == pytest.approx(level)   # the trigger margin (X-5)
+    assert any(" C: SELL" in m and f"(FAILED_BREAK at index {spot:,.2f}, line {level:,.2f})" in m
+               and "; trade closed, net Rs" in m for m in trades)               # the main book reports its exit
     assert not [m for m in trades if " CH:" in m]                               # shadow: summary only
     summary = _summary(db)
-    assert "(rules expiry-v2," in summary and "  CH: filled net" in summary
+    assert "(rules expiry-v3," in summary and "  CH: filled net" in summary
     assert f"CH-C today Rs {_whole([ch]) - _whole([c]):+,.2f}, " in summary
 
 
@@ -938,7 +954,7 @@ async def test_br_sells_a_strangle_leg_at_half_its_premium_and_keeps_b_exits_oth
 
     db = await _run_day(tmp_path, _Market(_book(), late_run))
     rows = _positions(db)
-    b, br = [r for r in rows if r["play"] == "B"], [r for r in rows if r["play"] == "BR"]
+    b, br = [r for r in rows if r["play"] == "BL"], [r for r in rows if r["play"] == "BR"]   # BL: v2's B
     assert [(r["symbol"], r["entry_ts"], r["entry_price"]) for r in br] == \
         [(r["symbol"], r["entry_ts"], r["entry_price"]) for r in b]
     by_kind = {r["opt_type"]: r for r in br}
@@ -1009,17 +1025,25 @@ def _insert_legs(conn, rows):
                       1.0, 0.0, status, net))
 
 
-def test_paired_lines_bind_each_shadow_entry_to_the_identical_primary_entry(tmp_path):
+def _save_rules(conn, day, rules):
+    state = xp.new_day_state()
+    state["rules"] = rules
+    xp._save_state(conn, day, "NIFTY", state, _at(TUESDAY, 15, 45))
+
+
+def test_paired_lines_bind_each_shadow_entry_and_split_at_the_primary_rule_change(tmp_path):
     store = str(tmp_path / "x.db")
     with xp._store(store) as conn:
+        for day, rules in (("2026-10-06", "expiry-v1"), ("2026-10-13", "expiry-v2"), ("2026-10-22", "expiry-v3")):
+            _save_rules(conn, day, rules)
         _insert_legs(conn, (
             ("2026-10-06", "C", "13:40", "X1", 6, -2000.0, "CLOSED"),
-            ("2026-10-06", "CX", "13:40", "X1", 6, -900.0, "CLOSED"),
+            ("2026-10-06", "CX", "13:40", "X1", 6, -900.0, "CLOSED"),           # v1's C: before the v2 rule
             ("2026-10-13", "C", "13:40", "X2", 6, 900.0, "CLOSED"),
             ("2026-10-13", "CH", "13:40", "X2", 6, 900.0, "CLOSED"),
             ("2026-10-13", "B", "15:13", "CE1", 1, -1000.0, "CLOSED"),          # a strangle: two legs, one entry
             ("2026-10-13", "B", "15:13", "PE1", 1, -800.0, "CLOSED"),
-            ("2026-10-13", "BR", "15:13", "PE1", 1, -500.0, "CLOSED"),
+            ("2026-10-13", "BR", "15:13", "PE1", 1, -500.0, "CLOSED"),          # v2's B: before the v3 rule
             ("2026-10-13", "BR", "15:13", "CE1", 1, -500.0, "CLOSED"),
             ("2026-10-13", "A", "13:30", "A1", 1, 100.0, "CLOSED"),
             ("2026-10-13", "AL", "13:30", "A1", 1, 100.0, "CLOSED"),
@@ -1027,16 +1051,32 @@ def test_paired_lines_bind_each_shadow_entry_to_the_identical_primary_entry(tmp_
             ("2026-10-13", "AL", "14:00", "A3", 2, 50.0, "CLOSED"),             # another contract and size
             ("2026-10-13", "BP", "15:13", "CE1", 1, 0.0, "OPEN"),               # unfinished: waits
             ("2026-10-13", "BP", "15:13", "PE1", 1, 0.0, "CLOSED"),
-            ("2026-10-13", "C500", "13:40", "X2", 1, 200.0, "CLOSED")))
-        (line,) = xp.paired_lines(conn, "2026-10-13", "NIFTY")
+            ("2026-10-13", "C500", "13:40", "X2", 1, 200.0, "CLOSED"),
+            ("2026-10-22", "B", "15:13", "CE3", 1, 600.0, "CLOSED"),            # v3: B is the pair target
+            ("2026-10-22", "B", "15:13", "PE3", 1, -400.0, "CLOSED"),
+            ("2026-10-22", "BL", "15:13", "CE3", 1, 500.0, "CLOSED"),
+            ("2026-10-22", "BL", "15:13", "PE3", 1, -700.0, "CLOSED"),
+            ("2026-10-22", "BR", "15:13", "CE3", 1, 500.0, "CLOSED"),
+            ("2026-10-22", "BR", "15:13", "PE3", 1, -300.0, "CLOSED"),
+            ("2026-10-22", "C", "13:40", "X3", 6, -1000.0, "CLOSED"),
+            ("2026-10-22", "CI", "13:40", "X3", 6, -300.0, "CLOSED")))
+        (line,) = xp.paired_lines(conn, "2026-10-22", "NIFTY")
         assert line == ("  paired with its primary (same entry, own exits; positive = the shadow did better): "
-                        "AL-A today Rs +0.00, to date Rs +0.00 over 1 entry on 1 expiry, 1 not the same entry; "
+                        "AL-A to date Rs +0.00 over 1 entry on 1 expiry, 1 not the same entry; "
+                        "BL-B today Rs -400.00, to date Rs -400.00 over 1 entry on 1 expiry; "
+                        "BR-B today Rs +0.00, to date Rs +0.00 over 1 entry on 1 expiry, "
+                        "before B's expiry-v3 rule Rs +800.00 over 1 entry on 1 expiry; "
+                        "CH-C to date Rs +0.00 over 1 entry on 1 expiry; "
+                        "CI-C today Rs +700.00, to date Rs +700.00 over 1 entry on 1 expiry; "
                         "BP-B to date Rs +0.00 over 0 entries on 0 expiries, 1 still open; "
-                        "BR-B today Rs +800.00, to date Rs +800.00 over 1 entry on 1 expiry; "
-                        "CH-C today Rs +0.00, to date Rs +0.00 over 1 entry on 1 expiry; "
-                        "CX-C to date Rs +1,100.00 over 1 entry on 1 expiry")
+                        "CX-C before C's expiry-v2 rule Rs +1,100.00 over 1 entry on 1 expiry")
         assert "C500" not in line
         assert xp.paired_lines(conn, "2026-10-05", "NIFTY") == []
+        owner = xp.owner_rule_lines(conn, "2026-10-22")[1]
+    # Each main play's record shows the part since its current rule (Oct 19 audit X-3).
+    assert "A 1/1 (Rs -200), B 1/2 (Rs -1,600; since expiry-v3 0/1 Rs +200), " \
+           "C 2/3 (Rs -2,100; since expiry-v2 1/2 Rs -100)" in owner
+    assert "CX 1/1 (Rs -900)" in owner and "BP 0/1 (Rs +0)" in owner and "CI 1/1 (Rs -300)" in owner
 
 
 def test_retired_cx_rows_still_print_in_the_summary_and_the_owner_tally(tmp_path):
@@ -1049,8 +1089,10 @@ def test_retired_cx_rows_still_print_in_the_summary_and_the_owner_tally(tmp_path
         xp._save_state(conn, "2026-10-15", "NIFTY", state, _at(TUESDAY, 15, 45))
         summary = xp.format_day_summary(conn, "2026-10-15", "NIFTY", state)
     assert "(rules expiry-v1," in summary and "  CX: filled net Rs -281.00" in summary
-    assert "CH: no trade" in summary and "CX-C today Rs +2,018.54" in summary
+    assert "CH: no trade" in summary
+    assert "CX-C today Rs +2,018.54, before C's expiry-v2 rule Rs +2,018.54 over 1 entry on 1 expiry" in summary
     assert "CX Rs -281.00" in summary and "CX 1/1 (Rs -281)" in summary
+    assert "C 1/1 (Rs -2,300; since expiry-v2 0/0)" in summary              # no v2 trade yet on that day
     assert "window ticks" not in summary                                    # not counted on that day
 
 
@@ -1065,8 +1107,8 @@ def test_a_day_begun_under_older_rules_is_marked_once(tmp_path):
         with xp._store(store) as conn:
             state = xp._load_state(conn, "2026-10-06", "NIFTY")
             xp._save_state(conn, "2026-10-06", "NIFTY", state, now)
-    assert state["rules"] == "expiry-v1+expiry-v2 from mid-day"
-    assert state["trades"]["CH"] == 0
+    assert state["rules"] == "expiry-v1+expiry-v3 from mid-day"
+    assert state["trades"]["CH"] == state["trades"]["BL"] == state["trades"]["CI"] == 0
 
 
 @pytest.mark.asyncio
@@ -1081,11 +1123,73 @@ async def test_window_ticks_count_a_fresh_index_per_decision_window(tmp_path):
     db = await _run_day(tmp_path, _DarkAtB(_book(), _breakout_day))
     with closing(sqlite3.connect(xp.expiry_db_path(db))) as conn:
         state = json.loads(conn.execute("SELECT state FROM expiry_paper_days").fetchone()[0])
-    assert state["window_ticks"] == {"box": [180, 180], "A/C": [570, 570], "D": [90, 90], "B": [0, 9]}
-    assert not [r for r in _positions(db) if r["play"] in ("B", "BH", "BP", "BR")]
+    assert {name: seen[:2] for name, seen in state["window_ticks"].items()} == {
+        "box": [180, 180], "A/C": [570, 570], "D": [90, 90], "B": [0, 9]}
+    assert state["window_ticks"]["D"][2] == 89                              # 25,060 from 14:30: unchanged
+    assert not [r for r in _positions(db) if r["play"] in ("B", "BL", "BH", "BR")]
     summary = _summary(db)
     assert "  window ticks with a fresh index: box 180 of 180, A/C 570 of 570, D 90 of 90, B 0 of 9" in summary
     assert "B: no trade (refused: NO_FRESH_INDEX 9)" in summary
+
+
+@pytest.mark.asyncio
+async def test_ci_sells_the_lottery_once_the_index_is_back_inside_the_box(tmp_path):
+    db = await _run_day(tmp_path, _Market(_book(), _failed_break_day))
+    rows = _positions(db)
+    (c,), (ci,) = ([r for r in rows if r["play"] == play] for play in ("C", "CI"))
+    assert (ci["symbol"], ci["entry_ts"], ci["entry_price"], ci["lots"]) == \
+        (c["symbol"], c["entry_ts"], c["entry_price"], c["lots"])               # C's entry: a paired comparison
+    (ci_exit,), (c_exit,) = json.loads(ci["events"])[1:], json.loads(c["events"])[1:]
+    assert ci_exit["action"] == c_exit["action"] == "FAILED_BREAK"
+    with closing(sqlite3.connect(xp.expiry_db_path(db))) as conn:
+        state = json.loads(conn.execute("SELECT state FROM expiry_paper_days").fetchone()[0])
+    edge = state["box"]["hi"]                                                   # CI: the box edge itself
+    sold = datetime.fromisoformat(ci_exit["ts"])
+    assert _failed_break_day(sold) < edge <= _failed_break_day(sold - timedelta(seconds=10))
+    assert ci_exit["line"] == pytest.approx(edge) and sold < datetime.fromisoformat(c_exit["ts"])
+    assert ci_exit["price"] > c_exit["price"]                                   # earlier, while worth more
+    assert not [m for k, m, _ in _notices(db) if " CI:" in m and ":summary" not in k]
+    assert f"CI-C today Rs {_whole([ci]) - _whole([c]):+,.2f}, " in _summary(db)
+
+
+@pytest.mark.asyncio
+async def test_a_still_index_is_counted_and_left_out_of_realized_volatility(tmp_path):
+    def closing_session(now):
+        clock = now.time()
+        if datetime.strptime("15:05:00", "%H:%M:%S").time() <= clock <= \
+                datetime.strptime("15:05:30", "%H:%M:%S").time():
+            return 25001.0                                                  # a 30 s stuck feed before 15:15
+        if clock < xp.AUCTION_START:
+            return 25000.0 + 10.0 * math.sin(now.hour * 60 + now.minute + now.second / 60.0)
+        if clock < datetime.strptime("15:29:40", "%H:%M:%S").time():
+            return 25003.0                                                  # frozen for the closing session
+        return 25012.0                                                      # the close
+
+    db = await _run_day(tmp_path, _Market(_book(), closing_session), start=(15, 0))
+    with closing(sqlite3.connect(xp.expiry_db_path(db))) as conn:
+        state = json.loads(conn.execute("SELECT state FROM expiry_paper_days").fetchone()[0])
+    still = state["index_unchanged"]
+    assert (still["pre"], still["longest"], still["auction"]) == (3, 3, 87 + 61)
+    assert datetime.fromisoformat(state["rv"]["ts"]).time() < xp.AUCTION_START   # no samples from 15:15
+    assert "  index unchanged from the previous tick: before 15:15 3 (longest run 3 ticks to 15:05:30), " \
+           "from 15:15 148 (the cash closing session), last change 15:29:40" in _summary(db)
+
+
+def test_a_strangle_leg_sale_names_its_open_partner_and_the_whole_trade():
+    def leg(symbol, status, net, lots_open=0):
+        return {"symbol": symbol, "status": status, "net_pnl": net, "lots_open": lots_open}
+
+    event = {"lots": 1, "price": 28.15, "action": "TRAIL", "fill_model": "AUCTION_WINDOW",
+             "gross": 851.50, "charges": 27.11}
+    call, put = leg("NIFTY26O1922900CE", "CLOSED", 800.35), leg("NIFTY26O1922850PE", "OPEN", -23.96, 1)
+    assert xp._sell_text(call, event, (call, put)).endswith(
+        "(TRAIL, auction window): slice gross Rs +851.50 less sell fees Rs 27.11; leg closed, net Rs +800.35; "
+        "still open: NIFTY26O1922850PE 1 lot; whole trade net so far Rs +776.39 after all fees")
+    put["status"], put["net_pnl"] = "CLOSED", -516.18
+    assert xp._sell_text(call, event, (call, put)).endswith("whole trade closed, net Rs +284.17 after all fees")
+    assert xp._sell_text(call, event).endswith("; trade closed, net Rs +800.35 after buy and sell fees")
+    broke = dict(event, action="FAILED_BREAK", index=22889.30, line=22889.2875, fill_model="CONTINUOUS")
+    assert "(FAILED_BREAK at index 22,889.30, line 22,889.29): " in xp._sell_text(call, broke)
 
 
 def test_the_owner_stop_rule_is_tallied_in_every_summary(tmp_path):

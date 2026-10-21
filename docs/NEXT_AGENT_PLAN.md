@@ -1,5 +1,57 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 21 — expiry-v3 (B takes BP's pair target), expiry-shadow-v5 and Oct 19 expiry-audit fixes (done, Dev, commit `XV5_COMMIT`, pushed, not deployed)
+
+- Problem:
+  - Owner order (Oct 21): apply the Oct 19 audit's expiry fixes, keep
+    observing, promote a shadow that keeps beating its main (main becomes a
+    shadow), add shadows where useful.
+  - Oct 19 audit: BP − B +₹722.46 on the first full B window; B lost 4 of 4;
+    X-1 15:38 sale read as unreachable; X-2 still index counted fresh; X-3
+    tallies mixed C's v1 and v2; X-4 B's call line hid the dead put; X-5
+    failed-break margin invisible.
+- Files: `python-engine/expiry_paper.py`; `tests/test_expiry_paper.py` (63
+  tests: BP test became the v3 B/BL test, paired test rewritten with rule
+  versions, 3 new); `docs/2026-10-05-expiry-day-paper-book.md`.
+- Contracts:
+  - `RULES_VERSION = expiry-v3`; `SHADOW_VERSION = expiry-shadow-v5`;
+    `CONTEXT_VERSION = expiry-context-v1.2`.
+  - `POLICIES["B"]` = hold + pair target (`PAIR_PLAYS = B, BP`;
+    `BP_TARGET` renamed `PAIR_TARGET`); `POLICIES["BL"]` = v2's B; BR = BL +
+    leg stop.
+  - `SHADOW_PLAYS` gains BL and CI and loses BP; `RETIRED_PLAYS = CX, BP`;
+    `PAIRED_WITH` gains BL: B, CI: C; `STRUCTURE_BACK` (CI 0.0, others 0.25)
+    with `STRUCTURE_PLAYS = tuple(STRUCTURE_BACK)`; `RULE_SINCE`.
+  - Day-state keys `index_value`, `index_unchanged`, third `window_ticks`
+    element; event keys `index`/`line` (FAILED_BREAK) and `intrinsic`
+    (settlement). No schema, config or store change.
+- Acceptance (met in Dev):
+  - B sells both legs at the pair target and its two sell lines say "whole
+    trade closed"; BL keeps per-leg exits; BP takes no entry;
+  - CI sells at the box edge before C, while its ticket is worth more;
+  - a still index is counted (before/from 15:15) and RV stops at 15:15;
+  - tallies and paired lines split at each primary's rule change;
+  - the five-expiry replay changes nothing except B = old BP, BL = old B and
+    the new CI rows.
+- Rollout: merge and rebuild the engine before the next expiry (SENSEX
+  Thursday Oct 22). Scoring of v3 starts with the first expiry after the
+  rebuild. Deploy outside 12:59–15:40 on an expiry day.
+- Rollback: revert the commit. B returns to per-leg exits and BP to the
+  shadows; stored BL/CI rows stay and print nothing.
+- Remaining:
+  - [ ] After deploy, on the first expiry: the header reads `rules
+    expiry-v3`; B, BL, BH and BR share one strangle; the summary shows "index
+    unchanged from the previous tick", "BL-B …", "CI-C …" and "B …/… (…;
+    since expiry-v3 …)".
+  - [ ] Promotion rule going forward (owner): a shadow that keeps beating its
+    main on the paired line becomes the main. Watch CI − C and BL − B per
+    entry; CI needs forward expiries (its rule was drawn from seen data).
+  - [ ] A is unchanged (lost 4 of 5, +₹3,559.57 lifetime); AE was tested and
+    rejected in-sample. Look for an A idea from new forward days only.
+  - [ ] The ten-second clock costs money in 15:15–15:30 (Oct 19: B's trail
+    line 32.47 filled at 28.15). A faster tick in the B window is an execution
+    change (`expiry-exec-v3`), not done.
+
 ## October 19 — Oct 19 audit fixes O19-E1/P1/P2/S1/S2/O1/F1/M1/M2/B1 (done, Dev, commit `d12bb1d`, pushed, not deployed)
 
 - Problem (Production deep audit 2026-10-19, non-expiry; owner: partner

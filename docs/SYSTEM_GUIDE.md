@@ -1,5 +1,66 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 21 — expiry-v3: B takes BP's pair target; expiry-shadow-v5 (BL, CI) and Oct 19 expiry-audit fixes (actual behavior, Dev, commit `XV5_COMMIT`)
+
+Audit: Production `docs/2026-10-19-expiry-system-deep-audit.md` (first expiry
+on v2). Owner order: apply the fixes, keep observing, and promote a shadow that
+keeps beating its main (the main becomes a shadow). Design, the five-expiry
+evidence table and honesty notes are in
+`docs/2026-10-05-expiry-day-paper-book.md`, section "expiry-v3". Execution
+(`expiry-exec-v2`), A, C, D, the budgets and the owner's 10-expiry rule are
+unchanged.
+
+- **B (main, `RULES_VERSION = expiry-v3`).** `POLICIES["B"]` is the hold
+  policy and `PAIR_PLAYS = (B, BP)`: both legs are sold together
+  (`PAIR_TARGET`, 0.20) once the pair's liquidation net after all charges
+  reaches 20% of the premium paid; else held into the auction and sold from
+  15:38 if bid. Why: BP − B was +₹768.77, +₹1,507.51 (replays), ₹0.00 and
+  +₹722.46 (forward) on the four expiries B traded, never worse. B's buy
+  notice says "both sold once the pair nets 20% after fees, else held into the
+  auction".
+- **Shadows (`SHADOW_VERSION = expiry-shadow-v5`).** `SHADOW_PLAYS = BH, C500,
+  D, AL, BR, CH, BL, CI`; `RETIRED_PLAYS = CX, BP` (no new entries, history
+  prints).
+  - **BL** = v2's B (`POLICIES["BL"]`: bank half at ×2, trail 65%, 80% from
+    15:30), paired with B. **BR** = BL plus its 50% leg stop.
+  - **CI** = C sold once the index is back inside the box at all
+    (`STRUCTURE_BACK["CI"] = 0.0`; A, AL, C and CX keep 0.25), paired with C.
+    In-sample CI − C +₹2,429.99 over five expiries; scored only forward.
+  - AE (A after a second buffer) was replayed and not added (−₹167.32 against
+    A in-sample).
+- **Fixes (Oct 19 audit X-1–X-5).**
+  - X-1: the 15:38 sale does fill a leg with a bid (ITM legs were bid to
+    15:39:50 on all five expiries); worthless legs have no bids and settle at
+    zero. Settlement events store `intrinsic`; the summary labels settled legs
+    "(worthless)" or "(intrinsic x)".
+  - X-2: `_record_tick` counts a fresh index equal to the previous one in
+    `state["index_unchanged"]` (before/from 15:15, longest run before 15:15,
+    last change) and as a third `window_ticks` element. The summary prints
+    "index unchanged from the previous tick: …". `update_realized` stops at
+    15:15 (`CONTEXT_VERSION = expiry-context-v1.2`).
+  - X-3: `RULE_SINCE = {A: 1, B: 3, C: 2}` and `day_rules()`. The owner
+    per-play tally adds "since expiry-vN a/b Rs x" when a record spans a rule
+    change. Paired lines total entries from before the primary's rule apart
+    ("before B's expiry-v3 rule …"). A mixed day counts as the version it
+    began under.
+  - X-4: sell lines are composed after every leg has moved; a strangle leg
+    says "leg closed", names the open partner and gives the whole trade's net.
+  - X-5: a `FAILED_BREAK` event stores `index` and `line`; the sell line
+    prints both.
+- **Rules version per day.** A day begun under older rules is marked
+  "expiry-v2+expiry-v3 from mid-day" (B's open legs would then switch to the
+  pair rule; deploy after the session).
+- **Verification.** A replay of the five retained Production expiries through
+  Dev (scratch `xv5/replay_all.py`, `compare.py`):
+  - before the change, 0 row mismatches on Oct 8, 13 and 19 (Oct 6 and 15
+    differ only where v2's C replaced v1's);
+  - after it, every existing row and event is identical except that B's rows
+    equal the old BP rows and BL's equal the old B rows; the only new rows
+    are CI's.
+  - main book in-sample under v3: −₹1,285.60 / −₹1,427.00 / +₹13,780.74 /
+    −₹954.88 / −₹1,357.93 = +₹8,755.33 (v2 +₹5,756.59; as run +₹2,567.95).
+    Still 4 losing expiries of 5. In-sample, not evidence of profit.
+
 ## October 19 — Oct 19 audit fixes: EDGE morning scan, partner pacing, Smart marks, overnight split, Momentum/F&O shadows (actual behavior, Dev, commit `d12bb1d`)
 
 Source: `Production_Trading-sentinel/docs/2026-10-19-production-deep-audit.md`
@@ -139,7 +200,7 @@ Research tooling only; no runtime strategy, threshold or config changed.
   −Rs 8.74. The replays now measure what the runtime would do, so the Oct 13
   rerun and the Oct 14 run can show which modules earn.
 
-## October 15 — expiry-v2: C takes CX's failed-break exit; expiry-shadow-v4 and Oct 15 expiry-audit fixes (actual behavior, Dev, commit `5458d2d`)
+## October 15 — expiry-v2: C takes CX's failed-break exit; expiry-shadow-v4 and Oct 15 expiry-audit fixes (actual behavior, commit `5458d2d`, deployed by PR #110)
 
 Audit: Production `docs/2026-10-15-expiry-system-deep-audit.md`. The owner
 ordered that a shadow which worked should replace its main play. Design, the

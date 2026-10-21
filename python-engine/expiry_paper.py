@@ -18,11 +18,17 @@ A  Gamma breakout: the 13:00-13:30 index and futures range is the box. Two
    stops, bank half at +40% (a stop raised to entry x1.05), trails that
    tighten with gain and after 15:00. Flat from 15:13.
 B  Auction strangle: at 15:13:30-15:15 buy the strikes either side of spot and
-   hold through the closing auction; a leg that doubles banks half and trails;
-   sold from 15:38.
+   manage them as one trade (expiry-v3): both legs are sold once selling the
+   pair on the visible bids would net PAIR_TARGET of the premium paid after
+   all charges; else held into the auction and sold from 15:38.
 C  Lottery ticket: on A's signal, the nearest strike priced 0.004%-0.03% of
    spot in that direction; sold on A's failed break (expiry-v2), else held
    into the auction; bank half at 3x, trail after 5x; sold from 15:38.
+
+"Sold from 15:38" sells a leg that still has a bid. A leg in the money stays
+bid to 15:40 (Oct 6 and 8: BH's calls sold at 15:38); a worthless leg loses its
+bids once the close is known (about 15:30) and expires at zero, the same
+result a sale at 0.05 would give after its order fee.
 
 Loss ceiling: every entry is sized so that losing the whole premium plus its
 charges fits the play's remaining ``EXPIRY_PAPER_BUDGET`` for the day. Stops are
@@ -60,10 +66,11 @@ let later expiries test whether the context separates winners from losers.
 Every open entry is also marked on each tick at what selling all of it on the
 visible depth would net after fees (``liquidation_net``). The summary prints
 each entry's best and worst mark beside its finish, with how many held ticks
-could be marked and why the rest could not. The marks are not fills, and BP's
-pair target is the only rule that reads one. Shadow plays (``SHADOW_VERSION``)
-run on the same quotes and are listed only in the summary, each beside its
-paired difference from the primary whose entry it shares.
+could be marked and why the rest could not. The marks are not fills, and the
+pair target (B, and the retired BP) is the only rule that reads one. Shadow
+plays (``SHADOW_VERSION``) run on the same quotes and are listed only in the
+summary, each beside its paired difference from the primary whose entry it
+shares.
 
 Telegram lines go to an outbox in the same transaction as the tick and are
 marked sent when a 2xx acknowledgement arrives (``flush_notices``); flushes
@@ -80,6 +87,7 @@ from datetime import date, datetime, time
 import json
 import logging
 import math
+import re
 import sqlite3
 from typing import Awaitable, Callable, Optional
 
@@ -95,7 +103,14 @@ IST = ZoneInfo("Asia/Kolkata")
 # (Oct 6 +Rs 1,170.10, Oct 8 and 13 equal, first forward Oct 15 +Rs 2,018.54);
 # only Oct 15 was scored forward, so v2 is scored on later expiries and the
 # old held C keeps running as shadow CH. A and B are unchanged from v1.
-RULES_VERSION = "expiry-v2"
+# expiry-v3 (owner order, 2026-10-21: a shadow that keeps beating its main
+# becomes the main, and the main a shadow): B takes BP's pair target. On every
+# expiry B traded, BP finished at or above B on the same strangle (Oct 6
+# +Rs 768.77 and Oct 8 +Rs 1,507.51 in replay, Oct 13 equal and Oct 19
+# +Rs 722.46 forward); the 20% target was frozen after seeing Oct 8, so v3 is
+# scored on later expiries and v2's B keeps running as shadow BL. A and C are
+# unchanged from v2.
+RULES_VERSION = "expiry-v3"
 EXECUTION_VERSION = "expiry-exec-v2"    # clock/data/fill contract; v1 judged freshness at request start
 
 INDEX_QUOTE_KEYS = {"NIFTY": "NSE:NIFTY 50", "SENSEX": "BSE:SENSEX"}
@@ -146,7 +161,7 @@ EXERCISE_STT_PCT = 0.0015           # STT on the settlement value of an exercise
 #         two or more lots it is A.
 #   BP    B's strangle managed as one trade: no per-leg bank or trail; both
 #         legs are sold once selling the pair on the visible bids would net
-#         BP_TARGET of the premium paid, after all charges; else sold at 15:38.
+#         PAIR_TARGET of the premium paid, after all charges; else sold at 15:38.
 #
 # expiry-shadow-v3 adds two loss-shaping plays, frozen on 2026-10-15 after the
 # October 13 audit and scored only on expiries after their deployment (the
@@ -169,14 +184,39 @@ EXERCISE_STT_PCT = 0.0015           # STT on the settlement value of an exercise
 #         failed-break exit, so the promotion keeps being scored on a paired
 #         entry (CH - C positive means holding would have done better).
 # C500 keeps the held v1 rule; its difference from CH is size.
-SHADOW_VERSION = "expiry-shadow-v4"
-MAIN_PLAYS, SHADOW_PLAYS = ("A", "B", "C"), ("BH", "C500", "D", "AL", "BP", "BR", "CH")
-RETIRED_PLAYS = ("CX",)                     # no new entries; their history still prints
+#
+# expiry-shadow-v5 goes with expiry-v3 (2026-10-21, after the Oct 19 audit):
+# BP's rule is now B's, so BP is retired (its rows stay and print), and
+#   BL    expiry-v2's B: the strangle's legs managed one by one (a leg that
+#         doubles banks half and trails 65% of its peak), so the promotion is
+#         scored on a paired entry (BL - B positive means the per-leg exits
+#         would have done better). BR stays BL plus its 50% leg stop.
+#   CI    C whose ticket is sold once the index is back inside the box at all
+#         (C sells a quarter of the width inside). On Oct 19 the index was
+#         back in the box 90 s after the entry and a quarter inside 15
+#         minutes later; on the one C winner (Oct 13) it never came back.
+#         CI was drawn from five seen expiries, so only later ones score it.
+# Considered and not added: AE, A entering only once the break clears the box
+# by a second buffer. On the five seen expiries it finished Rs 167.32 below A
+# (it skipped Oct 19's two losers but entered later on Oct 8 and 15).
+SHADOW_VERSION = "expiry-shadow-v5"
+MAIN_PLAYS = ("A", "B", "C")
+SHADOW_PLAYS = ("BH", "C500", "D", "AL", "BR", "CH", "BL", "CI")
+RETIRED_PLAYS = ("CX", "BP")                # no new entries; their history still prints
 # Each shadow and the primary whose entry it shares: their difference is paired.
-PAIRED_WITH = {"AL": "A", "BH": "B", "BP": "B", "BR": "B", "CH": "C", "CX": "C"}
-STRUCTURE_PLAYS = ("A", "AL", "C", "CX")    # plays that close on A's failed break
+PAIRED_WITH = {"AL": "A", "BH": "B", "BL": "B", "BR": "B", "CH": "C", "CI": "C", "BP": "B", "CX": "C"}
+# The version each main play's current rule began with. Tallies and paired
+# lines split a play's record there (Oct 19 audit X-3: "C 4/5" merged v1's
+# held ticket with v2's failed-break sale).
+RULE_SINCE = {"A": 1, "B": 3, "C": 2}
+# Plays that close on a failed break, with how far back inside the box (as a
+# share of its width) the index must be: A's test, or CI's box edge.
+STRUCTURE_BACK = {"A": FAIL_BACK_WIDTH, "AL": FAIL_BACK_WIDTH, "C": FAIL_BACK_WIDTH, "CX": FAIL_BACK_WIDTH,
+                  "CI": 0.0}
+STRUCTURE_PLAYS = tuple(STRUCTURE_BACK)
+PAIR_PLAYS = ("B", "BP")                    # a strangle sold as one trade at PAIR_TARGET
 AL_LOCK_GAIN = 0.5                  # fraction of the peak gain a banked one-lot AL keeps
-BP_TARGET = 0.20                    # pair liquidation net, as a fraction of the premium paid
+PAIR_TARGET = 0.20                  # pair liquidation net, as a fraction of the premium paid
 BR_LEG_STOP = 0.50                  # a BR leg is sold once its bid is down this share of its entry
 C500_BUDGET = 500.0
 D_ENTRY_START, D_ENTRY_END = time(14, 30), time(14, 45)
@@ -194,7 +234,11 @@ D_STT_RESERVE_MOVE = 0.05           # exercise STT reserved on a long wing up to
 # realized volatility share one clock, the 375-minute NSE session year, so their
 # ratio compares like with like. Max pain, walls and PCR cover only the fetched
 # ATM +/- CHAIN_WINDOW strikes, where most same-day OI sits.
-CONTEXT_VERSION = "expiry-context-v1.1"     # v1.1 (Oct 8): OI from fresh quotes only, with coverage
+# v1.1 (Oct 8): OI from fresh quotes only, with coverage. v1.2 (Oct 21):
+# realized volatility stops at 15:15. The index is frozen in the cash closing
+# session (15:15 to about 15:29:30 on all five expiries, then the close), so
+# later samples were zero returns and one jump (Oct 19 audit X-2).
+CONTEXT_VERSION = "expiry-context-v1.2"
 # The horizon of the implied volatility: our approximation of when the
 # settlement price is fixed (the closing auction's end). It is not verified for
 # BFO; IV is not computed after it.
@@ -232,19 +276,21 @@ class ExitPolicy:
 POLICIES = {
     "A": ExitPolicy(hard_stop=0.30, bank_at=0.40, bank_stop=1.05, trails=((1.0, 0.70), (2.0, 0.80)),
                     late=(time(15, 0), 0.85), time_stop=(480, 0.15), flat_at=A_FLAT),
-    "B": ExitPolicy(hard_stop=None, bank_at=1.0, bank_stop=None, trails=((1.0, 0.65),),
-                    late=(time(15, 30), 0.80), time_stop=None, flat_at=FINAL_FLAT),
+    "BL": ExitPolicy(hard_stop=None, bank_at=1.0, bank_stop=None, trails=((1.0, 0.65),),
+                     late=(time(15, 30), 0.80), time_stop=None, flat_at=FINAL_FLAT),   # B's legs, v1-v2
     "C": ExitPolicy(hard_stop=None, bank_at=2.0, bank_stop=None, trails=((4.0, 0.60),),
                     late=None, time_stop=None, flat_at=FINAL_FLAT),
     "BH": ExitPolicy(hard_stop=None, bank_at=None, bank_stop=None, trails=(),
                      late=None, time_stop=None, flat_at=FINAL_FLAT),
 }
+POLICIES["B"] = POLICIES["BH"]                  # expiry-v3: its exit is the pair's (see _pair_target)
 POLICIES["C500"] = POLICIES["C"]
 POLICIES["AL"] = replace(POLICIES["A"], lock_gain=AL_LOCK_GAIN)
-POLICIES["BP"] = POLICIES["BH"]                 # its exits are the pair's (see _pair_target)
+POLICIES["BP"] = POLICIES["BH"]                 # retired: B's rule since expiry-v3
 POLICIES["CX"] = POLICIES["C"]                  # plus A's failed break (STRUCTURE_PLAYS)
-POLICIES["BR"] = replace(POLICIES["B"], hard_stop=BR_LEG_STOP)
+POLICIES["BR"] = replace(POLICIES["BL"], hard_stop=BR_LEG_STOP)
 POLICIES["CH"] = POLICIES["C"]                  # without the failed break: expiry-v1's C
+POLICIES["CI"] = POLICIES["C"]                  # plus a failed break at the box edge (STRUCTURE_BACK)
 
 _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS expiry_paper_positions (
@@ -668,15 +714,21 @@ def breakout_signal(state: dict, now: datetime, spot: Optional[float], fut: Opti
     return direction
 
 
-def failed_break(state: dict, opt_type: str, spot: Optional[float]) -> bool:
-    """A's structure stop: the index is back inside the box by a quarter of its width."""
+def failed_break_line(state: dict, opt_type: str, back: float = FAIL_BACK_WIDTH) -> Optional[float]:
+    """The index level that fails a break: ``back`` of the box width inside its broken edge."""
     box = state["box"]
-    if box is None or spot is None:
-        return False
+    if box is None:
+        return None
     width = box["hi"] - box["lo"]
-    if opt_type == "CE":
-        return spot < box["hi"] - FAIL_BACK_WIDTH * width
-    return spot > box["lo"] + FAIL_BACK_WIDTH * width
+    return box["hi"] - back * width if opt_type == "CE" else box["lo"] + back * width
+
+
+def failed_break(state: dict, opt_type: str, spot: Optional[float], back: float = FAIL_BACK_WIDTH) -> bool:
+    """A's structure stop: the index is back inside the box by a quarter of its width (CI: by any amount)."""
+    line = failed_break_line(state, opt_type, back)
+    if line is None or spot is None:
+        return False
+    return spot < line if opt_type == "CE" else spot > line
 
 
 def _bank_floor(pos: dict, policy: ExitPolicy) -> float:
@@ -898,12 +950,12 @@ def unmarkable_legs(legs: list[dict], quotes: dict, now: datetime) -> list[str]:
 
 
 def _pair_target(pair: list[dict], quotes: dict, now: datetime) -> bool:
-    """BP: both legs open and the pair, sold now on the visible bids, nets BP_TARGET of its premium."""
+    """B (BP before v3): both legs open and the pair, sold now on the visible bids, nets PAIR_TARGET of its premium."""
     if len(pair) != 2 or any(leg["exit_pending"] or leg["status"] != "OPEN" for leg in pair):
         return False
     value = liquidation_net(pair, quotes, now)
     paid = sum(leg["entry_price"] * leg["lots"] * leg["lot_size"] for leg in pair)
-    return value is not None and value >= BP_TARGET * paid
+    return value is not None and value >= PAIR_TARGET * paid
 
 
 def _mark_paths(conn, state: dict, day: str, underlying: str, quotes: dict, now: datetime,
@@ -945,8 +997,12 @@ def _mark_paths(conn, state: dict, day: str, underlying: str, quotes: dict, now:
 # ---------------------------------------------------------------------------
 
 def update_realized(state: dict, now: datetime, spot: Optional[float]) -> None:
-    """Add the squared index log return since the last sample at least ``RV_SAMPLE_SEC`` old."""
-    if spot is None:
+    """Add the squared index log return since the last sample at least ``RV_SAMPLE_SEC`` old.
+
+    Continuous session only: from 15:15 the index is frozen for the cash
+    closing session, so its returns are not volatility (context v1.2).
+    """
+    if spot is None or now.time() >= AUCTION_START:
         return
     rv = state.setdefault("rv", {"sum_sq": 0.0, "secs": 0.0, "ts": None, "spot": None})
     if rv["ts"] is not None:
@@ -1160,6 +1216,8 @@ def reconcile(db_path: Optional[str] = None, now: Optional[datetime] = None) -> 
             event = {"ts": now.isoformat(), "action": pos["status"], "lots": pos["lots_open"],
                      "settlement_spot": spot, "settlement_source": "SAMPLED_INDEX_QUOTE",
                      "assumed_pnl": pos["assumed_pnl"]}
+            if spot is not None:
+                event["intrinsic"] = round(intrinsic, 2)
             if pos["play"] == "D" and not short and spot is not None:
                 # The entry event stores the reserved intrinsic; rows from
                 # before that field fall back to the settlement spot.
@@ -1267,14 +1325,38 @@ def _bump(state: dict, counter: str, key: str) -> None:
 
 def _record_tick(conn, state: dict, day: str, underlying: str, started: datetime, now: datetime,
                  spot: Optional[float], fut: Optional[float], payload: dict) -> None:
-    """Count the tick and its data quality in the day state and store its full packet."""
+    """Count the tick and its data quality in the day state and store its full packet.
+
+    A fresh index equal to the previous fresh index is counted as unchanged
+    (Oct 19 audit X-2): the provider's clock advances through the 15:15-15:29
+    closing session while the value stands still, so freshness alone cannot
+    show it. Before 15:15 a run of unchanged values is a stuck feed to look at.
+    """
     state["ticks"] = state.get("ticks", 0) + 1
+    previous_value = state.get("index_value")
+    unchanged = spot is not None and spot == previous_value
+    if spot is not None:
+        state["index_value"] = spot
+        still = state.setdefault("index_unchanged", {"pre": 0, "auction": 0, "run": 0, "longest": 0,
+                                                     "longest_end": None, "last_change": None})
+        if not unchanged:
+            still["run"], still["last_change"] = 0, now.isoformat()
+        elif now.time() >= AUCTION_START:
+            still["auction"] += 1
+        else:
+            still["pre"] += 1
+            still["run"] += 1
+            if still["run"] > still["longest"]:
+                still["longest"], still["longest_end"] = still["run"], now.isoformat()
     windows = state.setdefault("window_ticks", {})
     for name, start, end in ENTRY_WINDOWS:
         if start <= now.time() < end:
-            seen = windows.setdefault(name, [0, 0])
+            seen = windows.setdefault(name, [0, 0, 0])
+            if len(seen) < 3:                       # a window counted before unchanged ticks were
+                seen.append(0)
             seen[0] += spot is not None
             seen[1] += 1
+            seen[2] += unchanged
     for name, value, observation in (("spot", spot, payload["index"]), ("fut", fut, payload["future"])):
         if value is None:
             state[f"stale_{name}"] = state.get(f"stale_{name}", 0) + 1
@@ -1315,13 +1397,28 @@ def _buy_text(pos: dict, detail: str) -> str:
             f"buy fees Rs {pos['costs']:,.2f}, max loss Rs {pos['max_loss']:,.2f})")
 
 
-def _sell_text(pos: dict, event: dict) -> str:
+def _sell_text(pos: dict, event: dict, legs: tuple = ()) -> str:
+    """One exit slice. ``legs`` are the entry's legs after this tick: a strangle
+    leg names its open partner, so the line never reads as the whole trade
+    (Oct 19 audit X-4: B's call line said +Rs 800.35 while its put rode to zero)."""
     auction = ", auction window" if event["fill_model"] == "AUCTION_WINDOW" else ""
-    text = (f"SELL {event['lots']} lot {pos['symbol']} @ {event['price']:.2f} ({event['action']}{auction}): "
+    reason = event["action"]
+    if event.get("line") is not None:                   # how close the failed-break test was (X-5)
+        reason += f" at index {event['index']:,.2f}, line {event['line']:,.2f}"
+    text = (f"SELL {event['lots']} lot {pos['symbol']} @ {event['price']:.2f} ({reason}{auction}): "
             f"slice gross Rs {event['gross']:+,.2f} less sell fees Rs {event['charges']:,.2f}")
-    if pos["status"] == "CLOSED":
+    others = [leg for leg in legs if leg is not pos]
+    if pos["status"] != "CLOSED":
+        return text + f"; {pos['lots_open']} lot still open, net so far Rs {pos['net_pnl']:+,.2f} after all fees"
+    if not others:
         return text + f"; trade closed, net Rs {pos['net_pnl']:+,.2f} after buy and sell fees"
-    return text + f"; {pos['lots_open']} lot still open, net so far Rs {pos['net_pnl']:+,.2f} after all fees"
+    text += f"; leg closed, net Rs {pos['net_pnl']:+,.2f}"
+    whole = sum(leg["net_pnl"] for leg in legs)
+    still = [leg for leg in others if leg["status"] == "OPEN"]
+    if not still:
+        return text + f"; whole trade closed, net Rs {whole:+,.2f} after all fees"
+    return (text + "; still open: " + ", ".join(f"{leg['symbol']} {leg['lots_open']} lot" for leg in still)
+            + f"; whole trade net so far Rs {whole:+,.2f} after all fees")
 
 
 async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, started: datetime,
@@ -1391,13 +1488,15 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
         state["trades"][play] += 1
         return pos
 
-    # 1. manage what is open (D's legs are held to cash settlement). BP sells
+    # 1. manage what is open (D's legs are held to cash settlement). B sells
     #    both legs together once the pair reaches its target; the latched exit
     #    is then retried leg by leg like any other.
-    if clock_now < FINAL_FLAT and _pair_target([p for p in positions if p["play"] == "BP"], quotes, now):
-        for pos in positions:
-            if pos["play"] == "BP":
+    for play in PAIR_PLAYS:
+        pair = [p for p in positions if p["play"] == play]
+        if clock_now < FINAL_FLAT and _pair_target(pair, quotes, now):
+            for pos in pair:
                 pos["exit_pending"] = "PAIR_TARGET"
+    exits = []
     for pos in positions:
         if pos["play"] == "D":
             continue
@@ -1405,16 +1504,22 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
         if pos["exit_pending"]:
             event = _try_exit(pos, quote, pos["lots_open"], pos["exit_pending"], now)
         elif quote is not None and quote.fresh(now) and quote.bid is not None:
-            structure = pos["play"] in STRUCTURE_PLAYS and failed_break(state, pos["opt_type"], spot)
+            back = STRUCTURE_BACK.get(pos["play"])
+            structure = back is not None and failed_break(state, pos["opt_type"], spot, back)
             action = manage_position(pos, POLICIES[pos["play"]], quote.bid, now, structure_broken=structure)
             event = _try_exit(pos, quote, *action, now) if action else None
+            if event is not None and action[1] == "FAILED_BREAK":
+                event.update(index=spot, line=round(failed_break_line(state, pos["opt_type"], back), 4))
         elif clock_now >= POLICIES[pos["play"]].flat_at:
             event = _try_exit(pos, None, pos["lots_open"], "FLAT_TIME", now)
         else:
             event = None
         _save_position(conn, pos)
         if event is not None:
-            notify(pos, _sell_text(pos, event))
+            exits.append((pos, event))
+    for pos, event in exits:                    # after every leg has moved, so a line sees its partner's state
+        legs = tuple(p for p in positions if p["play"] == pos["play"] and p["entry_ts"] == pos["entry_ts"])
+        notify(pos, _sell_text(pos, event, legs))
 
     # 2. the afternoon box and A/C entries
     update_box(state, clock_now, spot, fut)
@@ -1453,7 +1558,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
                 break
             if reason:
                 _bump(state, "refusals", f"{play}:{reason}")
-        for play, ceiling in (("C", budget), ("C500", C500_BUDGET), ("CH", budget)):
+        for play, ceiling in (("C", budget), ("C500", C500_BUDGET), ("CH", budget), ("CI", budget)):
             if state["trades"][play] >= 1:
                 continue
             strike = pick_lottery_strike(quoted_chain, direction, spot, now)
@@ -1470,8 +1575,8 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
             else:
                 _bump(state, "refusals", f"{play}:DEPTH_OR_BUDGET")
 
-    # 3. B and its shadows BH, BP and BR: the same auction strangle, managed differently
-    for play in ("B", "BH", "BP", "BR"):
+    # 3. B and its shadows BL, BH and BR: the same auction strangle, managed differently
+    for play in ("B", "BL", "BH", "BR"):
         if state["trades"][play] or not B_ENTRY_START <= clock_now < B_ENTRY_END:
             continue
         if spot is None:
@@ -1491,9 +1596,11 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
         for pos in opened:
             _save_position(conn, pos)
         state["trades"][play] = 1
+        plan = (f"both sold once the pair nets {PAIR_TARGET:.0%} after fees, else held into the auction, "
+                if play in PAIR_PLAYS else "")
         notify(opened[0], f"BUY {lots} lot strangle "
                           + " + ".join(f"{p['symbol']} @ {p['entry_price']:.2f}" for p in opened)
-                          + f" (buy fees Rs {sum(p['costs'] for p in opened):,.2f}, "
+                          + f" ({plan}buy fees Rs {sum(p['costs'] for p in opened):,.2f}, "
                           + f"max loss Rs {sum(p['max_loss'] for p in opened):,.2f})")
 
     # 4. D (shadow): a short iron condor held to cash settlement
@@ -1539,6 +1646,16 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
     _save_state(conn, day, underlying, state, now)
 
 
+def _settled_text(row) -> str:
+    """The label of a leg settled at our sampled close: ' (worthless)' or ' (intrinsic 12.30)' (X-1)."""
+    if row["status"] != "SETTLED_ASSUMED":
+        return ""
+    intrinsic = (json.loads(row["events"] or "[]") or [{}])[-1].get("intrinsic")
+    if intrinsic is None:                       # settled before the intrinsic was stored
+        return ""
+    return " (worthless)" if intrinsic == 0 else f" (intrinsic {intrinsic:,.2f})"
+
+
 def _path_text(mark: dict, clock: Callable[[str], str]) -> str:
     """An entry's best and worst mark with its denominators: ticks marked of ticks held, and why the rest were not."""
     held = mark.get("held")                     # absent on days marked before the denominators were kept
@@ -1552,6 +1669,30 @@ def _path_text(mark: dict, clock: Callable[[str], str]) -> str:
             f"worst Rs {mark['worst']:+,.2f} at {clock(mark['worst_ts'])} ({count})")
 
 
+def day_rules(conn, underlying: Optional[str] = None) -> dict:
+    """{day: rules version number} ({(day, underlying): ...} without ``underlying``).
+
+    A day keeps the version it began under: "expiry-v2+expiry-v3 from
+    mid-day" is 2, and a day stored before the rules were recorded is 1.
+    """
+    out = {}
+    sql = "SELECT day, underlying, state FROM expiry_paper_days" + (" WHERE underlying=?" if underlying else "")
+    for d, u, raw in conn.execute(sql, (underlying,) if underlying else ()):
+        try:
+            rules = json.loads(raw).get("rules") or ""
+        except (TypeError, ValueError, AttributeError):
+            rules = ""
+        match = re.search(r"expiry-v(\d+)", rules)
+        out[d if underlying else (d, u)] = int(match.group(1)) if match else 1
+    return out
+
+
+def _pair_tally(diffs: list[tuple[str, float]]) -> str:
+    days = len({d for d, _ in diffs})
+    return (f"Rs {sum(v for _, v in diffs):+,.2f} over {len(diffs)} entr{'y' if len(diffs) == 1 else 'ies'} "
+            f"on {days} expir{'y' if days == 1 else 'ies'}")
+
+
 def paired_lines(conn, day: str, underlying: str) -> list[str]:
     """Each shadow minus the primary whose entry it shares, today and over this underlying's expiries.
 
@@ -1563,7 +1704,10 @@ def paired_lines(conn, day: str, underlying: str) -> list[str]:
     unmatched, and an entry with an open leg waits until it is finished
     (Oct 15 audit: day totals alone could pair different trades). C500 is
     excluded: its ceiling changes the quantity, so its difference is size.
+    Entries from before the primary's current rule (``RULE_SINCE``) are
+    totalled apart, so a comparison never mixes two versions of the primary.
     """
+    version = day_rules(conn, underlying)
     entries: dict[tuple[str, str, str], dict] = {}
     for row in conn.execute(
             "SELECT day, play, entry_ts, symbol, side, lots, entry_price, status, "
@@ -1589,11 +1733,15 @@ def paired_lines(conn, day: str, underlying: str) -> list[str]:
                 diffs.append((d, entry["whole"] - twin["whole"]))
         if not (diffs or unmatched or waiting):
             continue
+        since = RULE_SINCE.get(primary, 1)
+        current = [(d, v) for d, v in diffs if version.get(d, 1) >= since]
+        earlier = [(d, v) for d, v in diffs if version.get(d, 1) < since]
         today = [v for d, v in diffs if d == day]
         text = f"{shadow}-{primary} " + (f"today Rs {sum(today):+,.2f}, " if today else "")
-        text += (f"to date Rs {sum(v for _, v in diffs):+,.2f} over {len(diffs)} "
-                 f"entr{'y' if len(diffs) == 1 else 'ies'} on {len({d for d, _ in diffs})} expir"
-                 f"{'y' if len({d for d, _ in diffs}) == 1 else 'ies'}")
+        totals = [f"to date {_pair_tally(current)}"] if current or not earlier else []
+        if earlier:
+            totals.append(f"before {primary}'s expiry-v{since} rule {_pair_tally(earlier)}")
+        text += ", ".join(totals)
         text += f", {unmatched} not the same entry" if unmatched else ""
         text += f", {waiting} still open" if waiting else ""
         parts.append(text)
@@ -1619,6 +1767,14 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
              f"after start, index refused {state.get('stale_spot', 0)}"
              + (f" ({index_why})" if index_why else "")
              + f", future refused {state.get('stale_fut', 0)}"]
+    still = state.get("index_unchanged")
+    if still is not None:                       # absent on days recorded before it was counted
+        run = (f" (longest run {still['longest']} ticks to {datetime.fromisoformat(still['longest_end']):%H:%M:%S})"
+               if still["longest"] > 1 else "")                # one still tick in ten seconds is ordinary
+        last = (f", last change {datetime.fromisoformat(still['last_change']):%H:%M:%S}"
+                if still.get("last_change") else "")
+        lines.append(f"  index unchanged from the previous tick: before 15:15 {still['pre']}{run}, "
+                     f"from 15:15 {still['auction']} (the cash closing session){last}")
     windows = state.get("window_ticks")
     if windows is not None:                     # absent on days recorded before it was counted
         lines.append("  window ticks with a fresh index: " + ", ".join(
@@ -1650,7 +1806,8 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
             assumed = sum(r["assumed_pnl"] or 0.0 for r in rows)
             total_filled, total_assumed, total_fees = total_filled + filled, total_assumed + assumed, total_fees + fees
             auction = any(e.get("fill_model") == "AUCTION_WINDOW" for r in rows for e in json.loads(r["events"]))
-            detail = ", ".join(f"{'sold ' if r['side'] == 'SHORT' else ''}{r['symbol']} {r['status']}" for r in rows)
+            detail = ", ".join(f"{'sold ' if r['side'] == 'SHORT' else ''}{r['symbol']} {r['status']}"
+                               + _settled_text(r) for r in rows)
             line = f"  {play}: filled net Rs {filled:+,.2f} after fees Rs {fees:,.2f}"
             if any(r["assumed_pnl"] is not None for r in rows):
                 line += (f", assumed Rs {assumed:+,.2f} [our sampled index, not the official settlement], "
@@ -1700,7 +1857,9 @@ def owner_rule_lines(conn, through: str) -> list[str]:
 
     An expiry's main-book result is the whole modeled (filled + assumed) of
     A, B and C; a day without a main trade is not a loss. Per play it counts
-    the expiries the play traded and how many of them it lost.
+    the expiries the play traded and how many of them it lost; a main play
+    whose rule changed also shows the part since its current rule
+    (``RULE_SINCE``), e.g. "C 4/5 (Rs +2,483; since expiry-v2 1/1 Rs -1,211)".
     """
     days = conn.execute("SELECT day, underlying FROM expiry_paper_days WHERE day <= ? ORDER BY day, underlying",
                         (through,)).fetchall()
@@ -1714,12 +1873,20 @@ def owner_rule_lines(conn, through: str) -> list[str]:
         if result >= 0:
             break
         streak += 1
+    version = day_rules(conn)
     per_play = []
     for play in MAIN_PLAYS + SHADOW_PLAYS + RETIRED_PLAYS:
-        traded = [value for (_, _, p), value in whole.items() if p == play]
-        if traded:
-            per_play.append(f"{play} {sum(value < 0 for value in traded)}/{len(traded)} "
-                            f"(Rs {sum(traded):+,.0f})")
+        traded = [(version.get((d, u), 1), value) for (d, u, p), value in whole.items() if p == play]
+        if not traded:
+            continue
+        values = [value for _, value in traded]
+        text = f"{play} {sum(value < 0 for value in values)}/{len(values)} (Rs {sum(values):+,.0f}"
+        since = RULE_SINCE.get(play, 1)
+        if any(v < since for v, _ in traded):           # the record spans a rule change: show the new rule's part
+            current = [value for v, value in traded if v >= since]
+            text += f"; since expiry-v{since} {sum(value < 0 for value in current)}/{len(current)}"
+            text += f" Rs {sum(current):+,.0f}" if current else ""
+        per_play.append(text + ")")
     met = len(results) >= OWNER_REVIEW_EXPIRIES and lost == len(results)
     verdict = "RULE MET: every expiry lost, stop expiry-day F&O" if met else \
         f"{max(0, OWNER_REVIEW_EXPIRIES - len(results))} expiries left to observe"
