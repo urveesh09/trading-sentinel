@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 21 (night, 2) — SX-M1 Momentum shadow scoring excludes missed-exit closes (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 21 (night, 2) — SX-M1 Momentum shadow scoring excludes missed-exit closes (actual behavior, Dev, commit `27ee87b`)
 
 - Production read-only (Oct 21): 72 of MOM_BASE's 92 virtual closes (88 of
   MOM_RECENCY_5's 108) were `overnight_gap_exit`: the declared 15:15 exit bar

@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 21 (night, 2) — SX-M1 honest Momentum shadow scoring (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 21 (night, 2) — SX-M1 honest Momentum shadow scoring (done, Dev, commit `27ee87b`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: next-open gap exits (missed 15:15 bar) were scored as variant results.
 - Files: `momentum_shadow.py`, `promotion_readiness.py`, test in `tests/test_momentum_shadow.py`.
