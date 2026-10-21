@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 21 (afternoon) — O21-PC partner fill capture + coach, O21-SC standard capital, O21-BS F&O broker backstop (done, Dev, commit pending (recorded in the next docs commit), branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (afternoon) — O21-PC partner fill capture + coach, O21-SC standard capital, O21-BS F&O broker backstop (done, Dev, commit `b580af2`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - Problem:
   - Owner (Oct 21, planning ₹10k–12.5k real money): standardise the books on

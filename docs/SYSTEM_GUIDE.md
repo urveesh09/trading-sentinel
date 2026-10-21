@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 21 (afternoon) — partner fill capture and coach, standard-capital view, F&O broker backstop (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 21 (afternoon) — partner fill capture and coach, standard-capital view, F&O broker backstop (actual behavior, Dev, commit `b580af2`)
 
 Owner (Oct 21): before real money, standardise every book on one capital
 (₹2L / ₹5L) and scale down later; a broker-side stop for live F&O; capture

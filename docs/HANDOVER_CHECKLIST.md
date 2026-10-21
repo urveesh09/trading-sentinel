@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 21 (afternoon) — partner fill capture + coach, standard capital, F&O broker backstop (commit pending (recorded in the next docs commit), Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (afternoon) — partner fill capture + coach, standard capital, F&O broker backstop (commit `b580af2`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
 
 - [x] O21-PC cards carry Bought/Skipped buttons, exit updates Sold; replies
   record or correct prices; off-card "b NIFTY 22950 PE 120 x2"; only the
