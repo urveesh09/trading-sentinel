@@ -15,9 +15,10 @@ const router = express.Router();
 
 const REQUEST_TOKEN = /^[A-Za-z0-9]{8,64}$/;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-// Session exchange, the order-book reads, [O21-PX] order histories and the
-// traded options' prices (the engine caps those at 20 s), then the coach
-// note. Under nginx's 60 s proxy timeout, so the page always gets an answer.
+// The session exchange and the fills; [A22-P4] the engine answers within its
+// own 35 s login deadline and reads order histories, prices and the coach
+// note in the background (the review page shows that progress). Under
+// nginx's 60 s proxy timeout, so the page always gets an answer.
 const SESSION_TIMEOUT_MS = 45000;
 
 // Fixed texts only: nothing from the query or the engine reaches the page.
@@ -82,7 +83,7 @@ router.get('/callback', limiters.authCallback, async (req, res) => {
     return page(res, key === 'wrong_account' ? 403 : result.status === 400 ? 400 : 502, key);
   }
   req.session.partner_view = { since: new Date().toISOString(), account: result.data?.account || null };
-  logger.info({ event_type: 'partner_kite_login', note: result.data?.note }, 'Partner Zerodha login; coach view opened');
+  logger.info({ event_type: 'partner_kite_login', sync: result.data?.sync?.state }, 'Partner Zerodha login; coach view opened');
   return res.redirect('/?view=review');
 });
 

@@ -561,6 +561,12 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
     bar are not passed. The usual stop/target/time-exit rules decide each
     trade; a trade still open afterwards gets a CENSORED receipt saying why.
     Nothing is invented: a missing bar or a failed fetch stays censored.
+
+    [A22-M2] Each ticker's bars are fetched with no database connection
+    open, then applied in one short transaction for that ticker: a slow
+    history read never holds the write lock other writers need. A rerun
+    re-selects only trades still without a CLOSED event, so a pass cut
+    short half-way resumes where it stopped.
     """
     await init_momentum_shadow_db(db_path)
     created_at = datetime.now(timezone.utc).isoformat()
@@ -575,21 +581,22 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
                   AND e.variant=t.variant AND e.event_type='CLOSED')
             ORDER BY t.ticker, t.variant
         """, (trading_date,))).fetchall()
-        by_ticker: dict = {}
-        for row in rows:
-            by_ticker.setdefault(row["ticker"], []).append(row["variant"])
-        summary.update(open=len(rows), tickers=len(by_ticker))
-        for ticker, variants in by_ticker.items():
-            error = None
-            try:
-                frame = await fetch_bars(ticker)
-                bars = [bar for bar in _bars(frame if frame is not None else pd.DataFrame())
-                        if bar["bar_ts"][:10] == trading_date]
-                terminal = next((bar for bar in bars if _at_or_after_time_exit(bar["bar_ts"])), None)
-                if terminal is not None:
-                    bars = [bar for bar in bars if bar["bar_ts"] <= terminal["bar_ts"]]
-            except Exception as exc:     # a failed fetch is a censored outcome, not a crash
-                bars, terminal, error = [], None, type(exc).__name__
+    by_ticker: dict = {}
+    for row in rows:
+        by_ticker.setdefault(row["ticker"], []).append(row["variant"])
+    summary.update(open=len(rows), tickers=len(by_ticker))
+    for ticker, variants in by_ticker.items():
+        error = None
+        try:
+            frame = await fetch_bars(ticker)
+            bars = [bar for bar in _bars(frame if frame is not None else pd.DataFrame())
+                    if bar["bar_ts"][:10] == trading_date]
+            terminal = next((bar for bar in bars if _at_or_after_time_exit(bar["bar_ts"])), None)
+            if terminal is not None:
+                bars = [bar for bar in bars if bar["bar_ts"] <= terminal["bar_ts"]]
+        except Exception as exc:     # a failed fetch is a censored outcome, not a crash
+            bars, terminal, error = [], None, type(exc).__name__
+        async with aiosqlite.connect(db_path) as db:
             for variant in variants:
                 await _advance_and_open(db, {"trading_date": trading_date, "ticker": ticker,
                                              "variant": variant, "accepted": False, "bars": bars}, created_at)
@@ -614,7 +621,7 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
                         terminal_bar_ts=excluded.terminal_bar_ts, created_at=excluded.created_at
                     WHERE momentum_shadow_terminal_receipts.status='CENSORED'
                 """, (trading_date, ticker, variant, status, detail, bar_ts, created_at))
-        await db.commit()
+            await db.commit()
     return summary
 
 

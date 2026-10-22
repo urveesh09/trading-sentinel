@@ -392,6 +392,12 @@ async def health_check():
                 snap["smart_penny_v2"] = smart_exposure_snapshot(settings.DB_PATH, policy=SMART_V2_VERSION)
             except Exception as exc:
                 snap["smart_penny_v2"] = {"status": "UNREADABLE", "error_type": type(exc).__name__}
+        # [A22-R6] The F&O exit-path recorder: looks written and dropped by reason.
+        try:
+            import fno_exit_paths
+            snap["fno_exit_paths"] = fno_exit_paths.stats()
+        except Exception as exc:
+            snap["fno_exit_paths"] = {"status": "UNREADABLE", "error_type": type(exc).__name__}
         try:
             from halt_switch import halt_state
             entry_halted, halt_attribution = halt_state(None)

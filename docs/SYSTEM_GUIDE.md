@@ -1,5 +1,109 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 22 — A22 audit follow-up: broker-stop safety, short write locks, bounded exit evidence, honest research and partner timing (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+The Oct 22 audit of PRs #112–113 (Production 33065ed) reported two order-safety
+defects and five follow-ups. Each was reproduced in Dev before the fix, and each
+new regression test fails on the previous code:
+
+- **A22-BS broker backstop never allows a second SELL on an uncertain record
+  (P1, live only).** `fno_broker_backstop.arm` writes the placement intent
+  (`state=PLACING`, trigger, limit; `INSERT OR IGNORE`, so one order per
+  position) *before* the SL is sent. If that write fails, nothing is sent:
+  the result is `ARM_FAILED`, the operator is paged, and the engine stop still
+  acts. If the receipt write fails after the send, the row stays `PLACING`
+  without an order id and the operator is paged (`fno_backstop_unrecorded`).
+  `load_backstop` now raises `BackstopUnreadable` for any unreadable ledger.
+  Only "no such table" (nothing ever recorded) means absent.
+  `before_exit` handles uncertain rows as follows:
+  - an unreadable ledger holds the exit (paged once);
+  - a `PLACING` row younger than 30 s holds (the send may still be in
+    flight);
+  - an older `PLACING` or `PLACE_UNKNOWN` row is looked up in the order
+    book: found means cancel it and read its state; absent means none rests,
+    so proceed; an unreadable book holds.
+
+  The passive check adopts a lost order id once the book shows it. Live F&O
+  is still off, so this changes no paper behaviour. The unused
+  `init_backstop_db` is removed.
+- **A22-M2 Momentum terminal pass holds no write lock while fetching.**
+  `resolve_momentum_shadow_day` reads the open trades, closes that
+  connection, then fetches each ticker's bars with no connection open.
+  Each ticker is applied in its own short transaction. A rerun resumes,
+  because only trades without a CLOSED event are selected. The audit's
+  "database is locked" reproducer is now a test.
+- **A22-R6 exit-path recorder is bounded and off the shared executor.**
+  - `record()` puts the line on a bounded queue (2,000) and returns
+    True/False; it never awaits and never raises.
+  - One daemon thread appends batches (≤ 500) through the research archive's
+    `guarded_write`: free-space reserve, daily byte budget, cross-process
+    lease. The per-session file cap is 32 MiB.
+  - Drops are counted by reason: `queue_full`, `day_cap`, `storage`,
+    `write_error`. The counts appear in `fno_exit_paths.stats()` and the ops
+    snapshot `fno_exit_paths`.
+  - Shutdown drains the writer (`close`).
+  - Each line now carries `params_sha`, a digest of the live exit settings
+    plus `FNO_HARD_FLAT_MIN`. A position's first look of the session also
+    carries the full `params`.
+- **A22-R3 exit-arm evaluator scores only whole, reconciled evidence.**
+  - Arms are overrides on the settings recorded with the looks. CURRENT is
+    what was live then, not this process's settings. `LOCK_CONFIRMED` (8 s)
+    is added, amended 2026-10-22 before any session was scored.
+  - A position is skipped, and counted, when it has no recorded path, a
+    contract mismatch, no recorded settings, a settings change mid-trade, a
+    path that ends before the live exit, or an observation gap. Gaps mean the
+    first look more than 120 s after entry, or more than 120 s between looks.
+  - It is also skipped on a `baseline_mismatch`: CURRENT must reproduce the
+    stored exit reason, within 20 s, at a premium within 1% or ₹0.10. These
+    are listed under `mismatches`; this is the audit's ₹0 underlying_stop
+    counterexample.
+  - Archive quotes after the live exit are used only up to the first gap
+    over 180 s, with a future price no older than 180 s.
+  - Totals and `paired.delta_vs_current` count scored positions only. The
+    output reports `coverage` and `scope` (exit-only).
+  - Lines recorded before this change carry no settings and are reported as
+    `settings_unbound`.
+- **A22-P4 partner login answers inside the gateway deadline.**
+  - `on_login` uses one 35 s deadline: the session exchange (≤ 25 s), then
+    the fills.
+  - Order histories, positions, cash, option prices and, after the close,
+    the coach note continue in a background task with a 120 s budget.
+    Overrunning it gives the `partial` state.
+  - A fills read that fails inside the deadline is still the login's error.
+  - `review_sync()` reports `reading` / `enriching` / `done` / `partial` /
+    `failed`, with no token and no broker data. `GET /partner/review` returns
+    it as `sync`.
+  - The review page shows a one-line status and refreshes every 4 s until
+    the state is final.
+  - The 15:40 wrap and the owner's sync button still run the whole read
+    (`sync_book`).
+- **A22-P5 partner coaching never borrows prices from outside the holding.**
+  - "Best/worst while you held" uses only 1-minute candles wholly inside the
+    holding; for prints, a print time inside it.
+  - The buy and sale minutes are reported apart as `edge` (uncertain):
+    "In the minute you bought or sold it also traded at …; that may have
+    been before your buy or after your sale".
+  - A lowered stop's later touch must start after the change and end before
+    the sale.
+  - The audit's 10-second hold no longer gets the whole minute's range.
+- **A22-E1 Smart V1/V2 comparison compares opportunities, not just totals.**
+  - `smart_policy_comparison` pairs entries with exits into round trips.
+  - Per book it reports fees, median hold, average deployed and rupee-hours
+    (capital occupancy).
+  - `versus[PEN_SMART_V2]` compares same-day, same-ticker opportunities:
+    matched count and net difference, V1 stop-outs where V2 did better, V2
+    wider-stop losses, opportunities only one book took, and the winners each
+    missed.
+  - It is reporting only; no threshold reads it.
+- **A22-E2 scope labels.** Standard capital's `method.scope`, shown first on
+  the page, says it scales closed trades: open positions are not included,
+  and it is neither a whole-portfolio replay nor an exit experiment. The exit
+  evaluator states that it is exit-only.
+- **A22-E3 version separation (verified, no change).**
+  - The expiry book keeps each day's rules version (`day_rules`), and its
+    paired comparisons total pre-`RULE_SINCE` entries apart.
+  - Smart V2 is scored from 2026-10-22 on its own events.
+  - Neither pools an older rule's winners into the new version.
 ## October 21 (night, 3) — SX-F1 confirmed F&O profit lock + live-clock exit evidence; SX-P2 PEN_SMART_V2 (actual behavior, Dev, commit `ace52ab`)
 
 Owner (Oct 21 night): "take the relevant calls … make it smart, not a
@@ -20,13 +124,15 @@ shadow of the old behaviour and a one-line rollback:
   `FNO_PROFIT_LOCK_CONFIRM_SEC=0`.
 - **SX-F1 live-clock evidence.** `fno_exit_paths.py` appends every exit look
   of a held option (bid/ask/LTP, future, decision, lock state) to
-  `<RESEARCH_ARCHIVE_PATH>/fno_exit_paths/<day>.jsonl` in a worker thread
-  (never awaited, never raises; `FNO_EXIT_PATH_RECORDING`). The export copies
+  `<RESEARCH_ARCHIVE_PATH>/fno_exit_paths/<day>.jsonl` off the exit path
+  (never awaited, never raises; `FNO_EXIT_PATH_RECORDING`; since A22-R6 one
+  bounded, guarded writer thread with counted drops). The export copies
   finished sessions. `fno_exit_cadence.py` replays declared arms (CURRENT,
   LOCK_FIRST_LOOK = the old lock, FNO_LOCK_OFF, FNO_LOCK_LATE_ARM,
   FNO_LOCK_LOOSE_KEEP) from each live entry on the recorded looks, then on
   the archive's verified quotes after the live exit; still open at the end =
-  unresolved. Declared 2026-10-21; judge after ≥ 20 matched trades. The
+  unresolved. Declared 2026-10-21; judge after ≥ 20 matched trades (since
+  A22-R3: scored trades only, see the Oct 22 section). The
   post-Oct-5 archive replay of the lock arms was inconclusive (3 NIFTY
   trades; arms differ on one trade by ≤ ₹400).
 - **SX-P2 PEN_SMART_V2 beside V1.** V1's Production record Oct 5–21: 68 closes,
@@ -471,7 +577,8 @@ book sizing, Smart policy file or live switch changed.
   (`broker_backstop`, no order sent); part-filled → sells only the rest;
   unprovable → nothing sold, paged once (no exit intent claimed). While no
   exit is due `check_filled()` re-reads each minute, every tick within 2% of
-  the trigger. PLACE_UNKNOWN is resolved from `orders_snapshot`. Paper never
+  the trigger. PLACE_UNKNOWN (since A22-BS also a lost-receipt PLACING row) is resolved
+  from `orders_snapshot`. Paper never
   places one; `REENTRY_STOP_REASONS` includes `broker_backstop`. The live
   leg is still behind `FNO_DISABLE_LIVE` and the go-live bar.
 - **Routes and dashboard.** Engine `routes_partner_coach.py`: GET

@@ -33,6 +33,14 @@ risk against the day's cash, charges, the order changes and a small chart.
 Hindsight only shows what happened and praises a disciplined exit; it never
 tells the partner to hold a loser. A 1-minute candle can put a time up to a
 minute early; 5-minute prints can miss a touch between them.
+
+[A22-P5 2026-10-22] "While you held" uses only candles wholly inside the
+holding (a print: a time inside it). The minute of the buy and the minute of
+the sale also hold prices from before the buy or after the sale (Oct 22
+audit: a 10-second hold was given the whole minute's high and low); a price
+seen only there is reported apart as ``edge``, marked uncertain, and a
+stop's later touch must start after the stop was moved and end before the
+sale.
 """
 from __future__ import annotations
 
@@ -119,6 +127,19 @@ def cash_of(account: Optional[dict]) -> Optional[float]:
     return cash if cash > 0 else None
 
 
+def _inside(bar: tuple, first: datetime, end: datetime, basis: Optional[str]) -> bool:
+    """A 1-minute candle wholly inside [first, end]; a print at a time inside it."""
+    if basis == BASIS_CANDLES:
+        return first <= bar[0] and bar[0] + timedelta(minutes=1) <= end
+    return first <= bar[0] <= end
+
+
+def _edge(bar: tuple, first: datetime, end: datetime, basis: Optional[str]) -> bool:
+    """A candle that overlaps the holding without being inside it (the buy or sale minute)."""
+    return (basis == BASIS_CANDLES and not _inside(bar, first, end, basis)
+            and bar[0] < end and bar[0] + timedelta(minutes=1) > first)
+
+
 def _window(trade: dict, now: Optional[datetime]) -> tuple[datetime, datetime, bool]:
     """(first buy, end of the holding, closed?) for a trade with a buy; an
     open trade is held to the close, or to now during the session."""
@@ -154,7 +175,7 @@ def apply(item: dict, trade: Optional[dict], card: Optional[dict], stops: Option
     bars = (path or {}).get("bars") or []
     if bars:
         insight["basis"] = path.get("basis")
-        _path_facts(insight, bars, first, end, closed, entry, first_px, qty or bought_qty)
+        _path_facts(insight, bars, path.get("basis"), first, end, closed, entry, first_px, qty or bought_qty)
         insight["chart"] = _chart(day, bars, trade, card, stops, first, end)
     sl_orders = _stop_orders_of(ctx, trade, first, end)
     events = _order_events(ctx, trade, sl_orders, first, end)
@@ -168,7 +189,8 @@ def apply(item: dict, trade: Optional[dict], card: Optional[dict], stops: Option
         _chased_spike(item, path, bars, trade, first, first_px, actual)
     if off_card and closed and exit_px is not None and qty and bars:
         _gave_back(item, bars, trade, first, end, entry, exit_px, qty, actual)
-    _stop_moves(item, sl_orders, ctx, trade, bars, first, end, closed, entry, exit_px, qty, actual)
+    _stop_moves(item, sl_orders, ctx, trade, bars, (path or {}).get("basis"), first, end, closed, entry, exit_px,
+                qty, actual)
     _price_raised(item, ctx, trade, card)
     if off_card:
         _held_overnight(item, trade, ctx)
@@ -181,17 +203,22 @@ def apply(item: dict, trade: Optional[dict], card: Optional[dict], stops: Option
                                   f"{_amt((exit_px - after['price']) * qty)} smaller than holding to then."))
 
 
-def _path_facts(insight: dict, bars: list, first: datetime, end: datetime, closed: bool, entry: float,
-                first_px: float, size: Optional[int]) -> None:
+def _path_facts(insight: dict, bars: list, basis: Optional[str], first: datetime, end: datetime, closed: bool,
+                entry: float, first_px: float, size: Optional[int]) -> None:
     m0, m1 = _minute(first), _minute(end)
-    held = [b for b in bars if m0 <= b[0] <= m1]
+    held = [b for b in bars if _inside(b, first, end, basis)]
+    best = max(held, key=lambda b: b[2]) if held else None
+    worst = min(held, key=lambda b: b[3]) if held else None
     if held and size:
-        best = max(held, key=lambda b: b[2])
-        worst = min(held, key=lambda b: b[3])
         insight["best"] = {"at": _hhmm(best[0]), "price": best[2], "move_rs": round((best[2] - entry) * size, 2),
                            "pct": round(best[2] / entry - 1, 4)}
         insight["worst"] = {"at": _hhmm(worst[0]), "price": worst[3], "move_rs": round((worst[3] - entry) * size, 2),
                             "pct": round(worst[3] / entry - 1, 4)}
+    edges = [b for b in bars if _edge(b, first, end, basis)]
+    if edges:
+        high, low = max(b[2] for b in edges), min(b[3] for b in edges)
+        if best is None or high > best[2] or low < worst[3]:
+            insight["edge"] = {"high": high, "low": low, "uncertain": True}
     before = [b for b in bars if m0 - timedelta(minutes=RUN_LOOKBACK_MIN) <= b[0] < m0]
     if before and first_px:
         low = min(b[3] for b in before)
@@ -373,9 +400,9 @@ def _gave_back(item: dict, bars: list, trade: dict, first: datetime, end: dateti
         better_pnl=better, actual_pnl=actual))
 
 
-def _stop_moves(item: dict, sl_orders: list, ctx: Context, trade: dict, bars: list, first: datetime, end: datetime,
-                closed: bool, entry: float, exit_px: Optional[float], qty: Optional[int],
-                actual: Optional[float]) -> None:
+def _stop_moves(item: dict, sl_orders: list, ctx: Context, trade: dict, bars: list, basis: Optional[str],
+                first: datetime, end: datetime, closed: bool, entry: float, exit_px: Optional[float],
+                qty: Optional[int], actual: Optional[float]) -> None:
     lowered, raised = [], []
     for order in sl_orders:
         for change in ctx.changes.get(order["order_id"], []):
@@ -390,7 +417,8 @@ def _stop_moves(item: dict, sl_orders: list, ctx: Context, trade: dict, bars: li
         lowest = min(c["new_value"] for _, c in lowered)
         better_pnl, touch = None, None
         if closed and exit_px is not None and qty and exit_px < original:
-            touch = next((b for b in bars if b[0] >= _minute(at) and b[0] <= _minute(end) and b[3] <= original), None)
+            touch = next((b for b in bars if b[0] >= at and _inside(b, first, end, basis) and b[3] <= original),
+                         None)
             if touch is not None:
                 better_pnl = _pnl(entry, original, qty, trade["exchange"], _orders(trade))
         times = f" ({len(lowered)} times)" if len(lowered) > 1 else ""

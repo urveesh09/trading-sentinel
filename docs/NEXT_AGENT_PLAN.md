@@ -1,5 +1,76 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 22 — A22 audit follow-up (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem: the Oct 22 audit of PRs #112–113 found two order-safety defects
+  in the live broker backstop and five follow-ups. The follow-ups are the
+  Momentum terminal pass's write lock, an unbounded exit-path recorder,
+  exit-arm research that scored baseline mismatches, the partner login
+  exceeding the 45 s gateway deadline, and coaching extrema taken from
+  outside the holding. The audit also asked for opportunity-level V1/V2
+  comparison, explicit research scopes and version separation. All six
+  defects reproduced in Dev; we agreed with every finding.
+- Files:
+  - `fno_broker_backstop.py`: intent before send, `BackstopUnreadable`,
+    in-flight grace, order-book adoption.
+  - `momentum_shadow.py`: fetch outside the transaction.
+  - `fno_exit_paths.py`: bounded writer, guarded writes, counters, settings
+    binding, `close`.
+  - `fno_orchestrator.py`: passes the exit settings to the recorder.
+  - `main.py`: drains the writer on shutdown.
+  - `routes_ops.py`: `fno_exit_paths` stats.
+  - `fno_exit_cadence.py`: binding, identity, gap and reconciliation gates;
+    `LOCK_CONFIRMED`; paired deltas; coverage.
+  - `partner_broker_sync.py`: login deadline, background read,
+    `review_sync`.
+  - `routes_partner_coach.py`: `sync` in the review.
+  - `partner_insights.py` and `partner_lessons.py`: contained extrema,
+    `edge` line.
+  - `penny_smart_shadow.py`: round trips, `versus`.
+  - `standard_capital.py`: `method.scope`.
+  - Gateway `routes/partner-kite.js`: comment and log field.
+  - Client `PartnerReview.jsx` and `utils/partnerReview.js`: status line,
+    auto refresh.
+  - Tests: `test_fno_broker_backstop.py` (+4),
+    `test_oct21_audit_fixes.py` (+1), `test_fno_exit_cadence.py` (rewritten,
+    17), `test_partner_broker_sync.py` (+3, login tests updated),
+    `test_partner_insights.py` (+2), `test_penny_smart_v2.py` (comparison
+    tests rewritten, +1), `client/tests/partnerReview.test.mjs` (+1) and the
+    gateway partner-kite mock.
+- Acceptance (Dev):
+  - Every audit reproducer is a test that fails on the previous code and
+    passes now:
+    - a lost receipt never lets an exit sell blind;
+    - no intent means no send, and never two sends;
+    - an unreadable ledger holds;
+    - another writer is never locked out by a history fetch;
+    - 100 looks against a stuck disk return in < 1 s, with every drop
+      counted;
+    - a ₹0 underlying_stop never scores as CURRENT's profit lock;
+    - a slow deeper read never delays the login;
+    - a 10-second hold gets no best/worst.
+  - Expected changed text: the spike test's best is now 10:31, the first
+    whole minute after a 10:30:20 buy.
+- Configuration and migration: no new settings and no schema change. The
+  backstop `state` column gains values `PLACING` and `ALREADY_RECORDED`
+  (return only). Exit-path lines gain `params_sha` and `params`. The ops
+  snapshot gains `fno_exit_paths`; the review payload gains `sync`.
+- Rollout: merge, rebuild engine and gateway. After deploy:
+  - `fno_exit_paths` in the ops snapshot shows `written` growing with no
+    drops on the first F&O position;
+  - the first exit-path line of each position carries `params`;
+  - a partner login answers at once and the review shows "Adding your
+    order changes…" until done;
+  - `GET /experiments/penny-smart` has `versus`.
+- Rollback: `FNO_EXIT_PATH_RECORDING=false` stops recording. Everything else
+  is a code revert of this commit. The backstop acts only when live F&O is
+  enabled.
+- Remaining:
+  - [ ] Score `fno_exit_cadence` once ≥ 20 positions are scored (not merely
+    recorded) after deploy; read `skipped` and `mismatches` first.
+  - [ ] Score V2 against V1 from 2026-10-22 with `versus` (≥ 30 V2 closes).
+  - [ ] Live F&O stays off. The backstop changes are a precondition for it,
+    not a go-live decision.
 ## October 21 (night, 3) — SX-F1 confirmed lock + exit evidence, SX-P2 PEN_SMART_V2 (done, Dev, commit `ace52ab`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: owner delegated the open calls (profit lock, Smart Penny, partner

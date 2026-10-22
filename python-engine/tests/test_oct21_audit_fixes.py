@@ -122,6 +122,33 @@ async def test_missing_data_is_censored_and_a_later_pass_can_close_it():
 
 
 @pytest.mark.asyncio
+async def test_a_slow_history_read_holds_no_write_lock(tmp_path):
+    """[A22-M2] The audit's reproducer: after the first ticker's writes, the
+    second ticker's fetch ran inside the same open transaction, so any other
+    writer got "database is locked". Now each fetch runs with no connection."""
+    import sqlite3
+    import momentum_shadow as ms
+    db = settings.DB_PATH
+    await ms.persist_momentum_shadow_results(db, [_accepted("AAA"), _accepted("BBB")])
+    other_writes = []
+
+    async def fetch(ticker):
+        if ticker == "BBB":
+            con = sqlite3.connect(db, timeout=0.2)
+            try:
+                con.execute("CREATE TABLE IF NOT EXISTS other_writer (n INTEGER)")
+                con.execute("INSERT INTO other_writer VALUES (1)")
+                con.commit()
+                other_writes.append("ok")
+            finally:
+                con.close()
+        return _bars(QUIET)
+
+    summary = await ms.resolve_momentum_shadow_day(db, DAY, fetch)
+    assert other_writes == ["ok"] and summary["closed"] == 2
+
+
+@pytest.mark.asyncio
 async def test_the_terminal_job_runs_only_when_enabled_on_a_trading_day(monkeypatch):
     import main
     calls = []

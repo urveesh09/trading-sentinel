@@ -56,6 +56,7 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+from time import monotonic
 from typing import Callable, Optional
 from urllib.parse import urlencode
 
@@ -85,6 +86,13 @@ _ALLOWED_CALLS = {("POST", "/session/token"), ("DELETE", "/session/token"),
 _ORDER_HISTORY = re.compile(r"^/orders/[0-9]{1,24}$")
 HISTORY_MAX_ORDERS = 40        # order histories read per sync
 HISTORY_CONCURRENCY = 3
+# [A22-P4] The gateway waits 45 s for the login (nginx 60 s). One deadline
+# covers the session exchange and the fills; the order histories, positions,
+# cash, option prices and the coach note follow in the background within
+# their own budget, and the review page shows their progress.
+LOGIN_DEADLINE_SEC = 35.0
+LOGIN_SESSION_MAX_SEC = 25.0
+ENRICH_BUDGET_SEC = 120.0
 # History states the exchange confirmed; a refused modify is not a change.
 _CONFIRMED_STATES = {"OPEN", "TRIGGER PENDING", "COMPLETE", "CANCELLED"}
 _MONTHS = {m: i for i, m in enumerate(
@@ -792,9 +800,16 @@ def _complete(day: str, at: datetime) -> bool:
 
 
 async def sync_book(now: Optional[datetime] = None, *, db_path: Optional[str] = None) -> dict:
-    """Read the partner's order book and store its filled option orders."""
+    """Read the partner's order book, store its filled option orders, then
+    the deeper review's reads (the 15:40 wrap and the owner's button)."""
     now = (now or datetime.now(IST)).astimezone(IST)
     db_path = db_path or settings.DB_PATH
+    result, orders = await _sync_fills(now, db_path)
+    return {**result, **await _enrich(db_path, orders, result, now)}
+
+
+async def _sync_fills(now: datetime, db_path: str) -> tuple[dict, list]:
+    """The order book, trades and stops: the fills the review is built on."""
     if not connected(now):
         disconnect()
         raise BrokerError("not_connected")
@@ -844,13 +859,18 @@ async def sync_book(now: Optional[datetime] = None, *, db_path: Optional[str] = 
                  _session.account if _session else None, int(stops_known)))
             result_days[day] = {"option_orders": len(day_reports), "complete": complete, "stops_known": stops_known}
         await db.commit()
-    details = await _read_details(db_path, orders, now)
-    paths = await _store_paths(db_path, [d for d, row in result_days.items() if row["complete"]], now)
     logger.info("partner_zerodha_synced days=%s option_orders=%d other=%d unfilled=%d on_card=%d",
                 ",".join(days), counts["option_orders"], counts["other_orders"], counts["unfilled_orders"],
                 sum(1 for r in reports if r["advisory_id"]))
     return {"synced_at": now.isoformat(), "days": result_days, **counts,
-            "on_card": sum(1 for r in reports if r["advisory_id"]), "details": details, "paths": paths}
+            "on_card": sum(1 for r in reports if r["advisory_id"])}, orders
+
+
+async def _enrich(db_path: str, orders: list, result: dict, now: datetime) -> dict:
+    """[O21-PX] Order histories, positions, cash and the finished days' option prices."""
+    details = await _read_details(db_path, orders, now)
+    paths = await _store_paths(db_path, [d for d, row in result["days"].items() if row["complete"]], now)
+    return {"details": details, "paths": paths}
 
 
 async def _read_details(db_path: str, orders: list, now: datetime) -> dict:
@@ -990,12 +1010,74 @@ async def ensure_review_message(now: Optional[datetime] = None) -> dict:
 
 
 async def on_login(request_token: str, now: Optional[datetime] = None) -> dict:
-    """The partner's Kite login: session, read, then the coach note after the close."""
+    """The partner's Kite login: the session, the fills, then (in the
+    background) the deeper review and, after the close, the coach note.
+
+    [A22-P4] Answers within LOGIN_DEADLINE_SEC: the page opens on the fills
+    and shows "adding details" until the background read is done. A failed
+    fills read inside the deadline is the login's error, as before."""
     now = (now or datetime.now(IST)).astimezone(IST)
-    session = await create_session(request_token, now)
-    synced = await sync_book(now)
+    started = monotonic()
+    try:
+        session = await asyncio.wait_for(create_session(request_token, now), LOGIN_SESSION_MAX_SEC)
+    except asyncio.TimeoutError as exc:
+        raise BrokerError("network", "session exchange timed out") from exc
+    task, fills_read = _start_review_sync(now, settings.DB_PATH)
+    try:
+        await asyncio.wait_for(asyncio.shield(fills_read.wait()),
+                               max(0.0, LOGIN_DEADLINE_SEC - (monotonic() - started)))
+    except asyncio.TimeoutError:
+        logger.warning("partner_zerodha_login_answered_before_fills")
+    if task.done() and not task.cancelled() and isinstance(task.exception(), BrokerError):
+        raise task.exception()
+    return {"connected": True, **session, "sync": review_sync(now), "automatic_execution": False}
+
+
+_review_task: Optional[asyncio.Task] = None
+_review_state: dict = {"state": "idle"}
+
+
+def _set_review_state(state: str, **fields) -> None:
+    _review_state.update(state=state, **fields)
+
+
+def _start_review_sync(now: datetime, db_path: str) -> tuple[asyncio.Task, asyncio.Event]:
+    """One background read at a time; a second login joins the running one."""
+    global _review_task, _review_state
+    fills_read = asyncio.Event()
+    if (_review_task is not None and not _review_task.done()
+            and _review_task.get_loop() is asyncio.get_running_loop()):
+        fills_read.set()          # the running read stores this session's book; its state is shown
+        return _review_task, fills_read
+    _review_state = {"state": "reading", "day": now.date().isoformat(), "started_at": now.isoformat()}
+    _review_task = asyncio.create_task(_review_sync_run(now, db_path, fills_read))
+    _review_task.add_done_callback(_review_sync_done)
+    return _review_task, fills_read
+
+
+def _review_sync_done(task: asyncio.Task) -> None:
+    if not task.cancelled() and task.exception() is not None:
+        logger.warning("partner_review_sync_failed err=%s", type(task.exception()).__name__)
+
+
+async def _review_sync_run(now: datetime, db_path: str, fills_read: asyncio.Event) -> dict:
+    try:
+        result, orders = await _sync_fills(now, db_path)
+    except Exception as exc:
+        _set_review_state("failed", error=getattr(exc, "code", type(exc).__name__),
+                          finished_at=datetime.now(IST).isoformat())
+        raise
+    finally:
+        fills_read.set()
+    _set_review_state("enriching", option_orders=result["option_orders"])
+    try:
+        extra = await asyncio.wait_for(_enrich(db_path, orders, result, now), ENRICH_BUDGET_SEC)
+    except asyncio.TimeoutError:
+        logger.warning("partner_review_enrich_deadline sec=%.0f -- the review shows what was read",
+                       ENRICH_BUDGET_SEC)
+        extra = {"details": "deadline", "paths": "deadline"}
     note = "before_close"
-    today = synced["days"].get(now.date().isoformat())
+    today = result["days"].get(now.date().isoformat())
     if today and today["complete"]:
         from partner_coach import partner_coach_eod
         try:
@@ -1003,7 +1085,25 @@ async def on_login(request_token: str, now: Optional[datetime] = None) -> dict:
         except Exception as exc:
             logger.warning("partner_zerodha_coach_note_failed err=%s", type(exc).__name__)
             note = "failed"
-    return {"connected": True, **session, **synced, "note": note, "automatic_execution": False}
+    _set_review_state("partial" if extra["details"] == "deadline" else "done", note=note,
+                      finished_at=datetime.now(IST).isoformat())
+    return {**result, **extra, "note": note}
+
+
+def review_sync(now: Optional[datetime] = None) -> dict:
+    """Today's background review read: idle, reading, enriching, done,
+    partial (the budget ran out) or failed. No token, no broker data."""
+    now = (now or datetime.now(IST)).astimezone(IST)
+    if _review_state.get("day") != now.date().isoformat():
+        return {"state": "idle"}
+    return {k: v for k, v in _review_state.items()
+            if k in ("state", "started_at", "finished_at", "option_orders", "note", "error")}
+
+
+async def wait_review_sync() -> Optional[dict]:
+    """Await the latest background read and return its result (tests)."""
+    task = _review_task
+    return await task if task is not None else None
 
 
 def status(now: Optional[datetime] = None) -> dict:

@@ -317,7 +317,7 @@ def test_rules_kept_count_process_not_money_and_the_stop_rule_needs_known_stops(
         {"key": "cards_only", "name": "Traded only the cards", "kept": 1, "of": 1}]}
     assert story["option_lines"][:2] == [
         "Before you bought: up 31% in 15 minutes (from ₹100).",
-        f"While you held (16 min): best ₹131 at 10:30 (₹0 open), worst ₹110 at 10:45 ({rs(-21 * 75)} open)."]
+        f"While you held (16 min): best ₹131 at 10:31 (₹0 open), worst ₹110 at 10:45 ({rs(-21 * 75)} open)."]
     assert story["option_lines"][-1] == f"Charges: {pc._amt(story['numbers']['charges'])} on a {rs(-21 * 75)} price move."
     assert story["chart"]["marks"][0]["kind"] == "buy"
     stats = review["stats"]
@@ -592,7 +592,8 @@ async def test_a_login_reads_details_and_paths_and_the_review_shows_them(kite, p
         return [(b[0].strftime("%Y-%m-%d %H:%M:%S"), *b[1:]) for b in bars]
 
     monkeypatch.setattr(ptp, "kite_minutes", minutes)
-    result = await zerodha.on_login("reqtok12", T(15, 52))
+    await zerodha.on_login("reqtok12", T(15, 52))
+    result = await zerodha.wait_review_sync()
     assert result["note"] == "sent" and result["paths"][DAY][ptp.BASIS_CANDLES] == 1
     assert result["details"]["histories"] == 1 and result["details"]["account"] is True
     view = await pc.load_partner_coach(db, days=3, now=T(16, 0))
@@ -687,3 +688,30 @@ def test_the_lesson_tells_at_most_three_other_mistakes_and_keeps_the_rest_as_les
     assert timeline[:3] == ["You raised your buy price from ₹126 to ₹129", "You raised your buy price from ₹129 to ₹131",
                             "You bought 2 lots at ₹131"]
     assert all("sort_key" not in e for e in review["trades"][0]["timeline"])
+
+
+def test_a_short_hold_gets_no_price_from_outside_the_holding():
+    """[A22-P5] The audit's case: held 10:00:40-10:00:50. The 10:00 candle's
+    high and low may have come before the buy or after the sale, so they are
+    never "best" or "worst while you held"; they are shown apart, uncertain."""
+    bars = [(T(10, 0), 100.0, 140.0, 90.0, 100.0)] + [
+        (T(10, m), 100.0, 101.0, 99.0, 100.0) for m in range(1, 30)]
+    view = _view([], [off("BUY", T(10, 0, 40), 100.0), off("SELL", T(10, 0, 50), 101.0)], context=ctx(bars))
+    insight = off_item(view)["insight"]
+    assert "best" not in insight and "worst" not in insight
+    assert insight["edge"] == {"high": 140.0, "low": 90.0, "uncertain": True}
+    assert ("In the minute you bought or sold it also traded at ₹90–₹140; that may have been before your buy or "
+            "after your sale.") in pl.option_lines(insight)
+
+
+def test_best_and_worst_while_held_come_from_whole_minutes_only():
+    # Bought 10:00:40, sold 10:05:10. Whole minutes 10:01-10:04 ran 100-110; the 10:00 spike to 140
+    # and the 10:05 drop to 80 sit in the buy and sale minutes.
+    bars = ([(T(10, 0), 100.0, 140.0, 90.0, 100.0)]
+            + [(T(10, m), 100.0 + m, 102.0 + 2 * m, 99.0 + m, 101.0 + m) for m in range(1, 5)]
+            + [(T(10, 5), 105.0, 106.0, 80.0, 82.0)] + [(T(10, m), 82.0, 83.0, 81.0, 82.0) for m in range(6, 40)])
+    view = _view([], [off("BUY", T(10, 0, 40), 100.0), off("SELL", T(10, 5, 10), 104.0)], context=ctx(bars))
+    insight = off_item(view)["insight"]
+    assert (insight["best"]["price"], insight["best"]["at"]) == (110.0, "10:04")
+    assert (insight["worst"]["price"], insight["worst"]["at"]) == (100.0, "10:01")
+    assert insight["edge"] == {"high": 140.0, "low": 80.0, "uncertain": True}

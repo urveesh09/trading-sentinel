@@ -242,6 +242,13 @@ def option_lines(insight: Optional[dict]) -> list[str]:
         span = "to the close" if insight.get("held_to_close") else f"{insight['hold_min']} min"
         lines.append(f"While you held ({span}): best {_px(best['price'])} at {best['at']} ({_rs(best['move_rs'])} "
                      f"open), worst {_px(worst['price'])} at {worst['at']} ({_rs(worst['move_rs'])} open).")
+    edge = insight.get("edge")
+    if edge:
+        # [A22-P5] Seen only in the minute of the buy or the sale: maybe outside the holding.
+        span = (f"{_px(edge['low'])}–{_px(edge['high'])}" if edge["high"] - edge["low"] >= 0.05
+                else _px(edge["low"]))
+        lines.append(f"In the minute you bought or sold it also traded at {span}; that may have been before your "
+                     "buy or after your sale.")
     after = insight.get("after")
     if after:
         between = (f" (it traded {_px(after['low'])}–{_px(after['high'])} in between)"
@@ -319,7 +326,7 @@ def story(item: dict) -> dict:
             "mistakes": [f["title"] for f in item["flags"]], "good": [g["title"] for g in item.get("positives", [])],
             "checks": trade_checks(item), "option_lines": option_lines(insight), "chart": insight.get("chart"),
             "numbers": {k: insight.get(k) for k in ("hold_min", "held_to_close", "best", "worst", "before", "after",
-                                                   "risk", "gross_pnl", "charges", "basis")} if insight else None}
+                                                   "risk", "gross_pnl", "charges", "basis", "edge")} if insight else None}
 
 
 # ---------------------------------------------------------------------------

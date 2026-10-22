@@ -1,5 +1,16 @@
 # Handover receipt and operator checklist
 
+## October 22 — A22 audit follow-up (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] P1 broker backstop: intent before send, an unreadable ledger holds the exit, uncertain sends reconciled from the order book (live only).
+- [x] P2 Momentum terminal pass: history fetched with no write lock held; one short transaction per ticker.
+- [x] P2 exit-path recorder: bounded queue, one guarded writer thread, per-session cap, drops counted (ops `fno_exit_paths`), drained on shutdown; settings bound on each line.
+- [x] P2 exit-arm evaluator: scores only bound, same-contract, gap-free evidence whose CURRENT reproduces the live exit; mismatches listed.
+- [x] P2 partner login: one 35 s deadline; deeper read and coach note in the background; the review shows progress.
+- [x] P2 coaching extrema: whole minutes inside the holding only; buy/sale-minute prices shown apart as uncertain.
+- [x] Enrichments: Smart V1/V2 `versus` (opportunities, stop-outs, missed winners, fees, hold, rupee-hours); scope labels; version separation verified.
+- [x] Tests: engine 5451 passed, 4 skipped (full suite, Windows winvenv); client 60 node tests passed, vite build ok; gateway partner-kite jest 7 passed.
+- [ ] Deployed: no. After deploy: ops `fno_exit_paths` counters, `params` on first exit-path lines, partner login status line, `versus` in `/experiments/penny-smart`.
 ## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit `ace52ab`, Dev, pushed, not deployed)
 
 - [x] F&O profit lock needs a second look ≥ 8 s after the first under its floor (rollback `FNO_PROFIT_LOCK_CONFIRM_SEC=0`).

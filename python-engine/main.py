@@ -2449,6 +2449,9 @@ async def lifespan(app: FastAPI):
     # makes the exit deterministic.
     _LIVENESS_TICK_STOP.set()
     _liveness_thread.join(timeout=10)
+    # [A22-R6] Drain the F&O exit-path writer (research looks queued last).
+    import fno_exit_paths
+    fno_exit_paths.close(timeout=5.0)
     # [O13-R1] Last: the next startup can tell a deliberate stop from a death.
     try:
         from lifecycle_receipts import mark_clean_shutdown
