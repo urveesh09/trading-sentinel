@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 22 (evening) — T22-BG held background work, T22-U universe history scope (done, Dev, commit `3a9f674`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 22 (evening) — T22-BG held background work, T22-U universe history scope (done, Dev, commit `3a9f674`, branch `codex/production-correction-hedge-p0`, pushed, deployed 2026-10-22 19:38 IST by PR #114 (`582d7a5`))
 
 - Problem:
   - T22-BG: verifying A22, the full suite passed and then hung at exit for
@@ -60,8 +60,19 @@
 - Remaining:
   - [ ] Compare the first post-deploy refresh's ranked universe and quality
     audit with the day before. They should differ only by market moves.
+  - [ ] Engine stop grace. On this Docker host `docker stop` kills after
+    about 3 s (a throwaway container measured 3.4 s), and compose sets no
+    `stop_grace_period`. At the 19:38 redeploy the engine got SIGTERM and
+    then SIGKILL 3 s later (exit 137), while the gateway and agent exited 0.
+    So the engine's shutdown did not run: no clean-shutdown receipt
+    (startup logged `cause=unclean_stop`), no exit-path drain, no
+    background drain. Of the 10 startups since 2026-10-17, only 2 followed
+    a recorded `clean_shutdown`; some others followed host shutdowns.
+    Next: set `stop_grace_period` for python-engine and
+    bound uvicorn's own graceful wait, then check `clean_shutdown` on the
+    following redeploy.
 
-## October 22 — A22 audit follow-up (done, Dev, commit `ffa979c`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 22 — A22 audit follow-up (done, Dev, commit `ffa979c`, branch `codex/production-correction-hedge-p0`, pushed, deployed 2026-10-22 19:38 IST by PR #114 (`582d7a5`))
 
 - Problem: the Oct 22 audit of PRs #112–113 found two order-safety defects
   in the live broker backstop and five follow-ups. The follow-ups are the

@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 22 (evening) — T22-BG background work is held and drained; T22-U the universe refresh reads only usable history (actual behavior, Dev, commit `3a9f674`)
+## October 22 (evening) — T22-BG background work is held and drained; T22-U the universe refresh reads only usable history (actual behavior, commit `3a9f674`, deployed 2026-10-22 by PR #114)
 
 - **T22-BG fire-and-forget work is held until done.**
   - Found while verifying A22: the full suite passed (5,451) and then the
@@ -55,7 +55,7 @@
     No caller depended on that: a request ending today misses the cache
     until today's candle exists.
 
-## October 22 — A22 audit follow-up: broker-stop safety, short write locks, bounded exit evidence, honest research and partner timing (actual behavior, Dev, commit `ffa979c`)
+## October 22 — A22 audit follow-up: broker-stop safety, short write locks, bounded exit evidence, honest research and partner timing (actual behavior, commit `ffa979c`, deployed 2026-10-22 by PR #114)
 
 The Oct 22 audit of PRs #112–113 (Production 33065ed) reported two order-safety
 defects and five follow-ups. Each was reproduced in Dev before the fix, and each

@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 22 (evening) — T22-BG / T22-U (commit `3a9f674`, Dev, pushed, not deployed)
+## October 22 (evening) — T22-BG / T22-U (commit `3a9f674`, Dev, pushed, deployed 2026-10-22 19:38 IST by PR #114 (`582d7a5`))
 
 - [x] Suite hang at exit diagnosed: a leaked aiosqlite worker from an unheld startup catch-up. Not caused by A22; A22 itself passed in full (5,451).
 - [x] Fourteen fire-and-forget sites are held via `background_tasks.spawn` (ledger write, post-login init, catch-ups, alerts); failures are logged; shutdown drains.
@@ -8,9 +8,11 @@
 - [x] `aiosqlite` pinned 0.20.0 → 0.21.0: 0.20 leaked a worker when a connect was cancelled mid-open (proven by a test that fails on 0.20.0). The engine image must be rebuilt to pick it up.
 - [x] Universe refresh reads history only for quoted in-band EQ symbols; universe identical over 40 randomised sets; Production estimate 10,235 → ~956 reads.
 - [x] Tests: engine 5460 passed, 4 skipped (full suite, Windows winvenv, aiosqlite 0.21.0; exit 0, no leaked worker); client unchanged (60 passed, vite build ok).
-- [ ] Deployed: no. After deploy: `penny_universe_refresh_done elapsed` in minutes, `penny_universe_history_scope`, `count=100`, no `Task was destroyed` on restart.
+- [x] Deployed 2026-10-22 19:38 IST (PR #114, `582d7a5`). Images were built one service at a time (a combined build was stopped for low host memory). `verify_deployment.py` passed for the engine, gateway and agent; the engine image has aiosqlite 0.21.0; no `Task was destroyed` or errors on start; `/health` shows the release and `fno_exit_paths` (recording, 0). `trading_ready=false` is the standing `order_execution_unverified` (no real broker order yet).
+- [ ] Next session (2026-10-23): `penny_universe_refresh_done elapsed` in minutes, `penny_universe_history_scope fetch≈900–1,000`, `count=100`, quality audit like today's.
+- [ ] Engine stop grace: SIGKILL came 3 s after SIGTERM at this redeploy (exit 137, `cause=unclean_stop`); see the plan.
 
-## October 22 — A22 audit follow-up (commit `ffa979c`, Dev, pushed, not deployed)
+## October 22 — A22 audit follow-up (commit `ffa979c`, Dev, pushed, deployed 2026-10-22 19:38 IST by PR #114 (`582d7a5`))
 
 - [x] P1 broker backstop: intent before send, an unreadable ledger holds the exit, uncertain sends reconciled from the order book (live only).
 - [x] P2 Momentum terminal pass: history fetched with no write lock held; one short transaction per ticker.
@@ -20,7 +22,8 @@
 - [x] P2 coaching extrema: whole minutes inside the holding only; buy/sale-minute prices shown apart as uncertain.
 - [x] Enrichments: Smart V1/V2 `versus` (opportunities, stop-outs, missed winners, fees, hold, rupee-hours); scope labels; version separation verified.
 - [x] Tests: engine 5451 passed, 4 skipped (full suite, Windows winvenv); client 60 node tests passed, vite build ok; gateway partner-kite jest 7 passed.
-- [ ] Deployed: no. After deploy: ops `fno_exit_paths` counters, `params` on first exit-path lines, partner login status line, `versus` in `/experiments/penny-smart`.
+- [x] Deployed 2026-10-22 19:38 IST (PR #114); `/health` has the `fno_exit_paths` counters.
+- [ ] Still to see on live use: `params` on the first exit-path line of an F&O position, the partner login status line, `versus` in `/experiments/penny-smart`.
 
 ## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit `ace52ab`, Dev, pushed, not deployed)
 
