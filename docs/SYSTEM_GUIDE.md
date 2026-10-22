@@ -1,5 +1,60 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 22 (evening) — T22-BG background work is held and drained; T22-U the universe refresh reads only usable history (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **T22-BG fire-and-forget work is held until done.**
+  - Found while verifying A22: the full suite passed (5,451) and then the
+    process never exited (3.5 h). The cause was a registration-time startup
+    catch-up: the EDGE scan between 09:30 and 15:15 IST, the EDGE exit after
+    15:15, the accept watchdog after 15:45. It was started with a bare
+    `create_task`, and the test's loop closed while the task was inside
+    `aiosqlite.connect()`. aiosqlite 0.20's connection worker is a
+    non-daemon thread that waits for `close()`, so the interpreter could
+    never exit.
+  - The same pattern was a Production risk. asyncio holds only a weak
+    reference to a task, so an unreferenced one can be collected mid-run.
+    Fourteen sites spawned work that way, among them the Penny ledger write
+    of realised P&L, `post_login_initialization` (which runs the morning
+    bootstrap), the startup catch-ups and the operator alerts.
+  - New `background_tasks.spawn(coro, name=, loop=)` holds each task until
+    it is done and logs a failure as `background_task_failed name=…`.
+    Before, a failed ledger write vanished unlogged. All fourteen sites use
+    it. Each site still resolves its loop before it builds the coroutine.
+  - Shutdown gives background tasks 2 s to finish, then cancels them and
+    waits up to 3 s for them to unwind, before the exit-path writer drains.
+    That is at most 5 s, inside Docker's default 10 s stop grace.
+    Cancelled names are logged as `background_tasks_cancelled`.
+  - Tests: conftest cancels a test's background tasks while its loop is
+    still open. At session end it stops any leaked aiosqlite worker and
+    prints the count, so a leak can no longer hang a run.
+  - **aiosqlite 0.20.0 → 0.21.0.** In 0.20 `_connect` caught only
+    `Exception`, so a cancellation while a connection was opening left its
+    worker thread waiting forever. Such a cancellation can come from a
+    drain or a `wait_for` deadline. 0.21.0 is the maintenance release with
+    exactly that fix (#317), and `Connection` is unchanged otherwise.
+  - Production showed 17 engine threads after 12 h, so the leak was rare
+    there. The pin closes it.
+- **T22-U the universe refresh reads daily history only for symbols that can
+  enter the universe.**
+  - Production 2026-10-22: `penny_universe_refresh` ran 07:51–08:51
+    (3,611 s). It read 10,235 histories, of which 6,085 were skipped:
+    5,351 empty and 734 short, mostly state-government bonds (`…-SG`).
+  - History only fills candidates. So it is now read only for quoted EQ
+    symbols inside `PENNY_PRICE_MIN`–`PENNY_PRICE_MAX` that are not
+    bonds/ETFs or non-EQ series (`_quote_screen`). The candidate loop uses
+    the same screen, so the two cannot drift.
+  - New log line `penny_universe_history_scope fetch=… instruments=…`.
+  - The written universe is unchanged: it was identical to the previous
+    code over 40 randomised instrument sets with bonds, ETFs, SME/BE,
+    unquoted symbols, band edges, and empty or short histories.
+  - About 956 symbols in Production's daily cache closed inside ₹1–₹55, so
+    the refresh should take minutes instead of an hour. That also frees
+    Kite's shared 3 req/s history limit before the open, and after it on a
+    late-login day.
+  - Symbols outside the band are no longer pre-warmed in the daily cache.
+    No caller depended on that: a request ending today misses the cache
+    until today's candle exists.
+
 ## October 22 — A22 audit follow-up: broker-stop safety, short write locks, bounded exit evidence, honest research and partner timing (actual behavior, Dev, commit `ffa979c`)
 
 The Oct 22 audit of PRs #112–113 (Production 33065ed) reported two order-safety
@@ -104,6 +159,7 @@ new regression test fails on the previous code:
     paired comparisons total pre-`RULE_SINCE` entries apart.
   - Smart V2 is scored from 2026-10-22 on its own events.
   - Neither pools an older rule's winners into the new version.
+
 ## October 21 (night, 3) — SX-F1 confirmed F&O profit lock + live-clock exit evidence; SX-P2 PEN_SMART_V2 (actual behavior, Dev, commit `ace52ab`)
 
 Owner (Oct 21 night): "take the relevant calls … make it smart, not a

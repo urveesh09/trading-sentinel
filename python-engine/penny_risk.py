@@ -204,9 +204,10 @@ class PennyRiskEngine:
                 except RuntimeError:
                     loop = None
                 if loop is not None:
-                    loop.create_task(
-                        self._ledger_writer(ticker or "PENNY", net)
-                    )
+                    # [T22-BG] Held until written; a failed write is logged.
+                    import background_tasks
+                    background_tasks.spawn(self._ledger_writer(ticker or "PENNY", net),
+                                           name="penny_ledger_write", loop=loop)
                 # If no running loop, we silently drop the write -- the
                 # in-memory daily_pnl is still updated for risk gating.
             except Exception as e:

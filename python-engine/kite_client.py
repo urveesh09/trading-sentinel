@@ -9,6 +9,7 @@ import time
 import uuid
 from typing import Callable, Optional
 import httpx
+import background_tasks
 import sqlite3
 import pandas as pd
 import structlog
@@ -1945,7 +1946,7 @@ class KiteClient:
 
         try:
             asyncio.get_running_loop()
-            asyncio.create_task(_send())
+            background_tasks.spawn(_send(), name="kite_operator_alert")
         except RuntimeError:
             # No running loop (sync/test context) -- the ERROR log above
             # already carries the hint; skip the Telegram hop.

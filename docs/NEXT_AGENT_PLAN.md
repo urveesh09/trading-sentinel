@@ -1,5 +1,66 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 22 (evening) — T22-BG held background work, T22-U universe history scope (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem:
+  - T22-BG: verifying A22, the full suite passed and then hung at exit for
+    3.5 h. A startup catch-up spawned by `register_penny_scheduler_jobs` was
+    destroyed inside `aiosqlite.connect()`, whose non-daemon worker thread
+    then waited forever. The hang depends on the time of day, which is why
+    some runs exited. Fourteen engine sites used bare `create_task`, which
+    asyncio holds only weakly. Among them are the Penny ledger write and
+    `post_login_initialization`.
+  - T22-U: the T21-B universe refresh took 60 min on Production because it
+    read daily history for all 10,235 NSE instruments; 6,085 were unusable.
+- Files:
+  - New `background_tasks.py` (`spawn`, `pending`, `drain`).
+  - Spawn sites in `scheduler_setup.py` (3 startup catch-ups), `main.py`
+    (4, plus `drain` at shutdown), `routes_ops.py` (3), `engine_auth.py`,
+    `kite_client.py`, `market_calendar.py`, `penny_risk.py` (ledger write)
+    and `scheduler_telemetry.py`.
+  - `tests/conftest.py`: per-test drain hook and session-end connection
+    guard.
+  - `requirements.txt`: `aiosqlite==0.21.0`. 0.20 leaked a worker thread
+    when a connect was cancelled mid-open; 0.21.0 fixes it (#317).
+  - `penny_universe.py`: `_quote_screen`, history scope, and the candidate
+    loop on the same screen.
+  - Tests: new `test_background_tasks.py` (8) and
+    `test_penny_universe_refresh.py` (+1).
+- Acceptance (Dev):
+  - A bare task parked on its own future is collected by `gc.collect()`; a
+    spawned one is held.
+  - `drain` unwinds a task inside an open aiosqlite connection, and its
+    worker thread stops.
+  - A finishing write gets its grace period.
+  - A failed task is logged.
+  - No running loop closes the coroutine.
+  - The Penny ledger write and every scheduler catch-up are held. These two
+    tests fail on the previous code.
+  - A connect cancelled mid-open leaves no worker. This fails on aiosqlite
+    0.20.0 and passes on 0.21.0.
+  - The history-scope test fails on the previous code, which fetched bonds,
+    ETFs and unquoted symbols.
+  - Old and new refresh write identical universes over 40 randomised sets
+    (history calls 16,000 → 3,872).
+  - Full suite: 5460 passed, 4 skipped (full suite, Windows winvenv, aiosqlite 0.21.0; exit 0, no leaked worker); the process exits on its own (exit code
+    recorded).
+- Configuration and migration: no settings and no schema change. One
+  dependency pin, `aiosqlite` 0.20.0 → 0.21.0; the engine image rebuild
+  picks it up. New log lines are
+  `penny_universe_history_scope`, `background_task_failed` and
+  `background_tasks_cancelled`.
+- Rollout: merge and rebuild the engine. After deploy:
+  - the next `penny_universe_refresh_done` shows elapsed in minutes, with
+    `penny_universe_history_scope fetch≈900–1,000`;
+  - `penny_universe_refreshed count=100` and the quality audit are
+    unchanged;
+  - an engine restart logs no `Task was destroyed`.
+- Rollback: a code revert of this commit, including the pin. Nothing
+  persistent changes.
+- Remaining:
+  - [ ] Compare the first post-deploy refresh's ranked universe and quality
+    audit with the day before. They should differ only by market moves.
+
 ## October 22 — A22 audit follow-up (done, Dev, commit `ffa979c`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: the Oct 22 audit of PRs #112–113 found two order-safety defects
@@ -71,6 +132,7 @@
   - [ ] Score V2 against V1 from 2026-10-22 with `versus` (≥ 30 V2 closes).
   - [ ] Live F&O stays off. The backstop changes are a precondition for it,
     not a go-live decision.
+
 ## October 21 (night, 3) — SX-F1 confirmed lock + exit evidence, SX-P2 PEN_SMART_V2 (done, Dev, commit `ace52ab`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: owner delegated the open calls (profit lock, Smart Penny, partner
@@ -215,7 +277,8 @@
     a few nights.
   - [ ] T21-B (penny universe refresh about 60 min) and F21-S (Smart 8W/40L)
     are not changed here: Smart's policy files are hashed and stay as they
-    are; profile the refresh's symbol types separately.
+    are; profile the refresh's symbol types separately. (T21-B profiled
+    and done as T22-U on 2026-10-22; F21-S stays open.)
   - [ ] F21-Q (old pending signals, unsynced orders, September deadletters)
     needs the owner's dated disposition; nothing is resent automatically.
 ## October 21 (night) — O21-PL the partner's review page and explained lessons (done, Dev, commit `6f882f0`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)

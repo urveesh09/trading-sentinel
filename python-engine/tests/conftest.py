@@ -17,6 +17,37 @@ from datetime import datetime, date
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
+# -- Background work and connection threads [T22-BG 2026-10-22] -------
+# Engine background work a test starts (registering the scheduler jobs
+# after 09:30 IST starts a startup catch-up) must not be left pending when
+# pytest-asyncio closes the test's loop: a task destroyed inside
+# `aiosqlite.connect()` leaves a non-daemon worker thread, and the
+# interpreter can then never exit (Oct 22: a passing suite hung 3.5 h).
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_pyfunc_call(pyfuncitem):
+    yield
+    import background_tasks
+    for loop in {task.get_loop() for task in background_tasks.pending()}:
+        if not loop.is_closed() and not loop.is_running():
+            loop.run_until_complete(background_tasks.drain(grace=0, timeout=5.0))
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Last guard: stop any connection worker a test leaked, and say so."""
+    import threading
+    leaked = [thread for thread in threading.enumerate()
+              if isinstance(thread, aiosqlite.Connection) and thread.is_alive()]
+    for connection in leaked:
+        stop = getattr(connection, "_stop_running", None)
+        if stop is not None:
+            stop()
+    reporter = session.config.pluginmanager.get_plugin("terminalreporter")
+    if leaked and reporter is not None:
+        reporter.write_line(f"conftest: stopped {len(leaked)} leaked aiosqlite connection thread(s) "
+                            "so the run can exit", yellow=True)
+
+
 # -- Fake Settings ----------------------------------------------------
 
 @pytest.fixture(autouse=True)

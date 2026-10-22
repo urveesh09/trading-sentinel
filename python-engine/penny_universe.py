@@ -101,6 +101,33 @@ def _is_non_equity_symbol(symbol: str) -> bool:
     return False
 
 
+# NSE series suffixes the refresh rejects even when Kite reports series=EQ.
+_SEGMENT_SUFFIXES = ("-SM", "-ST", "-BE", "-BZ", "-IL", "-GS")
+
+
+def _quote_screen(inst: dict, quotes) -> tuple:
+    """[T22-U 2026-10-22] The refresh's per-instrument screen, in its order.
+
+    Returns (series, prev_close, reject); reject is None for a candidate, else
+    "no_quote", "segment" (non-EQ series or suffix), "non_equity" (bond, ETF)
+    or "no_price". Used both to choose which symbols need daily history and to
+    build the candidates, so the two cannot drift apart.
+    """
+    q = quotes.get(inst["instrument_token"]) if isinstance(quotes, dict) else None
+    series = (inst.get("series") or "EQ").upper()
+    if not q:
+        return series, None, "no_quote"
+    sym = inst["tradingsymbol"]
+    if series != "EQ" or sym.endswith(_SEGMENT_SUFFIXES):
+        return series, None, "segment"
+    if _is_non_equity_symbol(sym):
+        return series, None, "non_equity"
+    prev_close = q.get("ohlc", {}).get("close") or q.get("last_price")
+    if prev_close is None:
+        return series, None, "no_price"
+    return series, prev_close, None
+
+
 class UniverseError(Exception):
     """Raised when the penny JSON is missing, malformed, or invalid."""
 
@@ -743,6 +770,7 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
        or fall back to penny_company_data.json if Kite endpoint missing
     4. Apply PennyUniverse eligibility gates (price band, liquidity, promoter, PB)
     5. Compute 20d momentum + 52w-low distance + realized vol per ticker
+       (daily history only for quoted EQ symbols inside the price band)
     6. Rank via composite score
     7. Write top_n to penny_static.json
     8. Emit penny_universe_quality_audit (2026-06-25) so operators can
@@ -865,7 +893,21 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
         # Pre-existing fields from `corp_by_sym` are NOT overwritten --
         # history-derived values only fill where the corp record is missing
         # the field. See docs/deviations/2026-06-26-penny-corp-from-history.md
-        symbols_for_metrics = [inst["tradingsymbol"] for inst in instruments]
+        # [T22-U 2026-10-22] Daily history only for symbols that can enter the
+        # universe: quoted, EQ series, not a bond/ETF, previous close inside the
+        # price band -- the same screen the candidate loop below applies. History
+        # only fills candidates, so the written universe is unchanged. On
+        # 2026-10-22 the refresh read 10,235 histories in 3,590 s; 6,085 were
+        # bonds and other instruments with no usable daily bars.
+        screened = [(inst, *_quote_screen(inst, quotes)) for inst in instruments]
+        symbols_for_metrics = list(dict.fromkeys(
+            inst["tradingsymbol"] for inst, _series, prev_close, reject in screened
+            if reject is None and settings.PENNY_PRICE_MIN <= prev_close <= settings.PENNY_PRICE_MAX
+        ))
+        logger.info(
+            "penny_universe_history_scope fetch=%d instruments=%d (quoted EQ inside %.2f-%.2f)",
+            len(symbols_for_metrics), len(instruments), settings.PENNY_PRICE_MIN, settings.PENNY_PRICE_MAX,
+        )
         try:
             history_metrics = await compute_metrics_from_history(kite, symbols_for_metrics)
         except Exception as e:
@@ -902,57 +944,42 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
         # [PENNY-SG-FILTER 2026-07-02] Defence layer 1 counter.
         non_equity_rejected = 0
         candidates = []
-        for inst in instruments:
-            sym = inst["tradingsymbol"]
-            tok = inst["instrument_token"]
-            q = quotes.get(tok) if isinstance(quotes, dict) else None
-            if not q:
-                continue
-            # Standard NSE EQ segments: EQ only. Anything else (SM, BE,
-            # BZ, IL, GS) is a non-standard series; reject.
-            series = (inst.get("series") or "EQ").upper()
-            if series != "EQ":
+        for inst, series, prev_close, reject in screened:
+            # Standard NSE EQ segments only: a non-EQ series (SM, BE, BZ, IL,
+            # GS) or, belt-and-braces, such a tradingsymbol suffix with
+            # series=EQ is rejected ("segment"). [PENNY-SG-FILTER 2026-07-02]
+            # Defence layer 1: Sovereign Gold Bonds, ETFs and other
+            # non-equity instruments Kite surfaces with instrument_type=EQ
+            # ("non_equity"). See `_quote_screen` and the module comment.
+            if reject == "segment":
                 sm_be_rejected += 1
                 continue
-            # Belt-and-braces: some Kite responses report series=EQ for
-            # SME tickers too. Filter by tradingsymbol suffix as well.
-            for bad_suffix in ("-SM", "-ST", "-BE", "-BZ", "-IL", "-GS"):
-                if sym.endswith(bad_suffix):
-                    sm_be_rejected += 1
-                    break
-            else:
-                # [PENNY-SG-FILTER 2026-07-02] Defence layer 1: drop
-                # Sovereign Gold Bonds, ETFs and other non-equity
-                # instruments that Kite sometimes surfaces with
-                # instrument_type=EQ. Without this, today's universe
-                # contained ~20 SG bonds + 4 ETFs that polluted the
-                # top-100 ranker. See module-level comment.
-                if _is_non_equity_symbol(sym):
-                    non_equity_rejected += 1
-                    continue
-                prev_close = q.get("ohlc", {}).get("close") or q.get("last_price")
-                if prev_close is None:
-                    continue
-                corp_rec = corp_by_sym.get(sym, {})
-                tv_20d = corp_rec.get("median_traded_value_20d", 0) or 0
-                cand = {
-                    "symbol": sym,
-                    "tick_size": inst.get("tick_size"),
-                    "tick_size_as_of": datetime.now(ZoneInfo("Asia/Kolkata")).date().isoformat(),
-                    "series": series,
-                    "prev_close": prev_close,
-                    "promoter_holding_pct": corp_rec.get("promoter_holding_pct"),
-                    "pb_ratio": corp_rec.get("pb_ratio"),
-                    "is_t2t": corp_rec.get("is_t2t", False),
-                    "is_asm": corp_rec.get("is_asm", False),
-                    "is_gsm": corp_rec.get("is_gsm", False),
-                    "median_traded_value_20d": tv_20d,
-                    # momentum metrics populated below
-                    "avg_return_20d": corp_rec.get("avg_return_20d", 0) or 0,
-                    "dist_from_52w_low_pct": corp_rec.get("dist_from_52w_low_pct", 0) or 0,
-                    "vol_20d": corp_rec.get("vol_20d", 0) or 0,
-                }
-                candidates.append(cand)
+            if reject == "non_equity":
+                non_equity_rejected += 1
+                continue
+            if reject is not None:
+                continue
+            sym = inst["tradingsymbol"]
+            corp_rec = corp_by_sym.get(sym, {})
+            tv_20d = corp_rec.get("median_traded_value_20d", 0) or 0
+            cand = {
+                "symbol": sym,
+                "tick_size": inst.get("tick_size"),
+                "tick_size_as_of": datetime.now(ZoneInfo("Asia/Kolkata")).date().isoformat(),
+                "series": series,
+                "prev_close": prev_close,
+                "promoter_holding_pct": corp_rec.get("promoter_holding_pct"),
+                "pb_ratio": corp_rec.get("pb_ratio"),
+                "is_t2t": corp_rec.get("is_t2t", False),
+                "is_asm": corp_rec.get("is_asm", False),
+                "is_gsm": corp_rec.get("is_gsm", False),
+                "median_traded_value_20d": tv_20d,
+                # momentum metrics populated below
+                "avg_return_20d": corp_rec.get("avg_return_20d", 0) or 0,
+                "dist_from_52w_low_pct": corp_rec.get("dist_from_52w_low_pct", 0) or 0,
+                "vol_20d": corp_rec.get("vol_20d", 0) or 0,
+            }
+            candidates.append(cand)
         if sm_be_rejected:
             logger.info(
                 "penny_universe_segment_filtered count=%d "
