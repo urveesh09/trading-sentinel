@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 22 (evening) — T22-BG / T22-U (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 22 (evening) — T22-BG / T22-U (commit `3a9f674`, Dev, pushed, not deployed)
 
 - [x] Suite hang at exit diagnosed: a leaked aiosqlite worker from an unheld startup catch-up. Not caused by A22; A22 itself passed in full (5,451).
 - [x] Fourteen fire-and-forget sites are held via `background_tasks.spawn` (ledger write, post-login init, catch-ups, alerts); failures are logged; shutdown drains.

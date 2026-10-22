@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 22 (evening) — T22-BG held background work, T22-U universe history scope (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 22 (evening) — T22-BG held background work, T22-U universe history scope (done, Dev, commit `3a9f674`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem:
   - T22-BG: verifying A22, the full suite passed and then hung at exit for

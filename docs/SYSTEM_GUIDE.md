@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 22 (evening) — T22-BG background work is held and drained; T22-U the universe refresh reads only usable history (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 22 (evening) — T22-BG background work is held and drained; T22-U the universe refresh reads only usable history (actual behavior, Dev, commit `3a9f674`)
 
 - **T22-BG fire-and-forget work is held until done.**
   - Found while verifying A22: the full suite passed (5,451) and then the
