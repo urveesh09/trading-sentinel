@@ -645,3 +645,33 @@ def test_penny_universe_refresh_skip_when_in_progress(monkeypatch):
         )
     finally:
         main._penny_universe_refresh_in_progress = False
+
+
+def test_history_is_read_only_for_symbols_that_can_enter_the_universe(tmp_path):
+    """[T22-U 2026-10-22] On 2026-10-22 the refresh read 10,235 daily histories
+    in 3,590 s; 6,085 were bonds and other instruments with no usable bars.
+    History only fills candidates, so it is read only for quoted EQ symbols
+    inside the price band; the written universe is unchanged."""
+    from penny_universe import refresh_from_kite
+
+    rows = [  # symbol, token, series, previous close (None: no quote)
+        ("PENNYA", 1, "EQ", 12.0), ("EDGEHI", 2, "EQ", 55.0), ("EDGELO", 3, "EQ", 1.0),
+        ("BIGCO", 4, "EQ", 820.0), ("662RJ30-SG", 5, "EQ", 25.0), ("NIFTYBEES", 6, "EQ", 25.0),
+        ("TINY-SM", 7, "EQ", 9.0), ("TTRADE", 8, "BE", 9.0), ("NOQUOTE", 9, "EQ", None),
+    ]
+    fake_kite = MagicMock()
+    fake_kite.get_instruments_nse_eq = AsyncMock(return_value=[
+        {"tradingsymbol": s, "instrument_token": t, "series": series, "tick_size": 0.01}
+        for s, t, series, _ in rows])
+    fake_kite.get_quote = AsyncMock(return_value={
+        t: {"last_price": close, "ohlc": {"close": close}} for _, t, _, close in rows if close is not None})
+    fake_kite.get_corporate_actions = AsyncMock(return_value=[])
+    fake_kite.get_historical = AsyncMock(return_value=_make_history_df(n=60, base_price=12.0))
+
+    ranked = asyncio.run(refresh_from_kite(fake_kite, str(tmp_path / "u.json"), str(tmp_path / "corp.json"),
+                                           top_n=10))
+
+    fetched = [call.args[0] for call in fake_kite.get_historical.await_args_list]
+    assert sorted(fetched) == ["EDGEHI", "EDGELO", "PENNYA"]          # band edges included
+    assert sorted(t["symbol"] for t in ranked) == ["EDGEHI", "EDGELO", "PENNYA"]
+    assert all(t["median_traded_value_20d"] > 0 for t in ranked)       # history still filled them

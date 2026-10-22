@@ -1,5 +1,138 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 22 (evening) — T22-BG held background work, T22-U universe history scope (done, Dev, commit `3a9f674`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem:
+  - T22-BG: verifying A22, the full suite passed and then hung at exit for
+    3.5 h. A startup catch-up spawned by `register_penny_scheduler_jobs` was
+    destroyed inside `aiosqlite.connect()`, whose non-daemon worker thread
+    then waited forever. The hang depends on the time of day, which is why
+    some runs exited. Fourteen engine sites used bare `create_task`, which
+    asyncio holds only weakly. Among them are the Penny ledger write and
+    `post_login_initialization`.
+  - T22-U: the T21-B universe refresh took 60 min on Production because it
+    read daily history for all 10,235 NSE instruments; 6,085 were unusable.
+- Files:
+  - New `background_tasks.py` (`spawn`, `pending`, `drain`).
+  - Spawn sites in `scheduler_setup.py` (3 startup catch-ups), `main.py`
+    (4, plus `drain` at shutdown), `routes_ops.py` (3), `engine_auth.py`,
+    `kite_client.py`, `market_calendar.py`, `penny_risk.py` (ledger write)
+    and `scheduler_telemetry.py`.
+  - `tests/conftest.py`: per-test drain hook and session-end connection
+    guard.
+  - `requirements.txt`: `aiosqlite==0.21.0`. 0.20 leaked a worker thread
+    when a connect was cancelled mid-open; 0.21.0 fixes it (#317).
+  - `penny_universe.py`: `_quote_screen`, history scope, and the candidate
+    loop on the same screen.
+  - Tests: new `test_background_tasks.py` (8) and
+    `test_penny_universe_refresh.py` (+1).
+- Acceptance (Dev):
+  - A bare task parked on its own future is collected by `gc.collect()`; a
+    spawned one is held.
+  - `drain` unwinds a task inside an open aiosqlite connection, and its
+    worker thread stops.
+  - A finishing write gets its grace period.
+  - A failed task is logged.
+  - No running loop closes the coroutine.
+  - The Penny ledger write and every scheduler catch-up are held. These two
+    tests fail on the previous code.
+  - A connect cancelled mid-open leaves no worker. This fails on aiosqlite
+    0.20.0 and passes on 0.21.0.
+  - The history-scope test fails on the previous code, which fetched bonds,
+    ETFs and unquoted symbols.
+  - Old and new refresh write identical universes over 40 randomised sets
+    (history calls 16,000 → 3,872).
+  - Full suite: 5460 passed, 4 skipped (full suite, Windows winvenv, aiosqlite 0.21.0; exit 0, no leaked worker); the process exits on its own (exit code
+    recorded).
+- Configuration and migration: no settings and no schema change. One
+  dependency pin, `aiosqlite` 0.20.0 → 0.21.0; the engine image rebuild
+  picks it up. New log lines are
+  `penny_universe_history_scope`, `background_task_failed` and
+  `background_tasks_cancelled`.
+- Rollout: merge and rebuild the engine. After deploy:
+  - the next `penny_universe_refresh_done` shows elapsed in minutes, with
+    `penny_universe_history_scope fetch≈900–1,000`;
+  - `penny_universe_refreshed count=100` and the quality audit are
+    unchanged;
+  - an engine restart logs no `Task was destroyed`.
+- Rollback: a code revert of this commit, including the pin. Nothing
+  persistent changes.
+- Remaining:
+  - [ ] Compare the first post-deploy refresh's ranked universe and quality
+    audit with the day before. They should differ only by market moves.
+
+## October 22 — A22 audit follow-up (done, Dev, commit `ffa979c`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem: the Oct 22 audit of PRs #112–113 found two order-safety defects
+  in the live broker backstop and five follow-ups. The follow-ups are the
+  Momentum terminal pass's write lock, an unbounded exit-path recorder,
+  exit-arm research that scored baseline mismatches, the partner login
+  exceeding the 45 s gateway deadline, and coaching extrema taken from
+  outside the holding. The audit also asked for opportunity-level V1/V2
+  comparison, explicit research scopes and version separation. All six
+  defects reproduced in Dev; we agreed with every finding.
+- Files:
+  - `fno_broker_backstop.py`: intent before send, `BackstopUnreadable`,
+    in-flight grace, order-book adoption.
+  - `momentum_shadow.py`: fetch outside the transaction.
+  - `fno_exit_paths.py`: bounded writer, guarded writes, counters, settings
+    binding, `close`.
+  - `fno_orchestrator.py`: passes the exit settings to the recorder.
+  - `main.py`: drains the writer on shutdown.
+  - `routes_ops.py`: `fno_exit_paths` stats.
+  - `fno_exit_cadence.py`: binding, identity, gap and reconciliation gates;
+    `LOCK_CONFIRMED`; paired deltas; coverage.
+  - `partner_broker_sync.py`: login deadline, background read,
+    `review_sync`.
+  - `routes_partner_coach.py`: `sync` in the review.
+  - `partner_insights.py` and `partner_lessons.py`: contained extrema,
+    `edge` line.
+  - `penny_smart_shadow.py`: round trips, `versus`.
+  - `standard_capital.py`: `method.scope`.
+  - Gateway `routes/partner-kite.js`: comment and log field.
+  - Client `PartnerReview.jsx` and `utils/partnerReview.js`: status line,
+    auto refresh.
+  - Tests: `test_fno_broker_backstop.py` (+4),
+    `test_oct21_audit_fixes.py` (+1), `test_fno_exit_cadence.py` (rewritten,
+    17), `test_partner_broker_sync.py` (+3, login tests updated),
+    `test_partner_insights.py` (+2), `test_penny_smart_v2.py` (comparison
+    tests rewritten, +1), `client/tests/partnerReview.test.mjs` (+1) and the
+    gateway partner-kite mock.
+- Acceptance (Dev):
+  - Every audit reproducer is a test that fails on the previous code and
+    passes now:
+    - a lost receipt never lets an exit sell blind;
+    - no intent means no send, and never two sends;
+    - an unreadable ledger holds;
+    - another writer is never locked out by a history fetch;
+    - 100 looks against a stuck disk return in < 1 s, with every drop
+      counted;
+    - a ₹0 underlying_stop never scores as CURRENT's profit lock;
+    - a slow deeper read never delays the login;
+    - a 10-second hold gets no best/worst.
+  - Expected changed text: the spike test's best is now 10:31, the first
+    whole minute after a 10:30:20 buy.
+- Configuration and migration: no new settings and no schema change. The
+  backstop `state` column gains values `PLACING` and `ALREADY_RECORDED`
+  (return only). Exit-path lines gain `params_sha` and `params`. The ops
+  snapshot gains `fno_exit_paths`; the review payload gains `sync`.
+- Rollout: merge, rebuild engine and gateway. After deploy:
+  - `fno_exit_paths` in the ops snapshot shows `written` growing with no
+    drops on the first F&O position;
+  - the first exit-path line of each position carries `params`;
+  - a partner login answers at once and the review shows "Adding your
+    order changes…" until done;
+  - `GET /experiments/penny-smart` has `versus`.
+- Rollback: `FNO_EXIT_PATH_RECORDING=false` stops recording. Everything else
+  is a code revert of this commit. The backstop acts only when live F&O is
+  enabled.
+- Remaining:
+  - [ ] Score `fno_exit_cadence` once ≥ 20 positions are scored (not merely
+    recorded) after deploy; read `skipped` and `mismatches` first.
+  - [ ] Score V2 against V1 from 2026-10-22 with `versus` (≥ 30 V2 closes).
+  - [ ] Live F&O stays off. The backstop changes are a precondition for it,
+    not a go-live decision.
+
 ## October 21 (night, 3) — SX-F1 confirmed lock + exit evidence, SX-P2 PEN_SMART_V2 (done, Dev, commit `ace52ab`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: owner delegated the open calls (profit lock, Smart Penny, partner
@@ -144,7 +277,8 @@
     a few nights.
   - [ ] T21-B (penny universe refresh about 60 min) and F21-S (Smart 8W/40L)
     are not changed here: Smart's policy files are hashed and stay as they
-    are; profile the refresh's symbol types separately.
+    are; profile the refresh's symbol types separately. (T21-B profiled
+    and done as T22-U on 2026-10-22; F21-S stays open.)
   - [ ] F21-Q (old pending signals, unsynced orders, September deadletters)
     needs the owner's dated disposition; nothing is resent automatically.
 ## October 21 (night) — O21-PL the partner's review page and explained lessons (done, Dev, commit `6f882f0`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)

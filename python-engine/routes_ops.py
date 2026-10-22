@@ -33,6 +33,8 @@ import main as _main
 
 import asyncio
 
+import background_tasks
+
 from config import settings
 from optional_ai_status import load_optional_ai_status, record_optional_ai_status
 from fno_exit_recovery import RecoveryConflict, pending_exit_intents, resolve_exit_intent
@@ -191,7 +193,7 @@ async def inject_token(payload: TokenPayload, request: Request):
     # restart away from going quiet.
     persisted = _main._persist_kite_token(payload.access_token)
     if not persisted:
-        asyncio.create_task(
+        background_tasks.spawn(
             _main._notify_operator(
                 "⚠️ TOKEN NOT PERSISTED\n\n"
                 "Trading is ARMED right now, but the token could NOT be written "
@@ -199,13 +201,14 @@ async def inject_token(payload: TokenPayload, request: Request):
                 "If the engine restarts it will come up UNARMED and every scan "
                 "will silently do nothing -- exactly the 2026-07-13 outage. "
                 "Fix the disk, then re-login to re-arm."
-            )
+            ),
+            name="token_not_persisted_alert",
         )
 
     # Fire-and-forget: return 200 immediately so node-gateway's 2-second
     # AbortController does not trigger retries that spawn concurrent screener runs.
     # _main.post_login_initialization runs in the background (Q4 behaviour is preserved).
-    asyncio.create_task(_main.post_login_initialization())
+    background_tasks.spawn(_main.post_login_initialization(), name="post_login_initialization")
     return {"status": "ok", "token_persisted": persisted}
 
 
@@ -392,6 +395,12 @@ async def health_check():
                 snap["smart_penny_v2"] = smart_exposure_snapshot(settings.DB_PATH, policy=SMART_V2_VERSION)
             except Exception as exc:
                 snap["smart_penny_v2"] = {"status": "UNREADABLE", "error_type": type(exc).__name__}
+        # [A22-R6] The F&O exit-path recorder: looks written and dropped by reason.
+        try:
+            import fno_exit_paths
+            snap["fno_exit_paths"] = fno_exit_paths.stats()
+        except Exception as exc:
+            snap["fno_exit_paths"] = {"status": "UNREADABLE", "error_type": type(exc).__name__}
         try:
             from halt_switch import halt_state
             entry_halted, halt_attribution = halt_state(None)
@@ -443,5 +452,5 @@ async def health_check():
 @router.post("/test-momentum")
 async def test_momentum_screener():
     """Manual trigger for testing the momentum scanner."""
-    asyncio.create_task(_main.run_momentum_screener())
+    background_tasks.spawn(_main.run_momentum_screener(), name="momentum_screener_manual")
     return {"status": "momentum_scan_triggered"}

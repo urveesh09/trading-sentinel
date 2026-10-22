@@ -17,6 +17,7 @@ import asyncio
 import structlog
 from fastapi import HTTPException, Request
 
+import background_tasks
 from config import settings
 
 logger = structlog.get_logger()
@@ -81,7 +82,7 @@ def _check_internal_secret(request: Request, endpoint_name: str) -> None:
                 import asyncio
                 try:
                     asyncio.get_running_loop()
-                    asyncio.create_task(_send_internal_secret_alert())
+                    background_tasks.spawn(_send_internal_secret_alert(), name="internal_secret_alert")
                 except RuntimeError:
                     # No running loop (test context). The warning is
                     # enough -- we already logged at CRITICAL above.

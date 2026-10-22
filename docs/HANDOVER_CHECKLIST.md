@@ -1,5 +1,27 @@
 # Handover receipt and operator checklist
 
+## October 22 (evening) — T22-BG / T22-U (commit `3a9f674`, Dev, pushed, not deployed)
+
+- [x] Suite hang at exit diagnosed: a leaked aiosqlite worker from an unheld startup catch-up. Not caused by A22; A22 itself passed in full (5,451).
+- [x] Fourteen fire-and-forget sites are held via `background_tasks.spawn` (ledger write, post-login init, catch-ups, alerts); failures are logged; shutdown drains.
+- [x] Tests can no longer hang: per-test drain plus a session-end connection guard.
+- [x] `aiosqlite` pinned 0.20.0 → 0.21.0: 0.20 leaked a worker when a connect was cancelled mid-open (proven by a test that fails on 0.20.0). The engine image must be rebuilt to pick it up.
+- [x] Universe refresh reads history only for quoted in-band EQ symbols; universe identical over 40 randomised sets; Production estimate 10,235 → ~956 reads.
+- [x] Tests: engine 5460 passed, 4 skipped (full suite, Windows winvenv, aiosqlite 0.21.0; exit 0, no leaked worker); client unchanged (60 passed, vite build ok).
+- [ ] Deployed: no. After deploy: `penny_universe_refresh_done elapsed` in minutes, `penny_universe_history_scope`, `count=100`, no `Task was destroyed` on restart.
+
+## October 22 — A22 audit follow-up (commit `ffa979c`, Dev, pushed, not deployed)
+
+- [x] P1 broker backstop: intent before send, an unreadable ledger holds the exit, uncertain sends reconciled from the order book (live only).
+- [x] P2 Momentum terminal pass: history fetched with no write lock held; one short transaction per ticker.
+- [x] P2 exit-path recorder: bounded queue, one guarded writer thread, per-session cap, drops counted (ops `fno_exit_paths`), drained on shutdown; settings bound on each line.
+- [x] P2 exit-arm evaluator: scores only bound, same-contract, gap-free evidence whose CURRENT reproduces the live exit; mismatches listed.
+- [x] P2 partner login: one 35 s deadline; deeper read and coach note in the background; the review shows progress.
+- [x] P2 coaching extrema: whole minutes inside the holding only; buy/sale-minute prices shown apart as uncertain.
+- [x] Enrichments: Smart V1/V2 `versus` (opportunities, stop-outs, missed winners, fees, hold, rupee-hours); scope labels; version separation verified.
+- [x] Tests: engine 5451 passed, 4 skipped (full suite, Windows winvenv); client 60 node tests passed, vite build ok; gateway partner-kite jest 7 passed.
+- [ ] Deployed: no. After deploy: ops `fno_exit_paths` counters, `params` on first exit-path lines, partner login status line, `versus` in `/experiments/penny-smart`.
+
 ## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit `ace52ab`, Dev, pushed, not deployed)
 
 - [x] F&O profit lock needs a second look ≥ 8 s after the first under its floor (rollback `FNO_PROFIT_LOCK_CONFIRM_SEC=0`).

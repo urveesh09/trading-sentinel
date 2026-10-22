@@ -496,9 +496,10 @@ async def _manage_open_positions(
         position_fut = (fut_prices.get((p.underlying or "NIFTY").upper()) if fut_prices is not None
                         else fut_price)
         breach_key = (source, p.id)
+        exit_params = live_single_leg_exit_params(settings)
         decision = evaluate_single_leg_exit(
             p, now_ist=now_ist, fut_price=position_fut, exit_px_basis=exit_px_basis,
-            hard_flat=hard_flat, params=live_single_leg_exit_params(settings),
+            hard_flat=hard_flat, params=exit_params,
             lock_breach_since=_LOCK_BREACH_SINCE.get(breach_key),
         )
         exit_reason = decision.exit_reason
@@ -509,7 +510,8 @@ async def _manage_open_positions(
         else:
             _LOCK_BREACH_SINCE.pop(breach_key, None)
         fno_exit_paths.record(now_ist, source, p, bid=bid, ask=ask, ltp=ltp, fut=position_fut,
-                              decision=decision)
+                              decision=decision,
+                              params={**exit_params, "FNO_HARD_FLAT_MIN": int(settings.FNO_HARD_FLAT_MIN)})
         if decision.trail_newly_armed:
             logger.info(
                 "fno_trail_armed id=%d symbol=%s fut=%.1f target=%.1f",

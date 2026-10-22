@@ -57,6 +57,23 @@ export function minutesLabel(minutes) {
   return rest ? `${Math.floor(total / 60)} h ${rest} min` : `${Math.floor(total / 60)} h`;
 }
 
+// [A22-P4] The login's background read: what the page says while it runs,
+// and how often it refreshes (0 = stop once done, partial or failed).
+const SYNC_TEXT = {
+  reading: 'Reading your orders from Zerodha…',
+  enriching: 'Adding your order changes, cash and price charts… this page updates itself.',
+  partial: 'Some details took too long to read; the review shows what was read.',
+  failed: 'Zerodha could not be read just now; the review shows what was read before.',
+};
+
+export function syncNote(sync) {
+  return SYNC_TEXT[sync?.state] || null;
+}
+
+export function syncRefreshMs(sync) {
+  return sync?.state === 'reading' || sync?.state === 'enriching' ? 4000 : 0;
+}
+
 export function formatPrice(value) {
   if (value === null || value === undefined || !Number.isFinite(Number(value))) return '?';
   return `₹${Number(value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
@@ -147,5 +164,6 @@ export function buildReviewModel(payload) {
       stats: progress.stats || null,
     },
     noOrders: payload?.automatic_execution === false,
+    sync: payload?.sync || null,
   };
 }

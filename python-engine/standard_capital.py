@@ -485,6 +485,9 @@ def standard_capital_view(books: list[BookSpec], *, capital: float, since: Optio
         "capital": capital, "since": since.date().isoformat() if since else None,
         "books": out, "equal_split": combined,
         "method": {
+            # [A22-E2] What this replay is and is not (shown first on the page).
+            "scope": "scales each book's closed paper trades; open positions are not included; "
+                     "not a whole-portfolio replay and not an exit experiment",
             "units": "round(book units x capital / reference capital); 0 = too small, skipped",
             "cash": "own cash only; a trade that does not fit is sized down or skipped",
             "charges": "recomputed at the new size; flat ₹20/order kept fixed where only totals are stored",

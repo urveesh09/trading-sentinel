@@ -66,6 +66,8 @@ def partner_app(monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_KITE_USER_ID", "ab1234")
     monkeypatch.setattr(settings, "PARTNER_ZERODHA_SYNC_ENABLED", True)
     zerodha.disconnect()
+    monkeypatch.setattr(zerodha, "_review_task", None)
+    monkeypatch.setattr(zerodha, "_review_state", {"state": "idle"})
     yield
     zerodha.disconnect()
 
@@ -395,8 +397,12 @@ async def test_login_after_the_close_reads_and_sends_the_note(kite, partner_chat
     kite["orders"] = [_order("O1", "BUY", 20, T(12, 9, 5)), _order("O2", "SELL", 20, T(15, 11))]
     kite["trades"] = [_trade("O1", 20, 518.0, T(12, 9, 10)), _trade("O2", 20, 640.0, T(15, 11, 2))]
     result = await zerodha.on_login("reqtok12", T(15, 52))
-    assert result["note"] == "sent" and result["connected"] and result["automatic_execution"] is False
+    assert result["connected"] and result["automatic_execution"] is False
     assert "tok-secret" not in json.dumps(result)
+    # [A22-P4] The login answers on the fills; the deeper read and the note follow.
+    assert result["sync"]["state"] in ("enriching", "done") and result["sync"]["option_orders"] == 2
+    synced = await zerodha.wait_review_sync()
+    assert synced["note"] == "sent" and zerodha.review_sync(T(15, 53))["state"] == "done"
     [(kind, text, markup)] = partner_chat
     assert kind == "coach" and text.startswith("📒 Your trades today (from Zerodha)")
     assert markup["inline_keyboard"][0][0]["text"] == "📒 Open full review"
@@ -409,8 +415,73 @@ async def test_login_after_the_close_reads_and_sends_the_note(kite, partner_chat
 async def test_login_before_the_close_reads_but_waits_for_the_wrap(kite, partner_chat):
     db = settings.DB_PATH
     await _seed(db)
-    result = await zerodha.on_login("reqtok12", T(11, 0))
-    assert result["note"] == "before_close" and partner_chat == []
+    await zerodha.on_login("reqtok12", T(11, 0))
+    assert (await zerodha.wait_review_sync())["note"] == "before_close" and partner_chat == []
+
+
+@pytest.mark.asyncio
+async def test_a_slow_deeper_read_never_delays_the_login(kite, monkeypatch):
+    """[A22-P4] Order histories, positions, cash and prices could take minutes
+    (40 histories at 3 at a time, 15 s per call); the gateway waits 45 s."""
+    import asyncio
+    release = asyncio.Event()
+    real = zerodha._read_details
+
+    async def slow(*args):
+        await release.wait()
+        return await real(*args)
+
+    monkeypatch.setattr(zerodha, "_read_details", slow)
+    kite["orders"] = [_order("O1", "BUY", 20, T(12, 9, 5))]
+    kite["trades"] = [_trade("O1", 20, 518.0, T(12, 9, 10))]
+    result = await asyncio.wait_for(zerodha.on_login("reqtok12", T(12, 30)), 2)
+    assert result["sync"] == {"state": "enriching", "started_at": T(12, 30).isoformat(), "option_orders": 1}
+    release.set()
+    assert (await zerodha.wait_review_sync())["note"] == "before_close"
+    assert zerodha.review_sync(T(12, 31))["state"] == "done"
+
+
+@pytest.mark.asyncio
+async def test_one_deadline_covers_the_session_and_the_fills(kite, monkeypatch):
+    import asyncio
+    real = zerodha._sync_fills
+
+    async def slow_fills(*args):
+        await asyncio.sleep(0.5)
+        return await real(*args)
+
+    monkeypatch.setattr(zerodha, "_sync_fills", slow_fills)
+    monkeypatch.setattr(zerodha, "LOGIN_DEADLINE_SEC", 0.1)
+    result = await asyncio.wait_for(zerodha.on_login("reqtok12", T(12, 30)), 2)
+    # The page opens and shows "reading"; the read finishes in the background.
+    assert result["connected"] and result["sync"]["state"] == "reading"
+    await zerodha.wait_review_sync()
+    assert zerodha.review_sync(T(12, 31))["state"] == "done"
+
+
+@pytest.mark.asyncio
+async def test_the_deeper_read_has_its_own_budget_and_a_failed_fills_read_is_the_logins_error(kite, monkeypatch):
+    import asyncio
+
+    async def stuck(*args):
+        await asyncio.sleep(5)
+
+    monkeypatch.setattr(zerodha, "_read_details", stuck)
+    monkeypatch.setattr(zerodha, "ENRICH_BUDGET_SEC", 0.1)
+    await zerodha.on_login("reqtok12", T(12, 30))
+    synced = await zerodha.wait_review_sync()
+    assert synced["details"] == "deadline" and zerodha.review_sync(T(12, 31))["state"] == "partial"
+
+    async def expired(*args):
+        raise zerodha.BrokerError("TokenException", "Token is invalid or has expired.")
+
+    monkeypatch.setattr(zerodha, "_sync_fills", expired)
+    with pytest.raises(zerodha.BrokerError) as err:
+        await zerodha.on_login("reqtok12", T(12, 40))
+    assert err.value.code == "TokenException"
+    assert zerodha.review_sync(T(12, 41)) == {"state": "failed", "started_at": T(12, 40).isoformat(),
+                                               "finished_at": zerodha._review_state["finished_at"],
+                                               "error": "TokenException"}
 
 
 def test_card_buttons_stay_off_with_zerodha(monkeypatch):

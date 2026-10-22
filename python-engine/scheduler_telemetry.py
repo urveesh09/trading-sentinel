@@ -20,6 +20,8 @@ from typing import Any, Awaitable, Callable
 import aiosqlite
 from zoneinfo import ZoneInfo
 
+import background_tasks
+
 
 BOOT_ID = os.environ.get("TRADING_SENTINEL_BOOT_ID") or uuid.uuid4().hex
 _SCHEMA = """
@@ -477,7 +479,8 @@ def attach_scheduler_listener(scheduler: Any, db_path: str, *, retention: int = 
             except Exception:
                 return
         try:
-            asyncio.get_running_loop().create_task(persist())
+            _loop = asyncio.get_running_loop()
+            background_tasks.spawn(persist(), name="scheduler_event_persist", loop=_loop)
         except RuntimeError:
             return
     scheduler.add_listener(listener, EVENT_JOB_MISSED | EVENT_JOB_MAX_INSTANCES)

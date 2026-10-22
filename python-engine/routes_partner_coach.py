@@ -84,9 +84,11 @@ async def get_partner_review(request: Request, day: Optional[str] = Query(defaul
     available = active_days(view)
     chosen = asked.isoformat() if asked else (today.isoformat() if today.isoformat() in available
                                               else (available[0] if available else today.isoformat()))
+    from partner_broker_sync import review_sync
+    # [A22-P4] The login's background read (reading / enriching / done): the page refreshes until done.
     return {"day": chosen, "days_available": available, "review": day_review(view, chosen),
             "progress": progress(view, today.isoformat()), "zerodha": view["zerodha"], "window": view["window"],
-            "as_of": view["as_of"], "automatic_execution": False}
+            "as_of": view["as_of"], "sync": review_sync(now), "automatic_execution": False}
 
 
 @router.post("/partner/coach/reports")

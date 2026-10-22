@@ -400,39 +400,118 @@ async def monitor_smart_shadow(db_path, kite, *, now, policy=SMART_VERSION):
     )
 
 
+STOP_EXITS = ("SMART_PAPER_STOP", "SMART_THESIS_FAILED")
+
+
+def _round_trips(rows) -> list[dict]:
+    """ENTRY_FILLED/EXIT_FILLED events (time order) as closed round trips."""
+    open_by_ticker: dict = {}
+    trips = []
+    for at, ticker, kind, raw in rows:
+        try:
+            payload = json.loads(raw)
+        except (TypeError, ValueError):
+            continue
+        if kind == "ENTRY_FILLED":
+            open_by_ticker.setdefault(ticker, []).append((at, payload))
+            continue
+        queue = open_by_ticker.get(ticker) or []
+        if not queue:
+            continue          # an exit whose entry is before the window
+        entry_at, entry = queue.pop(0)
+        try:
+            shares, net = float(payload["shares"]), float(payload["net_pnl"])
+            entry_px, exit_px = float(entry["price"]), float(payload["price"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        minutes = (datetime.fromisoformat(at) - datetime.fromisoformat(entry_at)).total_seconds() / 60
+        trips.append({"day": entry_at[:10], "ticker": ticker, "entry_at": entry_at, "exit_at": at,
+                      "reason": payload.get("reason") or "?", "net": net, "shares": shares,
+                      "fees": round((exit_px - entry_px) * shares - net, 4), "hold_min": minutes,
+                      "deployed": entry_px * shares})
+    return trips
+
+
+def _book_stats(trips: list[dict]) -> dict:
+    nets = [t["net"] for t in trips]
+    gains, losses = sum(n for n in nets if n > 0), -sum(n for n in nets if n < 0)
+    reasons: dict = {}
+    for t in trips:
+        reasons[t["reason"]] = reasons.get(t["reason"], 0) + 1
+    holds = sorted(t["hold_min"] for t in trips)
+    return {
+        "closes": len(nets), "wins": sum(n > 0 for n in nets), "losses": sum(n < 0 for n in nets),
+        "net": round(sum(nets), 4), "average": round(sum(nets) / len(nets), 4) if nets else None,
+        "profit_factor": round(gains / losses, 4) if losses else None, "exit_reasons": reasons,
+        "fees": round(sum(t["fees"] for t in trips), 4),
+        "median_hold_min": round(holds[len(holds) // 2], 1) if holds else None,
+        # Capital occupancy: rupees held times hours held (a wider stop sizes smaller and holds longer).
+        "rupee_hours": round(sum(t["deployed"] * t["hold_min"] / 60 for t in trips), 2),
+        "average_deployed": round(sum(t["deployed"] for t in trips) / len(trips), 2) if trips else None,
+    }
+
+
+def _versus(base: list[dict], other: list[dict]) -> dict:
+    """Same-day, same-ticker opportunities: the first round trip of each book."""
+    def first(trips):
+        out: dict = {}
+        for t in trips:
+            out.setdefault((t["day"], t["ticker"]), t)
+        return out
+
+    a, b = first(base), first(other)
+    matched = sorted(set(a) & set(b))
+    only_base, only_other = sorted(set(a) - set(b)), sorted(set(b) - set(a))
+
+    def missed(keys, book):
+        winners = [book[k]["net"] for k in keys if book[k]["net"] > 0]
+        return {"count": len(winners), "net": round(sum(winners), 4)}
+
+    return {
+        "matched": len(matched),
+        "matched_net_delta": round(sum(b[k]["net"] - a[k]["net"] for k in matched), 4),
+        # The base book's stop or thesis exit lost, the other book on the same name did better.
+        "base_stopped_other_better": sum(1 for k in matched if a[k]["reason"] in STOP_EXITS and a[k]["net"] < 0
+                                         and b[k]["net"] > a[k]["net"]),
+        "other_stopped_worse": sum(1 for k in matched if b[k]["reason"] in STOP_EXITS and b[k]["net"] < a[k]["net"]),
+        "base_only": len(only_base), "other_only": len(only_other),
+        "winners_missed_by_other": missed(only_base, a), "winners_missed_by_base": missed(only_other, b),
+    }
+
+
 def smart_policy_comparison(ledger_path, *, since="2026-10-22"):
     """[SX-P2] Each Smart book's closes from ``since`` (V2's first scored
-    session): count, wins, losses, net, average, profit factor, exit reasons."""
+    session): count, wins, losses, net, average, profit factor, exit reasons.
+
+    [A22-E1] Opportunities as well as totals (Oct 22 audit): a wider stop
+    changes which later trades fit the bankroll, not only each outcome. Per
+    book: fees, median hold and capital occupancy (rupee-hours). Against V1
+    (``versus``): same-day same-ticker opportunities both took and the net
+    difference on them, V1 stop-outs where the other book did better, the
+    other's wider-stop losses, and winners only one book took. Round trips
+    pair each exit with its entry; an exit whose entry is before ``since``
+    is left out. Reporting only: no threshold reads it."""
     import sqlite3
     path = smart_db_path(ledger_path)
-    out = {"since": since, "policies": []}
+    out = {"since": since, "policies": [], "versus": {}}
     if not Path(path).exists():
         return out
+    trips_by_policy = {}
     with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=2.0) as conn:
         for policy in smart_policies():
             try:
                 rows = conn.execute(
-                    "SELECT payload_json FROM penny_smart_paper_events WHERE policy=? AND kind='EXIT_FILLED' "
-                    "AND at >= ? ORDER BY at", (policy, since)).fetchall()
+                    "SELECT at, ticker, kind, payload_json FROM penny_smart_paper_events WHERE policy=? "
+                    "AND kind IN ('ENTRY_FILLED','EXIT_FILLED') AND at >= ? ORDER BY at, kind DESC",
+                    (policy, since)).fetchall()
             except sqlite3.OperationalError:
                 rows = []
-            nets, reasons = [], {}
-            for (raw,) in rows:
-                try:
-                    payload = json.loads(raw)
-                    nets.append(float(payload["net_pnl"]))
-                except (ValueError, KeyError, TypeError):
-                    continue
-                reason = payload.get("reason") or "?"
-                reasons[reason] = reasons.get(reason, 0) + 1
-            gains, losses = sum(n for n in nets if n > 0), -sum(n for n in nets if n < 0)
-            out["policies"].append({
-                "policy": policy, "closes": len(nets), "wins": sum(n > 0 for n in nets),
-                "losses": sum(n < 0 for n in nets), "net": round(sum(nets), 4),
-                "average": round(sum(nets) / len(nets), 4) if nets else None,
-                "profit_factor": round(gains / losses, 4) if losses else None,
-                "exit_reasons": reasons,
-            })
+            trips_by_policy[policy] = _round_trips(rows)
+            out["policies"].append({"policy": policy, **_book_stats(trips_by_policy[policy])})
+    base = SMART_VERSION
+    for policy, trips in trips_by_policy.items():
+        if policy != base:
+            out["versus"][policy] = {"base": base, **_versus(trips_by_policy[base], trips)}
     return out
 
 

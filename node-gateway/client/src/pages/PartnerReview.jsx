@@ -5,7 +5,7 @@ import { fetcher } from '../api/client';
 import { formatRs, pnlTone } from '../utils/partnerCoach';
 import {
   LEVEL_STYLE, LEVEL_TEXT, buildReviewModel, chartGeometry, formatDay, formatPrice, minutesLabel, percent, reviewUrl,
-  scoreTone, signedPercent, trendOf,
+  scoreTone, signedPercent, syncNote, syncRefreshMs, trendOf,
 } from '../utils/partnerReview';
 import PartnerCoach from './PartnerCoach';
 
@@ -428,8 +428,12 @@ export function Progress({ progress, focus }) {
 export default function PartnerReview({ navigateBack }) {
   const [day, setDay] = useState('');
   const [tab, setTab] = useState('today');
-  const { data, error, isLoading } = useSWR(reviewUrl(day), fetcher, { revalidateOnFocus: false });
+  // [A22-P4] While the login's background read runs, refresh every few seconds.
+  const { data, error, isLoading } = useSWR(reviewUrl(day), fetcher, {
+    revalidateOnFocus: false, refreshInterval: (latest) => syncRefreshMs(latest?.sync),
+  });
   const model = buildReviewModel(data);
+  const syncText = syncNote(model.sync);
   if (tab === 'details') {
     return <PartnerCoach partnerView navigateToDashboard={() => setTab('today')} />;
   }
@@ -454,6 +458,7 @@ export default function PartnerReview({ navigateBack }) {
         </nav>
         {error && <div className="rounded border border-red-800 bg-red-950/40 p-3 text-sm text-red-200">Your review is unavailable: {error.message}</div>}
         {isLoading && !data && <p className="text-sm text-gray-500">Loading your review…</p>}
+        {syncText && <p className="rounded border border-sky-900 bg-sky-950/40 p-2 text-xs text-sky-200" role="status">{syncText}</p>}
         {data && tab === 'today' && <Today model={model} />}
         {data && tab === 'progress' && <Progress progress={model.progress} focus={model.focus} />}
         <p className="text-center text-[10px] text-gray-600">Coaching only. Nothing here places an order.</p>

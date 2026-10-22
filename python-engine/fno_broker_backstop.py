@@ -25,6 +25,14 @@ While no exit is due the engine re-reads the order each minute, and every
 tick once the price is within 2% of the trigger, so a backstop fill is
 booked even if the engine was down when it happened.
 
+[A22-BS 2026-10-22] Never two SELLs on an uncertain record (Oct 22 audit):
+  - the placement intent (state PLACING, trigger, limit) is written before
+    the order is sent; if it cannot be written nothing is sent. A receipt
+    lost after the send leaves PLACING without an order id, which an exit
+    resolves from the order book (found: cancel and read it; absent: none
+    rests; unreadable: hold) and the passive check adopts once found;
+  - a ledger that cannot be read is not "no backstop": the exit holds.
+
 Paper books never place one (the executor returns ``paper``). The live leg
 stays behind FNO_DISABLE_LIVE and the go-live bar; this adds no entry path.
 """
@@ -45,10 +53,14 @@ logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
 
 PASSIVE_CHECK_SEC = 60
+# A PLACING row this young may still be on its way to the broker (the send
+# is bounded by the order client's timeout): an exit waits, never guesses.
+PLACING_GRACE_SEC = 30
 # States that prove no backstop share can execute: cancelled with nothing
 # filled, never placed, or no level. Every other state is re-read at the
 # broker before an exit (a broker-cancelled order may have part-filled).
 SETTLED_SAFE_STATES = ("CANCELLED", "NO_LEVEL", "PLACE_REJECTED", "NOT_ARMED")
+UNCERTAIN_DISPATCH_STATES = ("PLACING", "PLACE_UNKNOWN")
 NEAR_TRIGGER_PCT = 0.02
 # NSE circular 54/2023, OPTIDX: trigger up to ₹50 -> ₹10 range, above -> 20%.
 SMALL_TRIGGER_RS, SMALL_RANGE_RS, RANGE_PCT = 50.0, 10.0, 0.20
@@ -72,10 +84,8 @@ CREATE TABLE IF NOT EXISTS fno_broker_backstops (
 _last_check: dict = {}
 
 
-async def init_backstop_db(db_path: str) -> None:
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(_DDL)
-        await db.commit()
+class BackstopUnreadable(Exception):
+    """The backstop ledger could not be read: absence is not proven."""
 
 
 def _down(value: float, tick: float) -> float:
@@ -115,14 +125,36 @@ async def _write(db_path: str, position_id: int, **fields) -> None:
         await db.commit()
 
 
+async def _claim_intent(db_path: str, position_id: int, **fields) -> bool:
+    """Record the placement intent before any send; False when the position
+    already has a backstop row (one order per position, never a second)."""
+    now = datetime.now(IST).isoformat()
+    fields.update(placed_at=now, updated_at=now)
+    cols = ["position_id", *fields]
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(_DDL)
+        cursor = await db.execute(f"INSERT OR IGNORE INTO fno_broker_backstops ({', '.join(cols)}) "
+                                  f"VALUES ({', '.join('?' for _ in cols)})", (position_id, *fields.values()))
+        await db.commit()
+        return cursor.rowcount == 1
+
+
 async def load_backstop(db_path: str, position_id: int) -> Optional[dict]:
+    """The position's backstop row; ``None`` only when none was recorded.
+
+    Raises ``BackstopUnreadable`` when the ledger cannot be read: a locked or
+    failing database proves nothing about an order resting at the broker."""
     try:
         async with aiosqlite.connect(db_path) as db:
             db.row_factory = aiosqlite.Row
             row = await (await db.execute(
                 "SELECT * FROM fno_broker_backstops WHERE position_id=?", (position_id,))).fetchone()
-    except aiosqlite.OperationalError:
-        return None
+    except aiosqlite.OperationalError as exc:
+        if "no such table" in str(exc):
+            return None       # the table is created with the first intent, before any order
+        raise BackstopUnreadable(str(exc)[:200]) from exc
+    except (aiosqlite.Error, OSError) as exc:
+        raise BackstopUnreadable(f"{type(exc).__name__}: {exc}"[:200]) from exc
     return dict(row) if row else None
 
 
@@ -150,11 +182,35 @@ async def arm(db_path: str, executor, *, position_id: int, source: str, tradings
                             position_id, tradingsymbol, fill)
             return {"state": "NO_LEVEL"}
         trigger, limit = levels
+        try:
+            claimed = await _claim_intent(db_path, position_id, source=source, tradingsymbol=tradingsymbol,
+                                          exchange=exchange, qty=qty, trigger_price=trigger, limit_price=limit,
+                                          state="PLACING")
+        except Exception as exc:
+            # No durable intent, no order: an unrecorded SL could later sell a second time.
+            logger.critical("fno_backstop_intent_unwritten id=%d symbol=%s err=%s -- not placed, engine stop only",
+                            position_id, tradingsymbol, str(exc))
+            await _page(f"⚠️ F&O backstop not placed\nid={position_id} {tradingsymbol}: its ledger could not be "
+                        "written, so no order was sent. Engine stop still active.", "fno_backstop_not_placed")
+            return {"state": "ARM_FAILED"}
+        if not claimed:
+            logger.warning("fno_backstop_already_recorded id=%d symbol=%s -- no second order", position_id,
+                           tradingsymbol)
+            return {"state": "ALREADY_RECORDED"}
         result = await executor.place_stop_limit(tradingsymbol, qty, trigger, limit, exchange=exchange)
         state = {"placed": "PLACED", "rejected": "PLACE_REJECTED"}.get(result["status"], "PLACE_UNKNOWN")
-        await _write(db_path, position_id, source=source, tradingsymbol=tradingsymbol, exchange=exchange,
-                     qty=qty, trigger_price=trigger, limit_price=limit, order_id=result.get("order_id"),
-                     state=state, evidence=json.dumps(result.get("evidence") or {}))
+        try:
+            await _write(db_path, position_id, order_id=result.get("order_id"), state=state,
+                         evidence=json.dumps(result.get("evidence") or {}))
+        except Exception as exc:
+            # The row stays PLACING without an order id: every exit first
+            # looks the order up in the order book (_find_in_order_book).
+            logger.critical("fno_backstop_receipt_unwritten id=%d symbol=%s state=%s order_id=%s err=%s",
+                            position_id, tradingsymbol, state, result.get("order_id"), str(exc))
+            await _page(f"⚠️ F&O backstop {state.lower()} but its receipt was not saved\nid={position_id} "
+                        f"{tradingsymbol} order_id={result.get('order_id')}. Before any exit the engine looks it "
+                        "up in the order book.", "fno_backstop_unrecorded")
+            return {"state": "PLACING", "trigger": trigger, "limit": limit, "order_id": result.get("order_id")}
         if state == "PLACED":
             logger.info("fno_backstop_placed id=%d symbol=%s qty=%d trigger=%.2f limit=%.2f order_id=%s",
                         position_id, tradingsymbol, qty, trigger, limit, result.get("order_id"))
@@ -166,6 +222,7 @@ async def arm(db_path: str, executor, *, position_id: int, source: str, tradings
                         "fno_backstop_not_placed")
         return {"state": state, "trigger": trigger, "limit": limit, "order_id": result.get("order_id")}
     except Exception as exc:
+        # After the intent a PLACING row remains, which exits reconcile first.
         logger.critical("fno_backstop_arm_failed id=%d symbol=%s err=%s", position_id, tradingsymbol, str(exc))
         return {"state": "ARM_FAILED"}
 
@@ -188,9 +245,20 @@ async def before_exit(db_path: str, executor, position_id: int, qty: int) -> dic
     {"action": "partial", "filled_qty", "fill_price", "remaining"} or
     {"action": "hold", "reason"} (state unknown: send nothing).
     """
-    row = await load_backstop(db_path, position_id)
-    if row is None or executor.paper_mode or row["state"] in SETTLED_SAFE_STATES:
+    if executor.paper_mode:
         return {"action": "proceed"}
+    try:
+        row = await load_backstop(db_path, position_id)
+    except BackstopUnreadable as exc:
+        logger.critical("fno_backstop_ledger_unreadable id=%d err=%s -- exit held", position_id, str(exc))
+        await _page_once(position_id, "unreadable",
+                         f"⚠️ F&O exit held: the backstop ledger for id={position_id} could not be read. "
+                         "Check the order book for a resting SL order before any exit.")
+        return {"action": "hold", "reason": "backstop_ledger_unreadable"}
+    if row is None or row["state"] in SETTLED_SAFE_STATES:
+        return {"action": "proceed"}
+    if row["state"] == "PLACING" and _age_sec(row) < PLACING_GRACE_SEC:
+        return {"action": "hold", "reason": "backstop_dispatch_in_flight"}
     order_id = row.get("order_id")
     if row["state"] == "FILLED" and order_id:
         # Booked as executed by check_filled, but the exit was not settled
@@ -202,9 +270,9 @@ async def before_exit(db_path: str, executor, position_id: int, qty: int) -> dic
         if average > 0:
             return {"action": "filled", "fill_price": average, "order_id": order_id}
     if not order_id:
-        # PLACE_UNKNOWN without an id: the broker may hold an SL order this
-        # process cannot name. Look for it in today's order book; only a
-        # readable book without it proves nothing rests there.
+        # PLACE_UNKNOWN or PLACING without an id: the broker may hold an SL
+        # order this process cannot name. Look for it in today's order book;
+        # only a readable book without it proves nothing rests there.
         found = await _find_in_order_book(executor, row)
         if found == "absent":
             await _write(db_path, position_id, state="CANCELLED", evidence=json.dumps({"order_book": "absent"}))
@@ -244,6 +312,14 @@ async def before_exit(db_path: str, executor, position_id: int, qty: int) -> dic
 _paged: set = set()
 
 
+def _age_sec(row: dict, now: Optional[datetime] = None) -> float:
+    try:
+        written = datetime.fromisoformat(str(row.get("updated_at") or row.get("placed_at")))
+    except (TypeError, ValueError):
+        return float("inf")
+    return ((now or datetime.now(IST)) - written).total_seconds()
+
+
 async def _page_once(position_id: int, reason: str, text: str) -> None:
     """One page per position and reason; the hold repeats every tick."""
     if (position_id, reason) in _paged:
@@ -279,14 +355,35 @@ async def check_filled(db_path: str, executor, position_id: int, *, price: float
     """Read (never cancel) a resting backstop; the fill when it has executed."""
     if executor.paper_mode:
         return None
-    row = await load_backstop(db_path, position_id)
-    if row is None or row["state"] != "PLACED" or not row.get("order_id"):
+    try:
+        row = await load_backstop(db_path, position_id)
+    except BackstopUnreadable as exc:
+        logger.warning("fno_backstop_passive_check_unreadable id=%d err=%s", position_id, str(exc))
+        return None
+    if row is None:
         return None
     now = now or datetime.now(IST)
     trigger = float(row.get("trigger_price") or 0)
     near = price <= 0 or (trigger > 0 and price <= trigger * (1 + NEAR_TRIGGER_PCT))
     last = _last_check.get(position_id)
     if not near and last is not None and (now - last).total_seconds() < PASSIVE_CHECK_SEC:
+        return None
+    if (row["state"] in UNCERTAIN_DISPATCH_STATES and not row.get("order_id")
+            and _age_sec(row, now) >= PLACING_GRACE_SEC):
+        # A send whose receipt was lost: adopt the order once the book shows it.
+        _last_check[position_id] = now
+        found = await _find_in_order_book(executor, row)
+        if found in (None, "absent", "ambiguous"):
+            return None       # an exit settles these (absent -> none rests; else hold)
+        try:
+            await _write(db_path, position_id, order_id=found, state="PLACED",
+                         evidence=json.dumps({"order_book": "adopted"}))
+        except Exception as exc:     # still PLACING: the next check or an exit retries
+            logger.warning("fno_backstop_adopt_unwritten id=%d order_id=%s err=%s", position_id, found, str(exc))
+            return None
+        logger.warning("fno_backstop_adopted id=%d order_id=%s", position_id, found)
+        row = {**row, "order_id": found, "state": "PLACED"}
+    if row["state"] != "PLACED" or not row.get("order_id"):
         return None
     _last_check[position_id] = now
     latest = await executor.order_state(row["order_id"])

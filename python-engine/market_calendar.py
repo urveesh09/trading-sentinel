@@ -1,5 +1,6 @@
 import aiosqlite
 #import aiosqlite
+import background_tasks
 import functools
 import httpx
 import sqlite3
@@ -235,7 +236,7 @@ def _alert_static_fallback(reason: str) -> None:
                 logger.warning("holiday_fallback_alert_failed error=%s", str(exc))
 
         asyncio.get_running_loop()
-        asyncio.create_task(_send())
+        background_tasks.spawn(_send(), name="holiday_fallback_alert")
     except RuntimeError:
         # No running loop (sync caller) -- the log line above still fires.
         pass

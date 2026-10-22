@@ -31,7 +31,7 @@ const engineReply = (status, data) => ({ status, json: async () => data });
 beforeEach(() => jest.clearAllMocks());
 
 test('a completed login opens a coach-only session and the review page', async () => {
-  global.fetch.mockResolvedValue(engineReply(200, { connected: true, account: 'AB***34', note: 'sent' }));
+  global.fetch.mockResolvedValue(engineReply(200, { connected: true, account: 'AB***34', sync: { state: 'enriching' } }));
   const { app, session } = makeApp();
   const response = await request(app).get('/api/partner-kite/callback?status=success&request_token=abcDEF123456');
   expect(response.status).toBe(302);

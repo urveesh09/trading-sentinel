@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildReviewModel, formatDay, percent, reviewUrl, trendOf } from '../src/utils/partnerReview.js';
+import { buildReviewModel, formatDay, percent, reviewUrl, syncNote, syncRefreshMs, trendOf } from '../src/utils/partnerReview.js';
 
 test('[O21-PL] the review url carries a valid day only', () => {
   assert.equal(reviewUrl(''), '/api/partner-kite/review');
@@ -84,4 +84,16 @@ test('[O21-PX] the model carries the score, day numbers, orders, focus and windo
   const empty = buildReviewModel({});
   assert.deepEqual([empty.score, empty.stats, empty.account, empty.orders, empty.focus, empty.progress.stats],
     [null, null, null, null, null, null]);
+});
+
+test('[A22-P4] the page says what the background read is doing and refreshes only while it runs', () => {
+  assert.equal(syncRefreshMs({ state: 'reading' }), 4000);
+  assert.equal(syncRefreshMs({ state: 'enriching' }), 4000);
+  for (const state of ['done', 'partial', 'failed', 'idle']) assert.equal(syncRefreshMs({ state }), 0);
+  assert.equal(syncRefreshMs(undefined), 0);
+  assert.match(syncNote({ state: 'enriching' }), /updates itself/);
+  assert.equal(syncNote({ state: 'done' }), null);
+  assert.equal(syncNote(null), null);
+  assert.deepEqual(buildReviewModel({ sync: { state: 'reading' } }).sync, { state: 'reading' });
+  assert.equal(buildReviewModel(undefined).sync, null);
 });

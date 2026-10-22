@@ -219,3 +219,103 @@ async def test_paper_positions_never_touch_the_backstop(fno_db):
     assert len(await _manage_open_positions(kite, fno_db, "FNO_PAPER", executor, NOW, 19500)) == 1
     executor.cancel_and_read.assert_not_awaited()
     executor.execute_exit.assert_awaited_once()
+
+
+# ---------------------------------------------------------------- [A22-BS] uncertain records
+
+
+def _book(trigger=65.0, order_id="SL-7"):
+    return [{"order_id": order_id, "tradingsymbol": "NIFTY26O2322950PE", "transaction_type": "SELL",
+             "order_type": "SL", "trigger_price": trigger}]
+
+
+def _age(db, position_id, seconds):
+    """Back-date a row so it is past the in-flight grace."""
+    from datetime import timedelta
+    old = (datetime.now(bs.IST) - timedelta(seconds=seconds)).isoformat()
+    with closing(sqlite3.connect(db)) as con:
+        con.execute("UPDATE fno_broker_backstops SET placed_at=?, updated_at=? WHERE position_id=?",
+                    (old, old, position_id))
+        con.commit()
+
+
+@pytest.mark.asyncio
+async def test_a_receipt_lost_after_the_send_never_lets_an_exit_sell_blind(fno_db, monkeypatch, _pages):
+    # The audit's reproducer: the broker accepts the SL, then the receipt write fails.
+    kite = AsyncMock()
+    kite.place_order.return_value = {"order_id": "SL-7", "dispatch_certainty": "ACCEPTED"}
+    real_write = bs._write
+
+    async def failing_write(*args, **kwargs):
+        raise sqlite3.OperationalError("disk I/O error")
+
+    monkeypatch.setattr(bs, "_write", failing_write)
+    out = await bs.arm(fno_db, _live(kite), position_id=7, source="FNO_LIVE", tradingsymbol="NIFTY26O2322950PE",
+                       exchange="NFO", qty=75, fill=100.0, tick=0.05)
+    monkeypatch.setattr(bs, "_write", real_write)
+    assert out["state"] == "PLACING" and _pages[-1][0] == "fno_backstop_unrecorded"
+    row = await bs.load_backstop(fno_db, 7)
+    assert (row["state"], row["order_id"], row["trigger_price"]) == ("PLACING", None, 65.0)
+    executor = _live(kite)
+    # Seconds later the send may still be in flight: hold, never guess.
+    assert await bs.before_exit(fno_db, executor, 7, 75) == {"action": "hold",
+                                                             "reason": "backstop_dispatch_in_flight"}
+    _age(fno_db, 7, 60)
+    kite.orders_snapshot.return_value = None                 # the book cannot be read: still hold
+    assert (await bs.before_exit(fno_db, executor, 7, 75))["action"] == "hold"
+    kite.orders_snapshot.return_value = _book()              # found: cancel it and read what it did
+    kite.order_history.return_value = [{"status": "CANCELLED", "filled_quantity": 0}]
+    assert await bs.before_exit(fno_db, executor, 7, 75) == {"action": "proceed"}
+    kite.cancel_order.assert_awaited_once_with("SL-7")
+
+
+@pytest.mark.asyncio
+async def test_no_order_is_sent_without_a_durable_intent_and_never_twice(fno_db, monkeypatch, _pages):
+    kite = AsyncMock()
+    kite.place_order.return_value = {"order_id": "SL-1", "dispatch_certainty": "ACCEPTED"}
+
+    async def unwritable(*args, **kwargs):
+        raise sqlite3.OperationalError("database is locked")
+
+    monkeypatch.setattr(bs, "_claim_intent", unwritable)
+    out = await bs.arm(fno_db, _live(kite), position_id=3, source="FNO_LIVE", tradingsymbol="X", exchange="NFO",
+                       qty=75, fill=100.0, tick=0.05)
+    assert out == {"state": "ARM_FAILED"} and _pages[-1][0] == "fno_backstop_not_placed"
+    kite.place_order.assert_not_awaited()
+    monkeypatch.undo()
+    monkeypatch.setattr(settings, "FNO_BROKER_BACKSTOP_ENABLED", True)
+    first = await bs.arm(fno_db, _live(kite), position_id=3, source="FNO_LIVE", tradingsymbol="X", exchange="NFO",
+                         qty=75, fill=100.0, tick=0.05)
+    again = await bs.arm(fno_db, _live(kite), position_id=3, source="FNO_LIVE", tradingsymbol="X", exchange="NFO",
+                         qty=75, fill=100.0, tick=0.05)
+    assert (first["state"], again["state"], kite.place_order.await_count) == ("PLACED", "ALREADY_RECORDED", 1)
+
+
+@pytest.mark.asyncio
+async def test_an_unreadable_ledger_is_not_an_absent_backstop(fno_db, tmp_path, _pages):
+    # A fresh database has no table yet: nothing was ever recorded.
+    empty = str(tmp_path / "empty.db")
+    assert await bs.load_backstop(empty, 1) is None
+    # A database that cannot be opened proves nothing: the exit holds, the passive check waits.
+    unreadable = str(tmp_path)                               # a directory, not a database
+    with pytest.raises(bs.BackstopUnreadable):
+        await bs.load_backstop(unreadable, 1)
+    executor = _live()
+    assert await bs.before_exit(unreadable, executor, 1, 75) == {"action": "hold",
+                                                                 "reason": "backstop_ledger_unreadable"}
+    assert await bs.check_filled(unreadable, executor, 1, price=50.0) is None
+    executor.kite.cancel_order.assert_not_awaited()
+    assert [event for event, _ in _pages] == ["fno_backstop_unreadable"]
+
+
+@pytest.mark.asyncio
+async def test_the_passive_check_adopts_a_lost_receipt_from_the_order_book(fno_db):
+    await _armed(fno_db, position_id=4, state="PLACING", order_id=None)
+    _age(fno_db, 4, 60)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = _book(order_id="SL-4")
+    executor.kite.order_history.return_value = [{"status": "TRIGGER PENDING", "filled_quantity": 0}]
+    assert await bs.check_filled(fno_db, executor, 4, price=90.0) is None
+    row = await bs.load_backstop(fno_db, 4)
+    assert (row["state"], row["order_id"]) == ("PLACED", "SL-4")
+    executor.kite.order_history.assert_awaited_once_with(order_id="SL-4")

@@ -121,6 +121,7 @@ from scheduler_setup import (
 
 # [PENNY-MAIN 2026-06-21] Penny subsystem module imports.
 from penny_universe import PennyUniverse, refresh_from_kite
+import background_tasks
 
 
 # [AUDIT-FIX-1.2 2026-06-25] Single source of truth for "is this position
@@ -2128,7 +2129,7 @@ async def lifespan(app: FastAPI):
         # [HIGH-001 2026-07-12] Also page the operator at boot, not just on
         # the first blocked request (which could be hours later, mid-day).
         # Fire-and-forget; a notify failure must not block startup.
-        asyncio.create_task(_send_internal_secret_alert())
+        background_tasks.spawn(_send_internal_secret_alert(), name="internal_secret_alert")
 
     db_dir = os.path.dirname(settings.DB_PATH)
     if db_dir:
@@ -2146,7 +2147,7 @@ async def lifespan(app: FastAPI):
     except Exception as _ops_exc:
         logger.warning("ops_metrics_init_failed err=%s", str(_ops_exc))
 
-    asyncio.create_task(kite.refresh_instrument_cache())
+    background_tasks.spawn(kite.refresh_instrument_cache(), name="instrument_cache_refresh")
     scheduler.add_job(kite.refresh_instrument_cache, 'cron', hour=8, minute=0)
     # [O9-R1 2026-10-09] Recovery for a failed startup refresh: one provider
     # attempt every 2 minutes until today's refresh succeeds, then a no-op.
@@ -2417,7 +2418,7 @@ async def lifespan(app: FastAPI):
     # by lifespan-run time the module is fully imported.
     try:
         if restore_kite_token_if_fresh():
-            asyncio.create_task(post_login_initialization())
+            background_tasks.spawn(post_login_initialization(), name="post_login_initialization")
     except Exception as e:
         logger.warning("kite_token_restore_startup_failed error=%s", str(e))
 
@@ -2440,7 +2441,7 @@ async def lifespan(app: FastAPI):
         startup_tick["recovered_previous"],
         startup_tick["prior_gap_seconds"],
     )
-    asyncio.create_task(_restart_gap_receipt(startup_tick))
+    background_tasks.spawn(_restart_gap_receipt(startup_tick), name="restart_gap_receipt")
     yield
 
     # [LIVENESS-HEARTBEAT 2026-07-07] On shutdown, signal the heartbeat
@@ -2449,6 +2450,13 @@ async def lifespan(app: FastAPI):
     # makes the exit deterministic.
     _LIVENESS_TICK_STOP.set()
     _liveness_thread.join(timeout=10)
+    # [T22-BG] Let background tasks finish briefly, then cancel and await
+    # them, so none is destroyed inside an open connection. At most 5 s, well
+    # inside Docker's default 10 s stop grace.
+    await background_tasks.drain(grace=2.0, timeout=3.0)
+    # [A22-R6] Drain the F&O exit-path writer (research looks queued last).
+    import fno_exit_paths
+    fno_exit_paths.close(timeout=5.0)
     # [O13-R1] Last: the next startup can tell a deliberate stop from a death.
     try:
         from lifecycle_receipts import mark_clean_shutdown
