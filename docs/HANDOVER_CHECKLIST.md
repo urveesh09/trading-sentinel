@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 22 — A22 audit follow-up (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 22 — A22 audit follow-up (commit `ffa979c`, Dev, pushed, not deployed)
 
 - [x] P1 broker backstop: intent before send, an unreadable ledger holds the exit, uncertain sends reconciled from the order book (live only).
 - [x] P2 Momentum terminal pass: history fetched with no write lock held; one short transaction per ticker.

@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 22 — A22 audit follow-up (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 22 — A22 audit follow-up (done, Dev, commit `ffa979c`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: the Oct 22 audit of PRs #112–113 found two order-safety defects
   in the live broker backstop and five follow-ups. The follow-ups are the

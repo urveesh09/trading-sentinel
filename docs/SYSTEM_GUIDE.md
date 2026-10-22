@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 22 — A22 audit follow-up: broker-stop safety, short write locks, bounded exit evidence, honest research and partner timing (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 22 — A22 audit follow-up: broker-stop safety, short write locks, bounded exit evidence, honest research and partner timing (actual behavior, Dev, commit `ffa979c`)
 
 The Oct 22 audit of PRs #112–113 (Production 33065ed) reported two order-safety
 defects and five follow-ups. Each was reproduced in Dev before the fix, and each
