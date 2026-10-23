@@ -119,6 +119,14 @@ def _lots(lots: int) -> str:
     return f"{lots} lot{'s' if lots != 1 else ''}"
 
 
+def when(ctx: Context, day: str) -> str:
+    """[O23-PH] "today" for the session being read now, "that day" for an
+    earlier one (the partner can open past reviews)."""
+    if ctx.now is None or ctx.now.astimezone(IST).date().isoformat() == day:
+        return "today"
+    return "that day"
+
+
 def cash_of(account: Optional[dict]) -> Optional[float]:
     """The day's cash: the opening balance plus money added today."""
     if not account:
@@ -182,7 +190,7 @@ def apply(item: dict, trade: Optional[dict], card: Optional[dict], stops: Option
     if events:
         insight["events"] = events
     _risk(insight, item, trade, card, stops, ctx.accounts.get(day), entry, bought_qty, lot_size, actual, exit_px,
-          closed)
+          closed, when(ctx, day))
     item["insight"] = insight
     off_card = card is None
     if off_card or not card.get("buy_limit"):
@@ -301,7 +309,7 @@ def _order_events(ctx: Context, trade: dict, sl_orders: list, first: datetime, e
 
 def _risk(insight: dict, item: dict, trade: dict, card: Optional[dict], stops: Optional[list],
           account: Optional[dict], entry: float, bought_qty: Optional[int], lot_size: Optional[int],
-          actual: Optional[float], exit_px: Optional[float], closed: bool) -> None:
+          actual: Optional[float], exit_px: Optional[float], closed: bool, on_day: str = "today") -> None:
     """Money at risk: to the partner's own stop; with no stop order, the
     premium; when stops are unknown, to the card's SL on a card trade (the
     plan) and the premium off-card."""
@@ -340,7 +348,7 @@ def _risk(insight: dict, item: dict, trade: dict, card: Optional[dict], stops: O
                   "closer stop.")
     item["flags"].append(_flag(
         "BIG_RISK", f"{_lots(lots)} of {item.get('option')} at {_px(entry)}: {_amt(risk)} at risk {where}, "
-                    f"{pct:.0%} of the {_amt(cash)} cash in your account today.",
+                    f"{pct:.0%} of the {_amt(cash)} cash in your account {on_day}.",
         (round(actual - better_pnl, 2) if better_pnl is not None and actual is not None else None),
         why="When one trade can lose more than a tenth of the account, a short run of losses takes weeks to win "
             "back." + _worked(actual),
@@ -479,7 +487,7 @@ def _held_overnight(item: dict, trade: dict, ctx: Context) -> None:
     expired = trade.get("expiry") == day
     reason = f"You still held {_lots(trade['open_lots'])} of {item.get('option')} at the close."
     if expired:
-        reason += " It expired today."
+        reason += f" It expired {when(ctx, day)}."
         why = ("On expiry day an option that is not in the money at the close settles at zero; holding it to the "
                "end is a bet on the last minutes.")
     else:
@@ -517,7 +525,7 @@ def day_details(row: dict, ctx: Context) -> None:
         funds = [o for o in rejected if o["transaction_type"] == "BUY" and _FUNDS.search(o.get("status_message") or "")]
         if funds:
             first = funds[0]
-            more = f" ({len(funds)} refusals today)" if len(funds) > 1 else ""
+            more = f" ({len(funds)} refusals {when(ctx, day)})" if len(funds) > 1 else ""
             row["day_flags"].append(_flag(
                 "INSUFFICIENT_FUNDS",
                 f"At {_hhmm(_dt(first['placed_at']))} Zerodha refused your buy of {first.get('quantity')} "

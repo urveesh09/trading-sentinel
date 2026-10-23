@@ -1578,7 +1578,7 @@ Related tests: `python-engine/tests/test_partner_input_refresh.py`
 
 [O21-PX 2026-10-21] A deeper review: what the option did around each of the partner's trades, what their order book shows, and the account behind it. Sources, all read after the fact (nothing here places or changes an order): - the option's 1-minute candles for the session (the owner's market data, partner_trade_paths.py), else the 5-minute prints the analytics tick stored, marked as such; - the partner's Zerodha book: every option order with Zerodha's reason for a rejection, the price and trigger changes of modified orders, the positions and the day's cash (partner_broker_sync.py). partner_coach.analyse() calls ``apply`` on each traded card or off-card trade and ``day_details`` on each day.
 
-Top-level declarations: `Context` (line 73), `_minute` (line 96), `_session` (line 100), `_t` (line 104), `_clock` (line 109), `_pct` (line 113), `_lots` (line 118), `cash_of` (line 122), `_inside` (line 130), `_edge` (line 137), `_window` (line 143), `apply` (line 158), `_path_facts` (line 206), `_chart` (line 234), `_stop_orders_of` (line 261), `_order_events` (line 272), `_risk` (line 302), `_chased_spike` (line 350), `_gave_back` (line 379), `_stop_moves` (line 403), `_price_raised` (line 442), `_held_overnight` (line 469), `day_details` (line 496)
+Top-level declarations: `Context` (line 73), `_minute` (line 96), `_session` (line 100), `_t` (line 104), `_clock` (line 109), `_pct` (line 113), `_lots` (line 118), `when` (line 122), `cash_of` (line 130), `_inside` (line 138), `_edge` (line 145), `_window` (line 151), `apply` (line 166), `_path_facts` (line 214), `_chart` (line 242), `_stop_orders_of` (line 269), `_order_events` (line 280), `_risk` (line 310), `_chased_spike` (line 358), `_gave_back` (line 387), `_stop_moves` (line 411), `_price_raised` (line 450), `_held_overnight` (line 477), `day_details` (line 504)
 
 Engine dependencies: `partner_coach`
 
@@ -1588,7 +1588,7 @@ Related tests: `python-engine/tests/test_partner_insights.py`
 
 [O21-PL 2026-10-21] The partner's daily review: today's learnings first. partner_coach.analyse() finds what happened on each card and why it mattered. This module turns one day of that into what the partner reads in the evening, in this order: 1. the day in one line: trades, P&L after charges, and the cards as written on the same trades; 2. the lesson of the day: the mistake that cost the most (or, when nothing was lost, the most important rule broken), with what happened, why it matters, what would have been better and what it would have paid, and the rule for next time; repeated mistakes are grouped; 3. the other lessons, shorter; 4. what went well (so the habits to keep are said out loud)
 
-Top-level declarations: `_priority` (line 86), `_px` (line 90), `_lots` (line 96), `_traded` (line 101), `lessons` (line 110), `_rank` (line 134), `_fold` (line 139), `_well_done` (line 169), `trade_checks` (line 190), `score` (line 203), `option_lines` (line 231), `_fill_text` (line 267), `story` (line 274), `day_review` (line 336), `day_stats` (line 407), `active_days` (line 425), `progress` (line 434), `_bucket` (line 496), `_mean` (line 500), `window_stats` (line 504), `render_note` (line 586)
+Top-level declarations: `_priority` (line 111), `_px` (line 115), `_lots` (line 121), `_traded` (line 126), `lessons` (line 135), `_rank` (line 159), `_fold` (line 164), `_well_done` (line 194), `trade_checks` (line 215), `score` (line 228), `option_lines` (line 257), `_fill_text` (line 293), `story` (line 300), `day_review` (line 362), `day_stats` (line 439), `active_days` (line 457), `progress` (line 466), `_bucket` (line 528), `_mean` (line 532), `window_stats` (line 536), `render_note` (line 618)
 
 Engine dependencies: `partner_coach`
 
@@ -1683,6 +1683,14 @@ Top-level declarations: `_sha` (line 13), `_validated_public_scope` (line 18), `
 Engine dependencies: `fno_engine_mom`, `partner_decision_clock`, `partner_qualification`, `research_archive`
 
 Related tests: `python-engine/tests/test_partner_research_capture.py`
+
+## `python-engine/partner_review_pdf.py`
+
+[O23-PD 2026-10-23] The partner's day review as a PDF. The review page has a "Download PDF" button (GET /partner/review/pdf). This module prints what the page shows for one day (partner_lessons.day_review), in the page's order: the day in one line with the rules kept, the one rule to focus on tomorrow (newest day only), the lesson of the day, what went well, every other lesson with all its examples (the page folds them), the rules with what each one means, every trade with its checks, price chart, what the option did, its timeline and result, the day's orders, the cards not taken and the data notes. Nothing is recomputed: every sentence comes from the engine, and numbers are formatted as the
+
+Top-level declarations: `Fonts` (line 94), `_winansi` (line 101), `_load_fonts` (line 109), `fonts` (line 126), `plain` (line 134), `_finite` (line 151), `_group_in` (line 161), `_number_in` (line 172), `format_rs` (line 181), `format_price` (line 194), `signed_percent` (line 199), `minutes_label` (line 210), `long_day` (line 221), `short_day` (line 230), `_tone` (line 239), `_score_tone` (line 246), `_hex` (line 253), `chart_geometry` (line 261), `_place` (line 308), `price_chart` (line 327), `_Writer` (line 397), `_box` (line 443), `_pair` (line 454), `_line` (line 462), `_section` (line 468), `_boxes` (line 479), `_labeled` (line 491), `_example` (line 497), `_lesson_head` (line 507), `_examples` (line 515), `_lesson` (line 524), `_more` (line 537), `_headline` (line 545), `_focus` (line 575), `_well_done` (line 583), `_rules` (line 592), `_trade` (line 610), `_orders` (line 647), `_untaken` (line 666), `build_story` (line 681), `_PagedCanvas` (line 717), `render_review_pdf` (line 744)
+
+Related tests: `python-engine/tests/test_partner_review_pdf.py`
 
 ## `python-engine/partner_sizing.py`
 
@@ -2436,11 +2444,11 @@ Engine dependencies: `config`, `fno_exit_recovery`, `fno_spread_tilt`, `halt_swi
 
 ## `python-engine/routes_partner_coach.py`
 
-[O21-PC 2026-10-21] Partner coach and standard-capital views (read-mostly). GET /partner/coach the coach view (partner_coach.py) GET /partner/review [O21-PL] the partner's day review + progress (partner_lessons.py) POST /partner/coach/reports owner-entered fill (the partner told them) POST /partner/coach/reports/{id}/void remove a wrong report GET /performance/standard-capital every book on one capital (standard_capital.py) POST /partner/broker/session [O21-PK] the partner's Kite login (gateway callback) GET /partner/broker/status whether a partner login is held (never the token) POST /partner/broker/sync read the partner's order book now (owner button) All routes need the internal secret. N
+[O21-PC 2026-10-21] Partner coach and standard-capital views (read-mostly). GET /partner/coach the coach view (partner_coach.py) GET /partner/review [O21-PL] the partner's day review + progress (partner_lessons.py) GET /partner/review/days [O23-PH] every day with a review in the last 120 days GET /partner/review/pdf [O23-PD] one day's review as a PDF (partner_review_pdf.py) POST /partner/coach/reports owner-entered fill (the partner told them) POST /partner/coach/reports/{id}/void remove a wrong report GET /performance/standard-capital every book on one capital (standard_capital.py) POST /partner/broker/session [O21-PK] the partner's Kite login (gateway callback) GET /partner/broker/status w
 
-Top-level declarations: `PartnerReportPayload` (line 28), `VoidPayload` (line 40), `BrokerSessionPayload` (line 44), `_broker_http_error` (line 54), `get_partner_coach` (line 59), `get_partner_review` (line 66), `post_partner_coach_report` (line 95), `post_partner_coach_report_void` (line 109), `post_partner_broker_session` (line 119), `get_partner_broker_status` (line 129), `post_partner_broker_sync` (line 136), `get_standard_capital` (line 146)
+Top-level declarations: `PartnerReportPayload` (line 35), `VoidPayload` (line 47), `BrokerSessionPayload` (line 51), `_broker_http_error` (line 61), `get_partner_coach` (line 66), `_review` (line 72), `get_partner_review` (line 106), `get_partner_review_days` (line 114), `get_partner_review_pdf` (line 126), `post_partner_coach_report` (line 147), `post_partner_coach_report_void` (line 161), `post_partner_broker_session` (line 171), `get_partner_broker_status` (line 181), `post_partner_broker_sync` (line 188), `get_standard_capital` (line 198)
 
-Engine dependencies: `config`, `partner_broker_sync`, `partner_coach`, `partner_fill_capture`, `partner_lessons`, `standard_capital`
+Engine dependencies: `config`, `partner_broker_sync`, `partner_coach`, `partner_fill_capture`, `partner_lessons`, `partner_review_pdf`, `standard_capital`
 
 ## `python-engine/routes_penny_experiments.py`
 
@@ -2666,7 +2674,7 @@ Local routes: `GET /ltp`, `POST /square-off`, `POST /execute`
 
 Dependencies: `../config`, `../middleware/logger`, `../middleware/security`, `express`
 
-Local routes: `GET /callback`, `GET /coach`, `GET /review`
+Local routes: `GET /callback`, `GET /coach`, `GET /review`, `GET /review/days`, `GET /review/pdf`
 
 ## `node-gateway/server/routes/proxy.js`
 

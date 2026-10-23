@@ -886,7 +886,7 @@ def _sequence_flags(day_trades: list[dict]) -> None:
         previous = item
 
 
-def _overtrading(buys: int, cards: int, traded: list[dict]) -> dict:
+def _overtrading(buys: int, cards: int, traded: list[dict], on_day: str = "today") -> dict:
     """Day flag: more buys than cards, with the charges and the cards-only day."""
     priced = [i["_trade"] for i in traded if i["_trade"]["pnl"] is not None]
     actual = round(sum(t["pnl"] for t in priced), 2) if priced and len(priced) == len(traded) else None
@@ -899,7 +899,7 @@ def _overtrading(buys: int, cards: int, traded: list[dict]) -> dict:
     return _flag(
         "OVERTRADING", f"{buys} buys against {cards} card{'s' if cards != 1 else ''}.", _gap(actual, card_only),
         why="Extra trades come from watching the screen rather than from a setup"
-            + (f"; today's trades paid {_amt(charges)} in charges." if charges > 0 else ".") + _worked(actual),
+            + (f"; {on_day}'s trades paid {_amt(charges)} in charges." if charges > 0 else ".") + _worked(actual),
         better=(f"Only the card trades: {_instead(card_only, actual)}." if card_only is not None
                 else "Trade the cards only."), better_pnl=card_only, actual_pnl=actual)
 
@@ -984,7 +984,7 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         buys = sum(len(i["_trade"]["buys"]) for i in traded)
         actual = [i["_trade"]["pnl"] for i in traded if i["_trade"]["pnl"] is not None]
         if buys >= OVERTRADE_MIN_BUYS and buys > len(day_cards) + 1:
-            day_flags.append(_overtrading(buys, len(day_cards), traded))
+            day_flags.append(_overtrading(buys, len(day_cards), traded, insights.when(ctx, day)))
         plans = [i["plan"]["pnl"] for i in day_cards + day_again if i.get("_trade") and i["_trade"]["buys"]
                  and i.get("plan", {}).get("pnl") is not None and i["_trade"]["pnl"] is not None]
         row = {

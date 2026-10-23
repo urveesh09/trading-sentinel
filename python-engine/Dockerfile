@@ -22,8 +22,10 @@ ARG SENTINEL_RELEASE_SHA=unknown
 ARG SENTINEL_BUILD_UTC=unknown
 ARG SENTINEL_SERVICE_NAME=python-engine
 
-# Install curl for HEALTHCHECK and gosu for privilege drop in entrypoint
-RUN apt-get update && apt-get install -y curl gosu && rm -rf /var/lib/apt/lists/*
+# Install curl for HEALTHCHECK and gosu for privilege drop in entrypoint;
+# [O23-PD] DejaVu Sans for the partner's review PDF (it has the rupee sign,
+# the true minus and the check marks)
+RUN apt-get update && apt-get install -y curl gosu fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
 
 # Create the non-root user for production security. uid/gid 1000 is shared with
 # node-gateway's appuser: both write the shared cache.db and its WAL/SHM files.

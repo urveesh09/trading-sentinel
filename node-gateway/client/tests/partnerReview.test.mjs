@@ -97,3 +97,36 @@ test('[A22-P4] the page says what the background read is doing and refreshes onl
   assert.deepEqual(buildReviewModel({ sync: { state: 'reading' } }).sync, { state: 'reading' });
   assert.equal(buildReviewModel(undefined).sync, null);
 });
+
+test('[O23-PD] the PDF url carries a valid day only', async () => {
+  const { reviewPdfUrl } = await import('../src/utils/partnerReview.js');
+  assert.equal(reviewPdfUrl('2026-10-23'), '/api/partner-kite/review/pdf?day=2026-10-23');
+  assert.equal(reviewPdfUrl(''), '/api/partner-kite/review/pdf');
+  assert.equal(reviewPdfUrl('2026-10-23&evil=1'), '/api/partner-kite/review/pdf');
+});
+
+test('[O23-PH] the day list joins the sources newest first, and steps a day back or forward', async () => {
+  const { dayList, dayNeighbours } = await import('../src/utils/partnerReview.js');
+  const days = dayList(['2026-10-23', '2026-10-19'], ['2026-10-19', '2026-10-15', 'bad'], '2026-10-21', undefined);
+  assert.deepEqual(days, ['2026-10-23', '2026-10-21', '2026-10-19', '2026-10-15']);
+  assert.deepEqual(dayList(undefined, null, ''), []);
+  assert.deepEqual(dayNeighbours(days, '2026-10-19'), { older: '2026-10-15', newer: '2026-10-21' });
+  assert.deepEqual(dayNeighbours(days, '2026-10-23'), { older: '2026-10-21', newer: null });
+  assert.deepEqual(dayNeighbours(days, '2026-10-15'), { older: null, newer: '2026-10-19' });
+  assert.deepEqual(dayNeighbours(days, '2026-09-01'), { older: null, newer: null });
+});
+
+test('[O23-PH] an earlier day says "that day" and only the newest day shows tomorrow\'s focus', async () => {
+  const { dayWords } = await import('../src/utils/partnerReview.js');
+  assert.deepEqual(dayWords(false), { lesson: 'Your lesson for today', more: 'More to learn from today',
+    rules: 'Rules kept today', orders: 'Your orders today' });
+  assert.deepEqual(dayWords(true), { lesson: 'Your lesson from that day', more: 'More to learn from that day',
+    rules: 'Rules kept that day', orders: 'Your orders that day' });
+  const past = buildReviewModel({ day: '2026-10-19', today: '2026-10-23', newest: false });
+  assert.deepEqual([past.day, past.today, past.past, past.newest], ['2026-10-19', '2026-10-23', true, false]);
+  const today = buildReviewModel({ day: '2026-10-23', today: '2026-10-23', newest: true });
+  assert.deepEqual([today.past, today.newest], [false, true]);
+  // An engine from before O23 sends neither field: the page reads as before.
+  const older = buildReviewModel({ day: '2026-10-19' });
+  assert.deepEqual([older.past, older.newest], [false, true]);
+});

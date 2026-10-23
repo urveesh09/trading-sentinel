@@ -839,6 +839,22 @@
       "response_model": null
     },
     {
+      "endpoint": "get_partner_review_days",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/review/days",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_review_pdf",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/review/pdf",
+      "response_model": null
+    },
+    {
       "endpoint": "penny_command_get",
       "methods": [
         "GET"

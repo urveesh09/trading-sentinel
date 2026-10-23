@@ -1,5 +1,84 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 23 (evening) — O23 Partner review: earlier days, a PDF of the day, what each rule means (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 23 evening): the partner loved the review. Let them open
+  earlier days' reviews, add a button that downloads the day's review as a
+  PDF, and explain "Trade a Card" (the "Traded a card" rule).
+- Evidence (Production, read-only, Oct 23):
+  - The review already had a small day `<select>` over the last 30 days with
+    a card or a trade (Oct 13, 15, 19, 23).
+  - Oct 23 is the first Zerodha day: 12 trades, all without a card, so
+    "Traded a card 0/12".
+  - Kite Connect returns only the current day's orders. A day has Zerodha
+    trades only if Zerodha was read that day (the evening login, or the 15:40
+    wrap with a held login); nothing before the first login can be fetched.
+  - Card price paths are frozen at the 15:40 wrap
+    (`partner_coach_card_paths`) and the traded options' 1-minute paths are
+    stored (`partner_trade_paths`), so an older review stays as it was after
+    the 7-day OI purge.
+- [x] O23-PH earlier days.
+  - A day bar (◀ Earlier · the day list · Later ▶) replaces the small select.
+    The list covers 120 days (`GET /partner/review/days`, read once per page,
+    never polled), and Progress "Day by day" rows open their day.
+  - On an earlier day the page and the engine say "that day", not "today"
+    (headline, clean-day line, cash at risk, the day's charges, refusals,
+    expiry, the read-before-close note). The "Today" tab shows the date, and
+    "Tomorrow, focus on one thing" shows only on the newest day.
+  - Progress always covers the last `days` (30) days. Before, opening an old
+    day widened Progress to reach it.
+- [x] O23-PD PDF.
+  - `GET /partner/review/pdf?day=` (engine) prints the same day review with
+    reportlab, with vector text and charts. DejaVu Sans covers ₹ − ✓ ✗; a
+    missing glyph is replaced, never dropped.
+  - `GET /api/partner-kite/review/pdf` (gateway, partner or owner session,
+    20 a minute) passes on only a PDF, as `trading-review-YYYY-MM-DD.pdf`.
+  - "Download PDF" waits while today's Zerodha read is still running.
+- [x] O23-PM rule meanings. Every rule under "Rules kept" carries a plain
+  `means` line on the page and in the PDF. "Traded a card": the trade was on
+  a card the system sent on Telegram that day (the same option, bought after
+  the card arrived); a trade on any other option counts as a trade without a
+  card.
+- Files:
+  - `python-engine/`: `partner_lessons.py`, `partner_insights.py`,
+    `partner_coach.py` (wording only), `routes_partner_coach.py`, new
+    `partner_review_pdf.py`, `requirements.txt` (reportlab 4.4.10, pillow
+    12.3.0, charset-normalizer 3.5.2), `Dockerfile` (fonts-dejavu-core).
+  - `node-gateway/server/`: `routes/partner-kite.js`,
+    `middleware/security.js` (the `reviewPdf` limiter).
+  - `node-gateway/client/src/`: `pages/PartnerReview.jsx`,
+    `utils/partnerReview.js`.
+  - Tests.
+- Acceptance:
+  - Today's review reads exactly as before; an earlier day reads "that day".
+  - Progress does not change with the open day; the day list reaches 120
+    days.
+  - The PDF holds:
+    - the headline, and the focus (newest day only);
+    - the lesson, what went well, and every lesson in full;
+    - the rules with their meanings;
+    - every trade with its checks, chart, option lines, timeline and result;
+    - the orders, the cards not taken and the notes.
+  - No glyph is lost.
+  - The gateway passes only a PDF, under a fixed file name, and needs a
+    session.
+- Tests: engine full suite 5524 passed, 4 skipped, exit 0 (winvenv, Python 3.11.9, 9 min 12 s); the new tests/test_partner_review_pdf.py 12 passed; in the engine image (Debian 13, Python 3.11.17, fonts-dejavu-core, pinned packages) the partner tests 111 passed and the default font path embeds DejaVu with every symbol covered; gateway jest in a throwaway container 522 passed, 4 skipped (40/41 suites, partner-kite 10); client unit tests 63 passed and the Vite build passes; the real Oct 23 review printed to an 11-page PDF in 0.25 s and was checked page by page; the route golden adds exactly the two new GET routes
+- Config and migration impact:
+  - New Python packages and the Debian font package, so the engine image
+    must be rebuilt.
+  - No schema, setting or env change.
+- Rollout:
+  - Rebuild the engine, then the gateway, one at a time.
+  - Check: open the review, step to an earlier day, download the PDF on the
+    phone that opens the Telegram link.
+  - Rollback: revert the commit.
+- Remaining:
+  - Whether the PDF downloads inside Telegram's in-app browser depends on the
+    phone. Android Custom Tabs download it; an in-app browser that blocks
+    downloads needs "Open in browser", and then a fresh login.
+  - Days before the first Zerodha login have no Zerodha trades (Kite keeps no
+    order history). A Console tradebook import would be a separate piece.
+
 ## October 23 — S23 Oct 23 audit fixes: broker-stop identity, one equity charge contract, clean shutdown, terminal retry, iNAV screen, health backlog, telemetry identity, honest reporting (done, Dev, commit `7e2a2b9`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: the Oct 23 Production audit of PR #114 (`582d7a5`,

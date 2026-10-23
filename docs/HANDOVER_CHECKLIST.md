@@ -1,5 +1,23 @@
 # Handover receipt and operator checklist
 
+## October 23 (evening) — O23 partner review: earlier days, PDF, rule meanings (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] O23-PH earlier days:
+  - a day bar steps back and forward and lists 120 days;
+  - Progress days open their review;
+  - an earlier day reads "that day", and tomorrow's focus shows on the newest day only;
+  - Progress stays the last 30 days whichever day is open.
+- [x] O23-PD "Download PDF": the open day's review as `trading-review-YYYY-MM-DD.pdf` (engine reportlab + DejaVu; gateway passes only a PDF, 20 a minute, session needed).
+- [x] O23-PM every rule says what it means. "Traded a card" = the trade was on a card the system sent on Telegram that day (the same option, bought after the card arrived).
+- [x] Tests: engine full suite 5524 passed, 4 skipped, exit 0 (winvenv, Python 3.11.9, 9 min 12 s); the new tests/test_partner_review_pdf.py 12 passed; in the engine image (Debian 13, Python 3.11.17, fonts-dejavu-core, pinned packages) the partner tests 111 passed and the default font path embeds DejaVu with every symbol covered; gateway jest in a throwaway container 522 passed, 4 skipped (40/41 suites, partner-kite 10); client unit tests 63 passed and the Vite build passes; the real Oct 23 review printed to an 11-page PDF in 0.25 s and was checked page by page; the route golden adds exactly the two new GET routes
+- [ ] Deployed: no.
+  - The engine image needs a rebuild (reportlab, pillow, charset-normalizer, fonts-dejavu-core); then the gateway.
+  - After deploy:
+    - open `/?view=review` and step to Oct 19;
+    - download Oct 23's PDF;
+    - in the engine, `python -c "import partner_review_pdf as p; print(p.fonts())"` names `ReviewSans-…` with `embedded=True`.
+- [ ] Check on the partner's phone that the download works from the Telegram link; if the in-app browser blocks it, decide whether to add "Send the PDF to my Telegram".
+
 ## October 23 — S23 Oct 23 audit fixes (commit `7e2a2b9`, Dev, pushed, not deployed)
 
 - [x] S23-BS1 (P1, live only): a lost backstop receipt is resolved by the order's own tag, quantity, exchange and time, never by shape; doubt holds the exit and pages. The audit's reproducer now proceeds instead of adopting the old stop.

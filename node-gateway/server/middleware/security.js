@@ -63,6 +63,7 @@ const limiters = {
   orders: createLimiter(20, 60 * 1000),    // 20 req / 1 min
   token: createLimiter(10, 60 * 60 * 1000),// 10 req / 1 hour
   webhook: createLimiter(100, 60 * 1000),  // 100 req / 1 min
+  reviewPdf: createLimiter(20, 60 * 1000), // [O23-PD] 20 PDFs / 1 min (each is built by the engine)
   default: createLimiter(100, 60 * 1000)
 };
 

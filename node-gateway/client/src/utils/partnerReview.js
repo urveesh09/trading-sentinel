@@ -9,6 +9,45 @@ export function reviewUrl(day) {
   return DAY.test(String(day || '')) ? `/api/partner-kite/review?day=${day}` : '/api/partner-kite/review';
 }
 
+// [O23-PH] Every day with a review in the last 120 days (read once per page).
+export const REVIEW_DAYS_URL = '/api/partner-kite/review/days';
+
+// [O23-PD] The day's review as a PDF file.
+export function reviewPdfUrl(day) {
+  return DAY.test(String(day || '')) ? `/api/partner-kite/review/pdf?day=${day}` : '/api/partner-kite/review/pdf';
+}
+
+// [O23-PH] The days to pick from, newest first, each once: the review's own
+// window, the 120-day list and the open day.
+export function dayList(...lists) {
+  const days = new Set();
+  for (const list of lists) {
+    for (const day of Array.isArray(list) ? list : [list]) {
+      if (DAY.test(String(day || ''))) days.add(day);
+    }
+  }
+  return [...days].sort().reverse();
+}
+
+// The day before and after `day` in a newest-first list (null at either end).
+export function dayNeighbours(days, day) {
+  const index = days.indexOf(day);
+  if (index < 0) return { older: null, newer: null };
+  return { older: days[index + 1] || null, newer: index > 0 ? days[index - 1] : null };
+}
+
+// Section titles: "today" for today's review, "that day" for an earlier one
+// (the engine words its sentences the same way).
+export function dayWords(past) {
+  return past ? {
+    lesson: 'Your lesson from that day', more: 'More to learn from that day', rules: 'Rules kept that day',
+    orders: 'Your orders that day',
+  } : {
+    lesson: 'Your lesson for today', more: 'More to learn from today', rules: 'Rules kept today',
+    orders: 'Your orders today',
+  };
+}
+
 // "2026-10-19" -> "Mon 19 Oct" (a calendar date, no time zone involved).
 export function formatDay(day) {
   if (!DAY.test(String(day || ''))) return '';
@@ -136,8 +175,15 @@ export function chartGeometry(chart, { width = 320, height = 140, padX = 6, padY
 export function buildReviewModel(payload) {
   const review = payload?.review || {};
   const progress = payload?.progress || {};
+  const day = payload?.day || '';
+  const today = payload?.today || '';
   return {
-    day: payload?.day || '',
+    day,
+    today,
+    // [O23-PH] An earlier day than today; `newest` (today or the latest day
+    // with a review) is where tomorrow's focus belongs.
+    past: Boolean(day && today && day < today),
+    newest: payload?.newest !== false,
     days: Array.isArray(payload?.days_available) ? payload.days_available : [],
     headline: review.headline || { trades: 0, text: '' },
     lesson: review.lesson || null,

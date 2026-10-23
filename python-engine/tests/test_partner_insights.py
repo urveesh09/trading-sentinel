@@ -308,13 +308,14 @@ def test_rules_kept_count_process_not_money_and_the_stop_rule_needs_known_stops(
     [story] = review["trades"]
     assert [(c["key"], c["kept"]) for c in story["checks"]] == [
         ("card", False), ("entry", False), ("exit", True), ("calm", True), ("size", True)]
+    means = pl.RULE_MEANINGS     # [O23-PM] each rule says what it means
     assert review["score"] == {"kept": 4, "of": 6, "pct": 67, "rules": [
-        {"key": "card", "name": "Traded a card", "kept": 0, "of": 1},
-        {"key": "entry", "name": "Entered as planned", "kept": 0, "of": 1},
-        {"key": "exit", "name": "Exited by the plan", "kept": 1, "of": 1},
-        {"key": "calm", "name": "Calm after a loss", "kept": 1, "of": 1},
-        {"key": "size", "name": "Size within the account", "kept": 1, "of": 1},
-        {"key": "cards_only", "name": "Traded only the cards", "kept": 1, "of": 1}]}
+        {"key": "card", "name": "Traded a card", "kept": 0, "of": 1, "means": means["card"]},
+        {"key": "entry", "name": "Entered as planned", "kept": 0, "of": 1, "means": means["entry"]},
+        {"key": "exit", "name": "Exited by the plan", "kept": 1, "of": 1, "means": means["exit"]},
+        {"key": "calm", "name": "Calm after a loss", "kept": 1, "of": 1, "means": means["calm"]},
+        {"key": "size", "name": "Size within the account", "kept": 1, "of": 1, "means": means["size"]},
+        {"key": "cards_only", "name": "Traded only the cards", "kept": 1, "of": 1, "means": means["cards_only"]}]}
     assert story["option_lines"][:2] == [
         "Before you bought: up 31% in 15 minutes (from ₹100).",
         f"While you held (16 min): best ₹131 at 10:31 (₹0 open), worst ₹110 at 10:45 ({rs(-21 * 75)} open)."]

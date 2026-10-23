@@ -1,5 +1,94 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 23 (evening) — O23 partner review: earlier days, a PDF of the day, what each rule means (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **O23-PH earlier days.**
+  - **Engine `routes_partner_coach.py`.** `_review(day, days)` serves both
+    the page and the PDF.
+    - The window loaded is the larger of `days` (14–120, default 30) and the
+      span back to the asked day.
+    - `progress` uses only the last `days` days whichever day is open
+      (before, an old day widened it).
+    - The response adds `today` (IST date) and `newest`: the open day is
+      today or the latest day with a review.
+    - `GET /partner/review/days` returns every day with a card or a trade in
+      the last 120 days (`REVIEW_HISTORY_DAYS`), newest first.
+  - **Wording.**
+    - `partner_insights.when(ctx, day)` gives "today" for the analysis
+      date's session and "that day" for an earlier one. It is used in
+      BIG_RISK ("cash in your account …"), HELD_OVERNIGHT ("It expired …"),
+      INSUFFICIENT_FUNDS ("(n refusals …)") and OVERTRADING ("today's" /
+      "that day's trades paid").
+    - `partner_lessons.day_review(view, day, today=None)` words the headline
+      ("No trades that day."), the clean-day line, "At risk … of your cash
+      that day" and the read-before-close note ("trades after that are not
+      in this review").
+    - Without `today` (the evening note) everything reads as before.
+  - **Page `PartnerReview.jsx`.**
+    - `DayBar`: Earlier / select / Later over `dayList(review days, 120-day
+      list, open day)`.
+    - The "Today" tab shows the date on an earlier day, and section titles
+      come from `dayWords(past)`.
+    - Focus shows only when `newest`.
+    - Progress "Day by day" rows are buttons that open the day.
+  - **What a past day can show.**
+    - Zerodha trades exist only for days Zerodha was read (Kite returns only
+      the current day's orders).
+    - Card paths are frozen at the 15:40 wrap and traded options' 1-minute
+      paths are stored, so an old review does not change with the 7-day OI
+      purge.
+- **O23-PD the day's review as a PDF.**
+  - **Engine `partner_review_pdf.py`.**
+    - `render_review_pdf(document)` prints, in the page's order:
+      - the title and the made-at time;
+      - the headline box: P&L, rules kept, the stats line;
+      - tomorrow's focus, only when `newest`;
+      - the lesson (what / why / better, "Also on this trade", next time);
+      - what went well;
+      - every other lesson with all its examples;
+      - the rules with their meanings;
+      - each trade with its check chips, a vector price chart, the option
+        lines, the timeline, the result and its mistakes and habits;
+      - the orders with their refusals, the cards not taken and the notes.
+    - The footer reads "Coaching only. Nothing here places an order." and
+      "Page n of m".
+    - Number formats match the page: Indian grouping, a true minus,
+      `formatRs`, `formatPrice`, `signedPercent` and `minutesLabel`.
+    - The chart follows the page's `chartGeometry`: a far level is listed as
+      off the chart. Labels sit on small panels and are placed clear of each
+      other and of the dots.
+    - Fonts: DejaVu Sans from `/usr/share/fonts/truetype/dejavu`
+      (fonts-dejavu-core in the image), embedded and subset. Without it the
+      built-in Helvetica is used, and `plain()` replaces each character the
+      font lacks (₹ → "Rs ", − → "-"), never dropping one.
+    - Renders run in a worker thread under one lock (reportlab keeps module
+      state). About 0.25 s for the 12-trade Oct 23 day, 11 pages.
+  - **Engine route `GET /partner/review/pdf?day=`.**
+    - Returns `application/pdf` with `Content-Disposition: attachment;
+      filename="trading-review-YYYY-MM-DD.pdf"` and `Cache-Control:
+      no-store`.
+    - Errors: 422 for a bad day; 503 `pdf_unavailable` when reportlab is
+      missing (an image built before O23); 500 `pdf_failed` with a log line.
+  - **Gateway `/api/partner-kite/review/pdf`.**
+    - Needs a partner or owner session and accepts a day of YYYY-MM-DD only.
+      Limiter `reviewPdf` allows 20 a minute; the timeout is 30 s.
+    - Only a 200 `application/pdf` is passed on. The file name is used only
+      if it matches the fixed pattern, else `trading-review.pdf`.
+    - Anything else becomes a fixed JSON error (422 → 400, other → 502).
+  - **Gateway `/api/partner-kite/review/days`** has a 20 s timeout.
+  - **Page.** "Download PDF" is a same-origin link with `download`. While
+    today's Zerodha read is still running it shows "PDF after the update".
+- **O23-PM what each rule means.**
+  - `partner_lessons.RULE_MEANINGS` gives one plain line per rule. It
+    matches the flags that break the rule and their thresholds: 30 minutes,
+    5 minutes, a tenth of the cash, 20%, and cards + 1 with three buys.
+  - `score()["rules"][i]["means"]` carries the line; the page shows it under
+    each rule and so does the PDF.
+  - "Traded a card" means the trade was on a card the system sent on
+    Telegram that day: the same exchange and symbol, bought at or after the
+    card arrived (60 s slack), the same session. A trade on any other option
+    is "without a card" (OFF_CARD).
+
 ## October 23 — S23 Oct 23 audit fixes: broker-stop identity, one equity charge contract, clean shutdown, terminal retry, iNAV screen, health backlog, telemetry identity, honest reporting (actual behavior, Dev, commit `7e2a2b9`)
 
 - **S23-BS1 a broker stop is found by identity, not shape (live F&O only).**
