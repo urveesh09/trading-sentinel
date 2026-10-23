@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 23 — S23 Oct 23 audit fixes (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 23 — S23 Oct 23 audit fixes (commit `7e2a2b9`, Dev, pushed, not deployed)
 
 - [x] S23-BS1 (P1, live only): a lost backstop receipt is resolved by the order's own tag, quantity, exchange and time, never by shape; doubt holds the exit and pages. The audit's reproducer now proceeds instead of adopting the old stop.
 - [x] S23-COST1: one rule for equity charges. CNC sold the session it was bought pays intraday charges; held overnight it pays the full delivery schedule (tracker, EDGE confirmed exit, Momentum closes). DCMSRIND would be ₹48.84, not ₹82.58 (and not the audit's ₹118.31).

@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 23 — S23 Oct 23 audit fixes: broker-stop identity, one equity charge contract, clean shutdown, terminal retry, iNAV screen, health backlog, telemetry identity, honest reporting (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 23 — S23 Oct 23 audit fixes: broker-stop identity, one equity charge contract, clean shutdown, terminal retry, iNAV screen, health backlog, telemetry identity, honest reporting (actual behavior, Dev, commit `7e2a2b9`)
 
 - **S23-BS1 a broker stop is found by identity, not shape (live F&O only).**
   - Each backstop intent records its own broker tag (`BSL` + 17 hex, within

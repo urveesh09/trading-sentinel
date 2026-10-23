@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 23 — S23 Oct 23 audit fixes: broker-stop identity, one equity charge contract, clean shutdown, terminal retry, iNAV screen, health backlog, telemetry identity, honest reporting (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 23 — S23 Oct 23 audit fixes: broker-stop identity, one equity charge contract, clean shutdown, terminal retry, iNAV screen, health backlog, telemetry identity, honest reporting (done, Dev, commit `7e2a2b9`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Problem: the Oct 23 Production audit of PR #114 (`582d7a5`,
   `docs/2026-10-23-production-deep-audit.md` in Production) and our own
