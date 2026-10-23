@@ -197,9 +197,12 @@ async def record_scheduler_event(
     scheduled_at: datetime | None = None, started_at: datetime | None = None,
     ended_at: datetime | None = None, elapsed_seconds: float | None = None,
     reason: str | None = None, stage_durations: dict[str, Any] | None = None,
-    retention: int = 5000,
+    retention: int = 5000, run_id: str | None = None, busy_ms: int = 100,
 ) -> None:
-    """Persist one bounded fact. Telemetry failure must never fail a job."""
+    """Persist one bounded fact. Telemetry failure must never fail a job.
+
+    [S23-T1] With ``run_id`` the fact is idempotent: a replay of a completion
+    already written inserts nothing and counts nothing twice."""
     if not job_id or not event_kind or not result:
         raise ValueError("job_id, event_kind and result are required")
     if retention < 100:
@@ -207,16 +210,16 @@ async def record_scheduler_event(
     import json
     created_at = _utc_now()
     payload = json.dumps(stage_durations or {}, sort_keys=True, separators=(",", ":"))
-    async with aiosqlite.connect(db_path, timeout=0.10) as db:
-        await db.execute("PRAGMA busy_timeout=100")
+    async with aiosqlite.connect(db_path, timeout=busy_ms / 1000) as db:
+        await db.execute(f"PRAGMA busy_timeout={int(busy_ms)}")
         await db.executescript(_SCHEMA)
-        await db.execute(
-            "INSERT INTO scheduler_run_telemetry VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-            (uuid.uuid4().hex, BOOT_ID, job_id[:120], event_kind[:48], _iso(scheduled_at),
+        cursor = await db.execute(
+            "INSERT OR IGNORE INTO scheduler_run_telemetry VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            (run_id or uuid.uuid4().hex, BOOT_ID, job_id[:120], event_kind[:48], _iso(scheduled_at),
              _iso(started_at), _iso(ended_at), elapsed_seconds,
             result[:48], (reason or "")[:240], payload, _iso(created_at)),
         )
-        if result != "IN_FLIGHT":
+        if cursor.rowcount == 1 and result != "IN_FLIGHT":
             await _record_daily_summary(
                 db, job_id=job_id, event_kind=event_kind, result=result,
                 occurred_at=ended_at or started_at or created_at,
@@ -232,7 +235,8 @@ async def record_scheduler_event(
         await db.commit()
 
 
-async def start_scheduler_run(db_path: str, *, job_id: str, retention: int = 5000) -> str:
+async def start_scheduler_run(db_path: str, *, job_id: str, retention: int = 5000,
+                              run_id: str | None = None) -> str:
     """Durably mark a callback in-flight before awaiting business work.
 
     The marker is best-effort from the scheduler wrapper's perspective: a
@@ -242,7 +246,7 @@ async def start_scheduler_run(db_path: str, *, job_id: str, retention: int = 500
     """
     if not job_id:
         raise ValueError("job_id is required")
-    run_id = uuid.uuid4().hex
+    run_id = run_id or uuid.uuid4().hex
     now = _utc_now()
     async with aiosqlite.connect(db_path, timeout=0.10) as db:
         await db.execute("PRAGMA busy_timeout=100")
@@ -355,9 +359,14 @@ def instrument_async_job(
     async def wrapped() -> Any:
         started = _utc_now()
         monotonic_started = time.monotonic()
-        run_id: str | None = None
+        # [S23-T1] The run's identity exists before its marker: Oct 23 14:20 a
+        # lost marker left the completion with run_id=None, so its fallback
+        # insert could neither use the retry budgets nor be replayed exactly.
+        run_id = uuid.uuid4().hex
+        marked = False
         try:
-            run_id = await start_scheduler_run(db_path, job_id=job_id, retention=retention)
+            await start_scheduler_run(db_path, job_id=job_id, retention=retention, run_id=run_id)
+            marked = True
             _ACTIVE_RUNS.add(run_id)
         except Exception:
             # Telemetry has a deliberately tiny lock budget and cannot become
@@ -391,13 +400,16 @@ def instrument_async_job(
                 await _replay_pending(db_path, retention)
             else:
                 _park_completion(run_id, final)
-            if run_id is not None:
+            if marked:
                 _ACTIVE_RUNS.discard(run_id)
     return wrapped
 
 
 async def _write_final(db_path: str, run_id: str | None, final: dict[str, Any], retention: int) -> bool:
-    """Persist one final fact with bounded retries; True when it is durable."""
+    """Persist one final fact with bounded retries; True when it is durable.
+
+    [S23-T1] Without an in-flight marker the fact is inserted under the run's
+    own id with the same growing busy budget, so a replay is idempotent."""
     error: str | None = None
     for budget in COMPLETION_BUSY_BUDGETS_MS:
         try:
@@ -413,6 +425,7 @@ async def _write_final(db_path: str, run_id: str | None, final: dict[str, Any], 
                     started_at=final["started_at"], ended_at=final["ended_at"],
                     elapsed_seconds=final["elapsed_seconds"], reason=final["reason"],
                     stage_durations=final["stage_durations"], retention=retention,
+                    run_id=run_id, busy_ms=budget,
                 )
             return True
         except Exception as exc:  # noqa: BLE001 - telemetry is best-effort

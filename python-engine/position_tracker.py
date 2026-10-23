@@ -6,11 +6,22 @@ from datetime import datetime
 import structlog
 from typing import List
 from models import OpenPosition
-from engine import calc_zerodha_costs
+from equity_charges import charged_as_intraday
+from penny_risk import calc_penny_costs
 from chandelier_stop import ChandelierStop
 from config import settings
 
 logger = structlog.get_logger()
+
+
+def settlement_costs(pos: dict, exit_price: float, shares: int, exit_date) -> float:
+    """[S23-COST1] Round-trip charges for a tracker settlement.
+
+    The tracker settles only the Penny/EDGE paper books, so it uses their cost
+    function (the confirmed EDGE exit's) and the same rule: CNC sold in the
+    session it was bought pays intraday charges, held overnight delivery."""
+    intraday = charged_as_intraday(pos.get('product_type'), pos['entry_date'], exit_date, default_product="CNC")
+    return calc_penny_costs(pos['entry_price'], exit_price, shares, is_intraday=intraday)
 
 
 async def _init_pnl_outbox(db_path: str) -> None:
@@ -359,7 +370,7 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
                     closed_shares = 1 # If only 1 share, sell it all
                 remaining_shares = pos['shares'] - closed_shares
                 gross = (exit_price - pos['entry_price']) * closed_shares
-                costs = calc_zerodha_costs(pos['entry_price'], exit_price, closed_shares, is_intraday=False)
+                costs = settlement_costs(pos, exit_price, closed_shares, current_date_str)
                 realised_pnl = gross - costs
                 if remaining_shares == 0:
                     # Full close (if you only had 1 share)
@@ -409,7 +420,7 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
             else:
                 # Normal Full Close (Stop Loss, Target 2, or Time Expiry)
                 gross = (exit_price - pos['entry_price']) * pos['shares']
-                costs = calc_zerodha_costs(pos['entry_price'], exit_price, pos['shares'], is_intraday=False)
+                costs = settlement_costs(pos, exit_price, pos['shares'], current_date_str)
                 realised_pnl = gross - costs
                 total_realised_pnl = float(pos.get('realised_pnl') or 0) + realised_pnl
                 risk_initial = float(pos.get('initial_capital_at_risk') or 0)

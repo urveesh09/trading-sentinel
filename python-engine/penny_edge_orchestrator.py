@@ -905,6 +905,7 @@ async def _settle_confirmed_edge_fill(
     exit_reason: str, exit_date: str,
 ) -> dict:
     """Persist one broker/paper-confirmed fill behind a quantity fence."""
+    from equity_charges import charged_as_intraday
     from penny_risk import calc_penny_costs
     from performance import allocation_for_source, init_ledger
 
@@ -916,8 +917,10 @@ async def _settle_confirmed_edge_fill(
     remaining = requested - quantity
     entry = float(position["entry_price"])
     product_type = str(position["product_type"] or "CNC").upper()
+    # [S23-COST1] CNC sold in the session it was bought pays intraday charges.
     costs = calc_penny_costs(
-        entry, fill_price, quantity, is_intraday=(product_type == "MIS"),
+        entry, fill_price, quantity,
+        is_intraday=charged_as_intraday(product_type, position.get("entry_date"), exit_date),
     )
     pnl = (fill_price - entry) * quantity - costs
     prior_pnl = float(position.get("realised_pnl") or 0)

@@ -152,6 +152,15 @@ def _price_exit(quote: dict, *, today: str, auction: bool, trade_date: str, tick
               else "OPEN_RETRY" if retry else "NEXT_OPEN")
     item = {"trade_date": trade_date, "ticker": ticker, "exit_open": float(open_price),
             "exit_price": exit_price, "costs": round(costs, 4), "net_pnl": net, "reason": reason}
+    # [S23-S1 2026-10-23] The modelled exit is the open less 5 bp, but the
+    # exit runs at 09:17 and two Oct 23 entries showed ~3% displayed spreads.
+    # Record what selling into the quote's best bid would have paid, so the
+    # comparison can show how far the model sits above it. Measurement only.
+    bid = _best_bid(quote)
+    if bid is not None:
+        bid_costs = float(calc_penny_costs(entry_price, bid, shares, is_intraday=False))
+        item["exit_bid"] = bid
+        item["exit_bid_net"] = round((bid - entry_price) * shares - bid_costs, 4)
     # [OVERNIGHT-ATTRIBUTION 2026-10-06, date-checked 2026-10-07 T3] A quote's
     # ohlc.close is the PREVIOUS session's close. It is the entry day's close
     # only when the entry day is the session right before today; a missed
@@ -211,6 +220,13 @@ def _store(path: str):
         columns = {row[1] for row in conn.execute("PRAGMA table_info(edge_overnight_paper_trades)")}
         if "entry_day_close" not in columns:
             conn.execute("ALTER TABLE edge_overnight_paper_trades ADD COLUMN entry_day_close REAL")
+        # [S23-S1 2026-10-23] Displayed bid/ask at entry; the bid on the exit
+        # quote and the net had the position been sold there.
+        for table in ("edge_overnight_paper_trades", "edge_overnight_shadow_trades"):
+            have = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+            for column in ("entry_bid", "entry_ask", "exit_bid", "exit_bid_net"):
+                if column not in have:
+                    conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} REAL")
         notice_columns = {row[1] for row in conn.execute("PRAGMA table_info(edge_overnight_paper_notices)")}
         for column in ("next_attempt_at", "last_error"):
             if column not in notice_columns:
@@ -316,10 +332,11 @@ def _close_shadow_items(conn: sqlite3.Connection, today: str, closed: list[dict]
     for c in closed:
         conn.execute(
             "UPDATE edge_overnight_shadow_trades SET status='CLOSED', exit_date=?, exit_open=?, exit_price=?, "
-            "costs=?, net_pnl=?, exit_reason=?, entry_day_close=? "
+            "costs=?, net_pnl=?, exit_reason=?, entry_day_close=?, exit_bid=?, exit_bid_net=? "
             "WHERE variant=? AND trade_date=? AND ticker=? AND status='OPEN'",
             (today, c["exit_open"], c["exit_price"], c["costs"], c["net_pnl"], c["reason"],
-             c.get("entry_day_close"), c["variant"], c["trade_date"], c["ticker"]))
+             c.get("entry_day_close"), c.get("exit_bid"), c.get("exit_bid_net"),
+             c["variant"], c["trade_date"], c["ticker"]))
 
 
 def _already_ran(conn: sqlite3.Connection, day: str, phase: str) -> Optional[dict]:
@@ -827,15 +844,15 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
             return {**_already_ran(conn, today, "ENTRY"), "repeat": True}
         conn.executemany(
             "INSERT INTO edge_overnight_paper_trades (trade_date, ticker, kind, strength, entry_ltp, entry_price, "
-            "shares, entry_ts, status) VALUES (?,?,?,?,?,?,?,?, 'OPEN')",
+            "shares, entry_ts, status, entry_bid, entry_ask) VALUES (?,?,?,?,?,?,?,?, 'OPEN',?,?)",
             [(today, o["ticker"], o["kind"], o["strength"], o["entry_ltp"], o["entry_price"], o["shares"],
-              decided.isoformat()) for o in opened])
+              decided.isoformat(), o.get("best_bid"), o.get("best_ask")) for o in opened])
         for name, result in shadows.items():
             conn.executemany(
                 "INSERT OR IGNORE INTO edge_overnight_shadow_trades (variant, trade_date, ticker, kind, entry_ltp, "
-                "entry_price, shares, entry_ts, status) VALUES (?,?,?,?,?,?,?,?, 'OPEN')",
+                "entry_price, shares, entry_ts, status, entry_bid, entry_ask) VALUES (?,?,?,?,?,?,?,?, 'OPEN',?,?)",
                 [(name, today, o["ticker"], o["kind"], o["entry_ltp"], o["entry_price"], o["shares"],
-                  decided.isoformat()) for o in result["opened"]])
+                  decided.isoformat(), o.get("best_bid"), o.get("best_ask")) for o in result["opened"]])
         _record_run(conn, today, "ENTRY", summary, decided, format_entry_telegram(summary))
     logger.info("edge_overnight_entry date=%s quoted=%d candidates=%d opened=%d",
                 today, len(bars_today), len(scan["candidates"]), len(opened))
@@ -980,8 +997,38 @@ async def retry_waiting_exits(kite, db_path: Optional[str] = None, now: Optional
     return summary
 
 
+def _realism(rows: list, closed: list) -> dict:
+    """[S23-S1] What the paper model may flatter, on the same trades.
+
+    ``entry_spread_pct``: displayed (best ask - best bid) / LTP at entry; the
+    ON_TIGHT_SPREAD arm measures fill over LTP instead. ``exit_at_bid``: the
+    net had each close sold into the exit quote's best bid; ``model_minus_bid``
+    is how much the modelled open-auction exit adds. ``entry_at_close``: the
+    net had the same shares been bought at the entry day's close. Counter-
+    factuals for measurement; rows recorded before S23-S1 lack the fields."""
+    from penny_risk import calc_penny_costs
+    spreads = [100 * (float(r[7]) - float(r[6])) / float(r[0]) for r in rows
+               if r[0] and r[6] is not None and r[7] is not None]
+    at_bid = [(float(r[4]), float(r[8])) for r in closed if r[8] is not None]
+    at_close = []
+    for r in closed:
+        if r[9] is None or r[10] is None:
+            continue
+        close_px, exit_px, shares = float(r[9]), float(r[10]), int(r[2])
+        alt = (exit_px - close_px) * shares - float(calc_penny_costs(close_px, exit_px, shares, is_intraday=False))
+        at_close.append((float(r[4]), alt))
+    return {
+        "entry_spread_pct": round(sum(spreads) / len(spreads), 3) if spreads else None,
+        "exit_at_bid": {"closes": len(at_bid), "net": round(sum(b for _n, b in at_bid), 2),
+                        "model_minus_bid": round(sum(n - b for n, b in at_bid), 2)},
+        "entry_at_close": {"closes": len(at_close), "net": round(sum(a for _n, a in at_close), 2),
+                           "versus_actual": round(sum(a - n for n, a in at_close), 2)},
+    }
+
+
 def _book_stats(rows: list) -> dict:
-    """rows: (entry_ltp, entry_price, shares, status, net_pnl, costs)."""
+    """rows: (entry_ltp, entry_price, shares, status, net_pnl, costs, entry_bid,
+    entry_ask, exit_bid_net, entry_day_close, exit_price)."""
     closed = [r for r in rows if r[3] == "CLOSED" and r[4] is not None]
     nets = [float(r[4]) for r in closed]
     wins, losses = [n for n in nets if n > 0], [n for n in nets if n < 0]
@@ -994,7 +1041,8 @@ def _book_stats(rows: list) -> dict:
             "avg_net_per_trade": round(sum(nets) / len(nets), 2) if nets else None,
             "charges": round(sum(costs), 2),
             "avg_entry_cost_pct": round(100 * sum(spreads) / len(spreads), 3) if spreads else None,
-            "avg_position_value": round(sum(values) / len(values), 2) if values else None}
+            "avg_position_value": round(sum(values) / len(values), 2) if values else None,
+            "realism": _realism(rows, closed)}
 
 
 def overnight_shadow_comparison(db_path: Optional[str] = None) -> dict:
@@ -1005,7 +1053,10 @@ def overnight_shadow_comparison(db_path: Optional[str] = None) -> dict:
            "book": None, "shadows": [], "research_only": True,
            "notes": ["Same picks, quotes and decision time at entry and the same exit quotes as the book; "
                      "each shadow has its own cash.",
-                     "Declared before scoring; compare only on the nights since the first shadow entry."]}
+                     "Declared before scoring; compare only on the nights since the first shadow entry.",
+                     "[S23-S1] ON_TIGHT_SPREAD limits the fill premium over LTP, not the displayed bid-ask "
+                     "spread; realism.entry_spread_pct is the displayed spread. realism.exit_at_bid and "
+                     "entry_at_close are counterfactuals on the same trades, for measurement only."]}
     if not os.path.exists(store):
         return out
     try:
@@ -1013,11 +1064,19 @@ def overnight_shadow_comparison(db_path: Optional[str] = None) -> dict:
             since = conn.execute("SELECT MIN(trade_date) FROM edge_overnight_shadow_trades").fetchone()[0]
             if since is None:
                 return out
-            cols = "entry_ltp, entry_price, shares, status, net_pnl, costs"
-            book = conn.execute(f"SELECT {cols} FROM edge_overnight_paper_trades WHERE trade_date >= ?",
-                                (since,)).fetchall()
+            wanted = ("entry_ltp", "entry_price", "shares", "status", "net_pnl", "costs", "entry_bid", "entry_ask",
+                      "exit_bid_net", "entry_day_close", "exit_price")
+
+            def cols(table):
+                # A store not yet migrated by S23-S1 (read-only here) lacks the new fields.
+                have = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+                return ", ".join(c if c in have else f"NULL AS {c}" for c in wanted)
+
+            book = conn.execute(f"SELECT {cols('edge_overnight_paper_trades')} FROM edge_overnight_paper_trades "
+                                "WHERE trade_date >= ?", (since,)).fetchall()
+            shadow_cols = cols("edge_overnight_shadow_trades")
             shadows = {shadow.name: conn.execute(
-                f"SELECT {cols} FROM edge_overnight_shadow_trades WHERE variant=? AND trade_date >= ?",
+                f"SELECT {shadow_cols} FROM edge_overnight_shadow_trades WHERE variant=? AND trade_date >= ?",
                 (shadow.name, since)).fetchall() for shadow in OVERNIGHT_SHADOWS}
     except sqlite3.OperationalError:
         return out
@@ -1032,9 +1091,10 @@ def _close_items(conn: sqlite3.Connection, today: str, closed: list[dict]) -> No
     for c in closed:
         conn.execute(
             "UPDATE edge_overnight_paper_trades SET status='CLOSED', exit_date=?, exit_open=?, exit_price=?, "
-            "costs=?, net_pnl=?, exit_reason=?, entry_day_close=? WHERE trade_date=? AND ticker=? AND status='OPEN'",
+            "costs=?, net_pnl=?, exit_reason=?, entry_day_close=?, exit_bid=?, exit_bid_net=? "
+            "WHERE trade_date=? AND ticker=? AND status='OPEN'",
             (today, c["exit_open"], c["exit_price"], c["costs"], c["net_pnl"], c["reason"],
-             c.get("entry_day_close"), c["trade_date"], c["ticker"]))
+             c.get("entry_day_close"), c.get("exit_bid"), c.get("exit_bid_net"), c["trade_date"], c["ticker"]))
 
 
 def _exit_summary(conn: sqlite3.Connection, today: str, phase: str, closed: list, waiting: list) -> dict:

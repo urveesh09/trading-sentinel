@@ -1,5 +1,23 @@
 # Handover receipt and operator checklist
 
+## October 23 — S23 Oct 23 audit fixes (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] S23-BS1 (P1, live only): a lost backstop receipt is resolved by the order's own tag, quantity, exchange and time, never by shape; doubt holds the exit and pages. The audit's reproducer now proceeds instead of adopting the old stop.
+- [x] S23-COST1: one rule for equity charges. CNC sold the session it was bought pays intraday charges; held overnight it pays the full delivery schedule (tracker, EDGE confirmed exit, Momentum closes). DCMSRIND would be ₹48.84, not ₹82.58 (and not the audit's ₹118.31).
+- [x] S23-G1: entry gates price full costs (the ₹50k bypass is gone); Momentum acceptance unchanged.
+- [x] S23-SG: engine `stop_grace_period: 45s`, uvicorn graceful wait 10 s.
+- [x] S23-R1: second Momentum terminal pass at 16:05 for trades still censored.
+- [x] S23-U1: ETF iNAV tickers left out of the universe screen.
+- [x] S23-H1: gateway health degrades on recent dead letters, recent unsynced orders and any unsynced order that may have filled; older settled backlog is under `stale_backlog`.
+- [x] S23-T1: every scheduler run has its id before its marker; completions are written with the growing budgets and replay without duplicates.
+- [x] S23-M1/M2: nudge quotes the last measured refresh; 16:00 digest has an all-books block (main, Smart V1, overnight with holdings, subtotal; V2 apart).
+- [x] S23-S1: overnight trades record displayed bid/ask and the exit-quote bid; the comparison shows `realism` counterfactuals. S23-Q1: short quote batches name the missing symbols.
+- [x] S23-D1: PR #112/#113 slices now say deployed.
+- [ ] Oct 6 Momentum allocation holdout is due; evaluate it at `b03afa5` (its fingerprint commit, since S23 changed `engine.py`).
+- [x] Tests: engine 5512 passed, 4 skipped (full suite, exit 0); gateway 519 passed, 4 skipped (full jest suite in a throwaway Linux container from the gateway image, no network); the health, dead-letter and backlog suites re-run after comment edits: 19 passed.
+- [ ] Deployed: no. After deploy, see the plan's rollout list (clean shutdown receipt, 16:05 retry line, smaller history scope, health `ok` with `stale_backlog`, nudge, digest block, overnight `realism`).
+- [ ] Owner decisions pending: old backlog clean-up via the reviewed reconciliation; whether anything about the ₹127.79 historical over-charge is reported beyond the docs (the ledger is not rewritten).
+
 ## October 22 (evening) — T22-BG / T22-U (commit `3a9f674`, Dev, pushed, deployed 2026-10-22 19:38 IST by PR #114 (`582d7a5`))
 
 - [x] Suite hang at exit diagnosed: a leaked aiosqlite worker from an unheld startup catch-up. Not caused by A22; A22 itself passed in full (5,451).
@@ -10,7 +28,7 @@
 - [x] Tests: engine 5460 passed, 4 skipped (full suite, Windows winvenv, aiosqlite 0.21.0; exit 0, no leaked worker); client unchanged (60 passed, vite build ok).
 - [x] Deployed 2026-10-22 19:38 IST (PR #114, `582d7a5`). Images were built one service at a time (a combined build was stopped for low host memory). `verify_deployment.py` passed for the engine, gateway and agent; the engine image has aiosqlite 0.21.0; no `Task was destroyed` or errors on start; `/health` shows the release and `fno_exit_paths` (recording, 0). `trading_ready=false` is the standing `order_execution_unverified` (no real broker order yet).
 - [ ] Next session (2026-10-23): `penny_universe_refresh_done elapsed` in minutes, `penny_universe_history_scope fetch≈900–1,000`, `count=100`, quality audit like today's.
-- [ ] Engine stop grace: SIGKILL came 3 s after SIGTERM at this redeploy (exit 137, `cause=unclean_stop`); see the plan.
+- [x] (done in S23-SG) Engine stop grace: SIGKILL came 3 s after SIGTERM at this redeploy (exit 137, `cause=unclean_stop`); see the plan.
 
 ## October 22 — A22 audit follow-up (commit `ffa979c`, Dev, pushed, deployed 2026-10-22 19:38 IST by PR #114 (`582d7a5`))
 
@@ -25,7 +43,7 @@
 - [x] Deployed 2026-10-22 19:38 IST (PR #114); `/health` has the `fno_exit_paths` counters.
 - [ ] Still to see on live use: `params` on the first exit-path line of an F&O position, the partner login status line, `versus` in `/experiments/penny-smart`.
 
-## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit `ace52ab`, Dev, pushed, not deployed)
+## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit `ace52ab`, Dev, pushed, deployed: merged by PR #113 (`33065ed`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] F&O profit lock needs a second look ≥ 8 s after the first under its floor (rollback `FNO_PROFIT_LOCK_CONFIRM_SEC=0`).
 - [x] Every F&O exit look recorded (`fno_exit_paths`), exported, and replayable by arm (`fno_exit_cadence.py`).
@@ -33,11 +51,11 @@
 - [x] Partner cards and expiry promotions: no change, with the reasons in SYSTEM_GUIDE.
 - [x] Tests: new 14; full engine suite 5,433 passed, 4 skipped, 0 failed (9 min).
 - [ ] Deployed: no. After deploy: exit-path lines on the first F&O position; two Smart state rows after the first Penny scan.
-## October 21 (night, 2) — SX-M1 Momentum shadow scoring (commit `27ee87b`, Dev, pushed, not deployed)
+## October 21 (night, 2) — SX-M1 Momentum shadow scoring (commit `27ee87b`, Dev, pushed, deployed: merged by PR #113 (`33065ed`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] Gap-exit closes shown apart and never scored; promotion gate counts scored closes. Related tests 58 pass; full suite not rerun.
 - [ ] SX-F1 F&O live-cadence exit evidence: designed only (see NEXT_AGENT_PLAN).
-## October 21 (night) — O21-PX partner's deeper review (commit `68eec28`, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 21 (night) — O21-PX partner's deeper review (commit `68eec28`, Dev, branch `codex/production-correction-hedge-p0`, pushed, deployed: merged by PR #113 (`33065ed`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] One review link every trading day after the brief
   (`ensure_review_message`: the coach note's button, else the prompt).
@@ -60,7 +78,7 @@
   setting; the partner's keys as already listed).
 - [ ] After deploy: the 15:40 link; after the partner's login the
   `partner_paths_stored` line and charts on the review.
-## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit `462d28f`, Dev, branch `codex/oct21-audit-fixes`, pushed, not deployed)
+## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit `462d28f`, Dev, branch `codex/oct21-audit-fixes`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] S21-R1 15:32 terminal pass for virtual Momentum trades (receipts
   CLOSED / CENSORED); S21-R2 RS identity binds index, daily bars, rules,
@@ -87,7 +105,7 @@
   counts; shadow rows at the 15:20 overnight entry; the 15:45 EDGE alarm
   quiet when the paper leg enters, or naming the real refusal.
 
-## October 21 (night) — the partner's review page + explained lessons (commit `6f882f0`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (night) — the partner's review page + explained lessons (commit `6f882f0`, Dev, branch `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] O21-PL each flag: what happened, why it matters (this trade's
   numbers), the better action and what it would have paid, the rule;
@@ -117,7 +135,7 @@
 - [ ] First Zerodha evening: open the review on a phone; check the lesson
   against the partner's Kite order book.
 
-## October 21 (evening) — the partner's Zerodha fills + coach-only review page (commit `9648f95`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (evening) — the partner's Zerodha fills + coach-only review page (commit `9648f95`, Dev, branch `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] O21-PK `partner_broker_sync.py`: evening "Open today's review" button
   (Kite login for the partner's own Personal app); the callback reads GET
@@ -153,7 +171,7 @@
 - [ ] First evening: the prompt arrives after 15:40; the login lands on the
   review; `partner_zerodha_synced` count matches the partner's order book.
 
-## October 21 (afternoon) — partner fill capture + coach, standard capital, F&O broker backstop (commit `b580af2`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (afternoon) — partner fill capture + coach, standard capital, F&O broker backstop (commit `b580af2`, Dev, branch `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] O21-PC cards carry Bought/Skipped buttons, exit updates Sold; replies
   record or correct prices; off-card "b NIFTY 22950 PE 120 x2"; only the
@@ -191,7 +209,7 @@
   tell the partner about the buttons (only without Zerodha; with it the
   evening "Open today's review" button replaces them, O21-PK above).
 
-## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `a88da98`, Dev, pushed, not deployed)
+## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `a88da98`, Dev, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] B (main) sells both legs once the pair nets 20% after fees (BP's rule).
   BP was never worse than B on any expiry B traded (+₹2,998.74 over four;

@@ -148,6 +148,14 @@ def _is_intraday_from_product_type(product_type) -> bool:
     if not product_type:
         return True
     return str(product_type).strip().upper() != "CNC"
+
+
+def _charged_as_intraday(pos: dict, exit_at=None) -> bool:
+    """[S23-COST1] MIS (or no product: legacy intraday), or CNC sold in the
+    session it was bought. Only CNC held overnight pays delivery charges."""
+    from equity_charges import IST as _IST, charged_as_intraday
+    return charged_as_intraday(pos.get("product_type"), pos.get("entry_date"),
+                               exit_at or datetime.now(_IST))
 from penny_regime import PennyRegimeEngine
 from penny_scanner import PennyScanner
 # app = FastAPI(title="Quant Engine Container B")
@@ -831,6 +839,9 @@ async def run_penny_universe_refresh() -> bool:
                 datetime.now(timezone.utc).strftime("%Y-%m-%d"),
                 elapsed,
             )
+            # [S23-M1] The login nudge quotes this measured duration.
+            from daily_bootstrap import record_universe_refresh
+            record_universe_refresh(elapsed)
             return True
     except Exception as e:
         logger.error("penny_universe_refresh_failed", error=str(e))
@@ -2209,6 +2220,12 @@ async def lifespan(app: FastAPI):
     # get the bars the scans never passed them (their 15:15 time exit).
     scheduler.add_job(run_momentum_shadow_terminal, 'cron', day_of_week='mon-fri', hour=15, minute=32,
                       id="momentum_shadow_terminal", max_instances=1, coalesce=True, misfire_grace_time=1800)
+    # [S23-R1] Oct 23: two of four trades had no 15:15 bar at 15:32 and stayed
+    # CENSORED. A second pass re-reads only trades still without a CLOSED
+    # event (a CENSORED receipt may become CLOSED, never the reverse).
+    scheduler.add_job(run_momentum_shadow_terminal, 'cron', day_of_week='mon-fri', hour=16, minute=5,
+                      kwargs={"pass_name": "retry"}, id="momentum_shadow_terminal_retry", max_instances=1,
+                      coalesce=True, misfire_grace_time=1800)
 
     scheduler.add_job(kite.clear_intraday_cache, 'cron', hour=0, minute=5, id="intraday_cache_cleanup")
 
@@ -2451,8 +2468,9 @@ async def lifespan(app: FastAPI):
     _LIVENESS_TICK_STOP.set()
     _liveness_thread.join(timeout=10)
     # [T22-BG] Let background tasks finish briefly, then cancel and await
-    # them, so none is destroyed inside an open connection. At most 5 s, well
-    # inside Docker's default 10 s stop grace.
+    # them, so none is destroyed inside an open connection. At most 5 s.
+    # [S23-SG] The whole shutdown fits compose's 45 s stop_grace_period; this
+    # host's docker default killed the engine after 3 s.
     await background_tasks.drain(grace=2.0, timeout=3.0)
     # [A22-R6] Drain the F&O exit-path writer (research looks queued last).
     import fno_exit_paths
@@ -3105,10 +3123,11 @@ async def daily_post_market():
 _momentum_scan_in_progress: bool = False
 
 
-async def run_momentum_shadow_terminal(now: datetime | None = None) -> dict | None:
+async def run_momentum_shadow_terminal(now: datetime | None = None, pass_name: str = "close") -> dict | None:
     """[S21-R1] Resolve today's open virtual Momentum shadow trades after the
     close. Research only: it fetches each open ticker's completed bars for the
-    session and never touches a paper or live position."""
+    session and never touches a paper or live position. [S23-R1] Runs at 15:32
+    (``close``) and again at 16:05 (``retry``) for trades still censored."""
     if not getattr(settings, "MOMENTUM_SHADOW_ENABLED", True):
         return None
     now = (now or datetime.now(IST)).astimezone(IST)
@@ -3125,7 +3144,7 @@ async def run_momentum_shadow_terminal(now: datetime | None = None) -> dict | No
     except Exception as exc:
         logger.warning("momentum_shadow_terminal_failed", error=type(exc).__name__)
         return None
-    logger.info("momentum_shadow_terminal", day=day, **summary)
+    logger.info("momentum_shadow_terminal", day=day, pass_name=pass_name, **summary)
     return summary
 
 
@@ -3657,7 +3676,7 @@ async def _close_momentum_position(pos: dict, exit_price: float, reason: str, no
     gross = (exit_price - pos['entry_price']) * pos['shares']
     costs = calc_zerodha_costs(
         pos['entry_price'], exit_price, pos['shares'],
-        is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
+        is_intraday=_charged_as_intraday(pos),
     )
     realised_pnl = gross - costs
     total_pnl, r_multiple = _aggregate_momentum_close(pos, realised_pnl)
@@ -3722,7 +3741,7 @@ async def _record_momentum_scale_out(
     gross = (exit_price - pos['entry_price']) * sold_shares
     costs = calc_zerodha_costs(
         pos['entry_price'], exit_price, sold_shares,
-        is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
+        is_intraday=_charged_as_intraday(pos),
     )
     realised_pnl = gross - costs
 
@@ -3836,7 +3855,7 @@ async def _record_confirmed_momentum_partial(
         return False
     costs = calc_zerodha_costs(
         pos["entry_price"], fill_price, sold,
-        is_intraday=_is_intraday_from_product_type(pos.get("product_type")),
+        is_intraday=_charged_as_intraday(pos),
     )
     pnl = (fill_price - pos["entry_price"]) * sold - costs
     stop = float(new_stop if new_stop is not None else pos.get("trailing_stop_current") or pos.get("stop_loss_initial") or 0)
@@ -4507,10 +4526,11 @@ async def _auto_square_momentum_owned():
             # Settle strictly from broker evidence, never from the pre-order LTP.
             gross = (confirmed_fill - pos['entry_price']) * pos['shares']
             # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was
-            # hardcoded True, understating CNC costs).
+            # hardcoded True, understating CNC costs); [S23-COST1] and from
+            # whether a CNC buy was held overnight.
             costs = calc_zerodha_costs(
                 pos['entry_price'], confirmed_fill, pos['shares'],
-                is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
+                is_intraday=_charged_as_intraday(pos),
             )
             realised_pnl = gross - costs
             total_pnl, r_multiple = _aggregate_momentum_close(

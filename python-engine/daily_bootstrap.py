@@ -101,6 +101,40 @@ def _save_state(state: dict) -> None:
         logger.warning("daily_bootstrap_state_write_failed error=%s", str(e))
 
 
+def _timing_path() -> str:
+    return os.path.join(os.path.dirname(settings.DB_PATH), "daily_bootstrap_timing.json")
+
+
+def record_universe_refresh(elapsed_sec: float) -> None:
+    """[S23-M1] Keep the last successful universe refresh's duration (it
+    survives the daily state reset) so the login nudge quotes a measured time."""
+    path = _timing_path()
+    try:
+        fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), prefix=".bootstrap-timing-")
+        try:
+            with os.fdopen(fd, "w") as f:
+                json.dump({"penny_universe_sec": round(float(elapsed_sec), 1),
+                           "at": datetime.now(IST).isoformat()}, f)
+            os.replace(tmp, path)
+        finally:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
+    except OSError as e:
+        logger.warning("daily_bootstrap_timing_write_failed error=%s", str(e))
+
+
+def last_universe_refresh() -> dict | None:
+    """{"penny_universe_sec", "at"} of the last successful refresh, or None."""
+    try:
+        with open(_timing_path()) as f:
+            timing = json.load(f)
+        seconds = float(timing["penny_universe_sec"])
+        datetime.fromisoformat(str(timing["at"]))
+    except (FileNotFoundError, OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+        return None
+    return {"penny_universe_sec": seconds, "at": str(timing["at"])} if seconds > 0 else None
+
+
 def token_is_fresh_today() -> bool:
     """A token counts as fresh only if it was ARMED today (IST).
 
@@ -264,11 +298,13 @@ async def premarket_login_nudge() -> None:
     08:00 `daily_bootstrap_deferred` alert -- which fires when the window has
     *already* been missed.
 
-    The margin is thinner than it looks: the penny-universe fetch takes ~55 min,
-    so an 08:17 login (2026-07-24) finished at 09:12, three minutes before the
-    09:15 open; a 07:05 login (2026-07-23) was comfortable. This nudge is the
-    difference between a 10-minute heads-up and an hour of degraded scanning.
+    The margin was thin: the penny-universe fetch took ~55 min, so an 08:17
+    login (2026-07-24) finished at 09:12, three minutes before the 09:15 open.
     Recommended twice in prior audits (2026-07-21, 2026-07-24) and never wired.
+
+    [S23-M1 2026-10-23] T22-U cut the refresh to 5.6 min (Oct 23), but the
+    message still said "~55 min". It now quotes the last measured duration;
+    a quick refresh is no reason to log in late, so the ask is unchanged.
 
     No-ops when the token is already fresh, so a punctual operator hears nothing.
     """
@@ -282,13 +318,22 @@ async def premarket_login_nudge() -> None:
         return
 
     from operator_alert import notify_operator
-    await notify_operator(
-        "🔑 *Kite login needed* — no fresh token yet and the 08:00 bootstrap is "
-        "10 minutes out. The penny-universe refresh takes ~55 min, so logging in "
-        "now keeps the full universe ready before the 09:15 open. "
-        f"Pending: {', '.join(pending_tasks()) or 'none'}.",
-        event="premarket_login_nudge",
-    )
+    await notify_operator(login_nudge_text(last_universe_refresh(), pending_tasks()),
+                          event="premarket_login_nudge")
+
+
+def login_nudge_text(timing: dict | None, pending: list[str]) -> str:
+    """The 07:50 nudge, quoting the last measured refresh when there is one."""
+    if timing:
+        minutes = max(1, round(timing["penny_universe_sec"] / 60))
+        when = datetime.fromisoformat(timing["at"]).astimezone(IST).strftime("%d %b")
+        refresh = f"The penny-universe refresh took ~{minutes} min last time ({when})"
+    else:
+        refresh = "The penny-universe refresh needs the token"
+    return ("🔑 *Kite login needed* — no fresh token yet and the 08:00 bootstrap is "
+            f"10 minutes out. {refresh}; logging in now keeps the universe, F&O "
+            "instruments and the 09:30 EDGE scan ready well before the 09:15 open. "
+            f"Pending: {', '.join(pending) or 'none'}.")
 
 
 async def bootstrap_safety_tick() -> None:

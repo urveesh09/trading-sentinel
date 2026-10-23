@@ -1,5 +1,163 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 23 — S23 Oct 23 audit fixes: broker-stop identity, one equity charge contract, clean shutdown, terminal retry, iNAV screen, health backlog, telemetry identity, honest reporting (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Problem: the Oct 23 Production audit of PR #114 (`582d7a5`,
+  `docs/2026-10-23-production-deep-audit.md` in Production) and our own
+  checks found:
+  - S23-BS1 (P1, live F&O only): a lost backstop receipt was resolved from the
+    order book by shape (symbol, SELL, SL, trigger). An earlier position's
+    COMPLETE stop with the same trigger was adopted, and the still-held long
+    was booked flat. Exchange, quantity and order time were not checked
+    either. Reproduced in Dev: `before_exit` returned `filled` with
+    `OLD-POSITION-SL`.
+  - S23-COST1 (P2): the daily tracker settled EDGE/Penny paper with the
+    engine's old CNC branch (intraday brokerage and stamp, sell-only STT, no
+    DP); the confirmed EDGE exit used the delivery schedule. We disagree with
+    the audit's proposed direction: DCMSRIND (Oct 22) was bought and sold the
+    same day, which Zerodha charges as intraday (support.zerodha.com,
+    "brokerage charged for partial delivery"), so its real cost was about
+    ₹48.84. The tracker booked ₹82.58; the delivery schedule would have
+    booked ₹118.31.
+  - S23-SG: a redeploy SIGKILLed the engine 3 s after SIGTERM (Oct 22 19:38,
+    `cause=unclean_stop`), so no drain or clean-shutdown receipt.
+  - S23-R1: two of six Momentum research trades had no 15:15 bar at the
+    15:32 pass and stayed CENSORED; there was no later pass.
+  - S23-U1 (ours): 251 of 259 skipped universe histories were empty
+    responses. The sampled ones were ETF iNAV tickers (351 in the instrument
+    list) that pass the EQ screen.
+  - S23-H1: gateway `/api/health` stayed `degraded` all day for old backlog
+    (8 dead letters, 10 PENDING signals from 29 Jun–7 Oct, 4
+    CANCELLED/REJECTED orders never synced).
+  - S23-T1: a scheduler completion hit `database is locked` with
+    `run_id=None`. A lost start marker left the completion without identity;
+    its fallback insert ignored the growing retry budgets, and a replay could
+    not be matched.
+  - S23-M1: the 07:50 nudge said "~55 min"; the refresh took 5.6 min.
+  - S23-M2: the 16:00 digest read only classic Penny and Nifty ("+Rs 0")
+    on a −₹478.53 closed day.
+  - S23-S1: ON_TIGHT_SPREAD measures fill over LTP, not the displayed
+    spread (GLOTTIS/HEADSUP passed with ~3% spreads). The overnight exit is
+    modelled at the open less 5 bp, although it runs at 09:17.
+  - S23-Q1: a short quote batch (`requested=15 returned=0`) did not name
+    the missing symbols.
+  - S23-G1 (ours): entry gates still zeroed brokerage, STT and GST
+    "until the bankroll reaches ₹50,000". The main book holds ₹91k and
+    testing is standardised on ₹2L/₹5L.
+- Files:
+  - `fno_broker_backstop.py`: `broker_tag` column (ALTER on first write),
+    `new_tag()` (`BSL` + 17 hex), `_same_order`, identity matcher.
+  - `fno_executor.py`: `place_stop_limit(tag=)`.
+  - New `equity_charges.py`: `session_date`, `charged_as_intraday`.
+  - `engine.py`: true delivery branch, no `for_gate`; `momentum_exits.py`
+    drops its `for_gate=False` argument (the full suite caught the
+    TypeError).
+  - `config.py`: `ZERODHA_CNC_STAMP_DUTY_PCT`, `ZERODHA_CNC_DP_CHARGE`.
+  - `position_tracker.py`: `settlement_costs`.
+  - `penny_edge_orchestrator.py`: same rule on the confirmed exit.
+  - `main.py`: `_charged_as_intraday` on Momentum closes; 16:05 terminal
+    retry job; shutdown comment; records the refresh time.
+  - `routes_portfolio.py`, `research_penny_cnc_lifecycle.py`.
+  - `docker-compose.yml`: engine `stop_grace_period: 45s`.
+  - `python-engine/Dockerfile`: `--timeout-graceful-shutdown 10`.
+  - `penny_universe.py`: `INAV` suffix.
+  - Gateway `routes/health.js`, `services/telegram.js`:
+    `undeliveredAlertSummary`, `stale_backlog`.
+  - `scheduler_telemetry.py`: run id before the marker, idempotent fallback
+    insert.
+  - `daily_bootstrap.py`: `record_universe_refresh`,
+    `last_universe_refresh`, `login_nudge_text`.
+  - New `day_books.py`; `operator_status.py`: the all-books block,
+    "Classic Penny".
+  - `edge_overnight_paper.py`: `entry_bid`, `entry_ask`, `exit_bid` and
+    `exit_bid_net` columns; `_realism`.
+  - `kite_client.py`: names the missing quote keys.
+  - Tests: `test_fno_broker_backstop.py` (+13 cases in 7 tests; fixtures carry
+    real order fields), new `test_s23_cost_contract.py` (19), new
+    `test_s23_runtime_fixes.py` (17), `test_scheduler_telemetry.py` (+2),
+    `test_penny_universe_refresh.py` (iNAV rows), updated
+    `test_engine.py`/`test_audit_fix.py` (old cost shape),
+    `add_job_census_golden.json` (+1 job), gateway `health-status.test.js`
+    (+2), `alert-dead-letter.test.js` (+1).
+- Acceptance (Dev):
+  - Every reproducer fails on the previous code and passes now:
+    - the audit's old-stop adoption (old code `filled`, new `proceed`);
+    - the second probe (changed exchange or quantity);
+    - two unattributable candidates hold the exit and page;
+    - the escalated-budget completion and the idempotent replay;
+    - the tracker settling by holding.
+  - DCMSRIND same day → ₹48.8374; held overnight → ₹118.3074. Engine and
+    Penny schedules are equal on both branches.
+  - On a read of Production data (2026-10-23, read-only), the all-books
+    block reproduces the audit: main ₹0, Smart V1 +₹16.40, overnight
+    −₹494.93 holding 3 at ₹18,366.60, subtotal −₹478.53, V2 +₹11.02 apart.
+  - Gateway: 19 health, dead-letter and backlog tests pass in a throwaway
+    Linux container from the gateway image (no network). better-sqlite3 has
+    no Windows binary for Node 24 here.
+  - The Oct 6 allocation freeze verifies at `b03afa5`, and its intraday
+    costs equal the new engine's on 500 random trades.
+  - Full engine suite: 5512 passed, 4 skipped (Windows winvenv, 9 min 23 s, exit 0; the process exits on its own). The first run caught `momentum_exits.py` still passing `for_gate` (fixed) and the Oct 6 freeze test (now pinned, above).
+- Configuration and migration:
+  - Settings: `ZERODHA_CNC_STAMP_DUTY_PCT=0.00015`,
+    `ZERODHA_CNC_DP_CHARGE=15.34`; gateway env `HEALTH_BACKLOG_RECENT_HOURS`
+    (default 24).
+  - Additive columns: `fno_broker_backstops.broker_tag`, and
+    `entry_bid`/`entry_ask`/`exit_bid`/`exit_bid_net` on both overnight trade
+    tables. Each is created on first write; the read-only comparison selects
+    NULL until then.
+  - New file `/data/daily_bootstrap_timing.json`; new job
+    `momentum_shadow_terminal_retry` (16:05 Mon–Fri).
+  - Behavior changes:
+    - CNC sold the session it was bought pays intraday charges, held
+      overnight the full delivery schedule (tracker, EDGE confirmed exit,
+      Momentum closes);
+    - entry gates price full costs. Momentum acceptance is unchanged: its
+      cost-per-R gate (≤ 0.12 R at full cost) already binds. The daily swing
+      screener (`evaluate_signal`) now needs targets that cover delivery
+      costs;
+    - `/api/health` is `ok` with only stale, settled backlog;
+    - live backstop stops carry their own tag instead of `FNO_LIVE`.
+- Rollout: merge; rebuild the engine, then the gateway, one at a time;
+  recreate both (compose applies the stop grace). After deploy:
+  - the next engine stop or redeploy is followed by a startup without
+    `cause=unclean_stop`;
+  - 16:05 logs `momentum_shadow_terminal pass_name=retry`;
+  - `penny_universe_history_scope fetch` drops by the iNAV count;
+  - gateway `/api/health` is `ok` with `stale_backlog`;
+  - the 07:50 nudge quotes the last refresh;
+  - the 16:00 digest has the all-books block;
+  - new overnight rows carry the bid/ask fields, and the overnight
+    comparison has `realism`.
+- Rollback: a code revert of this commit; compose and Dockerfile go back with
+  it. The new columns and the timing file are additive and harmless. The
+  old cost branch must not be restored silently: it over-charged same-day
+  paper trades.
+- Remaining:
+  - [ ] Owner decision: resolve the old gateway backlog with the reviewed
+    reconciliation (`server/scripts/backlog-reconciliation.js`). Health no
+    longer depends on it.
+  - [ ] Historical cost difference, read-only on Production 2026-10-23: 21
+    fully closed EDGE/Penny paper positions (18 same-day, 3 overnight; 19
+    partial rows not restated). The stored costs were ₹778.00; under this
+    contract they are ₹650.22, so the old tracker over-charged by ₹127.79
+    (EDGE_PAPER ₹123.79, PENNY_PAPER ₹4.02). The ledger is not rewritten.
+  - [ ] Four Aug 2026 `positions` rows store `exit_price` as a numpy int64
+    blob. Current code casts to float; this is history only, and the ledger
+    is the authority.
+  - [ ] Score the overnight `realism` counterfactuals after ≥ 20 nights
+    before any change to the exit or entry timing.
+  - [ ] Host or VM shutdowns (nightly ~22:00–23:30) still skip the engine's
+    shutdown; the stop grace covers compose stops only.
+  - [ ] The Oct 6 Momentum allocation freeze fingerprints `engine.py` and
+    `momentum_exits.py`, which changed here. Evaluate its holdout at
+    `b03afa5`, the last commit whose fingerprint matches; the freeze test
+    now verifies the manifest there. The study prices only intraday round
+    trips, and a test shows the new engine gives the pinned values exactly,
+    so the holdout is unaffected. Its evaluation ("after about 10
+    sessions") is due. No other frozen manifest covers a changed file.
+  - [ ] Live F&O stays off. The backstop fix is a precondition, not a go-live
+    decision.
+
 ## October 22 (evening) — T22-BG held background work, T22-U universe history scope (done, Dev, commit `3a9f674`, branch `codex/production-correction-hedge-p0`, pushed, deployed 2026-10-22 19:38 IST by PR #114 (`582d7a5`))
 
 - Problem:
@@ -60,7 +218,7 @@
 - Remaining:
   - [ ] Compare the first post-deploy refresh's ranked universe and quality
     audit with the day before. They should differ only by market moves.
-  - [ ] Engine stop grace. On this Docker host `docker stop` kills after
+  - [x] (done in S23-SG, Oct 23 slice) Engine stop grace. On this Docker host `docker stop` kills after
     about 3 s (a throwaway container measured 3.4 s), and compose sets no
     `stop_grace_period`. At the 19:38 redeploy the engine got SIGTERM and
     then SIGKILL 3 s later (exit 137), while the gateway and agent exited 0.
@@ -144,7 +302,7 @@
   - [ ] Live F&O stays off. The backstop changes are a precondition for it,
     not a go-live decision.
 
-## October 21 (night, 3) — SX-F1 confirmed lock + exit evidence, SX-P2 PEN_SMART_V2 (done, Dev, commit `ace52ab`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 21 (night, 3) — SX-F1 confirmed lock + exit evidence, SX-P2 PEN_SMART_V2 (done, Dev, commit `ace52ab`, branch `codex/production-correction-hedge-p0`, pushed, deployed: merged by PR #113 (`33065ed`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - Problem: owner delegated the open calls (profit lock, Smart Penny, partner
   cards) with "make it smart, not a blocking and filtering system".
@@ -174,7 +332,7 @@
   - [ ] Score `fno_exit_cadence` after ≥ 20 matched F&O trades recorded after
     deploy (CURRENT vs LOCK_FIRST_LOOK vs lock arms).
   - [ ] Score V2 vs V1 from 2026-10-22 (≥ 30 V2 closes, the four checks).
-## October 21 (night, 2) — SX-M1 honest Momentum shadow scoring (done, Dev, commit `27ee87b`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 21 (night, 2) — SX-M1 honest Momentum shadow scoring (done, Dev, commit `27ee87b`, branch `codex/production-correction-hedge-p0`, pushed, deployed: merged by PR #113 (`33065ed`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - Problem: next-open gap exits (missed 15:15 bar) were scored as variant results.
 - Files: `momentum_shadow.py`, `promotion_readiness.py`, test in `tests/test_momentum_shadow.py`.
@@ -182,7 +340,7 @@
 - Verification: related suites 58 pass (momentum shadow, Oct 21 fixes, promotion readiness); full suite not rerun (usage limit).
 - Remaining:
   - [ ] SX-F1 (designed, not built): record the 10-second exit loop's quotes of held F&O options (fire-and-forget JSONL under `/data/research/fno_exit_paths`) and an offline evaluator replaying CURRENT (parity), FNO_LOCK_OFF, FNO_LOCK_LATE_ARM, FNO_LOCK_LOOSE_KEEP and a declared FNO_LOCK_CONFIRM_2 at live cadence (archive after the live exit). Why: Oct 15 live profit-lock exit +₹663 vs replay trail exit +₹3,515 on the same trade; post-Oct-5 archive replay of the lock arms differs only on one trade (3 NIFTY trades, inconclusive).
-## October 21 (night) — O21-PX the partner's deeper review (done, Dev, commit `68eec28`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 21 (night) — O21-PX the partner's deeper review (done, Dev, commit `68eec28`, branch `codex/production-correction-hedge-p0`, pushed, deployed: merged by PR #113 (`33065ed`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - Problem: the owner merged PR #112 and asked that every evening, after the
   brief, the partner gets a review link (login, then the review), and that
@@ -238,7 +396,7 @@
     them only with the owner.
   - [ ] A re-entry on a card is its own item; a split position kept across
     days (carry-in) is shown as a note, not scored.
-## October 21 (late) — Oct 21 audit fixes S21-R1/R2/R3/E1/L1, R21-M1/M2, T21-X; O21-ON overnight shadows (done, Dev, commit `462d28f`, branch `codex/oct21-audit-fixes` on top of `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (late) — Oct 21 audit fixes S21-R1/R2/R3/E1/L1, R21-M1/M2, T21-X; O21-ON overnight shadows (done, Dev, commit `462d28f`, branch `codex/oct21-audit-fixes` on top of `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - Problem: the Oct 21 Production audit (read-only; Production HEAD
   `2fc12ee`, PR #111 deployed) found: nine censored virtual Momentum trades
@@ -292,7 +450,7 @@
     and done as T22-U on 2026-10-22; F21-S stays open.)
   - [ ] F21-Q (old pending signals, unsynced orders, September deadletters)
     needs the owner's dated disposition; nothing is resent automatically.
-## October 21 (night) — O21-PL the partner's review page and explained lessons (done, Dev, commit `6f882f0`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (night) — O21-PL the partner's review page and explained lessons (done, Dev, commit `6f882f0`, branch `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - Problem:
   - Owner (Oct 21): log in from Telegram, land on their own dashboard, "a
@@ -337,7 +495,7 @@
     stop checks use it as the time the stop was placed.
   - [ ] After two weeks of reads, check the Progress patterns against what
     the partner says they did.
-## October 21 (evening) — O21-PK the partner's Zerodha fills and a coach-only review page (done, Dev, commit `9648f95`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (evening) — O21-PK the partner's Zerodha fills and a coach-only review page (done, Dev, commit `9648f95`, branch `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - Problem:
   - Owner (Oct 21): "the partner won't go on the dashboard for tracking his
@@ -408,7 +566,7 @@
   - [ ] Check whether ngrok shows its browser warning page on the callback;
     if it does, the partner taps "Visit site" once per login.
   - [ ] The O21-PC rows below still apply (flag wording only with the owner).
-## October 21 (afternoon) — O21-PC partner fill capture + coach, O21-SC standard capital, O21-BS F&O broker backstop (done, Dev, commit `b580af2`, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (afternoon) — O21-PC partner fill capture + coach, O21-SC standard capital, O21-BS F&O broker backstop (done, Dev, commit `b580af2`, branch `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - Problem:
   - Owner (Oct 21, planning ₹10k–12.5k real money): standardise the books on
@@ -469,7 +627,7 @@
   - [ ] Owner decisions: host reliability (UPS / cloud VM with its own
     static IP); the standard amount to use for promotion (₹2L or ₹5L).
 
-## October 21 — expiry-v3 (B takes BP's pair target), expiry-shadow-v5 and Oct 19 expiry-audit fixes (done, Dev, commit `a88da98`, pushed, not deployed)
+## October 21 — expiry-v3 (B takes BP's pair target), expiry-shadow-v5 and Oct 19 expiry-audit fixes (done, Dev, commit `a88da98`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - Problem:
   - Owner order (Oct 21): apply the Oct 19 audit's expiry fixes, keep

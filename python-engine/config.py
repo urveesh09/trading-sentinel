@@ -535,7 +535,10 @@ class Settings(BaseSettings):
     # Cost model
     ZERODHA_BROKERAGE_PCT:    float = 0.0003  # 0.03%
     ZERODHA_BROKERAGE_MAX:    float = 20.0    # Rs20 cap
-    ZERODHA_STT_CNC:          float = 0.001   # 0.1% sell side
+    ZERODHA_STT_CNC:          float = 0.001   # 0.1% buy AND sell side (delivery)
+    # [S23-COST1] Delivery stamp duty and DP charge, as PENNY_CNC_* below.
+    ZERODHA_CNC_STAMP_DUTY_PCT: float = 0.00015
+    ZERODHA_CNC_DP_CHARGE:    float = 15.34
 
     # --- Telegram (for penny hourly report delivery) ---
     # 2026-06-23: penny hourly report now tries Telegram first, falls back

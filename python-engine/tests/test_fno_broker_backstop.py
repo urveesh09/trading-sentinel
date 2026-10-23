@@ -120,9 +120,7 @@ async def test_unknown_dispatch_is_resolved_from_the_order_book(fno_db):
     executor.kite.orders_snapshot.return_value = []
     assert await bs.before_exit(fno_db, executor, 5, 75) == {"action": "proceed"}
     await _armed(fno_db, position_id=6, state="PLACE_UNKNOWN", order_id=None)
-    executor.kite.orders_snapshot.return_value = [
-        {"order_id": "SL-9", "tradingsymbol": "NIFTY26O2322950PE", "transaction_type": "SELL", "order_type": "SL",
-         "trigger_price": 65.0}]
+    executor.kite.orders_snapshot.return_value = _book(order_id="SL-9")
     executor.kite.order_history.return_value = [{"status": "CANCELLED", "filled_quantity": 0}]
     assert await bs.before_exit(fno_db, executor, 6, 75) == {"action": "proceed"}
     executor.kite.cancel_order.assert_awaited_once_with("SL-9")
@@ -224,9 +222,17 @@ async def test_paper_positions_never_touch_the_backstop(fno_db):
 # ---------------------------------------------------------------- [A22-BS] uncertain records
 
 
-def _book(trigger=65.0, order_id="SL-7"):
-    return [{"order_id": order_id, "tradingsymbol": "NIFTY26O2322950PE", "transaction_type": "SELL",
-             "order_type": "SL", "trigger_price": trigger}]
+def _order(order_id="SL-7", *, tag="FNO_LIVE", at=None, status="TRIGGER PENDING", trigger=65.0, qty=75,
+           exchange="NFO"):
+    """One order as Kite's /orders lists it; ``at`` defaults to now (IST)."""
+    at = at or datetime.now(bs.IST).strftime("%Y-%m-%d %H:%M:%S")
+    return {"order_id": order_id, "tradingsymbol": "NIFTY26O2322950PE", "exchange": exchange,
+            "transaction_type": "SELL", "order_type": "SL", "trigger_price": trigger, "quantity": qty,
+            "status": status, "order_timestamp": at, "tag": tag}
+
+
+def _book(trigger=65.0, order_id="SL-7", tag="FNO_LIVE"):
+    return [_order(order_id, tag=tag, trigger=trigger)]
 
 
 def _age(db, position_id, seconds):
@@ -263,7 +269,8 @@ async def test_a_receipt_lost_after_the_send_never_lets_an_exit_sell_blind(fno_d
     _age(fno_db, 7, 60)
     kite.orders_snapshot.return_value = None                 # the book cannot be read: still hold
     assert (await bs.before_exit(fno_db, executor, 7, 75))["action"] == "hold"
-    kite.orders_snapshot.return_value = _book()              # found: cancel it and read what it did
+    assert row["broker_tag"] == kite.place_order.await_args.kwargs["tag"]
+    kite.orders_snapshot.return_value = _book(tag=row["broker_tag"])   # found: cancel it, read what it did
     kite.order_history.return_value = [{"status": "CANCELLED", "filled_quantity": 0}]
     assert await bs.before_exit(fno_db, executor, 7, 75) == {"action": "proceed"}
     kite.cancel_order.assert_awaited_once_with("SL-7")
@@ -319,3 +326,120 @@ async def test_the_passive_check_adopts_a_lost_receipt_from_the_order_book(fno_d
     row = await bs.load_backstop(fno_db, 4)
     assert (row["state"], row["order_id"]) == ("PLACED", "SL-4")
     executor.kite.order_history.assert_awaited_once_with(order_id="SL-4")
+
+
+# ---------------------------------------------------------------- [S23-BS1] order identity, not shape
+
+
+async def _intent(db, position_id, *, tag, at="2026-10-23T11:01:00+05:30", state="PLACE_UNKNOWN"):
+    """An uncertain dispatch recorded at ``at`` (IST)."""
+    await bs._write(db, position_id, source="FNO_LIVE", tradingsymbol="NIFTY26O2322950PE", exchange="NFO", qty=75,
+                    trigger_price=65.0, limit_price=58.5, order_id=None, state=state, broker_tag=tag)
+    with closing(sqlite3.connect(db)) as con:
+        con.execute("UPDATE fno_broker_backstops SET placed_at=?, updated_at=? WHERE position_id=?",
+                    (at, at, position_id))
+        con.commit()
+
+
+EARLIER_STOP = _order("OLD-POSITION-SL", at="2026-10-23 10:01:12", status="COMPLETE")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("tag", ["BSL0123456789abcdef", None])
+async def test_an_earlier_positions_completed_stop_is_never_adopted(fno_db, tag):
+    # The Oct 23 audit's reproducer: the current 11:01 send is not in the book;
+    # an earlier position's 10:01 COMPLETE stop has the same symbol, trigger,
+    # quantity and exchange. Adopting it booked the still-held long as flat.
+    await _intent(fno_db, 11, tag=tag)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = [{**EARLIER_STOP, "average_price": 58.5}]
+    assert await bs.before_exit(fno_db, executor, 11, 75) == {"action": "proceed"}
+    executor.kite.cancel_order.assert_not_awaited()
+    assert (await bs.load_backstop(fno_db, 11))["state"] == "CANCELLED"
+    # The passive check does not adopt it either.
+    await _intent(fno_db, 12, tag=tag)
+    now = datetime(2026, 10, 23, 5, 35, tzinfo=timezone.utc)          # 11:05 IST
+    assert await bs.check_filled(fno_db, executor, 12, price=66.0, now=now) is None
+    row = await bs.load_backstop(fno_db, 12)
+    assert (row["state"], row["order_id"]) == ("PLACE_UNKNOWN", None)
+    executor.kite.order_history.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_our_tag_identifies_the_order_even_when_it_already_executed(fno_db):
+    tag = "BSL00000000000000aa"
+    await _intent(fno_db, 13, tag=tag)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = [
+        EARLIER_STOP,
+        _order("OTHER-BACKSTOP", tag="BSL00000000000000bb", at="2026-10-23 11:01:20"),   # another position's
+        _order("OURS", tag=tag, at="2026-10-23 11:01:01", status="COMPLETE")]
+    executor.kite.order_history.return_value = [{"status": "COMPLETE", "filled_quantity": 75, "average_price": 63.0}]
+    assert await bs.before_exit(fno_db, executor, 13, 75) == {"action": "filled", "fill_price": 63.0,
+                                                              "order_id": "OURS"}
+    executor.kite.cancel_order.assert_awaited_once_with("OURS")
+
+
+@pytest.mark.asyncio
+async def test_a_legacy_intent_adopts_only_an_order_placed_after_it(fno_db):
+    await _intent(fno_db, 14, tag=None)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = [EARLIER_STOP, _order("AFTER", at="2026-10-23 11:01:02")]
+    executor.kite.order_history.return_value = [{"status": "CANCELLED", "filled_quantity": 0}]
+    assert await bs.before_exit(fno_db, executor, 14, 75) == {"action": "proceed"}
+    executor.kite.cancel_order.assert_awaited_once_with("AFTER")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("tag, book", [
+    # Two untagged orders since a legacy intent: never pick one.
+    (None, [_order("A", at="2026-10-23 11:01:02"), _order("B", at="2026-10-23 11:01:03")]),
+    # An earlier same-shape stop still working: whose it is cannot be proven.
+    (None, [_order("WORKING", at="2026-10-23 10:01:12", status="TRIGGER PENDING")]),
+    ("BSL0123456789abcdef", [_order("WORKING", at="2026-10-23 10:01:12", status="TRIGGER PENDING")]),
+    # Our tag is absent but an untagged same-shape order appeared since the intent.
+    ("BSL0123456789abcdef", [_order("MANUAL", at="2026-10-23 11:02:00")]),
+    # Our tag on an order that no longer has our quantity.
+    ("BSL0123456789abcdef", [_order("OURS", tag="BSL0123456789abcdef", qty=50)]),
+    # A same-shape order with no timestamp.
+    (None, [{**_order("NO-TIME"), "order_timestamp": None}]),
+])
+async def test_an_unprovable_order_holds_the_exit_and_pages(fno_db, _pages, tag, book):
+    await _intent(fno_db, 15, tag=tag)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = book
+    assert await bs.before_exit(fno_db, executor, 15, 75) == {"action": "hold",
+                                                              "reason": "backstop_dispatch_unknown"}
+    executor.kite.cancel_order.assert_not_awaited()
+    assert [event for event, _ in _pages] == ["fno_backstop_unknown"]
+
+
+@pytest.mark.asyncio
+async def test_another_exchange_or_quantity_is_not_this_backstop(fno_db):
+    # The audit's second probe: changed exchange and quantity were still adopted.
+    await _intent(fno_db, 16, tag=None)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = [_order("BFO", exchange="BFO", at="2026-10-23 11:01:05"),
+                                                  _order("QTY", qty=150, at="2026-10-23 11:01:05")]
+    assert await bs.before_exit(fno_db, executor, 16, 75) == {"action": "proceed"}
+    executor.kite.cancel_order.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_a_ledger_from_before_tags_gains_the_column(tmp_path):
+    db = str(tmp_path / "old.db")
+    with closing(sqlite3.connect(db)) as con:
+        con.execute(bs._DDL.replace(",\n  broker_tag TEXT", ""))
+        con.execute("INSERT INTO fno_broker_backstops VALUES (1,'FNO_LIVE','X','NFO',75,65.0,58.5,'SL-1','PLACED',"
+                    "'2026-10-22T10:00:00+05:30','2026-10-22T10:00:00+05:30',NULL)")
+        con.commit()
+    assert await bs._claim_intent(db, 2, source="FNO_LIVE", tradingsymbol="X", exchange="NFO", qty=75,
+                                  trigger_price=65.0, limit_price=58.5, state="PLACING", broker_tag="BSLx")
+    assert (await bs.load_backstop(db, 1))["broker_tag"] is None
+    assert (await bs.load_backstop(db, 2))["broker_tag"] == "BSLx"
+
+
+def test_backstop_tags_fit_kite_and_are_unique():
+    tags = {bs.new_tag() for _ in range(1000)}
+    assert len(tags) == 1000
+    assert all(len(t) == 20 and t.startswith(bs.TAG_PREFIX) and t.isalnum() for t in tags)

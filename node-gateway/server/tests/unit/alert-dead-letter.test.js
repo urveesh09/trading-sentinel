@@ -70,6 +70,20 @@ describe('undelivered alert dead-letter', () => {
     expect(telegram.undeliveredAlertCount()).toBe(0);
   });
 
+  // [S23-H1] Health degrades only on recent dead letters; an unreadable
+  // timestamp counts as recent.
+  test('the summary splits open dead letters by age', () => {
+    const now = Date.parse('2026-10-23T12:00:00Z');
+    for (const ts of ['2026-10-16T09:00:00Z', '2026-07-31T08:49:00Z', '2026-10-23T08:00:00Z', 'garbled']) {
+      fs.appendFileSync(tmpFile, JSON.stringify({ ts, message: ts }) + '\n');
+    }
+    expect(telegram.undeliveredAlertSummary({ now, recentMs: 24 * 3600 * 1000 })).toEqual({
+      open: 4, recent: 2, oldest_ts: '2026-07-31T08:49:00.000Z',
+    });
+    expect(telegram.undeliveredAlertSummary({ now: Date.parse('2026-10-20T00:00:00Z'), recentMs: 1 }))
+      .toMatchObject({ open: 4, recent: 2 });   // a future-dated line is not "old"
+  });
+
   // [EXPIRY-OUTBOX 2026-10-05] The caller's outbox owns retries for
   // sendAlertOnce, so a refusal reports false and leaves no dead-letter row.
   test('sendAlertOnce reports a refusal without retrying or dead-lettering', async () => {

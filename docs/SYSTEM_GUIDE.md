@@ -1,5 +1,120 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 23 — S23 Oct 23 audit fixes: broker-stop identity, one equity charge contract, clean shutdown, terminal retry, iNAV screen, health backlog, telemetry identity, honest reporting (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **S23-BS1 a broker stop is found by identity, not shape (live F&O only).**
+  - Each backstop intent records its own broker tag (`BSL` + 17 hex, within
+    Kite's 20 characters) before the send, and the SL order carries it.
+  - When a receipt is lost (`PLACING`/`PLACE_UNKNOWN` without an order id),
+    `_find_in_order_book` accepts only the order with that tag and the row's
+    symbol, exchange and quantity. If more than one order has the tag, or it
+    no longer matches, the lookup is `ambiguous`.
+  - With the tag absent from a readable book:
+    - another backstop's tag (`BSL…`) belongs to another position;
+    - a same-shape order that finished before the intent (2 min clock skew
+      allowed) belongs to an earlier position;
+    - a same-shape order still working from before the intent, or untagged
+      since it, or without a timestamp, is `ambiguous`;
+    - otherwise the order is `absent`.
+  - Rows written before tags match shape, exchange and quantity, and only
+    orders placed after the intent; the same doubt rules apply.
+  - `ambiguous` holds the exit and pages once, as before.
+  - The Oct 23 audit's reproducer now ends in `proceed`, not `filled`:
+    an earlier position's 10:01 COMPLETE stop beside an 11:01 lost send.
+- **S23-COST1 one equity charge contract.**
+  `equity_charges.charged_as_intraday(product, entry, exit)`:
+  - MIS (or none, legacy) is intraday;
+  - CNC is intraday when sold in the IST session it was bought, as Zerodha
+    charges a same-day CNC round trip;
+  - CNC held overnight pays delivery charges.
+
+  The pieces that use it:
+  - `engine.calc_zerodha_costs` charges delivery as `calc_penny_costs` does:
+    no brokerage, 0.1% STT on both legs, 0.015% buy stamp duty and the
+    ₹15.34 DP charge. It used to charge intraday brokerage and stamp, STT on
+    the sell only, and no DP.
+  - The tracker (`position_tracker.settlement_costs`) settles its
+    Penny/EDGE paper books with `calc_penny_costs` and this rule; the
+    confirmed EDGE exit and the CNC lifecycle replay use the same rule.
+  - Momentum closes use `main._charged_as_intraday(pos)`.
+
+  Example, Oct 22 DCMSRIND (873 shares, 54.30 → 51.5424, same day): ₹48.84;
+  booked ₹82.58. On Production's 21 fully closed EDGE/Penny paper positions
+  the old tracker over-charged ₹127.79 in all; the ledger is kept as booked.
+- **S23-G1 entry gates price full costs.** The `for_gate` bypass is removed;
+  it zeroed brokerage, STT and GST in Momentum's `is_cost_viable` and
+  `net_ev`, and in the daily swing screener's EV gate (`evaluate_signal`,
+  which sends signals to the gateway).
+  - Momentum's accepted set does not change: its cost-per-R gate (full
+    costs, ≤ 0.12 R) is stricter and already binding.
+  - The swing screener now needs its target profit to cover real delivery
+    costs (both-leg STT, delivery stamp duty, DP), so marginal small signals
+    are no longer emitted.
+- **Frozen research and these changes.** The Oct 6 Momentum allocation
+  freeze fingerprints `engine.py` and `momentum_exits.py`.
+  - It is verified, and its holdout evaluated, at `b03afa5`: the last commit
+    whose fingerprint matches.
+  - Its intraday costs are unchanged by S23 (a test compares 500 cases with
+    the pinned engine).
+- **S23-SG clean engine shutdown.**
+  - Compose gives the engine `stop_grace_period: 45s`.
+  - uvicorn runs with `--timeout-graceful-shutdown 10`.
+  - The lifespan shutdown then completes inside the grace: liveness join
+    ≤ 10 s, background drain ≤ 5 s, exit-path writer ≤ 5 s, then the
+    `clean_shutdown` receipt.
+  - A host or VM shutdown is outside this.
+- **S23-R1 a second Momentum terminal pass.**
+  - `momentum_shadow_terminal_retry` (16:05 Mon–Fri) re-runs the resolver
+    with `pass_name=retry` for trades still without a CLOSED event.
+  - The intraday cache treats a cache ending before 15:15 as stale, so the
+    retry refetches.
+  - A CENSORED receipt may become CLOSED, never the reverse.
+- **S23-U1 ETF iNAVs are not equities.** `INAV` joins the non-equity
+  suffixes, at the refresh screen and at scan time.
+- **S23-H1 gateway health and old backlog.**
+  - `status` is `degraded` for:
+    - an unreachable engine;
+    - an open dead letter from the last `HEALTH_BACKLOG_RECENT_HOURS`
+      (default 24);
+    - an unsynced order from that window;
+    - an unsynced order of any age that is not CANCELLED/REJECTED.
+  - Older, settled items are reported under `stale_backlog`, with
+    `telegram_status=stale_delivery_backlog_present`, until the reviewed
+    backlog reconciliation resolves them. The total counts are unchanged.
+- **S23-T1 scheduler telemetry identity.**
+  - Each wrapped run gets its id before its in-flight marker.
+  - If the marker write loses the lock, the completion is inserted under that
+    id with the same growing budgets (100/250/500 ms).
+  - `INSERT OR IGNORE` plus a summary update only on insert make a replay
+    idempotent.
+- **S23-M1 login nudge.** The 07:50 message quotes the last successful
+  refresh (`/data/daily_bootstrap_timing.json`, written by
+  `run_penny_universe_refresh`). Its ask is unchanged.
+- **S23-M2 all books in the 16:00 digest.** `day_books.all_books_day` reads
+  each book's own store read-only:
+  - main ledger settlements by IST date;
+  - Smart `EXIT_FILLED` per policy;
+  - overnight closes and holdings at entry value.
+
+  The digest labels "Classic Penny" and adds:
+  - main, Smart V1 and overnight;
+  - their closed subtotal (separate books, not an account or NAV);
+  - Smart V2 as a parallel experiment that is never added.
+
+  An unreadable book shows as unavailable, never zero.
+- **S23-S1 overnight realism measures.**
+  - Book and shadow rows record `entry_bid`/`entry_ask` (displayed) and, at
+    the exit, the quote's best bid plus the net had it been sold there
+    (`exit_bid`, `exit_bid_net`).
+  - The overnight comparison's `realism` reports:
+    - `entry_spread_pct`, the displayed spread;
+    - `exit_at_bid`, including how far the modelled open-auction exit sits
+      above the bid;
+    - `entry_at_close`, the same shares bought at the entry day's close.
+  - Counterfactuals only. ON_TIGHT_SPREAD is unchanged and is documented as
+    a fill-over-LTP limit.
+- **S23-Q1** `kite_quote_instrument_partial` names up to 20 missing keys.
+
 ## October 22 (evening) — T22-BG background work is held and drained; T22-U the universe refresh reads only usable history (actual behavior, commit `3a9f674`, deployed 2026-10-22 by PR #114)
 
 - **T22-BG fire-and-forget work is held until done.**
@@ -160,7 +275,7 @@ new regression test fails on the previous code:
   - Smart V2 is scored from 2026-10-22 on its own events.
   - Neither pools an older rule's winners into the new version.
 
-## October 21 (night, 3) — SX-F1 confirmed F&O profit lock + live-clock exit evidence; SX-P2 PEN_SMART_V2 (actual behavior, Dev, commit `ace52ab`)
+## October 21 (night, 3) — SX-F1 confirmed F&O profit lock + live-clock exit evidence; SX-P2 PEN_SMART_V2 (actual behavior, commit `ace52ab`, deployed: merged by PR #113, running at `582d7a5`)
 
 Owner (Oct 21 night): "take the relevant calls … make it smart, not a
 blocking and filtering system". Calls taken, each with its evidence, a
@@ -212,7 +327,7 @@ shadow of the old behaviour and a one-line rollback:
   them; the coach (O21-PX) teaches the management.
 - **Expiry book: no promotion yet.** Five expiries; A (+₹3,560) and C (+₹9,004)
   are carried by Oct 13; the owner's 10-expiry review stands.
-## October 21 (night, 2) — SX-M1 Momentum shadow scoring excludes missed-exit closes (actual behavior, Dev, commit `27ee87b`)
+## October 21 (night, 2) — SX-M1 Momentum shadow scoring excludes missed-exit closes (actual behavior, commit `27ee87b`, deployed: merged by PR #113, running at `582d7a5`)
 
 - Production read-only (Oct 21): 72 of MOM_BASE's 92 virtual closes (88 of
   MOM_RECENCY_5's 108) were `overnight_gap_exit`: the declared 15:15 exit bar
@@ -222,7 +337,7 @@ shadow of the old behaviour and a one-line rollback:
   `scored_closes`, `missed_time_exit_closes`, `missed_time_exit_net_pnl` and a
   warning. `promotion_readiness` counts `scored_closes` (when present) for its
   closed-trades sample gate. `closed_trades` keeps its meaning (all closes).
-## October 21 (night) — O21-PX the partner's deeper review (actual behavior, Dev, commit `68eec28`)
+## October 21 (night) — O21-PX the partner's deeper review (actual behavior, commit `68eec28`, deployed: merged by PR #113, running at `582d7a5`)
 
 Owner (Oct 21 night, after merging PR #112): after the day's ending brief the
 partner gets one message with the review link, the link goes to the Zerodha
@@ -301,7 +416,7 @@ blocks a card or changes card text.
   "what the option did" lines; the day's orders with refusals. Progress: the
   statistics, "what your numbers say", where the results came from, and
   rules kept per day.
-## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, Dev, commit `462d28f`)
+## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, commit `462d28f`, deployed: merged by PR #112, running at `582d7a5`)
 
 Owner (Oct 21): act on the Oct 21 Production audit
 (`Production_Trading-sentinel/docs/2026-10-21-production-deep-audit.md`):
@@ -379,7 +494,7 @@ switch changed; everything below is a bug fix, telemetry, or research.
   %, average position value). Setting `EDGE_OVERNIGHT_SHADOWS_ENABLED`
   (True).
 
-## October 21 (night) — the partner's own review page; lessons that explain each mistake (actual behavior, Dev, commit `6f882f0`)
+## October 21 (night) — the partner's own review page; lessons that explain each mistake (actual behavior, commit `6f882f0`, deployed: merged by PR #112, running at `582d7a5`)
 
 Owner (Oct 21): the partner logs in from the Telegram button and lands on
 their own dashboard, a branch of the main one, opening on the day's
@@ -455,7 +570,7 @@ text or gate, sizing, Smart policy file or live switch changed.
   it from the Coach page ("Partner's view"); the owner's flags also show the
   why and better lines.
 
-## October 21 (evening) — the partner's Zerodha fills read once a day, coach-only review page (actual behavior, Dev, commit `9648f95`)
+## October 21 (evening) — the partner's Zerodha fills read once a day, coach-only review page (actual behavior, commit `9648f95`, deployed: merged by PR #112, running at `582d7a5`)
 
 Owner (Oct 21): the partner will not log entries during the day; fetch their
 orders from the free API and let them open the dashboard only at the end of
@@ -551,7 +666,7 @@ switch changed; nothing places, modifies or cancels an order.
   to `/login?error=wrong_account`. With neither set the callback is
   unchanged.
 
-## October 21 (afternoon) — partner fill capture and coach, standard-capital view, F&O broker backstop (actual behavior, Dev, commit `b580af2`)
+## October 21 (afternoon) — partner fill capture and coach, standard-capital view, F&O broker backstop (actual behavior, commit `b580af2`, deployed: merged by PR #112, running at `582d7a5`)
 
 Owner (Oct 21): before real money, standardise every book on one capital
 (₹2L / ₹5L) and scale down later; a broker-side stop for live F&O; capture
@@ -649,7 +764,7 @@ book sizing, Smart policy file or live switch changed.
   checked Oct 21). `a88da98` (expiry-v3) was not merged: the container runs
   `RULES_VERSION = "expiry-v2"`.
 
-## October 21 — expiry-v3: B takes BP's pair target; expiry-shadow-v5 (BL, CI) and Oct 19 expiry-audit fixes (actual behavior, Dev, commit `a88da98`)
+## October 21 — expiry-v3: B takes BP's pair target; expiry-shadow-v5 (BL, CI) and Oct 19 expiry-audit fixes (actual behavior, commit `a88da98`, deployed: merged by PR #112, running at `582d7a5`)
 
 Audit: Production `docs/2026-10-19-expiry-system-deep-audit.md` (first expiry
 on v2). Owner order: apply the fixes, keep observing, and promote a shadow that

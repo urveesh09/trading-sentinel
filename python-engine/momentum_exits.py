@@ -94,13 +94,13 @@ def cost_adjusted_breakeven(entry_price: float, shares: int) -> float:
     exactly this mistake -- every position force-closed at its entry price, and
     every one of those "flat" trades was a real loss of pure cost drag.
 
-    for_gate=False on purpose: we want the REAL cost here, not the gate's
-    optimistic zeroed one (see engine.calc_zerodha_costs).
+    The REAL cost: [S23-G1] calc_zerodha_costs no longer has the gates'
+    zeroed ``for_gate`` variant, so every caller gets full charges.
     """
     if shares <= 0:
         return entry_price
     costs = calc_zerodha_costs(
-        entry_price, entry_price, shares, is_intraday=True, for_gate=False
+        entry_price, entry_price, shares, is_intraday=True
     )
     return entry_price + (costs / shares)
 

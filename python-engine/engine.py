@@ -416,7 +416,7 @@ def evaluate_signal(
     # Estimate exit at T2 for cost calculation
     # For Regime 3 (no T2), use T1 as the exit for cost model
     exit_for_costs = target_2 if target_2 is not None else target_1
-    total_round_trip = calc_zerodha_costs(c, exit_for_costs, shares, is_intraday=False, for_gate=True)
+    total_round_trip = calc_zerodha_costs(c, exit_for_costs, shares, is_intraday=False)
 
     gross_profit_t1 = (target_1 - c) * shares * 0.5
     gross_profit_t2 = ((target_2 - c) * shares * 0.5) if target_2 is not None else 0.0
@@ -531,18 +531,24 @@ def calc_zerodha_costs(
     exit_price: float,
     shares: int,
     is_intraday: bool,
-    for_gate: bool = False
 ) -> float:
     """
     Accurate Zerodha cost model for NSE equity trades.
-    
-    Delivery (CNC): STT on sell side only (0.1%)
-    Intraday (MIS): STT on sell side only (0.025%)
-    
-    When for_gate=True, brokerage (Rs20 cap), STT, and GST are zeroed
-    for signal viability checks only. Actual P&L tracking always uses
-    the full cost model (for_gate=False).
-    
+
+    Intraday (MIS, or CNC sold the session it was bought): brokerage 0.03%
+    capped at Rs 20 per order, STT 0.025% on the sell, 0.003% buy stamp duty.
+    Delivery (CNC held overnight): no brokerage, STT 0.1% on both legs,
+    0.015% buy stamp duty and the DP charge on the sell.
+    ``equity_charges.charged_as_intraday`` decides which applies.
+
+    [S23-COST1 2026-10-23] The delivery branch used to charge intraday
+    brokerage and stamp duty, STT on the sell only and no DP charge -- the
+    tracker's Oct 22 DCMSRIND cost. It now matches penny_risk.calc_penny_costs.
+    [S23-G1 2026-10-23] The ``for_gate`` bypass (brokerage, STT and GST zeroed
+    in entry gates "until the bankroll reaches Rs 50,000") is gone: the main
+    book holds Rs 91k and testing is standardised on Rs 2L/5L, so the gates
+    now see the same charges the trade will pay.
+
     Returns total round-trip cost in rupees.
     """
     buy_value  = entry_price * shares
@@ -552,39 +558,29 @@ def calc_zerodha_costs(
     # 2026-08-10. No unverified effective date is asserted here.
     exchange_txn = (buy_value + sell_value) * settings.ZERODHA_EXCHANGE_PCT
 
-    # Intraday stamp duty: 0.003% on buy side only.
-    stamp_duty = buy_value * settings.ZERODHA_STAMP_DUTY_PCT
-
     # SEBI turnover fee: Rs10 per crore = 0.0001% both sides
     sebi = (buy_value + sell_value) * settings.ZERODHA_SEBI_PCT
     ipft = (buy_value + sell_value) * settings.ZERODHA_IPFT_PCT
 
-    # -- TEMPORARY: Brokerage + STT + GST zeroed for gate calculations --
-    # At Rs5,000 bankroll the Rs20 flat brokerage + STT + GST kill most
-    # viable signals.  These are skipped ONLY for signal viability gates;
-    # actual P&L tracking (position_tracker, close_position) still uses
-    # the full cost model.
-    # TODO(urveesh): Remove for_gate bypass when bankroll reaches Rs50,000+
-    if for_gate:
-        brokerage_buy  = 0.0
-        brokerage_sell = 0.0
-        stt            = 0.0
-        gst            = 0.0
-    else:
+    if is_intraday:
         # Brokerage: min(0.03% of turnover, Rs20) per executed order
         brokerage_buy  = min(buy_value  * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
         brokerage_sell = min(sell_value * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
+        stt = sell_value * settings.ZERODHA_STT_MIS
+        stamp_duty = buy_value * settings.ZERODHA_STAMP_DUTY_PCT
+        dp_charge = 0.0
+    else:
+        brokerage_buy = brokerage_sell = 0.0
+        stt = (buy_value + sell_value) * settings.ZERODHA_STT_CNC
+        stamp_duty = buy_value * settings.ZERODHA_CNC_STAMP_DUTY_PCT
+        dp_charge = settings.ZERODHA_CNC_DP_CHARGE if shares > 0 else 0.0
 
-        # STT (Securities Transaction Tax) - sell side only
-        stt_rate = settings.ZERODHA_STT_MIS if is_intraday else settings.ZERODHA_STT_CNC
-        stt = sell_value * stt_rate
-
-        # GST applies to brokerage, transaction, SEBI, and NSE IPFT charges.
-        gst = (brokerage_buy + brokerage_sell + exchange_txn + sebi + ipft) * settings.ZERODHA_GST_PCT
-
+    # GST applies to brokerage, transaction, SEBI, and NSE IPFT charges
+    # (the DP charge already includes its GST).
+    gst = (brokerage_buy + brokerage_sell + exchange_txn + sebi + ipft) * settings.ZERODHA_GST_PCT
 
     total = (brokerage_buy + brokerage_sell + stt +
-             exchange_txn + stamp_duty + sebi + ipft + gst)
+             exchange_txn + stamp_duty + sebi + ipft + gst + dp_charge)
 
     return round(total, 4)
 
@@ -605,7 +601,7 @@ def is_cost_viable(
     r_distance     = risk_per_trade / shares   # stop distance per share
     estimated_exit = entry_price + (r_target * r_distance)
     total_cost     = calc_zerodha_costs(
-        entry_price, estimated_exit, shares, is_intraday, for_gate=True
+        entry_price, estimated_exit, shares, is_intraday
     )
     expected_gross = risk_per_trade * r_target
     cost_ratio     = total_cost / expected_gross if expected_gross > 0 else 1.0
@@ -1143,7 +1139,7 @@ def _evaluate_momentum_signal_impl(
     # round trip out of one unit of risk is not a trade.
     round_trip_cost = calc_zerodha_costs(
         current_close, current_close + risk_per_share, shares,
-        is_intraday=True, for_gate=False,
+        is_intraday=True,
     )
     cost_per_r = round_trip_cost / actual_risk if actual_risk > 0 else 1.0
     if cost_per_r > settings.MOMENTUM_MAX_COST_PER_R:
@@ -1158,7 +1154,7 @@ def _evaluate_momentum_signal_impl(
     # Accurate cost for net_ev -- must use effective_r_target to avoid inflated EV in bear mode
     estimated_exit = current_close + (effective_r_target * r_distance)  # [AUDIT-004]
     total_cost = calc_zerodha_costs(
-        current_close, estimated_exit, shares, is_intraday=True, for_gate=True
+        current_close, estimated_exit, shares, is_intraday=True
     )
     net_ev = (actual_risk * effective_r_target) - total_cost  # [EV-BASIS 2026-07-17]
 

@@ -304,11 +304,13 @@ class FnoExecutor:
 
     async def place_stop_limit(
         self, tradingsymbol: str, qty: int, trigger: float, limit: float, *, exchange: str = "NFO",
+        tag: Optional[str] = None,
     ) -> dict:
         """Rest one SELL SL (stop-limit) order. Returns {status, order_id, evidence}.
 
         status: paper | placed | rejected | unknown. ``intent="exit"``: a
-        protective order is never blocked by an entry halt."""
+        protective order is never blocked by an entry halt. ``tag`` is the
+        backstop intent's own broker tag [S23-BS1]."""
         if self.paper_mode:
             return {"status": "paper", "order_id": None}
         try:
@@ -316,7 +318,7 @@ class FnoExecutor:
                 variety="regular", exchange=exchange, tradingsymbol=tradingsymbol,
                 transaction_type="SELL", quantity=qty, product="MIS", order_type="SL",
                 price=round(limit, 2), trigger_price=round(trigger, 2), validity="DAY",
-                tag=self.source_tag[:20], intent="exit", channel="fno",
+                tag=(tag or self.source_tag)[:20], intent="exit", channel="fno",
             )
         except Exception as e:
             return {"status": "unknown", "order_id": None,

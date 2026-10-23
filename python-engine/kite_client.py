@@ -1843,7 +1843,12 @@ class KiteClient:
             result = {reverse[key]: value for key, value in payload.items() if key in reverse and isinstance(value, dict)}
             timing["parse_sec"] = time.monotonic() - parse_started
             if len(result) != len(requested):
-                logger.warning("kite_quote_instrument_partial requested=%d returned=%d", len(requested), len(result))
+                # [S23-Q1] Name what is missing: Oct 23 15:20 logged 15 -> 0
+                # and the audit could not tell which symbols went unquoted.
+                missing = sorted(key for token, key in requested.items() if token not in result)
+                logger.warning("kite_quote_instrument_partial requested=%d returned=%d missing=%s",
+                               len(requested), len(result),
+                               ",".join(missing[:20]) + (f",+{len(missing) - 20} more" if len(missing) > 20 else ""))
             timing["outcome"] = "COMPLETE" if len(result) == len(requested) else "PARTIAL"
             return _finish(result)
         except (httpx.HTTPStatusError, httpx.RequestError) as exc:

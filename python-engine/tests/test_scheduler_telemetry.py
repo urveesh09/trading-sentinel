@@ -248,3 +248,54 @@ async def test_unfinished_current_boot_marker_is_stale_not_running(tmp_path, _cl
     await start_scheduler_run(db_path, job_id="partner_manual_advisory_lifecycle_tick")
     report = await scheduler_timing_report(db_path)
     assert report["inflight"][0]["inflight_state"] == "CURRENT_PROCESS_STALE"
+
+
+# ---------------------------------------------------------------- [S23-T1] run identity without a marker
+
+
+@pytest.mark.asyncio
+async def test_a_lost_marker_still_completes_under_the_runs_own_id(tmp_path, monkeypatch, _clean_completion_state):
+    """Oct 23 14:20: the 100 ms marker write lost the lock, the completion ran
+    with run_id=None and its fallback insert used a fixed 100 ms budget."""
+    import threading
+    telemetry = _clean_completion_state
+    db_path = str(tmp_path / "cache.db")
+    await record_scheduler_event(db_path, job_id="seed", event_kind="EXECUTION", result="COMPLETED")
+    seen = {}
+
+    async def marker_lost(_db, *, job_id, retention, run_id):
+        seen["run_id"] = run_id
+        raise sqlite3.OperationalError("database is locked")
+
+    monkeypatch.setattr(telemetry, "start_scheduler_run", marker_lost)
+
+    async def advisory_tick():
+        # Another writer holds the database for 0.45 s as the job finishes:
+        # longer than three 100 ms tries, shorter than the 100/250/500 budgets.
+        lock = sqlite3.connect(db_path, check_same_thread=False)
+        lock.execute("BEGIN EXCLUSIVE")
+        threading.Timer(0.45, lambda: (lock.rollback(), lock.close())).start()
+        return {"status": "COMPLETED"}
+
+    await instrument_async_job(db_path, "partner_manual_advisory_lifecycle_tick", advisory_tick)()
+    assert telemetry.pending_completion_writes() == []
+    with sqlite3.connect(db_path) as con:
+        rows = con.execute("SELECT run_id, result FROM scheduler_run_telemetry WHERE job_id=?",
+                           ("partner_manual_advisory_lifecycle_tick",)).fetchall()
+    assert rows == [(seen["run_id"], "COMPLETED")]
+
+
+@pytest.mark.asyncio
+async def test_replaying_a_completion_never_duplicates_it(tmp_path, _clean_completion_state):
+    telemetry = _clean_completion_state
+    db_path = str(tmp_path / "cache.db")
+    now = datetime(2026, 10, 23, 8, 50, tzinfo=timezone.utc)
+    final = {"job_id": "partner_manual_advisory_lifecycle_tick", "result": "COMPLETED", "started_at": now,
+             "ended_at": now + timedelta(seconds=1), "elapsed_seconds": 1.0, "reason": None,
+             "stage_durations": None}
+    assert await telemetry._write_final(db_path, "run-1420", dict(final), 5000)
+    assert await telemetry._write_final(db_path, "run-1420", dict(final), 5000)    # a replay
+    with sqlite3.connect(db_path) as con:
+        assert con.execute("SELECT COUNT(*) FROM scheduler_run_telemetry WHERE run_id='run-1420'").fetchone()[0] == 1
+    daily = await scheduler_daily_summary_report(db_path, session_date="2026-10-23")
+    assert daily["summaries"][0]["runs"] == 1
