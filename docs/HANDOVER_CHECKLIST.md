@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 23 (evening) — O23 partner review: earlier days, PDF, rule meanings (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 23 (evening) — O23 partner review: earlier days, PDF, rule meanings (commit `66cfb7c`, Dev, pushed, not deployed)
 
 - [x] O23-PH earlier days:
   - a day bar steps back and forward and lists 120 days;

@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 23 (evening) — O23 partner review: earlier days, a PDF of the day, what each rule means (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 23 (evening) — O23 partner review: earlier days, a PDF of the day, what each rule means (actual behavior, Dev, commit `66cfb7c`)
 
 - **O23-PH earlier days.**
   - **Engine `routes_partner_coach.py`.** `_review(day, days)` serves both

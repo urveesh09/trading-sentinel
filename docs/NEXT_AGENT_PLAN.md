@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 23 (evening) — O23 Partner review: earlier days, a PDF of the day, what each rule means (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 23 (evening) — O23 Partner review: earlier days, a PDF of the day, what each rule means (done, Dev, commit `66cfb7c`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 23 evening): the partner loved the review. Let them open
   earlier days' reviews, add a button that downloads the day's review as a
