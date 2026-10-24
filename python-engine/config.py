@@ -1386,6 +1386,12 @@ class Settings(BaseSettings):
     PARTNER_WATCH_POLL_SEC:        int   = 5
     PARTNER_WATCH_PROMPT_HOUR:     int   = 9
     PARTNER_WATCH_PROMPT_MIN:      int   = 0
+    # [O24g] The partner's order updates over Kite's websocket wake the watch
+    # at once (partner_watch_stream.py); the 5 s reads go on regardless. Off
+    # until the partner's key has a plan with the websocket and a live day
+    # has checked it.
+    PARTNER_WATCH_STREAM_ENABLED:  bool  = False
+    PARTNER_KITE_WS_URL:           str   = "wss://ws.kite.trade"
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True

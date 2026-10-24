@@ -1,5 +1,18 @@
 # Handover receipt and operator checklist
 
+## October 24 (night, 2) — O24g stops moved together told together; "no stop" only from a GTT list read then; the order stream (off) and delivery measurement (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] Fifth audit: GTTs moved down together were told for one only. Real, fixed. So were two SL orders modified together, and a move under the plan beside another move.
+- [x] A "no stop" claim, or a sell-order claim counting a GTT, is made only from a GTT list read in that tick.
+- [x] Order stream built, off (`PARTNER_WATCH_STREAM_ENABLED` false). Kite's order updates wake a tick at once; the 5 s reads go on regardless. New dependency `websockets==12.0` (rebuild the image).
+- [x] Delivery measurement: `detected_by` per message, tick statistics per day, and `python -m partner_watch_report` (read-only).
+- [x] Tests: engine: the full suite 5,648 passed, 4 skipped, exit 0 (576 s), after one test fix (an earlier run: 5,647 passed, 4 skipped, 1 failed, the refused-stream test reading the log through capsys); the watch, stream, partner and scheduler files 244 passed with thread and unraisable warnings as errors. The new tests against db167ed: 7 of the watch file's 95 fail there (the five issues, the wording, the retry). Client unit 65 passed. No live broker, websocket or Telegram round trip (Saturday).
+- [ ] Deployed: no. Ships with S23-O24f (rebuild the engine, then the gateway).
+  - On the first live day, run `docker exec -u quantuser python-engine python -m partner_watch_report` (read-only).
+- [ ] Owner:
+  - switch the stream on after the partner's plan has the websocket, and check one live day in the report;
+  - pick the next partner features (O24b list).
+
 ## October 24 (night) — O24f "none held" only with evidence; sell orders matched by product; a replacement matched to the stop it replaced; the watch says when it cannot see (commit `320fe20`, Dev, pushed, not deployed)
 
 - [x] Fourth audit of the watch: three issues, all real, all fixed. Each is a test that fails on 764055f's watch.

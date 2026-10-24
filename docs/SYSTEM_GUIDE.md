@@ -1,5 +1,29 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 24 (night, 2) — O24g stops moved together; claims from a fresh GTT list; the order stream and delivery measurement (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **Stops moved together (`_lowered(moves)`).**
+  - A move is {"id", "old", "new", "units", "at"}. `_events` step 1 collects each holding's SL orders modified down. `_guard(moves)` adds the GTTs modified down (`_track_stops`) and a single replacement (`_replacement` → ("MOVE", move)); several replaced stay ("CHANGED", gone, added) → `_changed`.
+  - One read is one message, keyed `lowered:<id>@<new>+…`, with "first" taken once for the read.
+  - `moves_reason` is the most serious of the read's reasons. `moved_text` gives each move "₹70 → ₹69 for 65" and the result at the units' weighted triggers, on the units held (`_held_moves` caps them). `_moves_why` names the moves the reason is about.
+  - `_b_lowered` tells only the moves whose stop still waits at its new level, with the units capped as in O24f, and judges the reason again. One left uses `lowered_text`.
+  - With the GTTs UNKNOWN, the SL moves are still told.
+- **Claims from a fresh GTT list.**
+  - `_cover_claim` builds REMOVED, NO_STOP or PARTIAL. When a claim is not yet in the outbox and the GTT list was not read this tick, the guard reads it (once a tick) and recomputes the cover. A changed state gives no claim this tick; without a read, the claim waits.
+  - For EXCESS, ORPHAN and PRODUCT that count a GTT (`_counts_gtt`), `_events` reads the list and runs `_exits` again with it. Without a read, those claims are dropped for this tick.
+- **The tick and the stream.**
+  - `watch_tick(woken=)` holds `_tick_lock` around `_watch_tick`. A scheduled tick returns SKIPPED busy while another runs. `wake()` starts `_woken`: woken ticks run while wakes keep coming, WAKE_GAP_SEC (1 s) apart, at `_now()`, with the last tick's market.
+  - `_state.detected_by` (poll | stream) goes to `_insert_outbox(by=)`, also through `_start_plan` → `_plan_job(by=)` → `_store_plan(by=)` and `_revise`.
+  - `partner_watch_stream.ensure()` runs each tick and starts `run()` while the stream should run (`_should_run`: enabled with a key, the login held, 09:00 to 15:40).
+  - `run(connect, clock)`: CONNECTING → LIVE. Frames go to `_frame`: binary is counted; an "order" text frame counts an update, records its lag and calls `partner_watch.wake("order")`; "error" is counted, not logged.
+  - Recovery: 401, 403 or no library → REFUSED and a 30 min wait; anything else → DOWN with a 1 s backoff doubling to 60 s; no frame for 10 s → reconnect; a changed token → reconnect; the end → OFF.
+  - `_code(exc)` logs only the HTTP status or the type.
+- **Measurement.**
+  - `partner_watch_messages.detected_by`.
+  - `_TickStats` (module `_ticks`) counts ticks by status:reason (and "woken"), tick_ms and read_ms (the /orders read), up to TICK_SAMPLES each. It is saved every TICK_STATS_EVERY (60 s) for the watch's current day as `ticks:<day>:<process start>`, with `partner_watch_stream.stats()`.
+  - `partner_watch_report.report(db, first, last)` reads it (sqlite read-only URI); `spread` is nearest-rank p50, p95 and max; `render` prints plain text; `main` is the CLI.
+  - `watch_status()["stream"]` gives the stream's state, or None when off.
+
 ## October 24 (night) — O24f the watch's sell-order and replacement boundaries; watch health (actual behavior, Dev, commit `320fe20`)
 
 - **"None held" (`none_held`).** For an option, or a product, with no holding, the evidence is:

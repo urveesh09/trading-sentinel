@@ -1,5 +1,81 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 24 (night, 2) — O24g Stops moved together told together; "no stop" claimed only from a GTT list read then; the order stream (off) and delivery measurement (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 24): the audit agent's fifth review (on db167ed) reproduced one remaining edge case: GTTs moved down together were told for one of them only. Fix it with regression cover. Then prioritise streaming and live delivery measurements: faster, reliable account awareness over more restrictive filters.
+- Verdict: real. Writing the tests found two more of the same family, and a stale-list gap. All are fixed.
+- [x] O24g-MV every stop moved down in one read is one LOWERED message, judged together (`moves_reason`, `moved_text`, `_moves_why`, `_held_moves`, `_lowered(moves)`, `_changed`, `_replacement`, `_b_lowered`, `_guard(moves)`, `_rest_note(ids)`).
+  - Audit: when several GTTs moved down in one read, only `moved[0]` was looked at; the others were lost, and the bigger move could be the one dropped. Test: ₹70 → ₹69 and ₹68 → ₹60; only the first was told.
+  - Found:
+    - two SL orders modified down in one read. Whichever came first in the order book counted as "the first move"; the other (₹68 → ₹60) was dropped as within the plan.
+    - after a trade's first move, a small move and one under the plan stop in the same read. The one under the plan was never looked at.
+  - Now step 1 collects the SL orders modified down for each holding. The guard adds the GTTs modified down and a single replacement. All go in one message for the read: "you moved 2 stops down: ₹70 → ₹69 for 65 and ₹68 → ₹60 for 65. If they are hit, on your 130: …".
+  - The reason is the most serious of the read's moves (GUARD, then BELOW_PLAN, then FIRST), and it names the moves it is about ("₹55 is under your plan stop ₹59.4").
+  - At send time, only the moves whose stop still waits at its new level are told, and the reason is judged again on them.
+  - An SL moved down while the GTT list cannot be read is still told.
+  - Several stops cancelled and replaced (O24f, never paired) stay one `changed_text` message.
+- [x] O24g-FR a claim of no stop (NO_STOP, PARTIAL, REMOVED), or a sell-order claim that counts a GTT (EXCESS, ORPHAN, PRODUCT), is made only from a GTT list read in that tick, the first time it is due (`_cover_claim`, `_counts_gtt`).
+  - Why: the list is reused for 20 s (60 s for the sell-order check). A GTT placed after the last read got "no stop order yet"; one deleted after it still counted in "sell orders add up to 130". Both reproduced.
+  - Cost: one GTT read on the tick a claim first comes due. Without that read (it failed, or no budget is left), the claim waits a tick.
+- [x] O24g-ST the order stream, a doorbell, off by default (`partner_watch_stream.py`; `partner_watch.wake`, `_woken`, `_tick_lock`; `PARTNER_WATCH_STREAM_ENABLED` false, `PARTNER_KITE_WS_URL`; `websockets==12.0`).
+  - Kite pushes the partner's order updates on its websocket. On one, the watch reads the book at once instead of at the next 5 s tick. The stream is never trusted for state: a missed, repeated or out-of-order update changes only when the next read happens, and the 5 s reads go on.
+  - Behaviour:
+    - one tick at a time: a scheduled tick skips while another runs, and a woken one waits for it;
+    - woken ticks are at least 1 s apart;
+    - a refusal (HTTP 401 or 403: a plan without the websocket), or no library, is REFUSED, retried every 30 min;
+    - any other failure reconnects after a backoff of 1 s, doubling to 60 s;
+    - with no frame for 10 s, it reconnects;
+    - a new login reconnects with the new token;
+    - it stops when the login is gone or at 15:40.
+  - The access token is in the URL, so it is never logged (errors by type or HTTP status only).
+  - Tested offline: a fake socket (drops, backoff, refusal, missing library, a new login, the close) and a real local websocket server for the whole path (an order update in, LOWERED out, found by the woken tick).
+- [x] O24g-DM delivery measurement (`detected_by`, `_TickStats`, `partner_watch_report.py`).
+  - Each outbox row records whether a 5 s tick (poll) or a woken tick (stream) found it.
+  - Each process saves its day's tick statistics every 60 s as `ticks:<day>:<process start>`: how ticks ended, tick and order-read milliseconds, and the stream's state, connections, updates, errors and exchange-to-receipt lag.
+  - `python -m partner_watch_report [FIRST [LAST]]` opens the database read-only and prints, per kind, the outcomes and two timings (p50 / p95 / max):
+    - seen: the event to the tick that found it;
+    - sent: that tick to Telegram's acknowledgement.
+  - `watch_status()["stream"]` gives the stream's state.
+- Disagreed or deferred, with reasons:
+  - Switching the stream on is the owner's call, once the partner's key has a plan with the websocket and one live day shows it LIVE in the report, with stream-found messages seen sooner.
+  - What streaming can change: it shortens "seen" for messages told at once (PLAN, LOWERED, REFUSED: up to 5 s, about 2.5 s on average, today). It does not change the deliberate waits (UNFILLED 10 s, the 20 s grace, NO_STOP 120 s). The report will show which matters.
+  - Streaming option prices (quotes for the held options) is not built. It needs the paid plan's market data and a subscription; the doorbell comes first.
+  - No new trading filters (the audit's point, agreed).
+- The intermittent failures:
+  - `test_a_send_cut_off_part_way_is_not_sent_twice` (O24f) has not come back. Every run this round kept its full output.
+  - `test_the_ticks_reads_share_one_budget` failed once, on db167ed's code, while the full suite ran beside it. Its bound is 0.9 s on a 0.6 s budget, so it is load-sensitive. With nothing else running it passed 5 of 5 on that code and 5 of 5 on this one.
+  - The first full run's only failure was this round's new `test_a_refused_stream_waits_long_and_never_logs_the_token`. It read the log through capsys, which other tests' logging set-up bypasses: empty in the suite, full alone. It now records the stream module's own log lines. It passes alone, and after the main-surface tests (11 passed).
+- Files:
+  - `python-engine/partner_watch.py`;
+  - new: `python-engine/partner_watch_stream.py`, `python-engine/partner_watch_report.py`;
+  - `python-engine/config.py`, `python-engine/requirements.txt`;
+  - tests: `python-engine/tests/test_partner_watch.py` (88 → 95), new `python-engine/tests/test_partner_watch_stream.py` (7).
+- Acceptance: each issue is a tick test that fails on db167ed:
+  - `test_gtts_moved_down_together_are_all_told`;
+  - `test_a_move_under_the_plan_is_told_when_another_stop_moved_in_the_same_read`;
+  - `test_sl_orders_moved_down_together_are_one_message`;
+  - `test_a_no_stop_alarm_is_never_built_on_a_gtt_list_read_before_the_gtt_was_placed`;
+  - `test_a_sell_order_alarm_is_never_built_on_a_gtt_list_read_before_the_gtt_went`;
+  - plus the wording and retry tests.
+- Tests: engine: the full suite 5,648 passed, 4 skipped, exit 0 (576 s), after one test fix (an earlier run: 5,647 passed, 4 skipped, 1 failed, the refused-stream test reading the log through capsys); the watch, stream, partner and scheduler files 244 passed with thread and unraisable warnings as errors. The new tests against db167ed: 7 of the watch file's 95 fail there (the five issues, the wording, the retry). Client unit 65 passed. No live broker, websocket or Telegram round trip (Saturday).
+- Config and migration impact:
+  - new settings `PARTNER_WATCH_STREAM_ENABLED` (false) and `PARTNER_KITE_WS_URL`;
+  - a new dependency, `websockets==12.0`: the engine image must be rebuilt. The engine imports it only when the stream connects;
+  - a new column `partner_watch_messages.detected_by`, added by `init_partner_watch_db`;
+  - new state keys `ticks:*`: one write a minute while the watch runs.
+- Rollout: with S23-O24f (rebuild the engine, then the gateway); the stream stays off.
+- Switching the stream on:
+  - the partner's plan has the websocket;
+  - `PARTNER_WATCH_STREAM_ENABLED=true` in the root `.env`;
+  - restart the engine;
+  - `watch_status` shows the stream LIVE, and the report's Stream line has connections and order updates.
+- Rollback: the flag off, or revert the commit.
+- Remaining:
+  - the first live days, through `partner_watch_report`;
+  - the stream's live check (owner, with the plan);
+  - quote streaming;
+  - judgment messages stay shadow until scored.
+
 ## October 24 (night) — O24f The watch's sell-order and replacement boundaries: "none held" only with evidence, sell orders matched by product, a replacement matched to the stop it replaced; the watch says when it cannot see (done, Dev, commit `320fe20`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): the audit agent's fourth review (through 764055f) found three remaining issues, two in the new sell-order alarms and one in replacement-stop reporting. It also suggested enrichments. Fix bugs that are real, enrich where it is worth it, disagree where right.

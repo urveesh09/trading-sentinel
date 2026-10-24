@@ -1521,12 +1521,12 @@ async def test_a_plan_is_never_stored_without_its_message(watch, kite, monkeypat
             raise aiosqlite.OperationalError("database is locked")
         return await real_enqueue(db_path, key, day, kind, *args, **kwargs)
 
-    async def insert_once(conn, day, items, now):
+    async def insert_once(conn, day, items, now, *args):
         kinds = [item[1] for item in items if item[1] in ("PLAN", "ADDED") and item[1] not in failed]
         if kinds:
             failed.append(kinds[0])
             raise aiosqlite.OperationalError("database is locked")
-        return await real_insert(conn, day, items, now)
+        return await real_insert(conn, day, items, now, *args)
 
     monkeypatch.setattr(pw, "_enqueue", enqueue_once)
     if real_insert is not None:
@@ -1986,3 +1986,150 @@ async def test_a_replacement_for_more_units_is_told_for_the_units_the_old_stop_s
     assert lowered.startswith(f"⚠️ NIFTY 22300 PE: you moved your stop for 65 of your 130 down ₹95 → ₹70. If it is "
                               f"hit, on those 65: {pw._signed(pw._result_for(trip, 70.0, 65))} instead of "
                               f"{pw._signed(pw._result_for(trip, 95.0, 65))}.")
+
+
+# ---------------------------------------------------------------------------
+# [O24g] the audit agent's fifth review (on db167ed): stops moved together
+# ---------------------------------------------------------------------------
+
+async def _two_stops(kite, market, *, gtt: bool):
+    """130 bought at ₹75.05 with two stops of 65: ₹70 and ₹68 (GTTs, or SL orders 201 and 202), all in place
+    before the first read."""
+    await _login()
+    kite["orders"] = [_o("101", "BUY", D(9, 59, 30), qty=130, average_price=75.05)]
+    if gtt:
+        kite["gtts"] = [_gtt(5, 70.0), _gtt(6, 68.0)]
+    else:
+        kite["orders"] += [_o("201", "SELL", D(9, 59, 40), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0),
+                           _o("202", "SELL", D(9, 59, 40), order_type="SL", status="TRIGGER PENDING", trigger_price=68.0)]
+    for at in (D(10, 0, 0), D(10, 0, 5), D(10, 0, 10)):
+        await pw.watch_tick(at, market=market)
+    await pw.settle()
+
+
+def _both(trip, olds, news, units=65):
+    qty = units * len(olds)
+    old, new = sum(olds) / len(olds), sum(news) / len(news)
+    return pw._signed(pw._result_for(trip, new, qty)), pw._signed(pw._result_for(trip, old, qty))
+
+
+@pytest.mark.asyncio
+async def test_gtts_moved_down_together_are_all_told(watch, kite):
+    """[O24g] Audit: two GTTs moved down in one read. Only the first one found was told; the other (here the bigger
+    move, ₹68 → ₹60) was dropped. Now one message names both, with the result if they are hit."""
+    market = _market(D(10, 0))
+    await _two_stops(kite, market, gtt=True)
+    kite["gtts"] = [_gtt(5, 69.0), _gtt(6, 60.0)]
+    for at in (D(10, 1, 10), D(10, 1, 15)):
+        await pw.watch_tick(at, market=market)
+    [lowered] = [m["text"] for m in watch if m["kind"] == "watch_lowered"]
+    after, before = _both(pw._state.view.holdings[0], (70.0, 68.0), (69.0, 60.0))
+    assert lowered == (f"⚠️ NIFTY 22300 PE: you moved 2 stops down: ₹70 → ₹69 for 65 and ₹68 → ₹60 for 65. If they "
+                       f"are hit, on your 130: {after} instead of {before}. Stops moved down add to the loss you "
+                       f"chose when you placed them.")
+
+
+@pytest.mark.asyncio
+async def test_a_move_under_the_plan_is_told_when_another_stop_moved_in_the_same_read(watch, kite):
+    """[O24g] After the trade's first move was told, a small move (within the plan) and one under the plan stop in
+    the same read: the one under the plan was never looked at. Now it is told, with the read's other move."""
+    db = settings.DB_PATH
+    market = _market(D(10, 0))
+    await _two_stops(kite, market, gtt=True)
+    stop = (await pw.plan_versions(db, "101"))[0]["plan"].stop
+    assert 60.0 < stop + 1 and stop < 68.5
+    kite["gtts"] = [_gtt(5, 69.0), _gtt(6, 68.0)]
+    for at in (D(10, 1, 10), D(10, 1, 15)):
+        await pw.watch_tick(at, market=market)
+    assert len([m for m in watch if m["kind"] == "watch_lowered"]) == 1                    # the first move
+    kite["gtts"] = [_gtt(5, 68.5), _gtt(6, 55.0)]
+    for at in (D(10, 2, 10), D(10, 2, 15)):
+        await pw.watch_tick(at, market=market)
+    lowered = [m["text"] for m in watch if m["kind"] == "watch_lowered"]
+    assert len(lowered) == 2
+    assert lowered[1].startswith("⚠️ NIFTY 22300 PE: you moved 2 stops down: ₹69 → ₹68.5 for 65 and ₹68 → ₹55 for "
+                                 "65. If they are hit, on your 130: ")
+    assert lowered[1].endswith(f" ₹55 is under your plan stop {pw._px(stop)}: the loss can now be bigger than "
+                               f"planned.")
+
+
+@pytest.mark.asyncio
+async def test_sl_orders_moved_down_together_are_one_message(watch, kite):
+    """[O24g] Two SL orders modified down in one read: whichever came first in the order book was "the first move"
+    and the other (here the bigger) was dropped as within the plan. Now one message names both."""
+    market = _market(D(10, 0))
+    await _two_stops(kite, market, gtt=False)
+    kite["orders"][1] = _o("201", "SELL", D(10, 1), order_type="SL", status="TRIGGER PENDING", trigger_price=69.0)
+    kite["orders"][2] = _o("202", "SELL", D(10, 1), order_type="SL", status="TRIGGER PENDING", trigger_price=60.0)
+    for at in (D(10, 1, 5), D(10, 1, 10)):
+        await pw.watch_tick(at, market=market)
+    [lowered] = [m["text"] for m in watch if m["kind"] == "watch_lowered"]
+    assert lowered.startswith("⚠️ NIFTY 22300 PE: you moved 2 stops down: ₹70 → ₹69 for 65 and ₹68 → ₹60 for 65.")
+
+
+def test_stops_moved_together_say_each_move_and_why():
+    """[O24g] The reason names the moves it is about; more stop units than held are counted only up to the holding."""
+    trip, plan = _holding(130, entry=100.0), pw.Plan(entry=100.0, qty=130, stop=80.0)
+    guard = [{"id": "kite:201", "old": 100.0, "new": 90.0, "units": 65},
+             {"id": "kite:202", "old": 85.0, "new": 84.0, "units": 65}]
+    assert pw.moves_reason(trip, guard, plan, first=False) == "GUARD"
+    assert pw.moved_text(trip, guard, "GUARD", plan).endswith(
+        "Your stop at ₹100 was guarding your buy price; now those 65 can end in a loss.")
+    below = [dict(guard[0], old=90.0, new=70.0), dict(guard[1], new=75.0)]
+    assert pw.moves_reason(trip, below, plan, first=False) == "BELOW_PLAN"
+    assert pw.moved_text(trip, below, "BELOW_PLAN", plan).endswith(
+        "₹75 and ₹70 are under your plan stop ₹80: the loss can now be bigger than planned.")
+    assert pw.moves_reason(trip, [dict(guard[1], new=82.0)], plan, first=False) is None   # within the plan, not first
+    # A stop for all 130 moved with another: only 130 are counted, so it is told as the one move.
+    big = [dict(guard[0], old=95.0, units=130), guard[1]]
+    assert pw.moved_text(trip, big, "FIRST", plan).startswith("⚠️ NIFTY 22300 PE: you moved your stop down ₹95 → ₹90.")
+
+
+@pytest.mark.asyncio
+async def test_stops_moved_together_are_told_again_for_what_is_still_moved(watch, kite):
+    """[O24g] The message about two GTTs moved did not leave; before the retry one of them is deleted. The retry
+    is rebuilt for the one still at its new level (and the deleted one is REMOVED's or PARTIAL's to tell)."""
+    market = _market(D(10, 0))
+    await _two_stops(kite, market, gtt=True)
+    kite["outcomes"].append("unsent_connect")
+    kite["gtts"] = [_gtt(5, 69.0), _gtt(6, 60.0)]
+    await pw.watch_tick(D(10, 1, 10), market=market)
+    kite["gtts"] = [_gtt(5, 69.0)]
+    pw._state.gtts_at = None                                    # the next read sees the GTT list again
+    await pw.watch_tick(D(10, 1, 25), market=market)
+    lowered = [m for m in watch if m["kind"] == "watch_lowered"]
+    assert [m["state"] for m in lowered] == ["unsent_connect", "acknowledged"]
+    assert lowered[0]["text"].startswith("⚠️ NIFTY 22300 PE: you moved 2 stops down:")
+    assert lowered[1]["text"].startswith("⚠️ NIFTY 22300 PE: you moved your stop for 65 of your 130 down ₹70 → ₹69.")
+
+
+@pytest.mark.asyncio
+async def test_a_no_stop_alarm_is_never_built_on_a_gtt_list_read_before_the_gtt_was_placed(watch, kite):
+    """[O24g] The GTT list is reused for 20 s. A GTT placed after the last read was not in it, so "no stop order
+    yet" went out with a GTT in place. A claim of no stop is now made only from a GTT list read in that tick."""
+    await _login()
+    market = _market(D(10, 0))
+    kite["orders"] = [_o("101", "BUY", D(10, 0), average_price=75.05)]
+    for at in (D(10, 0, 5), D(10, 0, 30), D(10, 1, 0), D(10, 1, 30), D(10, 1, 50)):
+        await pw.watch_tick(at, market=market)
+    kite["gtts"] = [_gtt(5, 70.0)]                                          # placed at 10:01:55
+    await pw.watch_tick(D(10, 2, 5), market=market)
+    assert [m["kind"] for m in watch] == ["watch_plan"]
+    assert pw._state.view.covers[pw._state.view.holdings[0].hkey].state == "FULL"
+
+
+@pytest.mark.asyncio
+async def test_a_sell_order_alarm_is_never_built_on_a_gtt_list_read_before_the_gtt_went(watch, kite):
+    """[O24g] An SL and a GTT for the 65 held: more sell orders than held. The GTT is deleted inside the 20 s
+    grace; the list (reused for 60 s) still had it, so the alarm went out. Now a claim that counts a GTT is made
+    only from a GTT list read in that tick."""
+    await _login()
+    market = _market(D(10, 0))
+    kite["orders"] = [_o("101", "BUY", D(9, 59), average_price=75.05),
+                      _o("201", "SELL", D(9, 59, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0)]
+    kite["gtts"] = [_gtt(5, 68.0)]
+    await pw.watch_tick(D(10, 0, 5), market=market)
+    kite["gtts"] = []                                                       # deleted at 10:00:10
+    for at in (D(10, 0, 30), D(10, 0, 35)):
+        await pw.watch_tick(at, market=market)
+    assert not any(m["kind"] == "watch_excess" for m in watch)
