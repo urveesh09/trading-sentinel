@@ -77,7 +77,7 @@
     - `test_a_gtt_that_fires_fills_in_part_and_is_cancelled`;
     - `test_a_replacement_for_more_units_is_told_for_the_units_the_old_stop_sold`.
   - The new test file against 764055f: 17 of 88 fail there, 71 pass.
-- Tests: engine: watch tests 88 passed (thread and unraisable warnings as errors); the six partner test files 204 passed; scheduler closures 26 passed. The full engine suite was stopped at about 93% by Claude Code because the machine ran low on memory: no failure up to there (4 skipped, as usual); it was not run again. Client unit 65 passed. No live broker or Telegram round trip (Saturday).
+- Tests: engine: watch tests 88 passed (thread and unraisable warnings as errors); the six partner test files 204 passed; scheduler closures 26 passed. Full engine suite: 5,629 passed, 4 skipped, 5 errors (593 s). The 5 errors were all in `test_session_phase_golden.py`, at setup: its child Python failed to start (exit 0xC0000142) when Claude Code stopped the run's shell for low memory, and pytest went on to finish. That file then passed alone (7 passed). Client unit 65 passed. No live broker or Telegram round trip (Saturday).
 - Config and migration impact: no setting, schema or scheduler change. New message kinds PRODUCT, BLIND and BACK in `partner_watch_messages`. The guard memory in `partner_watch_state` gains `seen`, `withdrawn`, `fresh` and `tracked`; an older memory without them starts a fresh look.
 - Rollout: with S23-O24e (rebuild the engine, then the gateway). Rollback: revert the commit.
 - Remaining:

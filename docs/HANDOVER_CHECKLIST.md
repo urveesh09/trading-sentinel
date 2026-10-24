@@ -11,7 +11,7 @@
   - BLIND: orders unreadable for 60 s; positions for 120 s while the overnight list is unknown; GTTs for 120 s while a holding's protection is unknown;
   - BACK: when that read works again.
 - [x] One option held as MIS and NRML is named with the product; units that look converted say so.
-- [x] Tests: engine: watch tests 88 passed (thread and unraisable warnings as errors); the six partner test files 204 passed; scheduler closures 26 passed. The full engine suite was stopped at about 93% by Claude Code because the machine ran low on memory: no failure up to there (4 skipped, as usual); it was not run again. Client unit 65 passed. No live broker or Telegram round trip (Saturday).
+- [x] Tests: engine: watch tests 88 passed (thread and unraisable warnings as errors); the six partner test files 204 passed; scheduler closures 26 passed. Full engine suite: 5,629 passed, 4 skipped, 5 errors (593 s). The 5 errors were all in `test_session_phase_golden.py`, at setup: its child Python failed to start (exit 0xC0000142) when Claude Code stopped the run's shell for low memory, and pytest went on to finish. That file then passed alone (7 passed). Client unit 65 passed. No live broker or Telegram round trip (Saturday).
 - [ ] Deployed: no. Ships with S23-O24e (rebuild the engine, then the gateway).
   - On the first live days, read:
     - BLIND / BACK in `partner_watch_messages`, and the PRODUCT / ORPHAN counts;
