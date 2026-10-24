@@ -134,9 +134,12 @@ test('[O23-PH] an earlier day says "that day" and only the newest day shows tomo
 test('[O24-PW] the page says when the trade watch is on, and what quiet keeps', async () => {
   const { watchNote } = await import('../src/utils/partnerReview.js');
   const on = buildReviewModel({ day: '2026-10-26', today: '2026-10-26', watch: { on: true, until: '15:40', quiet: false } });
-  assert.deepEqual(on.watch, { until: '15:40', quiet: false });
-  assert.equal(watchNote(on.watch), 'Trade watch on until 15:40: messages on Telegram when a buy has no stop or only part of it is covered, a stop is moved down, cancelled or does not sell, Zerodha refuses an order, and before the close. It never places an order.');
-  assert.equal(watchNote({ until: '15:40', quiet: true }), 'Trade watch on until 15:40, quiet today: you hear only when a stop is moved down, cancelled or does not sell, or Zerodha refuses an order.');
+  assert.deepEqual(on.watch, { until: '15:40', quiet: false, unread: [] });
+  assert.equal(watchNote(on.watch), 'Trade watch on until 15:40: messages on Telegram when a buy has no stop or only part of it is covered, a stop is moved down, cancelled or does not sell, Zerodha refuses an order, sell orders could sell more than you hold, and before the close. It never places an order.');
+  assert.equal(watchNote({ until: '15:40', quiet: true }), 'Trade watch on until 15:40, quiet today: you hear only when a stop is moved down, cancelled or does not sell, when Zerodha refuses an order, or when sell orders could sell more than you hold.');
+  // [O24f] What the watch cannot read right now.
+  const blind = buildReviewModel({ watch: { on: true, until: '15:40', unread: { gtts: '2026-10-26T10:42:05+05:30', orders: '2026-10-26T10:43:00+05:30' } } });
+  assert.ok(watchNote(blind.watch).endsWith('It never places an order. Right now it cannot read your GTTs and your orders.'));
   // Off, or an engine from before O24: nothing is shown.
   assert.equal(buildReviewModel({ watch: { on: false } }).watch, null);
   assert.equal(buildReviewModel({}).watch, null);

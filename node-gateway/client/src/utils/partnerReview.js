@@ -211,18 +211,26 @@ export function buildReviewModel(payload) {
     },
     noOrders: payload?.automatic_execution === false,
     sync: payload?.sync || null,
-    // [O24-PW] The trade watch: on after a login before the close.
-    watch: payload?.watch?.on ? { until: payload.watch.until || '', quiet: Boolean(payload.watch.quiet) } : null,
+    // [O24-PW] The trade watch: on after a login before the close. [O24f] With the reads failing now.
+    watch: payload?.watch?.on
+      ? { until: payload.watch.until || '', quiet: Boolean(payload.watch.quiet), unread: Object.keys(payload.watch.unread || {}) }
+      : null,
   };
 }
 
-// [O24-PW] The line the page shows while the trade watch is on.
+const UNREAD_NAMES = { orders: 'your orders', positions: 'your positions', gtts: 'your GTTs', quotes: 'option prices' };
+
+// [O24-PW] The line the page shows while the trade watch is on. [O24f] And what it cannot read right now.
 export function watchNote(watch) {
   if (!watch) return '';
   const until = watch.until ? ` until ${watch.until}` : '';
-  return watch.quiet
-    ? `Trade watch on${until}, quiet today: you hear only when a stop is moved down, cancelled or does not sell, or Zerodha refuses an order.`
-    : `Trade watch on${until}: messages on Telegram when a buy has no stop or only part of it is covered, a stop is moved down, cancelled or does not sell, Zerodha refuses an order, and before the close. It never places an order.`;
+  const line = watch.quiet
+    ? `Trade watch on${until}, quiet today: you hear only when a stop is moved down, cancelled or does not sell, when Zerodha refuses an order, or when sell orders could sell more than you hold.`
+    : `Trade watch on${until}: messages on Telegram when a buy has no stop or only part of it is covered, a stop is moved down, cancelled or does not sell, Zerodha refuses an order, sell orders could sell more than you hold, and before the close. It never places an order.`;
+  const cannot = (watch.unread || []).map((read) => UNREAD_NAMES[read]).filter(Boolean);
+  if (!cannot.length) return line;
+  const names = cannot.length > 1 ? `${cannot.slice(0, -1).join(', ')} and ${cannot[cannot.length - 1]}` : cannot[0];
+  return `${line} Right now it cannot read ${names}.`;
 }
 
 // [O24-SB] " Rules of 24 Oct 2026.": the rules a day was checked with (a review is worked out again each time).

@@ -70,10 +70,30 @@ What it sends (live, loss first)
   EXCESS    [O24e] sell orders (SL, limit, GTT; an OCO once) that together
             would sell more than is held, for 20 s: the extra is a short sale.
   ORPHAN    [O24e] sell orders still waiting on an option no longer held.
+            [O24f] "You hold none" only when Zerodha's positions show it;
+            when they cannot be read, the order may protect a holding not
+            seen (one from an earlier day), so it is "keep it if you hold it".
+  PRODUCT   [O24f] sell orders of a product not held, on an option held as
+            another (an MIS sell on NRML units opens an MIS short).
   CLOSE     15:20 with an option still held: what the close does to it.
+  BLIND     [O24f] a read the watch needs has failed for a while: the orders
+            (60 s), the positions while the overnight list is unknown
+            (120 s), the GTTs while a holding's protection is unknown
+            (120 s). BACK when that read works again.
   "Quiet today" (a button on PLAN and NO_STOP) mutes PLAN, ADDED, NO_STOP,
-  PARTIAL and CLOSE. LOWERED, REMOVED, UNFILLED, REFUSED, EXCESS and ORPHAN
-  always go, because those are the moments a loss grows.
+  PARTIAL and CLOSE. LOWERED, REMOVED, UNFILLED, REFUSED, EXCESS, ORPHAN,
+  PRODUCT, BLIND and BACK always go, because those are the moments a loss
+  grows (or the watch cannot see it).
+
+[O24f] A stop replaced (``_track_stops``): stops taken away and stops placed
+are kept for REPLACE_WINDOW (120 s), whether seen in one read or several,
+in either order. One taken away and one placed lower is that stop moved, for
+the units both sell; several are told as one change, never paired; a stop
+taken away with nothing placed is not a move (REMOVED or PARTIAL tell it);
+a GTT modified down (same id) is a move. "Placed" means new to every stop
+the holding had, not new to what ``cover_of`` needed to read. One option
+held as MIS and NRML is two holdings, named with the product; units Zerodha
+shows in a product the orders did not buy look converted, and say so.
 
 [O24c] Every level in a message is checked against the price read just
 before it (``level_state``). Kite refuses an SL sell whose trigger is at or
@@ -217,6 +237,9 @@ POSITIONS_LAG = timedelta(seconds=10)      # a fill this recent may not be in Ze
 POSITIONS_MAX_AGE = timedelta(minutes=2)   # an older positions read (later reads failed) confirms nothing
 GTT_EVERY = timedelta(seconds=20)
 GTT_REFRESH = timedelta(seconds=60)        # [O24e] the GTT list for the exit-size check
+REPLACE_WINDOW = timedelta(seconds=120)    # [O24f] a stop taken away and one placed this close together: a replacement
+# [O24f] How long a read may fail before the partner is told the watch cannot see it.
+BLIND_AFTER = {"orders": timedelta(seconds=60), "positions": timedelta(seconds=120), "gtts": timedelta(seconds=120)}
 READ_TIMEOUT_SEC = 4.0                     # one read of the partner's book
 MIN_READ_SEC = 0.5                         # an optional read with less of the tick's budget left waits a tick
 QUOTE_TIMEOUT_SEC = 3.0
@@ -236,8 +259,8 @@ RUN_LOOKBACK_MIN = 15
 COUNT_FROM_TRADE = 5
 FUTURE_BARS_DAYS = 21                      # as the F&O engine (fno_orchestrator.RVOL_FETCH_CALENDAR_DAYS)
 TICK = 0.05
-QUIET_KEEPS = ("LOWERED", "REMOVED", "UNFILLED", "REFUSED", "EXCESS", "ORPHAN")
-ALWAYS_SENT = ("WATCH_ON", "PROMPT", "RECONNECT")
+QUIET_KEEPS = ("LOWERED", "REMOVED", "UNFILLED", "REFUSED", "EXCESS", "ORPHAN", "PRODUCT")
+ALWAYS_SENT = ("WATCH_ON", "PROMPT", "RECONNECT", "BLIND", "BACK")
 GUARD_TOLERANCE = 0.005                    # a stop within 0.5% under the buy price still guards it
 QUIET_PREFIX = "watch"
 # Kite states in which an SL order still waits to protect (a modify in flight included).
@@ -247,13 +270,13 @@ COVERED = ("FULL", "PARTIAL")
 # How long a message is still worth sending again after a failed send (seconds).
 LIFETIME_SEC = {"PLAN": 180, "ADDED": 180, "NO_STOP": 900, "PARTIAL": 900, "REMOVED": 900, "UNFILLED": 120,
                 "LOWERED": 120, "REFUSED": 300, "CLOSE": 1200, "WATCH_ON": 600, "PROMPT": 1800, "RECONNECT": 1800,
-                "EXCESS": 900, "ORPHAN": 900}
+                "EXCESS": 900, "ORPHAN": 900, "PRODUCT": 900, "BLIND": 600, "BACK": 300}
 MAX_ATTEMPTS = 4
 RETRY_GAP = timedelta(seconds=10)
 # [O24d] The outbox sends the most urgent first.
-PRIORITY = {"UNFILLED": 0, "REMOVED": 1, "LOWERED": 1, "REFUSED": 1, "EXCESS": 1, "ORPHAN": 1, "NO_STOP": 2,
-            "PARTIAL": 2, "ADDED": 3,
-            "PLAN": 3, "CLOSE": 4, "WATCH_ON": 5, "PROMPT": 5, "RECONNECT": 5}
+PRIORITY = {"UNFILLED": 0, "REMOVED": 1, "LOWERED": 1, "REFUSED": 1, "EXCESS": 1, "ORPHAN": 1, "PRODUCT": 1,
+            "BLIND": 1, "NO_STOP": 2, "PARTIAL": 2, "ADDED": 3,
+            "PLAN": 3, "CLOSE": 4, "BACK": 4, "WATCH_ON": 5, "PROMPT": 5, "RECONNECT": 5}
 SENT, DONE, RETRY, MUTED, WAIT, LATER = "SENT", "DONE", "RETRY", "MUTED", "WAIT", "LATER"
 QUEUED = "queued"
 
@@ -372,6 +395,12 @@ def _hhmm(at: Optional[datetime]) -> str:
 
 def _hms(at: Optional[datetime]) -> str:
     return at.astimezone(IST).strftime("%H:%M:%S") if at else "--:--:--"
+
+
+def _name(position) -> str:
+    """[O24f] A holding's option, with its product when the option is held as two products."""
+    name = _option(position.tradingsymbol)
+    return f"{name} {position.product}" if getattr(position, "twin", False) else name
 
 
 def _option(symbol: str) -> str:
@@ -582,6 +611,8 @@ class Holding:
     basis: str                       # CONFIRMED | ZERODHA (they differ: Zerodha's count) | ORDERS (orders only)
     trip: Optional[Trip] = None
     average: Optional[float] = None
+    twin: bool = False               # [O24f] the same option is held as another product too (texts name the product)
+    converted: Optional[str] = None  # [O24f] the product today's orders bought these units as (Zerodha shows them here)
 
     @property
     def hkey(self) -> str:
@@ -617,8 +648,9 @@ def holdings_of(trips: list, positions: Optional[list], positions_at: Optional[d
     is the orders' (ORDERS)."""
     mine = {(t.exchange, t.tradingsymbol, t.product): t for t in trips if t.open_qty}
     if positions is None:
-        return [Holding(*key, qty=t.open_qty, orders_qty=t.open_qty, broker_qty=None, basis="ORDERS", trip=t,
-                        average=t.entry) for key, t in mine.items()]
+        out = [Holding(*key, qty=t.open_qty, orders_qty=t.open_qty, broker_qty=None, basis="ORDERS", trip=t,
+                       average=t.entry) for key, t in mine.items()]
+        return _mark_holdings(out, mine, {})
     broker = {(p["exchange"], p["tradingsymbol"], str(p.get("product") or "")): p for p in positions}
     out = []
     for key in sorted(set(mine) | {k for k, p in broker.items() if int(p.get("quantity") or 0) > 0}):
@@ -640,6 +672,21 @@ def holdings_of(trips: list, positions: Optional[list], positions_at: Optional[d
                 trip.entry if trip is not None else None)
         out.append(Holding(*key, qty=qty, orders_qty=ours, broker_qty=theirs, basis=basis, trip=trip,
                            average=average))
+    return _mark_holdings(out, mine, broker)
+
+
+def _mark_holdings(out: list, mine: dict, broker: dict) -> list:
+    """[O24f] One option held as two products is two holdings (``twin``: the
+    texts name the product). Units Zerodha shows in a product today's orders
+    did not buy, while the orders' own product shows fewer, look converted
+    (``converted``: a conversion places no order)."""
+    for holding in out:
+        option = (holding.exchange, holding.tradingsymbol)
+        holding.twin = any(h is not holding and (h.exchange, h.tradingsymbol) == option for h in out)
+        if holding.basis == "ZERODHA" and holding.orders_qty < holding.qty:
+            holding.converted = next((key[2] for key in sorted(mine) if key[:2] == option and key[2] != holding.product
+                                      and mine[key].open_qty > int((broker.get(key) or {}).get("quantity") or 0)),
+                                     None)
     return out
 
 
@@ -1121,7 +1168,7 @@ def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tup
     under is never offered as a stop. [O24d] ``cover``: what already
     protects the units (``stop_advice``)."""
     from partner_insights import USUAL_SIZE_MULT
-    name = _option(position.tradingsymbol)
+    name = _name(position)
     future = _future_of(position.tradingsymbol)
     bought_qty, bought_px = bought or (plan.qty, plan.entry)
     size = f"{lots} lot{'s' if lots != 1 else ''} ({bought_qty})" if lots else f"{bought_qty}"
@@ -1196,6 +1243,9 @@ def plan_summary(plan: Plan, quote: Optional[dict] = None, cover: Optional[Cover
 
 def _count_note(holding) -> str:
     """[O24c] Where the count comes from when Zerodha's positions do not confirm it ("" when they do)."""
+    if getattr(holding, "basis", "CONFIRMED") == "ZERODHA" and getattr(holding, "converted", None):
+        return (f" Zerodha's positions show {holding.qty} held as {holding.product}; your orders today bought them "
+                f"as {holding.converted}, so they look converted. The count is Zerodha's.")
     if getattr(holding, "basis", "CONFIRMED") == "ZERODHA":
         return (f" Zerodha's positions show {holding.qty} held; your orders today give {holding.orders_qty}, so the "
                 f"count is Zerodha's.")
@@ -1238,7 +1288,7 @@ def no_stop_text(holding, plan: Optional[Plan], quote: Optional[dict] = None, co
                  set_at: Optional[datetime] = None, *, now: Optional[datetime] = None) -> str:
     when = "held from yesterday" if holding.carried else (
         f"bought {_hhmm(holding.first_at)}" if holding.first_at else "held")
-    line = f"⏰ {_option(holding.tradingsymbol)} ({holding.open_qty}): no stop order yet ({when})."
+    line = f"⏰ {_name(holding)} ({holding.open_qty}): no stop order yet ({when})."
     return line + _count_note(holding) + _product_note(cover, holding) + plan_stop_line(holding, plan, quote,
                                                                                        set_at=set_at, now=now)
 
@@ -1246,7 +1296,7 @@ def no_stop_text(holding, plan: Optional[Plan], quote: Optional[dict] = None, co
 def partial_text(holding, cover: Cover, plan: Optional[Plan], quote: Optional[dict] = None,
                  set_at: Optional[datetime] = None, *, now: Optional[datetime] = None) -> str:
     protected = cover.covered + cover.exiting
-    line = (f"⚠️ {_option(holding.tradingsymbol)}: protection incomplete. A stop covers {protected} of your "
+    line = (f"⚠️ {_name(holding)}: protection incomplete. A stop covers {protected} of your "
             f"{cover.held}; the other {cover.held - protected} have none.")
     return line + _count_note(holding) + _product_note(cover, holding) + plan_stop_line(holding, plan, quote,
                                                                                        set_at=set_at, now=now)
@@ -1257,7 +1307,7 @@ def exits_of(rows: list, gtts: Optional[list], exchange: str, symbol: str, produ
     orders waiting, sells open (a limit, or a stop that fired) and active
     GTT sells. An OCO GTT counts once, for its bigger leg: only one leg can
     fire. ``product`` None: any product. Each: {"id", "kind" (SL | SELL |
-    GTT | OCO), "price", "units"} (an OCO also "low" and "high")."""
+    GTT | OCO), "price", "units", "product"} (an OCO also "low" and "high")."""
     def same(value) -> bool:
         return product is None or str(value or "").upper() in ("", product)
 
@@ -1269,12 +1319,13 @@ def exits_of(rows: list, gtts: Optional[list], exchange: str, symbol: str, produ
         status, units = str(row.get("status") or "").upper(), _pending(row)
         if not units:
             continue
+        prod = str(row.get("product") or "").upper()
         if status in WAITING and zerodha.carries_trigger(row):
             out.append({"id": f"kite:{row['order_id']}", "kind": "SL", "units": units,
-                        "price": zerodha._num(row.get("trigger_price")) or 0.0})
+                        "price": zerodha._num(row.get("trigger_price")) or 0.0, "product": prod})
         elif status == "OPEN" or status in WAITING:          # a limit, a fired stop, or an after-market sell
             out.append({"id": f"kite:{row['order_id']}", "kind": "SELL", "units": units,
-                        "price": zerodha._num(row.get("price")) or 0.0})
+                        "price": zerodha._num(row.get("price")) or 0.0, "product": prod})
     for gtt in gtts or []:
         condition = gtt.get("condition") or {}
         if (str(gtt.get("status") or "").lower() != "active"
@@ -1286,12 +1337,14 @@ def exits_of(rows: list, gtts: Optional[list], exchange: str, symbol: str, produ
         triggers = [float(v) for v in condition.get("trigger_values") or [] if v]
         if not legs or not triggers:
             continue
-        units = max(int(leg.get("quantity") or 0) for leg in legs)
+        big = max(legs, key=lambda leg: int(leg.get("quantity") or 0))
+        units, prod = int(big.get("quantity") or 0), str(big.get("product") or "").upper()
         if str(gtt.get("type") or "").lower() == "two-leg" and len(triggers) > 1:
             out.append({"id": f"gtt:{gtt.get('id')}", "kind": "OCO", "units": units, "price": min(triggers),
-                        "low": min(triggers), "high": max(triggers)})
+                        "low": min(triggers), "high": max(triggers), "product": prod})
         else:
-            out.append({"id": f"gtt:{gtt.get('id')}", "kind": "GTT", "units": units, "price": triggers[0]})
+            out.append({"id": f"gtt:{gtt.get('id')}", "kind": "GTT", "units": units, "price": triggers[0],
+                        "product": prod})
     return out
 
 
@@ -1308,20 +1361,66 @@ def _exit_list(exits: list) -> str:
 
 
 def excess_text(holding, exits: list) -> str:
-    """[O24e] Sell orders that together would sell more than is held."""
+    """[O24e] Sell orders that together would sell more than is held. [O24f]
+    With where the count comes from when Zerodha's positions do not confirm it."""
     total, held = sum(e["units"] for e in exits), holding.open_qty
-    return (f"⚠️ {_option(holding.tradingsymbol)}: your sell orders add up to {total} but you hold {held} "
-            f"({_exit_list(exits)}). If more than {held} fill, the extra {total - held} is a new short sale: Zerodha "
-            f"needs margin for it, and a short option can lose far more than its premium. An OCO GTT links a stop "
-            f"and a target so that only one of them can fill.")
+    return (f"⚠️ {_name(holding)}: your sell orders add up to {total} but you hold {held} "
+            f"({_exit_list(exits)}).{_count_note(holding)} If more than {held} fill, the extra {total - held} is a new "
+            f"short sale: Zerodha needs margin for it, and a short option can lose far more than its premium. An OCO "
+            f"GTT links a stop and a target so that only one of them can fill.")
 
 
-def orphan_text(symbol: str, exits: list) -> str:
-    """[O24e] Sell orders still waiting on an option no longer held."""
+def none_held(positions: Optional[list], carried_known: bool) -> str:
+    """[O24f] How sure "none held" is, for an option and product with no
+    holding: ZERODHA (Zerodha's positions, read within POSITIONS_MAX_AGE,
+    show none); ORDERS (they cannot be read now; today's orders, from the
+    overnight list read earlier today, show none); UNREAD (they were not read
+    today, so a position from an earlier day would not show)."""
+    if positions is not None:
+        return "ZERODHA"
+    return "ORDERS" if carried_known else "UNREAD"
+
+
+def _unverified(basis: str, held: str = "none held now") -> str:
+    if basis == "UNREAD":
+        return "Zerodha's positions could not be read today, so a position from an earlier day does not show."
+    return f"Zerodha's positions could not be read just now, and your orders today show {held}."
+
+
+def orphan_text(symbol: str, exits: list, basis: str = "ZERODHA") -> str:
+    """[O24e] Sell orders still waiting on an option no longer held. [O24f]
+    Said as fact only when Zerodha's positions show none (``none_held``);
+    otherwise the order may be the protection of a holding not seen, so it is
+    never "cancel it"."""
     total, many = sum(e["units"] for e in exits), len(exits) > 1
-    return (f"⚠️ {_option(symbol)}: you hold none now, but {'these sell orders are' if many else 'this sell order is'} "
-            f"still waiting: {_exit_list(exits)}. If {'they trigger they sell' if many else 'it triggers it sells'} "
-            f"{total} you do not have: a short sale. Cancel {'them' if many else 'it'} if the trade is over.")
+    orders = "these sell orders are" if many else "this sell order is"
+    if basis == "ZERODHA":
+        return (f"⚠️ {_option(symbol)}: Zerodha shows you hold none now, but {orders} still waiting: "
+                f"{_exit_list(exits)}. If {'they trigger they sell' if many else 'it triggers it sells'} {total} you "
+                f"do not have: a short sale. Cancel {'them' if many else 'it'} if the trade is over.")
+    return (f"⚠️ {_option(symbol)}: {orders} waiting: {_exit_list(exits)}, and I could not check whether you hold "
+            f"this option: {_unverified(basis)} If you hold it, "
+            f"{'these orders are' if many else 'this order is'} its protection: keep {'them' if many else 'it'}. If "
+            f"you don't, {'they' if many else 'it'} would sell {total} you do not have: a short sale.")
+
+
+def product_text(symbol: str, product: str, exits: list, held: list, basis: str = "ZERODHA") -> str:
+    """[O24f] Sell orders of a product that is not held, on an option held as
+    another product (``held``: those holdings). Kite keeps a position per
+    product: an MIS sell does not sell NRML units, it opens an MIS short."""
+    total, many = sum(e["units"] for e in exits), len(exits) > 1
+    other = held[0].product
+    qty = sum(h.qty for h in held)
+    line = (f"⚠️ {_option(symbol)}: {'these sell orders are' if many else 'this sell order is'} {product}: "
+            f"{_exit_list(exits)}, but your {qty} are {other}. {'They' if many else 'It'} would not sell them")
+    trigger = "if they trigger, they open" if many else "if it triggers, it opens"
+    if basis == "ZERODHA":
+        line += (f": {trigger} a new {product} short of {total} (Zerodha needs margin for it) and your {other} units "
+                 f"stay as they are.")
+    else:
+        line += (f". {_unverified(basis, f'no {product} units held')} Unless you hold {product} units of it, "
+                 f"{trigger} a new {product} short of {total}, and your {other} units stay as they are.")
+    return line + f" A stop for them has to be {other}."
 
 
 def lowered_reason(trip, old: float, new: float, plan: Optional[Plan], first: bool) -> Optional[str]:
@@ -1359,7 +1458,7 @@ def lowered_text(trip, old: float, new: float, reason: str = "FIRST", plan: Opti
     part = units is not None and 0 < units < held
     qty = units if part else held
     before, after = _result_for(trip, old, qty), _result_for(trip, new, qty)
-    name = _option(trip.tradingsymbol)
+    name = _name(trip)
     if part:
         line = (f"⚠️ {name}: you moved your stop for {units} of your {held} down {_px(old)} → {_px(new)}. If it is "
                 f"hit, on those {units}: {_signed(after)} instead of {_signed(before)}."
@@ -1367,25 +1466,55 @@ def lowered_text(trip, old: float, new: float, reason: str = "FIRST", plan: Opti
     else:
         line = (f"⚠️ {name}: you moved your stop down {_px(old)} → {_px(new)}. If it is hit: "
                 f"{_signed(after)} instead of {_signed(before)}.")
+    return line + _lowered_why(reason, plan, units if part else None)
+
+
+def _lowered_why(reason: str, plan: Optional[Plan], units: Optional[int] = None) -> str:
     if reason == "GUARD":
-        line += (f" It was guarding your buy price; now those {units} can end in a loss." if part else
-                 " It was guarding your buy price; now this trade can end in a loss.")
-    elif reason == "BELOW_PLAN" and plan is not None and plan.stop is not None:
-        line += f" That is under your plan stop {_px(plan.stop)}: the loss can now be bigger than planned."
-    else:
-        line += " A stop moved down adds to the loss you chose when you placed it."
-    return line
+        return (f" It was guarding your buy price; now those {units} can end in a loss." if units else
+                " It was guarding your buy price; now this trade can end in a loss.")
+    if reason == "BELOW_PLAN" and plan is not None and plan.stop is not None:
+        return f" That is under your plan stop {_px(plan.stop)}: the loss can now be bigger than planned."
+    return " A stop moved down adds to the loss you chose when you placed it."
+
+
+def _average_trigger(stops: list) -> float:
+    units = sum(int(s["units"]) for s in stops)
+    return sum(s["trigger"] * int(s["units"]) for s in stops) / units if units else min(s["trigger"] for s in stops)
+
+
+def changed_text(trip, gone: list, added: list, reason: str = "FIRST", plan: Optional[Plan] = None) -> str:
+    """[O24f] Several stops taken away and new ones placed within
+    REPLACE_WINDOW, lower on average: the change they make together. No new
+    stop is paired with an old one (that would be a guess); the results are
+    at each set's average trigger (by units), on the units both cover."""
+    held = trip.open_qty
+    qty = min(sum(int(s["units"]) for s in gone), sum(int(s["units"]) for s in added), held)
+    before = _result_for(trip, _average_trigger(gone), qty)
+    after = _result_for(trip, _average_trigger(added), qty)
+    on = f"on your {held}" if qty >= held else f"on {qty} of your {held}"
+    new = f"new ones at {_triggers(added)}" if len(added) > 1 else f"a new one at {_triggers(added)}"
+    return (f"⚠️ {_name(trip)}: your stops changed: {_triggers(gone)} cancelled, {new}. If they are "
+            f"hit, {on}: about {_signed(after)} instead of about {_signed(before)}."
+            + _lowered_why(reason, plan, qty if qty < held else None))
 
 
 def removed_text(holding, why: dict, plan: Optional[Plan], quote: Optional[dict] = None,
                  set_at: Optional[datetime] = None, *, now: Optional[datetime] = None) -> str:
     """[O24c] Units that had a stop and no longer have one. ``why``: {"kind":
-    CANCELLED | SOLD | GTT_GONE | GONE, "trigger", "sold"}."""
-    name, trigger = _option(holding.tradingsymbol), why.get("trigger")
+    CANCELLED | SOLD | GTT_GONE | FIRED_CANCELLED | GONE, "trigger", "sold",
+    "via" (GTT: [O24f] a GTT that fired)}."""
+    name, trigger = _name(holding), why.get("trigger")
     kind = why.get("kind")
-    if kind == "SOLD":
+    if kind == "SOLD" and why.get("via") == "GTT":
+        line = (f"⚠️ {name}: your GTT at {_px(trigger)} fired and sold {why.get('sold')}; the other "
+                f"{holding.open_qty} have no stop now.")
+    elif kind == "SOLD":
         line = (f"⚠️ {name}: your stop at {_px(trigger)} sold {why.get('sold')}; the {holding.open_qty} still held "
                 f"have no stop.")
+    elif kind == "FIRED_CANCELLED":
+        line = (f"⚠️ {name}: your GTT at {_px(trigger)} fired, but its sell order was cancelled before it sold. No "
+                f"other stop is in Zerodha: nothing limits this trade's loss now.")
     elif kind == "GTT_GONE":
         line = (f"⚠️ {name}: your GTT at {_px(trigger)} is no longer active and no other stop is in Zerodha. "
                 f"Nothing limits this trade's loss now.")
@@ -1402,7 +1531,7 @@ def unfilled_text(holding, fired: dict, quote: Optional[dict] = None) -> str:
     """[O24c] A stop that fired and has not sold: the price is under its limit."""
     what = "GTT" if fired.get("kind") == "GTT" else "stop"
     limit = fired.get("limit")
-    line = (f"🚨 {_option(holding.tradingsymbol)}: your {what} triggered at {_px(fired['trigger'])}, but its sell "
+    line = (f"🚨 {_name(holding)}: your {what} triggered at {_px(fired['trigger'])}, but its sell "
             f"order{f' (limit {_px(limit)})' if limit else ''} has not filled: {fired['pending']} of "
             f"{holding.open_qty} still to sell.")
     bid = (quote or {}).get("bid")
@@ -1429,7 +1558,7 @@ def added_text(holding, *, added: int, added_px: float, first_px: Optional[float
                now: Optional[datetime] = None) -> str:
     """[O24c] A new buy order on an open trade: the new size and what the plan stop now costs."""
     under = (f", under your first buy at {_px(first_px)}" if first_px and added_px < first_px - 1e-9 else "")
-    line = (f"➕ You added {added} to {_option(holding.tradingsymbol)} at {_px(added_px)}{under}: now "
+    line = (f"➕ You added {added} to {_name(holding)} at {_px(added_px)}{under}: now "
             f"{holding.open_qty} at {_px(holding.entry)}.{_count_note(holding)}")
     covers = _cover_note(cover, holding.open_qty)
     if (plan is None or plan.stop is None) and cover is not None and cover.state == "FULL" and cover.stops:
@@ -1464,7 +1593,7 @@ def refused_text(row: dict, rows: list, still_open: Optional[int]) -> str:
 def close_text(trip, *, expiry_today: bool, theta_day: Optional[float]) -> str:
     from partner_broker_sync import CLOSE_MIN
     close = f"{CLOSE_MIN // 60}:{CLOSE_MIN % 60:02d}"
-    line = (f"⏳ 20 minutes to the {close} close and you still hold {_option(trip.tradingsymbol)} "
+    line = (f"⏳ 20 minutes to the {close} close and you still hold {_name(trip)} "
             f"({trip.open_qty}).")
     if expiry_today:
         line += (" It expires today: after the close it is settled in cash at its in-the-money value, "
@@ -1479,15 +1608,28 @@ def close_text(trip, *, expiry_today: bool, theta_day: Optional[float]) -> str:
 
 WATCH_ON_TEXT = ("✅ Trade watch on until {close}. I'll message you when a buy has no stop or only part of it is "
                  "covered, when a stop is moved down or cancelled, when a stop fires and does not sell, when "
-                 "Zerodha refuses an order, and before the close. Messages only: nothing is ever placed, changed "
+                 "Zerodha refuses an order, when sell orders could sell more than you hold, and before the close; "
+                 "and if I cannot read your account for a while. Messages only: nothing is ever placed, changed "
                  "or cancelled for you.")
 PROMPT_TEXT = ("🌅 Good morning. Log in to Zerodha to switch on today's trade watch: I'll message you when a buy "
                "has no stop, when a stop is moved down, cancelled or does not sell, and when Zerodha refuses an "
                "order. Messages only: nothing is ever placed for you.")
 RECONNECT_TEXT = ("🔌 The trade watch stopped (the system restarted) and needs your Zerodha login again. "
                   "Your orders are untouched.")
-QUIET_TOAST = ("Quiet for today. You will still hear when a stop is moved down, cancelled or does not sell, or "
-               "Zerodha refuses an order.")
+QUIET_TOAST = ("Quiet for today. You will still hear when a stop is moved down, cancelled or does not sell, when "
+               "Zerodha refuses an order, or when sell orders could sell more than you hold.")
+# [O24f] The watch cannot see part of the book (``_health``), and then can again.
+BLIND_TEXT = {
+    "orders": ("⚠️ The trade watch cannot read your Zerodha orders since {since} (it tries every 5 s). Until it can, "
+               "it cannot warn you about your trades. Your orders at Zerodha are not affected."),
+    "positions": ("⚠️ The trade watch cannot read your Zerodha positions since {since}. Until it can, an option you "
+                  "hold from an earlier day is not watched, and what you hold is counted from today's orders."),
+    "gtts": ("⚠️ The trade watch cannot read your GTTs since {since}, so it cannot tell whether {names} {has} a stop: "
+             "your SL orders do not cover all of {it}. Until it can, it does not warn you about {it}."),
+}
+READ_NAMES = {"orders": "Zerodha orders", "positions": "Zerodha positions", "gtts": "GTTs"}
+BACK_TEXT = ("✅ The trade watch can read your {what} again (it could not from {since} to {now}). It checks what "
+             "changed meanwhile now.")
 
 
 def quiet_keyboard(day: str) -> dict:
@@ -2085,10 +2227,18 @@ class _Guard:
     full_ids: list = field(default_factory=list)   # their ids when it was last fully covered
     lowered_told: bool = False                     # its first stop move down was told
     saved: Optional[str] = None                    # what partner_watch_state holds for it
+    # [O24f] For replacements (``_track_stops``): the stops at the last look, and within REPLACE_WINDOW the stops
+    # taken away and the stops placed (each with "at"). ``tracked``: ``seen`` is a real look (not a new guard's).
+    seen: list = field(default_factory=list)
+    withdrawn: list = field(default_factory=list)
+    fresh: list = field(default_factory=list)
+    tracked: bool = False
 
     def memory(self) -> str:
         return json.dumps({"covered_once": self.covered_once, "full_once": self.full_once, "stops": self.stops,
-                           "full_ids": self.full_ids, "lowered_told": self.lowered_told}, sort_keys=True)
+                           "full_ids": self.full_ids, "lowered_told": self.lowered_told, "seen": self.seen,
+                           "withdrawn": self.withdrawn, "fresh": self.fresh, "tracked": self.tracked},
+                          sort_keys=True)
 
 
 @dataclass
@@ -2102,6 +2252,8 @@ class View:
     holdings: list
     covers: dict = field(default_factory=dict)     # holding key -> Cover
     gtts: Optional[list] = None                    # [O24e] the GTT list when read within GTT_REFRESH, else None
+    positions: Optional[list] = None               # [O24f] Zerodha's positions (None: not read within POSITIONS_MAX_AGE)
+    carried_known: bool = False                    # [O24f] the overnight positions were read today
 
     def holding(self, episode: Optional[str]) -> Optional[Holding]:
         return next((h for h in self.holdings if _episode(self.day, h) == episode), None)
@@ -2154,6 +2306,8 @@ class _State:
     delivered: int = 0
     size_shares: Optional[list] = None                # the usual-size history before today
     last_tick_ms: Optional[float] = None
+    unread: dict = field(default_factory=dict)        # [O24f] read -> its first failure since it last worked
+    blind: dict = field(default_factory=dict)         # [O24f] read -> the failure the partner was told of (BLIND)
 
 
 _state = _State()
@@ -2281,8 +2435,10 @@ async def _refresh_book(rows: list, now: datetime, deadline: Optional[float] = N
             if exc.code == "TokenException":
                 raise
             logger.warning("partner_watch_positions_unread code=%s", exc.code)
+            _read_failed("positions", exc.code, now)
         else:
             _state.positions, _state.positions_at = positions, now
+            _state.unread.pop("positions", None)
             if not _state.carried_known:
                 _state.carried = [p for p in positions if p["overnight_quantity"] > 0]
                 _state.carried_known = True
@@ -2327,12 +2483,19 @@ async def watch_tick(now: Optional[datetime] = None, *, market: Optional[Market]
     _state.market = market
     before = _state.delivered
     try:
-        rows = zerodha.option_orders(await _book("/orders", deadline))
+        try:
+            rows = zerodha.option_orders(await _book("/orders", deadline))
+        except zerodha.BrokerError as exc:
+            _read_failed("orders", exc.code, now)
+            raise
+        _state.unread.pop("orders", None)
         await _refresh_book(rows, now, deadline)
         await _seed_cash(deadline)
     except zerodha.BrokerError as exc:
         logger.warning("partner_watch_read_failed code=%s", exc.code)
+        await _enqueue_many(db_path, day, await _health(db_path, day, now), now)
         _flush()
+        await _wait_within([_outbox["task"]], DELIVERY_INLINE_SEC, deadline)
         return {"status": "FAILED", "reason": exc.code}
     plans = await _events(db_path, day, rows, now, market, deadline)
     _state.seeded = True
@@ -2401,6 +2564,7 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     for holding in holdings:
         covers[holding.hkey] = await _guard(db_path, day, holding, rows, now, deadline, seeded, out)
     _exits(day, rows, _state.gtts if _gtts_fresh(now, GTT_REFRESH) else None, holdings, now, out)
+    out.extend(await _health(db_path, day, now, holdings, covers))
     live = {_episode(day, h) for h in holdings}
     for key in [k for k in _state.guards if k not in live]:
         del _state.guards[key]
@@ -2413,7 +2577,8 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
                 out.append((f"close:{episode}", "CLOSE", holding, {"episode": episode}, None, episode))
     # The view every message is built from; then the outbox goes.
     _state.view = View(day=day, at=now, rows=rows, trips=trips, holdings=holdings, covers=covers,
-                       gtts=_state.gtts if _gtts_fresh(now, GTT_REFRESH) else None)
+                       gtts=_state.gtts if _gtts_fresh(now, GTT_REFRESH) else None, positions=_state.positions,
+                       carried_known=_state.carried_known)
     await _enqueue_many(db_path, day, out, now)
     if _outbox["pending"]:
         _kick()
@@ -2470,7 +2635,9 @@ async def _quotes(market: Market, contracts: list, now: datetime) -> dict:
         got = await asyncio.wait_for(market.quote(contracts), QUOTE_TIMEOUT_SEC)
     except Exception as exc:          # a missing price leaves levels unchecked; it never fails the tick
         logger.warning("partner_watch_quote_unread err=%s", type(exc).__name__)
+        _state.unread.setdefault("quotes", now)
         return {}
+    _state.unread.pop("quotes", None)
     for symbol, quote in (got or {}).items():
         _state.quotes[symbol] = dict(quote, looked_at=now)
     return {symbol: _state.quotes[symbol] for symbol in got or {}}
@@ -2506,6 +2673,10 @@ async def _guard_for(db_path: str, episode: str, holding: Holding, now: datetime
             guard.stops = list(kept.get("stops") or [])
             guard.full_ids = list(kept.get("full_ids") or [])
             guard.lowered_told = bool(kept.get("lowered_told"))
+            guard.seen = list(kept.get("seen") or [])
+            guard.withdrawn = list(kept.get("withdrawn") or [])
+            guard.fresh = list(kept.get("fresh") or [])
+            guard.tracked = bool(kept.get("tracked"))
             guard.saved = saved
         _state.guards[episode] = guard
     elif holding.qty > guard.held:
@@ -2547,11 +2718,12 @@ async def _guard(db_path: str, day: str, holding: Holding, rows: list, now: date
         return cover                  # the GTTs could not be read: nothing is claimed; read again next tick
     if cover.state != guard.state:
         guard.state, guard.state_at = cover.state, now
+    moved = _track_stops(guard, holding, cover, rows, now, baseline=not seeded)
+    if seeded:
+        item = await _replaced_lower(db_path, day, holding, guard, moved, now)
+        if item is not None:
+            out.append(item)
     if cover.state in COVERED:
-        if seeded:
-            item = await _replaced_lower(db_path, day, holding, guard, cover, rows, now)
-            if item is not None:
-                out.append(item)
         guard.covered_once = True
         if cover.stops:
             guard.stops = [dict(s) for s in cover.stops]
@@ -2564,7 +2736,7 @@ async def _guard(db_path: str, day: str, holding: Holding, rows: list, now: date
     base = {"episode": episode, "held": held}
     if cover.state == "ABSENT" and guard.covered_once:
         lost = ",".join(sorted(s["id"] for s in guard.stops)) or "stop"
-        why = _lost_why(guard.stops, rows, holding)
+        why = _lost_why(guard.stops, rows, holding, _state.gtts)
         out.append((f"removed:{episode}:{lost}", "REMOVED", holding, base | {"why": _plain(why)}, why.get("at"),
                     episode))
     elif cover.state == "ABSENT" and now - guard.since >= NO_STOP_AFTER:
@@ -2582,24 +2754,46 @@ def _gtts_fresh(now: datetime, within: timedelta) -> bool:
     return _state.gtts_at is not None and now - _state.gtts_at < within
 
 
+def _sell_products(rows: list, gtts: Optional[list]) -> set:
+    """[O24f] (exchange, option, product) of every sell order waiting: SL
+    orders, open sells, and active GTT sell legs."""
+    out = set()
+    for row in rows:
+        status = str(row.get("status") or "").upper()
+        if row["transaction_type"] == "SELL" and _pending(row) and (status in WAITING or status == "OPEN"):
+            out.add((row["exchange"], row["tradingsymbol"], str(row.get("product") or "").upper()))
+    for gtt in gtts or []:
+        condition = gtt.get("condition") or {}
+        if str(gtt.get("status") or "").lower() != "active":
+            continue
+        for leg in gtt.get("orders") or []:
+            if str(leg.get("transaction_type") or "").upper() == "SELL":
+                out.add((str(condition.get("exchange") or "").upper(), str(condition.get("tradingsymbol") or "").upper(),
+                         str(leg.get("product") or "").upper()))
+    return out
+
+
 def _exits(day: str, rows: list, gtts: Optional[list], holdings: list, now: datetime, out: list) -> None:
     """[O24e] Sell orders that together would sell more than is held
     (EXCESS), or that wait on an option not held at all (ORPHAN): what is
     sold beyond the holding is a new short sale. Told once it has lasted
     COVER_GRACE (a stop replaced by placing the new one first is not told).
-    Without a fresh GTT list only the orders are counted."""
+    Without a fresh GTT list only the orders are counted.
+
+    [O24f] By exchange, option and product throughout: Kite keeps a position
+    per product, so a holding of one product never hides a sell of another
+    (PRODUCT: an MIS sell on NRML units opens an MIS short). An option with
+    no holding of any product is one ORPHAN message for all its sells."""
+    held = {(h.exchange, h.tradingsymbol, h.product) for h in holdings}
     held_options = {(h.exchange, h.tradingsymbol) for h in holdings}
-    options = set()
-    for row in rows:
-        if row["transaction_type"] == "SELL" and _pending(row) and (
-                str(row.get("status") or "").upper() in WAITING or str(row.get("status") or "").upper() == "OPEN"):
-            options.add((row["exchange"], row["tradingsymbol"]))
-    for gtt in gtts or []:
-        condition = gtt.get("condition") or {}
-        if str(gtt.get("status") or "").lower() == "active":
-            options.add((str(condition.get("exchange") or "").upper(),
-                         str(condition.get("tradingsymbol") or "").upper()))
+    sells = _sell_products(rows, gtts)
     live = set()
+
+    def due(key: str) -> Optional[datetime]:
+        live.add(key)
+        seen = _state.exit_seen.setdefault(key, now)
+        return seen if now - seen >= COVER_GRACE else None
+
     for holding in holdings:
         exits = exits_of(rows, gtts, holding.exchange, holding.tradingsymbol, holding.product)
         if sum(e["units"] for e in exits) <= holding.qty:
@@ -2607,22 +2801,29 @@ def _exits(day: str, rows: list, gtts: Optional[list], holdings: list, now: date
         episode = _episode(day, holding)
         ids = ",".join(sorted(e["id"] for e in exits))
         key = f"excess:{episode}:{holding.qty}:{ids}"
-        live.add(key)
-        seen = _state.exit_seen.setdefault(key, now)
-        if now - seen >= COVER_GRACE:
+        if (seen := due(key)) is not None:
             out.append((key, "EXCESS", holding, {"episode": episode, "held": holding.qty, "ids": ids}, seen,
                         episode))
-    for exchange, symbol in sorted(options - held_options):
+    for exchange, symbol in sorted({(e, s) for e, s, _p in sells} - held_options):
         exits = exits_of(rows, gtts, exchange, symbol, None)
         if not exits:
             continue
         ids = ",".join(sorted(e["id"] for e in exits))
         key = f"orphan:{day}:{exchange}:{symbol}:{ids}"
-        live.add(key)
-        seen = _state.exit_seen.setdefault(key, now)
-        if now - seen >= COVER_GRACE:
+        if (seen := due(key)) is not None:
             subject = SimpleNamespace(exchange=exchange, tradingsymbol=symbol, position_key=None)
             out.append((key, "ORPHAN", subject, {"option": [exchange, symbol], "ids": ids}, seen, None))
+    for exchange, symbol, product in sorted(sells):
+        if not product or (exchange, symbol) not in held_options or (exchange, symbol, product) in held:
+            continue
+        exits = [e for e in exits_of(rows, gtts, exchange, symbol, product) if e.get("product") == product]
+        if not exits:
+            continue
+        ids = ",".join(sorted(e["id"] for e in exits))
+        key = f"product:{day}:{exchange}:{symbol}:{product}:{ids}"
+        if (seen := due(key)) is not None:
+            subject = SimpleNamespace(exchange=exchange, tradingsymbol=symbol, position_key=None)
+            out.append((key, "PRODUCT", subject, {"option": [exchange, symbol, product], "ids": ids}, seen, None))
     for key in [k for k in _state.exit_seen if k not in live]:
         del _state.exit_seen[key]
 
@@ -2636,22 +2837,91 @@ def _since(holding: Holding, now: datetime) -> datetime:
 
 
 async def _read_gtts(now: datetime, deadline: Optional[float] = None) -> None:
+    """The GTT list. [O24f] A read skipped for want of the tick's budget keeps
+    the last list (its age still decides what it can confirm)."""
     _state.gtts_tried_at = now
     try:
         _state.gtts = list(await _book("/gtt/triggers", deadline) or [])
         _state.gtts_at = now
+        _state.unread.pop("gtts", None)
     except zerodha.BrokerError as exc:
+        if exc.code == "budget":
+            return
         logger.warning("partner_watch_gtts_unavailable code=%s", exc.code)
         _state.gtts, _state.gtts_at = None, None
+        _read_failed("gtts", exc.code, now)
 
 
-def _lost_why(stops: list, rows: list, holding: Holding) -> dict:
-    """Why the last covering stops no longer cover: the first one's fate."""
+def _read_failed(read: str, code: Optional[str], now: datetime) -> None:
+    """[O24f] A read that failed (not one skipped for the budget, nor a lost
+    login: that has its own message): from when it has been failing."""
+    if code not in ("budget", "TokenException", "not_connected"):
+        _state.unread.setdefault(read, now)
+
+
+async def _health(db_path: str, day: str, now: datetime, holdings: Optional[list] = None,
+                  covers: Optional[dict] = None) -> list:
+    """[O24f] What the partner should know about the watch itself (outbox
+    items, fixed texts): BLIND once a read it needs has failed for
+    BLIND_AFTER (the orders always; the positions while the overnight list
+    is unknown; the GTTs while a holding's protection is UNKNOWN), and BACK
+    when a read that BLIND was sent for works again. A short failure is not
+    told. ``holdings`` None: the orders could not be read, so only they are
+    looked at."""
+    items = []
+    for read, told in list(_state.blind.items()):
+        if read in _state.unread:
+            continue
+        del _state.blind[read]
+        key = f"blind:{day}:{read}:{told.isoformat()}"
+        async with aiosqlite.connect(db_path) as db:
+            row = await (await db.execute("SELECT sent FROM partner_watch_messages WHERE message_key=?",
+                                          (key,))).fetchone()
+        if row and row[0]:
+            text = BACK_TEXT.format(what=READ_NAMES[read], since=_hms(told), now=_hms(now))
+            items.append((f"back:{day}:{read}:{told.isoformat()}", "BACK", None, {"text": text}, now, None))
+    for read, since in _state.unread.items():
+        if (read not in BLIND_TEXT or read in _state.blind or now - since < BLIND_AFTER[read]
+                or (holdings is None and read != "orders")):
+            continue
+        fields = {"since": _hms(since)}
+        if read == "positions" and _state.carried_known:
+            continue                      # the overnight list is known: the messages say the count is the orders'
+        if read == "gtts":
+            unknown = [h for h in holdings or [] if (covers or {}).get(h.hkey) is not None
+                       and covers[h.hkey].state == "UNKNOWN"]
+            if not unknown:
+                continue                  # every holding's SL orders cover it: the GTTs are not needed
+            names = [f"{_name(h)} ({h.qty})" for h in unknown]
+            many = len(names) > 1
+            fields |= {"names": f"{', '.join(names[:-1])} and {names[-1]}" if many else names[0],
+                       "has": "have" if many else "has", "it": "them" if many else "it"}
+        _state.blind[read] = since
+        items.append((f"blind:{day}:{read}:{since.isoformat()}", "BLIND", None,
+                      {"text": BLIND_TEXT[read].format(**fields)}, since, None))
+    return items
+
+
+def _lost_why(stops: list, rows: list, holding: Holding, gtts: Optional[list] = None) -> dict:
+    """Why the last covering stops no longer cover: the first one's fate.
+    [O24f] A GTT that fired is told by its order's fate (sold part, or
+    cancelled unsold), not as a GTT no longer active."""
     by_id = {f"kite:{r['order_id']}": r for r in rows}
     for stop in stops:
         row = by_id.get(stop["id"])
         if stop["kind"] == "GTT":
-            return {"kind": "GTT_GONE", "trigger": stop["trigger"]}
+            gtt = next((g for g in gtts or [] if f"gtt:{g.get('id')}" == stop["id"]), None)
+            placed = None
+            if gtt is not None and str(gtt.get("status") or "").lower() == "triggered":
+                for leg in gtt.get("orders") or []:
+                    placed = placed or ((leg.get("result") or {}).get("order_result") or {}).get("order_id")
+            row = by_id.get(f"kite:{placed}") if placed else None
+            if row is None:
+                return {"kind": "GTT_GONE", "trigger": stop["trigger"]}
+            filled, at = int(row.get("filled_quantity") or 0), _dt(row.get("updated_at"))
+            if filled > 0:
+                return {"kind": "SOLD", "trigger": stop["trigger"], "sold": filled, "at": at, "via": "GTT"}
+            return {"kind": "FIRED_CANCELLED", "trigger": stop["trigger"], "at": at}
         if row is None:
             continue
         status, filled = str(row.get("status") or "").upper(), int(row.get("filled_quantity") or 0)
@@ -2688,28 +2958,90 @@ def _withdrawn(stop_id: str, rows: list, gtts: Optional[list]) -> bool:
     return gtt is None or str(gtt.get("status") or "").lower() in ("cancelled", "deleted", "disabled")
 
 
-async def _replaced_lower(db_path: str, day: str, holding: Holding, guard: _Guard, cover: Cover, rows: list,
+def _all_stops(holding, cover: Optional[Cover], gtts: Optional[list], last: Optional[list] = None) -> list:
+    """[O24f] Every waiting stop of the holding's product, whatever
+    ``cover_of`` needed to look at (it reads the GTTs only when the SL orders
+    leave units uncovered): its SL orders, and the GTT stop legs of ``gtts``
+    (a list read within GTT_REFRESH); without one, the GTTs in ``last``."""
+    stops = [s for s in (cover.stops if cover else []) if s["kind"] == "SL"]
+    if gtts is not None:
+        waiting, _fired = gtt_legs(gtts, holding)
+        return stops + [leg for leg in waiting if _same_product(leg["product"], holding)]
+    if last is not None:
+        return stops + [s for s in last if s["kind"] == "GTT"]
+    return list(cover.stops if cover else [])
+
+
+def _track_stops(guard: _Guard, holding: Holding, cover: Cover, rows: list, now: datetime, *,
+                 baseline: bool = False) -> list:
+    """[O24f] Stops taken away (``_withdrawn``) and stops placed, kept for
+    REPLACE_WINDOW: a replacement is seen in one read or across several, the
+    new stop placed before or after the old one goes. A stop is placed when
+    it is new to every stop the holding had (``_all_stops``), not when
+    ``cover_of`` first needed it. ``baseline`` (a new guard, the first read
+    after a restart): this read is only remembered. Returns the GTTs
+    modified down (same id, lower trigger) as (before, now)."""
+    gtts = _state.gtts if _gtts_fresh(now, GTT_REFRESH) else None
+    now_by = {s["id"]: s for s in _all_stops(holding, cover, gtts, guard.seen)}
+    moved = []
+    if guard.tracked and not baseline:
+        seen = {s["id"]: s for s in guard.seen}
+        for stop_id, stop in seen.items():
+            if stop_id not in now_by and _withdrawn(stop_id, rows, gtts):
+                guard.withdrawn.append(dict(stop, at=now.isoformat()))
+            elif stop_id in now_by and stop["kind"] == "GTT" and now_by[stop_id]["trigger"] < stop["trigger"] - 1e-6:
+                moved.append((stop, now_by[stop_id]))
+        guard.fresh.extend(dict(s, at=now.isoformat()) for i, s in now_by.items() if i not in seen)
+    else:
+        guard.withdrawn, guard.fresh = [], []
+    cutoff = now - REPLACE_WINDOW
+    guard.withdrawn = [s for s in guard.withdrawn if (_dt(s.get("at")) or now) >= cutoff]
+    guard.fresh = [s for s in guard.fresh if (_dt(s.get("at")) or now) >= cutoff and s["id"] in now_by]
+    guard.seen, guard.tracked = [dict(s) for s in now_by.values()], True
+    return moved
+
+
+async def _replaced_lower(db_path: str, day: str, holding: Holding, guard: _Guard, moved: list,
                           now: datetime) -> Optional[tuple]:
     """A stop cancelled and replaced by a lower one is a stop moved down (a
-    stop that fired, leaving a lower one, is not)."""
-    before = {s["id"]: s for s in guard.stops}
-    now_ids = {s["id"] for s in cover.stops}
-    gone = sorted(i for i in before if i not in now_ids and _withdrawn(i, rows, _state.gtts))
-    if not gone or not cover.stops:
+    stop that fired, leaving a lower one, is not).
+
+    [O24f] The new stop is matched to the one it replaced, never to a stop
+    that stayed: one taken away and one placed within REPLACE_WINDOW are a
+    move of that stop, for the units both sell; several are told as the
+    change they make together, without pairing them (``changed_text``). A
+    stop taken away with nothing placed is not a move (REMOVED and PARTIAL
+    tell it). A GTT modified down is a move of that GTT."""
+    if moved:
+        before, after = moved[0]
+        return await _lowered(db_path, day, holding, after["id"], before["trigger"], after["trigger"], now,
+                              stop_id=after["id"], units=min(int(after["units"]), holding.qty))
+    if not guard.withdrawn or not guard.fresh:
         return None
-    top = max(cover.stops, key=lambda s: s["trigger"])
-    old, new = max(s["trigger"] for s in before.values()), top["trigger"]
+    gone, added = guard.withdrawn, guard.fresh
+    guard.withdrawn, guard.fresh = [], []
+    old, new = _average_trigger(gone), _average_trigger(added)
     if new >= old - 1e-6:
-        return None
-    return await _lowered(db_path, day, holding, gone[0].split(":", 1)[1], old, new, now, stop_id=top["id"],
-                          units=min(int(top["units"]), holding.qty))
+        return None                       # replaced at the same level or higher
+    if len(gone) == 1 and len(added) == 1:
+        units = min(int(added[0]["units"]), int(gone[0]["units"]), holding.qty)
+        return await _lowered(db_path, day, holding, gone[0]["id"].split(":", 1)[1], old, new, now,
+                              stop_id=added[0]["id"], units=units)
+    def plain(stops: list) -> list:
+        return [{"id": s["id"], "trigger": s["trigger"], "units": s["units"]} for s in stops]
+
+    return await _lowered(db_path, day, holding, "+".join(sorted(s["id"] for s in gone)), old, new, now,
+                          units=min(sum(int(s["units"]) for s in added), holding.qty),
+                          changed=(plain(gone), plain(added)))
 
 
 async def _lowered(db_path: str, day: str, holding: Holding, order_id: str, old: float, new: float, now: datetime,
                    *, stop_id: Optional[str] = None, units: Optional[int] = None,
-                   event_at: Optional[datetime] = None) -> Optional[tuple]:
+                   event_at: Optional[datetime] = None, changed: Optional[tuple] = None) -> Optional[tuple]:
     """A stop moved down, worth a message (``lowered_reason``). [O24e] Bound to
-    the stop now at the new level (``stop_id``) and what it sells (``units``)."""
+    the stop now at the new level (``stop_id``) and what it sells (``units``).
+    [O24f] ``changed``: (stops taken away, stops placed) when several changed
+    together; ``old`` and ``new`` are then their average triggers."""
     episode = _episode(day, holding)
     guard = await _guard_for(db_path, episode, holding, now)
     plan, _set_at = await _plan_for(db_path, holding, day)
@@ -2718,9 +3050,11 @@ async def _lowered(db_path: str, day: str, holding: Holding, order_id: str, old:
     if reason is None:
         logger.info("partner_watch_lowered_within_plan key=%s old=%.2f new=%.2f", episode, old, new)
         return None
-    return (f"lowered:{order_id}:{new:.2f}", "LOWERED", holding,
-            {"episode": episode, "order_id": str(order_id), "old": old, "new": new, "reason": reason,
-             "stop_id": stop_id or f"kite:{order_id}", "units": units}, event_at, episode)
+    context = {"episode": episode, "order_id": str(order_id), "old": old, "new": new, "reason": reason,
+               "stop_id": stop_id or f"kite:{order_id}", "units": units}
+    if changed is not None:
+        context.update(stop_id=None, gone=changed[0], added=changed[1])
+    return f"lowered:{order_id}:{new:.2f}", "LOWERED", holding, context, event_at, episode
 
 
 async def _usual_share(db_path: str, trip: Trip, trips: list, now: datetime) -> Optional[float]:
@@ -3026,12 +3360,21 @@ async def _b_lowered(db_path: str, context: dict, view: View, now: datetime):
     holding = view.holding(context.get("episode"))
     cover = view.covers.get(holding.hkey) if holding is not None else None
     old, new = float(context["old"]), float(context["new"])
+    stops = _all_stops(holding, cover, view.gtts) if holding is not None else []
+    if context.get("added"):              # [O24f] several stops changed together: all the new ones still wait
+        waiting = {s["id"]: s["trigger"] for s in stops}
+        added, gone = context["added"], context.get("gone") or []
+        if any(s["id"] not in waiting or abs(waiting[s["id"]] - s["trigger"]) > 1e-6 for s in added):
+            return None
+        plan, _set_at = await _plan_for(db_path, holding, view.day)
+        return (changed_text(holding, gone, added, context.get("reason") or "FIRST", plan),
+                f"stops changed {_triggers(gone)} → {_triggers(added)}", None)
     stop_id = context.get("stop_id")
-    stop = next((s for s in (cover.stops if cover else []) if s["id"] == stop_id and abs(s["trigger"] - new) < 1e-6),
-                None)
+    stop = next((s for s in stops if s["id"] == stop_id and abs(s["trigger"] - new) < 1e-6), None)
     if stop is None:
         return None                       # that stop no longer waits at the new level
-    units = min(int(stop["units"]), holding.qty)
+    # [O24f] A replacement is told for the units both stops sell (the context's), never more than the stop has now.
+    units = min(int(stop["units"]), holding.qty, int(context.get("units") or holding.qty))
     plan, _set_at = await _plan_for(db_path, holding, view.day)
     part = f" for {units} of {holding.qty}" if units < holding.qty else ""
     return (lowered_text(holding, old, new, context.get("reason") or "FIRST", plan, units=units, cover=cover,
@@ -3079,12 +3422,30 @@ async def _b_orphan(db_path: str, context: dict, view: View, now: datetime):
     exits = exits_of(view.rows, view.gtts, exchange, symbol, None)
     if not exits:
         return None
-    return orphan_text(symbol, exits), "sell orders waiting with nothing held", None
+    basis = none_held(view.positions, view.carried_known)
+    summary = ("sell orders waiting with nothing held" if basis == "ZERODHA" else
+               "sell orders waiting; whether anything is held could not be checked")
+    return orphan_text(symbol, exits, basis), summary, None
+
+
+async def _b_product(db_path: str, context: dict, view: View, now: datetime):
+    """[O24f] Sells of a product not held, on an option held as another product: only while still so."""
+    exchange, symbol, product = context["option"]
+    same = [h for h in view.holdings if h.exchange == exchange and h.tradingsymbol == symbol]
+    if not same or any(h.product == product for h in same):
+        return None                       # nothing held any more (ORPHAN's), or that product is held now
+    if view.gtts is None and "gtt:" in str(context.get("ids") or ""):
+        return WAIT
+    exits = [e for e in exits_of(view.rows, view.gtts, exchange, symbol, product) if e.get("product") == product]
+    if not exits:
+        return None
+    return (product_text(symbol, product, exits, same, none_held(view.positions, view.carried_known)),
+            f"{product} sell orders on {same[0].product} units", None)
 
 
 _BUILDERS = {
     "PLAN": _b_plan, "ADDED": _b_added, "UNFILLED": _b_unfilled, "LOWERED": _b_lowered, "REFUSED": _b_refused,
-    "CLOSE": _b_close, "EXCESS": _b_excess, "ORPHAN": _b_orphan,
+    "CLOSE": _b_close, "EXCESS": _b_excess, "ORPHAN": _b_orphan, "PRODUCT": _b_product,
     "NO_STOP": lambda *args: _b_cover("NO_STOP", *args),
     "PARTIAL": lambda *args: _b_cover("PARTIAL", *args),
     "REMOVED": lambda *args: _b_cover("REMOVED", *args),
@@ -3171,10 +3532,13 @@ async def handle_button(db_path: str, data: str, now: datetime) -> Optional[str]
 
 
 async def watch_status(now: Optional[datetime] = None) -> dict:
-    """For the review page: is the watch on now, and quiet?"""
+    """For the review page: is the watch on now, and quiet? [O24f] ``unread``:
+    the reads failing now, each since when (a lasting one is also told on
+    Telegram: BLIND)."""
     now = (now or datetime.now(IST)).astimezone(IST)
     minute = now.hour * 60 + now.minute
     on = enabled() and zerodha.connected(now) and OPEN_MIN - 15 <= minute < zerodha.CLOSE_MIN
     close = f"{zerodha.CLOSE_MIN // 60}:{zerodha.CLOSE_MIN % 60:02d}"
     return {"on": bool(on), "until": close,
-            "quiet": await quiet(settings.DB_PATH, now.date().isoformat()) if on else False}
+            "quiet": await quiet(settings.DB_PATH, now.date().isoformat()) if on else False,
+            "unread": {read: since.isoformat() for read, since in sorted(_state.unread.items())} if on else {}}

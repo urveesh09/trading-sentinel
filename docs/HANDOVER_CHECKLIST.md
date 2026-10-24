@@ -1,5 +1,25 @@
 # Handover receipt and operator checklist
 
+## October 24 (night) — O24f "none held" only with evidence; sell orders matched by product; a replacement matched to the stop it replaced; the watch says when it cannot see (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] Fourth audit of the watch: three issues, all real, all fixed. Each is a test that fails on 764055f's watch.
+- [x] An orphan sell is "you hold none" only when Zerodha's positions show it. Otherwise the message says it could not check and does not say "cancel it": the order may protect a holding from an earlier day.
+- [x] Sell orders are matched by product: an MIS sell on NRML units is told (PRODUCT, never muted).
+- [x] A replacement stop is matched to the stop it replaced. Several changed together are told as one change, not paired. A stop cancelled with nothing new is not a move. A GTT modified down is a move.
+- [x] A GTT that fired and sold part is told so, not as "no longer active".
+- [x] BLIND and BACK, always sent:
+  - BLIND: orders unreadable for 60 s; positions for 120 s while the overnight list is unknown; GTTs for 120 s while a holding's protection is unknown;
+  - BACK: when that read works again.
+- [x] One option held as MIS and NRML is named with the product; units that look converted say so.
+- [x] Tests: engine: watch tests 88 passed (thread and unraisable warnings as errors); the six partner test files 204 passed; scheduler closures 26 passed. The full engine suite was stopped at about 93% by Claude Code because the machine ran low on memory: no failure up to there (4 skipped, as usual); it was not run again. Client unit 65 passed. No live broker or Telegram round trip (Saturday).
+- [ ] Deployed: no. Ships with S23-O24e (rebuild the engine, then the gateway).
+  - On the first live days, read:
+    - BLIND / BACK in `partner_watch_messages`, and the PRODUCT / ORPHAN counts;
+    - `partner_watch_looks` against the 15 s.
+- [ ] Owner:
+  - streaming next (a websocket dependency, an image rebuild, the paid plan);
+  - pick the next partner features (O24b list: pre-buy check and others).
+
 ## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (commit `79629e5`, Dev, pushed, not deployed)
 
 - [x] Third audit of the watch: four gaps, all real, all fixed. Each is a test that fails on ad6190e's watch.

@@ -1,5 +1,47 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 24 (night) — O24f the watch's sell-order and replacement boundaries; watch health (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **"None held" (`none_held`).** For an option, or a product, with no holding, the evidence is:
+  - ZERODHA: `View.positions`, Zerodha's positions read within POSITIONS_MAX_AGE, show none;
+  - ORDERS: no positions now, but the overnight list was read today (`View.carried_known`);
+  - UNREAD: the positions were not read today.
+  - ORPHAN says "Zerodha shows you hold none now … Cancel it if the trade is over" only on ZERODHA. Otherwise: "… I could not check whether you hold this option: … If you hold it, this order is its protection: keep it. If you don't, it would sell N you do not have: a short sale."
+- **Sell orders by product (`_sell_products`, `_exits`).**
+  - Every waiting sell (an SL, an open sell, a GTT sell leg) is keyed by exchange, option and product; each exit carries its `product`.
+  - EXCESS: per holding, as before.
+  - ORPHAN: an option held in no product, one message for all its sells.
+  - PRODUCT: a product not held, on an option held as another. Keyed `product:<day>:<exchange>:<symbol>:<product>:<ids>`; built by `_b_product` while still so.
+  - `product_text`: "this sell order is MIS: …, but your 65 are NRML. It would not sell them: if it triggers, it opens a new MIS short of 65 …". It hedges the same way when the positions are not ZERODHA.
+  - PRODUCT is in QUIET_KEEPS, PRIORITY 1, LIFETIME 900.
+- **Replacements (`_track_stops`, `_all_stops`, `_replaced_lower`).**
+  - Each tick (not UNKNOWN), the guard compares the stops now with `seen`. `_all_stops` gives the holding's SL orders plus the GTT stop legs of a GTT list within GTT_REFRESH; without one, the GTTs as last seen.
+  - A stop gone and `_withdrawn` goes to `withdrawn`; a new one goes to `fresh`. Both carry "at" and are kept for REPLACE_WINDOW (120 s).
+  - When both lists have entries, they are matched and cleared:
+    - lower on average and one each: `_lowered` for the new stop, units = min(new, old, held);
+    - several: `_lowered(changed=(gone, added))` at the average triggers. `_b_lowered` checks that every new stop still waits; the text is `changed_text`: "your stops changed: ₹95 and ₹92 cancelled, new ones at ₹88 and ₹70. If they are hit, on your 130: about … instead of about …".
+  - A GTT with the same id and a lower trigger is a move.
+  - `baseline` (a new guard, or the first read after a restart) only remembers. The memory (`seen`, `withdrawn`, `fresh`, `tracked`) is kept in partner_watch_state.
+- **A fired GTT (`_lost_why(gtts=)`).** A GTT now "triggered" is judged by the order it placed:
+  - sold part: SOLD via GTT, "your GTT at ₹60 fired and sold 30; the other 35 have no stop now";
+  - cancelled unsold: FIRED_CANCELLED;
+  - no order found: GTT_GONE.
+- **Watch health (`_health`, `_read_failed`).**
+  - `_State.unread`: read → its first failure since it last worked. Reads: orders, positions, gtts, quotes. Failures for the budget, TokenException and not_connected are not counted.
+  - BLIND (fixed text, ALWAYS_SENT, PRIORITY 1, LIFETIME 600) is sent once the failure lasts BLIND_AFTER:
+    - orders: 60 s, from the failed-read path;
+    - positions: 120 s, only while the overnight list is unknown;
+    - gtts: 120 s, only while a holding's cover is UNKNOWN, naming those holdings.
+  - BACK (PRIORITY 4) is sent when that read works again, if its BLIND was sent.
+  - The failed-read tick waits for its message within the budget.
+  - `watch_status()["unread"]`: the reads failing now. The page appends "Right now it cannot read …".
+  - `_read_gtts` keeps the last list on a budget skip.
+- **Names and counts.**
+  - `Holding.twin`: the option is held as two products; texts use `_name` ("NIFTY 22300 PE MIS").
+  - `Holding.converted`: units Zerodha shows in a product today's orders did not buy, while the orders' own product shows fewer. `_count_note`: "Zerodha's positions show 65 held as NRML; your orders today bought them as MIS, so they look converted."
+  - EXCESS adds `_count_note`.
+  - WATCH_ON and QUIET_TOAST name the sell-order alarms (and, in WATCH_ON, BLIND).
+
 ## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (actual behavior, Dev, commit `79629e5`)
 
 - **Send only from the latest read (`_deliver`).** Each try, up to `BUILD_TRIES` (3):

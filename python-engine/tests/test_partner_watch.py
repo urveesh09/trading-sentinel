@@ -557,6 +557,8 @@ def watch(kite, monkeypatch):
     fake = zerodha._kite_call
 
     async def book(method, path, **kw):
+        if path in kite.get("unreadable", ()):
+            raise zerodha.BrokerError("network", "ConnectError")
         if path == "/portfolio/positions" and kite.get("auto_positions", True):
             return _net_positions(kite["orders"], kite.get("carried", []))
         if path == "/gtt/triggers" and kite.get("gtt_fail"):
@@ -777,13 +779,19 @@ async def test_an_unreadable_gtt_list_claims_nothing_and_is_read_again(watch, ki
     market = _market(D(11, 0))
     kite["orders"] = [_o("101", "BUY", D(11, 0), average_price=75.05)]
     kite["gtt_fail"] = True
-    for at in (D(11, 0, 5), D(11, 2, 5), D(11, 2, 30)):
+    for at in (D(11, 0, 5), D(11, 2, 0), D(11, 2, 30)):
         await pw.watch_tick(at, market=market)
-    assert [m["kind"] for m in watch] == ["watch_plan"]                 # unknown: nothing said
+    # Unknown: nothing said about the stop. [O24f] After 120 s the partner is told the watch cannot see it.
+    assert [m["kind"] for m in watch] == ["watch_plan", "watch_blind"]
+    assert watch[-1]["text"] == (
+        "⚠️ The trade watch cannot read your GTTs since 11:00:05, so it cannot tell whether NIFTY 22300 PE (65) has "
+        "a stop: your SL orders do not cover all of it. Until it can, it does not warn you about it.")
     kite["gtt_fail"] = False
     await pw.watch_tick(D(11, 2, 35), market=market)
     await pw.watch_tick(D(11, 3, 0), market=market)
-    assert watch[-1]["kind"] == "watch_no_stop"
+    assert [m["kind"] for m in watch][2:] == ["watch_back", "watch_no_stop"]
+    assert watch[2]["text"] == ("✅ The trade watch can read your GTTs again (it could not from 11:00:05 to "
+                                "11:02:35). It checks what changed meanwhile now.")
 
 
 @pytest.mark.asyncio
@@ -1404,9 +1412,44 @@ def test_sell_orders_are_counted_against_what_is_held():
         "₹60/₹120 for 65). If more than 65 fill, the extra 130 is a new short sale: Zerodha needs margin for it, and a "
         "short option can lose far more than its premium. An OCO GTT links a stop and a target so that only one of "
         "them can fill.")
+    # [O24f] "None held" is said as fact only from Zerodha's positions; otherwise the order may be a stop to keep.
+    assert pw.none_held([], True) == "ZERODHA" and pw.none_held(None, True) == "ORDERS"
+    assert pw.none_held(None, False) == "UNREAD"
     assert pw.orphan_text(SYMBOL, exits[:1]) == (
-        "⚠️ NIFTY 22300 PE: you hold none now, but this sell order is still waiting: SL ₹70 for 65. If it triggers it "
-        "sells 65 you do not have: a short sale. Cancel it if the trade is over.")
+        "⚠️ NIFTY 22300 PE: Zerodha shows you hold none now, but this sell order is still waiting: SL ₹70 for 65. If "
+        "it triggers it sells 65 you do not have: a short sale. Cancel it if the trade is over.")
+    assert pw.orphan_text(SYMBOL, exits[:2], "ORDERS") == (
+        "⚠️ NIFTY 22300 PE: these sell orders are waiting: SL ₹70 for 65, sell ₹110 for 65, and I could not check "
+        "whether you hold this option: Zerodha's positions could not be read just now, and your orders today show "
+        "none held now. If you hold it, these orders are its protection: keep them. If you don't, they would sell "
+        "130 you do not have: a short sale.")
+    # [O24f] Each exit carries its product; the MIS stop is not one of the NRML exits.
+    assert [e["product"] for e in exits] == ["NRML", "NRML", "NRML"]
+    mis = [e for e in pw.exits_of(rows, [oco], "NFO", SYMBOL, "MIS") if e["product"] == "MIS"]
+    assert pw.product_text(SYMBOL, "MIS", mis, [_holding(65)], "ORDERS") == (
+        "⚠️ NIFTY 22300 PE: this sell order is MIS: SL ₹70 for 65, but your 65 are NRML. It would not sell them. "
+        "Zerodha's positions could not be read just now, and your orders today show no MIS units held. Unless you "
+        "hold MIS units of it, if it triggers, it opens a new MIS short of 65, and your NRML units stay as they are. "
+        "A stop for them has to be NRML.")
+    # [O24f] Where the count comes from, when Zerodha's positions could not confirm it.
+    unread = replace(_holding(65), basis="ORDERS", broker_qty=None)
+    assert "(SL ₹70 for 65, sell ₹110 for 65, OCO GTT ₹60/₹120 for 65). The count is from your orders: Zerodha's " \
+           "positions could not be read. If more than 65 fill" in pw.excess_text(unread, exits)
+
+
+def test_several_stops_changed_together_are_told_as_one_change_without_pairing_them():
+    """[O24f] Two stops taken away and two placed lower: no new stop is said to replace a given old one."""
+    trip = _holding(130, entry=100.0)
+    gone = [{"id": "kite:201", "trigger": 95.0, "units": 65}, {"id": "kite:202", "trigger": 92.0, "units": 65}]
+    added = [{"id": "kite:203", "trigger": 88.0, "units": 65}, {"id": "kite:204", "trigger": 70.0, "units": 65}]
+    text = pw.changed_text(trip, gone, added)
+    before, after = pw._result_for(trip, 93.5, 130), pw._result_for(trip, 79.0, 130)
+    assert text == (f"⚠️ NIFTY 22300 PE: your stops changed: ₹95 and ₹92 cancelled, new ones at ₹88 and ₹70. If they "
+                    f"are hit, on your 130: about {pw._signed(after)} instead of about {pw._signed(before)}. A stop "
+                    f"moved down adds to the loss you chose when you placed it.")
+    one = pw.changed_text(trip, gone, added[1:], "GUARD")
+    assert "₹95 and ₹92 cancelled, a new one at ₹70. If they are hit, on 65 of your 130:" in one
+    assert one.endswith("It was guarding your buy price; now those 65 can end in a loss.")
 
 
 @pytest.mark.asyncio
@@ -1580,8 +1623,8 @@ async def test_a_sell_order_left_waiting_after_the_trade_is_told(watch, kite):
     await pw.watch_tick(D(10, 0, 0), market=market)
     await pw.watch_tick(D(10, 0, 25), market=market)
     assert [m["text"] for m in watch if m["kind"] == "watch_orphan"] == [
-        "⚠️ NIFTY 22400 PE: you hold none now, but this sell order is still waiting: GTT ₹40 for 65. If it triggers it "
-        "sells 65 you do not have: a short sale. Cancel it if the trade is over."]
+        "⚠️ NIFTY 22400 PE: Zerodha shows you hold none now, but this sell order is still waiting: GTT ₹40 for 65. If "
+        "it triggers it sells 65 you do not have: a short sale. Cancel it if the trade is over."]
     # A replacement placed before the old stop is cancelled: briefly 130 for 65, not told.
     kite["orders"].append(_o("202", "SELL", D(10, 1), order_type="SL", status="TRIGGER PENDING", trigger_price=72.0))
     await pw.watch_tick(D(10, 1, 5), market=market)
@@ -1623,3 +1666,323 @@ async def test_a_send_cut_off_part_way_is_not_sent_twice(watch, kite, monkeypatc
         await pw.watch_tick(at, market=market)
     assert not any(m["kind"] == "watch_no_stop" for m in watch)
     assert next(r[4] for r in await _messages(db) if r[1] == "NO_STOP") == "attempting"
+
+
+# ---------------------------------------------------------------------------
+# [O24f] the audit agent's fourth review (on 764055f)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_a_sell_order_is_not_called_an_orphan_when_the_positions_could_not_be_read(watch, kite):
+    """[O24f] Audit 1: Zerodha's positions never read today, so a holding from an earlier day does not show. The SL
+    waiting on it may be its protection: never "you hold none ... cancel it"."""
+    kite["unreadable"] = ("/portfolio/positions",)
+    kite["carried"] = [{"exchange": "NFO", "tradingsymbol": SYMBOL, "product": "NRML", "quantity": 65,
+                        "overnight_quantity": 65, "average_price": 100.0}]
+    await _login()
+    market = _market(D(10, 0))
+    kite["orders"] = [_o("201", "SELL", D(9, 20), order_type="SL", status="TRIGGER PENDING", trigger_price=95.0)]
+    for at in (D(10, 0, 0), D(10, 0, 25)):
+        await pw.watch_tick(at, market=market)
+    assert [m["text"] for m in watch if m["kind"] == "watch_orphan"] == [
+        "⚠️ NIFTY 22300 PE: this sell order is waiting: SL ₹95 for 65, and I could not check whether you hold this "
+        "option: Zerodha's positions could not be read today, so a position from an earlier day does not show. If you "
+        "hold it, this order is its protection: keep it. If you don't, it would sell 65 you do not have: a short sale."]
+    # The positions come back: the 65 carried in are held, and the SL covers them. Nothing more is said.
+    kite["unreadable"] = ()
+    count = len(watch)
+    for at in (D(10, 0, 30), D(10, 1, 0), D(10, 3, 0)):
+        await pw.watch_tick(at, market=market)
+    assert len(watch) == count
+    [holding] = pw._state.view.holdings
+    assert holding.carried and pw._state.view.covers[holding.hkey].state == "FULL"
+
+
+@pytest.mark.asyncio
+async def test_a_sell_order_of_another_product_than_the_one_held_is_told(watch, kite):
+    """[O24f] Audit 2: 65 held as NRML and an SL for 65 as MIS. It would not sell the NRML units; filled, it opens
+    an MIS short. Told after the 20 s grace, apart from the later NO_STOP."""
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(10, 0, 0), market=market)
+    kite["orders"] = [_o("101", "BUY", D(10, 0, 2), average_price=75.05),
+                      _o("201", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0,
+                         product="MIS")]
+    for at in (D(10, 0, 35), D(10, 1, 0)):
+        await pw.watch_tick(at, market=market)
+    assert [m["text"] for m in watch if m["kind"] == "watch_product"] == [
+        "⚠️ NIFTY 22300 PE: this sell order is MIS: SL ₹70 for 65, but your 65 are NRML. It would not sell them: if "
+        "it triggers, it opens a new MIS short of 65 (Zerodha needs margin for it) and your NRML units stay as they "
+        "are. A stop for them has to be NRML."]
+
+
+@pytest.mark.parametrize("same_tick", [True, False])
+@pytest.mark.asyncio
+async def test_a_replacement_stop_is_matched_to_the_stop_it_replaced(watch, kite, same_tick):
+    """[O24f] Audit 3: stops for 65 at ₹95 and 65 at ₹90 on 130. The ₹95 one is cancelled and a new one put at ₹70;
+    the ₹90 one is not touched. The move is ₹95 → ₹70 (the new stop), not ₹95 → ₹90 (the one that stayed),
+    whether the cancel and the new stop are seen in one read or in two."""
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(10, 0, 0), market=market)
+    kite["orders"] = [_o("101", "BUY", D(10, 0, 2), qty=130, average_price=100.0),
+                      _o("201", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=95.0),
+                      _o("202", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=90.0)]
+    await pw.watch_tick(D(10, 0, 35), market=market)
+    kite["orders"][1] = _o("201", "SELL", D(10, 1), order_type="SL", status="CANCELLED", trigger_price=95.0)
+    if not same_tick:
+        await pw.watch_tick(D(10, 1, 2), market=market)
+    kite["orders"].append(_o("203", "SELL", D(10, 1, 4), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0))
+    for at in (D(10, 1, 5), D(10, 1, 30)):
+        await pw.watch_tick(at, market=market)
+    lowered = [m["text"] for m in watch if m["kind"] == "watch_lowered"]
+    assert len(lowered) == 1
+    assert lowered[0].startswith("⚠️ NIFTY 22300 PE: you moved your stop for 65 of your 130 down ₹95 → ₹70. If it "
+                                 "is hit, on those 65: ")
+    assert "The other 65 keep their stop at ₹90." in lowered[0]
+    assert not any(m["kind"] in ("watch_partial", "watch_removed") for m in watch)
+
+
+# [O24f] Lifecycles the audit asked for: each test runs one sequence of book reads end to end.
+
+def _gtt(gid, trigger, status="active", qty=65, product="NRML", placed=None, last=75.0):
+    leg = {"transaction_type": "SELL", "quantity": qty, "order_type": "LIMIT", "price": trigger - 1, "product": product}
+    if placed:
+        leg["result"] = {"order_result": {"order_id": placed, "status": "success"}}
+    return {"id": gid, "type": "single", "status": status,
+            "condition": {"exchange": "NFO", "tradingsymbol": SYMBOL, "trigger_values": [trigger], "last_price": last},
+            "orders": [leg]}
+
+
+@pytest.mark.asyncio
+async def test_the_partner_is_told_when_the_orders_cannot_be_read_and_when_they_can_again(watch, kite):
+    """[O24f] A failure under 60 s is not told; past it, once. When the orders can be read again: what changed
+    meanwhile (here a stop moved down) and that the watch sees again."""
+    await _login()
+    market = _market(D(10, 0))
+    kite["orders"] = [_o("101", "BUY", D(9, 59), average_price=75.05),
+                      _o("201", "SELL", D(9, 59, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0)]
+    for at in (D(10, 0, 0), D(10, 0, 5)):
+        await pw.watch_tick(at, market=market)
+    count = len(watch)
+    kite["unreadable"] = ("/orders",)
+    for at in (D(10, 0, 10), D(10, 0, 40), D(10, 1, 5)):
+        assert (await pw.watch_tick(at, market=market))["status"] == "FAILED"
+    assert len(watch) == count                                              # 55 s: not yet
+    await pw.watch_tick(D(10, 1, 10), market=market)
+    assert [m["text"] for m in watch[count:]] == [
+        "⚠️ The trade watch cannot read your Zerodha orders since 10:00:10 (it tries every 5 s). Until it can, it "
+        "cannot warn you about your trades. Your orders at Zerodha are not affected."]
+    await pw.watch_tick(D(10, 1, 30), market=market)
+    assert len(watch) == count + 1                                          # once for the outage
+    assert (await pw.watch_status(D(10, 1, 30)))["unread"] == {"orders": D(10, 0, 10).isoformat()}
+    kite["orders"][1] = _o("201", "SELL", D(10, 1, 20), order_type="SL", status="TRIGGER PENDING", trigger_price=60.0)
+    kite["unreadable"] = ()
+    await pw.watch_tick(D(10, 1, 35), market=market)
+    assert [m["kind"] for m in watch[count + 1:]] == ["watch_lowered", "watch_back"]
+    assert watch[-1]["text"] == ("✅ The trade watch can read your Zerodha orders again (it could not from 10:00:10 to "
+                                 "10:01:35). It checks what changed meanwhile now.")
+    assert pw._state.unread == {} and pw._state.blind == {}
+
+
+@pytest.mark.asyncio
+async def test_an_overnight_holding_unseen_while_the_positions_cannot_be_read(watch, kite):
+    """[O24f] 65 carried in, no stop, no order today, and Zerodha's positions unreadable: the watch cannot see the
+    holding. It says so after 120 s; once the positions are read, the holding is watched like any other."""
+    kite["unreadable"] = ("/portfolio/positions",)
+    kite["carried"] = [{"exchange": "NFO", "tradingsymbol": SYMBOL, "product": "NRML", "quantity": 65,
+                        "overnight_quantity": 65, "average_price": 100.0}]
+    await _login()
+    market = _market(D(10, 0))
+    for at in (D(10, 0, 0), D(10, 1, 0), D(10, 1, 55)):
+        await pw.watch_tick(at, market=market)
+    assert watch == []
+    await pw.watch_tick(D(10, 2, 0), market=market)
+    assert [m["text"] for m in watch] == [
+        "⚠️ The trade watch cannot read your Zerodha positions since 10:00:00. Until it can, an option you hold from "
+        "an earlier day is not watched, and what you hold is counted from today's orders."]
+    kite["unreadable"] = ()
+    for at in (D(10, 2, 5), D(10, 4, 0), D(10, 4, 10)):
+        await pw.watch_tick(at, market=market)
+    assert [m["kind"] for m in watch] == ["watch_blind", "watch_back", "watch_no_stop"]
+    assert watch[-1]["text"].startswith("⏰ NIFTY 22300 PE (65): no stop order yet (held from yesterday).")
+
+
+@pytest.mark.asyncio
+async def test_mis_and_nrml_in_one_option_are_two_holdings_each_with_its_own_stops(watch, kite):
+    """[O24f] 65 NRML and 65 MIS of one option, each with its own SL: both covered, nothing said. The MIS stop
+    cancelled: told for the MIS units, named so. An NRML stop for 130: more than the NRML held."""
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(10, 0, 0), market=market)
+    kite["orders"] = [_o("101", "BUY", D(10, 0, 2), average_price=75.05),
+                      _o("102", "BUY", D(10, 0, 3), average_price=75.10, product="MIS"),
+                      _o("201", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0),
+                      _o("202", "SELL", D(10, 0, 31), order_type="SL", status="TRIGGER PENDING", trigger_price=71.0,
+                         product="MIS")]
+    for at in (D(10, 0, 35), D(10, 1, 0), D(10, 2, 30)):
+        await pw.watch_tick(at, market=market)
+    view = pw._state.view
+    assert sorted((h.product, h.qty, h.twin) for h in view.holdings) == [("MIS", 65, True), ("NRML", 65, True)]
+    assert {c.state for c in view.covers.values()} == {"FULL"}
+    assert [m["kind"] for m in watch] == ["watch_plan", "watch_plan"]
+    assert sorted(m["text"].split(" · ")[0] for m in watch) == ["🟢 You bought NIFTY 22300 PE MIS",
+                                                                 "🟢 You bought NIFTY 22300 PE NRML"]
+    kite["orders"][3] = _o("202", "SELL", D(10, 3), order_type="SL", status="CANCELLED", trigger_price=71.0,
+                           product="MIS")
+    for at in (D(10, 3, 5), D(10, 3, 30)):
+        await pw.watch_tick(at, market=market)
+    assert [m["text"].split(":")[0] for m in watch[2:]] == ["⚠️ NIFTY 22300 PE MIS"]
+    assert watch[-1]["kind"] == "watch_removed" and "your stop at ₹71 is cancelled" in watch[-1]["text"]
+    kite["orders"][2] = _o("201", "SELL", D(10, 4), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0,
+                           qty=130)
+    for at in (D(10, 4, 5), D(10, 4, 30)):
+        await pw.watch_tick(at, market=market)
+    assert watch[-1]["kind"] == "watch_excess"
+    assert watch[-1]["text"].startswith("⚠️ NIFTY 22300 PE NRML: your sell orders add up to 130 but you hold 65 (SL ₹70 "
+                                        "for 130).")
+    assert not any(m["kind"] in ("watch_product", "watch_orphan") for m in watch)
+
+
+@pytest.mark.asyncio
+async def test_a_holding_converted_to_another_product_is_watched_as_that_product(watch, kite):
+    """[O24f] 65 bought MIS with an MIS SL, then converted to NRML (a conversion places no order: only Zerodha's
+    positions show it). The NRML units are what is held; the MIS stop would not sell them."""
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(10, 0, 0), market=market)
+    kite["orders"] = [_o("101", "BUY", D(10, 0, 2), average_price=75.05, product="MIS"),
+                      _o("201", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0,
+                         product="MIS")]
+    for at in (D(10, 0, 35), D(10, 3, 0)):
+        await pw.watch_tick(at, market=market)
+    assert [m["kind"] for m in watch] == ["watch_plan"]
+    kite["auto_positions"] = False
+    kite["positions"] = {"net": [
+        {"exchange": "NFO", "tradingsymbol": SYMBOL, "product": "MIS", "quantity": 0, "overnight_quantity": 0,
+         "average_price": 0.0},
+        {"exchange": "NFO", "tradingsymbol": SYMBOL, "product": "NRML", "quantity": 65, "overnight_quantity": 0,
+         "average_price": 75.05}], "day": []}
+    for at in (D(10, 4, 0), D(10, 4, 25), D(10, 6, 0), D(10, 6, 5)):
+        await pw.watch_tick(at, market=market)
+    [holding] = pw._state.view.holdings
+    assert (holding.product, holding.qty, holding.basis, holding.converted) == ("NRML", 65, "ZERODHA", "MIS")
+    assert [m["kind"] for m in watch[1:]] == ["watch_product", "watch_no_stop"]
+    assert watch[1]["text"].startswith("⚠️ NIFTY 22300 PE: this sell order is MIS: SL ₹70 for 65, but your 65 are "
+                                       "NRML. It would not sell them")
+    assert watch[2]["text"].startswith(
+        "⏰ NIFTY 22300 PE (65): no stop order yet (held). Zerodha's positions show 65 held as NRML; your orders today "
+        "bought them as MIS, so they look converted. The count is Zerodha's. Your stop for 65 is MIS and these are "
+        "NRML: it would not sell them.")
+
+
+@pytest.mark.asyncio
+async def test_a_gtt_that_fires_fills_in_part_and_is_cancelled(watch, kite):
+    """[O24f] A GTT stop for 65 fires; its order sells 30 and waits; then the rest is cancelled. Told: the stop
+    that did not sell, then the 35 left with no stop. Never a stop "moved down", never an orphan."""
+    await _login()
+    market = _market(D(10, 0), bid=58.0, ltp=58.5, ask=58.6)
+    kite["orders"] = [_o("101", "BUY", D(9, 59), average_price=75.05)]
+    kite["gtts"] = [_gtt(5, 60.0)]
+    for at in (D(10, 0, 0), D(10, 2, 30)):
+        await pw.watch_tick(at, market=market)
+    assert [m["kind"] for m in watch] == ["watch_plan"]
+    kite["gtts"] = [_gtt(5, 60.0, status="triggered", placed="301")]
+    kite["orders"].append(_o("301", "SELL", D(10, 3), order_type="LIMIT", status="OPEN", price=59.0,
+                             filled_quantity=30))
+    for at in (D(10, 3, 5), D(10, 3, 20)):
+        await pw.watch_tick(at, market=market)
+    assert watch[-1]["kind"] == "watch_unfilled"
+    assert watch[-1]["text"].startswith("🚨 NIFTY 22300 PE: your GTT triggered at ₹60, but its sell order (limit ₹59) "
+                                        "has not filled: 35 of 35 still to sell.")
+    kite["orders"][1] = _o("301", "SELL", D(10, 4), order_type="LIMIT", status="CANCELLED", price=59.0,
+                           filled_quantity=30, average_price=59.0)
+    for at in (D(10, 4, 5), D(10, 4, 30)):
+        await pw.watch_tick(at, market=market)
+    [holding] = pw._state.view.holdings
+    assert holding.qty == 35
+    assert [m["kind"] for m in watch] == ["watch_plan", "watch_unfilled", "watch_removed"]
+    assert watch[-1]["text"].startswith("⚠️ NIFTY 22300 PE: your GTT at ₹60 fired and sold 30; the other 35 have no "
+                                        "stop now.")
+
+
+@pytest.mark.asyncio
+async def test_a_gtt_moved_down_is_a_stop_moved_down(watch, kite):
+    """[O24f] Kite keeps a GTT's id when it is modified: its trigger lowered is a stop moved down."""
+    await _login()
+    market = _market(D(10, 0))
+    kite["orders"] = [_o("101", "BUY", D(9, 59), average_price=75.05)]
+    kite["gtts"] = [_gtt(5, 70.0)]
+    for at in (D(10, 0, 0), D(10, 0, 5)):
+        await pw.watch_tick(at, market=market)
+    kite["gtts"] = [_gtt(5, 60.0)]
+    for at in (D(10, 1, 10), D(10, 1, 15)):
+        await pw.watch_tick(at, market=market)
+    assert [m["kind"] for m in watch] == ["watch_plan", "watch_lowered"]
+    assert "you moved your stop down ₹70 → ₹60" in watch[-1]["text"]
+
+
+@pytest.mark.asyncio
+async def test_several_stops_replaced_together_are_one_change(watch, kite):
+    """[O24f] Two stops cancelled and two placed lower within two minutes: one message for the change, no
+    pairing; a stop cancelled with no new one is not a move."""
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(10, 0, 0), market=market)
+    kite["orders"] = [_o("101", "BUY", D(10, 0, 2), qty=130, average_price=100.0),
+                      _o("201", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=95.0),
+                      _o("202", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=92.0)]
+    await pw.watch_tick(D(10, 0, 35), market=market)
+    kite["orders"][1] = _o("201", "SELL", D(10, 1), order_type="SL", status="CANCELLED", trigger_price=95.0)
+    await pw.watch_tick(D(10, 1, 5), market=market)
+    assert not any(m["kind"] == "watch_lowered" for m in watch)            # one cancelled, nothing new: not a move
+    kite["orders"][2] = _o("202", "SELL", D(10, 1, 8), order_type="SL", status="CANCELLED", trigger_price=92.0)
+    kite["orders"] += [_o("203", "SELL", D(10, 1, 9), order_type="SL", status="TRIGGER PENDING", trigger_price=88.0),
+                       _o("204", "SELL", D(10, 1, 9), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0)]
+    for at in (D(10, 1, 10), D(10, 1, 40)):
+        await pw.watch_tick(at, market=market)
+    [lowered] = [m["text"] for m in watch if m["kind"] == "watch_lowered"]
+    assert lowered.startswith("⚠️ NIFTY 22300 PE: your stops changed: ₹95 and ₹92 cancelled, new ones at ₹88 and ₹70. "
+                              "If they are hit, on your 130: about ")
+    assert not any(m["kind"] in ("watch_partial", "watch_removed") for m in watch)
+
+
+@pytest.mark.asyncio
+async def test_a_stop_cancelled_with_an_older_gtt_left_is_not_a_stop_moved_down(watch, kite):
+    """[O24f] An SL at ₹95 and a GTT at ₹90, both for the 65 held (told as more sell orders than held). The SL is
+    cancelled: the GTT was there all along, so nothing was moved (the old matcher said ₹95 → ₹90)."""
+    await _login()
+    market = _market(D(10, 0))
+    kite["orders"] = [_o("101", "BUY", D(9, 59), average_price=100.0),
+                      _o("201", "SELL", D(9, 59, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=95.0)]
+    kite["gtts"] = [_gtt(5, 90.0, last=100.0)]
+    for at in (D(10, 0, 0), D(10, 0, 30)):
+        await pw.watch_tick(at, market=market)
+    assert [m["kind"] for m in watch] == ["watch_plan", "watch_excess"]
+    kite["orders"][1] = _o("201", "SELL", D(10, 1), order_type="SL", status="CANCELLED", trigger_price=95.0)
+    for at in (D(10, 1, 5), D(10, 1, 30), D(10, 3, 30)):
+        await pw.watch_tick(at, market=market)
+    assert [m["kind"] for m in watch] == ["watch_plan", "watch_excess"]
+    assert pw._state.view.covers[pw._state.view.holdings[0].hkey].state == "FULL"
+
+
+@pytest.mark.asyncio
+async def test_a_replacement_for_more_units_is_told_for_the_units_the_old_stop_sold(watch, kite):
+    """[O24f] 130 held: a stop for 65 at ₹95 and one for 65 at ₹90. The ₹95 one is replaced by a stop for 130 at
+    ₹70. The move is told for the 65 the old stop sold, not for 130 (the other 65 were at ₹90, not ₹95)."""
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(10, 0, 0), market=market)
+    kite["orders"] = [_o("101", "BUY", D(10, 0, 2), qty=130, average_price=100.0),
+                      _o("201", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=95.0),
+                      _o("202", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=90.0)]
+    await pw.watch_tick(D(10, 0, 35), market=market)
+    kite["orders"][1] = _o("201", "SELL", D(10, 1), order_type="SL", status="CANCELLED", trigger_price=95.0)
+    kite["orders"].append(_o("203", "SELL", D(10, 1, 2), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0,
+                             qty=130))
+    await pw.watch_tick(D(10, 1, 5), market=market)
+    [lowered] = [m["text"] for m in watch if m["kind"] == "watch_lowered"]
+    trip = pw._state.view.holdings[0]
+    assert lowered.startswith(f"⚠️ NIFTY 22300 PE: you moved your stop for 65 of your 130 down ₹95 → ₹70. If it is "
+                              f"hit, on those 65: {pw._signed(pw._result_for(trip, 70.0, 65))} instead of "
+                              f"{pw._signed(pw._result_for(trip, 95.0, 65))}.")

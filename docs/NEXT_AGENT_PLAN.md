@@ -1,5 +1,93 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 24 (night) — O24f The watch's sell-order and replacement boundaries: "none held" only with evidence, sell orders matched by product, a replacement matched to the stop it replaced; the watch says when it cannot see (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 24): the audit agent's fourth review (through 764055f) found three remaining issues, two in the new sell-order alarms and one in replacement-stop reporting. It also suggested enrichments. Fix bugs that are real, enrich where it is worth it, disagree where right.
+- Verdict: all three were real. Each is now a tick test that fails on 764055f's `partner_watch.py`. Writing the tests found three more of the same family; those are fixed too (O24f-RP, O24f-GF).
+- [x] O24f-NH "you hold none" only with evidence (`none_held`, `orphan_text(basis)`, `_b_orphan`, `View.positions` / `View.carried_known`).
+  - Audit 1: with Zerodha's positions never read today, an SL protecting a holding from an earlier day was called an orphan: "you hold none now … Cancel it if the trade is over."
+  - The bases:
+    - ZERODHA: the positions, read within POSITIONS_MAX_AGE, show none. Said as fact.
+    - ORDERS: they cannot be read now, but today's overnight list was read.
+    - UNREAD: they were not read today.
+  - Without ZERODHA the message says the holding could not be checked, and that the order is the holding's protection if it is held: keep it. It is never "cancel it".
+- [x] O24f-PR sell orders matched by exchange, option and product throughout (`_sell_products`, `_exits`, `product_text`, `_b_product`, PRODUCT; each exit carries its product).
+  - Audit 2: 65 held as NRML with an SL for 65 as MIS gave no alarm. The excess check went by product, but the orphan check skipped any option held in any product.
+  - Now a sell of a product not held, on an option held as another, is PRODUCT: "It would not sell them: if it triggers, it opens a new MIS short of 65 … A stop for them has to be NRML."
+  - An option held in no product is still one ORPHAN for all its sells. PRODUCT is a loss alarm, never muted.
+  - Broker margin checks may refuse such an order; the mismatch is said either way.
+- [x] O24f-RP a replacement matched to the stop it replaced (`_track_stops`, `_all_stops`, `_replaced_lower`, `changed_text`, `_Guard.seen/withdrawn/fresh/tracked`, `REPLACE_WINDOW` 120 s).
+  - Audit 3: stops for 65 at ₹95 and 65 at ₹90. The ₹95 one was cancelled and replaced at ₹70. It was told as ₹95 → ₹90: the matcher took the highest stop left, not the new one.
+  - Also found: cancelling one of two stops, with nothing new, was already told as a move ₹95 → ₹90. So was an SL cancelled beside an older, lower GTT. And a replacement for more units than the old stop sold was costed on all of them.
+  - Now stops taken away and stops placed are kept for 120 s, whether seen in one read or several and in either order:
+    - one taken away and one placed lower is that stop moved, for the units both sell (`_b_lowered` caps them at the context's);
+    - several are told as one change at their average triggers, without pairing them;
+    - a stop taken away with nothing placed is not a move (REMOVED and PARTIAL tell it).
+  - "Placed" means new to every stop the holding had (its SL orders and the GTT list), not new to what `cover_of` needed to read.
+  - A GTT modified down (Kite keeps its id) is now a move too.
+  - A restart's first read only remembers. The memory is kept in `partner_watch_state`.
+- [x] O24f-GF a fired GTT is told by its order's fate (`_lost_why(gtts=)`, `removed_text` SOLD via GTT and FIRED_CANCELLED). A GTT that fired, sold 30 and had the rest cancelled was told as "your GTT at ₹60 is no longer active". Now: "your GTT at ₹60 fired and sold 30; the other 35 have no stop now."
+- [x] O24f-HL watch health: BLIND and BACK (audit enrichment 2). Code: `_health`, `_read_failed`, `_State.unread/blind`, `BLIND_AFTER`, `watch_status()["unread"]`, the page's `watchNote`.
+  - BLIND is told once a read the watch needs keeps failing:
+    - the orders, for 60 s;
+    - the positions, for 120 s while the overnight list is unknown;
+    - the GTTs, for 120 s while a holding's protection is unknown.
+  - BACK is told when that read works again, only if its BLIND was sent.
+  - Both are fixed texts that are always sent, quiet or not.
+  - A failure shorter than that, a read skipped for the budget, and a lost login (RECONNECT) are not told.
+  - A GTT read skipped for the budget now keeps the last list instead of dropping it.
+- [x] O24f-UN uncertainty said where it decides the advice (enrichment 1).
+  - EXCESS adds where the count comes from (`_count_note`).
+  - One option held as MIS and NRML is two holdings, named with the product ("NIFTY 22300 PE MIS"; `Holding.twin`, `_name`).
+  - Units Zerodha shows in a product today's orders did not buy, while the orders' own product shows fewer, are said to look converted (`Holding.converted`).
+  - WATCH_ON, the quiet toast and the page note list the sell-order alarms and BLIND.
+- [x] O24f-LC lifecycle tests (enrichment 3), one sequence each:
+  - failed position reads with an overnight holding;
+  - MIS and NRML in one option;
+  - several stops, replacements and part quantities;
+  - a product conversion;
+  - a GTT that fires, sells in part and has the rest cancelled;
+  - a GTT modified down;
+  - an orders outage with a stop moved during it.
+- Disagreed or deferred, with reasons:
+  - Trading judgement (enrichment 4: keep strong winners through normal pullbacks, a thesis that fails, reduce vs exit, a tip entered late). Agreed it comes next after streaming. It needs recorded live days (`partner_watch_looks`), and the watch is not deployed yet. It will be scored on winners cut short as well as losses avoided, after charges, before anything is sent.
+  - The page shows what cannot be read only while the watch is on. The partner reads the page in the evening, so Telegram BLIND is the partner's signal; the page line is for the owner.
+  - No SHORT alarm for a position already short: for this account Zerodha refuses the margin (Oct 23).
+- The intermittent failure, still unexplained:
+  - Its test is now named: `test_a_send_cut_off_part_way_is_not_sent_twice`. It failed once in a run of the six partner test files, with thread and unraisable warnings as errors; that run's output was not kept.
+  - Every repeat since keeps each failing run's full output (scratchpad `flaky/loop.sh`, `loop2.sh`). All were clean:
+    - 40 runs of the watch file on 764055f;
+    - 80 runs of that test alone;
+    - 15 runs of the six files.
+  - A probe showed only the outbox task pending at its simulated shutdown in 8 of 8 runs, so a cancelled shadow-looks write is ruled out as the cause.
+  - Clean repeats do not show it fixed. Keep `-rA` and the full output on every repeat.
+- Files:
+  - `python-engine/partner_watch.py`;
+  - `node-gateway/client/src/utils/partnerReview.js`;
+  - tests: `python-engine/tests/test_partner_watch.py` (74 → 88), `node-gateway/client/tests/partnerReview.test.mjs`.
+- Acceptance:
+  - each audit issue has a tick test that fails on 764055f:
+    - 1: `test_a_sell_order_is_not_called_an_orphan_when_the_positions_could_not_be_read`;
+    - 2: `test_a_sell_order_of_another_product_than_the_one_held_is_told`;
+    - 3: `test_a_replacement_stop_is_matched_to_the_stop_it_replaced` (one read, and two);
+  - the found ones:
+    - `test_several_stops_replaced_together_are_one_change`;
+    - `test_a_stop_cancelled_with_an_older_gtt_left_is_not_a_stop_moved_down`;
+    - `test_a_gtt_moved_down_is_a_stop_moved_down`;
+    - `test_a_gtt_that_fires_fills_in_part_and_is_cancelled`;
+    - `test_a_replacement_for_more_units_is_told_for_the_units_the_old_stop_sold`.
+  - The new test file against 764055f: 17 of 88 fail there, 71 pass.
+- Tests: engine: watch tests 88 passed (thread and unraisable warnings as errors); the six partner test files 204 passed; scheduler closures 26 passed. The full engine suite was stopped at about 93% by Claude Code because the machine ran low on memory: no failure up to there (4 skipped, as usual); it was not run again. Client unit 65 passed. No live broker or Telegram round trip (Saturday).
+- Config and migration impact: no setting, schema or scheduler change. New message kinds PRODUCT, BLIND and BACK in `partner_watch_messages`. The guard memory in `partner_watch_state` gains `seen`, `withdrawn`, `fresh` and `tracked`; an older memory without them starts a fresh look.
+- Rollout: with S23-O24e (rebuild the engine, then the gateway). Rollback: revert the commit.
+- Remaining:
+  - streaming (next slice, offline tests for reconnects, duplicates and ordering first);
+  - the first live days:
+    - BLIND / BACK counts and how long reads fail;
+    - PRODUCT / ORPHAN bases;
+    - `partner_watch_looks` against the 15 s;
+  - judgment messages stay shadow until scored.
+
 ## October 24 (late) — O24e The watch's last races closed: a message is sent only from the latest read, a plan never without its message, a moved stop for its own units, protection named without a level; sell orders that could sell short (done, Dev, commit `79629e5`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): the audit agent's third review of the watch (on ad6190e) reproduced four remaining gaps. It also corrected a freshness statement and suggested next enrichments. Fix what is real, enrich where it is worth it, disagree where right.
