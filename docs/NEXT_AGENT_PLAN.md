@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (evening) — O24c The trade watch made trustworthy before it is switched on; a fired backstop recognised; a stable usual size (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (evening) — O24c The trade watch made trustworthy before it is switched on; a fired backstop recognised; a stable usual size (done, Dev, commit `7d0cb6f`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): the audit agent reviewed O23-O24b ("correctness gaps that should be fixed before enabling the new trade watch unchanged"). Agree or disagree, fix what is right, and enrich.
 - Verdict: A-G were all reproduced on 08a95e3 and are fixed below. The fake-provider reproductions (old code vs new) are in each test's docstring.

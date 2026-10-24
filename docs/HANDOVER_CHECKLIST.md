@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (commit `7d0cb6f`, Dev, pushed, not deployed)
 
 - [x] Audit A-G on 08a95e3 reproduced and fixed.
   - Each reproduction is a test that the old code fails.

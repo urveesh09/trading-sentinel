@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (actual behavior, Dev, commit `7d0cb6f`)
 
 - **What is held (`partner_watch.fills_of`, `trips_from_fills`, `holdings_of`).**
   - Fills come from GET /trades. It is read when a fill is new, and again while it shows fewer units than the orders' filled quantities. An order's unshown part is one fill at its last update, priced to keep its average.
