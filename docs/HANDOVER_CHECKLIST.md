@@ -1,14 +1,15 @@
 # Handover receipt and operator checklist
 
-## October 24 (night, 3) — O24h F&O shadow variants on real paths; a trend-day continuation frozen (commit `e37504f`, Dev, pushed, not deployed)
+## October 24 (night, 3) — O24h F&O variants scored on real paths; exit slippage; "check before you buy" (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
 
-- [x] Found: the F&O shadow outcome is a target-hit scenario (43 of 43 "wins"); it never replays stops or trails, so it cannot rank variants.
-- [x] The replay can now trade any shadow variant's entries through the live book (`FNO_SIG_*` arms).
-- [x] `FNO_CONTINUATION` (base break, or a pullback to the break level that resumes) is frozen, and recorded live in shadow from deploy.
-- [x] Study `fno-entry-t2` frozen on 28 archived sessions; decision window Oct 12–23.
-- [x] Tests: shadow, replay, study-runner, promotion-route and penny-price-contract tests 43 + 32 passed (targeted; the full suite runs at the end of O24h). No live broker round trip.
-- [ ] Scoring and verdict (next commit); exit slippage receipts; the partner's pre-buy check.
-- [ ] Deployed: no.
+- [x] The F&O shadow outcome was a target-hit scenario. The variants are now traded through the live book in the replay (`FNO_SIG_*`).
+- [x] Study `fno-entry-t2` (frozen e37504f, scored once): the shipped entry is the best of five. The trend-day continuation is **not supported** and stays off; the variants keep being recorded.
+- [x] The 15% drawdown halt cliff is attributed. The live paper book is ₹14,298 above it: an **owner decision**, nothing changed.
+- [x] `python -m fno_exit_report`: 7 of 7 level exits since Sep 1 filled past their level (≈ ₹2,235), all before the 10 s fast exit.
+- [x] The partner can send "check 22300 pe" for the plan before a buy; WATCH_ON tells them.
+- [x] Tests: engine: the full suite 5,656 passed, 4 skipped, exit 0 (573 s); the partner and exit-report files 225 passed with thread and unraisable warnings as errors; study fno-entry-t2 scored once (10 reports) and the halt attribution run. No live broker or Telegram round trip (Saturday).
+- [ ] Deployed: no. Ships with S23-O24g (rebuild the engine, then the gateway).
+- [ ] Owner: the drawdown halt; the partner's language.
 
 ## October 24 (night, 2) — O24g stops moved together told together; "no stop" only from a GTT list read then; the order stream (off) and delivery measurement (commit `797d69b`, Dev, pushed, not deployed)
 

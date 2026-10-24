@@ -1,0 +1,693 @@
+{
+  "bound_verified_after_scoring": true,
+  "decision": {
+    "checks": {
+      "max_drawdown <= max(1.5 * BASELINE max_drawdown, 5000.0)": true,
+      "net_excluding_best_winner > 0": false,
+      "net_pnl > 0": true,
+      "net_pnl > BASELINE net_pnl": false
+    },
+    "qualification": "NOT_ASSESSED",
+    "verdict": "NOT_SUPPORTED_STAYS_OFF"
+  },
+  "freeze_sha256": "cb37fb07be48cc1d30338a1ff2b5e1a1eedc4ed7aac862e4dc41688dec573841",
+  "results": {
+    "development": {
+      "default": {
+        "BASELINE": {
+          "closed": 12,
+          "exit_reasons": {
+            "time_stop": 7,
+            "trail_stop": 3,
+            "underlying_stop": 2
+          },
+          "funnel": {
+            "accepted": 12,
+            "already_holding_this_contract": 4,
+            "engine:ema_trend_disagreement": 48,
+            "engine:inside_opening_range_window": 63,
+            "engine:no_or_break": 1684,
+            "engine:not_fresh_break": 1720,
+            "engine:rvol_below_min": 52,
+            "kill_switches_clear": 9,
+            "no_strike_solves_delta": 1,
+            "reentry_not_confirmed": 2,
+            "reward_risk_below_min": 4
+          },
+          "max_drawdown": 1990.8913,
+          "net_excluding_best_winner": 178.2097,
+          "net_pnl": 7285.8842,
+          "notes": {
+            "grid_phase_live_aligned": 19,
+            "regime_logged_for_bar": 3624
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ],
+              [
+                "2026-10-07 13:05:00",
+                "NIFTY26O1322650PE"
+              ],
+              [
+                "2026-10-07 13:55:00",
+                "NIFTY26O1322700PE"
+              ]
+            ],
+            "live_trades": 12,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-24 11:30:00",
+                "NIFTY26SEP23250PE"
+              ],
+              [
+                "2026-10-07 13:05:00",
+                "NIFTY26O1322600PE"
+              ]
+            ],
+            "replayed_trades": 12
+          },
+          "profit_factor": 2.3401,
+          "win_rate_pct": 50.0
+        },
+        "FNO_SIG_CONFIRM_1": {
+          "closed": 3,
+          "exit_reasons": {
+            "profit_lock": 1,
+            "time_stop": 1,
+            "trail_stop": 1
+          },
+          "funnel": {
+            "accepted": 3,
+            "engine:awaiting_confirmation": 157,
+            "engine:confirmation_extension_exceeded": 67,
+            "engine:confirmation_not_first_bar": 1608,
+            "engine:ema_trend_disagreement": 3,
+            "engine:inside_opening_range_window": 63,
+            "engine:no_or_break": 1684,
+            "engine:rvol_below_min": 33
+          },
+          "max_drawdown": 0.0,
+          "net_excluding_best_winner": 316.1604,
+          "net_pnl": 3921.0379,
+          "notes": {
+            "exit_unpriced_no_archived_quote": 1,
+            "grid_phase_live_aligned": 19,
+            "regime_logged_for_bar": 3624
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-17 12:05:00",
+                "NIFTY2692223350CE"
+              ],
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ],
+              [
+                "2026-09-23 11:30:00",
+                "NIFTY26SEP23400CE"
+              ],
+              [
+                "2026-09-28 10:20:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 11:50:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 13:30:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-30 11:15:00",
+                "NIFTY26O0622850PE"
+              ],
+              [
+                "2026-09-30 14:20:00",
+                "NIFTY26O0622850PE"
+              ],
+              [
+                "2026-10-01 12:15:00",
+                "NIFTY26O0622650PE"
+              ],
+              [
+                "2026-10-07 13:05:00",
+                "NIFTY26O1322650PE"
+              ],
+              [
+                "2026-10-07 13:55:00",
+                "NIFTY26O1322700PE"
+              ],
+              [
+                "2026-10-09 09:45:00",
+                "NIFTY26O1322500CE"
+              ]
+            ],
+            "live_trades": 12,
+            "replay_only": [
+              [
+                "2026-09-28 10:25:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-10-07 13:10:00",
+                "NIFTY26O1322600PE"
+              ],
+              [
+                "2026-10-08 10:40:00",
+                "NIFTY26O1322550PE"
+              ]
+            ],
+            "replayed_trades": 3
+          },
+          "profit_factor": null,
+          "win_rate_pct": 100.0
+        },
+        "FNO_SIG_CONTINUATION": {
+          "closed": 10,
+          "exit_reasons": {
+            "time_stop": 7,
+            "underlying_stop": 3
+          },
+          "funnel": {
+            "accepted": 10,
+            "already_holding_this_contract": 3,
+            "engine:ema_trend_disagreement": 64,
+            "engine:inside_opening_range_window": 63,
+            "engine:no_or_break": 1684,
+            "engine:no_pullback_resumption": 1573,
+            "engine:rvol_below_min": 125,
+            "expiry_day_block": 4,
+            "kill_switches_clear": 77,
+            "no_strike_solves_delta": 1,
+            "reward_risk_below_min": 1
+          },
+          "max_drawdown": 5123.7059,
+          "net_excluding_best_winner": -5428.7745,
+          "net_pnl": -4846.1318,
+          "notes": {
+            "grid_phase_live_aligned": 19,
+            "regime_logged_for_bar": 3624
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ],
+              [
+                "2026-09-28 10:20:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 11:50:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 13:30:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-30 14:20:00",
+                "NIFTY26O0622850PE"
+              ],
+              [
+                "2026-10-01 12:15:00",
+                "NIFTY26O0622650PE"
+              ],
+              [
+                "2026-10-07 13:05:00",
+                "NIFTY26O1322650PE"
+              ],
+              [
+                "2026-10-07 13:55:00",
+                "NIFTY26O1322700PE"
+              ]
+            ],
+            "live_trades": 12,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-23 12:00:00",
+                "NIFTY26SEP23450CE"
+              ],
+              [
+                "2026-09-23 14:25:00",
+                "NIFTY26SEP23450CE"
+              ],
+              [
+                "2026-10-07 13:05:00",
+                "NIFTY26O1322600PE"
+              ],
+              [
+                "2026-10-09 10:25:00",
+                "NIFTY26O1322550CE"
+              ],
+              [
+                "2026-10-09 13:55:00",
+                "NIFTY26O1322600CE"
+              ]
+            ],
+            "replayed_trades": 10
+          },
+          "profit_factor": 0.175,
+          "win_rate_pct": 30.0
+        },
+        "FNO_SIG_OR_20": {
+          "closed": 10,
+          "exit_reasons": {
+            "profit_lock": 2,
+            "time_stop": 3,
+            "trail_stop": 2,
+            "underlying_stop": 3
+          },
+          "funnel": {
+            "accepted": 10,
+            "already_holding_this_contract": 3,
+            "engine:ema_trend_disagreement": 48,
+            "engine:no_or_break": 1511,
+            "engine:not_fresh_break": 1966,
+            "engine:rvol_below_min": 49,
+            "expiry_day_block": 6,
+            "kill_switches_clear": 6,
+            "reward_risk_below_min": 5
+          },
+          "max_drawdown": 2877.4713,
+          "net_excluding_best_winner": -2510.951,
+          "net_pnl": 4596.7235,
+          "notes": {
+            "grid_phase_live_aligned": 19,
+            "regime_logged_for_bar": 3624
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-17 12:05:00",
+                "NIFTY2692223350CE"
+              ],
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ],
+              [
+                "2026-09-28 10:20:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 11:50:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 13:30:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-10-07 13:05:00",
+                "NIFTY26O1322650PE"
+              ],
+              [
+                "2026-10-07 13:55:00",
+                "NIFTY26O1322700PE"
+              ],
+              [
+                "2026-10-09 09:45:00",
+                "NIFTY26O1322500CE"
+              ]
+            ],
+            "live_trades": 12,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-24 09:40:00",
+                "NIFTY26SEP23250PE"
+              ],
+              [
+                "2026-09-28 09:50:00",
+                "NIFTY26SEP22950PE"
+              ],
+              [
+                "2026-10-07 10:00:00",
+                "NIFTY26O1322750PE"
+              ],
+              [
+                "2026-10-07 13:05:00",
+                "NIFTY26O1322600PE"
+              ],
+              [
+                "2026-10-08 10:30:00",
+                "NIFTY26O1322550PE"
+              ]
+            ],
+            "replayed_trades": 10
+          },
+          "profit_factor": 1.7383,
+          "win_rate_pct": 50.0
+        },
+        "FNO_SIG_OR_45": {
+          "closed": 13,
+          "exit_reasons": {
+            "time_stop": 7,
+            "trail_stop": 3,
+            "underlying_stop": 3
+          },
+          "funnel": {
+            "accepted": 13,
+            "engine:ema_trend_disagreement": 45,
+            "engine:inside_opening_range_window": 63,
+            "engine:no_or_break": 1708,
+            "engine:not_fresh_break": 1483,
+            "engine:opening_range_incomplete": 190,
+            "engine:rvol_below_min": 78,
+            "kill_switches_clear": 9,
+            "no_strike_solves_delta": 1,
+            "reentry_not_confirmed": 2,
+            "reward_risk_below_min": 4
+          },
+          "max_drawdown": 2768.7395,
+          "net_excluding_best_winner": -1452.8854,
+          "net_pnl": 5654.7891,
+          "notes": {
+            "grid_phase_live_aligned": 19,
+            "regime_logged_for_bar": 3624
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ],
+              [
+                "2026-10-07 13:05:00",
+                "NIFTY26O1322650PE"
+              ],
+              [
+                "2026-10-07 13:55:00",
+                "NIFTY26O1322700PE"
+              ],
+              [
+                "2026-10-09 09:45:00",
+                "NIFTY26O1322500CE"
+              ]
+            ],
+            "live_trades": 12,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-24 12:30:00",
+                "NIFTY26SEP23250PE"
+              ],
+              [
+                "2026-10-07 13:05:00",
+                "NIFTY26O1322600PE"
+              ],
+              [
+                "2026-10-09 10:25:00",
+                "NIFTY26O1322550CE"
+              ],
+              [
+                "2026-10-09 11:35:00",
+                "NIFTY26O1322550CE"
+              ]
+            ],
+            "replayed_trades": 13
+          },
+          "profit_factor": 1.834,
+          "win_rate_pct": 46.15
+        }
+      }
+    },
+    "untouched": {
+      "default": {
+        "BASELINE": {
+          "closed": 1,
+          "exit_reasons": {
+            "trail_stop": 1
+          },
+          "funnel": {
+            "accepted": 1,
+            "chain_unavailable:calendar_expiry_not_archived": 3,
+            "engine:ema_trend_disagreement": 19,
+            "engine:inside_opening_range_window": 27,
+            "engine:no_or_break": 416,
+            "engine:not_fresh_break": 890,
+            "engine:regime_crisis": 14,
+            "engine:rvol_below_min": 19,
+            "expiry_day_block": 3
+          },
+          "max_drawdown": 0.0,
+          "net_excluding_best_winner": 0.0,
+          "net_pnl": 3515.2085,
+          "notes": {
+            "exit_unpriced_no_archived_quote": 1,
+            "grid_phase_live_aligned": 9,
+            "regime_logged_for_bar": 1395
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-10-13 09:45:00",
+                "SENSEX26O1572800CE"
+              ],
+              [
+                "2026-10-13 12:30:00",
+                "SENSEX26O1572700CE"
+              ],
+              [
+                "2026-10-19 12:00:00",
+                "SENSEX26O2274300PE"
+              ]
+            ],
+            "live_trades": 4,
+            "replay_only": [],
+            "replayed_trades": 1
+          },
+          "profit_factor": null,
+          "win_rate_pct": 100.0
+        },
+        "FNO_SIG_CONFIRM_1": {
+          "closed": 0,
+          "exit_reasons": {},
+          "funnel": {
+            "chain_unavailable:calendar_expiry_not_archived": 3,
+            "engine:awaiting_confirmation": 62,
+            "engine:confirmation_extension_exceeded": 33,
+            "engine:confirmation_not_first_bar": 838,
+            "engine:ema_trend_disagreement": 3,
+            "engine:inside_opening_range_window": 27,
+            "engine:no_or_break": 416,
+            "engine:regime_crisis": 4,
+            "engine:rvol_below_min": 8,
+            "expiry_day_block": 1
+          },
+          "max_drawdown": 0.0,
+          "net_excluding_best_winner": 0.0,
+          "net_pnl": 0,
+          "notes": {
+            "grid_phase_live_aligned": 9,
+            "regime_logged_for_bar": 1395
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-10-13 09:45:00",
+                "SENSEX26O1572800CE"
+              ],
+              [
+                "2026-10-13 12:30:00",
+                "SENSEX26O1572700CE"
+              ],
+              [
+                "2026-10-15 09:50:00",
+                "NIFTY26O1922800CE"
+              ],
+              [
+                "2026-10-19 12:00:00",
+                "SENSEX26O2274300PE"
+              ]
+            ],
+            "live_trades": 4,
+            "replay_only": [],
+            "replayed_trades": 0
+          },
+          "profit_factor": null,
+          "win_rate_pct": null
+        },
+        "FNO_SIG_CONTINUATION": {
+          "closed": 1,
+          "exit_reasons": {
+            "trail_stop": 1
+          },
+          "funnel": {
+            "accepted": 1,
+            "chain_unavailable:calendar_expiry_not_archived": 5,
+            "engine:ema_trend_disagreement": 26,
+            "engine:inside_opening_range_window": 27,
+            "engine:no_or_break": 416,
+            "engine:no_pullback_resumption": 852,
+            "engine:regime_crisis": 24,
+            "engine:rvol_below_min": 37,
+            "expiry_day_block": 4
+          },
+          "max_drawdown": 0.0,
+          "net_excluding_best_winner": 0.0,
+          "net_pnl": 3515.2085,
+          "notes": {
+            "exit_unpriced_no_archived_quote": 1,
+            "grid_phase_live_aligned": 9,
+            "regime_logged_for_bar": 1395
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-10-13 09:45:00",
+                "SENSEX26O1572800CE"
+              ],
+              [
+                "2026-10-13 12:30:00",
+                "SENSEX26O1572700CE"
+              ],
+              [
+                "2026-10-19 12:00:00",
+                "SENSEX26O2274300PE"
+              ]
+            ],
+            "live_trades": 4,
+            "replay_only": [],
+            "replayed_trades": 1
+          },
+          "profit_factor": null,
+          "win_rate_pct": 100.0
+        },
+        "FNO_SIG_OR_20": {
+          "closed": 0,
+          "exit_reasons": {},
+          "funnel": {
+            "chain_unavailable:calendar_expiry_not_archived": 1,
+            "engine:ema_trend_disagreement": 20,
+            "engine:no_or_break": 319,
+            "engine:not_fresh_break": 1010,
+            "engine:regime_crisis": 23,
+            "engine:rvol_below_min": 20,
+            "expiry_day_block": 2
+          },
+          "max_drawdown": 0.0,
+          "net_excluding_best_winner": 0.0,
+          "net_pnl": 0,
+          "notes": {
+            "grid_phase_live_aligned": 9,
+            "regime_logged_for_bar": 1395
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-10-13 09:45:00",
+                "SENSEX26O1572800CE"
+              ],
+              [
+                "2026-10-13 12:30:00",
+                "SENSEX26O1572700CE"
+              ],
+              [
+                "2026-10-15 09:50:00",
+                "NIFTY26O1922800CE"
+              ],
+              [
+                "2026-10-19 12:00:00",
+                "SENSEX26O2274300PE"
+              ]
+            ],
+            "live_trades": 4,
+            "replay_only": [],
+            "replayed_trades": 0
+          },
+          "profit_factor": null,
+          "win_rate_pct": null
+        },
+        "FNO_SIG_OR_45": {
+          "closed": 3,
+          "exit_reasons": {
+            "profit_lock": 2,
+            "trail_stop": 1
+          },
+          "funnel": {
+            "accepted": 3,
+            "chain_unavailable:calendar_expiry_not_archived": 3,
+            "engine:ema_trend_disagreement": 13,
+            "engine:inside_opening_range_window": 27,
+            "engine:no_or_break": 415,
+            "engine:not_fresh_break": 805,
+            "engine:opening_range_incomplete": 89,
+            "engine:regime_crisis": 15,
+            "engine:rvol_below_min": 16,
+            "expiry_day_block": 3
+          },
+          "max_drawdown": 266.1127,
+          "net_excluding_best_winner": 1138.1947,
+          "net_pnl": 3449.283,
+          "notes": {
+            "grid_phase_live_aligned": 9,
+            "regime_logged_for_bar": 1395
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-10-13 09:45:00",
+                "SENSEX26O1572800CE"
+              ],
+              [
+                "2026-10-13 12:30:00",
+                "SENSEX26O1572700CE"
+              ],
+              [
+                "2026-10-15 09:50:00",
+                "NIFTY26O1922800CE"
+              ],
+              [
+                "2026-10-19 12:00:00",
+                "SENSEX26O2274300PE"
+              ]
+            ],
+            "live_trades": 4,
+            "replay_only": [
+              [
+                "2026-10-12 10:50:00",
+                "NIFTY26O1322550PE"
+              ],
+              [
+                "2026-10-15 10:05:00",
+                "NIFTY26O1922850CE"
+              ],
+              [
+                "2026-10-23 13:45:00",
+                "NIFTY26OCT22650PE"
+              ]
+            ],
+            "replayed_trades": 3
+          },
+          "profit_factor": 13.9617,
+          "win_rate_pct": 66.67
+        }
+      }
+    }
+  },
+  "schema": "preregistered_study_results_v1",
+  "study": "fno-entry-t2"
+}

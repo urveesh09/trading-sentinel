@@ -1,32 +1,59 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (night, 3) — O24h The F&O shadow variants traded through the live book; a trend-day continuation frozen and scored (in progress, Dev, commit `e37504f`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (night, 3) — O24h The F&O shadow variants scored on real paths (the shipped entry stays best; the continuation is not supported); exit slippage measured; "check before you buy" for the partner (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
-- Owner ask (Oct 24): improve the system: more profit and smaller losses, flexible, never fitted to one thing. The owner agreed to four items:
+- Owner ask (Oct 24): improve the system for more profit and smaller losses, flexible, never fitted to one thing. The owner agreed to four items:
   - (1) score the F&O shadow variants on real price paths;
   - (2) a trend-day participation variant, in shadow first;
   - (3) measure exit slippage;
   - (4) "ask before you buy" for the partner.
   - Momentum and Penny stay as they are (they cost nothing, rarely trade, and keep gathering evidence); no development time goes to them.
-- Found (Production, read-only): `fno_shadow` records only a target-hit scenario for each accepted variant. FNO_BASE shows 43 of 43 "wins", +₹85,689, but no stop, time stop, trail or forced close is ever replayed. It cannot rank the variants.
-- Production since Sep 1: F&O single-leg 18 trades, +₹3,765 after ₹1,345 of charges. The 3 trail exits made +₹13,767; every other exit together −₹10,002. 5 of 8 weeks were negative, and one week made +₹12,026. No F&O trade on Oct 21–23: most rejections were `not_fresh_break` (240 in three days).
-- [x] O24h-SA entry-signal arms in the full-policy replay (`ReplayPolicy.signal_variant`): FNO_SIG_CONFIRM_1, _OR_20, _OR_45 and _CONTINUATION. Each trades its `fno_shadow` variant's entries through the whole live book (entry plan, sizing, brakes, the live exit ladder at fast-exit cadence, costs, bid/ask fills); only the entry signal differs.
-- [x] O24h-CT `FNO_CONTINUATION` (`fno_shadow`, freshness `crossing_or_pullback`, `pullback_resumed`), frozen before any replay of it.
-  - It takes the base break, or a trend-day continuation: after the break, the price pulls back to within 0.25 ATR of the break level since its latest extreme, and the last closed bar closes beyond the level and the previous bar's extreme.
-  - One new number (0.25), set a priori. The stop and target rules are the base's. From deploy it is also recorded live in shadow.
-- [x] Study `fno-entry-t2` frozen (`docs/research/fno/2026-10-24-entry-arms/study/freeze.json`, 17 sources hashed).
-  - Data: a read-only export of the Production archive, 28 NIFTY sessions Sep 10 – Oct 23 (Oct 23 unsealed), kept out of git in `_local`.
-  - Decision window: Oct 12 – Oct 23 (no entry rule has been developed on it). Development: Sep 10 – Oct 9.
-  - Candidate: FNO_SIG_CONTINUATION, against BASELINE (= the replay's CURRENT arm). The other three arms are attribution.
-  - The four standard checks; a pass only authorises more shadow.
-- [ ] Score once, write the README, and record the verdict here.
-- [ ] (3) exit slippage receipts; (4) the pre-buy check.
+- Found (Production, read-only):
+  - `fno_shadow` recorded only a target-hit scenario: FNO_BASE 43 of 43 "wins", +₹85,689, with no stop, trail or forced close replayed.
+  - The F&O single-leg book since Sep 1: 18 trades, +₹3,765 after ₹1,345 of charges. Trail exits +₹13,767, every other exit −₹10,002. 5 of 8 weeks were negative.
+- [x] O24h-SA entry-signal arms in the full-policy replay (`ReplayPolicy.signal_variant`; FNO_SIG_CONFIRM_1, _OR_20, _OR_45, _CONTINUATION at the live fast-exit cadence).
+- [x] O24h-CT `FNO_CONTINUATION` (`fno_shadow`, `pullback_resumed`, `pullback_atr` 0.25), frozen in e37504f before any replay of it. It is recorded live in shadow from deploy.
+- [x] O24h-ST study `fno-entry-t2`, frozen (e37504f, pushed) and scored once (`docs/research/fno/2026-10-24-entry-arms/`: README.md, study/results.json).
+  - Data: 28 archived NIFTY sessions (Sep 10 – Oct 23).
+  - Development, Sep 10 – Oct 9: BASELINE +₹7,286 (12 trades); CONTINUATION −₹4,846; OR_20 +₹4,597; OR_45 +₹5,655; CONFIRM_1 +₹3,921 (3 trades).
+  - Decision, Oct 12 – Oct 23: BASELINE and CONTINUATION each 1 trade, +₹3,515; OR_45 3 trades, +₹3,449; OR_20 and CONFIRM_1 none.
+  - Verdict: **NOT SUPPORTED, the continuation stays off.** It fails "net without the best winner > 0" and "beats BASELINE". No variant beats the shipped entry.
+  - Parity: the development baseline matches 9 of 12 live NIFTY trades.
+  - The decision window is thin: one NIFTY trade, and 3 of its 4 live trades were SENSEX, which is not replayed.
+- [x] O24h-HL the drawdown halt cliff, attributed (`halt_attribution.py` / `.json`, not the decision).
+  - The continuation's early extra losses put paper equity under the 15% drawdown halt (₹2.125L on ₹2.5L). The halt then blocked the three trend-day winners the baseline took (Sep 28, Sep 30, Oct 1: +₹11,516).
+  - With the halt removed (development): BASELINE +₹6,922 (13 trades), CONTINUATION −₹93 (20 trades; −₹7,201 without its best winner). The rule itself loses about ₹7,000; the halt made it worse.
+  - The live paper book (Production, read-only, Oct 24): ₹2,26,798, i.e. ₹14,298 above that halt. The halt counts every loss since inception, July included (single-leg −₹23,012 over 45 trades).
+  - Changing the halt is the owner's decision; this slice reports it and changes nothing.
+- [x] O24h-XS `fno_exit_report.py` (read-only CLI): how far each paper exit with a level (underlying stop, trail, premium stop) filled past it, with a rupee estimate at the entry delta.
+  - On Production's data: all 7 such exits since Sep 1 filled past their level, about ₹2,235 in all. The worst was Oct 7: 26 points past the stop, ≈ ₹956.
+  - All 7 were before the 10 s fast exit (on since Oct 9; until then exits were checked every 90 s). No stop or trail exit has happened since, so the 10 s pass is not yet measured. Tick exits only if it shows real slippage.
+- [x] O24h-PB "check before you buy" (`partner_watch.parse_check`, `check_message`, `check_text`, `answer_check`; `partner_fill_capture.handle_update`; kind CHECK).
+  - The partner sends "check 22300 pe" (with a price and lots if they like). The reply is the plan for that option bought now, at their price or the ask just read (fresh only), from the same `build_plan` as the after-buy PLAN:
+    - the plan stop and the loss there, the target zone;
+    - the normal 5-min swing, the move in the last 15 min, the future's trend, the bid-ask gap;
+    - only the warnings that apply: a run ≥ 20% in 15 min (the review's chased spike), the last trade a loss within 30 min, a size much bigger than usual, the day's trade count, expiry today;
+    - "A check, not a tip".
+  - Without a fresh price and none given, no rupee figure is made up.
+  - It is never recorded as a trade, goes through the outbox even when quiet (they asked), and WATCH_ON tells them about it.
+- Disagreed or deferred, with reasons:
+  - The 45-minute opening range is the closest variant (positive in both windows). It loses without its best winner on development and is not promoted. Every variant keeps being recorded for forward scoring.
+  - The partner's language (Hindi, Gujarati) is waiting for the owner.
+  - Judgment shadows (protect a profit, trail, idea broken) are scored after about 20 live trades.
 - Files:
-  - `python-engine/fno_shadow.py`, `python-engine/fno_policy_replay.py`, `scripts/run_preregistered_study.py`;
-  - tests: `python-engine/tests/test_fno_shadow.py` (+2), `python-engine/tests/test_fno_policy_replay.py` (+1).
-- Tests: shadow, replay, study-runner, promotion-route and penny-price-contract tests 43 + 32 passed (targeted; the full suite runs at the end of O24h). No live broker round trip.
-- Config and migration impact: none. One more shadow row per F&O tick in `fno_shadow_evaluations`; it is research only and cannot place an order.
+  - `python-engine/fno_shadow.py`, `python-engine/fno_policy_replay.py`;
+  - new: `python-engine/fno_exit_report.py`;
+  - `python-engine/partner_watch.py`, `python-engine/partner_fill_capture.py`, `scripts/run_preregistered_study.py`;
+  - `docs/research/fno/2026-10-24-entry-arms/` (README.md, study/freeze.json, study/results.json, halt_attribution.py and .json);
+  - tests: `test_fno_shadow.py` (+2), `test_fno_policy_replay.py` (+1), new `test_fno_exit_report.py` (2), `test_partner_watch.py` (95 → 98).
+- Tests: engine: the full suite 5,656 passed, 4 skipped, exit 0 (573 s); the partner and exit-report files 225 passed with thread and unraisable warnings as errors; study fno-entry-t2 scored once (10 reports) and the halt attribution run. No live broker or Telegram round trip (Saturday).
+- Config and migration impact: none. A new message kind CHECK in `partner_watch_messages`, and one more shadow row per F&O tick.
 - Rollout: with S23-O24g. Rollback: revert.
+- Remaining:
+  - the owner's call on the drawdown halt;
+  - forward scoring of the entry variants on new sessions (a new freeze);
+  - the fast-exit slippage once stop or trail exits happen;
+  - the partner's language.
 
 ## October 24 (night, 2) — O24g Stops moved together told together; "no stop" claimed only from a GTT list read then; the order stream (off) and delivery measurement (done, Dev, commit `797d69b`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 

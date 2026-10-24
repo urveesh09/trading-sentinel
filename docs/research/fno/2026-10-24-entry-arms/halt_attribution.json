@@ -1,0 +1,128 @@
+{
+  "note": "attribution only: the drawdown halt removed; not the pre-registered decision",
+  "results": {
+    "development": {
+      "BASELINE": {
+        "closed": 13,
+        "exit_reasons": {
+          "time_stop": 8,
+          "trail_stop": 3,
+          "underlying_stop": 2
+        },
+        "max_drawdown": 1990.8913,
+        "net_excluding_best_winner": -185.6696,
+        "net_pnl": 6922.0049,
+        "profit_factor": 2.1933,
+        "win_rate_pct": 46.15
+      },
+      "FNO_SIG_CONFIRM_1": {
+        "closed": 3,
+        "exit_reasons": {
+          "profit_lock": 1,
+          "time_stop": 1,
+          "trail_stop": 1
+        },
+        "max_drawdown": 0.0,
+        "net_excluding_best_winner": 316.1604,
+        "net_pnl": 3921.0379,
+        "profit_factor": null,
+        "win_rate_pct": 100.0
+      },
+      "FNO_SIG_CONTINUATION": {
+        "closed": 20,
+        "exit_reasons": {
+          "profit_lock": 2,
+          "time_stop": 13,
+          "trail_stop": 1,
+          "underlying_stop": 4
+        },
+        "max_drawdown": 6017.4325,
+        "net_excluding_best_winner": -7200.7761,
+        "net_pnl": -93.1016,
+        "profit_factor": 0.9902,
+        "win_rate_pct": 35.0
+      },
+      "FNO_SIG_OR_20": {
+        "closed": 11,
+        "exit_reasons": {
+          "profit_lock": 3,
+          "time_stop": 3,
+          "trail_stop": 2,
+          "underlying_stop": 3
+        },
+        "max_drawdown": 2877.4713,
+        "net_excluding_best_winner": -2524.7899,
+        "net_pnl": 4582.8846,
+        "profit_factor": 1.7345,
+        "win_rate_pct": 45.45
+      },
+      "FNO_SIG_OR_45": {
+        "closed": 14,
+        "exit_reasons": {
+          "time_stop": 8,
+          "trail_stop": 3,
+          "underlying_stop": 3
+        },
+        "max_drawdown": 2768.7395,
+        "net_excluding_best_winner": -1816.7647,
+        "net_pnl": 5290.9098,
+        "profit_factor": 1.7406,
+        "win_rate_pct": 42.86
+      }
+    },
+    "untouched": {
+      "BASELINE": {
+        "closed": 1,
+        "exit_reasons": {
+          "trail_stop": 1
+        },
+        "max_drawdown": 0.0,
+        "net_excluding_best_winner": 0.0,
+        "net_pnl": 3515.2085,
+        "profit_factor": null,
+        "win_rate_pct": 100.0
+      },
+      "FNO_SIG_CONFIRM_1": {
+        "closed": 0,
+        "exit_reasons": {},
+        "max_drawdown": 0.0,
+        "net_excluding_best_winner": 0.0,
+        "net_pnl": 0,
+        "profit_factor": null,
+        "win_rate_pct": null
+      },
+      "FNO_SIG_CONTINUATION": {
+        "closed": 1,
+        "exit_reasons": {
+          "trail_stop": 1
+        },
+        "max_drawdown": 0.0,
+        "net_excluding_best_winner": 0.0,
+        "net_pnl": 3515.2085,
+        "profit_factor": null,
+        "win_rate_pct": 100.0
+      },
+      "FNO_SIG_OR_20": {
+        "closed": 0,
+        "exit_reasons": {},
+        "max_drawdown": 0.0,
+        "net_excluding_best_winner": 0.0,
+        "net_pnl": 0,
+        "profit_factor": null,
+        "win_rate_pct": null
+      },
+      "FNO_SIG_OR_45": {
+        "closed": 3,
+        "exit_reasons": {
+          "profit_lock": 2,
+          "trail_stop": 1
+        },
+        "max_drawdown": 266.1127,
+        "net_excluding_best_winner": 1138.1947,
+        "net_pnl": 3449.283,
+        "profit_factor": 13.9617,
+        "win_rate_pct": 66.67
+      }
+    }
+  }
+}

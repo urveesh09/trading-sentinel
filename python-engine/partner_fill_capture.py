@@ -832,6 +832,11 @@ async def handle_update(db_path: str, update: dict, now: datetime, *, quote_fn=q
     if not text:
         return "ignored"
     reported_at = datetime.fromtimestamp(int(message.get("date") or now.timestamp()), tz=IST)
+    # [O24h] "check 22300 pe": the trade watch's plan before a buy; a reply, never a recorded trade.
+    from partner_watch import answer_check
+    checked = await answer_check(db_path, text, now, key=f"check:{update_id}", asked_at=reported_at)
+    if checked != "not_check":
+        return checked
     parsed = parse_report_text(text)
     reply_to = (message.get("reply_to_message") or {}).get("message_id")
     card = None

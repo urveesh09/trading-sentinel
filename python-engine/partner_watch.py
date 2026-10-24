@@ -278,7 +278,7 @@ COUNT_FROM_TRADE = 5
 FUTURE_BARS_DAYS = 21                      # as the F&O engine (fno_orchestrator.RVOL_FETCH_CALENDAR_DAYS)
 TICK = 0.05
 QUIET_KEEPS = ("LOWERED", "REMOVED", "UNFILLED", "REFUSED", "EXCESS", "ORPHAN", "PRODUCT")
-ALWAYS_SENT = ("WATCH_ON", "PROMPT", "RECONNECT", "BLIND", "BACK")
+ALWAYS_SENT = ("WATCH_ON", "PROMPT", "RECONNECT", "BLIND", "BACK", "CHECK")
 GUARD_TOLERANCE = 0.005                    # a stop within 0.5% under the buy price still guards it
 QUIET_PREFIX = "watch"
 # Kite states in which an SL order still waits to protect (a modify in flight included).
@@ -288,12 +288,12 @@ COVERED = ("FULL", "PARTIAL")
 # How long a message is still worth sending again after a failed send (seconds).
 LIFETIME_SEC = {"PLAN": 180, "ADDED": 180, "NO_STOP": 900, "PARTIAL": 900, "REMOVED": 900, "UNFILLED": 120,
                 "LOWERED": 120, "REFUSED": 300, "CLOSE": 1200, "WATCH_ON": 600, "PROMPT": 1800, "RECONNECT": 1800,
-                "EXCESS": 900, "ORPHAN": 900, "PRODUCT": 900, "BLIND": 600, "BACK": 300}
+                "EXCESS": 900, "ORPHAN": 900, "PRODUCT": 900, "BLIND": 600, "BACK": 300, "CHECK": 120}
 MAX_ATTEMPTS = 4
 RETRY_GAP = timedelta(seconds=10)
 # [O24d] The outbox sends the most urgent first.
 PRIORITY = {"UNFILLED": 0, "REMOVED": 1, "LOWERED": 1, "REFUSED": 1, "EXCESS": 1, "ORPHAN": 1, "PRODUCT": 1,
-            "BLIND": 1, "NO_STOP": 2, "PARTIAL": 2, "ADDED": 3,
+            "BLIND": 1, "CHECK": 1, "NO_STOP": 2, "PARTIAL": 2, "ADDED": 3,
             "PLAN": 3, "CLOSE": 4, "BACK": 4, "WATCH_ON": 5, "PROMPT": 5, "RECONNECT": 5}
 SENT, DONE, RETRY, MUTED, WAIT, LATER = "SENT", "DONE", "RETRY", "MUTED", "WAIT", "LATER"
 QUEUED = "queued"
@@ -1694,7 +1694,7 @@ WATCH_ON_TEXT = ("✅ Trade watch on until {close}. I'll message you when a buy 
                  "covered, when a stop is moved down or cancelled, when a stop fires and does not sell, when "
                  "Zerodha refuses an order, when sell orders could sell more than you hold, and before the close; "
                  "and if I cannot read your account for a while. Messages only: nothing is ever placed, changed "
-                 "or cancelled for you.")
+                 "or cancelled for you. Before a buy you can send me, for example: check 22300 pe.")
 PROMPT_TEXT = ("🌅 Good morning. Log in to Zerodha to switch on today's trade watch: I'll message you when a buy "
                "has no stop, when a stop is moved down, cancelled or does not sell, and when Zerodha refuses an "
                "order. Messages only: nothing is ever placed for you.")
@@ -3416,9 +3416,15 @@ async def _market_plan(trip: Trip, now: datetime, market: Market, size: Optional
             fut_price = (quotes.get(future.tradingsymbol) or {}).get("ltp") if future is not None else None
         except Exception as exc:          # the plan says less, it never fails the tick
             logger.warning("partner_watch_market_failed err=%s", type(exc).__name__)
+    lot = int(getattr(contract, "lot_size", 0) or 0)
+    if size is not None and size[1] is None:
+        # [O24h] A check before a buy: the price is the ask just read, and only a fresh one (``stale``).
+        ask = (quote or {}).get("ask")
+        if not ask or ask <= 0 or stale(quote, now):
+            return None, quote, lot
+        size = (size[0], float(ask))
     plan = _plan_of(trip, contract, now, size=size, option_bars=option_bars, fut_bars=fut_bars, fut_price=fut_price,
                     mid=_mid(quote))
-    lot = int(getattr(contract, "lot_size", 0) or 0)
     return plan, quote, lot
 
 
@@ -3736,18 +3742,204 @@ _BUILDERS = {
 # ---------------------------------------------------------------------------
 
 async def _say(db_path: str, key: str, day: str, kind: str, text: str, now: datetime, *,
-               keyboard: Optional[dict] = None) -> bool:
-    """[O24d] A fixed-text message (WATCH_ON, PROMPT, RECONNECT) through the
-    outbox: sent at once when it can be; one that provably did not leave is
-    tried again from the later ticks. Whether it went now."""
+               keyboard: Optional[dict] = None, event_at: Optional[datetime] = None) -> bool:
+    """[O24d] A fixed-text message (WATCH_ON, PROMPT, RECONNECT; [O24h]
+    CHECK) through the outbox: sent at once when it can be; one that provably
+    did not leave is tried again from the later ticks. Whether it went now."""
     deadline = _time.monotonic() + DELIVERY_INLINE_SEC
-    if not await _enqueue(db_path, key, day, kind, None, now, context={"text": text, "keyboard": keyboard}):
+    if not await _enqueue(db_path, key, day, kind, None, now, context={"text": text, "keyboard": keyboard},
+                          event_at=event_at):
         return False
     await _wait_within([_kick()], DELIVERY_INLINE_SEC, deadline)
     async with aiosqlite.connect(db_path) as db:
         row = await (await db.execute("SELECT sent FROM partner_watch_messages WHERE message_key=?",
                                       (key,))).fetchone()
     return bool(row and row[0])
+
+
+# ---------------------------------------------------------------------------
+# [O24h] "check 22300 pe": the plan before a buy
+# ---------------------------------------------------------------------------
+
+CHECK_WORDS = ("check", "chk")
+CHECK_DEADLINE_SEC = 12.0                  # the check's market reads (the inbox waits for it)
+MAX_CHECK_LOTS = 50
+CHECK_HELP = ("🔎 To check an option before you buy, send for example: check 22300 pe. With your price and lots: "
+              "check sensex 81000 ce 120 2 lots. I reply with the plan stop, the loss if it sells there, the "
+              "target zone and anything that stands out. A check, not a tip.")
+CHECK_NOTE = "A check, not a tip: whether to buy is your call."
+
+
+def parse_check(text: str) -> Optional[dict]:
+    """A check request: "check 22300 pe", "chk nifty 22300pe 75.5 x2",
+    "check sensex 81000 ce 120 2 lots". None when the message is not a check.
+    The fields not given are None; "unclear" when a word or number could
+    not be read (the reply is then the help)."""
+    words = re.sub(r"(?<=\d),(?=\d)", "", str(text or "")).strip().lower().replace(",", " ").split()
+    if not words or words[0].lstrip("/").split("@", 1)[0] not in CHECK_WORDS:
+        return None
+    try:
+        from fno_underlyings import SPECS
+        names = set(SPECS)
+    except Exception:
+        names = {"NIFTY", "SENSEX"}
+    out = {"underlying": None, "strike": None, "opt_type": None, "price": None, "lots": None, "unclear": False}
+    numbers: list = []
+    for word in words[1:]:
+        if word.upper() in names:
+            out["underlying"] = word.upper()
+        elif re.fullmatch(r"\d{4,6}(ce|pe)", word):
+            out["strike"], out["opt_type"] = float(word[:-2]), word[-2:].upper()
+        elif word in ("ce", "pe", "call", "put"):
+            out["opt_type"] = "CE" if word in ("ce", "call") else "PE"
+        elif re.fullmatch(r"x\d{1,2}|\d{1,2}(l|lot|lots)", word):
+            out["lots"] = int(re.sub(r"\D", "", word))
+        elif word in ("lot", "lots") and numbers:
+            out["lots"] = int(numbers.pop())
+        elif word in ("at", "@", "for", "rs", "₹", "price", "option"):
+            continue
+        elif re.fullmatch(r"₹?\d+(\.\d+)?", word):
+            numbers.append(float(word.lstrip("₹")))
+        else:
+            out["unclear"] = True
+    for value in numbers:
+        if out["strike"] is None and value >= 1000 and value == int(value):
+            out["strike"] = value
+        elif out["price"] is None and 0.05 <= value < 100000:
+            out["price"] = value
+        else:
+            out["unclear"] = True
+    if out["lots"] is not None and not 1 <= out["lots"] <= MAX_CHECK_LOTS:
+        out["unclear"] = True
+    return out
+
+
+def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[dict], *, lots: int, qty: int,
+               given: Optional[float], future: str, opt_type: str, after_loss: Optional[dict] = None,
+               day_line: Optional[str] = None, usual: Optional[float] = None, expires_today: bool = False) -> str:
+    """[O24h] The reply to a check: the plan for this option bought now, at
+    the price the partner gave or the ask just read, then only the facts
+    that stand out. Never "buy" or "don't buy"."""
+    from partner_insights import SPIKE_RUN_PCT, USUAL_SIZE_MULT
+    ask, bid = (quote or {}).get("ask"), (quote or {}).get("bid")
+    when = f" ({expiry:%d %b})" if expiry else ""
+    if given is not None:
+        price = f"at your {_px(given)}" + (f" (the ask now {_px(ask)})" if ask else "")
+    else:
+        price = f"at {_px(plan.entry)} (the ask now" + (f"; bid {_px(bid)})" if bid else ")")
+    lines = [f"🔎 Check: {name}{when} · {lots} lot{'s' if lots != 1 else ''} ({qty}) {price}."]
+    share = _share(plan.loss, plan.cash)
+    if plan.stop_basis == "INDEX" and plan.stop is not None:
+        lines.append(f"🛑 If you buy: plan stop {_px(plan.stop)} ({future} {plan.stop_index:,.0f}). If it sells "
+                     f"there: about −{_amt(plan.loss)} with charges{share}.")
+    elif plan.stop_basis == "SWING" and plan.stop is not None:
+        lines.append(f"🛑 If you buy: plan stop {_px(plan.stop)}, one normal 5-minute swing ({_px(plan.swing)}) "
+                     f"under the price. If it sells there: about −{_amt(plan.loss)} with charges{share}.")
+    else:
+        lines.append(f"🛑 No plan stop could be worked out now ({'no market data' if plan.stop_basis == 'PREMIUM' else 'its normal swing is as big as the price'}): "
+                     f"all {_amt(plan.entry * qty)} you would pay is at risk without a stop{share}.")
+    if plan.target is not None and plan.target_index is not None:
+        lines.append(f"🎯 Target zone {_px(plan.target)} ({future} {plan.target_index:,.0f}).")
+    kind = "call" if opt_type == "CE" else "put"
+    facts = []
+    if plan.stop_basis in ("INDEX", "SWING") and plan.swing:
+        facts.append(f"normal 5-min swing {_px(plan.swing)}")
+    if plan.run_pct is not None and plan.run_from:
+        facts.append(f"{'up' if plan.run_pct >= 0 else 'down'} {abs(plan.run_pct):.0%} in the last 15 min "
+                     f"(from {_px(plan.run_from)})")
+    if plan.trend:
+        facts.append(f"the {future}'s 5-min trend is {'with' if plan.trend == 'WITH' else 'against'} this {kind}")
+    if ask and bid:
+        facts.append(f"bid-ask gap {_px(ask - bid)} ({_amt((ask - bid) * qty)} on {qty})")
+    if facts:
+        lines.append("• " + "; ".join(facts) + ".")
+    if plan.run_pct is not None and plan.run_pct >= SPIKE_RUN_PCT:
+        lines.append(f"⚠️ It rose {plan.run_pct:.0%} in 15 minutes: your review calls a buy after a run like this a "
+                     f"chased spike.")
+    if after_loss:
+        line = (f"⚠️ Your last trade closed −{_amt(after_loss['loss'])} at {after_loss['at']}, "
+                f"{after_loss['minutes']} min ago.")
+        if after_loss.get("bigger"):
+            line += f" This would be {after_loss['bigger']}."
+        lines.append(line)
+    paid = plan.entry * qty
+    if usual and plan.cash and paid / plan.cash > USUAL_SIZE_MULT * usual:
+        lines.append(f"⚠️ {_amt(paid)} is {paid / plan.cash:.0%} of your cash: much bigger than your usual "
+                     f"{usual:.0%}.")
+    if day_line:
+        lines.append(day_line.replace("Trade ", "This would be trade ", 1))
+    if expires_today:
+        lines.append("⏳ It expires today: after the close it is settled at its in-the-money value, and its time "
+                     "value falls fastest today.")
+    lines.append(CHECK_NOTE)
+    return "\n".join(lines)
+
+
+async def check_message(parsed: dict, now: datetime, market: Market, db_path: Optional[str] = None) -> str:
+    """[O24h] The reply to one check: the option (the nearest expiry with that
+    strike), its plan as if bought now, and the day's context when the watch
+    has read the book today (the last loss, the trade count, the usual size,
+    the cash)."""
+    from fno_models import OptionType
+    from fno_underlyings import SPECS, get_instruments_for
+    name = parsed["underlying"] or "NIFTY"
+    spec = SPECS.get(name)
+    if spec is None:
+        return f"🔎 I can check {', '.join(sorted(SPECS))} options."
+    book = get_instruments_for(name)
+    expiry = book.nearest_option_expiry(now.date())
+    raw = book.option(expiry, parsed["strike"], OptionType(parsed["opt_type"])) if expiry else None
+    label = f"{name} {parsed['strike']:g} {parsed['opt_type']}"
+    if raw is None:
+        return f"🔎 I could not find {label} for the nearest expiry{f' ({expiry:%d %b})' if expiry else ''}."
+    lots = parsed["lots"] or 1
+    qty = lots * int(raw.lot_size or 1)
+    trip = Trip(key=f"check:{raw.tradingsymbol}", exchange=spec.segment, tradingsymbol=raw.tradingsymbol,
+                product="NRML", first_at=now)
+    plan, quote, _lot = await _market_plan(trip, now, market, size=(qty, parsed["price"]))
+    if plan is None:
+        return (f"🔎 {label}{f' ({expiry:%d %b})' if expiry else ''}: its price could not be read now (the market may "
+                f"be closed). Send the price you would pay to check it: check {parsed['strike']:g} "
+                f"{parsed['opt_type'].lower()} 75.")
+    trip.bought, trip.buy_value = qty, qty * plan.entry
+    view = _state.view if _state.view is not None and _state.view.day == now.date().isoformat() else None
+    trips = list(view.trips) if view is not None else []
+    usual = await _usual_share(db_path, trip, trips, now) if db_path and view is not None else None
+    return check_text(_option(raw.tradingsymbol), expiry, plan, quote, lots=lots, qty=qty, given=parsed["price"],
+                      future=_future_of(raw.tradingsymbol), opt_type=parsed["opt_type"],
+                      after_loss=_after_loss(trip, trips) if view is not None else None,
+                      day_line=_day_line(trip, [*trips, trip]) if view is not None else None, usual=usual,
+                      expires_today=expiry == now.date())
+
+
+async def answer_check(db_path: str, text: str, now: datetime, *, key: str, asked_at: Optional[datetime] = None,
+                       market: Optional[Market] = None) -> str:
+    """[O24h] Answer a check from the partner's chat (partner_fill_capture
+    calls this before reading a message as a trade report). "not_check" when
+    the message is not one (or the watch is off); the reply goes through the
+    outbox (kind CHECK, sent even when quiet: the partner asked for it)."""
+    if not enabled():
+        return "not_check"
+    parsed = parse_check(text)
+    if parsed is None:
+        return "not_check"
+    await init_partner_watch_db(db_path)
+    _state.clock = _state.clock or (now, _time.monotonic())
+    if parsed["unclear"] or parsed["strike"] is None or parsed["opt_type"] is None:
+        reply, outcome = CHECK_HELP, "check_help"
+    else:
+        try:
+            reply = await asyncio.wait_for(check_message(parsed, now, market or _state.market or _market, db_path),
+                                           CHECK_DEADLINE_SEC)
+            outcome = "check"
+        except asyncio.TimeoutError:
+            reply, outcome = "🔎 The market data did not come in time for this check. Try again in a minute.", "check_slow"
+        except Exception as exc:          # a check that cannot be worked out is said so, never a crash
+            logger.warning("partner_watch_check_failed err=%s", type(exc).__name__)
+            reply, outcome = "🔎 I could not work out this check now. Try again in a minute.", "check_failed"
+    await _say(db_path, key, now.date().isoformat(), "CHECK", reply, now, event_at=asked_at)
+    logger.info("partner_watch_check outcome=%s", outcome)
+    return outcome
 
 
 async def on_login(now: Optional[datetime] = None) -> None:

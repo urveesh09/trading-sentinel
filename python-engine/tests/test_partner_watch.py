@@ -2133,3 +2133,93 @@ async def test_a_sell_order_alarm_is_never_built_on_a_gtt_list_read_before_the_g
     for at in (D(10, 0, 30), D(10, 0, 35)):
         await pw.watch_tick(at, market=market)
     assert not any(m["kind"] == "watch_excess" for m in watch)
+
+
+# ---------------------------------------------------------------------------
+# [O24h] "check 22300 pe": the plan before a buy
+# ---------------------------------------------------------------------------
+
+class FakeBook:
+    """The morning book for the check: one NIFTY option, 22300 PE, expiring 27 Oct."""
+
+    def nearest_option_expiry(self, today):
+        return date(2026, 10, 27)
+
+    def option(self, expiry, strike, opt_type):
+        return FakeContract(SYMBOL) if (strike, getattr(opt_type, "value", opt_type)) == (22300.0, "PE") else None
+
+
+def test_a_check_is_read_from_the_partners_words():
+    assert pw.parse_check("check 22300 pe") == {"underlying": None, "strike": 22300.0, "opt_type": "PE",
+                                                "price": None, "lots": None, "unclear": False}
+    assert pw.parse_check("chk nifty 22300pe 75.5 x2") | {} == {"underlying": "NIFTY", "strike": 22300.0,
+                                                                 "opt_type": "PE", "price": 75.5, "lots": 2,
+                                                                 "unclear": False}
+    sensex = pw.parse_check("Check SENSEX 81000 CE 1,200 2 lots")
+    assert (sensex["underlying"], sensex["strike"], sensex["opt_type"], sensex["price"], sensex["lots"]) == (
+        "SENSEX", 81000.0, "CE", 1200.0, 2)
+    assert pw.parse_check("/check 22300 put")["opt_type"] == "PE"
+    assert pw.parse_check("check")["strike"] is None                       # a check, answered with the help
+    assert pw.parse_check("check 22300 pe banana")["unclear"] is True
+    assert pw.parse_check("check 22300 pe 99 lots")["unclear"] is True     # more lots than a check takes
+    for text in ("b 22300 pe 75", "checked it", "22300 pe", ""):
+        assert pw.parse_check(text) is None
+
+
+@pytest.mark.asyncio
+async def test_a_check_before_a_buy_gets_the_plan_for_the_option_now(watch, kite, monkeypatch):
+    """[O24h] The partner asks before buying. The reply is the plan for that option bought now, at the ask just
+    read (or their price), with the day's context the watch has read: here the losing trade 10 minutes before."""
+    import fno_underlyings
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(11, 0))
+    kite["orders"] = [_o("101", "BUY", D(10, 40), average_price=80.0), _o("102", "SELL", D(10, 50), average_price=70.0)]
+    await pw.watch_tick(D(11, 0, 0), market=market)
+    assert await pw.answer_check(db, "check 22300 pe", D(11, 0, 2), key="check:1", market=market) == "check"
+    lines = watch[-1]["text"].splitlines()
+    assert watch[-1]["kind"] == "watch_check"
+    assert lines[0] == "🔎 Check: NIFTY 22300 PE (27 Oct) · 1 lot (65) at ₹75.1 (the ask now; bid ₹75)."
+    assert lines[1].startswith("🛑 If you buy: plan stop ₹") and "If it sells there: about −₹" in lines[1]
+    assert any(line.startswith("• ") and "bid-ask gap ₹0.1 (₹6 on 65)" in line for line in lines)
+    assert any(line.startswith("⚠️ Your last trade closed −₹") and line.endswith(" at 10:50, 10 min ago.")
+               for line in lines)
+    assert lines[-1] == pw.CHECK_NOTE and not any("buy now" in line.lower() for line in lines)
+    # Their price and lots; quiet does not mute an answer they asked for.
+    await pw.handle_button(db, "watch:quiet:20261023", D(11, 0, 3))
+    await pw.answer_check(db, "chk 22300pe 75.5 x2", D(11, 0, 4), key="check:2", market=market)
+    assert watch[-1]["text"].splitlines()[0] == ("🔎 Check: NIFTY 22300 PE (27 Oct) · 2 lots (130) at your ₹75.5 "
+                                                 "(the ask now ₹75.1).")
+    await pw.answer_check(db, "check banana", D(11, 0, 6), key="check:3", market=market)
+    assert watch[-1]["text"] == pw.CHECK_HELP
+    await pw.answer_check(db, "check 22350 ce", D(11, 0, 8), key="check:4", market=market)
+    assert watch[-1]["text"] == "🔎 I could not find NIFTY 22350 CE for the nearest expiry (27 Oct)."
+    # No price to be read and none given: no rupee figure is made up.
+    blind = FakeMarket(option=market.option, futures=market.futures)
+    await pw.answer_check(db, "check 22300 pe", D(11, 0, 10), key="check:5", market=blind)
+    assert watch[-1]["text"].startswith("🔎 NIFTY 22300 PE (27 Oct): its price could not be read now")
+    assert await pw.answer_check(db, "b 22300 pe 75", D(11, 0, 12), key="check:6", market=market) == "not_check"
+    assert [r[4] for r in await _messages(db) if r[1] == "CHECK"] == ["acknowledged"] * 5
+
+
+@pytest.mark.asyncio
+async def test_a_check_in_the_partners_chat_is_answered_and_never_recorded_as_a_trade(watch, kite, monkeypatch):
+    import fno_underlyings
+    import partner_fill_capture as capture
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    monkeypatch.setattr(settings, "PARTNER_TELEGRAM_CHAT_ID", "4242")
+    monkeypatch.setattr(pw, "_market", _market(D(11, 0)))
+    db = settings.DB_PATH
+    await _login()
+    await capture.init_partner_fill_db(db)
+    update = {"update_id": 77, "message": {"message_id": 9, "date": int(D(11, 0, 1).timestamp()),
+                                           "text": "check 22300 pe", "chat": {"id": 4242}}}
+    assert await capture.handle_update(db, update, D(11, 0, 2)) == "check"
+    assert watch[-1]["kind"] == "watch_check" and watch[-1]["text"].startswith("🔎 Check: NIFTY 22300 PE")
+    async with aiosqlite.connect(db) as conn:
+        reports = (await (await conn.execute("SELECT COUNT(*) FROM partner_trade_reports")).fetchone())[0]
+        row = await (await conn.execute("SELECT event_at FROM partner_watch_messages WHERE kind='CHECK'")).fetchone()
+    assert reports == 0 and row[0] == D(11, 0, 1).isoformat()
+    assert await capture.handle_update(db, update, D(11, 0, 5)) == "check"   # Telegram delivered it again
+    assert [m["kind"] for m in watch].count("watch_check") == 1

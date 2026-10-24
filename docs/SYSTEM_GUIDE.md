@@ -1,18 +1,27 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 (night, 3) — O24h F&O entry-signal arms and the continuation variant (actual behavior, Dev, commit `e37504f`)
+## October 24 (night, 3) — O24h F&O entry-signal arms; exit slippage report; "check before you buy" (actual behavior, Dev, commit pending (recorded in the next docs commit))
 
 - **`fno_shadow.VARIANTS`** gains `FNO_CONTINUATION` (`FnoShadowVariant.pullback_atr` 0.25, freshness `crossing_or_pullback`).
   - `_variant_signal` accepts a fresh break as the base does. Otherwise it needs `pullback_resumed(today_bars, long, level, atr, 0.25)`, else `no_pullback_resumption`:
     - closes beyond the level exist before the last bar;
-    - after the run's extreme (highest high for a long), a bar's low came within 0.25 ATR of the level;
-    - the last bar closes beyond the level and the previous bar's high (low for a short).
-  - The regime, EMA and RVOL checks, the stop (`max(or_low, close − FNO_STOP_ATR_MULT·ATR)` for a long) and the target are the base's.
-  - The freshness branches are explicit; an unknown one raises. The live shadow evaluates all five variants on every F&O tick (research only).
-- **`fno_policy_replay.ReplayPolicy.signal_variant`.**
-  - `_entry` calls `fno_shadow._variant_signal(frame, regime, now, VARIANTS[name])` instead of `evaluate_fno_mom` (FNO_BASE delegates to it).
-  - The arms FNO_SIG_CONFIRM_1, _OR_20, _OR_45 and _CONTINUATION all manage at the live fast-exit cadence (as CURRENT).
-- **`scripts/run_preregistered_study.py`** study `fno-entry-t2`: runner `fno_replay` on `docs/research/fno/2026-10-24-entry-arms/_local`; development Sep 10 – Oct 9, untouched Oct 12 – Oct 23; candidate FNO_SIG_CONTINUATION vs BASELINE (`CURRENT`).
+    - after the run's extreme, a bar came within 0.25 ATR of the level;
+    - the last bar closes beyond the level and the previous bar's extreme.
+  - The regime, EMA and RVOL checks, the stop and the target are the base's. The freshness branches are explicit; an unknown one raises. The live shadow evaluates all five variants each F&O tick (research only).
+- **`fno_policy_replay.ReplayPolicy.signal_variant`.** `_entry` calls `fno_shadow._variant_signal` with that variant instead of `evaluate_fno_mom`. FNO_SIG_CONFIRM_1, _OR_20, _OR_45 and _CONTINUATION all manage at the live fast-exit cadence.
+- **`scripts/run_preregistered_study.py`** study `fno-entry-t2`: development Sep 10 – Oct 9, untouched Oct 12 – Oct 23; candidate FNO_SIG_CONTINUATION vs BASELINE (`CURRENT`). Results are in `docs/research/fno/2026-10-24-entry-arms/`.
+- **`fno_exit_report.py`** (read-only sqlite URI; `python -m fno_exit_report [FIRST [LAST]]`).
+  - `exit_slippage` takes the closed FNO_PAPER single-leg positions with a level (`stop_underlying`, `trail_stop_underlying`, `premium_stop`).
+  - "past" is points beyond the level (positive is worse; the premium stop in premium). The rupee estimate is past × |delta_at_entry| × qty.
+  - Time stops, the lock, targets and the forced close are counted as without a level. `render` prints them.
+- **"Check before you buy".**
+  - `partner_fill_capture.handle_update` calls `partner_watch.answer_check` before `parse_report_text`; anything else returns "not_check" and continues as before.
+  - `parse_check`: the words `check` or `chk` (or `/check`); then the underlying (default NIFTY), the strike and CE/PE (or "22300pe"), an optional price, and lots ("x2", "2 lots", at most 50). Commas inside numbers are allowed. An unclear word gives `CHECK_HELP`.
+  - `check_message` finds the contract (`get_instruments_for(name).nearest_option_expiry`, `.option`) and builds a synthetic `Trip`. `_market_plan(size=(qty, price or None))` takes the fresh ask when no price is given, else returns no plan.
+  - The day's context comes from `_state.view` when it is today's: `_after_loss`, `_day_line` (as "This would be trade N"), `_usual_share`, the cash.
+  - `check_text` builds the reply. `answer_check` sends it via `_say(kind CHECK, event_at=the message time)`, keyed `check:<update_id>` (a repeated update is not answered twice). The deadline is `CHECK_DEADLINE_SEC` (12 s).
+  - CHECK is in ALWAYS_SENT (never muted), LIFETIME 120 s, PRIORITY 1.
+- **WATCH_ON** ends with "Before a buy you can send me, for example: check 22300 pe."
 
 ## October 24 (night, 2) — O24g stops moved together; claims from a fresh GTT list; the order stream and delivery measurement (actual behavior, Dev, commit `797d69b`)
 
