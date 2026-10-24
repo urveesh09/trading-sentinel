@@ -33,9 +33,10 @@ from fno_models import FnoDirection, OptionType
 class FnoShadowVariant:
     name: str
     opening_range_minutes: int
-    freshness: str
+    freshness: str                       # crossing | first_confirmation | crossing_or_pullback
     confirmation_bars: int = 0
     max_extension_atr: float | None = None
+    pullback_atr: float | None = None    # crossing_or_pullback: how near the break level a pullback must come
 
 
 _VARIANT_ROWS = (
@@ -43,6 +44,12 @@ _VARIANT_ROWS = (
     FnoShadowVariant("FNO_CONFIRM_1", int(settings.FNO_OR_MINUTES), "first_confirmation", 1, 0.35),
     FnoShadowVariant("FNO_OR_20", 20, "crossing"),
     FnoShadowVariant("FNO_OR_45", 45, "crossing"),
+    # [O24g 2026-10-24] Frozen before any scoring: the base break, or a continuation on a trend day. The book's
+    # money came from trends held with a trail (Sep 1 - Oct 23: three trail exits +Rs13,767, every other exit
+    # -Rs10,002) while most bars after a break are "not_fresh_break". After the break, the price pulls back to
+    # within 0.25 ATR of the break level since its latest extreme, and the last closed bar resumes the trend. One
+    # new number (0.25), set a priori; every other check, the stop and the target are the base's.
+    FnoShadowVariant("FNO_CONTINUATION", int(settings.FNO_OR_MINUTES), "crossing_or_pullback", pullback_atr=0.25),
 )
 VARIANTS: Mapping[str, FnoShadowVariant] = MappingProxyType({
     variant.name: variant for variant in _VARIANT_ROWS
@@ -76,6 +83,31 @@ def _selected(names: Sequence[str] | None) -> tuple[FnoShadowVariant, ...]:
     if unknown:
         raise ValueError(f"unknown F&O shadow variant(s): {', '.join(unknown)}")
     return tuple(VARIANTS[name] for name in selected)
+
+
+def pullback_resumed(bars: pd.DataFrame, long: bool, level: float, atr: float, tolerance_atr: float) -> bool:
+    """[O24g] A continuation after the opening-range break (today's closed
+    bars, the last one being judged). Since the first close beyond ``level``
+    today, the price made an extreme (the highest high, for a long), then
+    pulled back to within ``tolerance_atr`` ATR of the level, and the last
+    bar resumes: it closes beyond the level and beyond the previous bar's
+    extreme (its high, for a long). Causal: only closed bars are read."""
+    closes = [float(value) for value in bars["close"]]
+    highs = [float(value) for value in bars["high"]]
+    lows = [float(value) for value in bars["low"]]
+    beyond = [close > level if long else close < level for close in closes]
+    if len(closes) < 4 or not beyond[-1] or True not in beyond[:-1]:
+        return False
+    first = beyond.index(True)
+    run = range(first, len(closes) - 1)                 # from the break to the bar before the last
+    extremes = highs if long else lows
+    peak = max(run, key=lambda i: extremes[i]) if long else min(run, key=lambda i: extremes[i])
+    after = range(peak + 1, len(closes) - 1)
+    if not after:
+        return False                                    # no pullback since the latest extreme
+    if long:
+        return min(lows[i] for i in after) <= level + tolerance_atr * atr and closes[-1] > highs[-2]
+    return max(highs[i] for i in after) >= level - tolerance_atr * atr and closes[-1] < lows[-2]
 
 
 def _variant_signal(
@@ -140,7 +172,13 @@ def _variant_signal(
         if (long_break and prev > long_level) or (short_break and prev < short_level):
             out.reject_reason = "not_fresh_break"
             return out
-    else:
+    elif variant.freshness == "crossing_or_pullback":
+        fresh = not ((long_break and prev > long_level) or (short_break and prev < short_level))
+        if not fresh and not pullback_resumed(today_bars, long_break, long_level if long_break else short_level,
+                                              atr, float(variant.pullback_atr or 0.0)):
+            out.reject_reason = "no_pullback_resumption"
+            return out
+    elif variant.freshness == "first_confirmation":
         prior = closes[-3] if len(closes) >= 3 else prev
         first_confirmation = (
             long_break and prev > long_level and prior <= long_level
@@ -158,6 +196,8 @@ def _variant_signal(
         if extension > float(variant.max_extension_atr or 0.0) * atr:
             out.reject_reason = "confirmation_extension_exceeded"
             return out
+    else:
+        raise ValueError(f"unknown freshness {variant.freshness!r} for {variant.name}")
 
     if regime == "REGIME_3_CRISIS":
         out.reject_reason = "regime_crisis"

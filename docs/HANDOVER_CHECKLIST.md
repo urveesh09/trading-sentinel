@@ -1,5 +1,15 @@
 # Handover receipt and operator checklist
 
+## October 24 (night, 3) — O24h F&O shadow variants on real paths; a trend-day continuation frozen (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] Found: the F&O shadow outcome is a target-hit scenario (43 of 43 "wins"); it never replays stops or trails, so it cannot rank variants.
+- [x] The replay can now trade any shadow variant's entries through the live book (`FNO_SIG_*` arms).
+- [x] `FNO_CONTINUATION` (base break, or a pullback to the break level that resumes) is frozen, and recorded live in shadow from deploy.
+- [x] Study `fno-entry-t2` frozen on 28 archived sessions; decision window Oct 12–23.
+- [x] Tests: shadow, replay, study-runner, promotion-route and penny-price-contract tests 43 + 32 passed (targeted; the full suite runs at the end of O24h). No live broker round trip.
+- [ ] Scoring and verdict (next commit); exit slippage receipts; the partner's pre-buy check.
+- [ ] Deployed: no.
+
 ## October 24 (night, 2) — O24g stops moved together told together; "no stop" only from a GTT list read then; the order stream (off) and delivery measurement (commit `797d69b`, Dev, pushed, not deployed)
 
 - [x] Fifth audit: GTTs moved down together were told for one only. Real, fixed. So were two SL orders modified together, and a move under the plan beside another move.

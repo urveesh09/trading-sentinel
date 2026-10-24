@@ -103,7 +103,7 @@ async def test_persistence_is_idempotent_and_comparison_separates_counts(db_path
     rows = fno_shadow.evaluate_fno_shadows(
         _bars(), "REGIME_1_BULL", IST.localize(datetime(2026, 7, 10, 10, 1)),
     )
-    assert await fno_shadow.persist_fno_shadow_results(db_path, rows) == 4
+    assert await fno_shadow.persist_fno_shadow_results(db_path, rows) == len(fno_shadow.VARIANTS) == 5
     assert await fno_shadow.persist_fno_shadow_results(db_path, rows) == 0
     comparison = await fno_shadow.fno_shadow_comparison(db_path)
     base = next(row for row in comparison["variants"] if row["variant"] == "FNO_BASE")
@@ -245,3 +245,63 @@ def test_authenticated_registry_and_comparison_endpoint(monkeypatch, db_path):
     assert disabled["enabled"] is False
     assert disabled["config"] == {"enabled": False}
     assert disabled["status"] == "disabled"
+
+
+def _trend_day(after_break):
+    """Five flat sessions, then today's flat 30-minute opening range, a break at 09:55 and ``after_break``:
+    (time, close) bars, each 10 points either side of its close."""
+    frame = _bars()
+    rows = [(stamp, close) for stamp, close in after_break]
+    index = pd.to_datetime([f"2026-07-10 {stamp}" for stamp, _ in rows])
+    closes = [close for _, close in rows]
+    extra = pd.DataFrame({"open": closes, "high": [c + 10 for c in closes], "low": [c - 10 for c in closes],
+                          "close": closes, "volume": 300.0}, index=index)
+    return pd.concat([frame, extra])
+
+
+def _continuation(after_break, minute):
+    now = IST.localize(datetime(2026, 7, 10, 10, minute))
+    return {row["variant"]: row for row in fno_shadow.evaluate_fno_shadows(
+        _trend_day(after_break), "REGIME_1_BULL", now, variants=["FNO_BASE", "FNO_CONTINUATION"])}
+
+
+def test_a_continuation_needs_a_pullback_to_the_break_and_a_resumption():
+    """[O24g] Frozen definition: after the break (09:55) an extension (10:00), a pullback to within 0.25 ATR of
+    the break level (10:05, low 25,008) and a bar closing above the previous high (10:10): the base calls it not
+    fresh; the continuation takes it, with the base's stop and target rules."""
+    rows = _continuation([("10:00", 25040), ("10:05", 25018), ("10:10", 25035)], 16)
+    assert rows["FNO_BASE"]["reject_reason"] == "not_fresh_break"
+    accepted = rows["FNO_CONTINUATION"]
+    assert accepted["accepted"] is True and accepted["direction"] == "LONG"
+    features = accepted["features"]
+    risk = features["close"] - features["stop_underlying"]
+    assert risk > 0 and features["target_underlying"] == pytest.approx(features["close"] + settings.FNO_TARGET_R * risk)
+    # A straight extension (no pullback since the latest high) and a pullback that does not resume: no entry.
+    assert _continuation([("10:00", 25040), ("10:05", 25050), ("10:10", 25065)], 16)["FNO_CONTINUATION"][
+        "reject_reason"] == "no_pullback_resumption"
+    assert _continuation([("10:00", 25040), ("10:05", 25018), ("10:10", 25020)], 16)["FNO_CONTINUATION"][
+        "reject_reason"] == "no_pullback_resumption"
+    # On the break bar itself it is the base signal.
+    fresh = _continuation([], 1)
+    assert fresh["FNO_CONTINUATION"]["accepted"] is fresh["FNO_BASE"]["accepted"] is True
+
+
+def test_pullback_resumed_reads_closed_bars_both_ways():
+    """[O24g] Level 102, ATR 4, tolerance 0.25 ATR (a pullback low at or under 103 counts, for a long)."""
+    index = pd.date_range("2026-07-10 09:45", periods=5, freq="5min")
+
+    def frame(closes, highs, lows):
+        return pd.DataFrame({"close": closes, "high": highs, "low": lows}, index=index[:len(closes)])
+
+    # break at 09:50, high 112 at 09:55, pullback to 101 at 10:00, 10:05 closes 108 above 10:00's high 106
+    long = frame([100, 103, 110, 104, 108], [101, 104, 112, 106, 109], [99, 102, 108, 101, 105])
+    assert fno_shadow.pullback_resumed(long, True, 102.0, 4.0, 0.25)
+    assert not fno_shadow.pullback_resumed(long.iloc[:-1], True, 102.0, 4.0, 0.25)   # the last bar is the pullback
+    shallow = frame([100, 103, 110, 107, 112], [101, 104, 112, 109, 113], [99, 102, 108, 105, 108])
+    assert not fno_shadow.pullback_resumed(shallow, True, 102.0, 4.0, 0.25)          # low 105 > 103: no pullback
+    stalled = frame([100, 103, 110, 104, 105], [101, 104, 112, 106, 107], [99, 102, 108, 101, 103])
+    assert not fno_shadow.pullback_resumed(stalled, True, 102.0, 4.0, 0.25)          # 105 is not above 106
+    # the short mirror: low 88, pullback high 99 >= 97, 10:05 closes 92 under 10:00's low 94
+    short = frame([100, 97, 90, 96, 92], [101, 98, 92, 99, 95], [99, 96, 88, 94, 91])
+    assert fno_shadow.pullback_resumed(short, False, 98.0, 4.0, 0.25)
+    assert not fno_shadow.pullback_resumed(short, True, 98.0, 4.0, 0.25)            # not beyond a long level

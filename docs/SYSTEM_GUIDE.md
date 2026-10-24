@@ -1,5 +1,19 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 24 (night, 3) — O24h F&O entry-signal arms and the continuation variant (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **`fno_shadow.VARIANTS`** gains `FNO_CONTINUATION` (`FnoShadowVariant.pullback_atr` 0.25, freshness `crossing_or_pullback`).
+  - `_variant_signal` accepts a fresh break as the base does. Otherwise it needs `pullback_resumed(today_bars, long, level, atr, 0.25)`, else `no_pullback_resumption`:
+    - closes beyond the level exist before the last bar;
+    - after the run's extreme (highest high for a long), a bar's low came within 0.25 ATR of the level;
+    - the last bar closes beyond the level and the previous bar's high (low for a short).
+  - The regime, EMA and RVOL checks, the stop (`max(or_low, close − FNO_STOP_ATR_MULT·ATR)` for a long) and the target are the base's.
+  - The freshness branches are explicit; an unknown one raises. The live shadow evaluates all five variants on every F&O tick (research only).
+- **`fno_policy_replay.ReplayPolicy.signal_variant`.**
+  - `_entry` calls `fno_shadow._variant_signal(frame, regime, now, VARIANTS[name])` instead of `evaluate_fno_mom` (FNO_BASE delegates to it).
+  - The arms FNO_SIG_CONFIRM_1, _OR_20, _OR_45 and _CONTINUATION all manage at the live fast-exit cadence (as CURRENT).
+- **`scripts/run_preregistered_study.py`** study `fno-entry-t2`: runner `fno_replay` on `docs/research/fno/2026-10-24-entry-arms/_local`; development Sep 10 – Oct 9, untouched Oct 12 – Oct 23; candidate FNO_SIG_CONTINUATION vs BASELINE (`CURRENT`).
+
 ## October 24 (night, 2) — O24g stops moved together; claims from a fresh GTT list; the order stream and delivery measurement (actual behavior, Dev, commit `797d69b`)
 
 - **Stops moved together (`_lowered(moves)`).**

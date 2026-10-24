@@ -822,9 +822,9 @@ Related tests: `python-engine/tests/test_fno_orchestrator.py`
 
 Full-policy single-leg F&O replay over archived quotes (research only). The replay re-runs the *shipped* NIFTY single-leg paper book tick by tick on evidence the live system actually had: * futures 5-minute candles (``fut_candles``) for the day's front future, * every archived NIFTY quote batch (front future + ATM±5 calls/puts for two expiries, raw provider packets verified by ``verify_archive_event``), * the live ``fno_signals`` regime per bar (point-in-time, never re-derived). Decisions call the production code: ``evaluate_fno_mom`` (signal), ``fno_chain._parse_quote_entry`` + ``ChainSnapshot`` (chain view), ``fno_entry_plan.plan_single_leg_entry`` (strike, gates, sizing, max loss, reward/
 
-Top-level declarations: `FnoReplayError` (line 65), `ReplayPolicy` (line 72), `resolve_policy` (line 108), `Observation` (line 125), `ReplayData` (line 132), `_last_closed_bar` (line 269), `_aware` (line 276), `OpenLeg` (line 284), `Book` (line 316), `_close_record` (line 327), `SingleLegReplay` (line 351), `summarize` (line 624), `parity_report` (line 640), `run_replay` (line 657)
+Top-level declarations: `FnoReplayError` (line 65), `ReplayPolicy` (line 72), `resolve_policy` (line 119), `Observation` (line 136), `ReplayData` (line 143), `_last_closed_bar` (line 280), `_aware` (line 287), `OpenLeg` (line 295), `Book` (line 327), `_close_record` (line 338), `SingleLegReplay` (line 362), `summarize` (line 639), `parity_report` (line 655), `run_replay` (line 672)
 
-Engine dependencies: `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_exit_experiment`, `fno_exit_rules`, `fno_models`, `fno_risk`, `fno_shared_risk`, `intraday_spread_archive_adapter`
+Engine dependencies: `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_exit_experiment`, `fno_exit_rules`, `fno_models`, `fno_risk`, `fno_shadow`, `fno_shared_risk`, `intraday_spread_archive_adapter`
 
 Related tests: `python-engine/tests/test_fno_policy_replay.py`
 
@@ -852,7 +852,7 @@ Related tests: `python-engine/tests/test_fno_risk_switches.py`
 
 Broker-free F&O opening-range paper-shadow experiment. The baseline delegates to the production evaluator verbatim. Variants consume the same already-fetched futures frame and, optionally, an already-resolved chain snapshot. This module has no executor, order, Kite, sizing, position, or ledger dependency and cannot influence a trading decision.
 
-Top-level declarations: `FnoShadowVariant` (line 33), `_json_safe` (line 52), `_json` (line 67), `_selected` (line 71), `_variant_signal` (line 81), `evaluate_fno_shadows` (line 193), `attach_resolved_cost_estimates` (line 233), `init_fno_shadow_db` (line 286), `persist_fno_shadow_results` (line 308), `persist_fno_shadow_results_sync` (line 356), `fno_shadow_comparison` (line 361)
+Top-level declarations: `FnoShadowVariant` (line 33), `_json_safe` (line 59), `_json` (line 74), `_selected` (line 78), `pullback_resumed` (line 88), `_variant_signal` (line 113), `evaluate_fno_shadows` (line 233), `attach_resolved_cost_estimates` (line 273), `init_fno_shadow_db` (line 326), `persist_fno_shadow_results` (line 348), `persist_fno_shadow_results_sync` (line 396), `fno_shadow_comparison` (line 401)
 
 Engine dependencies: `config`, `cost_schedules`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_models`
 
