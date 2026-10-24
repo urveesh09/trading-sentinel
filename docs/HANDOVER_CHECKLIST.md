@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 (night) — O24f "none held" only with evidence; sell orders matched by product; a replacement matched to the stop it replaced; the watch says when it cannot see (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 (night) — O24f "none held" only with evidence; sell orders matched by product; a replacement matched to the stop it replaced; the watch says when it cannot see (commit `320fe20`, Dev, pushed, not deployed)
 
 - [x] Fourth audit of the watch: three issues, all real, all fixed. Each is a test that fails on 764055f's watch.
 - [x] An orphan sell is "you hold none" only when Zerodha's positions show it. Otherwise the message says it could not check and does not say "cancel it": the order may protect a holding from an earlier day.

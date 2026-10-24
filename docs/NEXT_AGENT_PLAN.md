@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (night) — O24f The watch's sell-order and replacement boundaries: "none held" only with evidence, sell orders matched by product, a replacement matched to the stop it replaced; the watch says when it cannot see (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (night) — O24f The watch's sell-order and replacement boundaries: "none held" only with evidence, sell orders matched by product, a replacement matched to the stop it replaced; the watch says when it cannot see (done, Dev, commit `320fe20`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): the audit agent's fourth review (through 764055f) found three remaining issues, two in the new sell-order alarms and one in replacement-stop reporting. It also suggested enrichments. Fix bugs that are real, enrich where it is worth it, disagree where right.
 - Verdict: all three were real. Each is now a tick test that fails on 764055f's `partner_watch.py`. Writing the tests found three more of the same family; those are fixed too (O24f-RP, O24f-GF).

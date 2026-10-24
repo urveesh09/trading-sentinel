@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 (night) — O24f the watch's sell-order and replacement boundaries; watch health (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 24 (night) — O24f the watch's sell-order and replacement boundaries; watch health (actual behavior, Dev, commit `320fe20`)
 
 - **"None held" (`none_held`).** For an option, or a product, with no holding, the evidence is:
   - ZERODHA: `View.positions`, Zerodha's positions read within POSITIONS_MAX_AGE, show none;
