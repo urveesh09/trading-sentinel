@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 (night, 4) — O24i F&O paper risk messages (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 24 (night, 4) — O24i F&O paper risk messages (actual behavior, Dev, commit `0b7d7b9`)
 
 - **`fno_risk_alert.check_paper(db_path, now, notify=None)`**, called by `fno_orchestrator.run_fno_tick` right after `_manage_single_leg_books`, unless FNO_DISABLE_PAPER.
   - It reads `fno_shared_risk.shared_fno_entry_policy` (FNO_PAPER, pool FNO_PAPER_BANKROLL) and `fno_adaptive_risk.risk_stance` over `read_book_closes`.

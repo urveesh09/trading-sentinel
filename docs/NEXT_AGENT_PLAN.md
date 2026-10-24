@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (night, 4) — O24i The F&O drawdown halt stays as it is and is no longer silent; the partner stays in English (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (night, 4) — O24i The F&O drawdown halt stays as it is and is no longer silent; the partner stays in English (done, Dev, commit `0b7d7b9`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24):
   - On the 15% drawdown halt: "this you decide with the vision in mind" (keep it, base it on a recent peak, or reset the paper starting point).

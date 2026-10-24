@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 (night, 4) — O24i the F&O drawdown halt stays and is no longer silent (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 (night, 4) — O24i the F&O drawdown halt stays and is no longer silent (commit `0b7d7b9`, Dev, pushed, not deployed)
 
 - [x] Decided (the owner delegated it): the 15% drawdown halt stays as it is. Its July – August losses were made by the same entry rule.
 - [x] The owner is told once per change of the paper book's size tier or entry halts (`fno_risk_alert`), with the distance to the 15% line. Today: ₹14,298, about six average stop-outs.
