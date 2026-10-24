@@ -593,6 +593,14 @@ def _well_done(w: _Writer, well: list) -> list:
     return _section(w, "What you did well", rows)
 
 
+def _rules_as_of(score: dict) -> str:
+    """[O24-SB] " Rules of 24 Oct 2026.": the rules this day was checked with."""
+    try:
+        return f" Rules of {datetime.fromisoformat(score['rules_version']).strftime('%d %b %Y')}."
+    except (KeyError, TypeError, ValueError):
+        return ""
+
+
 def _rules(w: _Writer, score: Optional[dict], past: bool) -> list:
     if not score:
         return []
@@ -607,7 +615,7 @@ def _rules(w: _Writer, score: Optional[dict], past: bool) -> list:
                                ("LEFTPADDING", (0, 0), (-1, -1), 2), ("RIGHTPADDING", (0, 0), (-1, -1), 2),
                                ("TOPPADDING", (0, 0), (-1, -1), 3.5), ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5)]))
     intro = w.p(w.t("Each trade is checked against the same rules. This counts how you traded, not whether it "
-                    "made money."), w.small)
+                    f"made money.{_rules_as_of(score)}"), w.small)
     return _section(w, TITLES["rules"][past], [intro, Spacer(1, 3), table])
 
 

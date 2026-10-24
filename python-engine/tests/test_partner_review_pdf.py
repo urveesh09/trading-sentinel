@@ -284,3 +284,11 @@ def test_the_assistants_lines_and_plain_refusals_print(monkeypatch):
     assert "refused: another sell order for this option was already waiting" in text
     assert "Zerodha: Insufficient funds. Margin required: 159586.95." in text
     assert text.count("WHAT HAPPENED") == once + 1 and text.count("WHY IT MATTERS") == once   # the same why, once
+
+
+def test_the_rules_a_day_was_checked_with_are_named():
+    # [O24-SB] A review is worked out again each time; the date of the rules says which ones scored it.
+    assert pdf._rules_as_of({"rules_version": "2026-10-24"}) == " Rules of 24 Oct 2026."
+    assert pdf._rules_as_of({}) == "" and pdf._rules_as_of({"rules_version": "soon"}) == ""
+    assert pl.day_review(_view([], [off("BUY", T(10, 0), 30.0), off("SELL", T(10, 20), 31.0)]), DAY)["score"][
+        "rules_version"] == pl.RULES_VERSION

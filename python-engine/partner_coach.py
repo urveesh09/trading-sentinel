@@ -48,6 +48,8 @@ owner's 1-minute candles), what the partner's Zerodha book shows (order
 changes, rejections, positions, the day's cash) and the lessons that follow
 from them: CHASED_SPIKE, GAVE_BACK_PROFIT, STOP_LOWERED, PRICE_RAISED_TO_FILL,
 UNUSUAL_SIZE ([O24-SZ], was BIG_RISK), HELD_OVERNIGHT and INSUFFICIENT_FUNDS.
+[O24-SB] The usual size starts from the trades in the 45 days before the
+window (``size_history``), so a day reads the same in any window.
 
 Honesty rules (paper-fill-honesty): reported prices are the partner's;
 "≈" prices came from a quote at the tap; a plan exit is a 5-minute print,
@@ -924,7 +926,7 @@ def _overtrading(buys: int, cards: int, traded: list[dict], on_day: str = "today
 def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: datetime,
             complete_days: frozenset = frozenset(), stops: Optional[list] = None,
             stops_known_days: frozenset = frozenset(), context: Optional[dict] = None,
-            unknown_stops: Optional[list] = None) -> dict:
+            unknown_stops: Optional[list] = None, earlier_sizes: Optional[list] = None) -> dict:
     """The coach view for the cards and reports in a window (pure).
 
     ``complete_days``: days whose whole Zerodha book was read after the close.
@@ -933,7 +935,9 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
     ``unknown_stops``: [O24-SR] sales that may have been stops; a trade with
     one and no confirmed stop has unknown stops.
     ``context``: [O21-PX] price paths and the Zerodha book's details
-    (partner_insights.Context); without it the analysis is as before."""
+    (partner_insights.Context); without it the analysis is as before.
+    ``earlier_sizes``: [O24-SB] the shares of cash of the trades before the
+    window (``size_history``), where the usual size starts."""
     import partner_insights as insights
     ctx = insights.Context.of(context, complete_days, now)
     reaction = timedelta(seconds=reaction_sec)
@@ -996,7 +1000,7 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         days[item["day"]].append(item)
     for day_items in days.values():
         _sequence_flags(day_items)
-    insights.usual_size_flags(items + reentries + off_card)
+    insights.usual_size_flags(items + reentries + off_card, earlier=earlier_sizes)
     day_rows = []
     all_days = sorted({c["day"] for c in cards} | {i["day"] for i in off_card}, reverse=True)
     for day in all_days:
@@ -1221,13 +1225,42 @@ async def load_partner_coach(db_path: str, *, days: int = 30, now: Optional[date
                                          context["orders"], context["changes"])
     view = analyse(cards, reports, reaction_sec=int(settings.PARTNER_COACH_REACTION_SEC), now=now,
                    complete_days=complete, stops=stops, stops_known_days=known, context=context,
-                   unknown_stops=unknown)
+                   unknown_stops=unknown, earlier_sizes=await size_history(db_path, first_day))
     view["data_quality"]["superseded_by_zerodha"] = superseded
     view["window"] = {"first_day": first_day, "last_day": last_day, "days": days}
     view["capture_enabled"] = bool(settings.PARTNER_FILL_CAPTURE_ENABLED)
     view["zerodha"] = zerodha.status(now) | {"days": broker}
     view["as_of"] = now.isoformat()
     return view
+
+
+SIZE_HISTORY_DAYS = 45      # [O24-SB] calendar days read before a window for the usual size
+
+
+async def size_history(db_path: str, before_day: str, *, days: int = SIZE_HISTORY_DAYS) -> list:
+    """[O24-SB] The share of the day's cash in each trade in the ``days``
+    before ``before_day``, oldest first, the last USUAL_SIZE_LOOKBACK of them.
+    The trades and shares are the review's own (``build_trades``,
+    partner_insights.trade_share), so the usual size of a day is the same in
+    any window, and the trade watch uses the same history."""
+    from partner_fill_capture import reports_between
+    import partner_broker_sync as zerodha
+    from partner_insights import USUAL_SIZE_LOOKBACK, trade_share
+    last = date.fromisoformat(before_day) - timedelta(days=1)
+    first = (last - timedelta(days=days - 1)).isoformat()
+    broker = await zerodha.broker_days(db_path, first, last.isoformat())
+    reports, _superseded = zerodha_first(await reports_between(db_path, first, last.isoformat()), broker)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT session_date, opening_balance, intraday_payin FROM partner_account_days "
+            "WHERE session_date>=? AND session_date<=?", (first, last.isoformat()))).fetchall()
+    accounts = {day: {"opening_balance": opening, "intraday_payin": payin} for day, opening, payin in rows}
+    shares = []
+    for trade in build_trades(reports).values():
+        share = trade_share(trade, accounts.get(trade["session_date"]))
+        if share is not None:
+            shares.append((trade["first_buy_at"], share))
+    return [share for _at, share in sorted(shares, key=lambda s: s[0])][-USUAL_SIZE_LOOKBACK:]
 
 
 def zerodha_first(reports: list[dict], broker: dict) -> tuple[list[dict], int]:

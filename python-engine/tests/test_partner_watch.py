@@ -1,8 +1,14 @@
 """[O24-PW] The partner's trade watch: messages only, loss first.
 
-Pure parts (round trips, the plan, the texts) and the tick against a fake
-Kite book, a fake market and a fake Telegram.
+Pure parts (fills, holdings, cover, the plan, the texts) and the tick against
+a fake Kite book, a fake market and a fake Telegram. [O24c] The Oct 24
+audit's counterexamples are reproduced here: the held count after a partly
+filled buy and after a partial sale of a carried position, cover by product
+and quantity, an unreadable GTT list, a send that never left, a plan stop the
+price is already under, a plan replaced after a restart, and a slow plan.
 """
+import asyncio
+import time
 from datetime import date, datetime, timedelta
 
 import aiosqlite
@@ -10,12 +16,13 @@ import pandas as pd
 import pytest
 
 import options_math as om
+import partner_bot
 import partner_broker_sync as zerodha
 import partner_watch as pw
 from config import settings
 from fno_chain import RISK_FREE_RATE, years_to_expiry
 from partner_coach import round_trip_costs
-from tests.test_partner_broker_sync import T, _order, _ts, kite, partner_app  # noqa: F401
+from tests.test_partner_broker_sync import T, _order, _trade, _ts, kite, partner_app  # noqa: F401
 from tests.test_partner_fill_capture import _seed
 
 DAY = date(2026, 10, 23)
@@ -61,9 +68,9 @@ def _futures(now: datetime, *, rising: bool, low_edge: float = 22450.0) -> pd.Da
 
 
 class FakeMarket(pw.Market):
-    def __init__(self, option=None, futures=None, quotes=None):
+    def __init__(self, option=None, futures=None, quotes=None, delay=0.0):
         super().__init__()
-        self.option, self.futures, self.quotes, self.calls = option, futures, quotes or {}, []
+        self.option, self.futures, self.quotes, self.calls, self.delay = option, futures, quotes or {}, [], delay
 
     async def quote(self, contracts):
         self.calls.append(("quote", [c.tradingsymbol for c in contracts]))
@@ -71,6 +78,8 @@ class FakeMarket(pw.Market):
 
     async def candles(self, contract, interval, start, end):
         self.calls.append((interval, contract.tradingsymbol))
+        if self.delay:
+            await asyncio.sleep(self.delay)
         return self.option if interval == "minute" else self.futures
 
 
@@ -87,6 +96,23 @@ def _row(order_id, side, qty, price, at, status="COMPLETE", **over):
     return row
 
 
+def _stop_row(order_id, qty, trigger, at, status="TRIGGER PENDING", product="NRML", **over):
+    row = _row(order_id, "SELL", qty, 0.0, at, status=status, order_type="SL", trigger_price=trigger, product=product)
+    row["price"] = round(trigger - 1, 2)          # the limit (``_row``'s own price is the fill's average)
+    row.update(over)
+    return row
+
+
+def _fill(order_id, qty, price, at):
+    return _trade(order_id, qty, price, at) | {"trade_id": f"t{order_id}-{at.isoformat()}"}
+
+
+def _holding(qty, product="NRML", entry=80.0):
+    trip = pw.Trip("101", "NFO", SYMBOL, product, D(10, 0), bought=qty, buy_value=qty * entry)
+    return pw.Holding("NFO", SYMBOL, product, qty=qty, orders_qty=qty, broker_qty=qty, basis="CONFIRMED", trip=trip,
+                      average=entry)
+
+
 def test_round_trips_open_and_close_in_fill_order():
     rows = [_row("1", "BUY", 65, 75.05, D(11, 29, 17)), _row("2", "SELL", 65, 62.6, D(13, 38, 17)),
             _row("3", "BUY", 65, 80.0, D(13, 40)), _row("4", "BUY", 65, 82.0, D(13, 41)),
@@ -95,17 +121,111 @@ def test_round_trips_open_and_close_in_fill_order():
     assert (first.key, first.open_qty, first.closed_at) == ("1", 0, D(13, 38, 17))
     assert first.realised() == round((62.6 - 75.05) * 65 - round_trip_costs(75.05, 62.6, 65, "NFO"), 2)
     assert (second.key, second.bought, second.sold, second.open_qty, round(second.entry, 2)) == ("3", 130, 65, 65, 81.0)
+    assert list(second.buys) == ["3", "4"] and second.buy_orders == 2
     assert second.realised() is None                      # still open
 
 
-def test_a_position_carried_from_yesterday_is_a_trip_from_the_open():
-    carried = [{"exchange": "NFO", "tradingsymbol": SYMBOL, "product": "NRML", "quantity": 65, "overnight_quantity": 65,
+def test_a_partly_filled_buy_with_a_sale_between_its_fills_holds_65_not_130():
+    """[O24c] Audit A1: buy 130 fills 65 at 10:00, a sale of 65 at 10:05, the other 65 at 10:10. The order book
+    stamps the whole 130 at 10:10, after the sale; the trade book has each fill."""
+    rows = [_row("101", "BUY", 130, 80.0, D(10, 10)), _row("201", "SELL", 65, 85.0, D(10, 5))]
+    trades = [_fill("101", 65, 79.0, D(10, 0)), _fill("201", 65, 85.0, D(10, 5)), _fill("101", 65, 81.0, D(10, 10))]
+    assert [t.open_qty for t in pw.trips_from_orders(rows)] == [130]          # the order book alone: wrong
+    first, second = pw.trips_from_orders(rows, trades=trades)
+    assert (first.key, first.bought, first.sold, first.closed_at) == ("101", 65, 65, D(10, 5))
+    assert (second.key, second.open_qty, second.entry, second.exact) == ("101#2", 65, 81.0, True)
+    # Zerodha's positions agree with the fills.
+    [held] = pw.holdings_of([first, second], [{"exchange": "NFO", "tradingsymbol": SYMBOL, "product": "NRML",
+                                               "quantity": 65, "overnight_quantity": 0, "average_price": 81.0}],
+                            D(10, 15))
+    assert (held.qty, held.basis) == (65, "CONFIRMED")
+
+
+def test_a_carried_position_sold_in_part_before_the_login_still_holds_the_rest():
+    """[O24c] Audit A2: 130 carried in, 65 sold at 09:30, a login at 10:00. The trip starts at the overnight
+    130 (not the 65 left), so the sale is not taken off twice."""
+    carried = [{"exchange": "NFO", "tradingsymbol": SYMBOL, "product": "NRML", "quantity": 65, "overnight_quantity": 130,
                 "average_price": 90.0}]
-    trips = pw.trips_from_orders([_row("9", "SELL", 65, 80.0, D(10, 0))], carried, DAY)
-    assert len(trips) == 1 and trips[0].carried and trips[0].first_at == D(9, 15) and trips[0].open_qty == 0
+    [trip] = pw.trips_from_orders([_row("9", "SELL", 65, 80.0, D(9, 30))], carried, DAY)
+    assert (trip.carried, trip.first_at, trip.bought, trip.sold, trip.open_qty) == (True, D(9, 15), 130, 65, 65)
+    [held] = pw.holdings_of([trip], carried, D(10, 0))
+    assert (held.qty, held.basis, held.carried) == (65, "CONFIRMED", True)
 
 
-def test_the_plan_is_the_systems_index_stop_priced_into_the_option():
+def test_a_count_zerodha_does_not_confirm_uses_zerodhas_and_says_so():
+    trip = pw.trips_from_orders([_row("101", "BUY", 130, 80.0, D(10, 10))])[0]
+    positions = [{"exchange": "NFO", "tradingsymbol": SYMBOL, "product": "NRML", "quantity": 65,
+                  "overnight_quantity": 0, "average_price": 80.0}]
+    # A fill newer than the positions read keeps the orders' count for now...
+    [fresh] = pw.holdings_of([trip], positions, D(10, 10, 5))
+    assert (fresh.qty, fresh.basis) == (130, "ORDERS")
+    # ...a difference older than a fill can lag uses Zerodha's and says so.
+    [stale] = pw.holdings_of([trip], positions, D(10, 11))
+    assert (stale.qty, stale.basis, stale.orders_qty) == (65, "ZERODHA", 130)
+    assert pw.no_stop_text(stale, None) == (
+        "⏰ NIFTY 22300 PE (65): no stop order yet (bought 10:10). Zerodha's positions show 65 held; your orders today "
+        "give 130, so the count is Zerodha's.")
+    # Without positions the count is the orders', said as such.
+    [unread] = pw.holdings_of([trip], None)
+    assert pw._count_note(unread) == " The count is from your orders: Zerodha's positions could not be read."
+    # Zerodha shows nothing held long after: nothing to watch.
+    assert pw.holdings_of([trip], [], D(10, 30)) == []
+
+
+def test_cover_counts_only_stops_of_the_same_product_and_their_units():
+    """[O24c] Audit B: a 65-unit MIS stop does not protect a 130-unit NRML holding."""
+    held = _holding(130)
+    mis = [_stop_row("201", 65, 70.0, D(10, 1), product="MIS")]
+    cover = pw.cover_of(held, mis, [])
+    assert (cover.state, cover.covered, [s["units"] for s in cover.other_product]) == ("ABSENT", 0, [65])
+    assert pw.cover_of(held, mis, None).state == "UNKNOWN"          # the GTTs could still cover it
+    both = mis + [_stop_row("202", 65, 70.0, D(10, 2))]
+    cover = pw.cover_of(held, both, [])
+    assert (cover.state, cover.covered, cover.held) == ("PARTIAL", 65, 130)
+    assert pw.partial_text(held, cover, None) == (
+        "⚠️ NIFTY 22300 PE: protection incomplete. A stop covers 65 of your 130; the other 65 have none. Your stop "
+        "for 65 is MIS and these are NRML: it would not sell them.")
+    # A stop partly filled covers only what it still has to sell; a modify in flight still waits.
+    partly = [_stop_row("203", 130, 70.0, D(10, 3), status="MODIFY PENDING", filled_quantity=65)]
+    assert pw.cover_of(_holding(65), partly, None).state == "FULL"
+    assert pw.cover_of(held, [_stop_row("204", 130, 70.0, D(10, 4))], None).state == "FULL"
+
+
+def test_a_fired_stop_that_has_not_sold_is_exiting_not_missing():
+    held = _holding(65)
+    fired = [_stop_row("201", 65, 70.0, D(10, 1), status="OPEN", order_type="LIMIT", price=69.0)]
+    cover = pw.cover_of(held, fired, None)
+    assert (cover.state, cover.covered, cover.exiting) == ("FULL", 0, 65)
+    assert cover.fired == [{"order_id": "201", "trigger": 70.0, "limit": 69.0, "pending": 65, "kind": "SL"}]
+    text = pw.unfilled_text(held, cover.fired[0], {"bid": 66.0, "ltp": 66.5})
+    at_bid = (66.0 - 80.0) * 65 - round_trip_costs(80.0, 66.0, 65, "NFO")
+    assert text == ("🚨 NIFTY 22300 PE: your stop triggered at ₹70, but its sell order (limit ₹69) has not filled: "
+                    "65 of 65 still to sell. The bid is ₹66, under your limit: it sells only at ₹69 or better. Selling "
+                    f"at the bid ₹66 now: about −{pw._amt(-at_bid)} with charges. To sell now, the limit has to come "
+                    "down to the bid.")
+
+
+def test_gtt_stop_legs_count_with_their_product_and_a_fired_gtt_is_exiting():
+    held = _holding(65)
+    oco = {"id": 7, "type": "two-leg", "status": "active",
+           "condition": {"exchange": "NFO", "tradingsymbol": SYMBOL, "trigger_values": [60.0, 120.0], "last_price": 80.0},
+           "orders": [{"transaction_type": "SELL", "quantity": 65, "product": "NRML", "price": 59.0},
+                      {"transaction_type": "SELL", "quantity": 65, "product": "NRML", "price": 119.0}]}
+    target_only = {"id": 8, "type": "single", "status": "active",
+                   "condition": {"exchange": "NFO", "tradingsymbol": SYMBOL, "trigger_values": [120.0], "last_price": 80.0},
+                   "orders": [{"transaction_type": "SELL", "quantity": 65, "product": "NRML"}]}
+    assert pw.cover_of(held, [], [target_only]).state == "ABSENT"         # a target is not a stop
+    cover = pw.cover_of(held, [], [oco])
+    assert (cover.state, cover.stops) == ("FULL", [{"id": "gtt:7", "trigger": 60.0, "units": 65, "product": "NRML",
+                                                    "kind": "GTT"}])
+    fired = oco | {"status": "triggered", "orders": [oco["orders"][0] | {"result": {"order_result": {"order_id": "901"}}},
+                                                     oco["orders"][1]]}
+    placed = _row("901", "SELL", 65, 0.0, D(10, 30), status="OPEN", order_type="LIMIT") | {"price": 59.0}
+    cover = pw.cover_of(held, [placed], [fired])
+    assert (cover.state, cover.fired[0]["kind"], cover.fired[0]["trigger"]) == ("FULL", "GTT", 60.0)
+
+
+def test_the_plan_is_the_systems_futures_stop_priced_into_the_option():
     now = D(11, 29, 30)
     futures = _futures(now, rising=False)
     plan = pw.build_plan(entry=75.05, qty=65, exchange="NFO", opt_type="PE", strike=22300.0, expiry=date(2026, 10, 27),
@@ -113,13 +233,13 @@ def test_the_plan_is_the_systems_index_stop_priced_into_the_option():
                          fut_price=22534.7, option_mid=75.05)
     years = years_to_expiry(date(2026, 10, 27), now)
     iv = om.implied_vol(75.05, 22534.7, 22300.0, years, RISK_FREE_RATE, False)
-    # ATR 40 on these bars; a PE is wrong when the index rises: 22534.7 + 1.5 x 40. The opening-range high
-    # (22520 + 20) is under the index, on the winning side, so it is not the stop.
+    # ATR 40 on these bars; a PE is wrong when the future rises: 22534.7 + 1.5 x 40. The opening-range high
+    # (22520 + 20) is under the future, on the winning side, so it is not the stop.
     assert round(plan.atr, 6) == 40.0 and plan.range_edge is None and plan.stop_index == 22594.7
     assert plan.stop == pw._floor_tick(om.black76_price(22594.7, 22300.0, years, iv, RISK_FREE_RATE, False))
     assert plan.stop_basis == "INDEX" and plan.target_index == round(22534.7 - 1.8 * 60.0, 1)
     assert plan.loss == round((75.05 - plan.stop) * 65 + round_trip_costs(75.05, plan.stop, 65, "NFO"), 2)
-    assert plan.loss_pct == round(plan.loss / 7536.7, 4) and plan.trend == "WITH"    # falling index, a PE
+    assert plan.loss_pct == round(plan.loss / 7536.7, 4) and plan.trend == "WITH"    # falling future, a PE
 
 
 def test_a_stop_inside_the_options_normal_swing_moves_one_swing_under_the_price():
@@ -139,6 +259,33 @@ def test_a_stop_inside_the_options_normal_swing_moves_one_swing_under_the_price(
     assert plan.loss_pct > 0.10
 
 
+def test_a_plan_stop_the_price_is_already_under_is_never_offered_as_a_stop():
+    """[O24c] Audit D: bought at ₹100, the option at ₹20 now, no futures read: the swing stop (₹90) is already
+    crossed, so the message says so and what selling at the bid gives, and asks for no SL at ₹90."""
+    bought = D(10, 0)
+    option = _bars(bought - timedelta(minutes=30), 30, 95.0, 105.0, 100.0)
+    plan = pw.build_plan(entry=100.0, qty=65, exchange="NFO", opt_type="CE", strike=22700.0, expiry=date(2026, 10, 27),
+                         now=D(10, 0, 30), bought_at=bought, cash=20000.0,
+                         option_bars=[(ts.to_pydatetime(), *row) for ts, row in
+                                      zip(option.index, option[["open", "high", "low", "close"]].values.tolist())],
+                         fut_bars=None, fut_price=None, option_mid=20.0)
+    assert (plan.stop, plan.stop_basis) == (90.0, "SWING")
+    quote = {"bid": 19.9, "ask": 20.1, "ltp": 20.0}
+    assert pw.level_state(plan.stop, quote) == "CROSSED" and pw.level_state(plan.stop, None) == "UNCHECKED"
+    trip = pw.Trip("1", "NFO", "NIFTY26OCT22700CE", "NRML", bought, bought=65, buy_value=6500.0)
+    text = pw.plan_text(trip, plan, lots=1, quote=quote)
+    at_bid = (19.9 - 100.0) * 65 - round_trip_costs(100.0, 19.9, 65, "NFO")
+    assert text.splitlines()[1] == (f"🛑 The price (₹20) is already under the plan stop ₹90, the level where this trade "
+                                    f"is wrong. Selling at the bid ₹19.9 now: about −{pw._amt(-at_bid)} with charges, "
+                                    f"{-at_bid / 20000.0:.0%} of your cash.")
+    assert "Place an SL sell" not in text
+    assert pw.plan_summary(plan, quote) == "the price was already under the plan stop ₹90"
+    held = pw.Holding("NFO", "NIFTY26OCT22700CE", "NRML", qty=65, orders_qty=65, broker_qty=65, basis="CONFIRMED",
+                      trip=trip, average=100.0)
+    assert "is already under the plan stop ₹90" in pw.no_stop_text(held, plan, quote)
+    assert "the price could not be read now" in pw.no_stop_text(held, plan, None, set_at=bought)
+
+
 def test_without_market_data_the_plan_names_only_the_premium_at_risk():
     plan = pw.build_plan(entry=100.0, qty=65, exchange="NFO", opt_type="CE", strike=22700.0, expiry=date(2026, 10, 27),
                          now=D(14, 2, 40), bought_at=D(14, 2, 36), cash=7536.7, option_bars=None, fut_bars=None,
@@ -148,7 +295,7 @@ def test_without_market_data_the_plan_names_only_the_premium_at_risk():
                         plan, lots=1)
     assert "At risk: the whole ₹6,500 you paid, 86% of your cash. Decide your stop and place it now." in text
     assert "usual" not in text                       # no usual size known: no size warning
-    assert "Place the SL order now" not in text
+    assert "Place an SL sell" not in text
 
 
 def test_the_plan_message_reads_plainly():
@@ -157,17 +304,22 @@ def test_the_plan_message_reads_plainly():
                    trend="WITH")
     trip = pw.Trip("1", "NFO", SYMBOL, "NRML", D(11, 29, 17), bought=65, buy_value=65 * 75.05)
     text = pw.plan_text(trip, plan, lots=1, after_loss={"loss": 925.0, "at": "13:53", "minutes": 0, "bigger": "130 after 65"},
-                        day_line="Trade 5 today · ₹290 in charges so far.", usual=0.30)
+                        day_line="Trade 5 today · ₹290 in charges so far.", usual=0.30,
+                        quote={"bid": 75.0, "ask": 75.1, "ltp": 75.05})
     assert text.splitlines() == [
         "🟢 You bought NIFTY 22300 PE · 1 lot (65) at ₹75.05",
-        "🛑 Plan stop ₹57.85 (index 22,601). If it is hit: about −₹1,180 with charges, 16% of your cash.",
+        "🛑 Plan stop ₹57.85 (NIFTY future 22,601). If it sells there: about −₹1,180 with charges, 16% of your cash.",
         "⚠️ ₹4,878 in this trade, 65% of your cash: much bigger than your usual 30%.",
-        "🎯 Target zone ₹115.2 (index 22,415).",
-        "• normal 5-min swing ₹11.4; up 24% in the 15 min before you bought (from ₹60.5); the 5-min trend is with you.",
+        "🎯 Target zone ₹115.2 (NIFTY future 22,415).",
+        "• normal 5-min swing ₹11.4; up 24% in the 15 min before you bought (from ₹60.5); the NIFTY future's 5-min "
+        "trend is with you.",
         "⚠️ Your last trade closed −₹925 at 13:53, 0 min before this buy. This is 130 after 65.",
         "Trade 5 today · ₹290 in charges so far.",
-        "Place the SL order now: trigger ₹57.85. A fast fall can fill a little lower.",
+        "Place an SL sell now: trigger ₹57.85, limit a little under it. In a fast fall an SL order can trigger and "
+        "still not fill.",
     ]
+    above = pw.plan_text(trip, plan, lots=1, quote={"bid": 116.0, "ask": 116.2, "ltp": 116.1})
+    assert "🎯 Already above the target zone ₹115.2 (price ₹116.1)." in above
 
 
 def test_a_stop_moved_down_is_told_first_then_only_under_the_plan_or_off_the_buy_price():
@@ -193,7 +345,22 @@ def test_lowered_and_removed_texts_give_the_result_if_hit():
     at_70 = (70.0 - 75.05) * 65 - round_trip_costs(75.05, 70.0, 65, "NFO")
     assert text == (f"⚠️ NIFTY 22300 PE: you moved your stop down ₹75 → ₹70. If it is hit: −{pw._amt(at_70)} instead "
                     f"of −{pw._amt(at_75)}. A stop moved down adds to the loss you chose when you placed it.")
-    assert pw.removed_text(trip, 75.0, None).endswith("Nothing limits this trade's loss now.")
+    held = _holding(65, entry=75.05)
+    assert pw.removed_text(held, {"kind": "CANCELLED", "trigger": 75.0}, None).endswith(
+        "Nothing limits this trade's loss now.")
+    assert pw.removed_text(held, {"kind": "SOLD", "trigger": 70.0, "sold": 65}, None) == (
+        "⚠️ NIFTY 22300 PE: your stop at ₹70 sold 65; the 65 still held have no stop.")
+
+
+def test_an_add_names_the_new_size_and_the_bigger_loss_at_the_plan_stop():
+    held = _holding(130, entry=77.5)
+    plan = pw.Plan(entry=77.5, qty=130, stop=60.0, stop_basis="INDEX")
+    text = pw.added_text(held, added=65, added_px=75.0, first_px=80.0, plan=plan, loss_before=1300.0,
+                         quote={"bid": 74.9, "ask": 75.1, "ltp": 75.0})
+    at_stop = (60.0 - 77.5) * 130 - round_trip_costs(77.5, 60.0, 130, "NFO")
+    assert text == (f"➕ You added 65 to NIFTY 22300 PE at ₹75, under your first buy at ₹80: now 130 at ₹77.5. If the "
+                    f"plan stop ₹60 sells: about −{pw._amt(-at_stop)} with charges (it was −₹1,300). Buying more of a "
+                    "falling option makes the loss at the stop bigger.")
 
 
 def test_close_texts_name_what_the_close_does():
@@ -205,6 +372,28 @@ def test_close_texts_name_what_the_close_does():
     assert "squares it off near the close" in pw.close_text(trip, expiry_today=False, theta_day=None)
 
 
+def test_a_quote_keeps_its_sizes_and_clocks():
+    """[O24c] Audit G: the shadow looks keep the bid/ask quantities and the exchange's and our clocks."""
+    raw = {"last_price": 75.05, "timestamp": "2026-10-23 11:30:01", "last_trade_time": "2026-10-23 11:29:58",
+           "depth": {"buy": [{"price": 75.0, "quantity": 650, "orders": 3}],
+                     "sell": [{"price": 75.1, "quantity": 325, "orders": 2}]}}
+    top = pw._top(raw, D(11, 30, 2))
+    assert top == {"bid": 75.0, "ask": 75.1, "ltp": 75.05, "bid_qty": 650, "ask_qty": 325,
+                   "quote_at": D(11, 30, 1).isoformat(), "trade_at": D(11, 29, 58).isoformat(),
+                   "received_at": D(11, 30, 2).isoformat()}
+    assert pw._top({"last_price": 0, "depth": {}}, D(11, 30))["bid"] is None
+
+
+@pytest.mark.parametrize("state, error, retry", [
+    ("unsent_connect", "ConnectError", True), ("rate_limited", "telegram_429", True),
+    ("rejected", "telegram_http_502", True), ("rejected", "telegram_http_400", False),
+    ("ambiguous_timeout", "ReadTimeout", False), ("ambiguous_transport", "RemoteProtocolError", False),
+    ("disabled", "partner_transport_disabled", False), ("attempting", None, False),
+])
+def test_only_a_send_that_provably_did_not_leave_is_sent_again(state, error, retry):
+    assert pw._retryable(state, error) is retry
+
+
 @pytest.mark.asyncio
 async def test_the_quiet_button_is_for_today_only(partner_app):
     db = settings.DB_PATH
@@ -214,27 +403,76 @@ async def test_the_quiet_button_is_for_today_only(partner_app):
     assert await pw.quiet(db, "2026-10-23") and not await pw.quiet(db, "2026-10-24")
 
 
+@pytest.mark.asyncio
+async def test_tables_written_by_o24_gain_the_new_columns(tmp_path):
+    db = str(tmp_path / "o24.db")
+    async with aiosqlite.connect(db) as conn:
+        await conn.executescript(
+            "CREATE TABLE partner_watch_messages (message_key TEXT PRIMARY KEY, session_date TEXT NOT NULL, kind TEXT "
+            "NOT NULL, exchange TEXT, tradingsymbol TEXT, position_key TEXT, created_at TEXT NOT NULL, sent INTEGER NOT "
+            "NULL DEFAULT 0, text TEXT NOT NULL, summary TEXT);"
+            "CREATE TABLE partner_watch_looks (position_key TEXT NOT NULL, at TEXT NOT NULL, session_date TEXT NOT "
+            "NULL, bid REAL, ask REAL, ltp REAL, fut REAL, PRIMARY KEY (position_key, at));")
+    await pw.init_partner_watch_db(db)
+    async with aiosqlite.connect(db) as conn:
+        cols = {r[1] for r in await (await conn.execute("PRAGMA table_info(partner_watch_messages)")).fetchall()}
+        looks = {r[1] for r in await (await conn.execute("PRAGMA table_info(partner_watch_looks)")).fetchall()}
+    assert {"attempts", "outcome", "error", "event_at", "detected_at", "sent_at", "message_id"} <= cols
+    assert {"bid_qty", "ask_qty", "quote_at", "trade_at", "received_at"} <= looks
+
+
 # ---------------------------------------------------------------------------
 # the tick
 # ---------------------------------------------------------------------------
 
+def _net_positions(orders, carried):
+    """Zerodha's net positions as the fake book implies them: the overnight
+    quantity plus today's fills, per exchange, option and product."""
+    net: dict = {}
+    for item in carried:
+        key = (item["exchange"], item["tradingsymbol"], item["product"])
+        net[key] = dict(item)
+    for order in orders:
+        filled = int(order.get("filled_quantity") or 0)
+        if not filled:
+            continue
+        key = (order["exchange"], order["tradingsymbol"], order["product"])
+        row = net.setdefault(key, {"exchange": key[0], "tradingsymbol": key[1], "product": key[2], "quantity": 0,
+                                   "overnight_quantity": 0, "average_price": 0.0})
+        sign = 1 if order["transaction_type"] == "BUY" else -1
+        if sign > 0 and order.get("average_price"):
+            held = max(row["quantity"], 0)
+            row["average_price"] = (row["average_price"] * held + float(order["average_price"]) * filled) / (held + filled)
+        row["quantity"] += sign * filled
+    return {"net": list(net.values()), "day": []}
+
+
 @pytest.fixture
 def watch(kite, monkeypatch):
-    """Fake Telegram, an open trading day and the fake option book."""
-    sent = []
-
-    class Result:
-        def __init__(self):
-            self.delivered = True
+    """Fake Telegram (``outcomes``: the next sends' states), an open trading
+    day, the fake option book, and positions that follow the fake orders."""
+    sent, outcomes = [], []
 
     async def send(text, *, kind="partner_msg", reply_markup=None):
-        sent.append({"kind": kind, "text": text, "keyboard": reply_markup})
-        return Result()
+        state = outcomes.pop(0) if outcomes else "acknowledged"
+        delivered = state == "acknowledged"
+        sent.append({"kind": kind, "text": text, "keyboard": reply_markup, "state": state})
+        return partner_bot.PartnerSendResult(delivered, message_id=len(sent) if delivered else None, state=state,
+                                             error=None if delivered else "ConnectError")
 
     async def trading_day(now):
         return True
 
-    import partner_bot
+    fake = zerodha._kite_call
+
+    async def book(method, path, **kw):
+        if path == "/portfolio/positions" and kite.get("auto_positions", True):
+            return _net_positions(kite["orders"], kite.get("carried", []))
+        if path == "/gtt/triggers" and kite.get("gtt_fail"):
+            raise zerodha.BrokerError("network", "ConnectError")
+        return await fake(method, path, **kw)
+
+    monkeypatch.setattr(zerodha, "_kite_call", book)
     monkeypatch.setattr(settings, "PARTNER_WATCH_ENABLED", True)
     monkeypatch.setattr(partner_bot, "partner_enabled", lambda: True)
     monkeypatch.setattr(partner_bot, "send_partner_result", send)
@@ -243,27 +481,40 @@ def watch(kite, monkeypatch):
     pw.reset()
     kite["margins"] = {"available": {"opening_balance": 7536.7, "intraday_payin": 0.0, "live_balance": 7536.7},
                        "utilised": {"option_premium": 0.0}}
+    kite["outcomes"] = outcomes
     yield sent
     pw.reset()
 
 
 def _o(order_id, side, at, **over):
     over = {"order_type": "MARKET", "product": "NRML"} | over
-    return _order(order_id, side, 65, at, symbol=SYMBOL, exchange="NFO", **over)
+    return _order(order_id, side, over.pop("qty", 65), at, symbol=SYMBOL, exchange="NFO", **over)
 
 
-def _market(now):
+def _market(now, **quote):
     option = _bars(now - timedelta(minutes=40), 40, 70.0, 76.0, 75.0)
     return FakeMarket(option=option, futures=_futures(now, rising=False),
-                      quotes={SYMBOL: {"bid": 75.0, "ask": 75.1, "ltp": 75.05}, FUT: {"bid": None, "ask": None,
-                                                                                     "ltp": 22534.7}})
+                      quotes={SYMBOL: {"bid": 75.0, "ask": 75.1, "ltp": 75.05} | quote,
+                              FUT: {"bid": None, "ask": None, "ltp": 22534.7}})
+
+
+async def _login(at=D(9, 0)):
+    await _seed(settings.DB_PATH)
+    await zerodha.create_session("reqtok12", at)
+
+
+async def _messages(db):
+    async with aiosqlite.connect(db) as conn:
+        rows = await (await conn.execute(
+            "SELECT message_key, kind, sent, attempts, outcome, event_at, detected_at, sent_at FROM partner_watch_messages "
+            "ORDER BY created_at")).fetchall()
+    return rows
 
 
 @pytest.mark.asyncio
 async def test_a_buy_gets_its_plan_then_no_stop_then_a_lowered_and_a_removed_stop(watch, kite):
     db = settings.DB_PATH
-    await _seed(db)
-    await zerodha.create_session("reqtok12", D(9, 0))
+    await _login()
     market = _market(D(11, 29, 30))
     assert (await pw.watch_tick(D(11, 29, 0), market=market))["sent"] == 0          # the first read seeds
     kite["orders"] = [_o("101", "BUY", D(11, 29, 17), average_price=75.05)]
@@ -274,7 +525,8 @@ async def test_a_buy_gets_its_plan_then_no_stop_then_a_lowered_and_a_removed_sto
     await pw.watch_tick(D(11, 31, 0), market=market)
     assert watch[-1]["kind"] == "watch_plan"                                         # 103 s: not yet
     await pw.watch_tick(D(11, 31, 20), market=market)
-    assert watch[-1]["kind"] == "watch_no_stop" and watch[-1]["text"].startswith("⏰ NIFTY 22300 PE: no stop order yet")
+    assert watch[-1]["kind"] == "watch_no_stop"
+    assert watch[-1]["text"].startswith("⏰ NIFTY 22300 PE (65): no stop order yet (bought 11:29). Plan stop ₹")
     # A stop placed, then lowered: told at once with the result if it is hit.
     kite["orders"].append(_o("201", "SELL", D(11, 32), order_type="SL", status="TRIGGER PENDING", trigger_price=68.0))
     await pw.watch_tick(D(11, 32, 5), market=market)
@@ -298,15 +550,17 @@ async def test_a_buy_gets_its_plan_then_no_stop_then_a_lowered_and_a_removed_sto
     await pw.watch_tick(D(15, 20, 0), market=market)
     assert watch[-1]["kind"] == "watch_close" and "20 minutes to the 15:40 close" in watch[-1]["text"]
     async with aiosqlite.connect(db) as conn:
-        looks = (await (await conn.execute("SELECT COUNT(*) FROM partner_watch_looks")).fetchone())[0]
-    assert looks >= 3                                                                # shadow looks recorded
+        looks = await (await conn.execute("SELECT bid, ask, ltp, fut FROM partner_watch_looks")).fetchall()
+    assert len(looks) >= 3 and looks[0] == (75.0, 75.1, 75.05, 22534.7)                # shadow looks recorded
+    # Each message keeps when the broker event happened, when it was seen and when Telegram acknowledged it.
+    plan_row = next(r for r in await _messages(db) if r[1] == "PLAN")
+    assert plan_row[2:5] == (1, 1, "acknowledged") and plan_row[5] == D(11, 29, 17).isoformat()
+    assert plan_row[6] == D(11, 29, 25).isoformat() and plan_row[7] is not None
 
 
 @pytest.mark.asyncio
 async def test_a_cancel_and_lower_replacement_is_one_lowered_message(watch, kite):
-    db = settings.DB_PATH
-    await _seed(db)
-    await zerodha.create_session("reqtok12", D(9, 0))
+    await _login()
     market = _market(D(14, 3))
     kite["orders"] = [_o("101", "BUY", D(14, 2, 36), average_price=112.25),
                       _o("201", "SELL", D(14, 3), order_type="SL", status="TRIGGER PENDING", trigger_price=100.0)]
@@ -321,10 +575,27 @@ async def test_a_cancel_and_lower_replacement_is_one_lowered_message(watch, kite
 
 
 @pytest.mark.asyncio
+async def test_a_higher_stop_that_fires_is_not_a_stop_moved_down(watch, kite):
+    # Two stops on 130: 65 at ₹80 and 65 at ₹70. The ₹80 one fires and sells; the ₹70 one still waits. Nothing
+    # was moved down, so no LOWERED (and the 65 left are covered).
+    await _login()
+    market = _market(D(10, 0), bid=79.0, ltp=79.5, ask=79.6)
+    kite["orders"] = [_o("101", "BUY", D(10, 0), qty=130, average_price=90.0),
+                      _o("201", "SELL", D(10, 1), order_type="SL", status="TRIGGER PENDING", trigger_price=80.0),
+                      _o("202", "SELL", D(10, 1), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0)]
+    await pw.watch_tick(D(10, 2), market=market)
+    count = len(watch)
+    kite["orders"][1] = _o("201", "SELL", D(10, 5), order_type="LIMIT", status="COMPLETE", trigger_price=80.0,
+                           average_price=79.5)
+    for at in (D(10, 5, 5), D(10, 5, 30), D(10, 6)):
+        await pw.watch_tick(at, market=market)
+    assert [m["kind"] for m in watch[count:]] == []
+
+
+@pytest.mark.asyncio
 async def test_a_refusal_is_explained_and_quiet_keeps_only_the_loss_alarms(watch, kite):
     db = settings.DB_PATH
-    await _seed(db)
-    await zerodha.create_session("reqtok12", D(9, 0))
+    await _login()
     market = _market(D(13, 54))
     margin = "Insufficient funds. Margin required: 159586.95. Margin available: 7536.70. Check orderbook for open orders."
     kite["orders"] = [_o("101", "BUY", D(13, 53, 41), average_price=105.8),
@@ -351,24 +622,207 @@ async def test_a_refusal_is_explained_and_quiet_keeps_only_the_loss_alarms(watch
 @pytest.mark.asyncio
 async def test_after_a_restart_old_events_are_not_told_again_and_old_buys_get_no_plan_message(watch, kite):
     db = settings.DB_PATH
-    await _seed(db)
-    await zerodha.create_session("reqtok12", D(9, 0))
+    await _login()
     kite["orders"] = [_o("101", "BUY", D(10, 0), average_price=98.75),
                       _o("201", "SELL", D(10, 1), order_type="SL", status="TRIGGER PENDING", trigger_price=85.0),
                       _o("301", "BUY", D(10, 30), status="REJECTED", status_message="Margin required: 8118.50. "
                          "Margin available: 7536.70.")]
     await pw.watch_tick(D(11, 0), market=_market(D(11, 0)))
     assert watch == []                                     # a 60-minute-old buy and an old refusal: nothing told
-    async with aiosqlite.connect(db) as conn:
-        plans = (await (await conn.execute("SELECT position_key FROM partner_watch_plans")).fetchall())
-    assert plans == [("101",)]                              # the plan is kept for later messages
+    assert [(v["version"], v["reason"]) for v in await pw.plan_versions(db, "101")] == [(1, "BUY")]
+
+
+@pytest.mark.asyncio
+async def test_a_restart_keeps_the_plan_that_was_sent_and_an_add_is_a_new_version(watch, kite):
+    """[O24c] Audit E: after a restart the stored plan stays (a recomputation without market data used to
+    replace an ₹80-ish stop with "no stop"); a new buy order adds version 2 and an ADDED message."""
+    db = settings.DB_PATH
+    await _login()
+    await pw.watch_tick(D(11, 29, 0), market=_market(D(11, 29, 30)))
+    kite["orders"] = [_o("101", "BUY", D(11, 29, 17), average_price=75.05)]
+    await pw.watch_tick(D(11, 29, 25), market=_market(D(11, 29, 30)))
+    [first] = await pw.plan_versions(db, "101")
+    assert first["plan"].stop is not None
+    pw.reset()                                             # the restart: memory gone, the login kept
+    blind = FakeMarket()                                   # and no market data now
+    await pw.watch_tick(D(11, 30, 0), market=blind)
+    assert [v["plan"] for v in await pw.plan_versions(db, "101")] == [first["plan"]]
+    assert ("minute", SYMBOL) not in blind.calls           # nothing recomputed
+    kite["orders"].append(_o("102", "BUY", D(11, 31, 0), average_price=70.0))
+    await pw.watch_tick(D(11, 31, 5), market=_market(D(11, 31, 5), ltp=70.1, bid=70.0, ask=70.2))
+    versions = await pw.plan_versions(db, "101")
+    assert [(v["version"], v["reason"], v["qty"]) for v in versions] == [(1, "BUY", 65), (2, "ADDED", 130)]
+    assert versions[0]["plan"] == first["plan"] and versions[1]["plan"].stop == first["plan"].stop
+    assert watch[-1]["kind"] == "watch_added"
+    assert watch[-1]["text"].startswith(f"➕ You added 65 to NIFTY 22300 PE at ₹70, under your first buy at ₹75.05: now "
+                                        f"130 at {pw._px((75.05 + 70.0) / 2)}. If the plan stop ")
+
+
+@pytest.mark.asyncio
+async def test_a_stop_of_another_product_or_for_part_is_named(watch, kite):
+    """[O24c] Audit B: an MIS stop for 65 on 130 NRML is not protection."""
+    await _login()
+    market = _market(D(10, 0))
+    kite["orders"] = [_o("101", "BUY", D(10, 0), qty=130, average_price=75.05),
+                      _o("201", "SELL", D(10, 0, 30), order_type="SL", status="TRIGGER PENDING", trigger_price=65.0,
+                         product="MIS")]
+    for at in (D(10, 0, 5), D(10, 1, 0), D(10, 2, 5)):
+        await pw.watch_tick(at, market=market)
+    assert watch[-1]["kind"] == "watch_no_stop"
+    assert "Your stop for 65 is MIS and these are NRML: it would not sell them." in watch[-1]["text"]
+    kite["orders"].append(_o("202", "SELL", D(10, 3), order_type="SL", status="TRIGGER PENDING", trigger_price=65.0))
+    for at in (D(10, 3, 5), D(10, 3, 30)):
+        await pw.watch_tick(at, market=market)
+    assert watch[-1]["kind"] == "watch_partial"
+    assert watch[-1]["text"].startswith("⚠️ NIFTY 22300 PE: protection incomplete. A stop covers 65 of your 130; the "
+                                        "other 65 have none.")
+
+
+@pytest.mark.asyncio
+async def test_an_unreadable_gtt_list_claims_nothing_and_is_read_again(watch, kite):
+    """[O24c] Audit B: a failed GTT read used to end the no-stop check for the trade."""
+    await _login()
+    market = _market(D(11, 0))
+    kite["orders"] = [_o("101", "BUY", D(11, 0), average_price=75.05)]
+    kite["gtt_fail"] = True
+    for at in (D(11, 0, 5), D(11, 2, 5), D(11, 2, 30)):
+        await pw.watch_tick(at, market=market)
+    assert [m["kind"] for m in watch] == ["watch_plan"]                 # unknown: nothing said
+    kite["gtt_fail"] = False
+    await pw.watch_tick(D(11, 2, 35), market=market)
+    await pw.watch_tick(D(11, 3, 0), market=market)
+    assert watch[-1]["kind"] == "watch_no_stop"
+
+
+@pytest.mark.asyncio
+async def test_a_gtt_stop_counts_and_a_gtt_that_goes_away_is_told(watch, kite):
+    await _login()
+    market = _market(D(11, 0))
+    kite["orders"] = [_o("101", "BUY", D(11, 0), average_price=75.05)]
+    kite["gtts"] = [{"id": 5, "type": "single", "status": "active", "created_at": _ts(D(11, 0, 30)),
+                     "updated_at": _ts(D(11, 0, 30)),
+                     "condition": {"exchange": "NFO", "tradingsymbol": SYMBOL, "trigger_values": [60.0], "last_price": 75.0},
+                     "orders": [{"transaction_type": "SELL", "quantity": 65, "order_type": "LIMIT", "price": 60.0}]}]
+    await pw.watch_tick(D(11, 0, 10), market=market)
+    await pw.watch_tick(D(11, 3), market=market)
+    assert [m["kind"] for m in watch] == ["watch_plan"]
+    kite["gtts"] = []                                      # deleted at Zerodha
+    for at in (D(11, 4), D(11, 4, 25)):
+        await pw.watch_tick(at, market=market)
+    assert watch[-1]["kind"] == "watch_removed"
+    assert watch[-1]["text"].startswith("⚠️ NIFTY 22300 PE: your GTT at ₹60 is no longer active")
+
+
+@pytest.mark.asyncio
+async def test_a_stop_that_fired_and_did_not_sell_is_an_alarm_even_when_quiet(watch, kite):
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(12, 0), bid=66.0, ltp=66.5, ask=66.6)
+    kite["orders"] = [_o("101", "BUY", D(11, 50), average_price=80.0),
+                      _o("201", "SELL", D(11, 51), order_type="SL", status="TRIGGER PENDING", trigger_price=70.0,
+                         price=69.0)]
+    await pw.watch_tick(D(11, 59, 55), market=market)
+    await pw.handle_button(db, "watch:quiet:20261023", D(11, 59, 56))
+    kite["orders"][1] = _o("201", "SELL", D(12, 0), order_type="LIMIT", status="OPEN", trigger_price=70.0, price=69.0)
+    await pw.watch_tick(D(12, 0, 2), market=market)
+    count = len(watch)
+    await pw.watch_tick(D(12, 0, 7), market=market)
+    assert len(watch) == count                             # 5 s: it may still fill
+    await pw.watch_tick(D(12, 0, 15), market=market)
+    assert watch[-1]["kind"] == "watch_unfilled"
+    assert watch[-1]["text"].startswith("🚨 NIFTY 22300 PE: your stop triggered at ₹70, but its sell order (limit ₹69) "
+                                        "has not filled: 65 of 65 still to sell. The bid is ₹66, under your limit")
+    assert not any(m["kind"] in ("watch_no_stop", "watch_removed") for m in watch)
+
+
+@pytest.mark.asyncio
+async def test_a_send_that_never_left_is_sent_again_and_a_timeout_is_not(watch, kite):
+    """[O24c] Audit C: the message key was claimed before the send, so a confirmed connection failure was never
+    sent again."""
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(11, 0))
+    kite["orders"] = [_o("101", "BUY", D(11, 0), average_price=75.05)]
+    await pw.watch_tick(D(11, 0, 5), market=market)                          # the plan
+    kite["outcomes"].append("unsent_connect")
+    await pw.watch_tick(D(11, 2, 5), market=market)
+    assert watch[-1] == watch[-1] | {"kind": "watch_no_stop", "state": "unsent_connect"}
+    count = len(watch)
+    await pw.watch_tick(D(11, 2, 10), market=market)
+    assert len(watch) == count                                               # 10 s apart at least
+    await pw.watch_tick(D(11, 2, 16), market=market)
+    assert watch[-1] == watch[-1] | {"kind": "watch_no_stop", "state": "acknowledged"}
+    row = next(r for r in await _messages(db) if r[1] == "NO_STOP")
+    assert row[2:5] == (1, 2, "acknowledged")
+    # A refusal whose send timed out may have arrived: it is not sent again.
+    kite["outcomes"].append("ambiguous_timeout")
+    kite["orders"].append(_o("301", "BUY", D(11, 3), status="REJECTED", status_message="Margin required: 8118.50. "
+                             "Margin available: 7536.70."))
+    await pw.watch_tick(D(11, 3, 5), market=market)
+    count = len(watch)
+    for at in (D(11, 3, 20), D(11, 3, 40)):
+        await pw.watch_tick(at, market=market)
+    assert len(watch) == count and watch[-1]["state"] == "ambiguous_timeout"
+    # A refusal that provably did not leave is sent again from the tick.
+    kite["outcomes"].append("unsent_connect")
+    kite["orders"].append(_o("302", "BUY", D(11, 4), status="REJECTED", status_message="Margin required: 8118.50. "
+                             "Margin available: 7536.70."))
+    await pw.watch_tick(D(11, 4, 5), market=market)
+    await pw.watch_tick(D(11, 4, 20), market=market)
+    assert [m["state"] for m in watch if m["kind"] == "watch_refused"][-2:] == ["unsent_connect", "acknowledged"]
+
+
+@pytest.mark.asyncio
+async def test_a_slow_plan_does_not_hold_up_the_tick(watch, kite, monkeypatch):
+    """[O24c] Audit G: the plan's candles ran inside the tick. Now the tick goes on after PLAN_INLINE_SEC, the
+    refusal in the same tick is told at once, and the plan follows."""
+    monkeypatch.setattr(pw, "PLAN_INLINE_SEC", 0.05)
+    await _login()
+    slow = _market(D(11, 0))
+    slow.delay = 1.0
+    await pw.watch_tick(D(11, 0, 0), market=slow)
+    kite["orders"] = [_o("101", "BUY", D(11, 0, 2), average_price=75.05),
+                      _o("301", "BUY", D(11, 0, 3), status="REJECTED", status_message="Margin required: 8118.50. "
+                         "Margin available: 7536.70.")]
+    started = time.monotonic()
+    await pw.watch_tick(D(11, 0, 5), market=slow)
+    assert time.monotonic() - started < 0.8
+    assert [m["kind"] for m in watch] == ["watch_refused"]
+    await pw.settle()
+    assert [m["kind"] for m in watch] == ["watch_refused", "watch_plan"]
+    # A plan that cannot be read in time says only the premium at risk.
+    monkeypatch.setattr(pw, "PLAN_DEADLINE_SEC", 0.05)
+    kite["orders"].append(_o("102", "BUY", D(11, 1), average_price=70.0, tradingsymbol="NIFTY26OCT22400PE"))
+    await pw.watch_tick(D(11, 1, 5), market=slow)
+    await pw.settle()
+    assert watch[-1]["kind"] == "watch_plan" and "At risk: the whole ₹4,550 you paid" in watch[-1]["text"]
+
+
+@pytest.mark.asyncio
+async def test_a_plan_that_failed_is_started_again(watch, kite, monkeypatch):
+    await _login()
+    calls = []
+    real = pw._store_plan
+
+    async def flaky(*args, **kwargs):
+        calls.append(1)
+        if len(calls) == 1:
+            raise aiosqlite.OperationalError("database is locked")
+        return await real(*args, **kwargs)
+
+    monkeypatch.setattr(pw, "_store_plan", flaky)
+    market = _market(D(11, 0))
+    await pw.watch_tick(D(11, 0, 0), market=market)
+    kite["orders"] = [_o("101", "BUY", D(11, 0, 2), average_price=75.05)]
+    await pw.watch_tick(D(11, 0, 5), market=market)
+    assert watch == []                                     # the first plan failed
+    await pw.watch_tick(D(11, 0, 10), market=market)
+    assert [m["kind"] for m in watch] == ["watch_plan"] and len(calls) == 2
 
 
 @pytest.mark.asyncio
 async def test_login_says_the_watch_is_on_and_a_lost_login_asks_to_reconnect(watch, kite):
-    db = settings.DB_PATH
-    await _seed(db)
-    await zerodha.create_session("reqtok12", D(9, 5))
+    await _login(D(9, 5))
     await pw.on_login(D(9, 5))
     assert watch[-1]["kind"] == "watch_watch_on" and watch[-1]["text"].startswith("✅ Trade watch on until 15:40.")
     zerodha.disconnect()                                   # a restart loses the login
@@ -379,10 +833,12 @@ async def test_login_says_the_watch_is_on_and_a_lost_login_asks_to_reconnect(wat
 
 
 @pytest.mark.asyncio
-async def test_the_morning_prompt_goes_once_and_not_when_a_login_is_held(watch, kite):
-    db = settings.DB_PATH
-    await _seed(db)
+async def test_the_morning_prompt_goes_once_and_not_when_a_login_is_held(watch, kite, monkeypatch):
+    await _seed(settings.DB_PATH)
+    monkeypatch.setattr(pw, "RETRY_GAP", timedelta(0))
+    kite["outcomes"].append("unsent_connect")              # the first try never left: tried again
     assert (await pw.watch_prompt(D(9, 0)))["sent"] is True
+    assert [m["state"] for m in watch] == ["unsent_connect", "acknowledged"]
     assert watch[-1]["text"] == pw.PROMPT_TEXT and watch[-1]["keyboard"]["inline_keyboard"][0][0]["text"] == \
         "🔐 Start today's watch"
     assert (await pw.watch_prompt(D(9, 0, 30)))["sent"] is False
@@ -391,28 +847,11 @@ async def test_the_morning_prompt_goes_once_and_not_when_a_login_is_held(watch, 
 
 
 @pytest.mark.asyncio
-async def test_a_gtt_stop_counts_and_no_stop_is_not_claimed(watch, kite):
-    db = settings.DB_PATH
-    await _seed(db)
-    await zerodha.create_session("reqtok12", D(9, 0))
-    market = _market(D(11, 0))
-    kite["orders"] = [_o("101", "BUY", D(11, 0), average_price=75.05)]
-    kite["gtts"] = [{"id": 5, "type": "single", "status": "active", "created_at": _ts(D(11, 0, 30)),
-                     "updated_at": _ts(D(11, 0, 30)),
-                     "condition": {"exchange": "NFO", "tradingsymbol": SYMBOL, "trigger_values": [60.0], "last_price": 75.0},
-                     "orders": [{"transaction_type": "SELL", "quantity": 65, "order_type": "LIMIT", "price": 60.0}]}]
-    await pw.watch_tick(D(11, 0, 10), market=market)
-    await pw.watch_tick(D(11, 3), market=market)
-    assert [m["kind"] for m in watch] == ["watch_plan"]
-
-
-@pytest.mark.asyncio
 async def test_the_review_shows_what_the_assistant_said(watch, kite):
     import partner_coach as pc
     import partner_lessons as lessons
     db = settings.DB_PATH
-    await _seed(db)
-    await zerodha.create_session("reqtok12", D(9, 0))
+    await _login()
     market = _market(D(11, 29, 30))
     kite["orders"] = []
     await pw.watch_tick(D(11, 29, 0), market=market)
@@ -449,12 +888,13 @@ async def test_the_inbox_sends_the_quiet_button_to_the_watch(watch, monkeypatch)
 
 @pytest.mark.asyncio
 async def test_the_plan_warns_only_when_a_buy_is_much_bigger_than_the_partners_usual(watch, kite):
-    """[O24-SZ] No fixed share of cash: earlier days' Zerodha buys set the usual (1.5 x their median share)."""
+    """[O24-SZ] No fixed share of cash: the partner's earlier trades, as the review counts them
+    (partner_coach.size_history), set the usual (1.5 x their median share)."""
     db = settings.DB_PATH
     await _seed(db)
     await zerodha.init_partner_broker_db(db)
     async with aiosqlite.connect(db) as conn:
-        for i, day in enumerate(("2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-22")):
+        for i, day in enumerate(("2026-10-16", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22")):
             await conn.execute(
                 "INSERT INTO partner_trade_reports(dedup_key,source,received_at,trade_at,trade_at_basis,action,"
                 "session_date,tradingsymbol,exchange,lots,lot_size,price,price_basis) "

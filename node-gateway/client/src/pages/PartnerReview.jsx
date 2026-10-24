@@ -5,8 +5,8 @@ import { fetcher } from '../api/client';
 import { formatRs, pnlTone } from '../utils/partnerCoach';
 import {
   LEVEL_STYLE, LEVEL_TEXT, REVIEW_DAYS_URL, buildReviewModel, chartGeometry, dayList, dayNeighbours, dayWords, formatDay,
-  formatPrice, minutesLabel, percent, reviewPdfUrl, reviewUrl, scoreTone, signedPercent, syncNote, syncRefreshMs, trendOf,
-  watchNote,
+  formatPrice, minutesLabel, percent, reviewPdfUrl, reviewUrl, rulesAsOf, scoreTone, signedPercent, syncNote, syncRefreshMs,
+  trendOf, watchNote,
 } from '../utils/partnerReview';
 import PartnerCoach from './PartnerCoach';
 
@@ -233,7 +233,7 @@ function RulesKept({ score, title }) {
   if (!score) return null;
   return (
     <Section title={title} icon={ListChecks}>
-      <p className="text-xs text-gray-400">Each trade is checked against the same rules. This counts how you traded, not whether it made money.</p>
+      <p className="text-xs text-gray-400">Each trade is checked against the same rules. This counts how you traded, not whether it made money.{rulesAsOf(score)}</p>
       <ul className="grid gap-1 sm:grid-cols-2">
         {score.rules.map((rule) => (
           <li key={rule.key} className="rounded border border-gray-800 bg-gray-950 px-2 py-1">

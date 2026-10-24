@@ -1,5 +1,87 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 24 (evening) — O24c The trade watch made trustworthy before it is switched on; a fired backstop recognised; a stable usual size (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 24): the audit agent reviewed O23-O24b ("correctness gaps that should be fixed before enabling the new trade watch unchanged"). Agree or disagree, fix what is right, and enrich.
+- Verdict: A-G were all reproduced on 08a95e3 and are fixed below. The fake-provider reproductions (old code vs new) are in each test's docstring.
+- [x] O24c-HD what is held (`partner_watch.fills_of`, `trips_from_fills`, `holdings_of`).
+  - A partly filled buy with a sale between its fills counted 130 instead of 65: the order's total was stamped at its last update. Now:
+    - each fill comes from GET /trades (read when a fill is new, or while the trade book lags the orders);
+    - trips are per exchange, option and product;
+    - a trip reopened by the same order's later fill is `<id>#2`.
+  - A carried position sold in part before the login counted 0 instead of 65 (the remainder was seeded, then the sale taken off again). Now it starts at the overnight quantity.
+  - Zerodha's positions confirm each count. They are read after a new fill, every 30 s, and every tick while they differ.
+    - A difference older than POSITIONS_LAG (10 s) uses Zerodha's count, and the message says whose count it is (`_count_note`).
+    - With no positions read, the message says the count is from the orders.
+- [x] O24c-CV what protects it (`cover_of`, `gtt_legs`): FULL / PARTIAL / ABSENT / UNKNOWN with the units covered.
+  - What counts:
+    - only stops of the holding's product, for their pending units;
+    - SL orders waiting, a modify or AMO in flight included;
+    - active GTT stop legs, with their product.
+  - A stop of another product is named ("Your stop for 65 is MIS and these are NRML").
+  - A fired stop (OPEN with its trigger, or a triggered GTT's order) is "exiting". After 10 s unsold it gets UNFILLED: trigger, limit, bid, and what selling at the bid gives.
+  - An unreadable GTT list is UNKNOWN: nothing is said and the list is read again. Before, it was marked checked forever.
+  - Messages come from one state machine per holding:
+    - NO_STOP (never covered, 120 s after the newest buy order);
+    - PARTIAL;
+    - REMOVED: covered, then not, for 20 s, with the reason (CANCELLED / SOLD part / GTT gone);
+    - LOWERED on a modify, or on a replacement by a lower stop. A stop that fired is not a replacement.
+- [x] O24c-DL delivery (`_send`, `_retry_pending`, `_send_until_done`).
+  - Telegram's own outcome is stored. A provably unsent message is sent again from the book read then:
+    - which: no connection, the 429 rate limit, or a Telegram 5xx;
+    - when: 10 s apart, at most 4 times, within LIFETIME_SEC by kind.
+  - A timeout after the request left is not repeated. A row left "attempting" by a crash is not repeated.
+  - Per message: `event_at` (broker), `detected_at` (tick), `sent_at` (Telegram ack), `message_id`, `attempts`, `outcome`, `error`.
+- [x] O24c-LV levels checked against the price just read (`level_state`, `plan_stop_line`).
+  - A plan stop at or above the LTP is never offered as a stop to place. The message says the price is already under it, and what selling at the bid gives with charges.
+  - A target already passed is said as passed.
+  - A level not checked says when it was set.
+  - Wording:
+    - futures levels read "NIFTY future 22,601", not "index";
+    - "If it sells there";
+    - "In a fast fall an SL order can trigger and still not fill".
+- [x] O24c-PV immutable plans (`partner_watch_plan_versions`).
+  - Version 1 is never replaced. A restart loads the stored plan instead of recomputing.
+  - A new buy order adds version 2 (ADDED) and an ADDED message: the new size and average, and the loss at the plan stop now and before ("Buying more of a falling option makes the loss at the stop bigger").
+  - More fills (FILLED) or a partial sale (TRIMMED) add silent versions.
+- [x] O24c-TL timing.
+  - The tick reads and sends protection alarms first. Each book read is bounded by READ_TIMEOUT_SEC (4 s).
+  - The plan's candles and quotes run as a task; the tick waits at most PLAN_INLINE_SEC (1.5 s).
+  - A plan slower than PLAN_DEADLINE_SEC (25 s) says only the premium at risk.
+  - A plan task that failed (a database error, say) is started again on the next tick, up to PLAN_TRIES (3).
+  - A tick over TICK_BUDGET_SEC (4 s) is logged.
+  - Quotes keep bid/ask quantities, the exchange's quote and last-trade times, and our receipt time; `partner_watch_looks` stores them.
+- [x] O24-BS (`fno_broker_backstop._sl_shape`): a fired SL listed as LIMIT with its trigger is still the backstop's order. Identity stays strict, and a LIMIT without a trigger still holds.
+- [x] O24-SB the review's usual size (`partner_coach.size_history`, `partner_insights.trade_share`).
+  - The usual starts from the trades in the 45 days before the window, as the review counts them. A day's UNUSUAL_SIZE no longer depends on the window it is read in.
+  - The watch uses the same history.
+  - "Usual size" says "Your usual is your own habit, not a safe size".
+  - The score carries `rules_version` (2026-10-24), and the page and the PDF say "Rules of 24 Oct 2026".
+- Disagreed or deferred, with reasons:
+  - Streaming (Kite websocket order updates and ticks): deferred until the partner's ₹500 plan is active. The engine has no websocket library (a new dependency and an image rebuild), and it cannot be verified before a live session.
+    - The tick is already split, so a stream can wake the same reconciliation; REST stays the source of truth.
+  - Editing an earlier message in place: not for alarms, because Telegram does not notify an edit.
+  - OFF_CARD wording: kept. It is the owner's card rule, and it already says what was missing (no written stop or exit), not that the trade was bad.
+  - Snapshotting each day's review: not done. The rules date shows when a rule change re-scored a day.
+- Files:
+  - `python-engine/`: `partner_watch.py`, `fno_broker_backstop.py`, `partner_coach.py`, `partner_insights.py`, `partner_lessons.py`, `partner_review_pdf.py`;
+  - client: `node-gateway/client/src/utils/partnerReview.js`, `pages/PartnerReview.jsx`;
+  - tests: `test_partner_watch.py`, `test_fno_broker_backstop.py`, `test_partner_insights.py`, `test_partner_review_pdf.py`, `client/tests/partnerReview.test.mjs`.
+- Acceptance:
+  - each audit counterexample (A1, A2, B, C, D, E, F, G) is a test that the old code fails;
+  - the before/after probe on 08a95e3: A1 130 → 65, A2 0 → 65, B "protected" → ABSENT, D "Place the SL order now: trigger ₹90" (price ₹20) → "already under the plan stop", F False → True.
+- Tests: engine full suite 5590 passed, 4 skipped, exit 0 (9 m 31 s, on the final code; an earlier run before the last test: 5589 passed); tests/test_partner_watch.py 45 passed; client unit tests 65 passed; Vite build passed. Before/after probe on 08a95e3 vs the working tree: A1 130 → 65 held, A2 0 → 65, B 'protected' → ABSENT, D 'Place the SL order now: trigger ₹90' (price ₹20) → 'already under the plan stop', F fired backstop False → True. No live broker or Telegram round trip (market closed).
+- Config and migration impact:
+  - no setting or scheduler change;
+  - new table `partner_watch_plan_versions` (O24's `partner_watch_plans` is no longer written; it was never deployed);
+  - columns added in place to `partner_watch_messages` (attempts, outcome, error, event_at, detected_at, last_attempt_at, sent_at, message_id) and `partner_watch_looks` (bid_qty, ask_qty, quote_at, trade_at, received_at).
+- Rollout: with S23-O24b (rebuild the engine, then the gateway). Rollback: revert the commit; the added columns and table are harmless.
+- Remaining:
+  - streaming after the plan is bought;
+  - the first live day's latency and PARTIAL volume, read from `partner_watch_messages`;
+  - a buy added to a position carried in from yesterday gets no plan;
+  - the judgment messages stay shadow until scored.
+
 ## October 24 (afternoon) — O24b Partner size against their own habit; the system on the 15:40 F&O close (done, Dev, commit `3c6523e`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner asks (Oct 24):

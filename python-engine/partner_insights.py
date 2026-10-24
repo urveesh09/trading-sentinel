@@ -54,6 +54,11 @@ trades had a stop moved down). [O24-RF] A refusal reads in plain words
 new short sale (another sell already waiting for the lot, more than held,
 or bought and sold under different products). [O24-MC] The session ends at
 15:40.
+
+[O24-SB 2026-10-24] The usual size starts from the trades before the window
+(``partner_coach.size_history``, each as ``trade_share`` computes it), so a
+day's usual does not depend on which window it is read in. The usual is the
+partner's habit, not a safe size.
 """
 from __future__ import annotations
 
@@ -430,11 +435,25 @@ def usual_size(shares: list) -> Optional[float]:
     return round(median(recent), 4) if len(recent) >= USUAL_SIZE_MIN_TRADES else None
 
 
-def usual_size_flags(items: list) -> None:
+def trade_share(trade: Optional[dict], account: Optional[dict]) -> Optional[float]:
+    """[O24-SB] The money put into a trade as a share of that day's cash, as
+    ``_risk`` puts it in ``insight["size"]`` (pure)."""
+    if not trade or not trade["buys"] or trade.get("first_buy_at") is None or trade.get("avg_entry") is None:
+        return None
+    cash = cash_of(account)
+    lot_size = trade.get("lot_size")
+    bought_qty = trade["bought_lots"] * lot_size if lot_size else trade.get("qty")
+    if not cash or not bought_qty:
+        return None
+    return round(trade["avg_entry"] * bought_qty / cash, 4)
+
+
+def usual_size_flags(items: list, earlier: Optional[list] = None) -> None:
     """[O24-SZ] UNUSUAL_SIZE on each trade with much more in it than the
     partner's usual, judged against the trades before it (all days, in time
-    order). Items carry ``_trade`` and ``insight["size"]``."""
-    shares: list = []
+    order). Items carry ``_trade`` and ``insight["size"]``. [O24-SB]
+    ``earlier``: the shares of the trades before the window, oldest first."""
+    shares: list = list(earlier or [])
     for item in sorted((i for i in items if i.get("_trade") and (i.get("insight") or {}).get("size")),
                        key=lambda i: i["_trade"]["first_buy_at"]):
         size, trade = item["insight"]["size"], item["_trade"]

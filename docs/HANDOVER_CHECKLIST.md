@@ -1,5 +1,25 @@
 # Handover receipt and operator checklist
 
+## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] Audit A-G on 08a95e3 reproduced and fixed.
+  - Each reproduction is a test that the old code fails.
+  - Before/after probe: A1 130 → 65 held, A2 0 → 65, B "protected" → ABSENT, D "place SL at ₹90" (price ₹20) → "already under the plan stop", F fired backstop found.
+- [x] Held: from each fill (GET /trades), per product, a carried position from its overnight quantity, confirmed by Zerodha's positions. A difference uses Zerodha's count, and the message says so.
+- [x] Cover: FULL / PARTIAL / ABSENT / UNKNOWN with units, same product only.
+  - A fired stop that has not sold → UNFILLED after 10 s.
+  - An unreadable GTT list says nothing and is read again.
+- [x] Delivery: a provably unsent message (no connection / 429 / 5xx) is sent again, rebuilt; a timeout is not. Event, detection and Telegram-ack times are stored.
+- [x] Levels: checked against the price just read; a crossed plan stop is never offered as a stop. Futures levels are named as futures.
+- [x] Plans: version 1 immutable; a restart reloads it; a new buy order adds a version and an ADDED message.
+- [x] Timing: book reads ≤ 4 s each; the plan runs beside the tick (≤ 1.5 s wait, 25 s deadline).
+- [x] Backstop: a fired SL listed as LIMIT with its trigger is recognised.
+- [x] Review: the usual size starts from the 45 days before the window; "Rules of 24 Oct 2026" on the page and the PDF.
+- [x] Tests: engine full suite 5590 passed, 4 skipped, exit 0 (9 m 31 s, on the final code; an earlier run before the last test: 5589 passed); tests/test_partner_watch.py 45 passed; client unit tests 65 passed; Vite build passed. Before/after probe on 08a95e3 vs the working tree: A1 130 → 65 held, A2 0 → 65, B 'protected' → ABSENT, D 'Place the SL order now: trigger ₹90' (price ₹20) → 'already under the plan stop', F fired backstop False → True. No live broker or Telegram round trip (market closed).
+- [ ] Deployed: no. Ships with S23-O24b (rebuild the engine, then the gateway).
+  - After deploy, on the first live day, read `partner_watch_messages`: detected_at − event_at, sent_at − detected_at, the outcomes and the PARTIAL count.
+- [ ] Owner: streaming once the partner's ₹500 plan is active (new websocket dependency, image rebuild, live check).
+
 ## October 24 (afternoon) — O24b partner size vs their habit; system on the 15:40 F&O close (commit `3c6523e`, Dev, pushed, not deployed)
 
 - [x] O24-SZ: no fixed tenth of cash anywhere for the partner.

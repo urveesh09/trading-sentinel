@@ -276,6 +276,38 @@ def test_a_trade_much_bigger_than_the_partners_usual_is_flagged_and_sized_to_the
     assert pi.usual_size([0.045] * 5 + [0.135]) == 0.045 and pi.usual_size([0.045] * 4) is None
 
 
+@pytest.mark.asyncio
+async def test_the_usual_size_of_a_day_is_the_same_in_any_window():
+    """[O24-SB] Five 1-lot trades on earlier days set the usual (4.5% of ₹50,000); a 3-lot trade on Oct 23 is
+    much bigger than it whether the review window is one day or eight. Before, a one-day window had no
+    earlier trades and flagged nothing."""
+    db = settings.DB_PATH
+    await _seed(db)
+    await zerodha.init_partner_broker_db(db)
+    fields = {k: OFF[k] for k in ("underlying", "strike", "opt_type", "lot_size", "exchange", "tradingsymbol")}
+    for n, day in enumerate((16, 17, 20, 21, 22, 23)):
+        for action, minute, price in (("BUY", 0, 30.0), ("SELL", 20, 31.0)):
+            at = T(10, minute, day=day)
+            await pfc.insert_report(db, {"dedup_key": f"kite:{n}{action}", "source": "ZERODHA",
+                                         "received_at": T(16, 0, day=day).isoformat(), "trade_at": at.isoformat(),
+                                         "trade_at_basis": "EXCHANGE_FILL", "action": action,
+                                         "session_date": at.date().isoformat(), "lots": 3 if day == 23 else 1,
+                                         "price": price, "price_basis": "BROKER_FILL", **fields})
+        await zerodha.store_account(db, at.date().isoformat(), {"opening_balance": 50000.0, "intraday_payin": 0.0},
+                                    T(16, 0, day=day))
+    assert await pc.size_history(db, "2026-10-23") == [0.045] * 5
+    flagged = []
+    for days in (1, 8):
+        view = await pc.load_partner_coach(db, days=days, now=T(16, 0, day=23))
+        row = next(r for r in view["days"] if r["day"] == "2026-10-23")
+        flagged.append([codes(i) for i in row["off_card"]])
+    assert flagged[0] == flagged[1] and "UNUSUAL_SIZE" in flagged[0][0]
+    # The share is the review's own: the same as the trade's insight.
+    trade = {"buys": [1], "first_buy_at": T(10, 0), "avg_entry": 30.0, "lot_size": 75, "bought_lots": 3, "qty": 225}
+    assert pi.trade_share(trade, {"opening_balance": 50000.0, "intraday_payin": 0.0}) == 0.135
+    assert pi.trade_share(trade, None) is None and pi.trade_share({**trade, "buys": []}, {"opening_balance": 1}) is None
+
+
 def test_a_stop_order_sets_the_risk_and_without_one_the_whole_premium_is_at_risk():
     stop = [{"source_id": "kite:2001", "session_date": DAY, "kind": "SL_ORDER", "exchange": "NFO", "tradingsymbol": SYM,
              "trigger_price": 80.0, "quantity": 150, "status": "TRIGGERED", "placed_at": T(10, 1).isoformat(),
@@ -324,7 +356,7 @@ def test_rules_kept_count_process_not_money_and_the_stop_rule_needs_known_stops(
     assert [(c["key"], c["kept"]) for c in story["checks"]] == [
         ("card", False), ("entry", False), ("exit", True), ("calm", True), ("size", True)]
     means = pl.RULE_MEANINGS     # [O23-PM] each rule says what it means
-    assert review["score"] == {"kept": 4, "of": 6, "pct": 67, "rules": [
+    assert review["score"] == {"kept": 4, "of": 6, "pct": 67, "rules_version": pl.RULES_VERSION, "rules": [
         {"key": "card", "name": "Traded a card", "kept": 0, "of": 1, "means": means["card"]},
         {"key": "entry", "name": "Entered as planned", "kept": 0, "of": 1, "means": means["entry"]},
         {"key": "exit", "name": "Exited by the plan", "kept": 1, "of": 1, "means": means["exit"]},

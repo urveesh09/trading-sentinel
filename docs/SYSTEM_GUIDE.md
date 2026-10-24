@@ -1,5 +1,54 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **What is held (`partner_watch.fills_of`, `trips_from_fills`, `holdings_of`).**
+  - Fills come from GET /trades. It is read when a fill is new, and again while it shows fewer units than the orders' filled quantities. An order's unshown part is one fill at its last update, priced to keep its average.
+  - Round trips are per exchange, option and product. A trip reopened by the same order's later fill is `<id>#2`.
+  - A carried position starts at `overnight_quantity`, at the position's average price.
+  - `Holding.basis` compares the trips with Zerodha's positions (GET /portfolio/positions: after a new fill, every 30 s, each tick while any differ):
+    - CONFIRMED: they agree;
+    - ORDERS: no positions were read, or the trip's last fill is within POSITIONS_LAG (10 s) of the read;
+    - ZERODHA: they differ; the messages then use Zerodha's count and `_count_note` says so.
+- **What protects it (`cover_of`, `gtt_legs`).**
+  - `Cover.state` is FULL / PARTIAL / ABSENT / UNKNOWN, with `covered` and `exiting` units:
+    - waiting SL orders (`WAITING`: TRIGGER PENDING, a modify or AMO in flight) and active GTT stop legs, of the holding's product only, count for their pending units;
+    - other products go in `other_product`;
+    - a fired stop is `fired`: a SELL with its trigger in OPEN, or a triggered GTT's placed order still OPEN.
+  - GTTs are read only when the SL orders leave units uncovered, at most once a tick, and reused for 20 s. Unread GTTs make the state UNKNOWN.
+  - `_guard` keeps one `_Guard` per holding and sends:
+    - NO_STOP: never covered, 120 s after the newest buy order's first fill;
+    - PARTIAL: for 20 s;
+    - REMOVED: covered, then ABSENT for 20 s; `_lost_why` gives CANCELLED / SOLD / GTT_GONE / GONE;
+    - UNFILLED: a fired stop unsold for 10 s; it is never muted;
+    - LOWERED: on a modify (per order, while waiting), or when a stop is withdrawn (`_withdrawn`: cancelled unsold, or a GTT gone) and the highest remaining trigger is lower.
+- **Delivery (`_send`).**
+  - The row is written as "attempting" before the send; Telegram's state, error, ack time and message id after.
+  - `_retryable`: `unsent_connect`, `rate_limited`, or a `telegram_http_5xx`. Those are sent again, 10 s apart, at most 4 times, within `LIFETIME_SEC[kind]`, with the text rebuilt:
+    - level-triggered kinds by the next `_guard`;
+    - one-off kinds (PLAN, ADDED, LOWERED, REFUSED) by `_retry_pending`;
+    - WATCH_ON / PROMPT by `_send_until_done`.
+  - Everything else is final. Quiet mutes PLAN, ADDED, NO_STOP, PARTIAL and CLOSE.
+- **Levels (`level_state`).**
+  - A stop at or above the LTP is CROSSED. PLAN and the stop line then say the price is already under the plan stop, and give the result of selling at the bid; there is no SL instruction.
+  - A target at or under the LTP is "already above the target zone".
+  - Unchecked levels say when they were set.
+  - Futures levels read "<UNDERLYING> future".
+- **Plans (`partner_watch_plan_versions`).**
+  - `_store_plan` never replaces version 1 ("BUY").
+  - `_revise` adds ADDED (a new buy order; a message while fresh), FILLED and TRIMMED versions, with the same levels and the loss for the new size and average (`revised`).
+  - A restart loads the latest version (`_load_meta`).
+- **Timing.**
+  - `_book` bounds each read at 4 s. The tick runs the protection alarms before plans.
+  - `_start_plan` runs `_plan_job` as a task: the tick waits up to `PLAN_INLINE_SEC`; past `PLAN_DEADLINE_SEC` the plan is the premium at risk.
+  - A failed plan task is started again, up to `PLAN_TRIES` (3).
+  - `watch_tick` returns `ms` and logs `partner_watch_tick_slow` over 4 s.
+  - `_top` keeps `bid_qty`, `ask_qty`, `quote_at`, `trade_at` and `received_at`; looks store them.
+- **Backstop (`fno_broker_backstop._sl_shape`).** SL, or LIMIT with a trigger > 0 (a fired SL), in both the tagged and the legacy lookup.
+- **Review (`partner_coach.size_history`, `partner_insights.trade_share`).**
+  - `load_partner_coach` passes the shares of the trades in the 45 days before the window as `earlier_sizes`; `usual_size_flags(..., earlier=...)` starts from them. The watch's `_usual_share` uses the same history.
+  - `score["rules_version"]` is `partner_lessons.RULES_VERSION` (2026-10-24); the page and the PDF print "Rules of 24 Oct 2026".
+
 ## October 24 (afternoon) — O24b partner size against their own habit; the system on the 15:40 F&O close (actual behavior, Dev, commit `3c6523e`)
 
 - **O24-SZ size (`partner_insights.py`, `partner_coach.py`, `partner_lessons.py`, `partner_watch.py`).**

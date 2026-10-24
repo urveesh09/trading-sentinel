@@ -221,6 +221,14 @@ export function watchNote(watch) {
   if (!watch) return '';
   const until = watch.until ? ` until ${watch.until}` : '';
   return watch.quiet
-    ? `Trade watch on${until}, quiet today: you hear only when a stop is moved down or cancelled, or Zerodha refuses an order.`
-    : `Trade watch on${until}: messages on Telegram when a buy has no stop, a stop is moved down or cancelled, Zerodha refuses an order, and before the close. It never places an order.`;
+    ? `Trade watch on${until}, quiet today: you hear only when a stop is moved down, cancelled or does not sell, or Zerodha refuses an order.`
+    : `Trade watch on${until}: messages on Telegram when a buy has no stop or only part of it is covered, a stop is moved down, cancelled or does not sell, Zerodha refuses an order, and before the close. It never places an order.`;
+}
+
+// [O24-SB] " Rules of 24 Oct 2026.": the rules a day was checked with (a review is worked out again each time).
+export function rulesAsOf(score) {
+  const version = String(score?.rules_version || '');
+  if (!DAY.test(version)) return '';
+  const [y, m, d] = version.split('-').map(Number);
+  return ` Rules of ${d} ${MONTHS[m - 1]} ${y}.`;
 }

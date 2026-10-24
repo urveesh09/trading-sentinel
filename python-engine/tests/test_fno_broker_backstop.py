@@ -381,6 +381,43 @@ async def test_our_tag_identifies_the_order_even_when_it_already_executed(fno_db
 
 
 @pytest.mark.asyncio
+async def test_a_fired_backstop_listed_as_limit_is_still_ours(fno_db, _pages):
+    # [O24-BS] Kite lists a triggered SL as LIMIT with its trigger kept. With our tag (or, for a legacy intent,
+    # placed after it with our trigger) it is this backstop, and its fill is read from the order itself.
+    tag = "BSL00000000000000cc"
+    await _intent(fno_db, 17, tag=tag)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = [{**_order("FIRED", tag=tag, at="2026-10-23 11:01:01",
+                                                            status="COMPLETE"), "order_type": "LIMIT"}]
+    executor.kite.order_history.return_value = [{"status": "COMPLETE", "filled_quantity": 75, "average_price": 61.5}]
+    assert await bs.before_exit(fno_db, executor, 17, 75) == {"action": "filled", "fill_price": 61.5,
+                                                              "order_id": "FIRED"}
+    await _intent(fno_db, 18, tag=None)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = [{**_order("LEGACY", at="2026-10-23 11:01:02", status="OPEN"),
+                                                   "order_type": "LIMIT"}]
+    executor.kite.order_history.return_value = [{"status": "CANCELLED", "filled_quantity": 0}]
+    assert await bs.before_exit(fno_db, executor, 18, 75) == {"action": "proceed"}
+    executor.kite.cancel_order.assert_awaited_once_with("LEGACY")
+    assert _pages == []
+
+
+@pytest.mark.asyncio
+async def test_a_limit_order_without_a_trigger_is_not_a_backstop(fno_db, _pages):
+    # A plain LIMIT sale under our tag is not the SL we sent: the exit holds and pages, as before.
+    tag = "BSL00000000000000dd"
+    await _intent(fno_db, 19, tag=tag)
+    executor = _live()
+    executor.kite.orders_snapshot.return_value = [{**_order("PLAIN", tag=tag, at="2026-10-23 11:01:01", trigger=0.0),
+                                                   "order_type": "LIMIT"}]
+    assert await bs.before_exit(fno_db, executor, 19, 75) == {"action": "hold", "reason": "backstop_dispatch_unknown"}
+    executor.kite.cancel_order.assert_not_awaited()
+    assert bs._sl_shape({"order_type": "SL"}) and bs._sl_shape({"order_type": "LIMIT", "trigger_price": 65.0})
+    assert not bs._sl_shape({"order_type": "LIMIT", "trigger_price": "x"}) and not bs._sl_shape({"order_type": "MARKET",
+                                                                                                "trigger_price": 65.0})
+
+
+@pytest.mark.asyncio
 async def test_a_legacy_intent_adopts_only_an_order_placed_after_it(fno_db):
     await _intent(fno_db, 14, tag=None)
     executor = _live()

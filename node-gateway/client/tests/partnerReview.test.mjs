@@ -135,10 +135,18 @@ test('[O24-PW] the page says when the trade watch is on, and what quiet keeps', 
   const { watchNote } = await import('../src/utils/partnerReview.js');
   const on = buildReviewModel({ day: '2026-10-26', today: '2026-10-26', watch: { on: true, until: '15:40', quiet: false } });
   assert.deepEqual(on.watch, { until: '15:40', quiet: false });
-  assert.equal(watchNote(on.watch), 'Trade watch on until 15:40: messages on Telegram when a buy has no stop, a stop is moved down or cancelled, Zerodha refuses an order, and before the close. It never places an order.');
-  assert.equal(watchNote({ until: '15:40', quiet: true }), 'Trade watch on until 15:40, quiet today: you hear only when a stop is moved down or cancelled, or Zerodha refuses an order.');
+  assert.equal(watchNote(on.watch), 'Trade watch on until 15:40: messages on Telegram when a buy has no stop or only part of it is covered, a stop is moved down, cancelled or does not sell, Zerodha refuses an order, and before the close. It never places an order.');
+  assert.equal(watchNote({ until: '15:40', quiet: true }), 'Trade watch on until 15:40, quiet today: you hear only when a stop is moved down, cancelled or does not sell, or Zerodha refuses an order.');
   // Off, or an engine from before O24: nothing is shown.
   assert.equal(buildReviewModel({ watch: { on: false } }).watch, null);
   assert.equal(buildReviewModel({}).watch, null);
   assert.equal(watchNote(null), '');
+});
+
+test('[O24-SB] the rules a day was checked with are named', async () => {
+  const { rulesAsOf } = await import('../src/utils/partnerReview.js');
+  assert.equal(rulesAsOf({ rules_version: '2026-10-24' }), ' Rules of 24 Oct 2026.');
+  assert.equal(rulesAsOf({}), '');
+  assert.equal(rulesAsOf(null), '');
+  assert.equal(rulesAsOf({ rules_version: 'soon' }), '');
 });

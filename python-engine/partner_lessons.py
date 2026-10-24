@@ -80,6 +80,9 @@ _RULE_ORDER = [key for key, _, _ in CHECKS + DAY_CHECKS]
 # [O23-PM] What each rule means, in the partner's words (shown under "Rules
 # kept" on the page and in the PDF). Each line matches the flags that break
 # the rule above and their thresholds in partner_coach / partner_insights.
+# [O24-SB] The day the rules below last changed. A review is worked out again from the stored book each
+# time it opens, so a rule change re-scores earlier days too; the page and the PDF name this date.
+RULES_VERSION = "2026-10-24"
 RULE_MEANINGS = {
     "card": "The trade was on a card the system sent you on Telegram that day: the same option, bought after the "
             "card arrived. A trade on any other option counts as a trade without a card.",
@@ -94,7 +97,7 @@ RULE_MEANINGS = {
     "calm": "No new buy within 30 minutes of closing a losing trade, and no bigger size after a loss.",
     "size": "The money put into the trade was not much more than you usually put in (at most 1.5 times your usual "
             "share of cash, from your last 20 trades; checked once you have 5), and you did not buy more of a "
-            "falling option.",
+            "falling option. Your usual is your own habit, not a safe size.",
     "cards_only": "No more buys in the day than the cards sent plus one (two buys are always within it).",
     "cash": "Zerodha refused none of your buys for lack of money. Checked only when your order book was read.",
 }
@@ -244,7 +247,7 @@ def score(row: dict, traded: list[dict]) -> Optional[dict]:
         rule["of"] += 1
         rule["kept"] += int(check["kept"])
     kept = sum(1 for check in checks if check["kept"])
-    return {"kept": kept, "of": len(checks), "pct": round(100 * kept / len(checks)),
+    return {"kept": kept, "of": len(checks), "pct": round(100 * kept / len(checks)), "rules_version": RULES_VERSION,
             "rules": sorted(rules.values(), key=lambda r: _RULE_ORDER.index(r["key"]))}
 
 

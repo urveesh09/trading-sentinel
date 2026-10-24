@@ -42,6 +42,11 @@ symbol, exchange and quantity, identifies the order. A same-shape order that
 cannot be ruled out (still working, untagged after the intent, or with no
 timestamp) makes the lookup "ambiguous": the exit holds and pages.
 
+[O24-BS 2026-10-24] A fired SL is still this order: Kite lists a triggered SL
+as LIMIT with its trigger kept, so the lookup takes SL or LIMIT-with-trigger
+(``_sl_shape``). Identity (tag, symbol, exchange, quantity, trigger) is as
+strict as before; the fill is still read from the order itself.
+
 Paper books never place one (the executor returns ``paper``). The live leg
 stays behind FNO_DISABLE_LIVE and the go-live bar; this adds no entry path.
 """
@@ -360,11 +365,26 @@ async def _page_once(position_id: int, reason: str, text: str) -> None:
     await _page(text, f"fno_backstop_{reason}")
 
 
+def _sl_shape(order: dict) -> bool:
+    """[O24-BS 2026-10-24] An SL order as Kite lists it: typed SL, or LIMIT with
+    its trigger kept once it fired (Kite turns a triggered SL into a limit
+    order; the Oct 24 audit found a fired backstop read as "ambiguous"). A
+    LIMIT without a trigger is not one."""
+    order_type = order.get("order_type")
+    if order_type == "SL":
+        return True
+    try:
+        trigger = float(order.get("trigger_price") or 0)
+    except (TypeError, ValueError):
+        return False
+    return order_type == "LIMIT" and trigger > 0
+
+
 def _same_order(order: dict, row: dict, *, with_trigger: bool) -> bool:
     """Same symbol, side, type, exchange and quantity (a missing broker field
     never rules an order out); with the intended trigger when asked."""
     if (order.get("tradingsymbol") != row["tradingsymbol"] or order.get("transaction_type") != "SELL"
-            or order.get("order_type") != "SL"):
+            or not _sl_shape(order)):
         return False
     if order.get("exchange") not in (None, row["exchange"]):
         return False
