@@ -822,7 +822,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 71), `_read_cap` (line 75), `_record_management_read` (line 80), `_timed_database_operation` (line 110), `_management_quote` (line 131), `_oldest_quote_age_sec` (line 147), `_settle_exit_receipt` (line 164), `_fno_pool_paper` (line 225), `_fno_pool_live` (line 230), `_load_dr_entry_inputs` (line 241), `_fno_equity` (line 311), `_fno_halted` (line 317), `_fetch_futures_bars` (line 339), `_record_shadow_observation` (line 347), `_schedule_shadow_observation` (line 364), `_manage_open_positions` (line 397), `_try_entry_for_leg` (line 698), `post_admission_entry_reject` (line 996), `_insert_entry_position` (line 1014), `_manage_single_leg_books` (line 1025), `run_fno_tick` (line 1124), `_single_leg_entries` (line 1379), `fast_exit_has_work` (line 1536), `run_fno_fast_exit` (line 1553), `_bar_already_logged` (line 1595), `format_fno_telegram` (line 1617)
+Top-level declarations: `_now_min` (line 71), `_read_cap` (line 75), `_record_management_read` (line 80), `_timed_database_operation` (line 110), `_management_quote` (line 131), `_oldest_quote_age_sec` (line 147), `_settle_exit_receipt` (line 164), `_fno_pool_paper` (line 225), `_fno_pool_live` (line 230), `_load_dr_entry_inputs` (line 241), `_fno_equity` (line 311), `_fno_halted` (line 317), `_fetch_futures_bars` (line 339), `_record_shadow_observation` (line 347), `_schedule_shadow_observation` (line 364), `_manage_open_positions` (line 397), `_try_entry_for_leg` (line 698), `post_admission_entry_reject` (line 996), `_insert_entry_position` (line 1014), `_manage_single_leg_books` (line 1025), `run_fno_tick` (line 1124), `_single_leg_entries` (line 1384), `fast_exit_has_work` (line 1541), `run_fno_fast_exit` (line 1558), `_bar_already_logged` (line 1600), `format_fno_telegram` (line 1622)
 
 Engine dependencies: `affordability`, `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `fno_underlyings`, `kite_client`, `operator_alert`, `performance`
 
@@ -856,7 +856,19 @@ Top-level declarations: `_pnl_points` (line 42), `max_loss` (line 54), `validate
 
 Engine dependencies: `config`, `fno_models`
 
-Related tests: `python-engine/tests/test_fno_risk_switches.py`
+Related tests: `python-engine/tests/test_fno_risk_alert.py`, `python-engine/tests/test_fno_risk_switches.py`
+
+## `python-engine/fno_risk_alert.py`
+
+[O24i 2026-10-24] Tell the owner when the F&O paper book's risk state changes. Messages only. The owner left the drawdown-halt question to this system's judgement (Oct 24). Decision: the halt stays as it is. The 15% drawdown halt is measured on equity against the ₹2.5L allocation since inception, because: - the July-August losses (27 single-leg trades, 6 winners, about -₹26.8k) were made by the same entry signal as today (the NIFTY opening-range signal is unchanged since the Jul 22 RVOL fix; later changes were sizing, exits and a re-entry confirmation after a stop), so re-anchoring the halt would hide a real record and loosen the one hard capital limit; - a recent-peak base is the same numbe
+
+Top-level declarations: `_rupees` (line 43), `risk_text` (line 47), `_init` (line 80), `_last` (line 87), `_save` (line 96), `check_paper` (line 104)
+
+Engine dependencies: `config`, `fno_adaptive_risk`, `fno_shared_risk`, `operator_alert`
+
+Related tests: `python-engine/tests/test_fno_risk_alert.py`
+
+Declared tables: `fno_risk_alert_state`
 
 ## `python-engine/fno_shadow.py`
 

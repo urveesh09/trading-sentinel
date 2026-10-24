@@ -1,5 +1,13 @@
 # Handover receipt and operator checklist
 
+## October 24 (night, 4) — O24i the F&O drawdown halt stays and is no longer silent (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] Decided (the owner delegated it): the 15% drawdown halt stays as it is. Its July – August losses were made by the same entry rule.
+- [x] The owner is told once per change of the paper book's size tier or entry halts (`fno_risk_alert`), with the distance to the 15% line. Today: ₹14,298, about six average stop-outs.
+- [x] The partner stays in English (no change needed).
+- [x] Tests: engine full suite (Dev, Windows, 9 min 32 s): 5,658 passed, 4 skipped, 1 failed — `test_kite_client.py::TestRateLimiter::test_management_priority_is_bounded_and_normal_work_is_fair`, a 10 ms timing test that fails under suite load (`kite_client.py` is untouched; it passed 8 of 8 runs alone, and `test_kite_client` + `test_fno_risk_alert` + `test_fno_orchestrator` together: 66 passed, 1 skipped). `test_fno_risk_alert` 3 passed. Engine only; no client change.
+- [ ] Deployed: no. After deploy, expect one owner message: "F&O paper risk: quarter size (0.25x) … ₹14,298 above the 15% halt line".
+
 ## October 24 (night, 3) — O24h F&O variants scored on real paths; exit slippage; "check before you buy" (commit `b8cf7a8`, Dev, pushed, not deployed)
 
 - [x] The F&O shadow outcome was a target-hit scenario. The variants are now traded through the live book in the replay (`FNO_SIG_*`).

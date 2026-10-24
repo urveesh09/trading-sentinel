@@ -76,8 +76,11 @@ Without the halt the continuation gets the trend winners back, and its own extra
 the rule is the problem, the halt made it worse. The baseline barely changes (the halt did not bind for it here).
 
 The live paper book (Production, read-only, Oct 24): ₹2,26,798, i.e. ₹14,298 above that halt. The halt counts
-every loss since inception (the single-leg book is −₹23,012 over 45 closed trades since July). Two or three
-ordinary losses would stop all F&O paper entries, trend days included. Changing the halt is the owner's decision.
+every loss since inception (the single-leg book is −₹23,012 over 45 closed trades since July). At one lot the Sep – Oct stop-outs
+averaged ₹2,321, so about six of them net of any wins would stop all F&O paper entries, trend days included
+(corrected on Oct 24: an earlier line here said two or three). Decided the same day (O24i, the owner left it
+to the system's judgement): the halt stays as it is, because the July – August losses were made by the same
+entry rule; it is no longer silent (`fno_risk_alert`: the owner is told when the size tier or a halt changes).
 
 ## What it means
 

@@ -1,5 +1,16 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 24 (night, 4) — O24i F&O paper risk messages (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **`fno_risk_alert.check_paper(db_path, now, notify=None)`**, called by `fno_orchestrator.run_fno_tick` right after `_manage_single_leg_books`, unless FNO_DISABLE_PAPER.
+  - It reads `fno_shared_risk.shared_fno_entry_policy` (FNO_PAPER, pool FNO_PAPER_BANKROLL) and `fno_adaptive_risk.risk_stance` over `read_book_closes`.
+  - State: `{"tier": stance.reason, "halts": [halt kinds, most serious first, plus two_strike_day_halt]}`.
+  - Unchanged from `fno_risk_alert_state` → nothing. The first look at a calm book (base, no halt) is saved silently.
+  - Otherwise `risk_text` goes to `operator_alert.notify_operator` (event `fno_paper_risk_state`); the state is saved only when it was accepted.
+  - With the ledger unavailable, nothing is claimed. Any exception is logged as `fno_risk_alert_failed`.
+- **`risk_text`.** It gives the tier (base / 0.5x / 0.25x / proven), the drawdown from the peak, and the halts started and cleared. Then the paper equity and its distance to `FNO_PAPER_BANKROLL × (1 − FNO_MAX_DRAWDOWN_PCT)`; a new drawdown halt adds that the decision is the owner's.
+- The halt itself is unchanged (`fno_shared_risk.entry_halts`, `FNO_MAX_DRAWDOWN_PCT` 0.15).
+
 ## October 24 (night, 3) — O24h F&O entry-signal arms; exit slippage report; "check before you buy" (actual behavior, Dev, commit `b8cf7a8`)
 
 - **`fno_shadow.VARIANTS`** gains `FNO_CONTINUATION` (`FnoShadowVariant.pullback_atr` 0.25, freshness `crossing_or_pullback`).

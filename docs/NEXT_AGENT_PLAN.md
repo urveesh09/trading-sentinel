@@ -1,5 +1,31 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 24 (night, 4) — O24i The F&O drawdown halt stays as it is and is no longer silent; the partner stays in English (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 24):
+  - On the 15% drawdown halt: "this you decide with the vision in mind" (keep it, base it on a recent peak, or reset the paper starting point).
+  - "The partner is in English language only": the partner's messages already are; nothing changes.
+- Decision: **the halt stays as it is**: paper equity against the ₹2.5L allocation since inception, 15%, line ₹2,12,500.
+  - The July – August losses were made by the same entry rule as today: 27 single-leg trades, 6 winners, about −₹26.8k; the defined-risk book −₹7.4k. The NIFTY opening-range signal has been unchanged since the Jul 22 RVOL fix (`fno_engine_mom`; the Oct 4 edit only added SENSEX's volume source). Later changes were sizing, exits and a re-entry confirmation after a stop (Oct 7).
+  - So re-anchoring would hide a real record and loosen the one hard capital limit.
+  - A recent-peak base is the same number today: equity has never been above the allocation.
+  - For real money, a capital floor that a losing strategy cannot reset is the point of having one.
+  - Since Sep 1 the books are positive (single-leg +₹3,764, defined-risk +₹7,238), so the floor is not in the way of a working strategy.
+- Facts (Production, read-only, Oct 24):
+  - equity ₹2,26,798, ₹14,298 above the line;
+  - at one lot the Sep – Oct stop-outs averaged ₹2,321, so about six of them, net of any wins, would reach it.
+  - Correction: O24h's README first said "two or three ordinary losses". Fixed there.
+- [x] O24i-RA the halt is no longer silent (`fno_risk_alert.py`; `fno_orchestrator.run_fno_tick` after the exits are managed, unless FNO_DISABLE_PAPER).
+  - Each F&O tick compares the paper book's risk state with the last one told: the adaptive size tier, and the entry halts (the drawdown halt, the daily, weekly and monthly brakes, the consecutive-loss pause, the two-strike day halt).
+  - On a change, one owner message (`operator_alert.notify_operator`, event `fno_paper_risk_state`), with the equity and its distance to the 15% line. A drawdown halt adds: "Keeping, re-anchoring or ending the halt is your decision."
+  - The state is kept in `fno_risk_alert_state`; a restart does not repeat it; a send that failed is tried again next tick.
+  - The first look at a calm book (normal size, no halt) is only remembered. After deploy the owner gets one message: today the size is quarter (0.25x), equity ₹14,298 above the line.
+  - It never raises into the tick.
+- Files: new `python-engine/fno_risk_alert.py`; `python-engine/fno_orchestrator.py`; tests: new `python-engine/tests/test_fno_risk_alert.py` (3); `docs/research/fno/2026-10-24-entry-arms/README.md` (correction and decision).
+- Tests: engine full suite (Dev, Windows, 9 min 32 s): 5,658 passed, 4 skipped, 1 failed — `test_kite_client.py::TestRateLimiter::test_management_priority_is_bounded_and_normal_work_is_fair`, a 10 ms timing test that fails under suite load (`kite_client.py` is untouched; it passed 8 of 8 runs alone, and `test_kite_client` + `test_fno_risk_alert` + `test_fno_orchestrator` together: 66 passed, 1 skipped). `test_fno_risk_alert` 3 passed. Engine only; no client change.
+- Config and migration impact: no setting change. A new table `fno_risk_alert_state` (created on first use). One owner Telegram message per risk-state change.
+- Rollout: with S23-O24h. Rollback: revert (the halt rules were never changed).
+
 ## October 24 (night, 3) — O24h The F&O shadow variants scored on real paths (the shipped entry stays best; the continuation is not supported); exit slippage measured; "check before you buy" for the partner (done, Dev, commit `b8cf7a8`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): improve the system for more profit and smaller losses, flexible, never fitted to one thing. The owner agreed to four items:

@@ -1191,6 +1191,11 @@ async def run_fno_tick(
         kite, db_path, fut, summary, paper_exec, live_exec, now_ist=now_ist,
         supplied_now_ist=supplied_now_ist, tick_started=tick_started, action_clock=action_clock,
     )
+    # [O24i] The owner hears when the paper book's size tier or entry halts change (the rules are unchanged;
+    # the check never fails the tick).
+    if not settings.FNO_DISABLE_PAPER:
+        import fno_risk_alert
+        await fno_risk_alert.check_paper(db_path, now_ist)
 
     # ---- 1b) defined-risk paper book (Phase 2) -----------------------
     # Rides this same tick: manage any open structure to current mids, then
