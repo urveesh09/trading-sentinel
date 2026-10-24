@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (late) — O24e The watch's last races closed: a message is sent only from the latest read, a plan never without its message, a moved stop for its own units, protection named without a level; sell orders that could sell short (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (late) — O24e The watch's last races closed: a message is sent only from the latest read, a plan never without its message, a moved stop for its own units, protection named without a level; sell orders that could sell short (done, Dev, commit `79629e5`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): the audit agent's third review of the watch (on ad6190e) reproduced four remaining gaps. It also corrected a freshness statement and suggested next enrichments. Fix what is real, enrich where it is worth it, disagree where right.
 - Verdict: all four gaps were real. Each is now a test that fails on ad6190e's `partner_watch.py`. The freshness wording was imprecise and the threshold was not deliberate: both corrected.

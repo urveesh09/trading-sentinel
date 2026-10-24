@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (commit `79629e5`, Dev, pushed, not deployed)
 
 - [x] Third audit of the watch: four gaps, all real, all fixed. Each is a test that fails on ad6190e's watch.
 - [x] A message is sent only if the read it was built from is still the latest after the build and after its row is marked; otherwise it is built again (or dropped).

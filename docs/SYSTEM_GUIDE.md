@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (actual behavior, Dev, commit `79629e5`)
 
 - **Send only from the latest read (`_deliver`).** Each try, up to `BUILD_TRIES` (3):
   - takes `view = _state.view` and builds from it (`_build(…, view)`; builders await `_plan_for` and `_price_now`);
