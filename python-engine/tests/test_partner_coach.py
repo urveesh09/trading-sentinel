@@ -409,6 +409,27 @@ def test_off_card_trades_get_the_stop_check_too():
     assert _codes(item) == ["OFF_CARD", "NO_STOP_ORDER"]
     assert _flags(item)["NO_STOP_ORDER"]["better"] == ("Decide the stop before buying and place the SL order right "
                                                         "after the buy fills.")
+    assert _flags(item)["OFF_CARD"]["why"].startswith(
+        "Without a card the system gave no stop, target or exit time, and no stop order was placed, so nothing "
+        "limited the loss except a decision in the moment.")
+
+
+def test_an_off_card_trade_with_its_own_stop_is_not_said_to_have_none():
+    """[O24d] Audit: a trade without a card can still have had the partner's own stop. The review says what
+    Zerodha shows ("no written stop" was said even with an SL order in place), and keeps the card rule apart
+    from whether that stop was good."""
+    reports = [_zr("BUY", T(13, 5), 100.0, **OFF), _zr("SELL", T(13, 40), 80.0, **OFF)]
+    own = [_stop(90.0, "TRIGGERED", T(13, 6), T(13, 40), symbol=OFF["tradingsymbol"]) | {"exchange": "NFO"}]
+    [item] = _view([], reports, stops=own, stops_known_days=KNOWN)["days"][0]["off_card"]
+    assert _flags(item)["OFF_CARD"]["why"] == (
+        "Without a card the system gave no stop, target or exit time; the plan was your own, with an SL order at ₹90 "
+        "1 min after the buy. The card rule is about which trades to take, not about whether your stop was good.")
+    assert "STOP_PLACED" in [p["code"] for p in item["positives"]]
+    # Stops not known for the day: nothing is claimed either way.
+    [unknown] = _view([], reports, stops=own, stops_known_days=frozenset())["days"][0]["off_card"]
+    assert _flags(unknown)["OFF_CARD"]["why"] == (
+        "Without a card the system gave no stop, target or exit time for this trade; any plan of your own is not on "
+        "record here.")
 
 
 # ---------------------------------------------------------------------------

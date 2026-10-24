@@ -1,5 +1,88 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 24 (night) — O24d The watch's advice stays with the partner's position: what already protects it, what is still held, a fresh price, its own trade (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 24): the audit agent reviewed O24c (7d0cb6f, 2effb5d) and found seven more gaps before the watch is production-ready. Fix those that are real, enrich where it is worth it, disagree where right.
+- Verdict: all seven were real. Each is now a test that fails on 2effb5d's `partner_watch.py` (probe: 12 new tick tests fail there for the audit's reasons; the lifecycle test is a regression guard and fails there only on the new cover line).
+- [x] O24d-SA stop advice that starts from what protects the units (`stop_advice`, `plan_text(cover=)`, `plan_summary`).
+  - Audit 1: a trade fully covered by an SL at ₹95 was told "Place an SL sell now: trigger ₹80".
+  - FULL with a stop at or above the plan stop: "already covers all 65 … no second SL is needed".
+  - FULL with a lower stop: the result at it against the plan stop. With a fresh price, raising it is named.
+  - PARTIAL: an SL for the units left only.
+  - UNKNOWN (GTTs unread): "if you have no stop yet".
+  - ABSENT: "Place an SL sell now" against a fresh price only.
+- [x] O24d-OB the outbox (`partner_watch_messages`: `context`, `episode`, `priority`; `_enqueue_many`, `_drain`, `_deliver`, `_build`, `_BUILDERS`, `View`).
+  - Audit 2: a plan computed beside the tick was sent after the partner had sold. Audit 6: a retry lived only in memory, so a restart lost it.
+  - The tick finds what to say and stores the key and context. The text is built just before sending, from the latest tick's view.
+  - Not true any more (the trade closed, a stop is back, the size changed): `superseded`, not sent.
+  - No fresh view (`VIEW_FRESH` 15 s, and not the read before the current tick's): it waits.
+  - One sender, most urgent first. A provably unsent message is rebuilt and sent again after RETRY_GAP, within LIFETIME_SEC and MAX_ATTEMPTS. This survives `reset()` or a restart.
+  - The sender, the plans and the looks go through `background_tasks.spawn` (T22-BG).
+- [x] O24d-EP one trade, its own warnings (`_episode`, `_Guard` per episode, `guard:<episode>` in `partner_watch_state`).
+  - Audit 3: a removal key was the option plus an in-memory counter, so a later trade in the same option (or a carried position the next day) lost its warning.
+  - Keys name the day and the trade (the opening buy's order id, or the carried position) and the incident:
+    - NO_STOP: the size;
+    - PARTIAL: the size and what covers it, or the stops lost since it was full;
+    - REMOVED: the stops lost.
+  - What covered each trade is kept in `partner_watch_state`. A stop cancelled while the watch was down is REMOVED after the restart. Before, a no-stop warning already sent for the trade hid it.
+- [x] O24d-RC one reconciled count (`_start_plan(holding)`, `_plan_of(size=)`, `_revise`, `_current`, `_held_line`).
+  - Audit 4: Zerodha showed 65 and the orders 130. The plan and its loss used 130.
+  - Plan versions take the quantity and average of what is held (Zerodha's when it differs). `bought`/`sold` stay the orders'.
+  - Every message uses the held count. The PLAN says what was bought apart from what is held: "65 still held: you sold 65 at ₹80, +₹… with charges", or Zerodha's count note.
+- [x] O24d-FR a level is an instruction only against a fresh price (`stale`, `level_state(..., now)` → STALE, `_unchecked`, `exit_fill`, `_sell_now`).
+  - Audit 5: with no quote, or an hour-old exchange quote checked as VALID, the plan still said "Place an SL sell now".
+  - STALE when:
+    - our read is older than QUOTE_FRESH (15 s); or
+    - the exchange's quote time is more than QUOTE_MAX_AGE (60 s) before its receipt.
+  - An unchecked level is "the plan stop ₹X is from HH:MM:SS … check the option is still above ₹X before placing an SL there".
+  - Quotes keep the bids shown (`_top` `bids`). Selling now is priced against their sizes:
+    - "into the bids (₹A down to ₹B)";
+    - or "the bids shown take only N of your Q … or worse".
+- [x] O24d-TB one budget per tick (`_book(path, deadline)`, `MIN_READ_SEC`, `TICK_BUDGET_SEC` 4 s, `DELIVERY_INLINE_SEC`, `_wait_within`, `_flush`).
+  - Audit 7: each read had its own 4 s, and the tick awaited every Telegram send.
+  - Reads and waits share the budget. An optional read with less than 0.5 s left waits for the next tick and keeps the last result: trades, positions, GTTs, cash.
+    - A failed trade-book read keeps the last book (it only grows), so it no longer drops to order-level fills.
+    - Positions older than 2 min confirm nothing.
+    - Cash is tried 3 times while unknown.
+  - Sending and the shadow looks go beside the tick.
+- [x] O24d-AD after an add, how much of the new size a stop covers ("A stop covers 65 of the 130 now held").
+- [x] O24d-OC (`partner_coach._off_card_plan`): an off-card trade with the partner's own SL is no longer said to have "no written stop".
+  - The review says what Zerodha shows: own stop and when, none placed, or not known.
+  - The card rule stays the owner's, kept apart from whether that stop was good.
+- Disagreed or deferred, with reasons:
+  - Streaming: agree it is next, and that reconnects, duplicates and out-of-order updates can be tested offline. Not in this slice:
+    - it needs a new dependency (no websocket client is installed) and an image rebuild;
+    - Kite's websocket comes with the partner's paid plan.
+    - The outbox and view are where a stream plugs in: an order update can wake a tick, and REST stays the truth.
+  - Origin labels (self-directed / tip) cannot be known without asking the partner. The review now states the partner's own plan as Zerodha shows it. Decision-quality scoring is deferred.
+  - Hold / reduce / exit judgement: still shadow until scored on fresh, declared days. Scoring must count winners cut short as well as losses avoided.
+  - "Check before buying" (the owner's O24b list, item 4) waits for the owner's pick.
+  - Critical alarms stay new messages, not edits.
+- Files:
+  - `python-engine/partner_watch.py`, `python-engine/partner_coach.py`;
+  - tests: `python-engine/tests/test_partner_watch.py` (45 → 62), `python-engine/tests/test_partner_coach.py`.
+- Acceptance: each audit point has a test that fails on 2effb5d and passes now:
+  - 1: `test_the_plan_never_asks_for_a_second_sl…`, `test_a_trade_already_protected…`;
+  - 2: `test_a_plan_ready_after_the_trade_closed…`, `…after_a_partial_sale…`;
+  - 3: `test_a_second_trade_in_the_same_option…`, `…carried_over_two_days…`;
+  - 4: `test_zerodhas_count_is_the_plans_count`;
+  - 5: `test_a_level_is_an_instruction_only…`, `test_selling_now_is_priced…`, `test_a_plan_without_a_price…`;
+  - 6: `test_a_message_that_never_left_is_sent_after_a_restart_rebuilt`, `test_a_warning_no_longer_true…`, `test_a_stop_cancelled_while_the_watch_was_down…`;
+  - 7: `test_a_slow_send_does_not_hold_up_the_check` (old: 1.08 s for two sends), `test_the_ticks_reads_share_one_budget`;
+  - lifecycle: `test_one_option_through_a_day_open_trim_add_close_reopen_restart`.
+- Tests: engine full suite 5608 passed, 4 skipped, exit 0 (9 m 35 s, `winvenv/Scripts/python -m pytest -q`); `tests/test_partner_watch.py` 62 passed (45 before); the partner and backstop test files 240 passed; client unit 65 passed (no client change). The 13 new tick tests were run against 2effb5d's watch: 12 fail for the audit's reasons, the lifecycle test only on the new cover line. No live broker or Telegram round trip (Saturday, market closed).
+- Config and migration impact:
+  - no setting or scheduler change;
+  - columns added in place to `partner_watch_messages` (`context`, `episode`, `priority`), plus the index `ix_partner_watch_messages_outbox`;
+  - `partner_watch_state` holds `guard:<episode>` rows;
+  - message keys now carry the day and trade. O24c's keys were never deployed.
+- Rollout: with S23-O24c (rebuild the engine, then the gateway). Rollback: revert the commit; the added columns and rows are harmless.
+- Remaining:
+  - streaming (next slice, once the paid plan is active);
+  - the first live day's `partner_watch_messages`: outcome counts (superseded, expired), detected_at − event_at and sent_at − detected_at;
+  - judgment messages stay shadow until scored;
+  - a buy added to a position carried in from yesterday gets no plan.
+
 ## October 24 (evening) — O24c The trade watch made trustworthy before it is switched on; a fired backstop recognised; a stable usual size (done, Dev, commit `7d0cb6f`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): the audit agent reviewed O23-O24b ("correctness gaps that should be fixed before enabling the new trade watch unchanged"). Agree or disagree, fix what is right, and enrich.

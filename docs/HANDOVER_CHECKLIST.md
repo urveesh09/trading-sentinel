@@ -1,5 +1,28 @@
 # Handover receipt and operator checklist
 
+## October 24 (night) — O24d the watch's advice stays with the partner's position (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] Audit of O24c: seven gaps, all real, all fixed. Each is a test that fails on 2effb5d's watch.
+- [x] Stop advice starts from what protects the units:
+  - no second SL when a stop already covers them;
+  - a tighter stop is never widened;
+  - a part covered gets an SL for the rest only.
+- [x] Outbox: each message is built just before it is sent, from the latest book read.
+  - A plan for a trade already closed, or a warning no longer true, is `superseded`, not sent.
+  - A provably unsent message survives a restart and is sent rebuilt.
+- [x] Keys per trade and incident. A later trade in the same option, or a carried position the next day, gets its own warnings.
+  - What covered a trade is remembered across a restart.
+- [x] One reconciled count (Zerodha's when it differs) for every message and plan version. What was bought and sold is said apart.
+- [x] Levels are instructions only against a fresh price (STALE / UNCHECKED: a reference to check). Selling now is priced against the bids' sizes.
+- [x] Tick budget: reads and waits share 4 s; optional reads wait a tick; sending goes beside the tick.
+- [x] Review: an off-card trade with the partner's own SL is not said to have "no written stop".
+- [x] Tests: engine full suite 5608 passed, 4 skipped, exit 0 (9 m 35 s, `winvenv/Scripts/python -m pytest -q`); `tests/test_partner_watch.py` 62 passed (45 before); the partner and backstop test files 240 passed; client unit 65 passed (no client change). The 13 new tick tests were run against 2effb5d's watch: 12 fail for the audit's reasons, the lifecycle test only on the new cover line. No live broker or Telegram round trip (Saturday, market closed).
+- [ ] Deployed: no. Ships with S23-O24c (rebuild the engine, then the gateway).
+  - On the first live day, read `partner_watch_messages`:
+    - the outcomes (acknowledged / superseded / expired / muted);
+    - detected_at − event_at and sent_at − detected_at.
+- [ ] Owner: streaming once the partner's paid plan is active (a new websocket dependency, an image rebuild, a live check). Pick the next partner features (O24b list).
+
 ## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (commit `7d0cb6f`, Dev, pushed, not deployed)
 
 - [x] Audit A-G on 08a95e3 reproduced and fixed.

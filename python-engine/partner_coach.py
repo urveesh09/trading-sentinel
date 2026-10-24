@@ -50,6 +50,9 @@ from them: CHASED_SPIKE, GAVE_BACK_PROFIT, STOP_LOWERED, PRICE_RAISED_TO_FILL,
 UNUSUAL_SIZE ([O24-SZ], was BIG_RISK), HELD_OVERNIGHT and INSUFFICIENT_FUNDS.
 [O24-SB] The usual size starts from the trades in the 45 days before the
 window (``size_history``), so a day reads the same in any window.
+[O24d] A trade without a card says what Zerodha shows of the partner's own
+plan (``_off_card_plan``): their stop and when, none placed, or not known.
+The card rule (OFF_CARD) is kept apart from whether that stop was good.
 
 Honesty rules (paper-fill-honesty): reported prices are the partner's;
 "≈" prices came from a quote at the tap; a plan exit is a 5-minute print,
@@ -832,6 +835,27 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
     return out
 
 
+def _off_card_plan(trade: dict, stops: Optional[list]) -> str:
+    """[O24d] What the order book shows of the partner's own plan for a trade
+    without a card. A trade the system sent no card for can still have had
+    its stop: say what Zerodha shows, not that there was none."""
+    first = trade.get("first_buy_at")
+    if not trade["buys"] or first is None or stops is None:
+        return ("Without a card the system gave no stop, target or exit time for this trade; any plan of your own "
+                "is not on record here.")
+    if not stops:
+        return ("Without a card the system gave no stop, target or exit time, and no stop order was placed, so "
+                "nothing limited the loss except a decision in the moment.")
+    stop = stops[0]
+    kind = "a GTT" if stop["kind"] == "GTT" else "an SL order"
+    after = max((stop["placed_dt"] - first).total_seconds() / 60, 0)
+    when = (f"{after:.0f} min after the buy" if stop.get("placed_exact", True) else
+            f"within {after:.0f} min of the buy")
+    return (f"Without a card the system gave no stop, target or exit time; the plan was your own, with {kind} at "
+            f"{_px(float(stop['trigger_price']))} {when}. The card rule is about which trades to take, not about "
+            f"whether your stop was good.")
+
+
 def analyse_off_card(trade: dict, stops: Optional[list] = None) -> dict:
     actual = trade["pnl"]
     out = {"key": trade["key"], "day": trade["session_date"], "option": trade["option"],
@@ -844,8 +868,7 @@ def analyse_off_card(trade: dict, stops: Optional[list] = None) -> dict:
         what = f"You sold {trade['option']} at {_hhmm(trade['last_sell_at'])}; no card was sent for this option."
     out["flags"].append(_flag(
         "OFF_CARD", what, _gap(actual, 0.0),
-        why="Without a card there is no written stop, target or exit time, so nothing limits the loss except "
-            "a decision in the moment." + _worked(actual),
+        why=_off_card_plan(trade, stops) + _worked(actual),
         better=f"No trade: {_instead(0.0, actual)}." if actual is None or actual <= 0 else
                "If you take one, decide the stop before buying and place it right after.",
         better_pnl=0.0, actual_pnl=actual))

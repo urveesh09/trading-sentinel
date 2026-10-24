@@ -1,5 +1,55 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 24 (night) — O24d the watch's advice stays with the partner's position (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **Outbox (`partner_watch_messages`).** The tick's `_events` collects (key, kind, subject, context, event_at, episode). It builds `View` (rows, trips, holdings, covers) and writes the messages as `queued` (`_enqueue_many`, INSERT OR IGNORE: a key goes in once). Then it starts the sender (`_kick` → `_drain`, one at a time, via `background_tasks.spawn`).
+  - `_drain` takes today's `queued` rows and provably unsent ones with tries left, by `priority` (UNFILLED 0; REMOVED, LOWERED, REFUSED 1; NO_STOP, PARTIAL 2; ADDED, PLAN 3; CLOSE 4; fixed texts 5).
+  - `_deliver` handles each row in this order:
+    - past `LIFETIME_SEC` → `expired`;
+    - quiet → `muted` (not the loss alarms);
+    - otherwise `_build`:
+      - from `_state.view` only when it is today's, within `VIEW_FRESH` (15 s), and from the latest tick (`tick_at`), else WAIT;
+      - the builder returns None when the message is no longer true → `superseded`.
+  - The send records Telegram's state. `unsent_connect`, `rate_limited` or `telegram_http_5xx` are tried again `RETRY_GAP` later, up to `MAX_ATTEMPTS`; anything else is final; a row left `attempting` is never repeated.
+  - A tick that reads no book (outside the session, no login, a failed read) calls `_flush`, so fixed texts still go; messages about a trade wait for a read.
+  - WATCH_ON, PROMPT and RECONNECT go through `_say` (the outbox, waiting up to `DELIVERY_INLINE_SEC`).
+- **Builders (`_BUILDERS`).**
+  - PLAN: the trade still held (else superseded), its plan for the held count (`_current`), its cover and a fresh quote.
+  - ADDED: the trade still held.
+  - NO_STOP / PARTIAL / REMOVED: the trade still held, the cover still ABSENT / PARTIAL (UNKNOWN waits), NO_STOP / PARTIAL for the same size.
+  - UNFILLED: the fired order still OPEN and unsold.
+  - LOWERED: a stop still waiting at the new trigger.
+  - REFUSED: the order from the view; "still open" from the held count then.
+  - CLOSE: the trade still held.
+- **Episodes.** `_episode(day, holding)` = `<day>:<trip key>` (`<day>:zerodha:<holding key>` without a trip). `_Guard` is per episode. `covered_once`, `full_once`, `stops`, `full_ids` and `lowered_told` are saved as `guard:<episode>` in `partner_watch_state` and loaded by `_guard_for`. Keys:
+  - `nostop:<ep>:<held>`;
+  - `partial:<ep>:<held>:<protected | lost:<ids>>`;
+  - `removed:<ep>:<lost ids>`;
+  - `unfilled:<order>`, `lowered:<order>:<new>`, `refused:<order>`;
+  - `plan:<ep>`, `added:<ep>:<order>`, `close:<ep>`.
+  - `_replaced_lower` runs only on a tick after the first of a login (seen happening).
+- **Stop advice (`stop_advice`).**
+  - It uses the plan stop's `level_state(..., now)`; CROSSED adds nothing (the stop line says it).
+  - FULL:
+    - stops ≥ the plan stop: "already covers all N … no second SL is needed";
+    - lower: the result at the stops (`_result_at_stops`) against the plan stop, and "Raising its trigger to ₹X" with a fresh price.
+  - PARTIAL: "For the other N:" an SL.
+  - UNKNOWN: "Your GTTs could not be read. If you have no stop yet:".
+  - ABSENT: "Place an SL sell now" (VALID only).
+  - STALE / UNCHECKED give `_unchecked`: the plan stop with its time, and "check the option is still above ₹X before placing an SL there".
+- **Freshness (`stale`).** STALE when `looked_at` is older than `QUOTE_FRESH` (15 s), or `quote_at` is more than `QUOTE_MAX_AGE` (60 s) before `received_at`. `plan_stop_line` says "the last price update was HH:MM:SS".
+- **Exit price (`exit_fill`, `_sell_now`).** `_top` keeps `bids` ([price, qty], best first). Selling the whole holding walks them: the best bid; else "into the bids (A down to B)"; else "the bids shown take only N of your Q … or worse" (the rest priced at the lowest bid shown). Without sizes it is the bid as before.
+- **One count.**
+  - `_start_plan(…, holding)` sizes version 1 from the reconciled holding (`_plan_of(size=)`). `_revise` stores the holding's quantity and average; `bought` / `sold` are the orders'.
+  - PLAN's header is the buy (the context's `bought`, `bought_px`). `_held_line` adds "N still held: you sold … with charges", "N held now, with your later buys", or Zerodha's count note.
+  - `added_text(cover=)` adds how much of the new size a stop covers.
+- **Budget.**
+  - `watch_tick` sets `deadline = start + TICK_BUDGET_SEC` (4 s). `_book(path, deadline)` raises `budget` with less than `MIN_READ_SEC` (0.5 s) left.
+  - `_refresh_book` keeps the last trade book and the last positions on a failed or budget-skipped read. Positions older than `POSITIONS_MAX_AGE` (2 min) are dropped.
+  - `_seed_cash` runs after the book, up to `CASH_TRIES`.
+  - `_wait_within` bounds the waits for plans (`PLAN_INLINE_SEC`), the sender (`DELIVERY_INLINE_SEC`) and the looks (spawned).
+- **Review (`partner_coach._off_card_plan`).** OFF_CARD's why says what Zerodha shows: the partner's own SL or GTT and when ("The card rule is about which trades to take, not about whether your stop was good"), no stop order placed, or stops not known.
+
 ## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (actual behavior, Dev, commit `7d0cb6f`)
 
 - **What is held (`partner_watch.fills_of`, `trips_from_fills`, `holdings_of`).**
