@@ -50,7 +50,7 @@ async def test_records_whole_session_for_both_indices(books):
     assert result["recorded"]["SENSEX"] == {"tradingsymbol": "SENSEX26OCTFUT", "5minute": 75, "minute": 375}
     assert {(t, i) for t, _, _, i in kite.calls} == {(111, "5minute"), (111, "minute"),
                                                      (222, "5minute"), (222, "minute")}
-    assert all(frm == "2026-10-05 09:15:00" and to == "2026-10-05 15:30:00" for _, frm, to, _ in kite.calls)
+    assert all(frm == "2026-10-05 09:15:00" and to == "2026-10-05 15:40:00" for _, frm, to, _ in kite.calls)
 
 
 @pytest.mark.asyncio

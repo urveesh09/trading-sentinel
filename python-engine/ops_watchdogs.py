@@ -265,7 +265,7 @@ async def _kite_endpoint_probe_tick():
     """3-min market-hours cron: probe the configured Kite endpoint."""
     now_ist = datetime.now(IST)
     nm = now_ist.hour * 60 + now_ist.minute
-    if not (9 * 60 + 15 <= nm <= 15 * 60 + 30):
+    if not (9 * 60 + 15 <= nm <= 15 * 60 + 40):     # [O24-MC 2026-10-24] the session runs to the 15:40 derivatives close
         return
     if not await is_trading_day(now_ist.date(), settings.DB_PATH):
         return

@@ -27,6 +27,7 @@ import structlog
 import options_math
 from config import settings
 from fno_instruments import FnoInstruments
+from market_calendar import DERIVATIVES_CLOSE_TIME
 from fno_models import Contract, ContractQuote, OptionType
 
 logger = structlog.get_logger()
@@ -36,8 +37,10 @@ IST = pytz.timezone("Asia/Kolkata")
 # points at weekly tenors; not worth a live feed.
 RISK_FREE_RATE = 0.065
 
-# NSE options settle to the 15:30 close on expiry day.
-EXPIRY_CUTOFF_HOUR, EXPIRY_CUTOFF_MIN = 15, 30
+# NSE options settle to the close on expiry day. [O24-MC 2026-10-24] The derivatives
+# close moved to 15:40 (market_calendar.DERIVATIVES_CLOSE_TIME; the research
+# archive's last futures trades are 15:39:5x from Oct 6).
+EXPIRY_CUTOFF_HOUR, EXPIRY_CUTOFF_MIN = DERIVATIVES_CLOSE_TIME.hour, DERIVATIVES_CLOSE_TIME.minute
 
 
 def years_to_expiry(expiry: date, now_ist: datetime) -> float:

@@ -83,7 +83,7 @@ async def init_ops_metrics_db(db_path: str) -> None:
 # -------------------------------------------------------------------
 
 def _gap_overlaps_market(end_ist: datetime, gap_seconds: float) -> bool:
-    """Did the interval [end - gap, end] touch a weekday 09:15-15:30 IST
+    """Did the interval [end - gap, end] touch a weekday 09:15-15:40 IST
     session? Weekday-only (no holiday lookup: this runs every minute and
     must stay DB-free; a frozen scheduler on a holiday is still worth
     seeing in the report -- it would stay frozen into the next session)."""
@@ -92,7 +92,7 @@ def _gap_overlaps_market(end_ist: datetime, gap_seconds: float) -> bool:
     while day <= end_ist.date():
         if day.weekday() < 5:
             open_dt = datetime.combine(day, dtime(9, 15), tzinfo=end_ist.tzinfo)
-            close_dt = datetime.combine(day, dtime(15, 30), tzinfo=end_ist.tzinfo)
+            close_dt = datetime.combine(day, dtime(15, 40), tzinfo=end_ist.tzinfo)   # [O24-MC 2026-10-24] the session runs to the 15:40 derivatives close
             if start_ist <= close_dt and end_ist >= open_dt:
                 return True
         day += timedelta(days=1)

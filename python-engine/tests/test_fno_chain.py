@@ -53,8 +53,8 @@ def _snapshot(strikes=(24800.0, 24900.0, 25000.0, 25100.0, 25200.0)) -> ChainSna
 
 def test_years_to_expiry_positive_before_cutoff():
     T = years_to_expiry(EXPIRY, NOW)
-    # 4 days + 5.5 hours, as a fraction of a year
-    assert T == pytest.approx((4 * 24 + 5.5) * 3600 / (365 * 24 * 3600), rel=1e-6)
+    # 4 days + 5 h 40 min to the 15:40 close [O24-MC], as a fraction of a year
+    assert T == pytest.approx((4 * 24 + 5 + 40 / 60) * 3600 / (365 * 24 * 3600), rel=1e-6)
 
 
 def test_years_to_expiry_zero_after_cutoff():

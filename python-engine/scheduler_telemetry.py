@@ -88,11 +88,11 @@ def _session_date(value: datetime) -> str:
 # [S3 R4 2026-10-02] Durable elapsed distributions.  Fixed upper bounds in
 # seconds; the last bucket is open-ended.  Counts survive raw-tail eviction.
 ELAPSED_BUCKETS = (0.1, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 45.0, 60.0, 90.0, 120.0, 180.0, 300.0)
-_MARKET_OPEN_MIN, _MARKET_CLOSE_MIN = 9 * 60 + 15, 15 * 60 + 30
+_MARKET_OPEN_MIN, _MARKET_CLOSE_MIN = 9 * 60 + 15, 15 * 60 + 40   # [O24-MC 2026-10-24] the session runs to the 15:40 derivatives close
 
 
 def _market_segment(value: datetime) -> str:
-    """NSE continuous-session hours (IST, weekdays) versus everything else."""
+    """Trading-session hours (IST, weekdays, to the 15:40 F&O close) versus everything else."""
     local = value.astimezone(IST)
     minute = local.hour * 60 + local.minute
     if local.weekday() < 5 and _MARKET_OPEN_MIN <= minute < _MARKET_CLOSE_MIN:

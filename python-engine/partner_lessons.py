@@ -34,7 +34,8 @@ pattern the numbers show, and the one rule to focus on tomorrow.
 [O23-PH] The partner can open an earlier day: ``day_review(view, day,
 today)`` then says "that day" where it would say "today". [O23-PM] Each rule
 under "rules kept" carries a plain ``means`` line (RULE_MEANINGS).
-partner_review_pdf.py prints one day's review as a PDF.
+partner_review_pdf.py prints one day's review as a PDF. [O24-SZ] The size
+rule is "Usual size": the partner's own habit, not a fixed tenth of the cash.
 
 Pure functions over the coach view; nothing here places orders or changes
 a card. Wording rules: numbers come from the coach; a rule-break that made
@@ -53,7 +54,7 @@ from partner_coach import REENTRY_WINDOW_MIN, _amt, _dt, _rs
 # order follows the damage they do to a manual option buyer: revenge and
 # size first, then entries that break the card, then stop discipline.
 LESSON_PRIORITY = (
-    "QUICK_REENTRY_AFTER_LOSS", "SIZE_UP_AFTER_LOSS", "BIG_RISK", "ENTRY_ABOVE_LIMIT", "CHASED_SPIKE",
+    "QUICK_REENTRY_AFTER_LOSS", "SIZE_UP_AFTER_LOSS", "UNUSUAL_SIZE", "ENTRY_ABOVE_LIMIT", "CHASED_SPIKE",
     "HELD_PAST_STOP", "STOP_CANCELLED", "STOP_LOWERED", "NO_STOP_ORDER", "AVERAGED_DOWN", "OFF_CARD",
     "GAVE_BACK_PROFIT", "OVERTRADING", "INSUFFICIENT_FUNDS", "PRICE_RAISED_TO_FILL", "LATE_ENTRY",
     "AFTER_CARD_CLOSED", "ENTRY_UNDER_STOP", "HELD_OVERNIGHT", "STOP_WIDER_THAN_CARD", "GAVE_BACK_AFTER_TARGET",
@@ -69,7 +70,7 @@ CHECKS = (
     ("exit", "Exited by the plan", ("HELD_PAST_STOP", "EARLY_EXIT", "GAVE_BACK_AFTER_TARGET", "GAVE_BACK_PROFIT",
                                     "HELD_PAST_SQUARE_OFF", "HELD_OVERNIGHT")),
     ("calm", "Calm after a loss", ("QUICK_REENTRY_AFTER_LOSS", "SIZE_UP_AFTER_LOSS")),
-    ("size", "Size within the account", ("AVERAGED_DOWN", "BIG_RISK")),
+    ("size", "Usual size", ("AVERAGED_DOWN", "UNUSUAL_SIZE")),
 )
 DAY_CHECKS = (
     ("cards_only", "Traded only the cards", ("OVERTRADING",)),
@@ -91,8 +92,9 @@ RULE_MEANINGS = {
     "exit": "Sold as the plan said: when the stop was hit, not long before the card's exit, soon after a target "
             "message, by the exit-by time and before the close; and a trade up 20% did not end as a loss.",
     "calm": "No new buy within 30 minutes of closing a losing trade, and no bigger size after a loss.",
-    "size": "What the trade could lose stayed under a tenth of your cash (to your stop, or the whole premium with "
-            "no stop), and you did not buy more of a falling option.",
+    "size": "The money put into the trade was not much more than you usually put in (at most 1.5 times your usual "
+            "share of cash, from your last 20 trades; checked once you have 5), and you did not buy more of a "
+            "falling option.",
     "cards_only": "No more buys in the day than the cards sent plus one (two buys are always within it).",
     "cash": "Zerodha refused none of your buys for lack of money. Checked only when your order book was read.",
 }

@@ -1,5 +1,21 @@
 # Handover receipt and operator checklist
 
+## October 24 (afternoon) — O24b partner size vs their habit; system on the 15:40 F&O close (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] O24-SZ: no fixed tenth of cash anywhere for the partner.
+  - UNUSUAL_SIZE flags more than 1.5 times their usual share; the usual is the median of the last 20 trades, once there are 5.
+  - The rule is "Usual size".
+  - The watch warns only on a much-bigger-than-usual buy.
+- [x] O24-MC2: the F&O session facts are at 15:40:
+  - time to expiry, the hedge gamma hours, futures candles (job at 15:45), the analytics gate, the expiry-book capital close;
+  - the ops, health and telemetry windows.
+  - Cash stays at 15:30, and strategy times are unchanged.
+- [x] Tests: engine full suite 5560 passed, 4 skipped, 1 failed (winvenv, Python 3.11.9, 9 min 23 s): the failure was tests/test_oct21_audit_fixes.py's weekday session length, which is now 09:15-15:40 (23,100 s); that test was updated and passes, together with tests/test_partner_insights.py (53 passed). After the run only those two test expectations changed, not code. The modules moved to 15:40 have their tests passing: 346 in the targeted run, then 43 after the updates. The watch 20, insights 34 and PDF 13 tests pass. The Oct 23 review rebuilt on a copy of Production's partner tables gives Usual size 12/12 and score 43/72. The route golden changes only research_future_candles (15:40 -> 15:45)
+- [ ] Deployed: no. Ships with O24 (rebuild the engine).
+  - After deploy: Oct 23's review shows "Usual size 12/12".
+  - `research_future_candles` runs at 15:45.
+- [ ] Owner: decide whether any strategy time should move with the close (FNO hard flat 15:10, entries end 14:45, the expiry book's BL late 15:30).
+
 ## October 24 — O24 partner: stops as Zerodha shows them, 15:40 close, plain refusals, trade watch (commit `53280d9`, Dev, pushed, not deployed)
 
 - [x] O24-SR the review reads every stop:

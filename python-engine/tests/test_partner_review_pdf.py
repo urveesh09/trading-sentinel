@@ -37,7 +37,8 @@ def test_every_rule_says_what_it_means():
     assert pc.STOP_CHECK_MIN_HOLD_MIN == 5 and "under 5 minutes" in pl.RULE_MEANINGS["stop"]
     assert pc.OVERTRADE_MIN_BUYS == 3 and "two buys are always within it" in pl.RULE_MEANINGS["cards_only"]
     import partner_insights as pi
-    assert pi.RISK_OF_CASH_PCT == 0.10 and "a tenth of your cash" in pl.RULE_MEANINGS["size"]
+    assert (pi.USUAL_SIZE_MULT, pi.USUAL_SIZE_LOOKBACK, pi.USUAL_SIZE_MIN_TRADES) == (1.5, 20, 5)
+    assert all(part in pl.RULE_MEANINGS["size"] for part in ("1.5 times", "last 20 trades", "once you have 5"))
     assert pi.PROTECT_GAIN_PCT == pi.SPIKE_RUN_PCT == 0.20
     assert "20%" in pl.RULE_MEANINGS["exit"] and "20% jump" in pl.RULE_MEANINGS["entry"]
 
@@ -62,12 +63,14 @@ def test_an_earlier_day_reads_that_day_and_today_reads_as_before():
 
 
 def test_the_analysis_of_an_earlier_session_says_that_day():
-    reports = [off("BUY", T(10, 0), 30.0, lots=3), off("SELL", T(10, 30), 20.0, lots=3)]
+    earlier = [r for i in range(5) for r in (off("BUY", T(9, 20 + 5 * i), 30.0), off("SELL", T(9, 22 + 5 * i), 31.0))]
+    reports = earlier + [off("BUY", T(10, 0), 30.0, lots=3), off("SELL", T(10, 30), 20.0, lots=3)]
     context = ctx(None, accounts=_cash(45000.0, 5000.0))
     for now, word in ((T(16, 0), "today"), (LATER, "that day")):
         view = _view([], reports, now=now, context=context)
-        assert flag(off_item(view), "BIG_RISK")["reason"].endswith(f"cash in your account {word}.")
-        story = pl.day_review(view, DAY, today=now.date().isoformat())["trades"][0]
+        big = view["days"][0]["off_card"][-1]
+        assert f"14% of your cash {word}. You usually put about 4% into one trade." in flag(big, "UNUSUAL_SIZE")["reason"]
+        story = pl.day_review(view, DAY, today=now.date().isoformat())["trades"][-1]
         assert f"At risk: ₹6,750 in premium paid, 14% of your cash {word}." in story["option_lines"]
     expiring = [off("BUY", T(14, 0), 100.0, expiry=DAY)]
     known = frozenset({DAY})

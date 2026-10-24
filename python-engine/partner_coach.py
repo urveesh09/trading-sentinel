@@ -47,7 +47,7 @@ order history; otherwise the review says it was "in place by" that time.
 owner's 1-minute candles), what the partner's Zerodha book shows (order
 changes, rejections, positions, the day's cash) and the lessons that follow
 from them: CHASED_SPIKE, GAVE_BACK_PROFIT, STOP_LOWERED, PRICE_RAISED_TO_FILL,
-BIG_RISK, HELD_OVERNIGHT and INSUFFICIENT_FUNDS.
+UNUSUAL_SIZE ([O24-SZ], was BIG_RISK), HELD_OVERNIGHT and INSUFFICIENT_FUNDS.
 
 Honesty rules (paper-fill-honesty): reported prices are the partner's;
 "≈" prices came from a quote at the tap; a plan exit is a 5-minute print,
@@ -124,7 +124,7 @@ ADVICE = {
     "GAVE_BACK_PROFIT": "Once a trade is up 20%, move the SL order to your buy price.",
     "STOP_LOWERED": "Never cancel or lower a stop once it is placed. Move it only up, to lock in profit.",
     "PRICE_RAISED_TO_FILL": "Set the buy price once. If it does not fill, let the trade go.",
-    "BIG_RISK": "Keep what one trade can lose (to its stop) under a tenth of the cash in your account.",
+    "UNUSUAL_SIZE": "Keep to the size you usually trade; a much bigger trade is a much bigger loss when it goes wrong.",
     "HELD_OVERNIGHT": "Be out of every intraday option buy before the close.",
     "INSUFFICIENT_FUNDS": "Decide the lots before the trade, from the cash you have; never try the whole balance.",
     "ENTRY_UNDER_STOP": "If the option is already at or under the card's SL, the card is over; do not buy it.",
@@ -149,7 +149,7 @@ TITLES = {
     "GAVE_BACK_PROFIT": "A winning trade turned into a loss",
     "STOP_LOWERED": "Moved the stop down",
     "PRICE_RAISED_TO_FILL": "Raised the buy price to get filled",
-    "BIG_RISK": "Too much of the account on one trade",
+    "UNUSUAL_SIZE": "Much bigger than your usual size",
     "HELD_OVERNIGHT": "Held an option past the close",
     "INSUFFICIENT_FUNDS": "Order refused: not enough money",
     "ENTRY_UNDER_STOP": "Bought under the card's SL",
@@ -996,6 +996,7 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         days[item["day"]].append(item)
     for day_items in days.values():
         _sequence_flags(day_items)
+    insights.usual_size_flags(items + reentries + off_card)
     day_rows = []
     all_days = sorted({c["day"] for c in cards} | {i["day"] for i in off_card}, reverse=True)
     for day in all_days:

@@ -302,7 +302,7 @@ def _expiry(conn) -> list[TradeRow]:
         opened = _dt(entry_ts)
         if units <= 0 or opened is None or not lot_size:
             continue
-        closed = IST.localize(datetime.fromisoformat(f"{day}T15:30:00"))
+        closed = IST.localize(datetime.fromisoformat(f"{day}T15:40:00"))    # [O24-MC] F&O closes at 15:40
         spread = width is not None
         unit_cash = (float(max_loss) / units if spread and max_loss else float(entry or 0) * int(lot_size))
         if unit_cash <= 0:

@@ -1516,7 +1516,7 @@ def register_partner_scheduler_jobs(scheduler):
     )
     scheduler.add_job(
         _run_research_future_candles_safe, "cron",
-        day_of_week="mon-fri", hour=15, minute=40,
+        day_of_week="mon-fri", hour=15, minute=45,   # [O24-MC] after the 15:40 close, so the last minute is whole
         id="research_future_candles",
         max_instances=1, coalesce=True, misfire_grace_time=3600,
     )

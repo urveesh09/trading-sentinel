@@ -21,7 +21,7 @@ trading day AND a token issued TODAY is armed. Entry points:
   1. 08:00 cron  -> token fresh? run : send ONE Telegram reminder + defer.
   2. POST /token -> post_login_initialization calls run_pending("post_login"),
      so the moment the operator logs in, whatever is still pending runs.
-  3. Safety tick (every 10 min, 08:00-15:30) -> catches transient task
+  3. Safety tick (every 10 min, 08:00-15:40) -> catches transient task
      failures after a successful login (e.g. screener.in corp fetch blip).
 
 Each task records success PER IST DAY in /data/daily_bootstrap_state.json
@@ -337,7 +337,7 @@ def login_nudge_text(timing: dict | None, pending: list[str]) -> str:
 
 
 async def bootstrap_safety_tick() -> None:
-    """10-min safety net, 08:00-15:30 IST. No-op when nothing is pending or
+    """10-min safety net, 08:00-15:40 IST. No-op when nothing is pending or
     no fresh token; exists so a transient task failure after a successful
     login (or a login that raced the 08:00 cron) self-heals within 10
     minutes instead of staying broken until tomorrow."""
@@ -345,7 +345,7 @@ async def bootstrap_safety_tick() -> None:
 
     now = datetime.now(IST)
     nm = now.hour * 60 + now.minute
-    if not (8 * 60 <= nm <= 15 * 60 + 30):
+    if not (8 * 60 <= nm <= 15 * 60 + 40):     # [O24-MC 2026-10-24] the session runs to the 15:40 derivatives close
         return
     if not pending_tasks():
         return

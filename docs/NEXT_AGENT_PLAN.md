@@ -1,5 +1,48 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 24 (afternoon) — O24b Partner size against their own habit; the system on the 15:40 F&O close (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner asks (Oct 24):
+  - "The partner does not follow the 10% rule; they use the amount they have in the proportion they like." Do not judge their size by a fixed tenth of their cash.
+  - Move the rest of the system to the 15:40 close as well.
+- [x] O24-SZ size against the partner's own habit.
+  - BIG_RISK (more than a tenth of the day's cash at risk) is replaced by UNUSUAL_SIZE (`partner_insights.usual_size_flags`, called from `partner_coach.analyse`):
+    - the money put into a trade, as a share of the day's cash, is compared with the median share of the partner's last 20 trades;
+    - from the 5th earlier trade on, more than 1.5 times that is flagged;
+    - the better line sizes the trade to the usual lots.
+  - The rule is now "Usual size" (`partner_lessons.CHECKS` and `RULE_MEANINGS`).
+  - The money at risk and its share of cash stay on each trade as facts.
+  - The watch's PLAN drops "more than a tenth". It warns only when the buy is much bigger than the usual (`partner_watch._usual_share`: earlier days' Zerodha buys against that day's cash, then today's trips).
+  - Oct 23, rebuilt: "Usual size" 12/12 (the partner sized consistently; the one 2-lot trade is already "Bigger size after a loss"). Score 43/72.
+- [x] O24-MC2 the system on the 15:40 F&O close. The cash segment still closes at 15:30, so penny, momentum, EDGE and the gateway's stock-signal backlog stay at 15:30. Moved to 15:40:
+  - time to expiry: `fno_chain.EXPIRY_CUTOFF` and `hedge_strategies._EXPIRY_CUTOFF`, from `market_calendar.DERIVATIVES_CLOSE_TIME`;
+  - the hedge gamma alert's hours left;
+  - `research_future_candles`: the candles run to 15:40, and the job moves from 15:40 to 15:45;
+  - the partner analytics (OI) gate to 15:40;
+  - `standard_capital`: expiry-book exits close at 15:40;
+  - the system-activity windows: `lifecycle_receipts`, `ops_metrics`, `ops_watchdogs` (Kite probe), `token_lifecycle`, `daily_bootstrap`, `scheduler_telemetry`, `tools/runtime_audit`.
+  - Unchanged, by design:
+    - strategy times: FNO entries end 14:45, the hard flat and the DR square-off are at 15:10, the partner card management ends 15:15;
+    - the expiry book: A flat 15:13, FINAL_FLAT 15:38 (already set for 15:40), the BL "late" 15:30;
+    - the 15:15 operator-alert window.
+- Files:
+  - `python-engine/`:
+    - partner: `partner_insights.py`, `partner_coach.py`, `partner_lessons.py`, `partner_watch.py`;
+    - close: `fno_chain.py`, `hedge_strategies.py`, `hedge_advisory.py`, `research_future_candles.py`, `partner_orchestrator.py`, `standard_capital.py`, `lifecycle_receipts.py`, `ops_metrics.py`, `ops_watchdogs.py`, `token_lifecycle.py`, `daily_bootstrap.py`, `scheduler_telemetry.py`, `tools/runtime_audit.py`, `scheduler_setup.py`.
+  - Tests: `test_partner_insights.py`, `test_partner_review_pdf.py`, `test_partner_watch.py`, `test_fno_chain.py`, `test_ops_metrics.py`, `test_research_future_candles.py`, and the route goldens.
+- Acceptance:
+  - No partner message or review line names a tenth of the cash. A trade much bigger than the partner's usual is named, with the usual and the size it implies.
+  - Every F&O session boundary reads 15:40; the cash ones read 15:30.
+- Tests: engine full suite 5560 passed, 4 skipped, 1 failed (winvenv, Python 3.11.9, 9 min 23 s): the failure was tests/test_oct21_audit_fixes.py's weekday session length, which is now 09:15-15:40 (23,100 s); that test was updated and passes, together with tests/test_partner_insights.py (53 passed). After the run only those two test expectations changed, not code. The modules moved to 15:40 have their tests passing: 346 in the targeted run, then 43 after the updates. The watch 20, insights 34 and PDF 13 tests pass. The Oct 23 review rebuilt on a copy of Production's partner tables gives Usual size 12/12 and score 43/72. The route golden changes only research_future_candles (15:40 -> 15:45)
+- Config and migration impact:
+  - No setting or schema change.
+  - Scheduler: `research_future_candles` 15:40 → 15:45.
+  - Time to expiry is 10 minutes longer, so IV and greeks move slightly, most near expiry. Replays of days before Oct 6 use the 15:40 cutoff too, a 10-minute difference.
+- Rollout: with O24 (rebuild the engine). Rollback: revert the commit.
+- Remaining:
+  - The owner's call on any strategy times (hard flat, entry ends, the expiry book's BL late).
+  - The partner suggestions offered on Oct 24; see the owner's reply.
+
 ## October 24 — O24 Partner: stops read as Zerodha shows them, the 15:40 close, refusals in plain words, and the trade watch (done, Dev, commit `53280d9`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner asks (Oct 24):

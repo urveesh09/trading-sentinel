@@ -1,5 +1,33 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 24 (afternoon) — O24b partner size against their own habit; the system on the 15:40 F&O close (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **O24-SZ size (`partner_insights.py`, `partner_coach.py`, `partner_lessons.py`, `partner_watch.py`).**
+  - `_risk` keeps the money at risk (to the stop, the card's SL, or the premium) as `insight["risk"]`. It adds `insight["size"]`: the premium paid and its share of the day's cash. Neither is a limit.
+  - `usual_size(shares)` is the median of the last `USUAL_SIZE_LOOKBACK` (20) shares, once there are `USUAL_SIZE_MIN_TRADES` (5).
+  - `usual_size_flags(items)` runs after the sequence flags over every traded item in the loaded window, in time order. A share above `USUAL_SIZE_MULT` (1.5) times the usual gets UNUSUAL_SIZE:
+    - "You usually put about N% into one trade";
+    - the better line is the usual lots, with the result when the trade closed.
+  - The rule "size" is named "Usual size": UNUSUAL_SIZE or AVERAGED_DOWN break it.
+  - BIG_RISK and `RISK_OF_CASH_PCT` are gone.
+  - Watch PLAN:
+    - the loss at the stop is shown as a share of cash, without a threshold;
+    - "⚠️ ₹X in this trade, N% of your cash: much bigger than your usual M%" when the buy is more than 1.5 times the usual. `_usual_share` builds the usual from earlier days' ZERODHA BUY reports against `partner_account_days`, then today's trips.
+- **O24-MC2 the 15:40 close.**
+  - `market_calendar.DERIVATIVES_CLOSE_TIME` (15:40) is the F&O session end; `MARKET_CLOSE_TIME` (15:30) stays the cash end.
+  - At 15:40:
+    - `fno_chain.EXPIRY_CUTOFF` and `hedge_strategies._EXPIRY_CUTOFF` (time to expiry for every option price and greek);
+    - `hedge_advisory`'s gamma-alert hours;
+    - `research_future_candles` (fetch to 15:40, job at 15:45);
+    - `partner_orchestrator.partner_analytics_tick` (gate 09:20–15:40);
+    - `standard_capital._expiry` exits;
+    - the activity and health windows in `lifecycle_receipts`, `ops_metrics`, `ops_watchdogs`, `token_lifecycle`, `daily_bootstrap`, `scheduler_telemetry` and `tools/runtime_audit`.
+  - At 15:30, the cash segment:
+    - the penny and momentum market-hours gates (`main.py`) and `market_calendar.is_market_open`;
+    - `PENNY_DAILY_ATTRIBUTION_TIME`, `penny_lifecycle_replay` and `standard_capital._close_time`;
+    - the gateway's `backlog-reconciliation` stock signals.
+  - Strategy times unchanged: FNO entry end 14:45, hard flat and DR square-off 15:10, the expiry book's A flat 15:13, FINAL_FLAT 15:38, BL late 15:30.
+
 ## October 24 — O24 partner: stops as Zerodha shows them, the 15:40 close, refusals in plain words, the trade watch (actual behavior, Dev, commit `53280d9`)
 
 - **O24-SR stops (`partner_broker_sync.py`).**

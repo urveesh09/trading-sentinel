@@ -14,10 +14,13 @@ import logging
 from typing import Any, Dict, List
 
 from config import settings
+from market_calendar import DERIVATIVES_CLOSE_TIME
 
 logger = logging.getLogger(__name__)
 
 RECORDED_INTERVALS = ("5minute", "minute")
+# [O24-MC 2026-10-24] The session's candles run to the 15:40 derivatives close.
+_CLOSE = DERIVATIVES_CLOSE_TIME.strftime("%H:%M:%S")
 
 
 def recorded_underlyings() -> List[str]:
@@ -44,7 +47,7 @@ async def record_index_future_candles(kite, now_ist: datetime) -> Dict[str, Any]
         for interval in RECORDED_INTERVALS:
             try:
                 frame = await kite.get_intraday_by_token(
-                    future.token, f"{day} 09:15:00", f"{day} 15:30:00", interval)
+                    future.token, f"{day} 09:15:00", f"{day} {_CLOSE}", interval)
                 counts[interval] = 0 if frame is None else len(frame)
             except Exception as exc:  # one failure must not lose the other series
                 logger.error("future_candle_record_failed underlying=%s interval=%s err=%s",

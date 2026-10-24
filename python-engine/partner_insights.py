@@ -20,7 +20,9 @@ why it matters with this trade's numbers, the better action and the rule):
   STOP_LOWERED       an SL order moved down while the trade was open;
   PRICE_RAISED_TO_FILL the buy price raised to get filled (on a card, only
                      past the card's buy-up-to);
-  BIG_RISK           more than a tenth of the day's cash at risk on one trade;
+  UNUSUAL_SIZE       [O24-SZ] much more money in one trade than the partner
+                     usually puts in (replaces O21-PX's BIG_RISK, a fixed
+                     tenth of the cash: the partner sizes as they choose);
   HELD_OVERNIGHT     an off-card option still held at the close;
   INSUFFICIENT_FUNDS (day) Zerodha refused a buy for want of money.
 Positives: CUT_LOSS_SAVED (30 minutes after a losing exit the option was
@@ -58,6 +60,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from statistics import median
 from typing import Optional
 
 from partner_coach import (IST, STOP_SLIPPAGE_PCT, _amt, _day_close, _dt, _flag, _hhmm, _instead, _orders, _pnl,
@@ -73,7 +76,15 @@ CUT_LOSS_SAVED_PCT = 0.15      # 30 minutes after a losing exit the option was t
 PROTECT_GAIN_PCT = 0.20        # GAVE_BACK_PROFIT: the open gain at which the stop goes to the entry
 PRICE_RAISES_MIN = 2           # PRICE_RAISED_TO_FILL: raised this many times ...
 PRICE_RAISE_PCT = 0.05         # ... or by this much in total
-RISK_OF_CASH_PCT = 0.10        # BIG_RISK: money at risk on one trade above this share of the day's cash
+# [O24-SZ 2026-10-24] Size against the partner's own habit, not a fixed share
+# of cash (owner: "they use the amount they have in proportion they like").
+# The share of the day's cash put into a trade (premium paid) is compared with
+# the median share of their last USUAL_SIZE_LOOKBACK trades; from the
+# USUAL_SIZE_MIN_TRADES-th earlier trade on, more than USUAL_SIZE_MULT times
+# that is UNUSUAL_SIZE. Declared, not fitted.
+USUAL_SIZE_MULT = 1.5
+USUAL_SIZE_MIN_TRADES = 5
+USUAL_SIZE_LOOKBACK = 20
 CHART_BEFORE_MIN = 20
 CHART_AFTER_MIN = 30
 STOP_CLOCK_SLACK = timedelta(seconds=60)
@@ -205,8 +216,8 @@ def apply(item: dict, trade: Optional[dict], card: Optional[dict], stops: Option
     events = _order_events(ctx, trade, sl_orders, first, end)
     if events:
         insight["events"] = events
-    _risk(insight, item, trade, card, stops, ctx.accounts.get(day), entry, bought_qty, lot_size, actual, exit_px,
-          closed, when(ctx, day))
+    _risk(insight, trade, card, stops, ctx.accounts.get(day), entry, bought_qty, lot_size, actual, exit_px, closed,
+          when(ctx, day))
     item["insight"] = insight
     off_card = card is None
     if off_card or not card.get("buy_limit"):
@@ -384,7 +395,7 @@ def refusal_plain(order: dict, orders: list) -> Optional[str]:
             f"{held} you held: {short('it')}")
 
 
-def _risk(insight: dict, item: dict, trade: dict, card: Optional[dict], stops: Optional[list],
+def _risk(insight: dict, trade: dict, card: Optional[dict], stops: Optional[list],
           account: Optional[dict], entry: float, bought_qty: Optional[int], lot_size: Optional[int],
           actual: Optional[float], exit_px: Optional[float], closed: bool, on_day: str = "today") -> None:
     """Money at risk: to the partner's own stop; with no stop order, the
@@ -405,31 +416,51 @@ def _risk(insight: dict, item: dict, trade: dict, card: Optional[dict], stops: O
     pct = risk / cash
     insight["risk"] = {"rs": round(risk, 2), "pct_of_cash": round(pct, 4), "basis": basis, "cash": round(cash, 2),
                        "trigger": trigger}
-    if pct <= RISK_OF_CASH_PCT:
-        return
-    lots = trade["bought_lots"]
-    where = {"STOP": f"to your stop at {_px(trigger)}", "CARD_SL": f"to the card's SL at {_px(trigger)}",
-             "NO_STOP": "with no stop order", "PREMIUM": "in premium paid"}[basis]
-    per_lot = risk / lots if lots else 0.0
-    fit = int((RISK_OF_CASH_PCT * cash) // per_lot) if per_lot > 0 else 0
-    better_pnl = None
-    if lot_size and 1 <= fit < lots and closed and exit_px is not None:
-        better_pnl = _pnl(entry, exit_px, fit * lot_size, trade["exchange"], _orders(trade))
-    if better_pnl is not None:
-        better = (f"{_lots(fit)} instead: about {fit * per_lot / cash:.0%} at risk, and "
-                  f"{_instead(better_pnl, actual)}.")
-    elif fit >= 1 and fit < lots:
-        better = f"{_lots(fit)} would have kept the risk under a tenth of your cash."
-    else:
-        better = ("Even 1 lot put more than a tenth of your cash at risk here: skip a trade that big, or use a "
-                  "closer stop.")
-    item["flags"].append(_flag(
-        "BIG_RISK", f"{_lots(lots)} of {item.get('option')} at {_px(entry)}: {_amt(risk)} at risk {where}, "
-                    f"{pct:.0%} of the {_amt(cash)} cash in your account {on_day}.",
-        (round(actual - better_pnl, 2) if better_pnl is not None and actual is not None else None),
-        why="When one trade can lose more than a tenth of the account, a short run of losses takes weeks to win "
-            "back." + _worked(actual),
-        better=better, better_pnl=better_pnl, actual_pnl=actual if better_pnl is not None else None))
+    # [O24-SZ] What went into the trade, for the size against the partner's usual (usual_size_flags).
+    paid = entry * bought_qty
+    insight["size"] = {"rs": round(paid, 2), "pct_of_cash": round(paid / cash, 4), "cash": round(cash, 2),
+                       "lots": trade["bought_lots"], "lot_size": lot_size, "entry": entry,
+                       "exit": exit_px if closed else None, "actual": actual, "on_day": on_day}
+
+
+def usual_size(shares: list) -> Optional[float]:
+    """[O24-SZ] The share of cash the partner usually puts in one trade: the
+    median of the last USUAL_SIZE_LOOKBACK, once there are USUAL_SIZE_MIN_TRADES."""
+    recent = [s for s in shares if s and s > 0][-USUAL_SIZE_LOOKBACK:]
+    return round(median(recent), 4) if len(recent) >= USUAL_SIZE_MIN_TRADES else None
+
+
+def usual_size_flags(items: list) -> None:
+    """[O24-SZ] UNUSUAL_SIZE on each trade with much more in it than the
+    partner's usual, judged against the trades before it (all days, in time
+    order). Items carry ``_trade`` and ``insight["size"]``."""
+    shares: list = []
+    for item in sorted((i for i in items if i.get("_trade") and (i.get("insight") or {}).get("size")),
+                       key=lambda i: i["_trade"]["first_buy_at"]):
+        size, trade = item["insight"]["size"], item["_trade"]
+        usual = usual_size(shares)
+        shares.append(size["pct_of_cash"])
+        if usual is None or size["pct_of_cash"] <= USUAL_SIZE_MULT * usual:
+            continue
+        lots, lot_size, entry, actual = size["lots"], size["lot_size"], size["entry"], size["actual"]
+        per_lot = entry * lot_size if lot_size else 0.0
+        fit = int((usual * size["cash"]) // per_lot) if per_lot > 0 else 0
+        better_pnl = None
+        if 1 <= fit < lots and size["exit"] is not None:
+            better_pnl = _pnl(entry, size["exit"], fit * lot_size, trade["exchange"], _orders(trade))
+        if better_pnl is not None:
+            better = f"{_lots(fit)}, about your usual size: {_instead(better_pnl, actual)}."
+        elif 1 <= fit < lots:
+            better = f"{_lots(fit)} would have been about your usual size."
+        else:
+            better = "Keep to the size you usually trade."
+        item["flags"].append(_flag(
+            "UNUSUAL_SIZE", f"{_lots(lots)} of {item.get('option')} at {_px(entry)}: {_amt(size['rs'])} in this "
+                            f"trade, {size['pct_of_cash']:.0%} of your cash {size['on_day']}. You usually put about "
+                            f"{usual:.0%} into one trade.",
+            (round(actual - better_pnl, 2) if better_pnl is not None and actual is not None else None),
+            why="A trade much bigger than your usual turns one bad move into a big loss." + _worked(actual),
+            better=better, better_pnl=better_pnl, actual_pnl=actual if better_pnl is not None else None))
 
 
 def _chased_spike(item: dict, path: Optional[dict], bars: list, trade: dict, first: datetime, first_px: float,

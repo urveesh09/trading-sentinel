@@ -48,10 +48,11 @@ The plan, computed once per buy (``build_plan``, pure)
     median 5-minute high-low of the 30 minutes before the buy), normal moves
     would take it out, so the stop is P - W and the message says so.
   - Loss at the stop: (P - stop) x qty plus the round trip's charges
-    (partner_coach.round_trip_costs), against the day's cash. Above a tenth
-    (partner_insights.RISK_OF_CASH_PCT) the message says the trade is big for
-    the account. It does not tell them to change the stop: a tighter one sits
-    inside the noise.
+    (partner_coach.round_trip_costs), as a share of the day's cash: a fact,
+    not a limit. [O24-SZ] The partner sizes as they choose, so the message
+    warns only when the money in this buy is much more than they usually put
+    in (partner_insights.usual_size: 1.5 x the median share of their last 20
+    buys, once there are 5).
   - Target zone: the index at 1.8 R (FNO_TARGET_R), priced the same way.
   - Without market data the plan says only what is known: the premium at
     risk, and "place a stop". It never invents a level.
@@ -420,14 +421,12 @@ def build_plan(*, entry: float, qty: int, exchange: str, opt_type: str, strike: 
 # ---------------------------------------------------------------------------
 
 def plan_text(trip: Trip, plan: Plan, *, lots: Optional[int], after_loss: Optional[dict] = None,
-              day_line: Optional[str] = None) -> str:
-    from partner_insights import RISK_OF_CASH_PCT
+              day_line: Optional[str] = None, usual: Optional[float] = None) -> str:
+    from partner_insights import USUAL_SIZE_MULT
     name = _option(trip.tradingsymbol)
     size = f"{lots} lot{'s' if lots != 1 else ''} ({plan.qty})" if lots else f"{plan.qty}"
     lines = [f"🟢 You bought {name} · {size} at {_px(plan.entry)}"]
-    big = plan.loss_pct is not None and plan.loss_pct > RISK_OF_CASH_PCT
     share = (f", {plan.loss_pct:.0%} of your cash" if plan.loss_pct is not None else "")
-    share += " ⚠️ more than a tenth: big for your account" if big else ""
     if plan.stop_basis == "INDEX":
         lines.append(f"🛑 Plan stop {_px(plan.stop)} (index {plan.stop_index:,.0f}). If it is hit: about "
                      f"−{_amt(plan.loss)} with charges{share}.")
@@ -441,6 +440,10 @@ def plan_text(trip: Trip, plan: Plan, *, lots: Optional[int], after_loss: Option
                      f"sits inside the noise. At risk: the whole {_amt(plan.loss)}{share}.")
     else:
         lines.append(f"🛑 At risk: the whole {_amt(plan.loss)} you paid{share}. Decide your stop and place it now.")
+    paid = plan.entry * plan.qty
+    if usual and plan.cash and paid / plan.cash > USUAL_SIZE_MULT * usual:
+        lines.append(f"⚠️ {_amt(paid)} in this trade, {paid / plan.cash:.0%} of your cash: much bigger than your "
+                     f"usual {usual:.0%}.")
     if plan.target is not None and plan.target_index is not None:
         lines.append(f"🎯 Target zone {_px(plan.target)} (index {plan.target_index:,.0f}).")
     facts = []
@@ -973,6 +976,32 @@ async def _lowered(db_path: str, day: str, trip: Trip, order_id: str, old: float
                            summary=f"stop moved down {_px(old)} → {_px(new)}"))
 
 
+async def _usual_share(db_path: str, trip: Trip, trips: list, now: datetime) -> Optional[float]:
+    """[O24-SZ] The share of cash the partner usually puts into a buy: their
+    Zerodha buys on earlier days (each against that day's cash), then today's
+    trips before this one."""
+    from partner_insights import USUAL_SIZE_LOOKBACK, usual_size
+    day = now.date().isoformat()
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            rows = await (await db.execute(
+                "SELECT r.price, r.lots, r.lot_size, a.opening_balance, a.intraday_payin FROM partner_trade_reports r "
+                "JOIN partner_account_days a ON a.session_date=r.session_date WHERE r.source='ZERODHA' "
+                "AND r.action='BUY' AND r.status='ACTIVE' AND r.session_date<? ORDER BY r.trade_at DESC LIMIT ?",
+                (day, USUAL_SIZE_LOOKBACK))).fetchall()
+    except aiosqlite.OperationalError:
+        rows = []
+    shares = []
+    for price, lots, lot_size, opening, payin in reversed(rows):
+        cash = float(opening or 0) + float(payin or 0)
+        if price and lots and lot_size and cash > 0:
+            shares.append(float(price) * int(lots) * int(lot_size) / cash)
+    if _state.cash:
+        shares += [t.entry * t.bought / _state.cash for t in trips
+                   if not t.carried and t.first_at < trip.first_at and t.entry]
+    return usual_size(shares)
+
+
 async def _gtt_protects(trip: Trip) -> bool:
     """A sell GTT waiting on the option also protects it. When the GTT list
     cannot be read nothing is claimed (True: no message)."""
@@ -1045,7 +1074,8 @@ async def _plan(db_path: str, day: str, trip: Trip, trips: list, now: datetime, 
         return 0
     lot = int(getattr(contract, "lot_size", 0) or 0)
     lots = trip.open_qty // lot if lot and trip.open_qty % lot == 0 else None
-    text = plan_text(trip, plan, lots=lots, after_loss=_after_loss(trip, trips), day_line=_day_line(trip, trips))
+    text = plan_text(trip, plan, lots=lots, after_loss=_after_loss(trip, trips), day_line=_day_line(trip, trips),
+                     usual=await _usual_share(db_path, trip, trips, now))
     return int(await _send(db_path, f"plan:{trip.key}", day, "PLAN", trip, text, now, summary=plan_summary(plan),
                            keyboard=quiet_keyboard(day)))
 

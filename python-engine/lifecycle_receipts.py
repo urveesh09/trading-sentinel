@@ -52,7 +52,7 @@ PROVIDER_OUTAGE_ALERT_SEC = 120.0  # market-hours provider silence that pages th
 PROVIDER_OUTAGE_MIN_FAILURES = 5   # one stray failure is not an outage
 MAX_EVENTS = 2000
 MARKET_OPEN = dtime(9, 15)
-MARKET_CLOSE = dtime(15, 30)
+MARKET_CLOSE = dtime(15, 40)        # [O24-MC 2026-10-24] the session runs to the 15:40 derivatives close
 
 
 def events_path(db_path: str) -> str:
@@ -140,7 +140,7 @@ def host_uptime_sec() -> Optional[float]:
 
 
 def market_overlap_sec(start_epoch: float, end_epoch: float, is_session=None) -> float:
-    """Seconds of [start, end] inside 09:15-15:30 IST on session days.
+    """Seconds of [start, end] inside 09:15-15:40 IST on session days.
 
     ``is_session(date) -> bool`` decides each day (the exchange calendar);
     without it every weekday counts, which is the raw wall-clock measure.

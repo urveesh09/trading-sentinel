@@ -146,8 +146,8 @@ def test_without_market_data_the_plan_names_only_the_premium_at_risk():
     assert (plan.stop, plan.stop_basis, plan.loss) == (None, "PREMIUM", 6500.0)
     text = pw.plan_text(pw.Trip("1", "NFO", "NIFTY26OCT22700CE", "NRML", D(14, 2, 36), bought=65, buy_value=6500.0),
                         plan, lots=1)
-    assert ("At risk: the whole ₹6,500 you paid, 86% of your cash ⚠️ more than a tenth: big for your account. "
-            "Decide your stop and place it now.") in text
+    assert "At risk: the whole ₹6,500 you paid, 86% of your cash. Decide your stop and place it now." in text
+    assert "usual" not in text                       # no usual size known: no size warning
     assert "Place the SL order now" not in text
 
 
@@ -157,11 +157,11 @@ def test_the_plan_message_reads_plainly():
                    trend="WITH")
     trip = pw.Trip("1", "NFO", SYMBOL, "NRML", D(11, 29, 17), bought=65, buy_value=65 * 75.05)
     text = pw.plan_text(trip, plan, lots=1, after_loss={"loss": 925.0, "at": "13:53", "minutes": 0, "bigger": "130 after 65"},
-                        day_line="Trade 5 today · ₹290 in charges so far.")
+                        day_line="Trade 5 today · ₹290 in charges so far.", usual=0.30)
     assert text.splitlines() == [
         "🟢 You bought NIFTY 22300 PE · 1 lot (65) at ₹75.05",
-        "🛑 Plan stop ₹57.85 (index 22,601). If it is hit: about −₹1,180 with charges, 16% of your cash ⚠️ more than "
-        "a tenth: big for your account.",
+        "🛑 Plan stop ₹57.85 (index 22,601). If it is hit: about −₹1,180 with charges, 16% of your cash.",
+        "⚠️ ₹4,878 in this trade, 65% of your cash: much bigger than your usual 30%.",
         "🎯 Target zone ₹115.2 (index 22,415).",
         "• normal 5-min swing ₹11.4; up 24% in the 15 min before you bought (from ₹60.5); the 5-min trend is with you.",
         "⚠️ Your last trade closed −₹925 at 13:53, 0 min before this buy. This is 130 after 65.",
@@ -445,3 +445,27 @@ async def test_the_inbox_sends_the_quiet_button_to_the_watch(watch, monkeypatch)
     other = {"update_id": 6, "callback_query": {"id": "q2", "data": "watch:quiet:20261023",
                                                 "message": {"chat": {"id": 999}}}}
     assert await pfc.handle_update(settings.DB_PATH, other, D(10, 0)) == "foreign_chat"
+
+
+@pytest.mark.asyncio
+async def test_the_plan_warns_only_when_a_buy_is_much_bigger_than_the_partners_usual(watch, kite):
+    """[O24-SZ] No fixed share of cash: earlier days' Zerodha buys set the usual (1.5 x their median share)."""
+    db = settings.DB_PATH
+    await _seed(db)
+    await zerodha.init_partner_broker_db(db)
+    async with aiosqlite.connect(db) as conn:
+        for i, day in enumerate(("2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-22")):
+            await conn.execute(
+                "INSERT INTO partner_trade_reports(dedup_key,source,received_at,trade_at,trade_at_basis,action,"
+                "session_date,tradingsymbol,exchange,lots,lot_size,price,price_basis) "
+                "VALUES(?, 'ZERODHA', ?, ?, 'EXCHANGE_FILL', 'BUY', ?, ?, 'NFO', 1, 65, 30.0, 'BROKER_FILL')",
+                (f"kite:9{i}", f"{day}T16:00:00+05:30", f"{day}T10:0{i}:00+05:30", day, SYMBOL))
+            await conn.execute("INSERT OR REPLACE INTO partner_account_days(session_date,opening_balance,intraday_payin,"
+                               "read_at) VALUES(?,?,0,?)", (day, 7536.7, f"{day}T16:00:00+05:30"))
+        await conn.commit()
+    await zerodha.create_session("reqtok12", D(9, 0))
+    await pw.watch_tick(D(11, 29, 0), market=_market(D(11, 29, 30)))
+    kite["orders"] = [_o("101", "BUY", D(11, 29, 17), average_price=75.05)]
+    await pw.watch_tick(D(11, 29, 25), market=_market(D(11, 29, 30)))
+    # Usual: 30 x 65 = ₹1,950 of ₹7,537 = 26%; this buy ₹4,878 = 65% > 1.5 x 26%.
+    assert "⚠️ ₹4,878 in this trade, 65% of your cash: much bigger than your usual 26%." in watch[-1]["text"]

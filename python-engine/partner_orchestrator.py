@@ -5,7 +5,7 @@ Owns the partner-facing jobs (wired in scheduler_setup.register_partner_
 scheduler_jobs) and the partner_messages dedup/throttle table:
 
   - partner_scan_tick      cron */2min at :40s, 09:45-15:05  -> ORB signal tips
-  - partner_analytics_tick cron minute 2-57/5, 09:20-15:30   -> wide-chain
+  - partner_analytics_tick cron minute 2-57/5, 09:20-15:40   -> wide-chain
         snapshot -> OI store -> PCR/IV/OI-wall/regime/halt/momentum events
   - partner_morning_brief  09:50 -> per-underlying levels + options context
   - partner_eod_wrap       15:50 -> day recap + signal outcomes + OI purge
@@ -1390,7 +1390,8 @@ async def _send_pin_note(spec, book, snap, max_pain, now: datetime, day_iso: str
 async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
     global _last_regime_reported, _halt_reported_on
     now = now or datetime.now(IST)
-    if not await _gates_open(now, 9 * 60 + 20, 15 * 60 + 30):
+    # [O24-MC 2026-10-24] Snapshots run to the 15:40 derivatives close.
+    if not await _gates_open(now, 9 * 60 + 20, 15 * 60 + 40):
         return
     import main as _main
     logger.info("partner_analytics_tick_invoked now_ist=%s", now.strftime("%H:%M:%S"))

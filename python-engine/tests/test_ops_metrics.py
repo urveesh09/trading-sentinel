@@ -81,8 +81,10 @@ class TestGapOverlapsMarket:
         ) is True
 
     def test_post_close_to_pre_open_gap_does_not_count(self):
-        # Wed 15:35 -> Wed 20:35: entirely outside the session.
-        assert _gap_overlaps_market(_ist(2026, 7, 8, 20, 35), 5 * 3600.0) is False
+        # Wed 15:45 -> Wed 20:45: entirely outside the session (it ends at the 15:40 F&O close, O24-MC).
+        assert _gap_overlaps_market(_ist(2026, 7, 8, 20, 45), 5 * 3600.0) is False
+        # Wed 15:35 -> Wed 20:35 touches 15:35-15:40, still trading F&O.
+        assert _gap_overlaps_market(_ist(2026, 7, 8, 20, 35), 5 * 3600.0) is True
 
 
 # ===============================================================

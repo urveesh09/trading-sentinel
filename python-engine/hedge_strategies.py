@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from datetime import date, datetime, time
+from datetime import date, datetime
 from typing import Optional, Tuple
 
 import pytz
@@ -38,9 +38,10 @@ import pytz
 import options_math
 from fno_chain import ChainSnapshot
 from fno_models import ContractQuote, OptionType
+from market_calendar import DERIVATIVES_CLOSE_TIME
 
 IST = pytz.timezone("Asia/Kolkata")
-_EXPIRY_CUTOFF = time(15, 30)
+_EXPIRY_CUTOFF = DERIVATIVES_CLOSE_TIME    # [O24-MC 2026-10-24] options settle at the 15:40 derivatives close
 
 
 @dataclass(frozen=True)
