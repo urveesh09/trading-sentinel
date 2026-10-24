@@ -1322,7 +1322,9 @@ class Settings(BaseSettings):
     PARTNER_MORNING_BRIEF_HOUR: int   = 9
     PARTNER_MORNING_BRIEF_MIN:  int   = 50
     PARTNER_EOD_HOUR:           int   = 15
-    PARTNER_EOD_MIN:            int   = 40
+    # [O24-MC 2026-10-24] 15:40 -> 15:50: F&O now trades until 15:40, and the
+    # wrap reads the partner's book and the day's last bars after the close.
+    PARTNER_EOD_MIN:            int   = 50
     # IV/RV ratio bands for the premium rich/cheap read (option-buyer lens).
     PARTNER_IV_RICH_RATIO:      float = 1.25
     PARTNER_IV_CHEAP_RATIO:     float = 0.80
@@ -1375,6 +1377,15 @@ class Settings(BaseSettings):
     # With Zerodha fills the Bought/Skipped/Sold buttons are redundant, so
     # cards go out without them unless this is on. Typed replies still work.
     PARTNER_FILL_BUTTONS_WITH_ZERODHA: bool = False
+    # [O24-PW 2026-10-24] The partner's trade watch (partner_watch.py): after a
+    # login, read their order book every POLL_SEC and send loss-first messages
+    # (a buy's plan, no stop, stop moved down or cancelled, refusals, the
+    # close). Messages only: it never places, changes or cancels an order.
+    # The login button goes out at PROMPT_HOUR:PROMPT_MIN on trading days.
+    PARTNER_WATCH_ENABLED:         bool  = True
+    PARTNER_WATCH_POLL_SEC:        int   = 5
+    PARTNER_WATCH_PROMPT_HOUR:     int   = 9
+    PARTNER_WATCH_PROMPT_MIN:      int   = 0
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True

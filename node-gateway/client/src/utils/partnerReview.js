@@ -211,5 +211,16 @@ export function buildReviewModel(payload) {
     },
     noOrders: payload?.automatic_execution === false,
     sync: payload?.sync || null,
+    // [O24-PW] The trade watch: on after a login before the close.
+    watch: payload?.watch?.on ? { until: payload.watch.until || '', quiet: Boolean(payload.watch.quiet) } : null,
   };
+}
+
+// [O24-PW] The line the page shows while the trade watch is on.
+export function watchNote(watch) {
+  if (!watch) return '';
+  const until = watch.until ? ` until ${watch.until}` : '';
+  return watch.quiet
+    ? `Trade watch on${until}, quiet today: you hear only when a stop is moved down or cancelled, or Zerodha refuses an order.`
+    : `Trade watch on${until}: messages on Telegram when a buy has no stop, a stop is moved down or cancelled, Zerodha refuses an order, and before the close. It never places an order.`;
 }

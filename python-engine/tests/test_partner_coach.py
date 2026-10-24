@@ -363,7 +363,7 @@ def test_a_gtt_stop_counts_and_is_praised():
     placed = next(p for p in item["positives"] if p["code"] == "STOP_PLACED")
     assert placed["reason"] == "GTT at ₹465 placed 2 min after buying."
     assert item["stops"] == [{"kind": "GTT", "trigger": 465.0, "status": "CANCELLED", "placed": "12:11",
-                              "updated": "13:03"}]
+                              "updated": "13:03", "exact": True}]
 
 
 def test_a_wider_stop_that_fired_is_priced_against_the_card_stop():

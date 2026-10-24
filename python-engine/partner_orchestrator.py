@@ -8,7 +8,7 @@ scheduler_jobs) and the partner_messages dedup/throttle table:
   - partner_analytics_tick cron minute 2-57/5, 09:20-15:30   -> wide-chain
         snapshot -> OI store -> PCR/IV/OI-wall/regime/halt/momentum events
   - partner_morning_brief  09:50 -> per-underlying levels + options context
-  - partner_eod_wrap       15:40 -> day recap + signal outcomes + OI purge
+  - partner_eod_wrap       15:50 -> day recap + signal outcomes + OI purge
   - partner_rv_refresh     09:10 -> per-underlying 20d realized vol cache
 
 Scheduling is deliberately OFF the quarter-hour grid: the momentum

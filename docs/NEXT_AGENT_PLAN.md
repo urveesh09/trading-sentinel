@@ -1,5 +1,86 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 24 — O24 Partner: stops read as Zerodha shows them, the 15:40 close, refusals in plain words, and the trade watch (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner asks (Oct 24):
+  - the partner logs in in the morning, and a companion watches their trades and sends messages at the critical moments;
+  - messages only, never orders;
+  - first goal: cut their losses as much as possible;
+  - the rules computed per trade, not static.
+- Evidence (Production, read-only, Oct 23 partner book; the research quote archive):
+  - The review said "Stop placed and kept 1/12" and "No stop-loss order" on 10 trades. Zerodha's book and histories show a stop on at least 10 of 12 trades, and a stop moved down on 9 of them.
+    - A fired stop is LIMIT (SL) or MARKET (SL-M) with its trigger kept: SELL 22950 CE, trigger 33, never modified, filled 13:53.
+    - A stop turned into a sale keeps its trigger only in its history: 22300 PE, 68 → … → 75 → 60, then MARKET 62.6.
+    - Kite's `order_timestamp` moves on a modify or a fire.
+  - The 13:54 "insufficient funds" sell refusal was a second stop on a lot that already had one.
+  - F&O now trades until 15:40. The archive's last NIFTY and SENSEX futures trades are 15:30:2x until Oct 5 and 15:39:5x from Oct 6. NSE moved the equity-derivatives close to 15:40; `market_calendar.DERIVATIVES_CLOSE_TIME` already held it. The partner sold at 15:39:53 on Oct 23.
+  - Applying the paper book's exit ladder (`fno_exit_rules`) unchanged to the 12 trades (approximate replay) gave about −₹3,558 against the partner's −₹319.
+    - The +10% profit lock sold the 22400 PE at +₹285; the partner trailed it to +₹6,135.
+    - The partner's options swing 5–36% in a normal 5 minutes (median 16%).
+    - So the watch computes each trade's levels from that option's own swing, the index and the cash, not from the system's fixed percentages.
+- [x] O24-SR stops as Zerodha shows them.
+  - A stop is any option SELL that carried a trigger (`partner_broker_sync.order_stop`, `book_stops`, `merge_stops`).
+  - Histories are read for every stop and modified order. They give `stop_trigger` and `stop_since`, stored in new `partner_orders` columns (added in place).
+  - Days stored before this are rebuilt from their trigger changes. A modified sale with no trigger seen is UNKNOWN, so nothing is claimed about that trade's stop.
+  - CONVERTED (a stop turned into a sale) protected the trade.
+  - A trailed stop is praised after a small trim when it ended higher and its last move was up.
+  - The PDF prints a lesson's repeated "why" once.
+- [x] O24-RF refusals in plain words (`partner_insights.refusal_plain`), on the timeline, in the orders list (page and PDF, with Zerodha's own words under them) and in the watch.
+- [x] O24-MC the partner modules close at 15:40 (`DERIVATIVES_CLOSE_TIME`): the day's completeness, the trade paths, taps and the 13:30–15:40 time bucket. The evening wrap moves 15:40 → 15:50 (`PARTNER_EOD_MIN`, with the hedge EOD summary).
+- [x] O24-PW the trade watch (`partner_watch.py`).
+  - A 09:00 login button; "watch on" after a login before the close.
+  - Every 5 s it reads the partner's order book (read-only key) and sends:
+    - PLAN: the index stop priced by Black-76, floored by the option's swing, the loss with charges against the cash, the target, and the facts;
+    - NO_STOP after 120 s, unless an SL or a GTT is resting;
+    - LOWERED: the first move down in a trade, then only below the plan or off the buy price;
+    - REMOVED: after 20 s with no replacement;
+    - REFUSED;
+    - CLOSE at 15:20.
+  - "Quiet today" mutes PLAN, NO_STOP and CLOSE.
+  - Reconnect after a lost login.
+  - The partner's own key reads quotes and candles when its plan has market data, else the owner's (management lane).
+  - Shadow looks every 15 s go to `partner_watch_looks`, for scoring the judgment messages later.
+  - The review timeline shows "Assistant: …" lines; the page shows "Trade watch on".
+- Files:
+  - `python-engine/`: `partner_broker_sync.py`, `partner_coach.py`, `partner_insights.py`, `partner_lessons.py`, `partner_trade_paths.py`, `partner_fill_capture.py`, `partner_review_pdf.py`, `partner_orchestrator.py` (doc line), `routes_partner_coach.py`, `scheduler_setup.py`, `config.py`, and the new `partner_watch.py`.
+  - Tests: `tests/test_partner_stop_reading.py`, `tests/test_partner_watch.py`, existing partner tests, and the route golden.
+  - `node-gateway/client/src/`: `pages/PartnerReview.jsx`, `utils/partnerReview.js`, plus its test.
+- Acceptance:
+  - The Oct 23 review rebuilt on a copy of Production's partner tables:
+    - "Moved the stop down 9 times" is the lesson (−₹1,706), and no "No stop-loss order" is claimed where a stop existed;
+    - the 2 trades that cannot be told say nothing;
+    - stop rule 1/10, size 6/12, score 37/72 (was 31/74);
+    - the refusal reads plainly.
+  - The watch never calls a non-read endpoint (allowlist test). It sends nothing for events before its first read, and one message per key (restart-safe).
+- Tests: engine full suite 5559 passed, 4 skipped, exit 0 (winvenv, Python 3.11.9, 9 min 29 s); an earlier full run had one timing flake in tests/test_kite_client.py (the rate-limiter fairness test, untouched code), which passed 3 of 3 alone; partner tests 224 passed (new tests/test_partner_stop_reading.py 15 and tests/test_partner_watch.py 19); client unit tests 64 passed and the Vite build passes; a server render of the page shows the assistant line, the plain refusal and the lesson; the Oct 23 review rebuilt with Dev code on a copy of Production's partner tables (read-only export) gives the numbers above; the route goldens add exactly partner_watch_tick and partner_watch_prompt and move partner_eod_wrap and partner_hedge_eod_summary from 15:40 to 15:50
+- Config and migration impact:
+  - New settings: `PARTNER_WATCH_ENABLED` (True), `PARTNER_WATCH_POLL_SEC` 5, `PARTNER_WATCH_PROMPT_HOUR`/`_MIN` 09:00.
+  - `PARTNER_EOD_MIN` 40 → 50.
+  - New tables: `partner_watch_messages`, `partner_watch_plans`, `partner_watch_looks`, `partner_watch_state`.
+  - Three nullable or defaulted columns on `partner_orders` (ALTER in place).
+  - Two scheduler jobs: `partner_watch_tick` (interval 5 s) and `partner_watch_prompt` (cron 09:00).
+  - No new package and no env change. If the partner's API key changes with the paid plan, the owner updates the root `.env`.
+- Rollout:
+  - Merge, then rebuild the engine (and the gateway for the page).
+  - Check at 09:00 on a trading day:
+    - the login button arrives;
+    - after the login, "Trade watch on until 15:40" arrives;
+    - after a buy, a PLAN message within about 10 s.
+  - In the engine: `partner_watch_message` log lines, and rows in `partner_watch_messages`.
+  - Rollback: `PARTNER_WATCH_ENABLED=false` stops the watch alone; revert the commit for the rest.
+- Remaining:
+  - Score the shadow judgment messages on recorded days and show "what the assistant would have said" in the review. Fixed arms: B the plan (break-even at P + max(W, P−S), trail best − W), C B + index trail after the target, D B + 45-minute no-progress exit, E the system ladder with its lock armed at the option's swing.
+  - Then card follow-ups in the partner's numbers, and "ask before you buy".
+  - System-wide close at 15:40 (not changed here, the owner's call):
+    - `fno_chain.EXPIRY_CUTOFF` 15:30 (time to expiry);
+    - `main.py` market-open checks and the EOD close at 15:30;
+    - `partner_orchestrator` analytics gate to 15:30;
+    - `PENNY_DAILY_ATTRIBUTION_TIME` 15:30;
+    - expiry_paper's late window;
+    - ops watchdogs and telemetry windows;
+    - the cash segment's closing auction (15:15–15:35) for EDGE and Penny close prices.
+  - Production stores days with the old reading until this deploys; those days are rebuilt from trigger changes.
+
 ## October 23 (evening) — O23 Partner review: earlier days, a PDF of the day, what each rule means (done, Dev, commit `66cfb7c`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 23 evening): the partner loved the review. Let them open

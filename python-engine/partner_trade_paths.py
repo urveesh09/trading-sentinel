@@ -24,12 +24,14 @@ import aiosqlite
 import pytz
 import structlog
 
+from market_calendar import DERIVATIVES_CLOSE_TIME
+
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
 
 BASIS_CANDLES = "1MIN_CANDLES"
 BASIS_PRINTS = "5MIN_PRINTS"
-CLOSE_MIN = 15 * 60 + 30
+CLOSE_MIN = DERIVATIVES_CLOSE_TIME.hour * 60 + DERIVATIVES_CLOSE_TIME.minute   # [O24-MC] F&O trades until 15:40
 MAX_CONTRACTS = 12             # options per day (a busy day still stays quick at login)
 FETCH_TIMEOUT_SEC = 8.0        # one contract's candle read
 BUDGET_SEC = 20.0              # the whole day's reads; the gateway waits for the login
@@ -155,7 +157,7 @@ async def ensure_paths(db_path: str, day: str, now: Optional[datetime] = None, *
         token = token_of(contract["exchange"], contract["tradingsymbol"])
         if token:
             try:
-                bars = await asyncio.wait_for(fetch(token, f"{day} 09:15:00", f"{day} 15:30:00"),
+                bars = await asyncio.wait_for(fetch(token, f"{day} 09:15:00", f"{day} {CLOSE_MIN // 60:02d}:{CLOSE_MIN % 60:02d}:00"),
                                               timeout=FETCH_TIMEOUT_SEC)
             except Exception as exc:   # timeout or provider error: fall back to prints
                 logger.warning("partner_paths_candles_failed symbol=%s err=%s", contract["tradingsymbol"],

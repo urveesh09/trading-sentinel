@@ -257,3 +257,27 @@ def test_an_installed_font_is_embedded_and_the_text_stays_complete(monkeypatch):
     assert len(shown) >= len(text) and "?" not in shown
     if "DejaVu" in pair[0]:
         assert shown == text
+
+
+def test_the_assistants_lines_and_plain_refusals_print(monkeypatch):
+    """[O24] The trade watch's lines on a trade's timeline, a refusal's plain reason with Zerodha's words
+    under it, and a lesson's repeated "why" printed once."""
+    monkeypatch.setattr(pdf, "FONT_PAIRS", ())
+    document = _document()
+    review = document["review"]
+    trade = review["trades"][0]
+    trade["timeline"] = trade["timeline"] + [{"at": "12:10", "who": "assistant",
+                                              "text": "Assistant: plan stop Rs 465, loss if hit about -Rs 1,060"}]
+    review["orders"] = {"placed": 3, "filled": 2, "rejected": [
+        {"at": "13:54", "side": "SELL", "tradingsymbol": "NIFTY26OCT22500PE", "quantity": 65,
+         "reason": "Insufficient funds. Margin required: 159586.95.",
+         "plain": "another sell order for this option was already waiting"}],
+        "cancelled_unfilled": 0, "modified": 1, "market": 1}
+    once = _shown(pdf.render_review_pdf(document, compress=False)).count("WHY IT MATTERS")
+    lesson = review["lesson"]
+    lesson["examples"] = [dict(lesson["examples"][0]), dict(lesson["examples"][0])]
+    text = _shown(pdf.render_review_pdf(document, compress=False))
+    assert "Assistant: plan stop Rs 465, loss if hit about -Rs 1,060" in text
+    assert "refused: another sell order for this option was already waiting" in text
+    assert "Zerodha: Insufficient funds. Margin required: 159586.95." in text
+    assert text.count("WHAT HAPPENED") == once + 1 and text.count("WHY IT MATTERS") == once   # the same why, once

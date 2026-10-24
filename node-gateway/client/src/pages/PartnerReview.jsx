@@ -6,6 +6,7 @@ import { formatRs, pnlTone } from '../utils/partnerCoach';
 import {
   LEVEL_STYLE, LEVEL_TEXT, REVIEW_DAYS_URL, buildReviewModel, chartGeometry, dayList, dayNeighbours, dayWords, formatDay,
   formatPrice, minutesLabel, percent, reviewPdfUrl, reviewUrl, scoreTone, signedPercent, syncNote, syncRefreshMs, trendOf,
+  watchNote,
 } from '../utils/partnerReview';
 import PartnerCoach from './PartnerCoach';
 
@@ -174,7 +175,7 @@ function Story({ story }) {
       )}
       <ol className="mt-2 space-y-1 border-l border-gray-800 pl-3">
         {story.timeline.map((event, index) => (
-          <li key={index} className={`text-xs ${event.who === 'card' ? 'text-sky-200' : 'text-gray-200'}`}>
+          <li key={index} className={`text-xs ${event.who === 'card' ? 'text-sky-200' : event.who === 'assistant' ? 'text-teal-200' : 'text-gray-200'}`}>
             <span className="mr-2 font-mono text-gray-500">{event.at}</span>{event.text}
           </li>
         ))}
@@ -260,7 +261,8 @@ function Orders({ orders, title }) {
         <ul className="space-y-1">
           {orders.rejected.map((order, index) => (
             <li key={index} className="text-xs text-red-200">
-              <span className="mr-2 font-mono text-gray-500">{order.at}</span>{order.side === 'BUY' ? 'Buy' : 'Sell'} {order.quantity} {order.tradingsymbol} refused{order.reason ? `: ${order.reason}` : ''}
+              <span className="mr-2 font-mono text-gray-500">{order.at}</span>{order.side === 'BUY' ? 'Buy' : 'Sell'} {order.quantity} {order.tradingsymbol} refused{order.plain || order.reason ? `: ${order.plain || order.reason}` : ''}
+              {order.plain && order.reason && <span className="block text-gray-500">Zerodha: {order.reason}</span>}
             </li>
           ))}
         </ul>
@@ -513,6 +515,7 @@ export default function PartnerReview({ navigateBack }) {
         {error && <div className="rounded border border-red-800 bg-red-950/40 p-3 text-sm text-red-200">Your review is unavailable: {error.message}</div>}
         {isLoading && !data && <p className="text-sm text-gray-500">Loading your review…</p>}
         {syncText && <p className="rounded border border-sky-900 bg-sky-950/40 p-2 text-xs text-sky-200" role="status">{syncText}</p>}
+        {model.watch && !model.past && <p className="rounded border border-teal-900 bg-teal-950/40 p-2 text-xs text-teal-200" role="status">{watchNote(model.watch)}</p>}
         {data && tab === 'today' && <Today model={model} />}
         {data && tab === 'progress' && <Progress progress={model.progress} focus={model.focus} onOpenDay={openDay} />}
         <p className="text-center text-[10px] text-gray-600">Coaching only. Nothing here places an order.</p>

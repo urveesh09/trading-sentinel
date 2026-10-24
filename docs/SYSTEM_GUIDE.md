@@ -1,5 +1,66 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 24 — O24 partner: stops as Zerodha shows them, the 15:40 close, refusals in plain words, the trade watch (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **O24-SR stops (`partner_broker_sync.py`).**
+  - A stop is any option SELL order that carried a trigger:
+    - `carries_trigger` (any order type with a trigger above 0);
+    - the history's first trigger, through `history_facts`, for orders read after O24.
+  - Kite shows a fired SL as LIMIT and a fired SL-M as MARKET, both with the trigger kept.
+  - A stop the partner turns into a market or limit sale loses its trigger in the book. Its status is CONVERTED, and it counts as protecting the trade until that sale.
+  - `_read_details` reads the history of every stop and every modified order, sell orders first, at most 40. It stores:
+    - the price and trigger changes (`partner_order_changes`);
+    - `history_read`, `stop_trigger` and `stop_since` on `partner_orders` (the columns are added in place by `init_partner_broker_db`; a re-read of the book never erases them).
+  - `order_stop(order, changes)` gives a stop row, None, or `UNKNOWN`:
+    - with a history: its first trigger and the time it appeared (`placed_exact`);
+    - before O24: a trigger now or a trigger change makes it a stop. The first trigger is the first change's old value, and the earliest stamp is "in place by" (`placed_exact` False);
+    - a modified sale with neither: UNKNOWN.
+  - `merge_stops(stop_rows, orders, changes)`: SL stops come from the stored book on days it was stored, else from the fills read's `partner_stop_orders`. GTT stops always come from `partner_stop_orders`. It returns the UNKNOWN sales.
+  - `partner_coach.analyse(unknown_stops=…)`: a trade with an UNKNOWN sale and no confirmed stop has unknown stops (no stop checks). `PROTECTING` = PENDING, TRIGGERED, CONVERTED.
+  - `partner_insights._stop_orders_of` uses `order_stop`, so stop moves on fired and converted stops are seen.
+  - STOP_TRAILED is also given after a trim down, when the stop ended above where it started and its last move was up.
+  - The timeline says "You placed an SL order at ₹X" when the time is exact, else "By this time you had an SL order at ₹X".
+  - Effect on Oct 23: the stop rule read 1/12 and now reads 1/10. Stops moved down went from 1 to 9 trades, and that is now the lesson (−₹1,706). "Size within the account" went from 0/12 to 6/12, since risk is now measured to the real stop.
+- **O24-RF refusals (`partner_insights.refusal_plain`).**
+  - A refusal for margin reads in plain words:
+    - a buy: "the buy needed ₹X and your account had ₹Y";
+    - a sale is counted as a new short sale, for one of four reasons, tested in order: the option was not held at that moment, the buy and sale products differ, the sale was for more than was held, or (the rest) another sell order was already waiting for the lot.
+  - Shown on the trade timeline and in the day's orders. The page and the PDF show the plain reason with "Zerodha: …" under it.
+- **O24-MC the close.**
+  - `partner_broker_sync.CLOSE_MIN` and `partner_trade_paths.CLOSE_MIN` come from `market_calendar.DERIVATIVES_CLOSE_TIME` (15:40). They set the day's completeness and the candles to 15:40.
+  - `partner_coach._day_close`, the insights holding window and the chart end are 15:40.
+  - Taps are accepted to 15:40. The last time bucket is "13:30–15:40".
+  - `PARTNER_EOD_MIN` is 50: the evening wrap and the hedge EOD summary run at 15:50.
+  - The rest of the system still uses 15:30 in places; NEXT_AGENT_PLAN lists them.
+- **O24-PW the trade watch (`partner_watch.py`).**
+  - Messages only. Its Kite calls go through the read-only allowlist, which now also allows GET `/quote` and GET `/instruments/historical/{token}/(minute|5minute)` on the partner's key.
+  - Jobs:
+    - `partner_watch_prompt` at 09:00: the login button, unless a login is held;
+    - `partner_watch_tick` every `PARTNER_WATCH_POLL_SEC` (5 s): self-gated on enabled, 09:15–15:40, `is_trading_day` and the partner's login.
+  - `on_login` runs in the background from `partner_broker_sync.on_login`. It stores `login:<day>` and, before the close, sends "Trade watch on until 15:40".
+  - On a lost login during the session it sends one reconnect button per login.
+  - Each tick reads `/orders` (`option_orders` rows). The first read after a login also reads the positions held overnight and the day's cash.
+  - Messages are claimed by key in `partner_watch_messages` before sending, so a restart never repeats one. Events from before the first read are never told.
+  - The messages:
+    - PLAN: the first fill of a round trip, if seen within 5 minutes. `build_plan` sets:
+      - the index stop as the F&O engine sets it: the opposite opening-range edge once the 09:15–09:45 range is complete and on the losing side, else 1.5 × ATR(14) of 5-minute futures bars over 21 days, the tighter;
+      - that stop priced by Black-76 at the option's implied volatility (`fno_chain.years_to_expiry`), tick-floored;
+      - if it is inside the option's swing W (the median 5-minute high–low over the 30 minutes before the buy, from at least 10 one-minute bars), or the index could not be read, the stop is P − W instead;
+      - the loss at the stop with charges (`round_trip_costs`) against the day's cash, flagged above a tenth;
+      - the target at 1.8 R, priced the same way;
+      - facts: W, the rise from the 15-minute low, and the 5-minute EMA 21/50 trend;
+      - when they apply: a buy within 30 minutes of a losing exit (and a bigger size), and from the 5th trade the day's count and charges;
+      - without market data: the premium at risk and "decide your stop".
+    - NO_STOP: 120 s after the buy with no resting SL. A pending sell GTT counts as a stop, and an unreadable GTT list means nothing is claimed.
+    - LOWERED: a resting stop's trigger moved down, or cancelled and replaced lower within 20 s. Told the first time in the trip, then only under the plan stop or when it stops guarding the buy price (within 0.5%).
+    - REMOVED: a resting stop cancelled with no stop 20 s later.
+    - REFUSED: a new rejection, explained by `refusal_plain`.
+    - CLOSE: 15:20 with an option held. It says what happens: expiry settlement, MIS square-off, or NRML overnight with theta per day.
+  - "Quiet today" (callback `watch:quiet:YYYYMMDD`, handled in `partner_fill_capture.handle_update`) mutes PLAN, NO_STOP and CLOSE for the day.
+  - Market data: the partner's own key (`Market`, tried once a day; PermissionException means fallback), else `main.kite` (quotes in the management lane, `get_intraday_by_token`).
+  - Every 15 s each open trip's bid, ask, LTP and front future go to `partner_watch_looks` (shadow). Plans are stored in `partner_watch_plans`.
+  - The review: `messages_between` puts the sent messages on the matching trade's timeline as "Assistant: …" (who `assistant`; teal on the page and in the PDF). `/partner/review` returns `watch` {on, until, quiet}, and the page shows "Trade watch on until 15:40 …".
+
 ## October 23 (evening) — O23 partner review: earlier days, a PDF of the day, what each rule means (actual behavior, Dev, commit `66cfb7c`)
 
 - **O23-PH earlier days.**

@@ -1,5 +1,40 @@
 # Handover receipt and operator checklist
 
+## October 24 — O24 partner: stops as Zerodha shows them, 15:40 close, plain refusals, trade watch (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] O24-SR the review reads every stop:
+  - fired stops (LIMIT/MARKET with a trigger);
+  - stops turned into a sale (CONVERTED, from the history);
+  - placement times from the history;
+  - older days rebuilt from trigger changes;
+  - a sale that cannot be told says nothing.
+- [x] O24-RF Zerodha's refusals in plain words: margin for a buy, and a sale counted as a new short sale (another sell waiting, more than held, or the products differ).
+- [x] O24-MC the partner modules close at 15:40 (`market_calendar.DERIVATIVES_CLOSE_TIME`); the evening wrap moves to 15:50.
+- [x] O24-PW the trade watch (`partner_watch.py`), messages only:
+  - a 09:00 login button, then "watch on";
+  - every 5 s: PLAN, NO_STOP, LOWERED (first, then under the plan or off the buy price), REMOVED, REFUSED, CLOSE;
+  - "Quiet today" keeps only LOWERED, REMOVED and REFUSED;
+  - a reconnect button after a lost login;
+  - shadow looks every 15 s;
+  - "Assistant: …" lines in the review.
+- [x] Tests: engine full suite 5559 passed, 4 skipped, exit 0 (winvenv, Python 3.11.9, 9 min 29 s); an earlier full run had one timing flake in tests/test_kite_client.py (the rate-limiter fairness test, untouched code), which passed 3 of 3 alone; partner tests 224 passed (new tests/test_partner_stop_reading.py 15 and tests/test_partner_watch.py 19); client unit tests 64 passed and the Vite build passes; a server render of the page shows the assistant line, the plain refusal and the lesson; the Oct 23 review rebuilt with Dev code on a copy of Production's partner tables (read-only export) gives the numbers above; the route goldens add exactly partner_watch_tick and partner_watch_prompt and move partner_eod_wrap and partner_hedge_eod_summary from 15:40 to 15:50
+- [ ] Deployed: no.
+  - Rebuild the engine, then the gateway.
+  - First trading day after deploy:
+    - 09:00 login button;
+    - after the login, "Trade watch on until 15:40";
+    - a PLAN message within about 10 s of a buy;
+    - `partner_watch_message kind=… delivered=True` lines;
+    - `partner_watch_messages` rows;
+    - the review's Oct 23 shows "Moved the stop down · 9 times".
+- [ ] The paid Kite plan on the partner's key: no code change needed.
+  - If Zerodha issues a new API key or secret, the owner updates the root `.env` and restarts the engine.
+  - Log `partner_watch_partner_market_data_unavailable` means the key has no market data, and the owner's quotes are used.
+- [ ] Owner decisions open:
+  - the system-wide 15:40 close (time to expiry, EOD and attribution times, analytics gates);
+  - when to score the shadow exit plans;
+  - whether the "more than a tenth of your cash" line should use another share.
+
 ## October 23 (evening) — O23 partner review: earlier days, PDF, rule meanings (commit `66cfb7c`, Dev, pushed, not deployed)
 
 - [x] O23-PH earlier days:

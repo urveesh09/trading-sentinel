@@ -477,8 +477,10 @@ async def test_paths_are_read_once_after_the_close_and_fall_back_to_prints(monke
         return [("2026-10-19 10:00:00", 100, 101, 99, 100.5), ("2026-10-19 10:01:00", 100.5, 103, 100, 102)]
 
     assert (await ptp.ensure_paths(db, DAY, T(15, 0), fetch=fetch, token_of=lambda e, s: 7))["status"] == "day_not_over"
+    # [O24-MC] F&O trades until 15:40: at 15:35 the day is not over, and the candles run to 15:40.
+    assert (await ptp.ensure_paths(db, DAY, T(15, 35), fetch=fetch, token_of=lambda e, s: 7))["status"] == "day_not_over"
     out = await ptp.ensure_paths(db, DAY, T(15, 45), fetch=fetch, token_of=lambda e, s: 7)
-    assert out[ptp.BASIS_CANDLES] == 1 and calls == [(7, f"{DAY} 09:15:00", f"{DAY} 15:30:00")]
+    assert out[ptp.BASIS_CANDLES] == 1 and calls == [(7, f"{DAY} 09:15:00", f"{DAY} 15:40:00")]
     await ptp.ensure_paths(db, DAY, T(16, 0), fetch=fetch, token_of=lambda e, s: 7)
     assert len(calls) == 1          # candles stored: not read again
     paths = await ptp.load_paths(db, DAY, DAY)

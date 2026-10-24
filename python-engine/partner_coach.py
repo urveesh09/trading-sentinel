@@ -33,6 +33,16 @@ NO_STOP_ORDER, STOP_WIDER_THAN_CARD, STOP_CANCELLED; placing the stop, a
 pause after a loss and an exit ahead of the stop are positives.
 partner_lessons.py turns a day of this into the partner's review.
 
+[O24-SR 2026-10-24] The stops come from ``partner_broker_sync.merge_stops``:
+every option SELL order that carried a trigger, including a stop that fired
+(Kite shows it as LIMIT or MARKET) and one the partner turned into a sale
+(status CONVERTED: it protected the trade until that sale). A trade whose
+sale may have been a stop that cannot be confirmed (a modified sale on a day
+stored before the order histories were kept) has unknown stops, so nothing
+about its stop is claimed. A stop's placing time is exact only from its
+order history; otherwise the review says it was "in place by" that time.
+[O24-MC] The day closes at 15:40 (partner_broker_sync.CLOSE_MIN).
+
 [O21-PX] partner_insights.py adds what the option did around each trade (the
 owner's 1-minute candles), what the partner's Zerodha book shows (order
 changes, rejections, positions, the day's cash) and the lessons that follow
@@ -82,6 +92,7 @@ STOP_CHECK_MIN_HOLD_MIN = 5               # "no stop" only for a trade held at l
 STOP_PROMPT_MIN = 5                       # a stop this soon after the buy earns the positive
 STOP_WIDER_PCT = 0.03                     # a stop this far under the card's SL is "wider"
 STOP_CANCEL_SLIP_PCT = 0.01               # sold this far under a cancelled stop
+PROTECTING = ("PENDING", "TRIGGERED", "CONVERTED")   # [O24-SR] a stop in force until it sold or the day ended
 SQUARE_OFF_MIN = 15 * 60 + 15             # a stop cancelled after this may be the broker's square-off
 EXIT_LABELS = {"TARGET_MESSAGE": "target message", "SQUARE_OFF_MESSAGE": "square-off message",
                "EXIT_BY": "exit-by time"}
@@ -453,7 +464,8 @@ def _worked(actual: Optional[float]) -> str:
 
 
 def _day_close(day: str) -> datetime:
-    return IST.localize(datetime.fromisoformat(day) + timedelta(hours=15, minutes=30))
+    from partner_broker_sync import CLOSE_MIN
+    return IST.localize(datetime.fromisoformat(day) + timedelta(minutes=CLOSE_MIN))
 
 
 def _first_under(series: list, after: datetime, level: float):
@@ -524,7 +536,8 @@ def _stop_checks(out: dict, trade: dict, card: Optional[dict], stops: Optional[l
     if stops is None or first is None:
         return
     out["stops"] = [{"kind": s["kind"], "trigger": float(s["trigger_price"]), "status": s["status"],
-                     "placed": _hhmm(s["placed_dt"]), "updated": _hhmm(s["updated_dt"])} for s in stops]
+                     "placed": _hhmm(s["placed_dt"]), "updated": _hhmm(s["updated_dt"]),
+                     "exact": bool(s.get("placed_exact", True))} for s in stops]
     flags, positives = out["flags"], out["positives"]
     actual, entry, exit_px, last_sell = trade["pnl"], trade["avg_entry"], trade["avg_exit"], trade["last_sell_at"]
     end = last_sell if last_sell and not trade["open_lots"] else _day_close(trade["session_date"])
@@ -561,10 +574,14 @@ def _stop_checks(out: dict, trade: dict, card: Optional[dict], stops: Optional[l
                     else f"Put the stop at the card's {_px(sl)}."),
             better_pnl=at_card, actual_pnl=actual if at_card is not None else None))
     elif after <= STOP_PROMPT_MIN:
-        prompt = _positive("STOP_PLACED", f"{kind} at {_px(trigger)} placed {max(after, 0):.0f} min after buying.")
+        # [O24-SR] Without the order's history the time is when it was in place by: still within the limit.
+        prompt = _positive("STOP_PLACED", (f"{kind} at {_px(trigger)} placed {max(after, 0):.0f} min after buying."
+                                           if stop.get("placed_exact", True) else
+                                           f"{kind} at {_px(trigger)} in place within {max(after, 0):.0f} min of "
+                                           f"buying."))
     cancelled = [s for s in stops if s["status"] == "CANCELLED" and s["updated_dt"] and last_sell
                  and s["updated_dt"] < last_sell and s["updated_dt"].hour * 60 + s["updated_dt"].minute < SQUARE_OFF_MIN]
-    protected_after = any(s["status"] in ("PENDING", "TRIGGERED") for s in stops
+    protected_after = any(s["status"] in PROTECTING for s in stops
                           if cancelled and s["placed_dt"] > cancelled[-1]["updated_dt"])
     if cancelled and not protected_after and exit_px is not None:
         gone = cancelled[-1]
@@ -906,12 +923,15 @@ def _overtrading(buys: int, cards: int, traded: list[dict], on_day: str = "today
 
 def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: datetime,
             complete_days: frozenset = frozenset(), stops: Optional[list] = None,
-            stops_known_days: frozenset = frozenset(), context: Optional[dict] = None) -> dict:
+            stops_known_days: frozenset = frozenset(), context: Optional[dict] = None,
+            unknown_stops: Optional[list] = None) -> dict:
     """The coach view for the cards and reports in a window (pure).
 
     ``complete_days``: days whose whole Zerodha book was read after the close.
     ``stops`` / ``stops_known_days``: the partner's stop orders, and the days
     on which they are fully known (stop flags only on those days).
+    ``unknown_stops``: [O24-SR] sales that may have been stops; a trade with
+    one and no confirmed stop has unknown stops.
     ``context``: [O21-PX] price paths and the Zerodha book's details
     (partner_insights.Context); without it the analysis is as before."""
     import partner_insights as insights
@@ -922,7 +942,10 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
     def stops_for(trade):
         if not trade or trade["session_date"] not in stops_known_days:
             return None
-        return trade_stops(trade, stops or [])
+        known = trade_stops(trade, stops or [])
+        if not known and trade_stops(trade, [u | {"status": "UNKNOWN"} for u in unknown_stops or []]):
+            return None
+        return known
 
     items = []
     by_card = {card["advisory_id"]: card for card in cards}
@@ -1191,9 +1214,13 @@ async def load_partner_coach(db_path: str, *, days: int = 30, now: Optional[date
     from partner_trade_paths import load_paths
     context = await zerodha.book_details(db_path, first_day, last_day)
     context["paths"] = await load_paths(db_path, first_day, last_day)
+    from partner_watch import messages_between
+    context["watch"] = await messages_between(db_path, first_day, last_day)
+    stops, unknown = zerodha.merge_stops(await zerodha.stop_orders(db_path, first_day, last_day),
+                                         context["orders"], context["changes"])
     view = analyse(cards, reports, reaction_sec=int(settings.PARTNER_COACH_REACTION_SEC), now=now,
-                   complete_days=complete, stops=await zerodha.stop_orders(db_path, first_day, last_day),
-                   stops_known_days=known, context=context)
+                   complete_days=complete, stops=stops, stops_known_days=known, context=context,
+                   unknown_stops=unknown)
     view["data_quality"]["superseded_by_zerodha"] = superseded
     view["window"] = {"first_day": first_day, "last_day": last_day, "days": days}
     view["capture_enabled"] = bool(settings.PARTNER_FILL_CAPTURE_ENABLED)

@@ -494,12 +494,13 @@ def _labeled(w: _Writer, label: str, text, colour=INK) -> list:
     return [w.p(w.t(label.upper()), w.label), w.p(w.c(text, colour)), Spacer(1, 3)]
 
 
-def _example(w: _Writer, example: dict) -> list:
+def _example(w: _Writer, example: dict, why_shown: bool = False) -> list:
     out = []
     if example.get("option"):
         out.append(w.p(w.t(f"{example.get('time') or ''} · {example['option']}"), w.small))
     out += _labeled(w, "What happened", example.get("what"))
-    out += _labeled(w, "Why it matters", example.get("why"))
+    if not why_shown:
+        out += _labeled(w, "Why it matters", example.get("why"))
     out += _labeled(w, "What would have been better", example.get("better"), GREEN)
     return out
 
@@ -514,10 +515,13 @@ def _lesson_head(w: _Writer, lesson: dict, width: float) -> Table:
 
 def _examples(w: _Writer, lesson: dict, inner: float, divider) -> list:
     rows: list = []
+    seen: set = set()
     for index, example in enumerate(lesson.get("examples") or []):
         if index:
             rows += [_line(inner, divider), Spacer(1, 4)]
-        rows += _example(w, example)
+        # [O24-SR] A "why" already told in this lesson is not printed again (Oct 23: nine stops moved down).
+        rows += _example(w, example, why_shown=example.get("why") in seen)
+        seen.add(example.get("why"))
     return rows
 
 
@@ -625,7 +629,8 @@ def _trade(w: _Writer, story: dict) -> tuple:
     for line in story.get("option_lines") or []:
         rows.append(w.p(w.t(f"• {line}"), w.small))
     timeline = [[w.p(w.t(event.get("at", "")), w.tiny),
-                 w.p(w.c(event.get("text", ""), SKY) if event.get("who") == "card" else w.t(event.get("text", "")),
+                 w.p(w.c(event.get("text", ""), SKY) if event.get("who") == "card" else
+                     w.c(event.get("text", ""), TEAL) if event.get("who") == "assistant" else w.t(event.get("text", "")),
                      w.small)]
                 for event in story.get("timeline") or []]
     if timeline:
@@ -657,9 +662,13 @@ def _orders(w: _Writer, orders: Optional[dict], past: bool) -> list:
     body: list = [w.p(w.t(line))]
     for order in rejected:
         side = "Buy" if order.get("side") == "BUY" else "Sell"
-        reason = f": {order['reason']}" if order.get("reason") else ""
+        # [O24-RF] The plain reason first; Zerodha's own words under it.
+        said = order.get("plain") or order.get("reason")
+        reason = f": {said}" if said else ""
         refused = f"{side} {order.get('quantity', '')} {order.get('tradingsymbol', '')} refused{reason}"
         body.append(w.p(f"{w.c(order.get('at', ''), FAINT)}{GAP}{w.c(refused, RED)}", w.small))
+        if order.get("plain") and order.get("reason"):
+            body.append(w.p(w.c(f"Zerodha: {order['reason']}", FAINT), w.small))
     return _section(w, TITLES["orders"][past], body)
 
 

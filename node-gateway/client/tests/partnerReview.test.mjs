@@ -130,3 +130,15 @@ test('[O23-PH] an earlier day says "that day" and only the newest day shows tomo
   const older = buildReviewModel({ day: '2026-10-19' });
   assert.deepEqual([older.past, older.newest], [false, true]);
 });
+
+test('[O24-PW] the page says when the trade watch is on, and what quiet keeps', async () => {
+  const { watchNote } = await import('../src/utils/partnerReview.js');
+  const on = buildReviewModel({ day: '2026-10-26', today: '2026-10-26', watch: { on: true, until: '15:40', quiet: false } });
+  assert.deepEqual(on.watch, { until: '15:40', quiet: false });
+  assert.equal(watchNote(on.watch), 'Trade watch on until 15:40: messages on Telegram when a buy has no stop, a stop is moved down or cancelled, Zerodha refuses an order, and before the close. It never places an order.');
+  assert.equal(watchNote({ until: '15:40', quiet: true }), 'Trade watch on until 15:40, quiet today: you hear only when a stop is moved down or cancelled, or Zerodha refuses an order.');
+  // Off, or an engine from before O24: nothing is shown.
+  assert.equal(buildReviewModel({ watch: { on: false } }).watch, null);
+  assert.equal(buildReviewModel({}).watch, null);
+  assert.equal(watchNote(null), '');
+});

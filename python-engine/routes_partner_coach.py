@@ -94,12 +94,15 @@ async def _review(day: Optional[str], days: int) -> dict:
     first = (today - timedelta(days=window - 1)).isoformat()
     recent = view if span <= window else {**view, "days": [r for r in view["days"] if r["day"] >= first]}
     from partner_broker_sync import review_sync
+    from partner_watch import watch_status
     # [A22-P4] The login's background read (reading / enriching / done): the page refreshes until done.
     # [O23-PH] `newest`: the open day is today or the latest day with a review, so tomorrow's focus applies.
+    # [O24-PW] `watch`: whether the trade watch is on now (the page says so after a morning login).
     return {"day": chosen, "today": today.isoformat(), "newest": chosen >= (available[0] if available else chosen),
             "days_available": available, "review": day_review(view, chosen, today.isoformat()),
             "progress": progress(recent, today.isoformat()), "zerodha": view["zerodha"], "window": view["window"],
-            "as_of": view["as_of"], "sync": review_sync(now), "automatic_execution": False}
+            "as_of": view["as_of"], "sync": review_sync(now), "watch": await watch_status(now),
+            "automatic_execution": False}
 
 
 @router.get("/partner/review")

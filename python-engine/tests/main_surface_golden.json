@@ -76,7 +76,7 @@
       "func": "_run_partner_eod_wrap_safe",
       "id": "partner_eod_wrap",
       "kwargs": [],
-      "trigger": "cron[hour='15', minute='40']"
+      "trigger": "cron[hour='15', minute='50']"
     },
     {
       "func": "_run_partner_hedge_delivery_recovery_safe",
@@ -88,7 +88,7 @@
       "func": "_run_partner_hedge_eod_summary_safe",
       "id": "partner_hedge_eod_summary",
       "kwargs": [],
-      "trigger": "cron[hour='15', minute='40']"
+      "trigger": "cron[hour='15', minute='50']"
     },
     {
       "func": "_run_partner_hedge_morning_summary_safe",
@@ -155,6 +155,18 @@
       "id": "partner_scan_tick",
       "kwargs": [],
       "trigger": "cron[minute='*/2', second='40']"
+    },
+    {
+      "func": "_run_partner_watch_prompt_safe",
+      "id": "partner_watch_prompt",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='0']"
+    },
+    {
+      "func": "_run_partner_watch_tick_safe",
+      "id": "partner_watch_tick",
+      "kwargs": [],
+      "trigger": "interval[0:00:05]"
     },
     {
       "func": "_run_penny_accept_watchdog_safe",

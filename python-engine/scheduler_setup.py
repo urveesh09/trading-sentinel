@@ -1259,6 +1259,8 @@ def register_partner_scheduler_jobs(scheduler):
       - partner_scan_tick:      minute */2 at second 40 (09:45-15:05 self-gate)
       - partner_analytics_tick: minute 2-57/5 (09:20-15:30 self-gate)
       - partner_morning_brief / partner_eod_wrap / partner_rv_refresh: crons.
+      - [O24-PW] partner_watch_tick: every PARTNER_WATCH_POLL_SEC (09:15-15:40
+        self-gate, only with the partner's login); partner_watch_prompt: cron.
     """
     import main as _main
 
@@ -1361,6 +1363,26 @@ def register_partner_scheduler_jobs(scheduler):
             await partner_inbox_tick()
         except Exception as exc:
             logger.error("partner_inbox_tick_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_watch_tick_safe():
+        # [O24-PW 2026-10-24] partner_watch.watch_tick self-gates: enabled,
+        # 09:15-15:40, is_trading_day and the partner's own login; it reads
+        # their order book with their read-only key and only sends messages.
+        # Not telemetry-wrapped: a 5 s cadence would churn the per-run table.
+        try:
+            from partner_watch import watch_tick
+            await watch_tick()
+        except Exception as exc:
+            logger.error("partner_watch_tick_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_watch_prompt_safe():
+        # [O24-PW] delegated: watch_prompt checks enabled, is_trading_day and
+        # an existing login before sending the one login button.
+        try:
+            from partner_watch import watch_prompt
+            await watch_prompt()
+        except Exception as exc:
+            logger.error("partner_watch_prompt_crashed err=%s", exc, exc_info=True)
 
     async def _run_partner_eod_wrap_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
@@ -1567,13 +1589,25 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=30,
     )
     scheduler.add_job(
+        _run_partner_watch_tick_safe, "interval",
+        seconds=settings.PARTNER_WATCH_POLL_SEC,
+        id="partner_watch_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=10,
+    )
+    scheduler.add_job(
+        _run_partner_watch_prompt_safe, "cron",
+        hour=settings.PARTNER_WATCH_PROMPT_HOUR, minute=settings.PARTNER_WATCH_PROMPT_MIN,
+        id="partner_watch_prompt",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
         _run_proactive_shadow_workflow_safe, "cron",
         minute="*/5", second=55,
         id="proactive_shadow_workflow",
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )
     logger.info(
-        "partner_cron_registered jobs=16 enabled=%s hedge_enabled=%s "
+        "partner_cron_registered jobs=18 enabled=%s hedge_enabled=%s "
         "hedge_phase2_enabled=%s hedge_phase3_enabled=%s shadow_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
         settings.PARTNER_HEDGE_ENABLED,

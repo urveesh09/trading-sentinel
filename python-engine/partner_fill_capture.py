@@ -508,7 +508,7 @@ async def refresh_keyboards(db_path: str, advisory_id: str, now: datetime) -> No
 
 def _market_open(now: datetime) -> bool:
     minute = now.hour * 60 + now.minute
-    return now.weekday() < 5 and 9 * 60 + 15 <= minute <= 15 * 60 + 30
+    return now.weekday() < 5 and 9 * 60 + 15 <= minute <= 15 * 60 + 40   # [O24-MC] F&O closes at 15:40
 
 
 async def quote_at_tap(token, now: datetime) -> Optional[dict]:
@@ -803,6 +803,12 @@ async def handle_update(db_path: str, update: dict, now: datetime, *, quote_fn=q
         message = callback.get("message") or {}
         if not _in_partner_chat(message.get("chat")):
             return "foreign_chat"
+        # [O24-PW] The trade watch's "Quiet today" button.
+        from partner_watch import handle_button as watch_button
+        toast = await watch_button(db_path, str(callback.get("data") or ""), now)
+        if toast is not None:
+            await _answer(callback.get("id", ""), toast)
+            return "watch_button"
         parts = str(callback.get("data") or "").split(":")
         if len(parts) != 3 or parts[0] != CALLBACK_PREFIX or not _ADVISORY_ID.match(parts[2]):
             await _answer(callback.get("id", ""), "Unknown button.")

@@ -160,6 +160,16 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_watch_prompt_safe",
+    "id": "'partner_watch_prompt'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_watch_tick_safe",
+    "id": "'partner_watch_tick'",
+    "trigger": "'interval'"
+  },
+  {
     "func": "_run_penny_accept_watchdog_safe",
     "id": "'penny_accept_watchdog'",
     "trigger": "'cron'"

@@ -98,7 +98,7 @@ RULE_MEANINGS = {
 }
 # Time-of-day buckets for the window statistics (minutes after midnight, IST).
 TIME_BUCKETS = (("09:15–09:45", 555, 585), ("09:45–11:30", 585, 690), ("11:30–13:30", 690, 810),
-                ("13:30–15:30", 810, 930))
+                ("13:30–15:40", 810, 940))   # [O24-MC] F&O closes at 15:40
 MIN_SAMPLE = 3                 # trades per side before a window pattern is put into words
 MAX_MORE_LESSONS = 4
 MAX_ALSO = 3          # [O21-PX] other mistakes told inside the lesson; the rest go to "more"
@@ -326,7 +326,10 @@ def story(item: dict, on_day: str = "today") -> dict:
                        "sort_key": str(fill["at"])})
     for stop in item.get("stops") or []:
         kind = "a GTT stop" if stop["kind"] == "GTT" else "an SL order"
-        events.append({"at": stop["placed"], "who": "you", "text": f"You placed {kind} at {_px(stop['trigger'])}"})
+        # [O24-SR] Without the order's history only "in place by" this time is known.
+        events.append({"at": stop["placed"], "who": "you",
+                       "text": (f"You placed {kind} at {_px(stop['trigger'])}" if stop.get("exact", True) else
+                                f"By this time you had an SL order at {_px(stop['trigger'])}")})
         if stop["status"] == "CANCELLED":
             events.append({"at": stop["updated"], "who": "you", "text": f"You cancelled the stop at {_px(stop['trigger'])}"})
     for fill in partner.get("sells") or []:
