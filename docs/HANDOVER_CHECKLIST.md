@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 (night) — O24d the watch's advice stays with the partner's position (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 (night) — O24d the watch's advice stays with the partner's position (commit `677c630`, Dev, pushed, not deployed)
 
 - [x] Audit of O24c: seven gaps, all real, all fixed. Each is a test that fails on 2effb5d's watch.
 - [x] Stop advice starts from what protects the units:

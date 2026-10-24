@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 (night) — O24d the watch's advice stays with the partner's position (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 24 (night) — O24d the watch's advice stays with the partner's position (actual behavior, Dev, commit `677c630`)
 
 - **Outbox (`partner_watch_messages`).** The tick's `_events` collects (key, kind, subject, context, event_at, episode). It builds `View` (rows, trips, holdings, covers) and writes the messages as `queued` (`_enqueue_many`, INSERT OR IGNORE: a key goes in once). Then it starts the sender (`_kick` → `_drain`, one at a time, via `background_tasks.spawn`).
   - `_drain` takes today's `queued` rows and provably unsent ones with tries left, by `priority` (UNFILLED 0; REMOVED, LOWERED, REFUSED 1; NO_STOP, PARTIAL 2; ADDED, PLAN 3; CLOSE 4; fixed texts 5).

@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (night) — O24d The watch's advice stays with the partner's position: what already protects it, what is still held, a fresh price, its own trade (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (night) — O24d The watch's advice stays with the partner's position: what already protects it, what is still held, a fresh price, its own trade (done, Dev, commit `677c630`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): the audit agent reviewed O24c (7d0cb6f, 2effb5d) and found seven more gaps before the watch is production-ready. Fix those that are real, enrich where it is worth it, disagree where right.
 - Verdict: all seven were real. Each is now a test that fails on 2effb5d's `partner_watch.py` (probe: 12 new tick tests fail there for the audit's reasons; the lifecycle test is a regression guard and fails there only on the new cover line).
