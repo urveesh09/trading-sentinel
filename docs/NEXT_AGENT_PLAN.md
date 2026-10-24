@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (night, 2) — O24g Stops moved together told together; "no stop" claimed only from a GTT list read then; the order stream (off) and delivery measurement (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (night, 2) — O24g Stops moved together told together; "no stop" claimed only from a GTT list read then; the order stream (off) and delivery measurement (done, Dev, commit `797d69b`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): the audit agent's fifth review (on db167ed) reproduced one remaining edge case: GTTs moved down together were told for one of them only. Fix it with regression cover. Then prioritise streaming and live delivery measurements: faster, reliable account awareness over more restrictive filters.
 - Verdict: real. Writing the tests found two more of the same family, and a stale-list gap. All are fixed.

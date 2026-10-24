@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 (night, 2) — O24g stops moved together; claims from a fresh GTT list; the order stream and delivery measurement (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 24 (night, 2) — O24g stops moved together; claims from a fresh GTT list; the order stream and delivery measurement (actual behavior, Dev, commit `797d69b`)
 
 - **Stops moved together (`_lowered(moves)`).**
   - A move is {"id", "old", "new", "units", "at"}. `_events` step 1 collects each holding's SL orders modified down. `_guard(moves)` adds the GTTs modified down (`_track_stops`) and a single replacement (`_replacement` → ("MOVE", move)); several replaced stay ("CHANGED", gone, added) → `_changed`.

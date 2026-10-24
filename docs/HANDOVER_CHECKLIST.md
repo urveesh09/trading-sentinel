@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 (night, 2) — O24g stops moved together told together; "no stop" only from a GTT list read then; the order stream (off) and delivery measurement (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 (night, 2) — O24g stops moved together told together; "no stop" only from a GTT list read then; the order stream (off) and delivery measurement (commit `797d69b`, Dev, pushed, not deployed)
 
 - [x] Fifth audit: GTTs moved down together were told for one only. Real, fixed. So were two SL orders modified together, and a move under the plan beside another move.
 - [x] A "no stop" claim, or a sell-order claim counting a GTT, is made only from a GTT list read in that tick.
