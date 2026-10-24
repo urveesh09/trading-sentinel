@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 (night, 3) — O24h F&O shadow variants on real paths; a trend-day continuation frozen (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 (night, 3) — O24h F&O shadow variants on real paths; a trend-day continuation frozen (commit `e37504f`, Dev, pushed, not deployed)
 
 - [x] Found: the F&O shadow outcome is a target-hit scenario (43 of 43 "wins"); it never replays stops or trails, so it cannot rank variants.
 - [x] The replay can now trade any shadow variant's entries through the live book (`FNO_SIG_*` arms).

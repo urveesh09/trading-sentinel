@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (night, 3) — O24h The F&O shadow variants traded through the live book; a trend-day continuation frozen and scored (in progress, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (night, 3) — O24h The F&O shadow variants traded through the live book; a trend-day continuation frozen and scored (in progress, Dev, commit `e37504f`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): improve the system: more profit and smaller losses, flexible, never fitted to one thing. The owner agreed to four items:
   - (1) score the F&O shadow variants on real price paths;
