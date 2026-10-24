@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 — O24 partner: stops as Zerodha shows them, 15:40 close, plain refusals, trade watch (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 — O24 partner: stops as Zerodha shows them, 15:40 close, plain refusals, trade watch (commit `53280d9`, Dev, pushed, not deployed)
 
 - [x] O24-SR the review reads every stop:
   - fired stops (LIMIT/MARKET with a trigger);

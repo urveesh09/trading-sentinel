@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 — O24 partner: stops as Zerodha shows them, the 15:40 close, refusals in plain words, the trade watch (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 24 — O24 partner: stops as Zerodha shows them, the 15:40 close, refusals in plain words, the trade watch (actual behavior, Dev, commit `53280d9`)
 
 - **O24-SR stops (`partner_broker_sync.py`).**
   - A stop is any option SELL order that carried a trigger:

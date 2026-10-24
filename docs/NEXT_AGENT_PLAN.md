@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 — O24 Partner: stops read as Zerodha shows them, the 15:40 close, refusals in plain words, and the trade watch (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 — O24 Partner: stops read as Zerodha shows them, the 15:40 close, refusals in plain words, and the trade watch (done, Dev, commit `53280d9`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner asks (Oct 24):
   - the partner logs in in the morning, and a companion watches their trades and sends messages at the critical moments;
