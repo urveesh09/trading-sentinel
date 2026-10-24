@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (night, 3) — O24h The F&O shadow variants scored on real paths (the shipped entry stays best; the continuation is not supported); exit slippage measured; "check before you buy" for the partner (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (night, 3) — O24h The F&O shadow variants scored on real paths (the shipped entry stays best; the continuation is not supported); exit slippage measured; "check before you buy" for the partner (done, Dev, commit `b8cf7a8`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): improve the system for more profit and smaller losses, flexible, never fitted to one thing. The owner agreed to four items:
   - (1) score the F&O shadow variants on real price paths;

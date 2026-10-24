@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 (night, 3) — O24h F&O variants scored on real paths; exit slippage; "check before you buy" (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 (night, 3) — O24h F&O variants scored on real paths; exit slippage; "check before you buy" (commit `b8cf7a8`, Dev, pushed, not deployed)
 
 - [x] The F&O shadow outcome was a target-hit scenario. The variants are now traded through the live book in the replay (`FNO_SIG_*`).
 - [x] Study `fno-entry-t2` (frozen e37504f, scored once): the shipped entry is the best of five. The trend-day continuation is **not supported** and stays off; the variants keep being recorded.

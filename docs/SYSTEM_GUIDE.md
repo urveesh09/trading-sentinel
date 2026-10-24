@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 (night, 3) — O24h F&O entry-signal arms; exit slippage report; "check before you buy" (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 24 (night, 3) — O24h F&O entry-signal arms; exit slippage report; "check before you buy" (actual behavior, Dev, commit `b8cf7a8`)
 
 - **`fno_shadow.VARIANTS`** gains `FNO_CONTINUATION` (`FnoShadowVariant.pullback_atr` 0.25, freshness `crossing_or_pullback`).
   - `_variant_signal` accepts a fresh break as the base does. Otherwise it needs `pullback_resumed(today_bars, long, level, atr, 0.25)`, else `no_pullback_resumption`:
