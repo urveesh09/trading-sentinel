@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 24 (afternoon) — O24b Partner size against their own habit; the system on the 15:40 F&O close (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 24 (afternoon) — O24b Partner size against their own habit; the system on the 15:40 F&O close (done, Dev, commit `3c6523e`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner asks (Oct 24):
   - "The partner does not follow the 10% rule; they use the amount they have in the proportion they like." Do not judge their size by a fixed tenth of their cash.

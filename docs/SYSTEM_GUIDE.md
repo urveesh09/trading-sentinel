@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 24 (afternoon) — O24b partner size against their own habit; the system on the 15:40 F&O close (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 24 (afternoon) — O24b partner size against their own habit; the system on the 15:40 F&O close (actual behavior, Dev, commit `3c6523e`)
 
 - **O24-SZ size (`partner_insights.py`, `partner_coach.py`, `partner_lessons.py`, `partner_watch.py`).**
   - `_risk` keeps the money at risk (to the stop, the card's SL, or the premium) as `insight["risk"]`. It adds `insight["size"]`: the premium paid and its share of the day's cash. Neither is a limit.

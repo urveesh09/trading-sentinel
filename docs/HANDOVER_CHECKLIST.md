@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 24 (afternoon) — O24b partner size vs their habit; system on the 15:40 F&O close (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+## October 24 (afternoon) — O24b partner size vs their habit; system on the 15:40 F&O close (commit `3c6523e`, Dev, pushed, not deployed)
 
 - [x] O24-SZ: no fixed tenth of cash anywhere for the partner.
   - UNUSUAL_SIZE flags more than 1.5 times their usual share; the usual is the median of the last 20 trades, once there are 5.
