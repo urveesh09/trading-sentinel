@@ -1,5 +1,67 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 24 (late) — O24e The watch's last races closed: a message is sent only from the latest read, a plan never without its message, a moved stop for its own units, protection named without a level; sell orders that could sell short (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 24): the audit agent's third review of the watch (on ad6190e) reproduced four remaining gaps. It also corrected a freshness statement and suggested next enrichments. Fix what is real, enrich where it is worth it, disagree where right.
+- Verdict: all four gaps were real. Each is now a test that fails on ad6190e's `partner_watch.py`. The freshness wording was imprecise and the threshold was not deliberate: both corrected.
+- [x] O24e-RV the view a message is built from must still be the latest when it is sent (`_deliver`, `_still`, `_mark`, `_unmark`, `_build(view)`, `BUILD_TRIES` 3).
+  - Audit 1: the sender checked the view before building. The build then awaited the database and prices, a newer read showed the trade closed, and the old text still went out.
+  - Now the view is checked again after the build, and again after the row is marked "attempting". If a newer read came, the row goes back as it was and the message is built again from it (and dropped if no longer true). After 3 tries it waits for the next tick.
+  - Changes after dispatch has started cannot be undone. Changes already seen are respected.
+- [x] O24e-AT a plan version and the message it owes in one transaction (`_store_plan(announce=)`, `_insert_outbox`, `_noted`).
+  - Audit 2: version 1 was stored and its PLAN written separately. One failed write left a plan that never got its message, and nothing repaired it. The same applied to an ADDED version.
+  - Now PLAN and ADDED go into the same transaction as their version. A failed write leaves neither, and the plan (or the size change) is seen again on the next tick.
+  - A database error in one trade's plan read or revision no longer stops the tick (`partner_watch_plan_read_failed`, `partner_watch_revise_failed`).
+- [x] O24e-LU a moved stop is told for its own units, bound to its own order (`lowered_text(units=, cover=, stop_id=)`, `_rest_note`, `_result_for`, `_b_lowered`).
+  - Audit 3: 130 held, two stops of 65 each, one moved from ₹95 to ₹70. That adds 25 × 65 = ₹1,625 of gross loss if hit; the message modelled 130 units.
+  - Now: "you moved your stop for 65 of your 130 down … on those 65: … The other 65 keep their stop at ₹90."
+  - The retry is valid only while that same order (`stop_id`) waits at the new level, not any stop at that price.
+- [x] O24e-NL protection named when there is no plan stop (`_no_level_line`, `plan_summary`, `added_text`).
+  - Audit 4: with all 65 covered by an SL at ₹95, a plan without market data said "At risk: the whole ₹6,500 you paid. Decide your stop and place it now."
+  - Now: "Your SL at ₹95 covers all 65. I could not work out a fresh reference level (no market data). If it sells there: about −₹… with charges; in a fast fall an SL order can trigger and still not fill."
+  - A part covered gets the units without a stop and what is at risk on them. Unread GTTs: "unless a GTT covers it". The swing-as-big-as-the-price case is handled the same way.
+- [x] O24e-FR freshness made deliberate. `QUOTE_MAX_AGE` 60 s → 15 s, the same as our own read (`QUOTE_FRESH`).
+  - The rule is both of these:
+    - our quote read is at most 15 s old;
+    - the exchange's last quote update is at most 15 s before we received it.
+  - Reason: the partner's index options are quoted many times a second. A quote unchanged for 15 s is a stalled feed, or a contract too thin to place a level against. It then gets the reference wording, not an instruction.
+  - `partner_watch_looks` keeps both clocks, so the threshold is checked on the first live days.
+- [x] O24e-EX sell orders that could sell short (`exits_of`, `_exits`, `excess_text`, `orphan_text`, EXCESS / ORPHAN; GTTs refreshed every 60 s, `GTT_REFRESH`).
+  - EXCESS: SL, limit and GTT sells (an OCO counted once) add up to more than is held, for 20 s.
+  - ORPHAN: sells still waiting on an option no longer held, e.g. a stop left after selling at market, or an old GTT.
+  - Both are loss alarms, never muted.
+  - Evidence: on Oct 23 Zerodha refused a second sell order from the partner for exactly this, because their cash could not margin the extra as a short. So for this account the alarm matters mostly for GTTs (nothing is reserved until they fire) and for a larger account.
+- [x] O24e-TS the FULL-but-lower stop is compared with the plan stop, no longer followed by "Raising its trigger to ₹X keeps the loss to the plan": a tighter stop is not a better one until it is scored (audit enrichment 5).
+- Disagreed or deferred, with reasons:
+  - Plans for carried positions (audit enrichment 3): Production has one day of the partner's positions (Oct 23). All 9 were NRML and all were closed that day; none were carried. Deferred until a carried position is seen.
+  - "What changed since my last message" (enrichment 1): every live message already leads with the partner's latest action ("You added…", "you moved your stop…", "your stop at … is cancelled", "N still held: you sold…"). A partial sale stays silent unless it changes protection, so that is not more alerts.
+  - Pre-buy check (enrichment 4) waits for the owner's pick (the O24b list).
+  - Streaming (enrichment 6): agree it is next, with offline tests for reconnects, duplicates and ordering first. It needs a new websocket dependency, an image rebuild and the partner's paid plan; proposed as the next slice.
+  - Stop changes as decisions (enrichment 5): the shadow scoring must count winners stopped early as well as losses avoided before any tighter stop is called better.
+- Files:
+  - `python-engine/partner_watch.py`;
+  - tests: `python-engine/tests/test_partner_watch.py` (62 → 74).
+- Acceptance:
+  - each audit gap has a tick test that fails on ad6190e:
+    - 1: `test_a_message_whose_trade_closed_while_it_was_built_is_not_sent`;
+    - 2: `test_a_plan_is_never_stored_without_its_message`;
+    - 3: `test_a_stop_moved_for_part_of_a_holding_is_told_for_that_stop`;
+    - 4: `test_a_plan_without_market_data_names_the_stop_already_there`;
+  - plus pure tests for each text;
+  - interruption tests:
+    - a newer read while the row is marked;
+    - a send cut off part way (stays "attempting", not repeated after a restart).
+- Tests: engine full suite 5620 passed, 4 skipped, exit 0 (9 m 41 s, `winvenv/Scripts/python -m pytest -q`); `tests/test_partner_watch.py` 74 passed (62 before), 60 repeated runs clean after one unreproduced failure (see Remaining); client unit 65 passed (no client change). The new tick tests were run against ad6190e's watch: the four audit gaps and the two new alarms fail there for their reasons; the cut-off-send test passes there too (O24d was already conservative). No live broker or Telegram round trip (Saturday, market closed).
+- Config and migration impact: no setting, schema or scheduler change. One more GTT read a minute while logged in. New message kinds EXCESS and ORPHAN in `partner_watch_messages`.
+- Rollout: with S23-O24d (rebuild the engine, then the gateway). Rollback: revert the commit.
+- Remaining:
+  - streaming (next slice);
+  - the first live days:
+    - `partner_watch_looks` received_at − quote_at against the 15 s;
+    - `partner_watch_messages` outcomes (superseded, expired) and the EXCESS / ORPHAN counts;
+  - judgment messages stay shadow until scored.
+  - one run of `tests/test_partner_watch.py` (of about 66 that day) failed once, and 60 repeats did not reproduce it; its traceback was not kept. Repeat it with `-W error::pytest.PytestUnhandledThreadExceptionWarning`, and fix the cause if it returns.
+
 ## October 24 (night) — O24d The watch's advice stays with the partner's position: what already protects it, what is still held, a fresh price, its own trade (done, Dev, commit `677c630`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24): the audit agent reviewed O24c (7d0cb6f, 2effb5d) and found seven more gaps before the watch is production-ready. Fix those that are real, enrich where it is worth it, disagree where right.

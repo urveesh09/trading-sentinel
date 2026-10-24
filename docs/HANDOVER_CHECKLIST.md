@@ -1,5 +1,26 @@
 # Handover receipt and operator checklist
 
+## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (commit pending (recorded in the next docs commit), Dev, pushed, not deployed)
+
+- [x] Third audit of the watch: four gaps, all real, all fixed. Each is a test that fails on ad6190e's watch.
+- [x] A message is sent only if the read it was built from is still the latest after the build and after its row is marked; otherwise it is built again (or dropped).
+- [x] A plan version and its PLAN / ADDED message go in one transaction; a failed write leaves neither and is tried again on the next tick.
+- [x] A moved stop is told for the units that stop sells, the rest said apart, and only while that same order waits there.
+- [x] Without a plan stop (no market data, a swing as big as the price), the stop already in place is named; "place it now" is never said over it.
+- [x] Freshness: our read ≤ 15 s old, and the exchange's last quote update ≤ 15 s before we received it (was 60 s).
+- [x] New loss alarms, never muted:
+  - EXCESS: sell orders for more than is held;
+  - ORPHAN: sell orders waiting with nothing held.
+- [x] The plan no longer tells the partner to raise a lower stop (a comparison only).
+- [x] Tests: engine full suite 5620 passed, 4 skipped, exit 0 (9 m 41 s, `winvenv/Scripts/python -m pytest -q`); `tests/test_partner_watch.py` 74 passed (62 before), 60 repeated runs clean after one unreproduced failure (see Remaining); client unit 65 passed (no client change). The new tick tests were run against ad6190e's watch: the four audit gaps and the two new alarms fail there for their reasons; the cut-off-send test passes there too (O24d was already conservative). No live broker or Telegram round trip (Saturday, market closed).
+- [ ] Deployed: no. Ships with S23-O24d (rebuild the engine, then the gateway).
+  - On the first live days, read:
+    - `partner_watch_looks` received_at − quote_at (the 15 s);
+    - `partner_watch_messages` outcomes and the EXCESS / ORPHAN counts.
+- [ ] Owner:
+  - streaming next (a websocket dependency, an image rebuild, the paid plan);
+  - pick the next partner features (O24b list: pre-buy check and others).
+
 ## October 24 (night) — O24d the watch's advice stays with the partner's position (commit `677c630`, Dev, pushed, not deployed)
 
 - [x] Audit of O24c: seven gaps, all real, all fixed. Each is a test that fails on 2effb5d's watch.

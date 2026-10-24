@@ -1,5 +1,42 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **Send only from the latest read (`_deliver`).** Each try, up to `BUILD_TRIES` (3):
+  - takes `view = _state.view` and builds from it (`_build(…, view)`; builders await `_plan_for` and `_price_now`);
+  - if `_state.view is not view` after the build (`_still`), builds again from the newer view;
+  - None from the build → `superseded`;
+  - otherwise `_mark` (attempting, attempts + 1, the text), then checks again. A newer view there → `_unmark` (attempts, outcome and last_attempt_at as read) and builds again.
+  - After 3 tries it is WAIT and the next tick tries again. Fixed texts (WATCH_ON, PROMPT, RECONNECT) need no view.
+- **Plans and their messages, atomically.**
+  - `_store_plan(…, announce=item, day=)` inserts the version (version 1 is still never replaced) and the outbox row (`_insert_outbox` on the same connection) in one transaction. `_noted` updates `_state.enqueued` and wakes the sender only after the commit.
+  - `_plan_job` builds the PLAN item (lots from `trip.bought`, `_after_loss`, `_day_line`, `_usual_share`) before storing. `_revise` does the same for ADDED.
+  - A failed write raises: in the plan job, the task fails and is started again (`PLAN_TRIES`); in `_revise`, `_events` logs `partner_watch_revise_failed` and the change is seen again on the next tick. `_load_meta` failures log `partner_watch_plan_read_failed`.
+- **A moved stop (`lowered_text`, `_b_lowered`).**
+  - The context carries `stop_id` and `units`:
+    - a modify: `kite:<order>`, its pending units;
+    - a replacement: the new top stop's id and units.
+  - The builder needs that same stop waiting at the new trigger. The units are capped at the held count.
+  - With units under the held count: "you moved your stop for U of your N down … on those U: … instead of …", plus `_rest_note`: the other units' stops, part covered, or none. GUARD says "those U can end in a loss". `_result_for(holding, price, qty)` is the result for part of a holding.
+- **No plan stop (`_no_level_line`).** The PREMIUM and NONE stop lines start from the cover:
+  - FULL: "Your SL at ₹X covers all N." + why there is no level + the result at the stops + "in a fast fall an SL order can trigger and still not fill";
+  - PARTIAL: the units without a stop and their premium at risk;
+  - UNKNOWN: "unless a GTT covers it";
+  - ABSENT: as before.
+  - `plan_summary`: "no plan stop; your SL at … covered all N". `added_text` without a level and FULL: the result at the stops.
+- **Freshness.** `QUOTE_MAX_AGE` = 15 s (was 60 s), the same as `QUOTE_FRESH`; `stale()` unchanged otherwise.
+- **Sell orders that could sell short (`_exits`, `exits_of`).**
+  - `exits_of(rows, gtts, exchange, symbol, product|None)` lists:
+    - SL orders waiting (SL);
+    - open, or waiting without a trigger (SELL);
+    - active GTT sells (GTT); a two-leg OCO once, for its bigger leg (OCO).
+  - Every tick, after the guards, `_exits`:
+    - EXCESS: a holding's exits add up to more than it holds, keyed `excess:<ep>:<held>:<exit ids>`;
+    - ORPHAN: an option with sells waiting and no holding of any product, keyed `orphan:<day>:<exchange>:<symbol>:<exit ids>`.
+  - Each is told after `COVER_GRACE` (20 s; `exit_seen`). The builders recount from the view and wait while a counted GTT is not in a fresh list (`View.gtts`, within `GTT_REFRESH` 60 s).
+  - `_events` reads the GTT list when it is older than `GTT_REFRESH`. Both kinds are in `QUIET_KEEPS`, `PRIORITY` 1, `LIFETIME_SEC` 900.
+- **Stop advice.** FULL with a stop under the plan stop gives the comparison only (no "Raising its trigger").
+
 ## October 24 (night) — O24d the watch's advice stays with the partner's position (actual behavior, Dev, commit `677c630`)
 
 - **Outbox (`partner_watch_messages`).** The tick's `_events` collects (key, kind, subject, context, event_at, episode). It builds `View` (rows, trips, holdings, covers) and writes the messages as `queued` (`_enqueue_many`, INSERT OR IGNORE: a key goes in once). Then it starts the sender (`_kick` → `_drain`, one at a time, via `background_tasks.spawn`).
