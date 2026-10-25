@@ -1,5 +1,13 @@
 # Runbook: the ₹12,500 real-money F&O test (O25–O25d)
 
+_O25h update, October 25: **Oracle Console sign-in is no longer required for
+the selected route.** A supervised Windows SSH bridge is installed and tested
+against the existing VM tunnel. Step 4 is complete using SSH; step 5's private
+settings now select `host.docker.internal:31528`. Production clients have not
+yet adopted them. Keep Windows logged in during trading. See the
+[bridge runbook](kite-ssh-bridge.md) for verified recovery and limitations.
+The following older cloud-rule references apply only to a direct public route._
+
 _O25g operational update, October 25: **Production is recovered and PR #115
 is merged/deployed at `0aa629a`**. Engine, gateway, agent and nginx are healthy;
 the public dashboard and release identity checks passed. Automatic restart
@@ -116,53 +124,42 @@ Have at least ₹12,500 of free cash in the Zerodha account. Pledged holdings
 and margin do not count. A typical lot has cost about ₹8–9k; the morning
 check compares the two.
 
-### 4. The tunnel on the Oracle VM
+### 4. The tunnel and SSH bridge (already installed)
 
 Today all of the gateway's Kite traffic goes through the relay on port 31527
 in plain HTTP. That includes the login exchange and the day's access token.
 The tunnel replaces it: the token is inside TLS all the way to Kite, orders
 still leave from the VM's registered IP, and it serves nothing else.
 
-**[O25f] State on Oct 25: items 1 and 2 are done.** The tunnel was installed on
-the VM on Oct 25 (O25e). A read-only check the same day showed the service
-`kite-tunnel` active and enabled at boot, listening on 31528, with the VM's
-own firewall accepting it. Its two `.env` lines are in
+**O25h: this step is complete through SSH, without an Oracle website change.**
+The VM's `kite-tunnel` is active/enabled on 31528. The Windows task
+**Trading Sentinel - Kite SSH Bridge** forwards local 127.0.0.1:31528 over
+authenticated SSH (port 22) to that service. It starts at owner logon and
+reconnects automatically; overlapping starts are ignored. Keep the owner
+logged in during trading. Docker Desktop clients use `host.docker.internal`.
+
+Both clients and both deployed images reached Kite through this bridge with
+verified TLS. A forced SSH process loss recovered in 58.8 seconds. No real
+order, physical network-loss test or reboot was performed. Check the task
+before step 5:
+
+    Get-ScheduledTask -TaskName 'Trading Sentinel - Kite SSH Bridge'
+    Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort 31528 -State Listen
+
+Expect the task running and one loopback listener. The protected two-line
+settings file is
 `C:\Users\Urveesh\sentinel-operations\oracle-access-20261025\tunnel-client.env`.
-**Only item 3, the Oracle console rule, is left.** From this PC, 31528 does
-not answer until that rule exists, while 31527 does. Items 1–2 remain below
-for a reinstall.
-
-1. Copy the program to the VM, from a PowerShell window in the Production folder:
-
-       scp -i <your VM key> scripts\kite_tunnel.py ubuntu@161.118.160.180:~/
-
-   (`ubuntu` is the usual user on Oracle's Ubuntu images; use yours if it differs.)
-2. On the VM (`ssh -i <your VM key> ubuntu@161.118.160.180`):
-
-       sudo python3 kite_tunnel.py install
-
-   It installs a service called `kite-tunnel` on port 31528 and opens the
-   VM's own firewall for that port. Then it tests itself: no password is
-   refused, any other host is refused, and Kite is reached over verified TLS.
-   Expect three `PASS` lines, then two `.env` lines. Copy those two lines
-   somewhere private. Do not paste them into a chat or a screenshot: they
-   hold the tunnel's password. If you lose them, `sudo python3 kite_tunnel.py print-env`
-   prints them again. Running `install` again keeps the same password.
-3. In the Oracle console, open the port (the VM firewall is not enough). Do
-   it in the same place that allows 31527 today: usually Compute → Instances →
-   your VM → its subnet → Security Lists → the list → **Add Ingress Rules**
-   (or the VM's Network Security Group, if it uses one):
-   - Source CIDR `0.0.0.0/0` (the password protects it). Or use your home
-     IP `/32`, but then a change of home IP blocks orders until you update it.
-   - IP Protocol: TCP.
-   - Destination Port Range: `31528`.
+Do not paste its contents into chat. Direct public 31528 still times out;
+opening that cloud port is an optional alternative, not a prerequisite for
+this SSH route. [Detailed operation/rollback](kite-ssh-bridge.md).
 
 Leave the old relay (31527) running for now: it is the fallback (step 10).
 
 ### 5. The two `.env` lines, with the switch still off
 
-Take them from `tunnel-client.env` (step 4), or from `sudo python3 kite_tunnel.py print-env`
-on the VM.
+Take them from `tunnel-client.env` (step 4), also saved as `tunnel-client-ssh.env`.
+These select the verified SSH route. The VM's `print-env` command instead
+prints a direct public endpoint that is still blocked; do not substitute it.
 
 - `node-gateway\.env`: add the `KITE_PROXY_URL=…` line. Leave `KITE_BASE_URL`
   as it is: while `KITE_PROXY_URL` is set it is ignored, and deleting
@@ -190,7 +187,7 @@ goes through the tunnel, so a successful login proves the gateway's route.
 
 Expect:
 
-- `Order route: https://api.kite.trade through the CONNECT proxy http://kite:***@161.118.160.180:31528 (TLS end to end)`;
+- `Order route: https://api.kite.trade through the CONNECT proxy http://kite:***@host.docker.internal:31528 (TLS end to end)`;
 - `Order route answers: yes`;
 - your free cash, and no problem lines.
 
@@ -252,7 +249,9 @@ working), stop the plain-HTTP relay so nothing can ever use it again:
 
 1. On the VM, `sudo python3 kite_tunnel.py status` shows what listens on 31527.
    Stop and disable that program.
-2. In the Oracle console, delete the ingress rule for port 31527.
+2. Close the VM's old 31527 firewall rule after confirming no client uses it.
+   Remove its Oracle cloud ingress rule when Console access is recovered;
+   that website step does not block retirement of the VM listener.
 
 Until then it is the fallback. If the tunnel fails:
 

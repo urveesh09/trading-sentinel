@@ -1,5 +1,12 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25h supervised SSH access to the Kite tunnel
+
+- Oracle website credentials cannot be derived from the SSH key. The VM's instance principal authenticated but its network read returned `NotAuthorizedOrNotFound`; no cloud security/IAM change was made. A temporary official SDK was removed after the check.
+- Installed **Trading Sentinel - Kite SSH Bridge**, an owner-level Windows Scheduled Task using the existing OpenSSH client/key and strict saved host keys. Loopback 127.0.0.1:31528 forwards over SSH port 22 to the existing VM CONNECT service on localhost:31528. The task retries and starts at owner logon; it requires the owner to stay logged in. Docker clients use `host.docker.internal:31528`. No cloud port opening is required for this route.
+- Both actual client transports passed, including both deployed images after a forced bridge-process loss. Missing password 407, other destination 403, verified Kite TLS HTTP 200; fake broker tokens rejected. Automatic process recovery took 58.8 s. Reboot/physical network-loss recovery was not exercised. Stop/start testing did not affect Production.
+- Protected operator settings now select this SSH route, with a separate direct-route copy. **Production clients still use their previous route**, pending step 5 adoption; no Production config edit, image change or live enablement in O25h. The previous cloud-ingress blocker remains only for direct public 31528. [Operation, limitations and rollback](runbooks/kite-ssh-bridge.md).
+
 ## October 25 — O25g Production recovered and PR #115 deployed
 
 - Production was started at 13:32 IST, then updated exclusively through merged PR #115 / fast-forward to `0aa629a32f1ee714eb898fb790cf50e4ca06fc43`. Engine, gateway, agent and nginx are healthy; the public dashboard and health endpoint return HTTP 200. All three application images and runtime health passed release-identity verification at 13:42:35 IST. Automatic restart and engine logging 20m x 25 are now effective, rather than only Dev settings.

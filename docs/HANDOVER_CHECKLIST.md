@@ -1,5 +1,14 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25h SSH bridge ready; Oracle website not needed for tunnel adoption
+
+- [x] Probed the VM's actual cloud authority with official SDK: instance principal authenticated, VNIC read denied (404 `NotAuthorizedOrNotFound`); no cloud change. Removed temporary SDK.
+- [x] Installed owner-level Scheduled Task **Trading Sentinel - Kite SSH Bridge**: strict host keys, loopback-only 31528, existing SSH port 22, keepalives, indefinite retries with duplicate instances ignored. Requires owner Windows login; no stored Windows password.
+- [x] Actual client and deployed-image transport tests passed; missing-auth 407 / wrong-target 403 / verified TLS HTTP 200. Forced SSH process loss automatically recovered in 58.8 s. Stop/start left Production healthy. No reboot/physical network-loss test or real order.
+- [x] Protected `tunnel-client.env` now selects the SSH route; direct endpoint retained separately. Task XML and verification receipt saved privately. No Production `.env` edit; existing application route unchanged.
+- [ ] At operator adoption, follow step 5 in the updated live-test checklist and verify login/route. Keep Windows logged in and both SSH/tunnel healthy during trading. No Oracle website step required for this route; account recovery remains useful separately.
+- [SSH bridge operation and rollback](runbooks/kite-ssh-bridge.md). This supersedes older statements that cloud 31528 ingress is required before any client adoption.
+
 ## October 25 — O25g Production recovered; PR #115 merged and deployed (`0aa629a`)
 
 - [x] Started the three existing services, then verified dashboard/nginx recovery. Reviewed O25f and independently ran 66 focused tests; no new blocking defect found in that review.
