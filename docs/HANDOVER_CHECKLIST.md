@@ -6,7 +6,12 @@
 - [x] A CHECK work-out cut off by a restart is worked out again (row `refreshing` until replaced).
 - [x] Env audit (read-only, names and switches only): no orphan or missing names; no `.env` change needed. The real-money switches are still off and the owner halt is still on.
 - [x] Tests: Dev (Windows venv) full engine + scripts suites: 6,039 passed, 4 skipped, 1 failed (the calendar-gate guard wanted the new cron's [CALENDAR-GATE] marker; added, then the guard, scheduler, golden and ledger tests: 40 passed). 6,040 = O25M's 6,031 plus 9 new tests. Tests do not show the partner's results or profitability.
-- [ ] Production rollout receipt: recorded in the next docs commit.
+- [x] Rollout done 18:45–18:56 IST:
+  - PR #118 merged as `f9547c5`;
+  - 8 database snapshots `quick_check=ok`, rollback tags `:7468853-20261025`;
+  - Production fast-forwarded, built and recreated one service at a time, nginx restarted;
+  - `verify_deployment.py` passed; env audit identical except the release SHA;
+  - the new jobs are registered; switches off; owner halt on; no order or message.
 
 ## October 25 — O25M R1–R3 fixed in Dev (commit `07e22da`, pushed)
 
@@ -14,7 +19,7 @@
 - [x] R2: quotes need both clocks, zoned and believable. Missing or unreadable is UNVERIFIED, and a future exchange time is INVALID; neither checks a level. A typed price never makes an old quote current; an old future places no level.
 - [x] R3: the partner's reminder is retried only after a send that provably never left (5, 10, 20 min; 4 sends; 07:00–08:30) and never after a possible delivery. New job `partner_login_reminder_retry`.
 - [x] Tests: Dev (Windows venv) full engine suite 5,744 passed, 4 skipped (617 s) plus scripts/tests 287 passed: 6,031 in all (O25k's 6,015 plus the 16 new tests); focused partner suites 165 passed; the O25L review's four reproductions now fail against this code. Tests do not show the partner's results or profitability.
-- [ ] Rollout to Production (PR, backup, rebuild, recreate, verify): owner's call. Production runs `7468853` without these fixes.
+- [x] (O25N) Rolled out to Production with O25N as `f9547c5` (see the O25N receipt).
 - [x] (O25N) The brief, EOD, coach note and review prompt now use the daily-send ledger.
 
 ## October 25 — O25L independent release/partner audit

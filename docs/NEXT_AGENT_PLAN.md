@@ -37,6 +37,22 @@
 - Config impact: no new setting; one new scheduler job; new partner_messages kinds `brief_try`, `eod_try`, `coach_try` and `zerodha_prompt_try` (no schema change); partner_watch_messages outcome `refreshing`.
 - Rollout: PR to `evolve/smart-strategies`, merged with the owner's go-ahead. Production procedure: database backup, rollback tags, fast-forward, stamped build of the three images one at a time, recreate one at a time, nginx restart, `verify_deployment.py`, then the env audit again. The rollout receipt follows in the next docs commit.
 - Rollback: the `sentinel-rollback/<svc>:7468853-20261025` images, or revert the merge; no migration.
+- **Receipt (done Oct 25, 18:45–18:56 IST):**
+  - PR #118 merged as a merge commit, `f9547c5` on `evolve/smart-strategies`, carrying O25M (`07e22da`) and O25N (`967c2d6`). The Production branch had no commit of its own beyond its merges.
+  - Backups, outside the repositories, in `C:\Users\Urveesh\sentinel-operations\production-rollout-20261025-o25n\`:
+    - 8 SQLite databases as single-step online snapshots from a read-only, network-less sidecar, every one `quick_check=ok` (cache.db 3.15 GB in 57 s);
+    - the previous images tagged `sentinel-rollback/<service>:7468853-20261025`.
+  - Production: on `evolve/smart-strategies` with no tracked change, `git merge --ff-only` to `f9547c5`.
+  - Build: engine, gateway and agent built one at a time, stamped `f9547c5` / `2026-10-25T13:19:55Z`; each image's baked stamp checked.
+  - Engine, gateway and agent recreated one at a time (`--no-deps --no-build --force-recreate`), each healthy before the next; then nginx restarted.
+  - `scripts/verify_deployment.py --expected-sha f9547c5…` passed with health checked; the receipt is in `%USERPROFILE%\sentinel-operations\release-receipts\`.
+  - Env audit, read-only, run before and after (switches, times and presence only): identical except the release SHA. No `.env` was edited.
+  - Engine startup:
+    - `premarket_login_nudge`, `login_reminder_retry_tick` and `partner_daily_retry` registered, with the brief and the wrap;
+    - no traceback or error;
+    - `/health` DEGRADED only for no_kite_token, instrument_cache_unavailable and order_execution_unverified (expected until Monday's login).
+  - Gateway: `kite_route` still encrypted through the tunnel; the order-route probe job ran successfully. Dashboard HTTP 200. All four services healthy, restart `always`.
+  - No real order placed and no Telegram message sent by the rollout.
 - Remaining (not code): live evidence from the first real partner session (O25L item 2) and O25L items 3–8.
 
 ## October 25 — O25M Fixes for R1–R3 from the O25L review: CHECK prices current when sent, quote clocks enforced, the morning reminder retried safely (done, Dev, commit `07e22da`, branch `codex/production-correction-hedge-p0`, pushed)
