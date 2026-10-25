@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 25 — O25f Review of O25d/O25e: a route conflict no longer stops the engine, a bad run date never silences the reports, Production survives a Docker restart (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, in draft PR #115, not deployed, switch off)
+## October 25 — O25f Review of O25d/O25e: a route conflict no longer stops the engine, a bad run date never silences the reports, Production survives a Docker restart (done, Dev, commit `e9645de`, branch `codex/production-correction-hedge-p0`, pushed, in draft PR #115, not deployed, switch off)
 
 - Owner ask (Oct 25): forwarded the O25d/O25e agent's summary: "now you check if there is any issue then fix it and tell me if anything is left or to enhance or what?"
 - Checked:

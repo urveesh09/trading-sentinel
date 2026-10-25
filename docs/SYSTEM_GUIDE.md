@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 25 — O25f Route conflicts, run authorization and restart policy (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 25 — O25f Route conflicts, run authorization and restart policy (actual behavior, Dev, commit `e9645de`)
 
 - **`KiteClient.__init__`.** When KITE_ORDER_PROXY_URL and KITE_ORDER_BASE_URL are both set, `order_route_error` is set, `order_client` is None and `kite_order_route_invalid` is logged (critical). It never raises.
   - `place_order` (any intent), `modify_order` and `cancel_order` return `order_route_invalid` (place: `dispatch_certainty` NOT_SENT) before the limiter or any HTTP.

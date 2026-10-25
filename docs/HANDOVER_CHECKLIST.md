@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 25 — O25f review of O25d/O25e: three gaps fixed; Production is down until the owner starts it (commit pending (recorded in the next docs commit), Dev, pushed, in draft PR #115, not deployed, switch off)
+## October 25 — O25f review of O25d/O25e: three gaps fixed; Production is down until the owner starts it (commit `e9645de`, Dev, pushed, in draft PR #115, not deployed, switch off)
 
 - [x] Both order routes set: the engine keeps running and real orders are refused (NOT_SENT). It no longer fails at import.
 - [x] A malformed run date: buys are refused, and the 09:25 and 15:50 messages still go out, naming it.
