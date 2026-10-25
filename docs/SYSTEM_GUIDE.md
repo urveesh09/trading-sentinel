@@ -1,12 +1,33 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25M Partner delivery: current prices, verified quote clocks, a safe reminder retry (actual behavior, commit pending (recorded in the next docs commit))
+
+- **Quote freshness (`partner_watch.quote_freshness`).** A quote is FRESH only when all of these hold:
+  - our read is within QUOTE_FRESH (15 s);
+  - the exchange's quote time and our receipt time are both present, readable and zoned;
+  - the exchange time is at most QUOTE_CLOCK_SKEW (5 s) after receipt and at most QUOTE_MAX_AGE (15 s) before it.
+
+  Otherwise it is STALE, UNVERIFIED (unknown), INVALID (a future exchange time) or MISSING.
+  - Only a FRESH quote checks a level (`level_state`: VALID or CROSSED). Anything else is "check first". UNVERIFIED texts say the time could not be verified and never print a future time.
+  - Plans use the option's mid and the future's price only when FRESH, typed price or not. Without a current future, the levels come from the last closed 5-minute bar.
+  - The fired-stop alarm says the bid only from a FRESH quote.
+- **"check 22300 pe" replies.** The outbox row keeps the request, the exact option and expiry, and `valid_until` (15 s after the prices were read).
+  - A reply not sent by then is never sent: the row is closed `outdated`, and the reply is worked out again once for the same option and expiry, beside the sender, saying "Prices read again at …".
+  - Otherwise the partner gets a no-numbers note to send the check again.
+  - With a typed price and no current quote, the reply says why ("its last price update was 10:50:02, too old to use, so the levels are worked from your price"). It never says "the ask now" or gives a bid-ask gap.
+- **The partner's 07:00 reminder.** Each send is claimed in `partner_messages` (`login_reminder_try`, `<day>:<n>`) before it goes, and settled after.
+  - A send that provably did not leave (no connection, 429, Telegram 5xx) is retried by `partner_login_reminder_retry`, which runs every 5 minutes. The waits are 5, 10 and 20 minutes, 4 sends at most, and only 07:00–08:30.
+  - Nothing is resent after a timeout after the request left, a send cut off by a restart, a 4xx, or a login.
+  - The same tick sends a reminder the 07:00 run missed. The day's `login_reminder` row records the result: reminded, uncertain, refused or undelivered.
+- **Owner alerts.** `operator_alert_queued` (warning) means the gateway accepted an alert that Telegram did not take on the first try; the gateway keeps retrying it.
+
 ## October 25 — O25L independently verified state and remaining partner delivery gaps
 
 Production runs `7468853`, with matching Dev application source and matching installed Mumbai tunnel source. Both application tunnel settings are now applied. The full application runs on the owner's Windows/Docker host; Oracle hosts the routing service. Real trading remains off. Sunday readiness still requires a current owner login, instruments and order-execution verification.
 
 The partner can request a hypothetical nearest-expiry option plan in Telegram with `check 22300 pe` or `check sensex 81000 ce 120 2 lots`. It never records a buy or authorizes/places an order. Actual post-buy monitoring, protection alerts and evening broker-based review are separate. Order-update streaming is implemented but off; price/depth streaming and scored adaptive exit judgments are not active. Production has zero watch-message/quote-path rows, so live watch delivery has not yet been demonstrated.
 
-Three reproduced gaps remain in the current code: CHECK is fixed text and can be retried stale; incomplete/future quote clocks pass freshness and a supplied price bypasses stale-input rejection; failed morning reminders are deduplicated as already reminded. These require Dev fixes, not Production edits. The unqualified-card option is currently enabled, so an empty qualification registry alone does not block properly labelled NOT CHECKED cards. [Verified feature inventory, findings, evidence and implementation plan](2026-10-25-independent-production-partner-review.md).
+Three reproduced gaps were in the code reviewed (fixed in Dev by O25M, above; Production keeps them until it is deployed): CHECK is fixed text and can be retried stale; incomplete/future quote clocks pass freshness and a supplied price bypasses stale-input rejection; failed morning reminders are deduplicated as already reminded. These require Dev fixes, not Production edits. The unqualified-card option is currently enabled, so an empty qualification registry alone does not block properly labelled NOT CHECKED cards. [Verified feature inventory, findings, evidence and implementation plan](2026-10-25-independent-production-partner-review.md).
 
 ## October 25 — O25k The morning login reminder (actual behavior, commit `1d40091`)
 

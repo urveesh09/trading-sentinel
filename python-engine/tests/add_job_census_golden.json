@@ -280,6 +280,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "login_reminder_retry_tick",
+    "id": "'partner_login_reminder_retry'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "momentum_eod_warning",
     "id": "'momentum_eod_warning'",
     "trigger": "'cron'"

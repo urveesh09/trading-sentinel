@@ -119,7 +119,12 @@ above the last price, so:
   - a level that could not be checked says when it was set.
 [O24d] Only a fresh price checks a level: our read within QUOTE_FRESH (15 s)
 and the exchange's last quote update within QUOTE_MAX_AGE (15 s, [O24e])
-before we received it (else STALE). A level not checked is an earlier
+before we received it (else STALE). [O25M] Both clocks must say their zone
+and the exchange's may be at most QUOTE_CLOCK_SKEW after our receipt; a
+missing, unreadable or later one is UNVERIFIED (unknown, not old) and checks
+nothing either (``quote_freshness``). The same rule decides which quotes a
+plan uses (the option's mid, the future's price), whether or not the price
+was given. A level not checked is an earlier
 reference to check first, never "place an SL now". What selling now gives
 is priced against the bids' sizes: a best bid for fewer units than are held
 is not the price of all of them.
@@ -153,6 +158,10 @@ still starts from the stops in place (``_no_level_line``).
     later, rebuilt, within LIFETIME_SEC and MAX_ATTEMPTS; this survives a
     restart, because the outbox is in the database. A timeout after the
     request left may have arrived, so it is not repeated.
+  - [O25M] A CHECK reply's prices are current for QUOTE_FRESH after they
+    were read (``valid_until``, kept with its request and the option and
+    expiry worked out). Past that it is not sent: it is worked out again
+    for the same option and expiry (once), else a note to ask again.
   - The broker's event time, the detection time and Telegram's
     acknowledgement time are stored for each message.
 
@@ -247,6 +256,10 @@ QUOTE_FRESH = timedelta(seconds=15)        # a quote this recent checks a level 
 # partner's index options are quoted many times a second, so a quote unchanged this long is either a stalled feed
 # or a contract too thin to place a level against. partner_watch_looks keeps both clocks to check it on live days.
 QUOTE_MAX_AGE = timedelta(seconds=15)
+# [O25M] How far the exchange's quote time may be after our receipt (the two clocks differ a little) before it is
+# not believed. Production's Kite quotes of Oct 21-22 (69,480 NIFTY/SENSEX options and futures): never missing, never
+# more than 0.5 s after receipt; receipt 1.1 s after it at the median, 2.3 s at the 99th percentile.
+QUOTE_CLOCK_SKEW = timedelta(seconds=5)
 POSITIONS_EVERY = timedelta(seconds=30)
 POSITIONS_LAG = timedelta(seconds=10)      # a fill this recent may not be in Zerodha's positions yet
 POSITIONS_MAX_AGE = timedelta(minutes=2)   # an older positions read (later reads failed) confirms nothing
@@ -945,31 +958,80 @@ def revised(plan: Plan, *, entry: float, qty: int, exchange: str) -> Plan:
     return out
 
 
-def stale(quote: Optional[dict], now: Optional[datetime] = None) -> bool:
-    """[O24d] A price too old to check a level against: our read is older
-    than QUOTE_FRESH, or the exchange's quote time is more than QUOTE_MAX_AGE
-    before we received it (an option nobody has quoted for a minute)."""
+def _aware(value) -> Optional[datetime]:
+    """[O25M] A clock that says its zone (an aware datetime, or ISO text with an offset); None when it is missing,
+    unreadable or without a zone. ``_dt`` reads a zoneless time as IST; a quote's clocks are not guessed."""
+    if isinstance(value, datetime):
+        return value if value.utcoffset() is not None else None
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return parsed if parsed.utcoffset() is not None else None
+
+
+def quote_freshness(quote: Optional[dict], now: Optional[datetime] = None) -> str:
+    """[O25M] Whether a quote is current enough to check a level or price a check:
+      - FRESH;
+      - STALE: our read is older than QUOTE_FRESH, or the exchange's quote
+        time is more than QUOTE_MAX_AGE before we received it ([O24d]: an
+        option nobody has quoted for a minute);
+      - UNVERIFIED: the exchange's quote time or our receipt time is missing,
+        unreadable or without a zone (unknown, not old);
+      - INVALID: the exchange's quote time is more than QUOTE_CLOCK_SKEW after
+        we received it;
+      - MISSING: no quote.
+    [O25M] Before, a quote without the exchange's time, or with one ten
+    minutes ahead, passed as fresh when our own read was recent."""
     if not quote:
-        return False
+        return "MISSING"
+    received = _aware(quote.get("received_at"))
     looked = quote.get("looked_at")
-    if now is not None and isinstance(looked, datetime) and now - looked > QUOTE_FRESH:
-        return True
-    exchange, received = _dt(quote.get("quote_at")), _dt(quote.get("received_at"))
-    return bool(exchange and received and received - exchange > QUOTE_MAX_AGE)
+    read = _aware(looked) if looked is not None else received
+    if now is not None and read is not None and now - read > QUOTE_FRESH:
+        return "STALE"
+    exchange = _aware(quote.get("quote_at"))
+    if exchange is None or received is None or read is None:
+        return "UNVERIFIED"
+    if exchange - received > QUOTE_CLOCK_SKEW:
+        return "INVALID"
+    return "STALE" if received - exchange > QUOTE_MAX_AGE else "FRESH"
+
+
+def stale(quote: Optional[dict], now: Optional[datetime] = None) -> bool:
+    """[O24d] A price too old to check a level against (``quote_freshness``
+    STALE). [O25M] A quote whose clocks cannot be verified is not stale but
+    unknown: it checks no level either."""
+    return quote_freshness(quote, now) == "STALE"
+
+
+def _exchange_time(quote: Optional[dict]) -> Optional[datetime]:
+    """[O25M] The exchange's quote time when it can be believed (it says its zone and is not after our receipt)."""
+    exchange, received = _aware((quote or {}).get("quote_at")), _aware((quote or {}).get("received_at"))
+    if exchange is None or (received is not None and exchange - received > QUOTE_CLOCK_SKEW):
+        return None
+    return exchange
 
 
 def level_state(level: Optional[float], quote: Optional[dict], now: Optional[datetime] = None) -> str:
     """[O24c] A plan stop against the last price: VALID (an SL sell can be
     placed there: Kite needs the trigger under the last price), CROSSED (the
     price is at or under it), UNCHECKED (no price read), NONE (no stop).
-    [O24d] STALE: the price read is too old to tell (``stale``)."""
+    [O24d] STALE: the price read is too old to tell (``stale``). [O25M]
+    UNVERIFIED: the price's clocks are missing or not believable
+    (``quote_freshness`` UNVERIFIED or INVALID): it checks nothing."""
     if level is None:
         return "NONE"
     ltp = (quote or {}).get("ltp")
     if not ltp:
         return "UNCHECKED"
-    if stale(quote, now):
+    state = quote_freshness(quote, now)
+    if state == "STALE":
         return "STALE"
+    if state != "FRESH":
+        return "UNVERIFIED"
     return "CROSSED" if ltp <= level + 1e-9 else "VALID"
 
 
@@ -1042,12 +1104,15 @@ def _checked(quote: Optional[dict]) -> str:
     return f"; the price was {_px(quote['ltp'])} at {_hms(quote['looked_at'])}"
 
 
-def _unchecked(stop: float, quote: Optional[dict], set_at: Optional[datetime]) -> str:
+def _unchecked(stop: float, quote: Optional[dict], set_at: Optional[datetime], state: Optional[str] = None) -> str:
     """[O24d] A plan stop that could not be checked against a current price:
-    an earlier reference, not an instruction."""
+    an earlier reference, not an instruction. [O25M] A price whose time
+    cannot be verified is said so (a future exchange time is never shown)."""
     since = f" is from {_hms(set_at)}" if set_at else ""
-    exchange = _dt((quote or {}).get("quote_at"))
-    if quote and quote.get("ltp") and exchange:
+    exchange = _exchange_time(quote)
+    if quote and quote.get("ltp") and state == "UNVERIFIED":
+        why = "the time of the last price I read could not be verified"
+    elif quote and quote.get("ltp") and exchange:
         why = f"the last price update I have is from {_hms(exchange)}"
     elif quote and quote.get("ltp") and quote.get("looked_at"):
         why = f"the last price I read was at {_hms(quote['looked_at'])}"
@@ -1096,7 +1161,7 @@ def stop_advice(position, plan: Optional[Plan], cover: Optional[Cover], quote: O
     held = position.open_qty
     fresh = state == "VALID"
     order = f"an SL sell, trigger {_px(plan.stop)}, limit a little under it{_checked(quote)}."
-    unsure = _unchecked(plan.stop, quote, set_at)
+    unsure = _unchecked(plan.stop, quote, set_at, state)
     if cover is not None and cover.state == "FULL":
         if not cover.stops:
             return "Your stop has triggered and is selling."
@@ -1290,8 +1355,9 @@ def plan_stop_line(holding, plan: Optional[Plan], quote: Optional[dict], *, set_
         return (f" Plan stop {_px(plan.stop)} (price {_px(quote['ltp'])}{read}); if it sells there, about "
                 f"−{_amt(loss)} with charges.")
     since = f"set at {_hhmm(set_at)}; " if set_at else ""
-    exchange = _dt((quote or {}).get("quote_at"))
+    exchange = _exchange_time(quote)
     why = (f"the last price update was {_hms(exchange)}" if state == "STALE" and exchange else
+           "the time of the last price could not be verified" if state == "UNVERIFIED" else
            "the price could not be read now")
     return (f" Plan stop {_px(plan.stop)} ({since}{why}); if it sells there, about −{_amt(loss)} with charges.")
 
@@ -1611,15 +1677,18 @@ def removed_text(holding, why: dict, plan: Optional[Plan], quote: Optional[dict]
     return line + _count_note(holding) + plan_stop_line(holding, plan, quote, set_at=set_at, now=now)
 
 
-def unfilled_text(holding, fired: dict, quote: Optional[dict] = None) -> str:
-    """[O24c] A stop that fired and has not sold: the price is under its limit."""
+def unfilled_text(holding, fired: dict, quote: Optional[dict] = None, now: Optional[datetime] = None) -> str:
+    """[O24c] A stop that fired and has not sold: the price is under its limit.
+    [O25M] The bid is said only from a current quote (``quote_freshness``)."""
     what = "GTT" if fired.get("kind") == "GTT" else "stop"
     limit = fired.get("limit")
     line = (f"🚨 {_name(holding)}: your {what} triggered at {_px(fired['trigger'])}, but its sell "
             f"order{f' (limit {_px(limit)})' if limit else ''} has not filled: {fired['pending']} of "
             f"{holding.open_qty} still to sell.")
     bid = (quote or {}).get("bid")
-    if bid and limit and bid < limit:
+    if bid and quote_freshness(quote, now) != "FRESH":
+        line += " The last bid I read is not current: check the bid in Zerodha."
+    elif bid and limit and bid < limit:
         line += (f" The bid is {_px(bid)}, under your limit: it sells only at {_px(limit)} or better."
                  f"{_sell_now(holding, quote)} To sell now, the limit has to come down to the bid.")
     elif bid:
@@ -1890,12 +1959,9 @@ class _Contract:
 # ---------------------------------------------------------------------------
 
 def _retryable(state: Optional[str], error: Optional[str]) -> bool:
-    """[O24c] Provably not delivered, so safe to send again: no connection was
-    made, Telegram's rate limit, or a Telegram 5xx. A timeout after the
-    request left may have arrived."""
-    if state in ("unsent_connect", "rate_limited"):
-        return True
-    return state == "rejected" and bool(re.fullmatch(r"telegram_http_5\d\d", str(error or "")))
+    """[O24c] Provably not delivered, so safe to send again (``partner_bot.provably_unsent``)."""
+    from partner_bot import provably_unsent
+    return provably_unsent(state, error)
 
 
 def _who(subject) -> tuple:
@@ -2089,6 +2155,15 @@ async def _deliver(db_path: str, entry: _Entry, now: datetime) -> str:
             and await quiet(db_path, now.date().isoformat())):
         await _close(db_path, entry.key, "muted")
         return MUTED
+    if entry.kind == "CHECK":
+        # [O25M] A check's prices are current for QUOTE_FRESH after they were read. Past that (a retry, a slow first
+        # send, a restart) the text is never sent: it is worked out again beside the sender.
+        outdated = _outdated_check(entry, now)
+        if outdated is not None:
+            await _close(db_path, entry.key, "outdated")
+            logger.info("partner_watch_check_outdated key=%s attempts=%d", entry.key, entry.attempts)
+            _refresh_later(db_path, entry, outdated, now)
+            return DONE
     # [O24e] Building awaits prices and the database, and a newer book read can arrive meanwhile: the message is
     # sent only if the view it was built from is still the latest, checked after the build and again after the
     # row is marked; otherwise it is built again from the newer view.
@@ -3396,10 +3471,16 @@ def _plan_done(task: asyncio.Task) -> None:
         logger.error("partner_watch_plan_failed err=%s", type(task.exception()).__name__)
 
 
-async def _market_plan(trip: Trip, now: datetime, market: Market, size: Optional[tuple] = None) -> tuple:
-    """The plan from the option's and the front future's candles and quotes."""
+async def _market_plan(trip: Trip, now: datetime, market: Market, size: Optional[tuple] = None,
+                       inputs: Optional[dict] = None) -> tuple:
+    """The plan from the option's and the front future's candles and quotes.
+    [O25M] A quote is used only when current (``quote_freshness``), whether
+    or not the price was given: the option's mid prices its volatility, the
+    future's price places its levels. Without a current future price the plan
+    takes the last closed 5-minute bar, as when the future cannot be read.
+    ``inputs`` (when given) gets each quote's freshness: option, future."""
     contract = contract_of(trip.exchange, trip.tradingsymbol)
-    option_bars, fut_bars, fut_price, quote = None, None, None, None
+    option_bars, fut_bars, fut_price, quote, fut_quote = None, None, None, None, None
     if contract is not None:
         future = contract.front_future(now.date())
         try:
@@ -3413,18 +3494,23 @@ async def _market_plan(trip: Trip, now: datetime, market: Market, size: Optional
                 fut_bars = await market.candles(future, "5minute", start, now)
             quotes = await _quotes(market, [c for c in (contract, future) if c is not None], now)
             quote = quotes.get(contract.tradingsymbol)
-            fut_price = (quotes.get(future.tradingsymbol) or {}).get("ltp") if future is not None else None
+            fut_quote = quotes.get(future.tradingsymbol) if future is not None else None
         except Exception as exc:          # the plan says less, it never fails the tick
             logger.warning("partner_watch_market_failed err=%s", type(exc).__name__)
+    option_state, fut_state = quote_freshness(quote, now), quote_freshness(fut_quote, now)
+    if fut_state == "FRESH":
+        fut_price = fut_quote.get("ltp")
+    if inputs is not None:
+        inputs.update(option=option_state, future=fut_state)
     lot = int(getattr(contract, "lot_size", 0) or 0)
     if size is not None and size[1] is None:
-        # [O24h] A check before a buy: the price is the ask just read, and only a fresh one (``stale``).
+        # [O24h] A check before a buy: the price is the ask just read, and only a current one.
         ask = (quote or {}).get("ask")
-        if not ask or ask <= 0 or stale(quote, now):
+        if not ask or ask <= 0 or option_state != "FRESH":
             return None, quote, lot
         size = (size[0], float(ask))
     plan = _plan_of(trip, contract, now, size=size, option_bars=option_bars, fut_bars=fut_bars, fut_price=fut_price,
-                    mid=_mid(quote))
+                    mid=_mid(quote) if option_state == "FRESH" else None)
     return plan, quote, lot
 
 
@@ -3629,7 +3715,8 @@ async def _b_unfilled(db_path: str, context: dict, view: View, now: datetime):
     fired = next((f for f in (cover.fired if cover else []) if f["order_id"] == context.get("order_id")), None)
     if fired is None:
         return None                       # it sold, or it was changed or cancelled
-    return unfilled_text(holding, fired, await _price_now(holding, now)), "your stop fired and had not sold", None
+    return (unfilled_text(holding, fired, await _price_now(holding, now), now), "your stop fired and had not sold",
+            None)
 
 
 async def _b_lowered(db_path: str, context: dict, view: View, now: datetime):
@@ -3742,13 +3829,15 @@ _BUILDERS = {
 # ---------------------------------------------------------------------------
 
 async def _say(db_path: str, key: str, day: str, kind: str, text: str, now: datetime, *,
-               keyboard: Optional[dict] = None, event_at: Optional[datetime] = None) -> bool:
+               keyboard: Optional[dict] = None, event_at: Optional[datetime] = None,
+               context: Optional[dict] = None) -> bool:
     """[O24d] A fixed-text message (WATCH_ON, PROMPT, RECONNECT; [O24h]
     CHECK) through the outbox: sent at once when it can be; one that provably
-    did not leave is tried again from the later ticks. Whether it went now."""
+    did not leave is tried again from the later ticks. Whether it went now.
+    [O25M] ``context``: kept with it (a check's request and prices)."""
     deadline = _time.monotonic() + DELIVERY_INLINE_SEC
-    if not await _enqueue(db_path, key, day, kind, None, now, context={"text": text, "keyboard": keyboard},
-                          event_at=event_at):
+    if not await _enqueue(db_path, key, day, kind, None, now,
+                          context={**(context or {}), "text": text, "keyboard": keyboard}, event_at=event_at):
         return False
     await _wait_within([_kick()], DELIVERY_INLINE_SEC, deadline)
     async with aiosqlite.connect(db_path) as db:
@@ -3763,6 +3852,7 @@ async def _say(db_path: str, key: str, day: str, kind: str, text: str, now: date
 
 CHECK_WORDS = ("check", "chk")
 CHECK_DEADLINE_SEC = 12.0                  # the check's market reads (the inbox waits for it)
+CHECK_REFRESHES = 1                        # [O25M] times a check not sent while current is worked out again
 MAX_CHECK_LOTS = 50
 CHECK_HELP = ("🔎 To check an option before you buy, send for example: check 22300 pe. With your price and lots: "
               "check sensex 81000 ce 120 2 lots. I reply with the plan stop, the loss if it sells there, the "
@@ -3816,17 +3906,30 @@ def parse_check(text: str) -> Optional[dict]:
 
 def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[dict], *, lots: int, qty: int,
                given: Optional[float], future: str, opt_type: str, after_loss: Optional[dict] = None,
-               day_line: Optional[str] = None, usual: Optional[float] = None, expires_today: bool = False) -> str:
+               day_line: Optional[str] = None, usual: Optional[float] = None, expires_today: bool = False,
+               price_note: Optional[str] = None, future_live: bool = True,
+               refreshed_at: Optional[datetime] = None) -> str:
     """[O24h] The reply to a check: the plan for this option bought now, at
     the price the partner gave or the ask just read, then only the facts
-    that stand out. Never "buy" or "don't buy"."""
+    that stand out. Never "buy" or "don't buy".
+    [O25M] ``quote`` is a current one only (None otherwise): ``price_note``
+    then says why there is no live price, and the levels are worked from the
+    price given. ``future_live``: whether the future's price was current.
+    ``refreshed_at``: the prices were read again, the first answer late."""
     from partner_insights import SPIKE_RUN_PCT, USUAL_SIZE_MULT
+    state = quote_freshness(quote)
+    if quote is not None and state != "FRESH":     # never "the ask now" from a quote whose clocks do not hold
+        price_note, quote = price_note or _live_price_note(quote, state), None
     ask, bid = (quote or {}).get("ask"), (quote or {}).get("bid")
     when = f" ({expiry:%d %b})" if expiry else ""
     if given is not None:
-        price = f"at your {_px(given)}" + (f" (the ask now {_px(ask)})" if ask else "")
-    else:
+        price = f"at your {_px(given)}" + (f" (the ask now {_px(ask)})" if ask else
+                                           f" ({price_note}, so the levels are worked from your price)"
+                                           if price_note else "")
+    elif quote is not None:
         price = f"at {_px(plan.entry)} (the ask now" + (f"; bid {_px(bid)})" if bid else ")")
+    else:
+        price = f"at {_px(plan.entry)} ({price_note or 'no current price to compare'})"
     lines = [f"🔎 Check: {name}{when} · {lots} lot{'s' if lots != 1 else ''} ({qty}) {price}."]
     share = _share(plan.loss, plan.cash)
     if plan.stop_basis == "INDEX" and plan.stop is not None:
@@ -3853,6 +3956,10 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
         facts.append(f"bid-ask gap {_px(ask - bid)} ({_amt((ask - bid) * qty)} on {qty})")
     if facts:
         lines.append("• " + "; ".join(facts) + ".")
+    if not future_live:
+        lines.append(f"• The {future}'s live price could not be checked now: "
+                     + ("its levels are from its last closed 5-minute bar." if plan.fut is not None else
+                        "no futures stop or target."))
     if plan.run_pct is not None and plan.run_pct >= SPIKE_RUN_PCT:
         lines.append(f"⚠️ It rose {plan.run_pct:.0%} in 15 minutes: your review calls a buy after a run like this a "
                      f"chased spike.")
@@ -3871,45 +3978,179 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
     if expires_today:
         lines.append("⏳ It expires today: after the close it is settled at its in-the-money value, and its time "
                      "value falls fastest today.")
+    if refreshed_at is not None:
+        lines.append(f"🔁 Prices read again at {_hms(refreshed_at)}: my first answer could not reach you while its "
+                     f"prices were current.")
     lines.append(CHECK_NOTE)
     return "\n".join(lines)
 
 
-async def check_message(parsed: dict, now: datetime, market: Market, db_path: Optional[str] = None) -> str:
+def _live_price_note(quote: Optional[dict], state: str) -> str:
+    """[O25M] Why a check has no current price for the option ("" when it has one)."""
+    if state == "FRESH":
+        return ""
+    if state == "STALE":
+        at = _exchange_time(quote)
+        return f"its last price update was {_hms(at)}, too old to use" if at else "its last price is too old to use"
+    if state in ("UNVERIFIED", "INVALID"):
+        return "the time of its last price could not be verified"
+    return "its price could not be read now"
+
+
+def _check_words(request: Optional[dict]) -> str:
+    """[O25M] The check as the partner would send it again ("check 22300 pe", "check sensex 81000 ce 120 2 lots")."""
+    if not isinstance(request, dict) or request.get("strike") is None or not request.get("opt_type"):
+        return "the check"
+    words = ["check"]
+    if request.get("underlying") and request["underlying"] != "NIFTY":
+        words.append(str(request["underlying"]).lower())
+    words += [f"{float(request['strike']):g}", str(request["opt_type"]).lower()]
+    if request.get("price") is not None:
+        words.append(f"{float(request['price']):g}")
+    if request.get("lots") and int(request["lots"]) != 1:
+        words.append(f"{int(request['lots'])} lots")
+    return " ".join(words)
+
+
+def check_late_text(request: Optional[dict], contract: Optional[dict]) -> str:
+    """[O25M] A check that could not be sent while its prices were current and is not worked out again: no numbers,
+    the option and expiry it was about, and the words to ask again."""
+    name = _option(contract["tradingsymbol"]) if isinstance(contract, dict) and contract.get("tradingsymbol") else ""
+    expiry = _iso_date(contract.get("expiry")) if isinstance(contract, dict) else None
+    about = f" {name}" + (f" ({expiry:%d %b})" if expiry else "") if name else ""
+    return (f"🔎 Check{':' if about else ''}{about}: my answer could not reach you while its prices were current. "
+            f"Send {_check_words(request)} again for the current plan.")
+
+
+def _iso_date(value) -> Optional[date]:
+    try:
+        return date.fromisoformat(str(value)) if value else None
+    except ValueError:
+        return None
+
+
+async def _check_reply(parsed: dict, now: datetime, market: Market, db_path: Optional[str] = None, *,
+                       pin: Optional[dict] = None, refreshed: bool = False) -> tuple:
     """[O24h] The reply to one check: the option (the nearest expiry with that
     strike), its plan as if bought now, and the day's context when the watch
     has read the book today (the last loss, the trade count, the usual size,
-    the cash)."""
+    the cash).
+
+    [O25M] (text, evidence): with prices in the reply, what they rest on (the
+    option and expiry worked out, when they were read, and ``valid_until``:
+    QUOTE_FRESH later); None for a reply without prices. ``pin``: an earlier
+    answer's option and expiry, worked out again for that option only (never
+    another expiry)."""
     from fno_models import OptionType
     from fno_underlyings import SPECS, get_instruments_for
-    name = parsed["underlying"] or "NIFTY"
+    name = (pin or {}).get("underlying") or parsed["underlying"] or "NIFTY"
     spec = SPECS.get(name)
     if spec is None:
-        return f"🔎 I can check {', '.join(sorted(SPECS))} options."
+        return f"🔎 I can check {', '.join(sorted(SPECS))} options.", None
     book = get_instruments_for(name)
-    expiry = book.nearest_option_expiry(now.date())
-    raw = book.option(expiry, parsed["strike"], OptionType(parsed["opt_type"])) if expiry else None
     label = f"{name} {parsed['strike']:g} {parsed['opt_type']}"
-    if raw is None:
-        return f"🔎 I could not find {label} for the nearest expiry{f' ({expiry:%d %b})' if expiry else ''}."
+    kind = OptionType(parsed["opt_type"])
+    if pin is not None:
+        expiry = _iso_date(pin.get("expiry"))
+        raw = book.option(expiry, parsed["strike"], kind) if expiry else None
+        if raw is None or raw.tradingsymbol != pin.get("tradingsymbol"):
+            return (f"🔎 I could not find {label}{f' ({expiry:%d %b})' if expiry else ''} to check it again. Send "
+                    f"{_check_words(parsed)} for the nearest expiry."), None
+    else:
+        expiry = book.nearest_option_expiry(now.date())
+        raw = book.option(expiry, parsed["strike"], kind) if expiry else None
+        if raw is None:
+            return f"🔎 I could not find {label} for the nearest expiry{f' ({expiry:%d %b})' if expiry else ''}.", None
+    when = f" ({expiry:%d %b})" if expiry else ""
     lots = parsed["lots"] or 1
     qty = lots * int(raw.lot_size or 1)
     trip = Trip(key=f"check:{raw.tradingsymbol}", exchange=spec.segment, tradingsymbol=raw.tradingsymbol,
                 product="NRML", first_at=now)
-    plan, quote, _lot = await _market_plan(trip, now, market, size=(qty, parsed["price"]))
+    inputs: dict = {}
+    plan, quote, _lot = await _market_plan(trip, now, market, size=(qty, parsed["price"]), inputs=inputs)
+    live = inputs.get("option") == "FRESH"
+    note = _live_price_note(quote, inputs.get("option", "MISSING"))
     if plan is None:
-        return (f"🔎 {label}{f' ({expiry:%d %b})' if expiry else ''}: its price could not be read now (the market may "
-                f"be closed). Send the price you would pay to check it: check {parsed['strike']:g} "
-                f"{parsed['opt_type'].lower()} 75.")
+        return (f"🔎 {label}{when}: {note or 'its price could not be read now'} (the market may be closed). Send the "
+                f"price you would pay to check it: check {parsed['strike']:g} {parsed['opt_type'].lower()} 75."), None
     trip.bought, trip.buy_value = qty, qty * plan.entry
     view = _state.view if _state.view is not None and _state.view.day == now.date().isoformat() else None
     trips = list(view.trips) if view is not None else []
     usual = await _usual_share(db_path, trip, trips, now) if db_path and view is not None else None
-    return check_text(_option(raw.tradingsymbol), expiry, plan, quote, lots=lots, qty=qty, given=parsed["price"],
-                      future=_future_of(raw.tradingsymbol), opt_type=parsed["opt_type"],
+    text = check_text(_option(raw.tradingsymbol), expiry, plan, quote if live else None, lots=lots, qty=qty,
+                      given=parsed["price"], future=_future_of(raw.tradingsymbol), opt_type=parsed["opt_type"],
                       after_loss=_after_loss(trip, trips) if view is not None else None,
                       day_line=_day_line(trip, [*trips, trip]) if view is not None else None, usual=usual,
-                      expires_today=expiry == now.date())
+                      expires_today=expiry == now.date(), price_note=note or None,
+                      future_live=inputs.get("future") == "FRESH", refreshed_at=now if refreshed else None)
+    evidence = {"contract": {"underlying": name, "exchange": spec.segment, "tradingsymbol": raw.tradingsymbol,
+                             "expiry": expiry.isoformat() if expiry else None},
+                "read_at": now.isoformat(), "valid_until": (now + QUOTE_FRESH).isoformat()}
+    return text, evidence
+
+
+async def check_message(parsed: dict, now: datetime, market: Market, db_path: Optional[str] = None) -> str:
+    """[O24h] The reply to one check (``_check_reply``'s text)."""
+    return (await _check_reply(parsed, now, market, db_path))[0]
+
+
+def _outdated_check(entry: _Entry, now: datetime) -> Optional[dict]:
+    """[O25M] A CHECK whose prices are no longer current (past ``valid_until``): its context; None otherwise (no
+    prices in it, or still current). A check kept without what its text rests on (no ``base``: not written by
+    answer_check) may hold prices as old as the row: current for QUOTE_FRESH after it was written."""
+    try:
+        context = json.loads(entry.context or "null")
+    except ValueError:
+        context = None
+    if not isinstance(context, dict):
+        context = {}
+    until = _aware(context.get("valid_until"))
+    if until is None and "base" not in context:
+        created = _dt(entry.created_at)
+        until = created + QUOTE_FRESH if created is not None else None
+    return context if until is not None and now > until else None
+
+
+_check_tasks: set = set()
+
+
+def _refresh_later(db_path: str, entry: _Entry, context: dict, now: datetime) -> None:
+    task = background_tasks.spawn(_refresh_check(db_path, entry, context, now), name="partner_watch_check_refresh")
+    _check_tasks.add(task)
+    task.add_done_callback(_refresh_done)
+
+
+def _refresh_done(task: asyncio.Task) -> None:
+    _check_tasks.discard(task)
+    if not task.cancelled() and task.exception() is not None:
+        logger.error("partner_watch_check_refresh_failed err=%s", type(task.exception()).__name__)
+
+
+async def _refresh_check(db_path: str, entry: _Entry, context: dict, now: datetime) -> None:
+    """[O25M] A check whose prices went out of date before it could be sent
+    (a send that never left, a slow first send, a restart): worked out again
+    from prices read now, for the same option and expiry, CHECK_REFRESHES
+    times; after that (or when it cannot be worked out) a note to ask again,
+    with no numbers. The old numbers are never sent. Beside the sender, so
+    an urgent alarm never waits for these market reads."""
+    base = str(context.get("base") or entry.key)
+    done = int(context.get("refreshes") or 0)
+    request, pin = context.get("request"), context.get("contract")
+    day, asked = now.date().isoformat(), _dt(entry.event_at)
+    if done < CHECK_REFRESHES and isinstance(request, dict) and isinstance(pin, dict):
+        try:
+            reply, evidence = await asyncio.wait_for(
+                _check_reply(request, now, _state.market or _market, db_path, pin=pin, refreshed=True),
+                CHECK_DEADLINE_SEC)
+        except Exception as exc:          # TimeoutError included: the note to ask again instead
+            logger.warning("partner_watch_check_refresh_unworked key=%s err=%s", entry.key, type(exc).__name__)
+        else:
+            await _say(db_path, f"{base}:r{done + 1}", day, "CHECK", reply, now, event_at=asked,
+                       context={"request": request, "base": base, "refreshes": done + 1, **(evidence or {})})
+            logger.info("partner_watch_check_refreshed key=%s", entry.key)
+            return
+    await _say(db_path, f"{base}:late", day, "CHECK", check_late_text(request, pin), now, event_at=asked,
+               context={"base": base})
 
 
 async def answer_check(db_path: str, text: str, now: datetime, *, key: str, asked_at: Optional[datetime] = None,
@@ -3917,7 +4158,10 @@ async def answer_check(db_path: str, text: str, now: datetime, *, key: str, aske
     """[O24h] Answer a check from the partner's chat (partner_fill_capture
     calls this before reading a message as a trade report). "not_check" when
     the message is not one (or the watch is off); the reply goes through the
-    outbox (kind CHECK, sent even when quiet: the partner asked for it)."""
+    outbox (kind CHECK, sent even when quiet: the partner asked for it).
+    [O25M] The request, the option and expiry worked out and until when its
+    prices are current are kept with it: a reply not sent by then is worked
+    out again (``_refresh_check``), never sent with old prices."""
     if not enabled():
         return "not_check"
     parsed = parse_check(text)
@@ -3925,19 +4169,21 @@ async def answer_check(db_path: str, text: str, now: datetime, *, key: str, aske
         return "not_check"
     await init_partner_watch_db(db_path)
     _state.clock = _state.clock or (now, _time.monotonic())
+    evidence = None
     if parsed["unclear"] or parsed["strike"] is None or parsed["opt_type"] is None:
         reply, outcome = CHECK_HELP, "check_help"
     else:
         try:
-            reply = await asyncio.wait_for(check_message(parsed, now, market or _state.market or _market, db_path),
-                                           CHECK_DEADLINE_SEC)
+            reply, evidence = await asyncio.wait_for(
+                _check_reply(parsed, now, market or _state.market or _market, db_path), CHECK_DEADLINE_SEC)
             outcome = "check"
         except asyncio.TimeoutError:
             reply, outcome = "🔎 The market data did not come in time for this check. Try again in a minute.", "check_slow"
         except Exception as exc:          # a check that cannot be worked out is said so, never a crash
             logger.warning("partner_watch_check_failed err=%s", type(exc).__name__)
             reply, outcome = "🔎 I could not work out this check now. Try again in a minute.", "check_failed"
-    await _say(db_path, key, now.date().isoformat(), "CHECK", reply, now, event_at=asked_at)
+    await _say(db_path, key, now.date().isoformat(), "CHECK", reply, now, event_at=asked_at,
+               context={"request": parsed, "base": key, "refreshes": 0, **(evidence or {})})
     logger.info("partner_watch_check outcome=%s", outcome)
     return outcome
 

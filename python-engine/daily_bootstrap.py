@@ -336,6 +336,37 @@ async def premarket_login_nudge() -> None:
         logger.error("partner_login_reminder_failed err=%s", type(exc).__name__)
 
 
+# The retry tick's quiet outcomes: nothing was sent and nothing is wrong.
+_RETRY_QUIET = ("already_reminded", "already_logged_in", "retry_later", "in_progress", "not_configured",
+                "partner_disabled", "outside_window")
+
+
+async def login_reminder_retry_tick() -> None:
+    """[O25M 2026-10-25] Every 5 minutes in the partner reminder's window (07:00-08:30 on trading days): the
+    partner's reminder again. A send that provably did not leave is retried (bounded), and a reminder the 07:00
+    run missed (an engine restart at 07:00) is sent; one delivered or possibly delivered is never repeated
+    (partner_broker_sync.morning_login_reminder). The owner's nudge is not repeated: the gateway retries an
+    accepted alert itself."""
+    import partner_broker_sync
+
+    now = datetime.now(IST)
+    start, end = partner_broker_sync.reminder_window(now)
+    if not start <= now <= end:
+        return
+    import main as _main
+
+    if not await _main.is_trading_day(now.date(), settings.DB_PATH):
+        return
+    try:
+        outcome = await partner_broker_sync.morning_login_reminder(now)
+    except Exception as exc:
+        logger.error("partner_login_reminder_failed err=%s", type(exc).__name__)
+        return
+    if outcome.get("status") not in _RETRY_QUIET:
+        logger.info("partner_login_reminder_retry status=%s attempts=%s", outcome.get("status"),
+                    outcome.get("attempts"))
+
+
 def owner_login_url() -> str | None:
     """[O25k] The owner's Kite login page for this app (ZERODHA_API_KEY). Kite sends the login back to the
     app's registered redirect (the gateway's /api/auth/callback), so it works from the phone too."""

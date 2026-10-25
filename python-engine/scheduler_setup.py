@@ -472,7 +472,7 @@ def register_penny_scheduler_jobs(scheduler):
     # degraded. run_penny_universe_refresh itself is unchanged and remains
     # the task runner underneath (and the manual/ops entry point).
     from daily_bootstrap import (
-        bootstrap_0800_job, bootstrap_safety_tick, premarket_login_nudge,
+        bootstrap_0800_job, bootstrap_safety_tick, login_reminder_retry_tick, premarket_login_nudge,
     )
 
     scheduler.add_job(
@@ -493,6 +493,14 @@ def register_penny_scheduler_jobs(scheduler):
         hour=settings.LOGIN_REMINDER_HOUR, minute=settings.LOGIN_REMINDER_MINUTE,
         id="premarket_login_nudge",
         max_instances=1, coalesce=True, misfire_grace_time=1800,
+    )
+    # [O25M 2026-10-25] The partner's reminder again every 5 minutes in its window (07:00-08:30): a send that
+    # provably never left is retried (bounded), one a restart missed is sent, one that may have arrived never is.
+    scheduler.add_job(
+        login_reminder_retry_tick, "cron",
+        hour=f"{settings.LOGIN_REMINDER_HOUR}-{min(settings.LOGIN_REMINDER_HOUR + 2, 23)}", minute="*/5",
+        id="partner_login_reminder_retry",
+        max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     scheduler.add_job(
         bootstrap_safety_tick, "interval",

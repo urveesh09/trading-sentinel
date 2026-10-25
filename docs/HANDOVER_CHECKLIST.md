@@ -1,12 +1,21 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25M R1–R3 fixed in Dev (commit pending (recorded in the next docs commit), pushed)
+
+- [x] R1: a CHECK reply is never sent after its prices' 15 s. It is worked out again once for the same option and expiry, else a no-numbers note to ask again.
+- [x] R2: quotes need both clocks, zoned and believable. Missing or unreadable is UNVERIFIED, and a future exchange time is INVALID; neither checks a level. A typed price never makes an old quote current; an old future places no level.
+- [x] R3: the partner's reminder is retried only after a send that provably never left (5, 10, 20 min; 4 sends; 07:00–08:30) and never after a possible delivery. New job `partner_login_reminder_retry`.
+- [x] Tests: Dev (Windows venv) full engine suite 5,744 passed, 4 skipped (617 s) plus scripts/tests 287 passed: 6,031 in all (O25k's 6,015 plus the 16 new tests); focused partner suites 165 passed; the O25L review's four reproductions now fail against this code. Tests do not show the partner's results or profitability.
+- [ ] Rollout to Production (PR, backup, rebuild, recreate, verify): owner's call. Production runs `7468853` without these fixes.
+- [ ] Not changed: brief, EOD and coach use the same attempted-versus-delivered record (O25L R3 note).
+
 ## October 25 — O25L independent release/partner audit
 
 - [x] Production `7468853` image/HTTP identity and Dev source parity verified; normalized hashes match 342 engine/gateway/agent source/config files. VM tunnel active/enabled and source matches Dev. No Production mutation during review.
 - [x] Independent focused checks: 490 passed. Four isolated fake-data reproductions confirmed three gaps; they do not represent fixes.
-- [ ] R1: rebuild or expire CHECK market-dependent text at delivery/retry, preserving exact contract identity and bounded/ambiguous delivery handling.
-- [ ] R2: enforce valid quote clocks and current option/future evidence even when an entry price is supplied; label unavailable inputs honestly.
-- [ ] R3: bounded safe retry for provably unsent morning reminders, without globally changing dedup or repeating ambiguous sends.
+- [x] (O25M) R1: rebuild or expire CHECK market-dependent text at delivery/retry, preserving exact contract identity and bounded/ambiguous delivery handling.
+- [x] (O25M) R2: enforce valid quote clocks and current option/future evidence even when an entry price is supplied; label unavailable inputs honestly.
+- [x] (O25M) R3: bounded safe retry for provably unsent morning reminders, without globally changing dedup or repeating ambiguous sends.
 - [ ] First live partner session: both logins, account reconciliation, persisted message acknowledgement/latency and quote paths; streaming remains off. No unnecessary real trade for testing.
 - [ ] Effective-date CAS/session/settlement maintenance before Dec 7; preserve current/replay rules. Subsequent stream and adaptive entry/exit evaluation follow the [review and concrete plan](2026-10-25-independent-production-partner-review.md).
 - No source/schema/configuration/deployment change in this audit. Real-money switches remain off; no outbound message/order. Empty qualifications do not by themselves block owner-authorized NOT CHECKED cards.

@@ -2,6 +2,8 @@
 
 Status: review completed in Dev against Production release `74688534434aeb00164b31a8f9c717d7ae883cb2` and Dev `6e91f3b`. No application fix, Production edit, restart, trading activation, real order or outbound message was performed during this review. Findings below remain open. This is software and operational evidence, not proof of profitability.
 
+Update (O25M, Oct 25): R1, R2 and R3 are fixed in Dev, with adversarial tests; this review's four reproductions now fail against the fixed code. Production keeps the findings until the fix is deployed. See the O25M slice in [the plan](NEXT_AGENT_PLAN.md). The brief/EOD/coach records noted under R3 were not changed.
+
 ## Verified deployment and recent development
 
 - Production checkout and all three running application images report `7468853` (PR #117). `scripts/verify_deployment.py --expected-sha <full Production HEAD>` passed container/image identity and HTTP release checks.

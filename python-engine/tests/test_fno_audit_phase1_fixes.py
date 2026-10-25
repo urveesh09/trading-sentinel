@@ -182,7 +182,7 @@ class TestHardFlatNoQuotePagesOperator:
     """
 
     @pytest.mark.asyncio
-    async def test_hard_flat_no_quote_calls_notify_operator(self, fno_log):
+    async def test_hard_flat_no_quote_calls_notify_operator(self, fno_log, monkeypatch):
         import fno_positions as fpos
         from config import settings as _settings
         await fpos.init_fno_positions_db(_settings.DB_PATH)
@@ -233,8 +233,8 @@ class TestHardFlatNoQuotePagesOperator:
             captured["event"] = kwargs.get("event")
             return True
 
-        sys.modules["operator_alert"] = MagicMock()
-        sys.modules["operator_alert"].notify_operator = _capture
+        # [O25M] Through monkeypatch: the stand-in leaked into every later test's `import operator_alert`.
+        monkeypatch.setitem(sys.modules, "operator_alert", MagicMock(notify_operator=_capture))
 
         executor = FnoExecutor(fake_kite, paper_mode=True, source_tag="FNO_PAPER")
         closed = await _manage_open_positions(

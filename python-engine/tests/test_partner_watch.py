@@ -35,6 +35,13 @@ def D(h, m, s=0):
     return T(h, m, s, day=23)
 
 
+def _clocked(quote: dict, at: datetime = None) -> dict:
+    """[O25M] A quote as the watch holds one: read at ``at`` (10:00:05), the exchange's quote time a second
+    before. Without both clocks a quote checks no level."""
+    at = at or D(10, 0, 5)
+    return {"looked_at": at, "received_at": at.isoformat(), "quote_at": (at - timedelta(seconds=1)).isoformat()} | quote
+
+
 class FakeContract:
     def __init__(self, symbol=SYMBOL, kind="PE", strike=22300.0, token=11, lot=65):
         self.tradingsymbol, self.instrument_type, self.strike, self.token = symbol, kind, strike, token
@@ -75,7 +82,11 @@ class FakeMarket(pw.Market):
 
     async def quote(self, contracts):
         self.calls.append(("quote", [c.tradingsymbol for c in contracts]))
-        return {k: v for k, v in self.quotes.items() if k in {c.tradingsymbol for c in contracts}}
+        # [O25M] As Market.quote: our receipt time and the exchange's quote time (a second before it), unless the
+        # test gives its own clocks. A quote without them checks nothing.
+        at = pw._now()
+        clocks = {"received_at": at.isoformat(), "quote_at": (at - timedelta(seconds=1)).isoformat()}
+        return {k: clocks | v for k, v in self.quotes.items() if k in {c.tradingsymbol for c in contracts}}
 
     async def candles(self, contract, interval, start, end):
         self.calls.append((interval, contract.tradingsymbol))
@@ -198,7 +209,7 @@ def test_a_fired_stop_that_has_not_sold_is_exiting_not_missing():
     cover = pw.cover_of(held, fired, None)
     assert (cover.state, cover.covered, cover.exiting) == ("FULL", 0, 65)
     assert cover.fired == [{"order_id": "201", "trigger": 70.0, "limit": 69.0, "pending": 65, "kind": "SL"}]
-    text = pw.unfilled_text(held, cover.fired[0], {"bid": 66.0, "ltp": 66.5})
+    text = pw.unfilled_text(held, cover.fired[0], _clocked({"bid": 66.0, "ltp": 66.5}))
     at_bid = (66.0 - 80.0) * 65 - round_trip_costs(80.0, 66.0, 65, "NFO")
     assert text == ("🚨 NIFTY 22300 PE: your stop triggered at ₹70, but its sell order (limit ₹69) has not filled: "
                     "65 of 65 still to sell. The bid is ₹66, under your limit: it sells only at ₹69 or better. Selling "
@@ -271,7 +282,7 @@ def test_a_plan_stop_the_price_is_already_under_is_never_offered_as_a_stop():
                                       zip(option.index, option[["open", "high", "low", "close"]].values.tolist())],
                          fut_bars=None, fut_price=None, option_mid=20.0)
     assert (plan.stop, plan.stop_basis) == (90.0, "SWING")
-    quote = {"bid": 19.9, "ask": 20.1, "ltp": 20.0}
+    quote = _clocked({"bid": 19.9, "ask": 20.1, "ltp": 20.0})
     assert pw.level_state(plan.stop, quote) == "CROSSED" and pw.level_state(plan.stop, None) == "UNCHECKED"
     trip = pw.Trip("1", "NFO", "NIFTY26OCT22700CE", "NRML", bought, bought=65, buy_value=6500.0)
     text = pw.plan_text(trip, plan, lots=1, quote=quote)
@@ -306,7 +317,7 @@ def test_the_plan_message_reads_plainly():
     trip = pw.Trip("1", "NFO", SYMBOL, "NRML", D(11, 29, 17), bought=65, buy_value=65 * 75.05)
     text = pw.plan_text(trip, plan, lots=1, after_loss={"loss": 925.0, "at": "13:53", "minutes": 0, "bigger": "130 after 65"},
                         day_line="Trade 5 today · ₹290 in charges so far.", usual=0.30,
-                        quote={"bid": 75.0, "ask": 75.1, "ltp": 75.05})
+                        quote=_clocked({"bid": 75.0, "ask": 75.1, "ltp": 75.05}))
     assert text.splitlines() == [
         "🟢 You bought NIFTY 22300 PE · 1 lot (65) at ₹75.05",
         "🛑 Plan stop ₹57.85 (NIFTY future 22,601). If it sells there: about −₹1,180 with charges, 16% of your cash.",
@@ -316,10 +327,10 @@ def test_the_plan_message_reads_plainly():
         "trend is with you.",
         "⚠️ Your last trade closed −₹925 at 13:53, 0 min before this buy. This is 130 after 65.",
         "Trade 5 today · ₹290 in charges so far.",
-        "Place an SL sell now: trigger ₹57.85, limit a little under it. In a fast fall an SL order can trigger and "
-        "still not fill.",
+        "Place an SL sell now: trigger ₹57.85, limit a little under it; the price was ₹75.05 at 10:00:05. In a fast "
+        "fall an SL order can trigger and still not fill.",
     ]
-    above = pw.plan_text(trip, plan, lots=1, quote={"bid": 116.0, "ask": 116.2, "ltp": 116.1})
+    above = pw.plan_text(trip, plan, lots=1, quote=_clocked({"bid": 116.0, "ask": 116.2, "ltp": 116.1}))
     assert "🎯 Already above the target zone ₹115.2 (price ₹116.1)." in above
 
 
@@ -357,7 +368,7 @@ def test_an_add_names_the_new_size_and_the_bigger_loss_at_the_plan_stop():
     held = _holding(130, entry=77.5)
     plan = pw.Plan(entry=77.5, qty=130, stop=60.0, stop_basis="INDEX")
     text = pw.added_text(held, added=65, added_px=75.0, first_px=80.0, plan=plan, loss_before=1300.0,
-                         quote={"bid": 74.9, "ask": 75.1, "ltp": 75.0})
+                         quote=_clocked({"bid": 74.9, "ask": 75.1, "ltp": 75.0}))
     at_stop = (60.0 - 77.5) * 130 - round_trip_costs(77.5, 60.0, 130, "NFO")
     assert text == (f"➕ You added 65 to NIFTY 22300 PE at ₹75, under your first buy at ₹80: now 130 at ₹77.5. If the "
                     f"plan stop ₹60 sells: about −{pw._amt(-at_stop)} with charges (it was −₹1,300). Buying more of a "
@@ -391,7 +402,7 @@ def test_the_plan_never_asks_for_a_second_sl_and_never_widens_a_tighter_one():
     second sell order, or a reason to loosen the tighter stop)."""
     held = _holding(65, entry=100.0)
     plan = pw.Plan(entry=100.0, qty=65, stop=80.0, stop_basis="INDEX", stop_index=22601.0, loss=1400.0, cash=20000.0)
-    quote = {"bid": 99.9, "ask": 100.1, "ltp": 100.0, "looked_at": D(10, 0, 5)}
+    quote = _clocked({"bid": 99.9, "ask": 100.1, "ltp": 100.0}, D(10, 0, 5))
     tight = pw.cover_of(held, [_stop_row("201", 65, 95.0, D(10, 0, 1))], [])
     text = pw.plan_text(held, plan, lots=1, cover=tight, quote=quote, now=D(10, 0, 6))
     assert "Place an SL" not in text
@@ -2223,3 +2234,252 @@ async def test_a_check_in_the_partners_chat_is_answered_and_never_recorded_as_a_
     assert reports == 0 and row[0] == D(11, 0, 1).isoformat()
     assert await capture.handle_update(db, update, D(11, 0, 5)) == "check"   # Telegram delivered it again
     assert [m["kind"] for m in watch].count("watch_check") == 1
+
+
+# ---------------------------------------------------------------------------
+# [O25M] The Oct 25 independent review (O25L): a check's prices are current when it is sent (R1), and a quote is current
+# only when both its clocks hold, whether or not the partner typed a price (R2)
+# ---------------------------------------------------------------------------
+
+class LaterBook(FakeBook):
+    """A book whose nearest expiry is now 3 Nov; the 27 Oct option is still listed (``listed``)."""
+
+    def __init__(self, listed=True):
+        self.listed = listed
+
+    def nearest_option_expiry(self, today):
+        return date(2026, 11, 3)
+
+    def option(self, expiry, strike, opt_type):
+        if (strike, getattr(opt_type, "value", opt_type)) != (22300.0, "PE"):
+            return None
+        if expiry == date(2026, 10, 27):
+            return FakeContract(SYMBOL) if self.listed else None
+        return FakeContract("NIFTY26NOV22300PE")
+
+
+async def _checks(db):
+    async with aiosqlite.connect(db) as conn:
+        return [tuple(row) for row in await (await conn.execute(
+            "SELECT message_key, outcome FROM partner_watch_messages WHERE kind='CHECK' ORDER BY created_at, rowid"
+        )).fetchall()]
+
+
+async def _send_due(db, at):
+    """The sender at ``at`` (what is due, delivered), then the checks it worked out again beside it."""
+    pw._state.clock = (at, time.monotonic())
+    for entry in await pw._due(db, at):
+        await pw._deliver(db, entry, at)
+    while pw._check_tasks:
+        await asyncio.gather(*list(pw._check_tasks))
+
+
+@pytest.mark.asyncio
+async def test_a_check_retried_after_its_prices_went_old_is_worked_out_again(watch, kite, monkeypatch):
+    """[O25M, O25L R1] Reproduced: a check whose first send never left (no connection) went 30 s later as it was, the ask
+    read at 11:00:02 still called "the ask now". Now a reply past its prices' QUOTE_FRESH is never sent: it is
+    worked out again from prices read then, for the same option."""
+    import fno_underlyings
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    db = settings.DB_PATH
+    market = _market(D(11, 0))
+    monkeypatch.setattr(pw, "_market", market)
+    pw._state.clock = (D(11, 0, 2), time.monotonic())
+    kite["outcomes"].append("unsent_connect")
+    assert await pw.answer_check(db, "check 22300 pe", D(11, 0, 2), key="check:1") == "check"
+    assert watch[-1]["state"] == "unsent_connect" and "at ₹75.1 (the ask now; bid ₹75)." in watch[-1]["text"]
+    market.quotes[SYMBOL] = {"bid": 79.9, "ask": 80.0, "ltp": 79.95}            # the market moved meanwhile
+    await _send_due(db, D(11, 0, 32))
+    assert len(watch) == 2 and watch[-1]["state"] == "acknowledged" and "₹75.1" not in watch[-1]["text"]
+    lines = watch[-1]["text"].splitlines()
+    assert lines[0] == "🔎 Check: NIFTY 22300 PE (27 Oct) · 1 lot (65) at ₹80 (the ask now; bid ₹79.9)."
+    assert lines[-2] == ("🔁 Prices read again at 11:00:32: my first answer could not reach you while its prices were "
+                         "current.")
+    assert await _checks(db) == [("check:1", "outdated"), ("check:1:r1", "acknowledged")]
+
+
+@pytest.mark.asyncio
+async def test_a_check_retried_while_its_prices_are_current_goes_as_it_is(watch, kite, monkeypatch):
+    import fno_underlyings
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    db = settings.DB_PATH
+    monkeypatch.setattr(pw, "_market", _market(D(11, 0)))
+    pw._state.clock = (D(11, 0, 2), time.monotonic())
+    kite["outcomes"] += ["unsent_connect", "unsent_connect"]
+    await pw.answer_check(db, "check 22300 pe", D(11, 0, 2), key="check:1")
+    await pw.answer_check(db, "check banana", D(11, 0, 2), key="check:help")
+    await _send_due(db, D(11, 0, 13))           # 11 s after its prices were read: still current
+    assert watch[2]["text"] == watch[0]["text"] and watch[2]["state"] == "acknowledged"
+    await _send_due(db, D(11, 0, 50))           # the help has no prices in it: it goes as it is, however late
+    assert watch[-1]["text"] == watch[1]["text"] == pw.CHECK_HELP
+    assert await _checks(db) == [("check:1", "acknowledged"), ("check:help", "acknowledged")]
+
+
+@pytest.mark.asyncio
+async def test_a_check_still_unsent_after_it_was_worked_out_again_asks_for_the_check_again(watch, kite, monkeypatch):
+    """[O25M, O25L R1] Once worked out again (CHECK_REFRESHES): a refused retry (here Telegram's rate limit) that goes old
+    too becomes a note to ask again, with no numbers in it."""
+    import fno_underlyings
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    db = settings.DB_PATH
+    monkeypatch.setattr(pw, "_market", _market(D(11, 0)))
+    pw._state.clock = (D(11, 0, 2), time.monotonic())
+    kite["outcomes"] += ["unsent_connect", "rate_limited"]
+    await pw.answer_check(db, "check 22300 pe 2 lots", D(11, 0, 2), key="check:1")
+    await _send_due(db, D(11, 0, 32))
+    assert watch[-1]["state"] == "rate_limited" and watch[-1]["text"].startswith("🔎 Check: NIFTY 22300 PE (27 Oct)")
+    await _send_due(db, D(11, 1, 0))
+    assert watch[-1]["state"] == "acknowledged" and watch[-1]["text"] == (
+        "🔎 Check: NIFTY 22300 PE (27 Oct): my answer could not reach you while its prices were current. Send check "
+        "22300 pe 2 lots again for the current plan.")
+    assert await _checks(db) == [("check:1", "outdated"), ("check:1:r1", "outdated"),
+                                 ("check:1:late", "acknowledged")]
+
+
+@pytest.mark.asyncio
+async def test_a_check_left_by_a_slow_send_or_a_restart_keeps_its_option_and_expiry(watch, kite, monkeypatch):
+    """[O25M, O25L R1] The first send waited and the engine restarted before it went; meanwhile the book's nearest expiry
+    is 3 Nov. The reply is worked out again for the 27 Oct option asked about (never another expiry), without the
+    account context the restart lost; an option no longer listed is said so."""
+    import fno_underlyings
+    db = settings.DB_PATH
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    monkeypatch.setattr(pw, "_market", _market(D(11, 0)))
+    pw._state.clock = (D(11, 0, 2), time.monotonic())
+    kick = pw._kick
+
+    def busy():
+        return asyncio.ensure_future(asyncio.sleep(0))
+
+    monkeypatch.setattr(pw, "_kick", busy)                                                 # the sender is busy
+    await pw.answer_check(db, "chk 22300pe 75.5 x2", D(11, 0, 2), key="check:7")
+    monkeypatch.setattr(pw, "_kick", kick)
+    assert watch == []
+    pw.reset()                                                                             # a restart
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: LaterBook())
+    await _send_due(db, D(11, 0, 25))
+    [reply] = watch
+    lines = reply["text"].splitlines()
+    assert lines[0] == "🔎 Check: NIFTY 22300 PE (27 Oct) · 2 lots (130) at your ₹75.5 (the ask now ₹75.1)."
+    assert not any("Your last trade" in line for line in lines)
+    # Asked at 11:01 for the 27 Oct option, not sent in time, and that option is no longer listed.
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    pw._state.clock = (D(11, 1, 0), time.monotonic())
+    monkeypatch.setattr(pw, "_kick", busy)
+    await pw.answer_check(db, "check 22300 pe", D(11, 1, 0), key="check:8")
+    monkeypatch.setattr(pw, "_kick", kick)
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: LaterBook(listed=False))
+    await _send_due(db, D(11, 1, 20))
+    assert watch[-1]["text"] == ("🔎 I could not find NIFTY 22300 PE (27 Oct) to check it again. Send check 22300 pe "
+                                 "for the nearest expiry.")
+    assert await _checks(db) == [("check:7", "outdated"), ("check:7:r1", "acknowledged"), ("check:8", "outdated"),
+                                 ("check:8:r1", "acknowledged")]
+
+
+def test_a_quote_checks_a_level_only_when_both_its_clocks_hold():
+    """[O25M, O25L R2] Reproduced: a quote without the exchange's time, or with one ten minutes ahead, was VALID when our
+    own read was recent. Unknown is now UNVERIFIED (not STALE) and checks nothing; a later time is never shown."""
+    at = D(10, 0, 5)
+    read = {"bid": 99.9, "ask": 100.1, "ltp": 100.0, "looked_at": at, "received_at": at.isoformat()}
+
+    def exchange(seconds):
+        return read | {"quote_at": (at + timedelta(seconds=seconds)).isoformat()}
+
+    assert pw.quote_freshness(exchange(-1), at) == "FRESH"
+    assert pw.quote_freshness(exchange(-15), at) == "FRESH" and pw.quote_freshness(exchange(-16), at) == "STALE"
+    assert pw.quote_freshness(exchange(5), at) == "FRESH"                  # the two clocks differ a little
+    assert pw.quote_freshness(exchange(6), at) == pw.quote_freshness(exchange(600), at) == "INVALID"
+    assert pw.quote_freshness(read, at) == "UNVERIFIED"                                        # no exchange time
+    assert pw.quote_freshness(read | {"quote_at": "10:00:04"}, at) == "UNVERIFIED"            # unreadable
+    assert pw.quote_freshness(read | {"quote_at": "2026-10-23T10:00:04"}, at) == "UNVERIFIED"  # no zone
+    assert pw.quote_freshness({k: v for k, v in exchange(-1).items() if k != "received_at"}, at) == "UNVERIFIED"
+    assert pw.quote_freshness(exchange(-1) | {"looked_at": at.replace(tzinfo=None)}, at) == "UNVERIFIED"
+    assert pw.quote_freshness(exchange(-1), at + timedelta(seconds=15)) == "FRESH"
+    assert pw.quote_freshness(exchange(-1), at + timedelta(seconds=16)) == "STALE"       # our own read 16 s old
+    assert pw.quote_freshness(None, at) == "MISSING"
+    held = _holding(65, entry=100.0)
+    plan = pw.Plan(entry=100.0, qty=65, stop=90.0, stop_basis="INDEX", stop_index=22601.0, loss=700.0, cash=20000.0)
+    fired = {"order_id": "201", "trigger": 70.0, "limit": 69.0, "pending": 65, "kind": "SL"}
+    for quote in (read, exchange(600)):
+        assert pw.level_state(90.0, quote, at) == "UNVERIFIED" and not pw.stale(quote, at)
+        assert pw.stop_advice(held, plan, pw.cover_of(held, [], []), quote, now=at, set_at=D(10, 0, 2)) == (
+            "The plan stop ₹90 is from 10:00:02, and the time of the last price I read could not be verified: check "
+            "the option is still above ₹90 before placing an SL there (Zerodha refuses an SL sell at or above the "
+            "price).")
+        line = pw.plan_stop_line(held, plan, quote, now=at)
+        assert "(the time of the last price could not be verified)" in line and "10:10:05" not in line
+        assert pw.unfilled_text(held, fired, quote, now=at).endswith(
+            "The last bid I read is not current: check the bid in Zerodha.")
+    assert pw.level_state(90.0, exchange(-1), at) == "VALID"
+
+
+@pytest.mark.asyncio
+async def test_a_typed_price_never_makes_an_old_quote_current(watch, monkeypatch):
+    """[O25M, O25L R2] Reproduced: with the partner's own price, an option quote ten minutes old still priced the plan and
+    was called "the ask now". Their price is an assumption: the levels are worked from it, the old quote prices
+    nothing, and the reply says so. An old future quote places no level either."""
+    import fno_underlyings
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    db = settings.DB_PATH
+    at = D(11, 0, 2)
+    pw._state.clock = (at, time.monotonic())
+    old = _market(D(11, 0), quote_at=(at - timedelta(minutes=10)).isoformat())
+    await pw.answer_check(db, "chk 22300pe 75.5 x2", at, key="check:old", market=old)
+    text = watch[-1]["text"]
+    assert text.splitlines()[0] == ("🔎 Check: NIFTY 22300 PE (27 Oct) · 2 lots (130) at your ₹75.5 (its last price "
+                                    "update was 10:50:02, too old to use, so the levels are worked from your price).")
+    assert "ask now" not in text and "bid-ask gap" not in text
+    trip = pw.Trip(key="t", exchange="NFO", tradingsymbol=SYMBOL, product="NRML", first_at=at)
+    unread = FakeMarket(option=old.option, futures=old.futures, quotes={FUT: old.quotes[FUT]})
+    seen: dict = {}
+    plan = (await pw._market_plan(trip, at, old, size=(130, 75.5), inputs=seen))[0]
+    assert seen == {"option": "STALE", "future": "FRESH"}
+    assert plan == (await pw._market_plan(trip, at, unread, size=(130, 75.5)))[0]      # as if never read
+    await pw.answer_check(db, "check 22300 pe", at, key="check:old2", market=old)
+    assert watch[-1]["text"].startswith("🔎 NIFTY 22300 PE (27 Oct): its last price update was 10:50:02, too old to "
+                                        "use (the market may be closed). Send the price you would pay")
+    # A current option, an old future: no level from the future's old price.
+    future_old = _market(D(11, 0))
+    future_old.quotes[FUT] = future_old.quotes[FUT] | {"quote_at": (at - timedelta(minutes=10)).isoformat()}
+    await pw.answer_check(db, "check 22300 pe", at, key="check:fut", market=future_old)
+    assert "(the ask now; bid ₹75)." in watch[-1]["text"]
+    assert ("• The NIFTY future's live price could not be checked now: its levels are from its last closed 5-minute "
+            "bar.") in watch[-1]["text"].splitlines()
+    seen = {}
+    plan = (await pw._market_plan(trip, at, future_old, size=(65, None), inputs=seen))[0]
+    assert seen == {"option": "FRESH", "future": "STALE"} and plan.fut != 22534.7
+
+
+@pytest.mark.asyncio
+async def test_a_check_kept_without_its_prices_record_is_never_sent_old(watch, kite):
+    """[O25M, O25L R1] The review's own case: a CHECK row holding only its text (not written by answer_check, so nothing
+    says when its prices were read) is taken as priced when the row was written. 30 s later it is not sent; the
+    note to ask again is."""
+    db = settings.DB_PATH
+    await pw.init_partner_watch_db(db)
+    at = D(10, 0)
+    pw._state.clock = (at, time.monotonic())
+    await pw._enqueue(db, "audit-check", DAY.isoformat(), "CHECK", None, at,
+                      context={"text": "The ask now is 75; plan stop 60"})
+    kite["outcomes"].append("unsent_connect")
+    [entry] = await pw._due(db, at)
+    assert await pw._deliver(db, entry, at) == pw.RETRY
+    await _send_due(db, at + timedelta(seconds=30))
+    assert [m["text"] for m in watch] == [
+        "The ask now is 75; plan stop 60",
+        "🔎 Check: my answer could not reach you while its prices were current. Send the check again for the current "
+        "plan."]
+
+
+def test_the_check_text_never_calls_an_old_quote_the_ask_now():
+    """[O25M, O25L R2] The review's own case: ``check_text`` handed a quote ten minutes old (by its own clocks) says so
+    rather than "the ask now", whoever calls it."""
+    at = D(11, 0, 2)
+    plan = pw.Plan(entry=75.5, qty=65, stop=60.0, stop_basis="SWING", swing=15.5, loss=1050.0, cash=20000.0)
+    old = {"bid": 75.0, "ask": 75.1, "ltp": 75.05, "looked_at": at, "received_at": at.isoformat(),
+           "quote_at": (at - timedelta(minutes=10)).isoformat()}
+    for given in (75.5, None):
+        text = pw.check_text("NIFTY 22300 PE", date(2026, 10, 27), plan, old, lots=1, qty=65, given=given,
+                             future="NIFTY future", opt_type="PE")
+        assert "ask now" not in text and "bid-ask gap" not in text
+        assert "its last price update was 10:50:02, too old to use" in text.splitlines()[0]
