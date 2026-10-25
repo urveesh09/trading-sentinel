@@ -43,6 +43,25 @@ port in Oracle's console is free. The Kite Connect plan is unchanged.
 Work from the Production folder (`C:\Users\Urveesh\Desktop\Production_Trading-sentinel`)
 once it has been updated from GitHub. Every command below runs from that folder.
 
+### Before anything: is Production running?
+
+    docker ps --format "{{.Names}} {{.Status}}"
+
+`python-engine`, `node-gateway` and `agent` must show `Up`. On Oct 25 a Docker
+Desktop update (11:12–11:15 IST) restarted Docker, and those three stayed
+down: their restart policy did not survive it. While the gateway is down there
+is no Telegram either. If any is not `Up`, from the Production folder, one at a time:
+
+    docker start python-engine
+    docker start node-gateway
+    docker start agent
+
+`quant_nginx` recovers by itself once the gateway is up. O25f sets
+`restart: always` for the three, so after the next deploy a Docker restart
+brings them back. Even so, do not update Docker Desktop or Windows during
+market hours, above all Nov 2–6. An update in the session stops the engine;
+an open real position then has only the broker's resting stop.
+
 ### 0. Optional, before Mon Oct 26 09:15: deploy now
 
 If you merge and deploy before Monday's open, the engine sends the proving
@@ -85,12 +104,21 @@ Have at least ₹12,500 of free cash in the Zerodha account. Pledged holdings
 and margin do not count. A typical lot has cost about ₹8–9k; the morning
 check compares the two.
 
-### 4. The tunnel on the Oracle VM (about 10 minutes)
+### 4. The tunnel on the Oracle VM
 
 Today all of the gateway's Kite traffic goes through the relay on port 31527
 in plain HTTP. That includes the login exchange and the day's access token.
 The tunnel replaces it: the token is inside TLS all the way to Kite, orders
 still leave from the VM's registered IP, and it serves nothing else.
+
+**[O25f] State on Oct 25: items 1 and 2 are done.** The tunnel was installed on
+the VM on Oct 25 (O25e). A read-only check the same day showed the service
+`kite-tunnel` active and enabled at boot, listening on 31528, with the VM's
+own firewall accepting it. Its two `.env` lines are in
+`C:\Users\Urveesh\sentinel-operations\oracle-access-20261025\tunnel-client.env`.
+**Only item 3, the Oracle console rule, is left.** From this PC, 31528 does
+not answer until that rule exists, while 31527 does. Items 1–2 remain below
+for a reinstall.
 
 1. Copy the program to the VM, from a PowerShell window in the Production folder:
 
@@ -120,6 +148,9 @@ still leave from the VM's registered IP, and it serves nothing else.
 Leave the old relay (31527) running for now: it is the fallback (step 10).
 
 ### 5. The two `.env` lines, with the switch still off
+
+Take them from `tunnel-client.env` (step 4), or from `sudo python3 kite_tunnel.py print-env`
+on the VM.
 
 - `node-gateway\.env`: add the `KITE_PROXY_URL=…` line. Leave `KITE_BASE_URL`
   as it is: while `KITE_PROXY_URL` is set it is ignored, and deleting

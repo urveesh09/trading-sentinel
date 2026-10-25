@@ -758,6 +758,27 @@ async def test_no_buy_outside_the_authorized_dates(book, db_path, paper_entered,
 
 
 @pytest.mark.asyncio
+async def test_a_malformed_run_authorization_refuses_buys_and_never_silences_the_reports(
+        book, db_path, paper_entered, monkeypatch):
+    """[O25f] Raising from current_run lost the 09:25 message and the whole 15:50 report."""
+    from datetime import date
+    broker, sig = paper_entered
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_END_DATE", "2026-13-40")
+    run = await fno_live_test.current_run(db_path, date(2026, 11, 2))
+    assert not run["window_available"] and "unreadable" in run["invalid"]
+    assert await _mirror(book, db_path, broker, sig=sig) is None
+    assert broker.orders_placed == [] and (await _reasons(db_path))[-1] == "live_test_run_window_unavailable"
+    morning = await fno_live_test.morning_check(Account(), db_path, IST.localize(datetime(2026, 11, 2, 9, 25)))
+    assert morning.startswith("⚠️ REAL-money F&O test NOT ready today:") and "unreadable" in morning
+    report = await fno_live_test.day_report(db_path, "2026-11-02")
+    assert report.startswith("💰 REAL-money F&O test, 2026-11-02: 0 real trade(s) -- run 1 cannot buy: ")
+    from datetime import timedelta
+    before_start = date.fromisoformat(settings.FNO_LIVE_TEST_START_DATE) - timedelta(days=1)
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_END_DATE", before_start.isoformat())
+    assert "the end is before the start" in (await fno_live_test.current_run(db_path, date(2026, 11, 2)))["invalid"]
+
+
+@pytest.mark.asyncio
 async def test_legacy_run_without_an_authorized_end_cannot_buy(book, db_path, paper_entered):
     broker, sig = paper_entered
     with closing(sqlite3.connect(db_path)) as db:
@@ -770,15 +791,34 @@ async def test_legacy_run_without_an_authorized_end_cannot_buy(book, db_path, pa
     assert broker.orders_placed == [] and (await _reasons(db_path))[-1] == "live_test_run_window_unavailable"
 
 
-def test_conflicting_routes_are_rejected_before_any_http_client(tmp_path, monkeypatch):
-    from unittest.mock import patch
+@pytest.mark.asyncio
+async def test_conflicting_routes_refuse_every_real_order_but_never_stop_the_engine(tmp_path, monkeypatch):
+    """[O25f] main.py builds this client at import: refusing to construct stopped the whole engine.
+    Both routes set now builds it (paper books, management and alerts keep running), and place, modify,
+    cancel and the route probe refuse before any byte is sent through the pair."""
+    import httpx
     from kite_client import KiteClient
     monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "http://old-relay.test:31527")
     monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://kite:fake-password@tunnel.test:31528")
-    with patch("kite_client.httpx.AsyncClient") as client:
-        with pytest.raises(ValueError, match="not both"):
-            KiteClient(str(tmp_path / "conflicting-route.db"))
-        client.assert_not_called()
+    client = KiteClient(str(tmp_path / "conflicting-route.db"))
+    assert client.order_client is None and "not both" in client.order_route_error
+    sent = []
+
+    def anywhere(request):
+        sent.append(request)
+        return httpx.Response(200, json={"status": "success", "data": {"order_id": "X"}})
+
+    client.client = httpx.AsyncClient(base_url="https://api.kite.trade", transport=httpx.MockTransport(anywhere))
+    client.set_token("TOKEN")
+    for intent, side in (("entry", "BUY"), ("exit", "SELL")):
+        refused = await client.place_order(variety="regular", exchange="NFO", tradingsymbol="NIFTY26NOV25000CE",
+                                           transaction_type=side, quantity=65, product="MIS", order_type="LIMIT",
+                                           price=100.0, intent=intent, channel="fno")
+        assert refused["dispatch_certainty"] == "NOT_SENT" and refused["order_route_invalid"]
+    assert (await client.modify_order("X", price=99.0))["order_route_invalid"]
+    assert (await client.cancel_order("X"))["order_route_invalid"]
+    assert "not both" in await client.probe_order_route()
+    assert sent == []                                                    # nothing left by any client
 
 
 @pytest.mark.asyncio

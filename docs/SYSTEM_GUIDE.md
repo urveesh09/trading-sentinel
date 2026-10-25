@@ -1,5 +1,17 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25f Route conflicts, run authorization and restart policy (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **`KiteClient.__init__`.** When KITE_ORDER_PROXY_URL and KITE_ORDER_BASE_URL are both set, `order_route_error` is set, `order_client` is None and `kite_order_route_invalid` is logged (critical). It never raises.
+  - `place_order` (any intent), `modify_order` and `cancel_order` return `order_route_invalid` (place: `dispatch_certainty` NOT_SENT) before the limiter or any HTTP.
+  - `probe_order_route` returns the reason.
+- **`ops_watchdogs._kite_endpoint_probe_tick`.** With both set, the order-route probe counts as failed (no GET through the pair) and pages through the usual 2-failure state machine.
+- **`fno_live_test.current_run`.** An unreadable or disordered FNO_LIVE_TEST_START_DATE/END_DATE, or SESSIONS < 1, returns `{window_available: False, invalid: "…", sessions: 0, …}` without touching the database (it logs `fno_live_test_run_authorization_invalid`).
+  - `mirror_entry` refuses with `live_test_run_window_unavailable`.
+  - `morning_check` names `invalid`, and also catches a failing run read.
+  - `day_report` catches a failing run read, and heads "run … cannot buy: …" for an invalid one.
+- **`docker-compose.yml`.** `node-gateway`, `python-engine` and `agent` use `restart: always`, like nginx, ngrok and autoheal: a Docker daemon restart (a Docker Desktop update) brings them back. Stop the stack with `docker compose down`.
+
 ## October 25 — O25e actual Oracle tunnel installation; application adoption pending
 
 - Recovered the owner's SSH key from the attached Linux USB without writing to that disk or exposing key contents. Strict saved-host-key verification authenticated the existing Mumbai `trading-sentinel` VM as `ubuntu`; the earlier missing-key blocker is resolved.

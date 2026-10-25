@@ -1,5 +1,20 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25f review of O25d/O25e: three gaps fixed; Production is down until the owner starts it (commit pending (recorded in the next docs commit), Dev, pushed, in draft PR #115, not deployed, switch off)
+
+- [x] Both order routes set: the engine keeps running and real orders are refused (NOT_SENT). It no longer fails at import.
+- [x] A malformed run date: buys are refused, and the 09:25 and 15:50 messages still go out, naming it.
+- [x] `restart: always` for the engine, gateway and agent. A Docker Desktop update on Oct 25 11:12–11:15 IST left them down.
+- [x] The runbook says the tunnel is installed, the `.env` lines are in `tunnel-client.env`, and only the Oracle rule is left. It also adds a "Production running?" check and no updates in market hours.
+- [x] Verified on the VM (read-only): `kite-tunnel` active/enabled, listening on 31528, VM firewall ACCEPT. From outside, 31528 does not answer and 31527 does.
+- [x] Tests: engine + scripts full suite 6,010 passed, 4 skipped, exit 0 (11 min 36 s); focused suites 140 passed, 1 skipped; the three new regression tests fail on 94a262a/85b464a (checked in a throwaway worktree) and pass now; gateway code unchanged (O25d's receipt: 97 focused passed). Read-only checks: VM kite-tunnel active/enabled, 31528 listening, VM firewall ACCEPT; external 31528 times out, 31527 answers. Not a profitability result.
+- [ ] Owner:
+  1. `docker start python-engine`, `node-gateway`, `agent` (Production, now);
+  2. the Oracle ingress rule for TCP 31528;
+  3. PR #115 ready, merged and deployed;
+  4. checklist steps 1, 3, 5–9 at the weekend;
+  5. step 10 after Nov 2.
+
 ## October 25 — O25e VM installation receipt; cloud ingress pending
 
 - [x] Owner's attached Linux USB searched read-only; recovered SSH access, strict saved-host-key match, authenticated expected Mumbai VM. Key and client settings are protected outside the repositories; no private values printed/committed.

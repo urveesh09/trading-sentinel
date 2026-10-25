@@ -804,10 +804,20 @@ class KiteClient:
         # access token never crosses the internet in clear text.
         order_url = (getattr(settings, "KITE_ORDER_BASE_URL", "") or "").strip().rstrip("/")
         order_proxy = (getattr(settings, "KITE_ORDER_PROXY_URL", "") or "").strip()
-        if order_proxy and order_url:
-            raise ValueError("Set KITE_ORDER_PROXY_URL or KITE_ORDER_BASE_URL, not both")
+        # [O25d] Both set is refused: an http:// base through the proxy would be a plain proxy request that
+        # carries the token in clear text. [O25f] Refused for orders only, never by failing to construct:
+        # main.py builds this client at import, so raising here stopped the whole engine (every paper book,
+        # every exit's management, every alert) over one leftover .env line, with no message to the owner.
+        # Place, modify and cancel return NOT_SENT before any byte leaves; the preflight, the 09:25 check and
+        # the 3-minute probe all name the problem.
+        self.order_route_error: Optional[str] = (
+            "Set KITE_ORDER_PROXY_URL or KITE_ORDER_BASE_URL, not both: real orders are refused until one is "
+            "removed" if order_proxy and order_url else None)
         self.client = httpx.AsyncClient(base_url=settings.KITE_BASE_URL, timeout=15.0)
-        if order_proxy:
+        if self.order_route_error:
+            logger.critical("kite_order_route_invalid", reason=self.order_route_error)
+            self.order_client = None
+        elif order_proxy:
             self.order_client = httpx.AsyncClient(base_url=order_url or "https://api.kite.trade", timeout=15.0,
                                                   proxy=order_proxy)
         else:
@@ -2334,6 +2344,11 @@ class KiteClient:
         if not tradingsymbol or quantity <= 0:
             return {"order_id": None, "status": "ERROR", "dispatch_certainty": "NOT_SENT",
                     "message": "tradingsymbol and positive quantity are required"}
+        if self.order_route_error:
+            logger.error("kite_order_refused_route_invalid", tradingsymbol=tradingsymbol, intent=intent,
+                         reason=self.order_route_error)
+            return {"order_id": None, "status": "ERROR", "dispatch_certainty": "NOT_SENT",
+                    "order_route_invalid": True, "message": self.order_route_error}
 
         def entry_blocker():
             if intent != "entry":
@@ -2536,6 +2551,9 @@ class KiteClient:
             params["order_type"] = order_type
         if not params:
             return {"order_id": order_id, "status": "ERROR", "message": "nothing to modify"}
+        if self.order_route_error:
+            return {"order_id": order_id, "status": "ERROR", "order_route_invalid": True,
+                    "message": self.order_route_error}
 
         await self.limiter.acquire()
         _record_endpoint(self, "order")
@@ -2562,6 +2580,9 @@ class KiteClient:
         """
         if not order_id:
             return {"order_id": None, "status": "ERROR", "message": "order_id required"}
+        if self.order_route_error:
+            return {"order_id": order_id, "status": "ERROR", "order_route_invalid": True,
+                    "message": self.order_route_error}
         await self.limiter.acquire()
         _record_endpoint(self, "order")
         try:
@@ -2620,6 +2641,8 @@ class KiteClient:
 
         Reads are not IP-checked, so this proves the route (the tunnel, its password, TLS to
         Kite and today's token), not the static IP: only an accepted order proves that."""
+        if self.order_route_error:
+            return self.order_route_error
         try:
             _record_endpoint(self, "other")
             resp = await self._orders_http.get("/user/profile")

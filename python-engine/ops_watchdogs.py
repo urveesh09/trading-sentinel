@@ -318,7 +318,11 @@ async def _kite_endpoint_probe_tick():
         return
     url, proxy = target
     route = url.rstrip("/") + (f" through {redact_url_credentials(proxy)}" if proxy else "")
-    ok, err = await _kite_probe_get(url, proxy)
+    if proxy and (settings.KITE_ORDER_BASE_URL or "").strip():
+        # [O25f] Both set: kite_client refuses every real order; nothing is sent through the pair.
+        ok, err = False, "KITE_ORDER_PROXY_URL and KITE_ORDER_BASE_URL are both set"
+    else:
+        ok, err = await _kite_probe_get(url, proxy)
     if not ok:
         logger.warning("kite_order_route_probe_failed route=%s consec=%d error=%s", route,
                        _kite_order_route_probe_state["consec_failures"] + 1, redact_url_credentials(err))

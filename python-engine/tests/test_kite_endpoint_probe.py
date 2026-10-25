@@ -164,3 +164,44 @@ class TestOrderRouteProbe:
         assert len(pages) == 1 and pages[0].startswith("📡 KITE ORDER ROUTE DOWN: https://api.kite.trade through "
                                                        "http://kite:***@161.118.160.180:31528")
         assert "pw0123456789abcdef" not in pages[0]
+
+
+@pytest.mark.asyncio
+async def test_both_order_routes_set_is_a_failed_probe_and_nothing_is_fetched_through_them(monkeypatch):
+    """[O25f] kite_client refuses every real order then; the probe pages instead of probing the pair."""
+    from datetime import datetime
+    from types import SimpleNamespace
+
+    import pytz
+
+    import ops_watchdogs as ow
+    from config import settings
+
+    ist = pytz.timezone("Asia/Kolkata")
+    monkeypatch.setattr(ow, "datetime", SimpleNamespace(now=lambda tz: ist.localize(datetime(2026, 11, 2, 11, 0))))
+
+    async def trading(day, db_path):
+        return True
+
+    monkeypatch.setattr(ow, "is_trading_day", trading)
+    monkeypatch.setattr(settings, "KITE_BASE_URL", "https://api.kite.trade")
+    monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "http://161.118.160.180:31527")
+    monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://kite:pw0123456789abcdef@161.118.160.180:31528")
+    for key in ("consec_failures", "down_since_monotonic", "last_alert_monotonic"):
+        monkeypatch.setitem(ow._kite_probe_state, key, 0 if key == "consec_failures" else None)
+        monkeypatch.setitem(ow._kite_order_route_probe_state, key, 0 if key == "consec_failures" else None)
+    probed, pages = [], []
+
+    async def get(url, proxy=""):
+        probed.append((url, proxy))
+        return True, ""
+
+    async def notify(msg):
+        pages.append(msg)
+
+    monkeypatch.setattr(ow, "_kite_probe_get", get)
+    monkeypatch.setattr(ow, "_kite_probe_notify", notify)
+    await ow._kite_endpoint_probe_tick()
+    await ow._kite_endpoint_probe_tick()
+    assert probed == [("https://api.kite.trade/", ""), ("https://api.kite.trade/", "")]   # quotes only
+    assert len(pages) == 1 and pages[0].startswith("📡 KITE ORDER ROUTE DOWN") and "pw0123456789abcdef" not in pages[0]

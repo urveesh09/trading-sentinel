@@ -1,5 +1,52 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 — O25f Review of O25d/O25e: a route conflict no longer stops the engine, a bad run date never silences the reports, Production survives a Docker restart (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, in draft PR #115, not deployed, switch off)
+
+- Owner ask (Oct 25): forwarded the O25d/O25e agent's summary: "now you check if there is any issue then fix it and tell me if anything is left or to enhance or what?"
+- Checked:
+  - the O25d code (`94a262a`) and its review document;
+  - the O25e installation receipt;
+  - draft PR #115 (open, mergeable, head `85b464a`);
+  - the VM, by a read-only SSH check: `kite-tunnel` active and enabled, listening on 31528, VM iptables ACCEPT; the old relay still on 31527;
+  - external TCP from this PC: 31527 answers, 31528 does not (Oracle ingress missing);
+  - Production containers.
+- O25d's six fixes hold: the frozen run record, Nov 2–6 enforced, no test order after a failed preflight, the AMO maintenance window, the allow list's loopback self-test, `--user quantuser`.
+- Found and fixed:
+  - [x] **P1: a route conflict stopped the whole engine.** O25d raised `ValueError` in `KiteClient.__init__` when KITE_ORDER_PROXY_URL and KITE_ORDER_BASE_URL were both set. `main.py` builds that client at import, so one leftover `.env` line (the runbook's own fallback swaps one for the other) stopped every paper book, every exit's management and every alert, with no message.
+    - Now the client is built with `order_route_error` set and no order client.
+    - `place_order` (entries and exits), `modify_order` and `cancel_order` return NOT_SENT / ERROR with `order_route_invalid` before any HTTP. `probe_order_route` returns the reason.
+    - The 3-minute probe treats the pair as a failure without fetching through it, so it pages `📡 KITE ORDER ROUTE DOWN`.
+    - The preflight already refused (O25d).
+  - [x] **P2: a malformed run authorization silenced the reports.** O25d's `current_run` raised `ValueError` on an unreadable or disordered FNO_LIVE_TEST_START_DATE/END_DATE/SESSIONS.
+    - The 09:25 job then sent no message. `day_report` raised outside its try, so the whole 15:50 message was lost, the proving-week verdict with it.
+    - Now `current_run` returns `window_available=False` with `invalid` (nothing written), and `mirror_entry` refuses (`live_test_run_window_unavailable`).
+    - The 09:25 check says NOT ready with the reason; `day_report` heads "run … cannot buy: …".
+    - A database failure in either report is caught and reported.
+  - [x] **P1 operations: Production stayed down after a Docker Desktop update.**
+    - The updater ran 05:42–05:45 UTC (11:12–11:15 IST, `Docker Desktop Updater` log). All containers stopped at 05:41:45–51; the engine and gateway exited 137 (no stop grace in 582d7a5).
+    - Only the `restart: always` services (nginx, ngrok, autoheal) came back. `python-engine`, `node-gateway` and `agent` (`unless-stopped`) stayed down, with no Telegram (the gateway sends it). nginx crash-loops on the missing upstream.
+    - `docker-compose.yml` now gives those three `restart: always`, effective on the next deploy.
+    - The runbook gets a "Before anything" check with the `docker start` order, and the rule: no Docker/Windows updates in market hours, above all Nov 2–6.
+  - [x] **Runbook steps 4–5:** the tunnel is installed; its `.env` lines are in the protected `tunnel-client.env`; only the Oracle ingress rule is left.
+- Not done here (blocked or the owner's):
+  - **Restarting Production now:** this agent's `docker start` was refused by the session's permission classifier ("Production Deploy"); the owner runs it.
+  - The Oracle console sign-in and the ingress rule.
+- Files:
+  - `python-engine/kite_client.py`, `fno_live_test.py`, `ops_watchdogs.py`;
+  - `tests/test_fno_live_test.py` (the O25d constructor test is replaced; +1 malformed-run test), `tests/test_kite_endpoint_probe.py` (+1);
+  - `docker-compose.yml`; `docs/runbooks/fno-live-test.md`.
+- Tests: engine + scripts full suite 6,010 passed, 4 skipped, exit 0 (11 min 36 s); focused suites 140 passed, 1 skipped; the three new regression tests fail on 94a262a/85b464a (checked in a throwaway worktree) and pass now; gateway code unchanged (O25d's receipt: 97 focused passed). Read-only checks: VM kite-tunnel active/enabled, 31528 listening, VM firewall ACCEPT; external 31528 times out, 31527 answers. Not a profitability result.
+- Config and migration impact:
+  - restart policy `always` for three services (applies at their next recreate);
+  - no schema, setting default or scheduler change.
+  - The route conflict is no longer fatal at start-up: real orders are refused instead.
+- Rollout: with PR #115 (engine, then gateway, then agent). Rollback: revert; `restart: unless-stopped` comes back with it.
+- Remaining (owner), in order:
+  1. Start Production now (`docker start python-engine`, then `node-gateway`, then `agent`).
+  2. Oracle sign-in and the TCP 31528 ingress rule, then recheck 407 / 403 / TLS from outside.
+  3. Mark PR #115 ready, merge and deploy (before Mon Oct 26 09:15 if the proving week should run on this code and send the daily 15:50 messages).
+  4. The weekend checklist (steps 1, 3, 5–9); step 10 after Nov 2.
+
 ## October 25 — O25e VM tunnel installed; cloud ingress and application rollout remain
 
 - Installation/documentation receipt **`c062b65`**, pushed on the existing branch and included in draft PR #115. Post-commit documentation/scope checks passed; the only remaining tracked working-tree edits are the original unrelated `.gitignore` and bottom-of-document changes. No application source changed or atlas regeneration required in O25e.

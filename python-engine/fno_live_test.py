@@ -114,10 +114,23 @@ async def current_run(db_path: str, today) -> Optional[dict]:
     from release_identity import release_identity
     from datetime import date, timedelta
     label = str(getattr(settings, "FNO_LIVE_TEST_RUN", "1") or "1")
-    start = date.fromisoformat(settings.FNO_LIVE_TEST_START_DATE)
-    end = date.fromisoformat(settings.FNO_LIVE_TEST_END_DATE)
-    if end < start or int(settings.FNO_LIVE_TEST_SESSIONS) < 1:
-        raise ValueError("The live test needs ordered start/end dates and a positive session limit")
+    # [O25f] A malformed authorization never raises: raising here lost the 09:25 message and the whole
+    # 15:50 report (the proving-week verdict with it). The run is reported as unavailable instead, and
+    # mirror_entry refuses on that (live_test_run_window_unavailable). Nothing is written for it.
+    try:
+        start = date.fromisoformat(str(settings.FNO_LIVE_TEST_START_DATE))
+        end = date.fromisoformat(str(settings.FNO_LIVE_TEST_END_DATE))
+        limit = int(settings.FNO_LIVE_TEST_SESSIONS)
+        invalid = None if start <= end and limit >= 1 else "the end is before the start, or no sessions"
+    except (TypeError, ValueError) as exc:
+        invalid = f"unreadable ({exc})"
+    if invalid:
+        logger.error("fno_live_test_run_authorization_invalid label=%s reason=%s", label, invalid)
+        return {"label": label, "started_on": str(settings.FNO_LIVE_TEST_START_DATE), "capital": 0.0,
+                "floor": 0.0, "release": "", "sessions": 0, "session": 0,
+                "ends_on": str(settings.FNO_LIVE_TEST_END_DATE), "window_available": False,
+                "invalid": f"FNO_LIVE_TEST_START_DATE/END_DATE/SESSIONS {invalid}",
+                "not_started": False, "ended": False}
     async with aiosqlite.connect(db_path) as db:
         await db.execute("BEGIN IMMEDIATE")
         await db.execute(_RUNS_DDL)
@@ -534,10 +547,16 @@ async def day_report(db_path: str, day_iso: str) -> Optional[str]:
     if not (trades or skipped or any(outstanding.values()) or armed()):
         return None
     from datetime import date
-    run = await current_run(db_path, date.fromisoformat(day_iso))
+    try:
+        run = await current_run(db_path, date.fromisoformat(day_iso))
+    except Exception as exc:             # [O25f] the trades are still reported, and the proving week with them
+        logger.error("fno_live_test_day_report_run_failed err=%s", str(exc))
+        run = None
     equity = await live_equity(db_path)
     head = f"💰 REAL-money F&O test, {day_iso}: {len(trades)} real trade(s)"
-    if run is not None:
+    if run is not None and run.get("invalid"):
+        head += f" -- run {run['label']} cannot buy: {run['invalid']}"
+    elif run is not None:
         head += (f" -- run {run['label']}, session {min(run['session'], run['sessions'])} of {run['sessions']}"
                  f" (from {run['started_on']}, release {str(run['release'])[:7]})")
     lines = [head]
@@ -681,9 +700,15 @@ async def morning_check(kite, db_path: str, now: datetime) -> Optional[str]:
         if held:
             problems.append("the broker holds F&O positions this morning: " +
                             ", ".join(f"{p.get('tradingsymbol')} {p.get('product')} {p.get('quantity')}" for p in held))
-    run = await current_run(db_path, now.date())
+    try:
+        run = await current_run(db_path, now.date())
+    except Exception as exc:             # [O25f] say so, rather than send no morning message at all
+        logger.error("fno_live_readiness_run_failed err=%s", str(exc))
+        run = {"label": str(getattr(settings, "FNO_LIVE_TEST_RUN", "1") or "1"), "window_available": False,
+               "invalid": f"its record could not be read ({type(exc).__name__})"}
     if not run["window_available"]:
-        problems.append("this run has no authorized end date: use a new run name with explicit dates")
+        problems.append(f"run {run['label']}: {run['invalid']}" if run.get("invalid") else
+                        "this run has no authorized end date: use a new run name with explicit dates")
     elif run["not_started"]:
         problems.append(f"run {run['label']} starts on {run['started_on']}; no real entry before then")
     elif run["ended"]:
