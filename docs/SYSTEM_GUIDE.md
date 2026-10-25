@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 25 — O25N Once-a-day partner messages: retried only when provably unsent (actual behavior, commit pending (recorded in the next docs commit))
+## October 25 — O25N Once-a-day partner messages: retried only when provably unsent (actual behavior, commit `967c2d6`)
 
 - **`partner_orchestrator.send_daily(db, kind, day, text, now, reply_markup, until)`** is used by the brief, the wrap, the coach note, the review prompt and the 07:00 reminder.
   - Each send is claimed (`<kind>_try`, `<day>:<n>`, with its text and button) before it goes, and settled after.

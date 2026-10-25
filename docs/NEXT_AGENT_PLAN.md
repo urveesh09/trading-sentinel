@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 25 — O25N The O25M open items closed: once-a-day partner messages retried safely, the CHECK work-out survives a restart; promoted to Production (done, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed)
+## October 25 — O25N The O25M open items closed: once-a-day partner messages retried safely, the CHECK work-out survives a restart; promoted to Production (done, commit `967c2d6`, branch `codex/production-correction-hedge-p0`, pushed)
 
 - Owner ask (Oct 25): "yes all the open you close then commit push merge and deploy and restart and rebuild the prod while ensuring all the env are in line".
 - Done:

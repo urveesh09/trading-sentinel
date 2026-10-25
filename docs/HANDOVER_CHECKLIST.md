@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 25 — O25N O25M's open items closed; promoted to Production (commit pending (recorded in the next docs commit), pushed)
+## October 25 — O25N O25M's open items closed; promoted to Production (commit `967c2d6`, pushed)
 
 - [x] The brief, wrap, coach note and review prompt are retried only after a send that provably never left (5, 10, 20 min; 4 sends; within 60 min), from the stored text with "Written at". A possible delivery is never resent. New job `partner_daily_retry`.
 - [x] A CHECK work-out cut off by a restart is worked out again (row `refreshing` until replaced).
