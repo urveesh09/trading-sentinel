@@ -70,6 +70,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_fno_live_readiness_safe",
+    "id": "'fno_live_readiness'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_fno_tick_safe",
     "id": "'fno_bar_close_tick'",
     "trigger": "'cron'"

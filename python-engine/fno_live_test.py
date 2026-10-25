@@ -36,6 +36,20 @@ What is kept
 
 Switching it off stops new entries only: an open real position is still
 managed to its exit (fno_orchestrator._live_leg_managed).
+
+[O25b 2026-10-25] After the audit-agent review:
+  - NIFTY is enforced here, in the admission itself (an NFO segment is not
+    NIFTY: BANKNIFTY would have passed the orchestrator's check).
+  - A run is bounded: FNO_LIVE_TEST_RUN names it, and it lasts
+    FNO_LIVE_TEST_SESSIONS trading sessions from the first day it is armed
+    (``fno_live_test_runs`` keeps its start, capital, floor and release). After
+    that no new entry; the owner is told once. A new run needs a new name.
+  - Every real execution step is kept (``fno_live_execution_events``), and the
+    evening report shows decision-to-fill delay, slippage against the paper
+    twin, refused price changes, the broker stop's state and outstanding work.
+  - One-lot economics come from the fills and the full one-lot charges
+    (``one_lot_pnl``), never a multi-lot P&L divided by its lots: the fixed
+    brokerage is paid per order, whatever the size.
 """
 from __future__ import annotations
 
@@ -52,7 +66,85 @@ from fno_models import FnoSource
 logger = structlog.get_logger()
 SOURCE = FnoSource.FNO_LIVE.value
 PAPER = FnoSource.FNO_PAPER.value
+UNDERLYING = "NIFTY"
+# fno_live_preflight's filled test buy is handed to the engine under this bar;
+# fno_orchestrator sells such a position at once (exit reason preflight_flatten).
+PREFLIGHT_BAR = "PREFLIGHT"
 _FLOOR_TOLD: set = set()
+_RUN_END_TOLD: set = set()
+_EVENTS_DDL = ("CREATE TABLE IF NOT EXISTS fno_live_execution_events (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+               "position_id INTEGER, at TEXT NOT NULL, kind TEXT NOT NULL, detail TEXT)")
+_RUNS_DDL = ("CREATE TABLE IF NOT EXISTS fno_live_test_runs (label TEXT PRIMARY KEY, started_on TEXT NOT NULL, "
+             "sessions INTEGER NOT NULL, capital REAL NOT NULL, floor REAL NOT NULL, release TEXT, "
+             "created_at TEXT NOT NULL)")
+
+
+def one_lot_pnl(entry: float, exit_: float, lot_size: int, underlying: str = UNDERLYING) -> float:
+    """One lot's net P&L from its two fills and its own full charges."""
+    from fno_costs import calc_fno_costs, options_exchange_for
+    qty = int(lot_size)
+    return (float(exit_) - float(entry)) * qty - calc_fno_costs(
+        float(entry), float(exit_), qty, exchange=options_exchange_for(underlying))
+
+
+async def record_event(db_path: str, position_id: Optional[int], kind: str, detail: Optional[dict] = None) -> None:
+    """Keep one real execution step as evidence; never raises (evidence never blocks an order)."""
+    import json
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(_EVENTS_DDL)
+            await db.execute("INSERT INTO fno_live_execution_events(position_id, at, kind, detail) VALUES(?,?,?,?)",
+                             (position_id, datetime.now().astimezone().isoformat(), kind,
+                              json.dumps(detail or {}, default=str, sort_keys=True)[:2000]))
+            await db.commit()
+    except Exception as exc:
+        logger.error("fno_live_execution_event_failed kind=%s err=%s", kind, str(exc))
+
+
+async def current_run(db_path: str, today) -> Optional[dict]:
+    """The named run (created on the first armed day it is asked for), with
+    ``session`` (its trading sessions so far, today included) and ``ended``."""
+    if not armed():
+        return None
+    from market_calendar import is_trading_day_sync
+    from release_identity import release_identity
+    label = str(getattr(settings, "FNO_LIVE_TEST_RUN", "1") or "1")
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(_RUNS_DDL)
+        await db.execute(
+            "INSERT OR IGNORE INTO fno_live_test_runs(label, started_on, sessions, capital, floor, release, "
+            "created_at) VALUES(?,?,?,?,?,?,?)",
+            (label, today.isoformat(), int(settings.FNO_LIVE_TEST_SESSIONS), float(settings.FNO_LIVE_TEST_CAPITAL),
+             float(settings.FNO_LIVE_TEST_FLOOR), str(release_identity()["revision"]),
+             datetime.now().astimezone().isoformat()))
+        await db.commit()
+        row = await (await db.execute(
+            "SELECT started_on, capital, floor, release FROM fno_live_test_runs WHERE label=?", (label,))).fetchone()
+    from datetime import date, timedelta
+    started = date.fromisoformat(row[0])
+    session, day = 0, started
+    while day <= today:
+        if is_trading_day_sync(day, db_path):
+            session += 1
+        day += timedelta(days=1)
+    sessions = int(settings.FNO_LIVE_TEST_SESSIONS)
+    return {"label": label, "started_on": row[0], "capital": float(row[1]), "floor": float(row[2]),
+            "release": row[3], "sessions": sessions, "session": session, "ended": session > sessions}
+
+
+async def _tell_run_ended_once(run: dict) -> None:
+    if run["label"] in _RUN_END_TOLD:
+        return
+    try:
+        from operator_alert import notify_operator
+        told = await notify_operator(
+            f"🏁 REAL-money F&O test run {run['label']} has ended: {run['sessions']} sessions from "
+            f"{run['started_on']}. No new real trades. To run again, set FNO_LIVE_TEST_RUN to a new name; to stop, "
+            "set FNO_LIVE_TEST_ENABLED=false.", event="fno_live_test_run_ended")
+        if told:
+            _RUN_END_TOLD.add(run["label"])
+    except Exception as exc:
+        logger.error("fno_live_test_run_end_notice_failed err=%s", str(exc))
 
 
 def armed() -> bool:
@@ -177,10 +269,19 @@ async def mirror_entry(kite, db_path: str, executor, *, sig, paper_entry: dict, 
         if not accepted:
             logger.warning("fno_live_test_skip symbol=%s reason=%s", symbol, reason)
 
+    if str(underlying or "").upper() != UNDERLYING:
+        await _log(False, "live_test_not_nifty")
+        return None
     if getattr(executor, "paper_mode", True):
         await _log(False, "live_test_executor_not_live")
         return None
     today = now_ist.date()
+    run = await current_run(db_path, today)
+    if run is None or run["ended"]:
+        await _log(False, "live_test_run_ended")
+        if run is not None:
+            await _tell_run_ended_once(run)
+        return None
     if instruments.is_expiry_day(today):
         # The owner excluded expiry trading from this test; held even if
         # FNO_EXPIRY_DAY_ENTRIES is ever switched on for paper.
@@ -329,9 +430,21 @@ async def mirror_entry(kite, db_path: str, executor, *, sig, paper_entry: dict, 
                     f"{result.get('order_id')}). The system cannot manage it: sell it in Kite.",
                     "fno_live_test_fill_unrecorded")
         return None
+    filled_at = action_clock() if action_clock is not None else now_ist
+    try:
+        decided = datetime.fromisoformat(str(row["entry_time"]))
+        delay = round((filled_at - decided).total_seconds(), 1)
+    except (TypeError, ValueError):
+        delay = None
+    await record_event(db_path, position_id, "entry_filled", {
+        "order_id": result.get("order_id"), "limit": limit, "fill": fill, "ask": quote.ask, "paper": paper_price,
+        "slippage_per_unit": round(fill - paper_price, 2), "decision_to_fill_sec": delay, "run": run["label"]})
     import fno_broker_backstop
-    await fno_broker_backstop.arm(db_path, executor, position_id=position_id, source=SOURCE, tradingsymbol=symbol,
-                                  exchange=exchange, qty=qty, fill=fill, tick=settings.FNO_TICK_SIZE)
+    backstop = await fno_broker_backstop.arm(db_path, executor, position_id=position_id, source=SOURCE,
+                                             tradingsymbol=symbol, exchange=exchange, qty=qty, fill=fill,
+                                             tick=settings.FNO_TICK_SIZE)
+    await record_event(db_path, position_id, "backstop_armed", {"state": backstop.get("state"),
+                                                                "trigger": backstop.get("trigger")})
     await _log(True, "", **{**fields, "premium": fill, "max_loss_rupees": filled_loss})
     logger.info("fno_live_test_entry symbol=%s qty=%d fill=%.2f paper=%.2f limit=%.2f order_id=%s", symbol, qty,
                 fill, paper_price, limit, result.get("order_id"))
@@ -352,43 +465,215 @@ def _rs(value: float) -> str:
     return f"{'+' if value >= 0 else '-'}₹{abs(value):,.0f}"
 
 
+async def _rows(db, sql: str, params: tuple = ()) -> list:
+    try:
+        return [dict(r) for r in await (await db.execute(sql, params)).fetchall()]
+    except aiosqlite.OperationalError as exc:
+        if "no such" in str(exc).lower():
+            return []
+        raise
+
+
 async def day_report(db_path: str, day_iso: str) -> Optional[str]:
-    """The day's real trades beside the paper trade each mirrored; None without real trades."""
+    """The day's real trades beside the paper trade each mirrored, with how
+    they were executed and what is still open; None when there is nothing to say."""
+    import json
     try:
         async with aiosqlite.connect(db_path) as db:
             db.row_factory = aiosqlite.Row
-            exists = await (await db.execute(
-                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='fno_positions'")).fetchone()
-            if exists is None:
-                return None
-            rows = [dict(r) for r in await (await db.execute(
-                "SELECT l.tradingsymbol, l.status, l.entry_premium, l.exit_premium, l.exit_reason, l.pnl, l.qty, "
-                "p.entry_premium AS paper_entry, p.exit_premium AS paper_exit, p.pnl AS paper_pnl, "
-                "COALESCE(p.initial_lots, p.lots) AS paper_lots, p.exit_reason AS paper_reason "
-                "FROM fno_positions l LEFT JOIN fno_positions p ON p.source=? AND p.bar_ts=l.bar_ts "
-                "AND p.tradingsymbol=l.tradingsymbol WHERE l.source=? AND l.entry_date=? ORDER BY l.id",
-                (PAPER, SOURCE, day_iso))).fetchall()]
+            trades = await _rows(db,
+                "SELECT l.id, l.tradingsymbol, l.status, l.entry_premium, l.exit_premium, l.exit_reason, l.pnl, "
+                "l.lot_size, l.underlying, p.entry_premium AS paper_entry, p.exit_premium AS paper_exit, "
+                "p.status AS paper_status FROM fno_positions l LEFT JOIN fno_positions p ON p.source=? "
+                "AND p.bar_ts=l.bar_ts AND p.tradingsymbol=l.tradingsymbol "
+                "WHERE l.source=? AND l.entry_date=? ORDER BY l.id", (PAPER, SOURCE, day_iso))
+            ids = [t["id"] for t in trades]
+            events = await _rows(db, "SELECT position_id, kind, detail FROM fno_live_execution_events WHERE "
+                                     f"position_id IN ({','.join('?' for _ in ids) or 'NULL'}) ORDER BY id", tuple(ids))
+            stops = {r["position_id"]: r["state"] for r in await _rows(
+                db, "SELECT position_id, state FROM fno_broker_backstops WHERE source=?", (SOURCE,))}
+            skipped = await _rows(db, "SELECT reject_reason, COUNT(*) AS n FROM fno_signals WHERE leg=? AND "
+                                      "accepted=0 AND bar_ts LIKE ? GROUP BY reject_reason ORDER BY n DESC",
+                                  (SOURCE, f"{day_iso}%"))
+            open_rows = await _rows(db, "SELECT COUNT(*) AS n FROM fno_positions WHERE source=? AND status='OPEN'",
+                                    (SOURCE,))
+            claims = await _rows(db, "SELECT COUNT(*) AS n, SUM(order_id IS NOT NULL) AS working FROM "
+                                     "fno_exit_intents WHERE source=?", (SOURCE,))
+            reserved = await _rows(db, "SELECT COUNT(*) AS n FROM fno_risk_reservations WHERE source=? AND "
+                                       "state='RESERVED'", (SOURCE,))
     except Exception as exc:
         logger.error("fno_live_test_day_report_failed err=%s", str(exc))
         return None
-    if not rows:
+    outstanding = {"open": (open_rows[0]["n"] if open_rows else 0) or 0,
+                   "claims": (claims[0]["n"] if claims else 0) or 0,
+                   "working": (claims[0]["working"] if claims else 0) or 0,
+                   "reserved": (reserved[0]["n"] if reserved else 0) or 0}
+    if not (trades or skipped or any(outstanding.values()) or armed()):
         return None
+    from datetime import date
+    run = await current_run(db_path, date.fromisoformat(day_iso))
     equity = await live_equity(db_path)
-    lines = [f"💰 REAL-money F&O test, {day_iso}: {len(rows)} trade(s)"]
+    head = f"💰 REAL-money F&O test, {day_iso}: {len(trades)} real trade(s)"
+    if run is not None:
+        head += (f" -- run {run['label']}, session {min(run['session'], run['sessions'])} of {run['sessions']}"
+                 f" (from {run['started_on']}, release {str(run['release'])[:7]})")
+    lines = [head]
+    by_id: dict = {}
+    for e in events:
+        by_id.setdefault(e["position_id"], []).append((e["kind"], json.loads(e["detail"] or "{}")))
     real_total = paper_total = 0.0
-    for r in rows:
-        if r["status"] != "CLOSED":
-            lines.append(f"- {r['tradingsymbol']}: bought ₹{r['entry_premium']:.2f} (paper ₹"
-                         f"{(r['paper_entry'] or 0):.2f}); still {r['status'].lower()}")
+    for t in trades:
+        steps = by_id.get(t["id"], [])
+        entry = next((d for k, d in steps if k == "entry_filled"), {})
+        refused = sum(1 for k, _ in steps if k == "exit_modify_refused")
+        moved = sum(1 for k, _ in steps if k == "exit_modified")
+        delay = entry.get("decision_to_fill_sec")
+        quality = (f"bought {_slip(t['entry_premium'], t['paper_entry'])} vs paper"
+                   + (f", {delay:.0f}s after the paper decision" if isinstance(delay, (int, float)) else ""))
+        if t["status"] != "CLOSED":
+            lines.append(f"- {t['tradingsymbol']}: real ₹{t['entry_premium']:.2f} (paper ₹{(t['paper_entry'] or 0):.2f}); "
+                         f"still {t['status'].lower()}; {quality}; broker stop {stops.get(t['id'], 'none')}")
             continue
-        paper_one_lot = (r["paper_pnl"] or 0.0) / max(1, int(r["paper_lots"] or 1))
-        real_total += float(r["pnl"] or 0.0)
-        paper_total += paper_one_lot
-        lines.append(f"- {r['tradingsymbol']}: real ₹{r['entry_premium']:.2f} → ₹{r['exit_premium']:.2f} "
-                     f"({r['exit_reason']}) = {_rs(r['pnl'] or 0.0)}; paper ₹{(r['paper_entry'] or 0):.2f} → "
-                     f"₹{(r['paper_exit'] or 0):.2f} = {_rs(paper_one_lot)} a lot")
-    lines.append(f"Real {_rs(real_total)} against paper {_rs(paper_total)} (one lot, after charges); the gap "
-                 "is real fills and timing.")
+        paper_one_lot = (one_lot_pnl(t["paper_entry"], t["paper_exit"], t["lot_size"], t["underlying"])
+                         if t["paper_entry"] and t["paper_exit"] else None)
+        real_total += float(t["pnl"] or 0.0)
+        paper_total += paper_one_lot or 0.0
+        lines.append(
+            f"- {t['tradingsymbol']}: real ₹{t['entry_premium']:.2f} → ₹{t['exit_premium']:.2f} ({t['exit_reason']}) "
+            f"= {_rs(t['pnl'] or 0.0)}; paper ₹{(t['paper_entry'] or 0):.2f} → ₹{(t['paper_exit'] or 0):.2f} = "
+            + (f"{_rs(paper_one_lot)} a lot" if paper_one_lot is not None else "still open")
+            + f"; {quality}; sold {_slip(t['exit_premium'], t['paper_exit'], selling=True)} vs paper"
+            + (f"; exit price moved {moved}x" if moved else "")
+            + (f", {refused} change(s) refused" if refused else ""))
+    if trades:
+        lines.append(f"Real {_rs(real_total)} against paper {_rs(paper_total)} (one lot each, after its own "
+                     "charges); the gap is real fills and timing.")
+    if skipped:
+        lines.append("Paper trades not bought for real: " + ", ".join(f"{r['reject_reason']} x{r['n']}"
+                                                                      for r in skipped) + ".")
+    if any(outstanding.values()):
+        lines.append(f"Outstanding: {outstanding['open']} open real position(s), {outstanding['claims']} exit(s) "
+                     f"claimed ({outstanding['working']} still working), {outstanding['reserved']} reservation(s) held.")
+    else:
+        lines.append("Outstanding: nothing (no open real position, no exit or reservation pending).")
     if equity is not None:
-        lines.append(f"Test equity ₹{equity:,.0f} of ₹{live_pool():,.0f} (floor ₹{settings.FNO_LIVE_TEST_FLOOR:,.0f}).")
+        lines.append(f"Test equity ₹{equity:,.0f} of ₹{live_pool():,.0f} (floor ₹{settings.FNO_LIVE_TEST_FLOOR:,.0f}; "
+                     "the floor stops new entries, it cannot cap an open position's loss).")
     return "\n".join(lines)
+
+
+def _slip(real, paper, *, selling: bool = False) -> str:
+    """Real against paper per unit, signed so that positive is worse for us."""
+    if not real or not paper:
+        return "n/a"
+    worse = (float(paper) - float(real)) if selling else (float(real) - float(paper))
+    return f"{'+' if worse >= 0 else '-'}₹{abs(worse):.2f}/unit ({worse / float(paper):+.1%} worse)" if worse \
+        else "at the same price"
+
+
+async def hand_off_preflight_fill(db_path: str, *, contract, qty: int, fill: float, order_id: str,
+                                  forward: float, now: datetime) -> int:
+    """[O25b] Record fno_live_preflight's filled test buy as a real FNO_LIVE
+    position, so the engine sells it at once (exit reason preflight_flatten)
+    through its full exit path (claim, tag, ladder, follow-up, restart
+    recovery), and the owner is told. Returns the position id."""
+    import fno_positions as fpos
+    from performance import init_ledger
+    await init_ledger(db_path)                 # its exit settles into the FNO_LIVE ledger
+    await fpos.init_fno_positions_db(db_path)
+    position_id = await fpos.insert_position(
+        db_path, source=SOURCE, tradingsymbol=contract.tradingsymbol, token=contract.token, underlying=UNDERLYING,
+        expiry=contract.expiry.isoformat(), strike=float(contract.strike), opt_type=contract.instrument_type,
+        direction="LONG", lots=max(1, qty // int(contract.lot_size)), lot_size=int(contract.lot_size), qty=qty,
+        entry_time=now.isoformat(), entry_date=now.date().isoformat(), entry_premium=fill,
+        entry_underlying=forward, delta_at_entry=0.0, iv_at_entry=0.0, atr_at_entry=0.0,
+        stop_underlying=0.0, target_underlying=forward * 10.0, premium_stop=round(0.75 * fill, 2),
+        max_loss_rupees=fill * qty, bar_ts=f"{PREFLIGHT_BAR}-{order_id}", entry_order_id=order_id,
+    )
+    await record_event(db_path, position_id, "preflight_fill_handed_off", {"order_id": order_id, "fill": fill})
+    await _page(f"⚠️ The preflight test BUY filled: {contract.tradingsymbol} x{qty} at ₹{fill:.2f} (order {order_id}). "
+                "It is recorded as a real position and the engine sells it now; you will see its exit. If it is "
+                "still held in Kite in a few minutes, sell it there.", "fno_live_preflight_filled")
+    return position_id
+
+
+async def typical_lot_cost(db_path: str, last: int = 20) -> Optional[float]:
+    """The median cost of one lot over the paper book's last ``last`` single-leg buys."""
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            rows = await (await db.execute(
+                "SELECT entry_premium * lot_size FROM fno_positions WHERE source=? AND underlying=? "
+                "ORDER BY entry_time DESC LIMIT ?", (PAPER, UNDERLYING, last))).fetchall()
+    except aiosqlite.OperationalError:
+        return None
+    costs = sorted(float(r[0]) for r in rows if r[0])
+    return costs[len(costs) // 2] if costs else None
+
+
+async def morning_check(kite, db_path: str, now: datetime) -> Optional[str]:
+    """[O25b] 09:25 on a trading day while the test is on: is it ready to trade
+    real money today? One owner message, so nothing has to be run by hand."""
+    if not armed():
+        return None
+    from fno_live_preflight import order_route
+    from kite_client import own_uncommitted_cash
+    problems, facts = [], []
+    route, encrypted, route_problem = order_route()
+    if route_problem:
+        problems.append(route_problem)
+    else:
+        facts.append("orders via " + ("an encrypted tunnel" if encrypted else "the relay (plain HTTP)"))
+    logged_in = bool(getattr(kite, "access_token", "")) and getattr(kite, "token_set_ist_date", None) == now.date()
+    if not logged_in:
+        problems.append("no Kite login for today yet: no real trade until you log in")
+    else:
+        async def read(name):
+            method = getattr(type(kite), name, None)
+            return await method(kite) if callable(method) else None
+        try:
+            margins, positions, orders = (await read("get_funds_margins"), await read("get_broker_positions"),
+                                          await read("orders_snapshot"))
+        except Exception as exc:
+            margins = positions = orders = None
+            logger.error("fno_live_readiness_read_failed err=%s", str(exc))
+        own = own_uncommitted_cash(margins, positions, orders)
+        lot = await typical_lot_cost(db_path)
+        if own is None:
+            problems.append("free cash could not be read")
+        else:
+            facts.append(f"free cash ₹{own:,.0f}" + (f" (a lot has cost about ₹{lot:,.0f})" if lot else ""))
+            if lot and own < lot:
+                problems.append(f"free cash ₹{own:,.0f} is under a typical lot (₹{lot:,.0f}): most buys would be "
+                                "refused")
+        held = [p for p in ((positions or {}).get("net") or []) if isinstance(p, dict)
+                and p.get("exchange") in ("NFO", "BFO") and p.get("quantity")]
+        if held:
+            problems.append("the broker holds F&O positions this morning: " +
+                            ", ".join(f"{p.get('tradingsymbol')} {p.get('product')} {p.get('quantity')}" for p in held))
+    run = await current_run(db_path, now.date())
+    if run["ended"]:
+        problems.append(f"run {run['label']} has ended ({run['sessions']} sessions from {run['started_on']})")
+    else:
+        facts.append(f"run {run['label']}, session {run['session']} of {run['sessions']}")
+    equity = await live_equity(db_path)
+    if equity is None:
+        problems.append("test equity could not be read")
+    elif equity < float(settings.FNO_LIVE_TEST_FLOOR):
+        problems.append(f"equity ₹{equity:,.0f} is under the floor ₹{settings.FNO_LIVE_TEST_FLOOR:,.0f}")
+    else:
+        facts.append(f"equity ₹{equity:,.0f} (floor ₹{settings.FNO_LIVE_TEST_FLOOR:,.0f})")
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            carried = (await (await db.execute(
+                "SELECT COUNT(*) FROM fno_positions WHERE source=? AND status='OPEN'", (SOURCE,))).fetchone())[0]
+            claimed = (await (await db.execute(
+                "SELECT COUNT(*) FROM fno_exit_intents WHERE source=?", (SOURCE,))).fetchone())[0]
+    except aiosqlite.OperationalError:
+        carried = claimed = 0
+    if carried or claimed:
+        problems.append(f"{carried} real position(s) still open and {claimed} exit(s) claimed from before today: "
+                        "reconcile them first")
+    if problems:
+        return ("⚠️ REAL-money F&O test NOT ready today: " + "; ".join(problems) + "."
+                + (" Fine: " + "; ".join(facts) + "." if facts else ""))
+    return "✅ REAL-money F&O test ready today: " + "; ".join(facts) + "."

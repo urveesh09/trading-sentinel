@@ -29,45 +29,66 @@ def quick_ladder(monkeypatch):
                                                            for share, ticks, _wait in fno_executor.EXIT_LADDER))
 
 
-class Broker:
-    """One working order at a time: placed, modified, cancelled and read back."""
+class Killed(BaseException):
+    """The process dies here (not an Exception: nothing in the engine catches it)."""
 
-    def __init__(self, *, place=None, fill_after_modifies=None, terminal=None, fill_price=None):
-        self.placed, self.modified, self.cancelled, self.quotes = [], [], [], 0
+
+class Broker:
+    """One working order at a time, as Kite keeps it: placed (with its tag),
+    modified when accepted, cancelled, and read back with its resting price."""
+
+    def __init__(self, *, place=None, fill_after_modifies=None, terminal=None, fill_price=None,
+                 refuse_modifies=0, die_while_waiting=False):
+        self.placed, self.modified, self.attempts, self.cancelled, self.quotes = [], [], [], [], 0
         self.place_reply = place
         self.fill_after = fill_after_modifies
         self.terminal = terminal
         self.fill_price = fill_price
+        self.refuse_modifies = refuse_modifies
+        self.die_while_waiting = die_while_waiting
         self.complete = False
+        self.resting = None
 
     async def place_order(self, **kw):
         self.placed.append(kw)
         if self.place_reply is not None:
             return dict(self.place_reply)
+        self.resting = kw.get("price")
         return {"order_id": f"B{len(self.placed)}", "dispatch_certainty": "ACCEPTED"}
 
     async def modify_order(self, order_id, price=None, **kw):
+        self.attempts.append(price)
+        if self.refuse_modifies > 0:
+            self.refuse_modifies -= 1
+            return {"order_id": order_id, "status": "ERROR", "message": "HTTP 400: price out of range"}
         self.modified.append(price)
+        self.resting = price
         return {"order_id": order_id, "status": "MODIFIED"}
 
     async def cancel_order(self, order_id, variety="regular"):
         self.cancelled.append(order_id)
         return {"order_id": order_id, "status": "CANCELLED"}
 
-    async def order_history(self, order_id):
+    def _state(self) -> dict:
         if self.terminal is not None:
-            state = dict(self.terminal)
-        elif self.complete or (self.fill_after is not None and len(self.modified) >= self.fill_after):
-            price = self.fill_price or (self.modified[-1] if self.modified else self.placed[-1]["price"])
-            state = {"status": "COMPLETE", "filled_quantity": self.placed[-1]["quantity"], "average_price": price}
-        elif self.cancelled:
-            state = {"status": "CANCELLED", "filled_quantity": 0}
-        else:
-            state = {"status": "OPEN", "filled_quantity": 0}
-        return [{**state, "order_timestamp": "2026-10-27 15:15:00"}]
+            return dict(self.terminal)
+        if self.complete or (self.fill_after is not None and len(self.modified) >= self.fill_after):
+            price = self.fill_price or self.resting
+            return {"status": "COMPLETE", "filled_quantity": self.placed[-1]["quantity"], "average_price": price,
+                    "price": self.resting}
+        if self.cancelled:
+            return {"status": "CANCELLED", "filled_quantity": 0, "price": self.resting}
+        return {"status": "OPEN", "filled_quantity": 0, "price": self.resting}
+
+    async def order_history(self, order_id):
+        if self.die_while_waiting:
+            raise Killed()
+        return [{**self._state(), "order_timestamp": "2026-10-27 15:15:00"}]
 
     async def orders_snapshot(self):
-        return []
+        return [{**self._state(), "order_id": f"B{i + 1}", "tag": kw.get("tag"), "tradingsymbol": kw["tradingsymbol"],
+                 "transaction_type": kw["transaction_type"], "quantity": kw["quantity"],
+                 "order_timestamp": "2026-10-27 15:15:00"} for i, kw in enumerate(self.placed)]
 
     async def get_quote(self, tokens):
         self.quotes += 1
@@ -460,3 +481,231 @@ async def test_order_writes_leave_from_the_order_route_and_reads_do_not(tmp_path
                     ("GET", "api.kite.trade", "TOKEN")]
     monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
     assert KiteClient(str(tmp_path / "route2.db")).order_client is None          # unset: one client, as before
+
+
+# ---------------------------------------------------------------- [O25b] the review's reproduced gaps
+
+@pytest.mark.asyncio
+async def test_a_refused_price_change_is_not_taken_for_one_and_is_tried_again(quick_ladder):
+    broker = Broker(refuse_modifies=2)                         # both ladder modifications refused
+    result = await _live(broker).execute_exit("S", 65, 100.0, 0.05)
+    assert result["status"] == "unfilled" and result["limit"] == 99.5     # where it really rests
+    followed = await _live(broker).follow_exit("B1", result["limit"], 100.0, 0.05)
+    assert broker.attempts[-1] == 90.0 and followed["limit"] == 90.0      # the next pass moves it
+
+
+@pytest.mark.asyncio
+async def test_a_restart_while_the_sell_waits_follows_the_same_order(live_db, quick_ladder, monkeypatch):
+    monkeypatch.setattr(fno_orchestrator, "_page_live_exit_once", _no_page)
+    position_id = await _live_position(live_db, entry_order_id="LIVE-ENTRY-1")
+    broker = Broker(die_while_waiting=True)
+    with pytest.raises(Killed):
+        await fno_orchestrator._manage_open_positions(broker, live_db, "FNO_LIVE", _live(broker), LATE, 25000.0)
+    broker.die_while_waiting, broker.complete = False, True                # it filled while the engine was down
+    closed = await fno_orchestrator._manage_open_positions(broker, live_db, "FNO_LIVE", _live(broker), LATE,
+                                                           25000.0)
+    assert len(closed) == 1 and len(broker.placed) == 1                    # followed, never sent twice
+    assert _status(live_db, position_id)[0][3] == "B1"
+
+
+@pytest.mark.asyncio
+async def test_a_send_whose_reply_was_lost_is_found_by_its_tag(live_db, quick_ladder, monkeypatch):
+    monkeypatch.setattr(fno_orchestrator, "_page_live_exit_once", _no_page)
+    position_id = await _live_position(live_db, entry_order_id="LIVE-ENTRY-1")
+    broker = Broker()
+    assert await fpos.claim_exit_intent(live_db, position_id, "FNO_LIVE")
+    await fpos.record_exit_tag(live_db, position_id, "FNO_LIVE", tag="FXlostreply000000",
+                               exit_reason="hard_flat_1510")
+    await broker.place_order(tradingsymbol="NIFTY26OCT25000CE", transaction_type="SELL", quantity=65, price=99.5,
+                             tag="FXlostreply000000")                       # it reached Kite; the reply was lost
+    assert await fno_orchestrator._manage_open_positions(broker, live_db, "FNO_LIVE", _live(broker), LATE,
+                                                         25000.0) == []
+    assert _status(live_db, position_id)[1] == [("B1",)]                    # adopted from the order book
+    broker.complete = True
+    assert len(await fno_orchestrator._manage_open_positions(broker, live_db, "FNO_LIVE", _live(broker), LATE,
+                                                             25000.0)) == 1
+    assert len(broker.placed) == 1
+
+
+@pytest.mark.asyncio
+async def test_a_tagged_send_that_never_reached_kite_is_sent_again(live_db, quick_ladder, monkeypatch):
+    monkeypatch.setattr(fno_orchestrator, "_page_live_exit_once", _no_page)
+    position_id = await _live_position(live_db, entry_order_id="LIVE-ENTRY-1")
+    assert await fpos.claim_exit_intent(live_db, position_id, "FNO_LIVE")
+    await fpos.record_exit_tag(live_db, position_id, "FNO_LIVE", tag="FXneversent0000000",
+                               exit_reason="hard_flat_1510")
+    with closing(sqlite3.connect(live_db)) as conn:                         # claimed a minute earlier
+        conn.execute("UPDATE fno_exit_intents SET created_at=?", (LATE.replace(minute=14).isoformat(),))
+        conn.commit()
+    broker = Broker(fill_after_modifies=0)
+    assert await fno_orchestrator._manage_open_positions(broker, live_db, "FNO_LIVE", _live(broker), LATE,
+                                                         25000.0) == []
+    assert _status(live_db, position_id)[1] == [] and broker.placed == []   # absent from the book: freed
+    assert len(await fno_orchestrator._manage_open_positions(broker, live_db, "FNO_LIVE", _live(broker), LATE,
+                                                             25000.0)) == 1
+
+
+class HeldAsNrml(Broker):
+    """Kite holds the contract only under NRML; the system's own MIS lot is gone."""
+
+    async def get_broker_positions(self):
+        return {"net": [{"tradingsymbol": "NIFTY26OCT25000CE", "exchange": "NFO", "product": "MIS", "quantity": 0},
+                        {"tradingsymbol": "NIFTY26OCT25000CE", "exchange": "NFO", "product": "NRML",
+                         "quantity": 65}]}
+
+
+@pytest.mark.asyncio
+async def test_an_nrml_holding_never_lets_an_mis_sell_through(live_db, quick_ladder, monkeypatch):
+    pages = []
+
+    async def page(position, reason, text):
+        pages.append(reason)
+
+    monkeypatch.setattr(fno_orchestrator, "_page_live_exit_once", page)
+    await _live_position(live_db, entry_order_id="LIVE-ENTRY-1")
+    broker = HeldAsNrml(fill_after_modifies=0)
+    assert await fno_orchestrator._manage_open_positions(broker, live_db, "FNO_LIVE", _live(broker), LATE,
+                                                         25000.0) == []
+    assert broker.placed == [] and pages == ["not_held"]
+
+
+@pytest.mark.asyncio
+async def test_only_nifty_is_ever_bought_for_real(book, db_path, paper_entered, monkeypatch):
+    broker, sig = paper_entered
+    paper = _rows(db_path, "FNO_PAPER")[-1]
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as conn:                           # the same trade, on BANKNIFTY
+        await conn.execute("UPDATE fno_positions SET underlying='BANKNIFTY' WHERE id=?", (paper["id"],))
+        await conn.commit()
+    assert await fno_live_test.mirror_entry(
+        broker, db_path, _live(broker), sig=sig, paper_entry={"symbol": paper["tradingsymbol"]},
+        underlying="BANKNIFTY", instruments=book, regime="REGIME_1_NORMAL", now_ist=NOW, scan_id="T") is None
+    assert broker.orders_placed == [] and (await _reasons(db_path))[-1] == "live_test_not_nifty"
+
+
+# ---------------------------------------------------------------- [O25b] bounded runs, readiness, evidence
+
+@pytest.mark.asyncio
+async def test_a_run_ends_after_its_sessions_and_the_owner_is_told_once(book, db_path, paper_entered, monkeypatch):
+    broker, sig = paper_entered
+    from datetime import date
+    first = await fno_live_test.current_run(db_path, date(2026, 7, 1))            # armed on Wed Jul 1
+    assert (first["label"], first["started_on"], first["session"], first["ended"]) == ("1", "2026-07-01", 1, False)
+    assert (await fno_live_test.current_run(db_path, date(2026, 7, 7)))["ended"] is False     # the 5th session
+    later = await fno_live_test.current_run(db_path, date(2026, 7, 8))            # the 6th
+    assert (later["session"], later["ended"]) == (6, True)
+    told = []
+
+    async def notify(text, *, event):
+        told.append(event)
+        return True
+
+    import operator_alert
+    monkeypatch.setattr(operator_alert, "notify_operator", notify)
+    monkeypatch.setattr(fno_live_test, "_RUN_END_TOLD", set())
+    assert await _mirror(book, db_path, broker, sig=sig) is None                 # NOW (Fri Jul 10): session 8
+    assert await _mirror(book, db_path, broker, sig=sig) is None
+    assert told == ["fno_live_test_run_ended"] and broker.orders_placed == []
+    assert (await _reasons(db_path))[-2:] == ["live_test_run_ended", "live_test_run_ended"]
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_RUN", "2")                       # a new, named run
+    assert (await fno_live_test.current_run(db_path, date(2026, 11, 2)))["session"] == 1
+
+
+class Account:
+    """The account as the morning check reads it."""
+
+    def __init__(self, *, cash=15000.0, logged_in=True, held=()):
+        from datetime import date
+        self.access_token = "T" if logged_in else ""
+        self.token_set_ist_date = date(2026, 11, 2) if logged_in else None
+        self.cash, self.held = cash, list(held)
+
+    async def get_funds_margins(self):
+        return {"equity": {"enabled": True, "available": {"cash": self.cash}, "utilised": {"m2m_realised": 0.0}}}
+
+    async def get_broker_positions(self):
+        return {"net": self.held}
+
+    async def orders_snapshot(self):
+        return []
+
+
+@pytest.mark.asyncio
+async def test_the_morning_check_says_ready_or_names_what_is_missing(live_db, armed, monkeypatch):
+    monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://relay.test:8888")
+    monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
+    monday = IST.localize(datetime(2026, 11, 2, 9, 25))
+    for i, premium in enumerate((120.0, 140.0, 136.0)):                         # lots of ₹7.8k-9.1k
+        await fpos.insert_position(
+            live_db, source="FNO_PAPER", tradingsymbol=f"NIFTYX{i}CE", token=i, underlying="NIFTY",
+            expiry="2026-11-03", strike=25000.0, opt_type="CE", direction="LONG", lots=1, lot_size=65, qty=65,
+            entry_time=f"2026-10-2{i}T10:00:00+05:30", entry_date=f"2026-10-2{i}", entry_premium=premium,
+            entry_underlying=25000.0, delta_at_entry=0.55, iv_at_entry=0.12, atr_at_entry=40.0,
+            stop_underlying=24950.0, target_underlying=25100.0, premium_stop=0.75 * premium,
+            max_loss_rupees=premium * 65, bar_ts=f"2026-10-2{i} 10:00:00")
+    ready = await fno_live_test.morning_check(Account(), live_db, monday)
+    assert ready == ("✅ REAL-money F&O test ready today: orders via an encrypted tunnel; free cash ₹15,000 (a lot "
+                     "has cost about ₹8,840); run 1, session 1 of 5; equity ₹12,500 (floor ₹7,000).")
+    short = await fno_live_test.morning_check(Account(cash=8000.0), live_db, monday)
+    assert short.startswith("⚠️ REAL-money F&O test NOT ready today: free cash ₹8,000 is under a typical lot")
+    out = await fno_live_test.morning_check(Account(logged_in=False), live_db, monday)
+    assert "no Kite login for today yet" in out
+    nrml = Account(held=[{"tradingsymbol": "NIFTY26NOV25000CE", "exchange": "NFO", "product": "NRML",
+                          "quantity": 65}])
+    assert "the broker holds F&O positions this morning: NIFTY26NOV25000CE NRML 65" in \
+        await fno_live_test.morning_check(nrml, live_db, monday)
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_ENABLED", False)
+    assert await fno_live_test.morning_check(Account(), live_db, monday) is None
+
+
+@pytest.mark.asyncio
+async def test_the_evening_report_shows_how_each_real_trade_was_executed(live_db, armed):
+    import aiosqlite
+
+    async def closed(source, entry, exit_, when):
+        position_id = await fpos.insert_position(
+            live_db, source=source, tradingsymbol="NIFTY26NOV25000CE", token=1, underlying="NIFTY",
+            expiry="2026-11-03", strike=25000.0, opt_type="CE", direction="LONG", lots=1, lot_size=65, qty=65,
+            entry_time=when, entry_date="2026-11-02", entry_premium=entry, entry_underlying=25000.0,
+            delta_at_entry=0.55, iv_at_entry=0.12, atr_at_entry=40.0, stop_underlying=24950.0,
+            target_underlying=25100.0, premium_stop=0.75 * entry, max_loss_rupees=entry * 65,
+            bar_ts="2026-11-02 10:00:00", entry_order_id="LIVE-1" if source == "FNO_LIVE" else "PAPER-FNO-ENT-1")
+        pnl = fno_live_test.one_lot_pnl(entry, exit_, 65)
+        async with aiosqlite.connect(live_db) as db:
+            await db.execute("UPDATE fno_positions SET status='CLOSED', exit_premium=?, exit_reason='trail_stop', "
+                             "pnl=?, exit_date='2026-11-02' WHERE id=?", (exit_, pnl, position_id))
+            await db.commit()
+        return position_id
+
+    await closed("FNO_PAPER", 100.0, 110.2, "2026-11-02T10:00:02+05:30")
+    live = await closed("FNO_LIVE", 100.1, 110.0, "2026-11-02T10:00:06+05:30")
+    await fno_live_test.record_event(live_db, live, "entry_filled", {"decision_to_fill_sec": 4.2})
+    await fno_live_test.record_event(live_db, live, "exit_modified", {"price": 108.0})
+    await fno_live_test.record_event(live_db, live, "exit_modify_refused", {"price": 100.0})
+    text = await fno_live_test.day_report(live_db, "2026-11-02")
+    lines = text.split("\n")
+    assert lines[0].startswith("💰 REAL-money F&O test, 2026-11-02: 1 real trade(s) -- run 1, session")
+    paper_lot, real_lot = fno_live_test.one_lot_pnl(100.0, 110.2, 65), fno_live_test.one_lot_pnl(100.1, 110.0, 65)
+    assert lines[1] == (f"- NIFTY26NOV25000CE: real ₹100.10 → ₹110.00 (trail_stop) = +₹{real_lot:,.0f}; paper "
+                        f"₹100.00 → ₹110.20 = +₹{paper_lot:,.0f} a lot; bought +₹0.10/unit (+0.1% worse) vs paper, "
+                        "4s after the paper decision; sold +₹0.20/unit (+0.2% worse) vs paper; exit price moved 1x, "
+                        "1 change(s) refused")
+    assert "Outstanding: nothing" in text and "the floor stops new entries, it cannot cap" in text
+
+
+@pytest.mark.asyncio
+async def test_a_claim_left_without_a_name_is_held_and_paged_never_sold(live_db, quick_ladder, monkeypatch):
+    pages = []
+
+    async def page(position, reason, text):
+        pages.append(reason)
+
+    monkeypatch.setattr(fno_orchestrator, "_page_live_exit_once", page)
+    position_id = await _live_position(live_db, entry_order_id="LIVE-ENTRY-1")
+    assert await fpos.claim_exit_intent(live_db, position_id, "FNO_LIVE")      # stopped before naming it
+    broker = Broker(fill_after_modifies=0)
+    for _ in range(2):
+        assert await fno_orchestrator._manage_open_positions(broker, live_db, "FNO_LIVE", _live(broker), LATE,
+                                                             25000.0) == []
+    assert broker.placed == [] and pages == ["claimed_unsent", "claimed_unsent"]   # (the real page dedupes)
+    assert _status(live_db, position_id) == (("OPEN", None, None, None), [(None,)])

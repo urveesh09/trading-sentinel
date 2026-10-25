@@ -999,6 +999,11 @@ class Settings(BaseSettings):
     # paper book's price (the trade has run away), and never chased after.
     FNO_LIVE_TEST_MAX_CHASE_PCT: float = 0.02
     FNO_LIVE_TEST_ENTRY_BUFFER_TICKS: int = 2
+    # [O25b] A run is bounded: FNO_LIVE_TEST_RUN names it and it lasts
+    # FNO_LIVE_TEST_SESSIONS trading sessions from the first day it is armed
+    # (fno_live_test_runs). After that no new entry until a new run is named.
+    FNO_LIVE_TEST_RUN:         str   = "1"
+    FNO_LIVE_TEST_SESSIONS:    int   = 5
     # [O25] The pre-registered proving week (fno_proving_week.py): the paper
     # single-leg book's first FNO_PROVING_SESSIONS trading sessions from
     # FNO_PROVING_START, scored once with rules fixed on Oct 25.
@@ -1710,6 +1715,11 @@ class Settings(BaseSettings):
     # (http://161.118.160.180:31527), whose IP is registered, so quotes can
     # stay direct while orders leave from the registered address.
     KITE_ORDER_BASE_URL: str = ""
+    # [O25b] Preferred when the VM runs a CONNECT proxy (e.g. tinyproxy allowing
+    # only this host and api.kite.trade:443): orders go to https://api.kite.trade
+    # through it, encrypted end to end, and still leave from the registered IP.
+    # Set this OR KITE_ORDER_BASE_URL, not both.
+    KITE_ORDER_PROXY_URL: str = ""
     # [FOLLOW-UP-F3 2026-10-08] Kite documents 1 quote request/second (up to
     # 500 instruments each). kite_client.QuoteBudget enforces it and merges
     # concurrent token requests into one call; the shared limiter (3/s, all

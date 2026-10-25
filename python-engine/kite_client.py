@@ -800,9 +800,17 @@ class KiteClient:
         self.client = httpx.AsyncClient(base_url=settings.KITE_BASE_URL, timeout=15.0)
         # [O25] Order writes leave from the registered static IP when
         # KITE_ORDER_BASE_URL names one (the relay); None = the client above.
+        # [O25b] KITE_ORDER_PROXY_URL instead tunnels them (HTTP CONNECT) through
+        # a proxy at that IP to https://api.kite.trade: TLS end to end, so the
+        # access token never crosses the internet in clear text.
         order_url = (getattr(settings, "KITE_ORDER_BASE_URL", "") or "").strip().rstrip("/")
-        self.order_client = (httpx.AsyncClient(base_url=order_url, timeout=15.0)
-                             if order_url and order_url != settings.KITE_BASE_URL.rstrip("/") else None)
+        order_proxy = (getattr(settings, "KITE_ORDER_PROXY_URL", "") or "").strip()
+        if order_proxy:
+            self.order_client = httpx.AsyncClient(base_url=order_url or "https://api.kite.trade", timeout=15.0,
+                                                  proxy=order_proxy)
+        else:
+            self.order_client = (httpx.AsyncClient(base_url=order_url, timeout=15.0)
+                                 if order_url and order_url != settings.KITE_BASE_URL.rstrip("/") else None)
 
     @property
     def _orders_http(self) -> httpx.AsyncClient:

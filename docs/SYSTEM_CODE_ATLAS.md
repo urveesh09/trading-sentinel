@@ -706,7 +706,7 @@ Related tests: `python-engine/tests/test_fno_entry_plan.py`
 
 [FNO-EXECUTOR 2026-07-10] Order path for the F&O subsystem (spec §10.1). LIMIT orders only. Never market. The bid-ask spread on an option is the single largest controllable cost. Entry: LIMIT at ask, FNO_FILL_TIMEOUT_SEC then cancel. NEVER chase -- a missed fill is free; a chased fill is not. Exit: [O25] one SELL LIMIT just under the bid, modified lower in steps (EXIT_LADDER) until it fills; one still working is followed up on every later pass (follow_exit). Never a second SELL order. Hard flat (15:10): the ladder's deepest step at once -- the position MUST close. Paper mode fills honestly against the REAL book: entry at ask, exit at bid. Paying the spread in paper is deliberate -- it is the
 
-Top-level declarations: `_tick_floor` (line 63), `exit_ladder_prices` (line 67), `FnoExecutor` (line 78)
+Top-level declarations: `_tick_floor` (line 63), `_resting_price` (line 67), `_emit` (line 77), `exit_ladder_prices` (line 87), `FnoExecutor` (line 98)
 
 Engine dependencies: `config`, `kite_client`
 
@@ -804,7 +804,7 @@ Related tests: `python-engine/tests/test_fno_instruments.py`
 
 [O25 2026-10-25] Before the real-money F&O test: is the order route ready? Run by the owner. docker exec -it python-engine python -m fno_live_preflight # reads only docker exec -it python-engine python -m fno_live_preflight --test-order # plus one order, cancelled Reads (any time after the day's Kite login): the order route (KITE_ORDER_BASE_URL), own free cash in the account (no margin, no collateral) against FNO_LIVE_TEST_CAPITAL, open F&O positions at the broker, and the day's order book. ``--test-order`` (market hours, a real order): one lot of the nearest NIFTY call that does not expire today, at the strike nearest the future, as a BUY LIMIT 20% under its bid. It cannot fill unless the o
 
-Top-level declarations: `_floor_tick` (line 37), `run` (line 41), `_test_order` (line 84), `main` (line 155)
+Top-level declarations: `order_route` (line 46), `_floor_tick` (line 61), `run` (line 65), `_test_order` (line 108), `main` (line 184)
 
 Engine dependencies: `config`, `fno_executor`, `fno_instruments`, `fno_models`, `kite_client`, `token_lifecycle`
 
@@ -814,11 +814,13 @@ Related tests: `python-engine/tests/test_fno_live_preflight.py`
 
 [O25 2026-10-25] The owner's real-money F&O test: own cash, one lot, the paper book's trades. The owner's decision (Oct 25): after a five-session paper proving week (fno_proving_week.py), put FNO_LIVE_TEST_CAPITAL (₹12,500) of real money on the pure intraday single-leg F&O book for about a week, with the investment and risk guardrails relaxed, to see how the system trades with real fills. It is one switch, FNO_LIVE_TEST_ENABLED; it is off unless the owner sets it. What the test does - It never decides a trade. When the paper book buys an option, the test buys ONE lot of the same contract on the same signal bar (``mirror_entry``), so the signal, strike, gates, reward/risk, the paper book's ow
 
-Top-level declarations: `armed` (line 58), `live_pool` (line 62), `entry_limit` (line 67), `live_equity` (line 79), `_paper_row` (line 95), `_fresh_quote` (line 104), `_contract_for` (line 122), `_tell_floor_once` (line 138), `mirror_entry` (line 155), `_page` (line 343), `_rs` (line 351), `day_report` (line 355)
+Top-level declarations: `one_lot_pnl` (line 82), `record_event` (line 90), `current_run` (line 104), `_tell_run_ended_once` (line 135), `armed` (line 150), `live_pool` (line 154), `entry_limit` (line 159), `live_equity` (line 171), `_paper_row` (line 187), `_fresh_quote` (line 196), `_contract_for` (line 214), `_tell_floor_once` (line 230), `mirror_entry` (line 247), `_page` (line 456), `_rs` (line 464), `_rows` (line 468), `day_report` (line 477), `_slip` (line 565), `hand_off_preflight_fill` (line 574), `typical_lot_cost` (line 600), `morning_check` (line 613)
 
-Engine dependencies: `config`, `fno_chain`, `fno_costs`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `kite_client`, `operator_alert`, `performance`
+Engine dependencies: `config`, `fno_chain`, `fno_costs`, `fno_live_preflight`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `kite_client`, `market_calendar`, `operator_alert`, `performance`, `release_identity`
 
 Related tests: `python-engine/tests/test_fno_live_test.py`
+
+Declared tables: `fno_live_execution_events`, `fno_live_test_runs`
 
 ## `python-engine/fno_models.py`
 
@@ -842,7 +844,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 72), `_read_cap` (line 76), `_record_management_read` (line 81), `_timed_database_operation` (line 111), `_management_quote` (line 132), `_oldest_quote_age_sec` (line 148), `_settle_exit_receipt` (line 165), `_fno_pool_paper` (line 226), `_fno_pool_live` (line 231), `_live_leg_enabled` (line 237), `_live_orders_enabled` (line 242), `_live_leg_managed` (line 247), `_load_dr_entry_inputs` (line 265), `_fno_equity` (line 335), `_fno_halted` (line 341), `_fetch_futures_bars` (line 363), `_record_shadow_observation` (line 371), `_schedule_shadow_observation` (line 388), `_manage_open_positions` (line 421), `_executor_for_position` (line 711), `_broker_holds_none` (line 724), `_page_live_exit_once` (line 750), `_live_exit_not_filled` (line 763), `_follow_working_exit` (line 794), `_book_exit_fill` (line 818), `_try_entry_for_leg` (line 863), `post_admission_entry_reject` (line 1161), `_insert_entry_position` (line 1179), `_manage_single_leg_books` (line 1190), `run_fno_tick` (line 1290), `_single_leg_entries` (line 1551), `fast_exit_has_work` (line 1723), `run_fno_fast_exit` (line 1740), `_bar_already_logged` (line 1782), `format_fno_telegram` (line 1804)
+Top-level declarations: `_now_min` (line 72), `_read_cap` (line 76), `_record_management_read` (line 81), `_timed_database_operation` (line 111), `_management_quote` (line 132), `_oldest_quote_age_sec` (line 148), `_settle_exit_receipt` (line 165), `_fno_pool_paper` (line 226), `_fno_pool_live` (line 231), `_live_leg_enabled` (line 237), `_live_orders_enabled` (line 242), `_live_leg_managed` (line 247), `_load_dr_entry_inputs` (line 265), `_fno_equity` (line 335), `_fno_halted` (line 341), `_fetch_futures_bars` (line 363), `_record_shadow_observation` (line 371), `_schedule_shadow_observation` (line 388), `_manage_open_positions` (line 421), `_exit_event_recorder` (line 758), `_find_tagged_order` (line 770), `_recover_tagged_exit` (line 800), `_executor_for_position` (line 828), `_broker_mis_held` (line 841), `_page_live_exit_once` (line 873), `_live_exit_not_filled` (line 886), `_follow_working_exit` (line 920), `_book_exit_fill` (line 948), `_try_entry_for_leg` (line 993), `post_admission_entry_reject` (line 1291), `_insert_entry_position` (line 1309), `_manage_single_leg_books` (line 1320), `run_fno_tick` (line 1420), `_single_leg_entries` (line 1681), `fast_exit_has_work` (line 1853), `run_fno_fast_exit` (line 1870), `_bar_already_logged` (line 1912), `format_fno_telegram` (line 1934)
 
 Engine dependencies: `affordability`, `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `fno_underlyings`, `kite_client`, `operator_alert`, `performance`
 
@@ -862,7 +864,7 @@ Related tests: `python-engine/tests/test_fno_policy_replay.py`
 
 [FNO-POSITIONS 2026-07-10] Position store for the F&O subsystem. Options positions don't fit the equity `positions` table (premium vs price, lots vs shares, underlying-level stops next to premium backstops), so they get their own table. Pool accounting still flows into the shared bankroll_ledger via performance.record_trade_close(source=FNO_PAPER/ FNO_LIVE) at close time -- purely additive next to the existing source tags (spec §10.3). All dates/times stored in IST (the exchange's clock), ISO format. Kill switches and day-queries key off entry_date / exit_date, so the module's "day" can never drift against the trading session the way UTC dates do. Rule 57: every reader preflights the table a
 
-Top-level declarations: `FnoPosition` (line 205), `_row_to_position` (line 250), `init_fno_positions_db` (line 254), `_table_exists` (line 349), `_with_entry_baselines` (line 356), `insert_position` (line 377), `insert_position_with_risk_reservation` (line 392), `open_positions` (line 424), `open_premium_committed` (line 438), `trades_today` (line 452), `already_entered_bar` (line 464), `update_trail` (line 477), `update_best_premium` (line 492), `close_position` (line 508), `exit_execution_receipt` (line 540), `claim_exit_intent` (line 559), `record_working_exit` (line 585), `working_exit` (line 598), `release_exit_intent` (line 618), `record_exit_execution_receipt` (line 631), `SettlementError` (line 742), `PositionNotOpen` (line 746), `SettlementConflict` (line 756), `settle_position_close` (line 781), `settle_position_close_idempotent` (line 1012), `stopped_entry_levels_today` (line 1065), `closed_today` (line 1084)
+Top-level declarations: `FnoPosition` (line 205), `_row_to_position` (line 250), `init_fno_positions_db` (line 254), `_table_exists` (line 351), `_with_entry_baselines` (line 358), `insert_position` (line 379), `insert_position_with_risk_reservation` (line 394), `open_positions` (line 426), `open_premium_committed` (line 440), `trades_today` (line 454), `already_entered_bar` (line 466), `update_trail` (line 479), `update_best_premium` (line 494), `close_position` (line 510), `exit_execution_receipt` (line 542), `claim_exit_intent` (line 561), `record_working_exit` (line 587), `record_exit_tag` (line 600), `exit_intent` (line 615), `release_exit_intent` (line 638), `record_exit_execution_receipt` (line 651), `SettlementError` (line 762), `PositionNotOpen` (line 766), `SettlementConflict` (line 776), `settle_position_close` (line 801), `settle_position_close_idempotent` (line 1032), `stopped_entry_levels_today` (line 1085), `closed_today` (line 1104)
 
 Engine dependencies: `fno_costs`, `fno_entry_plan`, `fno_shared_risk`, `performance`
 
@@ -870,11 +872,11 @@ Declared tables: `fno_exit_execution_receipts`, `fno_exit_intents`, `fno_exit_re
 
 ## `python-engine/fno_proving_week.py`
 
-[O25 2026-10-25] The owner's five-session proving week for the paper F&O single-leg book. The owner (Oct 25): "I will give the system 5 more days to prove itself, if it's able to then you tell me", before ₹12,500 of real money goes on the book (fno_live_test.py). These rules were fixed on Sunday Oct 25, before the first session, and are scored once; they are not tuned afterwards. Window: the first FNO_PROVING_SESSIONS NSE trading days from FNO_PROVING_START (Mon Oct 26 to Fri Oct 30, 2026). Scored: FNO_PAPER single-leg positions entered in the window, each at ONE lot (its P&L after the paper charges, over its lots), because the real test trades one lot. Verdict, once the last session has clo
+[O25 2026-10-25] The owner's five-session proving week for the paper F&O single-leg book. The owner (Oct 25): "I will give the system 5 more days to prove itself, if it's able to then you tell me", before ₹12,500 of real money goes on the book (fno_live_test.py). These rules were fixed on Sunday Oct 25, before the first session, and are scored once; they are not tuned afterwards. Window: the first FNO_PROVING_SESSIONS NSE trading days from FNO_PROVING_START (Mon Oct 26 to Fri Oct 30, 2026). Scored: FNO_PAPER single-leg positions entered in the window, each at ONE lot, because the real test trades one lot: its two fills times one lot, less one lot's own full charges. [O25b, before the first s
 
-Top-level declarations: `window_days` (line 50), `_day_closed` (line 62), `replay_small_account` (line 66), `score` (line 83), `_rs` (line 148), `render` (line 152), `_told` (line 195), `_mark_told` (line 203), `evening_report` (line 210), `main` (line 240)
+Top-level declarations: `window_days` (line 54), `_day_closed` (line 66), `replay_small_account` (line 70), `score` (line 87), `_rs` (line 157), `render` (line 161), `_told` (line 207), `_mark_told` (line 215), `evening_report` (line 222), `main` (line 252)
 
-Engine dependencies: `config`, `fno_shared_risk`, `market_calendar`, `operator_alert`
+Engine dependencies: `config`, `fno_live_test`, `fno_shared_risk`, `market_calendar`, `operator_alert`
 
 Related tests: `python-engine/tests/test_fno_proving_week.py`
 
@@ -1158,7 +1160,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 41), `_intraday_cache_gate_evaluate` (line 77), `provider_lane` (line 197), `RateLimiter` (line 214), `EndpointBudget` (line 299), `transport_error_kind` (line 416), `SendWindowGate` (line 448), `_TruncatedInstrumentDump` (line 482), `QuoteBatchCancelled` (line 486), `_acquire_shared` (line 490), `QuoteBudget` (line 502), `_aggregate_chunk_timing` (line 728), `_record_endpoint` (line 748), `_record_status` (line 755), `_record_answer` (line 763), `_record_transport` (line 770), `_historical_send_gate` (line 777), `KiteClient` (line 783), `_finite` (line 2773), `own_uncommitted_cash` (line 2782), `latest_order_state` (line 2832)
+Top-level declarations: `_interval_minutes` (line 41), `_intraday_cache_gate_evaluate` (line 77), `provider_lane` (line 197), `RateLimiter` (line 214), `EndpointBudget` (line 299), `transport_error_kind` (line 416), `SendWindowGate` (line 448), `_TruncatedInstrumentDump` (line 482), `QuoteBatchCancelled` (line 486), `_acquire_shared` (line 490), `QuoteBudget` (line 502), `_aggregate_chunk_timing` (line 728), `_record_endpoint` (line 748), `_record_status` (line 755), `_record_answer` (line 763), `_record_transport` (line 770), `_historical_send_gate` (line 777), `KiteClient` (line 783), `_finite` (line 2781), `own_uncommitted_cash` (line 2790), `latest_order_state` (line 2840)
 
 Engine dependencies: `account_cash_reservations`, `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
@@ -2570,7 +2572,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 400), `register_partner_scheduler_jobs` (line 1273)
+Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 427), `register_partner_scheduler_jobs` (line 1300)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `fno_proving_week`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `partner_watch`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 

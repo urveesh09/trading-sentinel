@@ -524,13 +524,27 @@ async def _manage_open_positions(
         # paper (never a real SELL for a position the broker does not hold).
         pos_exec = _executor_for_position(kite, executor, source, p)
         if not pos_exec.paper_mode:
-            working = await fpos.working_exit(db_path, p.id, source)
-            if working is not None:
-                settled = await _follow_working_exit(db_path, p, source, pos_exec, working,
+            intent = await fpos.exit_intent(db_path, p.id, source)
+            if intent is not None and intent["order_id"]:
+                settled = await _follow_working_exit(db_path, p, source, pos_exec, intent,
                                                      bid=exit_px_basis, now_ist=now_ist,
                                                      position_fut=position_fut, db_timing=db_timing)
                 if settled is not None:
                     closed.append(settled)
+                continue
+            if intent is not None and intent["broker_tag"]:
+                # [O25b] Claimed and named, but no order id came back (the
+                # engine stopped during the send): the broker's order book decides.
+                await _recover_tagged_exit(db_path, p, source, pos_exec, intent, now_ist=now_ist)
+                continue
+            if intent is not None:
+                # Claimed without a name or an order: held for exit recovery
+                # (the broker no longer holds it, or the engine stopped between
+                # the claim and the name). Nothing more is sold from here.
+                if intent["exit_reason"] not in ("not_held", "partly_held"):
+                    await _page_live_exit_once(p, "claimed_unsent", f"⚠️ REAL F&O exit claimed but not sent: "
+                                               f"{p.tradingsymbol}. Nothing was sold after the claim. Check Kite, "
+                                               f"then use F&O exit recovery (/ops/fno-exit-intents/{p.id}).")
                 continue
         breach_key = (source, p.id)
         exit_params = live_single_leg_exit_params(settings)
@@ -540,6 +554,9 @@ async def _manage_open_positions(
             lock_breach_since=_LOCK_BREACH_SINCE.get(breach_key),
         )
         exit_reason = decision.exit_reason
+        if not exit_reason and source == FnoSource.FNO_LIVE.value and \
+                str(p.bar_ts or "").startswith(fno_live_test.PREFLIGHT_BAR):
+            exit_reason = "preflight_flatten"     # [O25b] fno_live_preflight's filled test buy
         # [SX-F1] The lock's first look under its floor, kept between checks
         # (a restart forgets it, so the next two looks decide: never earlier).
         if decision.lock_breach_since is not None and not exit_reason:
@@ -655,17 +672,43 @@ async def _manage_open_positions(
             continue
         # [O25] Never sell what the broker does not hold: a position sold in
         # Kite by hand (or squared off by the broker) would otherwise be sold
-        # again -- a short option. The claim stays, so no later pass sells
-        # and the position is listed for exit recovery. An unreadable book
-        # does not stop a stop.
-        if backstop_fill is None and live_backstop and await _broker_holds_none(pos_exec, p):
-            logger.critical("fno_live_exit_not_held id=%d symbol=%s reason=%s -- nothing sold; reconcile",
-                            p.id, p.tradingsymbol, exit_reason)
-            await _page_live_exit_once(p, "not_held", f"⚠️ REAL F&O {p.tradingsymbol}: the broker no longer holds "
-                                       "it (sold in Kite, or squared off), so nothing was sold. Record its exit "
-                                       f"with F&O exit recovery (/ops/fno-exit-intents/{p.id}/resolve and the "
-                                       "Kite order id of that sale).")
-            continue
+        # again -- a short option. [O25b] Only this product (MIS) on this
+        # exchange counts: an NRML holding of the same contract is not ours to
+        # sell, and an MIS SELL against it would open a short. The claim stays,
+        # so no later pass sells and the position is listed for exit recovery.
+        # An unreadable book does not stop a stop.
+        partial_rest = backstop is not None and backstop["action"] == "partial"
+        to_sell = backstop["remaining"] if partial_rest else p.qty
+        if backstop_fill is None and live_backstop:
+            held = await _broker_mis_held(pos_exec, p)
+            if held is not None and held < to_sell:
+                reason = "not_held" if held <= 0 else "partly_held"
+                logger.critical("fno_live_exit_%s id=%d symbol=%s held=%d to_sell=%d reason=%s -- nothing sold",
+                                reason, p.id, p.tradingsymbol, held, to_sell, exit_reason)
+                await fno_live_test.record_event(db_path, p.id, f"exit_{reason}", {"held": held, "to_sell": to_sell})
+                try:
+                    await fpos.record_exit_tag(db_path, p.id, source, tag=None, exit_reason=reason)
+                except Exception as exc:
+                    logger.error("fno_exit_reason_unwritten id=%d err=%s", p.id, str(exc))
+                await _page_live_exit_once(p, reason, f"⚠️ REAL F&O {p.tradingsymbol}: the broker holds {held} MIS "
+                                           f"(the system's record: {to_sell}), so nothing was sold. If you sold it in "
+                                           "Kite, record its exit with F&O exit recovery "
+                                           f"(/ops/fno-exit-intents/{p.id}/resolve and that sale's order id).")
+                continue
+        tag, on_event = None, None
+        if not pos_exec.paper_mode and not partial_rest and backstop_fill is None:
+            tag = f"FX{uuid4().hex[:17]}"
+            try:
+                await fpos.record_exit_tag(db_path, p.id, source, tag=tag, exit_reason=exit_reason)
+            except Exception as exc:
+                # No durable name, no order: an unnamed SELL could not be found after a restart.
+                logger.critical("fno_exit_tag_unwritten id=%d err=%s -- not sent; retried next pass", p.id, str(exc))
+                try:
+                    await fpos.release_exit_intent(db_path, p.id, source)
+                except Exception:
+                    logger.critical("fno_exit_release_failed id=%d -- reconcile", p.id)
+                continue
+            on_event = _exit_event_recorder(db_path, p, source, exit_reason)
         try:
             spec = SPECS.get((p.underlying or "NIFTY").upper())
             exchange_kw = {} if spec is None or spec.segment == "NFO" else {"exchange": spec.segment}
@@ -688,17 +731,21 @@ async def _manage_open_positions(
                 result = await pos_exec.execute_exit(
                     p.tradingsymbol, p.qty, exit_px_basis,
                     tick_size=settings.FNO_TICK_SIZE,
-                    hard_flat=exit_reason.startswith("hard_flat"),
-                    **exchange_kw,
+                    hard_flat=exit_reason.startswith("hard_flat") or exit_reason == "preflight_flatten",
+                    **exchange_kw, **({"tag": tag, "on_event": on_event} if tag else {}),
                 )
         except Exception:
             logger.exception("fno_exit_dispatch_ambiguous id=%s; reconcile before retry", p.id)
             continue
         if result["status"] not in ("paper", "filled"):
             await _live_exit_not_filled(db_path, p, source, pos_exec, result, exit_reason=exit_reason,
-                                        partial_rest=backstop is not None and backstop["action"] == "partial")
+                                        partial_rest=partial_rest)
             continue
 
+        if not pos_exec.paper_mode:
+            await fno_live_test.record_event(db_path, p.id, "exit_filled", {
+                "order_id": result.get("order_id"), "fill": float(result["fill_price"]), "bid": exit_px_basis,
+                "reason": exit_reason})
         settled = await _book_exit_fill(
             db_path, p, source, fill=float(result["fill_price"]), order_id=result.get("order_id"),
             exit_reason=exit_reason, now_ist=now_ist, position_fut=position_fut, db_timing=db_timing,
@@ -706,6 +753,76 @@ async def _manage_open_positions(
         if settled is not None:
             closed.append(settled)
     return closed
+
+
+def _exit_event_recorder(db_path: str, p, source: str, exit_reason: str):
+    """[O25b] The live exit's order is recorded the moment it exists (before any
+    wait, so a restart follows the same order) and at every accepted price;
+    every step is kept as execution evidence."""
+    async def on_event(kind: str, **detail) -> None:
+        if kind in ("placed", "modified"):
+            await fpos.record_working_exit(db_path, p.id, source, order_id=detail["order_id"],
+                                           limit=float(detail["price"]), exit_reason=exit_reason)
+        await fno_live_test.record_event(db_path, p.id, f"exit_{kind}", detail)
+    return on_event
+
+
+async def _find_tagged_order(executor: FnoExecutor, tag: str, position):
+    """[O25b] (order_id, resting price) of this exit's own order in today's book,
+    "absent" (readable, not there), or None (unreadable or not exactly one
+    SELL of this contract and quantity under the tag)."""
+    reader = getattr(type(executor.kite), "orders_snapshot", None)
+    if not callable(reader):
+        return None
+    try:
+        book = await reader(executor.kite)
+    except Exception as exc:
+        logger.error("fno_exit_order_book_unreadable id=%d err=%s", position.id, str(exc))
+        return None
+    if not isinstance(book, list):
+        return None
+    tagged = [o for o in book if isinstance(o, dict) and str(o.get("tag") or "") == tag]
+    if not tagged:
+        return "absent"
+    if len(tagged) != 1:
+        return None
+    order = tagged[0]
+    if (order.get("tradingsymbol") != position.tradingsymbol or order.get("transaction_type") != "SELL"
+            or order.get("quantity") not in (None, position.qty) or not order.get("order_id")):
+        return None
+    try:
+        price = float(order.get("price") or 0.0)
+    except (TypeError, ValueError):
+        price = 0.0
+    return str(order["order_id"]), price
+
+
+async def _recover_tagged_exit(db_path: str, p, source: str, pos_exec: FnoExecutor, intent: dict, *,
+                               now_ist: datetime) -> None:
+    """[O25b] A claimed exit named by its tag but without an order id."""
+    found = await _find_tagged_order(pos_exec, intent["broker_tag"], p)
+    if found is None:
+        await _page_live_exit_once(p, "unknown", f"⚠️ REAL F&O exit unclear after a restart: {p.tradingsymbol} "
+                                   f"(tag {intent['broker_tag']}). The order book could not show it; check Kite.")
+        return
+    if found == "absent":
+        try:
+            claimed_at = datetime.fromisoformat(str(intent["created_at"]))
+            age = (now_ist - claimed_at).total_seconds()
+        except (TypeError, ValueError):
+            age = float("inf")
+        if age < fno_broker_backstop.PLACING_GRACE_SEC:
+            return                          # the send may still be on its way: wait, never guess
+        await fpos.release_exit_intent(db_path, p.id, source)
+        await fno_live_test.record_event(db_path, p.id, "exit_never_reached_broker", {"tag": intent["broker_tag"]})
+        logger.warning("fno_exit_tagged_absent id=%d tag=%s -- nothing reached Kite; next pass re-evaluates",
+                       p.id, intent["broker_tag"])
+        return
+    order_id, price = found
+    await fpos.record_working_exit(db_path, p.id, source, order_id=order_id, limit=price,
+                                   exit_reason=intent["exit_reason"] or "recovered_exit")
+    await fno_live_test.record_event(db_path, p.id, "exit_adopted", {"order_id": order_id, "price": price})
+    logger.warning("fno_exit_adopted id=%d order_id=%s tag=%s", p.id, order_id, intent["broker_tag"])
 
 
 def _executor_for_position(kite, executor: FnoExecutor, source: str, position) -> FnoExecutor:
@@ -721,27 +838,33 @@ def _executor_for_position(kite, executor: FnoExecutor, source: str, position) -
     return FnoExecutor(kite, paper_mode=not real, source_tag=source)
 
 
-async def _broker_holds_none(executor: FnoExecutor, position) -> bool:
-    """[O25] True only when the broker's positions are read and hold none of this contract."""
+async def _broker_mis_held(executor: FnoExecutor, position) -> Optional[int]:
+    """[O25b] The MIS quantity of this contract the broker holds on its exchange;
+    None when the positions cannot be read (an unread book never stops a stop)."""
     reader = getattr(type(executor.kite), "get_broker_positions", None)
     if not callable(reader):
-        return False
+        return None
     try:
         book = await reader(executor.kite)
     except Exception as exc:
         logger.error("fno_live_positions_read_failed symbol=%s err=%s", position.tradingsymbol, str(exc))
-        return False
+        return None
     rows = book.get("net") if isinstance(book, dict) else None
     if not isinstance(rows, list):
-        return False
+        return None
+    spec = SPECS.get((position.underlying or "NIFTY").upper())
+    exchange = spec.segment if spec is not None else "NFO"
     held = 0
     for row in rows:
-        if isinstance(row, dict) and row.get("tradingsymbol") == position.tradingsymbol:
-            try:
-                held += int(row.get("quantity") or 0)
-            except (TypeError, ValueError):
-                return False
-    return held <= 0
+        if not isinstance(row, dict) or row.get("tradingsymbol") != position.tradingsymbol:
+            continue
+        if str(row.get("product") or "").upper() != "MIS" or row.get("exchange") not in (None, exchange):
+            continue
+        try:
+            held += int(row.get("quantity") or 0)
+        except (TypeError, ValueError):
+            return None
+    return held
 
 
 _LIVE_EXIT_PAGED: set = set()
@@ -769,6 +892,9 @@ async def _live_exit_not_filled(db_path: str, p, source: str, pos_exec: FnoExecu
     is kept on the claim and followed up every pass (``_follow_working_exit``).
     Anything else stays claimed for reconciliation, as before."""
     status = result["status"]
+    if not pos_exec.paper_mode:
+        await fno_live_test.record_event(db_path, p.id, f"exit_{status}", {
+            "order_id": result.get("order_id"), "limit": result.get("limit"), "reason": exit_reason})
     if status in ("not_sent", "rejected_verified") and not partial_rest:
         await fpos.release_exit_intent(db_path, p.id, source)
         logger.critical("fno_exit_not_placed_retrying id=%d symbol=%s status=%s reason=%s",
@@ -795,18 +921,22 @@ async def _follow_working_exit(db_path: str, p, source: str, pos_exec: FnoExecut
                                bid: float, now_ist: datetime, position_fut: Optional[float],
                                db_timing: Optional[dict]) -> Optional[dict]:
     """[O25] A live exit order left working by an earlier pass (or before a restart)."""
-    followed = await pos_exec.follow_exit(working["order_id"], working["limit"], bid, settings.FNO_TICK_SIZE)
     reason = working["exit_reason"] or "working_exit"
+    followed = await pos_exec.follow_exit(working["order_id"], working["limit"], bid, settings.FNO_TICK_SIZE,
+                                          on_event=_exit_event_recorder(db_path, p, source, reason))
     if followed["status"] == "filled":
+        await fno_live_test.record_event(db_path, p.id, "exit_filled", {
+            "order_id": followed["order_id"], "fill": float(followed["fill_price"]), "bid": bid, "reason": reason})
         return await _book_exit_fill(db_path, p, source, fill=float(followed["fill_price"]),
                                      order_id=followed["order_id"], exit_reason=reason, now_ist=now_ist,
                                      position_fut=position_fut, db_timing=db_timing)
     if followed["status"] == "rejected_verified":
         await fpos.release_exit_intent(db_path, p.id, source)
+        await fno_live_test.record_event(db_path, p.id, "exit_ended_unfilled", {"order_id": working["order_id"]})
         logger.warning("fno_working_exit_ended_unfilled id=%d order_id=%s -- next pass re-evaluates",
                        p.id, working["order_id"])
     elif followed["status"] == "unfilled":
-        if float(followed.get("limit") or 0.0) < working["limit"]:
+        if float(followed.get("limit") or 0.0) != working["limit"]:
             await fpos.record_working_exit(db_path, p.id, source, order_id=working["order_id"],
                                            limit=float(followed["limit"]), exit_reason=reason)
     else:

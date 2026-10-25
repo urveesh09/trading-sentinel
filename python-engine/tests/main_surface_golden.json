@@ -67,6 +67,12 @@
       "trigger": "cron[minute='0']"
     },
     {
+      "func": "_run_fno_live_readiness_safe",
+      "id": "fno_live_readiness",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='25']"
+    },
+    {
       "func": "_run_fno_tick_safe",
       "id": "fno_tick",
       "kwargs": [],

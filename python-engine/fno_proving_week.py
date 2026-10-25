@@ -7,14 +7,18 @@ session, and are scored once; they are not tuned afterwards.
 
 Window: the first FNO_PROVING_SESSIONS NSE trading days from FNO_PROVING_START
 (Mon Oct 26 to Fri Oct 30, 2026). Scored: FNO_PAPER single-leg positions
-entered in the window, each at ONE lot (its P&L after the paper charges, over
-its lots), because the real test trades one lot.
+entered in the window, each at ONE lot, because the real test trades one lot:
+its two fills times one lot, less one lot's own full charges. [O25b, before
+the first session] Not its P&L divided by its lots: brokerage is a fixed
+charge per order, so a halved two-lot result understated one lot's costs.
 
 Verdict, once the last session has closed:
   PROVED       at least one trade, one-lot net >= ₹0, clean operation, and the
                15% drawdown halt not active at the end;
   NOT_PROVED   one-lot net < ₹0, operation not clean, or the drawdown halt active;
-  NO_EVIDENCE  no trade in the window (and nothing else wrong).
+  NO_EVIDENCE  no trade in the window (and nothing else wrong);
+  UNAVAILABLE  [O25b] the drawdown-halt state could not be read: a required
+               condition that is unknown is never a pass.
 Clean operation: every window position closed on its entry day, and none of
 them needed exit recovery (a row in fno_exit_intents or fno_exit_recoveries).
 
@@ -93,8 +97,8 @@ async def score(db_path: str, now: Optional[datetime] = None) -> dict:
             "SELECT name FROM sqlite_master WHERE type='table'")).fetchall()}
         if "fno_positions" in tables:
             trades = [dict(r) for r in await (await db.execute(
-                "SELECT id, tradingsymbol, entry_date, entry_time, exit_date, exit_time, status, entry_premium, "
-                "exit_premium, lot_size, COALESCE(initial_lots, lots) AS lots, pnl, exit_reason "
+                "SELECT id, tradingsymbol, underlying, entry_date, entry_time, exit_date, exit_time, status, "
+                "entry_premium, exit_premium, lot_size, COALESCE(initial_lots, lots) AS lots, pnl, exit_reason "
                 "FROM fno_positions WHERE source=? AND entry_date BETWEEN ? AND ? ORDER BY entry_time",
                 (SOURCE, first, last))).fetchall()]
         for table in ("fno_exit_intents", "fno_exit_recoveries"):
@@ -103,8 +107,11 @@ async def score(db_path: str, now: Optional[datetime] = None) -> dict:
                 recovery_ids |= {r[0] for r in await (await db.execute(
                     f"SELECT position_id FROM {table} WHERE source=? AND position_id IN ({marks})",
                     (SOURCE, *[t["id"] for t in trades]))).fetchall()}
+    from fno_live_test import one_lot_pnl
     for t in trades:
-        t["one_lot"] = (float(t["pnl"]) / max(1, int(t["lots"] or 1))) if t["pnl"] is not None else None
+        t["one_lot"] = (round(one_lot_pnl(t["entry_premium"], t["exit_premium"], t["lot_size"],
+                                          t["underlying"] or "NIFTY"), 2)
+                        if t["pnl"] is not None and t["entry_premium"] and t["exit_premium"] else None)
     problems = []
     for t in trades:
         entered = date.fromisoformat(t["entry_date"])
@@ -136,6 +143,8 @@ async def score(db_path: str, now: Optional[datetime] = None) -> dict:
     }
     if done < len(days):
         result["verdict"] = "IN_PROGRESS"
+    elif halted is None:
+        result["verdict"] = "UNAVAILABLE"
     elif problems or halted:
         result["verdict"] = "NOT_PROVED"
     elif not closed:
@@ -166,7 +175,7 @@ def render(result: dict, today: Optional[date] = None) -> str:
         lines.append(f"📋 F&O proving week ({days[0]:%d %b} to {days[-1]:%d %b})")
     if result["closed"]:
         lines.append(f"Week so far: {result['closed']} trade(s), {result['wins']} won, {_rs(result['one_lot_net'])} "
-                     f"at one lot after charges (paper size {_rs(result['actual_net'])}).")
+                     f"at one lot after one lot's own charges (paper size {_rs(result['actual_net'])}).")
     else:
         lines.append("Week so far: no paper trade.")
     lines.append("Operation: clean (every trade closed the same day by its rules)." if not result["problems"]
@@ -179,8 +188,11 @@ def render(result: dict, today: Optional[date] = None) -> str:
     if verdict == "IN_PROGRESS":
         lines.append(f"Verdict after the close on {days[-1]:%a %d %b}.")
         return "\n".join(lines)
-    head = {"PROVED": "✅ PROVED", "NOT_PROVED": "❌ NOT PROVED", "NO_EVIDENCE": "➖ NO EVIDENCE"}[verdict]
+    head = {"PROVED": "✅ PROVED", "NOT_PROVED": "❌ NOT PROVED", "NO_EVIDENCE": "➖ NO EVIDENCE",
+            "UNAVAILABLE": "⚠️ UNAVAILABLE"}[verdict]
     why = {"PROVED": "it traded, did not lose at one lot, and nothing broke.",
+           "UNAVAILABLE": "the drawdown-halt state could not be read, and the verdict needs it. Run "
+                          "`python -m fno_proving_week` again; it is scored from the same week.",
            "NOT_PROVED": ("the drawdown halt is on." if result["drawdown_halt"] else
                           "operation was not clean." if result["problems"] else
                           "the week lost money at one lot."),

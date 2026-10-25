@@ -1,5 +1,33 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 (2) — O25b The live exit's identity, restart recovery, bounded runs and readiness (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **`FnoExecutor` (live).**
+  - `execute_exit(…, tag=None, on_event=None)` sends the SELL with the exit's own tag. It calls `on_event("placed", order_id, price)` before any wait.
+  - Each step's modification counts only when Kite accepts it: `_reprice` returns a bool and emits `modified` or `modify_refused`.
+  - The returned `limit` is the broker-shown resting price (`_resting_price`: Kite's `price`, else the last accepted).
+  - `follow_exit(…, on_event)` re-prices to the fresh bid − max(10%, 100 ticks) only when that is under the resting price, and returns the resting price.
+- **`fno_orchestrator._manage_open_positions` (live positions).**
+  - First, its claimed exit (`fno_positions.exit_intent`):
+    - with an order id → `_follow_working_exit`;
+    - with only a tag → `_recover_tagged_exit`: `_find_tagged_order` requires exactly one SELL of this contract and quantity under the tag. Found → adopted; absent after PLACING_GRACE_SEC → freed; otherwise held and paged.
+    - with neither (held for recovery: not held at the broker, or the engine stopped between claim and name) → nothing sold; paged once as `claimed_unsent` unless its reason is not_held/partly_held.
+  - A FNO_LIVE position with bar `PREFLIGHT-…` exits at once, reason `preflight_flatten`, hard-flat depth.
+  - After the claim, `_broker_mis_held` gives MIS on the contract's exchange; less than the quantity to sell → nothing sold (claim kept, paged).
+  - Then `record_exit_tag` writes a tag `FX`+17 hex and the reason; if it cannot be written, the claim is freed and nothing is sent.
+  - `_exit_event_recorder` records the working order on placed/modified and every step in `fno_live_execution_events`.
+- **`fno_live_test`.**
+  - `mirror_entry` refuses non-NIFTY (`live_test_not_nifty`) and an ended run (`live_test_run_ended`, `current_run`: `fno_live_test_runs`, sessions counted with `is_trading_day_sync`).
+  - It records `entry_filled` (decision-to-fill delay, slippage) and `backstop_armed`.
+  - `one_lot_pnl` uses the two fills and one lot's own `calc_fno_costs`.
+  - `day_report`: one lot each, execution quality per trade, refusals by reason, outstanding work, the floor caveat.
+  - `morning_check` gives route, login, own cash against `typical_lot_cost`, broker F&O positions, run, equity and leftovers. It runs from job `fno_live_readiness` at 09:25 while armed.
+  - `hand_off_preflight_fill` records a filled preflight buy as a FNO_LIVE position and pages.
+- **`fno_proving_week`.** One-lot P&L comes from fills (`one_lot_pnl`). The verdict is UNAVAILABLE when the drawdown-halt read is unavailable.
+- **`kite_client`.** With KITE_ORDER_PROXY_URL, `order_client` is `https://api.kite.trade` (or KITE_ORDER_BASE_URL) through that HTTP CONNECT proxy.
+- **`fno_live_preflight`.** `order_route()` describes the route (encrypted or not) and flags none or both set. A fill is handed to the engine; the tool never sells.
+- **Gateway `executeSignal`.** A failed `releaseFilled` is logged and the hold kept; protection continues.
+
 ## October 25 — O25 The real-money F&O test, the live exit and the proving week (actual behavior, Dev, commit `ca12934`)
 
 - **`fno_live_test` (off unless FNO_LIVE_TEST_ENABLED).** After a paper single-leg entry on an NFO underlying, `fno_orchestrator._single_leg_entries` calls `mirror_entry`.

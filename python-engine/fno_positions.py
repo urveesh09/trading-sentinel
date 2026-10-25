@@ -307,8 +307,10 @@ async def init_fno_positions_db(db_path: str) -> None:
             created_at TEXT NOT NULL)""")
         # [O25] A live exit still working at the broker is followed up by its
         # order id (survives a restart); NULL = no working order recorded.
+        # [O25b] broker_tag + exit_reason are written before the send, so a
+        # send whose reply was lost is found in the broker's order book.
         for column, datatype in (("order_id", "TEXT"), ("working_limit", "REAL"),
-                                 ("exit_reason", "TEXT")):
+                                 ("exit_reason", "TEXT"), ("broker_tag", "TEXT")):
             try:
                 await db.execute(f"ALTER TABLE fno_exit_intents ADD COLUMN {column} {datatype}")
             except aiosqlite.OperationalError as exc:
@@ -595,15 +597,32 @@ async def record_working_exit(db_path: str, position_id: int, source: str, *, or
         await db.commit()
 
 
-async def working_exit(db_path: str, position_id: int, source: str) -> Optional[dict]:
-    """[O25] The claimed intent's working exit order, or None when none is recorded.
+async def record_exit_tag(db_path: str, position_id: int, source: str, *, tag: Optional[str],
+                         exit_reason: str) -> None:
+    """[O25b] Name a claimed live exit before its order is sent (raises if not
+    written); ``tag=None`` records only why a claim is held (e.g. not_held)."""
+    await init_fno_positions_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "UPDATE fno_exit_intents SET broker_tag=?, exit_reason=? WHERE position_id=? AND source=?",
+            (tag, exit_reason, position_id, source),
+        )
+        await db.commit()
+    if cur.rowcount != 1:
+        raise RuntimeError("exit_intent_missing")
+
+
+async def exit_intent(db_path: str, position_id: int, source: str) -> Optional[dict]:
+    """[O25b] The position's claimed exit: its working order id, the price it
+    rests at, its reason and its tag; None when no exit is claimed.
+
     Read on every pass of a live position, so it never migrates the schema: a
-    database without the columns (none recorded yet) has no working exit."""
+    database without the columns has no recorded working exit."""
     async with aiosqlite.connect(db_path) as db:
         try:
             row = await (await db.execute(
-                "SELECT order_id, working_limit, exit_reason, created_at FROM fno_exit_intents "
-                "WHERE position_id=? AND source=? AND order_id IS NOT NULL",
+                "SELECT order_id, working_limit, exit_reason, created_at, broker_tag FROM fno_exit_intents "
+                "WHERE position_id=? AND source=?",
                 (position_id, source),
             )).fetchone()
         except aiosqlite.OperationalError as exc:
@@ -612,7 +631,8 @@ async def working_exit(db_path: str, position_id: int, source: str) -> Optional[
             return None
     if row is None:
         return None
-    return {"order_id": row[0], "limit": float(row[1] or 0.0), "exit_reason": row[2], "created_at": row[3]}
+    return {"order_id": row[0], "limit": float(row[1] or 0.0), "exit_reason": row[2], "created_at": row[3],
+            "broker_tag": row[4]}
 
 
 async def release_exit_intent(db_path: str, position_id: int, source: str) -> bool:

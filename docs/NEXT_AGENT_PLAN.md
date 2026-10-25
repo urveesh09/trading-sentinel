@@ -1,5 +1,69 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 (2) — O25b The review's gaps in the real-money test are fixed; bounded runs, a daily readiness message, execution evidence and an encrypted order route are added (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed, switch off)
+
+- Owner ask (Oct 25):
+  - the audit-agent review of `ca12934`..`b414383`: 5 P1 and 4 P2 findings, each reproduced by the reviewer;
+  - "secure the relay … the one you can improve at your end, tell me";
+  - "should I run the script every day or only once?"
+- Verdict: agreed with all nine findings. Each was reproduced as a failing test first, then fixed:
+  - [x] P1 gateway: `releaseFilled` could throw after a confirmed buy and stop its protection. It is now cleanup only: a failure is logged, the hold is kept (errs safe) and protection continues (`executor.js`).
+  - [x] P1 a refused price change stalled the exit: the result reported ₹90 while the order rested at ₹99.50. Now `_reprice` returns whether Kite accepted it. The ladder and `follow_exit` keep the broker-shown resting price (`_resting_price`, Kite's `price`), so a refused change is tried again next pass.
+  - [x] P1 a restart during the sell's wait lost its order. Now:
+    - the exit's tag and reason are written before the send (`record_exit_tag`, `fno_exit_intents.broker_tag`);
+    - the order id is recorded on `placed`, before any wait (`on_event`, `_exit_event_recorder`);
+    - a claimed exit with a tag but no id is resolved from Kite's order book (`_recover_tagged_exit`):
+      - found by tag, symbol, SELL and quantity → adopted and followed;
+      - absent after 30 s → freed and sent again;
+      - unreadable or ambiguous → held and paged.
+    - a claim with neither a tag nor an id (the engine stopped between the claim and its name, or the broker no longer holds the position) is held for exit recovery and paged; nothing is sold from it.
+  - [x] P1 MIS and NRML were mixed in the holding check. `_broker_mis_held` counts MIS on the contract's exchange only, against the quantity to sell. If it holds less, nothing is sold, the claim stays and the owner is paged (`not_held` / `partly_held`).
+  - [x] P1 a filled preflight buy could be left unmanaged. The tool never sells now: `hand_off_preflight_fill` records it as a FNO_LIVE position (bar `PREFLIGHT-<order>`). The engine sells it at once (`preflight_flatten`) through the full exit path, and the owner is paged.
+  - [x] P2 one-lot P&L understated charges (fixed brokerage per order). `one_lot_pnl` now uses the two fills and one lot's full charges, in the proving week and the evening report. Example: 100 → 100.4 is −₹36.66 at one lot, not the halved two-lot −₹13.06.
+    - The pre-registration was amended on Sun Oct 25, before the first session; the window has no trades yet.
+  - [x] P2 an unreadable drawdown state could pass: the verdict is now UNAVAILABLE.
+  - [x] P2 NIFTY-only was not enforced (an NFO segment is not NIFTY). `mirror_entry` refuses any other underlying (`live_test_not_nifty`).
+  - [x] P2 runbook order: the route goes in with the switch off; recreate the engine; check the effective route with the read-only preflight; then the test order; then the switch.
+- Recommendations taken:
+  - [x] **Bounded run.**
+    - FNO_LIVE_TEST_RUN (a name, default "1") and FNO_LIVE_TEST_SESSIONS (5): `fno_live_test_runs` keeps each run's start day, capital, floor and release.
+    - After its sessions: no new entry (`live_test_run_ended`), one owner notice. A new run needs a new name.
+  - [x] **Execution evidence.** Every real step goes to `fno_live_execution_events`: entry filled with delay and slippage, backstop armed, exit placed, modified, refused, filled or not held, adopted.
+    - The 15:50 report shows per trade: the decision-to-fill delay, entry and exit slippage against the paper twin, price moves and refusals, the broker stop's state.
+    - It also shows the paper trades not bought for real with their reasons, and the outstanding work: open positions, claimed exits (working), held reservations.
+  - [x] **Daily readiness** (`fno_live_readiness`, 09:25, while the test is on: `morning_check`). It reports:
+    - the route and today's login;
+    - free cash against a typical lot (`typical_lot_cost`, the median of the last 20 paper buys);
+    - F&O positions held at the broker;
+    - the run's session, equity against the floor, and leftovers.
+    - So the preflight is run once, and again only when the order path changes (route, relay, IP, API key or app).
+  - [x] **Encrypted route option:** KITE_ORDER_PROXY_URL sends orders by HTTP CONNECT through the VM to https://api.kite.trade, TLS end to end. On Oct 25 the relay answered plain HTTP (200) but refused CONNECT (404), probed without credentials. It needs a CONNECT proxy on the VM (owner).
+- Relay options (owner):
+  1. firewall port 31527 to the home IP;
+  2. a CONNECT proxy (`tinyproxy`) plus KITE_ORDER_PROXY_URL;
+  3. a WireGuard/Tailscale tunnel.
+  - The gateway still sends all its Kite traffic through the plain-HTTP relay (`node-gateway/.env` KITE_BASE_URL): a separate change.
+- Files:
+  - `python-engine/fno_executor.py`, `fno_orchestrator.py`, `fno_positions.py`, `fno_live_test.py`, `fno_proving_week.py`, `fno_live_preflight.py`, `kite_client.py`, `config.py`, `scheduler_setup.py`;
+  - `node-gateway/server/services/executor.js`;
+  - `docs/runbooks/fno-live-test.md`;
+  - tests: `test_fno_live_test.py` (25), `test_fno_proving_week.py` (8), `test_fno_live_preflight.py` (5), `executor.test.js` (+1), the census goldens.
+- Tests: engine full suite (Dev, Windows, 10 min 6 s, after the last edit): 5,698 passed, 4 skipped, exit 0. `test_fno_live_test` has 26 tests; 6 reproduce the review's cases (refused modification, restart while the sell waits, lost reply, never-sent tagged exit, NRML holding, non-NIFTY) and failed before the fixes. `test_fno_proving_week` has 8 and `test_fno_live_preflight` 5. Against the previous modules (a scratch copy with `git show HEAD:` of `fno_proving_week.py` and `fno_live_preflight.py`), the one-lot-charges, unavailable-halt and preflight hand-off tests fail as they should. An earlier full run made during editing had one failure: `test_fno_shadow` reads the orchestrator's source by line number while the file was being edited. It passes 18 of 18 alone, and the final run is clean. Gateway: `executor.test.js` 65 passed (+1: a failed hold release keeps the GTT protection). The full gateway suite: 506 passed, 4 skipped, 18 failed in `db.test.js` and `backlog-reconciliation.test.js` (better-sqlite3 native binding unavailable on this Windows Node 24; the files are untouched). No order was placed anywhere. The relay was probed without credentials: plain HTTP answered 200, CONNECT answered 404.
+- Config and migration impact:
+  - new settings: FNO_LIVE_TEST_RUN, FNO_LIVE_TEST_SESSIONS, KITE_ORDER_PROXY_URL;
+  - a new column `fno_exit_intents.broker_tag`;
+  - new tables `fno_live_execution_events`, `fno_live_test_runs`;
+  - a new scheduler job `fno_live_readiness` at 09:25 (it acts only while the test is on);
+  - `fno_positions.working_exit` is replaced by `exit_intent`.
+  - With the switch off there is no trading change.
+- Rollout: as O25. Rollback: FNO_LIVE_TEST_ENABLED=false, then revert.
+- Remaining (owner):
+  - the Oct 30 verdict;
+  - deploy;
+  - the relay (option 1 now, option 2 before the run);
+  - the route in the `.env`, recreate the engine, the read-only preflight, then the preflight test order;
+  - the switch.
+
 ## October 25 — O25 The ₹12,500 real-money F&O test is ready behind one switch, after a pre-registered proving week (done, Dev, commit `ca12934`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 25):

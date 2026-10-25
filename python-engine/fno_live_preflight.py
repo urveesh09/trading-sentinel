@@ -12,9 +12,18 @@ that does not expire today, at the strike nearest the future, as a BUY LIMIT 20%
 under its bid. It cannot fill unless the option falls 20% in the two seconds
 before it is cancelled. The order is then cancelled and read back: CANCELLED with
 nothing filled proves Kite takes orders from this route (the static-IP rule).
-In the very unlikely fill it is sold at once through the live exit ladder. A
-refusal for a static-IP reason trips the order-authorization halt in kite_client
-(no live entry anywhere until the owner clears it): that is intended.
+[O25b] In the very unlikely fill (the order can fill before the cancel lands)
+the holding is recorded as a real FNO_LIVE position and the running engine
+sells it at once through its full exit path: the claim, the tagged order, the
+price steps, the follow-up after a restart and the check that the broker still
+holds it. The owner is paged. This tool never sells by itself: an unfilled sell
+here would have had no one to follow it once the tool exited. A refusal for a
+static-IP reason trips the order-authorization halt in kite_client (no live
+entry anywhere until the owner clears it): that is intended.
+
+Run it once before the first switch-on, and again only after the order route,
+the relay, its IP, the API key or the account changes (a new key, a new
+static IP). The engine checks the rest every day by itself.
 
 Nothing here touches the F&O books, and no protective (SELL) order is ever sent
 without a position: an SL order without one would be a short option.
@@ -34,6 +43,21 @@ IST = pytz.timezone("Asia/Kolkata")
 TEST_DISCOUNT = 0.20
 
 
+def order_route() -> tuple[str, bool, str]:
+    """(description, encrypted end to end, problem or "") of where orders go."""
+    proxy = (settings.KITE_ORDER_PROXY_URL or "").strip()
+    base = (settings.KITE_ORDER_BASE_URL or "").strip()
+    if proxy and base:
+        return f"{base} through {proxy}", base.startswith("https://"), "Set KITE_ORDER_PROXY_URL or "             "KITE_ORDER_BASE_URL, not both."
+    if proxy:
+        return f"https://api.kite.trade through the CONNECT proxy {proxy} (TLS end to end)", True, ""
+    if base:
+        return f"{base} (KITE_ORDER_BASE_URL)", base.startswith("https://"), ""
+    return (f"{settings.KITE_BASE_URL} (neither KITE_ORDER_PROXY_URL nor KITE_ORDER_BASE_URL is set)", True,
+            "Orders would leave from this host's own IP; Kite accepts orders only from the app's registered "
+            "IPs. Set KITE_ORDER_PROXY_URL (preferred) or KITE_ORDER_BASE_URL.")
+
+
 def _floor_tick(value: float, tick: float) -> float:
     return round(max(tick, int(value / tick) * tick), 2)
 
@@ -48,13 +72,13 @@ async def run(test_order: bool) -> int:
         return 2
     kite = KiteClient(settings.DB_PATH)
     kite.set_token(payload["access_token"])
-    problems = 0
-    if settings.KITE_ORDER_BASE_URL:
-        print(f"Order route: {settings.KITE_ORDER_BASE_URL} (KITE_ORDER_BASE_URL)")
-    else:
-        print(f"Order route: {settings.KITE_BASE_URL} -- KITE_ORDER_BASE_URL is not set, so orders leave from "
-              "this host's own IP. Kite accepts orders only from the app's registered IPs: set it to the relay.")
-        problems += 1
+    route, encrypted, problem = order_route()
+    print(f"Order route: {route}")
+    problems = 1 if problem else 0
+    if problem:
+        print(f"  {problem}")
+    elif not encrypted:
+        print("  Note: plain HTTP to the relay carries the access token unencrypted (docs/runbooks/fno-live-test.md).")
     margins = await kite.get_funds_margins()
     positions = await kite.get_broker_positions()
     orders = await kite.orders_snapshot()
@@ -137,15 +161,20 @@ async def _test_order(kite) -> int:
         print(f"REJECTED by the exchange or the broker's checks: {latest.get('status_message')}. The route "
               "reached Kite (no static-IP refusal), but read the message before enabling the test.")
         return 1
-    if status == "COMPLETE":
-        kite.settle_entry_reservation(order_id, final_status=status, filled_quantity=filled)
-        fresh = (await kite.get_quote([contract.token])).get(contract.token) or {}
-        fresh_buys = (fresh.get("depth") or {}).get("buy") or []
-        sell_bid = float(fresh_buys[0]["price"]) if fresh_buys and fresh_buys[0].get("price") else price
-        result = await executor.execute_exit(contract.tradingsymbol, qty, sell_bid, tick)
-        print(f"The test order FILLED at ₹{latest.get('average_price')} (the option fell 20%). Sold at once: "
-              f"{result['status']} {result.get('fill_price')} order {result.get('order_id')}. "
-              "Check Kite that no NIFTY position is left.")
+    if type(filled) is int and filled > 0:
+        # Filled (wholly, or before the cancel landed): the engine sells it.
+        import fno_live_test
+        kite.settle_entry_reservation(order_id, final_status="COMPLETE", filled_quantity=filled)
+        try:
+            average = float(latest.get("average_price") or price)
+        except (TypeError, ValueError):
+            average = price
+        position_id = await fno_live_test.hand_off_preflight_fill(
+            settings.DB_PATH, contract=contract, qty=filled, fill=average, order_id=order_id, forward=forward,
+            now=datetime.now(IST))
+        print(f"The test order FILLED: {filled} at ₹{average:.2f} (the option fell 20%). It is recorded as real "
+              f"position {position_id} and the engine sells it within seconds (you were paged). Check Kite in a "
+              "few minutes that no NIFTY position is left; do not enable the test until it is flat.")
         return 1
     print(f"UNCLEAR: order {order_id} reads {status!r} filled={filled} (cancel error: {cancel_error}). "
           "Open Kite, cancel it if it is still open, and do not enable the test until it is understood.")

@@ -389,6 +389,33 @@ def register_fno_scheduler_jobs(scheduler):
         id="fno_evening_report",
         max_instances=1, coalesce=True, misfire_grace_time=1800,
     )
+
+    # [O25b 2026-10-25] 09:25 IST while the real-money test is on: one owner
+    # message saying whether it is ready to trade today (route, login, free
+    # cash against a typical lot, broker F&O positions, run, equity, leftovers),
+    # so the owner never has to run a check by hand each day.
+    async def _run_fno_live_readiness_safe():
+        import fno_live_test
+        if not fno_live_test.armed():
+            return
+        now_ist = datetime.now(IST)
+        if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH):
+            logger.info("fno_live_readiness_skip reason=non_trading_day")
+            return
+        try:
+            text = await fno_live_test.morning_check(_main.kite, settings.DB_PATH, now_ist)
+            if text:
+                from operator_alert import notify_operator
+                await notify_operator(text, event="fno_live_readiness")
+        except Exception as exc:
+            logger.error("fno_live_readiness_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_fno_live_readiness_safe, "cron",
+        hour=9, minute=25,
+        id="fno_live_readiness",
+        max_instances=1, coalesce=True, misfire_grace_time=1800,
+    )
     logger.info(
         "fno_cron_registered id=fno_instruments_refresh,fno_hourly_report,"
         "fno_accept_watchdog"

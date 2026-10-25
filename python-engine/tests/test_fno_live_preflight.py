@@ -8,6 +8,8 @@ import pytz
 import fno_instruments as fi
 import fno_live_preflight as preflight
 import kite_client
+
+REAL_KITE_CLIENT = kite_client.KiteClient
 import token_lifecycle
 from config import settings
 from tests.test_fno_orchestrator import FUT_TOKEN, _build_book
@@ -86,12 +88,31 @@ def account(monkeypatch):
 @pytest.mark.asyncio
 async def test_the_reads_name_the_order_route_and_the_cash(account, monkeypatch, capsys):
     monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
+    monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "")
     assert await preflight.run(test_order=False) == 1                    # no order route set: a problem
     out = capsys.readouterr().out
-    assert "KITE_ORDER_BASE_URL is not set" in out and "Own free cash: ₹15,000.00" in out
+    assert "neither KITE_ORDER_PROXY_URL nor KITE_ORDER_BASE_URL is set" in out and "Own free cash: ₹15,000.00" in out
     monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "http://relay.test:31527")
     assert await preflight.run(test_order=False) == 0
+    assert "carries the access token unencrypted" in capsys.readouterr().out
     assert Account.instances[-1].placed == []                           # reads only
+    monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
+    monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://relay.test:8888")
+    assert await preflight.run(test_order=False) == 0
+    assert "through the CONNECT proxy http://relay.test:8888 (TLS end to end)" in capsys.readouterr().out
+    monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "http://relay.test:31527")
+    assert await preflight.run(test_order=False) == 1                    # both set: ambiguous
+
+
+def test_the_proxy_route_tunnels_orders_to_kite_over_tls(tmp_path, monkeypatch):
+    RealClient = REAL_KITE_CLIENT
+    monkeypatch.setattr(settings, "KITE_BASE_URL", "https://api.kite.trade")
+    monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
+    monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://relay.test:8888")
+    client = RealClient(str(tmp_path / "proxy.db"))
+    client.set_token("TOKEN")
+    assert str(client.order_client.base_url) == "https://api.kite.trade"
+    assert client.order_client._mounts and client.order_client.headers["Authorization"].endswith(":TOKEN")
 
 
 @pytest.mark.asyncio
@@ -120,3 +141,51 @@ async def test_a_refused_test_order_fails_the_preflight(account, monkeypatch, ca
     monkeypatch.setattr(Account, "__init__", refusing)
     assert await preflight.run(test_order=True) == 1
     assert "REFUSED (BROKER_REJECTED): IP not allowed" in capsys.readouterr().out
+
+
+@pytest.mark.asyncio
+async def test_a_filled_test_buy_is_handed_to_the_engine_which_sells_it(account, monkeypatch, tmp_path, capsys):
+    """[O25b] The tool never sells by itself: the fill becomes a real position the engine exits at once."""
+    import sqlite3
+    from contextlib import closing
+
+    import fno_live_test
+    import fno_orchestrator
+    import fno_positions as fpos
+    from tests.test_fno_live_test import Broker, _live, _no_page
+
+    db = str(tmp_path / "engine.db")
+    monkeypatch.setattr(settings, "DB_PATH", db)
+    monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "http://relay.test:31527")
+    pages = []
+
+    async def page(text, event):
+        pages.append(event)
+
+    monkeypatch.setattr(fno_live_test, "_page", page)
+
+    async def filled_before_the_cancel(self, order_id, variety="regular"):
+        self.state[order_id] = {"status": "COMPLETE", "filled_quantity": 75, "average_price": 80.0}
+        return {"status": "ERROR", "message": "order already complete"}
+
+    monkeypatch.setattr(Account, "cancel_order", filled_before_the_cancel)
+    assert await preflight.run(test_order=True) == 1
+    broker_side = Account.instances[-1]
+    assert [o["transaction_type"] for o in broker_side.placed] == ["BUY"]          # no SELL from the tool
+    assert broker_side.settled == [("P1", "COMPLETE", 75)] and pages == ["fno_live_preflight_filled"]
+    assert "recorded as real position" in capsys.readouterr().out
+    [held] = await fpos.open_positions(db, "FNO_LIVE")
+    assert held.bar_ts == "PREFLIGHT-P1" and held.entry_order_id == "P1" and held.qty == 75
+
+    monkeypatch.setattr(fno_orchestrator, "_page_live_exit_once", _no_page)
+    engine_broker = Broker(fill_after_modifies=0)
+    engine_broker.get_quote = lambda tokens: _quote(held.token)
+    mid_morning = IST.localize(datetime(2026, 7, 10, 10, 1))
+    closed = await fno_orchestrator._manage_open_positions(engine_broker, db, "FNO_LIVE", _live(engine_broker),
+                                                           mid_morning, 25100.0)
+    assert len(closed) == 1 and closed[0]["reason"] == "preflight_flatten"
+    assert engine_broker.placed[0]["transaction_type"] == "SELL" and engine_broker.placed[0]["quantity"] == 75
+
+
+async def _quote(token):
+    return {token: {"last_price": 82.0, "depth": {"buy": [{"price": 82.0}], "sell": [{"price": 82.5}]}}}

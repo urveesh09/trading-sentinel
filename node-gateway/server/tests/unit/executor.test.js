@@ -403,6 +403,15 @@ describe('executeSignal()', () => {
       expect.stringMatching(/^GW:/), { brokerOrderId: 'ORD-001' });
   });
 
+  test('a failed hold release never stops the protection of a confirmed buy', async () => {
+    mockAccountCashReservations.releaseFilled.mockImplementation(() => {
+      throw new Error('SQLITE_BUSY: database is locked');
+    });
+    await executeSignal(makeSignal(), 'EXEC', false);                  // CNC: a resting GTT protects it
+    expect(mockAccountCashReservations.releaseFilled).toHaveBeenCalled();
+    expect(kite.placeGTT).toHaveBeenCalled();                    // the resting protection still went out
+  });
+
   test('a rejected order never releases a hold as filled', async () => {
     kite.getOrderHistory.mockResolvedValue([
       { status: 'REJECTED', status_message: 'Insufficient funds' },

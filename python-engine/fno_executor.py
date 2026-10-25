@@ -30,7 +30,7 @@ first. This reasoning does not survive a short leg (spec §8.4).
 from __future__ import annotations
 
 import asyncio
-from typing import Optional
+from typing import Awaitable, Callable, Optional
 from uuid import uuid4
 
 import structlog
@@ -62,6 +62,26 @@ _TERMINAL = ("COMPLETE", "CANCELLED", "REJECTED")
 
 def _tick_floor(value: float, tick: float) -> float:
     return round(max(tick, int(round(value / tick, 6)) * tick), 2)
+
+
+def _resting_price(latest: dict, fallback: float) -> float:
+    """[O25b] The limit the broker shows the order resting at, else ``fallback``
+    (the last price the broker accepted)."""
+    try:
+        price = float(latest.get("price") or 0.0)
+    except (TypeError, ValueError):
+        price = 0.0
+    return round(price, 2) if price > 0 else fallback
+
+
+async def _emit(on_event, kind: str, **detail) -> None:
+    """Tell the caller about the order; its own failure never stops an exit."""
+    if on_event is None:
+        return
+    try:
+        await on_event(kind, **detail)
+    except Exception as e:
+        logger.error("fno_exit_event_callback_failed kind=%s error=%s", kind, str(e))
 
 
 def exit_ladder_prices(bid: float, tick: float) -> list[tuple[float, float]]:
@@ -205,11 +225,16 @@ class FnoExecutor:
     async def execute_exit(
         self, tradingsymbol: str, qty: int, bid: float,
         tick_size: float, hard_flat: bool = False, *, exchange: str = "NFO",
+        tag: Optional[str] = None, on_event: Optional[Callable[..., Awaitable[None]]] = None,
     ) -> dict:
         """Submit one SELL LIMIT. An uncertain fill requires reconciliation.
 
         On hard flat use a deeply marketable limit. Never replace an order
         merely because polling or cancellation did not prove its final fill.
+        [O25b] ``tag`` is the exit's own broker tag (written by the caller
+        before the send, so a lost reply can be found); ``on_event(kind,
+        **detail)`` hears ``placed`` before any wait (the caller records the
+        order id), then ``modified`` / ``modify_refused``.
         """
         if self.paper_mode:
             logger.info(
@@ -230,7 +255,8 @@ class FnoExecutor:
         steps = exit_ladder_prices(bid, tick_size)
         if hard_flat:
             steps = steps[-1:]
-        resp = await self._place_limit(tradingsymbol, "SELL", qty, steps[0][0], intent="exit", exchange=exchange)
+        resp = await self._place_limit(tradingsymbol, "SELL", qty, steps[0][0], intent="exit", exchange=exchange,
+                                       tag=tag)
         order_id = resp.get("order_id")
         if not order_id:
             certainty = resp.get("dispatch_certainty") or "AMBIGUOUS"
@@ -240,17 +266,21 @@ class FnoExecutor:
             return {"status": status, "order_id": None, "fill_price": None,
                     "evidence": {"dispatch_certainty": certainty,
                                  "message": str(resp.get("message") or "")[:300]}}
+        resting = steps[0][0]
+        await _emit(on_event, "placed", order_id=order_id, price=resting)
         for index, (price, wait) in enumerate(steps):
-            if index:
-                await self._reprice(order_id, price)
-            outcome = self._exit_outcome(order_id, await self._watch(order_id, wait))
+            if index and price < resting and await self._reprice(order_id, price, on_event):
+                resting = price
+            latest = await self._watch(order_id, wait)
+            outcome = self._exit_outcome(order_id, latest)
             if outcome is not None:
                 return outcome
+            resting = _resting_price(latest, resting)
         logger.critical(
-            "fno_exit_working symbol=%s order_id=%s limit=%.2f hard_flat=%s -- still unfilled at the "
-            "deepest step; followed up every pass", tradingsymbol, order_id, steps[-1][0], hard_flat,
+            "fno_exit_working symbol=%s order_id=%s limit=%.2f hard_flat=%s -- still unfilled after the "
+            "price steps; followed up every pass", tradingsymbol, order_id, resting, hard_flat,
         )
-        return {"status": "unfilled", "order_id": order_id, "fill_price": None, "limit": steps[-1][0]}
+        return {"status": "unfilled", "order_id": order_id, "fill_price": None, "limit": resting}
 
     def _settle_account_cash(self, order_id: str, final_status: str, filled_quantity) -> None:
         """[O25] Free the BUY's own-cash hold once its outcome is proven (kite_client)."""
@@ -262,20 +292,26 @@ class FnoExecutor:
         except Exception as e:
             logger.error("fno_account_cash_release_failed order_id=%s error=%s", order_id, str(e))
 
-    async def follow_exit(self, order_id: str, limit: float, bid: float, tick_size: float) -> dict:
+    async def follow_exit(self, order_id: str, limit: float, bid: float, tick_size: float,
+                          on_event: Optional[Callable[..., Awaitable[None]]] = None) -> dict:
         """[O25] A working exit found on a later pass: read it, and if it still
         rests, move it under the fresh bid (never up). Same statuses as
-        ``execute_exit``; ``limit`` is the price it now rests at."""
-        outcome = self._exit_outcome(order_id, await self.order_state(order_id))
+        ``execute_exit``; ``limit`` is the price the broker shows it resting
+        at [O25b]: a refused modification leaves it where it was, so the next
+        pass tries again."""
+        latest = await self.order_state(order_id)
+        outcome = self._exit_outcome(order_id, latest)
         if outcome is not None:
             return outcome
+        resting = _resting_price(latest, limit)
         if bid > 0:
             lower = _tick_floor(bid - max(FOLLOW_UP_SHARE * bid, FOLLOW_UP_TICKS * tick_size), tick_size)
-            if lower < limit:
-                await self._reprice(order_id, lower)
-                limit = lower
-        outcome = self._exit_outcome(order_id, await self._watch(order_id, 2 * self.poll_interval_sec))
-        return outcome or {"status": "unfilled", "order_id": order_id, "fill_price": None, "limit": limit}
+            if lower < resting and await self._reprice(order_id, lower, on_event):
+                resting = lower
+        latest = await self._watch(order_id, 2 * self.poll_interval_sec)
+        outcome = self._exit_outcome(order_id, latest)
+        return outcome or {"status": "unfilled", "order_id": order_id, "fill_price": None,
+                           "limit": _resting_price(latest, resting)}
 
     def _exit_outcome(self, order_id: str, latest: dict) -> Optional[dict]:
         """A final answer from the order's latest state, or None while it works."""
@@ -315,15 +351,23 @@ class FnoExecutor:
             await asyncio.sleep(self.poll_interval_sec)
             elapsed += self.poll_interval_sec
 
-    async def _reprice(self, order_id: str, price: float) -> None:
-        """Move a working SELL LIMIT; a refusal (it filled meanwhile) is read next."""
+    async def _reprice(self, order_id: str, price: float,
+                       on_event: Optional[Callable[..., Awaitable[None]]] = None) -> bool:
+        """Move a working SELL LIMIT. True only when the broker accepted it: a
+        refusal (it filled meanwhile, or the price was refused) leaves the
+        order where it rests, and the next read or pass decides."""
         try:
             result = await self.kite.modify_order(order_id, price=round(price, 2))
-            if result.get("status") != "MODIFIED":
-                logger.warning("fno_exit_modify_refused order_id=%s price=%.2f msg=%s", order_id, price,
-                               str(result.get("message") or "")[:200])
+            message = str(result.get("message") or "")[:200]
+            accepted = result.get("status") == "MODIFIED"
         except Exception as e:
-            logger.error("fno_exit_modify_failed order_id=%s price=%.2f error=%s", order_id, price, str(e))
+            accepted, message = False, f"{type(e).__name__}: {e}"[:200]
+        if accepted:
+            await _emit(on_event, "modified", order_id=order_id, price=round(price, 2))
+            return True
+        logger.warning("fno_exit_modify_refused order_id=%s price=%.2f msg=%s", order_id, price, message)
+        await _emit(on_event, "modify_refused", order_id=order_id, price=round(price, 2), message=message)
+        return False
 
     # ------------------------------------------------------------------
     # plumbing
@@ -331,7 +375,7 @@ class FnoExecutor:
 
     async def _place_limit(
         self, tradingsymbol: str, txn: str, qty: int, price: float,
-        *, intent: str, exchange: str = "NFO",
+        *, intent: str, exchange: str = "NFO", tag: Optional[str] = None,
     ) -> dict:
         """`intent` is required: see KiteClient.place_order. Entries are
         halt-gated, the exit ladder never is."""
@@ -346,7 +390,7 @@ class FnoExecutor:
                 order_type="LIMIT",
                 price=round(price, 2),
                 validity="DAY",
-                tag=self.source_tag[:20],
+                tag=(tag or self.source_tag)[:20],
                 intent=intent, channel="fno",
             )
         except Exception as e:

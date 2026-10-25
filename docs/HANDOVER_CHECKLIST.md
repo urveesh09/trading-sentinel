@@ -1,5 +1,31 @@
 # Handover receipt and operator checklist
 
+## October 25 (2) — O25b the review's nine gaps in the real-money test fixed; bounded runs, readiness, evidence, encrypted route option (commit pending (recorded in the next docs commit), Dev, pushed, not deployed, switch off)
+
+- [x] P1:
+  - a gateway cleanup failure no longer stops protection;
+  - refused price changes are retried, with the broker-confirmed price kept;
+  - the exit's identity is written before the send and its order id before any wait, so a restart follows or recovers it by tag;
+  - only an MIS holding on the right exchange may be sold;
+  - a filled preflight buy is handed to the engine.
+- [x] P2:
+  - one-lot P&L from fills with one lot's own charges;
+  - an UNAVAILABLE verdict when the drawdown halt is unknown;
+  - NIFTY enforced in the buy;
+  - the runbook order fixed.
+- [x] Added:
+  - a bounded run (5 sessions, named);
+  - the 09:25 readiness message (the preflight runs once);
+  - execution evidence in the 15:50 report;
+  - KITE_ORDER_PROXY_URL for an encrypted route.
+- [x] Tests: engine full suite (Dev, Windows, 10 min 6 s, after the last edit): 5,698 passed, 4 skipped, exit 0. `test_fno_live_test` has 26 tests; 6 reproduce the review's cases (refused modification, restart while the sell waits, lost reply, never-sent tagged exit, NRML holding, non-NIFTY) and failed before the fixes. `test_fno_proving_week` has 8 and `test_fno_live_preflight` 5. Against the previous modules (a scratch copy with `git show HEAD:` of `fno_proving_week.py` and `fno_live_preflight.py`), the one-lot-charges, unavailable-halt and preflight hand-off tests fail as they should. An earlier full run made during editing had one failure: `test_fno_shadow` reads the orchestrator's source by line number while the file was being edited. It passes 18 of 18 alone, and the final run is clean. Gateway: `executor.test.js` 65 passed (+1: a failed hold release keeps the GTT protection). The full gateway suite: 506 passed, 4 skipped, 18 failed in `db.test.js` and `backlog-reconciliation.test.js` (better-sqlite3 native binding unavailable on this Windows Node 24; the files are untouched). No order was placed anywhere. The relay was probed without credentials: plain HTTP answered 200, CONNECT answered 404.
+- [ ] Owner:
+  1. the verdict;
+  2. deploy;
+  3. relay: firewall the port to the home IP now, a CONNECT proxy before the run;
+  4. the route in the `.env`, recreate the engine, the read-only preflight, the test order;
+  5. the switch.
+
 ## October 25 — O25 the ₹12,500 real-money F&O test is ready behind one switch (commit `ca12934`, Dev, pushed, not deployed, switch off)
 
 - [x] FNO_LIVE_TEST_ENABLED: one lot of what the paper book buys. NIFTY only, never on an expiry day, one position, own cash, a ₹7,000 floor. Sizing guardrails are relaxed for this test only.
