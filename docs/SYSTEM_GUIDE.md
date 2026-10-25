@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 25 — O25 The real-money F&O test, the live exit and the proving week (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 25 — O25 The real-money F&O test, the live exit and the proving week (actual behavior, Dev, commit `ca12934`)
 
 - **`fno_live_test` (off unless FNO_LIVE_TEST_ENABLED).** After a paper single-leg entry on an NFO underlying, `fno_orchestrator._single_leg_entries` calls `mirror_entry`.
   - It refuses (as FNO_LIVE signal rows `live_test_*`):

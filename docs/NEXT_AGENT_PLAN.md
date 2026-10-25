@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 25 — O25 The ₹12,500 real-money F&O test is ready behind one switch, after a pre-registered proving week (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 25 — O25 The ₹12,500 real-money F&O test is ready behind one switch, after a pre-registered proving week (done, Dev, commit `ca12934`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 25):
   - give the paper F&O book "5 more days to prove itself", then put ₹12.5k of real money on it for a week with the investment and risk guardrails relaxed;

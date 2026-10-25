@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 25 — O25 the ₹12,500 real-money F&O test is ready behind one switch (commit pending (recorded in the next docs commit), Dev, pushed, not deployed, switch off)
+## October 25 — O25 the ₹12,500 real-money F&O test is ready behind one switch (commit `ca12934`, Dev, pushed, not deployed, switch off)
 
 - [x] FNO_LIVE_TEST_ENABLED: one lot of what the paper book buys. NIFTY only, never on an expiry day, one position, own cash, a ₹7,000 floor. Sizing guardrails are relaxed for this test only.
 - [x] Real-money gaps fixed before any real order:
