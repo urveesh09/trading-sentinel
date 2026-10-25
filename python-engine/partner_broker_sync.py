@@ -77,7 +77,6 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
-import json
 import re
 from collections import defaultdict
 from dataclasses import dataclass
@@ -1137,27 +1136,25 @@ async def _sent_today(db_path: str, kind: str, day: str) -> bool:
 
 
 async def _send_prompt(now: datetime) -> dict:
-    from partner_bot import partner_enabled, send_partner_result
-    from partner_orchestrator import _record, _seen
+    """The review button, once a day. [O25M] Through partner_orchestrator.send_daily: a send that provably
+    never left is sent again (daily_retry_tick), one that may have arrived never is."""
+    from partner_bot import partner_enabled
+    from partner_orchestrator import send_daily
     day = now.date().isoformat()
     if not partner_enabled():
         return {"status": "partner_disabled"}
-    if await _seen(settings.DB_PATH, PROMPT_KIND, day):
-        return {"status": "already_prompted"}
-    result = await send_partner_result(prompt_text(now), kind=PROMPT_KIND, reply_markup=review_keyboard())
-    await _record(settings.DB_PATH, PROMPT_KIND, day, result.delivered, now=now)
-    return {"status": "prompted" if result.delivered else "prompt_failed"}
+    out = await send_daily(settings.DB_PATH, PROMPT_KIND, day, prompt_text(now), now, reply_markup=review_keyboard())
+    status = {"sent": "prompted", "already_sent": "already_prompted", "failed": "prompt_failed",
+              "uncertain": "prompt_failed", "refused": "prompt_failed", "undelivered": "prompt_failed"}
+    return {**out, "status": status.get(out["status"], out["status"])}
 
 
 LOGIN_REMINDER_KIND = "login_reminder"
-# [O25M] Each send of the reminder is a partner_messages row of its own (login_reminder_try, "<day>:<n>"), written
-# before the send ("attempting") and given Telegram's outcome after it. The day's login_reminder row is written once
-# nothing more will be sent: delivered, possibly delivered, refused for good, or out of tries.
-LOGIN_REMINDER_TRY_KIND = "login_reminder_try"
-LOGIN_REMINDER_ATTEMPTS = 4                    # sends in all: the first and up to three retries
-LOGIN_REMINDER_RETRY_MIN = 5                   # the first retry's wait; it doubles (5, 10, 20 minutes)
-LOGIN_REMINDER_WINDOW_MIN = 90                 # no send later than this after the reminder time (07:00 -> 08:30)
-LOGIN_REMINDER_IN_FLIGHT = timedelta(seconds=60)   # a send with no outcome yet: still being sent, or a restart cut it
+LOGIN_REMINDER_WINDOW_MIN = 90                 # [O25M] no send later than this after the reminder time (07:00 -> 08:30)
+# [O25M] What partner_orchestrator.send_daily answered, as the reminder says it.
+_REMINDER_STATUS = {"sent": "reminded", "failed": "reminder_failed", "uncertain": "reminder_uncertain",
+                    "refused": "reminder_refused", "undelivered": "reminder_undelivered",
+                    "already_sent": "already_reminded"}
 
 
 def login_reminder_text(now: datetime) -> str:
@@ -1175,123 +1172,33 @@ def reminder_window(now: datetime) -> tuple:
     return start, start + timedelta(minutes=LOGIN_REMINDER_WINDOW_MIN)
 
 
-async def _reminder_tries(day: str) -> list:
-    """[O25M] Today's sends of the reminder, the first first: {n, delivered, state, error, at}."""
-    from partner_orchestrator import _partner_db
-    async with _partner_db(settings.DB_PATH) as db:
-        rows = await (await db.execute(
-            "SELECT dedup_key, delivered, detail FROM partner_messages WHERE kind=? AND dedup_key LIKE ?",
-            (LOGIN_REMINDER_TRY_KIND, f"{day}:%"))).fetchall()
-    tries = []
-    for key, delivered, detail in rows:
-        try:
-            info = json.loads(detail) if detail else {}
-            n = int(str(key).rsplit(":", 1)[1])
-        except (ValueError, IndexError):
-            continue
-        at = kite_time(info.get("at")) if isinstance(info, dict) else None
-        tries.append({"n": n, "delivered": bool(delivered), "state": (info or {}).get("state"),
-                      "error": (info or {}).get("error"), "at": at})
-    return sorted(tries, key=lambda t: t["n"])
-
-
-async def _claim_try(day: str, n: int, now: datetime) -> bool:
-    """[O25M] Send n is ours: its row is written before the send (INSERT OR IGNORE: a second run gets False)."""
-    from partner_orchestrator import _partner_db
-    async with _partner_db(settings.DB_PATH) as db:
-        cursor = await db.execute(
-            "INSERT OR IGNORE INTO partner_messages (sent_at, kind, dedup_key, delivered, detail) VALUES (?,?,?,0,?)",
-            (now.strftime("%Y-%m-%d %H:%M:%S"), LOGIN_REMINDER_TRY_KIND, f"{day}:{n}",
-             json.dumps({"state": "attempting", "at": now.isoformat()})))
-        await db.commit()
-    return cursor.rowcount == 1
-
-
-async def _settle_try(day: str, n: int, attempt: dict, now: datetime) -> None:
-    """[O25M] Send n's outcome (Telegram's answer, or why there was none)."""
-    from partner_orchestrator import _partner_db
-    async with _partner_db(settings.DB_PATH) as db:
-        await db.execute(
-            "UPDATE partner_messages SET delivered=?, detail=? WHERE kind=? AND dedup_key=?",
-            (1 if attempt["delivered"] else 0, json.dumps({**attempt, "at": now.isoformat()}),
-             LOGIN_REMINDER_TRY_KIND, f"{day}:{n}"))
-        await db.commit()
-
-
 async def morning_login_reminder(now: Optional[datetime] = None) -> dict:
     """[O25k 2026-10-25] The owner: remind the partner to log in at 07:00 with their own link. Once a day,
     with their app's Kite login button (review_keyboard), not when a login is already held. Messages only:
     the login is read-only and nothing is ever traded on it.
 
-    [O25M] A failed send no longer counts as reminded. A send that provably did not leave (no connection,
-    the rate limit, a Telegram 5xx: partner_bot.provably_unsent) is sent again from the 5-minute ticks
-    (daily_bootstrap.login_reminder_retry_tick) after LOGIN_REMINDER_RETRY_MIN, doubling, at most
-    LOGIN_REMINDER_ATTEMPTS sends and only inside ``reminder_window``. Never again after one that may have
-    arrived (a timeout after the request left, a restart mid-send), one Telegram refused for good, a login,
-    or the window's end. Each send is claimed in the database first, so two runs never send it twice."""
-    from partner_bot import partner_enabled, provably_unsent, send_partner_result
-    from partner_orchestrator import _seen
+    [O25M] A failed send no longer counts as reminded (partner_orchestrator.send_daily): one that provably
+    did not leave (no connection, the rate limit, a Telegram 5xx) is sent again from the 5-minute ticks
+    (daily_bootstrap.login_reminder_retry_tick) 5, 10 and 20 minutes later, at most DAILY_ATTEMPTS sends
+    and only inside ``reminder_window``. Never again after one that may have arrived (a timeout after the
+    request left, a restart mid-send), one Telegram refused for good, or a login. Each send is claimed in
+    the database first, so two runs never send it twice."""
+    from partner_bot import partner_enabled
+    from partner_orchestrator import send_daily
     now = (now or datetime.now(IST)).astimezone(IST)
-    day = now.date().isoformat()
-    db_path = settings.DB_PATH
     if not configured():
         return {"status": "not_configured"}
     if not partner_enabled():
         return {"status": "partner_disabled"}
     if connected(now):
         return {"status": "already_logged_in"}
-    if await _seen(db_path, LOGIN_REMINDER_KIND, day):
-        return {"status": "already_reminded"}
     start, end = reminder_window(now)
     if not start <= now <= end:
         return {"status": "outside_window"}
-    tries = await _reminder_tries(day)
-    if tries:
-        last = tries[-1]
-        if last["state"] == "attempting" and last["at"] is not None and now - last["at"] < LOGIN_REMINDER_IN_FLIGHT:
-            return {"status": "in_progress"}
-        retry = not last["delivered"] and provably_unsent(last["state"], last["error"])
-        if retry and len(tries) < LOGIN_REMINDER_ATTEMPTS:
-            wait = timedelta(minutes=LOGIN_REMINDER_RETRY_MIN * 2 ** (len(tries) - 1))
-            if last["at"] is not None and now - last["at"] < wait:
-                return {"status": "retry_later", "attempts": len(tries)}
-        else:
-            # Settled before the day's row was written (a restart in between), or a send cut off mid-way: that send
-            # may have arrived and is not repeated.
-            return await _reminder_done(day, last, len(tries), now)
-    n = len(tries) + 1
-    if not await _claim_try(day, n, now):
-        return {"status": "in_progress"}
-    result = await send_partner_result(login_reminder_text(now), kind=LOGIN_REMINDER_KIND,
-                                       reply_markup=review_keyboard("🔑 Log in to Zerodha"))
-    delivered = bool(result.delivered)
-    attempt = {"delivered": delivered, "state": getattr(result, "state", None) or ("acknowledged" if delivered else
-                                                                                   "failed"),
-               "error": getattr(result, "error", None), "message_id": getattr(result, "message_id", None)}
-    await _settle_try(day, n, attempt, now)
-    if delivered or not provably_unsent(attempt["state"], attempt["error"]) or n >= LOGIN_REMINDER_ATTEMPTS:
-        return await _reminder_done(day, attempt, n, now)
-    logger.warning("partner_login_reminder_unsent attempt=%d state=%s err=%s", n, attempt["state"], attempt["error"])
-    return {"status": "reminder_failed", "attempts": n}
-
-
-async def _reminder_done(day: str, last: dict, attempts: int, now: datetime) -> dict:
-    """[O25M] Nothing more is sent today: the day's login_reminder row, and what became of the reminder."""
-    from partner_bot import provably_unsent
-    from partner_orchestrator import _record
-    if last["delivered"]:
-        status = "reminded"
-    elif last["state"] == "attempting" or str(last["state"] or "").startswith("ambiguous"):
-        status = "reminder_uncertain"         # it may have arrived
-    elif provably_unsent(last["state"], last["error"]):
-        status = "reminder_undelivered"       # LOGIN_REMINDER_ATTEMPTS sends, none left
-    else:
-        status = "reminder_refused"           # e.g. Telegram's 400: the same text would be refused again
-    await _record(settings.DB_PATH, LOGIN_REMINDER_KIND, day, bool(last["delivered"]),
-                  detail={"status": status, "state": last["state"], "attempts": attempts}, now=now)
-    log = logger.info if status == "reminded" else logger.error
-    log("partner_login_reminder_done status=%s attempts=%d state=%s", status, attempts, last["state"])
-    return {"status": status, "attempts": attempts}
+    out = await send_daily(settings.DB_PATH, LOGIN_REMINDER_KIND, now.date().isoformat(), login_reminder_text(now),
+                           now, reply_markup=review_keyboard("🔑 Log in to Zerodha"), until=end)
+    status = _REMINDER_STATUS.get(out["status"], out["status"])
+    return {"status": status} if status == "already_reminded" else {**out, "status": status}
 
 
 async def partner_broker_eod(now: Optional[datetime] = None) -> dict:

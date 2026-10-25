@@ -1446,6 +1446,19 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_watch_prompt_crashed err=%s", exc, exc_info=True)
 
+    async def _run_partner_daily_retry_safe():
+        # [O25M 2026-10-25] The brief, the wrap, the coach note and the review prompt sent again when their
+        # last send provably never left (bounded); never one that may have arrived. Self-gated on the partner
+        # bot; nothing is read when nothing was sent today.
+        # [CALENDAR-GATE 2026-07-03] gate delegated: it only resends what those calendar-gated jobs tried
+        # today (partner_orchestrator._gates_open, the review prompt's wrap); on a closed day nothing was
+        # tried, so every message answers never_sent from one database lookup.
+        try:
+            from partner_orchestrator import daily_retry_tick
+            await daily_retry_tick()
+        except Exception as exc:
+            logger.error("partner_daily_retry_crashed err=%s", exc, exc_info=True)
+
     async def _run_partner_eod_wrap_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
         # _gates_open checks PARTNER_BOT_ENABLED, the session window,
@@ -1594,6 +1607,12 @@ def register_partner_scheduler_jobs(scheduler):
         hour=settings.PARTNER_EOD_HOUR, minute=settings.PARTNER_EOD_MIN,
         id="partner_eod_wrap",
         max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
+        _run_partner_daily_retry_safe, "cron",
+        minute="*/5", second=40,
+        id="partner_daily_retry",
+        max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     scheduler.add_job(
         _run_partner_rv_refresh_safe, "cron",

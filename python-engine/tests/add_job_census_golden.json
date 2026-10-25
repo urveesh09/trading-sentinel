@@ -100,6 +100,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_daily_retry_safe",
+    "id": "'partner_daily_retry'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_partner_eod_wrap_safe",
     "id": "'partner_eod_wrap'",
     "trigger": "'cron'"

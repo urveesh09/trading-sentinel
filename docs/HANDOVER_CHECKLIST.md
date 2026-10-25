@@ -1,5 +1,13 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25N O25M's open items closed; promoted to Production (commit pending (recorded in the next docs commit), pushed)
+
+- [x] The brief, wrap, coach note and review prompt are retried only after a send that provably never left (5, 10, 20 min; 4 sends; within 60 min), from the stored text with "Written at". A possible delivery is never resent. New job `partner_daily_retry`.
+- [x] A CHECK work-out cut off by a restart is worked out again (row `refreshing` until replaced).
+- [x] Env audit (read-only, names and switches only): no orphan or missing names; no `.env` change needed. The real-money switches are still off and the owner halt is still on.
+- [x] Tests: Dev (Windows venv) full engine + scripts suites: 6,039 passed, 4 skipped, 1 failed (the calendar-gate guard wanted the new cron's [CALENDAR-GATE] marker; added, then the guard, scheduler, golden and ledger tests: 40 passed). 6,040 = O25M's 6,031 plus 9 new tests. Tests do not show the partner's results or profitability.
+- [ ] Production rollout receipt: recorded in the next docs commit.
+
 ## October 25 — O25M R1–R3 fixed in Dev (commit `07e22da`, pushed)
 
 - [x] R1: a CHECK reply is never sent after its prices' 15 s. It is worked out again once for the same option and expiry, else a no-numbers note to ask again.
@@ -7,7 +15,7 @@
 - [x] R3: the partner's reminder is retried only after a send that provably never left (5, 10, 20 min; 4 sends; 07:00–08:30) and never after a possible delivery. New job `partner_login_reminder_retry`.
 - [x] Tests: Dev (Windows venv) full engine suite 5,744 passed, 4 skipped (617 s) plus scripts/tests 287 passed: 6,031 in all (O25k's 6,015 plus the 16 new tests); focused partner suites 165 passed; the O25L review's four reproductions now fail against this code. Tests do not show the partner's results or profitability.
 - [ ] Rollout to Production (PR, backup, rebuild, recreate, verify): owner's call. Production runs `7468853` without these fixes.
-- [ ] Not changed: brief, EOD and coach use the same attempted-versus-delivered record (O25L R3 note).
+- [x] (O25N) The brief, EOD, coach note and review prompt now use the daily-send ledger.
 
 ## October 25 — O25L independent release/partner audit
 

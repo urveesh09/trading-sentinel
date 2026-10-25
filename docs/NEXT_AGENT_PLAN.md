@@ -1,5 +1,44 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 — O25N The O25M open items closed: once-a-day partner messages retried safely, the CHECK work-out survives a restart; promoted to Production (done, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed)
+
+- Owner ask (Oct 25): "yes all the open you close then commit push merge and deploy and restart and rebuild the prod while ensuring all the env are in line".
+- Done:
+  - [x] **Shared daily-send ledger (`partner_orchestrator.send_daily` / `retry_daily` / `daily_retry_tick`).**
+    - Used by the brief (09:50), the wrap (15:50), the coach note, the review prompt (`zerodha_prompt`) and the 07:00 login reminder.
+    - Each send is a `<kind>_try` row (`<day>:<n>`). It is claimed with its text and button before it goes, and settled with Telegram's answer after.
+    - Only a provably unsent send is sent again: 5, 10 and 20 minutes later, at most DAILY_ATTEMPTS (4) sends, and within DAILY_RETRY_WINDOW (60 min) of the first.
+    - The retry reuses the first send's stored text with "⏱ Written at HH:MM; it could not be sent then."
+    - Never resent: a timeout after the request left, a send a restart cut off, or a 4xx.
+    - The day's (kind, day) row, which `_seen` reads, is written only when nothing more will be sent: sent, uncertain, refused or undelivered. `_seen` and `_record` are unchanged; signals, pins, cue and flow events keep their own record (time-sensitive, never resent).
+    - New job `partner_daily_retry` (cron */5 at :40 seconds), gated on the partner bot.
+    - The reminder keeps its own tick (rebuilt text, also sent when the 07:00 run was missed). Its private copy of the ledger was removed.
+    - `_send_prompt`: a second ask while its retry is due says `retry_later`, not a second send.
+  - [x] **CHECK work-out durable (`partner_watch`).** The outdated row stays due as `refreshing` until its replacement is in the outbox, and only then is it closed `outdated`.
+    - In-process work-outs are listed in `_refreshing`, so a row being worked out waits.
+    - After a restart the row is worked out again; the replacement's fixed key means no doubles.
+  - [x] **Env alignment (read-only audit, no values printed).**
+    - Production's root `.env` has 23 names; every one is used by the engine settings, the agent, ngrok or `os.getenv`.
+    - The gateway validates its required env at startup.
+    - O25M and O25N add no setting and need no `.env` change.
+    - Effective switches before the rollout:
+      - FNO_LIVE_TEST_ENABLED, FNO_LIVE_TRADING and PENNY_LIVE_TRADING false;
+      - FNO_DISABLE_LIVE and PENNY_EDGE_DISABLE_LIVE true;
+      - OWNER_LIVE_ENTRY_HALT true; channels momentum,penny,edge;
+      - run window Nov 2–6;
+      - reminders 07:00;
+      - partner bot, sync, watch and fill capture on; watch stream off;
+      - both Kite routes set.
+- Files:
+  - `python-engine/partner_orchestrator.py`, `partner_broker_sync.py`, `partner_coach.py`, `partner_watch.py`, `scheduler_setup.py`;
+  - tests: new `tests/test_partner_daily_delivery.py` (8); `test_partner_watch.py` (+1, the restart during a work-out); `test_partner_orchestrator.py` (its fixture patches `partner_bot.send_partner_result`: the brief and wrap had reached the real sender with a fake token); `test_partner_insights.py`, `test_login_reminder.py` (the ledger's names); the two goldens (the new job only);
+  - `docs/SYSTEM_CODE_ATLAS.md`.
+- Tests: Dev (Windows venv) full engine + scripts suites: 6,039 passed, 4 skipped, 1 failed (the calendar-gate guard wanted the new cron's [CALENDAR-GATE] marker; added, then the guard, scheduler, golden and ledger tests: 40 passed). 6,040 = O25M's 6,031 plus 9 new tests. Tests do not show the partner's results or profitability.
+- Config impact: no new setting; one new scheduler job; new partner_messages kinds `brief_try`, `eod_try`, `coach_try` and `zerodha_prompt_try` (no schema change); partner_watch_messages outcome `refreshing`.
+- Rollout: PR to `evolve/smart-strategies`, merged with the owner's go-ahead. Production procedure: database backup, rollback tags, fast-forward, stamped build of the three images one at a time, recreate one at a time, nginx restart, `verify_deployment.py`, then the env audit again. The rollout receipt follows in the next docs commit.
+- Rollback: the `sentinel-rollback/<svc>:7468853-20261025` images, or revert the merge; no migration.
+- Remaining (not code): live evidence from the first real partner session (O25L item 2) and O25L items 3–8.
+
 ## October 25 — O25M Fixes for R1–R3 from the O25L review: CHECK prices current when sent, quote clocks enforced, the morning reminder retried safely (done, Dev, commit `07e22da`, branch `codex/production-correction-hedge-p0`, pushed)
 
 - Owner ask (Oct 25): the three O25L findings, "Fix them".
@@ -43,9 +82,9 @@
 - Rollout: PR to `evolve/smart-strategies`, then the Production runbook (backup, fast-forward, rebuild the engine, recreate, verify). Not deployed: Production stays `7468853` until the owner promotes it.
 - Rollback: revert the commit; no migration.
 - Remaining:
-  - The brief, EOD and coach messages use the same attempted-versus-delivered `_record` pattern. They were not changed here (O25L R3 note).
+  - (Closed by O25N, above.) The brief, EOD and coach messages used the same attempted-versus-delivered `_record` pattern.
   - Live evidence from the first real partner session (O25L plan item 2) and O25L items 3–8.
-  - The CHECK refresh is lost if the engine restarts during its own ≤12 s work-out; the partner can ask again.
+  - (Closed by O25N, above.) A CHECK work-out cut off by a restart was lost.
 
 ## October 25 — O25L independent Production/partner review (audit complete; R1–R3 fixed in Dev by O25M, above)
 

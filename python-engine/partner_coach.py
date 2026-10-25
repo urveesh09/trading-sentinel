@@ -1319,7 +1319,7 @@ async def partner_coach_eod(now: Optional[datetime] = None) -> dict:
     With Zerodha configured the note waits for a read of the whole day (the
     partner's evening login, or the wrap's own read when a login is held),
     so it is never built from a partial book."""
-    from partner_bot import partner_enabled, send_partner, send_partner_result
+    from partner_bot import partner_enabled
     import partner_broker_sync as zerodha
     now = (now or datetime.now(IST)).astimezone(IST)
     day = now.date().isoformat()
@@ -1327,7 +1327,7 @@ async def partner_coach_eod(now: Optional[datetime] = None) -> dict:
     frozen = await freeze_card_paths(db_path, day, now)
     if not (settings.PARTNER_COACH_NOTE_ENABLED and partner_enabled()):
         return {"frozen": frozen, "note": "disabled"}
-    from partner_orchestrator import _record, _seen
+    from partner_orchestrator import _seen, send_daily
     if await _seen(db_path, "coach", day):
         return {"frozen": frozen, "note": "already_sent"}
     if zerodha.configured() and not (await zerodha.broker_days(db_path, day, day)).get(day, {}).get("complete"):
@@ -1337,9 +1337,8 @@ async def partner_coach_eod(now: Optional[datetime] = None) -> dict:
     if text is None:
         return {"frozen": frozen, "note": "no_reported_trades"}
     keyboard = zerodha.review_keyboard("📒 Open full review")
-    if keyboard is not None:
-        ok = (await send_partner_result(text, kind="coach", reply_markup=keyboard)).delivered
-    else:
-        ok = await send_partner(text, kind="coach")
-    await _record(db_path, "coach", day, ok, now=now)
-    return {"frozen": frozen, "note": "sent" if ok else "failed"}
+    # [O25M] send_daily: a send that provably never left goes again (daily_retry_tick), one that may have
+    # arrived never does.
+    status = (await send_daily(db_path, "coach", day, text, now, reply_markup=keyboard))["status"]
+    return {"frozen": frozen, "note": status if status in ("sent", "already_sent", "in_progress", "retry_later")
+            else "failed"}

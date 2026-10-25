@@ -206,14 +206,17 @@ async def test_two_runs_at_once_send_it_once_and_a_send_cut_off_by_a_restart_is_
     monkeypatch.setattr(partner_bot, "send_partner_result", slow)
     first = asyncio.create_task(pbs.morning_login_reminder(MONDAY_7))      # the 07:00 job
     await entered.wait()
-    assert await pbs.morning_login_reminder(_at(seconds=1)) == {"status": "in_progress"}      # the retry tick
+    assert await pbs.morning_login_reminder(_at(seconds=1)) == {"status": "in_progress", "attempts": 1}  # the tick
     release.set()
     assert await first == {"status": "reminded", "attempts": 1}
     assert len(sent["partner"]) == 1
     # Tuesday the engine stops mid-send: the send was claimed, its outcome never written. It may have arrived.
     tuesday = _at(days=1)
-    assert await pbs._claim_try(tuesday.date().isoformat(), 1, tuesday)
-    assert await pbs.morning_login_reminder(tuesday + timedelta(seconds=30)) == {"status": "in_progress"}
+    import partner_orchestrator as po
+    assert await po._claim_daily(settings.DB_PATH, "login_reminder", tuesday.date().isoformat(), 1, tuesday,
+                                 "🔑 Good morning!", None)
+    assert await pbs.morning_login_reminder(tuesday + timedelta(seconds=30)) == {"status": "in_progress",
+                                                                              "attempts": 1}
     assert await pbs.morning_login_reminder(tuesday + timedelta(minutes=5)) == {"status": "reminder_uncertain",
                                                                                   "attempts": 1}
     assert len(sent["partner"]) == 1
@@ -249,7 +252,8 @@ def test_the_retry_tick_is_scheduled_every_five_minutes_in_the_window():
     assert ('login_reminder_retry_tick, "cron",\n'
             '        hour=f"{settings.LOGIN_REMINDER_HOUR}-{min(settings.LOGIN_REMINDER_HOUR + 2, 23)}", minute="*/5",\n'
             '        id="partner_login_reminder_retry"') in source
-    assert (pbs.LOGIN_REMINDER_ATTEMPTS, pbs.LOGIN_REMINDER_RETRY_MIN, pbs.LOGIN_REMINDER_WINDOW_MIN) == (4, 5, 90)
+    import partner_orchestrator as po
+    assert (po.DAILY_ATTEMPTS, po.DAILY_RETRY_MIN, pbs.LOGIN_REMINDER_WINDOW_MIN) == (4, 5, 90)
 
 
 def test_the_owners_alert_log_says_whether_telegram_took_it_on_the_first_try():

@@ -1,5 +1,25 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25N Once-a-day partner messages: retried only when provably unsent (actual behavior, commit pending (recorded in the next docs commit))
+
+- **`partner_orchestrator.send_daily(db, kind, day, text, now, reply_markup, until)`** is used by the brief, the wrap, the coach note, the review prompt and the 07:00 reminder.
+  - Each send is claimed (`<kind>_try`, `<day>:<n>`, with its text and button) before it goes, and settled after.
+  - The answers are:
+    - `sent`;
+    - `failed` (provably unsent, will be retried);
+    - `retry_later`;
+    - `in_progress` (claimed under 60 s ago);
+    - `uncertain` (a timeout after the request left, or a send cut off by a restart: never resent);
+    - `refused` (a 4xx);
+    - `undelivered` (4 sends, or the window's end);
+    - `already_sent`.
+  - The day's `(kind, day)` row is written once nothing more will be sent.
+- **`partner_daily_retry`** runs every 5 minutes, at :40 seconds. It resends the brief, the wrap, the coach note and the review prompt from the first send's text, with "⏱ Written at HH:MM; it could not be sent then."
+  - The waits are 5, 10 and 20 minutes, with 4 sends at most, within 60 minutes of the first send.
+  - Nothing happens for a message the job never sent today.
+- **The 07:00 reminder** uses the same ledger. Its own tick rebuilds the text and also sends it when the 07:00 run was missed (07:00–08:30).
+- **CHECK work-out.** The outdated row stays due as `refreshing` until its replacement is in the outbox. A restart during the work-out works it out again; the replacement's fixed key prevents doubles.
+
 ## October 25 — O25M Partner delivery: current prices, verified quote clocks, a safe reminder retry (actual behavior, commit `07e22da`)
 
 - **Quote freshness (`partner_watch.quote_freshness`).** A quote is FRESH only when all of these hold:

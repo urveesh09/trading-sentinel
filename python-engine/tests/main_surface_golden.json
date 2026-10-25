@@ -85,6 +85,12 @@
       "trigger": "cron[minute='2-57/5']"
     },
     {
+      "func": "_run_partner_daily_retry_safe",
+      "id": "partner_daily_retry",
+      "kwargs": [],
+      "trigger": "cron[minute='*/5', second='40']"
+    },
+    {
       "func": "_run_partner_eod_wrap_safe",
       "id": "partner_eod_wrap",
       "kwargs": [],

@@ -165,6 +165,195 @@ async def _record(
         await db.commit()
 
 
+# ---------------------------------------------------------------------------
+# [O25M 2026-10-25] once-a-day messages: a send that provably never left is
+# sent again, one that may have arrived never is
+# ---------------------------------------------------------------------------
+#
+# The brief, the wrap, the coach note, the review prompt and the 07:00 login
+# reminder used to write their day's row whatever became of the send, so one
+# failed connection meant no message that day. Each send is now a row of its
+# own (kind "<kind>_try", key "<day>:<n>"), claimed before it goes (INSERT OR
+# IGNORE: two runs never send it twice) with its text, and settled with
+# Telegram's answer after it. The day's (kind, day) row -- what _seen reads --
+# is written once nothing more will be sent. _seen and _record are unchanged.
+
+DAILY_ATTEMPTS = 4                          # sends in all: the first and up to three retries
+DAILY_RETRY_MIN = 5                         # the first retry's wait; it doubles (5, 10, 20 minutes)
+DAILY_RETRY_WINDOW = timedelta(minutes=60)  # no retry later than this after the first send
+DAILY_IN_FLIGHT = timedelta(seconds=60)     # a send with no outcome yet: still going, or a restart cut it off
+DAILY_RETRIED = ("brief", "eod", "coach", "zerodha_prompt")   # resent from their stored text by daily_retry_tick
+
+
+def _try_kind(kind: str) -> str:
+    return f"{kind}_try"
+
+
+def _clock(value) -> Optional[datetime]:
+    try:
+        parsed = datetime.fromisoformat(str(value)) if value else None
+    except ValueError:
+        return None
+    return parsed if parsed is not None and parsed.tzinfo is not None else None
+
+
+async def daily_tries(db_path: str, kind: str, day: str) -> list:
+    """[O25M] The day's sends of one once-a-day message, the first first:
+    {n, delivered, state, error, at, text, reply_markup}."""
+    async with _partner_db(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT dedup_key, delivered, detail FROM partner_messages WHERE kind=? AND dedup_key LIKE ?",
+            (_try_kind(kind), f"{day}:%"))).fetchall()
+    tries = []
+    for key, delivered, detail in rows:
+        try:
+            info = json.loads(detail) if detail else {}
+            n = int(str(key).rsplit(":", 1)[1])
+        except (ValueError, IndexError):
+            continue
+        info = info if isinstance(info, dict) else {}
+        tries.append({"n": n, "delivered": bool(delivered), "state": info.get("state"), "error": info.get("error"),
+                      "at": _clock(info.get("at")), "text": info.get("text"),
+                      "reply_markup": info.get("reply_markup")})
+    return sorted(tries, key=lambda t: t["n"])
+
+
+async def _claim_daily(db_path: str, kind: str, day: str, n: int, now: datetime, text: str,
+                       reply_markup: Optional[dict]) -> bool:
+    """Send n is this run's: its row (with the text) is written before the send. False: another run has it."""
+    async with _partner_db(db_path) as db:
+        cursor = await db.execute(
+            "INSERT OR IGNORE INTO partner_messages (sent_at, kind, dedup_key, delivered, detail) VALUES (?,?,?,0,?)",
+            (now.strftime("%Y-%m-%d %H:%M:%S"), _try_kind(kind), f"{day}:{n}",
+             json.dumps({"state": "attempting", "at": now.isoformat(), "text": text,
+                         "reply_markup": reply_markup})))
+        await db.commit()
+    return cursor.rowcount == 1
+
+
+async def _settle_daily(db_path: str, kind: str, day: str, n: int, attempt: dict, now: datetime,
+                        text: str, reply_markup: Optional[dict]) -> None:
+    async with _partner_db(db_path) as db:
+        await db.execute(
+            "UPDATE partner_messages SET delivered=?, detail=? WHERE kind=? AND dedup_key=?",
+            (1 if attempt["delivered"] else 0,
+             json.dumps({**attempt, "at": now.isoformat(), "text": text, "reply_markup": reply_markup}),
+             _try_kind(kind), f"{day}:{n}"))
+        await db.commit()
+
+
+async def _daily_done(db_path: str, kind: str, day: str, last: dict, attempts: int, now: datetime) -> dict:
+    """Nothing more is sent today: the day's (kind, day) row, and what became of the message."""
+    from partner_bot import provably_unsent
+    if last["delivered"]:
+        status = "sent"
+    elif last["state"] == "attempting" or str(last["state"] or "").startswith("ambiguous"):
+        status = "uncertain"          # it may have arrived: never sent again
+    elif provably_unsent(last["state"], last["error"]):
+        status = "undelivered"        # DAILY_ATTEMPTS sends, or the window's end, and none left
+    else:
+        status = "refused"            # e.g. Telegram's 400: the same text would be refused again
+    await _record(db_path, kind, day, bool(last["delivered"]),
+                  detail={"status": status, "state": last["state"], "attempts": attempts}, now=now)
+    log = logger.info if status == "sent" else logger.error
+    log("partner_daily_done kind=%s status=%s attempts=%d state=%s", kind, status, attempts, last["state"])
+    return {"status": status, "attempts": attempts}
+
+
+async def send_daily(db_path: str, kind: str, day: str, text: str, now: datetime, *,
+                     reply_markup: Optional[dict] = None, until: Optional[datetime] = None) -> dict:
+    """[O25M] Send one of the day's once-a-day messages, or not:
+      - already_sent: the day's row is written (sent, or nothing more will be);
+      - in_progress: another run is sending it (claimed under DAILY_IN_FLIGHT ago);
+      - retry_later: the last send provably never left, and its wait
+        (DAILY_RETRY_MIN, doubling) is not over;
+      - outside_window: past ``until``; a send provably never made is then
+        recorded undelivered;
+      - sent | failed (provably unsent: it may go again) | uncertain |
+        refused | undelivered (the last three: never again today).
+    A send that may have arrived (a timeout after the request left, a
+    restart mid-send) is never repeated."""
+    from partner_bot import provably_unsent, send_partner_result
+    if await _seen(db_path, kind, day):
+        return {"status": "already_sent"}
+    tries = await daily_tries(db_path, kind, day)
+    if tries:
+        last = tries[-1]
+        if last["state"] == "attempting" and last["at"] is not None and now - last["at"] < DAILY_IN_FLIGHT:
+            return {"status": "in_progress", "attempts": len(tries)}
+        retry = not last["delivered"] and provably_unsent(last["state"], last["error"])
+        if not retry or len(tries) >= DAILY_ATTEMPTS:
+            # Settled but the day's row not yet written (another run, or a restart, in between).
+            done = await _daily_done(db_path, kind, day, last, len(tries), now)
+            return {"status": "already_sent"} if last["delivered"] else done
+        if until is not None and now > until:
+            return await _daily_done(db_path, kind, day, last, len(tries), now)
+        wait = timedelta(minutes=DAILY_RETRY_MIN * 2 ** (len(tries) - 1))
+        if last["at"] is not None and now - last["at"] < wait:
+            return {"status": "retry_later", "attempts": len(tries)}
+    elif until is not None and now > until:
+        return {"status": "outside_window", "attempts": 0}
+    n = len(tries) + 1
+    if not await _claim_daily(db_path, kind, day, n, now, text, reply_markup):
+        return {"status": "in_progress", "attempts": n}
+    result = await send_partner_result(text, kind=kind, reply_markup=reply_markup)
+    delivered = bool(result.delivered)
+    attempt = {"delivered": delivered,
+               "state": getattr(result, "state", None) or ("acknowledged" if delivered else "failed"),
+               "error": getattr(result, "error", None), "message_id": getattr(result, "message_id", None)}
+    await _settle_daily(db_path, kind, day, n, attempt, now, text, reply_markup)
+    if delivered or not provably_unsent(attempt["state"], attempt["error"]) or n >= DAILY_ATTEMPTS:
+        return await _daily_done(db_path, kind, day, attempt, n, now)
+    logger.warning("partner_daily_unsent kind=%s attempt=%d state=%s err=%s", kind, n, attempt["state"],
+                   attempt["error"])
+    return {"status": "failed", "attempts": n}
+
+
+def late_note(first_at: Optional[datetime]) -> str:
+    """[O25M] Under a once-a-day message sent again later: when it was written."""
+    when = first_at.astimezone(IST).strftime("%H:%M") if first_at else "earlier"
+    return f"\n\n⏱ Written at {when}; it could not be sent then."
+
+
+async def retry_daily(db_path: str, kind: str, day: str, now: datetime) -> dict:
+    """[O25M] The first send's text again (with ``late_note``), when the
+    last send provably never left and its wait is over, within
+    DAILY_RETRY_WINDOW of the first send. Nothing when the job never sent
+    one today (never_sent): the job itself writes it."""
+    if await _seen(db_path, kind, day):
+        return {"status": "already_sent"}
+    tries = await daily_tries(db_path, kind, day)
+    if not tries or not tries[0]["text"]:
+        return {"status": "never_sent"}
+    first = tries[0]
+    until = first["at"] + DAILY_RETRY_WINDOW if first["at"] is not None else now
+    return await send_daily(db_path, kind, day, first["text"] + late_note(first["at"]), now,
+                            reply_markup=first["reply_markup"], until=until)
+
+
+async def daily_retry_tick(now: Optional[datetime] = None) -> dict:
+    """[O25M] Every 5 minutes: the brief, the wrap, the coach note and the
+    review prompt sent again when their last send provably never left (the
+    morning login reminder has its own tick: it is rebuilt, and also sent
+    when the 07:00 run was missed). Quiet unless something was sent."""
+    now = (now or datetime.now(IST)).astimezone(IST)
+    if not partner_enabled():
+        return {}
+    day = now.date().isoformat()
+    out = {}
+    for kind in DAILY_RETRIED:
+        try:
+            out[kind] = (await retry_daily(settings.DB_PATH, kind, day, now))["status"]
+        except Exception as exc:          # one message's failure never stops the others
+            logger.error("partner_daily_retry_failed kind=%s err=%s", kind, type(exc).__name__)
+            out[kind] = "error"
+    acted = {kind: status for kind, status in out.items()
+             if status not in ("already_sent", "never_sent", "retry_later", "in_progress")}
+    if acted:
+        logger.info("partner_daily_retry %s", " ".join(f"{k}={v}" for k, v in sorted(acted.items())))
+    return out
+
+
 async def _throttled(
     db_path: str, kind: str, key: str, now: datetime,
 ) -> bool:
@@ -1796,8 +1985,8 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
             f"{day_iso} {now.strftime('%H:%M')} IST", regime, score, rows,
             events_note=event_note_for(now.date()),
         )
-    ok = await send_partner(msg, kind="brief")
-    await _record(settings.DB_PATH, "brief", day_iso, ok, now=now)
+    # [O25M] send_daily: a send that provably never left goes again (daily_retry_tick).
+    await send_daily(settings.DB_PATH, "brief", day_iso, msg, now)
 
 
 # ---------------------------------------------------------------------------
@@ -2091,8 +2280,7 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
                 day_iso, rows,
                 record_line=await _track_record_overall(settings.DB_PATH, now),
             )
-        ok = await send_partner(msg, kind="eod")
-        await _record(settings.DB_PATH, "eod", day_iso, ok, now=now)
+        await send_daily(settings.DB_PATH, "eod", day_iso, msg, now)    # [O25M] retried when it never left
 
     # [O21-PC 2026-10-21] Coach: keep today's card prices past the 7-day OI
     # purge below, then send the partner's short evening note on days they

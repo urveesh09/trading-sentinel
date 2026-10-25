@@ -310,6 +310,7 @@ PRIORITY = {"UNFILLED": 0, "REMOVED": 1, "LOWERED": 1, "REFUSED": 1, "EXCESS": 1
             "PLAN": 3, "CLOSE": 4, "BACK": 4, "WATCH_ON": 5, "PROMPT": 5, "RECONNECT": 5}
 SENT, DONE, RETRY, MUTED, WAIT, LATER = "SENT", "DONE", "RETRY", "MUTED", "WAIT", "LATER"
 QUEUED = "queued"
+REFRESHING = "refreshing"                 # [O25M] a CHECK being worked out again: still due until replaced
 
 _DDL = """
 CREATE TABLE IF NOT EXISTS partner_watch_messages (
@@ -2127,10 +2128,11 @@ async def _due(db_path: str, now: datetime) -> list:
         rows = await (await db.execute(
             "SELECT message_key, kind, context, attempts, outcome, error, created_at, last_attempt_at, episode, "
             "detected_at, event_at FROM partner_watch_messages WHERE session_date=? AND sent=0 AND outcome IN "
-            "('queued','unsent_connect','rate_limited','rejected') AND attempts<? ORDER BY priority, created_at",
+            "('queued','unsent_connect','rate_limited','rejected','refreshing') AND attempts<? "
+            "ORDER BY priority, created_at",
             (now.date().isoformat(), MAX_ATTEMPTS))).fetchall()
     entries = [_Entry(*row) for row in rows]
-    return [e for e in entries if e.outcome == QUEUED or _retryable(e.outcome, e.error)]
+    return [e for e in entries if e.outcome in (QUEUED, REFRESHING) or _retryable(e.outcome, e.error)]
 
 
 async def _close(db_path: str, key: str, outcome: str) -> None:
@@ -2157,10 +2159,15 @@ async def _deliver(db_path: str, entry: _Entry, now: datetime) -> str:
         return MUTED
     if entry.kind == "CHECK":
         # [O25M] A check's prices are current for QUOTE_FRESH after they were read. Past that (a retry, a slow first
-        # send, a restart) the text is never sent: it is worked out again beside the sender.
+        # send, a restart) the text is never sent: it is worked out again beside the sender. The row stays due
+        # (REFRESHING) until what replaces it is in the outbox, so a restart meanwhile works it out again.
+        if entry.outcome == REFRESHING and entry.key in _refreshing:
+            return LATER
         outdated = _outdated_check(entry, now)
+        if outdated is None and entry.outcome == REFRESHING:
+            outdated = {}
         if outdated is not None:
-            await _close(db_path, entry.key, "outdated")
+            await _close(db_path, entry.key, REFRESHING)
             logger.info("partner_watch_check_outdated key=%s attempts=%d", entry.key, entry.attempts)
             _refresh_later(db_path, entry, outdated, now)
             return DONE
@@ -4112,16 +4119,19 @@ def _outdated_check(entry: _Entry, now: datetime) -> Optional[dict]:
 
 
 _check_tasks: set = set()
+_refreshing: set = set()                   # [O25M] the CHECK rows being worked out again in this process
 
 
 def _refresh_later(db_path: str, entry: _Entry, context: dict, now: datetime) -> None:
     task = background_tasks.spawn(_refresh_check(db_path, entry, context, now), name="partner_watch_check_refresh")
     _check_tasks.add(task)
-    task.add_done_callback(_refresh_done)
+    _refreshing.add(entry.key)
+    task.add_done_callback(lambda done, key=entry.key: _refresh_done(done, key))
 
 
-def _refresh_done(task: asyncio.Task) -> None:
+def _refresh_done(task: asyncio.Task, key: str) -> None:
     _check_tasks.discard(task)
+    _refreshing.discard(key)
     if not task.cancelled() and task.exception() is not None:
         logger.error("partner_watch_check_refresh_failed err=%s", type(task.exception()).__name__)
 
@@ -4132,7 +4142,9 @@ async def _refresh_check(db_path: str, entry: _Entry, context: dict, now: dateti
     from prices read now, for the same option and expiry, CHECK_REFRESHES
     times; after that (or when it cannot be worked out) a note to ask again,
     with no numbers. The old numbers are never sent. Beside the sender, so
-    an urgent alarm never waits for these market reads."""
+    an urgent alarm never waits for these market reads. The old row is
+    closed "outdated" only once its replacement is in the outbox (whose key
+    is fixed: a second work-out after a restart adds nothing)."""
     base = str(context.get("base") or entry.key)
     done = int(context.get("refreshes") or 0)
     request, pin = context.get("request"), context.get("contract")
@@ -4147,10 +4159,12 @@ async def _refresh_check(db_path: str, entry: _Entry, context: dict, now: dateti
         else:
             await _say(db_path, f"{base}:r{done + 1}", day, "CHECK", reply, now, event_at=asked,
                        context={"request": request, "base": base, "refreshes": done + 1, **(evidence or {})})
+            await _close(db_path, entry.key, "outdated")
             logger.info("partner_watch_check_refreshed key=%s", entry.key)
             return
     await _say(db_path, f"{base}:late", day, "CHECK", check_late_text(request, pin), now, event_at=asked,
                context={"base": base})
+    await _close(db_path, entry.key, "outdated")
 
 
 async def answer_check(db_path: str, text: str, now: datetime, *, key: str, asked_at: Optional[datetime] = None,

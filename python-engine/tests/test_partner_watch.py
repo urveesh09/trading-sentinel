@@ -2483,3 +2483,37 @@ def test_the_check_text_never_calls_an_old_quote_the_ask_now():
                              future="NIFTY future", opt_type="PE")
         assert "ask now" not in text and "bid-ask gap" not in text
         assert "its last price update was 10:50:02, too old to use" in text.splitlines()[0]
+
+
+@pytest.mark.asyncio
+async def test_a_check_being_worked_out_again_when_the_engine_restarts_is_worked_out_after_it(watch, kite, monkeypatch):
+    """[O25M] The work-out runs beside the sender; the old row stays due ("refreshing") until its replacement is in
+    the outbox. A restart in between (here the task is cancelled) works it out again: nothing lost, nothing twice."""
+    import fno_underlyings
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    db = settings.DB_PATH
+    monkeypatch.setattr(pw, "_market", _market(D(11, 0)))
+    pw._state.clock = (D(11, 0, 2), time.monotonic())
+    kite["outcomes"].append("unsent_connect")
+    await pw.answer_check(db, "check 22300 pe", D(11, 0, 2), key="check:1")
+    real, hold = pw._check_reply, asyncio.Event()
+
+    async def stuck(*args, **kwargs):
+        await hold.wait()
+
+    monkeypatch.setattr(pw, "_check_reply", stuck)
+    at = D(11, 0, 32)
+    pw._state.clock = (at, time.monotonic())
+    [entry] = await pw._due(db, at)
+    assert await pw._deliver(db, entry, at) == pw.DONE
+    [again] = await pw._due(db, at + timedelta(seconds=5))
+    assert again.outcome == "refreshing" and await pw._deliver(db, again, at + timedelta(seconds=5)) == pw.LATER
+    for task in list(pw._check_tasks):
+        task.cancel()
+    await asyncio.gather(*list(pw._check_tasks), return_exceptions=True)
+    pw.reset()                                                                             # the restart
+    monkeypatch.setattr(pw, "_check_reply", real)
+    await _send_due(db, at + timedelta(seconds=10))
+    assert watch[-1]["state"] == "acknowledged" and "🔁 Prices read again at 11:00:42" in watch[-1]["text"]
+    assert await _checks(db) == [("check:1", "outdated"), ("check:1:r1", "acknowledged")]
+    assert len(watch) == 2
