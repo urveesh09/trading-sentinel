@@ -113,7 +113,11 @@ async def test_a_wrong_password_is_told_how_to_authenticate():
 
 @pytest.mark.asyncio
 async def test_a_client_outside_the_allow_list_gets_no_answer():
-    server, port = await _start(kt.Tunnel(USER, PASSWORD, allow=["10.0.0.0/8"], upstream=("127.0.0.1", 9)))
+    class ExternalClient(kt.Tunnel):
+        def _allowed(self, client):
+            return super()._allowed("198.51.100.7")  # external peer, delivered through the local test socket
+
+    server, port = await _start(ExternalClient(USER, PASSWORD, allow=["10.0.0.0/8"], upstream=("127.0.0.1", 9)))
     reader, writer = await asyncio.open_connection("127.0.0.1", port)
     writer.write((f"CONNECT {KITE} HTTP/1.1\r\n" + _auth() + "\r\n").encode())
     assert await _closed_without_answer(reader)
@@ -172,7 +176,8 @@ async def test_kite_unreachable_is_a_502_and_the_service_keeps_serving():
     await _stop(server)
 
 
-def test_the_self_test_passes_against_a_real_tunnel_and_fails_on_a_wrong_password():
+@pytest.mark.parametrize("allow", [(), ("203.0.113.7/32",)])
+def test_the_self_test_passes_against_a_real_tunnel_and_fails_on_a_wrong_password(allow):
     loop = asyncio.new_event_loop()
     ready = threading.Event()
     holder = {}
@@ -180,21 +185,34 @@ def test_the_self_test_passes_against_a_real_tunnel_and_fails_on_a_wrong_passwor
     async def run():
         upstream = Upstream()
         up_port = await upstream.start()
-        server, port = await _start(kt.Tunnel(USER, PASSWORD, upstream=("127.0.0.1", up_port), auth_fail_delay=0))
+        server, port = await _start(kt.Tunnel(USER, PASSWORD, allow=allow,
+                                            upstream=("127.0.0.1", up_port), auth_fail_delay=0))
         holder["port"], holder["server"], holder["upstream"] = port, server, upstream.server
         ready.set()
 
     thread = threading.Thread(target=lambda: (loop.run_until_complete(run()), loop.run_forever()), daemon=True)
     thread.start()
     assert ready.wait(5)
-    good = kt.self_test(holder["port"], USER, PASSWORD, through_to_kite=False)
-    assert [passed for _, passed, _ in good] == [True, True, True], good
-    bad = kt.self_test(holder["port"], USER, "y" * 32, through_to_kite=False)
-    assert [passed for _, passed, _ in bad] == [True, False, False], bad
-    asyncio.run_coroutine_threadsafe(_stop(holder["server"], holder["upstream"]), loop).result(5)
-    loop.call_soon_threadsafe(loop.stop)
-    thread.join(5)
-    loop.close()
+
+    async def shutdown():
+        await _stop(holder["server"], holder["upstream"])
+        # This loop belongs only to this test. Server.close stops accepting,
+        # but existing CONNECT handlers must also be joined before it closes.
+        pending = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+        for task in pending:
+            task.cancel()
+        await asyncio.gather(*pending, return_exceptions=True)
+
+    try:
+        good = kt.self_test(holder["port"], USER, PASSWORD, through_to_kite=False)
+        assert [passed for _, passed, _ in good] == [True, True, True], good
+        bad = kt.self_test(holder["port"], USER, "y" * 32, through_to_kite=False)
+        assert [passed for _, passed, _ in bad] == [True, False, False], bad
+    finally:
+        asyncio.run_coroutine_threadsafe(shutdown(), loop).result(5)
+        loop.call_soon_threadsafe(loop.stop)
+        thread.join(5)
+        loop.close()
 
 
 class Recorder:

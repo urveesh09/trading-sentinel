@@ -22,6 +22,13 @@ IST = pytz.timezone("Asia/Kolkata")
 LATE = IST.localize(datetime(2026, 10, 27, 15, 15))       # past the 15:10 hard flat
 
 
+@pytest.fixture(autouse=True)
+def authorized_test_window(monkeypatch):
+    """Historical broker doubles have their own explicit authorization window."""
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_START_DATE", "2026-07-10")
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_END_DATE", "2026-07-16")
+
+
 @pytest.fixture
 def quick_ladder(monkeypatch):
     """The real ladder's prices with short waits, so a test runs in milliseconds."""
@@ -589,6 +596,8 @@ async def test_only_nifty_is_ever_bought_for_real(book, db_path, paper_entered, 
 async def test_a_run_ends_after_its_sessions_and_the_owner_is_told_once(book, db_path, paper_entered, monkeypatch):
     broker, sig = paper_entered
     from datetime import date
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_START_DATE", "2026-07-01")
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_END_DATE", "2026-07-10")
     first = await fno_live_test.current_run(db_path, date(2026, 7, 1))            # armed on Wed Jul 1
     assert (first["label"], first["started_on"], first["session"], first["ended"]) == ("1", "2026-07-01", 1, False)
     assert (await fno_live_test.current_run(db_path, date(2026, 7, 7)))["ended"] is False     # the 5th session
@@ -608,6 +617,8 @@ async def test_a_run_ends_after_its_sessions_and_the_owner_is_told_once(book, db
     assert told == ["fno_live_test_run_ended"] and broker.orders_placed == []
     assert (await _reasons(db_path))[-2:] == ["live_test_run_ended", "live_test_run_ended"]
     monkeypatch.setattr(settings, "FNO_LIVE_TEST_RUN", "2")                       # a new, named run
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_START_DATE", "2026-11-02")
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_END_DATE", "2026-11-06")
     assert (await fno_live_test.current_run(db_path, date(2026, 11, 2)))["session"] == 1
 
 
@@ -635,6 +646,8 @@ class Account:
 
 @pytest.mark.asyncio
 async def test_the_morning_check_says_ready_or_names_what_is_missing(live_db, armed, monkeypatch):
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_START_DATE", "2026-11-02")
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_END_DATE", "2026-11-06")
     monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://relay.test:8888")
     monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
     monday = IST.localize(datetime(2026, 11, 2, 9, 25))
@@ -715,3 +728,66 @@ async def test_a_claim_left_without_a_name_is_held_and_paged_never_sold(live_db,
                                                              25000.0) == []
     assert broker.placed == [] and pages == ["claimed_unsent", "claimed_unsent"]   # (the real page dedupes)
     assert _status(live_db, position_id) == (("OPEN", None, None, None), [(None,)])
+
+
+@pytest.mark.asyncio
+async def test_run_dates_and_length_are_frozen_even_with_delayed_start(live_db, armed, monkeypatch):
+    from datetime import date
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_START_DATE", "2026-11-02")
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_END_DATE", "2026-11-06")
+    first = await fno_live_test.current_run(live_db, date(2026, 11, 4))
+    assert (first["started_on"], first["session"], first["ends_on"]) == ("2026-11-02", 3, "2026-11-06")
+    last = await fno_live_test.current_run(live_db, date(2026, 11, 6))
+    assert not last["ended"] and last["session"] == 5
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_SESSIONS", 10)
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_END_DATE", "2026-11-30")
+    ended = await fno_live_test.current_run(live_db, date(2026, 11, 7))
+    assert ended["ended"] and ended["sessions"] == 5 and ended["ends_on"] == "2026-11-06"
+    early = await fno_live_test.current_run(live_db, date(2026, 10, 26))
+    assert early["not_started"] and early["session"] == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("day,reason", [(9, "live_test_run_not_started"), (17, "live_test_run_ended")])
+async def test_no_buy_outside_the_authorized_dates(book, db_path, paper_entered, monkeypatch, day, reason):
+    broker, sig = paper_entered
+    monkeypatch.setattr(fno_live_test, "_page", _no_page)
+    monkeypatch.setattr(fno_live_test, "_tell_run_ended_once", _no_page)
+    assert await _mirror(book, db_path, broker, sig=sig, when=NOW.replace(day=day)) is None
+    assert broker.orders_placed == [] and (await _reasons(db_path))[-1] == reason
+
+
+@pytest.mark.asyncio
+async def test_legacy_run_without_an_authorized_end_cannot_buy(book, db_path, paper_entered):
+    broker, sig = paper_entered
+    with closing(sqlite3.connect(db_path)) as db:
+        db.execute("CREATE TABLE fno_live_test_runs (label TEXT PRIMARY KEY, started_on TEXT NOT NULL, "
+                   "sessions INTEGER NOT NULL, capital REAL NOT NULL, floor REAL NOT NULL, release TEXT, "
+                   "created_at TEXT NOT NULL)")
+        db.execute("INSERT INTO fno_live_test_runs VALUES('1','2026-07-10',5,12500,7000,'legacy','2026-07-10')")
+        db.commit()
+    assert await _mirror(book, db_path, broker, sig=sig) is None
+    assert broker.orders_placed == [] and (await _reasons(db_path))[-1] == "live_test_run_window_unavailable"
+
+
+def test_conflicting_routes_are_rejected_before_any_http_client(tmp_path, monkeypatch):
+    from unittest.mock import patch
+    from kite_client import KiteClient
+    monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "http://old-relay.test:31527")
+    monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://kite:fake-password@tunnel.test:31528")
+    with patch("kite_client.httpx.AsyncClient") as client:
+        with pytest.raises(ValueError, match="not both"):
+            KiteClient(str(tmp_path / "conflicting-route.db"))
+        client.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_ended_entry_run_does_not_block_a_real_positions_exit(live_db, armed, quick_ladder, monkeypatch):
+    monkeypatch.setattr(fno_orchestrator, "_page_live_exit_once", _no_page)
+    assert (await fno_live_test.current_run(live_db, LATE.date()))["ended"]
+    await _live_position(live_db, entry_order_id="REAL-ENTRY")
+    broker = Broker(fill_after_modifies=0)
+    closed = await fno_orchestrator._manage_open_positions(
+        broker, live_db, "FNO_LIVE", _live(broker), LATE, 25000.0)
+    assert len(closed) == 1 and len(broker.placed) == 1
+    assert broker.placed[0]["transaction_type"] == "SELL"

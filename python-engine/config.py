@@ -1000,10 +1000,12 @@ class Settings(BaseSettings):
     FNO_LIVE_TEST_MAX_CHASE_PCT: float = 0.02
     FNO_LIVE_TEST_ENTRY_BUFFER_TICKS: int = 2
     # [O25b] A run is bounded: FNO_LIVE_TEST_RUN names it and it lasts
-    # FNO_LIVE_TEST_SESSIONS trading sessions from the first day it is armed
-    # (fno_live_test_runs). After that no new entry until a new run is named.
+    # FNO_LIVE_TEST_SESSIONS trading sessions from its authorized start date.
+    # Dates and length are persisted per name; delayed startup cannot extend it.
     FNO_LIVE_TEST_RUN:         str   = "1"
     FNO_LIVE_TEST_SESSIONS:    int   = 5
+    FNO_LIVE_TEST_START_DATE:  str   = "2026-11-02"
+    FNO_LIVE_TEST_END_DATE:    str   = "2026-11-06"
     # [O25] The pre-registered proving week (fno_proving_week.py): the paper
     # single-leg book's first FNO_PROVING_SESSIONS trading sessions from
     # FNO_PROVING_START, scored once with rules fixed on Oct 25.

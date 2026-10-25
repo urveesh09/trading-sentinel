@@ -40,10 +40,11 @@ managed to its exit (fno_orchestrator._live_leg_managed).
 [O25b 2026-10-25] After the audit-agent review:
   - NIFTY is enforced here, in the admission itself (an NFO segment is not
     NIFTY: BANKNIFTY would have passed the orchestrator's check).
-  - A run is bounded: FNO_LIVE_TEST_RUN names it, and it lasts
-    FNO_LIVE_TEST_SESSIONS trading sessions from the first day it is armed
-    (``fno_live_test_runs`` keeps its start, capital, floor and release). After
-    that no new entry; the owner is told once. A new run needs a new name.
+  - A run is bounded: FNO_LIVE_TEST_RUN names it. Its authorized start/end
+    dates and session limit are persisted, so delayed startup or an environment
+    change cannot extend it. Defaults are Nov 2-6, 2026 (five sessions).
+    Legacy rows without an end date cannot admit entries. A new run needs a
+    new name and explicit dates. Exits remain active after the entry window.
   - Every real execution step is kept (``fno_live_execution_events``), and the
     evening report shows decision-to-fill delay, slippage against the paper
     twin, refused price changes, the broker stop's state and outstanding work.
@@ -76,7 +77,7 @@ _EVENTS_DDL = ("CREATE TABLE IF NOT EXISTS fno_live_execution_events (id INTEGER
                "position_id INTEGER, at TEXT NOT NULL, kind TEXT NOT NULL, detail TEXT)")
 _RUNS_DDL = ("CREATE TABLE IF NOT EXISTS fno_live_test_runs (label TEXT PRIMARY KEY, started_on TEXT NOT NULL, "
              "sessions INTEGER NOT NULL, capital REAL NOT NULL, floor REAL NOT NULL, release TEXT, "
-             "created_at TEXT NOT NULL)")
+             "created_at TEXT NOT NULL, ends_on TEXT)")
 
 
 def one_lot_pnl(entry: float, exit_: float, lot_size: int, underlying: str = UNDERLYING) -> float:
@@ -102,34 +103,49 @@ async def record_event(db_path: str, position_id: Optional[int], kind: str, deta
 
 
 async def current_run(db_path: str, today) -> Optional[dict]:
-    """The named run (created on the first armed day it is asked for), with
-    ``session`` (its trading sessions so far, today included) and ``ended``."""
+    """The named run's frozen authorization, independent of first observation.
+
+    Legacy rows without an end date remain unavailable for new entries. A
+    new name and explicit dates are required to authorize another run.
+    """
     if not armed():
         return None
     from market_calendar import is_trading_day_sync
     from release_identity import release_identity
+    from datetime import date, timedelta
     label = str(getattr(settings, "FNO_LIVE_TEST_RUN", "1") or "1")
+    start = date.fromisoformat(settings.FNO_LIVE_TEST_START_DATE)
+    end = date.fromisoformat(settings.FNO_LIVE_TEST_END_DATE)
+    if end < start or int(settings.FNO_LIVE_TEST_SESSIONS) < 1:
+        raise ValueError("The live test needs ordered start/end dates and a positive session limit")
     async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
         await db.execute(_RUNS_DDL)
+        columns = {r[1] for r in await (await db.execute("PRAGMA table_info(fno_live_test_runs)")).fetchall()}
+        if "ends_on" not in columns:
+            await db.execute("ALTER TABLE fno_live_test_runs ADD COLUMN ends_on TEXT")
         await db.execute(
             "INSERT OR IGNORE INTO fno_live_test_runs(label, started_on, sessions, capital, floor, release, "
-            "created_at) VALUES(?,?,?,?,?,?,?)",
-            (label, today.isoformat(), int(settings.FNO_LIVE_TEST_SESSIONS), float(settings.FNO_LIVE_TEST_CAPITAL),
+            "created_at, ends_on) VALUES(?,?,?,?,?,?,?,?)",
+            (label, start.isoformat(), int(settings.FNO_LIVE_TEST_SESSIONS), float(settings.FNO_LIVE_TEST_CAPITAL),
              float(settings.FNO_LIVE_TEST_FLOOR), str(release_identity()["revision"]),
-             datetime.now().astimezone().isoformat()))
-        await db.commit()
+             datetime.now().astimezone().isoformat(), end.isoformat()))
         row = await (await db.execute(
-            "SELECT started_on, capital, floor, release FROM fno_live_test_runs WHERE label=?", (label,))).fetchone()
-    from datetime import date, timedelta
+            "SELECT started_on, capital, floor, release, sessions, ends_on "
+            "FROM fno_live_test_runs WHERE label=?", (label,))).fetchone()
+        await db.commit()
     started = date.fromisoformat(row[0])
+    ends = date.fromisoformat(row[5]) if row[5] else None
     session, day = 0, started
     while day <= today:
         if is_trading_day_sync(day, db_path):
             session += 1
         day += timedelta(days=1)
-    sessions = int(settings.FNO_LIVE_TEST_SESSIONS)
+    sessions = int(row[4])
     return {"label": label, "started_on": row[0], "capital": float(row[1]), "floor": float(row[2]),
-            "release": row[3], "sessions": sessions, "session": session, "ended": session > sessions}
+            "release": row[3], "sessions": sessions, "session": session, "ends_on": row[5],
+            "window_available": ends is not None and ends >= started and sessions > 0,
+            "not_started": today < started, "ended": session > sessions or (ends is not None and today > ends)}
 
 
 async def _tell_run_ended_once(run: dict) -> None:
@@ -277,6 +293,12 @@ async def mirror_entry(kite, db_path: str, executor, *, sig, paper_entry: dict, 
         return None
     today = now_ist.date()
     run = await current_run(db_path, today)
+    if run is not None and not run["window_available"]:
+        await _log(False, "live_test_run_window_unavailable")
+        return None
+    if run is not None and run["not_started"]:
+        await _log(False, "live_test_run_not_started")
+        return None
     if run is None or run["ended"]:
         await _log(False, "live_test_run_ended")
         if run is not None:
@@ -376,7 +398,8 @@ async def mirror_entry(kite, db_path: str, executor, *, sig, paper_entry: dict, 
         late = action_clock()
         minute = late.hour * 60 + late.minute
         stale = (late - quote.last_trade_time).total_seconds() if quote.last_trade_time else float("inf")
-        reason = ("entry_window" if not settings.FNO_ENTRY_START_MIN <= minute < settings.FNO_ENTRY_END_MIN
+        reason = ("run_window" if late.date() != today
+                  else "entry_window" if not settings.FNO_ENTRY_START_MIN <= minute < settings.FNO_ENTRY_END_MIN
                   else "quote_freshness" if stale > settings.FNO_MAX_QUOTE_AGE_SEC else None)
         if reason:
             await resolve_shared_fno_entry_dispatch(
@@ -659,7 +682,11 @@ async def morning_check(kite, db_path: str, now: datetime) -> Optional[str]:
             problems.append("the broker holds F&O positions this morning: " +
                             ", ".join(f"{p.get('tradingsymbol')} {p.get('product')} {p.get('quantity')}" for p in held))
     run = await current_run(db_path, now.date())
-    if run["ended"]:
+    if not run["window_available"]:
+        problems.append("this run has no authorized end date: use a new run name with explicit dates")
+    elif run["not_started"]:
+        problems.append(f"run {run['label']} starts on {run['started_on']}; no real entry before then")
+    elif run["ended"]:
         problems.append(f"run {run['label']} has ended ({run['sessions']} sessions from {run['started_on']})")
     else:
         facts.append(f"run {run['label']}, session {run['session']} of {run['sessions']}")

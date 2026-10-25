@@ -1,4 +1,4 @@
-# Runbook: the ₹12,500 real-money F&O test (O25, O25b, O25c)
+# Runbook: the ₹12,500 real-money F&O test (O25–O25d)
 
 _Written 2026-10-25, revised the same day after the audit-agent review (O25b) and
 for the owner's dates and the encrypted tunnel (O25c). Code:
@@ -6,10 +6,19 @@ for the owner's dates and the encrypted tunnel (O25c). Code:
 `fno_proving_week.py`, `fno_live_preflight.py`; the tunnel `scripts/kite_tunnel.py`
 and `node-gateway/server/services/kite-tunnel.js`._
 
+_O25d corrects all five findings in
+[the review](../2026-10-25-independent-live-tunnel-review.md). Promote the
+verified code through GitHub before using it operationally. Local tunnel
+tests passed; actual VM installation/client routes must still be verified.
+The account is unfunded: keep the trading switch false and do not place a
+test order yet. The Python commands specify the application user because
+the image installs its dependencies for `quantuser`._
+
 ## The dates (the owner's decision, Oct 25)
 
 | When | What |
 |---|---|
+| Sun Oct 25 onward | VM/tunnel preparation may be done now, with the real-money switch false. |
 | Mon Oct 26 – Fri Oct 30 | The proving week. Paper only: you watch the F&O book. No change to its rules. |
 | Sat Oct 31 – Sun Nov 1 | You do the checklist below. Every step works on a weekend. |
 | Mon Nov 2 – Fri Nov 6 | The real-money run: five sessions, then it stops by itself. |
@@ -39,7 +48,10 @@ then rebuild one service at a time: the engine, then the gateway.
 It comes on Telegram on Fri Oct 30 at 15:50 if you deployed in step 0.
 Otherwise read it now:
 
-    docker exec python-engine python -m fno_proving_week
+If step 0 was not completed, perform step 2 first, then return here. The
+new module must be present in the deployed image before this command runs:
+
+    docker exec --user quantuser python-engine python -m fno_proving_week
 
 The rules were fixed on Oct 25:
 
@@ -120,7 +132,7 @@ goes through the tunnel, so a successful login proves the gateway's route.
 
 ### 7. Check the engine's route (reads only)
 
-    docker exec python-engine python -m fno_live_preflight
+    docker exec --user quantuser python-engine python -m fno_live_preflight
 
 Expect:
 
@@ -130,7 +142,14 @@ Expect:
 
 ### 8. One test order (a real order, cancelled)
 
-    docker exec -it python-engine python -m fno_live_preflight --test-order
+    docker exec --user quantuser -it python-engine python -m fno_live_preflight --test-order
+
+Do not run this real-order command after any failed read-only preflight check.
+Do not run it between 01:00 and 05:30 IST: Zerodha disables AMO placement,
+modification and cancellation then, including on weekends. O25d enforces
+that maintenance interval and refuses the order when required preflight
+checks failed. While unfunded, stop at the read-only route checks in step 7;
+the cash failure is expected and does not authorize a test order.
 
 At a weekend this is an **after-market order** (AMO): a BUY of one lot of a
 NIFTY call, 20% under its last price. Kite holds F&O AMOs until 09:15 on the
@@ -150,7 +169,7 @@ cancelled at once. It refuses to run from 09:00 to 09:15 and from 15:25 to
   20% in two seconds. It is then recorded as a real position, the engine
   sells it at once and you are paged.
 
-### 9. Switch on (Sunday evening)
+### 9. Switch on (Sun Nov 1 evening, after funding, verification and owner decision)
 
 In the root `.env`, add `FNO_LIVE_TEST_ENABLED=true`. Optionally also set
 `FNO_LIVE_TEST_RUN=1`, `FNO_LIVE_TEST_SESSIONS=5`, `FNO_LIVE_TEST_CAPITAL=12500`
@@ -159,6 +178,15 @@ and `FNO_LIVE_TEST_FLOOR=7000`. Then:
     docker compose up -d --force-recreate python-engine
 
 Do this before 09:15 or after the 15:40 close, never in the session.
+
+The authorized entry dates default to `FNO_LIVE_TEST_START_DATE=2026-11-02`
+and `FNO_LIVE_TEST_END_DATE=2026-11-06`. The start, end and five-session
+limit are frozen in that run's record. Early activation cannot buy before
+Nov 2; delayed startup cannot extend Nov 6. Changing the dates or session
+limit in the environment cannot extend an existing name. A later run needs
+a new name and explicitly authorized dates. Legacy rows without an end date
+cannot admit entries; use a new authorized run name. Exits remain active
+after the entry window ends.
 
 **Monday Nov 2.** Do the usual morning login before 09:25. At 09:25 the engine
 sends `✅ REAL-money F&O test ready today`, or `⚠️ NOT ready` with the reason.
@@ -212,7 +240,7 @@ fill:
 | Sizing | 2%-of-pool risk per trade: one lot instead; one stop-out risks about ₹1.5k–3.7k, 12–30% of ₹12,500 | own cash only: Kite refuses a buy the account's free cash cannot pay; no margin, no leverage |
 | Pool gates | minimum-viable-pool and open-premium gates | the shared F&O ledger reserves the whole premium against the test's own equity |
 | Go-live bar | PF ≥ 1.2, 60 trades, 40 days (`fno_go_live_check`) | NIFTY only (enforced in the buy itself), never on its expiry day, one position at a time, at most 3 entries a day |
-| Run length | — | a bounded run: `FNO_LIVE_TEST_RUN` names it, `FNO_LIVE_TEST_SESSIONS` (default 5) trading sessions from its first armed day; then no new entry and you are told |
+| Run length | — | `FNO_LIVE_TEST_RUN` names it; its authorized start/end and `FNO_LIVE_TEST_SESSIONS` (default 5) are frozen. Defaults Nov 2–6; no delayed-start extension. Then no new entry and you are told |
 | Floor | — | no new entry while test equity (capital plus realised real P&L) is under `FNO_LIVE_TEST_FLOOR`, ₹7,000 by default |
 | Orders | — | LIMIT orders only, MIS (intraday) |
 
@@ -292,7 +320,7 @@ fills: 0.5%, then 3%, then 10% (or ₹5) under the bid, about 30 s in all.
 - **New entries:** set `FNO_LIVE_TEST_ENABLED=false` and recreate the engine.
   An open real position is still managed to its exit. When the run's sessions
   are used up, entries stop by themselves. A new run needs a new
-  `FNO_LIVE_TEST_RUN` name.
+  `FNO_LIVE_TEST_RUN` name and explicitly authorized start/end dates.
 - **Now:** sell in Kite. The engine checks the broker's MIS positions before
   any real sell, so it will not sell it again. It pages you to record the exit
   with F&O exit recovery: `POST /ops/fno-exit-intents/{id}/resolve` with the

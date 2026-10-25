@@ -1,5 +1,30 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25d live-test admission and tunnel setup corrections (Dev)
+
+- `fno_live_test.current_run` stores the authorized start (`FNO_LIVE_TEST_START_DATE`, default `2026-11-02`), end (`FNO_LIVE_TEST_END_DATE`, default `2026-11-06`) and session limit (5). Existing names use their stored dates/length, never a later environment value. Delayed first startup consumes the earlier sessions; it does not shift the window. A pre-start or ended run cannot buy. Open-position exit management is independent and remains active.
+- Run schema: nullable `fno_live_test_runs.ends_on`, added under a serialized transaction. Legacy rows without an end date remain unavailable for entries; authorize a new run name with explicit dates instead of silently rewriting them. Invalid dates/length fail closed. Capital/floor/release remain recorded metadata; this change freezes the entry window and session count, not those other environment settings.
+- `fno_live_preflight.run` rejects invalid route configuration before creating a client or sending authenticated reads. Failed route/cash/evidence checks return before the real-order test. `variety_for` also refuses 01:00–05:30 IST on every day. No order test is authorized while the account is unfunded.
+- `KiteClient` rejects simultaneous `KITE_ORDER_BASE_URL` and `KITE_ORDER_PROXY_URL` before creating any HTTP client. Proxy mode therefore targets verified HTTPS to Kite, with no accidental plaintext-forward request caused by an old HTTP base.
+- The tunnel's external allow-list permits loopback for installer diagnostics, but loopback still requires the password, CONNECT and the exact Kite destination. Unrelated external addresses remain denied. The test-owned server loop now joins live handlers before shutdown.
+- Verification: full engine/scripts suite **6,008 passed, 4 skipped**, exit 0 (702.68 s); affected suite **314 passed, 1 existing INDICES-plan skip**. Existing deprecation warnings and an unrelated injected penny-writer teardown diagnostic are recorded in the plan, not omitted. A fresh real-Kite TLS self-test with a restrictive allow-list also passed. Source/strategy switches remain off; no broker order was placed. Owner confirmed an Oracle account, but VM installation still needs an authenticated Console/SSH session; the sign-in page is left available.
+- Rollout remains GitHub promotion with trading off. The [runbook](runbooks/fno-live-test.md) separates today's setup from later funding, broker login, explicitly authorized order test and activation. The earlier review below is historical; its five code findings are addressed by O25d, not by the earlier pushed `d67caad`.
+
+## October 25 — Independent O25b/O25c readiness review
+
+See [the independent review](2026-10-25-independent-live-tunnel-review.md) and
+the active plan's pending implementation slice. The actual tunnel passed a
+local real-Kite TLS self-test; 116 focused Python and 97 gateway tests passed.
+Those checks do not verify VM installation, deployment or trading readiness.
+The named run currently reads its session limit from the environment rather
+than its stored row, and the Nov 2–6 window is not enforced. Failed preflight
+checks still reach the test-order function; a conflicting HTTP order base
+and proxy can send credentials in plaintext. AMO maintenance and restrictive
+allow-list self-testing also need guards. The Dev runbook's CLI user and
+deploy-before-new-module instructions were corrected; application behavior
+was not changed by this audit. Production release remains `582d7a5`, switch
+off; this review's documentation edits are local and uncommitted.
+
 ## October 25 (3) — O25c The Kite tunnel, the weekend test order and the order-route probe (actual behavior, Dev, commit `cff5036`)
 
 - **`scripts/kite_tunnel.py` (on the Oracle VM).**

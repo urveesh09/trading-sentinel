@@ -1,5 +1,31 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25d remediation receipt (Dev; VM access pending)
+
+- [x] All five review comments implemented: frozen authorized entry window/length, no order after failed preflight, conflicting routes rejected before HTTP clients, AMO maintenance excluded, authenticated loopback installer check with external restrictions retained.
+- [x] Tests cover delayed startup, immutable dates/length, legacy run migration, zero order calls on failed checks, zero HTTP clients for conflicting routes, maintenance boundaries, restricted-loopback checks, and continued real exits after entries expire.
+- [x] Full engine/scripts validation: **6,008 passed, 4 skipped**, exit 0; affected suite **314 passed, 1 existing skip**. Existing warnings and the separately reproduced injected penny-writer teardown diagnostic are documented in the active plan. A restrictive-allow-list real-Kite TLS self-test passed. No claim of deployment or profitability.
+- [ ] Existing Oracle VM install/ingress and real client routes: owner confirmed an Oracle account; SSH key/agent and authenticated Console are still unavailable. Owner sign-in is needed; the page is left available. IP-range metadata indicates Mumbai; confirm instance ownership/identity before installation.
+- [ ] Later: funds/current Kite login, explicitly authorized broker test order, and owner activation for Nov 2–6. `FNO_LIVE_TEST_ENABLED` stays false; Production is unchanged.
+- Historical audit: [independent review](2026-10-25-independent-live-tunnel-review.md). Current implementation and verification: O25d at the top of the active plan and guide. Existing unrelated changes are excluded from implementation commits.
+
+## October 25 — Independent O25b/O25c audit receipt (Dev documentation only)
+
+- [x] Reviewed pushed `d67caad`; independent checks: 116 focused Python tests,
+  97 focused gateway tests, and a real local Kite TLS self-test passed.
+- [x] Corrected Dev runbook engine commands to use `--user quantuser`, and
+  require deployment before invoking a newly shipped module.
+- [x] Production inspected read-only: release `582d7a5`, switch false, proxy
+  settings unset, no open FNO_LIVE positions/exit intents. Cached login is
+  stale; cash is not verified. Old VM port reachable; new port timed out.
+- [ ] Before real money: close the run-bound, failed-preflight and conflicting
+  route configuration findings; add maintenance and allow-list tests.
+- [ ] VM/Oracle installation and actual routes; current login/cash; GitHub
+  promotion; explicitly authorized real-order test and later activation.
+- Evidence and full remaining work: [review](2026-10-25-independent-live-tunnel-review.md).
+  Audit documentation changes are local/uncommitted, not pushed or deployed.
+  No strategy/source/configuration change, migration or atlas regeneration.
+
 ## October 25 (3) — O25c the owner's dates (proving Oct 26–30, checklist Oct 31–Nov 1, run Nov 2–6), the free encrypted Kite tunnel, a weekend test order (commit `cff5036`, Dev, pushed, not deployed, switch off)
 
 - [x] `scripts/kite_tunnel.py` for the VM:

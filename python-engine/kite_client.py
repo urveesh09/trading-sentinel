@@ -797,7 +797,6 @@ class KiteClient:
         self.account_cash_reservations = AccountCashReservations(db_path)
         # KITE_BASE_URL: direct = "https://api.kite.trade" (default); via OCI relay = "http://161.118.160.180:31527"
         # Relay is a path-preserving forward proxy. Auth + X-Kite-Version headers pass through unchanged.
-        self.client = httpx.AsyncClient(base_url=settings.KITE_BASE_URL, timeout=15.0)
         # [O25] Order writes leave from the registered static IP when
         # KITE_ORDER_BASE_URL names one (the relay); None = the client above.
         # [O25b] KITE_ORDER_PROXY_URL instead tunnels them (HTTP CONNECT) through
@@ -805,6 +804,9 @@ class KiteClient:
         # access token never crosses the internet in clear text.
         order_url = (getattr(settings, "KITE_ORDER_BASE_URL", "") or "").strip().rstrip("/")
         order_proxy = (getattr(settings, "KITE_ORDER_PROXY_URL", "") or "").strip()
+        if order_proxy and order_url:
+            raise ValueError("Set KITE_ORDER_PROXY_URL or KITE_ORDER_BASE_URL, not both")
+        self.client = httpx.AsyncClient(base_url=settings.KITE_BASE_URL, timeout=15.0)
         if order_proxy:
             self.order_client = httpx.AsyncClient(base_url=order_url or "https://api.kite.trade", timeout=15.0,
                                                   proxy=order_proxy)

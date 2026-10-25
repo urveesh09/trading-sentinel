@@ -1,7 +1,7 @@
 """[O25 2026-10-25] Before the real-money F&O test: is the order route ready? Run by the owner.
 
-    docker exec -it python-engine python -m fno_live_preflight              # reads only
-    docker exec -it python-engine python -m fno_live_preflight --test-order # plus one order, cancelled
+    docker exec --user quantuser -it python-engine python -m fno_live_preflight              # reads only
+    docker exec --user quantuser -it python-engine python -m fno_live_preflight --test-order # one real order
 
 Reads (any time after the day's Kite login): the order route (KITE_ORDER_PROXY_URL or
 KITE_ORDER_BASE_URL), whether it answers an authenticated read [O25c], own free cash
@@ -21,7 +21,9 @@ modifying and cancelling).
     F&O ones to the exchange only at the next open (09:15), so a cancelled AMO never
     reaches the exchange. That lets the whole checklist run on a weekend. If its
     cancel is not confirmed, cancel it in Kite before 09:11 on the next trading day.
-  - Between 09:00 and 09:15 and between 15:25 and 15:45 it does not run.
+  - Between 09:00 and 09:15, between 15:25 and 15:45, and during daily
+    01:00-05:30 AMO maintenance it does not run. Failed preflight checks
+    prevent the real-order test entirely.
 [O25b] In the very unlikely fill (the order can fill before the cancel lands)
 the holding is recorded as a real FNO_LIVE position and the running engine
 sells it at once through its full exit path: the claim, the tagged order, the
@@ -63,6 +65,8 @@ def variety_for(now: datetime, trading_day: bool) -> Optional[str]:
     """[O25c] "regular" in market hours; "amo" in the evening, at night, before 09:00 and on a closed
     day; None in the minutes around the open and the close."""
     minute = now.hour * 60 + now.minute
+    if 60 <= minute < 5 * 60 + 30:
+        return None                         # AMO placement AND cancellation unavailable during maintenance
     if trading_day and REGULAR_HOURS[0] <= minute < REGULAR_HOURS[1]:
         return "regular"
     if not trading_day or minute >= AMO_FROM or minute < AMO_UNTIL:
@@ -113,14 +117,15 @@ async def run(test_order: bool) -> int:
     if not payload:
         print("No Kite login for today: log in first, then run this again.")
         return 2
-    kite = KiteClient(settings.DB_PATH)
-    kite.set_token(payload["access_token"])
     route, encrypted, problem = order_route()
     print(f"Order route: {route}")
-    problems = 1 if problem else 0
     if problem:
         print(f"  {problem}")
-    elif not encrypted:
+        return 1                           # no authenticated reads through an invalid route
+    kite = KiteClient(settings.DB_PATH)
+    kite.set_token(payload["access_token"])
+    problems = 0
+    if not encrypted:
         print("  Note: plain HTTP to the relay carries the access token unencrypted (docs/runbooks/fno-live-test.md).")
     probe = getattr(type(kite), "probe_order_route", None)
     if callable(probe):
@@ -154,7 +159,10 @@ async def run(test_order: bool) -> int:
           f"floor ₹{settings.FNO_LIVE_TEST_FLOOR:,.0f}")
     if not test_order:
         return 1 if problems else 0
-    return await _test_order(kite) or (1 if problems else 0)
+    if problems:
+        print("REFUSED: preflight checks failed; no test order was placed.")
+        return 1
+    return await _test_order(kite)
 
 
 async def _test_order(kite) -> int:
@@ -166,7 +174,8 @@ async def _test_order(kite) -> int:
     variety = variety_for(now, is_trading_day_sync(now.date(), settings.DB_PATH))
     if variety is None:
         print("The test order runs in market hours (09:15-15:25 on a trading day) or as an after-market order "
-              "(after 15:45, before 09:00, or on a closed day). Try again then.")
+              "(after 15:45, before 09:00, or on a closed day), excluding 01:00-05:30 IST maintenance. "
+              "Try again then.")
         return 2
     today = now.date()
     book = await _instrument_book(kite, today)

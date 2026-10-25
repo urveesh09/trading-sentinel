@@ -105,7 +105,8 @@ async def test_the_reads_name_the_order_route_and_the_cash(account, monkeypatch,
     monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "")
     assert await preflight.run(test_order=False) == 1                    # no order route set: a problem
     out = capsys.readouterr().out
-    assert "neither KITE_ORDER_PROXY_URL nor KITE_ORDER_BASE_URL is set" in out and "Own free cash: ₹15,000.00" in out
+    assert "neither KITE_ORDER_PROXY_URL nor KITE_ORDER_BASE_URL is set" in out
+    assert "Own free cash" not in out and Account.instances == []
     monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "http://relay.test:31527")
     assert await preflight.run(test_order=False) == 0
     assert "carries the access token unencrypted" in capsys.readouterr().out
@@ -145,6 +146,38 @@ def test_regular_in_market_hours_after_market_outside_them_and_never_around_the_
     assert preflight.variety_for(at(9, 0), True) is None and preflight.variety_for(at(9, 14), True) is None
     assert preflight.variety_for(at(15, 25), True) is None and preflight.variety_for(at(15, 44), True) is None
     assert preflight.variety_for(at(11, 0, day=11), False) == "amo"            # Saturday: all day
+
+
+@pytest.mark.parametrize("trading_day", [True, False])
+def test_amo_maintenance_is_refused_on_weekdays_and_weekends(trading_day):
+    at = lambda h, m: IST.localize(datetime(2026, 10, 25, h, m))
+    assert preflight.variety_for(at(0, 59), trading_day) == "amo"
+    assert preflight.variety_for(at(1, 0), trading_day) is None
+    assert preflight.variety_for(at(5, 29), trading_day) is None
+    assert preflight.variety_for(at(5, 30), trading_day) == "amo"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failed", ["route", "cash", "positions", "orders", "configuration"])
+async def test_failed_preflight_never_reaches_the_test_order(account, monkeypatch, failed):
+    from unittest.mock import AsyncMock
+    monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
+    monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://tunnel.test:31528")
+    if failed == "configuration":
+        monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "http://old-relay.test:31527")
+    elif failed == "route":
+        monkeypatch.setattr(Account, "probe_order_route", AsyncMock(return_value="route unavailable"))
+    elif failed == "cash":
+        monkeypatch.setattr(Account, "get_funds_margins", AsyncMock(return_value={
+            "equity": {"enabled": True, "available": {"cash": 1000.0}}}))
+    else:
+        method = "get_broker_positions" if failed == "positions" else "orders_snapshot"
+        monkeypatch.setattr(Account, method, AsyncMock(return_value=None))
+    order = AsyncMock(return_value=0)
+    monkeypatch.setattr(preflight, "_test_order", order)
+    assert await preflight.run(test_order=True) == 1
+    order.assert_not_awaited()
+    assert all(not a.placed for a in Account.instances)
 
 
 def test_the_proxy_route_tunnels_orders_to_kite_over_tls(tmp_path, monkeypatch):

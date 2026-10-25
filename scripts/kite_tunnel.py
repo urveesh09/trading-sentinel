@@ -138,6 +138,8 @@ class Tunnel:
             return False
         if address.version == 6 and address.ipv4_mapped:
             address = address.ipv4_mapped
+        if address.is_loopback:
+            return True                    # installer self-test; password and destination checks still apply
         return any(address in network for network in self.allow)
 
     async def handle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
