@@ -1,5 +1,31 @@
 # Handover receipt and operator checklist
 
+## October 25 (3) — O25c the owner's dates (proving Oct 26–30, checklist Oct 31–Nov 1, run Nov 2–6), the free encrypted Kite tunnel, a weekend test order (commit pending (recorded in the next docs commit), Dev, pushed, not deployed, switch off)
+
+- [x] `scripts/kite_tunnel.py` for the VM:
+  - CONNECT to api.kite.trade:443 only, with a password;
+  - `install` runs a self-test and prints both .env lines;
+  - verified locally against real Kite on Python 3.8, 3.11 and 3.12; unit verified, exposure 1.5.
+- [x] Gateway KITE_PROXY_URL: the SDK and the LTP call over TLS inside the tunnel. Verified with the real SDK against Kite.
+- [x] Engine:
+  - the route is checked to answer (preflight and 09:25), and the password is never printed;
+  - a 3-minute market-hours probe of the order route (`📡 KITE ORDER ROUTE DOWN`).
+- [x] The test order also runs at a weekend, as an after-market order cancelled before 09:15.
+- [x] The runbook is one dated checklist (`docs/runbooks/fno-live-test.md`, steps 0–10).
+- [x] Tests: engine + scripts full suite 5,994 passed, 4 skipped, exit 0 (11 min 26 s); gateway full suite 514 passed, 4 skipped, 18 failed only in db.test.js and backlog-reconciliation.test.js (better-sqlite3 cannot load on this Windows Node 24: environment); new tests: test_kite_tunnel.py 10, kite-tunnel.test.js 8, preflight +7, endpoint probe +3, readiness +1 case; live checks: the tunnel and both clients against the real api.kite.trade (Python 3.8/3.11/3.12, the gateway image's Node 20), systemd-analyze verify OK, exposure 1.5. Not a profitability result.
+- [ ] Owner:
+  - 0. optional: deploy before Mon Oct 26 09:15 (daily proving-week messages, Friday's verdict);
+  - 1. the verdict;
+  - 2. deploy;
+  - 3. cash;
+  - 4. the tunnel on the VM and the Oracle ingress rule for 31528;
+  - 5. the two .env lines, then recreate both services;
+  - 6. login;
+  - 7. the read-only preflight;
+  - 8. the test order;
+  - 9. the switch;
+  - 10. retire 31527 after Monday.
+
 ## October 25 (2) — O25b the review's nine gaps in the real-money test fixed; bounded runs, readiness, evidence, encrypted route option (commit `abbe073`, Dev, pushed, not deployed, switch off)
 
 - [x] P1:

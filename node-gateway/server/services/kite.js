@@ -5,13 +5,23 @@ const tokenStore = require('./token-store');
 const { TokenExpiredError, OrderExecutionError } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
 const haltSwitch = require('./halt-switch');
+const { kiteTransport, kiteConnectThrough } = require('./kite-tunnel');
 
-const KITE_API_ROOT = process.env.KITE_BASE_URL || 'https://api.kite.trade';
+// [O25c] KITE_PROXY_URL: every Kite call is HTTPS inside a CONNECT tunnel
+// through the registered VM. Unset: KITE_BASE_URL as before.
+const KITE_TRANSPORT = kiteTransport(process.env);
+const KITE_API_ROOT = KITE_TRANSPORT.root;
+logger.info({ event_type: 'kite_route', route: KITE_TRANSPORT.route, encrypted: KITE_TRANSPORT.encrypted },
+  'Kite route');
+if (KITE_TRANSPORT.ignoredBase) {
+  logger.warn({ event_type: 'kite_base_url_ignored', kite_base_url: KITE_TRANSPORT.ignoredBase },
+    'KITE_PROXY_URL is set, so KITE_BASE_URL (the plain relay) is not used');
+}
 
-const kite = new KiteConnect({
+const kite = kiteConnectThrough(KiteConnect, {
   api_key: config.ZERODHA_API_KEY,
   root: KITE_API_ROOT,
-});
+}, KITE_TRANSPORT.httpsAgent);
 
 // TOKEN BUCKET RATE LIMITER: Max 5 req/sec
 class RateLimiter {
@@ -196,6 +206,7 @@ module.exports = {
             'Authorization': `token ${config.ZERODHA_API_KEY}:${accessToken}`,
           },
           timeout: 7000,
+          ...KITE_TRANSPORT.requestOptions,
         });
 
         // Log the raw response so we can diagnose what Zerodha actually sends

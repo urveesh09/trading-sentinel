@@ -1,5 +1,42 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 (3) — O25c The Kite tunnel, the weekend test order and the order-route probe (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **`scripts/kite_tunnel.py` (on the Oracle VM).**
+  - `Tunnel.handle` reads one request head (8 KiB within 10 s) and checks, in order:
+    1. the client allow list (empty: anyone);
+    2. that the method is CONNECT (else 405);
+    3. the Basic password, by `hmac.compare_digest` (wrong or missing: 1 s delay, then 407);
+    4. that the target is exactly `api.kite.trade:443` (else 403).
+  - Then it connects to Kite within 10 s (else 502) and pipes bytes both ways until either side closes, or after 300 s of silence in both directions.
+  - More than 128 connections at once get 503. Each connection logs one line: client, outcome and byte counts.
+  - `install`:
+    - copies itself to `/opt/kite-tunnel`;
+    - writes `/etc/kite-tunnel.env` (mode 600, password kept on a re-run);
+    - writes the systemd unit (DynamicUser and sandboxing), then enables and restarts it;
+    - inserts the iptables ACCEPT before the first REJECT/DROP, saved with netfilter-persistent; ufw too if it is active;
+    - runs `self_test` and prints the gateway and engine `.env` lines only when every check passes.
+- **Gateway `services/kite-tunnel.js`.**
+  - `kiteTransport(env)`:
+    - without KITE_PROXY_URL: the root is KITE_BASE_URL, with no agent;
+    - with it: the root is https://api.kite.trade with a `ConnectTunnelAgent` (keep-alive, 30 s idle, 10 s CONNECT timeout), and `requestOptions` `{httpsAgent, proxy: false}`.
+    - A malformed KITE_PROXY_URL throws at start-up.
+  - `kiteConnectThrough` sets the SDK's axios `defaults.httpsAgent` and `proxy=false` only around `new KiteConnect`, then restores them.
+  - `kite.js` logs `kite_route` (route, encrypted), plus `kite_base_url_ignored` when both are set.
+- **Engine.**
+  - `KiteClient.probe_order_route()`: GET /user/profile on `_orders_http`. It returns None on 200, else `HTTP n: message` or the exception, credentials redacted.
+  - `kite_client.redact_url_credentials`.
+  - `fno_live_preflight`:
+    - `order_route()` redacts the proxy;
+    - `run` prints "Order route answers: yes/NO" (NO counts as a problem);
+    - `variety_for(now, trading_day)` chooses the test order type; AMO price: 80% of the last price, floored to the tick, at least the lower circuit (ceiled to the tick);
+    - `_instrument_book` uses the engine's book if it is today's, else a private temp-file book refreshed from Kite.
+  - `FnoExecutor.cancel_and_read(order_id, variety="regular")`: "CANCELLED AMO" is terminal.
+  - `fno_live_test.morning_check` adds "the order route does not answer (…)" when the probe fails.
+  - `ops_watchdogs._kite_endpoint_probe_tick`:
+    - after the KITE_BASE_URL probe, `_order_route_probe_target()` (the proxy, or a distinct KITE_ORDER_BASE_URL) is fetched by `_kite_probe_get`;
+    - it is folded into `_kite_order_route_probe_state` by `_kite_probe_evaluate(…, route=…)` and paged by `_kite_probe_notify`.
+
 ## October 25 (2) — O25b The live exit's identity, restart recovery, bounded runs and readiness (actual behavior, Dev, commit `abbe073`)
 
 - **`FnoExecutor` (live).**

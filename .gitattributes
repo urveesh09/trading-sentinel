@@ -1,0 +1,2 @@
+# [O25c] Copied as-is to the Oracle VM (Linux): keep LF line endings in every checkout.
+scripts/kite_tunnel.py text eol=lf

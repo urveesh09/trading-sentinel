@@ -1,16 +1,197 @@
-# Runbook: the ₹12,500 real-money F&O test (O25, O25b)
+# Runbook: the ₹12,500 real-money F&O test (O25, O25b, O25c)
 
-_Written 2026-10-25, revised the same day after the audit-agent review (O25b).
-Code: `python-engine/fno_live_test.py`, `fno_executor.py`, `fno_orchestrator.py`,
-`fno_proving_week.py`, `fno_live_preflight.py`._
+_Written 2026-10-25, revised the same day after the audit-agent review (O25b) and
+for the owner's dates and the encrypted tunnel (O25c). Code:
+`python-engine/fno_live_test.py`, `fno_executor.py`, `fno_orchestrator.py`,
+`fno_proving_week.py`, `fno_live_preflight.py`; the tunnel `scripts/kite_tunnel.py`
+and `node-gateway/server/services/kite-tunnel.js`._
+
+## The dates (the owner's decision, Oct 25)
+
+| When | What |
+|---|---|
+| Mon Oct 26 – Fri Oct 30 | The proving week. Paper only: you watch the F&O book. No change to its rules. |
+| Sat Oct 31 – Sun Nov 1 | You do the checklist below. Every step works on a weekend. |
+| Mon Nov 2 – Fri Nov 6 | The real-money run: five sessions, then it stops by itself. |
+
+Nothing here costs money. The Oracle VM is the Always-Free one you already
+have, the tunnel uses only the Python that is already on it, and opening a
+port in Oracle's console is free. The Kite Connect plan is unchanged.
+
+## The checklist (once, in this order)
+
+Work from the Production folder (`C:\Users\Urveesh\Desktop\Production_Trading-sentinel`)
+once it has been updated from GitHub. Every command below runs from that folder.
+
+### 0. Optional, before Mon Oct 26 09:15: deploy now
+
+If you merge and deploy before Monday's open, the engine sends the proving
+week's progress at 15:50 every day and the verdict on Friday at 15:50. The
+week then also proves the code that will trade. Nothing trades for real: the
+switch stays off. If you deploy only at the weekend, step 1 gives you the
+verdict then.
+
+Merge the PR (`codex/production-correction-hedge-p0` → `evolve/smart-strategies`),
+then rebuild one service at a time: the engine, then the gateway.
+
+### 1. Read the verdict
+
+It comes on Telegram on Fri Oct 30 at 15:50 if you deployed in step 0.
+Otherwise read it now:
+
+    docker exec python-engine python -m fno_proving_week
+
+The rules were fixed on Oct 25:
+
+- PROVED: at least one trade, no loss at one lot after one lot's own charges,
+  nothing broken, and no drawdown halt;
+- NOT PROVED: otherwise;
+- NO EVIDENCE: no trade;
+- UNAVAILABLE: the halt state could not be read.
+
+Five sessions cannot prove an edge. Going ahead is your decision.
+
+### 2. Deploy (if not done in step 0)
+
+Merge the PR, then rebuild one service at a time: the engine, then the gateway.
+The switch is still off, so nothing trades for real.
+
+### 3. Cash
+
+Have at least ₹12,500 of free cash in the Zerodha account. Pledged holdings
+and margin do not count. A typical lot has cost about ₹8–9k; the morning
+check compares the two.
+
+### 4. The tunnel on the Oracle VM (about 10 minutes)
+
+Today all of the gateway's Kite traffic goes through the relay on port 31527
+in plain HTTP. That includes the login exchange and the day's access token.
+The tunnel replaces it: the token is inside TLS all the way to Kite, orders
+still leave from the VM's registered IP, and it serves nothing else.
+
+1. Copy the program to the VM, from a PowerShell window in the Production folder:
+
+       scp -i <your VM key> scripts\kite_tunnel.py ubuntu@161.118.160.180:~/
+
+   (`ubuntu` is the usual user on Oracle's Ubuntu images; use yours if it differs.)
+2. On the VM (`ssh -i <your VM key> ubuntu@161.118.160.180`):
+
+       sudo python3 kite_tunnel.py install
+
+   It installs a service called `kite-tunnel` on port 31528 and opens the
+   VM's own firewall for that port. Then it tests itself: no password is
+   refused, any other host is refused, and Kite is reached over verified TLS.
+   Expect three `PASS` lines, then two `.env` lines. Copy those two lines
+   somewhere private. Do not paste them into a chat or a screenshot: they
+   hold the tunnel's password. If you lose them, `sudo python3 kite_tunnel.py print-env`
+   prints them again. Running `install` again keeps the same password.
+3. In the Oracle console, open the port (the VM firewall is not enough). Do
+   it in the same place that allows 31527 today: usually Compute → Instances →
+   your VM → its subnet → Security Lists → the list → **Add Ingress Rules**
+   (or the VM's Network Security Group, if it uses one):
+   - Source CIDR `0.0.0.0/0` (the password protects it). Or use your home
+     IP `/32`, but then a change of home IP blocks orders until you update it.
+   - IP Protocol: TCP.
+   - Destination Port Range: `31528`.
+
+Leave the old relay (31527) running for now: it is the fallback (step 10).
+
+### 5. The two `.env` lines, with the switch still off
+
+- `node-gateway\.env`: add the `KITE_PROXY_URL=…` line. Leave `KITE_BASE_URL`
+  as it is: while `KITE_PROXY_URL` is set it is ignored, and deleting
+  `KITE_PROXY_URL` takes the gateway back to the relay.
+- `.env` (the root one, beside `docker-compose.yml`): add the
+  `KITE_ORDER_PROXY_URL=…` line. Do not also set `KITE_ORDER_BASE_URL`.
+
+Recreate the two services, one at a time:
+
+    docker compose up -d --force-recreate python-engine
+    docker compose up -d --force-recreate node-gateway
+
+Check that the gateway took the tunnel. Expect `"encrypted":true` and no password:
+
+    docker logs node-gateway 2>&1 | findstr kite_route
+
+### 6. Log in to Kite on the dashboard
+
+Do the usual login (it works on a weekend). The gateway's login exchange now
+goes through the tunnel, so a successful login proves the gateway's route.
+
+### 7. Check the engine's route (reads only)
+
+    docker exec python-engine python -m fno_live_preflight
+
+Expect:
+
+- `Order route: https://api.kite.trade through the CONNECT proxy http://kite:***@161.118.160.180:31528 (TLS end to end)`;
+- `Order route answers: yes`;
+- your free cash, and no problem lines.
+
+### 8. One test order (a real order, cancelled)
+
+    docker exec -it python-engine python -m fno_live_preflight --test-order
+
+At a weekend this is an **after-market order** (AMO): a BUY of one lot of a
+NIFTY call, 20% under its last price. Kite holds F&O AMOs until 09:15 on the
+next trading day. The tool cancels it within seconds, so it never reaches the
+exchange. In market hours it would be a regular order 20% under the bid,
+cancelled at once. It refuses to run from 09:00 to 09:15 and from 15:25 to
+15:45.
+
+- Expect `PASS`. That proves Kite accepts orders from the tunnel's IP (the
+  static-IP rule).
+- A static-IP refusal trips the order-authorization halt. Fix the route,
+  then clear the halt.
+- `UNCLEAR`: open Kite → Orders and cancel the order yourself. For an AMO
+  this must happen before 09:11 on the next trading day. Do not switch on
+  until it is cancelled.
+- In market hours it could fill in the very unlikely case the option falls
+  20% in two seconds. It is then recorded as a real position, the engine
+  sells it at once and you are paged.
+
+### 9. Switch on (Sunday evening)
+
+In the root `.env`, add `FNO_LIVE_TEST_ENABLED=true`. Optionally also set
+`FNO_LIVE_TEST_RUN=1`, `FNO_LIVE_TEST_SESSIONS=5`, `FNO_LIVE_TEST_CAPITAL=12500`
+and `FNO_LIVE_TEST_FLOOR=7000`. Then:
+
+    docker compose up -d --force-recreate python-engine
+
+Do this before 09:15 or after the 15:40 close, never in the session.
+
+**Monday Nov 2.** Do the usual morning login before 09:25. At 09:25 the engine
+sends `✅ REAL-money F&O test ready today`, or `⚠️ NOT ready` with the reason.
+
+### 10. After Monday's session: retire the old relay
+
+After a clean session on the tunnel (logins, quotes and any real orders
+working), stop the plain-HTTP relay so nothing can ever use it again:
+
+1. On the VM, `sudo python3 kite_tunnel.py status` shows what listens on 31527.
+   Stop and disable that program.
+2. In the Oracle console, delete the ingress rule for port 31527.
+
+Until then it is the fallback. If the tunnel fails:
+
+- gateway: delete `KITE_PROXY_URL` from `node-gateway\.env` and recreate the gateway;
+- engine: replace `KITE_ORDER_PROXY_URL` with `KITE_ORDER_BASE_URL=http://161.118.160.180:31527`
+  and recreate the engine.
+
+That is plain HTTP again, so use it only to get through the day.
+
+**Run the preflight once.** Repeat steps 7–8 only after something in the order
+path changes: the tunnel, the VM or its IP, the Zerodha API key or app, or a
+new static IP. Nothing is run daily. While the test is on, the engine checks
+every trading day by itself (below).
 
 ## What it is
 
-The owner's decision (Oct 25): give the paper F&O single-leg book five
-sessions to prove itself (Oct 26–30). If it does, put ₹12,500 of real money on
-it for one bounded run, five sessions by default, with the sizing guardrails
-relaxed, to see how the system trades with real fills. It is the pure intraday
-single-leg book only: no expiry book, no spreads, no expiry-day trades.
+The paper F&O single-leg book gets five sessions to prove itself (Oct 26–30).
+If you go ahead, ₹12,500 of real money goes on it for one bounded run, five
+sessions by default, with the sizing guardrails relaxed, to see how the system
+trades with real fills. It is the pure intraday single-leg book only: no expiry
+book, no spreads, no expiry-day trades.
 
 One switch, `FNO_LIVE_TEST_ENABLED=true`, in the root `.env` that the
 python-engine reads. It is off unless you set it.
@@ -62,63 +243,11 @@ fills: 0.5%, then 3%, then 10% (or ₹5) under the bid, about 30 s in all.
   than the broker shows it holding as MIS on NFO: an NRML holding of the same
   contract is not the system's to sell.
 
-## Before you switch it on (in this order)
-
-1. **The verdict.** It arrives on Telegram on Fri Oct 30 at 15:50.
-   You can also read it at any time:
-   `docker exec python-engine python -m fno_proving_week`.
-   The rules were fixed on Oct 25:
-   - PROVED: at least one trade, no loss at one lot after one lot's own
-     charges, nothing broken, and no drawdown halt;
-   - NOT PROVED: otherwise;
-   - NO EVIDENCE: no trade;
-   - UNAVAILABLE: the halt state could not be read.
-
-   The decision is yours.
-2. **Deploy.** Merge the PR (`codex/production-correction-hedge-p0` → `evolve/smart-strategies`),
-   then rebuild one service at a time: the engine, then the gateway.
-3. **Cash.** At least ₹12,500 of free cash in the Zerodha account. Pledged
-   holdings and margin do not count. A typical lot has cost about ₹8–9k; the
-   morning check compares the two.
-4. **Order route, with the switch still off.** Kite accepts orders only from
-   the app's registered static IPs. Add **one** of these to the root `.env`:
-   - `KITE_ORDER_PROXY_URL=http://161.118.160.180:<port>` (preferred, encrypted):
-     only once the VM runs a CONNECT proxy. See "The relay" below.
-   - `KITE_ORDER_BASE_URL=http://161.118.160.180:31527` (works today, plain HTTP):
-     the current relay.
-
-   Then recreate the engine, so it reads the new value:
-   `docker compose up -d python-engine`.
-5. **Check the route the engine now uses**, before any order:
-   `docker exec python-engine python -m fno_live_preflight`
-   This only reads. It must print the route you set, your free cash and no
-   problem lines.
-6. **Preflight test order**, after the morning login, in market hours:
-   `docker exec -it python-engine python -m fno_live_preflight --test-order`
-   It places **one real BUY 20% under the bid** of a NIFTY call, cancels it and
-   reads it back.
-   - Expect `PASS`.
-   - A static-IP refusal trips the order-authorization halt. Fix the route,
-     then clear the halt.
-   - In the very unlikely case it fills, it is recorded as a real position.
-     The engine sells it at once (`preflight_flatten`) and you are paged. Do
-     not switch on until Kite shows it flat.
-7. **Switch on.** Add `FNO_LIVE_TEST_ENABLED=true` to the root `.env`.
-   Optionally set `FNO_LIVE_TEST_RUN=1`, `FNO_LIVE_TEST_SESSIONS=5`,
-   `FNO_LIVE_TEST_CAPITAL=12500` and `FNO_LIVE_TEST_FLOOR=7000`.
-   Then `docker compose up -d python-engine`, before 09:15 or after the 15:40
-   close.
-
-**Run the preflight once.** Repeat it only after something in the order path
-changes: the route, the relay or its IP, the Zerodha API key or app, or a new
-static IP. You don't run anything daily. While the test is on, the engine
-checks every trading day by itself (next section).
-
 ## What you will see
 
 - **09:25 each trading day (while on):** `✅ REAL-money F&O test ready today`,
   or `⚠️ NOT ready` with the reason:
-  - the route;
+  - the route is not set, or does not answer (the tunnel);
   - no login yet;
   - free cash against a typical lot;
   - F&O positions held at the broker;
@@ -127,7 +256,8 @@ checks every trading day by itself (next section).
   - anything left from earlier.
 - **Each real trade:** a `💰 REAL MONEY ENTRY [FNO_LIVE]` line with the paper
   price beside it, then a `💰 REAL MONEY EXIT` line.
-- **15:50 each trading day:** each real trade beside its paper twin, with:
+- **15:50 each trading day:** the proving week's status (Oct 26–30), then each
+  real trade beside its paper twin, with:
   - one lot each, after its own charges;
   - the decision-to-fill delay;
   - entry and exit slippage against paper;
@@ -137,6 +267,8 @@ checks every trading day by itself (next section).
   - anything outstanding (open positions, claimed exits, held reservations);
   - test equity.
 - **Alerts:**
+  - `📡 KITE ORDER ROUTE DOWN`: the tunnel failed two probes in a row (every
+    3 min in market hours), with `✅ … RECOVERED` when it answers again;
   - the floor was reached, or the run ended;
   - a real exit was not placed (it is retried), is still working, or is
     unclear;
@@ -149,9 +281,9 @@ checks every trading day by itself (next section).
 
 1. The engine's own exits, every 10 s (fast exit) and every 90 s (tick).
 2. A resting SL order at the broker, 35% under the fill (limit 10% under
-   that). It is for when the engine is down: the loss can then reach about
-   35–45% of the premium, ₹2.5k–5k on a typical lot, not 25%. A gap through
-   the limit can leave it unfilled.
+   that). It is for when the engine (or the tunnel) is down: the loss can then
+   reach about 35–45% of the premium, ₹2.5k–5k on a typical lot, not 25%. A
+   gap through the limit can leave it unfilled.
 3. The 15:10 hard flat. Behind it, Zerodha squares off MIS positions itself
    in the afternoon (with its own charge).
 
@@ -166,28 +298,28 @@ checks every trading day by itself (next section).
   with F&O exit recovery: `POST /ops/fno-exit-intents/{id}/resolve` with the
   Kite order id of your sale (`GET /ops/fno-exit-intents` lists it).
 
-## The relay (what is possible, and who does what)
+## The relay and the tunnel
 
-Today every order or quote that goes through `161.118.160.180:31527` is plain
-HTTP. That means the `Authorization` header (API key and the day's access
-token) crosses the internet unencrypted, and the port is open to anyone. On
-Oct 25 the relay answered a plain request, but refused an HTTP CONNECT tunnel
-(404): it is a forwarding proxy, not a tunnelling one. The gateway already
-sends all its Kite traffic this way. The engine sends only orders through it,
-and only once you set the route.
-
-| Option | Who | What it gives |
+| | The old relay (31527) | The tunnel (31528, O25c) |
 |---|---|---|
-| 1. Firewall the port to this home's public IP (Oracle security list + `iptables`) | you, on the VM (~5 minutes) | nobody else can use the relay, so a captured token cannot place orders (Kite takes orders only from the registered IP). Still unencrypted. If the home IP changes, orders fail safely (refused, alerted) until you update the rule. |
-| 2. A CONNECT proxy on the VM (e.g. `tinyproxy`: `Allow <home IP>`, `ConnectPort 443`, filter to `api.kite.trade`), then `KITE_ORDER_PROXY_URL=http://161.118.160.180:<port>` | you install it; the engine side is done (O25b) | orders are encrypted end to end (TLS to api.kite.trade) and still leave from the registered IP. The token is never in clear text. |
-| 3. A private tunnel (WireGuard or Tailscale) between this host and the VM | you, more setup | everything to the VM is encrypted, including the gateway's traffic |
+| Kite's access token on the internet | readable (plain HTTP) | inside TLS from home to Kite |
+| Who can use it | anyone who finds the port | only with the tunnel password |
+| What it serves | any request, forwarded | CONNECT to `api.kite.trade:443` only |
+| Orders leave from | the VM (registered IP) | the VM (registered IP) |
+| Watched | no (the engine's own probe watches its direct link) | every 3 min in market hours |
+| Cost | free | free (Python already on the VM) |
 
-Recommended: **1 now, then 2** before the real-money run. The gateway's own
-route is unchanged by this work (it still uses `KITE_BASE_URL` in
-`node-gateway/.env`). Moving it to a tunnel is a separate change.
+The tunnel password travels outside TLS, in the request that opens the tunnel.
+Someone who captured it could reach `api.kite.trade` from the VM's IP, but
+without your access token, which is always inside TLS, Kite gives them nothing.
+On the VM: `sudo python3 kite_tunnel.py status` (state, listeners, last log
+lines), `sudo python3 kite_tunnel.py uninstall`. The service restarts itself
+and starts at boot.
 
 ## Known limits
 
 - One lot only. A partial fill of one lot cannot happen on NSE (lots trade whole).
 - Five sessions are a small sample. Paper and real will differ by fills and
   timing; the 15:50 report shows the gap per trade.
+- The tunnel is one VM. If it is down, real orders and exits cannot be sent;
+  the broker's resting stop and Zerodha's own MIS square-off remain.

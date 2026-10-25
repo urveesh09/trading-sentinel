@@ -614,11 +614,14 @@ async def test_a_run_ends_after_its_sessions_and_the_owner_is_told_once(book, db
 class Account:
     """The account as the morning check reads it."""
 
-    def __init__(self, *, cash=15000.0, logged_in=True, held=()):
+    def __init__(self, *, cash=15000.0, logged_in=True, held=(), route_down=None):
         from datetime import date
         self.access_token = "T" if logged_in else ""
         self.token_set_ist_date = date(2026, 11, 2) if logged_in else None
-        self.cash, self.held = cash, list(held)
+        self.cash, self.held, self.route_down = cash, list(held), route_down
+
+    async def probe_order_route(self):
+        return self.route_down
 
     async def get_funds_margins(self):
         return {"equity": {"enabled": True, "available": {"cash": self.cash}, "utilised": {"m2m_realised": 0.0}}}
@@ -654,6 +657,9 @@ async def test_the_morning_check_says_ready_or_names_what_is_missing(live_db, ar
                           "quantity": 65}])
     assert "the broker holds F&O positions this morning: NIFTY26NOV25000CE NRML 65" in \
         await fno_live_test.morning_check(nrml, live_db, monday)
+    tunnel_down = await fno_live_test.morning_check(Account(route_down="ProxyError: 407"), live_db, monday)
+    assert tunnel_down.startswith("⚠️ REAL-money F&O test NOT ready today: the order route does not answer "
+                                  "(ProxyError: 407): check the tunnel on the VM")
     monkeypatch.setattr(settings, "FNO_LIVE_TEST_ENABLED", False)
     assert await fno_live_test.morning_check(Account(), live_db, monday) is None
 

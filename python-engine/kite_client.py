@@ -2612,6 +2612,25 @@ class KiteClient:
             logger.error("kite_order_history_failed error=%s", str(e))
             return []
 
+    async def probe_order_route(self) -> Optional[str]:
+        """[O25c] Does the order route answer? An authenticated read (``GET /user/profile``)
+        through the client that places orders: ``None`` when Kite answers it, else why not.
+
+        Reads are not IP-checked, so this proves the route (the tunnel, its password, TLS to
+        Kite and today's token), not the static IP: only an accepted order proves that."""
+        try:
+            _record_endpoint(self, "other")
+            resp = await self._orders_http.get("/user/profile")
+        except Exception as exc:
+            return redact_url_credentials(f"{type(exc).__name__}: {exc}")[:200]
+        if resp.status_code == 200:
+            return None
+        try:
+            message = str(resp.json().get("message") or "")
+        except ValueError:
+            message = ""
+        return f"HTTP {resp.status_code}" + (f": {message[:120]}" if message else "")
+
     async def get_funds_margins(self) -> dict | None:
         """[F1-A] Read-only ``GET /user/margins``; ``None`` when unavailable."""
         try:
@@ -2835,6 +2854,14 @@ def own_uncommitted_cash(margins, positions, orders):
             return None
         pending += qty * price
     return max(0.0, own_cash - committed - pending - realised_loss)
+
+
+_URL_CREDENTIALS = re.compile(r"(?P<scheme>[a-z][a-z0-9+.-]*://)(?P<user>[^:@/\s]*):[^@/\s]*@", re.IGNORECASE)
+
+
+def redact_url_credentials(text: str) -> str:
+    """[O25c] ``http://kite:secret@host`` -> ``http://kite:***@host``: a proxy password never reaches a log or a page."""
+    return _URL_CREDENTIALS.sub(lambda m: f"{m.group('scheme')}{m.group('user')}:***@", str(text))
 
 
 def latest_order_state(history: list) -> dict:

@@ -630,6 +630,14 @@ async def morning_check(kite, db_path: str, now: datetime) -> Optional[str]:
         async def read(name):
             method = getattr(type(kite), name, None)
             return await method(kite) if callable(method) else None
+        # [O25c] The route itself, not only its setting: an authenticated read through the order client.
+        if not route_problem and callable(getattr(type(kite), "probe_order_route", None)):
+            try:
+                unreachable = await read("probe_order_route")
+            except Exception as exc:
+                unreachable = f"{type(exc).__name__}"
+            if unreachable:
+                problems.append(f"the order route does not answer ({unreachable}): check the tunnel on the VM")
         try:
             margins, positions, orders = (await read("get_funds_margins"), await read("get_broker_positions"),
                                           await read("orders_snapshot"))

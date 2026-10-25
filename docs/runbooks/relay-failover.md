@@ -3,6 +3,13 @@
 _Last updated: 2026-07-12 (ROADMAP-2.6). Companion to the automated
 probe in `python-engine/main.py` (`_kite_endpoint_probe_tick`)._
 
+> **[O25c 2026-10-25] The relay is being replaced by an encrypted tunnel** on the
+> same VM (`scripts/kite_tunnel.py`, port 31528: HTTP CONNECT to `api.kite.trade:443`
+> only, with a password, TLS end to end). The gateway uses it with `KITE_PROXY_URL`,
+> the engine's orders with `KITE_ORDER_PROXY_URL`, and the engine probes it every
+> 3 minutes in market hours (`📡 KITE ORDER ROUTE DOWN`). Setup, fallback to this
+> relay, and retiring it: `docs/runbooks/fno-live-test.md`, steps 4–5 and 10.
+
 ## What the relay is
 
 Every quote and order the system makes transits `settings.KITE_BASE_URL`.

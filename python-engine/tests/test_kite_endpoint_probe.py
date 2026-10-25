@@ -89,3 +89,78 @@ class TestProbeStateMachine:
         msg = _kite_probe_evaluate(False, 180.0, state)
         assert "relay-failover.md" in msg
         assert "smoke_relay.sh" in msg
+
+
+
+class TestOrderRouteProbe:
+    """[O25c] The tunnel the real orders (and the gateway) use is watched in market hours too."""
+
+    def test_only_a_separate_order_route_is_probed(self, monkeypatch):
+        import ops_watchdogs as ow
+        from config import settings
+        monkeypatch.setattr(settings, "KITE_BASE_URL", "https://api.kite.trade")
+        monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "")
+        monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
+        assert ow._order_route_probe_target() is None
+        monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "https://api.kite.trade/")
+        assert ow._order_route_probe_target() is None                       # the same endpoint as quotes
+        monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "http://161.118.160.180:31527")
+        assert ow._order_route_probe_target() == ("http://161.118.160.180:31527/", "")
+        monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
+        monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://kite:pw0123456789abcdef@161.118.160.180:31528")
+        assert ow._order_route_probe_target() == ("https://api.kite.trade/",
+                                                  "http://kite:pw0123456789abcdef@161.118.160.180:31528")
+
+    def test_its_texts_name_the_route_and_what_still_protects_a_position(self, state):
+        route = "https://api.kite.trade through http://kite:***@161.118.160.180:31528"
+        assert _kite_probe_evaluate(False, 0.0, state, route=route) is None
+        down = _kite_probe_evaluate(False, 180.0, state, route=route)
+        assert down.startswith(f"📡 KITE ORDER ROUTE DOWN: {route} has failed 2 consecutive probes.")
+        assert "resting broker stop still protects" in down and "kite_tunnel.py status" in down
+        back = _kite_probe_evaluate(True, 780.0, state, route=route)
+        assert back == f"✅ KITE ORDER ROUTE RECOVERED: {route} answers again (was down ~10 min)."
+
+    @pytest.mark.asyncio
+    async def test_a_dark_tunnel_pages_once_without_its_password_while_quotes_stay_quiet(self, monkeypatch):
+        from datetime import datetime
+        from types import SimpleNamespace
+
+        import pytz
+
+        import ops_watchdogs as ow
+        from config import settings
+
+        ist = pytz.timezone("Asia/Kolkata")
+        monkeypatch.setattr(ow, "datetime", SimpleNamespace(now=lambda tz: ist.localize(datetime(2026, 11, 2, 11, 0))))
+
+        async def trading(day, db_path):
+            return True
+
+        monkeypatch.setattr(ow, "is_trading_day", trading)
+        monkeypatch.setattr(settings, "KITE_BASE_URL", "https://api.kite.trade")
+        monkeypatch.setattr(settings, "KITE_ORDER_BASE_URL", "")
+        monkeypatch.setattr(settings, "KITE_ORDER_PROXY_URL", "http://kite:pw0123456789abcdef@161.118.160.180:31528")
+        for key in ("consec_failures", "down_since_monotonic", "last_alert_monotonic"):
+            monkeypatch.setitem(ow._kite_probe_state, key, 0 if key == "consec_failures" else None)
+            monkeypatch.setitem(ow._kite_order_route_probe_state, key, 0 if key == "consec_failures" else None)
+        probed, pages = [], []
+
+        async def get(url, proxy=""):
+            probed.append((url, proxy))
+            if proxy:
+                return False, "ProxyError: cannot reach http://kite:pw0123456789abcdef@161.118.160.180:31528"
+            return True, ""
+
+        async def notify(msg):
+            pages.append(msg)
+
+        monkeypatch.setattr(ow, "_kite_probe_get", get)
+        monkeypatch.setattr(ow, "_kite_probe_notify", notify)
+        await ow._kite_endpoint_probe_tick()
+        await ow._kite_endpoint_probe_tick()
+        await ow._kite_endpoint_probe_tick()
+        assert probed[:2] == [("https://api.kite.trade/", ""),
+                              ("https://api.kite.trade/", "http://kite:pw0123456789abcdef@161.118.160.180:31528")]
+        assert len(pages) == 1 and pages[0].startswith("📡 KITE ORDER ROUTE DOWN: https://api.kite.trade through "
+                                                       "http://kite:***@161.118.160.180:31528")
+        assert "pw0123456789abcdef" not in pages[0]

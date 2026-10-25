@@ -494,22 +494,26 @@ class FnoExecutor:
             logger.error("fno_order_state_failed order_id=%s error=%s", order_id, str(e))
             return {}
 
-    async def cancel_and_read(self, order_id: str) -> tuple[dict, Optional[str]]:
-        """Cancel, then re-read until a terminal state (3 tries)."""
-        cancel_error = await self._cancel_quietly(order_id)
+    async def cancel_and_read(self, order_id: str, variety: str = "regular") -> tuple[dict, Optional[str]]:
+        """Cancel, then re-read until a terminal state (3 tries). [O25c] ``variety`` "amo" for an
+        after-market order (its cancel is DELETE /orders/amo/{id})."""
+        cancel_error = await self._cancel_quietly(order_id, variety)
         latest: dict = {}
         for attempt in range(3):
             latest = await self.order_state(order_id)
-            if latest.get("status") in ("COMPLETE", "CANCELLED", "REJECTED"):
+            if latest.get("status") in ("COMPLETE", "CANCELLED", "REJECTED", "CANCELLED AMO"):
                 break
             if attempt < 2:
                 await asyncio.sleep(self.poll_interval_sec)
         return latest, cancel_error
 
-    async def _cancel_quietly(self, order_id: str) -> Optional[str]:
+    async def _cancel_quietly(self, order_id: str, variety: str = "regular") -> Optional[str]:
         """Cancel; return the error text (``None`` on success) for evidence."""
         try:
-            await self.kite.cancel_order(order_id)
+            if variety == "regular":
+                await self.kite.cancel_order(order_id)
+            else:
+                await self.kite.cancel_order(order_id, variety=variety)
             return None
         except Exception as e:
             logger.error("fno_cancel_failed order_id=%s error=%s", order_id, str(e))

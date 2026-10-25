@@ -1715,10 +1715,12 @@ class Settings(BaseSettings):
     # (http://161.118.160.180:31527), whose IP is registered, so quotes can
     # stay direct while orders leave from the registered address.
     KITE_ORDER_BASE_URL: str = ""
-    # [O25b] Preferred when the VM runs a CONNECT proxy (e.g. tinyproxy allowing
-    # only this host and api.kite.trade:443): orders go to https://api.kite.trade
-    # through it, encrypted end to end, and still leave from the registered IP.
-    # Set this OR KITE_ORDER_BASE_URL, not both.
+    # [O25b] Preferred when the VM runs a CONNECT proxy: orders go to
+    # https://api.kite.trade through it, encrypted end to end, and still leave
+    # from the registered IP. Set this OR KITE_ORDER_BASE_URL, not both.
+    # [O25c] The VM's proxy is scripts/kite_tunnel.py (CONNECT to api.kite.trade:443
+    # only, with a password): http://kite:<password>@161.118.160.180:31528. The
+    # password is never printed (kite_client.redact_url_credentials).
     KITE_ORDER_PROXY_URL: str = ""
     # [FOLLOW-UP-F3 2026-10-08] Kite documents 1 quote request/second (up to
     # 500 instruments each). kite_client.QuoteBudget enforces it and merges

@@ -1,5 +1,78 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 (3) — O25c The owner's dates, an encrypted Kite tunnel on the free VM for both services, a weekend test order (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed, switch off)
+
+- Owner ask (Oct 25): "the real money will start next monday not this coming one, after one more week of observing the fno I will start it the steps you put in one doc i will follow and do it next weekend, also the relay do all you can what you need me to do you tell me, remember I wont pay anything extra for that".
+- Dates:
+  - the proving week stays Oct 26–30, paper only;
+  - the owner does the checklist on Sat Oct 31 – Sun Nov 1;
+  - the run is Nov 2–6 (FNO_LIVE_TEST_SESSIONS 5).
+  - No default changed: FNO_PROVING_START stays 2026-10-26.
+- Problems:
+  1. The gateway sends all its Kite traffic through the plain-HTTP relay, including the login exchange and the access token. The review asked for it to be secured, and the owner pays nothing extra.
+  2. The preflight test order needed market hours, but the owner does the steps at a weekend.
+  3. Nothing probed the gateway's route: the engine's probe watches its own KITE_BASE_URL, which is direct.
+  4. The preflight printed KITE_ORDER_PROXY_URL as set, so a tunnel password would have been shown.
+- Done:
+  - [x] **`scripts/kite_tunnel.py`** for the VM (Python 3.8+ standard library only):
+    - serves only CONNECT to api.kite.trade:443;
+    - checks the password first (constant time, 1 s delay on a wrong one); optional client allow list;
+    - limits: request head 8 KiB within 10 s, Kite reached within 10 s, idle close after 300 s, 128 connections;
+    - one log line per connection, with no secrets.
+    - `install`:
+      - a systemd service with sandboxing (DynamicUser, ProtectSystem=strict, a syscall filter and more);
+      - the VM's iptables rule placed before Oracle's REJECT, saved by netfilter-persistent;
+      - a self-test (no password → 407, another host → 403, verified TLS to Kite);
+      - prints both .env lines; a re-run keeps the password.
+    - Also `status` (including what listens on 31527), `print-env` and `uninstall`.
+  - [x] **Gateway `services/kite-tunnel.js`.** KITE_PROXY_URL gives a `ConnectTunnelAgent`: CONNECT, then TLS with servername api.kite.trade and the certificate verified.
+    - It is used by the Kite SDK (lent through the SDK's axios defaults during its constructor only) and by the direct LTP call.
+    - The root is https://api.kite.trade. KITE_BASE_URL is ignored, with a warning.
+    - The route is logged without the password. Unset, nothing changes.
+  - [x] **Engine.**
+    - `KiteClient.probe_order_route`: GET /user/profile through the order client.
+    - `redact_url_credentials`.
+    - The preflight shows the route redacted and checks that it answers.
+    - The 09:25 check says NOT ready when the route does not answer.
+  - [x] **Weekend test order.** `fno_live_preflight.variety_for` picks the order type:
+    - regular from 09:15 to 15:25 on a trading day;
+    - AMO after 15:45, before 09:00 and on closed days;
+    - none from 09:00 to 09:15 and from 15:25 to 15:45.
+    - The AMO is 20% under the last price, never under the lower circuit, and is cancelled as an AMO (`FnoExecutor.cancel_and_read(order_id, variety)`).
+    - "CANCELLED AMO" reads as cancelled. UNCLEAR tells the owner to cancel before 09:11.
+    - When the engine's book is not today's, instruments are fetched into a temporary file; the engine's snapshot is never written.
+  - [x] **Order-route probe.** `_kite_endpoint_probe_tick` also probes a separate order route (the tunnel, or a relay distinct from KITE_BASE_URL) every 3 minutes in market hours.
+    - After 2 failures it pages `📡 KITE ORDER ROUTE DOWN`, deduped for 30 minutes, then `✅ … RECOVERED`.
+    - The password is redacted.
+  - [x] **Runbook** rewritten as one dated checklist (steps 0–10): the relay table, the fallback, and retiring 31527.
+- Verified beyond the unit tests:
+  - The tunnel, run locally against the real api.kite.trade, gave 407 / 403 / TLS 200. Run on Windows Python 3.11, and in python:3.8-slim and python:3.12-slim containers.
+  - The systemd unit: `systemd-analyze verify` OK; `systemd-analyze security` exposure 1.5 OK (systemd 257).
+  - The gateway agent (real TLS) and the real kiteconnect SDK, through the local tunnel to Kite: HTTP 200 on `/`, and TokenException for a fake key, as expected.
+  - The engine order client (httpx, password in the URL), through the local tunnel: HTTP 403 for a fake token, so Kite was reached. A wrong tunnel password gave ProxyError 407 with no password in the text.
+  - Not verified (the owner's steps 4–8): the service under systemd on the real VM, the Oracle security-list rule, and a real order through the tunnel.
+- Files:
+  - `scripts/kite_tunnel.py`, `scripts/tests/test_kite_tunnel.py` (10);
+  - `node-gateway/server/services/kite-tunnel.js`, `kite.js`, `tests/unit/kite-tunnel.test.js` (8);
+  - `python-engine/kite_client.py`, `fno_executor.py`, `fno_live_preflight.py`, `fno_live_test.py`, `ops_watchdogs.py`, `config.py` (comment);
+  - tests: `test_fno_live_preflight.py` (+7), `test_fno_live_test.py` (readiness), `test_kite_endpoint_probe.py` (+3);
+  - `docs/runbooks/fno-live-test.md`, `docs/runbooks/relay-failover.md`;
+  - `.gitattributes` (new): the VM script keeps LF line endings in every checkout.
+- Tests: engine + scripts full suite 5,994 passed, 4 skipped, exit 0 (11 min 26 s); gateway full suite 514 passed, 4 skipped, 18 failed only in db.test.js and backlog-reconciliation.test.js (better-sqlite3 cannot load on this Windows Node 24: environment); new tests: test_kite_tunnel.py 10, kite-tunnel.test.js 8, preflight +7, endpoint probe +3, readiness +1 case; live checks: the tunnel and both clients against the real api.kite.trade (Python 3.8/3.11/3.12, the gateway image's Node 20), systemd-analyze verify OK, exposure 1.5. Not a profitability result.
+- Config and migration impact:
+  - a new optional gateway setting, KITE_PROXY_URL (`node-gateway/.env`);
+  - the engine's KITE_ORDER_PROXY_URL now documented with the tunnel's password form;
+  - no schema change and no new scheduler job (the existing 3-minute probe also covers the order route); no default changed.
+  - Unset: no behavior change beyond the preflight's read-only route lines.
+- Rollout: the owner's runbook steps 0–10.
+- Rollback:
+  - delete KITE_PROXY_URL (the gateway returns to the relay);
+  - set the engine's KITE_ORDER_BASE_URL to the relay;
+  - `sudo python3 kite_tunnel.py uninstall`.
+- Remaining (owner):
+  - steps 0–10 of `docs/runbooks/fno-live-test.md`;
+  - retire 31527 after Monday's clean session.
+
 ## October 25 (2) — O25b The review's gaps in the real-money test are fixed; bounded runs, a daily readiness message, execution evidence and an encrypted order route are added (done, Dev, commit `abbe073`, branch `codex/production-correction-hedge-p0`, pushed, not deployed, switch off)
 
 - Owner ask (Oct 25):

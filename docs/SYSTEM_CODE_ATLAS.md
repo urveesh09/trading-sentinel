@@ -802,11 +802,11 @@ Related tests: `python-engine/tests/test_fno_instruments.py`
 
 ## `python-engine/fno_live_preflight.py`
 
-[O25 2026-10-25] Before the real-money F&O test: is the order route ready? Run by the owner. docker exec -it python-engine python -m fno_live_preflight # reads only docker exec -it python-engine python -m fno_live_preflight --test-order # plus one order, cancelled Reads (any time after the day's Kite login): the order route (KITE_ORDER_BASE_URL), own free cash in the account (no margin, no collateral) against FNO_LIVE_TEST_CAPITAL, open F&O positions at the broker, and the day's order book. ``--test-order`` (market hours, a real order): one lot of the nearest NIFTY call that does not expire today, at the strike nearest the future, as a BUY LIMIT 20% under its bid. It cannot fill unless the o
+[O25 2026-10-25] Before the real-money F&O test: is the order route ready? Run by the owner. docker exec -it python-engine python -m fno_live_preflight # reads only docker exec -it python-engine python -m fno_live_preflight --test-order # plus one order, cancelled Reads (any time after the day's Kite login): the order route (KITE_ORDER_PROXY_URL or KITE_ORDER_BASE_URL), whether it answers an authenticated read [O25c], own free cash in the account (no margin, no collateral) against FNO_LIVE_TEST_CAPITAL, open F&O positions at the broker, and the day's order book. ``--test-order`` (a real order): one lot of the nearest NIFTY call that does not expire today, at the strike nearest the future, as
 
-Top-level declarations: `order_route` (line 46), `_floor_tick` (line 61), `run` (line 65), `_test_order` (line 108), `main` (line 184)
+Top-level declarations: `variety_for` (line 62), `order_route` (line 73), `_floor_tick` (line 89), `_ceil_tick` (line 93), `_instrument_book` (line 97), `run` (line 108), `_test_order` (line 160), `main` (line 258)
 
-Engine dependencies: `config`, `fno_executor`, `fno_instruments`, `fno_models`, `kite_client`, `token_lifecycle`
+Engine dependencies: `config`, `fno_executor`, `fno_instruments`, `fno_models`, `kite_client`, `market_calendar`, `token_lifecycle`
 
 Related tests: `python-engine/tests/test_fno_live_preflight.py`
 
@@ -1160,7 +1160,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 41), `_intraday_cache_gate_evaluate` (line 77), `provider_lane` (line 197), `RateLimiter` (line 214), `EndpointBudget` (line 299), `transport_error_kind` (line 416), `SendWindowGate` (line 448), `_TruncatedInstrumentDump` (line 482), `QuoteBatchCancelled` (line 486), `_acquire_shared` (line 490), `QuoteBudget` (line 502), `_aggregate_chunk_timing` (line 728), `_record_endpoint` (line 748), `_record_status` (line 755), `_record_answer` (line 763), `_record_transport` (line 770), `_historical_send_gate` (line 777), `KiteClient` (line 783), `_finite` (line 2781), `own_uncommitted_cash` (line 2790), `latest_order_state` (line 2840)
+Top-level declarations: `_interval_minutes` (line 41), `_intraday_cache_gate_evaluate` (line 77), `provider_lane` (line 197), `RateLimiter` (line 214), `EndpointBudget` (line 299), `transport_error_kind` (line 416), `SendWindowGate` (line 448), `_TruncatedInstrumentDump` (line 482), `QuoteBatchCancelled` (line 486), `_acquire_shared` (line 490), `QuoteBudget` (line 502), `_aggregate_chunk_timing` (line 728), `_record_endpoint` (line 748), `_record_status` (line 755), `_record_answer` (line 763), `_record_transport` (line 770), `_historical_send_gate` (line 777), `KiteClient` (line 783), `_finite` (line 2800), `own_uncommitted_cash` (line 2809), `redact_url_credentials` (line 2862), `latest_order_state` (line 2867)
 
 Engine dependencies: `account_cash_reservations`, `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
@@ -1456,9 +1456,9 @@ Declared tables: `ops_funnel_daily`, `ops_liveness_daily`
 
 [ROADMAP-4.1 2026-07-13] Ops watchdogs: scheduler liveness, daily ops snapshot, and the Kite relay probe. Extracted verbatim from main.py (roadmap 2.4 / 2.6 / 2.8 work). These are the jobs that are supposed to notice when the engine has gone quiet, so they belong together and away from the code they are watching. Worth stating plainly, since 2026-07-13 tested them: the scheduler-tick watchdog did its job (it fires when the APScheduler loop stalls) and the relay probe did its job. Neither of them can see an engine that is ticking happily with NO ACCESS TOKEN -- alive, scheduled, and trading nothing. That gap is real and is tracked separately; it is not addressed by this move. Singletons are r
 
-Top-level declarations: `_scheduler_tick_path` (line 63), `_scheduler_tick_job` (line 80), `_ops_daily_snapshot` (line 190), `_kite_probe_evaluate` (line 227), `_kite_endpoint_probe_tick` (line 264), `_readiness_should_alert` (line 339), `_trading_readiness_tick` (line 357)
+Top-level declarations: `_scheduler_tick_path` (line 63), `_scheduler_tick_job` (line 80), `_ops_daily_snapshot` (line 190), `_order_route_probe_target` (line 236), `_kite_probe_evaluate` (line 249), `_kite_endpoint_probe_tick` (line 296), `_kite_probe_get` (line 330), `_kite_probe_notify` (line 347), `_readiness_should_alert` (line 391), `_trading_readiness_tick` (line 409)
 
-Engine dependencies: `config`, `halt_switch`, `lifecycle_receipts`, `market_calendar`, `operator_alert`, `ops_metrics`, `order_execution_readiness`
+Engine dependencies: `config`, `halt_switch`, `kite_client`, `lifecycle_receipts`, `market_calendar`, `operator_alert`, `ops_metrics`, `order_execution_readiness`
 
 ## `python-engine/optional_ai_status.py`
 
@@ -2809,9 +2809,13 @@ Dependencies: `../config`, `../db/index`, `../middleware/logger`, `../utils/erro
 
 Dependencies: `../middleware/logger`, `fs`, `path`
 
+## `node-gateway/server/services/kite-tunnel.js`
+
+Dependencies: `http`, `https`, `path`, `tls`
+
 ## `node-gateway/server/services/kite.js`
 
-Dependencies: `../config`, `../middleware/logger`, `../utils/errors`, `./halt-switch`, `./telegram`, `./token-store`, `axios`, `kiteconnect`
+Dependencies: `../config`, `../middleware/logger`, `../utils/errors`, `./halt-switch`, `./kite-tunnel`, `./telegram`, `./token-store`, `axios`, `kiteconnect`
 
 ## `node-gateway/server/services/momentum-execution.js`
 

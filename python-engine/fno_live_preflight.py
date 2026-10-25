@@ -3,15 +3,25 @@
     docker exec -it python-engine python -m fno_live_preflight              # reads only
     docker exec -it python-engine python -m fno_live_preflight --test-order # plus one order, cancelled
 
-Reads (any time after the day's Kite login): the order route (KITE_ORDER_BASE_URL),
-own free cash in the account (no margin, no collateral) against
-FNO_LIVE_TEST_CAPITAL, open F&O positions at the broker, and the day's order book.
+Reads (any time after the day's Kite login): the order route (KITE_ORDER_PROXY_URL or
+KITE_ORDER_BASE_URL), whether it answers an authenticated read [O25c], own free cash
+in the account (no margin, no collateral) against FNO_LIVE_TEST_CAPITAL, open F&O
+positions at the broker, and the day's order book.
 
-``--test-order`` (market hours, a real order): one lot of the nearest NIFTY call
-that does not expire today, at the strike nearest the future, as a BUY LIMIT 20%
-under its bid. It cannot fill unless the option falls 20% in the two seconds
-before it is cancelled. The order is then cancelled and read back: CANCELLED with
-nothing filled proves Kite takes orders from this route (the static-IP rule).
+``--test-order`` (a real order): one lot of the nearest NIFTY call that does not
+expire today, at the strike nearest the future, as a BUY LIMIT 20% under the
+market. The order is then cancelled and read back: CANCELLED with nothing filled
+proves Kite takes orders from this route (the static-IP rule covers placing,
+modifying and cancelling).
+  - In market hours (09:15-15:25 on a trading day) it is a regular order 20% under
+    the bid. It cannot fill unless the option falls 20% in the two seconds before
+    it is cancelled.
+  - [O25c] After 15:45, before 09:00, and all day on a closed day (a weekend) it is
+    an after-market order (AMO) 20% under the last price. Kite holds AMOs and sends
+    F&O ones to the exchange only at the next open (09:15), so a cancelled AMO never
+    reaches the exchange. That lets the whole checklist run on a weekend. If its
+    cancel is not confirmed, cancel it in Kite before 09:11 on the next trading day.
+  - Between 09:00 and 09:15 and between 15:25 and 15:45 it does not run.
 [O25b] In the very unlikely fill (the order can fill before the cancel lands)
 the holding is recorded as a real FNO_LIVE position and the running engine
 sells it at once through its full exit path: the claim, the tagged order, the
@@ -32,8 +42,12 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import math
+import os
+import tempfile
 import uuid
-from datetime import datetime
+from datetime import date, datetime
+from typing import Optional
 
 import pytz
 
@@ -41,11 +55,25 @@ from config import settings
 
 IST = pytz.timezone("Asia/Kolkata")
 TEST_DISCOUNT = 0.20
+REGULAR_HOURS = (9 * 60 + 15, 15 * 60 + 25)    # a regular test order
+AMO_FROM, AMO_UNTIL = 15 * 60 + 45, 9 * 60      # Zerodha takes F&O AMOs 15:45-09:11; 09:00 keeps clear of the open
+
+
+def variety_for(now: datetime, trading_day: bool) -> Optional[str]:
+    """[O25c] "regular" in market hours; "amo" in the evening, at night, before 09:00 and on a closed
+    day; None in the minutes around the open and the close."""
+    minute = now.hour * 60 + now.minute
+    if trading_day and REGULAR_HOURS[0] <= minute < REGULAR_HOURS[1]:
+        return "regular"
+    if not trading_day or minute >= AMO_FROM or minute < AMO_UNTIL:
+        return "amo"
+    return None
 
 
 def order_route() -> tuple[str, bool, str]:
     """(description, encrypted end to end, problem or "") of where orders go."""
-    proxy = (settings.KITE_ORDER_PROXY_URL or "").strip()
+    from kite_client import redact_url_credentials
+    proxy = redact_url_credentials((settings.KITE_ORDER_PROXY_URL or "").strip())
     base = (settings.KITE_ORDER_BASE_URL or "").strip()
     if proxy and base:
         return f"{base} through {proxy}", base.startswith("https://"), "Set KITE_ORDER_PROXY_URL or "             "KITE_ORDER_BASE_URL, not both."
@@ -60,6 +88,21 @@ def order_route() -> tuple[str, bool, str]:
 
 def _floor_tick(value: float, tick: float) -> float:
     return round(max(tick, int(value / tick) * tick), 2)
+
+
+def _ceil_tick(value: float, tick: float) -> float:
+    return round(max(tick, math.ceil(round(value / tick, 6)) * tick), 2)
+
+
+async def _instrument_book(kite, today: date):
+    """Today's NIFTY book: the engine's (refreshed at 08:00 on trading days), else one fetched now into a
+    temporary file, so a weekend or early run never overwrites the engine's own snapshot."""
+    from fno_instruments import FnoInstruments, get_fno_instruments
+    book = get_fno_instruments()
+    if book.ready(today) or book.load_from_disk():
+        return book
+    private = FnoInstruments(json_path=os.path.join(tempfile.gettempdir(), "fno_live_preflight_instruments.json"))
+    return private if await private.refresh(kite) else None
 
 
 async def run(test_order: bool) -> int:
@@ -79,6 +122,15 @@ async def run(test_order: bool) -> int:
         print(f"  {problem}")
     elif not encrypted:
         print("  Note: plain HTTP to the relay carries the access token unencrypted (docs/runbooks/fno-live-test.md).")
+    probe = getattr(type(kite), "probe_order_route", None)
+    if callable(probe):
+        unreachable = await probe(kite)
+        if unreachable:
+            print(f"Order route answers: NO ({unreachable}). Check the tunnel (sudo python3 kite_tunnel.py status on "
+                  "the VM), its password in the .env, and the Oracle security-list rule.")
+            problems += 1
+        else:
+            print("Order route answers: yes (an authenticated read; only an accepted order proves the static IP).")
     margins = await kite.get_funds_margins()
     positions = await kite.get_broker_positions()
     orders = await kite.orders_snapshot()
@@ -107,17 +159,19 @@ async def run(test_order: bool) -> int:
 
 async def _test_order(kite) -> int:
     from fno_executor import FnoExecutor
-    from fno_instruments import get_fno_instruments
     from fno_models import OptionType
+    from market_calendar import is_trading_day_sync
 
     now = datetime.now(IST)
-    if not (9 * 60 + 15 <= now.hour * 60 + now.minute < 15 * 60 + 25):
-        print("The test order needs market hours (09:15-15:25 IST).")
+    variety = variety_for(now, is_trading_day_sync(now.date(), settings.DB_PATH))
+    if variety is None:
+        print("The test order runs in market hours (09:15-15:25 on a trading day) or as an after-market order "
+              "(after 15:45, before 09:00, or on a closed day). Try again then.")
         return 2
-    book = get_fno_instruments()
     today = now.date()
-    if not book.ready(today) and not book.load_from_disk():
-        print("NIFTY instruments are not loaded for today: wait for the morning refresh.")
+    book = await _instrument_book(kite, today)
+    if book is None:
+        print("NIFTY instruments could not be loaded from Kite: try again in a few minutes.")
         return 2
     fut = book.front_future(today)
     expiry = next((e for e in book.option_expiries if e > today), None)
@@ -131,17 +185,31 @@ async def _test_order(kite) -> int:
         print("Could not price the future or find its ATM call.")
         return 2
     quote = (await kite.get_quote([contract.token])).get(contract.token) or {}
-    buys = (quote.get("depth") or {}).get("buy") or []
-    bid = float(buys[0]["price"]) if buys and buys[0].get("price") else 0.0
-    if bid <= 0:
-        print(f"{contract.tradingsymbol} has no bid right now; try again in a minute.")
-        return 2
     tick = float(contract.tick_size or settings.FNO_TICK_SIZE)
-    price = _floor_tick(bid * (1.0 - TEST_DISCOUNT), tick)
+    if variety == "regular":
+        buys = (quote.get("depth") or {}).get("buy") or []
+        reference = float(buys[0]["price"]) if buys and buys[0].get("price") else 0.0
+        if reference <= 0:
+            print(f"{contract.tradingsymbol} has no bid right now; try again in a minute.")
+            return 2
+        price = _floor_tick(reference * (1.0 - TEST_DISCOUNT), tick)
+        basis = f"bid ₹{reference:.2f}"
+    else:
+        try:
+            reference = float(quote.get("last_price") or 0)
+            lower = float(quote.get("lower_circuit_limit") or 0)
+        except (TypeError, ValueError):
+            reference = lower = 0.0
+        if reference <= 0:
+            print(f"{contract.tradingsymbol} has no last price to work from; try again later.")
+            return 2
+        # Kite refuses an AMO priced outside the day's band: never under the lower circuit.
+        price = max(_floor_tick(reference * (1.0 - TEST_DISCOUNT), tick), _ceil_tick(lower, tick) if lower > 0 else 0)
+        basis = f"last price ₹{reference:.2f}; an after-market order, held by Kite until 09:15"
     qty = int(contract.lot_size)
     tag = f"PF{uuid.uuid4().hex[:17]}"
-    print(f"Test order: BUY {qty} {contract.tradingsymbol} LIMIT ₹{price:.2f} (bid ₹{bid:.2f}), MIS, tag {tag}")
-    resp = await kite.place_order(variety="regular", exchange="NFO", tradingsymbol=contract.tradingsymbol,
+    print(f"Test order: BUY {qty} {contract.tradingsymbol} LIMIT ₹{price:.2f} ({basis}), MIS, tag {tag}")
+    resp = await kite.place_order(variety=variety, exchange="NFO", tradingsymbol=contract.tradingsymbol,
                                   transaction_type="BUY", quantity=qty, product="MIS", order_type="LIMIT",
                                   price=price, validity="DAY", tag=tag, intent="entry", channel="fno")
     order_id = resp.get("order_id")
@@ -150,13 +218,16 @@ async def _test_order(kite) -> int:
         return 1
     await asyncio.sleep(2)
     executor = FnoExecutor(kite, paper_mode=False, source_tag="FNO_LIVE")
-    latest, cancel_error = await executor.cancel_and_read(order_id)
+    latest, cancel_error = await executor.cancel_and_read(order_id, variety)
     status, filled = latest.get("status"), latest.get("filled_quantity")
+    if status == "CANCELLED AMO":
+        status = "CANCELLED"
     if status in ("CANCELLED", "REJECTED") and filled == 0:
         kite.settle_entry_reservation(order_id, final_status=status, filled_quantity=0)
         if status == "CANCELLED":
-            print(f"PASS: order {order_id} was accepted by Kite and cancelled with nothing filled. "
-                  "Orders from this route work.")
+            print(f"PASS: order {order_id} was accepted by Kite and cancelled with nothing filled"
+                  + (" (an after-market order: it never reached the exchange)" if variety == "amo" else "")
+                  + ". Orders from this route work.")
             return 0
         print(f"REJECTED by the exchange or the broker's checks: {latest.get('status_message')}. The route "
               "reached Kite (no static-IP refusal), but read the message before enabling the test.")
@@ -177,14 +248,18 @@ async def _test_order(kite) -> int:
               "few minutes that no NIFTY position is left; do not enable the test until it is flat.")
         return 1
     print(f"UNCLEAR: order {order_id} reads {status!r} filled={filled} (cancel error: {cancel_error}). "
-          "Open Kite, cancel it if it is still open, and do not enable the test until it is understood.")
+          "Open Kite, cancel it if it is still open"
+          + (" (an after-market order goes to the exchange at 09:15: cancel it before 09:11)" if variety == "amo"
+             else "")
+          + ", and do not enable the test until it is understood.")
     return 1
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Is the real-money F&O test's order route ready?")
     parser.add_argument("--test-order", action="store_true",
-                        help="also place one BUY 20%% under the bid and cancel it (market hours, real order)")
+                        help="also place one BUY 20%% under the market and cancel it (a real order; outside market "
+                             "hours an after-market order)")
     args = parser.parse_args(argv)
     return asyncio.run(run(args.test_order))
 
