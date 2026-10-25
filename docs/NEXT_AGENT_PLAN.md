@@ -2,6 +2,7 @@
 
 ## October 25 — O25d remediation verified; Oracle sign-in needed for VM setup
 
+- Code and owned documentation committed/pushed as **`94a262a`** on `codex/production-correction-hedge-p0`. Post-commit source/doc checks pass and atlas regeneration is byte-stable. The original unrelated `.gitignore` and bottom-of-document changes remain uncommitted and excluded. Production remains `582d7a5`; no VM installation, runtime configuration change or real order has occurred.
 - Owner explicitly authorized fixing all five review comments and setting up the existing Oracle VM today. No extra paid service; real-money switch stays false and no test order while the account is unfunded. Production source/configuration still follows GitHub promotion, not direct edits.
 - Implementation: freeze each run's persisted length and enforce the authorized Nov 2–6 entry window independently of startup; reject failed preflight before order calls; reject conflicting order route settings before constructing authenticated clients; block AMO maintenance; permit authenticated loopback self-tests with an external allow-list. Preserve all open-position exit behavior.
 - Files/contracts: `fno_live_test.py`, `config.py`, `fno_live_preflight.py`, `kite_client.py`, `scripts/kite_tunnel.py`, their focused tests, runbook, guide, checklist and regenerated atlas. New run end-date column/settings require fail-closed handling of legacy run rows without an authorized end date.

@@ -1,7 +1,7 @@
 # Independent O25b/O25c review — 25 October 2026
 
-**Resolution update (O25d):** the owner subsequently authorized direct Dev
-remediation. All five code comments below are now implemented locally with
+**Resolution update (O25d, code `94a262a`, pushed, not deployed):** the owner subsequently authorized direct Dev
+remediation. All five code comments below are now implemented with
 regression coverage; the original observations remain historical evidence.
 See the current O25d receipt in `NEXT_AGENT_PLAN.md` for verification and
 commit/promotion state. VM setup still requires usable SSH/Oracle access.

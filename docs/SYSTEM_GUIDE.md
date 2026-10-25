@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 25 — O25d live-test admission and tunnel setup corrections (Dev)
+## October 25 — O25d live-test admission and tunnel setup corrections (Dev, code `94a262a`, pushed, not deployed)
 
 - `fno_live_test.current_run` stores the authorized start (`FNO_LIVE_TEST_START_DATE`, default `2026-11-02`), end (`FNO_LIVE_TEST_END_DATE`, default `2026-11-06`) and session limit (5). Existing names use their stored dates/length, never a later environment value. Delayed first startup consumes the earlier sessions; it does not shift the window. A pre-start or ended run cannot buy. Open-position exit management is independent and remains active.
 - Run schema: nullable `fno_live_test_runs.ends_on`, added under a serialized transaction. Legacy rows without an end date remain unavailable for entries; authorize a new run name with explicit dates instead of silently rewriting them. Invalid dates/length fail closed. Capital/floor/release remain recorded metadata; this change freezes the entry window and session count, not those other environment settings.

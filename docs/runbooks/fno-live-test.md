@@ -6,7 +6,7 @@ for the owner's dates and the encrypted tunnel (O25c). Code:
 `fno_proving_week.py`, `fno_live_preflight.py`; the tunnel `scripts/kite_tunnel.py`
 and `node-gateway/server/services/kite-tunnel.js`._
 
-_O25d corrects all five findings in
+_O25d (code `94a262a`, pushed, not deployed) corrects all five findings in
 [the review](../2026-10-25-independent-live-tunnel-review.md). Promote the
 verified code through GitHub before using it operationally. Local tunnel
 tests passed; actual VM installation/client routes must still be verified.

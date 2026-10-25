@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 25 — O25d remediation receipt (Dev; VM access pending)
+## October 25 — O25d remediation receipt (Dev code `94a262a`, pushed; VM access pending)
 
 - [x] All five review comments implemented: frozen authorized entry window/length, no order after failed preflight, conflicting routes rejected before HTTP clients, AMO maintenance excluded, authenticated loopback installer check with external restrictions retained.
 - [x] Tests cover delayed startup, immutable dates/length, legacy run migration, zero order calls on failed checks, zero HTTP clients for conflicting routes, maintenance boundaries, restricted-loopback checks, and continued real exits after entries expire.
