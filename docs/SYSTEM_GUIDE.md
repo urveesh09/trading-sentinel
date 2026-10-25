@@ -1,5 +1,13 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25j Production's Kite routes and the owner's entry halt (operations; commit pending (recorded in the next docs commit))
+
+- No source change. Production's `node-gateway/.env` gets `KITE_PROXY_URL` and the root `.env` gets `KITE_ORDER_PROXY_URL`, both the direct tunnel `161.118.160.180:31528`. So:
+  - the gateway's Kite calls go HTTPS inside the tunnel (its KITE_BASE_URL, the plain relay, is ignored);
+  - the engine's place/modify/cancel go through the tunnel; its quotes stay direct (KITE_BASE_URL https://api.kite.trade);
+  - the engine's 3-minute market-hours probe watches the tunnel.
+- `OWNER_LIVE_ENTRY_HALT=true` (Production root `.env`) refuses every real entry on every channel before any order is sent, including FNO_LIVE buys and the preflight test order. Exits are never halted. For the Nov 2 run: OWNER_LIVE_ENTRY_HALT=false plus OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge (runbook step 9).
+
 ## October 25 — O25i direct Oracle tunnel verified; application adoption still pending
 
 - Owner saved stateful TCP 31528 ingress in the attached `ig-quick-action-NSG` (`0.0.0.0/0`, source ports All). Console read-back and direct public tests confirm it; no existing rule was removed. Missing password 407, wrong destination 403. Both deployed application images reached Kite HTTP 200 directly with verified TLS and rejected fake broker tokens; no real orders/credentials or Production data mounts.

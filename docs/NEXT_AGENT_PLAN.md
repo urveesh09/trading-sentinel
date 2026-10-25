@@ -1,5 +1,39 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 — O25j Latest docs to the Production branch, Production rebuilt, tunnel settings applied (step 5) with the owner's one-time permission (in progress at commit pending (recorded in the next docs commit); the receipt follows in this slice)
+
+- Owner ask (Oct 25): "push the latest code all in the prod branch, something was pushed in it so that should also be maintained, and resolve any issues in the way. Then run the script to get the latest code in prod. I allow you this once to put the needed variables in the prod env, and then restart prod. In short, make it fully ready for tomorrow's run."
+- State found:
+  - PR #115 is already merged (`0aa629a` on `evolve/smart-strategies`). Production is at `0aa629a`, deployed 13:42 IST by O25g, and healthy.
+  - `hedge-p0` has three docs-only commits (`2e4529f`, `1bcc98e`, `228547b`) not on the Production branch.
+  - The Production branch has nothing our branch lacks, apart from its merge commits.
+  - Oracle ingress for 31528 has been added by the owner; it answers from this PC.
+  - The protected `tunnel-client.env` matches `tunnel-client-direct.env` (2 lines: http://kite:<48>@161.118.160.180:31528).
+- Real-money check before giving the engine a working order route. Production's effective settings:
+  - PENNY_LIVE_TRADING false, PENNY_EDGE_DISABLE_LIVE true, FNO_LIVE_TRADING false, FNO_DISABLE_LIVE true, FNO_LIVE_TEST_ENABLED false, OWNER_LIVE_ENTRY_HALT true.
+  - So no engine entry can be sent. The engine orders the tunnel newly lets through are only exits: momentum residual SLs and F&O exits for real positions, of which there are none.
+- Found: `OWNER_LIVE_ENTRY_HALT=true` would refuse every Nov 2 test buy and the step 8 test order. The runbook's step 9 now sets OWNER_LIVE_ENTRY_HALT=false with OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge first. The owner's call at the weekend.
+- Rollout:
+  1. These docs → PR to `evolve/smart-strategies`, merged as a merge commit (keeps `0aa629a`).
+  2. Production: fresh SQLite online backups; `git merge --ff-only`.
+  3. Build engine, gateway and agent one at a time, stamped with the merge SHA.
+  4. Back up both `.env` files outside the repositories, then add `KITE_PROXY_URL` (`node-gateway/.env`) and `KITE_ORDER_PROXY_URL` (root `.env`) from `tunnel-client.env`; no other setting changes and no value printed.
+  5. Recreate engine, gateway and agent separately (`--no-deps --no-build --force-recreate`), restart nginx, run `verify_deployment.py`.
+- Acceptance:
+  - identities equal the merge SHA; all healthy; restart policies `always`; the switch false;
+  - the gateway logs `kite_route` encrypted with no password;
+  - the engine's order client goes through the tunnel and Kite's root answers through it;
+  - no conflicting route settings; no real order.
+- Rollback:
+  - delete the two lines (or restore the `.env` backups) and recreate;
+  - the images tagged `sentinel-rollback/*:0aa629a-20261025`;
+  - the database backups.
+- Remaining (owner):
+  - Monday before 09:15: the Kite login (and the partner's);
+  - watch the 15:50 reports Oct 26–30 and Friday's verdict;
+  - at the weekend: steps 1, 3 and 6–9, including the entry-halt change;
+  - after Nov 2: step 10.
+
 ## October 25 — O25i owner-added Oracle ingress; direct route verified (completed; client adoption pending)
 
 - Owner added the requested rule. Read-only Console verification: attached `ig-quick-action-NSG` has stateful ingress TCP 31528 from `0.0.0.0/0`, all source ports, description `Kite authenticated CONNECT tunnel`; original egress retained. Direct TCP and negative policy checks now pass (missing password 407, wrong target 403).

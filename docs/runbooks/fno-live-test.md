@@ -7,8 +7,11 @@ both deployed image transports passed directly through public 31528 with
 verified TLS. Step 4 is complete. Protected `tunnel-client.env` now selects
 that direct route; the supervised SSH bridge remains a separate fallback.
 
-**Production clients have not adopted the tunnel settings; step 5 onward is
-pending.** The account is unfunded, real-money switch false, no real order
+**[O25j] Step 5 is applied on Oct 25** by the agent, with the owner's one-time
+permission, in the same rollout that brings this runbook to Production. The
+gateway's and the engine's lines come from `tunnel-client.env`. The receipt
+(the route checks after the recreate) is the plan's O25j slice. Steps 1, 3 and
+6–9 remain for the weekend of Oct 31 – Nov 1. The account is unfunded, real-money switch false, no real order
 placed. Log in to Kite Monday morning before 09:15; the partner watch needs
 its separate login. Telegram polling/read-only bot authentication passed;
 outbound delivery was not exercised. Use `--user quantuser` for engine CLIs.
@@ -188,6 +191,18 @@ cancelled at once. It refuses to run from 09:00 to 09:15 and from 15:25 to
   sells it at once and you are paged.
 
 ### 9. Switch on (Sun Nov 1 evening, after funding, verification and owner decision)
+
+**[O25j] First, the owner's entry halt.** Production's root `.env` has
+`OWNER_LIVE_ENTRY_HALT=true` (seen on Oct 25). It refuses every real entry on
+every channel, including this test's buys and the step 8 test order
+(`Owner entry halt: global_owner_entry_halt`). The test would then run for
+five days and never buy. To let only F&O through, set:
+
+    OWNER_LIVE_ENTRY_HALT=false
+    OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge
+
+The other three channels stay halted; exits are never halted. Do this before
+step 8 too, or its test order is refused.
 
 In the root `.env`, add `FNO_LIVE_TEST_ENABLED=true`. Optionally also set
 `FNO_LIVE_TEST_RUN=1`, `FNO_LIVE_TEST_SESSIONS=5`, `FNO_LIVE_TEST_CAPITAL=12500`

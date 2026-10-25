@@ -1,5 +1,15 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25j latest docs to Production, rebuild, tunnel settings applied (commit pending (recorded in the next docs commit); receipt in the plan's O25j slice)
+
+- [x] Real-money check: every engine entry path is off and the owner halt is on, so the engine's new order route can only carry exits.
+- [x] Runbook step 9: lift OWNER_LIVE_ENTRY_HALT for F&O only before the Nov 2 run, or nothing buys.
+- [ ] (this rollout) PR to `evolve/smart-strategies`; Production backup, fast-forward, build, `.env` lines, recreate, verify. See the plan's receipt.
+- [ ] Owner:
+  - the Kite login Monday before 09:15;
+  - the weekend steps 1, 3 and 6–9;
+  - step 10 after Nov 2.
+
 ## October 25 — O25i Oracle ingress complete; direct public tunnel verified
 
 - [x] Owner-added NSG ingress confirmed: stateful TCP 31528, source `0.0.0.0/0`, all source ports. Existing rules retained.
