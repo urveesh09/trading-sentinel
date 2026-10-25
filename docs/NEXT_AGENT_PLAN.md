@@ -2,6 +2,7 @@
 
 ## October 25 — O25e VM tunnel installed; cloud ingress and application rollout remain
 
+- Installation/documentation receipt **`c062b65`**, pushed on the existing branch and included in draft PR #115. Post-commit documentation/scope checks passed; the only remaining tracked working-tree edits are the original unrelated `.gitignore` and bottom-of-document changes. No application source changed or atlas regeneration required in O25e.
 - Problem/access: the owner's attached 128 GB Linux USB held `/home/urveesh/.ssh/id_ed25519`; its saved host keys match `161.118.160.180`. Recovered to an explicitly protected local directory outside both repositories, without printing private material. Strict-host-key SSH authenticated as `ubuntu` on `trading-sentinel`, Ubuntu 22.04.5 LTS, with passwordless sudo. The earlier missing-key blocker is resolved.
 - Authorized scope: install the already pushed O25d tunnel on this existing VM, retain port 31527 and its service, verify actual TLS and both client transports without broker credentials or orders. Keep live trading off and the unfunded account untouched. No paid resource, Production working-copy edit, restart or application deployment.
 - Files/contracts: committed `scripts/kite_tunnel.py` (`94a262a`); VM `/opt/kite-tunnel`, root-only `/etc/kite-tunnel.env`, `kite-tunnel.service`, additive TCP 31528 firewall rule. Secrets remain in protected storage and are never included in documentation/output. Cloud ingress may require authenticated Oracle Console access if the current rules do not already permit this port.

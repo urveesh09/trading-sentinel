@@ -1,5 +1,9 @@
 # October 25 — O25e Oracle tunnel installation and recovered access
 
+Installation/documentation receipt: **`c062b65`**, pushed in draft PR #115.
+Application source remains O25d `94a262a`; only that tunnel program is deployed
+to the VM. Production application deployment remains pending.
+
 ## Outcome
 
 The already pushed O25d tunnel is now installed on the existing Oracle VM.
