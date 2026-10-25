@@ -775,6 +775,8 @@ async function executeSignalSteps(signal, action, isIntraday, dispatch) {
     unknown.outcomeUnknown = true;
     throw unknown;
   }
+  // [O25] The fill is the broker's from here: free the own-cash hold.
+  accountCashReservations.releaseFilled(`GW:${idempotencyTag}`, { brokerOrderId: orderId });
   signal = { ...signal, shares: fill.filledQuantity };
   const finalNotes = isPartialFill ? `partial_fill:${fill.filledQuantity}` : "Executed via Telegram";
 

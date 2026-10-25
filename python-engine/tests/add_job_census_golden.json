@@ -55,6 +55,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_fno_evening_report_safe",
+    "id": "'fno_evening_report'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_fno_fast_exit_safe",
     "id": "'fno_fast_exit'",
     "trigger": "'interval'"

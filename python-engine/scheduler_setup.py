@@ -364,6 +364,31 @@ def register_fno_scheduler_jobs(scheduler):
         id="fno_accept_watchdog",
         max_instances=1, coalesce=True, misfire_grace_time=600,
     )
+
+    # [O25 2026-10-25] 15:50 IST: one owner message after the derivatives
+    # close -- the pre-registered proving week on its days, and the real-money
+    # test's trades beside their paper twins. Read-only over the F&O ledger;
+    # sent once a day (fno_evening_report_told survives a restart).
+    async def _run_fno_evening_report_safe():
+        from fno_proving_week import evening_report
+        if not settings.FNO_EVENING_REPORT_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            logger.info("fno_evening_report_skip reason=non_trading_day")
+            return
+        try:
+            sent = await evening_report(settings.DB_PATH)
+            logger.info("fno_evening_report_done sent=%s", bool(sent))
+        except Exception as exc:
+            logger.error("fno_evening_report_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_fno_evening_report_safe, "cron",
+        hour=15, minute=50,
+        id="fno_evening_report",
+        max_instances=1, coalesce=True, misfire_grace_time=1800,
+    )
     logger.info(
         "fno_cron_registered id=fno_instruments_refresh,fno_hourly_report,"
         "fno_accept_watchdog"

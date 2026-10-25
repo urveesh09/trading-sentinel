@@ -982,6 +982,29 @@ class Settings(BaseSettings):
     FNO_LIVE_TRADING:          bool  = False      # master switch
     FNO_DISABLE_PAPER:         bool  = False
     FNO_DISABLE_LIVE:          bool  = True
+    # [O25 2026-10-25] The owner's real-money F&O test (fno_live_test.py). One
+    # switch: True trades FNO_LIVE_TEST_CAPITAL of the owner's own cash on the
+    # single-leg book by mirroring the paper book (one lot of the contract the
+    # paper book just bought, NIFTY only, never on an expiry day, one position
+    # at a time). The 2%-of-pool sizing, the pool gates and the go-live bar are
+    # relaxed for this test only, by the owner's decision (Oct 25); the entry
+    # and exit rules are the paper book's. New entries stop while test equity
+    # (capital + realised real P&L) is under FNO_LIVE_TEST_FLOOR. Turning it off
+    # stops new entries; an open real position is still managed to its exit.
+    FNO_LIVE_TEST_ENABLED:     bool  = False
+    FNO_LIVE_TEST_CAPITAL:     float = 12500.0
+    FNO_LIVE_TEST_FLOOR:       float = 7000.0
+    # The real buy is a LIMIT at the fresh ask plus a few ticks (it fills at the
+    # ask or better); it is skipped when that ask is more than this above the
+    # paper book's price (the trade has run away), and never chased after.
+    FNO_LIVE_TEST_MAX_CHASE_PCT: float = 0.02
+    FNO_LIVE_TEST_ENTRY_BUFFER_TICKS: int = 2
+    # [O25] The pre-registered proving week (fno_proving_week.py): the paper
+    # single-leg book's first FNO_PROVING_SESSIONS trading sessions from
+    # FNO_PROVING_START, scored once with rules fixed on Oct 25.
+    FNO_PROVING_START:         str   = "2026-10-26"
+    FNO_PROVING_SESSIONS:      int   = 5
+    FNO_EVENING_REPORT_ENABLED: bool = True
     # Broker-free opening-range research sidecar. Disabling it removes all
     # local CPU/SQLite work without changing any F&O strategy or arming flag.
     FNO_SHADOW_ENABLED:        bool  = True
@@ -1681,6 +1704,12 @@ class Settings(BaseSettings):
     # Relay is a path-preserving forward proxy; auth + X-Kite-Version headers pass through.
     # Override with KITE_BASE_URL in .env (e.g. http://161.118.160.180:31527).
     KITE_BASE_URL: str = "https://api.kite.trade"
+    # [O25 2026-10-25] Where order writes (place, modify, cancel) go. Kite only
+    # accepts orders from the app's registered static IPs; reads do not need
+    # one. Empty = KITE_BASE_URL. On the home desktop set it to the relay
+    # (http://161.118.160.180:31527), whose IP is registered, so quotes can
+    # stay direct while orders leave from the registered address.
+    KITE_ORDER_BASE_URL: str = ""
     # [FOLLOW-UP-F3 2026-10-08] Kite documents 1 quote request/second (up to
     # 500 instruments each). kite_client.QuoteBudget enforces it and merges
     # concurrent token requests into one call; the shared limiter (3/s, all

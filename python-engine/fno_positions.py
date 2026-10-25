@@ -234,6 +234,7 @@ class FnoPosition:
     bar_ts: str
     settlement_generation: int
     best_premium: Optional[float] = None    # FNO-PROFIT-LOCK: best exit basis seen
+    entry_order_id: Optional[str] = None    # [O25] PAPER-... or the broker's order id
 
 
 _SELECT_COLS = (
@@ -242,7 +243,7 @@ _SELECT_COLS = (
     "entry_underlying, delta_at_entry, iv_at_entry, atr_at_entry, "
     "stop_underlying, target_underlying, premium_stop, trail_active, "
     "trail_stop_underlying, best_underlying, max_loss_rupees, status, bar_ts, "
-    "settlement_generation, best_premium"
+    "settlement_generation, best_premium, entry_order_id"
 )
 
 
@@ -304,6 +305,15 @@ async def init_fno_positions_db(db_path: str) -> None:
         await db.execute("""CREATE TABLE IF NOT EXISTS fno_exit_intents (
             position_id INTEGER PRIMARY KEY, source TEXT NOT NULL,
             created_at TEXT NOT NULL)""")
+        # [O25] A live exit still working at the broker is followed up by its
+        # order id (survives a restart); NULL = no working order recorded.
+        for column, datatype in (("order_id", "TEXT"), ("working_limit", "REAL"),
+                                 ("exit_reason", "TEXT")):
+            try:
+                await db.execute(f"ALTER TABLE fno_exit_intents ADD COLUMN {column} {datatype}")
+            except aiosqlite.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    raise
         await db.execute("""CREATE TABLE IF NOT EXISTS fno_exit_recoveries (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             position_id INTEGER NOT NULL, source TEXT NOT NULL,
@@ -568,6 +578,52 @@ async def claim_exit_intent(
             (datetime.now(timezone.utc).isoformat(), position_id, source,
              position_id, evaluation_started_at.astimezone(timezone.utc).isoformat()),
         )
+        await db.commit()
+        return cur.rowcount == 1
+
+
+async def record_working_exit(db_path: str, position_id: int, source: str, *, order_id: str,
+                              limit: float, exit_reason: str) -> None:
+    """[O25] Keep a live exit order that is still working, on its claimed intent."""
+    await init_fno_positions_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "UPDATE fno_exit_intents SET order_id=?, working_limit=?, exit_reason=? "
+            "WHERE position_id=? AND source=?",
+            (order_id, float(limit), exit_reason, position_id, source),
+        )
+        await db.commit()
+
+
+async def working_exit(db_path: str, position_id: int, source: str) -> Optional[dict]:
+    """[O25] The claimed intent's working exit order, or None when none is recorded.
+    Read on every pass of a live position, so it never migrates the schema: a
+    database without the columns (none recorded yet) has no working exit."""
+    async with aiosqlite.connect(db_path) as db:
+        try:
+            row = await (await db.execute(
+                "SELECT order_id, working_limit, exit_reason, created_at FROM fno_exit_intents "
+                "WHERE position_id=? AND source=? AND order_id IS NOT NULL",
+                (position_id, source),
+            )).fetchone()
+        except aiosqlite.OperationalError as exc:
+            if "no such" not in str(exc).lower():
+                raise
+            return None
+    if row is None:
+        return None
+    return {"order_id": row[0], "limit": float(row[1] or 0.0), "exit_reason": row[2], "created_at": row[3]}
+
+
+async def release_exit_intent(db_path: str, position_id: int, source: str) -> bool:
+    """[O25] Drop a claimed exit that provably left nothing at the broker.
+
+    Only for an order that was never sent (``NOT_SENT``/``BROKER_REJECTED``) or
+    that ended cancelled/rejected with nothing filled: the next pass may then
+    send a new exit. Any other uncertainty keeps the claim (reconciliation)."""
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "DELETE FROM fno_exit_intents WHERE position_id=? AND source=?", (position_id, source))
         await db.commit()
         return cur.rowcount == 1
 

@@ -72,13 +72,19 @@ async def test_concurrent_claim_and_unreadable_evidence_fail_closed(fno_db):
 
 
 @pytest.mark.asyncio
-async def test_executor_does_not_replace_uncertain_order():
+async def test_executor_does_not_replace_uncertain_order(monkeypatch):
+    import fno_executor
+    monkeypatch.setattr(fno_executor, "EXIT_LADDER", tuple((share, ticks, 0.0)
+                                                           for share, ticks, _ in fno_executor.EXIT_LADDER))
     executor = FnoExecutor(AsyncMock(), paper_mode=False, source_tag="FNO_LIVE")
     executor._place_limit = AsyncMock(return_value={"order_id": "broker-1"})
-    executor._wait_for_fill = AsyncMock(return_value=None)
+    executor.order_state = AsyncMock(return_value={"status": "OPEN", "filled_quantity": 0})
+    executor.kite.modify_order.return_value = {"order_id": "broker-1", "status": "MODIFIED"}
     result = await executor.execute_exit("NIFTY", 75, 110, .05)
-    assert result["status"] == "unfilled"
+    # [O25] still unfilled after the price steps: the same order, modified lower, never a second one
+    assert result["status"] == "unfilled" and result["order_id"] == "broker-1"
     executor._place_limit.assert_awaited_once()
+    assert [c.kwargs["price"] for c in executor.kite.modify_order.await_args_list] == [106.7, 99.0]
 
 
 @pytest.mark.asyncio

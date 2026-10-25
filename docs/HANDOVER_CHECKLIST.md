@@ -1,5 +1,25 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25 the ₹12,500 real-money F&O test is ready behind one switch (commit pending (recorded in the next docs commit), Dev, pushed, not deployed, switch off)
+
+- [x] FNO_LIVE_TEST_ENABLED: one lot of what the paper book buys. NIFTY only, never on an expiry day, one position, own cash, a ₹7,000 floor. Sizing guardrails are relaxed for this test only.
+- [x] Real-money gaps fixed before any real order:
+  - a live exit left resting at a stale price (now worked down until it fills and followed up);
+  - cash holds never released (the next day every buy would have been refused);
+  - orders leaving from an unregistered IP (KITE_ORDER_BASE_URL);
+  - an open live position unmanaged when switched off;
+  - never selling what the broker no longer holds.
+- [x] The proving week Oct 26–30 is pre-registered (`fno_proving_week`); a 15:50 owner message each day and the verdict on Fri Oct 30.
+- [x] Preflight `python -m fno_live_preflight --test-order`; runbook `docs/runbooks/fno-live-test.md`.
+- [x] Tests: engine full suite (Dev, Windows, 9 min 47 s): 5,684 passed, 4 skipped, 1 collection error -- pytest collected `fno_live_test.py` (its name matches `*_test.py`) and ran its helper `test_equity` as a test; renamed `live_equity`. After that, `pytest fno_live_test.py fno_live_preflight.py fno_proving_week.py --collect-only` collects nothing, and the affected files (`test_fno_live_test` 16, `test_fno_proving_week` 6, `test_fno_live_preflight` 3, `test_fno_orchestrator`, `test_fno_hourly_and_scheduler`, `test_performance`) pass 128 of 128. Gateway: `executor.test.js` 64 passed (1 new test, 1 new assertion). The full gateway suite: 505 passed, 4 skipped, 18 failed in `db.test.js` and `backlog-reconciliation.test.js`, which cannot load better-sqlite3's native binding on this Windows Node 24 (an environment limit; the files are untouched). `releaseFilled` was checked against real SQLite in a throwaway container of the gateway image (Node 20, no network). No order was placed anywhere.
+- [ ] Deployed: no. Owner, in order:
+  1. the verdict;
+  2. deploy (engine, then gateway);
+  3. ₹12,500 of free cash in the account;
+  4. root `.env`: `KITE_ORDER_BASE_URL=http://161.118.160.180:31527`;
+  5. the preflight PASS in market hours;
+  6. `FNO_LIVE_TEST_ENABLED=true`, then recreate the engine.
+
 ## October 24 (night, 4) — O24i the F&O drawdown halt stays and is no longer silent (commit `0b7d7b9`, Dev, pushed, not deployed)
 
 - [x] Decided (the owner delegated it): the 15% drawdown halt stays as it is. Its July – August losses were made by the same entry rule.

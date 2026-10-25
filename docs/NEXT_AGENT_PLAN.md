@@ -1,5 +1,67 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 — O25 The ₹12,500 real-money F&O test is ready behind one switch, after a pre-registered proving week (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 25):
+  - give the paper F&O book "5 more days to prove itself", then put ₹12.5k of real money on it for a week with the investment and risk guardrails relaxed;
+  - "make an env variable that if set true, it will start trading this much amount, real money";
+  - "will the entry and exit calculation still work?";
+  - pure intraday F&O only, no expiry;
+  - "this is important and critical, so do it wisely".
+- Answer to the question: yes. The real test runs the same signal, strike, gates and exit ladder (`fno_entry_plan`, `fno_exit_rules`, the same `_manage_open_positions`). Only the lot count changes (always one), plus real fills and timing.
+- Decisions (the system's, inside the owner's mandate):
+  - **Mirror.** The test never decides a trade. It buys one lot of the contract the paper book just bought on the same bar, so the paper book's tiers, loss brakes and 15% halt decide for both.
+  - **Scope.** NIFTY only: live exit evidence and recovery accept NFO only. Never on its expiry day, even if paper expiry entries are ever enabled. One open position; at most FNO_MAX_TRADES_PER_DAY entries.
+  - **Buy.** A LIMIT at the fresh ask plus 2 ticks. Skipped when that ask is over 2% above the paper price, the quote is stale or one-sided, or the spread is over 1.5%. Cancelled after 30 s, never chased.
+  - **Floor.** FNO_LIVE_TEST_FLOOR ₹7,000 (env): no new entries under it; the owner is told once a day.
+  - **Relaxed, for the test only:** the 2% risk per trade, the pool gates and the go-live bar. Kept: own cash only (kite_client), the shared ledger reservation, LIMIT and MIS, the hard flat and the broker backstop.
+- Found while preparing it: real-money gaps that never surfaced because no live F&O order has ever been placed. Production has 0 FNO_LIVE rows and an empty `account_cash_reservations`. All are fixed:
+  - [x] O25-EX: a live exit that does not fill now completes.
+    - Before: it waited 15 s at the bid, then left the order resting at a stale price with the exit claim held. No later pass acted, and its broker stop had already been cancelled.
+    - Now (`fno_executor`): one SELL LIMIT, modified lower (0.5%, then 3%, then 10% or ₹5 under the bid). If still unfilled, it is kept on the claim (`fno_exit_intents.order_id`) and re-priced every pass, also after a restart (`follow_exit`, `_follow_working_exit`). Never a second SELL.
+    - An exit proven never sent, or ended with nothing filled, frees its claim and is retried (`release_exit_intent`).
+    - Before any real sell the broker's positions are read. If it holds none (sold in Kite, or squared off), nothing is sold and the claim stays for exit recovery (`_broker_holds_none`).
+  - [x] O25-CASH: a filled buy's own-cash hold (`account_cash_reservations`) was never released. The day after a trade, every buy on the account would have been refused (the order had left the day's book, so the hold counted again). The engine's cancelled F&O buys were never released either.
+    - Now `KiteClient.settle_entry_reservation` (via `FnoExecutor`) and the gateway's `releaseFilled` release a hold on a proven fill or zero fill. Anything unproven keeps it.
+  - [x] O25-ROUTE: the Production engine sends orders straight from this host (KITE_BASE_URL is direct), while Kite accepts orders only from the registered static IPs. New KITE_ORDER_BASE_URL: only place, modify and cancel use it, so the relay can carry orders and quotes stay direct.
+  - [x] O25-MGMT: turning a switch off stopped managing an open live position. Now an open FNO_LIVE position is always managed. Each position is exited the way it was entered (a PAPER-... row never by a real order; `_executor_for_position`).
+- [x] O25-LT `fno_live_test.py`: FNO_LIVE_TEST_ENABLED / _CAPITAL 12500 / _FLOOR 7000 / _MAX_CHASE_PCT 0.02 / _ENTRY_BUFFER_TICKS 2.
+  - `mirror_entry` is called by `fno_orchestrator._single_leg_entries` after a paper entry. It uses the same reservation, single-dispatch claim and outcome protocol as the other legs, arms the broker backstop, and logs every refusal as a FNO_LIVE signal row.
+  - `live_pool` feeds the live leg, `performance` and the hourly report.
+  - Owner lines read `💰 REAL MONEY ENTRY/EXIT` with the paper price beside them.
+- [x] O25-PW `fno_proving_week.py`: the pre-registered proving week, rules fixed on Sunday Oct 25 before the first session.
+  - Window: Oct 26–30, the paper single-leg book at one lot.
+  - Verdict:
+    - PROVED: at least one trade, one-lot net ≥ ₹0, clean operation, no drawdown halt;
+    - NOT_PROVED: otherwise;
+    - NO_EVIDENCE: no trade.
+  - Shown beside it: what ₹12,500 would have done.
+  - A 15:50 job (`fno_evening_report`) sends one owner message a day: the week on its days, and the real trades beside their paper twins.
+  - CLI: `python -m fno_proving_week`.
+- [x] O25-PF `fno_live_preflight.py`, run by the owner. It reads the route, own free cash and open F&O positions. `--test-order` adds one real BUY 20% under the bid, cancelled and read back.
+- [x] Runbook: `docs/runbooks/fno-live-test.md`.
+- Proving-week discipline: the paper single-leg entry and exit rules stay unchanged Oct 26–30, so the week scores one thing. Fixes to safety or plumbing are fine.
+  - Deploying S23–O24i mid-week also moves the expiry cutoff in the delta/IV clock from 15:30 to 15:40 (`fno_chain`, O24-MC), a ten-minute change to time-to-expiry.
+  - Best deployed before Monday's open, or after Friday's close.
+- Files:
+  - new: `python-engine/fno_live_test.py`, `fno_proving_week.py`, `fno_live_preflight.py`, `docs/runbooks/fno-live-test.md`;
+  - changed: `python-engine/fno_executor.py`, `fno_orchestrator.py`, `fno_positions.py`, `kite_client.py`, `account_cash_reservations.py`, `performance.py`, `fno_hourly_report.py`, `scheduler_setup.py`, `config.py`;
+  - gateway: `node-gateway/server/services/account-cash-reservations.js`, `executor.js`;
+  - tests: new `python-engine/tests/test_fno_live_test.py` (16), `test_fno_proving_week.py` (6), `test_fno_live_preflight.py` (3); `test_fno_exit_recovery_boundary.py` (ladder); the census goldens; `node-gateway/server/tests/unit/executor.test.js` (+1).
+- Tests: engine full suite (Dev, Windows, 9 min 47 s): 5,684 passed, 4 skipped, 1 collection error -- pytest collected `fno_live_test.py` (its name matches `*_test.py`) and ran its helper `test_equity` as a test; renamed `live_equity`. After that, `pytest fno_live_test.py fno_live_preflight.py fno_proving_week.py --collect-only` collects nothing, and the affected files (`test_fno_live_test` 16, `test_fno_proving_week` 6, `test_fno_live_preflight` 3, `test_fno_orchestrator`, `test_fno_hourly_and_scheduler`, `test_performance`) pass 128 of 128. Gateway: `executor.test.js` 64 passed (1 new test, 1 new assertion). The full gateway suite: 505 passed, 4 skipped, 18 failed in `db.test.js` and `backlog-reconciliation.test.js`, which cannot load better-sqlite3's native binding on this Windows Node 24 (an environment limit; the files are untouched). `releaseFilled` was checked against real SQLite in a throwaway container of the gateway image (Node 20, no network). No order was placed anywhere.
+- Config and migration impact:
+  - new settings: FNO_LIVE_TEST_*, FNO_PROVING_START / _SESSIONS, FNO_EVENING_REPORT_ENABLED, KITE_ORDER_BASE_URL;
+  - new columns `fno_exit_intents.order_id`, `working_limit`, `exit_reason`, and `fno_positions.entry_order_id` read into `FnoPosition`;
+  - new table `fno_evening_report_told`; new scheduler job `fno_evening_report` at 15:50.
+  - With the switch off there is no trading change: the new exit ladder and position handling act only on FNO_LIVE positions, and none exist. The owner gets the 15:50 proving-week message Oct 26–30 once deployed.
+- Rollout: with S23–O24i.
+  - The switch goes on only after the verdict, the root `.env` route (`KITE_ORDER_BASE_URL=http://161.118.160.180:31527`), the preflight PASS and ₹12,500 of free cash.
+  - Rollback: FNO_LIVE_TEST_ENABLED=false (entries stop; an open position is still managed), then revert.
+- Remaining (owner):
+  - the Oct 30 verdict and the decision;
+  - deploy; the `.env` lines; run the preflight;
+  - restricting the relay port 31527 to this host (plain HTTP on an open port).
+
 ## October 24 (night, 4) — O24i The F&O drawdown halt stays as it is and is no longer silent; the partner stays in English (done, Dev, commit `0b7d7b9`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 24):

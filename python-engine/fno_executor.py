@@ -6,9 +6,11 @@ single largest controllable cost.
 
   Entry: LIMIT at ask, FNO_FILL_TIMEOUT_SEC then cancel. NEVER chase --
          a missed fill is free; a chased fill is not.
-  Exit:  LIMIT at bid, escalating to bid - 3 ticks after 15s.
-  Hard flat (15:10): a marketable limit wide enough to guarantee the
-         fill -- the position MUST close.
+  Exit:  [O25] one SELL LIMIT just under the bid, modified lower in steps
+         (EXIT_LADDER) until it fills; one still working is followed up on
+         every later pass (follow_exit). Never a second SELL order.
+  Hard flat (15:10): the ladder's deepest step at once -- the position
+         MUST close.
 
 Paper mode fills honestly against the REAL book: entry at ask, exit at
 bid. Paying the spread in paper is deliberate -- it is the cost model's
@@ -42,6 +44,35 @@ logger = structlog.get_logger()
 # bid. Deep enough to cross any sane NIFTY-option book, still a LIMIT so
 # a broken book (bid=0.05) cannot fill us at 0.
 HARD_FLAT_TICKS_THROUGH = 100
+
+# [O25 2026-10-25] A live exit is one SELL LIMIT that is worked until it
+# fills: (share of the bid, minimum ticks) under the bid, and the seconds it
+# waits at that price before the order is modified lower. A SELL LIMIT under
+# the bid still trades at the best bid (or better), so the deeper steps only
+# matter when the bid is falling away; the last step is the hard-flat depth
+# or 10%, whichever is deeper. The old exit waited 15 s at the bid and then
+# left the order resting at a stale price with the position unmanaged (a
+# stop in a falling market is exactly when that happens).
+EXIT_LADDER = ((0.005, 2, 4.0), (0.03, 10, 6.0), (0.10, HARD_FLAT_TICKS_THROUGH, 20.0))
+# A working exit found unfilled on a later pass is re-priced this far under
+# the fresh bid (never above its current price).
+FOLLOW_UP_SHARE, FOLLOW_UP_TICKS = 0.10, HARD_FLAT_TICKS_THROUGH
+_TERMINAL = ("COMPLETE", "CANCELLED", "REJECTED")
+
+
+def _tick_floor(value: float, tick: float) -> float:
+    return round(max(tick, int(round(value / tick, 6)) * tick), 2)
+
+
+def exit_ladder_prices(bid: float, tick: float) -> list[tuple[float, float]]:
+    """(limit, wait seconds) for each exit step; never rising, never under one tick."""
+    steps, last = [], None
+    for share, ticks, wait in EXIT_LADDER:
+        price = _tick_floor(bid - max(share * bid, ticks * tick), tick)
+        price = price if last is None else min(price, last)
+        steps.append((price, wait))
+        last = price
+    return steps
 
 
 class FnoExecutor:
@@ -100,6 +131,7 @@ class FnoExecutor:
             return {"status": status, "order_id": None, "fill_price": None, "evidence": evidence}
         fill = await self._wait_for_fill(order_id)
         if fill is not None:
+            self._settle_account_cash(order_id, "COMPLETE", qty)
             return {"status": "filled", "order_id": order_id, "fill_price": fill,
                     "evidence": {"dispatch_certainty": "ACCEPTED", "order_id": order_id,
                                  "final_status": "COMPLETE", "average_price": fill}}
@@ -140,6 +172,7 @@ class FnoExecutor:
             if price > 0:
                 logger.warning("fno_entry_filled_during_cancel symbol=%s order_id=%s",
                                tradingsymbol, order_id)
+                self._settle_account_cash(order_id, "COMPLETE", filled)
                 return {"status": "filled", "order_id": order_id, "fill_price": price,
                         "evidence": evidence}
         elif final_status in ("CANCELLED", "REJECTED") and filled == 0:
@@ -147,6 +180,7 @@ class FnoExecutor:
                 "fno_entry_unfilled_verified symbol=%s order_id=%s status=%s -- never chase",
                 tradingsymbol, order_id, final_status,
             )
+            self._settle_account_cash(order_id, final_status, 0)
             return {"status": "zero_fill_verified", "order_id": order_id, "fill_price": None,
                     "evidence": evidence}
         elif final_status in ("CANCELLED", "REJECTED") and filled is not None and 0 < filled < qty:
@@ -188,31 +222,108 @@ class FnoExecutor:
                 "fill_price": bid,
             }
 
+        # [O25] One order, worked down the ladder (the hard flat starts at its
+        # deepest step). Statuses: filled | not_sent (nothing reached the
+        # broker) | rejected_verified (terminal, nothing filled) | unfilled
+        # (still working at the deepest price: the caller follows it up) |
+        # unknown (the broker may hold an order this cannot read).
+        steps = exit_ladder_prices(bid, tick_size)
         if hard_flat:
-            price = max(tick_size, bid - HARD_FLAT_TICKS_THROUGH * tick_size)
-            resp = await self._place_limit(tradingsymbol, "SELL", qty, price, intent="exit", exchange=exchange)
-            order_id = resp.get("order_id")
-            fill = await self._wait_for_fill(order_id) if order_id else None
-            if fill is None:
-                logger.critical(
-                    "fno_hard_flat_unfilled symbol=%s order_id=%s -- OPERATOR "
-                    "MUST FLATTEN MANUALLY (position may go to expiry)",
-                    tradingsymbol, order_id,
-                )
-                return {"status": "unfilled", "order_id": order_id, "fill_price": None}
-            return {"status": "filled", "order_id": order_id, "fill_price": fill}
-
-        # Normal exit ladder: bid, then bid - 3 ticks.
-        resp = await self._place_limit(tradingsymbol, "SELL", qty, bid, intent="exit", exchange=exchange)
+            steps = steps[-1:]
+        resp = await self._place_limit(tradingsymbol, "SELL", qty, steps[0][0], intent="exit", exchange=exchange)
         order_id = resp.get("order_id")
         if not order_id:
-            return {"status": "rejected", "order_id": None, "fill_price": None}
-        fill = await self._wait_for_fill(order_id, timeout=15.0)
-        if fill is not None:
-            return {"status": "filled", "order_id": order_id, "fill_price": fill}
-        logger.critical("fno_exit_ambiguous symbol=%s order_id=%s -- reconcile before retry",
-                        tradingsymbol, order_id)
-        return {"status": "unfilled", "order_id": order_id, "fill_price": None}
+            certainty = resp.get("dispatch_certainty") or "AMBIGUOUS"
+            status = "not_sent" if certainty in ("NOT_SENT", "BROKER_REJECTED") else "unknown"
+            logger.critical("fno_exit_order_not_placed symbol=%s certainty=%s status=%s",
+                            tradingsymbol, certainty, status)
+            return {"status": status, "order_id": None, "fill_price": None,
+                    "evidence": {"dispatch_certainty": certainty,
+                                 "message": str(resp.get("message") or "")[:300]}}
+        for index, (price, wait) in enumerate(steps):
+            if index:
+                await self._reprice(order_id, price)
+            outcome = self._exit_outcome(order_id, await self._watch(order_id, wait))
+            if outcome is not None:
+                return outcome
+        logger.critical(
+            "fno_exit_working symbol=%s order_id=%s limit=%.2f hard_flat=%s -- still unfilled at the "
+            "deepest step; followed up every pass", tradingsymbol, order_id, steps[-1][0], hard_flat,
+        )
+        return {"status": "unfilled", "order_id": order_id, "fill_price": None, "limit": steps[-1][0]}
+
+    def _settle_account_cash(self, order_id: str, final_status: str, filled_quantity) -> None:
+        """[O25] Free the BUY's own-cash hold once its outcome is proven (kite_client)."""
+        settle = getattr(type(self.kite), "settle_entry_reservation", None)
+        if not callable(settle):
+            return
+        try:
+            settle(self.kite, order_id, final_status=final_status, filled_quantity=filled_quantity)
+        except Exception as e:
+            logger.error("fno_account_cash_release_failed order_id=%s error=%s", order_id, str(e))
+
+    async def follow_exit(self, order_id: str, limit: float, bid: float, tick_size: float) -> dict:
+        """[O25] A working exit found on a later pass: read it, and if it still
+        rests, move it under the fresh bid (never up). Same statuses as
+        ``execute_exit``; ``limit`` is the price it now rests at."""
+        outcome = self._exit_outcome(order_id, await self.order_state(order_id))
+        if outcome is not None:
+            return outcome
+        if bid > 0:
+            lower = _tick_floor(bid - max(FOLLOW_UP_SHARE * bid, FOLLOW_UP_TICKS * tick_size), tick_size)
+            if lower < limit:
+                await self._reprice(order_id, lower)
+                limit = lower
+        outcome = self._exit_outcome(order_id, await self._watch(order_id, 2 * self.poll_interval_sec))
+        return outcome or {"status": "unfilled", "order_id": order_id, "fill_price": None, "limit": limit}
+
+    def _exit_outcome(self, order_id: str, latest: dict) -> Optional[dict]:
+        """A final answer from the order's latest state, or None while it works."""
+        status = latest.get("status")
+        filled = latest.get("filled_quantity")
+        filled = filled if type(filled) is int and filled >= 0 else None
+        if status == "COMPLETE":
+            try:
+                price = float(latest.get("average_price") or latest.get("price") or 0.0)
+            except (TypeError, ValueError):
+                price = 0.0
+            if price > 0:
+                return {"status": "filled", "order_id": order_id, "fill_price": price}
+            logger.critical("fno_exit_complete_without_price order_id=%s -- reconcile", order_id)
+            return {"status": "unknown", "order_id": order_id, "fill_price": None}
+        if status in ("CANCELLED", "REJECTED"):
+            if filled == 0:
+                logger.warning("fno_exit_terminal_unfilled order_id=%s status=%s msg=%s", order_id, status,
+                               str(latest.get("status_message") or "")[:200])
+                return {"status": "rejected_verified", "order_id": order_id, "fill_price": None,
+                        "evidence": {"final_status": status, "filled_quantity": 0}}
+            logger.critical("fno_exit_terminal_partial order_id=%s status=%s filled=%s -- reconcile",
+                            order_id, status, filled)
+            return {"status": "unknown", "order_id": order_id, "fill_price": None,
+                    "evidence": {"final_status": status, "filled_quantity": filled}}
+        return None
+
+    async def _watch(self, order_id: str, seconds: float) -> dict:
+        """Poll until a terminal state or ``seconds`` pass; the latest state read."""
+        latest: dict = {}
+        elapsed = 0.0
+        while True:
+            state = await self.order_state(order_id)
+            latest = state or latest
+            if latest.get("status") in _TERMINAL or elapsed >= seconds:
+                return latest
+            await asyncio.sleep(self.poll_interval_sec)
+            elapsed += self.poll_interval_sec
+
+    async def _reprice(self, order_id: str, price: float) -> None:
+        """Move a working SELL LIMIT; a refusal (it filled meanwhile) is read next."""
+        try:
+            result = await self.kite.modify_order(order_id, price=round(price, 2))
+            if result.get("status") != "MODIFIED":
+                logger.warning("fno_exit_modify_refused order_id=%s price=%.2f msg=%s", order_id, price,
+                               str(result.get("message") or "")[:200])
+        except Exception as e:
+            logger.error("fno_exit_modify_failed order_id=%s price=%.2f error=%s", order_id, price, str(e))
 
     # ------------------------------------------------------------------
     # plumbing

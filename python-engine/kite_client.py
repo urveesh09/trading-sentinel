@@ -798,6 +798,16 @@ class KiteClient:
         # KITE_BASE_URL: direct = "https://api.kite.trade" (default); via OCI relay = "http://161.118.160.180:31527"
         # Relay is a path-preserving forward proxy. Auth + X-Kite-Version headers pass through unchanged.
         self.client = httpx.AsyncClient(base_url=settings.KITE_BASE_URL, timeout=15.0)
+        # [O25] Order writes leave from the registered static IP when
+        # KITE_ORDER_BASE_URL names one (the relay); None = the client above.
+        order_url = (getattr(settings, "KITE_ORDER_BASE_URL", "") or "").strip().rstrip("/")
+        self.order_client = (httpx.AsyncClient(base_url=order_url, timeout=15.0)
+                             if order_url and order_url != settings.KITE_BASE_URL.rstrip("/") else None)
+
+    @property
+    def _orders_http(self) -> httpx.AsyncClient:
+        """The client for place, modify and cancel (Kite checks their static IP)."""
+        return self.order_client or self.client
 
     def _cache_db(self):
         """Return a cache connection with a contention-safe bounded wait."""
@@ -818,10 +828,12 @@ class KiteClient:
             _pytz.timezone("Asia/Kolkata")
         ).date()
         api_key = os.getenv("ZERODHA_API_KEY", "")
-        self.client.headers.update({
-            "X-Kite-Version": "3",
-            "Authorization": f"token {api_key}:{token}"
-        })
+        for http in (self.client, self.order_client):
+            if http is not None:
+                http.headers.update({
+                    "X-Kite-Version": "3",
+                    "Authorization": f"token {api_key}:{token}"
+                })
         # [FIX-PHASE3-AUDIT 2026-07-09] Masked breadcrumb: the armed vs
         # disarmed transition was previously invisible in the logs.
         logger.info(
@@ -2394,7 +2406,7 @@ class KiteClient:
                 return refusal
         try:
             _record_endpoint(self, "order")     # counted at dispatch; refusals above never reach HTTP
-            resp = await self.client.post(f"/orders/{variety}", data=params)
+            resp = await self._orders_http.post(f"/orders/{variety}", data=params)
             resp.raise_for_status()
             data = resp.json().get("data", {})
             # An accepted POST is the only honest proof available that this
@@ -2418,7 +2430,7 @@ class KiteClient:
             logger.error("kite_place_order_failed status=%d body=%s", e.response.status_code, body)
             if is_permission_or_static_ip_rejection(e.response.status_code, body):
                 reason = (
-                    f"Kite order authorization rejected via {settings.KITE_BASE_URL}: "
+                    f"Kite order authorization rejected via {self._orders_http.base_url}: "
                     f"HTTP {e.response.status_code}; verify the app's registered static IP "
                     "and the configured relay egress"
                 )
@@ -2518,7 +2530,7 @@ class KiteClient:
         await self.limiter.acquire()
         _record_endpoint(self, "order")
         try:
-            resp = await self.client.put(f"/orders/{variety}/{order_id}", data=params)
+            resp = await self._orders_http.put(f"/orders/{variety}/{order_id}", data=params)
             resp.raise_for_status()
             data = resp.json().get("data", {})
             return {"order_id": data.get("order_id", order_id), "status": "MODIFIED"}
@@ -2543,7 +2555,7 @@ class KiteClient:
         await self.limiter.acquire()
         _record_endpoint(self, "order")
         try:
-            resp = await self.client.delete(f"/orders/{variety}/{order_id}")
+            resp = await self._orders_http.delete(f"/orders/{variety}/{order_id}")
             resp.raise_for_status()
             data = resp.json().get("data", {})
             return {"order_id": data.get("order_id", order_id), "status": "CANCELLED"}
@@ -2666,6 +2678,26 @@ class KiteClient:
                     amount=reservation.amount, charge_reserve=reservation.charge_reserve,
                     fill_buffer=reservation.fill_buffer, available_after=reservation.available_after)
         return reservation_id, None
+
+    def settle_entry_reservation(self, order_id: str, *, final_status: str, filled_quantity) -> bool:
+        """[O25] Release a BUY's own-cash hold once its outcome is proven.
+
+        COMPLETE: the broker's position and later its cash balance carry the
+        money. CANCELLED/REJECTED with nothing filled: no money moved. Anything
+        else keeps the hold (fail closed). True when a hold was released."""
+        reservation_id = self.account_cash_reservations.reservation_for_order(order_id)
+        if reservation_id is None:
+            return False
+        status = str(final_status or "").upper()
+        if status == "COMPLETE":
+            released = self.account_cash_reservations.release_filled(reservation_id, broker_order_id=order_id)
+        elif status in ("CANCELLED", "REJECTED") and filled_quantity == 0:
+            released = self.account_cash_reservations.release_zero_fill(
+                reservation_id, broker_order_id=order_id, terminal_status=status, filled_quantity=0)
+        else:
+            return False
+        logger.info("entry_account_cash_released", order_id=order_id, status=status, released=released)
+        return released
 
     async def orders_snapshot(self) -> list | None:
         """Return today's broker order book, or ``None`` when unreadable.

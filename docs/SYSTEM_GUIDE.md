@@ -1,5 +1,46 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25 The real-money F&O test, the live exit and the proving week (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- **`fno_live_test` (off unless FNO_LIVE_TEST_ENABLED).** After a paper single-leg entry on an NFO underlying, `fno_orchestrator._single_leg_entries` calls `mirror_entry`.
+  - It refuses (as FNO_LIVE signal rows `live_test_*`):
+    - an expiry day;
+    - a missing paper row;
+    - an open FNO_LIVE position, or FNO_MAX_TRADES_PER_DAY reached;
+    - an unreadable or under-floor equity (one owner notice a day);
+    - a stale, one-sided or wide fresh quote;
+    - an ask over the paper price × (1 + FNO_LIVE_TEST_MAX_CHASE_PCT).
+  - It then buys ONE lot: a LIMIT at the ask on the tick grid plus FNO_LIVE_TEST_ENTRY_BUFFER_TICKS.
+    - It runs through `reserve_shared_fno_risk` (pool = `live_pool()` = FNO_LIVE_TEST_CAPITAL), `claim_shared_fno_entry_dispatch` (max_open 1) and `FnoExecutor.execute_entry`.
+    - On a fill it inserts the FNO_LIVE row with the paper row's stops, target, direction and bar, then arms `fno_broker_backstop`.
+  - `live_equity` = capital + the FNO_LIVE ledger sum (fail closed). `day_report` puts the day's real trades beside their paper twins.
+  - The legacy live entry block (go-live bar) does not run while the test is on.
+- **Live exit (`FnoExecutor.execute_exit`, live only).**
+  - One SELL LIMIT along `exit_ladder_prices` (EXIT_LADDER: 0.5%/2 ticks for 4 s, 3%/10 ticks for 6 s, 10%/100 ticks for 20 s under the bid), modified with `modify_order`. The hard flat starts at the last step.
+  - Statuses: filled, not_sent, rejected_verified, unfilled (with `limit`), unknown.
+  - `follow_exit` reads a working order and moves it to the fresh bid − max(10%, 100 ticks), never up.
+  - Paper fills are unchanged (entry at the ask, exit at the bid).
+- **`fno_orchestrator._manage_open_positions`.**
+  - The executor is per position (`_executor_for_position`): a FNO_LIVE row with a PAPER-... entry id is closed on paper; one with a broker id by real orders, whatever the switches.
+  - Live positions first follow a recorded working exit (`fno_exit_intents.order_id`, `_follow_working_exit`).
+  - After the claim, a real sell is skipped when the broker's positions hold none of the contract (`_broker_holds_none`): the claim stays and the owner is paged.
+  - Unfilled outcomes (`_live_exit_not_filled`):
+    - not_sent / rejected_verified: `release_exit_intent`, then a retry;
+    - unfilled: `record_working_exit`;
+    - anything else stays claimed.
+  - Owner pages are deduplicated only once delivered.
+  - `_live_leg_managed`: the live leg's exits run while it is enabled, and always while a FNO_LIVE position is open. `fast_exit_has_work` always looks at FNO_LIVE.
+- **Own-cash holds.**
+  - `FnoExecutor` calls `KiteClient.settle_entry_reservation` after a fill, a fill during cancel, or a verified zero fill.
+  - That calls `AccountCashReservations.release_filled` / `release_zero_fill`, looked up with `reservation_for_order`.
+  - The gateway's momentum entry calls `releaseFilled` after a confirmed fill.
+- **Order route.** `KiteClient.order_client` (KITE_ORDER_BASE_URL, when set and different) carries `place_order`, `modify_order` and `cancel_order` (`_orders_http`). `set_token` sets both clients' headers.
+- **`fno_proving_week`.**
+  - `window_days` uses the sync holiday cache, never the network.
+  - `score` and `render` implement the verdict rules frozen in the module docstring.
+  - `evening_report` runs from the 15:50 job `fno_evening_report` (trading days, FNO_EVENING_REPORT_ENABLED). It is sent once a day (`fno_evening_report_told`).
+- **`fno_live_preflight`**: an owner-run CLI. Reads: the route, own free cash, open F&O positions, the order book. `--test-order`: one BUY 20% under the bid, cancelled and read back.
+
 ## October 24 (night, 4) — O24i F&O paper risk messages (actual behavior, Dev, commit `0b7d7b9`)
 
 - **`fno_risk_alert.check_paper(db_path, now, notify=None)`**, called by `fno_orchestrator.run_fno_tick` right after `_manage_single_leg_books`, unless FNO_DISABLE_PAPER.
