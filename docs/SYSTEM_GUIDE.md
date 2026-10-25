@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 25 — O25j Production's Kite routes and the owner's entry halt (operations; commit pending (recorded in the next docs commit))
+## October 25 — O25j Production's Kite routes and the owner's entry halt (operations; commit `0cc0edc`)
 
 - No source change. Production's `node-gateway/.env` gets `KITE_PROXY_URL` and the root `.env` gets `KITE_ORDER_PROXY_URL`, both the direct tunnel `161.118.160.180:31528`. So:
   - the gateway's Kite calls go HTTPS inside the tunnel (its KITE_BASE_URL, the plain relay, is ignored);

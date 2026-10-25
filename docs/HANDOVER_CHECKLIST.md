@@ -1,10 +1,16 @@
 # Handover receipt and operator checklist
 
-## October 25 — O25j latest docs to Production, rebuild, tunnel settings applied (commit pending (recorded in the next docs commit); receipt in the plan's O25j slice)
+## October 25 — O25j latest docs to Production, rebuild, tunnel settings applied (commit `0cc0edc`; receipt in the plan's O25j slice)
 
 - [x] Real-money check: every engine entry path is off and the owner halt is on, so the engine's new order route can only carry exits.
 - [x] Runbook step 9: lift OWNER_LIVE_ENTRY_HALT for F&O only before the Nov 2 run, or nothing buys.
-- [ ] (this rollout) PR to `evolve/smart-strategies`; Production backup, fast-forward, build, `.env` lines, recreate, verify. See the plan's receipt.
+- [x] Done 14:27–14:59 IST:
+  - PR #116 merged as `b6b39e8` (`0aa629a` kept);
+  - 8 database snapshots `quick_check=ok`, both `.env` backups, rollback image tags;
+  - Production fast-forwarded and rebuilt; the tunnel lines added;
+  - engine, gateway and agent recreated, nginx restarted;
+  - `verify_deployment.py` passed; both services reach Kite through the tunnel;
+  - switch false, entry halt true, no order.
 - [ ] Owner:
   - the Kite login Monday before 09:15;
   - the weekend steps 1, 3 and 6–9;

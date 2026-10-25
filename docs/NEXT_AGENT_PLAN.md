@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 25 — O25j Latest docs to the Production branch, Production rebuilt, tunnel settings applied (step 5) with the owner's one-time permission (in progress at commit pending (recorded in the next docs commit); the receipt follows in this slice)
+## October 25 — O25j Latest docs to the Production branch, Production rebuilt, tunnel settings applied (step 5) with the owner's one-time permission (done; docs `0cc0edc`, release `b6b39e8`)
 
 - Owner ask (Oct 25): "push the latest code all in the prod branch, something was pushed in it so that should also be maintained, and resolve any issues in the way. Then run the script to get the latest code in prod. I allow you this once to put the needed variables in the prod env, and then restart prod. In short, make it fully ready for tomorrow's run."
 - State found:
@@ -28,6 +28,26 @@
   - delete the two lines (or restore the `.env` backups) and recreate;
   - the images tagged `sentinel-rollback/*:0aa629a-20261025`;
   - the database backups.
+- **Receipt (done Oct 25, 14:27–14:59 IST):**
+  - PR #116 merged as a merge commit, `b6b39e8` on `evolve/smart-strategies`; `0aa629a` is kept in its history.
+  - Backups, outside the repositories in `C:\Users\Urveesh\sentinel-operations\production-rollout-20261025-o25j\`:
+    - 8 SQLite databases as single-step online snapshots, every one `quick_check=ok` (cache.db 3.15 GB in 62 s). A first, stepwise attempt restarted on every engine write and was stopped.
+    - both `.env` files (`env-backup\`);
+    - the previous images tagged `sentinel-rollback/<service>:0aa629a-20261025`.
+  - Production: `git merge --ff-only` to `b6b39e8`, no tracked change. Engine, gateway and agent built one at a time, stamped `b6b39e8` / `2026-10-25T09:12:31Z`.
+  - `.env`:
+    - `KITE_ORDER_PROXY_URL` added to the root file and `KITE_PROXY_URL` to `node-gateway/.env`, from `tunnel-client.env`; no value printed.
+    - No KITE_ORDER_BASE_URL. FNO_LIVE_TEST_ENABLED unset (false). OWNER_LIVE_ENTRY_HALT=true unchanged.
+  - Engine, gateway and agent recreated separately (`--no-deps --no-build --force-recreate`), then nginx restarted. All healthy, restart policy `always`.
+  - `scripts/verify_deployment.py --expected-sha b6b39e8…` passed with health checked (receipt in `%USERPROFILE%\sentinel-operations\release-receipts\`).
+  - Engine:
+    - its order-route probe (`_kite_probe_get` through the tunnel) answers; quotes stay direct; no startup traceback;
+    - `/health` trading_ready false only for no_kite_token, instrument_cache_unavailable and order_execution_unverified (expected until Monday's login); scheduler running;
+    - `fno_proving_week` reads 26–30 Oct, no trade yet.
+  - Gateway:
+    - `kite_route` encrypted true through 161.118.160.180:31528 (password hidden), and `kite_base_url_ignored` for the relay;
+    - Kite's root answers HTTP 200 through the tunnel from inside the container, certificate verified; no password in its logs.
+  - Dashboard HTTP 200; gateway health ok (Kite token expired). No real order placed, no Telegram message sent.
 - Remaining (owner):
   - Monday before 09:15: the Kite login (and the partner's);
   - watch the 15:50 reports Oct 26–30 and Friday's verdict;
