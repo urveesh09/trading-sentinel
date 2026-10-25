@@ -7,7 +7,7 @@
   - the owner gets the Kite login link (skipped if already logged in);
   - the partner gets their own login button, once a day, unless already logged in.
 - [x] Tests: engine + scripts full suite 6,015 passed, 4 skipped, exit 0 (11 min 34 s); tests/test_login_reminder.py 5 passed; scheduler surface/census goldens pass with the 07:00 trigger. Not a profitability result.
-- [ ] Rollout to Production (PR, backup, rebuild, recreate, verify): see the plan.
+- [x] Rolled out: PR #117 `7468853`; backup, rebuild, recreate; `verify_deployment.py` passed; reminders at 07:00, halts as set, tunnel answers.
 
 ## October 25 — O25j latest docs to Production, rebuild, tunnel settings applied (commit `0cc0edc`; receipt in the plan's O25j slice)
 

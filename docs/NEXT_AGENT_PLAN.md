@@ -20,6 +20,16 @@
 - Tests: engine + scripts full suite 6,015 passed, 4 skipped, exit 0 (11 min 34 s); tests/test_login_reminder.py 5 passed; scheduler surface/census goldens pass with the 07:00 trigger. Not a profitability result.
 - Config impact: new settings LOGIN_REMINDER_HOUR (7) and LOGIN_REMINDER_MINUTE (0); the job `premarket_login_nudge` is now at 07:00. No schema change.
 - Rollout: PR to `evolve/smart-strategies`; Production backup, fast-forward, rebuild all three images, recreate them, restart nginx, `verify_deployment.py`.
+- **Rollout receipt (Oct 25, 15:30–15:48 IST):**
+  - PR #117 merged as `7468853` (`b6b39e8` kept).
+  - 8 database snapshots `quick_check=ok` in `C:\Users\Urveesh\sentinel-operations\production-rollout-20261025-o25k\`; previous images tagged `sentinel-rollback/<service>:b6b39e8-20261025`.
+  - Production fast-forwarded; the three images built one at a time stamped `7468853`; engine, gateway and agent recreated separately; nginx restarted.
+  - `verify_deployment.py` passed with health checked. No startup traceback.
+  - Effective settings:
+    - the reminder at 07:00, the owner's and the partner's links on kite.zerodha.com, the partner bot and app configured;
+    - OWNER_LIVE_ENTRY_HALT true with CHANNELS momentum,penny,edge; the entry gate refuses fno and momentum alike today (global halt);
+    - FNO_LIVE_TEST_ENABLED false.
+  - The order tunnel probe answers; the gateway's `kite_route` is encrypted. No message or order was sent.
 - Rollback: LOGIN_REMINDER_HOUR=7 / LOGIN_REMINDER_MINUTE=50 in `.env` restores the time; or revert.
 
 ## October 25 — O25j Latest docs to the Production branch, Production rebuilt, tunnel settings applied (step 5) with the owner's one-time permission (done; docs `0cc0edc`, release `b6b39e8`)
