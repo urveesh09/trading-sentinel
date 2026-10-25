@@ -1136,19 +1136,25 @@ async def _sent_today(db_path: str, kind: str, day: str) -> bool:
 
 
 async def _send_prompt(now: datetime) -> dict:
-    from partner_bot import partner_enabled, send_partner_result
-    from partner_orchestrator import _record, _seen
+    """The review button, once a day. [O25M] Through partner_orchestrator.send_daily: a send that provably
+    never left is sent again (daily_retry_tick), one that may have arrived never is."""
+    from partner_bot import partner_enabled
+    from partner_orchestrator import send_daily
     day = now.date().isoformat()
     if not partner_enabled():
         return {"status": "partner_disabled"}
-    if await _seen(settings.DB_PATH, PROMPT_KIND, day):
-        return {"status": "already_prompted"}
-    result = await send_partner_result(prompt_text(now), kind=PROMPT_KIND, reply_markup=review_keyboard())
-    await _record(settings.DB_PATH, PROMPT_KIND, day, result.delivered, now=now)
-    return {"status": "prompted" if result.delivered else "prompt_failed"}
+    out = await send_daily(settings.DB_PATH, PROMPT_KIND, day, prompt_text(now), now, reply_markup=review_keyboard())
+    status = {"sent": "prompted", "already_sent": "already_prompted", "failed": "prompt_failed",
+              "uncertain": "prompt_failed", "refused": "prompt_failed", "undelivered": "prompt_failed"}
+    return {**out, "status": status.get(out["status"], out["status"])}
 
 
 LOGIN_REMINDER_KIND = "login_reminder"
+LOGIN_REMINDER_WINDOW_MIN = 90                 # [O25M] no send later than this after the reminder time (07:00 -> 08:30)
+# [O25M] What partner_orchestrator.send_daily answered, as the reminder says it.
+_REMINDER_STATUS = {"sent": "reminded", "failed": "reminder_failed", "uncertain": "reminder_uncertain",
+                    "refused": "reminder_refused", "undelivered": "reminder_undelivered",
+                    "already_sent": "already_reminded"}
 
 
 def login_reminder_text(now: datetime) -> str:
@@ -1158,26 +1164,41 @@ def login_reminder_text(now: datetime) -> str:
             "watch your stops and risk with you while you trade.")
 
 
+def reminder_window(now: datetime) -> tuple:
+    """[O25M] When the partner's reminder may be sent today: from LOGIN_REMINDER_HOUR:MINUTE for
+    LOGIN_REMINDER_WINDOW_MIN (07:00 to 08:30), before the 09:00 watch prompt."""
+    start = now.astimezone(IST).replace(hour=settings.LOGIN_REMINDER_HOUR, minute=settings.LOGIN_REMINDER_MINUTE,
+                                        second=0, microsecond=0)
+    return start, start + timedelta(minutes=LOGIN_REMINDER_WINDOW_MIN)
+
+
 async def morning_login_reminder(now: Optional[datetime] = None) -> dict:
     """[O25k 2026-10-25] The owner: remind the partner to log in at 07:00 with their own link. Once a day,
     with their app's Kite login button (review_keyboard), not when a login is already held. Messages only:
-    the login is read-only and nothing is ever traded on it."""
-    from partner_bot import partner_enabled, send_partner_result
-    from partner_orchestrator import _record, _seen
+    the login is read-only and nothing is ever traded on it.
+
+    [O25M] A failed send no longer counts as reminded (partner_orchestrator.send_daily): one that provably
+    did not leave (no connection, the rate limit, a Telegram 5xx) is sent again from the 5-minute ticks
+    (daily_bootstrap.login_reminder_retry_tick) 5, 10 and 20 minutes later, at most DAILY_ATTEMPTS sends
+    and only inside ``reminder_window``. Never again after one that may have arrived (a timeout after the
+    request left, a restart mid-send), one Telegram refused for good, or a login. Each send is claimed in
+    the database first, so two runs never send it twice."""
+    from partner_bot import partner_enabled
+    from partner_orchestrator import send_daily
     now = (now or datetime.now(IST)).astimezone(IST)
-    day = now.date().isoformat()
     if not configured():
         return {"status": "not_configured"}
     if not partner_enabled():
         return {"status": "partner_disabled"}
     if connected(now):
         return {"status": "already_logged_in"}
-    if await _seen(settings.DB_PATH, LOGIN_REMINDER_KIND, day):
-        return {"status": "already_reminded"}
-    result = await send_partner_result(login_reminder_text(now), kind=LOGIN_REMINDER_KIND,
-                                       reply_markup=review_keyboard("🔑 Log in to Zerodha"))
-    await _record(settings.DB_PATH, LOGIN_REMINDER_KIND, day, result.delivered, now=now)
-    return {"status": "reminded" if result.delivered else "reminder_failed"}
+    start, end = reminder_window(now)
+    if not start <= now <= end:
+        return {"status": "outside_window"}
+    out = await send_daily(settings.DB_PATH, LOGIN_REMINDER_KIND, now.date().isoformat(), login_reminder_text(now),
+                           now, reply_markup=review_keyboard("🔑 Log in to Zerodha"), until=end)
+    status = _REMINDER_STATUS.get(out["status"], out["status"])
+    return {"status": status} if status == "already_reminded" else {**out, "status": status}
 
 
 async def partner_broker_eod(now: Optional[datetime] = None) -> dict:

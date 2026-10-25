@@ -12,6 +12,7 @@ import pandas as pd
 import pytest
 import pytz
 
+import partner_bot
 import partner_orchestrator as po
 from config import settings
 from fno_engine_mom import MomSignal
@@ -83,7 +84,13 @@ def wired(tmp_path, monkeypatch):
         sent.append((kind, text))
         return True
 
+    async def _send_result(text, *, kind="partner_msg", reply_markup=None):
+        # [O25M] The brief and the wrap go through send_daily (partner_bot.send_partner_result).
+        sent.append((kind, text))
+        return partner_bot.PartnerSendResult(True, message_id=len(sent), state="acknowledged")
+
     monkeypatch.setattr(po, "send_partner", _send)
+    monkeypatch.setattr(partner_bot, "send_partner_result", _send_result)
     monkeypatch.setattr(po, "analytics_underlyings", lambda: [SPEC])
     monkeypatch.setattr(po, "get_instruments_for", lambda name: _Book())
 

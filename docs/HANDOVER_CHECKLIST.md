@@ -1,5 +1,33 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25N O25M's open items closed; promoted to Production (commit `967c2d6`, pushed)
+
+- [x] The brief, wrap, coach note and review prompt are retried only after a send that provably never left (5, 10, 20 min; 4 sends; within 60 min), from the stored text with "Written at". A possible delivery is never resent. New job `partner_daily_retry`.
+- [x] A CHECK work-out cut off by a restart is worked out again (row `refreshing` until replaced).
+- [x] Env audit (read-only, names and switches only): no orphan or missing names; no `.env` change needed. The real-money switches are still off and the owner halt is still on.
+- [x] Tests: Dev (Windows venv) full engine + scripts suites: 6,039 passed, 4 skipped, 1 failed (the calendar-gate guard wanted the new cron's [CALENDAR-GATE] marker; added, then the guard, scheduler, golden and ledger tests: 40 passed). 6,040 = O25M's 6,031 plus 9 new tests. Tests do not show the partner's results or profitability.
+- [ ] Production rollout receipt: recorded in the next docs commit.
+
+## October 25 — O25M R1–R3 fixed in Dev (commit `07e22da`, pushed)
+
+- [x] R1: a CHECK reply is never sent after its prices' 15 s. It is worked out again once for the same option and expiry, else a no-numbers note to ask again.
+- [x] R2: quotes need both clocks, zoned and believable. Missing or unreadable is UNVERIFIED, and a future exchange time is INVALID; neither checks a level. A typed price never makes an old quote current; an old future places no level.
+- [x] R3: the partner's reminder is retried only after a send that provably never left (5, 10, 20 min; 4 sends; 07:00–08:30) and never after a possible delivery. New job `partner_login_reminder_retry`.
+- [x] Tests: Dev (Windows venv) full engine suite 5,744 passed, 4 skipped (617 s) plus scripts/tests 287 passed: 6,031 in all (O25k's 6,015 plus the 16 new tests); focused partner suites 165 passed; the O25L review's four reproductions now fail against this code. Tests do not show the partner's results or profitability.
+- [ ] Rollout to Production (PR, backup, rebuild, recreate, verify): owner's call. Production runs `7468853` without these fixes.
+- [x] (O25N) The brief, EOD, coach note and review prompt now use the daily-send ledger.
+
+## October 25 — O25L independent release/partner audit
+
+- [x] Production `7468853` image/HTTP identity and Dev source parity verified; normalized hashes match 342 engine/gateway/agent source/config files. VM tunnel active/enabled and source matches Dev. No Production mutation during review.
+- [x] Independent focused checks: 490 passed. Four isolated fake-data reproductions confirmed three gaps; they do not represent fixes.
+- [x] (O25M) R1: rebuild or expire CHECK market-dependent text at delivery/retry, preserving exact contract identity and bounded/ambiguous delivery handling.
+- [x] (O25M) R2: enforce valid quote clocks and current option/future evidence even when an entry price is supplied; label unavailable inputs honestly.
+- [x] (O25M) R3: bounded safe retry for provably unsent morning reminders, without globally changing dedup or repeating ambiguous sends.
+- [ ] First live partner session: both logins, account reconciliation, persisted message acknowledgement/latency and quote paths; streaming remains off. No unnecessary real trade for testing.
+- [ ] Effective-date CAS/session/settlement maintenance before Dec 7; preserve current/replay rules. Subsequent stream and adaptive entry/exit evaluation follow the [review and concrete plan](2026-10-25-independent-production-partner-review.md).
+- No source/schema/configuration/deployment change in this audit. Real-money switches remain off; no outbound message/order. Empty qualifications do not by themselves block owner-authorized NOT CHECKED cards.
+
 ## October 25 — O25k 07:00 login reminders with each person's own link; per-channel halt set (commit `1d40091`, pushed)
 
 - [x] Production `.env`: OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge. The global halt is still true.
@@ -7,7 +35,7 @@
   - the owner gets the Kite login link (skipped if already logged in);
   - the partner gets their own login button, once a day, unless already logged in.
 - [x] Tests: engine + scripts full suite 6,015 passed, 4 skipped, exit 0 (11 min 34 s); tests/test_login_reminder.py 5 passed; scheduler surface/census goldens pass with the 07:00 trigger. Not a profitability result.
-- [ ] Rollout to Production (PR, backup, rebuild, recreate, verify): see the plan.
+- [x] Rolled out: PR #117 `7468853`; backup, rebuild, recreate; `verify_deployment.py` passed; reminders at 07:00, halts as set, tunnel answers.
 
 ## October 25 — O25j latest docs to Production, rebuild, tunnel settings applied (commit `0cc0edc`; receipt in the plan's O25j slice)
 

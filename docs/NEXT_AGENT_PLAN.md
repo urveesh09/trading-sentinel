@@ -1,5 +1,101 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 — O25N The O25M open items closed: once-a-day partner messages retried safely, the CHECK work-out survives a restart; promoted to Production (done, commit `967c2d6`, branch `codex/production-correction-hedge-p0`, pushed)
+
+- Owner ask (Oct 25): "yes all the open you close then commit push merge and deploy and restart and rebuild the prod while ensuring all the env are in line".
+- Done:
+  - [x] **Shared daily-send ledger (`partner_orchestrator.send_daily` / `retry_daily` / `daily_retry_tick`).**
+    - Used by the brief (09:50), the wrap (15:50), the coach note, the review prompt (`zerodha_prompt`) and the 07:00 login reminder.
+    - Each send is a `<kind>_try` row (`<day>:<n>`). It is claimed with its text and button before it goes, and settled with Telegram's answer after.
+    - Only a provably unsent send is sent again: 5, 10 and 20 minutes later, at most DAILY_ATTEMPTS (4) sends, and within DAILY_RETRY_WINDOW (60 min) of the first.
+    - The retry reuses the first send's stored text with "⏱ Written at HH:MM; it could not be sent then."
+    - Never resent: a timeout after the request left, a send a restart cut off, or a 4xx.
+    - The day's (kind, day) row, which `_seen` reads, is written only when nothing more will be sent: sent, uncertain, refused or undelivered. `_seen` and `_record` are unchanged; signals, pins, cue and flow events keep their own record (time-sensitive, never resent).
+    - New job `partner_daily_retry` (cron */5 at :40 seconds), gated on the partner bot.
+    - The reminder keeps its own tick (rebuilt text, also sent when the 07:00 run was missed). Its private copy of the ledger was removed.
+    - `_send_prompt`: a second ask while its retry is due says `retry_later`, not a second send.
+  - [x] **CHECK work-out durable (`partner_watch`).** The outdated row stays due as `refreshing` until its replacement is in the outbox, and only then is it closed `outdated`.
+    - In-process work-outs are listed in `_refreshing`, so a row being worked out waits.
+    - After a restart the row is worked out again; the replacement's fixed key means no doubles.
+  - [x] **Env alignment (read-only audit, no values printed).**
+    - Production's root `.env` has 23 names; every one is used by the engine settings, the agent, ngrok or `os.getenv`.
+    - The gateway validates its required env at startup.
+    - O25M and O25N add no setting and need no `.env` change.
+    - Effective switches before the rollout:
+      - FNO_LIVE_TEST_ENABLED, FNO_LIVE_TRADING and PENNY_LIVE_TRADING false;
+      - FNO_DISABLE_LIVE and PENNY_EDGE_DISABLE_LIVE true;
+      - OWNER_LIVE_ENTRY_HALT true; channels momentum,penny,edge;
+      - run window Nov 2–6;
+      - reminders 07:00;
+      - partner bot, sync, watch and fill capture on; watch stream off;
+      - both Kite routes set.
+- Files:
+  - `python-engine/partner_orchestrator.py`, `partner_broker_sync.py`, `partner_coach.py`, `partner_watch.py`, `scheduler_setup.py`;
+  - tests: new `tests/test_partner_daily_delivery.py` (8); `test_partner_watch.py` (+1, the restart during a work-out); `test_partner_orchestrator.py` (its fixture patches `partner_bot.send_partner_result`: the brief and wrap had reached the real sender with a fake token); `test_partner_insights.py`, `test_login_reminder.py` (the ledger's names); the two goldens (the new job only);
+  - `docs/SYSTEM_CODE_ATLAS.md`.
+- Tests: Dev (Windows venv) full engine + scripts suites: 6,039 passed, 4 skipped, 1 failed (the calendar-gate guard wanted the new cron's [CALENDAR-GATE] marker; added, then the guard, scheduler, golden and ledger tests: 40 passed). 6,040 = O25M's 6,031 plus 9 new tests. Tests do not show the partner's results or profitability.
+- Config impact: no new setting; one new scheduler job; new partner_messages kinds `brief_try`, `eod_try`, `coach_try` and `zerodha_prompt_try` (no schema change); partner_watch_messages outcome `refreshing`.
+- Rollout: PR to `evolve/smart-strategies`, merged with the owner's go-ahead. Production procedure: database backup, rollback tags, fast-forward, stamped build of the three images one at a time, recreate one at a time, nginx restart, `verify_deployment.py`, then the env audit again. The rollout receipt follows in the next docs commit.
+- Rollback: the `sentinel-rollback/<svc>:7468853-20261025` images, or revert the merge; no migration.
+- Remaining (not code): live evidence from the first real partner session (O25L item 2) and O25L items 3–8.
+
+## October 25 — O25M Fixes for R1–R3 from the O25L review: CHECK prices current when sent, quote clocks enforced, the morning reminder retried safely (done, Dev, commit `07e22da`, branch `codex/production-correction-hedge-p0`, pushed)
+
+- Owner ask (Oct 25): the three O25L findings, "Fix them".
+- Done:
+  - [x] **R1, CHECK replies (`partner_watch`).**
+    - `answer_check` keeps the reply's evidence with its outbox row: the parsed request, the exact option and expiry (`contract`), `read_at`, and `valid_until` (QUOTE_FRESH, 15 s, after the prices were read).
+    - `_deliver` never sends a CHECK past `valid_until`. This covers a retry after no connection, a 429 or a 5xx; a slow first send; and a restart. The row is closed `outdated`.
+    - `_refresh_check` then runs beside the sender, so urgent alarms never wait on its market reads. It works the check out again from prices read then, for the same option and expiry (`pin`), CHECK_REFRESHES (1) times. The reply says when the prices were read again.
+    - After that, or when the work-out fails, the reply is a note with no numbers that names the option and the words to ask again (`check_late_text`).
+    - Replies without prices are sent unchanged: help, not found, price unreadable.
+    - A CHECK row without `base` (not written by `answer_check`) counts as priced when its row was written.
+  - [x] **R2, quote freshness (`quote_freshness`).**
+    - FRESH, STALE, UNVERIFIED (a clock missing, unreadable or without a zone), INVALID (the exchange time more than QUOTE_CLOCK_SKEW, 5 s, after receipt), MISSING.
+    - `level_state` returns UNVERIFIED (not VALID) for both bad cases. The texts say "could not be verified", and never show a future time.
+    - `_market_plan` uses the option's mid and the future's price only when FRESH, whether or not a price was typed. A typed price with an old quote gives the same plan as no quote: the levels are worked from the typed price, and the reply says why there is no live price.
+    - `check_text` itself drops a quote whose clocks do not hold, so it never says "the ask now" from one.
+    - An old future quote places no level. The plan takes the last closed 5-minute bar, as before when the future was unread, and the check says so.
+    - `unfilled_text` says the bid only from a current quote.
+  - [x] **R3, the partner's morning reminder (`partner_broker_sync`).**
+    - Each send is a `login_reminder_try` row, claimed before the send (INSERT OR IGNORE) and settled after it.
+    - Provably unsent sends are retried: `partner_bot.provably_unsent`, shared with the watch's `_retryable`. The waits are 5, 10 and 20 minutes, LOGIN_REMINDER_ATTEMPTS (4) sends in all, only inside 07:00–08:30 (`reminder_window`).
+    - Never repeated: a timeout after the request left, a send a restart cut off (`attempting` older than 60 s), a Telegram 4xx, or after a login.
+    - The day's `login_reminder` row is written only when nothing more will be sent. It records reminded, uncertain, refused or undelivered.
+    - New job `partner_login_reminder_retry` (`daily_bootstrap.login_reminder_retry_tick`) runs every 5 minutes, hours 7–9, checking the window first and the trading day second. It also sends a reminder the 07:00 run missed (a restart). It never repeats the owner's nudge.
+    - `_seen` is unchanged for every other kind.
+  - [x] **Owner alerts, observability.** `operator_alert.notify_operator` logs the gateway's `delivered` flag: `operator_alert_queued` (warning) when Telegram did not take it on the first try and the gateway is retrying. Acceptance is still not reported as receipt.
+- Evidence behind the strict clock rule: Production's research archive, Oct 21–22. Of 69,480 Kite REST quotes (NIFTY/SENSEX CE, PE and FUT), the exchange time was never missing and never more than 0.5 s after receipt. Receipt minus exchange time: median 1.1 s, p99 2.3 s, max 28.1 s. The check was a read-only script in the engine container, removed afterwards.
+- Files:
+  - `python-engine/partner_watch.py`, `partner_bot.py`, `partner_broker_sync.py`, `daily_bootstrap.py`, `scheduler_setup.py`, `operator_alert.py`;
+  - `tests/test_partner_watch.py`: FakeMarket stamps both clocks as Market.quote does; hand-built quotes use `_clocked`; 8 new tests;
+  - `tests/test_login_reminder.py`: 8 new tests;
+  - `tests/main_surface_golden.json` and `tests/add_job_census_golden.json`: the new job only;
+  - `tests/test_fno_audit_phase1_fixes.py`: its `operator_alert` stand-in now goes through `monkeypatch.setitem`. It had stayed in `sys.modules` for every later test; the full suite found this through the new alert test;
+  - `docs/SYSTEM_CODE_ATLAS.md` regenerated.
+- Tests: Dev (Windows venv) full engine suite 5,744 passed, 4 skipped (617 s) plus scripts/tests 287 passed: 6,031 in all (O25k's 6,015 plus the 16 new tests); focused partner suites 165 passed; the O25L review's four reproductions now fail against this code. Tests do not show the partner's results or profitability.
+- Config and schema impact:
+  - no new setting;
+  - one new scheduler job;
+  - new partner_messages kind `login_reminder_try` (no schema change);
+  - partner_watch_messages: new outcome `outdated` and new CHECK context keys (no schema change).
+- Rollout: PR to `evolve/smart-strategies`, then the Production runbook (backup, fast-forward, rebuild the engine, recreate, verify). Not deployed: Production stays `7468853` until the owner promotes it.
+- Rollback: revert the commit; no migration.
+- Remaining:
+  - (Closed by O25N, above.) The brief, EOD and coach messages used the same attempted-versus-delivered `_record` pattern.
+  - Live evidence from the first real partner session (O25L plan item 2) and O25L items 3–8.
+  - (Closed by O25N, above.) A CHECK work-out cut off by a restart was lost.
+
+## October 25 — O25L independent Production/partner review (audit complete; R1–R3 fixed in Dev by O25M, above)
+
+- Production images/HTTP identity verified at `7468853`; Dev application tree matches. Independent normalized hashes match 293 engine, 38 gateway and 11 agent files. Mumbai VM tunnel source matches Dev and is active/enabled; the full application runs on the owner's PC. No Production edit/restart/order/message or switch change during this review.
+- New O25k reminder happy paths are deployed, but three fake-data findings remain: R1 queued CHECK financial text can retry unchanged beyond quote freshness; R2 missing/future timestamps pass freshness and typed entry price bypasses a known stale quote; R3 failed morning reminder is still treated as already reminded. Do not mark these fixed from the existing passing suites.
+- Implementation order: R1 delivery-time CHECK evidence/contract binding; R2 explicit option/future freshness independent of typed entry; R3 bounded reminder retry retaining ambiguity. Each slice needs adversarial regression tests, guide/plan update, atlas regeneration if declarations change and separate GitHub rollout/rollback. No new partner order authority or blanket paper veto.
+- Acceptance, affected contracts, rollout limits, partner feature inventory and the subsequent streaming/entry-exit research plan: [independent review](2026-10-25-independent-production-partner-review.md). First live watch verification is still pending: Production has zero watch messages/quote paths, stream off, and owner token/instrument/order-execution prerequisites unavailable on Sunday.
+- Qualification registry is empty, but owner-authorized `PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED=true` allows correctly labelled NOT CHECKED cards subject to the other gates; do not describe qualification as the sole blocker or promise daily tips. Latest saved input statuses are NO_ENTRY_SETUP/not_fresh_break on Oct 23.
+- New dated maintenance item: implement effective-date/contract-aware CAS/session/settlement changes before Dec 7, retaining current October/November rules and historical replay semantics. Official broker bulletin and SEBI circular are linked in the review.
+- Independent checks: 183 + 307 = 490 focused tests passed; four separate reproductions confirmed the three findings. No source/schema/config change; atlas unchanged. Review changes are Dev documentation only; Production stays `7468853`. Remaining: implement R1–R3, obtain first-session evidence, then staged stream/decision improvements. This audit makes no profitability claim.
+
 ## October 25 — O25k A 07:00 login reminder for the owner and the partner, each with their own link; F&O the only channel to open (done, Dev, commit `1d40091`, branch `codex/production-correction-hedge-p0`, pushed)
 
 - Owner ask (Oct 25):
@@ -20,6 +116,16 @@
 - Tests: engine + scripts full suite 6,015 passed, 4 skipped, exit 0 (11 min 34 s); tests/test_login_reminder.py 5 passed; scheduler surface/census goldens pass with the 07:00 trigger. Not a profitability result.
 - Config impact: new settings LOGIN_REMINDER_HOUR (7) and LOGIN_REMINDER_MINUTE (0); the job `premarket_login_nudge` is now at 07:00. No schema change.
 - Rollout: PR to `evolve/smart-strategies`; Production backup, fast-forward, rebuild all three images, recreate them, restart nginx, `verify_deployment.py`.
+- **Rollout receipt (Oct 25, 15:30–15:48 IST):**
+  - PR #117 merged as `7468853` (`b6b39e8` kept).
+  - 8 database snapshots `quick_check=ok` in `C:\Users\Urveesh\sentinel-operations\production-rollout-20261025-o25k\`; previous images tagged `sentinel-rollback/<service>:b6b39e8-20261025`.
+  - Production fast-forwarded; the three images built one at a time stamped `7468853`; engine, gateway and agent recreated separately; nginx restarted.
+  - `verify_deployment.py` passed with health checked. No startup traceback.
+  - Effective settings:
+    - the reminder at 07:00, the owner's and the partner's links on kite.zerodha.com, the partner bot and app configured;
+    - OWNER_LIVE_ENTRY_HALT true with CHANNELS momentum,penny,edge; the entry gate refuses fno and momentum alike today (global halt);
+    - FNO_LIVE_TEST_ENABLED false.
+  - The order tunnel probe answers; the gateway's `kite_route` is encrypted. No message or order was sent.
 - Rollback: LOGIN_REMINDER_HOUR=7 / LOGIN_REMINDER_MINUTE=50 in `.env` restores the time; or revert.
 
 ## October 25 — O25j Latest docs to the Production branch, Production rebuilt, tunnel settings applied (step 5) with the owner's one-time permission (done; docs `0cc0edc`, release `b6b39e8`)

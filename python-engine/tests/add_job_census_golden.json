@@ -100,6 +100,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_daily_retry_safe",
+    "id": "'partner_daily_retry'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_partner_eod_wrap_safe",
     "id": "'partner_eod_wrap'",
     "trigger": "'cron'"
@@ -277,6 +282,11 @@
   {
     "func": "kite.refresh_instrument_cache",
     "id": null,
+    "trigger": "'cron'"
+  },
+  {
+    "func": "login_reminder_retry_tick",
+    "id": "'partner_login_reminder_retry'",
     "trigger": "'cron'"
   },
   {

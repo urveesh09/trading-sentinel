@@ -613,7 +613,7 @@ def test_the_wrap_sends_the_brief_then_the_review_link():
     import partner_orchestrator as po
     source = inspect.getsource(po.partner_eod_wrap)
     assert source.index("partner_broker_eod") < source.index("partner_coach_eod") < source.index("ensure_review_message")
-    assert source.index('send_partner(msg, kind="eod")') < source.index("partner_broker_eod")
+    assert source.index('send_daily(settings.DB_PATH, "eod"') < source.index("partner_broker_eod")
 
 
 # ---------------------------------------------------------------------------

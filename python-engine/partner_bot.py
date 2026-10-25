@@ -26,6 +26,7 @@ bot that node-gateway owns. Design rules (plan WS4):
 from __future__ import annotations
 
 import asyncio
+import re
 from dataclasses import dataclass
 from typing import Optional
 
@@ -52,6 +53,16 @@ class PartnerSendResult:
     message_id: Optional[int] = None
     state: str = "failed"
     error: Optional[str] = None
+
+
+def provably_unsent(state: Optional[str], error: Optional[str] = None) -> bool:
+    """[O24c] Provably not delivered, so safe to send again: no connection was
+    made, Telegram's rate limit, or a Telegram 5xx. A timeout after the
+    request left may have arrived. [O25M] Shared by the trade watch's outbox
+    and the morning login reminder."""
+    if state in ("unsent_connect", "rate_limited"):
+        return True
+    return state == "rejected" and bool(re.fullmatch(r"telegram_http_5\d\d", str(error or "")))
 
 
 def partner_enabled() -> bool:

@@ -27,6 +27,16 @@ logger = structlog.get_logger()
 NOTIFY_TIMEOUT_SEC = 5.0
 
 
+def _first_try(resp) -> bool | None:
+    """[O25M] The gateway's answer to /api/internal/notify: whether Telegram took the alert on its first try
+    (False: the gateway keeps retrying it). None when it does not say. Acceptance is never receipt."""
+    try:
+        value = resp.json().get("delivered")
+    except Exception:
+        return None
+    return value if isinstance(value, bool) else None
+
+
 async def notify_operator(message: str, *, event: str = "operator_alert") -> bool:
     """Send `message` to the operator via node-gateway's Telegram relay.
 
@@ -47,7 +57,12 @@ async def notify_operator(message: str, *, event: str = "operator_alert") -> boo
                 timeout=NOTIFY_TIMEOUT_SEC,
             )
             resp.raise_for_status()
-        logger.info("operator_alert_sent", event_type=event)
+        first_try = _first_try(resp)
+        if first_try is False:
+            # [O25M] Accepted, not yet by Telegram: the gateway retries it in the background (dead-letter after).
+            logger.warning("operator_alert_queued", event_type=event, telegram_first_try=False)
+        else:
+            logger.info("operator_alert_sent", event_type=event, telegram_first_try=first_try)
         return True
     except Exception as e:
         logger.error(
