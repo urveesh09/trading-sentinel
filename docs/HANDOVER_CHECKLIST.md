@@ -1,5 +1,14 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25k 07:00 login reminders with each person's own link; per-channel halt set (commit pending (recorded in the next docs commit), pushed)
+
+- [x] Production `.env`: OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge. The global halt is still true.
+- [x] 07:00 on trading days:
+  - the owner gets the Kite login link (skipped if already logged in);
+  - the partner gets their own login button, once a day, unless already logged in.
+- [x] Tests: engine + scripts full suite 6,015 passed, 4 skipped, exit 0 (11 min 34 s); tests/test_login_reminder.py 5 passed; scheduler surface/census goldens pass with the 07:00 trigger. Not a profitability result.
+- [ ] Rollout to Production (PR, backup, rebuild, recreate, verify): see the plan.
+
 ## October 25 — O25j latest docs to Production, rebuild, tunnel settings applied (commit `0cc0edc`; receipt in the plan's O25j slice)
 
 - [x] Real-money check: every engine entry path is off and the owner halt is on, so the engine's new order route can only carry exits.

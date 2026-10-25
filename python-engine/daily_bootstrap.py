@@ -41,6 +41,7 @@ import json
 import os
 import tempfile
 from datetime import datetime
+from urllib.parse import urlencode
 
 import pytz
 import structlog
@@ -292,6 +293,12 @@ async def bootstrap_0800_job() -> None:
 async def premarket_login_nudge() -> None:
     """07:50 IST: remind the operator to log in BEFORE the 08:00 bootstrap.
 
+    [O25k 2026-10-25] Now at LOGIN_REMINDER_HOUR:MINUTE (07:00), on every trading
+    day, with the owner's own Kite login link, and the partner gets theirs too
+    (partner_broker_sync.morning_login_reminder: their app's link, once a day,
+    not when they are already logged in). The owner asked for one message each at
+    07:00 with the respective links.
+
     [LOGIN-NUDGE 2026-07-26] Zerodha access tokens die ~06:00 IST and the host
     boots around 06:35-06:50, so the engine starts every session token-blind and
     cannot bootstrap until a human authenticates. The only existing signal is the
@@ -315,24 +322,41 @@ async def premarket_login_nudge() -> None:
         return
     if token_is_fresh_today():
         logger.info("premarket_login_nudge_skipped reason=token_already_fresh")
-        return
+    else:
+        from operator_alert import notify_operator
+        await notify_operator(login_nudge_text(last_universe_refresh(), pending_tasks(), owner_login_url()),
+                              event="premarket_login_nudge")
+    # The partner's reminder is independent: the owner's login state never decides it, and its failure
+    # never touches the owner's.
+    try:
+        import partner_broker_sync
+        outcome = await partner_broker_sync.morning_login_reminder(now)
+        logger.info("partner_login_reminder status=%s", outcome.get("status"))
+    except Exception as exc:
+        logger.error("partner_login_reminder_failed err=%s", type(exc).__name__)
 
-    from operator_alert import notify_operator
-    await notify_operator(login_nudge_text(last_universe_refresh(), pending_tasks()),
-                          event="premarket_login_nudge")
+
+def owner_login_url() -> str | None:
+    """[O25k] The owner's Kite login page for this app (ZERODHA_API_KEY). Kite sends the login back to the
+    app's registered redirect (the gateway's /api/auth/callback), so it works from the phone too."""
+    key = (os.getenv("ZERODHA_API_KEY") or "").strip()
+    return f"https://kite.zerodha.com/connect/login?{urlencode({'v': 3, 'api_key': key})}" if key else None
 
 
-def login_nudge_text(timing: dict | None, pending: list[str]) -> str:
-    """The 07:50 nudge, quoting the last measured refresh when there is one."""
+def login_nudge_text(timing: dict | None, pending: list[str], url: str | None = None) -> str:
+    """The morning nudge, with the login link, quoting the last measured refresh when there is one."""
     if timing:
         minutes = max(1, round(timing["penny_universe_sec"] / 60))
         when = datetime.fromisoformat(timing["at"]).astimezone(IST).strftime("%d %b")
         refresh = f"The penny-universe refresh took ~{minutes} min last time ({when})"
     else:
         refresh = "The penny-universe refresh needs the token"
-    return ("🔑 *Kite login needed* — no fresh token yet and the 08:00 bootstrap is "
-            f"10 minutes out. {refresh}; logging in now keeps the universe, F&O "
-            "instruments and the 09:30 EDGE scan ready well before the 09:15 open. "
+    link = f"Log in here: {url}" if url else "Log in from the dashboard (/api/auth/login)."
+    return ("🔑 Good morning. Kite login needed for today: Zerodha's token expired at 06:00.\n"
+            f"{link}\n"
+            "The 08:00 bootstrap runs the moment you log in. "
+            f"{refresh}; logging in early keeps the universe, F&O instruments and the 09:30 EDGE scan "
+            "ready well before the 09:15 open. "
             f"Pending: {', '.join(pending) or 'none'}.")
 
 

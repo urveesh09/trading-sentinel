@@ -592,6 +592,11 @@ class Settings(BaseSettings):
     PENNY_MIN_PROMOTER_HOLD:       float = 0.25        # strictly > 25% AND strictly < 75%
     PENNY_MAX_PB_RATIO:            float = 2.0         # Price-to-Book <= 2.0 (loose asset floor)
     PENNY_REFRESH_HOUR:            int   = 8
+    # [O25k 2026-10-25] The owner: a login reminder every trading day at 07:00 IST, to the owner and to the
+    # partner, each with their own Kite login link (daily_bootstrap.premarket_login_nudge). Was 07:50,
+    # owner only, without a link.
+    LOGIN_REMINDER_HOUR:           int   = 7
+    LOGIN_REMINDER_MINUTE:         int   = 0
     # [PENNY-HISTORY-SEMAPHORE 2026-07-07] Bounded concurrency over
     # the per-ticker sqlite open in compute_metrics_from_history. The
     # 2026-07-07 incident showed that fanning 9,769 concurrent sqlite

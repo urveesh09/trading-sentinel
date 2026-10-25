@@ -1148,6 +1148,38 @@ async def _send_prompt(now: datetime) -> dict:
     return {"status": "prompted" if result.delivered else "prompt_failed"}
 
 
+LOGIN_REMINDER_KIND = "login_reminder"
+
+
+def login_reminder_text(now: datetime) -> str:
+    """[O25k] The 07:00 message: log in now, and what the login is for."""
+    return (f"🔑 Good morning! Please log in to Zerodha for today ({now.astimezone(IST).strftime('%a %d %b')}).\n"
+            "Tap the button below. I only read your orders and positions and never place a trade, so I can "
+            "watch your stops and risk with you while you trade.")
+
+
+async def morning_login_reminder(now: Optional[datetime] = None) -> dict:
+    """[O25k 2026-10-25] The owner: remind the partner to log in at 07:00 with their own link. Once a day,
+    with their app's Kite login button (review_keyboard), not when a login is already held. Messages only:
+    the login is read-only and nothing is ever traded on it."""
+    from partner_bot import partner_enabled, send_partner_result
+    from partner_orchestrator import _record, _seen
+    now = (now or datetime.now(IST)).astimezone(IST)
+    day = now.date().isoformat()
+    if not configured():
+        return {"status": "not_configured"}
+    if not partner_enabled():
+        return {"status": "partner_disabled"}
+    if connected(now):
+        return {"status": "already_logged_in"}
+    if await _seen(settings.DB_PATH, LOGIN_REMINDER_KIND, day):
+        return {"status": "already_reminded"}
+    result = await send_partner_result(login_reminder_text(now), kind=LOGIN_REMINDER_KIND,
+                                       reply_markup=review_keyboard("🔑 Log in to Zerodha"))
+    await _record(settings.DB_PATH, LOGIN_REMINDER_KIND, day, result.delivered, now=now)
+    return {"status": "reminded" if result.delivered else "reminder_failed"}
+
+
 async def partner_broker_eod(now: Optional[datetime] = None) -> dict:
     """The evening wrap (15:50), after the day's brief: read the book when a login is held,
     else send the review button once."""

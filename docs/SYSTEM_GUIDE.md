@@ -1,5 +1,13 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25k The morning login reminder (actual behavior, commit pending (recorded in the next docs commit))
+
+- **Job `premarket_login_nudge`.** Cron LOGIN_REMINDER_HOUR:LOGIN_REMINDER_MINUTE (07:00 IST), misfire grace 30 min, NSE trading days only.
+  1. **Owner:** unless `token_is_fresh_today()`, `notify_operator(login_nudge_text(…, owner_login_url()))`. The plain text holds `https://kite.zerodha.com/connect/login?v=3&api_key=<ZERODHA_API_KEY>`, then the last refresh time and the pending bootstrap tasks.
+  2. **Partner:** `partner_broker_sync.morning_login_reminder(now)`. It is skipped when the app is not configured, the partner bot is disabled, `connected(now)`, or a `login_reminder` row exists for the day. Otherwise it sends `login_reminder_text` with the URL button `🔑 Log in to Zerodha` (their app's login, ending on their review page; the login also starts the trade watch).
+  - Any exception in step 2 is logged (`partner_login_reminder_failed`) and never affects step 1.
+- **Production root `.env`:** OWNER_LIVE_ENTRY_HALT=true and OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge.
+
 ## October 25 — O25j Production's Kite routes and the owner's entry halt (operations; commit `0cc0edc`)
 
 - No source change. Production's `node-gateway/.env` gets `KITE_PROXY_URL` and the root `.env` gets `KITE_ORDER_PROXY_URL`, both the direct tunnel `161.118.160.180:31528`. So:

@@ -196,13 +196,15 @@ cancelled at once. It refuses to run from 09:00 to 09:15 and from 15:25 to
 `OWNER_LIVE_ENTRY_HALT=true` (seen on Oct 25). It refuses every real entry on
 every channel, including this test's buys and the step 8 test order
 (`Owner entry halt: global_owner_entry_halt`). The test would then run for
-five days and never buy. To let only F&O through, set:
+five days and never buy. To let only F&O through:
 
     OWNER_LIVE_ENTRY_HALT=false
     OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge
 
-The other three channels stay halted; exits are never halted. Do this before
-step 8 too, or its test order is refused.
+[O25k] The second line has been in Production's `.env` since Oct 25. At the
+weekend, change only the first from `true` to `false`. The other three channels
+stay halted; exits are never halted. Do this before step 8 too, or its test
+order is refused.
 
 In the root `.env`, add `FNO_LIVE_TEST_ENABLED=true`. Optionally also set
 `FNO_LIVE_TEST_RUN=1`, `FNO_LIVE_TEST_SESSIONS=5`, `FNO_LIVE_TEST_CAPITAL=12500`
@@ -308,6 +310,9 @@ fills: 0.5%, then 3%, then 10% (or ₹5) under the bid, about 30 s in all.
 
 ## What you will see
 
+- **07:00 each trading day [O25k]:** a login reminder to you with your Kite
+  login link (skipped if you are already logged in). Your partner gets their
+  own one, with their login button, unless they are already logged in.
 - **09:25 each trading day (while on):** `✅ REAL-money F&O test ready today`,
   or `⚠️ NOT ready` with the reason:
   - the route is not set, or does not answer (the tunnel);

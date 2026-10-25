@@ -1,5 +1,27 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 — O25k A 07:00 login reminder for the owner and the partner, each with their own link; F&O the only channel to open (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed)
+
+- Owner ask (Oct 25):
+  - "OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge, this you add right now";
+  - "like you send a message to me at 7:50 am to remind me of login, just send me a message every day at 7:00 am and to my partner to login with our respective links";
+  - "commit, push and merge, then pull and restart and rebuild".
+- Done:
+  - [x] **Production root `.env`:** `OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge` added (backup `env-backup\root.env.before-o25k`).
+    - `OWNER_LIVE_ENTRY_HALT=true` is unchanged, so every channel stays halted until the owner lifts the global halt (runbook step 9). F&O is then the only channel that opens.
+  - [x] **`daily_bootstrap.premarket_login_nudge`.** It runs at LOGIN_REMINDER_HOUR:MINUTE (new settings, 07:00) on trading days, with `misfire_grace_time` 30 min. It was 07:50, owner only, no link.
+    - **Owner:** the plain-text alert now carries the owner's own Kite login link (`owner_login_url`: ZERODHA_API_KEY, which redirects to the gateway's ngrok callback, so it works from the phone). It is skipped when today's token is already fresh.
+    - **Partner:** `partner_broker_sync.morning_login_reminder` sends their app's Kite login button (`review_keyboard("🔑 Log in to Zerodha")`), once a day (`partner_messages` kind `login_reminder`). Not when already logged in, not when the partner bot or the app is unconfigured. Its failure never stops the owner's.
+    - English only, messages only; the login is read-only.
+  - [x] "Every day" is implemented as every NSE trading day, the same gate as before: no login is needed on a closed day.
+- Files:
+  - `python-engine/config.py`, `daily_bootstrap.py`, `partner_broker_sync.py`, `scheduler_setup.py`;
+  - `tests/test_login_reminder.py` (5), `tests/main_surface_golden.json` (the trigger is now cron 07:00).
+- Tests: engine + scripts full suite 6,015 passed, 4 skipped, exit 0 (11 min 34 s); tests/test_login_reminder.py 5 passed; scheduler surface/census goldens pass with the 07:00 trigger. Not a profitability result.
+- Config impact: new settings LOGIN_REMINDER_HOUR (7) and LOGIN_REMINDER_MINUTE (0); the job `premarket_login_nudge` is now at 07:00. No schema change.
+- Rollout: PR to `evolve/smart-strategies`; Production backup, fast-forward, rebuild all three images, recreate them, restart nginx, `verify_deployment.py`.
+- Rollback: LOGIN_REMINDER_HOUR=7 / LOGIN_REMINDER_MINUTE=50 in `.env` restores the time; or revert.
+
 ## October 25 — O25j Latest docs to the Production branch, Production rebuilt, tunnel settings applied (step 5) with the owner's one-time permission (done; docs `0cc0edc`, release `b6b39e8`)
 
 - Owner ask (Oct 25): "push the latest code all in the prod branch, something was pushed in it so that should also be maintained, and resolve any issues in the way. Then run the script to get the latest code in prod. I allow you this once to put the needed variables in the prod env, and then restart prod. In short, make it fully ready for tomorrow's run."
