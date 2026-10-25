@@ -12,6 +12,17 @@
   - Production fast-forwarded, built and recreated one service at a time, nginx restarted;
   - `verify_deployment.py` passed; env audit identical except the release SHA;
   - the new jobs are registered; switches off; owner halt on; no order or message.
+- [x] Oct 25, 23:02 IST, config only: the owner put a new partner Kite app's `PARTNER_KITE_API_KEY` and
+  `PARTNER_KITE_API_SECRET` in Production's root `.env` (`PARTNER_KITE_USER_ID` unchanged).
+  - Only `python-engine` reads them, so only it was recreated (`up -d --no-deps --no-build --force-recreate`):
+    same image, release `f9547c5`, healthy; no traceback; `/health` reasons unchanged (no_kite_token,
+    instrument_cache_unavailable, order_execution_unverified).
+  - Checked without printing values: both set, cleanly written, different from the owner's `KITE_API_KEY`, and
+    the running engine has them. Zerodha's login page accepts the new key (a session is opened; a made-up key
+    gets 400). The secret is proven only by the partner's first login with the new app.
+  - The gateway reads only `PARTNER_KITE_USER_ID` (unchanged, matches); no other file holds these values.
+  - Owner: the new app's redirect URL must be `<public URL>/api/partner-kite/callback`.
+  - No code change, no deploy, no backup (no data change).
 
 ## October 25 — O25M R1–R3 fixed in Dev (commit `07e22da`, pushed)
 
