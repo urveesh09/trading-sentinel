@@ -1,5 +1,12 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25g Production recovered and PR #115 deployed
+
+- Production was started at 13:32 IST, then updated exclusively through merged PR #115 / fast-forward to `0aa629a32f1ee714eb898fb790cf50e4ca06fc43`. Engine, gateway, agent and nginx are healthy; the public dashboard and health endpoint return HTTP 200. All three application images and runtime health passed release-identity verification at 13:42:35 IST. Automatic restart and engine logging 20m x 25 are now effective, rather than only Dev settings.
+- Independent verification: 66 focused local tests; 74 tests in the newly built Linux engine image; native SQLite/tunnel-module checks in the gateway image. The previous full-suite 6,010/4 result remains the developer's receipt, not a new full-suite run. No additional source defect established in the reviewed O25f changes; no source/strategy change in this slice.
+- Scheduler startup attests 88 jobs (partner registration 18); deployed proving-week CLI reads Oct 26–30. Evening reporting is enabled; real-money test remains false and live bankroll 0. A fresh owner Kite login is needed Monday morning. Telegram polling resumed and a read-only bot API authentication passed; outbound delivery was not exercised. Historical stale backlog remains visible.
+- Oracle TCP 31528 still times out; Console sign-in/cloud ingress and client adoption remain incomplete. No tunnel credentials were applied to Production, no broker order placed, and no trading switch enabled. Earlier entries describing Production as stopped/unmerged are superseded by this receipt. See [verification, rollback and remaining operator work](2026-10-25-production-recovery-and-release.md).
+
 ## October 25 — O25f Route conflicts, run authorization and restart policy (actual behavior, Dev, commit `e9645de`)
 
 - **`KiteClient.__init__`.** When KITE_ORDER_PROXY_URL and KITE_ORDER_BASE_URL are both set, `order_route_error` is set, `order_client` is None and `kite_order_route_invalid` is logged (critical). It never raises.

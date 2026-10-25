@@ -1,5 +1,15 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25g Production recovered; PR #115 merged and deployed (`0aa629a`)
+
+- [x] Started the three existing services, then verified dashboard/nginx recovery. Reviewed O25f and independently ran 66 focused tests; no new blocking defect found in that review.
+- [x] Merged checked PR #115 through GitHub and fast-forwarded Production. Built sequentially and recreated engine, gateway, agent; all healthy, exact merged SHA verified in images/containers/HTTP. Engine log retention 20m x 25 and all application restart policies `always` are effective.
+- [x] New Linux engine image: 74 tests passed. New gateway native SQLite/tunnel module checks passed. Protected rollback image tags and eight checked database backups retained outside both repositories.
+- [x] Scheduler 88 jobs, partner registration 18, proving-week Oct 26–30 CLI works, evening report enabled. Real-money test false; live bankroll 0. Telegram read-only authentication passes; outbound delivery not tested. No real order sent. No direct Production source/configuration edit.
+- [ ] Owner completes Oracle sign-in; permit cloud TCP 31528 and verify its direct TLS path before applying protected client settings. Old 31527 retained.
+- [ ] Owner Kite login Monday before 09:15, partner's separate watch login, then observe the proving week's 15:50 reports. Funding/order test/Nov 2–6 activation remain later owner decisions.
+- Full [recovery/release receipt](2026-10-25-production-recovery-and-release.md). Earlier stopped/unmerged descriptions below are historical.
+
 ## October 25 — O25f review of O25d/O25e: three gaps fixed; Production is down until the owner starts it (commit `e9645de`, Dev, pushed, in draft PR #115, not deployed, switch off)
 
 - [x] Both order routes set: the engine keeps running and real orders are refused (NOT_SENT). It no longer fails at import.

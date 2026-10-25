@@ -1,5 +1,17 @@
 # Runbook: the ₹12,500 real-money F&O test (O25–O25d)
 
+_O25g operational update, October 25: **Production is recovered and PR #115
+is merged/deployed at `0aa629a`**. Engine, gateway, agent and nginx are healthy;
+the public dashboard and release identity checks passed. Automatic restart
+and the engine's 20m x 25 log retention are effective. Steps 0/2 are done for
+this release. Keep the real-money switch false. Oracle cloud TCP 31528 still
+times out, so finish Console sign-in and step 4's cloud rule before adopting
+the tunnel. Log in to Kite Monday morning before 09:15; the broker token is
+currently expired. Partner watch requires the partner's separate login.
+Telegram polling/API authentication passed, but outbound delivery was not
+tested. See the [release receipt](../2026-10-25-production-recovery-and-release.md).
+This supersedes the older stopped/not-deployed statements below._
+
 _O25e actual setup, October 25: the tunnel is now installed and verified on
 the existing Oracle VM, with its VM firewall rule persisted. SSH access was
 recovered from the owner's attached Linux disk. External TCP 31528 still
