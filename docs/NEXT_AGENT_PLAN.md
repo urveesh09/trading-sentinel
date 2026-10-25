@@ -1,5 +1,15 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 — O25L independent Production/partner review (audit complete; three fixes pending)
+
+- Production images/HTTP identity verified at `7468853`; Dev application tree matches. Independent normalized hashes match 293 engine, 38 gateway and 11 agent files. Mumbai VM tunnel source matches Dev and is active/enabled; the full application runs on the owner's PC. No Production edit/restart/order/message or switch change during this review.
+- New O25k reminder happy paths are deployed, but three fake-data findings remain: R1 queued CHECK financial text can retry unchanged beyond quote freshness; R2 missing/future timestamps pass freshness and typed entry price bypasses a known stale quote; R3 failed morning reminder is still treated as already reminded. Do not mark these fixed from the existing passing suites.
+- Implementation order: R1 delivery-time CHECK evidence/contract binding; R2 explicit option/future freshness independent of typed entry; R3 bounded reminder retry retaining ambiguity. Each slice needs adversarial regression tests, guide/plan update, atlas regeneration if declarations change and separate GitHub rollout/rollback. No new partner order authority or blanket paper veto.
+- Acceptance, affected contracts, rollout limits, partner feature inventory and the subsequent streaming/entry-exit research plan: [independent review](2026-10-25-independent-production-partner-review.md). First live watch verification is still pending: Production has zero watch messages/quote paths, stream off, and owner token/instrument/order-execution prerequisites unavailable on Sunday.
+- Qualification registry is empty, but owner-authorized `PARTNER_MANUAL_ADVISORY_SEND_UNQUALIFIED=true` allows correctly labelled NOT CHECKED cards subject to the other gates; do not describe qualification as the sole blocker or promise daily tips. Latest saved input statuses are NO_ENTRY_SETUP/not_fresh_break on Oct 23.
+- New dated maintenance item: implement effective-date/contract-aware CAS/session/settlement changes before Dec 7, retaining current October/November rules and historical replay semantics. Official broker bulletin and SEBI circular are linked in the review.
+- Independent checks: 183 + 307 = 490 focused tests passed; four separate reproductions confirmed the three findings. No source/schema/config change; atlas unchanged. Review changes are Dev documentation only; Production stays `7468853`. Remaining: implement R1–R3, obtain first-session evidence, then staged stream/decision improvements. This audit makes no profitability claim.
+
 ## October 25 — O25k A 07:00 login reminder for the owner and the partner, each with their own link; F&O the only channel to open (done, Dev, commit `1d40091`, branch `codex/production-correction-hedge-p0`, pushed)
 
 - Owner ask (Oct 25):

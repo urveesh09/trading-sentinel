@@ -1,5 +1,16 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25L independent release/partner audit
+
+- [x] Production `7468853` image/HTTP identity and Dev source parity verified; normalized hashes match 342 engine/gateway/agent source/config files. VM tunnel active/enabled and source matches Dev. No Production mutation during review.
+- [x] Independent focused checks: 490 passed. Four isolated fake-data reproductions confirmed three gaps; they do not represent fixes.
+- [ ] R1: rebuild or expire CHECK market-dependent text at delivery/retry, preserving exact contract identity and bounded/ambiguous delivery handling.
+- [ ] R2: enforce valid quote clocks and current option/future evidence even when an entry price is supplied; label unavailable inputs honestly.
+- [ ] R3: bounded safe retry for provably unsent morning reminders, without globally changing dedup or repeating ambiguous sends.
+- [ ] First live partner session: both logins, account reconciliation, persisted message acknowledgement/latency and quote paths; streaming remains off. No unnecessary real trade for testing.
+- [ ] Effective-date CAS/session/settlement maintenance before Dec 7; preserve current/replay rules. Subsequent stream and adaptive entry/exit evaluation follow the [review and concrete plan](2026-10-25-independent-production-partner-review.md).
+- No source/schema/configuration/deployment change in this audit. Real-money switches remain off; no outbound message/order. Empty qualifications do not by themselves block owner-authorized NOT CHECKED cards.
+
 ## October 25 — O25k 07:00 login reminders with each person's own link; per-channel halt set (commit `1d40091`, pushed)
 
 - [x] Production `.env`: OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge. The global halt is still true.

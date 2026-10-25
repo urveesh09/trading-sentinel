@@ -1,5 +1,13 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25L independently verified state and remaining partner delivery gaps
+
+Production runs `7468853`, with matching Dev application source and matching installed Mumbai tunnel source. Both application tunnel settings are now applied. The full application runs on the owner's Windows/Docker host; Oracle hosts the routing service. Real trading remains off. Sunday readiness still requires a current owner login, instruments and order-execution verification.
+
+The partner can request a hypothetical nearest-expiry option plan in Telegram with `check 22300 pe` or `check sensex 81000 ce 120 2 lots`. It never records a buy or authorizes/places an order. Actual post-buy monitoring, protection alerts and evening broker-based review are separate. Order-update streaming is implemented but off; price/depth streaming and scored adaptive exit judgments are not active. Production has zero watch-message/quote-path rows, so live watch delivery has not yet been demonstrated.
+
+Three reproduced gaps remain in the current code: CHECK is fixed text and can be retried stale; incomplete/future quote clocks pass freshness and a supplied price bypasses stale-input rejection; failed morning reminders are deduplicated as already reminded. These require Dev fixes, not Production edits. The unqualified-card option is currently enabled, so an empty qualification registry alone does not block properly labelled NOT CHECKED cards. [Verified feature inventory, findings, evidence and implementation plan](2026-10-25-independent-production-partner-review.md).
+
 ## October 25 — O25k The morning login reminder (actual behavior, commit `1d40091`)
 
 - **Job `premarket_login_nudge`.** Cron LOGIN_REMINDER_HOUR:LOGIN_REMINDER_MINUTE (07:00 IST), misfire grace 30 min, NSE trading days only.
