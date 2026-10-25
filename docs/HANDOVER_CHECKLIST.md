@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 25 — O25M R1–R3 fixed in Dev (commit pending (recorded in the next docs commit), pushed)
+## October 25 — O25M R1–R3 fixed in Dev (commit `07e22da`, pushed)
 
 - [x] R1: a CHECK reply is never sent after its prices' 15 s. It is worked out again once for the same option and expiry, else a no-numbers note to ask again.
 - [x] R2: quotes need both clocks, zoned and believable. Missing or unreadable is UNVERIFIED, and a future exchange time is INVALID; neither checks a level. A typed price never makes an old quote current; an old future places no level.

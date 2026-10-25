@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 25 — O25M Partner delivery: current prices, verified quote clocks, a safe reminder retry (actual behavior, commit pending (recorded in the next docs commit))
+## October 25 — O25M Partner delivery: current prices, verified quote clocks, a safe reminder retry (actual behavior, commit `07e22da`)
 
 - **Quote freshness (`partner_watch.quote_freshness`).** A quote is FRESH only when all of these hold:
   - our read is within QUOTE_FRESH (15 s);

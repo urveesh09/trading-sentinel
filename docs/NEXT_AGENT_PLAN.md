@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 25 — O25M Fixes for R1–R3 from the O25L review: CHECK prices current when sent, quote clocks enforced, the morning reminder retried safely (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed)
+## October 25 — O25M Fixes for R1–R3 from the O25L review: CHECK prices current when sent, quote clocks enforced, the morning reminder retried safely (done, Dev, commit `07e22da`, branch `codex/production-correction-hedge-p0`, pushed)
 
 - Owner ask (Oct 25): the three O25L findings, "Fix them".
 - Done:
