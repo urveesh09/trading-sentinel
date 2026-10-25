@@ -1,5 +1,12 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25i Oracle ingress complete; direct public tunnel verified
+
+- [x] Owner-added NSG ingress confirmed: stateful TCP 31528, source `0.0.0.0/0`, all source ports. Existing rules retained.
+- [x] Direct public negative checks 407/403, and both deployed-image transports HTTP 200 / verified TLS / fake-token rejection. No real broker credential, order or Production volume used.
+- [x] Private canonical settings now select the direct endpoint; separate SSH settings/task retained. Receipt stored privately. Production services remain healthy at `0aa629a`, real-money switch off; no Production configuration edit or restart.
+- [ ] Operator step 5 adoption, current login/read-only preflight, later funding/explicit order test/activation. Direct route has no SSH-task dependency. Use the updated [single checklist](runbooks/fno-live-test.md); older blocked-port statements below are historical.
+
 ## October 25 — O25h SSH bridge ready; Oracle website not needed for tunnel adoption
 
 - [x] Probed the VM's actual cloud authority with official SDK: instance principal authenticated, VNIC read denied (404 `NotAuthorizedOrNotFound`); no cloud change. Removed temporary SDK.

@@ -1,49 +1,23 @@
-# Runbook: the ₹12,500 real-money F&O test (O25–O25d)
+# Runbook: the ₹12,500 real-money F&O test (updated O25i, October 25)
 
-_O25h update, October 25: **Oracle Console sign-in is no longer required for
-the selected route.** A supervised Windows SSH bridge is installed and tested
-against the existing VM tunnel. Step 4 is complete using SSH; step 5's private
-settings now select `host.docker.internal:31528`. Production clients have not
-yet adopted them. Keep Windows logged in during trading. See the
-[bridge runbook](kite-ssh-bridge.md) for verified recovery and limitations.
-The following older cloud-rule references apply only to a direct public route._
+**Current status:** Production is healthy at PR #115 merge `0aa629a`;
+automatic restart and engine log retention 20m x 25 are effective. Steps 0/2
+are complete. The VM tunnel and owner-added Oracle ingress rule are verified:
+both deployed image transports passed directly through public 31528 with
+verified TLS. Step 4 is complete. Protected `tunnel-client.env` now selects
+that direct route; the supervised SSH bridge remains a separate fallback.
 
-_O25g operational update, October 25: **Production is recovered and PR #115
-is merged/deployed at `0aa629a`**. Engine, gateway, agent and nginx are healthy;
-the public dashboard and release identity checks passed. Automatic restart
-and the engine's 20m x 25 log retention are effective. Steps 0/2 are done for
-this release. Keep the real-money switch false. Oracle cloud TCP 31528 still
-times out, so finish Console sign-in and step 4's cloud rule before adopting
-the tunnel. Log in to Kite Monday morning before 09:15; the broker token is
-currently expired. Partner watch requires the partner's separate login.
-Telegram polling/API authentication passed, but outbound delivery was not
-tested. See the [release receipt](../2026-10-25-production-recovery-and-release.md).
-This supersedes the older stopped/not-deployed statements below._
+**Production clients have not adopted the tunnel settings; step 5 onward is
+pending.** The account is unfunded, real-money switch false, no real order
+placed. Log in to Kite Monday morning before 09:15; the partner watch needs
+its separate login. Telegram polling/read-only bot authentication passed;
+outbound delivery was not exercised. Use `--user quantuser` for engine CLIs.
 
-_O25e actual setup, October 25: the tunnel is now installed and verified on
-the existing Oracle VM, with its VM firewall rule persisted. SSH access was
-recovered from the owner's attached Linux disk. External TCP 31528 still
-times out, so step 4's Oracle cloud rule and the direct public route remain
-pending; the owner is completing Oracle sign-in. Both client transports
-passed against the actual service through a temporary SSH forward, which
-is now closed. Steps 5 onward are not completed; no application configuration,
-Production restart or real order occurred. See the
-[installation receipt](../2026-10-25-oracle-tunnel-installation.md), including
-the observation that the Production engine/gateway were already stopped._
-
-_Written 2026-10-25, revised the same day after the audit-agent review (O25b) and
-for the owner's dates and the encrypted tunnel (O25c). Code:
-`python-engine/fno_live_test.py`, `fno_executor.py`, `fno_orchestrator.py`,
-`fno_proving_week.py`, `fno_live_preflight.py`; the tunnel `scripts/kite_tunnel.py`
-and `node-gateway/server/services/kite-tunnel.js`._
-
-_O25d (code `94a262a`, pushed, not deployed) corrects all five findings in
-[the review](../2026-10-25-independent-live-tunnel-review.md). Promote the
-verified code through GitHub before using it operationally. Local tunnel
-tests passed; actual VM installation/client routes must still be verified.
-The account is unfunded: keep the trading switch false and do not place a
-test order yet. The Python commands specify the application user because
-the image installs its dependencies for `quantuser`._
+History/evidence: [Production release](../2026-10-25-production-recovery-and-release.md),
+[VM installation](../2026-10-25-oracle-tunnel-installation.md),
+[SSH fallback](kite-ssh-bridge.md), O25i at the top of the active plan.
+Older timeout/not-deployed statements in historical receipts are superseded
+by this current status.
 
 ## The dates (the owner's decision, Oct 25)
 
@@ -124,42 +98,35 @@ Have at least ₹12,500 of free cash in the Zerodha account. Pledged holdings
 and margin do not count. A typical lot has cost about ₹8–9k; the morning
 check compares the two.
 
-### 4. The tunnel and SSH bridge (already installed)
+### 4. The direct tunnel (installed and verified; SSH backup retained)
 
 Today all of the gateway's Kite traffic goes through the relay on port 31527
 in plain HTTP. That includes the login exchange and the day's access token.
 The tunnel replaces it: the token is inside TLS all the way to Kite, orders
 still leave from the VM's registered IP, and it serves nothing else.
 
-**O25h: this step is complete through SSH, without an Oracle website change.**
-The VM's `kite-tunnel` is active/enabled on 31528. The Windows task
-**Trading Sentinel - Kite SSH Bridge** forwards local 127.0.0.1:31528 over
-authenticated SSH (port 22) to that service. It starts at owner logon and
-reconnects automatically; overlapping starts are ignored. Keep the owner
-logged in during trading. Docker Desktop clients use `host.docker.internal`.
+**O25i: complete.** VM `kite-tunnel` is active/enabled on 31528. The owner
+added stateful TCP 31528 ingress from `0.0.0.0/0` in attached
+`ig-quick-action-NSG`; its existing rules remain. Public password/destination
+checks passed (407/403). Both deployed application image transports reached
+Kite root HTTP 200 with verified TLS and rejected fake broker tokens.
+These checks placed no real order and do not prove registered-IP order
+acceptance, current broker login, cash or profitability.
 
-Both clients and both deployed images reached Kite through this bridge with
-verified TLS. A forced SSH process loss recovered in 58.8 seconds. No real
-order, physical network-loss test or reboot was performed. Check the task
-before step 5:
-
-    Get-ScheduledTask -TaskName 'Trading Sentinel - Kite SSH Bridge'
-    Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort 31528 -State Listen
-
-Expect the task running and one loopback listener. The protected two-line
-settings file is
+The direct route needs no Windows SSH process. The protected settings are
 `C:\Users\Urveesh\sentinel-operations\oracle-access-20261025\tunnel-client.env`.
-Do not paste its contents into chat. Direct public 31528 still times out;
-opening that cloud port is an optional alternative, not a prerequisite for
-this SSH route. [Detailed operation/rollback](kite-ssh-bridge.md).
+Do not paste them into chat. `tunnel-client-direct.env` is the same pair.
+The separately retained `tunnel-client-ssh.env` uses the supervised SSH
+bridge if deliberately selected later; that fallback requires owner Windows
+login and its running task. [SSH backup operation/rollback](kite-ssh-bridge.md).
 
 Leave the old relay (31527) running for now: it is the fallback (step 10).
 
 ### 5. The two `.env` lines, with the switch still off
 
-Take them from `tunnel-client.env` (step 4), also saved as `tunnel-client-ssh.env`.
-These select the verified SSH route. The VM's `print-env` command instead
-prints a direct public endpoint that is still blocked; do not substitute it.
+Take them from `tunnel-client.env` (step 4), also saved as `tunnel-client-direct.env`.
+These select the verified public route. Use `tunnel-client-ssh.env` only for
+a deliberate switch to the SSH backup; do not mix the route choices.
 
 - `node-gateway\.env`: add the `KITE_PROXY_URL=…` line. Leave `KITE_BASE_URL`
   as it is: while `KITE_PROXY_URL` is set it is ignored, and deleting
@@ -187,7 +154,7 @@ goes through the tunnel, so a successful login proves the gateway's route.
 
 Expect:
 
-- `Order route: https://api.kite.trade through the CONNECT proxy http://kite:***@host.docker.internal:31528 (TLS end to end)`;
+- `Order route: https://api.kite.trade through the CONNECT proxy http://kite:***@161.118.160.180:31528 (TLS end to end)`;
 - `Order route answers: yes`;
 - your free cash, and no problem lines.
 

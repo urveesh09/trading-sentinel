@@ -1,5 +1,10 @@
 # Kite tunnel through supervised SSH (O25h, October 25)
 
+**O25i update:** the owner has added cloud ingress and the direct public
+tunnel passed both deployed-image transports. It is now selected in the
+canonical protected settings. This SSH bridge remains running as a separate,
+deliberately selected fallback; Production clients have adopted neither yet.
+
 ## Installed route
 
 Oracle website credentials are separate from the VM's SSH key. The key
@@ -23,7 +28,7 @@ Docker client -> host.docker.internal:31528
 Kite still sees the VM's outbound IP. A fake-token transport test establishes
 TLS reachability, not registered-IP order acceptance or trading profitability.
 Broker credentials are inside TLS; SSH also encrypts the CONNECT exchange.
-Direct public 31528 remains blocked and is not used by this route.
+Direct public 31528 is now verified/preferred; it is not used by this SSH route.
 
 ## Windows task
 
@@ -52,15 +57,16 @@ Actual reboot and physical network-loss recovery were not tested.
 
 `C:\Users\Urveesh\sentinel-operations\oracle-access-20261025`
 
-- `tunnel-client.env` and `tunnel-client-ssh.env`: two operator settings
-  selecting `host.docker.internal:31528`, protected to the Windows owner.
-- `tunnel-client-direct.env`: prior public-endpoint copy, still blocked.
+- `tunnel-client.env` and `tunnel-client-direct.env`: verified public endpoint,
+  currently preferred, protected to the Windows owner.
+- `tunnel-client-ssh.env`: separate `host.docker.internal:31528` fallback pair.
 - `ssh-bridge-task.xml`: exact task definition for restoration on this PC.
 - `ssh-bridge-verification.json`: transport/recovery results, no password.
 
 The settings contain the existing tunnel password. Do not paste them into
 chat, logs, Git or screenshots. VM `kite_tunnel.py print-env` prints the
-**direct** endpoint; it is not the selected SSH settings file.
+**direct** endpoint; use the separate SSH file when deliberately selecting
+this fallback.
 
 **Production clients have not adopted these settings.** Follow step 5 in
 [the live-test checklist](fno-live-test.md), the approved operator rollout,

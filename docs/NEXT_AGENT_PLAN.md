@@ -1,5 +1,14 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 25 — O25i owner-added Oracle ingress; direct route verified (completed; client adoption pending)
+
+- Owner added the requested rule. Read-only Console verification: attached `ig-quick-action-NSG` has stateful ingress TCP 31528 from `0.0.0.0/0`, all source ports, description `Kite authenticated CONNECT tunnel`; original egress retained. Direct TCP and negative policy checks now pass (missing password 407, wrong target 403).
+- Contract/acceptance: test both already-deployed application image transports directly against VM public 31528, verified TLS to Kite, fake-token rejection, no real orders/Production volume. Keep SSH bridge and old relay available; no Production source/config/restart or trading activation.
+- If both pass, select the direct endpoint in protected operator settings, retain the separate SSH settings for deliberate fallback, and correct the checklist/guide. Operator client adoption, current broker login/funds, actual preflight and later explicitly authorized order test remain separate. Rollback here only restores the protected settings choice; do not delete the owner's rule or disable working services.
+- Completed: both deployed images (`0aa629a`) reached Kite root HTTP 200 directly through public 31528 with certificate verification enabled; gateway explicitly reported verified TLS. Both rejected fake broker tokens as expected. No real broker credential, order call, Production volume or SSH forward was used by these disposable test containers.
+- `tunnel-client.env` now equals the verified `tunnel-client-direct.env`; `tunnel-client-ssh.env` and its running task remain available for deliberate fallback. Receipts in the protected directory: `direct-tunnel-verification.json`; no secret printed/committed. All four Production services remain healthy; real-money test still off. No Production file, route, image or running service changed in this slice.
+- Direct adoption no longer depends on the Windows SSH task. Step 4 is complete; step 5 adoption/current broker login/read-only preflight and later funded/explicit order test remain. The main checklist now has one current status block and the direct endpoint; SSH instructions are a separate fallback. No application source/schema change or atlas regeneration; integration verification covers the operational change.
+
 ## October 25 — O25h SSH bridge installed and verified; Console no longer required for this route
 
 - Owner asks whether SSH can recover the Console password or finish the port setup. SSH key access cannot reveal a website password. The VM has no user OCI config/CLI/SDK; that alone does not establish whether instance-principal IAM permissions exist.

@@ -1,5 +1,10 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25i direct Oracle tunnel verified; application adoption still pending
+
+- Owner saved stateful TCP 31528 ingress in the attached `ig-quick-action-NSG` (`0.0.0.0/0`, source ports All). Console read-back and direct public tests confirm it; no existing rule was removed. Missing password 407, wrong destination 403. Both deployed application images reached Kite HTTP 200 directly with verified TLS and rejected fake broker tokens; no real orders/credentials or Production data mounts.
+- Protected `tunnel-client.env` now selects public `161.118.160.180:31528`, with direct/SSH copies retained separately. The SSH bridge remains running as deliberate fallback; the preferred direct route does not depend on that Windows task. **Production clients still use the previous relay** until operator adoption in checklist step 5. Production remains healthy at `0aa629a`, trading switch off. No source/configuration change or restart in this slice; older timeout/SSH-preferred notes below are historical.
+
 ## October 25 — O25h supervised SSH access to the Kite tunnel
 
 - Oracle website credentials cannot be derived from the SSH key. The VM's instance principal authenticated but its network read returned `NotAuthorizedOrNotFound`; no cloud security/IAM change was made. A temporary official SDK was removed after the check.
