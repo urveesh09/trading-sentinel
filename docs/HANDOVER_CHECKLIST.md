@@ -2,6 +2,7 @@
 
 ## October 25 — O25d remediation receipt (Dev code `94a262a`, pushed; VM access pending)
 
+- [x] Documentation identity receipt `ca189f8` pushed; [draft PR #115](https://github.com/urveesh09/trading-sentinel/pull/115) created/attached for normal GitHub promotion. Not merged or deployed; broader S23–O25 branch changes are included.
 - [x] All five review comments implemented: frozen authorized entry window/length, no order after failed preflight, conflicting routes rejected before HTTP clients, AMO maintenance excluded, authenticated loopback installer check with external restrictions retained.
 - [x] Tests cover delayed startup, immutable dates/length, legacy run migration, zero order calls on failed checks, zero HTTP clients for conflicting routes, maintenance boundaries, restricted-loopback checks, and continued real exits after entries expire.
 - [x] Full engine/scripts validation: **6,008 passed, 4 skipped**, exit 0; affected suite **314 passed, 1 existing skip**. Existing warnings and the separately reproduced injected penny-writer teardown diagnostic are documented in the active plan. A restrictive-allow-list real-Kite TLS self-test passed. No claim of deployment or profitability.
