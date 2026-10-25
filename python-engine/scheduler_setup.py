@@ -486,11 +486,13 @@ def register_penny_scheduler_jobs(scheduler):
     # when the token is already fresh. Deliberately not misfire-graced: a nudge
     # delivered late is worse than no nudge (it would arrive after the 08:00
     # deferral alert has already said the same thing, louder).
+    # [O25k 2026-10-25] 07:00 (LOGIN_REMINDER_HOUR/MINUTE) for the owner and the partner, each with their
+    # own login link. A late run within 30 min still reaches both before the 08:00 bootstrap.
     scheduler.add_job(
         premarket_login_nudge, "cron",
-        hour=settings.PENNY_REFRESH_HOUR - 1, minute=50,
+        hour=settings.LOGIN_REMINDER_HOUR, minute=settings.LOGIN_REMINDER_MINUTE,
         id="premarket_login_nudge",
-        max_instances=1, coalesce=True,
+        max_instances=1, coalesce=True, misfire_grace_time=1800,
     )
     scheduler.add_job(
         bootstrap_safety_tick, "interval",

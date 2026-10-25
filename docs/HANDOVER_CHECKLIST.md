@@ -1,10 +1,25 @@
 # Handover receipt and operator checklist
 
-## October 25 — O25j latest docs to Production, rebuild, tunnel settings applied (commit pending (recorded in the next docs commit); receipt in the plan's O25j slice)
+## October 25 — O25k 07:00 login reminders with each person's own link; per-channel halt set (commit `1d40091`, pushed)
+
+- [x] Production `.env`: OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge. The global halt is still true.
+- [x] 07:00 on trading days:
+  - the owner gets the Kite login link (skipped if already logged in);
+  - the partner gets their own login button, once a day, unless already logged in.
+- [x] Tests: engine + scripts full suite 6,015 passed, 4 skipped, exit 0 (11 min 34 s); tests/test_login_reminder.py 5 passed; scheduler surface/census goldens pass with the 07:00 trigger. Not a profitability result.
+- [ ] Rollout to Production (PR, backup, rebuild, recreate, verify): see the plan.
+
+## October 25 — O25j latest docs to Production, rebuild, tunnel settings applied (commit `0cc0edc`; receipt in the plan's O25j slice)
 
 - [x] Real-money check: every engine entry path is off and the owner halt is on, so the engine's new order route can only carry exits.
 - [x] Runbook step 9: lift OWNER_LIVE_ENTRY_HALT for F&O only before the Nov 2 run, or nothing buys.
-- [ ] (this rollout) PR to `evolve/smart-strategies`; Production backup, fast-forward, build, `.env` lines, recreate, verify. See the plan's receipt.
+- [x] Done 14:27–14:59 IST:
+  - PR #116 merged as `b6b39e8` (`0aa629a` kept);
+  - 8 database snapshots `quick_check=ok`, both `.env` backups, rollback image tags;
+  - Production fast-forwarded and rebuilt; the tunnel lines added;
+  - engine, gateway and agent recreated, nginx restarted;
+  - `verify_deployment.py` passed; both services reach Kite through the tunnel;
+  - switch false, entry halt true, no order.
 - [ ] Owner:
   - the Kite login Monday before 09:15;
   - the weekend steps 1, 3 and 6–9;

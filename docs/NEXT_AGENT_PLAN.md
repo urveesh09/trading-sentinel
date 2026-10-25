@@ -1,6 +1,28 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 25 — O25j Latest docs to the Production branch, Production rebuilt, tunnel settings applied (step 5) with the owner's one-time permission (in progress at commit pending (recorded in the next docs commit); the receipt follows in this slice)
+## October 25 — O25k A 07:00 login reminder for the owner and the partner, each with their own link; F&O the only channel to open (done, Dev, commit `1d40091`, branch `codex/production-correction-hedge-p0`, pushed)
+
+- Owner ask (Oct 25):
+  - "OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge, this you add right now";
+  - "like you send a message to me at 7:50 am to remind me of login, just send me a message every day at 7:00 am and to my partner to login with our respective links";
+  - "commit, push and merge, then pull and restart and rebuild".
+- Done:
+  - [x] **Production root `.env`:** `OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge` added (backup `env-backup\root.env.before-o25k`).
+    - `OWNER_LIVE_ENTRY_HALT=true` is unchanged, so every channel stays halted until the owner lifts the global halt (runbook step 9). F&O is then the only channel that opens.
+  - [x] **`daily_bootstrap.premarket_login_nudge`.** It runs at LOGIN_REMINDER_HOUR:MINUTE (new settings, 07:00) on trading days, with `misfire_grace_time` 30 min. It was 07:50, owner only, no link.
+    - **Owner:** the plain-text alert now carries the owner's own Kite login link (`owner_login_url`: ZERODHA_API_KEY, which redirects to the gateway's ngrok callback, so it works from the phone). It is skipped when today's token is already fresh.
+    - **Partner:** `partner_broker_sync.morning_login_reminder` sends their app's Kite login button (`review_keyboard("🔑 Log in to Zerodha")`), once a day (`partner_messages` kind `login_reminder`). Not when already logged in, not when the partner bot or the app is unconfigured. Its failure never stops the owner's.
+    - English only, messages only; the login is read-only.
+  - [x] "Every day" is implemented as every NSE trading day, the same gate as before: no login is needed on a closed day.
+- Files:
+  - `python-engine/config.py`, `daily_bootstrap.py`, `partner_broker_sync.py`, `scheduler_setup.py`;
+  - `tests/test_login_reminder.py` (5), `tests/main_surface_golden.json` (the trigger is now cron 07:00).
+- Tests: engine + scripts full suite 6,015 passed, 4 skipped, exit 0 (11 min 34 s); tests/test_login_reminder.py 5 passed; scheduler surface/census goldens pass with the 07:00 trigger. Not a profitability result.
+- Config impact: new settings LOGIN_REMINDER_HOUR (7) and LOGIN_REMINDER_MINUTE (0); the job `premarket_login_nudge` is now at 07:00. No schema change.
+- Rollout: PR to `evolve/smart-strategies`; Production backup, fast-forward, rebuild all three images, recreate them, restart nginx, `verify_deployment.py`.
+- Rollback: LOGIN_REMINDER_HOUR=7 / LOGIN_REMINDER_MINUTE=50 in `.env` restores the time; or revert.
+
+## October 25 — O25j Latest docs to the Production branch, Production rebuilt, tunnel settings applied (step 5) with the owner's one-time permission (done; docs `0cc0edc`, release `b6b39e8`)
 
 - Owner ask (Oct 25): "push the latest code all in the prod branch, something was pushed in it so that should also be maintained, and resolve any issues in the way. Then run the script to get the latest code in prod. I allow you this once to put the needed variables in the prod env, and then restart prod. In short, make it fully ready for tomorrow's run."
 - State found:
@@ -28,6 +50,26 @@
   - delete the two lines (or restore the `.env` backups) and recreate;
   - the images tagged `sentinel-rollback/*:0aa629a-20261025`;
   - the database backups.
+- **Receipt (done Oct 25, 14:27–14:59 IST):**
+  - PR #116 merged as a merge commit, `b6b39e8` on `evolve/smart-strategies`; `0aa629a` is kept in its history.
+  - Backups, outside the repositories in `C:\Users\Urveesh\sentinel-operations\production-rollout-20261025-o25j\`:
+    - 8 SQLite databases as single-step online snapshots, every one `quick_check=ok` (cache.db 3.15 GB in 62 s). A first, stepwise attempt restarted on every engine write and was stopped.
+    - both `.env` files (`env-backup\`);
+    - the previous images tagged `sentinel-rollback/<service>:0aa629a-20261025`.
+  - Production: `git merge --ff-only` to `b6b39e8`, no tracked change. Engine, gateway and agent built one at a time, stamped `b6b39e8` / `2026-10-25T09:12:31Z`.
+  - `.env`:
+    - `KITE_ORDER_PROXY_URL` added to the root file and `KITE_PROXY_URL` to `node-gateway/.env`, from `tunnel-client.env`; no value printed.
+    - No KITE_ORDER_BASE_URL. FNO_LIVE_TEST_ENABLED unset (false). OWNER_LIVE_ENTRY_HALT=true unchanged.
+  - Engine, gateway and agent recreated separately (`--no-deps --no-build --force-recreate`), then nginx restarted. All healthy, restart policy `always`.
+  - `scripts/verify_deployment.py --expected-sha b6b39e8…` passed with health checked (receipt in `%USERPROFILE%\sentinel-operations\release-receipts\`).
+  - Engine:
+    - its order-route probe (`_kite_probe_get` through the tunnel) answers; quotes stay direct; no startup traceback;
+    - `/health` trading_ready false only for no_kite_token, instrument_cache_unavailable and order_execution_unverified (expected until Monday's login); scheduler running;
+    - `fno_proving_week` reads 26–30 Oct, no trade yet.
+  - Gateway:
+    - `kite_route` encrypted true through 161.118.160.180:31528 (password hidden), and `kite_base_url_ignored` for the relay;
+    - Kite's root answers HTTP 200 through the tunnel from inside the container, certificate verified; no password in its logs.
+  - Dashboard HTTP 200; gateway health ok (Kite token expired). No real order placed, no Telegram message sent.
 - Remaining (owner):
   - Monday before 09:15: the Kite login (and the partner's);
   - watch the 15:50 reports Oct 26–30 and Friday's verdict;
