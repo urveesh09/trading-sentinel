@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 25 (3) — O25c the owner's dates (proving Oct 26–30, checklist Oct 31–Nov 1, run Nov 2–6), the free encrypted Kite tunnel, a weekend test order (commit pending (recorded in the next docs commit), Dev, pushed, not deployed, switch off)
+## October 25 (3) — O25c the owner's dates (proving Oct 26–30, checklist Oct 31–Nov 1, run Nov 2–6), the free encrypted Kite tunnel, a weekend test order (commit `cff5036`, Dev, pushed, not deployed, switch off)
 
 - [x] `scripts/kite_tunnel.py` for the VM:
   - CONNECT to api.kite.trade:443 only, with a password;

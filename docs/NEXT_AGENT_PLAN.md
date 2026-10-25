@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 25 (3) — O25c The owner's dates, an encrypted Kite tunnel on the free VM for both services, a weekend test order (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed, switch off)
+## October 25 (3) — O25c The owner's dates, an encrypted Kite tunnel on the free VM for both services, a weekend test order (done, Dev, commit `cff5036`, branch `codex/production-correction-hedge-p0`, pushed, not deployed, switch off)
 
 - Owner ask (Oct 25): "the real money will start next monday not this coming one, after one more week of observing the fno I will start it the steps you put in one doc i will follow and do it next weekend, also the relay do all you can what you need me to do you tell me, remember I wont pay anything extra for that".
 - Dates:

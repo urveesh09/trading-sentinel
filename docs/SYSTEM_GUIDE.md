@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 25 (3) — O25c The Kite tunnel, the weekend test order and the order-route probe (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 25 (3) — O25c The Kite tunnel, the weekend test order and the order-route probe (actual behavior, Dev, commit `cff5036`)
 
 - **`scripts/kite_tunnel.py` (on the Oracle VM).**
   - `Tunnel.handle` reads one request head (8 KiB within 10 s) and checks, in order:
