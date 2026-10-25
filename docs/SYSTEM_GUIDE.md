@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 25 (2) — O25b The live exit's identity, restart recovery, bounded runs and readiness (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 25 (2) — O25b The live exit's identity, restart recovery, bounded runs and readiness (actual behavior, Dev, commit `abbe073`)
 
 - **`FnoExecutor` (live).**
   - `execute_exit(…, tag=None, on_event=None)` sends the SELL with the exit's own tag. It calls `on_event("placed", order_id, price)` before any wait.

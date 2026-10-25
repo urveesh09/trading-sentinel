@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 25 (2) — O25b The review's gaps in the real-money test are fixed; bounded runs, a daily readiness message, execution evidence and an encrypted order route are added (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed, not deployed, switch off)
+## October 25 (2) — O25b The review's gaps in the real-money test are fixed; bounded runs, a daily readiness message, execution evidence and an encrypted order route are added (done, Dev, commit `abbe073`, branch `codex/production-correction-hedge-p0`, pushed, not deployed, switch off)
 
 - Owner ask (Oct 25):
   - the audit-agent review of `ca12934`..`b414383`: 5 P1 and 4 P2 findings, each reproduced by the reviewer;

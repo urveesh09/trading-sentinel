@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 25 (2) — O25b the review's nine gaps in the real-money test fixed; bounded runs, readiness, evidence, encrypted route option (commit pending (recorded in the next docs commit), Dev, pushed, not deployed, switch off)
+## October 25 (2) — O25b the review's nine gaps in the real-money test fixed; bounded runs, readiness, evidence, encrypted route option (commit `abbe073`, Dev, pushed, not deployed, switch off)
 
 - [x] P1:
   - a gateway cleanup failure no longer stops protection;
