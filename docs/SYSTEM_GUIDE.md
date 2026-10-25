@@ -1,5 +1,32 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25j Production's Kite routes and the owner's entry halt (operations; commit pending (recorded in the next docs commit))
+
+- No source change. Production's `node-gateway/.env` gets `KITE_PROXY_URL` and the root `.env` gets `KITE_ORDER_PROXY_URL`, both the direct tunnel `161.118.160.180:31528`. So:
+  - the gateway's Kite calls go HTTPS inside the tunnel (its KITE_BASE_URL, the plain relay, is ignored);
+  - the engine's place/modify/cancel go through the tunnel; its quotes stay direct (KITE_BASE_URL https://api.kite.trade);
+  - the engine's 3-minute market-hours probe watches the tunnel.
+- `OWNER_LIVE_ENTRY_HALT=true` (Production root `.env`) refuses every real entry on every channel before any order is sent, including FNO_LIVE buys and the preflight test order. Exits are never halted. For the Nov 2 run: OWNER_LIVE_ENTRY_HALT=false plus OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge (runbook step 9).
+
+## October 25 — O25i direct Oracle tunnel verified; application adoption still pending
+
+- Owner saved stateful TCP 31528 ingress in the attached `ig-quick-action-NSG` (`0.0.0.0/0`, source ports All). Console read-back and direct public tests confirm it; no existing rule was removed. Missing password 407, wrong destination 403. Both deployed application images reached Kite HTTP 200 directly with verified TLS and rejected fake broker tokens; no real orders/credentials or Production data mounts.
+- Protected `tunnel-client.env` now selects public `161.118.160.180:31528`, with direct/SSH copies retained separately. The SSH bridge remains running as deliberate fallback; the preferred direct route does not depend on that Windows task. **Production clients still use the previous relay** until operator adoption in checklist step 5. Production remains healthy at `0aa629a`, trading switch off. No source/configuration change or restart in this slice; older timeout/SSH-preferred notes below are historical.
+
+## October 25 — O25h supervised SSH access to the Kite tunnel
+
+- Oracle website credentials cannot be derived from the SSH key. The VM's instance principal authenticated but its network read returned `NotAuthorizedOrNotFound`; no cloud security/IAM change was made. A temporary official SDK was removed after the check.
+- Installed **Trading Sentinel - Kite SSH Bridge**, an owner-level Windows Scheduled Task using the existing OpenSSH client/key and strict saved host keys. Loopback 127.0.0.1:31528 forwards over SSH port 22 to the existing VM CONNECT service on localhost:31528. The task retries and starts at owner logon; it requires the owner to stay logged in. Docker clients use `host.docker.internal:31528`. No cloud port opening is required for this route.
+- Both actual client transports passed, including both deployed images after a forced bridge-process loss. Missing password 407, other destination 403, verified Kite TLS HTTP 200; fake broker tokens rejected. Automatic process recovery took 58.8 s. Reboot/physical network-loss recovery was not exercised. Stop/start testing did not affect Production.
+- Protected operator settings now select this SSH route, with a separate direct-route copy. **Production clients still use their previous route**, pending step 5 adoption; no Production config edit, image change or live enablement in O25h. The previous cloud-ingress blocker remains only for direct public 31528. [Operation, limitations and rollback](runbooks/kite-ssh-bridge.md).
+
+## October 25 — O25g Production recovered and PR #115 deployed
+
+- Production was started at 13:32 IST, then updated exclusively through merged PR #115 / fast-forward to `0aa629a32f1ee714eb898fb790cf50e4ca06fc43`. Engine, gateway, agent and nginx are healthy; the public dashboard and health endpoint return HTTP 200. All three application images and runtime health passed release-identity verification at 13:42:35 IST. Automatic restart and engine logging 20m x 25 are now effective, rather than only Dev settings.
+- Independent verification: 66 focused local tests; 74 tests in the newly built Linux engine image; native SQLite/tunnel-module checks in the gateway image. The previous full-suite 6,010/4 result remains the developer's receipt, not a new full-suite run. No additional source defect established in the reviewed O25f changes; no source/strategy change in this slice.
+- Scheduler startup attests 88 jobs (partner registration 18); deployed proving-week CLI reads Oct 26–30. Evening reporting is enabled; real-money test remains false and live bankroll 0. A fresh owner Kite login is needed Monday morning. Telegram polling resumed and a read-only bot API authentication passed; outbound delivery was not exercised. Historical stale backlog remains visible.
+- Oracle TCP 31528 still times out; Console sign-in/cloud ingress and client adoption remain incomplete. No tunnel credentials were applied to Production, no broker order placed, and no trading switch enabled. Earlier entries describing Production as stopped/unmerged are superseded by this receipt. See [verification, rollback and remaining operator work](2026-10-25-production-recovery-and-release.md).
+
 ## October 25 — O25f Route conflicts, run authorization and restart policy (actual behavior, Dev, commit `e9645de`)
 
 - **`KiteClient.__init__`.** When KITE_ORDER_PROXY_URL and KITE_ORDER_BASE_URL are both set, `order_route_error` is set, `order_client` is None and `kite_order_route_invalid` is logged (critical). It never raises.

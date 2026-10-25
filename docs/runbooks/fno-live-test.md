@@ -1,29 +1,26 @@
-# Runbook: the ₹12,500 real-money F&O test (O25–O25d)
+# Runbook: the ₹12,500 real-money F&O test (updated O25i, October 25)
 
-_O25e actual setup, October 25: the tunnel is now installed and verified on
-the existing Oracle VM, with its VM firewall rule persisted. SSH access was
-recovered from the owner's attached Linux disk. External TCP 31528 still
-times out, so step 4's Oracle cloud rule and the direct public route remain
-pending; the owner is completing Oracle sign-in. Both client transports
-passed against the actual service through a temporary SSH forward, which
-is now closed. Steps 5 onward are not completed; no application configuration,
-Production restart or real order occurred. See the
-[installation receipt](../2026-10-25-oracle-tunnel-installation.md), including
-the observation that the Production engine/gateway were already stopped._
+**Current status:** Production is healthy at PR #115 merge `0aa629a`;
+automatic restart and engine log retention 20m x 25 are effective. Steps 0/2
+are complete. The VM tunnel and owner-added Oracle ingress rule are verified:
+both deployed image transports passed directly through public 31528 with
+verified TLS. Step 4 is complete. Protected `tunnel-client.env` now selects
+that direct route; the supervised SSH bridge remains a separate fallback.
 
-_Written 2026-10-25, revised the same day after the audit-agent review (O25b) and
-for the owner's dates and the encrypted tunnel (O25c). Code:
-`python-engine/fno_live_test.py`, `fno_executor.py`, `fno_orchestrator.py`,
-`fno_proving_week.py`, `fno_live_preflight.py`; the tunnel `scripts/kite_tunnel.py`
-and `node-gateway/server/services/kite-tunnel.js`._
+**[O25j] Step 5 is applied on Oct 25** by the agent, with the owner's one-time
+permission, in the same rollout that brings this runbook to Production. The
+gateway's and the engine's lines come from `tunnel-client.env`. The receipt
+(the route checks after the recreate) is the plan's O25j slice. Steps 1, 3 and
+6–9 remain for the weekend of Oct 31 – Nov 1. The account is unfunded, real-money switch false, no real order
+placed. Log in to Kite Monday morning before 09:15; the partner watch needs
+its separate login. Telegram polling/read-only bot authentication passed;
+outbound delivery was not exercised. Use `--user quantuser` for engine CLIs.
 
-_O25d (code `94a262a`, pushed, not deployed) corrects all five findings in
-[the review](../2026-10-25-independent-live-tunnel-review.md). Promote the
-verified code through GitHub before using it operationally. Local tunnel
-tests passed; actual VM installation/client routes must still be verified.
-The account is unfunded: keep the trading switch false and do not place a
-test order yet. The Python commands specify the application user because
-the image installs its dependencies for `quantuser`._
+History/evidence: [Production release](../2026-10-25-production-recovery-and-release.md),
+[VM installation](../2026-10-25-oracle-tunnel-installation.md),
+[SSH fallback](kite-ssh-bridge.md), O25i at the top of the active plan.
+Older timeout/not-deployed statements in historical receipts are superseded
+by this current status.
 
 ## The dates (the owner's decision, Oct 25)
 
@@ -104,53 +101,35 @@ Have at least ₹12,500 of free cash in the Zerodha account. Pledged holdings
 and margin do not count. A typical lot has cost about ₹8–9k; the morning
 check compares the two.
 
-### 4. The tunnel on the Oracle VM
+### 4. The direct tunnel (installed and verified; SSH backup retained)
 
 Today all of the gateway's Kite traffic goes through the relay on port 31527
 in plain HTTP. That includes the login exchange and the day's access token.
 The tunnel replaces it: the token is inside TLS all the way to Kite, orders
 still leave from the VM's registered IP, and it serves nothing else.
 
-**[O25f] State on Oct 25: items 1 and 2 are done.** The tunnel was installed on
-the VM on Oct 25 (O25e). A read-only check the same day showed the service
-`kite-tunnel` active and enabled at boot, listening on 31528, with the VM's
-own firewall accepting it. Its two `.env` lines are in
+**O25i: complete.** VM `kite-tunnel` is active/enabled on 31528. The owner
+added stateful TCP 31528 ingress from `0.0.0.0/0` in attached
+`ig-quick-action-NSG`; its existing rules remain. Public password/destination
+checks passed (407/403). Both deployed application image transports reached
+Kite root HTTP 200 with verified TLS and rejected fake broker tokens.
+These checks placed no real order and do not prove registered-IP order
+acceptance, current broker login, cash or profitability.
+
+The direct route needs no Windows SSH process. The protected settings are
 `C:\Users\Urveesh\sentinel-operations\oracle-access-20261025\tunnel-client.env`.
-**Only item 3, the Oracle console rule, is left.** From this PC, 31528 does
-not answer until that rule exists, while 31527 does. Items 1–2 remain below
-for a reinstall.
-
-1. Copy the program to the VM, from a PowerShell window in the Production folder:
-
-       scp -i <your VM key> scripts\kite_tunnel.py ubuntu@161.118.160.180:~/
-
-   (`ubuntu` is the usual user on Oracle's Ubuntu images; use yours if it differs.)
-2. On the VM (`ssh -i <your VM key> ubuntu@161.118.160.180`):
-
-       sudo python3 kite_tunnel.py install
-
-   It installs a service called `kite-tunnel` on port 31528 and opens the
-   VM's own firewall for that port. Then it tests itself: no password is
-   refused, any other host is refused, and Kite is reached over verified TLS.
-   Expect three `PASS` lines, then two `.env` lines. Copy those two lines
-   somewhere private. Do not paste them into a chat or a screenshot: they
-   hold the tunnel's password. If you lose them, `sudo python3 kite_tunnel.py print-env`
-   prints them again. Running `install` again keeps the same password.
-3. In the Oracle console, open the port (the VM firewall is not enough). Do
-   it in the same place that allows 31527 today: usually Compute → Instances →
-   your VM → its subnet → Security Lists → the list → **Add Ingress Rules**
-   (or the VM's Network Security Group, if it uses one):
-   - Source CIDR `0.0.0.0/0` (the password protects it). Or use your home
-     IP `/32`, but then a change of home IP blocks orders until you update it.
-   - IP Protocol: TCP.
-   - Destination Port Range: `31528`.
+Do not paste them into chat. `tunnel-client-direct.env` is the same pair.
+The separately retained `tunnel-client-ssh.env` uses the supervised SSH
+bridge if deliberately selected later; that fallback requires owner Windows
+login and its running task. [SSH backup operation/rollback](kite-ssh-bridge.md).
 
 Leave the old relay (31527) running for now: it is the fallback (step 10).
 
 ### 5. The two `.env` lines, with the switch still off
 
-Take them from `tunnel-client.env` (step 4), or from `sudo python3 kite_tunnel.py print-env`
-on the VM.
+Take them from `tunnel-client.env` (step 4), also saved as `tunnel-client-direct.env`.
+These select the verified public route. Use `tunnel-client-ssh.env` only for
+a deliberate switch to the SSH backup; do not mix the route choices.
 
 - `node-gateway\.env`: add the `KITE_PROXY_URL=…` line. Leave `KITE_BASE_URL`
   as it is: while `KITE_PROXY_URL` is set it is ignored, and deleting
@@ -213,6 +192,18 @@ cancelled at once. It refuses to run from 09:00 to 09:15 and from 15:25 to
 
 ### 9. Switch on (Sun Nov 1 evening, after funding, verification and owner decision)
 
+**[O25j] First, the owner's entry halt.** Production's root `.env` has
+`OWNER_LIVE_ENTRY_HALT=true` (seen on Oct 25). It refuses every real entry on
+every channel, including this test's buys and the step 8 test order
+(`Owner entry halt: global_owner_entry_halt`). The test would then run for
+five days and never buy. To let only F&O through, set:
+
+    OWNER_LIVE_ENTRY_HALT=false
+    OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge
+
+The other three channels stay halted; exits are never halted. Do this before
+step 8 too, or its test order is refused.
+
 In the root `.env`, add `FNO_LIVE_TEST_ENABLED=true`. Optionally also set
 `FNO_LIVE_TEST_RUN=1`, `FNO_LIVE_TEST_SESSIONS=5`, `FNO_LIVE_TEST_CAPITAL=12500`
 and `FNO_LIVE_TEST_FLOOR=7000`. Then:
@@ -240,7 +231,9 @@ working), stop the plain-HTTP relay so nothing can ever use it again:
 
 1. On the VM, `sudo python3 kite_tunnel.py status` shows what listens on 31527.
    Stop and disable that program.
-2. In the Oracle console, delete the ingress rule for port 31527.
+2. Close the VM's old 31527 firewall rule after confirming no client uses it.
+   Remove its Oracle cloud ingress rule when Console access is recovered;
+   that website step does not block retirement of the VM listener.
 
 Until then it is the fallback. If the tunnel fails:
 

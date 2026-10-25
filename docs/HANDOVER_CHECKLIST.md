@@ -1,5 +1,41 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25j latest docs to Production, rebuild, tunnel settings applied (commit pending (recorded in the next docs commit); receipt in the plan's O25j slice)
+
+- [x] Real-money check: every engine entry path is off and the owner halt is on, so the engine's new order route can only carry exits.
+- [x] Runbook step 9: lift OWNER_LIVE_ENTRY_HALT for F&O only before the Nov 2 run, or nothing buys.
+- [ ] (this rollout) PR to `evolve/smart-strategies`; Production backup, fast-forward, build, `.env` lines, recreate, verify. See the plan's receipt.
+- [ ] Owner:
+  - the Kite login Monday before 09:15;
+  - the weekend steps 1, 3 and 6–9;
+  - step 10 after Nov 2.
+
+## October 25 — O25i Oracle ingress complete; direct public tunnel verified
+
+- [x] Owner-added NSG ingress confirmed: stateful TCP 31528, source `0.0.0.0/0`, all source ports. Existing rules retained.
+- [x] Direct public negative checks 407/403, and both deployed-image transports HTTP 200 / verified TLS / fake-token rejection. No real broker credential, order or Production volume used.
+- [x] Private canonical settings now select the direct endpoint; separate SSH settings/task retained. Receipt stored privately. Production services remain healthy at `0aa629a`, real-money switch off; no Production configuration edit or restart.
+- [ ] Operator step 5 adoption, current login/read-only preflight, later funding/explicit order test/activation. Direct route has no SSH-task dependency. Use the updated [single checklist](runbooks/fno-live-test.md); older blocked-port statements below are historical.
+
+## October 25 — O25h SSH bridge ready; Oracle website not needed for tunnel adoption
+
+- [x] Probed the VM's actual cloud authority with official SDK: instance principal authenticated, VNIC read denied (404 `NotAuthorizedOrNotFound`); no cloud change. Removed temporary SDK.
+- [x] Installed owner-level Scheduled Task **Trading Sentinel - Kite SSH Bridge**: strict host keys, loopback-only 31528, existing SSH port 22, keepalives, indefinite retries with duplicate instances ignored. Requires owner Windows login; no stored Windows password.
+- [x] Actual client and deployed-image transport tests passed; missing-auth 407 / wrong-target 403 / verified TLS HTTP 200. Forced SSH process loss automatically recovered in 58.8 s. Stop/start left Production healthy. No reboot/physical network-loss test or real order.
+- [x] Protected `tunnel-client.env` now selects the SSH route; direct endpoint retained separately. Task XML and verification receipt saved privately. No Production `.env` edit; existing application route unchanged.
+- [ ] At operator adoption, follow step 5 in the updated live-test checklist and verify login/route. Keep Windows logged in and both SSH/tunnel healthy during trading. No Oracle website step required for this route; account recovery remains useful separately.
+- [SSH bridge operation and rollback](runbooks/kite-ssh-bridge.md). This supersedes older statements that cloud 31528 ingress is required before any client adoption.
+
+## October 25 — O25g Production recovered; PR #115 merged and deployed (`0aa629a`)
+
+- [x] Started the three existing services, then verified dashboard/nginx recovery. Reviewed O25f and independently ran 66 focused tests; no new blocking defect found in that review.
+- [x] Merged checked PR #115 through GitHub and fast-forwarded Production. Built sequentially and recreated engine, gateway, agent; all healthy, exact merged SHA verified in images/containers/HTTP. Engine log retention 20m x 25 and all application restart policies `always` are effective.
+- [x] New Linux engine image: 74 tests passed. New gateway native SQLite/tunnel module checks passed. Protected rollback image tags and eight checked database backups retained outside both repositories.
+- [x] Scheduler 88 jobs, partner registration 18, proving-week Oct 26–30 CLI works, evening report enabled. Real-money test false; live bankroll 0. Telegram read-only authentication passes; outbound delivery not tested. No real order sent. No direct Production source/configuration edit.
+- [ ] Owner completes Oracle sign-in; permit cloud TCP 31528 and verify its direct TLS path before applying protected client settings. Old 31527 retained.
+- [ ] Owner Kite login Monday before 09:15, partner's separate watch login, then observe the proving week's 15:50 reports. Funding/order test/Nov 2–6 activation remain later owner decisions.
+- Full [recovery/release receipt](2026-10-25-production-recovery-and-release.md). Earlier stopped/unmerged descriptions below are historical.
+
 ## October 25 — O25f review of O25d/O25e: three gaps fixed; Production is down until the owner starts it (commit `e9645de`, Dev, pushed, in draft PR #115, not deployed, switch off)
 
 - [x] Both order routes set: the engine keeps running and real orders are refused (NOT_SENT). It no longer fails at import.
