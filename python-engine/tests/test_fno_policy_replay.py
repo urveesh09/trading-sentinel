@@ -232,3 +232,29 @@ def test_replay_is_inert_research():
     callers = [path.name for path in root.glob("*.py") if path.stem != "fno_policy_replay"
                and "fno_policy_replay" in path.read_text(encoding="utf-8", errors="ignore")]
     assert callers == []
+
+
+def test_entry_signal_arms_trade_the_shadow_variants_through_the_live_book(dataset, monkeypatch):
+    """[O24g] A signal arm takes its entries from its fno_shadow variant and keeps everything else live (the
+    entry plan, sizing, the exit ladder at fast-exit cadence, costs). On a fresh break the continuation variant
+    is the base signal, so it trades exactly as CURRENT."""
+    import fno_policy_replay as replay
+    import fno_shadow
+    arms = {name: policy for name, policy in replay.POLICIES.items() if name.startswith("FNO_SIG_")}
+    assert {policy.signal_variant for policy in arms.values()} == set(fno_shadow.VARIANTS) - {"FNO_BASE"}
+    assert all(policy.manage_every_observation for policy in arms.values())
+    current = run_replay(dataset, start=DAY.isoformat(), end=DAY.isoformat(), policy="CURRENT")
+    continuation = run_replay(dataset, start=DAY.isoformat(), end=DAY.isoformat(), policy="FNO_SIG_CONTINUATION")
+    key = ("bar_ts", "tradingsymbol", "entry_time", "entry_premium", "exit_time", "exit_reason", "net_pnl")
+    assert [{k: t[k] for k in key} for t in continuation["trades"]] == [{k: t[k] for k in key}
+                                                                         for t in current["trades"]]
+    seen = []
+    real = fno_shadow._variant_signal
+
+    def spy(bars, regime, now, variant):
+        seen.append(variant.name)
+        return real(bars, regime, now, variant)
+
+    monkeypatch.setattr(fno_shadow, "_variant_signal", spy)
+    run_replay(dataset, start=DAY.isoformat(), end=DAY.isoformat(), policy="FNO_SIG_OR_45")
+    assert seen and set(seen) == {"FNO_OR_45"}

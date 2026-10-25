@@ -263,10 +263,11 @@ async def close_position(request: Request):
         )
 
     gross = (exit_price - pos['entry_price']) * pos['shares']
-    # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was hardcoded True).
+    # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was hardcoded True);
+    # [S23-COST1] CNC sold the session it was bought pays intraday charges.
     costs = _main.calc_zerodha_costs(
         pos['entry_price'], exit_price, pos['shares'],
-        is_intraday=_main._is_intraday_from_product_type(pos.get('product_type')),
+        is_intraday=_main._charged_as_intraday(pos),
     )
     realised_pnl = gross - costs
     total_pnl, r_multiple = _main._aggregate_momentum_close(

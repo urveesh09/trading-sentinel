@@ -55,6 +55,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_fno_evening_report_safe",
+    "id": "'fno_evening_report'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_fno_fast_exit_safe",
     "id": "'fno_fast_exit'",
     "trigger": "'interval'"
@@ -62,6 +67,11 @@
   {
     "func": "_run_fno_hourly_report_safe",
     "id": "'fno_hourly_report'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_fno_live_readiness_safe",
+    "id": "'fno_live_readiness'",
     "trigger": "'cron'"
   },
   {
@@ -158,6 +168,16 @@
     "func": "_run_partner_scan_tick_safe",
     "id": "'partner_scan_tick'",
     "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_watch_prompt_safe",
+    "id": "'partner_watch_prompt'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_watch_tick_safe",
+    "id": "'partner_watch_tick'",
+    "trigger": "'interval'"
   },
   {
     "func": "_run_penny_accept_watchdog_safe",
@@ -282,6 +302,11 @@
   {
     "func": "run_momentum_shadow_terminal",
     "id": "'momentum_shadow_terminal'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_momentum_shadow_terminal",
+    "id": "'momentum_shadow_terminal_retry'",
     "trigger": "'cron'"
   },
   {

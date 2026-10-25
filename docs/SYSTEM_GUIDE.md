@@ -1,6 +1,685 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 22 (evening) — T22-BG background work is held and drained; T22-U the universe refresh reads only usable history (actual behavior, Dev, commit `3a9f674`)
+## October 25 — O25f Route conflicts, run authorization and restart policy (actual behavior, Dev, commit `e9645de`)
+
+- **`KiteClient.__init__`.** When KITE_ORDER_PROXY_URL and KITE_ORDER_BASE_URL are both set, `order_route_error` is set, `order_client` is None and `kite_order_route_invalid` is logged (critical). It never raises.
+  - `place_order` (any intent), `modify_order` and `cancel_order` return `order_route_invalid` (place: `dispatch_certainty` NOT_SENT) before the limiter or any HTTP.
+  - `probe_order_route` returns the reason.
+- **`ops_watchdogs._kite_endpoint_probe_tick`.** With both set, the order-route probe counts as failed (no GET through the pair) and pages through the usual 2-failure state machine.
+- **`fno_live_test.current_run`.** An unreadable or disordered FNO_LIVE_TEST_START_DATE/END_DATE, or SESSIONS < 1, returns `{window_available: False, invalid: "…", sessions: 0, …}` without touching the database (it logs `fno_live_test_run_authorization_invalid`).
+  - `mirror_entry` refuses with `live_test_run_window_unavailable`.
+  - `morning_check` names `invalid`, and also catches a failing run read.
+  - `day_report` catches a failing run read, and heads "run … cannot buy: …" for an invalid one.
+- **`docker-compose.yml`.** `node-gateway`, `python-engine` and `agent` use `restart: always`, like nginx, ngrok and autoheal: a Docker daemon restart (a Docker Desktop update) brings them back. Stop the stack with `docker compose down`.
+
+## October 25 — O25e actual Oracle tunnel installation; application adoption pending
+
+- Recovered the owner's SSH key from the attached Linux USB without writing to that disk or exposing key contents. Strict saved-host-key verification authenticated the existing Mumbai `trading-sentinel` VM as `ubuntu`; the earlier missing-key blocker is resolved.
+- The exact pushed O25d tunnel (`94a262a`) is installed on the VM, active/enabled on 31528, with a persisted VM firewall rule and root-only settings. Actual service self-test passed **407 / 403 / verified TLS HTTP 200**. Both Dev client transports passed against that service through a temporary SSH forward; the gateway test used a disposable Linux image. No real credentials/orders were used and the temporary forward is closed.
+- External 31528 still times out. Oracle Console remains at owner password recovery; cloud ingress and direct client verification are incomplete. The old 31527 relay stays running. Protected client settings are outside both repositories and have not been applied to Production. The application remains at `582d7a5`, live-test switch default off, PR #115 unmerged.
+- A read-only inspection found the Production engine/gateway already stopped at 11:11:48 / 11:11:51 IST (exit 137, OOMKilled false), before this setup. No cause is established and no restart was performed. Resolve during the authorized rollout before expecting proving-week messages. See [the installation receipt](2026-10-25-oracle-tunnel-installation.md) for verification, rollback and remaining steps. No application source changed in this slice.
+
+## October 25 — O25d live-test admission and tunnel setup corrections (Dev, code `94a262a`, pushed, not deployed)
+
+- `fno_live_test.current_run` stores the authorized start (`FNO_LIVE_TEST_START_DATE`, default `2026-11-02`), end (`FNO_LIVE_TEST_END_DATE`, default `2026-11-06`) and session limit (5). Existing names use their stored dates/length, never a later environment value. Delayed first startup consumes the earlier sessions; it does not shift the window. A pre-start or ended run cannot buy. Open-position exit management is independent and remains active.
+- Run schema: nullable `fno_live_test_runs.ends_on`, added under a serialized transaction. Legacy rows without an end date remain unavailable for entries; authorize a new run name with explicit dates instead of silently rewriting them. Invalid dates/length fail closed. Capital/floor/release remain recorded metadata; this change freezes the entry window and session count, not those other environment settings.
+- `fno_live_preflight.run` rejects invalid route configuration before creating a client or sending authenticated reads. Failed route/cash/evidence checks return before the real-order test. `variety_for` also refuses 01:00–05:30 IST on every day. No order test is authorized while the account is unfunded.
+- `KiteClient` rejects simultaneous `KITE_ORDER_BASE_URL` and `KITE_ORDER_PROXY_URL` before creating any HTTP client. Proxy mode therefore targets verified HTTPS to Kite, with no accidental plaintext-forward request caused by an old HTTP base.
+- The tunnel's external allow-list permits loopback for installer diagnostics, but loopback still requires the password, CONNECT and the exact Kite destination. Unrelated external addresses remain denied. The test-owned server loop now joins live handlers before shutdown.
+- Verification: full engine/scripts suite **6,008 passed, 4 skipped**, exit 0 (702.68 s); affected suite **314 passed, 1 existing INDICES-plan skip**. Existing deprecation warnings and an unrelated injected penny-writer teardown diagnostic are recorded in the plan, not omitted. A fresh real-Kite TLS self-test with a restrictive allow-list also passed. Source/strategy switches remain off; no broker order was placed. Owner confirmed an Oracle account, but VM installation still needs an authenticated Console/SSH session; the sign-in page is left available.
+- Rollout remains GitHub promotion with trading off. The [runbook](runbooks/fno-live-test.md) separates today's setup from later funding, broker login, explicitly authorized order test and activation. The earlier review below is historical; its five code findings are addressed by O25d, not by the earlier pushed `d67caad`.
+
+## October 25 — Independent O25b/O25c readiness review
+
+See [the independent review](2026-10-25-independent-live-tunnel-review.md) and
+the active plan's pending implementation slice. The actual tunnel passed a
+local real-Kite TLS self-test; 116 focused Python and 97 gateway tests passed.
+Those checks do not verify VM installation, deployment or trading readiness.
+The named run currently reads its session limit from the environment rather
+than its stored row, and the Nov 2–6 window is not enforced. Failed preflight
+checks still reach the test-order function; a conflicting HTTP order base
+and proxy can send credentials in plaintext. AMO maintenance and restrictive
+allow-list self-testing also need guards. The Dev runbook's CLI user and
+deploy-before-new-module instructions were corrected; application behavior
+was not changed by this audit. Production release remains `582d7a5`, switch
+off; this review's documentation edits are local and uncommitted.
+
+## October 25 (3) — O25c The Kite tunnel, the weekend test order and the order-route probe (actual behavior, Dev, commit `cff5036`)
+
+- **`scripts/kite_tunnel.py` (on the Oracle VM).**
+  - `Tunnel.handle` reads one request head (8 KiB within 10 s) and checks, in order:
+    1. the client allow list (empty: anyone);
+    2. that the method is CONNECT (else 405);
+    3. the Basic password, by `hmac.compare_digest` (wrong or missing: 1 s delay, then 407);
+    4. that the target is exactly `api.kite.trade:443` (else 403).
+  - Then it connects to Kite within 10 s (else 502) and pipes bytes both ways until either side closes, or after 300 s of silence in both directions.
+  - More than 128 connections at once get 503. Each connection logs one line: client, outcome and byte counts.
+  - `install`:
+    - copies itself to `/opt/kite-tunnel`;
+    - writes `/etc/kite-tunnel.env` (mode 600, password kept on a re-run);
+    - writes the systemd unit (DynamicUser and sandboxing), then enables and restarts it;
+    - inserts the iptables ACCEPT before the first REJECT/DROP, saved with netfilter-persistent; ufw too if it is active;
+    - runs `self_test` and prints the gateway and engine `.env` lines only when every check passes.
+- **Gateway `services/kite-tunnel.js`.**
+  - `kiteTransport(env)`:
+    - without KITE_PROXY_URL: the root is KITE_BASE_URL, with no agent;
+    - with it: the root is https://api.kite.trade with a `ConnectTunnelAgent` (keep-alive, 30 s idle, 10 s CONNECT timeout), and `requestOptions` `{httpsAgent, proxy: false}`.
+    - A malformed KITE_PROXY_URL throws at start-up.
+  - `kiteConnectThrough` sets the SDK's axios `defaults.httpsAgent` and `proxy=false` only around `new KiteConnect`, then restores them.
+  - `kite.js` logs `kite_route` (route, encrypted), plus `kite_base_url_ignored` when both are set.
+- **Engine.**
+  - `KiteClient.probe_order_route()`: GET /user/profile on `_orders_http`. It returns None on 200, else `HTTP n: message` or the exception, credentials redacted.
+  - `kite_client.redact_url_credentials`.
+  - `fno_live_preflight`:
+    - `order_route()` redacts the proxy;
+    - `run` prints "Order route answers: yes/NO" (NO counts as a problem);
+    - `variety_for(now, trading_day)` chooses the test order type; AMO price: 80% of the last price, floored to the tick, at least the lower circuit (ceiled to the tick);
+    - `_instrument_book` uses the engine's book if it is today's, else a private temp-file book refreshed from Kite.
+  - `FnoExecutor.cancel_and_read(order_id, variety="regular")`: "CANCELLED AMO" is terminal.
+  - `fno_live_test.morning_check` adds "the order route does not answer (…)" when the probe fails.
+  - `ops_watchdogs._kite_endpoint_probe_tick`:
+    - after the KITE_BASE_URL probe, `_order_route_probe_target()` (the proxy, or a distinct KITE_ORDER_BASE_URL) is fetched by `_kite_probe_get`;
+    - it is folded into `_kite_order_route_probe_state` by `_kite_probe_evaluate(…, route=…)` and paged by `_kite_probe_notify`.
+
+## October 25 (2) — O25b The live exit's identity, restart recovery, bounded runs and readiness (actual behavior, Dev, commit `abbe073`)
+
+- **`FnoExecutor` (live).**
+  - `execute_exit(…, tag=None, on_event=None)` sends the SELL with the exit's own tag. It calls `on_event("placed", order_id, price)` before any wait.
+  - Each step's modification counts only when Kite accepts it: `_reprice` returns a bool and emits `modified` or `modify_refused`.
+  - The returned `limit` is the broker-shown resting price (`_resting_price`: Kite's `price`, else the last accepted).
+  - `follow_exit(…, on_event)` re-prices to the fresh bid − max(10%, 100 ticks) only when that is under the resting price, and returns the resting price.
+- **`fno_orchestrator._manage_open_positions` (live positions).**
+  - First, its claimed exit (`fno_positions.exit_intent`):
+    - with an order id → `_follow_working_exit`;
+    - with only a tag → `_recover_tagged_exit`: `_find_tagged_order` requires exactly one SELL of this contract and quantity under the tag. Found → adopted; absent after PLACING_GRACE_SEC → freed; otherwise held and paged.
+    - with neither (held for recovery: not held at the broker, or the engine stopped between claim and name) → nothing sold; paged once as `claimed_unsent` unless its reason is not_held/partly_held.
+  - A FNO_LIVE position with bar `PREFLIGHT-…` exits at once, reason `preflight_flatten`, hard-flat depth.
+  - After the claim, `_broker_mis_held` gives MIS on the contract's exchange; less than the quantity to sell → nothing sold (claim kept, paged).
+  - Then `record_exit_tag` writes a tag `FX`+17 hex and the reason; if it cannot be written, the claim is freed and nothing is sent.
+  - `_exit_event_recorder` records the working order on placed/modified and every step in `fno_live_execution_events`.
+- **`fno_live_test`.**
+  - `mirror_entry` refuses non-NIFTY (`live_test_not_nifty`) and an ended run (`live_test_run_ended`, `current_run`: `fno_live_test_runs`, sessions counted with `is_trading_day_sync`).
+  - It records `entry_filled` (decision-to-fill delay, slippage) and `backstop_armed`.
+  - `one_lot_pnl` uses the two fills and one lot's own `calc_fno_costs`.
+  - `day_report`: one lot each, execution quality per trade, refusals by reason, outstanding work, the floor caveat.
+  - `morning_check` gives route, login, own cash against `typical_lot_cost`, broker F&O positions, run, equity and leftovers. It runs from job `fno_live_readiness` at 09:25 while armed.
+  - `hand_off_preflight_fill` records a filled preflight buy as a FNO_LIVE position and pages.
+- **`fno_proving_week`.** One-lot P&L comes from fills (`one_lot_pnl`). The verdict is UNAVAILABLE when the drawdown-halt read is unavailable.
+- **`kite_client`.** With KITE_ORDER_PROXY_URL, `order_client` is `https://api.kite.trade` (or KITE_ORDER_BASE_URL) through that HTTP CONNECT proxy.
+- **`fno_live_preflight`.** `order_route()` describes the route (encrypted or not) and flags none or both set. A fill is handed to the engine; the tool never sells.
+- **Gateway `executeSignal`.** A failed `releaseFilled` is logged and the hold kept; protection continues.
+
+## October 25 — O25 The real-money F&O test, the live exit and the proving week (actual behavior, Dev, commit `ca12934`)
+
+- **`fno_live_test` (off unless FNO_LIVE_TEST_ENABLED).** After a paper single-leg entry on an NFO underlying, `fno_orchestrator._single_leg_entries` calls `mirror_entry`.
+  - It refuses (as FNO_LIVE signal rows `live_test_*`):
+    - an expiry day;
+    - a missing paper row;
+    - an open FNO_LIVE position, or FNO_MAX_TRADES_PER_DAY reached;
+    - an unreadable or under-floor equity (one owner notice a day);
+    - a stale, one-sided or wide fresh quote;
+    - an ask over the paper price × (1 + FNO_LIVE_TEST_MAX_CHASE_PCT).
+  - It then buys ONE lot: a LIMIT at the ask on the tick grid plus FNO_LIVE_TEST_ENTRY_BUFFER_TICKS.
+    - It runs through `reserve_shared_fno_risk` (pool = `live_pool()` = FNO_LIVE_TEST_CAPITAL), `claim_shared_fno_entry_dispatch` (max_open 1) and `FnoExecutor.execute_entry`.
+    - On a fill it inserts the FNO_LIVE row with the paper row's stops, target, direction and bar, then arms `fno_broker_backstop`.
+  - `live_equity` = capital + the FNO_LIVE ledger sum (fail closed). `day_report` puts the day's real trades beside their paper twins.
+  - The legacy live entry block (go-live bar) does not run while the test is on.
+- **Live exit (`FnoExecutor.execute_exit`, live only).**
+  - One SELL LIMIT along `exit_ladder_prices` (EXIT_LADDER: 0.5%/2 ticks for 4 s, 3%/10 ticks for 6 s, 10%/100 ticks for 20 s under the bid), modified with `modify_order`. The hard flat starts at the last step.
+  - Statuses: filled, not_sent, rejected_verified, unfilled (with `limit`), unknown.
+  - `follow_exit` reads a working order and moves it to the fresh bid − max(10%, 100 ticks), never up.
+  - Paper fills are unchanged (entry at the ask, exit at the bid).
+- **`fno_orchestrator._manage_open_positions`.**
+  - The executor is per position (`_executor_for_position`): a FNO_LIVE row with a PAPER-... entry id is closed on paper; one with a broker id by real orders, whatever the switches.
+  - Live positions first follow a recorded working exit (`fno_exit_intents.order_id`, `_follow_working_exit`).
+  - After the claim, a real sell is skipped when the broker's positions hold none of the contract (`_broker_holds_none`): the claim stays and the owner is paged.
+  - Unfilled outcomes (`_live_exit_not_filled`):
+    - not_sent / rejected_verified: `release_exit_intent`, then a retry;
+    - unfilled: `record_working_exit`;
+    - anything else stays claimed.
+  - Owner pages are deduplicated only once delivered.
+  - `_live_leg_managed`: the live leg's exits run while it is enabled, and always while a FNO_LIVE position is open. `fast_exit_has_work` always looks at FNO_LIVE.
+- **Own-cash holds.**
+  - `FnoExecutor` calls `KiteClient.settle_entry_reservation` after a fill, a fill during cancel, or a verified zero fill.
+  - That calls `AccountCashReservations.release_filled` / `release_zero_fill`, looked up with `reservation_for_order`.
+  - The gateway's momentum entry calls `releaseFilled` after a confirmed fill.
+- **Order route.** `KiteClient.order_client` (KITE_ORDER_BASE_URL, when set and different) carries `place_order`, `modify_order` and `cancel_order` (`_orders_http`). `set_token` sets both clients' headers.
+- **`fno_proving_week`.**
+  - `window_days` uses the sync holiday cache, never the network.
+  - `score` and `render` implement the verdict rules frozen in the module docstring.
+  - `evening_report` runs from the 15:50 job `fno_evening_report` (trading days, FNO_EVENING_REPORT_ENABLED). It is sent once a day (`fno_evening_report_told`).
+- **`fno_live_preflight`**: an owner-run CLI. Reads: the route, own free cash, open F&O positions, the order book. `--test-order`: one BUY 20% under the bid, cancelled and read back.
+
+## October 24 (night, 4) — O24i F&O paper risk messages (actual behavior, Dev, commit `0b7d7b9`)
+
+- **`fno_risk_alert.check_paper(db_path, now, notify=None)`**, called by `fno_orchestrator.run_fno_tick` right after `_manage_single_leg_books`, unless FNO_DISABLE_PAPER.
+  - It reads `fno_shared_risk.shared_fno_entry_policy` (FNO_PAPER, pool FNO_PAPER_BANKROLL) and `fno_adaptive_risk.risk_stance` over `read_book_closes`.
+  - State: `{"tier": stance.reason, "halts": [halt kinds, most serious first, plus two_strike_day_halt]}`.
+  - Unchanged from `fno_risk_alert_state` → nothing. The first look at a calm book (base, no halt) is saved silently.
+  - Otherwise `risk_text` goes to `operator_alert.notify_operator` (event `fno_paper_risk_state`); the state is saved only when it was accepted.
+  - With the ledger unavailable, nothing is claimed. Any exception is logged as `fno_risk_alert_failed`.
+- **`risk_text`.** It gives the tier (base / 0.5x / 0.25x / proven), the drawdown from the peak, and the halts started and cleared. Then the paper equity and its distance to `FNO_PAPER_BANKROLL × (1 − FNO_MAX_DRAWDOWN_PCT)`; a new drawdown halt adds that the decision is the owner's.
+- The halt itself is unchanged (`fno_shared_risk.entry_halts`, `FNO_MAX_DRAWDOWN_PCT` 0.15).
+
+## October 24 (night, 3) — O24h F&O entry-signal arms; exit slippage report; "check before you buy" (actual behavior, Dev, commit `b8cf7a8`)
+
+- **`fno_shadow.VARIANTS`** gains `FNO_CONTINUATION` (`FnoShadowVariant.pullback_atr` 0.25, freshness `crossing_or_pullback`).
+  - `_variant_signal` accepts a fresh break as the base does. Otherwise it needs `pullback_resumed(today_bars, long, level, atr, 0.25)`, else `no_pullback_resumption`:
+    - closes beyond the level exist before the last bar;
+    - after the run's extreme, a bar came within 0.25 ATR of the level;
+    - the last bar closes beyond the level and the previous bar's extreme.
+  - The regime, EMA and RVOL checks, the stop and the target are the base's. The freshness branches are explicit; an unknown one raises. The live shadow evaluates all five variants each F&O tick (research only).
+- **`fno_policy_replay.ReplayPolicy.signal_variant`.** `_entry` calls `fno_shadow._variant_signal` with that variant instead of `evaluate_fno_mom`. FNO_SIG_CONFIRM_1, _OR_20, _OR_45 and _CONTINUATION all manage at the live fast-exit cadence.
+- **`scripts/run_preregistered_study.py`** study `fno-entry-t2`: development Sep 10 – Oct 9, untouched Oct 12 – Oct 23; candidate FNO_SIG_CONTINUATION vs BASELINE (`CURRENT`). Results are in `docs/research/fno/2026-10-24-entry-arms/`.
+- **`fno_exit_report.py`** (read-only sqlite URI; `python -m fno_exit_report [FIRST [LAST]]`).
+  - `exit_slippage` takes the closed FNO_PAPER single-leg positions with a level (`stop_underlying`, `trail_stop_underlying`, `premium_stop`).
+  - "past" is points beyond the level (positive is worse; the premium stop in premium). The rupee estimate is past × |delta_at_entry| × qty.
+  - Time stops, the lock, targets and the forced close are counted as without a level. `render` prints them.
+- **"Check before you buy".**
+  - `partner_fill_capture.handle_update` calls `partner_watch.answer_check` before `parse_report_text`; anything else returns "not_check" and continues as before.
+  - `parse_check`: the words `check` or `chk` (or `/check`); then the underlying (default NIFTY), the strike and CE/PE (or "22300pe"), an optional price, and lots ("x2", "2 lots", at most 50). Commas inside numbers are allowed. An unclear word gives `CHECK_HELP`.
+  - `check_message` finds the contract (`get_instruments_for(name).nearest_option_expiry`, `.option`) and builds a synthetic `Trip`. `_market_plan(size=(qty, price or None))` takes the fresh ask when no price is given, else returns no plan.
+  - The day's context comes from `_state.view` when it is today's: `_after_loss`, `_day_line` (as "This would be trade N"), `_usual_share`, the cash.
+  - `check_text` builds the reply. `answer_check` sends it via `_say(kind CHECK, event_at=the message time)`, keyed `check:<update_id>` (a repeated update is not answered twice). The deadline is `CHECK_DEADLINE_SEC` (12 s).
+  - CHECK is in ALWAYS_SENT (never muted), LIFETIME 120 s, PRIORITY 1.
+- **WATCH_ON** ends with "Before a buy you can send me, for example: check 22300 pe."
+
+## October 24 (night, 2) — O24g stops moved together; claims from a fresh GTT list; the order stream and delivery measurement (actual behavior, Dev, commit `797d69b`)
+
+- **Stops moved together (`_lowered(moves)`).**
+  - A move is {"id", "old", "new", "units", "at"}. `_events` step 1 collects each holding's SL orders modified down. `_guard(moves)` adds the GTTs modified down (`_track_stops`) and a single replacement (`_replacement` → ("MOVE", move)); several replaced stay ("CHANGED", gone, added) → `_changed`.
+  - One read is one message, keyed `lowered:<id>@<new>+…`, with "first" taken once for the read.
+  - `moves_reason` is the most serious of the read's reasons. `moved_text` gives each move "₹70 → ₹69 for 65" and the result at the units' weighted triggers, on the units held (`_held_moves` caps them). `_moves_why` names the moves the reason is about.
+  - `_b_lowered` tells only the moves whose stop still waits at its new level, with the units capped as in O24f, and judges the reason again. One left uses `lowered_text`.
+  - With the GTTs UNKNOWN, the SL moves are still told.
+- **Claims from a fresh GTT list.**
+  - `_cover_claim` builds REMOVED, NO_STOP or PARTIAL. When a claim is not yet in the outbox and the GTT list was not read this tick, the guard reads it (once a tick) and recomputes the cover. A changed state gives no claim this tick; without a read, the claim waits.
+  - For EXCESS, ORPHAN and PRODUCT that count a GTT (`_counts_gtt`), `_events` reads the list and runs `_exits` again with it. Without a read, those claims are dropped for this tick.
+- **The tick and the stream.**
+  - `watch_tick(woken=)` holds `_tick_lock` around `_watch_tick`. A scheduled tick returns SKIPPED busy while another runs. `wake()` starts `_woken`: woken ticks run while wakes keep coming, WAKE_GAP_SEC (1 s) apart, at `_now()`, with the last tick's market.
+  - `_state.detected_by` (poll | stream) goes to `_insert_outbox(by=)`, also through `_start_plan` → `_plan_job(by=)` → `_store_plan(by=)` and `_revise`.
+  - `partner_watch_stream.ensure()` runs each tick and starts `run()` while the stream should run (`_should_run`: enabled with a key, the login held, 09:00 to 15:40).
+  - `run(connect, clock)`: CONNECTING → LIVE. Frames go to `_frame`: binary is counted; an "order" text frame counts an update, records its lag and calls `partner_watch.wake("order")`; "error" is counted, not logged.
+  - Recovery: 401, 403 or no library → REFUSED and a 30 min wait; anything else → DOWN with a 1 s backoff doubling to 60 s; no frame for 10 s → reconnect; a changed token → reconnect; the end → OFF.
+  - `_code(exc)` logs only the HTTP status or the type.
+- **Measurement.**
+  - `partner_watch_messages.detected_by`.
+  - `_TickStats` (module `_ticks`) counts ticks by status:reason (and "woken"), tick_ms and read_ms (the /orders read), up to TICK_SAMPLES each. It is saved every TICK_STATS_EVERY (60 s) for the watch's current day as `ticks:<day>:<process start>`, with `partner_watch_stream.stats()`.
+  - `partner_watch_report.report(db, first, last)` reads it (sqlite read-only URI); `spread` is nearest-rank p50, p95 and max; `render` prints plain text; `main` is the CLI.
+  - `watch_status()["stream"]` gives the stream's state, or None when off.
+
+## October 24 (night) — O24f the watch's sell-order and replacement boundaries; watch health (actual behavior, Dev, commit `320fe20`)
+
+- **"None held" (`none_held`).** For an option, or a product, with no holding, the evidence is:
+  - ZERODHA: `View.positions`, Zerodha's positions read within POSITIONS_MAX_AGE, show none;
+  - ORDERS: no positions now, but the overnight list was read today (`View.carried_known`);
+  - UNREAD: the positions were not read today.
+  - ORPHAN says "Zerodha shows you hold none now … Cancel it if the trade is over" only on ZERODHA. Otherwise: "… I could not check whether you hold this option: … If you hold it, this order is its protection: keep it. If you don't, it would sell N you do not have: a short sale."
+- **Sell orders by product (`_sell_products`, `_exits`).**
+  - Every waiting sell (an SL, an open sell, a GTT sell leg) is keyed by exchange, option and product; each exit carries its `product`.
+  - EXCESS: per holding, as before.
+  - ORPHAN: an option held in no product, one message for all its sells.
+  - PRODUCT: a product not held, on an option held as another. Keyed `product:<day>:<exchange>:<symbol>:<product>:<ids>`; built by `_b_product` while still so.
+  - `product_text`: "this sell order is MIS: …, but your 65 are NRML. It would not sell them: if it triggers, it opens a new MIS short of 65 …". It hedges the same way when the positions are not ZERODHA.
+  - PRODUCT is in QUIET_KEEPS, PRIORITY 1, LIFETIME 900.
+- **Replacements (`_track_stops`, `_all_stops`, `_replaced_lower`).**
+  - Each tick (not UNKNOWN), the guard compares the stops now with `seen`. `_all_stops` gives the holding's SL orders plus the GTT stop legs of a GTT list within GTT_REFRESH; without one, the GTTs as last seen.
+  - A stop gone and `_withdrawn` goes to `withdrawn`; a new one goes to `fresh`. Both carry "at" and are kept for REPLACE_WINDOW (120 s).
+  - When both lists have entries, they are matched and cleared:
+    - lower on average and one each: `_lowered` for the new stop, units = min(new, old, held);
+    - several: `_lowered(changed=(gone, added))` at the average triggers. `_b_lowered` checks that every new stop still waits; the text is `changed_text`: "your stops changed: ₹95 and ₹92 cancelled, new ones at ₹88 and ₹70. If they are hit, on your 130: about … instead of about …".
+  - A GTT with the same id and a lower trigger is a move.
+  - `baseline` (a new guard, or the first read after a restart) only remembers. The memory (`seen`, `withdrawn`, `fresh`, `tracked`) is kept in partner_watch_state.
+- **A fired GTT (`_lost_why(gtts=)`).** A GTT now "triggered" is judged by the order it placed:
+  - sold part: SOLD via GTT, "your GTT at ₹60 fired and sold 30; the other 35 have no stop now";
+  - cancelled unsold: FIRED_CANCELLED;
+  - no order found: GTT_GONE.
+- **Watch health (`_health`, `_read_failed`).**
+  - `_State.unread`: read → its first failure since it last worked. Reads: orders, positions, gtts, quotes. Failures for the budget, TokenException and not_connected are not counted.
+  - BLIND (fixed text, ALWAYS_SENT, PRIORITY 1, LIFETIME 600) is sent once the failure lasts BLIND_AFTER:
+    - orders: 60 s, from the failed-read path;
+    - positions: 120 s, only while the overnight list is unknown;
+    - gtts: 120 s, only while a holding's cover is UNKNOWN, naming those holdings.
+  - BACK (PRIORITY 4) is sent when that read works again, if its BLIND was sent.
+  - The failed-read tick waits for its message within the budget.
+  - `watch_status()["unread"]`: the reads failing now. The page appends "Right now it cannot read …".
+  - `_read_gtts` keeps the last list on a budget skip.
+- **Names and counts.**
+  - `Holding.twin`: the option is held as two products; texts use `_name` ("NIFTY 22300 PE MIS").
+  - `Holding.converted`: units Zerodha shows in a product today's orders did not buy, while the orders' own product shows fewer. `_count_note`: "Zerodha's positions show 65 held as NRML; your orders today bought them as MIS, so they look converted."
+  - EXCESS adds `_count_note`.
+  - WATCH_ON and QUIET_TOAST name the sell-order alarms (and, in WATCH_ON, BLIND).
+
+## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (actual behavior, Dev, commit `79629e5`)
+
+- **Send only from the latest read (`_deliver`).** Each try, up to `BUILD_TRIES` (3):
+  - takes `view = _state.view` and builds from it (`_build(…, view)`; builders await `_plan_for` and `_price_now`);
+  - if `_state.view is not view` after the build (`_still`), builds again from the newer view;
+  - None from the build → `superseded`;
+  - otherwise `_mark` (attempting, attempts + 1, the text), then checks again. A newer view there → `_unmark` (attempts, outcome and last_attempt_at as read) and builds again.
+  - After 3 tries it is WAIT and the next tick tries again. Fixed texts (WATCH_ON, PROMPT, RECONNECT) need no view.
+- **Plans and their messages, atomically.**
+  - `_store_plan(…, announce=item, day=)` inserts the version (version 1 is still never replaced) and the outbox row (`_insert_outbox` on the same connection) in one transaction. `_noted` updates `_state.enqueued` and wakes the sender only after the commit.
+  - `_plan_job` builds the PLAN item (lots from `trip.bought`, `_after_loss`, `_day_line`, `_usual_share`) before storing. `_revise` does the same for ADDED.
+  - A failed write raises: in the plan job, the task fails and is started again (`PLAN_TRIES`); in `_revise`, `_events` logs `partner_watch_revise_failed` and the change is seen again on the next tick. `_load_meta` failures log `partner_watch_plan_read_failed`.
+- **A moved stop (`lowered_text`, `_b_lowered`).**
+  - The context carries `stop_id` and `units`:
+    - a modify: `kite:<order>`, its pending units;
+    - a replacement: the new top stop's id and units.
+  - The builder needs that same stop waiting at the new trigger. The units are capped at the held count.
+  - With units under the held count: "you moved your stop for U of your N down … on those U: … instead of …", plus `_rest_note`: the other units' stops, part covered, or none. GUARD says "those U can end in a loss". `_result_for(holding, price, qty)` is the result for part of a holding.
+- **No plan stop (`_no_level_line`).** The PREMIUM and NONE stop lines start from the cover:
+  - FULL: "Your SL at ₹X covers all N." + why there is no level + the result at the stops + "in a fast fall an SL order can trigger and still not fill";
+  - PARTIAL: the units without a stop and their premium at risk;
+  - UNKNOWN: "unless a GTT covers it";
+  - ABSENT: as before.
+  - `plan_summary`: "no plan stop; your SL at … covered all N". `added_text` without a level and FULL: the result at the stops.
+- **Freshness.** `QUOTE_MAX_AGE` = 15 s (was 60 s), the same as `QUOTE_FRESH`; `stale()` unchanged otherwise.
+- **Sell orders that could sell short (`_exits`, `exits_of`).**
+  - `exits_of(rows, gtts, exchange, symbol, product|None)` lists:
+    - SL orders waiting (SL);
+    - open, or waiting without a trigger (SELL);
+    - active GTT sells (GTT); a two-leg OCO once, for its bigger leg (OCO).
+  - Every tick, after the guards, `_exits`:
+    - EXCESS: a holding's exits add up to more than it holds, keyed `excess:<ep>:<held>:<exit ids>`;
+    - ORPHAN: an option with sells waiting and no holding of any product, keyed `orphan:<day>:<exchange>:<symbol>:<exit ids>`.
+  - Each is told after `COVER_GRACE` (20 s; `exit_seen`). The builders recount from the view and wait while a counted GTT is not in a fresh list (`View.gtts`, within `GTT_REFRESH` 60 s).
+  - `_events` reads the GTT list when it is older than `GTT_REFRESH`. Both kinds are in `QUIET_KEEPS`, `PRIORITY` 1, `LIFETIME_SEC` 900.
+- **Stop advice.** FULL with a stop under the plan stop gives the comparison only (no "Raising its trigger").
+
+## October 24 (night) — O24d the watch's advice stays with the partner's position (actual behavior, Dev, commit `677c630`)
+
+- **Outbox (`partner_watch_messages`).** The tick's `_events` collects (key, kind, subject, context, event_at, episode). It builds `View` (rows, trips, holdings, covers) and writes the messages as `queued` (`_enqueue_many`, INSERT OR IGNORE: a key goes in once). Then it starts the sender (`_kick` → `_drain`, one at a time, via `background_tasks.spawn`).
+  - `_drain` takes today's `queued` rows and provably unsent ones with tries left, by `priority` (UNFILLED 0; REMOVED, LOWERED, REFUSED 1; NO_STOP, PARTIAL 2; ADDED, PLAN 3; CLOSE 4; fixed texts 5).
+  - `_deliver` handles each row in this order:
+    - past `LIFETIME_SEC` → `expired`;
+    - quiet → `muted` (not the loss alarms);
+    - otherwise `_build`:
+      - from `_state.view` only when it is today's, within `VIEW_FRESH` (15 s), and from the latest tick (`tick_at`), else WAIT;
+      - the builder returns None when the message is no longer true → `superseded`.
+  - The send records Telegram's state. `unsent_connect`, `rate_limited` or `telegram_http_5xx` are tried again `RETRY_GAP` later, up to `MAX_ATTEMPTS`; anything else is final; a row left `attempting` is never repeated.
+  - A tick that reads no book (outside the session, no login, a failed read) calls `_flush`, so fixed texts still go; messages about a trade wait for a read.
+  - WATCH_ON, PROMPT and RECONNECT go through `_say` (the outbox, waiting up to `DELIVERY_INLINE_SEC`).
+- **Builders (`_BUILDERS`).**
+  - PLAN: the trade still held (else superseded), its plan for the held count (`_current`), its cover and a fresh quote.
+  - ADDED: the trade still held.
+  - NO_STOP / PARTIAL / REMOVED: the trade still held, the cover still ABSENT / PARTIAL (UNKNOWN waits), NO_STOP / PARTIAL for the same size.
+  - UNFILLED: the fired order still OPEN and unsold.
+  - LOWERED: a stop still waiting at the new trigger.
+  - REFUSED: the order from the view; "still open" from the held count then.
+  - CLOSE: the trade still held.
+- **Episodes.** `_episode(day, holding)` = `<day>:<trip key>` (`<day>:zerodha:<holding key>` without a trip). `_Guard` is per episode. `covered_once`, `full_once`, `stops`, `full_ids` and `lowered_told` are saved as `guard:<episode>` in `partner_watch_state` and loaded by `_guard_for`. Keys:
+  - `nostop:<ep>:<held>`;
+  - `partial:<ep>:<held>:<protected | lost:<ids>>`;
+  - `removed:<ep>:<lost ids>`;
+  - `unfilled:<order>`, `lowered:<order>:<new>`, `refused:<order>`;
+  - `plan:<ep>`, `added:<ep>:<order>`, `close:<ep>`.
+  - `_replaced_lower` runs only on a tick after the first of a login (seen happening).
+- **Stop advice (`stop_advice`).**
+  - It uses the plan stop's `level_state(..., now)`; CROSSED adds nothing (the stop line says it).
+  - FULL:
+    - stops ≥ the plan stop: "already covers all N … no second SL is needed";
+    - lower: the result at the stops (`_result_at_stops`) against the plan stop, and "Raising its trigger to ₹X" with a fresh price.
+  - PARTIAL: "For the other N:" an SL.
+  - UNKNOWN: "Your GTTs could not be read. If you have no stop yet:".
+  - ABSENT: "Place an SL sell now" (VALID only).
+  - STALE / UNCHECKED give `_unchecked`: the plan stop with its time, and "check the option is still above ₹X before placing an SL there".
+- **Freshness (`stale`).** STALE when `looked_at` is older than `QUOTE_FRESH` (15 s), or `quote_at` is more than `QUOTE_MAX_AGE` (60 s) before `received_at`. `plan_stop_line` says "the last price update was HH:MM:SS".
+- **Exit price (`exit_fill`, `_sell_now`).** `_top` keeps `bids` ([price, qty], best first). Selling the whole holding walks them: the best bid; else "into the bids (A down to B)"; else "the bids shown take only N of your Q … or worse" (the rest priced at the lowest bid shown). Without sizes it is the bid as before.
+- **One count.**
+  - `_start_plan(…, holding)` sizes version 1 from the reconciled holding (`_plan_of(size=)`). `_revise` stores the holding's quantity and average; `bought` / `sold` are the orders'.
+  - PLAN's header is the buy (the context's `bought`, `bought_px`). `_held_line` adds "N still held: you sold … with charges", "N held now, with your later buys", or Zerodha's count note.
+  - `added_text(cover=)` adds how much of the new size a stop covers.
+- **Budget.**
+  - `watch_tick` sets `deadline = start + TICK_BUDGET_SEC` (4 s). `_book(path, deadline)` raises `budget` with less than `MIN_READ_SEC` (0.5 s) left.
+  - `_refresh_book` keeps the last trade book and the last positions on a failed or budget-skipped read. Positions older than `POSITIONS_MAX_AGE` (2 min) are dropped.
+  - `_seed_cash` runs after the book, up to `CASH_TRIES`.
+  - `_wait_within` bounds the waits for plans (`PLAN_INLINE_SEC`), the sender (`DELIVERY_INLINE_SEC`) and the looks (spawned).
+- **Review (`partner_coach._off_card_plan`).** OFF_CARD's why says what Zerodha shows: the partner's own SL or GTT and when ("The card rule is about which trades to take, not about whether your stop was good"), no stop order placed, or stops not known.
+
+## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (actual behavior, Dev, commit `7d0cb6f`)
+
+- **What is held (`partner_watch.fills_of`, `trips_from_fills`, `holdings_of`).**
+  - Fills come from GET /trades. It is read when a fill is new, and again while it shows fewer units than the orders' filled quantities. An order's unshown part is one fill at its last update, priced to keep its average.
+  - Round trips are per exchange, option and product. A trip reopened by the same order's later fill is `<id>#2`.
+  - A carried position starts at `overnight_quantity`, at the position's average price.
+  - `Holding.basis` compares the trips with Zerodha's positions (GET /portfolio/positions: after a new fill, every 30 s, each tick while any differ):
+    - CONFIRMED: they agree;
+    - ORDERS: no positions were read, or the trip's last fill is within POSITIONS_LAG (10 s) of the read;
+    - ZERODHA: they differ; the messages then use Zerodha's count and `_count_note` says so.
+- **What protects it (`cover_of`, `gtt_legs`).**
+  - `Cover.state` is FULL / PARTIAL / ABSENT / UNKNOWN, with `covered` and `exiting` units:
+    - waiting SL orders (`WAITING`: TRIGGER PENDING, a modify or AMO in flight) and active GTT stop legs, of the holding's product only, count for their pending units;
+    - other products go in `other_product`;
+    - a fired stop is `fired`: a SELL with its trigger in OPEN, or a triggered GTT's placed order still OPEN.
+  - GTTs are read only when the SL orders leave units uncovered, at most once a tick, and reused for 20 s. Unread GTTs make the state UNKNOWN.
+  - `_guard` keeps one `_Guard` per holding and sends:
+    - NO_STOP: never covered, 120 s after the newest buy order's first fill;
+    - PARTIAL: for 20 s;
+    - REMOVED: covered, then ABSENT for 20 s; `_lost_why` gives CANCELLED / SOLD / GTT_GONE / GONE;
+    - UNFILLED: a fired stop unsold for 10 s; it is never muted;
+    - LOWERED: on a modify (per order, while waiting), or when a stop is withdrawn (`_withdrawn`: cancelled unsold, or a GTT gone) and the highest remaining trigger is lower.
+- **Delivery (`_send`).**
+  - The row is written as "attempting" before the send; Telegram's state, error, ack time and message id after.
+  - `_retryable`: `unsent_connect`, `rate_limited`, or a `telegram_http_5xx`. Those are sent again, 10 s apart, at most 4 times, within `LIFETIME_SEC[kind]`, with the text rebuilt:
+    - level-triggered kinds by the next `_guard`;
+    - one-off kinds (PLAN, ADDED, LOWERED, REFUSED) by `_retry_pending`;
+    - WATCH_ON / PROMPT by `_send_until_done`.
+  - Everything else is final. Quiet mutes PLAN, ADDED, NO_STOP, PARTIAL and CLOSE.
+- **Levels (`level_state`).**
+  - A stop at or above the LTP is CROSSED. PLAN and the stop line then say the price is already under the plan stop, and give the result of selling at the bid; there is no SL instruction.
+  - A target at or under the LTP is "already above the target zone".
+  - Unchecked levels say when they were set.
+  - Futures levels read "<UNDERLYING> future".
+- **Plans (`partner_watch_plan_versions`).**
+  - `_store_plan` never replaces version 1 ("BUY").
+  - `_revise` adds ADDED (a new buy order; a message while fresh), FILLED and TRIMMED versions, with the same levels and the loss for the new size and average (`revised`).
+  - A restart loads the latest version (`_load_meta`).
+- **Timing.**
+  - `_book` bounds each read at 4 s. The tick runs the protection alarms before plans.
+  - `_start_plan` runs `_plan_job` as a task: the tick waits up to `PLAN_INLINE_SEC`; past `PLAN_DEADLINE_SEC` the plan is the premium at risk.
+  - A failed plan task is started again, up to `PLAN_TRIES` (3).
+  - `watch_tick` returns `ms` and logs `partner_watch_tick_slow` over 4 s.
+  - `_top` keeps `bid_qty`, `ask_qty`, `quote_at`, `trade_at` and `received_at`; looks store them.
+- **Backstop (`fno_broker_backstop._sl_shape`).** SL, or LIMIT with a trigger > 0 (a fired SL), in both the tagged and the legacy lookup.
+- **Review (`partner_coach.size_history`, `partner_insights.trade_share`).**
+  - `load_partner_coach` passes the shares of the trades in the 45 days before the window as `earlier_sizes`; `usual_size_flags(..., earlier=...)` starts from them. The watch's `_usual_share` uses the same history.
+  - `score["rules_version"]` is `partner_lessons.RULES_VERSION` (2026-10-24); the page and the PDF print "Rules of 24 Oct 2026".
+
+## October 24 (afternoon) — O24b partner size against their own habit; the system on the 15:40 F&O close (actual behavior, Dev, commit `3c6523e`)
+
+- **O24-SZ size (`partner_insights.py`, `partner_coach.py`, `partner_lessons.py`, `partner_watch.py`).**
+  - `_risk` keeps the money at risk (to the stop, the card's SL, or the premium) as `insight["risk"]`. It adds `insight["size"]`: the premium paid and its share of the day's cash. Neither is a limit.
+  - `usual_size(shares)` is the median of the last `USUAL_SIZE_LOOKBACK` (20) shares, once there are `USUAL_SIZE_MIN_TRADES` (5).
+  - `usual_size_flags(items)` runs after the sequence flags over every traded item in the loaded window, in time order. A share above `USUAL_SIZE_MULT` (1.5) times the usual gets UNUSUAL_SIZE:
+    - "You usually put about N% into one trade";
+    - the better line is the usual lots, with the result when the trade closed.
+  - The rule "size" is named "Usual size": UNUSUAL_SIZE or AVERAGED_DOWN break it.
+  - BIG_RISK and `RISK_OF_CASH_PCT` are gone.
+  - Watch PLAN:
+    - the loss at the stop is shown as a share of cash, without a threshold;
+    - "⚠️ ₹X in this trade, N% of your cash: much bigger than your usual M%" when the buy is more than 1.5 times the usual. `_usual_share` builds the usual from earlier days' ZERODHA BUY reports against `partner_account_days`, then today's trips.
+- **O24-MC2 the 15:40 close.**
+  - `market_calendar.DERIVATIVES_CLOSE_TIME` (15:40) is the F&O session end; `MARKET_CLOSE_TIME` (15:30) stays the cash end.
+  - At 15:40:
+    - `fno_chain.EXPIRY_CUTOFF` and `hedge_strategies._EXPIRY_CUTOFF` (time to expiry for every option price and greek);
+    - `hedge_advisory`'s gamma-alert hours;
+    - `research_future_candles` (fetch to 15:40, job at 15:45);
+    - `partner_orchestrator.partner_analytics_tick` (gate 09:20–15:40);
+    - `standard_capital._expiry` exits;
+    - the activity and health windows in `lifecycle_receipts`, `ops_metrics`, `ops_watchdogs`, `token_lifecycle`, `daily_bootstrap`, `scheduler_telemetry` and `tools/runtime_audit`.
+  - At 15:30, the cash segment:
+    - the penny and momentum market-hours gates (`main.py`) and `market_calendar.is_market_open`;
+    - `PENNY_DAILY_ATTRIBUTION_TIME`, `penny_lifecycle_replay` and `standard_capital._close_time`;
+    - the gateway's `backlog-reconciliation` stock signals.
+  - Strategy times unchanged: FNO entry end 14:45, hard flat and DR square-off 15:10, the expiry book's A flat 15:13, FINAL_FLAT 15:38, BL late 15:30.
+
+## October 24 — O24 partner: stops as Zerodha shows them, the 15:40 close, refusals in plain words, the trade watch (actual behavior, Dev, commit `53280d9`)
+
+- **O24-SR stops (`partner_broker_sync.py`).**
+  - A stop is any option SELL order that carried a trigger:
+    - `carries_trigger` (any order type with a trigger above 0);
+    - the history's first trigger, through `history_facts`, for orders read after O24.
+  - Kite shows a fired SL as LIMIT and a fired SL-M as MARKET, both with the trigger kept.
+  - A stop the partner turns into a market or limit sale loses its trigger in the book. Its status is CONVERTED, and it counts as protecting the trade until that sale.
+  - `_read_details` reads the history of every stop and every modified order, sell orders first, at most 40. It stores:
+    - the price and trigger changes (`partner_order_changes`);
+    - `history_read`, `stop_trigger` and `stop_since` on `partner_orders` (the columns are added in place by `init_partner_broker_db`; a re-read of the book never erases them).
+  - `order_stop(order, changes)` gives a stop row, None, or `UNKNOWN`:
+    - with a history: its first trigger and the time it appeared (`placed_exact`);
+    - before O24: a trigger now or a trigger change makes it a stop. The first trigger is the first change's old value, and the earliest stamp is "in place by" (`placed_exact` False);
+    - a modified sale with neither: UNKNOWN.
+  - `merge_stops(stop_rows, orders, changes)`: SL stops come from the stored book on days it was stored, else from the fills read's `partner_stop_orders`. GTT stops always come from `partner_stop_orders`. It returns the UNKNOWN sales.
+  - `partner_coach.analyse(unknown_stops=…)`: a trade with an UNKNOWN sale and no confirmed stop has unknown stops (no stop checks). `PROTECTING` = PENDING, TRIGGERED, CONVERTED.
+  - `partner_insights._stop_orders_of` uses `order_stop`, so stop moves on fired and converted stops are seen.
+  - STOP_TRAILED is also given after a trim down, when the stop ended above where it started and its last move was up.
+  - The timeline says "You placed an SL order at ₹X" when the time is exact, else "By this time you had an SL order at ₹X".
+  - Effect on Oct 23: the stop rule read 1/12 and now reads 1/10. Stops moved down went from 1 to 9 trades, and that is now the lesson (−₹1,706). "Size within the account" went from 0/12 to 6/12, since risk is now measured to the real stop.
+- **O24-RF refusals (`partner_insights.refusal_plain`).**
+  - A refusal for margin reads in plain words:
+    - a buy: "the buy needed ₹X and your account had ₹Y";
+    - a sale is counted as a new short sale, for one of four reasons, tested in order: the option was not held at that moment, the buy and sale products differ, the sale was for more than was held, or (the rest) another sell order was already waiting for the lot.
+  - Shown on the trade timeline and in the day's orders. The page and the PDF show the plain reason with "Zerodha: …" under it.
+- **O24-MC the close.**
+  - `partner_broker_sync.CLOSE_MIN` and `partner_trade_paths.CLOSE_MIN` come from `market_calendar.DERIVATIVES_CLOSE_TIME` (15:40). They set the day's completeness and the candles to 15:40.
+  - `partner_coach._day_close`, the insights holding window and the chart end are 15:40.
+  - Taps are accepted to 15:40. The last time bucket is "13:30–15:40".
+  - `PARTNER_EOD_MIN` is 50: the evening wrap and the hedge EOD summary run at 15:50.
+  - The rest of the system still uses 15:30 in places; NEXT_AGENT_PLAN lists them.
+- **O24-PW the trade watch (`partner_watch.py`).**
+  - Messages only. Its Kite calls go through the read-only allowlist, which now also allows GET `/quote` and GET `/instruments/historical/{token}/(minute|5minute)` on the partner's key.
+  - Jobs:
+    - `partner_watch_prompt` at 09:00: the login button, unless a login is held;
+    - `partner_watch_tick` every `PARTNER_WATCH_POLL_SEC` (5 s): self-gated on enabled, 09:15–15:40, `is_trading_day` and the partner's login.
+  - `on_login` runs in the background from `partner_broker_sync.on_login`. It stores `login:<day>` and, before the close, sends "Trade watch on until 15:40".
+  - On a lost login during the session it sends one reconnect button per login.
+  - Each tick reads `/orders` (`option_orders` rows). The first read after a login also reads the positions held overnight and the day's cash.
+  - Messages are claimed by key in `partner_watch_messages` before sending, so a restart never repeats one. Events from before the first read are never told.
+  - The messages:
+    - PLAN: the first fill of a round trip, if seen within 5 minutes. `build_plan` sets:
+      - the index stop as the F&O engine sets it: the opposite opening-range edge once the 09:15–09:45 range is complete and on the losing side, else 1.5 × ATR(14) of 5-minute futures bars over 21 days, the tighter;
+      - that stop priced by Black-76 at the option's implied volatility (`fno_chain.years_to_expiry`), tick-floored;
+      - if it is inside the option's swing W (the median 5-minute high–low over the 30 minutes before the buy, from at least 10 one-minute bars), or the index could not be read, the stop is P − W instead;
+      - the loss at the stop with charges (`round_trip_costs`) against the day's cash, flagged above a tenth;
+      - the target at 1.8 R, priced the same way;
+      - facts: W, the rise from the 15-minute low, and the 5-minute EMA 21/50 trend;
+      - when they apply: a buy within 30 minutes of a losing exit (and a bigger size), and from the 5th trade the day's count and charges;
+      - without market data: the premium at risk and "decide your stop".
+    - NO_STOP: 120 s after the buy with no resting SL. A pending sell GTT counts as a stop, and an unreadable GTT list means nothing is claimed.
+    - LOWERED: a resting stop's trigger moved down, or cancelled and replaced lower within 20 s. Told the first time in the trip, then only under the plan stop or when it stops guarding the buy price (within 0.5%).
+    - REMOVED: a resting stop cancelled with no stop 20 s later.
+    - REFUSED: a new rejection, explained by `refusal_plain`.
+    - CLOSE: 15:20 with an option held. It says what happens: expiry settlement, MIS square-off, or NRML overnight with theta per day.
+  - "Quiet today" (callback `watch:quiet:YYYYMMDD`, handled in `partner_fill_capture.handle_update`) mutes PLAN, NO_STOP and CLOSE for the day.
+  - Market data: the partner's own key (`Market`, tried once a day; PermissionException means fallback), else `main.kite` (quotes in the management lane, `get_intraday_by_token`).
+  - Every 15 s each open trip's bid, ask, LTP and front future go to `partner_watch_looks` (shadow). Plans are stored in `partner_watch_plans`.
+  - The review: `messages_between` puts the sent messages on the matching trade's timeline as "Assistant: …" (who `assistant`; teal on the page and in the PDF). `/partner/review` returns `watch` {on, until, quiet}, and the page shows "Trade watch on until 15:40 …".
+
+## October 23 (evening) — O23 partner review: earlier days, a PDF of the day, what each rule means (actual behavior, Dev, commit `66cfb7c`)
+
+- **O23-PH earlier days.**
+  - **Engine `routes_partner_coach.py`.** `_review(day, days)` serves both
+    the page and the PDF.
+    - The window loaded is the larger of `days` (14–120, default 30) and the
+      span back to the asked day.
+    - `progress` uses only the last `days` days whichever day is open
+      (before, an old day widened it).
+    - The response adds `today` (IST date) and `newest`: the open day is
+      today or the latest day with a review.
+    - `GET /partner/review/days` returns every day with a card or a trade in
+      the last 120 days (`REVIEW_HISTORY_DAYS`), newest first.
+  - **Wording.**
+    - `partner_insights.when(ctx, day)` gives "today" for the analysis
+      date's session and "that day" for an earlier one. It is used in
+      BIG_RISK ("cash in your account …"), HELD_OVERNIGHT ("It expired …"),
+      INSUFFICIENT_FUNDS ("(n refusals …)") and OVERTRADING ("today's" /
+      "that day's trades paid").
+    - `partner_lessons.day_review(view, day, today=None)` words the headline
+      ("No trades that day."), the clean-day line, "At risk … of your cash
+      that day" and the read-before-close note ("trades after that are not
+      in this review").
+    - Without `today` (the evening note) everything reads as before.
+  - **Page `PartnerReview.jsx`.**
+    - `DayBar`: Earlier / select / Later over `dayList(review days, 120-day
+      list, open day)`.
+    - The "Today" tab shows the date on an earlier day, and section titles
+      come from `dayWords(past)`.
+    - Focus shows only when `newest`.
+    - Progress "Day by day" rows are buttons that open the day.
+  - **What a past day can show.**
+    - Zerodha trades exist only for days Zerodha was read (Kite returns only
+      the current day's orders).
+    - Card paths are frozen at the 15:40 wrap and traded options' 1-minute
+      paths are stored, so an old review does not change with the 7-day OI
+      purge.
+- **O23-PD the day's review as a PDF.**
+  - **Engine `partner_review_pdf.py`.**
+    - `render_review_pdf(document)` prints, in the page's order:
+      - the title and the made-at time;
+      - the headline box: P&L, rules kept, the stats line;
+      - tomorrow's focus, only when `newest`;
+      - the lesson (what / why / better, "Also on this trade", next time);
+      - what went well;
+      - every other lesson with all its examples;
+      - the rules with their meanings;
+      - each trade with its check chips, a vector price chart, the option
+        lines, the timeline, the result and its mistakes and habits;
+      - the orders with their refusals, the cards not taken and the notes.
+    - The footer reads "Coaching only. Nothing here places an order." and
+      "Page n of m".
+    - Number formats match the page: Indian grouping, a true minus,
+      `formatRs`, `formatPrice`, `signedPercent` and `minutesLabel`.
+    - The chart follows the page's `chartGeometry`: a far level is listed as
+      off the chart. Labels sit on small panels and are placed clear of each
+      other and of the dots.
+    - Fonts: DejaVu Sans from `/usr/share/fonts/truetype/dejavu`
+      (fonts-dejavu-core in the image), embedded and subset. Without it the
+      built-in Helvetica is used, and `plain()` replaces each character the
+      font lacks (₹ → "Rs ", − → "-"), never dropping one.
+    - Renders run in a worker thread under one lock (reportlab keeps module
+      state). About 0.25 s for the 12-trade Oct 23 day, 11 pages.
+  - **Engine route `GET /partner/review/pdf?day=`.**
+    - Returns `application/pdf` with `Content-Disposition: attachment;
+      filename="trading-review-YYYY-MM-DD.pdf"` and `Cache-Control:
+      no-store`.
+    - Errors: 422 for a bad day; 503 `pdf_unavailable` when reportlab is
+      missing (an image built before O23); 500 `pdf_failed` with a log line.
+  - **Gateway `/api/partner-kite/review/pdf`.**
+    - Needs a partner or owner session and accepts a day of YYYY-MM-DD only.
+      Limiter `reviewPdf` allows 20 a minute; the timeout is 30 s.
+    - Only a 200 `application/pdf` is passed on. The file name is used only
+      if it matches the fixed pattern, else `trading-review.pdf`.
+    - Anything else becomes a fixed JSON error (422 → 400, other → 502).
+  - **Gateway `/api/partner-kite/review/days`** has a 20 s timeout.
+  - **Page.** "Download PDF" is a same-origin link with `download`. While
+    today's Zerodha read is still running it shows "PDF after the update".
+- **O23-PM what each rule means.**
+  - `partner_lessons.RULE_MEANINGS` gives one plain line per rule. It
+    matches the flags that break the rule and their thresholds: 30 minutes,
+    5 minutes, a tenth of the cash, 20%, and cards + 1 with three buys.
+  - `score()["rules"][i]["means"]` carries the line; the page shows it under
+    each rule and so does the PDF.
+  - "Traded a card" means the trade was on a card the system sent on
+    Telegram that day: the same exchange and symbol, bought at or after the
+    card arrived (60 s slack), the same session. A trade on any other option
+    is "without a card" (OFF_CARD).
+
+## October 23 — S23 Oct 23 audit fixes: broker-stop identity, one equity charge contract, clean shutdown, terminal retry, iNAV screen, health backlog, telemetry identity, honest reporting (actual behavior, Dev, commit `7e2a2b9`)
+
+- **S23-BS1 a broker stop is found by identity, not shape (live F&O only).**
+  - Each backstop intent records its own broker tag (`BSL` + 17 hex, within
+    Kite's 20 characters) before the send, and the SL order carries it.
+  - When a receipt is lost (`PLACING`/`PLACE_UNKNOWN` without an order id),
+    `_find_in_order_book` accepts only the order with that tag and the row's
+    symbol, exchange and quantity. If more than one order has the tag, or it
+    no longer matches, the lookup is `ambiguous`.
+  - With the tag absent from a readable book:
+    - another backstop's tag (`BSL…`) belongs to another position;
+    - a same-shape order that finished before the intent (2 min clock skew
+      allowed) belongs to an earlier position;
+    - a same-shape order still working from before the intent, or untagged
+      since it, or without a timestamp, is `ambiguous`;
+    - otherwise the order is `absent`.
+  - Rows written before tags match shape, exchange and quantity, and only
+    orders placed after the intent; the same doubt rules apply.
+  - `ambiguous` holds the exit and pages once, as before.
+  - The Oct 23 audit's reproducer now ends in `proceed`, not `filled`:
+    an earlier position's 10:01 COMPLETE stop beside an 11:01 lost send.
+- **S23-COST1 one equity charge contract.**
+  `equity_charges.charged_as_intraday(product, entry, exit)`:
+  - MIS (or none, legacy) is intraday;
+  - CNC is intraday when sold in the IST session it was bought, as Zerodha
+    charges a same-day CNC round trip;
+  - CNC held overnight pays delivery charges.
+
+  The pieces that use it:
+  - `engine.calc_zerodha_costs` charges delivery as `calc_penny_costs` does:
+    no brokerage, 0.1% STT on both legs, 0.015% buy stamp duty and the
+    ₹15.34 DP charge. It used to charge intraday brokerage and stamp, STT on
+    the sell only, and no DP.
+  - The tracker (`position_tracker.settlement_costs`) settles its
+    Penny/EDGE paper books with `calc_penny_costs` and this rule; the
+    confirmed EDGE exit and the CNC lifecycle replay use the same rule.
+  - Momentum closes use `main._charged_as_intraday(pos)`.
+
+  Example, Oct 22 DCMSRIND (873 shares, 54.30 → 51.5424, same day): ₹48.84;
+  booked ₹82.58. On Production's 21 fully closed EDGE/Penny paper positions
+  the old tracker over-charged ₹127.79 in all; the ledger is kept as booked.
+- **S23-G1 entry gates price full costs.** The `for_gate` bypass is removed;
+  it zeroed brokerage, STT and GST in Momentum's `is_cost_viable` and
+  `net_ev`, and in the daily swing screener's EV gate (`evaluate_signal`,
+  which sends signals to the gateway).
+  - Momentum's accepted set does not change: its cost-per-R gate (full
+    costs, ≤ 0.12 R) is stricter and already binding.
+  - The swing screener now needs its target profit to cover real delivery
+    costs (both-leg STT, delivery stamp duty, DP), so marginal small signals
+    are no longer emitted.
+- **Frozen research and these changes.** The Oct 6 Momentum allocation
+  freeze fingerprints `engine.py` and `momentum_exits.py`.
+  - It is verified, and its holdout evaluated, at `b03afa5`: the last commit
+    whose fingerprint matches.
+  - Its intraday costs are unchanged by S23 (a test compares 500 cases with
+    the pinned engine).
+- **S23-SG clean engine shutdown.**
+  - Compose gives the engine `stop_grace_period: 45s`.
+  - uvicorn runs with `--timeout-graceful-shutdown 10`.
+  - The lifespan shutdown then completes inside the grace: liveness join
+    ≤ 10 s, background drain ≤ 5 s, exit-path writer ≤ 5 s, then the
+    `clean_shutdown` receipt.
+  - A host or VM shutdown is outside this.
+- **S23-R1 a second Momentum terminal pass.**
+  - `momentum_shadow_terminal_retry` (16:05 Mon–Fri) re-runs the resolver
+    with `pass_name=retry` for trades still without a CLOSED event.
+  - The intraday cache treats a cache ending before 15:15 as stale, so the
+    retry refetches.
+  - A CENSORED receipt may become CLOSED, never the reverse.
+- **S23-U1 ETF iNAVs are not equities.** `INAV` joins the non-equity
+  suffixes, at the refresh screen and at scan time.
+- **S23-H1 gateway health and old backlog.**
+  - `status` is `degraded` for:
+    - an unreachable engine;
+    - an open dead letter from the last `HEALTH_BACKLOG_RECENT_HOURS`
+      (default 24);
+    - an unsynced order from that window;
+    - an unsynced order of any age that is not CANCELLED/REJECTED.
+  - Older, settled items are reported under `stale_backlog`, with
+    `telegram_status=stale_delivery_backlog_present`, until the reviewed
+    backlog reconciliation resolves them. The total counts are unchanged.
+- **S23-T1 scheduler telemetry identity.**
+  - Each wrapped run gets its id before its in-flight marker.
+  - If the marker write loses the lock, the completion is inserted under that
+    id with the same growing budgets (100/250/500 ms).
+  - `INSERT OR IGNORE` plus a summary update only on insert make a replay
+    idempotent.
+- **S23-M1 login nudge.** The 07:50 message quotes the last successful
+  refresh (`/data/daily_bootstrap_timing.json`, written by
+  `run_penny_universe_refresh`). Its ask is unchanged.
+- **S23-M2 all books in the 16:00 digest.** `day_books.all_books_day` reads
+  each book's own store read-only:
+  - main ledger settlements by IST date;
+  - Smart `EXIT_FILLED` per policy;
+  - overnight closes and holdings at entry value.
+
+  The digest labels "Classic Penny" and adds:
+  - main, Smart V1 and overnight;
+  - their closed subtotal (separate books, not an account or NAV);
+  - Smart V2 as a parallel experiment that is never added.
+
+  An unreadable book shows as unavailable, never zero.
+- **S23-S1 overnight realism measures.**
+  - Book and shadow rows record `entry_bid`/`entry_ask` (displayed) and, at
+    the exit, the quote's best bid plus the net had it been sold there
+    (`exit_bid`, `exit_bid_net`).
+  - The overnight comparison's `realism` reports:
+    - `entry_spread_pct`, the displayed spread;
+    - `exit_at_bid`, including how far the modelled open-auction exit sits
+      above the bid;
+    - `entry_at_close`, the same shares bought at the entry day's close.
+  - Counterfactuals only. ON_TIGHT_SPREAD is unchanged and is documented as
+    a fill-over-LTP limit.
+- **S23-Q1** `kite_quote_instrument_partial` names up to 20 missing keys.
+
+## October 22 (evening) — T22-BG background work is held and drained; T22-U the universe refresh reads only usable history (actual behavior, commit `3a9f674`, deployed 2026-10-22 by PR #114)
 
 - **T22-BG fire-and-forget work is held until done.**
   - Found while verifying A22: the full suite passed (5,451) and then the
@@ -55,7 +734,7 @@
     No caller depended on that: a request ending today misses the cache
     until today's candle exists.
 
-## October 22 — A22 audit follow-up: broker-stop safety, short write locks, bounded exit evidence, honest research and partner timing (actual behavior, Dev, commit `ffa979c`)
+## October 22 — A22 audit follow-up: broker-stop safety, short write locks, bounded exit evidence, honest research and partner timing (actual behavior, commit `ffa979c`, deployed 2026-10-22 by PR #114)
 
 The Oct 22 audit of PRs #112–113 (Production 33065ed) reported two order-safety
 defects and five follow-ups. Each was reproduced in Dev before the fix, and each
@@ -160,7 +839,7 @@ new regression test fails on the previous code:
   - Smart V2 is scored from 2026-10-22 on its own events.
   - Neither pools an older rule's winners into the new version.
 
-## October 21 (night, 3) — SX-F1 confirmed F&O profit lock + live-clock exit evidence; SX-P2 PEN_SMART_V2 (actual behavior, Dev, commit `ace52ab`)
+## October 21 (night, 3) — SX-F1 confirmed F&O profit lock + live-clock exit evidence; SX-P2 PEN_SMART_V2 (actual behavior, commit `ace52ab`, deployed: merged by PR #113, running at `582d7a5`)
 
 Owner (Oct 21 night): "take the relevant calls … make it smart, not a
 blocking and filtering system". Calls taken, each with its evidence, a
@@ -212,7 +891,7 @@ shadow of the old behaviour and a one-line rollback:
   them; the coach (O21-PX) teaches the management.
 - **Expiry book: no promotion yet.** Five expiries; A (+₹3,560) and C (+₹9,004)
   are carried by Oct 13; the owner's 10-expiry review stands.
-## October 21 (night, 2) — SX-M1 Momentum shadow scoring excludes missed-exit closes (actual behavior, Dev, commit `27ee87b`)
+## October 21 (night, 2) — SX-M1 Momentum shadow scoring excludes missed-exit closes (actual behavior, commit `27ee87b`, deployed: merged by PR #113, running at `582d7a5`)
 
 - Production read-only (Oct 21): 72 of MOM_BASE's 92 virtual closes (88 of
   MOM_RECENCY_5's 108) were `overnight_gap_exit`: the declared 15:15 exit bar
@@ -222,7 +901,7 @@ shadow of the old behaviour and a one-line rollback:
   `scored_closes`, `missed_time_exit_closes`, `missed_time_exit_net_pnl` and a
   warning. `promotion_readiness` counts `scored_closes` (when present) for its
   closed-trades sample gate. `closed_trades` keeps its meaning (all closes).
-## October 21 (night) — O21-PX the partner's deeper review (actual behavior, Dev, commit `68eec28`)
+## October 21 (night) — O21-PX the partner's deeper review (actual behavior, commit `68eec28`, deployed: merged by PR #113, running at `582d7a5`)
 
 Owner (Oct 21 night, after merging PR #112): after the day's ending brief the
 partner gets one message with the review link, the link goes to the Zerodha
@@ -301,7 +980,7 @@ blocks a card or changes card text.
   "what the option did" lines; the day's orders with refusals. Progress: the
   statistics, "what your numbers say", where the results came from, and
   rules kept per day.
-## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, Dev, commit `462d28f`)
+## October 21 (late) — Oct 21 audit fixes and the overnight book's forward shadows (actual behavior, commit `462d28f`, deployed: merged by PR #112, running at `582d7a5`)
 
 Owner (Oct 21): act on the Oct 21 Production audit
 (`Production_Trading-sentinel/docs/2026-10-21-production-deep-audit.md`):
@@ -379,7 +1058,7 @@ switch changed; everything below is a bug fix, telemetry, or research.
   %, average position value). Setting `EDGE_OVERNIGHT_SHADOWS_ENABLED`
   (True).
 
-## October 21 (night) — the partner's own review page; lessons that explain each mistake (actual behavior, Dev, commit `6f882f0`)
+## October 21 (night) — the partner's own review page; lessons that explain each mistake (actual behavior, commit `6f882f0`, deployed: merged by PR #112, running at `582d7a5`)
 
 Owner (Oct 21): the partner logs in from the Telegram button and lands on
 their own dashboard, a branch of the main one, opening on the day's
@@ -455,7 +1134,7 @@ text or gate, sizing, Smart policy file or live switch changed.
   it from the Coach page ("Partner's view"); the owner's flags also show the
   why and better lines.
 
-## October 21 (evening) — the partner's Zerodha fills read once a day, coach-only review page (actual behavior, Dev, commit `9648f95`)
+## October 21 (evening) — the partner's Zerodha fills read once a day, coach-only review page (actual behavior, commit `9648f95`, deployed: merged by PR #112, running at `582d7a5`)
 
 Owner (Oct 21): the partner will not log entries during the day; fetch their
 orders from the free API and let them open the dashboard only at the end of
@@ -551,7 +1230,7 @@ switch changed; nothing places, modifies or cancels an order.
   to `/login?error=wrong_account`. With neither set the callback is
   unchanged.
 
-## October 21 (afternoon) — partner fill capture and coach, standard-capital view, F&O broker backstop (actual behavior, Dev, commit `b580af2`)
+## October 21 (afternoon) — partner fill capture and coach, standard-capital view, F&O broker backstop (actual behavior, commit `b580af2`, deployed: merged by PR #112, running at `582d7a5`)
 
 Owner (Oct 21): before real money, standardise every book on one capital
 (₹2L / ₹5L) and scale down later; a broker-side stop for live F&O; capture
@@ -649,7 +1328,7 @@ book sizing, Smart policy file or live switch changed.
   checked Oct 21). `a88da98` (expiry-v3) was not merged: the container runs
   `RULES_VERSION = "expiry-v2"`.
 
-## October 21 — expiry-v3: B takes BP's pair target; expiry-shadow-v5 (BL, CI) and Oct 19 expiry-audit fixes (actual behavior, Dev, commit `a88da98`)
+## October 21 — expiry-v3: B takes BP's pair target; expiry-shadow-v5 (BL, CI) and Oct 19 expiry-audit fixes (actual behavior, commit `a88da98`, deployed: merged by PR #112, running at `582d7a5`)
 
 Audit: Production `docs/2026-10-19-expiry-system-deep-audit.md` (first expiry
 on v2). Owner order: apply the fixes, keep observing, and promote a shadow that

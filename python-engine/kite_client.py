@@ -797,7 +797,37 @@ class KiteClient:
         self.account_cash_reservations = AccountCashReservations(db_path)
         # KITE_BASE_URL: direct = "https://api.kite.trade" (default); via OCI relay = "http://161.118.160.180:31527"
         # Relay is a path-preserving forward proxy. Auth + X-Kite-Version headers pass through unchanged.
+        # [O25] Order writes leave from the registered static IP when
+        # KITE_ORDER_BASE_URL names one (the relay); None = the client above.
+        # [O25b] KITE_ORDER_PROXY_URL instead tunnels them (HTTP CONNECT) through
+        # a proxy at that IP to https://api.kite.trade: TLS end to end, so the
+        # access token never crosses the internet in clear text.
+        order_url = (getattr(settings, "KITE_ORDER_BASE_URL", "") or "").strip().rstrip("/")
+        order_proxy = (getattr(settings, "KITE_ORDER_PROXY_URL", "") or "").strip()
+        # [O25d] Both set is refused: an http:// base through the proxy would be a plain proxy request that
+        # carries the token in clear text. [O25f] Refused for orders only, never by failing to construct:
+        # main.py builds this client at import, so raising here stopped the whole engine (every paper book,
+        # every exit's management, every alert) over one leftover .env line, with no message to the owner.
+        # Place, modify and cancel return NOT_SENT before any byte leaves; the preflight, the 09:25 check and
+        # the 3-minute probe all name the problem.
+        self.order_route_error: Optional[str] = (
+            "Set KITE_ORDER_PROXY_URL or KITE_ORDER_BASE_URL, not both: real orders are refused until one is "
+            "removed" if order_proxy and order_url else None)
         self.client = httpx.AsyncClient(base_url=settings.KITE_BASE_URL, timeout=15.0)
+        if self.order_route_error:
+            logger.critical("kite_order_route_invalid", reason=self.order_route_error)
+            self.order_client = None
+        elif order_proxy:
+            self.order_client = httpx.AsyncClient(base_url=order_url or "https://api.kite.trade", timeout=15.0,
+                                                  proxy=order_proxy)
+        else:
+            self.order_client = (httpx.AsyncClient(base_url=order_url, timeout=15.0)
+                                 if order_url and order_url != settings.KITE_BASE_URL.rstrip("/") else None)
+
+    @property
+    def _orders_http(self) -> httpx.AsyncClient:
+        """The client for place, modify and cancel (Kite checks their static IP)."""
+        return self.order_client or self.client
 
     def _cache_db(self):
         """Return a cache connection with a contention-safe bounded wait."""
@@ -818,10 +848,12 @@ class KiteClient:
             _pytz.timezone("Asia/Kolkata")
         ).date()
         api_key = os.getenv("ZERODHA_API_KEY", "")
-        self.client.headers.update({
-            "X-Kite-Version": "3",
-            "Authorization": f"token {api_key}:{token}"
-        })
+        for http in (self.client, self.order_client):
+            if http is not None:
+                http.headers.update({
+                    "X-Kite-Version": "3",
+                    "Authorization": f"token {api_key}:{token}"
+                })
         # [FIX-PHASE3-AUDIT 2026-07-09] Masked breadcrumb: the armed vs
         # disarmed transition was previously invisible in the logs.
         logger.info(
@@ -1843,7 +1875,12 @@ class KiteClient:
             result = {reverse[key]: value for key, value in payload.items() if key in reverse and isinstance(value, dict)}
             timing["parse_sec"] = time.monotonic() - parse_started
             if len(result) != len(requested):
-                logger.warning("kite_quote_instrument_partial requested=%d returned=%d", len(requested), len(result))
+                # [S23-Q1] Name what is missing: Oct 23 15:20 logged 15 -> 0
+                # and the audit could not tell which symbols went unquoted.
+                missing = sorted(key for token, key in requested.items() if token not in result)
+                logger.warning("kite_quote_instrument_partial requested=%d returned=%d missing=%s",
+                               len(requested), len(result),
+                               ",".join(missing[:20]) + (f",+{len(missing) - 20} more" if len(missing) > 20 else ""))
             timing["outcome"] = "COMPLETE" if len(result) == len(requested) else "PARTIAL"
             return _finish(result)
         except (httpx.HTTPStatusError, httpx.RequestError) as exc:
@@ -2307,6 +2344,11 @@ class KiteClient:
         if not tradingsymbol or quantity <= 0:
             return {"order_id": None, "status": "ERROR", "dispatch_certainty": "NOT_SENT",
                     "message": "tradingsymbol and positive quantity are required"}
+        if self.order_route_error:
+            logger.error("kite_order_refused_route_invalid", tradingsymbol=tradingsymbol, intent=intent,
+                         reason=self.order_route_error)
+            return {"order_id": None, "status": "ERROR", "dispatch_certainty": "NOT_SENT",
+                    "order_route_invalid": True, "message": self.order_route_error}
 
         def entry_blocker():
             if intent != "entry":
@@ -2389,7 +2431,7 @@ class KiteClient:
                 return refusal
         try:
             _record_endpoint(self, "order")     # counted at dispatch; refusals above never reach HTTP
-            resp = await self.client.post(f"/orders/{variety}", data=params)
+            resp = await self._orders_http.post(f"/orders/{variety}", data=params)
             resp.raise_for_status()
             data = resp.json().get("data", {})
             # An accepted POST is the only honest proof available that this
@@ -2413,7 +2455,7 @@ class KiteClient:
             logger.error("kite_place_order_failed status=%d body=%s", e.response.status_code, body)
             if is_permission_or_static_ip_rejection(e.response.status_code, body):
                 reason = (
-                    f"Kite order authorization rejected via {settings.KITE_BASE_URL}: "
+                    f"Kite order authorization rejected via {self._orders_http.base_url}: "
                     f"HTTP {e.response.status_code}; verify the app's registered static IP "
                     "and the configured relay egress"
                 )
@@ -2509,11 +2551,14 @@ class KiteClient:
             params["order_type"] = order_type
         if not params:
             return {"order_id": order_id, "status": "ERROR", "message": "nothing to modify"}
+        if self.order_route_error:
+            return {"order_id": order_id, "status": "ERROR", "order_route_invalid": True,
+                    "message": self.order_route_error}
 
         await self.limiter.acquire()
         _record_endpoint(self, "order")
         try:
-            resp = await self.client.put(f"/orders/{variety}/{order_id}", data=params)
+            resp = await self._orders_http.put(f"/orders/{variety}/{order_id}", data=params)
             resp.raise_for_status()
             data = resp.json().get("data", {})
             return {"order_id": data.get("order_id", order_id), "status": "MODIFIED"}
@@ -2535,10 +2580,13 @@ class KiteClient:
         """
         if not order_id:
             return {"order_id": None, "status": "ERROR", "message": "order_id required"}
+        if self.order_route_error:
+            return {"order_id": order_id, "status": "ERROR", "order_route_invalid": True,
+                    "message": self.order_route_error}
         await self.limiter.acquire()
         _record_endpoint(self, "order")
         try:
-            resp = await self.client.delete(f"/orders/{variety}/{order_id}")
+            resp = await self._orders_http.delete(f"/orders/{variety}/{order_id}")
             resp.raise_for_status()
             data = resp.json().get("data", {})
             return {"order_id": data.get("order_id", order_id), "status": "CANCELLED"}
@@ -2586,6 +2634,27 @@ class KiteClient:
         except httpx.RequestError as e:
             logger.error("kite_order_history_failed error=%s", str(e))
             return []
+
+    async def probe_order_route(self) -> Optional[str]:
+        """[O25c] Does the order route answer? An authenticated read (``GET /user/profile``)
+        through the client that places orders: ``None`` when Kite answers it, else why not.
+
+        Reads are not IP-checked, so this proves the route (the tunnel, its password, TLS to
+        Kite and today's token), not the static IP: only an accepted order proves that."""
+        if self.order_route_error:
+            return self.order_route_error
+        try:
+            _record_endpoint(self, "other")
+            resp = await self._orders_http.get("/user/profile")
+        except Exception as exc:
+            return redact_url_credentials(f"{type(exc).__name__}: {exc}")[:200]
+        if resp.status_code == 200:
+            return None
+        try:
+            message = str(resp.json().get("message") or "")
+        except ValueError:
+            message = ""
+        return f"HTTP {resp.status_code}" + (f": {message[:120]}" if message else "")
 
     async def get_funds_margins(self) -> dict | None:
         """[F1-A] Read-only ``GET /user/margins``; ``None`` when unavailable."""
@@ -2661,6 +2730,26 @@ class KiteClient:
                     amount=reservation.amount, charge_reserve=reservation.charge_reserve,
                     fill_buffer=reservation.fill_buffer, available_after=reservation.available_after)
         return reservation_id, None
+
+    def settle_entry_reservation(self, order_id: str, *, final_status: str, filled_quantity) -> bool:
+        """[O25] Release a BUY's own-cash hold once its outcome is proven.
+
+        COMPLETE: the broker's position and later its cash balance carry the
+        money. CANCELLED/REJECTED with nothing filled: no money moved. Anything
+        else keeps the hold (fail closed). True when a hold was released."""
+        reservation_id = self.account_cash_reservations.reservation_for_order(order_id)
+        if reservation_id is None:
+            return False
+        status = str(final_status or "").upper()
+        if status == "COMPLETE":
+            released = self.account_cash_reservations.release_filled(reservation_id, broker_order_id=order_id)
+        elif status in ("CANCELLED", "REJECTED") and filled_quantity == 0:
+            released = self.account_cash_reservations.release_zero_fill(
+                reservation_id, broker_order_id=order_id, terminal_status=status, filled_quantity=0)
+        else:
+            return False
+        logger.info("entry_account_cash_released", order_id=order_id, status=status, released=released)
+        return released
 
     async def orders_snapshot(self) -> list | None:
         """Return today's broker order book, or ``None`` when unreadable.
@@ -2790,6 +2879,14 @@ def own_uncommitted_cash(margins, positions, orders):
             return None
         pending += qty * price
     return max(0.0, own_cash - committed - pending - realised_loss)
+
+
+_URL_CREDENTIALS = re.compile(r"(?P<scheme>[a-z][a-z0-9+.-]*://)(?P<user>[^:@/\s]*):[^@/\s]*@", re.IGNORECASE)
+
+
+def redact_url_credentials(text: str) -> str:
+    """[O25c] ``http://kite:secret@host`` -> ``http://kite:***@host``: a proxy password never reaches a log or a page."""
+    return _URL_CREDENTIALS.sub(lambda m: f"{m.group('scheme')}{m.group('user')}:***@", str(text))
 
 
 def latest_order_state(history: list) -> dict:

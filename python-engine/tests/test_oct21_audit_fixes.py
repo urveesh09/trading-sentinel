@@ -292,11 +292,12 @@ def test_a_holiday_is_not_market_time_in_the_restart_receipt():
     premarket = IST.localize(datetime(2026, 10, 21, 6, 15)).timestamp()
     receipt = lr.startup_receipt(settings.DB_PATH, {"ts_epoch": prior, "boot_id": "b0"}, premarket, "b1")
     # Oct 20 was Dussehra: zero session overlap, the raw weekday figure kept as evidence.
-    assert receipt["market_overlap_sec"] == 0.0 and receipt["weekday_overlap_sec"] == 22500.0
+    # [O24-MC2] A weekday session is 09:15-15:40 (the F&O close): 6 h 25 min.
+    assert receipt["market_overlap_sec"] == 0.0 and receipt["weekday_overlap_sec"] == 23100.0
     assert lr.restart_alert_text(receipt, {}) is None
     in_session = IST.localize(datetime(2026, 10, 21, 10, 0)).timestamp()
     receipt = lr.startup_receipt(settings.DB_PATH, {"ts_epoch": prior, "boot_id": "b0"}, in_session, "b2")
-    assert receipt["market_overlap_sec"] == 45 * 60.0 and receipt["weekday_overlap_sec"] == 22500.0 + 45 * 60
+    assert receipt["market_overlap_sec"] == 45 * 60.0 and receipt["weekday_overlap_sec"] == 23100.0 + 45 * 60
 
 
 # ---------------------------------------------------------------------------

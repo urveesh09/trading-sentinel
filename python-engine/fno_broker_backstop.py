@@ -33,6 +33,20 @@ booked even if the engine was down when it happened.
     rests; unreadable: hold) and the passive check adopts once found;
   - a ledger that cannot be read is not "no backstop": the exit holds.
 
+[S23-BS1 2026-10-23] Order identity, not order shape (Oct 23 audit): the
+order-book lookup matched symbol, SELL, SL and trigger only, so an earlier
+position's COMPLETE stop with the same trigger was adopted and the current,
+still-held long was booked flat. Each intent now records its own broker tag
+(``BSL`` + 17 hex) and sends it with the order. Only that tag, with the row's
+symbol, exchange and quantity, identifies the order. A same-shape order that
+cannot be ruled out (still working, untagged after the intent, or with no
+timestamp) makes the lookup "ambiguous": the exit holds and pages.
+
+[O24-BS 2026-10-24] A fired SL is still this order: Kite lists a triggered SL
+as LIMIT with its trigger kept, so the lookup takes SL or LIMIT-with-trigger
+(``_sl_shape``). Identity (tag, symbol, exchange, quantity, trigger) is as
+strict as before; the fill is still read from the order itself.
+
 Paper books never place one (the executor returns ``paper``). The live leg
 stays behind FNO_DISABLE_LIVE and the go-live bar; this adds no entry path.
 """
@@ -40,7 +54,8 @@ from __future__ import annotations
 
 import json
 import math
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 from typing import Optional
 
 import aiosqlite
@@ -48,6 +63,7 @@ import pytz
 import structlog
 
 from config import settings
+from fno_exit_evidence import TERMINAL, RecoveryConflict, broker_time
 
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
@@ -64,6 +80,10 @@ UNCERTAIN_DISPATCH_STATES = ("PLACING", "PLACE_UNKNOWN")
 NEAR_TRIGGER_PCT = 0.02
 # NSE circular 54/2023, OPTIDX: trigger up to ₹50 -> ₹10 range, above -> 20%.
 SMALL_TRIGGER_RS, SMALL_RANGE_RS, RANGE_PCT = 50.0, 10.0, 0.20
+# [S23-BS1] Kite tags hold at most 20 characters; the prefix marks a backstop.
+TAG_PREFIX = "BSL"
+# The broker may stamp our own order a little before our intent clock.
+INTENT_CLOCK_SKEW_SEC = 120
 
 _DDL = """
 CREATE TABLE IF NOT EXISTS fno_broker_backstops (
@@ -78,10 +98,26 @@ CREATE TABLE IF NOT EXISTS fno_broker_backstops (
   state TEXT NOT NULL,
   placed_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
-  evidence TEXT
+  evidence TEXT,
+  broker_tag TEXT
 )
 """
 _last_check: dict = {}
+
+
+def new_tag() -> str:
+    return f"{TAG_PREFIX}{uuid.uuid4().hex[:17]}"
+
+
+async def _ensure_table(db) -> None:
+    await db.execute(_DDL)
+    columns = {row[1] for row in await (await db.execute("PRAGMA table_info(fno_broker_backstops)")).fetchall()}
+    if "broker_tag" not in columns:      # created before S23-BS1
+        try:
+            await db.execute("ALTER TABLE fno_broker_backstops ADD COLUMN broker_tag TEXT")
+        except aiosqlite.OperationalError as exc:
+            if "duplicate column" not in str(exc):
+                raise
 
 
 class BackstopUnreadable(Exception):
@@ -109,7 +145,7 @@ def backstop_levels(entry_fill: float, tick: float, *, stop_pct: float, extra_pc
 async def _write(db_path: str, position_id: int, **fields) -> None:
     now = datetime.now(IST).isoformat()
     async with aiosqlite.connect(db_path) as db:
-        await db.execute(_DDL)
+        await _ensure_table(db)
         row = await (await db.execute(
             "SELECT 1 FROM fno_broker_backstops WHERE position_id=?", (position_id,))).fetchone()
         if row is None:
@@ -132,7 +168,7 @@ async def _claim_intent(db_path: str, position_id: int, **fields) -> bool:
     fields.update(placed_at=now, updated_at=now)
     cols = ["position_id", *fields]
     async with aiosqlite.connect(db_path) as db:
-        await db.execute(_DDL)
+        await _ensure_table(db)
         cursor = await db.execute(f"INSERT OR IGNORE INTO fno_broker_backstops ({', '.join(cols)}) "
                                   f"VALUES ({', '.join('?' for _ in cols)})", (position_id, *fields.values()))
         await db.commit()
@@ -182,10 +218,11 @@ async def arm(db_path: str, executor, *, position_id: int, source: str, tradings
                             position_id, tradingsymbol, fill)
             return {"state": "NO_LEVEL"}
         trigger, limit = levels
+        tag = new_tag()
         try:
             claimed = await _claim_intent(db_path, position_id, source=source, tradingsymbol=tradingsymbol,
                                           exchange=exchange, qty=qty, trigger_price=trigger, limit_price=limit,
-                                          state="PLACING")
+                                          state="PLACING", broker_tag=tag)
         except Exception as exc:
             # No durable intent, no order: an unrecorded SL could later sell a second time.
             logger.critical("fno_backstop_intent_unwritten id=%d symbol=%s err=%s -- not placed, engine stop only",
@@ -197,7 +234,7 @@ async def arm(db_path: str, executor, *, position_id: int, source: str, tradings
             logger.warning("fno_backstop_already_recorded id=%d symbol=%s -- no second order", position_id,
                            tradingsymbol)
             return {"state": "ALREADY_RECORDED"}
-        result = await executor.place_stop_limit(tradingsymbol, qty, trigger, limit, exchange=exchange)
+        result = await executor.place_stop_limit(tradingsymbol, qty, trigger, limit, exchange=exchange, tag=tag)
         state = {"placed": "PLACED", "rejected": "PLACE_REJECTED"}.get(result["status"], "PLACE_UNKNOWN")
         try:
             await _write(db_path, position_id, order_id=result.get("order_id"), state=state,
@@ -328,8 +365,47 @@ async def _page_once(position_id: int, reason: str, text: str) -> None:
     await _page(text, f"fno_backstop_{reason}")
 
 
+def _sl_shape(order: dict) -> bool:
+    """[O24-BS 2026-10-24] An SL order as Kite lists it: typed SL, or LIMIT with
+    its trigger kept once it fired (Kite turns a triggered SL into a limit
+    order; the Oct 24 audit found a fired backstop read as "ambiguous"). A
+    LIMIT without a trigger is not one."""
+    order_type = order.get("order_type")
+    if order_type == "SL":
+        return True
+    try:
+        trigger = float(order.get("trigger_price") or 0)
+    except (TypeError, ValueError):
+        return False
+    return order_type == "LIMIT" and trigger > 0
+
+
+def _same_order(order: dict, row: dict, *, with_trigger: bool) -> bool:
+    """Same symbol, side, type, exchange and quantity (a missing broker field
+    never rules an order out); with the intended trigger when asked."""
+    if (order.get("tradingsymbol") != row["tradingsymbol"] or order.get("transaction_type") != "SELL"
+            or not _sl_shape(order)):
+        return False
+    if order.get("exchange") not in (None, row["exchange"]):
+        return False
+    quantity = order.get("quantity")
+    if quantity is not None and quantity != row["qty"]:
+        return False
+    try:
+        trigger = float(order.get("trigger_price") or 0)
+    except (TypeError, ValueError):
+        return True
+    return not with_trigger or abs(trigger - float(row.get("trigger_price") or 0)) < 0.001
+
+
 async def _find_in_order_book(executor, row: dict):
-    """The backstop's order id from today's book, "absent", "ambiguous" or None (unreadable)."""
+    """The backstop's order id from today's book, "absent", "ambiguous" or None (unreadable).
+
+    [S23-BS1] An order is this intent's only when it carries the intent's tag
+    (rows written before tags: when it was placed after the intent), with the
+    row's symbol, exchange and quantity. Another backstop's tag, or a
+    same-shape order that finished before the intent, belongs to an earlier
+    position. Anything else that cannot be ruled out is "ambiguous"."""
     snapshot = getattr(executor.kite, "orders_snapshot", None)
     if snapshot is None:
         return None
@@ -339,15 +415,44 @@ async def _find_in_order_book(executor, row: dict):
         return None
     if book is None:
         return None
-    trigger = float(row.get("trigger_price") or 0)
-    matches = [o for o in book
-               if o.get("tradingsymbol") == row["tradingsymbol"] and o.get("transaction_type") == "SELL"
-               and o.get("order_type") == "SL" and abs(float(o.get("trigger_price") or 0) - trigger) < 0.001]
-    if not matches:
+    book = [o for o in book if isinstance(o, dict)]
+    tag = row.get("broker_tag") or ""
+    if tag:
+        tagged = [o for o in book if str(o.get("tag") or "") == tag]
+        if len(tagged) > 1 or (tagged and not _same_order(tagged[0], row, with_trigger=False)):
+            return "ambiguous"
+        if tagged:
+            return tagged[0].get("order_id") or "ambiguous"
+    try:
+        not_before = broker_time(str(row.get("placed_at") or "")) - timedelta(seconds=INTENT_CLOCK_SKEW_SEC)
+    except RecoveryConflict:
+        not_before = None
+    candidates = []
+    for order in book:
+        other_tag = str(order.get("tag") or "")
+        if (not _same_order(order, row, with_trigger=True)
+                or (other_tag.startswith(TAG_PREFIX) and other_tag != tag)):
+            continue
+        try:
+            placed = broker_time(order.get("order_timestamp"))
+        except RecoveryConflict:
+            return "ambiguous"
+        if not_before is None:
+            return "ambiguous"
+        if placed < not_before:
+            if str(order.get("status") or "").upper() in TERMINAL:
+                continue          # finished before this intent: an earlier position's
+            return "ambiguous"    # still working and not attributable
+        candidates.append(order)
+    if tag:
+        # A readable book without our tag: nothing of ours rests there, unless
+        # an untagged same-shape order placed since the intent leaves doubt.
+        return "ambiguous" if candidates else "absent"
+    if not candidates:
         return "absent"
-    if len(matches) > 1:
+    if len(candidates) > 1:
         return "ambiguous"
-    return matches[0].get("order_id")
+    return candidates[0].get("order_id") or "ambiguous"
 
 
 async def check_filled(db_path: str, executor, position_id: int, *, price: float,

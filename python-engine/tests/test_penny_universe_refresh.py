@@ -658,6 +658,8 @@ def test_history_is_read_only_for_symbols_that_can_enter_the_universe(tmp_path):
         ("PENNYA", 1, "EQ", 12.0), ("EDGEHI", 2, "EQ", 55.0), ("EDGELO", 3, "EQ", 1.0),
         ("BIGCO", 4, "EQ", 820.0), ("662RJ30-SG", 5, "EQ", 25.0), ("NIFTYBEES", 6, "EQ", 25.0),
         ("TINY-SM", 7, "EQ", 9.0), ("TTRADE", 8, "BE", 9.0), ("NOQUOTE", 9, "EQ", None),
+        # [S23-U1] ETF indicative NAVs: listed as EQ, no daily history.
+        ("GOLDSHINAV", 10, "EQ", 21.0), ("SBIVALINAV", 11, "EQ", 48.0),
     ]
     fake_kite = MagicMock()
     fake_kite.get_instruments_nse_eq = AsyncMock(return_value=[

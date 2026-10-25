@@ -361,12 +361,12 @@ const recordUndeliveredAlert = (message, err) => {
   }
 };
 
-const undeliveredAlertCount = () => {
+const _openDeadLetters = () => {
   let lines;
   try {
     lines = fs.readFileSync(DEAD_LETTER_PATH, 'utf8').split('\n').filter(Boolean);
   } catch (_) {
-    return 0;   // no file = nothing undelivered
+    return [];   // no file = nothing undelivered
   }
   // [S9 R2] Lines acknowledged by the reviewed backlog reconciliation are
   // recorded (by SHA-256) in an append-only sibling ledger. They stay in the
@@ -379,7 +379,25 @@ const undeliveredAlertCount = () => {
     }
   } catch (_) { /* no acknowledgements yet */ }
   const crypto = require('crypto');
-  return lines.filter((line) => !acknowledged.has(crypto.createHash('sha256').update(line).digest('hex'))).length;
+  return lines.filter((line) => !acknowledged.has(crypto.createHash('sha256').update(line).digest('hex')));
+};
+
+const undeliveredAlertCount = () => _openDeadLetters().length;
+
+// [S23-H1 2026-10-23] Open dead letters split by age. Health degrades only on
+// recent ones; older ones stay reported as backlog until the reviewed
+// reconciliation acknowledges them. An unreadable timestamp counts as recent.
+const undeliveredAlertSummary = ({ now = Date.now(), recentMs } = {}) => {
+  const open = _openDeadLetters();
+  let recent = 0;
+  let oldest = null;
+  for (const line of open) {
+    let ts = NaN;
+    try { ts = Date.parse(JSON.parse(line).ts); } catch (_) { /* torn line */ }
+    if (!Number.isFinite(ts) || now - ts < recentMs) recent += 1;
+    if (Number.isFinite(ts) && (oldest === null || ts < oldest)) oldest = ts;
+  }
+  return { open: open.length, recent, oldest_ts: oldest === null ? null : new Date(oldest).toISOString() };
 };
 
 const _retryAlertInBackground = async (message) => {
@@ -469,6 +487,7 @@ module.exports = {
   // [ALERT-DEADLETTER 2026-07-31] Surfaced on /api/health so a silent alert
   // path is observable rather than inferred.
   undeliveredAlertCount,
+  undeliveredAlertSummary,
   DEAD_LETTER_PATH
 };
 

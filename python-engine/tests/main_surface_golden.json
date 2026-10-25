@@ -49,6 +49,12 @@
       "trigger": "cron[hour='15', minute='45']"
     },
     {
+      "func": "_run_fno_evening_report_safe",
+      "id": "fno_evening_report",
+      "kwargs": [],
+      "trigger": "cron[hour='15', minute='50']"
+    },
+    {
       "func": "_run_fno_fast_exit_safe",
       "id": "fno_fast_exit",
       "kwargs": [],
@@ -59,6 +65,12 @@
       "id": "fno_hourly_report",
       "kwargs": [],
       "trigger": "cron[minute='0']"
+    },
+    {
+      "func": "_run_fno_live_readiness_safe",
+      "id": "fno_live_readiness",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='25']"
     },
     {
       "func": "_run_fno_tick_safe",
@@ -76,7 +88,7 @@
       "func": "_run_partner_eod_wrap_safe",
       "id": "partner_eod_wrap",
       "kwargs": [],
-      "trigger": "cron[hour='15', minute='40']"
+      "trigger": "cron[hour='15', minute='50']"
     },
     {
       "func": "_run_partner_hedge_delivery_recovery_safe",
@@ -88,7 +100,7 @@
       "func": "_run_partner_hedge_eod_summary_safe",
       "id": "partner_hedge_eod_summary",
       "kwargs": [],
-      "trigger": "cron[hour='15', minute='40']"
+      "trigger": "cron[hour='15', minute='50']"
     },
     {
       "func": "_run_partner_hedge_morning_summary_safe",
@@ -157,6 +169,18 @@
       "trigger": "cron[minute='*/2', second='40']"
     },
     {
+      "func": "_run_partner_watch_prompt_safe",
+      "id": "partner_watch_prompt",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='0']"
+    },
+    {
+      "func": "_run_partner_watch_tick_safe",
+      "id": "partner_watch_tick",
+      "kwargs": [],
+      "trigger": "interval[0:00:05]"
+    },
+    {
       "func": "_run_penny_accept_watchdog_safe",
       "id": "penny_accept_watchdog",
       "kwargs": [],
@@ -208,7 +232,7 @@
       "func": "_run_research_future_candles_safe",
       "id": "research_future_candles",
       "kwargs": [],
-      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='40']"
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='45']"
     },
     {
       "func": "_run_research_quote_collection_safe",
@@ -836,6 +860,22 @@
         "GET"
       ],
       "path": "/partner/review",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_review_days",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/review/days",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_review_pdf",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/review/pdf",
       "response_model": null
     },
     {

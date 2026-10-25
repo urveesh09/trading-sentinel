@@ -40,12 +40,16 @@ logger = logging.getLogger(__name__)
 #
 # Patterns covered:
 #   -SG / -SGX / -GS          Sovereign Gold Bond suffixes
+#   INAV                      ETF indicative NAV (S23-U1)
 #   BEES / ETF / GILT / ...   ETF name hints
 #   ^\d+[A-Z]{2}\d+...$       Generic `<digits><state><number>` bond
 #                             pattern (e.g. 597CG27-SG, 662RJ30-SG)
 import re as _re_sgfilter
 
-_NON_EQUITY_SUFFIXES = ("-SG", "-SGX", "-GS")
+# [S23-U1 2026-10-23] "INAV": an ETF's indicative NAV (GOLDSHINAV, TECHINAV,
+# SBIVALINAV, ...). Kite lists 351 of them as EQ; they have no daily history,
+# so the Oct 23 refresh spent most of its 251 empty history reads on them.
+_NON_EQUITY_SUFFIXES = ("-SG", "-SGX", "-GS", "INAV")
 _NON_EQUITY_EXACT = frozenset({
     "PHARMABEES", "BSE500IETF", "BFSI", "ESG",
     "GOLDBEES", "LIQUIDBEES", "CPSEETF", "NIFTYBEES",

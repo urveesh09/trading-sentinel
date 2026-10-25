@@ -97,3 +97,59 @@ test('[A22-P4] the page says what the background read is doing and refreshes onl
   assert.deepEqual(buildReviewModel({ sync: { state: 'reading' } }).sync, { state: 'reading' });
   assert.equal(buildReviewModel(undefined).sync, null);
 });
+
+test('[O23-PD] the PDF url carries a valid day only', async () => {
+  const { reviewPdfUrl } = await import('../src/utils/partnerReview.js');
+  assert.equal(reviewPdfUrl('2026-10-23'), '/api/partner-kite/review/pdf?day=2026-10-23');
+  assert.equal(reviewPdfUrl(''), '/api/partner-kite/review/pdf');
+  assert.equal(reviewPdfUrl('2026-10-23&evil=1'), '/api/partner-kite/review/pdf');
+});
+
+test('[O23-PH] the day list joins the sources newest first, and steps a day back or forward', async () => {
+  const { dayList, dayNeighbours } = await import('../src/utils/partnerReview.js');
+  const days = dayList(['2026-10-23', '2026-10-19'], ['2026-10-19', '2026-10-15', 'bad'], '2026-10-21', undefined);
+  assert.deepEqual(days, ['2026-10-23', '2026-10-21', '2026-10-19', '2026-10-15']);
+  assert.deepEqual(dayList(undefined, null, ''), []);
+  assert.deepEqual(dayNeighbours(days, '2026-10-19'), { older: '2026-10-15', newer: '2026-10-21' });
+  assert.deepEqual(dayNeighbours(days, '2026-10-23'), { older: '2026-10-21', newer: null });
+  assert.deepEqual(dayNeighbours(days, '2026-10-15'), { older: null, newer: '2026-10-19' });
+  assert.deepEqual(dayNeighbours(days, '2026-09-01'), { older: null, newer: null });
+});
+
+test('[O23-PH] an earlier day says "that day" and only the newest day shows tomorrow\'s focus', async () => {
+  const { dayWords } = await import('../src/utils/partnerReview.js');
+  assert.deepEqual(dayWords(false), { lesson: 'Your lesson for today', more: 'More to learn from today',
+    rules: 'Rules kept today', orders: 'Your orders today' });
+  assert.deepEqual(dayWords(true), { lesson: 'Your lesson from that day', more: 'More to learn from that day',
+    rules: 'Rules kept that day', orders: 'Your orders that day' });
+  const past = buildReviewModel({ day: '2026-10-19', today: '2026-10-23', newest: false });
+  assert.deepEqual([past.day, past.today, past.past, past.newest], ['2026-10-19', '2026-10-23', true, false]);
+  const today = buildReviewModel({ day: '2026-10-23', today: '2026-10-23', newest: true });
+  assert.deepEqual([today.past, today.newest], [false, true]);
+  // An engine from before O23 sends neither field: the page reads as before.
+  const older = buildReviewModel({ day: '2026-10-19' });
+  assert.deepEqual([older.past, older.newest], [false, true]);
+});
+
+test('[O24-PW] the page says when the trade watch is on, and what quiet keeps', async () => {
+  const { watchNote } = await import('../src/utils/partnerReview.js');
+  const on = buildReviewModel({ day: '2026-10-26', today: '2026-10-26', watch: { on: true, until: '15:40', quiet: false } });
+  assert.deepEqual(on.watch, { until: '15:40', quiet: false, unread: [] });
+  assert.equal(watchNote(on.watch), 'Trade watch on until 15:40: messages on Telegram when a buy has no stop or only part of it is covered, a stop is moved down, cancelled or does not sell, Zerodha refuses an order, sell orders could sell more than you hold, and before the close. It never places an order.');
+  assert.equal(watchNote({ until: '15:40', quiet: true }), 'Trade watch on until 15:40, quiet today: you hear only when a stop is moved down, cancelled or does not sell, when Zerodha refuses an order, or when sell orders could sell more than you hold.');
+  // [O24f] What the watch cannot read right now.
+  const blind = buildReviewModel({ watch: { on: true, until: '15:40', unread: { gtts: '2026-10-26T10:42:05+05:30', orders: '2026-10-26T10:43:00+05:30' } } });
+  assert.ok(watchNote(blind.watch).endsWith('It never places an order. Right now it cannot read your GTTs and your orders.'));
+  // Off, or an engine from before O24: nothing is shown.
+  assert.equal(buildReviewModel({ watch: { on: false } }).watch, null);
+  assert.equal(buildReviewModel({}).watch, null);
+  assert.equal(watchNote(null), '');
+});
+
+test('[O24-SB] the rules a day was checked with are named', async () => {
+  const { rulesAsOf } = await import('../src/utils/partnerReview.js');
+  assert.equal(rulesAsOf({ rules_version: '2026-10-24' }), ' Rules of 24 Oct 2026.');
+  assert.equal(rulesAsOf({}), '');
+  assert.equal(rulesAsOf(null), '');
+  assert.equal(rulesAsOf({ rules_version: 'soon' }), '');
+});

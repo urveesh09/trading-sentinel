@@ -9,6 +9,45 @@ export function reviewUrl(day) {
   return DAY.test(String(day || '')) ? `/api/partner-kite/review?day=${day}` : '/api/partner-kite/review';
 }
 
+// [O23-PH] Every day with a review in the last 120 days (read once per page).
+export const REVIEW_DAYS_URL = '/api/partner-kite/review/days';
+
+// [O23-PD] The day's review as a PDF file.
+export function reviewPdfUrl(day) {
+  return DAY.test(String(day || '')) ? `/api/partner-kite/review/pdf?day=${day}` : '/api/partner-kite/review/pdf';
+}
+
+// [O23-PH] The days to pick from, newest first, each once: the review's own
+// window, the 120-day list and the open day.
+export function dayList(...lists) {
+  const days = new Set();
+  for (const list of lists) {
+    for (const day of Array.isArray(list) ? list : [list]) {
+      if (DAY.test(String(day || ''))) days.add(day);
+    }
+  }
+  return [...days].sort().reverse();
+}
+
+// The day before and after `day` in a newest-first list (null at either end).
+export function dayNeighbours(days, day) {
+  const index = days.indexOf(day);
+  if (index < 0) return { older: null, newer: null };
+  return { older: days[index + 1] || null, newer: index > 0 ? days[index - 1] : null };
+}
+
+// Section titles: "today" for today's review, "that day" for an earlier one
+// (the engine words its sentences the same way).
+export function dayWords(past) {
+  return past ? {
+    lesson: 'Your lesson from that day', more: 'More to learn from that day', rules: 'Rules kept that day',
+    orders: 'Your orders that day',
+  } : {
+    lesson: 'Your lesson for today', more: 'More to learn from today', rules: 'Rules kept today',
+    orders: 'Your orders today',
+  };
+}
+
 // "2026-10-19" -> "Mon 19 Oct" (a calendar date, no time zone involved).
 export function formatDay(day) {
   if (!DAY.test(String(day || ''))) return '';
@@ -136,8 +175,15 @@ export function chartGeometry(chart, { width = 320, height = 140, padX = 6, padY
 export function buildReviewModel(payload) {
   const review = payload?.review || {};
   const progress = payload?.progress || {};
+  const day = payload?.day || '';
+  const today = payload?.today || '';
   return {
-    day: payload?.day || '',
+    day,
+    today,
+    // [O23-PH] An earlier day than today; `newest` (today or the latest day
+    // with a review) is where tomorrow's focus belongs.
+    past: Boolean(day && today && day < today),
+    newest: payload?.newest !== false,
     days: Array.isArray(payload?.days_available) ? payload.days_available : [],
     headline: review.headline || { trades: 0, text: '' },
     lesson: review.lesson || null,
@@ -165,5 +211,32 @@ export function buildReviewModel(payload) {
     },
     noOrders: payload?.automatic_execution === false,
     sync: payload?.sync || null,
+    // [O24-PW] The trade watch: on after a login before the close. [O24f] With the reads failing now.
+    watch: payload?.watch?.on
+      ? { until: payload.watch.until || '', quiet: Boolean(payload.watch.quiet), unread: Object.keys(payload.watch.unread || {}) }
+      : null,
   };
+}
+
+const UNREAD_NAMES = { orders: 'your orders', positions: 'your positions', gtts: 'your GTTs', quotes: 'option prices' };
+
+// [O24-PW] The line the page shows while the trade watch is on. [O24f] And what it cannot read right now.
+export function watchNote(watch) {
+  if (!watch) return '';
+  const until = watch.until ? ` until ${watch.until}` : '';
+  const line = watch.quiet
+    ? `Trade watch on${until}, quiet today: you hear only when a stop is moved down, cancelled or does not sell, when Zerodha refuses an order, or when sell orders could sell more than you hold.`
+    : `Trade watch on${until}: messages on Telegram when a buy has no stop or only part of it is covered, a stop is moved down, cancelled or does not sell, Zerodha refuses an order, sell orders could sell more than you hold, and before the close. It never places an order.`;
+  const cannot = (watch.unread || []).map((read) => UNREAD_NAMES[read]).filter(Boolean);
+  if (!cannot.length) return line;
+  const names = cannot.length > 1 ? `${cannot.slice(0, -1).join(', ')} and ${cannot[cannot.length - 1]}` : cannot[0];
+  return `${line} Right now it cannot read ${names}.`;
+}
+
+// [O24-SB] " Rules of 24 Oct 2026.": the rules a day was checked with (a review is worked out again each time).
+export function rulesAsOf(score) {
+  const version = String(score?.rules_version || '');
+  if (!DAY.test(version)) return '';
+  const [y, m, d] = version.split('-').map(Number);
+  return ` Rules of ${d} ${MONTHS[m - 1]} ${y}.`;
 }

@@ -293,9 +293,56 @@ def test_holdout_is_reported_per_admission_population_o8_t6():
     assert cohorts.admission_population(IST.localize(datetime(2026, 10, 8, 9, 15))) == "SELECTIVE_ADMISSION_V1"
 
 
-def test_the_october_6_freeze_still_verifies():
-    """The cohort split lives outside the fingerprinted modules."""
+# [S23] engine.py and momentum_exits.py changed after the Oct 6 freeze (the
+# delivery charge branch and the removed gate bypass). The freeze is verified,
+# and its holdout evaluated, at the last commit whose fingerprint matches, as
+# SYSTEM_GUIDE prescribes ("evaluate on a checkout whose fingerprint matches").
+OCT6_FREEZE_SOURCE_COMMIT = "b03afa5"
+
+
+def _git_show(path: str) -> bytes | None:
+    import subprocess
+    from pathlib import Path
+    repo = Path(__file__).resolve().parents[2]
+    try:
+        out = subprocess.run(["git", "-C", str(repo), "show", f"{OCT6_FREEZE_SOURCE_COMMIT}:{path}"],
+                             capture_output=True, check=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.stdout
+
+
+def test_the_october_6_freeze_still_verifies(monkeypatch):
+    """The cohort split lives outside the fingerprinted modules; the frozen
+    source is the pinned commit's."""
+    import hashlib
     from pathlib import Path
     path = Path(__file__).resolve().parents[2] / "docs/research/momentum-allocation/2026-10-06-allocation-freeze.json"
     manifest = json.loads(path.read_text(encoding="utf-8"))
+    digest = hashlib.sha256()
+    for name in alloc._SOURCE_MODULES:
+        data = _git_show(f"python-engine/{name}")
+        if data is None:
+            pytest.skip("the pinned freeze source needs the git checkout")
+        digest.update(name.encode("utf-8") + b"\0" + hashlib.sha256(data.replace(b"\r\n", b"\n")).digest())
+    monkeypatch.setattr(alloc, "_source_fingerprint", lambda: f"sha256:{digest.hexdigest()}")
     assert alloc.verify_allocation_manifest(manifest.get("manifest", manifest)).isoformat().startswith("2026-10-06")
+
+
+def test_the_study_costs_are_unchanged_since_the_freeze():
+    """[S23] The study prices intraday round trips only; the new engine gives
+    the pinned commit's values exactly, so the frozen holdout is unaffected."""
+    import ast
+    source = _git_show("python-engine/engine.py")
+    if source is None:
+        pytest.skip("the pinned freeze source needs the git checkout")
+    text = source.decode("utf-8")
+    node = next(n for n in ast.parse(text).body if getattr(n, "name", "") == "calc_zerodha_costs")
+    namespace = {"settings": alloc.settings}
+    exec(ast.get_source_segment(text, node), namespace)
+    frozen = namespace["calc_zerodha_costs"]
+    rng = random.Random(23)
+    for _ in range(500):
+        entry, shares = round(rng.uniform(1, 3000), 2), rng.randint(1, 5000)
+        exit_ = round(entry * rng.uniform(0.9, 1.1), 2)
+        assert alloc.calc_zerodha_costs(entry, exit_, shares, is_intraday=True) == frozen(entry, exit_, shares, True)

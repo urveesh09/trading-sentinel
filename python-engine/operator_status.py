@@ -312,8 +312,9 @@ def format_eod_digest(snap: Dict[str, Any]) -> str:
 
     p = snap["penny"]
     p_sign = "+" if p["pnl_today"] >= 0 else ""
+    # [S23-M2] "Classic": Smart and overnight are separate books, below.
     lines.append(
-        f"Penny: {p_sign}Rs {p['pnl_today']:.0f} across {p['open_positions']} "
+        f"Classic Penny: {p_sign}Rs {p['pnl_today']:.0f} across {p['open_positions']} "
         f"still-open positions"
     )
 
@@ -331,6 +332,11 @@ def format_eod_digest(snap: Dict[str, Any]) -> str:
     if snap["halted"]:
         reasons = "; ".join(snap["halt_reasons"][:3])
         lines.append(f"⚠ Day ended HALTED: {reasons}")
+
+    if snap.get("all_books"):
+        from day_books import format_all_books
+        lines.append("")
+        lines.extend(format_all_books(snap["all_books"]))
 
     lines.append("\n-- that's it for today --")
     return "\n".join(lines)
@@ -384,8 +390,18 @@ def cmd_performance(db_path: str) -> str:
 
 
 async def build_eod_digest_snapshot_async(db_path: str) -> Dict[str, Any]:
-    """Async core for cmd_eod_digest. Returns the raw status snapshot."""
-    return await build_status_snapshot(db_path)
+    """Async core for cmd_eod_digest. Returns the raw status snapshot.
+
+    [S23-M2 2026-10-23] Plus ``all_books``: every paper book's closed result
+    today. Oct 23's digest said "+Rs 0" beside a -478.53 closed day."""
+    snap = await build_status_snapshot(db_path)
+    try:
+        from zoneinfo import ZoneInfo
+        from day_books import all_books_day
+        snap["all_books"] = all_books_day(db_path, datetime.now(ZoneInfo("Asia/Kolkata")).date())
+    except Exception as e:      # the digest still goes out without this block
+        logger.warning("eod_all_books_failed error=%s", str(e))
+    return snap
 
 
 def build_eod_digest_snapshot_sync(db_path: str) -> Dict[str, Any]:

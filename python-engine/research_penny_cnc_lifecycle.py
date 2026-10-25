@@ -119,7 +119,7 @@ def tracker_step(pos: dict, bar: dict, current_day: date) -> dict:
     status (OPEN|CLOSED_T1), realised_pnl, atr_14_at_entry, regime_at_entry.
     Mutates ``pos`` exactly as the tracker's UPDATE would.
     """
-    from engine import calc_zerodha_costs
+    from position_tracker import settlement_costs
     o, h, l, c = bar["open"], bar["high"], bar["low"], bar["close"]
     highest_close = float(max(float(pos["highest_close_since_entry"]), c))
     if pos.get("atr_14_at_entry"):
@@ -155,7 +155,7 @@ def tracker_step(pos: dict, bar: dict, current_day: date) -> dict:
         closed = math.floor(pos["shares"] * 0.5) or 1
         remaining = pos["shares"] - closed
         gross = (exit_price - pos["entry_price"]) * closed
-        costs = calc_zerodha_costs(pos["entry_price"], exit_price, closed, is_intraday=False)
+        costs = settlement_costs(pos, exit_price, closed, current_day)
         pnl = gross - costs
         if remaining == 0:
             pos.update(status="CLOSED_T1", trailing_stop_current=trailing_stop, closed=True,
@@ -168,7 +168,7 @@ def tracker_step(pos: dict, bar: dict, current_day: date) -> dict:
         return {"event": "partial", "reason": "T1_PARTIAL", "shares": closed,
                 "price": exit_price, "gross": gross, "costs": costs, "pnl": pnl}
     gross = (exit_price - pos["entry_price"]) * pos["shares"]
-    costs = calc_zerodha_costs(pos["entry_price"], exit_price, pos["shares"], is_intraday=False)
+    costs = settlement_costs(pos, exit_price, pos["shares"], current_day)
     pnl = gross - costs
     pos.update(status=status, trailing_stop_current=trailing_stop, closed=True,
                exit_price=exit_price,
@@ -337,7 +337,7 @@ def run_penny_cnc_lifecycle(
             "fill": "LTP at 09:30 (open of the traded 09:30 bar); executor drift/stop checks",
             "exits": "15:45 tracker on final daily bars (stop unless target hit, T2, T1 50%, 15-day time)",
             "trail": "disabled: Connors decisions carry no atr_14",
-            "costs": "engine.calc_zerodha_costs(is_intraday=False), as the tracker books",
+            "costs": "position_tracker.settlement_costs (S23-COST1), as the tracker books",
             "regime": f"declared constant {config.regime}",
             "sizing": "PennyRiskEngine.position_size with fixed PENNY_PAPER_BANKROLL",
         },

@@ -20,6 +20,12 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/;
 // note in the background (the review page shows that progress). Under
 // nginx's 60 s proxy timeout, so the page always gets an answer.
 const SESSION_TIMEOUT_MS = 45000;
+// [O23-PH/PD] The 120-day day list and a PDF read more than one day's review.
+const HISTORY_TIMEOUT_MS = 20000;
+const PDF_TIMEOUT_MS = 30000;
+// The only file name passed on; anything else from the engine is replaced.
+const PDF_DISPOSITION = /^attachment; filename="trading-review-\d{4}-\d{2}-\d{2}\.pdf"$/;
+const PDF_FALLBACK_DISPOSITION = 'attachment; filename="trading-review.pdf"';
 
 // Fixed texts only: nothing from the query or the engine reaches the page.
 const MESSAGES = {
@@ -92,9 +98,9 @@ const allowCoach = (req, res, next) => {
   return res.status(401).json({ error: 'unauthorized', message: 'Open the review from the Telegram button' });
 };
 
-async function forward(res, path) {
+async function forward(res, path, timeoutMs) {
   try {
-    const result = await engine(path);
+    const result = await engine(path, { timeoutMs });
     return res.status(result.status).json(result.data);
   } catch (err) {
     logger.error({ event_type: 'proxy_error', path: path.split('?')[0], err: err.message });
@@ -119,6 +125,47 @@ router.get('/review', allowCoach, (req, res) => {
   }
   params.set('days', String(Math.min(Math.max(Number.parseInt(req.query.days, 10) || 30, 14), 120)));
   return forward(res, `/partner/review?${params}`);
+});
+
+// [O23-PH] Every day with a review in the last 120 days (the page's day list).
+router.get('/review/days', allowCoach, (req, res) => forward(res, '/partner/review/days', HISTORY_TIMEOUT_MS));
+
+// [O23-PD] One day's review as a PDF. Only a PDF from the engine is passed
+// on, under a fixed file name; errors are fixed texts.
+router.get('/review/pdf', allowCoach, limiters.reviewPdf, async (req, res) => {
+  const params = new URLSearchParams();
+  if (req.query.day !== undefined) {
+    if (typeof req.query.day !== 'string' || !DAY.test(req.query.day)) {
+      return res.status(400).json({ error: 'bad_request', message: 'day must be YYYY-MM-DD' });
+    }
+    params.set('day', req.query.day);
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), PDF_TIMEOUT_MS);
+  try {
+    const query = params.toString();
+    const response = await fetch(`${config.PYTHON_ENGINE_URL}/partner/review/pdf${query ? `?${query}` : ''}`, {
+      headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET }, signal: controller.signal,
+    });
+    const type = response.headers.get('content-type') || '';
+    if (response.status !== 200 || !type.startsWith('application/pdf')) {
+      logger.warn({ event_type: 'partner_review_pdf_refused', status: response.status }, 'Review PDF not made');
+      const status = response.status === 422 ? 400 : 502;
+      return res.status(status).json({ error: 'pdf_unavailable', message: 'The PDF could not be made. Try again in a minute.' });
+    }
+    const body = Buffer.from(await response.arrayBuffer());
+    const disposition = response.headers.get('content-disposition') || '';
+    return res.status(200).set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': PDF_DISPOSITION.test(disposition) ? disposition : PDF_FALLBACK_DISPOSITION,
+      'Cache-Control': 'no-store',
+    }).send(body);
+  } catch (err) {
+    logger.error({ event_type: 'proxy_error', path: '/partner/review/pdf', err: err.name }, 'Review PDF failed');
+    return res.status(502).json({ error: 'bad_gateway', message: 'Quant Engine is unreachable.' });
+  } finally {
+    clearTimeout(timeout);
+  }
 });
 
 module.exports = router;

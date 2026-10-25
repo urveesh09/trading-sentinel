@@ -181,6 +181,10 @@ DIVISION_ALLOCATION: dict = {
 def allocation_for_source(source: str) -> float:
     """Capital allocated to `source`. Unknown sources fall back to the swing
     pool, which is the historical behaviour."""
+    if source == "FNO_LIVE":
+        # [O25] The owner's real-money test capital while that test is on.
+        import fno_live_test
+        return fno_live_test.live_pool()
     setting_name = DIVISION_ALLOCATION.get(source, "INITIAL_BANKROLL")
     return float(getattr(settings, setting_name, settings.INITIAL_BANKROLL))
 
@@ -267,7 +271,7 @@ async def fno_bankroll(db_path: str, source: str = "FNO_PAPER") -> float:
     """
     allocated = (
         settings.FNO_PAPER_BANKROLL if source == "FNO_PAPER"
-        else settings.FNO_LIVE_BANKROLL
+        else allocation_for_source("FNO_LIVE")
     )
     try:
         async with aiosqlite.connect(db_path) as db:
@@ -848,7 +852,8 @@ def _division_registry() -> list:
     swing and momentum are the two halves of the ₹5,000 Nifty pool.
     """
     penny_live = bool(getattr(settings, "PENNY_LIVE_TRADING", False))
-    fno_live   = bool(getattr(settings, "FNO_LIVE_TRADING", False))
+    import fno_live_test
+    fno_live   = bool(getattr(settings, "FNO_LIVE_TRADING", False)) or fno_live_test.armed()
     # The ₹5,000 Nifty pool is split between swing and momentum by
     # MOMENTUM_POOL_PCT (0.50 default) — momentum gets its half, swing the rest.
     # They are separate, non-overlapping allocations (₹2,500 each at defaults).
@@ -869,7 +874,7 @@ def _division_registry() -> list:
         ("penny_edge_paper", "Penny Edge (paper)",       "EDGE_PAPER", "edge_paper",     float(getattr(settings, "PENNY_EDGE_PAPER_BANKROLL", 0.0)), "paper"),
         ("penny_edge_live",  "Penny Edge (live)",        "EDGE_LIVE",  "edge_live",      float(getattr(settings, "PENNY_EDGE_LIVE_BANKROLL", 0.0)),  "live"),
         ("fno_paper",        "F&O Options (paper)",      "FNO_PAPER",  "fno_paper",      float(getattr(settings, "FNO_PAPER_BANKROLL", 0.0)),        "paper"),
-        ("fno_live",         "F&O Options (live)",       "FNO_LIVE",   "fno_live",       float(getattr(settings, "FNO_LIVE_BANKROLL", 0.0)),         "live"),
+        ("fno_live",         "F&O Options (live)",       "FNO_LIVE",   "fno_live",       fno_live_test.live_pool(),                                 "live"),
     ]
 
 

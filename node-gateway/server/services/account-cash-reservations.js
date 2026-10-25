@@ -94,6 +94,16 @@ class AccountCashReservations {
       WHERE reservation_id=? AND state='RESERVED'`).run(String(reason).slice(0, 100), new Date().toISOString(), reservationId).changes === 1;
   }
 
+  // [O25] A filled BUY's hold is released: the broker's position (today) and
+  // its settled cash balance (after) carry the money from now on. Kept, the
+  // hold outlived the day's order book and refused every later entry.
+  releaseFilled(reservationId, { brokerOrderId }) {
+    if (!brokerOrderId) return false;
+    return this.db.prepare(`UPDATE account_cash_reservations SET state='RELEASED', release_reason='filled_now_broker_position', updated_at=?
+      WHERE reservation_id=? AND broker_order_id=? AND state IN ('RESERVED','DISPATCHED','AMBIGUOUS','PARTIAL')`)
+      .run(new Date().toISOString(), reservationId, brokerOrderId).changes === 1;
+  }
+
   releaseZeroFill(reservationId, { brokerOrderId, terminalStatus, filledQuantity }) {
     if (!brokerOrderId || !['CANCELLED', 'REJECTED'].includes(String(terminalStatus || '').toUpperCase()) || Number(filledQuantity) !== 0) return false;
     return this.db.prepare(`UPDATE account_cash_reservations SET state='RELEASED', release_reason=?, updated_at=?

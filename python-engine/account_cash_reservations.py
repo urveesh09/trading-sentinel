@@ -215,6 +215,39 @@ class AccountCashReservations:
         finally:
             self._close(conn)
 
+    def release_filled(self, reservation_id: str, *, broker_order_id: str) -> bool:
+        """[O25] Release a hold whose BUY filled: from now the broker's own
+        evidence carries the cash (the open position today, the settled cash
+        balance after it). Kept, a filled hold outlived its day: once the
+        order left the day's order book it counted as held again and refused
+        every later entry on the same account."""
+        if not broker_order_id:
+            return False
+        conn = self._connect()
+        try:
+            result = conn.execute("""UPDATE account_cash_reservations
+                SET state='RELEASED', release_reason='filled_now_broker_position', updated_at=?
+                WHERE reservation_id=? AND broker_order_id=?
+                  AND state IN ('RESERVED','DISPATCHED','AMBIGUOUS','PARTIAL')""",
+                                  (time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), reservation_id,
+                                   broker_order_id))
+            return result.rowcount == 1
+        finally:
+            self._close(conn)
+
+    def reservation_for_order(self, broker_order_id: str) -> str | None:
+        """The active reservation id dispatched as this broker order, if any."""
+        if not broker_order_id:
+            return None
+        conn = self._connect()
+        try:
+            row = conn.execute("SELECT reservation_id FROM account_cash_reservations WHERE broker_order_id=? "
+                               "AND state IN ('RESERVED','DISPATCHED','AMBIGUOUS','PARTIAL')",
+                               (broker_order_id,)).fetchone()
+            return row["reservation_id"] if row else None
+        finally:
+            self._close(conn)
+
     def release_not_sent(self, reservation_id: str, reason: str) -> bool:
         """Release only when the caller has proof that no request left it."""
         conn = self._connect()

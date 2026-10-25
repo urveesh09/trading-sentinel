@@ -33,11 +33,26 @@ NO_STOP_ORDER, STOP_WIDER_THAN_CARD, STOP_CANCELLED; placing the stop, a
 pause after a loss and an exit ahead of the stop are positives.
 partner_lessons.py turns a day of this into the partner's review.
 
+[O24-SR 2026-10-24] The stops come from ``partner_broker_sync.merge_stops``:
+every option SELL order that carried a trigger, including a stop that fired
+(Kite shows it as LIMIT or MARKET) and one the partner turned into a sale
+(status CONVERTED: it protected the trade until that sale). A trade whose
+sale may have been a stop that cannot be confirmed (a modified sale on a day
+stored before the order histories were kept) has unknown stops, so nothing
+about its stop is claimed. A stop's placing time is exact only from its
+order history; otherwise the review says it was "in place by" that time.
+[O24-MC] The day closes at 15:40 (partner_broker_sync.CLOSE_MIN).
+
 [O21-PX] partner_insights.py adds what the option did around each trade (the
 owner's 1-minute candles), what the partner's Zerodha book shows (order
 changes, rejections, positions, the day's cash) and the lessons that follow
 from them: CHASED_SPIKE, GAVE_BACK_PROFIT, STOP_LOWERED, PRICE_RAISED_TO_FILL,
-BIG_RISK, HELD_OVERNIGHT and INSUFFICIENT_FUNDS.
+UNUSUAL_SIZE ([O24-SZ], was BIG_RISK), HELD_OVERNIGHT and INSUFFICIENT_FUNDS.
+[O24-SB] The usual size starts from the trades in the 45 days before the
+window (``size_history``), so a day reads the same in any window.
+[O24d] A trade without a card says what Zerodha shows of the partner's own
+plan (``_off_card_plan``): their stop and when, none placed, or not known.
+The card rule (OFF_CARD) is kept apart from whether that stop was good.
 
 Honesty rules (paper-fill-honesty): reported prices are the partner's;
 "≈" prices came from a quote at the tap; a plan exit is a 5-minute print,
@@ -82,6 +97,7 @@ STOP_CHECK_MIN_HOLD_MIN = 5               # "no stop" only for a trade held at l
 STOP_PROMPT_MIN = 5                       # a stop this soon after the buy earns the positive
 STOP_WIDER_PCT = 0.03                     # a stop this far under the card's SL is "wider"
 STOP_CANCEL_SLIP_PCT = 0.01               # sold this far under a cancelled stop
+PROTECTING = ("PENDING", "TRIGGERED", "CONVERTED")   # [O24-SR] a stop in force until it sold or the day ended
 SQUARE_OFF_MIN = 15 * 60 + 15             # a stop cancelled after this may be the broker's square-off
 EXIT_LABELS = {"TARGET_MESSAGE": "target message", "SQUARE_OFF_MESSAGE": "square-off message",
                "EXIT_BY": "exit-by time"}
@@ -113,7 +129,7 @@ ADVICE = {
     "GAVE_BACK_PROFIT": "Once a trade is up 20%, move the SL order to your buy price.",
     "STOP_LOWERED": "Never cancel or lower a stop once it is placed. Move it only up, to lock in profit.",
     "PRICE_RAISED_TO_FILL": "Set the buy price once. If it does not fill, let the trade go.",
-    "BIG_RISK": "Keep what one trade can lose (to its stop) under a tenth of the cash in your account.",
+    "UNUSUAL_SIZE": "Keep to the size you usually trade; a much bigger trade is a much bigger loss when it goes wrong.",
     "HELD_OVERNIGHT": "Be out of every intraday option buy before the close.",
     "INSUFFICIENT_FUNDS": "Decide the lots before the trade, from the cash you have; never try the whole balance.",
     "ENTRY_UNDER_STOP": "If the option is already at or under the card's SL, the card is over; do not buy it.",
@@ -138,7 +154,7 @@ TITLES = {
     "GAVE_BACK_PROFIT": "A winning trade turned into a loss",
     "STOP_LOWERED": "Moved the stop down",
     "PRICE_RAISED_TO_FILL": "Raised the buy price to get filled",
-    "BIG_RISK": "Too much of the account on one trade",
+    "UNUSUAL_SIZE": "Much bigger than your usual size",
     "HELD_OVERNIGHT": "Held an option past the close",
     "INSUFFICIENT_FUNDS": "Order refused: not enough money",
     "ENTRY_UNDER_STOP": "Bought under the card's SL",
@@ -453,7 +469,8 @@ def _worked(actual: Optional[float]) -> str:
 
 
 def _day_close(day: str) -> datetime:
-    return IST.localize(datetime.fromisoformat(day) + timedelta(hours=15, minutes=30))
+    from partner_broker_sync import CLOSE_MIN
+    return IST.localize(datetime.fromisoformat(day) + timedelta(minutes=CLOSE_MIN))
 
 
 def _first_under(series: list, after: datetime, level: float):
@@ -524,7 +541,8 @@ def _stop_checks(out: dict, trade: dict, card: Optional[dict], stops: Optional[l
     if stops is None or first is None:
         return
     out["stops"] = [{"kind": s["kind"], "trigger": float(s["trigger_price"]), "status": s["status"],
-                     "placed": _hhmm(s["placed_dt"]), "updated": _hhmm(s["updated_dt"])} for s in stops]
+                     "placed": _hhmm(s["placed_dt"]), "updated": _hhmm(s["updated_dt"]),
+                     "exact": bool(s.get("placed_exact", True))} for s in stops]
     flags, positives = out["flags"], out["positives"]
     actual, entry, exit_px, last_sell = trade["pnl"], trade["avg_entry"], trade["avg_exit"], trade["last_sell_at"]
     end = last_sell if last_sell and not trade["open_lots"] else _day_close(trade["session_date"])
@@ -561,10 +579,14 @@ def _stop_checks(out: dict, trade: dict, card: Optional[dict], stops: Optional[l
                     else f"Put the stop at the card's {_px(sl)}."),
             better_pnl=at_card, actual_pnl=actual if at_card is not None else None))
     elif after <= STOP_PROMPT_MIN:
-        prompt = _positive("STOP_PLACED", f"{kind} at {_px(trigger)} placed {max(after, 0):.0f} min after buying.")
+        # [O24-SR] Without the order's history the time is when it was in place by: still within the limit.
+        prompt = _positive("STOP_PLACED", (f"{kind} at {_px(trigger)} placed {max(after, 0):.0f} min after buying."
+                                           if stop.get("placed_exact", True) else
+                                           f"{kind} at {_px(trigger)} in place within {max(after, 0):.0f} min of "
+                                           f"buying."))
     cancelled = [s for s in stops if s["status"] == "CANCELLED" and s["updated_dt"] and last_sell
                  and s["updated_dt"] < last_sell and s["updated_dt"].hour * 60 + s["updated_dt"].minute < SQUARE_OFF_MIN]
-    protected_after = any(s["status"] in ("PENDING", "TRIGGERED") for s in stops
+    protected_after = any(s["status"] in PROTECTING for s in stops
                           if cancelled and s["placed_dt"] > cancelled[-1]["updated_dt"])
     if cancelled and not protected_after and exit_px is not None:
         gone = cancelled[-1]
@@ -813,6 +835,27 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
     return out
 
 
+def _off_card_plan(trade: dict, stops: Optional[list]) -> str:
+    """[O24d] What the order book shows of the partner's own plan for a trade
+    without a card. A trade the system sent no card for can still have had
+    its stop: say what Zerodha shows, not that there was none."""
+    first = trade.get("first_buy_at")
+    if not trade["buys"] or first is None or stops is None:
+        return ("Without a card the system gave no stop, target or exit time for this trade; any plan of your own "
+                "is not on record here.")
+    if not stops:
+        return ("Without a card the system gave no stop, target or exit time, and no stop order was placed, so "
+                "nothing limited the loss except a decision in the moment.")
+    stop = stops[0]
+    kind = "a GTT" if stop["kind"] == "GTT" else "an SL order"
+    after = max((stop["placed_dt"] - first).total_seconds() / 60, 0)
+    when = (f"{after:.0f} min after the buy" if stop.get("placed_exact", True) else
+            f"within {after:.0f} min of the buy")
+    return (f"Without a card the system gave no stop, target or exit time; the plan was your own, with {kind} at "
+            f"{_px(float(stop['trigger_price']))} {when}. The card rule is about which trades to take, not about "
+            f"whether your stop was good.")
+
+
 def analyse_off_card(trade: dict, stops: Optional[list] = None) -> dict:
     actual = trade["pnl"]
     out = {"key": trade["key"], "day": trade["session_date"], "option": trade["option"],
@@ -825,8 +868,7 @@ def analyse_off_card(trade: dict, stops: Optional[list] = None) -> dict:
         what = f"You sold {trade['option']} at {_hhmm(trade['last_sell_at'])}; no card was sent for this option."
     out["flags"].append(_flag(
         "OFF_CARD", what, _gap(actual, 0.0),
-        why="Without a card there is no written stop, target or exit time, so nothing limits the loss except "
-            "a decision in the moment." + _worked(actual),
+        why=_off_card_plan(trade, stops) + _worked(actual),
         better=f"No trade: {_instead(0.0, actual)}." if actual is None or actual <= 0 else
                "If you take one, decide the stop before buying and place it right after.",
         better_pnl=0.0, actual_pnl=actual))
@@ -886,7 +928,7 @@ def _sequence_flags(day_trades: list[dict]) -> None:
         previous = item
 
 
-def _overtrading(buys: int, cards: int, traded: list[dict]) -> dict:
+def _overtrading(buys: int, cards: int, traded: list[dict], on_day: str = "today") -> dict:
     """Day flag: more buys than cards, with the charges and the cards-only day."""
     priced = [i["_trade"] for i in traded if i["_trade"]["pnl"] is not None]
     actual = round(sum(t["pnl"] for t in priced), 2) if priced and len(priced) == len(traded) else None
@@ -899,21 +941,26 @@ def _overtrading(buys: int, cards: int, traded: list[dict]) -> dict:
     return _flag(
         "OVERTRADING", f"{buys} buys against {cards} card{'s' if cards != 1 else ''}.", _gap(actual, card_only),
         why="Extra trades come from watching the screen rather than from a setup"
-            + (f"; today's trades paid {_amt(charges)} in charges." if charges > 0 else ".") + _worked(actual),
+            + (f"; {on_day}'s trades paid {_amt(charges)} in charges." if charges > 0 else ".") + _worked(actual),
         better=(f"Only the card trades: {_instead(card_only, actual)}." if card_only is not None
                 else "Trade the cards only."), better_pnl=card_only, actual_pnl=actual)
 
 
 def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: datetime,
             complete_days: frozenset = frozenset(), stops: Optional[list] = None,
-            stops_known_days: frozenset = frozenset(), context: Optional[dict] = None) -> dict:
+            stops_known_days: frozenset = frozenset(), context: Optional[dict] = None,
+            unknown_stops: Optional[list] = None, earlier_sizes: Optional[list] = None) -> dict:
     """The coach view for the cards and reports in a window (pure).
 
     ``complete_days``: days whose whole Zerodha book was read after the close.
     ``stops`` / ``stops_known_days``: the partner's stop orders, and the days
     on which they are fully known (stop flags only on those days).
+    ``unknown_stops``: [O24-SR] sales that may have been stops; a trade with
+    one and no confirmed stop has unknown stops.
     ``context``: [O21-PX] price paths and the Zerodha book's details
-    (partner_insights.Context); without it the analysis is as before."""
+    (partner_insights.Context); without it the analysis is as before.
+    ``earlier_sizes``: [O24-SB] the shares of cash of the trades before the
+    window (``size_history``), where the usual size starts."""
     import partner_insights as insights
     ctx = insights.Context.of(context, complete_days, now)
     reaction = timedelta(seconds=reaction_sec)
@@ -922,7 +969,10 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
     def stops_for(trade):
         if not trade or trade["session_date"] not in stops_known_days:
             return None
-        return trade_stops(trade, stops or [])
+        known = trade_stops(trade, stops or [])
+        if not known and trade_stops(trade, [u | {"status": "UNKNOWN"} for u in unknown_stops or []]):
+            return None
+        return known
 
     items = []
     by_card = {card["advisory_id"]: card for card in cards}
@@ -973,6 +1023,7 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         days[item["day"]].append(item)
     for day_items in days.values():
         _sequence_flags(day_items)
+    insights.usual_size_flags(items + reentries + off_card, earlier=earlier_sizes)
     day_rows = []
     all_days = sorted({c["day"] for c in cards} | {i["day"] for i in off_card}, reverse=True)
     for day in all_days:
@@ -984,7 +1035,7 @@ def analyse(cards: list[dict], reports: list[dict], *, reaction_sec: int, now: d
         buys = sum(len(i["_trade"]["buys"]) for i in traded)
         actual = [i["_trade"]["pnl"] for i in traded if i["_trade"]["pnl"] is not None]
         if buys >= OVERTRADE_MIN_BUYS and buys > len(day_cards) + 1:
-            day_flags.append(_overtrading(buys, len(day_cards), traded))
+            day_flags.append(_overtrading(buys, len(day_cards), traded, insights.when(ctx, day)))
         plans = [i["plan"]["pnl"] for i in day_cards + day_again if i.get("_trade") and i["_trade"]["buys"]
                  and i.get("plan", {}).get("pnl") is not None and i["_trade"]["pnl"] is not None]
         row = {
@@ -1191,15 +1242,48 @@ async def load_partner_coach(db_path: str, *, days: int = 30, now: Optional[date
     from partner_trade_paths import load_paths
     context = await zerodha.book_details(db_path, first_day, last_day)
     context["paths"] = await load_paths(db_path, first_day, last_day)
+    from partner_watch import messages_between
+    context["watch"] = await messages_between(db_path, first_day, last_day)
+    stops, unknown = zerodha.merge_stops(await zerodha.stop_orders(db_path, first_day, last_day),
+                                         context["orders"], context["changes"])
     view = analyse(cards, reports, reaction_sec=int(settings.PARTNER_COACH_REACTION_SEC), now=now,
-                   complete_days=complete, stops=await zerodha.stop_orders(db_path, first_day, last_day),
-                   stops_known_days=known, context=context)
+                   complete_days=complete, stops=stops, stops_known_days=known, context=context,
+                   unknown_stops=unknown, earlier_sizes=await size_history(db_path, first_day))
     view["data_quality"]["superseded_by_zerodha"] = superseded
     view["window"] = {"first_day": first_day, "last_day": last_day, "days": days}
     view["capture_enabled"] = bool(settings.PARTNER_FILL_CAPTURE_ENABLED)
     view["zerodha"] = zerodha.status(now) | {"days": broker}
     view["as_of"] = now.isoformat()
     return view
+
+
+SIZE_HISTORY_DAYS = 45      # [O24-SB] calendar days read before a window for the usual size
+
+
+async def size_history(db_path: str, before_day: str, *, days: int = SIZE_HISTORY_DAYS) -> list:
+    """[O24-SB] The share of the day's cash in each trade in the ``days``
+    before ``before_day``, oldest first, the last USUAL_SIZE_LOOKBACK of them.
+    The trades and shares are the review's own (``build_trades``,
+    partner_insights.trade_share), so the usual size of a day is the same in
+    any window, and the trade watch uses the same history."""
+    from partner_fill_capture import reports_between
+    import partner_broker_sync as zerodha
+    from partner_insights import USUAL_SIZE_LOOKBACK, trade_share
+    last = date.fromisoformat(before_day) - timedelta(days=1)
+    first = (last - timedelta(days=days - 1)).isoformat()
+    broker = await zerodha.broker_days(db_path, first, last.isoformat())
+    reports, _superseded = zerodha_first(await reports_between(db_path, first, last.isoformat()), broker)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT session_date, opening_balance, intraday_payin FROM partner_account_days "
+            "WHERE session_date>=? AND session_date<=?", (first, last.isoformat()))).fetchall()
+    accounts = {day: {"opening_balance": opening, "intraday_payin": payin} for day, opening, payin in rows}
+    shares = []
+    for trade in build_trades(reports).values():
+        share = trade_share(trade, accounts.get(trade["session_date"]))
+        if share is not None:
+            shares.append((trade["first_buy_at"], share))
+    return [share for _at, share in sorted(shares, key=lambda s: s[0])][-USUAL_SIZE_LOOKBACK:]
 
 
 def zerodha_first(reports: list[dict], broker: dict) -> tuple[list[dict], int]:

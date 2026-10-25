@@ -31,6 +31,12 @@ average loss, card against no-card trades, trades soon after a loss, hold
 time of winners against losers, time of day) with a plain line for each
 pattern the numbers show, and the one rule to focus on tomorrow.
 
+[O23-PH] The partner can open an earlier day: ``day_review(view, day,
+today)`` then says "that day" where it would say "today". [O23-PM] Each rule
+under "rules kept" carries a plain ``means`` line (RULE_MEANINGS).
+partner_review_pdf.py prints one day's review as a PDF. [O24-SZ] The size
+rule is "Usual size": the partner's own habit, not a fixed tenth of the cash.
+
 Pure functions over the coach view; nothing here places orders or changes
 a card. Wording rules: numbers come from the coach; a rule-break that made
 money is still named (process over outcome); nothing is called a maximum
@@ -48,7 +54,7 @@ from partner_coach import REENTRY_WINDOW_MIN, _amt, _dt, _rs
 # order follows the damage they do to a manual option buyer: revenge and
 # size first, then entries that break the card, then stop discipline.
 LESSON_PRIORITY = (
-    "QUICK_REENTRY_AFTER_LOSS", "SIZE_UP_AFTER_LOSS", "BIG_RISK", "ENTRY_ABOVE_LIMIT", "CHASED_SPIKE",
+    "QUICK_REENTRY_AFTER_LOSS", "SIZE_UP_AFTER_LOSS", "UNUSUAL_SIZE", "ENTRY_ABOVE_LIMIT", "CHASED_SPIKE",
     "HELD_PAST_STOP", "STOP_CANCELLED", "STOP_LOWERED", "NO_STOP_ORDER", "AVERAGED_DOWN", "OFF_CARD",
     "GAVE_BACK_PROFIT", "OVERTRADING", "INSUFFICIENT_FUNDS", "PRICE_RAISED_TO_FILL", "LATE_ENTRY",
     "AFTER_CARD_CLOSED", "ENTRY_UNDER_STOP", "HELD_OVERNIGHT", "STOP_WIDER_THAN_CARD", "GAVE_BACK_AFTER_TARGET",
@@ -64,16 +70,40 @@ CHECKS = (
     ("exit", "Exited by the plan", ("HELD_PAST_STOP", "EARLY_EXIT", "GAVE_BACK_AFTER_TARGET", "GAVE_BACK_PROFIT",
                                     "HELD_PAST_SQUARE_OFF", "HELD_OVERNIGHT")),
     ("calm", "Calm after a loss", ("QUICK_REENTRY_AFTER_LOSS", "SIZE_UP_AFTER_LOSS")),
-    ("size", "Size within the account", ("AVERAGED_DOWN", "BIG_RISK")),
+    ("size", "Usual size", ("AVERAGED_DOWN", "UNUSUAL_SIZE")),
 )
 DAY_CHECKS = (
     ("cards_only", "Traded only the cards", ("OVERTRADING",)),
     ("cash", "Orders within your cash", ("INSUFFICIENT_FUNDS",)),
 )
 _RULE_ORDER = [key for key, _, _ in CHECKS + DAY_CHECKS]
+# [O23-PM] What each rule means, in the partner's words (shown under "Rules
+# kept" on the page and in the PDF). Each line matches the flags that break
+# the rule above and their thresholds in partner_coach / partner_insights.
+# [O24-SB] The day the rules below last changed. A review is worked out again from the stored book each
+# time it opens, so a rule change re-scores earlier days too; the page and the PDF name this date.
+RULES_VERSION = "2026-10-24"
+RULE_MEANINGS = {
+    "card": "The trade was on a card the system sent you on Telegram that day: the same option, bought after the "
+            "card arrived. A trade on any other option counts as a trade without a card.",
+    "entry": "On a card: bought at or under its buy-up-to price, before its skip-after time, before its exit or "
+             "target message and above its SL. On every trade: not straight after a 20% jump, and without raising "
+             "your price again and again to get filled.",
+    "stop": "A stop-loss order (an SL order or a GTT) was in Zerodha for the trade, no wider than the card's SL, and "
+            "was not cancelled or moved down. Checked only on days your stop orders could be read; a trade held "
+            "under 5 minutes needs none.",
+    "exit": "Sold as the plan said: when the stop was hit, not long before the card's exit, soon after a target "
+            "message, by the exit-by time and before the close; and a trade up 20% did not end as a loss.",
+    "calm": "No new buy within 30 minutes of closing a losing trade, and no bigger size after a loss.",
+    "size": "The money put into the trade was not much more than you usually put in (at most 1.5 times your usual "
+            "share of cash, from your last 20 trades; checked once you have 5), and you did not buy more of a "
+            "falling option. Your usual is your own habit, not a safe size.",
+    "cards_only": "No more buys in the day than the cards sent plus one (two buys are always within it).",
+    "cash": "Zerodha refused none of your buys for lack of money. Checked only when your order book was read.",
+}
 # Time-of-day buckets for the window statistics (minutes after midnight, IST).
 TIME_BUCKETS = (("09:15–09:45", 555, 585), ("09:45–11:30", 585, 690), ("11:30–13:30", 690, 810),
-                ("13:30–15:30", 810, 930))
+                ("13:30–15:40", 810, 940))   # [O24-MC] F&O closes at 15:40
 MIN_SAMPLE = 3                 # trades per side before a window pattern is put into words
 MAX_MORE_LESSONS = 4
 MAX_ALSO = 3          # [O21-PX] other mistakes told inside the lesson; the rest go to "more"
@@ -166,7 +196,7 @@ def _fold(lesson_list: list[dict]) -> tuple[Optional[dict], list[dict]]:
     return main, sorted(rest, key=_rank)
 
 
-def _well_done(row: dict, traded: list[dict], lesson_list: list[dict]) -> list[dict]:
+def _well_done(row: dict, traded: list[dict], lesson_list: list[dict], on_day: str = "today") -> list[dict]:
     seen, out = set(), []
     for item in row["cards"] + row["off_card"]:
         for good in item.get("positives", []):
@@ -178,7 +208,7 @@ def _well_done(row: dict, traded: list[dict], lesson_list: list[dict]) -> list[d
                         "option": item["option"]})
     if traded and not lesson_list:
         out.insert(0, {"code": "CLEAN_DAY", "title": "Every trade followed its card",
-                       "reason": f"{len(traded)} trade{'s' if len(traded) != 1 else ''} today and no mistakes "
+                       "reason": f"{len(traded)} trade{'s' if len(traded) != 1 else ''} {on_day} and no mistakes "
                                  f"flagged. This is the habit to repeat.", "option": None})
     return out
 
@@ -212,11 +242,12 @@ def score(row: dict, traded: list[dict]) -> Optional[dict]:
         checks.append({"key": key, "name": name, "kept": not day_codes & set(broken_by)})
     rules: dict = {}
     for check in checks:
-        rule = rules.setdefault(check["key"], {"key": check["key"], "name": check["name"], "kept": 0, "of": 0})
+        rule = rules.setdefault(check["key"], {"key": check["key"], "name": check["name"], "kept": 0, "of": 0,
+                                               "means": RULE_MEANINGS[check["key"]]})
         rule["of"] += 1
         rule["kept"] += int(check["kept"])
     kept = sum(1 for check in checks if check["kept"])
-    return {"kept": kept, "of": len(checks), "pct": round(100 * kept / len(checks)),
+    return {"kept": kept, "of": len(checks), "pct": round(100 * kept / len(checks)), "rules_version": RULES_VERSION,
             "rules": sorted(rules.values(), key=lambda r: _RULE_ORDER.index(r["key"]))}
 
 
@@ -228,7 +259,7 @@ _RISK_TEXT = {"STOP": "to your stop", "CARD_SL": "to the card's stop", "NO_STOP"
               "PREMIUM": "in premium paid"}
 
 
-def option_lines(insight: Optional[dict]) -> list[str]:
+def option_lines(insight: Optional[dict], on_day: str = "today") -> list[str]:
     """What the option did around the trade, in plain lines."""
     if not insight:
         return []
@@ -257,7 +288,7 @@ def option_lines(insight: Optional[dict]) -> list[str]:
     risk = insight.get("risk")
     if risk:
         lines.append(f"At risk: {_amt(risk['rs'])} {_RISK_TEXT[risk['basis']]}, {risk['pct_of_cash']:.0%} of your "
-                     f"cash today.")
+                     f"cash {on_day}.")
     if insight.get("charges") is not None and insight.get("gross_pnl") is not None:
         lines.append(f"Charges: {_amt(insight['charges'])} on a {_rs(insight['gross_pnl'])} price move.")
     if insight.get("basis") == "5MIN_PRINTS" and (best or after):
@@ -271,7 +302,7 @@ def _fill_text(verb: str, fill: dict) -> str:
     return f"You {verb} {_lots(fill.get('lots'))} at {shown}" if fill.get("lots") else f"You {verb} at {shown}"
 
 
-def story(item: dict) -> dict:
+def story(item: dict, on_day: str = "today") -> dict:
     """One traded card (or off-card trade) as a time-ordered story."""
     events = []
     card = item.get("card")
@@ -300,7 +331,10 @@ def story(item: dict) -> dict:
                        "sort_key": str(fill["at"])})
     for stop in item.get("stops") or []:
         kind = "a GTT stop" if stop["kind"] == "GTT" else "an SL order"
-        events.append({"at": stop["placed"], "who": "you", "text": f"You placed {kind} at {_px(stop['trigger'])}"})
+        # [O24-SR] Without the order's history only "in place by" this time is known.
+        events.append({"at": stop["placed"], "who": "you",
+                       "text": (f"You placed {kind} at {_px(stop['trigger'])}" if stop.get("exact", True) else
+                                f"By this time you had an SL order at {_px(stop['trigger'])}")})
         if stop["status"] == "CANCELLED":
             events.append({"at": stop["updated"], "who": "you", "text": f"You cancelled the stop at {_px(stop['trigger'])}"})
     for fill in partner.get("sells") or []:
@@ -324,7 +358,7 @@ def story(item: dict) -> dict:
             "reentry": bool(item.get("reentry")), "advisory_id": item.get("advisory_id"), "pnl": pnl, "plan_pnl": plan if card else None,
             "estimated": bool(partner.get("estimated")), "timeline": events, "result": result,
             "mistakes": [f["title"] for f in item["flags"]], "good": [g["title"] for g in item.get("positives", [])],
-            "checks": trade_checks(item), "option_lines": option_lines(insight), "chart": insight.get("chart"),
+            "checks": trade_checks(item), "option_lines": option_lines(insight, on_day), "chart": insight.get("chart"),
             "numbers": {k: insight.get(k) for k in ("hold_min", "held_to_close", "best", "worst", "before", "after",
                                                    "risk", "gross_pnl", "charges", "basis", "edge")} if insight else None}
 
@@ -333,8 +367,13 @@ def story(item: dict) -> dict:
 # the day
 # ---------------------------------------------------------------------------
 
-def day_review(view: dict, day: str) -> dict:
-    """Everything the partner reads about one day, the lesson first."""
+def day_review(view: dict, day: str, today: Optional[str] = None) -> dict:
+    """Everything the partner reads about one day, the lesson first.
+
+    [O23-PH] ``today`` (the session date now) words an earlier day as "that
+    day"; without it the day is read as today (the evening note)."""
+    past = today is not None and day < today
+    on_day = "that day" if past else "today"
     row = next((r for r in view["days"] if r["day"] == day), None)
     zerodha_day = ((view.get("zerodha") or {}).get("days") or {}).get(day)
     if row is None:
@@ -354,8 +393,8 @@ def day_review(view: dict, day: str) -> dict:
         if off:
             text += f" · {len(off)} without a card"
     else:
-        text = "No trades today." + (f" {len(row['cards'])} card{'s were' if len(row['cards']) != 1 else ' was'} "
-                                     f"sent." if row["cards"] else "")
+        text = f"No trades {on_day}." + (f" {len(row['cards'])} card{'s were' if len(row['cards']) != 1 else ' was'} "
+                                         f"sent." if row["cards"] else "")
     untaken = [i for i in row["cards"] if not _traded(i)]
     plan_total = [i["plan"]["pnl"] for i in untaken if i.get("plan", {}).get("pnl") is not None]
     fills = [f for i in traded for f in i["partner"].get("buys", []) + i["partner"].get("sells", [])]
@@ -364,8 +403,9 @@ def day_review(view: dict, day: str) -> dict:
     if fills and not from_zerodha:
         notes.append("Prices are from your Telegram taps and replies; ≈ marks an estimate.")
     if zerodha_day and not zerodha_day.get("complete"):
-        notes.append(f"Zerodha was read at {str(zerodha_day.get('synced_at'))[11:16]}, before the close: later "
-                     f"trades are not here yet.")
+        # Kite returns only the current day's orders: a past day read before the close stays partial.
+        notes.append(f"Zerodha was read at {str(zerodha_day.get('synced_at'))[11:16]}, before the close: "
+                     + ("trades after that are not in this review." if past else "later trades are not here yet."))
     if zerodha_day and zerodha_day.get("complete") and not zerodha_day.get("stops_known"):
         notes.append("Stop orders could not be read for this day, so the stop-loss checks are off.")
     if row["cards"]:
@@ -389,8 +429,8 @@ def day_review(view: dict, day: str) -> dict:
         "open_positions": row.get("open_positions") or [],
         "lesson": main,
         "more_lessons": rest[:MAX_MORE_LESSONS],
-        "well_done": _well_done(row, traded, lesson_list),
-        "trades": [story(i) for i in traded],
+        "well_done": _well_done(row, traded, lesson_list, on_day),
+        "trades": [story(i, on_day) for i in traded],
         "untaken": {
             "cards": [{"option": i["option"], "time": i["time"], "status": STATUS_TEXT.get(i["partner"]["status"],
                                                                                          i["partner"]["status"]),

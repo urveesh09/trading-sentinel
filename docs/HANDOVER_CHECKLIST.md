@@ -1,6 +1,333 @@
 # Handover receipt and operator checklist
 
-## October 22 (evening) — T22-BG / T22-U (commit `3a9f674`, Dev, pushed, not deployed)
+## October 25 — O25f review of O25d/O25e: three gaps fixed; Production is down until the owner starts it (commit `e9645de`, Dev, pushed, in draft PR #115, not deployed, switch off)
+
+- [x] Both order routes set: the engine keeps running and real orders are refused (NOT_SENT). It no longer fails at import.
+- [x] A malformed run date: buys are refused, and the 09:25 and 15:50 messages still go out, naming it.
+- [x] `restart: always` for the engine, gateway and agent. A Docker Desktop update on Oct 25 11:12–11:15 IST left them down.
+- [x] The runbook says the tunnel is installed, the `.env` lines are in `tunnel-client.env`, and only the Oracle rule is left. It also adds a "Production running?" check and no updates in market hours.
+- [x] Verified on the VM (read-only): `kite-tunnel` active/enabled, listening on 31528, VM firewall ACCEPT. From outside, 31528 does not answer and 31527 does.
+- [x] Tests: engine + scripts full suite 6,010 passed, 4 skipped, exit 0 (11 min 36 s); focused suites 140 passed, 1 skipped; the three new regression tests fail on 94a262a/85b464a (checked in a throwaway worktree) and pass now; gateway code unchanged (O25d's receipt: 97 focused passed). Read-only checks: VM kite-tunnel active/enabled, 31528 listening, VM firewall ACCEPT; external 31528 times out, 31527 answers. Not a profitability result.
+- [ ] Owner:
+  1. `docker start python-engine`, `node-gateway`, `agent` (Production, now);
+  2. the Oracle ingress rule for TCP 31528;
+  3. PR #115 ready, merged and deployed;
+  4. checklist steps 1, 3, 5–9 at the weekend;
+  5. step 10 after Nov 2.
+
+## October 25 — O25e VM installation receipt; cloud ingress pending
+
+- [x] Owner's attached Linux USB searched read-only; recovered SSH access, strict saved-host-key match, authenticated expected Mumbai VM. Key and client settings are protected outside the repositories; no private values printed/committed.
+- [x] Installed exact O25d source `94a262a`; matching SHA-256, active/enabled service, persisted VM TCP 31528 rule, settings/logs `0600`. Existing 31527 process retained.
+- [x] Actual VM self-test **407 / 403 / verified TLS HTTP 200**. Engine and gateway client transports passed against this service through a temporary SSH forward (gateway in disposable Linux image). Fake tokens only; no order calls. Temporary resources closed/removed.
+- [ ] Owner finishes Oracle Console sign-in/password recovery; inspect existing security list / NSG and permit 31528, then verify the direct public path. External TCP still times out.
+- [ ] GitHub promotion of PR #115, operator client configuration, actual login/preflight and later funding/order test/Nov 2–6 activation. Production remains `582d7a5`, no tracked diff; no application restart or live-trading enablement.
+- [ ] Production engine/gateway already stopped at 11:11:48 / 11:11:51 IST (exit 137, OOMKilled false), before this install. Diagnose/restore through the authorized rollout before Monday's messages are expected. Cause not established.
+- Full [installation/rollback receipt](2026-10-25-oracle-tunnel-installation.md). This supersedes the older missing-SSH-key statement below; application deployment remains pending.
+
+## October 25 — O25d remediation receipt (Dev code `94a262a`, pushed; VM access pending)
+
+- [x] Documentation identity receipt `ca189f8` pushed; [draft PR #115](https://github.com/urveesh09/trading-sentinel/pull/115) created/attached for normal GitHub promotion. Not merged or deployed; broader S23–O25 branch changes are included.
+- [x] All five review comments implemented: frozen authorized entry window/length, no order after failed preflight, conflicting routes rejected before HTTP clients, AMO maintenance excluded, authenticated loopback installer check with external restrictions retained.
+- [x] Tests cover delayed startup, immutable dates/length, legacy run migration, zero order calls on failed checks, zero HTTP clients for conflicting routes, maintenance boundaries, restricted-loopback checks, and continued real exits after entries expire.
+- [x] Full engine/scripts validation: **6,008 passed, 4 skipped**, exit 0; affected suite **314 passed, 1 existing skip**. Existing warnings and the separately reproduced injected penny-writer teardown diagnostic are documented in the active plan. A restrictive-allow-list real-Kite TLS self-test passed. No claim of deployment or profitability.
+- [ ] Existing Oracle VM install/ingress and real client routes: owner confirmed an Oracle account; SSH key/agent and authenticated Console are still unavailable. Owner sign-in is needed; the page is left available. IP-range metadata indicates Mumbai; confirm instance ownership/identity before installation.
+- [ ] Later: funds/current Kite login, explicitly authorized broker test order, and owner activation for Nov 2–6. `FNO_LIVE_TEST_ENABLED` stays false; Production is unchanged.
+- Historical audit: [independent review](2026-10-25-independent-live-tunnel-review.md). Current implementation and verification: O25d at the top of the active plan and guide. Existing unrelated changes are excluded from implementation commits.
+
+## October 25 — Independent O25b/O25c audit receipt (Dev documentation only)
+
+- [x] Reviewed pushed `d67caad`; independent checks: 116 focused Python tests,
+  97 focused gateway tests, and a real local Kite TLS self-test passed.
+- [x] Corrected Dev runbook engine commands to use `--user quantuser`, and
+  require deployment before invoking a newly shipped module.
+- [x] Production inspected read-only: release `582d7a5`, switch false, proxy
+  settings unset, no open FNO_LIVE positions/exit intents. Cached login is
+  stale; cash is not verified. Old VM port reachable; new port timed out.
+- [ ] Before real money: close the run-bound, failed-preflight and conflicting
+  route configuration findings; add maintenance and allow-list tests.
+- [ ] VM/Oracle installation and actual routes; current login/cash; GitHub
+  promotion; explicitly authorized real-order test and later activation.
+- Evidence and full remaining work: [review](2026-10-25-independent-live-tunnel-review.md).
+  Audit documentation changes are local/uncommitted, not pushed or deployed.
+  No strategy/source/configuration change, migration or atlas regeneration.
+
+## October 25 (3) — O25c the owner's dates (proving Oct 26–30, checklist Oct 31–Nov 1, run Nov 2–6), the free encrypted Kite tunnel, a weekend test order (commit `cff5036`, Dev, pushed, not deployed, switch off)
+
+- [x] `scripts/kite_tunnel.py` for the VM:
+  - CONNECT to api.kite.trade:443 only, with a password;
+  - `install` runs a self-test and prints both .env lines;
+  - verified locally against real Kite on Python 3.8, 3.11 and 3.12; unit verified, exposure 1.5.
+- [x] Gateway KITE_PROXY_URL: the SDK and the LTP call over TLS inside the tunnel. Verified with the real SDK against Kite.
+- [x] Engine:
+  - the route is checked to answer (preflight and 09:25), and the password is never printed;
+  - a 3-minute market-hours probe of the order route (`📡 KITE ORDER ROUTE DOWN`).
+- [x] The test order also runs at a weekend, as an after-market order cancelled before 09:15.
+- [x] The runbook is one dated checklist (`docs/runbooks/fno-live-test.md`, steps 0–10).
+- [x] Tests: engine + scripts full suite 5,994 passed, 4 skipped, exit 0 (11 min 26 s); gateway full suite 514 passed, 4 skipped, 18 failed only in db.test.js and backlog-reconciliation.test.js (better-sqlite3 cannot load on this Windows Node 24: environment); new tests: test_kite_tunnel.py 10, kite-tunnel.test.js 8, preflight +7, endpoint probe +3, readiness +1 case; live checks: the tunnel and both clients against the real api.kite.trade (Python 3.8/3.11/3.12, the gateway image's Node 20), systemd-analyze verify OK, exposure 1.5. Not a profitability result.
+- [ ] Owner:
+  - 0. optional: deploy before Mon Oct 26 09:15 (daily proving-week messages, Friday's verdict);
+  - 1. the verdict;
+  - 2. deploy;
+  - 3. cash;
+  - 4. the tunnel on the VM and the Oracle ingress rule for 31528;
+  - 5. the two .env lines, then recreate both services;
+  - 6. login;
+  - 7. the read-only preflight;
+  - 8. the test order;
+  - 9. the switch;
+  - 10. retire 31527 after Monday.
+
+## October 25 (2) — O25b the review's nine gaps in the real-money test fixed; bounded runs, readiness, evidence, encrypted route option (commit `abbe073`, Dev, pushed, not deployed, switch off)
+
+- [x] P1:
+  - a gateway cleanup failure no longer stops protection;
+  - refused price changes are retried, with the broker-confirmed price kept;
+  - the exit's identity is written before the send and its order id before any wait, so a restart follows or recovers it by tag;
+  - only an MIS holding on the right exchange may be sold;
+  - a filled preflight buy is handed to the engine.
+- [x] P2:
+  - one-lot P&L from fills with one lot's own charges;
+  - an UNAVAILABLE verdict when the drawdown halt is unknown;
+  - NIFTY enforced in the buy;
+  - the runbook order fixed.
+- [x] Added:
+  - a bounded run (5 sessions, named);
+  - the 09:25 readiness message (the preflight runs once);
+  - execution evidence in the 15:50 report;
+  - KITE_ORDER_PROXY_URL for an encrypted route.
+- [x] Tests: engine full suite (Dev, Windows, 10 min 6 s, after the last edit): 5,698 passed, 4 skipped, exit 0. `test_fno_live_test` has 26 tests; 6 reproduce the review's cases (refused modification, restart while the sell waits, lost reply, never-sent tagged exit, NRML holding, non-NIFTY) and failed before the fixes. `test_fno_proving_week` has 8 and `test_fno_live_preflight` 5. Against the previous modules (a scratch copy with `git show HEAD:` of `fno_proving_week.py` and `fno_live_preflight.py`), the one-lot-charges, unavailable-halt and preflight hand-off tests fail as they should. An earlier full run made during editing had one failure: `test_fno_shadow` reads the orchestrator's source by line number while the file was being edited. It passes 18 of 18 alone, and the final run is clean. Gateway: `executor.test.js` 65 passed (+1: a failed hold release keeps the GTT protection). The full gateway suite: 506 passed, 4 skipped, 18 failed in `db.test.js` and `backlog-reconciliation.test.js` (better-sqlite3 native binding unavailable on this Windows Node 24; the files are untouched). No order was placed anywhere. The relay was probed without credentials: plain HTTP answered 200, CONNECT answered 404.
+- [ ] Owner:
+  1. the verdict;
+  2. deploy;
+  3. relay: firewall the port to the home IP now, a CONNECT proxy before the run;
+  4. the route in the `.env`, recreate the engine, the read-only preflight, the test order;
+  5. the switch.
+
+## October 25 — O25 the ₹12,500 real-money F&O test is ready behind one switch (commit `ca12934`, Dev, pushed, not deployed, switch off)
+
+- [x] FNO_LIVE_TEST_ENABLED: one lot of what the paper book buys. NIFTY only, never on an expiry day, one position, own cash, a ₹7,000 floor. Sizing guardrails are relaxed for this test only.
+- [x] Real-money gaps fixed before any real order:
+  - a live exit left resting at a stale price (now worked down until it fills and followed up);
+  - cash holds never released (the next day every buy would have been refused);
+  - orders leaving from an unregistered IP (KITE_ORDER_BASE_URL);
+  - an open live position unmanaged when switched off;
+  - never selling what the broker no longer holds.
+- [x] The proving week Oct 26–30 is pre-registered (`fno_proving_week`); a 15:50 owner message each day and the verdict on Fri Oct 30.
+- [x] Preflight `python -m fno_live_preflight --test-order`; runbook `docs/runbooks/fno-live-test.md`.
+- [x] Tests: engine full suite (Dev, Windows, 9 min 47 s): 5,684 passed, 4 skipped, 1 collection error -- pytest collected `fno_live_test.py` (its name matches `*_test.py`) and ran its helper `test_equity` as a test; renamed `live_equity`. After that, `pytest fno_live_test.py fno_live_preflight.py fno_proving_week.py --collect-only` collects nothing, and the affected files (`test_fno_live_test` 16, `test_fno_proving_week` 6, `test_fno_live_preflight` 3, `test_fno_orchestrator`, `test_fno_hourly_and_scheduler`, `test_performance`) pass 128 of 128. Gateway: `executor.test.js` 64 passed (1 new test, 1 new assertion). The full gateway suite: 505 passed, 4 skipped, 18 failed in `db.test.js` and `backlog-reconciliation.test.js`, which cannot load better-sqlite3's native binding on this Windows Node 24 (an environment limit; the files are untouched). `releaseFilled` was checked against real SQLite in a throwaway container of the gateway image (Node 20, no network). No order was placed anywhere.
+- [ ] Deployed: no. Owner, in order:
+  1. the verdict;
+  2. deploy (engine, then gateway);
+  3. ₹12,500 of free cash in the account;
+  4. root `.env`: `KITE_ORDER_BASE_URL=http://161.118.160.180:31527`;
+  5. the preflight PASS in market hours;
+  6. `FNO_LIVE_TEST_ENABLED=true`, then recreate the engine.
+
+## October 24 (night, 4) — O24i the F&O drawdown halt stays and is no longer silent (commit `0b7d7b9`, Dev, pushed, not deployed)
+
+- [x] Decided (the owner delegated it): the 15% drawdown halt stays as it is. Its July – August losses were made by the same entry rule.
+- [x] The owner is told once per change of the paper book's size tier or entry halts (`fno_risk_alert`), with the distance to the 15% line. Today: ₹14,298, about six average stop-outs.
+- [x] The partner stays in English (no change needed).
+- [x] Tests: engine full suite (Dev, Windows, 9 min 32 s): 5,658 passed, 4 skipped, 1 failed — `test_kite_client.py::TestRateLimiter::test_management_priority_is_bounded_and_normal_work_is_fair`, a 10 ms timing test that fails under suite load (`kite_client.py` is untouched; it passed 8 of 8 runs alone, and `test_kite_client` + `test_fno_risk_alert` + `test_fno_orchestrator` together: 66 passed, 1 skipped). `test_fno_risk_alert` 3 passed. Engine only; no client change.
+- [ ] Deployed: no. After deploy, expect one owner message: "F&O paper risk: quarter size (0.25x) … ₹14,298 above the 15% halt line".
+
+## October 24 (night, 3) — O24h F&O variants scored on real paths; exit slippage; "check before you buy" (commit `b8cf7a8`, Dev, pushed, not deployed)
+
+- [x] The F&O shadow outcome was a target-hit scenario. The variants are now traded through the live book in the replay (`FNO_SIG_*`).
+- [x] Study `fno-entry-t2` (frozen e37504f, scored once): the shipped entry is the best of five. The trend-day continuation is **not supported** and stays off; the variants keep being recorded.
+- [x] The 15% drawdown halt cliff is attributed. The live paper book is ₹14,298 above it: an **owner decision**, nothing changed.
+- [x] `python -m fno_exit_report`: 7 of 7 level exits since Sep 1 filled past their level (≈ ₹2,235), all before the 10 s fast exit.
+- [x] The partner can send "check 22300 pe" for the plan before a buy; WATCH_ON tells them.
+- [x] Tests: engine: the full suite 5,656 passed, 4 skipped, exit 0 (573 s); the partner and exit-report files 225 passed with thread and unraisable warnings as errors; study fno-entry-t2 scored once (10 reports) and the halt attribution run. No live broker or Telegram round trip (Saturday).
+- [ ] Deployed: no. Ships with S23-O24g (rebuild the engine, then the gateway).
+- [ ] Owner: the drawdown halt; the partner's language.
+
+## October 24 (night, 2) — O24g stops moved together told together; "no stop" only from a GTT list read then; the order stream (off) and delivery measurement (commit `797d69b`, Dev, pushed, not deployed)
+
+- [x] Fifth audit: GTTs moved down together were told for one only. Real, fixed. So were two SL orders modified together, and a move under the plan beside another move.
+- [x] A "no stop" claim, or a sell-order claim counting a GTT, is made only from a GTT list read in that tick.
+- [x] Order stream built, off (`PARTNER_WATCH_STREAM_ENABLED` false). Kite's order updates wake a tick at once; the 5 s reads go on regardless. New dependency `websockets==12.0` (rebuild the image).
+- [x] Delivery measurement: `detected_by` per message, tick statistics per day, and `python -m partner_watch_report` (read-only).
+- [x] Tests: engine: the full suite 5,648 passed, 4 skipped, exit 0 (576 s), after one test fix (an earlier run: 5,647 passed, 4 skipped, 1 failed, the refused-stream test reading the log through capsys); the watch, stream, partner and scheduler files 244 passed with thread and unraisable warnings as errors. The new tests against db167ed: 7 of the watch file's 95 fail there (the five issues, the wording, the retry). Client unit 65 passed. No live broker, websocket or Telegram round trip (Saturday).
+- [ ] Deployed: no. Ships with S23-O24f (rebuild the engine, then the gateway).
+  - On the first live day, run `docker exec -u quantuser python-engine python -m partner_watch_report` (read-only).
+- [ ] Owner:
+  - switch the stream on after the partner's plan has the websocket, and check one live day in the report;
+  - pick the next partner features (O24b list).
+
+## October 24 (night) — O24f "none held" only with evidence; sell orders matched by product; a replacement matched to the stop it replaced; the watch says when it cannot see (commit `320fe20`, Dev, pushed, not deployed)
+
+- [x] Fourth audit of the watch: three issues, all real, all fixed. Each is a test that fails on 764055f's watch.
+- [x] An orphan sell is "you hold none" only when Zerodha's positions show it. Otherwise the message says it could not check and does not say "cancel it": the order may protect a holding from an earlier day.
+- [x] Sell orders are matched by product: an MIS sell on NRML units is told (PRODUCT, never muted).
+- [x] A replacement stop is matched to the stop it replaced. Several changed together are told as one change, not paired. A stop cancelled with nothing new is not a move. A GTT modified down is a move.
+- [x] A GTT that fired and sold part is told so, not as "no longer active".
+- [x] BLIND and BACK, always sent:
+  - BLIND: orders unreadable for 60 s; positions for 120 s while the overnight list is unknown; GTTs for 120 s while a holding's protection is unknown;
+  - BACK: when that read works again.
+- [x] One option held as MIS and NRML is named with the product; units that look converted say so.
+- [x] Tests: engine: watch tests 88 passed (thread and unraisable warnings as errors); the six partner test files 204 passed; scheduler closures 26 passed. Full engine suite: 5,629 passed, 4 skipped, 5 errors (593 s). The 5 errors were all in `test_session_phase_golden.py`, at setup: its child Python failed to start (exit 0xC0000142) when Claude Code stopped the run's shell for low memory, and pytest went on to finish. That file then passed alone (7 passed). Client unit 65 passed. No live broker or Telegram round trip (Saturday).
+- [ ] Deployed: no. Ships with S23-O24e (rebuild the engine, then the gateway).
+  - On the first live days, read:
+    - BLIND / BACK in `partner_watch_messages`, and the PRODUCT / ORPHAN counts;
+    - `partner_watch_looks` against the 15 s.
+- [ ] Owner:
+  - streaming next (a websocket dependency, an image rebuild, the paid plan);
+  - pick the next partner features (O24b list: pre-buy check and others).
+
+## October 24 (late) — O24e the watch's last races closed; sell orders that could sell short (commit `79629e5`, Dev, pushed, not deployed)
+
+- [x] Third audit of the watch: four gaps, all real, all fixed. Each is a test that fails on ad6190e's watch.
+- [x] A message is sent only if the read it was built from is still the latest after the build and after its row is marked; otherwise it is built again (or dropped).
+- [x] A plan version and its PLAN / ADDED message go in one transaction; a failed write leaves neither and is tried again on the next tick.
+- [x] A moved stop is told for the units that stop sells, the rest said apart, and only while that same order waits there.
+- [x] Without a plan stop (no market data, a swing as big as the price), the stop already in place is named; "place it now" is never said over it.
+- [x] Freshness: our read ≤ 15 s old, and the exchange's last quote update ≤ 15 s before we received it (was 60 s).
+- [x] New loss alarms, never muted:
+  - EXCESS: sell orders for more than is held;
+  - ORPHAN: sell orders waiting with nothing held.
+- [x] The plan no longer tells the partner to raise a lower stop (a comparison only).
+- [x] Tests: engine full suite 5620 passed, 4 skipped, exit 0 (9 m 41 s, `winvenv/Scripts/python -m pytest -q`); `tests/test_partner_watch.py` 74 passed (62 before), 60 repeated runs clean after one unreproduced failure (see Remaining); client unit 65 passed (no client change). The new tick tests were run against ad6190e's watch: the four audit gaps and the two new alarms fail there for their reasons; the cut-off-send test passes there too (O24d was already conservative). No live broker or Telegram round trip (Saturday, market closed).
+- [ ] Deployed: no. Ships with S23-O24d (rebuild the engine, then the gateway).
+  - On the first live days, read:
+    - `partner_watch_looks` received_at − quote_at (the 15 s);
+    - `partner_watch_messages` outcomes and the EXCESS / ORPHAN counts.
+- [ ] Owner:
+  - streaming next (a websocket dependency, an image rebuild, the paid plan);
+  - pick the next partner features (O24b list: pre-buy check and others).
+
+## October 24 (night) — O24d the watch's advice stays with the partner's position (commit `677c630`, Dev, pushed, not deployed)
+
+- [x] Audit of O24c: seven gaps, all real, all fixed. Each is a test that fails on 2effb5d's watch.
+- [x] Stop advice starts from what protects the units:
+  - no second SL when a stop already covers them;
+  - a tighter stop is never widened;
+  - a part covered gets an SL for the rest only.
+- [x] Outbox: each message is built just before it is sent, from the latest book read.
+  - A plan for a trade already closed, or a warning no longer true, is `superseded`, not sent.
+  - A provably unsent message survives a restart and is sent rebuilt.
+- [x] Keys per trade and incident. A later trade in the same option, or a carried position the next day, gets its own warnings.
+  - What covered a trade is remembered across a restart.
+- [x] One reconciled count (Zerodha's when it differs) for every message and plan version. What was bought and sold is said apart.
+- [x] Levels are instructions only against a fresh price (STALE / UNCHECKED: a reference to check). Selling now is priced against the bids' sizes.
+- [x] Tick budget: reads and waits share 4 s; optional reads wait a tick; sending goes beside the tick.
+- [x] Review: an off-card trade with the partner's own SL is not said to have "no written stop".
+- [x] Tests: engine full suite 5608 passed, 4 skipped, exit 0 (9 m 35 s, `winvenv/Scripts/python -m pytest -q`); `tests/test_partner_watch.py` 62 passed (45 before); the partner and backstop test files 240 passed; client unit 65 passed (no client change). The 13 new tick tests were run against 2effb5d's watch: 12 fail for the audit's reasons, the lifecycle test only on the new cover line. No live broker or Telegram round trip (Saturday, market closed).
+- [ ] Deployed: no. Ships with S23-O24c (rebuild the engine, then the gateway).
+  - On the first live day, read `partner_watch_messages`:
+    - the outcomes (acknowledged / superseded / expired / muted);
+    - detected_at − event_at and sent_at − detected_at.
+- [ ] Owner: streaming once the partner's paid plan is active (a new websocket dependency, an image rebuild, a live check). Pick the next partner features (O24b list).
+
+## October 24 (evening) — O24c the trade watch made trustworthy; a fired backstop recognised; a stable usual size (commit `7d0cb6f`, Dev, pushed, not deployed)
+
+- [x] Audit A-G on 08a95e3 reproduced and fixed.
+  - Each reproduction is a test that the old code fails.
+  - Before/after probe: A1 130 → 65 held, A2 0 → 65, B "protected" → ABSENT, D "place SL at ₹90" (price ₹20) → "already under the plan stop", F fired backstop found.
+- [x] Held: from each fill (GET /trades), per product, a carried position from its overnight quantity, confirmed by Zerodha's positions. A difference uses Zerodha's count, and the message says so.
+- [x] Cover: FULL / PARTIAL / ABSENT / UNKNOWN with units, same product only.
+  - A fired stop that has not sold → UNFILLED after 10 s.
+  - An unreadable GTT list says nothing and is read again.
+- [x] Delivery: a provably unsent message (no connection / 429 / 5xx) is sent again, rebuilt; a timeout is not. Event, detection and Telegram-ack times are stored.
+- [x] Levels: checked against the price just read; a crossed plan stop is never offered as a stop. Futures levels are named as futures.
+- [x] Plans: version 1 immutable; a restart reloads it; a new buy order adds a version and an ADDED message.
+- [x] Timing: book reads ≤ 4 s each; the plan runs beside the tick (≤ 1.5 s wait, 25 s deadline).
+- [x] Backstop: a fired SL listed as LIMIT with its trigger is recognised.
+- [x] Review: the usual size starts from the 45 days before the window; "Rules of 24 Oct 2026" on the page and the PDF.
+- [x] Tests: engine full suite 5590 passed, 4 skipped, exit 0 (9 m 31 s, on the final code; an earlier run before the last test: 5589 passed); tests/test_partner_watch.py 45 passed; client unit tests 65 passed; Vite build passed. Before/after probe on 08a95e3 vs the working tree: A1 130 → 65 held, A2 0 → 65, B 'protected' → ABSENT, D 'Place the SL order now: trigger ₹90' (price ₹20) → 'already under the plan stop', F fired backstop False → True. No live broker or Telegram round trip (market closed).
+- [ ] Deployed: no. Ships with S23-O24b (rebuild the engine, then the gateway).
+  - After deploy, on the first live day, read `partner_watch_messages`: detected_at − event_at, sent_at − detected_at, the outcomes and the PARTIAL count.
+- [ ] Owner: streaming once the partner's ₹500 plan is active (new websocket dependency, image rebuild, live check).
+
+## October 24 (afternoon) — O24b partner size vs their habit; system on the 15:40 F&O close (commit `3c6523e`, Dev, pushed, not deployed)
+
+- [x] O24-SZ: no fixed tenth of cash anywhere for the partner.
+  - UNUSUAL_SIZE flags more than 1.5 times their usual share; the usual is the median of the last 20 trades, once there are 5.
+  - The rule is "Usual size".
+  - The watch warns only on a much-bigger-than-usual buy.
+- [x] O24-MC2: the F&O session facts are at 15:40:
+  - time to expiry, the hedge gamma hours, futures candles (job at 15:45), the analytics gate, the expiry-book capital close;
+  - the ops, health and telemetry windows.
+  - Cash stays at 15:30, and strategy times are unchanged.
+- [x] Tests: engine full suite 5560 passed, 4 skipped, 1 failed (winvenv, Python 3.11.9, 9 min 23 s): the failure was tests/test_oct21_audit_fixes.py's weekday session length, which is now 09:15-15:40 (23,100 s); that test was updated and passes, together with tests/test_partner_insights.py (53 passed). After the run only those two test expectations changed, not code. The modules moved to 15:40 have their tests passing: 346 in the targeted run, then 43 after the updates. The watch 20, insights 34 and PDF 13 tests pass. The Oct 23 review rebuilt on a copy of Production's partner tables gives Usual size 12/12 and score 43/72. The route golden changes only research_future_candles (15:40 -> 15:45)
+- [ ] Deployed: no. Ships with O24 (rebuild the engine).
+  - After deploy: Oct 23's review shows "Usual size 12/12".
+  - `research_future_candles` runs at 15:45.
+- [ ] Owner: decide whether any strategy time should move with the close (FNO hard flat 15:10, entries end 14:45, the expiry book's BL late 15:30).
+
+## October 24 — O24 partner: stops as Zerodha shows them, 15:40 close, plain refusals, trade watch (commit `53280d9`, Dev, pushed, not deployed)
+
+- [x] O24-SR the review reads every stop:
+  - fired stops (LIMIT/MARKET with a trigger);
+  - stops turned into a sale (CONVERTED, from the history);
+  - placement times from the history;
+  - older days rebuilt from trigger changes;
+  - a sale that cannot be told says nothing.
+- [x] O24-RF Zerodha's refusals in plain words: margin for a buy, and a sale counted as a new short sale (another sell waiting, more than held, or the products differ).
+- [x] O24-MC the partner modules close at 15:40 (`market_calendar.DERIVATIVES_CLOSE_TIME`); the evening wrap moves to 15:50.
+- [x] O24-PW the trade watch (`partner_watch.py`), messages only:
+  - a 09:00 login button, then "watch on";
+  - every 5 s: PLAN, NO_STOP, LOWERED (first, then under the plan or off the buy price), REMOVED, REFUSED, CLOSE;
+  - "Quiet today" keeps only LOWERED, REMOVED and REFUSED;
+  - a reconnect button after a lost login;
+  - shadow looks every 15 s;
+  - "Assistant: …" lines in the review.
+- [x] Tests: engine full suite 5559 passed, 4 skipped, exit 0 (winvenv, Python 3.11.9, 9 min 29 s); an earlier full run had one timing flake in tests/test_kite_client.py (the rate-limiter fairness test, untouched code), which passed 3 of 3 alone; partner tests 224 passed (new tests/test_partner_stop_reading.py 15 and tests/test_partner_watch.py 19); client unit tests 64 passed and the Vite build passes; a server render of the page shows the assistant line, the plain refusal and the lesson; the Oct 23 review rebuilt with Dev code on a copy of Production's partner tables (read-only export) gives the numbers above; the route goldens add exactly partner_watch_tick and partner_watch_prompt and move partner_eod_wrap and partner_hedge_eod_summary from 15:40 to 15:50
+- [ ] Deployed: no.
+  - Rebuild the engine, then the gateway.
+  - First trading day after deploy:
+    - 09:00 login button;
+    - after the login, "Trade watch on until 15:40";
+    - a PLAN message within about 10 s of a buy;
+    - `partner_watch_message kind=… delivered=True` lines;
+    - `partner_watch_messages` rows;
+    - the review's Oct 23 shows "Moved the stop down · 9 times".
+- [ ] The paid Kite plan on the partner's key: no code change needed.
+  - If Zerodha issues a new API key or secret, the owner updates the root `.env` and restarts the engine.
+  - Log `partner_watch_partner_market_data_unavailable` means the key has no market data, and the owner's quotes are used.
+- [ ] Owner decisions open:
+  - the system-wide 15:40 close (time to expiry, EOD and attribution times, analytics gates);
+  - when to score the shadow exit plans;
+  - whether the "more than a tenth of your cash" line should use another share.
+
+## October 23 (evening) — O23 partner review: earlier days, PDF, rule meanings (commit `66cfb7c`, Dev, pushed, not deployed)
+
+- [x] O23-PH earlier days:
+  - a day bar steps back and forward and lists 120 days;
+  - Progress days open their review;
+  - an earlier day reads "that day", and tomorrow's focus shows on the newest day only;
+  - Progress stays the last 30 days whichever day is open.
+- [x] O23-PD "Download PDF": the open day's review as `trading-review-YYYY-MM-DD.pdf` (engine reportlab + DejaVu; gateway passes only a PDF, 20 a minute, session needed).
+- [x] O23-PM every rule says what it means. "Traded a card" = the trade was on a card the system sent on Telegram that day (the same option, bought after the card arrived).
+- [x] Tests: engine full suite 5524 passed, 4 skipped, exit 0 (winvenv, Python 3.11.9, 9 min 12 s); the new tests/test_partner_review_pdf.py 12 passed; in the engine image (Debian 13, Python 3.11.17, fonts-dejavu-core, pinned packages) the partner tests 111 passed and the default font path embeds DejaVu with every symbol covered; gateway jest in a throwaway container 522 passed, 4 skipped (40/41 suites, partner-kite 10); client unit tests 63 passed and the Vite build passes; the real Oct 23 review printed to an 11-page PDF in 0.25 s and was checked page by page; the route golden adds exactly the two new GET routes
+- [ ] Deployed: no.
+  - The engine image needs a rebuild (reportlab, pillow, charset-normalizer, fonts-dejavu-core); then the gateway.
+  - After deploy:
+    - open `/?view=review` and step to Oct 19;
+    - download Oct 23's PDF;
+    - in the engine, `python -c "import partner_review_pdf as p; print(p.fonts())"` names `ReviewSans-…` with `embedded=True`.
+- [ ] Check on the partner's phone that the download works from the Telegram link; if the in-app browser blocks it, decide whether to add "Send the PDF to my Telegram".
+
+## October 23 — S23 Oct 23 audit fixes (commit `7e2a2b9`, Dev, pushed, not deployed)
+
+- [x] S23-BS1 (P1, live only): a lost backstop receipt is resolved by the order's own tag, quantity, exchange and time, never by shape; doubt holds the exit and pages. The audit's reproducer now proceeds instead of adopting the old stop.
+- [x] S23-COST1: one rule for equity charges. CNC sold the session it was bought pays intraday charges; held overnight it pays the full delivery schedule (tracker, EDGE confirmed exit, Momentum closes). DCMSRIND would be ₹48.84, not ₹82.58 (and not the audit's ₹118.31).
+- [x] S23-G1: entry gates price full costs (the ₹50k bypass is gone); Momentum acceptance unchanged.
+- [x] S23-SG: engine `stop_grace_period: 45s`, uvicorn graceful wait 10 s.
+- [x] S23-R1: second Momentum terminal pass at 16:05 for trades still censored.
+- [x] S23-U1: ETF iNAV tickers left out of the universe screen.
+- [x] S23-H1: gateway health degrades on recent dead letters, recent unsynced orders and any unsynced order that may have filled; older settled backlog is under `stale_backlog`.
+- [x] S23-T1: every scheduler run has its id before its marker; completions are written with the growing budgets and replay without duplicates.
+- [x] S23-M1/M2: nudge quotes the last measured refresh; 16:00 digest has an all-books block (main, Smart V1, overnight with holdings, subtotal; V2 apart).
+- [x] S23-S1: overnight trades record displayed bid/ask and the exit-quote bid; the comparison shows `realism` counterfactuals. S23-Q1: short quote batches name the missing symbols.
+- [x] S23-D1: PR #112/#113 slices now say deployed.
+- [ ] Oct 6 Momentum allocation holdout is due; evaluate it at `b03afa5` (its fingerprint commit, since S23 changed `engine.py`).
+- [x] Tests: engine 5512 passed, 4 skipped (full suite, exit 0); gateway 519 passed, 4 skipped (full jest suite in a throwaway Linux container from the gateway image, no network); the health, dead-letter and backlog suites re-run after comment edits: 19 passed.
+- [ ] Deployed: no. After deploy, see the plan's rollout list (clean shutdown receipt, 16:05 retry line, smaller history scope, health `ok` with `stale_backlog`, nudge, digest block, overnight `realism`).
+- [ ] Owner decisions pending: old backlog clean-up via the reviewed reconciliation; whether anything about the ₹127.79 historical over-charge is reported beyond the docs (the ledger is not rewritten).
+
+## October 22 (evening) — T22-BG / T22-U (commit `3a9f674`, Dev, pushed, deployed 2026-10-22 19:38 IST by PR #114 (`582d7a5`))
 
 - [x] Suite hang at exit diagnosed: a leaked aiosqlite worker from an unheld startup catch-up. Not caused by A22; A22 itself passed in full (5,451).
 - [x] Fourteen fire-and-forget sites are held via `background_tasks.spawn` (ledger write, post-login init, catch-ups, alerts); failures are logged; shutdown drains.
@@ -8,9 +335,11 @@
 - [x] `aiosqlite` pinned 0.20.0 → 0.21.0: 0.20 leaked a worker when a connect was cancelled mid-open (proven by a test that fails on 0.20.0). The engine image must be rebuilt to pick it up.
 - [x] Universe refresh reads history only for quoted in-band EQ symbols; universe identical over 40 randomised sets; Production estimate 10,235 → ~956 reads.
 - [x] Tests: engine 5460 passed, 4 skipped (full suite, Windows winvenv, aiosqlite 0.21.0; exit 0, no leaked worker); client unchanged (60 passed, vite build ok).
-- [ ] Deployed: no. After deploy: `penny_universe_refresh_done elapsed` in minutes, `penny_universe_history_scope`, `count=100`, no `Task was destroyed` on restart.
+- [x] Deployed 2026-10-22 19:38 IST (PR #114, `582d7a5`). Images were built one service at a time (a combined build was stopped for low host memory). `verify_deployment.py` passed for the engine, gateway and agent; the engine image has aiosqlite 0.21.0; no `Task was destroyed` or errors on start; `/health` shows the release and `fno_exit_paths` (recording, 0). `trading_ready=false` is the standing `order_execution_unverified` (no real broker order yet).
+- [ ] Next session (2026-10-23): `penny_universe_refresh_done elapsed` in minutes, `penny_universe_history_scope fetch≈900–1,000`, `count=100`, quality audit like today's.
+- [x] (done in S23-SG) Engine stop grace: SIGKILL came 3 s after SIGTERM at this redeploy (exit 137, `cause=unclean_stop`); see the plan.
 
-## October 22 — A22 audit follow-up (commit `ffa979c`, Dev, pushed, not deployed)
+## October 22 — A22 audit follow-up (commit `ffa979c`, Dev, pushed, deployed 2026-10-22 19:38 IST by PR #114 (`582d7a5`))
 
 - [x] P1 broker backstop: intent before send, an unreadable ledger holds the exit, uncertain sends reconciled from the order book (live only).
 - [x] P2 Momentum terminal pass: history fetched with no write lock held; one short transaction per ticker.
@@ -20,9 +349,10 @@
 - [x] P2 coaching extrema: whole minutes inside the holding only; buy/sale-minute prices shown apart as uncertain.
 - [x] Enrichments: Smart V1/V2 `versus` (opportunities, stop-outs, missed winners, fees, hold, rupee-hours); scope labels; version separation verified.
 - [x] Tests: engine 5451 passed, 4 skipped (full suite, Windows winvenv); client 60 node tests passed, vite build ok; gateway partner-kite jest 7 passed.
-- [ ] Deployed: no. After deploy: ops `fno_exit_paths` counters, `params` on first exit-path lines, partner login status line, `versus` in `/experiments/penny-smart`.
+- [x] Deployed 2026-10-22 19:38 IST (PR #114); `/health` has the `fno_exit_paths` counters.
+- [ ] Still to see on live use: `params` on the first exit-path line of an F&O position, the partner login status line, `versus` in `/experiments/penny-smart`.
 
-## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit `ace52ab`, Dev, pushed, not deployed)
+## October 21 (night, 3) — SX-F1 / SX-P2 owner-delegated calls (commit `ace52ab`, Dev, pushed, deployed: merged by PR #113 (`33065ed`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] F&O profit lock needs a second look ≥ 8 s after the first under its floor (rollback `FNO_PROFIT_LOCK_CONFIRM_SEC=0`).
 - [x] Every F&O exit look recorded (`fno_exit_paths`), exported, and replayable by arm (`fno_exit_cadence.py`).
@@ -30,11 +360,11 @@
 - [x] Partner cards and expiry promotions: no change, with the reasons in SYSTEM_GUIDE.
 - [x] Tests: new 14; full engine suite 5,433 passed, 4 skipped, 0 failed (9 min).
 - [ ] Deployed: no. After deploy: exit-path lines on the first F&O position; two Smart state rows after the first Penny scan.
-## October 21 (night, 2) — SX-M1 Momentum shadow scoring (commit `27ee87b`, Dev, pushed, not deployed)
+## October 21 (night, 2) — SX-M1 Momentum shadow scoring (commit `27ee87b`, Dev, pushed, deployed: merged by PR #113 (`33065ed`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] Gap-exit closes shown apart and never scored; promotion gate counts scored closes. Related tests 58 pass; full suite not rerun.
 - [ ] SX-F1 F&O live-cadence exit evidence: designed only (see NEXT_AGENT_PLAN).
-## October 21 (night) — O21-PX partner's deeper review (commit `68eec28`, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 21 (night) — O21-PX partner's deeper review (commit `68eec28`, Dev, branch `codex/production-correction-hedge-p0`, pushed, deployed: merged by PR #113 (`33065ed`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] One review link every trading day after the brief
   (`ensure_review_message`: the coach note's button, else the prompt).
@@ -57,7 +387,7 @@
   setting; the partner's keys as already listed).
 - [ ] After deploy: the 15:40 link; after the partner's login the
   `partner_paths_stored` line and charts on the review.
-## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit `462d28f`, Dev, branch `codex/oct21-audit-fixes`, pushed, not deployed)
+## October 21 (late) — Oct 21 audit fixes + overnight forward shadows (commit `462d28f`, Dev, branch `codex/oct21-audit-fixes`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] S21-R1 15:32 terminal pass for virtual Momentum trades (receipts
   CLOSED / CENSORED); S21-R2 RS identity binds index, daily bars, rules,
@@ -84,7 +414,7 @@
   counts; shadow rows at the 15:20 overnight entry; the 15:45 EDGE alarm
   quiet when the paper leg enters, or naming the real refusal.
 
-## October 21 (night) — the partner's review page + explained lessons (commit `6f882f0`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (night) — the partner's review page + explained lessons (commit `6f882f0`, Dev, branch `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] O21-PL each flag: what happened, why it matters (this trade's
   numbers), the better action and what it would have paid, the rule;
@@ -114,7 +444,7 @@
 - [ ] First Zerodha evening: open the review on a phone; check the lesson
   against the partner's Kite order book.
 
-## October 21 (evening) — the partner's Zerodha fills + coach-only review page (commit `9648f95`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (evening) — the partner's Zerodha fills + coach-only review page (commit `9648f95`, Dev, branch `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] O21-PK `partner_broker_sync.py`: evening "Open today's review" button
   (Kite login for the partner's own Personal app); the callback reads GET
@@ -150,7 +480,7 @@
 - [ ] First evening: the prompt arrives after 15:40; the login lands on the
   review; `partner_zerodha_synced` count matches the partner's order book.
 
-## October 21 (afternoon) — partner fill capture + coach, standard capital, F&O broker backstop (commit `b580af2`, Dev, branch `codex/partner-coach-standard-capital`, pushed, not deployed)
+## October 21 (afternoon) — partner fill capture + coach, standard capital, F&O broker backstop (commit `b580af2`, Dev, branch `codex/partner-coach-standard-capital`, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] O21-PC cards carry Bought/Skipped buttons, exit updates Sold; replies
   record or correct prices; off-card "b NIFTY 22950 PE 120 x2"; only the
@@ -188,7 +518,7 @@
   tell the partner about the buttons (only without Zerodha; with it the
   evening "Open today's review" button replaces them, O21-PK above).
 
-## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `a88da98`, Dev, pushed, not deployed)
+## October 21 — expiry-v3 (B takes BP's pair target) and expiry-shadow-v5 (commit `a88da98`, Dev, pushed, deployed: merged by PR #112 (`046f3ff`), running in Production at `582d7a5` (Oct 23 audit attestation))
 
 - [x] B (main) sells both legs once the pair nets 20% after fees (BP's rule).
   BP was never worse than B on any expiry B traded (+₹2,998.74 over four;

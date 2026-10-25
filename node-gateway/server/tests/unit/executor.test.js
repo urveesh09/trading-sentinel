@@ -66,6 +66,7 @@ const mockAccountCashReservations = {
   markDispatch: jest.fn(),
   releaseNotSent: jest.fn(),
   releaseZeroFill: jest.fn(),
+  releaseFilled: jest.fn(),
 };
 jest.mock('../../services/account-cash-reservations', () => ({ shared: mockAccountCashReservations }));
 
@@ -112,6 +113,7 @@ function setupHappyPath() {
   mockAccountCashReservations.markDispatch.mockReset();
   mockAccountCashReservations.releaseNotSent.mockReset();
   mockAccountCashReservations.releaseZeroFill.mockReset();
+  mockAccountCashReservations.releaseFilled.mockReset();
   resolveOwnerEntryHalt.mockReset().mockResolvedValue({
     resolved: true, allowed: true, reason: 'allowed',
   });
@@ -396,6 +398,26 @@ describe('executeSignal()', () => {
   test('verifies fill status after order placement', async () => {
     await executeSignal(makeSignal(), 'EXEC');
     expect(kite.getOrderHistory).toHaveBeenCalledWith('ORD-001');
+    // [O25] the filled BUY's own-cash hold is released to the broker's position
+    expect(mockAccountCashReservations.releaseFilled).toHaveBeenCalledWith(
+      expect.stringMatching(/^GW:/), { brokerOrderId: 'ORD-001' });
+  });
+
+  test('a failed hold release never stops the protection of a confirmed buy', async () => {
+    mockAccountCashReservations.releaseFilled.mockImplementation(() => {
+      throw new Error('SQLITE_BUSY: database is locked');
+    });
+    await executeSignal(makeSignal(), 'EXEC', false);                  // CNC: a resting GTT protects it
+    expect(mockAccountCashReservations.releaseFilled).toHaveBeenCalled();
+    expect(kite.placeGTT).toHaveBeenCalled();                    // the resting protection still went out
+  });
+
+  test('a rejected order never releases a hold as filled', async () => {
+    kite.getOrderHistory.mockResolvedValue([
+      { status: 'REJECTED', status_message: 'Insufficient funds' },
+    ]);
+    await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(OrderExecutionError);
+    expect(mockAccountCashReservations.releaseFilled).not.toHaveBeenCalled();
   });
 
   test('throws OrderExecutionError when order is rejected by broker', async () => {

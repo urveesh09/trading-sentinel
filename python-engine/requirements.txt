@@ -14,10 +14,18 @@ numpy==1.26.4
 httpx==0.27.0
 aiosqlite==0.21.0
 apscheduler==3.10.4
+# [O24g] the partner's order updates over Kite's websocket (partner_watch_stream.py; off until enabled)
+websockets==12.0
 
 # Observability
 structlog==24.1.0
 pytz==2024.1
+
+# Documents: [O23-PD] the partner's review as a PDF (reportlab and the two
+# packages it requires, pinned)
+reportlab==4.4.10
+pillow==12.3.0
+charset-normalizer==3.5.2
 
 # Testing
 pytest==8.0.0

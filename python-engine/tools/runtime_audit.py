@@ -181,7 +181,7 @@ def _scheduler_skips(records: Sequence[LogRecord]) -> Counter:
 
 
 def _gap_overlaps_market_hours(start: datetime, end: datetime) -> bool:
-    """Return whether an IST interval intersects a weekday 09:15-15:30 session.
+    """Return whether an IST interval intersects a weekday 09:15-15:40 session.
 
     A long gap is retained as raw evidence, but only a gap that actually
     overlaps a cash-market session is an operational freeze finding. This
@@ -196,7 +196,7 @@ def _gap_overlaps_market_hours(start: datetime, end: datetime) -> bool:
     while current_day <= end_ist.date():
         if current_day.weekday() < 5:
             session_start = datetime.combine(current_day, time(9, 15), tzinfo=IST)
-            session_end = datetime.combine(current_day, time(15, 30), tzinfo=IST)
+            session_end = datetime.combine(current_day, time(15, 40), tzinfo=IST)   # [O24-MC 2026-10-24] the session runs to the 15:40 derivatives close
             if start_ist < session_end and end_ist > session_start:
                 return True
         current_day += timedelta(days=1)

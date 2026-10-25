@@ -20,7 +20,9 @@ why it matters with this trade's numbers, the better action and the rule):
   STOP_LOWERED       an SL order moved down while the trade was open;
   PRICE_RAISED_TO_FILL the buy price raised to get filled (on a card, only
                      past the card's buy-up-to);
-  BIG_RISK           more than a tenth of the day's cash at risk on one trade;
+  UNUSUAL_SIZE       [O24-SZ] much more money in one trade than the partner
+                     usually puts in (replaces O21-PX's BIG_RISK, a fixed
+                     tenth of the cash: the partner sizes as they choose);
   HELD_OVERNIGHT     an off-card option still held at the close;
   INSUFFICIENT_FUNDS (day) Zerodha refused a buy for want of money.
 Positives: CUT_LOSS_SAVED (30 minutes after a losing exit the option was
@@ -41,16 +43,33 @@ audit: a 10-second hold was given the whole minute's high and low); a price
 seen only there is reported apart as ``edge``, marked uncertain, and a
 stop's later touch must start after the stop was moved and end before the
 sale.
+
+[O24-SR 2026-10-24] The trade's SL orders are every option sale that
+carried a trigger (``partner_broker_sync.order_stop``): a fired stop shows as
+LIMIT or MARKET with its trigger, and a stop turned into a sale shows its
+trigger only in its changes. Before, only orders still typed SL or SL-M
+counted, which hid most stop moves (Oct 23: one STOP_LOWERED where nine
+trades had a stop moved down). [O24-RF] A refusal reads in plain words
+(``refusal_plain``): a buy short of money, or a sale Zerodha counted as a
+new short sale (another sell already waiting for the lot, more than held,
+or bought and sold under different products). [O24-MC] The session ends at
+15:40.
+
+[O24-SB 2026-10-24] The usual size starts from the trades before the window
+(``partner_coach.size_history``, each as ``trade_share`` computes it), so a
+day's usual does not depend on which window it is read in. The usual is the
+partner's habit, not a safe size.
 """
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from statistics import median
 from typing import Optional
 
-from partner_coach import (IST, STOP_SLIPPAGE_PCT, _amt, _dt, _flag, _hhmm, _instead, _orders, _pnl, _positive,
-                           _px, _rs, _worked)
+from partner_coach import (IST, STOP_SLIPPAGE_PCT, _amt, _day_close, _dt, _flag, _hhmm, _instead, _orders, _pnl,
+                           _positive, _px, _rs, _worked)
 
 BASIS_CANDLES = "1MIN_CANDLES"
 RUN_LOOKBACK_MIN = 15          # the run before a buy is measured over this window
@@ -62,11 +81,22 @@ CUT_LOSS_SAVED_PCT = 0.15      # 30 minutes after a losing exit the option was t
 PROTECT_GAIN_PCT = 0.20        # GAVE_BACK_PROFIT: the open gain at which the stop goes to the entry
 PRICE_RAISES_MIN = 2           # PRICE_RAISED_TO_FILL: raised this many times ...
 PRICE_RAISE_PCT = 0.05         # ... or by this much in total
-RISK_OF_CASH_PCT = 0.10        # BIG_RISK: money at risk on one trade above this share of the day's cash
+# [O24-SZ 2026-10-24] Size against the partner's own habit, not a fixed share
+# of cash (owner: "they use the amount they have in proportion they like").
+# The share of the day's cash put into a trade (premium paid) is compared with
+# the median share of their last USUAL_SIZE_LOOKBACK trades; from the
+# USUAL_SIZE_MIN_TRADES-th earlier trade on, more than USUAL_SIZE_MULT times
+# that is UNUSUAL_SIZE. Declared, not fitted.
+USUAL_SIZE_MULT = 1.5
+USUAL_SIZE_MIN_TRADES = 5
+USUAL_SIZE_LOOKBACK = 20
 CHART_BEFORE_MIN = 20
 CHART_AFTER_MIN = 30
 STOP_CLOCK_SLACK = timedelta(seconds=60)
 _FUNDS = re.compile(r"insufficient|margin|funds", re.IGNORECASE)
+# [O24-RF] "Margin required: 159586.95. Margin available: 7536.70." in Zerodha's refusal.
+_MARGIN = re.compile(r"margin required:\s*([0-9][0-9,]*(?:\.[0-9]+)?).*?margin available:\s*([0-9][0-9,]*(?:\.[0-9]+)?)",
+                     re.IGNORECASE | re.DOTALL)
 
 
 @dataclass
@@ -79,6 +109,7 @@ class Context:
     accounts: dict = field(default_factory=dict)     # day -> partner_account_days row
     complete_days: frozenset = frozenset()
     now: Optional[datetime] = None
+    watch: list = field(default_factory=list)        # [O24-PW] the trade watch's sent messages
 
     @classmethod
     def of(cls, context: Optional[dict], complete_days: frozenset = frozenset(),
@@ -86,7 +117,8 @@ class Context:
         context = context or {}
         return cls(paths=context.get("paths") or {}, orders=context.get("orders") or [],
                    changes=context.get("changes") or {}, positions=context.get("positions") or {},
-                   accounts=context.get("accounts") or {}, complete_days=frozenset(complete_days), now=now)
+                   accounts=context.get("accounts") or {}, complete_days=frozenset(complete_days), now=now,
+                   watch=context.get("watch") or [])
 
 
 # ---------------------------------------------------------------------------
@@ -119,6 +151,14 @@ def _lots(lots: int) -> str:
     return f"{lots} lot{'s' if lots != 1 else ''}"
 
 
+def when(ctx: Context, day: str) -> str:
+    """[O23-PH] "today" for the session being read now, "that day" for an
+    earlier one (the partner can open past reviews)."""
+    if ctx.now is None or ctx.now.astimezone(IST).date().isoformat() == day:
+        return "today"
+    return "that day"
+
+
 def cash_of(account: Optional[dict]) -> Optional[float]:
     """The day's cash: the opening balance plus money added today."""
     if not account:
@@ -145,7 +185,7 @@ def _window(trade: dict, now: Optional[datetime]) -> tuple[datetime, datetime, b
     open trade is held to the close, or to now during the session."""
     first = trade["first_buy_at"]
     closed = bool(trade["sells"]) and not trade["open_lots"] and trade.get("last_sell_at") is not None
-    end = trade["last_sell_at"] if closed else _session(trade["session_date"], 15, 30)
+    end = trade["last_sell_at"] if closed else _day_close(trade["session_date"])
     if not closed and now is not None:
         end = min(end, now)
     return first, max(end, first), closed
@@ -181,8 +221,8 @@ def apply(item: dict, trade: Optional[dict], card: Optional[dict], stops: Option
     events = _order_events(ctx, trade, sl_orders, first, end)
     if events:
         insight["events"] = events
-    _risk(insight, item, trade, card, stops, ctx.accounts.get(day), entry, bought_qty, lot_size, actual, exit_px,
-          closed)
+    _risk(insight, trade, card, stops, ctx.accounts.get(day), entry, bought_qty, lot_size, actual, exit_px, closed,
+          when(ctx, day))
     item["insight"] = insight
     off_card = card is None
     if off_card or not card.get("buy_limit"):
@@ -234,7 +274,7 @@ def _path_facts(insight: dict, bars: list, basis: Optional[str], first: datetime
 def _chart(day: str, bars: list, trade: dict, card: Optional[dict], stops: Optional[list], first: datetime,
            end: datetime) -> dict:
     lo = max(_session(day, 9, 15), _minute(first) - timedelta(minutes=CHART_BEFORE_MIN))
-    hi = min(_session(day, 15, 30), _minute(end) + timedelta(minutes=CHART_AFTER_MIN))
+    hi = min(_day_close(day), _minute(end) + timedelta(minutes=CHART_AFTER_MIN))
     points = [[_t(day, b[0]), b[4]] for b in bars if lo <= b[0] <= hi]
     marks = []
     for kind, fills in (("buy", trade["buys"]), ("sell", trade["sells"])):
@@ -259,12 +299,16 @@ def _chart(day: str, bars: list, trade: dict, card: Optional[dict], stops: Optio
 
 
 def _stop_orders_of(ctx: Context, trade: dict, first: datetime, end: datetime) -> list:
+    """[O24-SR] The trade's SL orders, placed while it was open: resting,
+    fired, cancelled or turned into a sale (partner_broker_sync.order_stop)."""
+    from partner_broker_sync import order_stop
     out = []
     for order in ctx.orders:
-        placed = _dt(order.get("placed_at"))
-        if (order["exchange"] == trade["exchange"] and order["tradingsymbol"] == trade.get("tradingsymbol")
-                and order["transaction_type"] == "SELL" and order.get("order_type") in ("SL", "SL-M")
-                and placed is not None and first - STOP_CLOCK_SLACK <= placed <= end):
+        if order["exchange"] != trade["exchange"] or order["tradingsymbol"] != trade.get("tradingsymbol"):
+            continue
+        stop = order_stop(order, ctx.changes.get(order["order_id"], []))
+        placed = _dt(stop["placed_at"]) if isinstance(stop, dict) else None
+        if placed is not None and first - STOP_CLOCK_SLACK <= placed <= end:
             out.append(order)
     return out
 
@@ -293,15 +337,72 @@ def _order_events(ctx: Context, trade: dict, sl_orders: list, first: datetime, e
         if (order["status"] == "REJECTED" and order["exchange"] == trade["exchange"]
                 and order["tradingsymbol"] == trade.get("tradingsymbol") and placed is not None
                 and window_start <= placed <= end):
-            reason = f": {order['status_message']}" if order.get("status_message") else ""
+            plain = refusal_plain(order, ctx.orders)
+            reason = f": {plain or order['status_message']}" if plain or order.get("status_message") else ""
             events.append({"at": _hhmm(placed), "who": "you", "sort_key": placed.isoformat(),
                            "text": f"Zerodha refused your {order['transaction_type'].lower()} order{reason}"})
+    # [O24-PW] What the trade watch told the partner about this trade (its key is the first buy's order id).
+    first_buy = next((b.get("order_id") for b in trade["buys"] if b.get("order_id")), None)
+    for message in ctx.watch:
+        at = _dt(message.get("created_at"))
+        if first_buy and message.get("position_key") == first_buy and at is not None and message.get("summary"):
+            events.append({"at": _hhmm(at), "who": "assistant", "sort_key": at.isoformat(),
+                           "text": f"Assistant: {message['summary']}"})
     return sorted(events, key=lambda e: e["sort_key"])
 
 
-def _risk(insight: dict, item: dict, trade: dict, card: Optional[dict], stops: Optional[list],
+def _filled_by(orders: list, side: str, at: datetime) -> int:
+    """Quantity of these orders on one side that had filled by ``at`` (a fill
+    is stamped with the order's last exchange update)."""
+    total = 0
+    for order in orders:
+        filled_at = _dt(order.get("updated_at") or order.get("placed_at"))
+        if order["transaction_type"] == side and filled_at is not None and filled_at <= at:
+            total += int(order.get("filled_quantity") or 0)
+    return total
+
+
+def refusal_plain(order: dict, orders: list) -> Optional[str]:
+    """[O24-RF] Why Zerodha refused an order for margin, in plain words, or
+    None when the refusal is about something else (its own text then shows).
+
+    A sale of an option the partner holds needs no margin, so a sale refused
+    for margin was counted as a new short sale: the option was not held,
+    the buy and the sale used different products, the sale was for more
+    than was held, or (the rest) another sell order was already waiting for
+    the lot."""
+    found = _MARGIN.search(str(order.get("status_message") or ""))
+    at = _dt(order.get("placed_at"))
+    if not found or at is None:
+        return None
+    need, have = (float(value.replace(",", "")) for value in found.groups())
+    if order["transaction_type"] == "BUY":
+        return f"the buy needed {_amt(need)} and your account had {_amt(have)}."
+    same = [o for o in orders if o["exchange"] == order["exchange"] and o["tradingsymbol"] == order["tradingsymbol"]
+            and o["order_id"] != order["order_id"]]
+    held = _filled_by(same, "BUY", at) - _filled_by(same, "SELL", at)
+    qty = int(order.get("quantity") or 0)
+    bought_as = {o.get("product") for o in same if o["transaction_type"] == "BUY" and o.get("product")
+                 and (o.get("filled_quantity") or 0) > 0 and (_dt(o.get("updated_at") or o.get("placed_at")) or at) <= at}
+
+    def short(what: str) -> str:
+        return (f"Zerodha counted {what} as a new short sale, which needs {_amt(need)} of margin; your account had "
+                f"{_amt(have)}.")
+
+    if held <= 0:
+        return f"you did not hold this option at that moment, so {short('the sale')}"
+    if order.get("product") and bought_as and order["product"] not in bought_as:
+        return (f"you bought it as {'/'.join(sorted(bought_as))} and sold it as {order['product']}, so "
+                f"{short('the sale')}")
+    if qty > held:
+        return f"the sale was for {qty} and you held {held}, so {short(f'the extra {qty - held}')}"
+    return (f"another sell order for this option was already waiting, so this one would have sold more than the "
+            f"{held} you held: {short('it')}")
+
+
+def _risk(insight: dict, trade: dict, card: Optional[dict], stops: Optional[list],
           account: Optional[dict], entry: float, bought_qty: Optional[int], lot_size: Optional[int],
-          actual: Optional[float], exit_px: Optional[float], closed: bool) -> None:
+          actual: Optional[float], exit_px: Optional[float], closed: bool, on_day: str = "today") -> None:
     """Money at risk: to the partner's own stop; with no stop order, the
     premium; when stops are unknown, to the card's SL on a card trade (the
     plan) and the premium off-card."""
@@ -320,31 +421,65 @@ def _risk(insight: dict, item: dict, trade: dict, card: Optional[dict], stops: O
     pct = risk / cash
     insight["risk"] = {"rs": round(risk, 2), "pct_of_cash": round(pct, 4), "basis": basis, "cash": round(cash, 2),
                        "trigger": trigger}
-    if pct <= RISK_OF_CASH_PCT:
-        return
-    lots = trade["bought_lots"]
-    where = {"STOP": f"to your stop at {_px(trigger)}", "CARD_SL": f"to the card's SL at {_px(trigger)}",
-             "NO_STOP": "with no stop order", "PREMIUM": "in premium paid"}[basis]
-    per_lot = risk / lots if lots else 0.0
-    fit = int((RISK_OF_CASH_PCT * cash) // per_lot) if per_lot > 0 else 0
-    better_pnl = None
-    if lot_size and 1 <= fit < lots and closed and exit_px is not None:
-        better_pnl = _pnl(entry, exit_px, fit * lot_size, trade["exchange"], _orders(trade))
-    if better_pnl is not None:
-        better = (f"{_lots(fit)} instead: about {fit * per_lot / cash:.0%} at risk, and "
-                  f"{_instead(better_pnl, actual)}.")
-    elif fit >= 1 and fit < lots:
-        better = f"{_lots(fit)} would have kept the risk under a tenth of your cash."
-    else:
-        better = ("Even 1 lot put more than a tenth of your cash at risk here: skip a trade that big, or use a "
-                  "closer stop.")
-    item["flags"].append(_flag(
-        "BIG_RISK", f"{_lots(lots)} of {item.get('option')} at {_px(entry)}: {_amt(risk)} at risk {where}, "
-                    f"{pct:.0%} of the {_amt(cash)} cash in your account today.",
-        (round(actual - better_pnl, 2) if better_pnl is not None and actual is not None else None),
-        why="When one trade can lose more than a tenth of the account, a short run of losses takes weeks to win "
-            "back." + _worked(actual),
-        better=better, better_pnl=better_pnl, actual_pnl=actual if better_pnl is not None else None))
+    # [O24-SZ] What went into the trade, for the size against the partner's usual (usual_size_flags).
+    paid = entry * bought_qty
+    insight["size"] = {"rs": round(paid, 2), "pct_of_cash": round(paid / cash, 4), "cash": round(cash, 2),
+                       "lots": trade["bought_lots"], "lot_size": lot_size, "entry": entry,
+                       "exit": exit_px if closed else None, "actual": actual, "on_day": on_day}
+
+
+def usual_size(shares: list) -> Optional[float]:
+    """[O24-SZ] The share of cash the partner usually puts in one trade: the
+    median of the last USUAL_SIZE_LOOKBACK, once there are USUAL_SIZE_MIN_TRADES."""
+    recent = [s for s in shares if s and s > 0][-USUAL_SIZE_LOOKBACK:]
+    return round(median(recent), 4) if len(recent) >= USUAL_SIZE_MIN_TRADES else None
+
+
+def trade_share(trade: Optional[dict], account: Optional[dict]) -> Optional[float]:
+    """[O24-SB] The money put into a trade as a share of that day's cash, as
+    ``_risk`` puts it in ``insight["size"]`` (pure)."""
+    if not trade or not trade["buys"] or trade.get("first_buy_at") is None or trade.get("avg_entry") is None:
+        return None
+    cash = cash_of(account)
+    lot_size = trade.get("lot_size")
+    bought_qty = trade["bought_lots"] * lot_size if lot_size else trade.get("qty")
+    if not cash or not bought_qty:
+        return None
+    return round(trade["avg_entry"] * bought_qty / cash, 4)
+
+
+def usual_size_flags(items: list, earlier: Optional[list] = None) -> None:
+    """[O24-SZ] UNUSUAL_SIZE on each trade with much more in it than the
+    partner's usual, judged against the trades before it (all days, in time
+    order). Items carry ``_trade`` and ``insight["size"]``. [O24-SB]
+    ``earlier``: the shares of the trades before the window, oldest first."""
+    shares: list = list(earlier or [])
+    for item in sorted((i for i in items if i.get("_trade") and (i.get("insight") or {}).get("size")),
+                       key=lambda i: i["_trade"]["first_buy_at"]):
+        size, trade = item["insight"]["size"], item["_trade"]
+        usual = usual_size(shares)
+        shares.append(size["pct_of_cash"])
+        if usual is None or size["pct_of_cash"] <= USUAL_SIZE_MULT * usual:
+            continue
+        lots, lot_size, entry, actual = size["lots"], size["lot_size"], size["entry"], size["actual"]
+        per_lot = entry * lot_size if lot_size else 0.0
+        fit = int((usual * size["cash"]) // per_lot) if per_lot > 0 else 0
+        better_pnl = None
+        if 1 <= fit < lots and size["exit"] is not None:
+            better_pnl = _pnl(entry, size["exit"], fit * lot_size, trade["exchange"], _orders(trade))
+        if better_pnl is not None:
+            better = f"{_lots(fit)}, about your usual size: {_instead(better_pnl, actual)}."
+        elif 1 <= fit < lots:
+            better = f"{_lots(fit)} would have been about your usual size."
+        else:
+            better = "Keep to the size you usually trade."
+        item["flags"].append(_flag(
+            "UNUSUAL_SIZE", f"{_lots(lots)} of {item.get('option')} at {_px(entry)}: {_amt(size['rs'])} in this "
+                            f"trade, {size['pct_of_cash']:.0%} of your cash {size['on_day']}. You usually put about "
+                            f"{usual:.0%} into one trade.",
+            (round(actual - better_pnl, 2) if better_pnl is not None and actual is not None else None),
+            why="A trade much bigger than your usual turns one bad move into a big loss." + _worked(actual),
+            better=better, better_pnl=better_pnl, actual_pnl=actual if better_pnl is not None else None))
 
 
 def _chased_spike(item: dict, path: Optional[dict], bars: list, trade: dict, first: datetime, first_px: float,
@@ -432,7 +567,13 @@ def _stop_moves(item: dict, sl_orders: list, ctx: Context, trade: dict, bars: li
                     f"{_instead(better_pnl, actual)}." if better_pnl is not None else
                     "Leave the stop where you placed it; move it only up, to lock in profit."),
             better_pnl=better_pnl, actual_pnl=actual if better_pnl is not None else None))
-    elif raised:
+    # [O24-SR] A trailed stop is praised even after a small trim down, when it
+    # ended above where it started and its last move was up (Oct 23: 33 -> 90
+    # with one 68 -> 66 trim; the trade made +₹6,135).
+    moves = sorted(lowered + raised, key=lambda pair: pair[0])
+    trailed = bool(raised) and (not lowered or (moves[-1][1]["new_value"] > moves[-1][1]["old_value"]
+                                                and moves[-1][1]["new_value"] > moves[0][1]["old_value"]))
+    if trailed:
         at, change = sorted(raised, key=lambda pair: pair[0])[-1]
         item["positives"].append(_positive(
             "STOP_TRAILED", f"You raised your SL order to {_px(change['new_value'])} at {_hhmm(at)}, so less of the "
@@ -479,7 +620,7 @@ def _held_overnight(item: dict, trade: dict, ctx: Context) -> None:
     expired = trade.get("expiry") == day
     reason = f"You still held {_lots(trade['open_lots'])} of {item.get('option')} at the close."
     if expired:
-        reason += " It expired today."
+        reason += f" It expired {when(ctx, day)}."
         why = ("On expiry day an option that is not in the money at the close settles at zero; holding it to the "
                "end is a bet on the last minutes.")
     else:
@@ -508,7 +649,7 @@ def day_details(row: dict, ctx: Context) -> None:
             "placed": len(orders), "filled": sum(1 for o in orders if (o.get("filled_quantity") or 0) > 0),
             "rejected": [{"at": _hhmm(_dt(o["placed_at"])), "side": o["transaction_type"],
                           "tradingsymbol": o["tradingsymbol"], "quantity": o.get("quantity"),
-                          "reason": o.get("status_message")} for o in rejected],
+                          "reason": o.get("status_message"), "plain": refusal_plain(o, orders)} for o in rejected],
             "cancelled_unfilled": sum(1 for o in orders if o["status"] == "CANCELLED"
                                       and not (o.get("filled_quantity") or 0)),
             "modified": sum(1 for o in orders if ctx.changes.get(o["order_id"])),
@@ -517,7 +658,7 @@ def day_details(row: dict, ctx: Context) -> None:
         funds = [o for o in rejected if o["transaction_type"] == "BUY" and _FUNDS.search(o.get("status_message") or "")]
         if funds:
             first = funds[0]
-            more = f" ({len(funds)} refusals today)" if len(funds) > 1 else ""
+            more = f" ({len(funds)} refusals {when(ctx, day)})" if len(funds) > 1 else ""
             row["day_flags"].append(_flag(
                 "INSUFFICIENT_FUNDS",
                 f"At {_hhmm(_dt(first['placed_at']))} Zerodha refused your buy of {first.get('quantity')} "

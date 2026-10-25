@@ -22,8 +22,10 @@ ARG SENTINEL_RELEASE_SHA=unknown
 ARG SENTINEL_BUILD_UTC=unknown
 ARG SENTINEL_SERVICE_NAME=python-engine
 
-# Install curl for HEALTHCHECK and gosu for privilege drop in entrypoint
-RUN apt-get update && apt-get install -y curl gosu && rm -rf /var/lib/apt/lists/*
+# Install curl for HEALTHCHECK and gosu for privilege drop in entrypoint;
+# [O23-PD] DejaVu Sans for the partner's review PDF (it has the rupee sign,
+# the true minus and the check marks)
+RUN apt-get update && apt-get install -y curl gosu fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
 
 # Create the non-root user for production security. uid/gid 1000 is shared with
 # node-gateway's appuser: both write the shared cache.db and its WAL/SHM files.
@@ -52,4 +54,6 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
 
 EXPOSE 8000
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# [S23-SG] Bound the wait for open connections on SIGTERM so the lifespan
+# shutdown always runs inside compose's stop_grace_period.
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--timeout-graceful-shutdown", "10"]

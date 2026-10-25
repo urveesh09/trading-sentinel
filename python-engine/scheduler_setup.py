@@ -364,6 +364,58 @@ def register_fno_scheduler_jobs(scheduler):
         id="fno_accept_watchdog",
         max_instances=1, coalesce=True, misfire_grace_time=600,
     )
+
+    # [O25 2026-10-25] 15:50 IST: one owner message after the derivatives
+    # close -- the pre-registered proving week on its days, and the real-money
+    # test's trades beside their paper twins. Read-only over the F&O ledger;
+    # sent once a day (fno_evening_report_told survives a restart).
+    async def _run_fno_evening_report_safe():
+        from fno_proving_week import evening_report
+        if not settings.FNO_EVENING_REPORT_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            logger.info("fno_evening_report_skip reason=non_trading_day")
+            return
+        try:
+            sent = await evening_report(settings.DB_PATH)
+            logger.info("fno_evening_report_done sent=%s", bool(sent))
+        except Exception as exc:
+            logger.error("fno_evening_report_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_fno_evening_report_safe, "cron",
+        hour=15, minute=50,
+        id="fno_evening_report",
+        max_instances=1, coalesce=True, misfire_grace_time=1800,
+    )
+
+    # [O25b 2026-10-25] 09:25 IST while the real-money test is on: one owner
+    # message saying whether it is ready to trade today (route, login, free
+    # cash against a typical lot, broker F&O positions, run, equity, leftovers),
+    # so the owner never has to run a check by hand each day.
+    async def _run_fno_live_readiness_safe():
+        import fno_live_test
+        if not fno_live_test.armed():
+            return
+        now_ist = datetime.now(IST)
+        if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH):
+            logger.info("fno_live_readiness_skip reason=non_trading_day")
+            return
+        try:
+            text = await fno_live_test.morning_check(_main.kite, settings.DB_PATH, now_ist)
+            if text:
+                from operator_alert import notify_operator
+                await notify_operator(text, event="fno_live_readiness")
+        except Exception as exc:
+            logger.error("fno_live_readiness_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_fno_live_readiness_safe, "cron",
+        hour=9, minute=25,
+        id="fno_live_readiness",
+        max_instances=1, coalesce=True, misfire_grace_time=1800,
+    )
     logger.info(
         "fno_cron_registered id=fno_instruments_refresh,fno_hourly_report,"
         "fno_accept_watchdog"
@@ -1259,6 +1311,8 @@ def register_partner_scheduler_jobs(scheduler):
       - partner_scan_tick:      minute */2 at second 40 (09:45-15:05 self-gate)
       - partner_analytics_tick: minute 2-57/5 (09:20-15:30 self-gate)
       - partner_morning_brief / partner_eod_wrap / partner_rv_refresh: crons.
+      - [O24-PW] partner_watch_tick: every PARTNER_WATCH_POLL_SEC (09:15-15:40
+        self-gate, only with the partner's login); partner_watch_prompt: cron.
     """
     import main as _main
 
@@ -1361,6 +1415,26 @@ def register_partner_scheduler_jobs(scheduler):
             await partner_inbox_tick()
         except Exception as exc:
             logger.error("partner_inbox_tick_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_watch_tick_safe():
+        # [O24-PW 2026-10-24] partner_watch.watch_tick self-gates: enabled,
+        # 09:15-15:40, is_trading_day and the partner's own login; it reads
+        # their order book with their read-only key and only sends messages.
+        # Not telemetry-wrapped: a 5 s cadence would churn the per-run table.
+        try:
+            from partner_watch import watch_tick
+            await watch_tick()
+        except Exception as exc:
+            logger.error("partner_watch_tick_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_watch_prompt_safe():
+        # [O24-PW] delegated: watch_prompt checks enabled, is_trading_day and
+        # an existing login before sending the one login button.
+        try:
+            from partner_watch import watch_prompt
+            await watch_prompt()
+        except Exception as exc:
+            logger.error("partner_watch_prompt_crashed err=%s", exc, exc_info=True)
 
     async def _run_partner_eod_wrap_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
@@ -1494,7 +1568,7 @@ def register_partner_scheduler_jobs(scheduler):
     )
     scheduler.add_job(
         _run_research_future_candles_safe, "cron",
-        day_of_week="mon-fri", hour=15, minute=40,
+        day_of_week="mon-fri", hour=15, minute=45,   # [O24-MC] after the 15:40 close, so the last minute is whole
         id="research_future_candles",
         max_instances=1, coalesce=True, misfire_grace_time=3600,
     )
@@ -1567,13 +1641,25 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=30,
     )
     scheduler.add_job(
+        _run_partner_watch_tick_safe, "interval",
+        seconds=settings.PARTNER_WATCH_POLL_SEC,
+        id="partner_watch_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=10,
+    )
+    scheduler.add_job(
+        _run_partner_watch_prompt_safe, "cron",
+        hour=settings.PARTNER_WATCH_PROMPT_HOUR, minute=settings.PARTNER_WATCH_PROMPT_MIN,
+        id="partner_watch_prompt",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
         _run_proactive_shadow_workflow_safe, "cron",
         minute="*/5", second=55,
         id="proactive_shadow_workflow",
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )
     logger.info(
-        "partner_cron_registered jobs=16 enabled=%s hedge_enabled=%s "
+        "partner_cron_registered jobs=18 enabled=%s hedge_enabled=%s "
         "hedge_phase2_enabled=%s hedge_phase3_enabled=%s shadow_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
         settings.PARTNER_HEDGE_ENABLED,

@@ -398,20 +398,16 @@ class TestIsCostViable:
 
     def test_rejects_tiny_position(self):
         """Very small position where costs dominate profit.
-        NOTE: With for_gate=True (temporary cost gate relaxation),
-        brokerage+STT+GST are zeroed so only exchange+stamp+SEBI remain.
-        This test now verifies the gate still uses for_gate=True path.
-        When bankroll reaches Rs50,000+ and for_gate bypass is removed,
-        update this test to assert viable is False again. Else just make the test opposite
+        [S23-G1] The for_gate bypass is removed: brokerage, STT and GST now
+        count in the gate, so the tiny position is rejected again.
         """
         viable, ratio = is_cost_viable(
             entry_price=50.0, shares=1,
             risk_per_trade=0.1, r_target=2.0,
             max_cost_ratio=0.25, is_intraday=True
         )
-        # With for_gate=True, only minor fees remain - tiny position now passes
-        assert viable is True
-        assert ratio < 0.25
+        assert viable is False
+        assert ratio > 0.25
 
     def test_ratio_rounded_to_4dp(self):
         _, ratio = is_cost_viable(

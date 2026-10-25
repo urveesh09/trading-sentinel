@@ -41,15 +41,14 @@ def test_is_intraday_empty_defaults_to_true():
 
 
 def test_cost_calc_differs_for_cnc_vs_mis():
-    """[AUDIT-FIX-1.2] A CNC close has higher STT than MIS close at same
-    prices. Verify the calc is wired correctly."""
+    """[AUDIT-FIX-1.2] A CNC close costs more than an MIS close at the same
+    prices. [S23-COST1] Delivery has no brokerage, STT on both legs, the
+    0.015% buy stamp duty and the Rs 15.34 DP charge."""
     from engine import calc_zerodha_costs
     cnc_costs = calc_zerodha_costs(100.0, 102.0, 10, is_intraday=False)
     mis_costs = calc_zerodha_costs(100.0, 102.0, 10, is_intraday=True)
-    # CNC STT (0.1% sell side) > MIS STT (0.025% sell side) for the
-    # same sell value of Rs 1020. Difference should be Rs 0.765.
     assert cnc_costs > mis_costs
-    assert abs((cnc_costs - mis_costs) - (1020 * 0.00075)) < 0.01
+    assert (cnc_costs, mis_costs) == (17.5856, 1.0756)
 
 
 # ---- 1.3: PennyScanner regime property ----------------------------------

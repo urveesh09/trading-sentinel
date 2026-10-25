@@ -247,34 +247,81 @@ def _cash(opening, payin=0.0):
                   "option_premium": None, "read_at": T(15, 45).isoformat()}}
 
 
-def test_risk_is_measured_against_the_day_cash_and_too_much_is_sized_down():
+def test_risk_is_measured_against_the_day_cash_without_a_fixed_limit():
+    # [O24-SZ] 14% of the cash at risk is a fact on the trade, not a mistake: the partner sizes as they choose.
     reports = [off("BUY", T(10, 0), 30.0, lots=3), off("SELL", T(10, 30), 20.0, lots=3)]
     item = off_item(_view([], reports, context=ctx(None, accounts=_cash(45000.0, 5000.0))))
-    risk = flag(item, "BIG_RISK")
-    actual, better = net(30, 20, 225), net(30, 20, 150)
-    assert risk["reason"] == ("3 lots of NIFTY 22950 PE at ₹30: ₹6,750 at risk in premium paid, 14% of the ₹50,000 "
-                              "cash in your account today.")
-    assert risk["better"] == f"2 lots instead: about 9% at risk, and {rs(better)} instead of {rs(actual)}."
-    assert (risk["better_pnl"], risk["impact_rs"]) == (better, round(actual - better, 2))
+    assert "UNUSUAL_SIZE" not in codes(item)
     assert item["insight"]["risk"] == {"rs": 6750.0, "pct_of_cash": 0.135, "basis": "PREMIUM", "cash": 50000.0,
                                        "trigger": None}
+    assert item["insight"]["size"]["pct_of_cash"] == 0.135
 
 
-def test_a_stop_order_sets_the_risk_and_one_lot_too_big_says_so():
+def test_a_trade_much_bigger_than_the_partners_usual_is_flagged_and_sized_to_the_usual():
+    # Five 1-lot trades of ₹2,250 (4.5% of ₹50,000), then 3 lots (13.5%): more than 1.5 x the usual 4.5%.
+    reports = []
+    for i in range(5):
+        reports += [off("BUY", T(10, 10 * i), 30.0), off("SELL", T(10, 10 * i + 5), 31.0)]
+    reports += [off("BUY", T(11, 0), 30.0, lots=3), off("SELL", T(11, 30), 20.0, lots=3)]
+    view = _view([], reports, context=ctx(None, accounts=_cash(45000.0, 5000.0)))
+    items = view["days"][0]["off_card"]
+    assert [("UNUSUAL_SIZE" in codes(i)) for i in items] == [False] * 5 + [True]
+    size = flag(items[-1], "UNUSUAL_SIZE")
+    actual, better = net(30, 20, 225), net(30, 20, 75)
+    assert size["reason"] == ("3 lots of NIFTY 22950 PE at ₹30: ₹6,750 in this trade, 14% of your cash today. You "
+                              "usually put about 4% into one trade.")
+    assert size["better"] == f"1 lot, about your usual size: {rs(better)} instead of {rs(actual)}."
+    assert (size["better_pnl"], size["impact_rs"]) == (better, round(actual - better, 2))
+    # A second 3-lot trade is judged against a usual that now includes the first.
+    assert pi.usual_size([0.045] * 5 + [0.135]) == 0.045 and pi.usual_size([0.045] * 4) is None
+
+
+@pytest.mark.asyncio
+async def test_the_usual_size_of_a_day_is_the_same_in_any_window():
+    """[O24-SB] Five 1-lot trades on earlier days set the usual (4.5% of ₹50,000); a 3-lot trade on Oct 23 is
+    much bigger than it whether the review window is one day or eight. Before, a one-day window had no
+    earlier trades and flagged nothing."""
+    db = settings.DB_PATH
+    await _seed(db)
+    await zerodha.init_partner_broker_db(db)
+    fields = {k: OFF[k] for k in ("underlying", "strike", "opt_type", "lot_size", "exchange", "tradingsymbol")}
+    for n, day in enumerate((16, 17, 20, 21, 22, 23)):
+        for action, minute, price in (("BUY", 0, 30.0), ("SELL", 20, 31.0)):
+            at = T(10, minute, day=day)
+            await pfc.insert_report(db, {"dedup_key": f"kite:{n}{action}", "source": "ZERODHA",
+                                         "received_at": T(16, 0, day=day).isoformat(), "trade_at": at.isoformat(),
+                                         "trade_at_basis": "EXCHANGE_FILL", "action": action,
+                                         "session_date": at.date().isoformat(), "lots": 3 if day == 23 else 1,
+                                         "price": price, "price_basis": "BROKER_FILL", **fields})
+        await zerodha.store_account(db, at.date().isoformat(), {"opening_balance": 50000.0, "intraday_payin": 0.0},
+                                    T(16, 0, day=day))
+    assert await pc.size_history(db, "2026-10-23") == [0.045] * 5
+    flagged = []
+    for days in (1, 8):
+        view = await pc.load_partner_coach(db, days=days, now=T(16, 0, day=23))
+        row = next(r for r in view["days"] if r["day"] == "2026-10-23")
+        flagged.append([codes(i) for i in row["off_card"]])
+    assert flagged[0] == flagged[1] and "UNUSUAL_SIZE" in flagged[0][0]
+    # The share is the review's own: the same as the trade's insight.
+    trade = {"buys": [1], "first_buy_at": T(10, 0), "avg_entry": 30.0, "lot_size": 75, "bought_lots": 3, "qty": 225}
+    assert pi.trade_share(trade, {"opening_balance": 50000.0, "intraday_payin": 0.0}) == 0.135
+    assert pi.trade_share(trade, None) is None and pi.trade_share({**trade, "buys": []}, {"opening_balance": 1}) is None
+
+
+def test_a_stop_order_sets_the_risk_and_without_one_the_whole_premium_is_at_risk():
     stop = [{"source_id": "kite:2001", "session_date": DAY, "kind": "SL_ORDER", "exchange": "NFO", "tradingsymbol": SYM,
              "trigger_price": 80.0, "quantity": 150, "status": "TRIGGERED", "placed_at": T(10, 1).isoformat(),
              "updated_at": T(10, 20).isoformat()}]
     reports = [off("BUY", T(10, 0), 100.0, lots=2), off("SELL", T(10, 20), 80.0, lots=2)]
     item = off_item(_view([], reports, stops=stop, stops_known_days=frozenset({DAY}),
                           context=ctx(None, accounts=_cash(100000.0))))
-    assert "BIG_RISK" not in codes(item)
+    assert "UNUSUAL_SIZE" not in codes(item)
     assert item["insight"]["risk"]["basis"] == "STOP" and item["insight"]["risk"]["rs"] == 3000.0
     item = off_item(_view([], reports, stops=[], stops_known_days=frozenset({DAY}),
                           context=ctx(None, accounts=_cash(50000.0))))
-    risk = flag(item, "BIG_RISK")
-    assert "₹15,000 at risk with no stop order, 30% of the ₹50,000 cash" in risk["reason"]
-    assert risk["better"].startswith("Even 1 lot put more than a tenth of your cash at risk")
-    assert risk["better_pnl"] is None and risk["impact_rs"] is None
+    assert item["insight"]["risk"] == {"rs": 15000.0, "pct_of_cash": 0.3, "basis": "NO_STOP", "cash": 50000.0,
+                                       "trigger": None}
+    assert "UNUSUAL_SIZE" not in codes(item)              # no earlier trades: no usual size yet
 
 
 def _held(quantity):
@@ -308,13 +355,14 @@ def test_rules_kept_count_process_not_money_and_the_stop_rule_needs_known_stops(
     [story] = review["trades"]
     assert [(c["key"], c["kept"]) for c in story["checks"]] == [
         ("card", False), ("entry", False), ("exit", True), ("calm", True), ("size", True)]
-    assert review["score"] == {"kept": 4, "of": 6, "pct": 67, "rules": [
-        {"key": "card", "name": "Traded a card", "kept": 0, "of": 1},
-        {"key": "entry", "name": "Entered as planned", "kept": 0, "of": 1},
-        {"key": "exit", "name": "Exited by the plan", "kept": 1, "of": 1},
-        {"key": "calm", "name": "Calm after a loss", "kept": 1, "of": 1},
-        {"key": "size", "name": "Size within the account", "kept": 1, "of": 1},
-        {"key": "cards_only", "name": "Traded only the cards", "kept": 1, "of": 1}]}
+    means = pl.RULE_MEANINGS     # [O23-PM] each rule says what it means
+    assert review["score"] == {"kept": 4, "of": 6, "pct": 67, "rules_version": pl.RULES_VERSION, "rules": [
+        {"key": "card", "name": "Traded a card", "kept": 0, "of": 1, "means": means["card"]},
+        {"key": "entry", "name": "Entered as planned", "kept": 0, "of": 1, "means": means["entry"]},
+        {"key": "exit", "name": "Exited by the plan", "kept": 1, "of": 1, "means": means["exit"]},
+        {"key": "calm", "name": "Calm after a loss", "kept": 1, "of": 1, "means": means["calm"]},
+        {"key": "size", "name": "Usual size", "kept": 1, "of": 1, "means": means["size"]},
+        {"key": "cards_only", "name": "Traded only the cards", "kept": 1, "of": 1, "means": means["cards_only"]}]}
     assert story["option_lines"][:2] == [
         "Before you bought: up 31% in 15 minutes (from ₹100).",
         f"While you held (16 min): best ₹131 at 10:31 (₹0 open), worst ₹110 at 10:45 ({rs(-21 * 75)} open)."]
@@ -476,8 +524,10 @@ async def test_paths_are_read_once_after_the_close_and_fall_back_to_prints(monke
         return [("2026-10-19 10:00:00", 100, 101, 99, 100.5), ("2026-10-19 10:01:00", 100.5, 103, 100, 102)]
 
     assert (await ptp.ensure_paths(db, DAY, T(15, 0), fetch=fetch, token_of=lambda e, s: 7))["status"] == "day_not_over"
+    # [O24-MC] F&O trades until 15:40: at 15:35 the day is not over, and the candles run to 15:40.
+    assert (await ptp.ensure_paths(db, DAY, T(15, 35), fetch=fetch, token_of=lambda e, s: 7))["status"] == "day_not_over"
     out = await ptp.ensure_paths(db, DAY, T(15, 45), fetch=fetch, token_of=lambda e, s: 7)
-    assert out[ptp.BASIS_CANDLES] == 1 and calls == [(7, f"{DAY} 09:15:00", f"{DAY} 15:30:00")]
+    assert out[ptp.BASIS_CANDLES] == 1 and calls == [(7, f"{DAY} 09:15:00", f"{DAY} 15:40:00")]
     await ptp.ensure_paths(db, DAY, T(16, 0), fetch=fetch, token_of=lambda e, s: 7)
     assert len(calls) == 1          # candles stored: not read again
     paths = await ptp.load_paths(db, DAY, DAY)
@@ -666,22 +716,27 @@ def test_risk_on_a_card_trade_with_unknown_stops_is_to_the_card_sl():
                        context={"accounts": _cash(60000.0)}))
     assert item["insight"]["risk"] == {"rs": round((518.0 - 464.7) * 20, 2), "pct_of_cash": round(1066 / 60000, 4),
                                        "basis": "CARD_SL", "cash": 60000.0, "trigger": 464.7}
-    assert "BIG_RISK" not in codes(item)
+    assert "UNUSUAL_SIZE" not in codes(item)
     story = pl.day_review(_view([_card()], [_zr("BUY", T(12, 9), 518.0), _zr("SELL", T(13, 3), 598.0)],
                                 context={"accounts": _cash(60000.0)}), DAY)["trades"][0]
     assert "At risk: ₹1,066 to the card's stop, 2% of your cash today." in story["option_lines"]
 
 
 def test_the_lesson_tells_at_most_three_other_mistakes_and_keeps_the_rest_as_lessons():
-    reports = [off("BUY", T(10, 30, 20), 131.0, lots=2, order_id="2001"), off("SELL", T(10, 46, 5), 110.0, lots=2)]
-    context = ctx(SPIKE, accounts=_cash(60000.0), orders=[_sl("2002", T(10, 31), 105.0, status="CANCELLED")],
+    # [O24-SZ] Five 1-lot trades the day before set the usual size, so this 2-lot trade is much bigger than usual.
+    earlier = [r for i in range(5) for r in (off("BUY", T(10, 10 * i, day=18), 30.0),
+                                              off("SELL", T(10, 10 * i + 5, day=18), 31.0))]
+    reports = earlier + [off("BUY", T(10, 30, 20), 131.0, lots=2, order_id="2001"),
+                         off("SELL", T(10, 46, 5), 110.0, lots=2)]
+    accounts = _cash(60000.0) | {"2026-10-18": {**_cash(60000.0)[DAY], "session_date": "2026-10-18"}}
+    context = ctx(SPIKE, accounts=accounts, orders=[_sl("2002", T(10, 31), 105.0, status="CANCELLED")],
                   changes={"2002": [_change("2002", T(10, 38), "trigger_price", 120.0, 105.0)],
                            "2001": [_change("2001", T(10, 30, 5), "price", 126.0, 129.0),
                                     _change("2001", T(10, 30, 15), "price", 129.0, 131.0, seq=1)]})
     review = pl.day_review(_view([], reports, context=context), DAY)
     lesson = review["lesson"]
     assert lesson["code"] == "OFF_CARD"
-    assert [a["code"] for a in lesson["also"]] == ["STOP_LOWERED", "BIG_RISK", "CHASED_SPIKE"]
+    assert [a["code"] for a in lesson["also"]] == ["STOP_LOWERED", "UNUSUAL_SIZE", "CHASED_SPIKE"]
     assert [m["code"] for m in review["more_lessons"]] == ["PRICE_RAISED_TO_FILL"]
     # Same-minute events read in the order they happened: two raises, then the fill.
     timeline = [e["text"] for e in review["trades"][0]["timeline"]]

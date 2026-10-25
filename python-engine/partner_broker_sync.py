@@ -6,8 +6,8 @@ creates a free Kite Connect "Personal" app on their own account (orders
 and portfolio APIs, no market data) and taps one Telegram button in the
 evening:
 
-  1. after the 15:40 wrap's brief the partner gets "Review your day": a Kite
-     login link for the partner's app. [O21-PX] One review link goes out
+  1. after the evening wrap's brief (15:50) the partner gets "Review your
+     day": a Kite login link for the partner's app. [O21-PX] One review link goes out
      every trading day: the coach note's button when it was sent, else this
      prompt (before, a login held all day meant no link on a day without
      trades);
@@ -22,7 +22,7 @@ evening:
   4. after the close it sends the coach note, and the gateway opens the
      coach page with a coach-only session.
 
-A login earlier in the day is kept in memory and the 15:40 wrap reads the
+A login earlier in the day is kept in memory and the evening wrap reads the
 final book itself, so no tap is needed that evening.
 
 [O21-PX] The same read also keeps, best effort, what the deeper review
@@ -37,6 +37,9 @@ app has none).
 Read-only by construction: ``_kite_call`` allows only the session exchange
 and GET /orders, /trades, /gtt/triggers, /portfolio/positions and
 /user/margins/equity, plus GET of one order's history by its numeric id.
+[O24-PW] The trade watch (partner_watch.py) also reads market data with the
+partner's key when their plan has it: GET /quote and GET of one contract's
+minute or 5-minute candles by its numeric token.
 Placing is POST /orders/{variety}, modifying PUT and cancelling DELETE
 /orders/{variety}/{id}, so there is no place, modify or cancel path for
 orders or GTTs. Reads need no static IP (the exchange rule covers API order
@@ -47,6 +50,28 @@ DB or a response.
 On a day with a Zerodha read the coach scores these fills and ignores
 Telegram/dashboard BUY/SELL reports for that day (partner_coach.py). Nothing
 here places orders, blocks a card or changes card text.
+
+[O24-SR 2026-10-24] A stop is any option SELL order that carried a trigger,
+whatever its type is now. On Oct 23 the review said "No stop-loss order" on
+10 of 12 trades that had one, because two Kite shapes were missed:
+  - a fired stop stays in the book as LIMIT (SL) or MARKET (SL-M) with its
+    trigger (Oct 23: a SELL LIMIT, trigger 33, never modified, placed
+    near 13:40 and filled at 13:53);
+  - a stop the partner turns into a market or limit sell to get out at once
+    loses its trigger in the book, and only the order's history shows it
+    was a stop (Oct 23: trigger 68 -> 60 -> 75 -> 60, then a MARKET sale).
+Kite's ``order_timestamp`` moves when an order is modified or fires, so the
+history's first state gives when a stop was placed. The history is read
+for every stop and every modified order; ``book_stops`` builds the stops
+from the stored book. A day stored before this read (no history facts)
+is rebuilt from its trigger changes. A modified sale with no trigger in
+sight could have been either a stop or a target, and is reported as
+unknown, never as "no stop".
+
+[O24-MC 2026-10-24] F&O now trades until 15:40 (NSE moved the derivatives
+close from 15:30; the research archive's last NIFTY and SENSEX futures
+trades are 15:30:2x until Oct 5 and 15:39:5x from Oct 6). Oct 23: the
+partner sold at 15:39:53.
 """
 from __future__ import annotations
 
@@ -66,6 +91,7 @@ import pytz
 import structlog
 
 from config import settings
+from market_calendar import DERIVATIVES_CLOSE_TIME
 
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
@@ -75,15 +101,18 @@ PRICE_BASIS = "BROKER_FILL"
 TIME_BASIS = "EXCHANGE_FILL"
 LOGIN_URL = "https://kite.zerodha.com/connect/login"
 OPEN_MIN = 9 * 60 + 15
-CLOSE_MIN = 15 * 60 + 30          # F&O orders cannot fill after this; a later read is the day's book
+# F&O orders cannot fill after this; a later read is the day's book. [O24-MC] The derivatives close (15:40).
+CLOSE_MIN = DERIVATIVES_CLOSE_TIME.hour * 60 + DERIVATIVES_CLOSE_TIME.minute
 CARD_CLOCK_SLACK = timedelta(seconds=60)   # a fill this close before the card's send time is on that card
 PROMPT_KIND = "zerodha_prompt"
 _REQUEST_TOKEN = re.compile(r"^[A-Za-z0-9]{8,64}$")
 _ALLOWED_CALLS = {("POST", "/session/token"), ("DELETE", "/session/token"),
                   ("GET", "/orders"), ("GET", "/trades"), ("GET", "/gtt/triggers"),
-                  ("GET", "/portfolio/positions"), ("GET", "/user/margins/equity")}
+                  ("GET", "/portfolio/positions"), ("GET", "/user/margins/equity"), ("GET", "/quote")}
 # [O21-PX] One order's history: GET and a numeric order id only.
 _ORDER_HISTORY = re.compile(r"^/orders/[0-9]{1,24}$")
+# [O24-PW] One contract's candles: GET, a numeric token, minute or 5-minute.
+_CANDLES = re.compile(r"^/instruments/historical/[0-9]{1,12}/(minute|5minute)$")
 HISTORY_MAX_ORDERS = 40        # order histories read per sync
 HISTORY_CONCURRENCY = 3
 # [A22-P4] The gateway waits 45 s for the login (nginx 60 s). One deadline
@@ -95,6 +124,8 @@ LOGIN_SESSION_MAX_SEC = 25.0
 ENRICH_BUDGET_SEC = 120.0
 # History states the exchange confirmed; a refused modify is not a change.
 _CONFIRMED_STATES = {"OPEN", "TRIGGER PENDING", "COMPLETE", "CANCELLED"}
+_STOP_TYPES = ("SL", "SL-M")
+UNKNOWN = "UNKNOWN"            # [O24-SR] order_stop: it may have been a stop; nothing says so
 _MONTHS = {m: i for i, m in enumerate(
     ("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"), start=1)}
 _WEEKLY_MONTH = {**{str(i): i for i in range(1, 10)}, "O": 10, "N": 11, "D": 12}
@@ -143,7 +174,10 @@ CREATE TABLE IF NOT EXISTS partner_orders (
   status_message TEXT,
   placed_at TEXT NOT NULL,
   updated_at TEXT,
-  modified INTEGER NOT NULL DEFAULT 0
+  modified INTEGER NOT NULL DEFAULT 0,
+  history_read INTEGER NOT NULL DEFAULT 0,
+  stop_trigger REAL,
+  stop_since TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_partner_orders_day ON partner_orders(session_date);
 CREATE TABLE IF NOT EXISTS partner_order_changes (
@@ -179,7 +213,11 @@ CREATE TABLE IF NOT EXISTS partner_account_days (
   read_at TEXT NOT NULL
 );
 """
-# A stop's state: PENDING (resting), TRIGGERED (it sold), CANCELLED, REJECTED.
+# [O24-SR] Columns a stored database may still lack (added in place).
+_ORDER_HISTORY_COLS = (("history_read", "INTEGER NOT NULL DEFAULT 0"), ("stop_trigger", "REAL"),
+                       ("stop_since", "TEXT"))
+# A stop's state: PENDING (resting), TRIGGERED (it sold), CANCELLED, REJECTED,
+# [O24-SR] CONVERTED (the partner turned it into a market or limit sale).
 _ORDER_STOP_STATUS = {"COMPLETE": "TRIGGERED", "OPEN": "TRIGGERED", "CANCELLED": "CANCELLED",
                       "REJECTED": "REJECTED"}
 _GTT_STOP_STATUS = {"active": "PENDING", "triggered": "TRIGGERED", "cancelled": "CANCELLED",
@@ -245,7 +283,8 @@ def disconnect() -> None:
 
 def allowed(method: str, path: str) -> bool:
     """The allowlist: the session calls and GET reads only."""
-    return (method, path) in _ALLOWED_CALLS or (method == "GET" and bool(_ORDER_HISTORY.match(path)))
+    return (method, path) in _ALLOWED_CALLS or (method == "GET" and bool(_ORDER_HISTORY.match(path)
+                                                                          or _CANDLES.match(path)))
 
 
 async def _kite_call(method: str, path: str, *, data: Optional[dict] = None,
@@ -300,11 +339,11 @@ async def create_session(request_token: str, now: Optional[datetime] = None) -> 
     return {"account": _session.account, "login_at": now.isoformat(), "expires_at": _session.expires_at.isoformat()}
 
 
-async def _read(path: str):
+async def _read(path: str, params: Optional[dict] = None):
     if _session is None:
         raise BrokerError("not_connected")
     try:
-        return await _kite_call("GET", path, token=_session.access_token) or []
+        return await _kite_call("GET", path, params=params, token=_session.access_token) or []
     except BrokerError as exc:
         if exc.code == "TokenException":
             disconnect()
@@ -464,14 +503,21 @@ def _stop_row(source_id: str, kind: str, exchange: str, symbol: str, trigger: fl
             "placed_at": placed_at.isoformat(), "updated_at": updated_at.isoformat() if updated_at else None}
 
 
+def carries_trigger(order: dict) -> bool:
+    """[O24-SR] A SELL order that is a stop as it stands: an SL / SL-M order,
+    or one that fired (Kite then shows LIMIT or MARKET with the trigger kept)."""
+    return (str(order.get("transaction_type") or "").upper() == "SELL"
+            and (_num(order.get("trigger_price")) or 0.0) > 0)
+
+
 def stops_from_orders(orders: list, resolve: Optional[Callable] = None) -> list:
-    """Every SL / SL-M SELL order on an option: the partner's resting stops."""
+    """Every option SELL order that carries a trigger: the partner's stops as
+    the book shows them now. A stop already turned into a market sale needs
+    its history (``book_stops``)."""
     resolve = resolve or resolve_option
     rows = []
     for order in orders or []:
-        if (str(order.get("transaction_type") or "").upper() != "SELL"
-                or str(order.get("order_type") or "").upper() not in ("SL", "SL-M")
-                or not float(order.get("trigger_price") or 0) > 0):
+        if not carries_trigger(order):
             continue
         exchange = str(order.get("exchange") or "").upper()
         symbol = str(order.get("tradingsymbol") or "").upper()
@@ -580,6 +626,107 @@ def order_changes(order_id: str, history: list) -> list:
     return changes
 
 
+def history_facts(history: list) -> dict:
+    """[O24-SR] From one order's Kite history: the first trigger it carried
+    and when (the state that first shows it; its placement for an SL order).
+    ``stop_trigger`` None: the order never was a stop (pure)."""
+    timed = sorted(((kite_time(state.get("order_timestamp")), i, state)
+                    for i, state in enumerate(history or []) if isinstance(state, dict)),
+                   key=lambda item: (item[0] is None, item[0] or datetime.min.replace(tzinfo=IST), item[1]))
+    if not timed:
+        return {"history_read": 0, "stop_trigger": None, "stop_since": None}   # an empty history says nothing
+    first = next(((at, state) for at, _i, state in timed if (_num(state.get("trigger_price")) or 0.0) > 0), None)
+    if first is None:
+        return {"history_read": 1, "stop_trigger": None, "stop_since": None}
+    at, state = first
+    return {"history_read": 1, "stop_trigger": round(float(state["trigger_price"]), 2),
+            "stop_since": at.isoformat() if at else None}
+
+
+def _stop_state(order: dict) -> str:
+    raw = str(order.get("status") or "").upper()
+    if raw == "TRIGGER PENDING":
+        return "PENDING"
+    if raw == "CANCELLED":
+        return "TRIGGERED" if int(order.get("filled_quantity") or 0) > 0 else "CANCELLED"   # it sold part first
+    if raw == "REJECTED":
+        return "REJECTED"
+    if raw in ("COMPLETE", "OPEN"):
+        # Still carrying its trigger: it fired. Without one: the partner turned it into a sale.
+        return "TRIGGERED" if (_num(order.get("trigger_price")) or 0.0) > 0 else "CONVERTED"
+    return "PENDING"
+
+
+def order_stop(order: dict, changes: Optional[list] = None):
+    """[O24-SR] One stored option order (``partner_orders`` row) as a stop
+    row, ``None`` when it was no stop, or ``UNKNOWN`` (pure).
+
+    With its history read the history decides. Before O24 only the trigger
+    changes were kept: a trigger now or a trigger change makes it a stop
+    (its first trigger is the first change's old value), and the earliest
+    stamp seen is when it was in place by. A modified sale with neither may
+    have been a stop or a target: UNKNOWN."""
+    if str(order.get("transaction_type") or "").upper() != "SELL":
+        return None
+    moves = [c for c in changes or [] if c.get("field") == "trigger_price"]
+    if order.get("history_read") and order.get("stop_trigger"):
+        trigger, since, exact = float(order["stop_trigger"]), order.get("stop_since"), bool(order.get("stop_since"))
+        since = since or order.get("placed_at")
+    elif order.get("history_read") and not carries_trigger(order):
+        return None
+    elif carries_trigger(order) or moves:
+        trigger = float(moves[0]["old_value"]) if moves else float(order["trigger_price"])
+        stamps = [s for s in (order.get("placed_at"), *(c.get("changed_at") for c in moves)) if _parsed(s)]
+        since, exact = (min(stamps, key=_parsed) if stamps else order.get("placed_at")), False
+    elif order.get("modified"):
+        return UNKNOWN
+    else:
+        return None
+    return {"source_id": f"kite:{order.get('order_id')}", "order_id": order.get("order_id"),
+            "session_date": order.get("session_date"), "kind": "SL_ORDER", "exchange": order.get("exchange"),
+            "tradingsymbol": order.get("tradingsymbol"), "trigger_price": round(trigger, 2),
+            "quantity": order.get("quantity"), "status": _stop_state(order), "placed_at": since,
+            "updated_at": order.get("updated_at") or since, "placed_exact": exact}
+
+
+def _parsed(stamp) -> Optional[datetime]:
+    try:
+        parsed = datetime.fromisoformat(str(stamp)) if stamp else None
+    except ValueError:
+        return None
+    return parsed if parsed is None or parsed.tzinfo else IST.localize(parsed)
+
+
+def book_stops(orders: list, changes: Optional[dict] = None) -> tuple[list, list]:
+    """[O24-SR] Every SL-order stop in the stored order book, and the sales
+    that may have been stops (``UNKNOWN``) as {exchange, tradingsymbol,
+    session_date, placed_at, updated_at, order_id} (pure)."""
+    changes = changes or {}
+    stops, unknown = [], []
+    for order in orders or []:
+        stop = order_stop(order, changes.get(order.get("order_id"), []))
+        if stop == UNKNOWN:
+            unknown.append({k: order.get(k) for k in ("order_id", "session_date", "exchange", "tradingsymbol",
+                                                       "placed_at", "updated_at")})
+        elif stop is not None:
+            stops.append(stop)
+    return stops, unknown
+
+
+def merge_stops(stop_rows: list, orders: list, changes: Optional[dict] = None) -> tuple[list, list]:
+    """[O24-SR] The stops the coach checks, oldest first, and the possible
+    stops it cannot tell. SL orders come from the stored order book on the
+    days it was stored (``book_stops``), else from the fills read's
+    ``partner_stop_orders`` rows; GTT stops always from those rows."""
+    booked, unknown = book_stops(orders, changes)
+    booked_days = {o.get("session_date") for o in orders or []}
+    kept = [row | {"placed_exact": row["kind"] == "GTT"} for row in stop_rows or []
+            if row["kind"] == "GTT" or row["session_date"] not in booked_days]
+    merged = booked + kept
+    merged.sort(key=lambda s: (_parsed(s.get("placed_at")) or datetime.max.replace(tzinfo=IST), s["source_id"]))
+    return merged, unknown
+
+
 def option_positions(payload, resolve: Optional[Callable] = None) -> list:
     """[O21-PX] The option rows of Kite's net positions."""
     resolve = resolve or resolve_option
@@ -627,10 +774,14 @@ async def init_partner_broker_db(db_path: str) -> None:
     await init_partner_fill_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         await db.executescript(_DDL)
+        present = {row[1] for row in await (await db.execute("PRAGMA table_info(partner_orders)")).fetchall()}
+        for column, declaration in _ORDER_HISTORY_COLS:
+            if column not in present:
+                await db.execute(f"ALTER TABLE partner_orders ADD COLUMN {column} {declaration}")
         await db.commit()
 
 
-_STOP_COLS = ("source_id", "session_date", "kind", "exchange", "tradingsymbol", "trigger_price", "quantity",
+_STOP_COLS =("source_id", "session_date", "kind", "exchange", "tradingsymbol", "trigger_price", "quantity",
               "status", "placed_at", "updated_at")
 
 
@@ -659,7 +810,10 @@ async def stop_orders(db_path: str, first_day: str, last_day: str) -> list:
 _ORDER_COLS = ("order_id", "session_date", "exchange", "tradingsymbol", "transaction_type", "order_type", "product",
                "quantity", "filled_quantity", "price", "trigger_price", "average_price", "status", "status_message",
                "placed_at", "updated_at", "modified")
-_CHANGE_COLS = ("order_id", "seq", "session_date", "changed_at", "field", "old_value", "new_value")
+# [O24-SR] Read back with the history facts, which only store_history_facts writes
+# (a re-read of the book must not erase them).
+_ORDER_READ_COLS = _ORDER_COLS + tuple(column for column, _decl in _ORDER_HISTORY_COLS)
+_CHANGE_COLS =("order_id", "seq", "session_date", "changed_at", "field", "old_value", "new_value")
 _POSITION_COLS = ("session_date", "exchange", "tradingsymbol", "product", "quantity", "overnight_quantity",
                   "average_price", "last_price", "close_price", "read_at")
 _ACCOUNT_COLS = ("session_date", "opening_balance", "intraday_payin", "live_balance", "option_premium", "read_at")
@@ -678,6 +832,13 @@ async def store_orders(db_path: str, rows: list) -> None:
     async with aiosqlite.connect(db_path) as db:
         for row in rows:
             await db.execute(sql, tuple(row.get(c) for c in _ORDER_COLS))
+        await db.commit()
+
+
+async def store_history_facts(db_path: str, order_id: str, facts: dict) -> None:
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("UPDATE partner_orders SET history_read=?, stop_trigger=?, stop_since=? WHERE order_id=?",
+                         (int(facts["history_read"]), facts["stop_trigger"], facts["stop_since"], order_id))
         await db.commit()
 
 
@@ -720,7 +881,7 @@ async def book_details(db_path: str, first_day: str, last_day: str) -> dict:
     window = (first_day, last_day)
     async with aiosqlite.connect(db_path) as db:
         orders = await (await db.execute(
-            f"SELECT {', '.join(_ORDER_COLS)} FROM partner_orders WHERE session_date>=? AND session_date<=? "
+            f"SELECT {', '.join(_ORDER_READ_COLS)} FROM partner_orders WHERE session_date>=? AND session_date<=? "
             "ORDER BY placed_at, order_id", window)).fetchall()
         changes = await (await db.execute(
             f"SELECT {', '.join(_CHANGE_COLS)} FROM partner_order_changes WHERE session_date>=? AND session_date<=? "
@@ -739,7 +900,7 @@ async def book_details(db_path: str, first_day: str, last_day: str) -> dict:
     for row in positions:
         position = dict(zip(_POSITION_COLS, row))
         by_day[position["session_date"]].append(position)
-    return {"orders": [dict(zip(_ORDER_COLS, row)) for row in orders], "changes": dict(by_order),
+    return {"orders": [dict(zip(_ORDER_READ_COLS, row)) for row in orders], "changes": dict(by_order),
             "positions": dict(by_day),
             "accounts": {row[0]: dict(zip(_ACCOUNT_COLS, row)) for row in accounts}}
 
@@ -801,7 +962,7 @@ def _complete(day: str, at: datetime) -> bool:
 
 async def sync_book(now: Optional[datetime] = None, *, db_path: Optional[str] = None) -> dict:
     """Read the partner's order book, store its filled option orders, then
-    the deeper review's reads (the 15:40 wrap and the owner's button)."""
+    the deeper review's reads (the evening wrap and the owner's button)."""
     now = (now or datetime.now(IST)).astimezone(IST)
     db_path = db_path or settings.DB_PATH
     result, orders = await _sync_fills(now, db_path)
@@ -881,24 +1042,29 @@ async def _read_details(db_path: str, orders: list, now: datetime) -> dict:
         rows = option_orders(orders)
         await store_orders(db_path, rows)
         out["orders"] = len(rows)
-        wanted = [r["order_id"] for r in rows if r["modified"]
-                  and _ORDER_HISTORY.match(f"/orders/{r['order_id']}")][:HISTORY_MAX_ORDERS]
+        # [O24-SR] Every stop (when it was placed, its first trigger) and every
+        # modified order (a stop turned into a sale, price and trigger moves);
+        # sell orders first, as they decide the stop checks.
+        wanted = [r["order_id"] for r in sorted(
+            (r for r in rows if (r["modified"] or carries_trigger(r)) and _ORDER_HISTORY.match(f"/orders/{r['order_id']}")),
+            key=lambda r: r["transaction_type"] != "SELL")][:HISTORY_MAX_ORDERS]
         gate = asyncio.Semaphore(HISTORY_CONCURRENCY)
 
         async def history(order_id: str):
             async with gate:
                 try:
-                    return order_id, order_changes(order_id, await _read(f"/orders/{order_id}"))
+                    return order_id, await _read(f"/orders/{order_id}")
                 except BrokerError as exc:
                     if exc.code in ("TokenException", "not_connected"):
                         raise
                     return order_id, None
 
-        for order_id, changes in await asyncio.gather(*(history(o) for o in wanted)):
-            if changes is None:
+        for order_id, states in await asyncio.gather(*(history(o) for o in wanted)):
+            if states is None:
                 out["history_failures"] += 1
                 continue
-            await store_changes(db_path, order_id, changes)
+            await store_changes(db_path, order_id, order_changes(order_id, states))
+            await store_history_facts(db_path, order_id, history_facts(states))
             out["histories"] += 1
         # Positions and cash describe today, from the open on.
         if now.hour * 60 + now.minute >= OPEN_MIN:
@@ -983,7 +1149,7 @@ async def _send_prompt(now: datetime) -> dict:
 
 
 async def partner_broker_eod(now: Optional[datetime] = None) -> dict:
-    """15:40 wrap, after the day's brief: read the book when a login is held,
+    """The evening wrap (15:50), after the day's brief: read the book when a login is held,
     else send the review button once."""
     now = (now or datetime.now(IST)).astimezone(IST)
     if not configured():
@@ -1030,7 +1196,26 @@ async def on_login(request_token: str, now: Optional[datetime] = None) -> dict:
         logger.warning("partner_zerodha_login_answered_before_fills")
     if task.done() and not task.cancelled() and isinstance(task.exception(), BrokerError):
         raise task.exception()
+    _start_watch_hook(now)
     return {"connected": True, **session, "sync": review_sync(now), "automatic_execution": False}
+
+
+_watch_hooks: set = set()
+
+
+def _start_watch_hook(now: datetime) -> None:
+    """[O24-PW] Tell the trade watch about the login, in the background: it
+    never delays or fails the login."""
+    async def run():
+        try:
+            from partner_watch import on_login as watch_on_login
+            await asyncio.wait_for(watch_on_login(now), 30.0)
+        except Exception as exc:
+            logger.warning("partner_watch_login_hook_failed err=%s", type(exc).__name__)
+
+    task = asyncio.get_running_loop().create_task(run())
+    _watch_hooks.add(task)
+    task.add_done_callback(_watch_hooks.discard)
 
 
 _review_task: Optional[asyncio.Task] = None

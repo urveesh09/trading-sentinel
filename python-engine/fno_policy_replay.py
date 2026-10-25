@@ -79,6 +79,7 @@ class ReplayPolicy:
     trend_day_lookback: int = 10
     exit_overrides: tuple = ()               # ((setting, value), ...) applied to the exit ladder params
     reentry_confirmation: Optional[bool] = None   # None = live setting
+    signal_variant: Optional[str] = None     # [O24g] fno_shadow.VARIANTS entry signal instead of the live one
 
 
 POLICIES = {
@@ -102,6 +103,16 @@ POLICIES = {
                                         exit_overrides=(("FNO_PROFIT_LOCK_KEEP_FRACTION", 0.25),)),
     "FNO_LOCK_OFF": ReplayPolicy(name="FNO_LOCK_OFF", manage_every_observation=True,
                                  exit_overrides=(("FNO_PROFIT_LOCK_ENABLED", False),)),
+    # [O24g 2026-10-24] Entry-signal arms: the broker-free shadow variants (fno_shadow.VARIANTS, recorded live
+    # since Aug 11 but only ever given a target-hit scenario) traded through the whole live book (entry plan,
+    # sizing, brakes, the live exit ladder at fast-exit cadence, costs, bid/ask fills), so their outcome is a path,
+    # not an assumption. FNO_SIG_CONTINUATION is the one new definition, frozen before scoring.
+    "FNO_SIG_CONFIRM_1": ReplayPolicy(name="FNO_SIG_CONFIRM_1", manage_every_observation=True,
+                                      signal_variant="FNO_CONFIRM_1"),
+    "FNO_SIG_OR_20": ReplayPolicy(name="FNO_SIG_OR_20", manage_every_observation=True, signal_variant="FNO_OR_20"),
+    "FNO_SIG_OR_45": ReplayPolicy(name="FNO_SIG_OR_45", manage_every_observation=True, signal_variant="FNO_OR_45"),
+    "FNO_SIG_CONTINUATION": ReplayPolicy(name="FNO_SIG_CONTINUATION", manage_every_observation=True,
+                                         signal_variant="FNO_CONTINUATION"),
 }
 
 
@@ -503,7 +514,11 @@ class SingleLegReplay:
             return
         regime, regime_source = self.data.regime(bar_ts, day)
         self.notes[f"regime_{regime_source}"] += 1
-        sig = evaluate_fno_mom(frame, regime, now)
+        if self.policy.signal_variant:
+            from fno_shadow import VARIANTS, _variant_signal
+            sig = _variant_signal(frame, regime, now, VARIANTS[self.policy.signal_variant])
+        else:
+            sig = evaluate_fno_mom(frame, regime, now)
         if sig.direction is None:
             self.funnel[f"engine:{sig.reject_reason}"] += 1
             return

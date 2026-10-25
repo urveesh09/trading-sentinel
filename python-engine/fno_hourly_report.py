@@ -23,6 +23,7 @@ import aiosqlite
 import pytz
 import structlog
 
+import fno_live_test
 import fno_positions as fpos
 from config import settings
 
@@ -78,14 +79,14 @@ async def build_hourly_report(
     for source in ("FNO_PAPER", "FNO_LIVE"):
         if source == "FNO_PAPER" and settings.FNO_DISABLE_PAPER:
             continue
-        if source == "FNO_LIVE" and settings.FNO_DISABLE_LIVE:
+        if source == "FNO_LIVE" and settings.FNO_DISABLE_LIVE and not fno_live_test.armed():
             continue
         open_pos = await fpos.open_positions(db_path, source)
         closed = await fpos.closed_today(db_path, source, today_iso)
         day_pnl = sum(c["pnl"] or 0.0 for c in closed)
         allocation = (
             settings.FNO_PAPER_BANKROLL if source == "FNO_PAPER"
-            else settings.FNO_LIVE_BANKROLL
+            else fno_live_test.live_pool()
         )
         # [PAPER-MARKING 2026-08-04] Mark the leg and every rupee in it. This
         # report's numbers are an order of magnitude larger than the live

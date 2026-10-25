@@ -222,12 +222,35 @@ KITE_PROBE_FAILURES_TO_ALERT = 2
 KITE_PROBE_ALERT_MIN_INTERVAL_SEC = 1800.0
 
 
+# [O25c 2026-10-25] The order route, when it is not KITE_BASE_URL: the encrypted tunnel through the
+# registered VM (KITE_ORDER_PROXY_URL; the gateway's KITE_PROXY_URL uses the same tunnel) or a separate
+# relay (KITE_ORDER_BASE_URL). The probe above watches only KITE_BASE_URL, which is direct on the home
+# desktop, so a dark tunnel would otherwise be noticed only when a real order failed.
+_kite_order_route_probe_state = {
+    "consec_failures": 0,
+    "down_since_monotonic": None,
+    "last_alert_monotonic": None,
+}
 
 
-def _kite_probe_evaluate(ok: bool, now_monotonic: float, state: dict) -> str | None:
+def _order_route_probe_target() -> tuple[str, str] | None:
+    """(URL to GET, proxy or "") of a separate order route; None when orders use KITE_BASE_URL."""
+    proxy = (settings.KITE_ORDER_PROXY_URL or "").strip()
+    base = (settings.KITE_ORDER_BASE_URL or "").strip().rstrip("/")
+    if proxy:
+        return f"{base or 'https://api.kite.trade'}/", proxy
+    if base and base != settings.KITE_BASE_URL.rstrip("/"):
+        return f"{base}/", ""
+    return None
+
+
+
+
+def _kite_probe_evaluate(ok: bool, now_monotonic: float, state: dict, route: str | None = None) -> str | None:
     """Pure state machine: fold one probe result into `state`, return the
     operator alert text to send (down page / recovery notice) or None.
-    Kept side-effect-free so the alarm logic is fully testable."""
+    Kept side-effect-free so the alarm logic is fully testable.
+    [O25c] ``route`` names the separate order route (password hidden) for its own texts."""
     if ok:
         state["consec_failures"] = 0
         down_since = state["down_since_monotonic"]
@@ -236,6 +259,8 @@ def _kite_probe_evaluate(ok: bool, now_monotonic: float, state: dict) -> str | N
         state["down_since_monotonic"] = None
         state["last_alert_monotonic"] = None
         mins = (now_monotonic - down_since) / 60.0
+        if route is not None:
+            return f"✅ KITE ORDER ROUTE RECOVERED: {route} answers again (was down ~{mins:.0f} min)."
         return (
             f"✅ KITE ENDPOINT RECOVERED: {settings.KITE_BASE_URL} is "
             f"reachable again (was down ~{mins:.0f} min). Quotes and "
@@ -250,6 +275,13 @@ def _kite_probe_evaluate(ok: bool, now_monotonic: float, state: dict) -> str | N
     if last is not None and (now_monotonic - last) < KITE_PROBE_ALERT_MIN_INTERVAL_SEC:
         return None
     state["last_alert_monotonic"] = now_monotonic
+    if route is not None:
+        return (
+            f"📡 KITE ORDER ROUTE DOWN: {route} has failed {state['consec_failures']} consecutive probes. Real "
+            "orders and exits cannot be sent this way, nor the gateway's Kite calls if it uses the tunnel; a "
+            "resting broker stop still protects an open real position. On the VM: `sudo python3 kite_tunnel.py "
+            "status` (docs/runbooks/fno-live-test.md)."
+        )
     return (
         f"📡 KITE ENDPOINT DOWN: {settings.KITE_BASE_URL} has failed "
         f"{state['consec_failures']} consecutive probes. ALL quotes and "
@@ -265,35 +297,59 @@ async def _kite_endpoint_probe_tick():
     """3-min market-hours cron: probe the configured Kite endpoint."""
     now_ist = datetime.now(IST)
     nm = now_ist.hour * 60 + now_ist.minute
-    if not (9 * 60 + 15 <= nm <= 15 * 60 + 30):
+    if not (9 * 60 + 15 <= nm <= 15 * 60 + 40):     # [O24-MC 2026-10-24] the session runs to the 15:40 derivatives close
         return
     if not await is_trading_day(now_ist.date(), settings.DB_PATH):
         return
-    import httpx as _httpx
-    ok = False
-    err = ""
-    try:
-        async with _httpx.AsyncClient() as client:
-            resp = await client.get(f"{settings.KITE_BASE_URL}/", timeout=8.0)
-        # Any response < 500 means the hop is up (relay root proxies to
-        # Kite's root, which returns 200 -- see smoke_relay.sh). A 5xx
-        # from the relay means the path to Kite is broken even though
-        # the relay process answered: that IS an outage for us.
-        ok = resp.status_code < 500
-        if not ok:
-            err = f"HTTP {resp.status_code}"
-    except Exception as e:
-        err = str(e)
+    import time as _time
+    from kite_client import redact_url_credentials
+    ok, err = await _kite_probe_get(f"{settings.KITE_BASE_URL}/")
     if not ok:
         logger.warning(
             "kite_endpoint_probe_failed url=%s consec=%d error=%s",
             settings.KITE_BASE_URL,
             _kite_probe_state["consec_failures"] + 1, err,
         )
-    import time as _time
     msg = _kite_probe_evaluate(ok, _time.monotonic(), _kite_probe_state)
-    if msg is None:
+    if msg is not None:
+        await _kite_probe_notify(msg)
+    target = _order_route_probe_target()
+    if target is None:
         return
+    url, proxy = target
+    route = url.rstrip("/") + (f" through {redact_url_credentials(proxy)}" if proxy else "")
+    if proxy and (settings.KITE_ORDER_BASE_URL or "").strip():
+        # [O25f] Both set: kite_client refuses every real order; nothing is sent through the pair.
+        ok, err = False, "KITE_ORDER_PROXY_URL and KITE_ORDER_BASE_URL are both set"
+    else:
+        ok, err = await _kite_probe_get(url, proxy)
+    if not ok:
+        logger.warning("kite_order_route_probe_failed route=%s consec=%d error=%s", route,
+                       _kite_order_route_probe_state["consec_failures"] + 1, redact_url_credentials(err))
+    msg = _kite_probe_evaluate(ok, _time.monotonic(), _kite_order_route_probe_state, route=route)
+    if msg is not None:
+        await _kite_probe_notify(msg)
+
+
+async def _kite_probe_get(url: str, proxy: str = "") -> tuple[bool, str]:
+    """(answered, error): a GET of Kite's root, through ``proxy`` when one is given (no credentials sent)."""
+    import httpx as _httpx
+    try:
+        async with (_httpx.AsyncClient(proxy=proxy) if proxy else _httpx.AsyncClient()) as client:
+            resp = await client.get(url, timeout=8.0)
+        # Any response < 500 means the hop is up (relay root proxies to
+        # Kite's root, which returns 200 -- see smoke_relay.sh). A 5xx
+        # from the relay means the path to Kite is broken even though
+        # the relay process answered: that IS an outage for us.
+        if resp.status_code < 500:
+            return True, ""
+        return False, f"HTTP {resp.status_code}"
+    except Exception as e:
+        return False, str(e)
+
+
+async def _kite_probe_notify(msg: str) -> None:
+    import httpx as _httpx
     try:
         async with _httpx.AsyncClient() as client:
             await client.post(

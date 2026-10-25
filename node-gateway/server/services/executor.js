@@ -775,6 +775,16 @@ async function executeSignalSteps(signal, action, isIntraday, dispatch) {
     unknown.outcomeUnknown = true;
     throw unknown;
   }
+  // [O25] The fill is the broker's from here: free the own-cash hold.
+  // [O25b] Cleanup only: a failure (e.g. SQLITE_BUSY) keeps the hold, which
+  // errs safe, and must never stop the protection of the confirmed holding.
+  try {
+    accountCashReservations.releaseFilled(`GW:${idempotencyTag}`, { brokerOrderId: orderId });
+  } catch (err) {
+    logger.error({ event_type: 'entry_account_cash_release_failed', order_id: orderId,
+      reservation_id: `GW:${idempotencyTag}`, err: err.message,
+      note: 'hold kept; protection continues' });
+  }
   signal = { ...signal, shares: fill.filledQuantity };
   const finalNotes = isPartialFill ? `partial_fill:${fill.filledQuantity}` : "Executed via Telegram";
 

@@ -65,6 +65,8 @@ def partner_app(monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_KITE_API_SECRET", "ps_test")
     monkeypatch.setattr(settings, "PARTNER_KITE_USER_ID", "ab1234")
     monkeypatch.setattr(settings, "PARTNER_ZERODHA_SYNC_ENABLED", True)
+    # [O24-PW] The trade watch is off here; tests that check it turn it on.
+    monkeypatch.setattr(settings, "PARTNER_WATCH_ENABLED", False)
     zerodha.disconnect()
     monkeypatch.setattr(zerodha, "_review_task", None)
     monkeypatch.setattr(zerodha, "_review_state", {"state": "idle"})
@@ -216,11 +218,19 @@ async def test_bad_or_unconfigured_logins_are_refused(kite, monkeypatch):
 async def test_only_read_calls_can_leave_the_process():
     assert zerodha._ALLOWED_CALLS == {("POST", "/session/token"), ("DELETE", "/session/token"),
                                       ("GET", "/orders"), ("GET", "/trades"), ("GET", "/gtt/triggers"),
-                                      ("GET", "/portfolio/positions"), ("GET", "/user/margins/equity")}
+                                      ("GET", "/portfolio/positions"), ("GET", "/user/margins/equity"),
+                                      ("GET", "/quote")}
     # [O21-PX] One order's history is a GET with a numeric id; placing (POST
     # /orders/{variety}), modifying (PUT) and cancelling (DELETE
     # /orders/{variety}/{id}) can never match.
     assert zerodha.allowed("GET", "/orders/251021000123456")
+    # [O24-PW] One contract's minute or 5-minute candles, by numeric token.
+    assert zerodha.allowed("GET", "/instruments/historical/12071170/minute")
+    assert zerodha.allowed("GET", "/instruments/historical/12071170/5minute")
+    for path in ("/instruments/historical/12071170/day", "/instruments/historical/NIFTY/minute",
+                 "/instruments/historical/1/minute/x", "/instruments"):
+        assert not zerodha.allowed("GET", path), path
+    assert not zerodha.allowed("POST", "/quote") and not zerodha.allowed("POST", "/instruments/historical/1/minute")
     for method, path in (("POST", "/orders/regular"), ("PUT", "/orders/regular/1"), ("POST", "/gtt/triggers"),
                          ("PUT", "/gtt/triggers/7"), ("DELETE", "/gtt/triggers/7"), ("DELETE", "/orders/regular/1"),
                          ("POST", "/orders/251021000123456"), ("PUT", "/orders/251021000123456"),
@@ -412,11 +422,16 @@ async def test_login_after_the_close_reads_and_sends_the_note(kite, partner_chat
 
 
 @pytest.mark.asyncio
-async def test_login_before_the_close_reads_but_waits_for_the_wrap(kite, partner_chat):
+async def test_login_before_the_close_reads_but_waits_for_the_wrap(kite, partner_chat, monkeypatch):
+    monkeypatch.setattr(settings, "PARTNER_WATCH_ENABLED", True)
     db = settings.DB_PATH
     await _seed(db)
     await zerodha.on_login("reqtok12", T(11, 0))
-    assert (await zerodha.wait_review_sync())["note"] == "before_close" and partner_chat == []
+    assert (await zerodha.wait_review_sync())["note"] == "before_close"
+    for task in list(zerodha._watch_hooks):
+        await task
+    # [O24-PW] No coach note before the close; the only message says the trade watch is on.
+    assert [kind for kind, _text, _keys in partner_chat] == ["watch_watch_on"]
 
 
 @pytest.mark.asyncio

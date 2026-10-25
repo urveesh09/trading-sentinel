@@ -2075,7 +2075,9 @@ def _format_phase3_review(kind: str, value: object, context: Phase3MarketContext
     if kind == "calendar_diary_spread":
         return format_calendar_diary_spread(value, context=detail)
     if kind == "gamma_exposure_alert":
-        hours = max(0.0, (context.phase2.as_of.replace(hour=15, minute=30)-now).total_seconds()/3600)
+        from market_calendar import DERIVATIVES_CLOSE_TIME    # [O24-MC] the session ends at 15:40
+        close = context.phase2.as_of.replace(hour=DERIVATIVES_CLOSE_TIME.hour, minute=DERIVATIVES_CLOSE_TIME.minute)
+        hours = max(0.0, (close - now).total_seconds() / 3600)
         return format_gamma_exposure_alert("PORTFOLIO", value, hours, as_of=now)
     if kind == "earnings_event_hedge":
         return format_earnings_event_hedge(value, context.event_window, context=detail)

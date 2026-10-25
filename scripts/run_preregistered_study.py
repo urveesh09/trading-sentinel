@@ -161,6 +161,30 @@ STUDIES: dict[str, Study] = {
         drawdown_key="max_drawdown", drawdown_floor=5000.0, metrics="fno", runner="fno_replay",
         hypothesis="A faster exit loop, banking half at target, house-money pyramiding and trading only "
                    "compressed-open days beat the shipped single-leg F&O book (component arms are attribution)."),
+    # [O24g 2026-10-24] Entry-signal arms at the live exits. The shadow variants were recorded since Aug 11 but only
+    # ever given a target-hit scenario; FNO_SIG_CONTINUATION (fno_shadow FNO_CONTINUATION) is frozen here, before
+    # any replay of it. Development: the sessions earlier F&O studies and the Oct 7 exit grid used. Untouched for
+    # entry rules: Oct 12 - Oct 23 (no entry rule has been developed on them).
+    "fno-entry-t2": Study(
+        strategy="fno_policy_replay.single_leg",
+        snapshot=ROOT / "docs/research/fno/2026-10-24-entry-arms/_local",
+        base_config=lambda: {},
+        sources=("python-engine/fno_policy_replay.py", "python-engine/fno_shadow.py", "python-engine/fno_entry_plan.py",
+                 "python-engine/fno_engine_mom.py", "python-engine/fno_chain.py", "python-engine/fno_gates.py",
+                 "python-engine/fno_risk.py", "python-engine/fno_exit_rules.py", "python-engine/fno_costs.py",
+                 "python-engine/fno_shared_risk.py", "python-engine/fno_adaptive_risk.py",
+                 "python-engine/options_math.py", "python-engine/fno_exit_experiment.py",
+                 "python-engine/intraday_spread_archive_adapter.py"),
+        windows={"development": (("2026-09-10", "2026-10-09"),), "untouched": (("2026-10-12", "2026-10-23"),)},
+        arms={"BASELINE": {"policy": "CURRENT"},
+              **{name: {"policy": name} for name in (
+                  "FNO_SIG_CONTINUATION", "FNO_SIG_OR_20", "FNO_SIG_OR_45", "FNO_SIG_CONFIRM_1")}},
+        candidate="FNO_SIG_CONTINUATION", decision_window="untouched",
+        drawdown_key="max_drawdown", drawdown_floor=5000.0, metrics="fno", runner="fno_replay",
+        hypothesis="Taking the base opening-range break or a trend-day continuation (a pullback to within 0.25 "
+                   "ATR of the break level since the latest extreme, then a bar resuming the trend) beats the "
+                   "shipped entries at the live exits. FNO_SIG_OR_20, _OR_45 and _CONFIRM_1 (the recorded shadow "
+                   "variants) are scored the same way as attribution."),
     "momentum-thesis-t2": Study(
         strategy="momentum_intraday_15m_replay",
         snapshot=YAHOO / "2026-10-04-momentum-window/_local/validated-yahoo.sqlite",

@@ -535,7 +535,10 @@ class Settings(BaseSettings):
     # Cost model
     ZERODHA_BROKERAGE_PCT:    float = 0.0003  # 0.03%
     ZERODHA_BROKERAGE_MAX:    float = 20.0    # Rs20 cap
-    ZERODHA_STT_CNC:          float = 0.001   # 0.1% sell side
+    ZERODHA_STT_CNC:          float = 0.001   # 0.1% buy AND sell side (delivery)
+    # [S23-COST1] Delivery stamp duty and DP charge, as PENNY_CNC_* below.
+    ZERODHA_CNC_STAMP_DUTY_PCT: float = 0.00015
+    ZERODHA_CNC_DP_CHARGE:    float = 15.34
 
     # --- Telegram (for penny hourly report delivery) ---
     # 2026-06-23: penny hourly report now tries Telegram first, falls back
@@ -979,6 +982,36 @@ class Settings(BaseSettings):
     FNO_LIVE_TRADING:          bool  = False      # master switch
     FNO_DISABLE_PAPER:         bool  = False
     FNO_DISABLE_LIVE:          bool  = True
+    # [O25 2026-10-25] The owner's real-money F&O test (fno_live_test.py). One
+    # switch: True trades FNO_LIVE_TEST_CAPITAL of the owner's own cash on the
+    # single-leg book by mirroring the paper book (one lot of the contract the
+    # paper book just bought, NIFTY only, never on an expiry day, one position
+    # at a time). The 2%-of-pool sizing, the pool gates and the go-live bar are
+    # relaxed for this test only, by the owner's decision (Oct 25); the entry
+    # and exit rules are the paper book's. New entries stop while test equity
+    # (capital + realised real P&L) is under FNO_LIVE_TEST_FLOOR. Turning it off
+    # stops new entries; an open real position is still managed to its exit.
+    FNO_LIVE_TEST_ENABLED:     bool  = False
+    FNO_LIVE_TEST_CAPITAL:     float = 12500.0
+    FNO_LIVE_TEST_FLOOR:       float = 7000.0
+    # The real buy is a LIMIT at the fresh ask plus a few ticks (it fills at the
+    # ask or better); it is skipped when that ask is more than this above the
+    # paper book's price (the trade has run away), and never chased after.
+    FNO_LIVE_TEST_MAX_CHASE_PCT: float = 0.02
+    FNO_LIVE_TEST_ENTRY_BUFFER_TICKS: int = 2
+    # [O25b] A run is bounded: FNO_LIVE_TEST_RUN names it and it lasts
+    # FNO_LIVE_TEST_SESSIONS trading sessions from its authorized start date.
+    # Dates and length are persisted per name; delayed startup cannot extend it.
+    FNO_LIVE_TEST_RUN:         str   = "1"
+    FNO_LIVE_TEST_SESSIONS:    int   = 5
+    FNO_LIVE_TEST_START_DATE:  str   = "2026-11-02"
+    FNO_LIVE_TEST_END_DATE:    str   = "2026-11-06"
+    # [O25] The pre-registered proving week (fno_proving_week.py): the paper
+    # single-leg book's first FNO_PROVING_SESSIONS trading sessions from
+    # FNO_PROVING_START, scored once with rules fixed on Oct 25.
+    FNO_PROVING_START:         str   = "2026-10-26"
+    FNO_PROVING_SESSIONS:      int   = 5
+    FNO_EVENING_REPORT_ENABLED: bool = True
     # Broker-free opening-range research sidecar. Disabling it removes all
     # local CPU/SQLite work without changing any F&O strategy or arming flag.
     FNO_SHADOW_ENABLED:        bool  = True
@@ -1319,7 +1352,9 @@ class Settings(BaseSettings):
     PARTNER_MORNING_BRIEF_HOUR: int   = 9
     PARTNER_MORNING_BRIEF_MIN:  int   = 50
     PARTNER_EOD_HOUR:           int   = 15
-    PARTNER_EOD_MIN:            int   = 40
+    # [O24-MC 2026-10-24] 15:40 -> 15:50: F&O now trades until 15:40, and the
+    # wrap reads the partner's book and the day's last bars after the close.
+    PARTNER_EOD_MIN:            int   = 50
     # IV/RV ratio bands for the premium rich/cheap read (option-buyer lens).
     PARTNER_IV_RICH_RATIO:      float = 1.25
     PARTNER_IV_CHEAP_RATIO:     float = 0.80
@@ -1372,6 +1407,21 @@ class Settings(BaseSettings):
     # With Zerodha fills the Bought/Skipped/Sold buttons are redundant, so
     # cards go out without them unless this is on. Typed replies still work.
     PARTNER_FILL_BUTTONS_WITH_ZERODHA: bool = False
+    # [O24-PW 2026-10-24] The partner's trade watch (partner_watch.py): after a
+    # login, read their order book every POLL_SEC and send loss-first messages
+    # (a buy's plan, no stop, stop moved down or cancelled, refusals, the
+    # close). Messages only: it never places, changes or cancels an order.
+    # The login button goes out at PROMPT_HOUR:PROMPT_MIN on trading days.
+    PARTNER_WATCH_ENABLED:         bool  = True
+    PARTNER_WATCH_POLL_SEC:        int   = 5
+    PARTNER_WATCH_PROMPT_HOUR:     int   = 9
+    PARTNER_WATCH_PROMPT_MIN:      int   = 0
+    # [O24g] The partner's order updates over Kite's websocket wake the watch
+    # at once (partner_watch_stream.py); the 5 s reads go on regardless. Off
+    # until the partner's key has a plan with the websocket and a live day
+    # has checked it.
+    PARTNER_WATCH_STREAM_ENABLED:  bool  = False
+    PARTNER_KITE_WS_URL:           str   = "wss://ws.kite.trade"
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True
@@ -1661,6 +1711,19 @@ class Settings(BaseSettings):
     # Relay is a path-preserving forward proxy; auth + X-Kite-Version headers pass through.
     # Override with KITE_BASE_URL in .env (e.g. http://161.118.160.180:31527).
     KITE_BASE_URL: str = "https://api.kite.trade"
+    # [O25 2026-10-25] Where order writes (place, modify, cancel) go. Kite only
+    # accepts orders from the app's registered static IPs; reads do not need
+    # one. Empty = KITE_BASE_URL. On the home desktop set it to the relay
+    # (http://161.118.160.180:31527), whose IP is registered, so quotes can
+    # stay direct while orders leave from the registered address.
+    KITE_ORDER_BASE_URL: str = ""
+    # [O25b] Preferred when the VM runs a CONNECT proxy: orders go to
+    # https://api.kite.trade through it, encrypted end to end, and still leave
+    # from the registered IP. Set this OR KITE_ORDER_BASE_URL, not both.
+    # [O25c] The VM's proxy is scripts/kite_tunnel.py (CONNECT to api.kite.trade:443
+    # only, with a password): http://kite:<password>@161.118.160.180:31528. The
+    # password is never printed (kite_client.redact_url_credentials).
+    KITE_ORDER_PROXY_URL: str = ""
     # [FOLLOW-UP-F3 2026-10-08] Kite documents 1 quote request/second (up to
     # 500 instruments each). kite_client.QuoteBudget enforces it and merges
     # concurrent token requests into one call; the shared limiter (3/s, all

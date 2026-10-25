@@ -69,7 +69,11 @@ services:
         SENTINEL_BUILD_UTC: ${SENTINEL_BUILD_UTC:-unknown}
         SENTINEL_SERVICE_NAME: node-gateway
     container_name: node-gateway
-    restart: unless-stopped
+    # [O25f 2026-10-25] always, not unless-stopped: a Docker Desktop update on Oct 25
+    # (11:12-11:15 IST) stopped every container and restarted Docker, and only the
+    # `always` services came back. The engine, gateway and agent stayed down, with no
+    # Telegram (the gateway sends it). Stop the stack with `docker compose down`.
+    restart: always
     mem_limit: 768m
     cpus: 2
     expose:
@@ -112,7 +116,14 @@ services:
         SENTINEL_BUILD_UTC: ${SENTINEL_BUILD_UTC:-unknown}
         SENTINEL_SERVICE_NAME: python-engine
     container_name: python-engine
-    restart: unless-stopped
+    restart: always          # [O25f] see node-gateway
+    # [S23-SG 2026-10-23] Time to shut down cleanly. Without it a redeploy
+    # SIGKILLed the engine 3 s after SIGTERM (Oct 22 19:38, exit 137, startup
+    # cause=unclean_stop): no background drain, no exit-path flush, no
+    # clean_shutdown receipt. Worst case: uvicorn's 10 s graceful wait
+    # (Dockerfile), liveness join 10 s, background drain 5 s, exit-path
+    # writer 5 s = 30 s, plus margin.
+    stop_grace_period: 45s
     # Largest cap: pandas scans over the 500-ticker universe spike well
     # above the ~160M steady state. 3g is still 1/5 of the host.
     mem_limit: 3g
@@ -171,7 +182,7 @@ services:
         SENTINEL_BUILD_UTC: ${SENTINEL_BUILD_UTC:-unknown}
         SENTINEL_SERVICE_NAME: agent
     container_name: agent
-    restart: unless-stopped
+    restart: always          # [O25f] see node-gateway
     mem_limit: 768m
     cpus: 2
     environment:
