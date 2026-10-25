@@ -1,5 +1,12 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 25 — O25e actual Oracle tunnel installation; application adoption pending
+
+- Recovered the owner's SSH key from the attached Linux USB without writing to that disk or exposing key contents. Strict saved-host-key verification authenticated the existing Mumbai `trading-sentinel` VM as `ubuntu`; the earlier missing-key blocker is resolved.
+- The exact pushed O25d tunnel (`94a262a`) is installed on the VM, active/enabled on 31528, with a persisted VM firewall rule and root-only settings. Actual service self-test passed **407 / 403 / verified TLS HTTP 200**. Both Dev client transports passed against that service through a temporary SSH forward; the gateway test used a disposable Linux image. No real credentials/orders were used and the temporary forward is closed.
+- External 31528 still times out. Oracle Console remains at owner password recovery; cloud ingress and direct client verification are incomplete. The old 31527 relay stays running. Protected client settings are outside both repositories and have not been applied to Production. The application remains at `582d7a5`, live-test switch default off, PR #115 unmerged.
+- A read-only inspection found the Production engine/gateway already stopped at 11:11:48 / 11:11:51 IST (exit 137, OOMKilled false), before this setup. No cause is established and no restart was performed. Resolve during the authorized rollout before expecting proving-week messages. See [the installation receipt](2026-10-25-oracle-tunnel-installation.md) for verification, rollback and remaining steps. No application source changed in this slice.
+
 ## October 25 — O25d live-test admission and tunnel setup corrections (Dev, code `94a262a`, pushed, not deployed)
 
 - `fno_live_test.current_run` stores the authorized start (`FNO_LIVE_TEST_START_DATE`, default `2026-11-02`), end (`FNO_LIVE_TEST_END_DATE`, default `2026-11-06`) and session limit (5). Existing names use their stored dates/length, never a later environment value. Delayed first startup consumes the earlier sessions; it does not shift the window. A pre-start or ended run cannot buy. Open-position exit management is independent and remains active.

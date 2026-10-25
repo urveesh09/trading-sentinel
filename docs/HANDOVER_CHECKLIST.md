@@ -1,5 +1,15 @@
 # Handover receipt and operator checklist
 
+## October 25 — O25e VM installation receipt; cloud ingress pending
+
+- [x] Owner's attached Linux USB searched read-only; recovered SSH access, strict saved-host-key match, authenticated expected Mumbai VM. Key and client settings are protected outside the repositories; no private values printed/committed.
+- [x] Installed exact O25d source `94a262a`; matching SHA-256, active/enabled service, persisted VM TCP 31528 rule, settings/logs `0600`. Existing 31527 process retained.
+- [x] Actual VM self-test **407 / 403 / verified TLS HTTP 200**. Engine and gateway client transports passed against this service through a temporary SSH forward (gateway in disposable Linux image). Fake tokens only; no order calls. Temporary resources closed/removed.
+- [ ] Owner finishes Oracle Console sign-in/password recovery; inspect existing security list / NSG and permit 31528, then verify the direct public path. External TCP still times out.
+- [ ] GitHub promotion of PR #115, operator client configuration, actual login/preflight and later funding/order test/Nov 2–6 activation. Production remains `582d7a5`, no tracked diff; no application restart or live-trading enablement.
+- [ ] Production engine/gateway already stopped at 11:11:48 / 11:11:51 IST (exit 137, OOMKilled false), before this install. Diagnose/restore through the authorized rollout before Monday's messages are expected. Cause not established.
+- Full [installation/rollback receipt](2026-10-25-oracle-tunnel-installation.md). This supersedes the older missing-SSH-key statement below; application deployment remains pending.
+
 ## October 25 — O25d remediation receipt (Dev code `94a262a`, pushed; VM access pending)
 
 - [x] Documentation identity receipt `ca189f8` pushed; [draft PR #115](https://github.com/urveesh09/trading-sentinel/pull/115) created/attached for normal GitHub promotion. Not merged or deployed; broader S23–O25 branch changes are included.

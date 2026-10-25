@@ -1,5 +1,16 @@
 # Runbook: the ₹12,500 real-money F&O test (O25–O25d)
 
+_O25e actual setup, October 25: the tunnel is now installed and verified on
+the existing Oracle VM, with its VM firewall rule persisted. SSH access was
+recovered from the owner's attached Linux disk. External TCP 31528 still
+times out, so step 4's Oracle cloud rule and the direct public route remain
+pending; the owner is completing Oracle sign-in. Both client transports
+passed against the actual service through a temporary SSH forward, which
+is now closed. Steps 5 onward are not completed; no application configuration,
+Production restart or real order occurred. See the
+[installation receipt](../2026-10-25-oracle-tunnel-installation.md), including
+the observation that the Production engine/gateway were already stopped._
+
 _Written 2026-10-25, revised the same day after the audit-agent review (O25b) and
 for the owner's dates and the encrypted tunnel (O25c). Code:
 `python-engine/fno_live_test.py`, `fno_executor.py`, `fno_orchestrator.py`,
