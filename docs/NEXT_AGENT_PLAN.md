@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 25 — O25k A 07:00 login reminder for the owner and the partner, each with their own link; F&O the only channel to open (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, pushed)
+## October 25 — O25k A 07:00 login reminder for the owner and the partner, each with their own link; F&O the only channel to open (done, Dev, commit `1d40091`, branch `codex/production-correction-hedge-p0`, pushed)
 
 - Owner ask (Oct 25):
   - "OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge, this you add right now";

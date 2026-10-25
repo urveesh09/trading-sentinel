@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 25 — O25k 07:00 login reminders with each person's own link; per-channel halt set (commit pending (recorded in the next docs commit), pushed)
+## October 25 — O25k 07:00 login reminders with each person's own link; per-channel halt set (commit `1d40091`, pushed)
 
 - [x] Production `.env`: OWNER_LIVE_ENTRY_HALT_CHANNELS=momentum,penny,edge. The global halt is still true.
 - [x] 07:00 on trading days:

@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 25 — O25k The morning login reminder (actual behavior, commit pending (recorded in the next docs commit))
+## October 25 — O25k The morning login reminder (actual behavior, commit `1d40091`)
 
 - **Job `premarket_login_nudge`.** Cron LOGIN_REMINDER_HOUR:LOGIN_REMINDER_MINUTE (07:00 IST), misfire grace 30 min, NSE trading days only.
   1. **Owner:** unless `token_is_fresh_today()`, `notify_operator(login_nudge_text(…, owner_login_url()))`. The plain text holds `https://kite.zerodha.com/connect/login?v=3&api_key=<ZERODHA_API_KEY>`, then the last refresh time and the pending bootstrap tasks.
