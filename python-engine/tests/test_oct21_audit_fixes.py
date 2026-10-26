@@ -46,6 +46,20 @@ QUIET = [(14, 45, 100.2, 100.8, 99.6, 100.5), (15, 0, 100.5, 101.0, 100.1, 100.9
          (15, 15, 100.9, 101.2, 100.4, 100.6)]
 
 
+def nfo_master(day, *names):
+    """[O26d] Kite's NFO contract master as the morning refresh archives it on ``day`` (the real archive writer):
+    stock futures of ``names`` and one index option."""
+    from datetime import timezone
+    from research_archive import archive_contract_master
+    rows = ["instrument_token,exchange_token,tradingsymbol,name,last_price,expiry,strike,tick_size,lot_size,"
+            "instrument_type,segment,exchange"]
+    rows += [f"{i},{i},{name}26DECFUT,{name},0,2026-12-29,0,0.05,100,FUT,NFO-FUT,NFO"
+             for i, name in enumerate(names, start=1)]
+    rows.append("999,999,NIFTY26DEC22300PE,NIFTY,0,2026-12-29,22300,0.05,65,PE,NFO-OPT,NFO")
+    archive_contract_master(settings.RESEARCH_ARCHIVE_PATH, provider="KITE", segment="NFO", raw_csv="\n".join(rows),
+                            observed_at=datetime.fromisoformat(f"{day}T03:00:00").replace(tzinfo=timezone.utc))
+
+
 async def _events(db, ticker="AAA"):
     async with aiosqlite.connect(db) as conn:
         return await (await conn.execute(
@@ -103,7 +117,7 @@ async def test_missing_data_is_censored_and_a_later_pass_can_close_it():
     async def broken(ticker):
         if ticker == "AAA":
             raise RuntimeError("provider down")
-        return _bars(QUIET[:2])                     # nothing at or after 15:15
+        return _bars(QUIET[:1])                     # nothing at or after 15:00 ([O26c] a 15:00 bar gives 15:15)
 
     summary = await ms.resolve_momentum_shadow_day(db, DAY, broken)
     assert summary["censored"] == 2 and summary["closed"] == 0
@@ -119,6 +133,176 @@ async def test_missing_data_is_censored_and_a_later_pass_can_close_it():
 
     await ms.resolve_momentum_shadow_day(db, DAY, fixed)
     assert (await _receipt(db, "AAA"))[0] == "CLOSED" and (await _receipt(db, "BBB"))[0] == "CLOSED"
+
+
+@pytest.mark.asyncio
+async def test_a_closing_auction_stock_takes_its_1515_exit_at_the_last_continuous_price():
+    """[O26c, Oct 26 audit O26-R1] F&O stocks trade continuously only to 15:15 (the closing auction follows), so
+    their session has no 15:15 bar: all 22 censored trades of Oct 26 were such stocks. Their 15:15 price is the
+    15:00 bar's close; the 15:00 bar's own stop and target still come first."""
+    import momentum_shadow as ms
+    db = settings.DB_PATH
+    nfo_master(DAY, "AAA", "BBB")                    # [O26d] dated evidence: both had stock futures that day
+    await ms.persist_momentum_shadow_results(db, [_accepted("AAA"), _accepted("BBB")])
+
+    async def fetch(ticker):
+        return _bars(QUIET[:2] if ticker == "AAA" else
+                     [(14, 45, 100.2, 100.8, 99.6, 100.5), (15, 0, 100.0, 100.1, 97.5, 97.8)])
+
+    summary = await ms.resolve_momentum_shadow_day(db, DAY, fetch)
+    assert summary == {"open": 2, "closed": 2, "censored": 0, "tickers": 2}
+    closed = (await _events(db, "AAA"))[-1]
+    assert closed[:3] == ("CLOSED", "time_exit", f"{DAY}T15:15:00+05:30")
+    assert closed[3] == pytest.approx(100.9 * (1 - 5 / 10000), abs=1e-6)          # the 15:00 bar's close
+    assert await _receipt(db, "AAA") == ("CLOSED", ms.LAST_CONTINUOUS, f"{DAY}T15:15:00+05:30")
+    assert (await _events(db, "BBB"))[-1][:3] == ("CLOSED", "stop", f"{DAY}T15:00:00+05:30")
+    assert await _receipt(db, "BBB") == ("CLOSED", "stop", f"{DAY}T15:00:00+05:30")
+    # Production's bars carry no zone (as its stored trades): the derived bar keeps that form; none without 15:00.
+    naive = [{"bar_ts": f"{DAY}T15:00:00", "open": 1.0, "high": 1.0, "low": 1.0, "close": 2.5}]
+    assert ms._last_continuous_at_time_exit(naive) == {"bar_ts": f"{DAY}T15:15:00", "open": 2.5, "high": 2.5,
+                                                         "low": 2.5, "close": 2.5,
+                                                         "modelled": ms.EXECUTION.cas_time_exit}
+    assert ms._last_continuous_at_time_exit([naive[0] | {"bar_ts": f"{DAY}T14:45:00"}]) is None
+    assert ms._last_continuous_at_time_exit([]) is None
+    # [O26d] Counted apart as modelled prices, not fills.
+    row = next(r for r in (await ms.momentum_shadow_comparison(db))["variants"] if r["variant"] == "MOM_RS_PULLBACK")
+    assert row["modelled_time_exit_closes"] == 1 and row["modelled_time_exit_net_pnl"] is not None
+
+
+def test_a_missing_1515_bar_is_a_closing_auction_only_with_dated_evidence():
+    """[O26d, independent review R3] The O26c fallback took any session ending at 15:00 as a closing-auction one:
+    a 2025 date, a stock without derivatives, a feed that stopped early. Now all must hold: the execution declares
+    the model; the session is in CAS phase 1 (from 2026-08-03, before SEBI's revised framework of 2026-12-07); the
+    ticker had stock futures in that day's archived contract master."""
+    import momentum_shadow as ms
+    nfo_master(DAY, "AAA")
+    nfo_master("2026-12-04", "AAA")
+    assert ms.cas_time_exit_evidence("AAA", DAY) == "ELIGIBLE"
+    assert ms.cas_time_exit_evidence("aaa ", DAY) == "ELIGIBLE"
+    assert ms.cas_time_exit_evidence("CCC", DAY) == "NOT_LISTED"                    # no derivatives that day
+    assert ms.cas_time_exit_evidence("NIFTY", DAY) == "NOT_LISTED"                  # an index, not a stock future
+    assert ms.cas_time_exit_evidence("AAA", "2026-10-22") == "NO_DATED_MASTER"      # never today's list for a past day
+    assert ms.cas_time_exit_evidence("AAA", "2026-08-02") == "NOT_IN_FORCE"         # before the auction began
+    assert ms.cas_time_exit_evidence("AAA", "2025-01-02") == "NOT_IN_FORCE"
+    assert ms.cas_time_exit_evidence("AAA", "2026-12-04") == "ELIGIBLE"
+    assert ms.cas_time_exit_evidence("AAA", "2026-12-07") == "NOT_IN_FORCE"         # the revised framework's day
+    legacy = ms.momentum_shadow_execution_config()
+    legacy.pop("cas_time_exit")
+    assert ms.cas_time_exit_evidence("AAA", DAY, execution=legacy) == "NO_MODEL"
+
+
+@pytest.mark.asyncio
+async def test_without_that_evidence_a_session_ending_at_1500_stays_censored():
+    """[O26d] Not listed, no master that day, or a feed that ended before 15:00: censored, saying why. Bars are
+    put in time order first: an unsorted frame still finds its 15:00 bar."""
+    import momentum_shadow as ms
+    db = settings.DB_PATH
+    nfo_master(DAY, "AAA", "DDD")
+    await ms.persist_momentum_shadow_results(db, [_accepted(t) for t in ("AAA", "CCC", "DDD")])
+
+    async def fetch(ticker):
+        if ticker == "DDD":
+            return _bars(QUIET[:1])                                     # the feed stopped at 14:45
+        return _bars(QUIET[:2])[::-1]                                   # unsorted, ends 15:00
+
+    summary = await ms.resolve_momentum_shadow_day(db, DAY, fetch)
+    assert summary == {"open": 3, "closed": 1, "censored": 2, "tickers": 3}
+    assert await _receipt(db, "AAA") == ("CLOSED", ms.LAST_CONTINUOUS, f"{DAY}T15:15:00+05:30")
+    assert (await _receipt(db, "CCC"))[:2] == ("CENSORED", "no_terminal_bar:cas_not_listed")
+    assert (await _receipt(db, "DDD"))[:2] == ("CENSORED", "no_terminal_bar")
+
+
+async def _saved_trade(db, ticker, variant, **changes):
+    """[O26e] A trade stored with its own execution (as an older engine wrote it): ``changes`` set fields, a None
+    drops one. Trades are immutable once inserted, so the old record is inserted as it was."""
+    import json
+    import momentum_shadow as ms
+    execution = ms.momentum_shadow_execution_config()
+    for key, value in changes.items():
+        if value is None:
+            execution.pop(key)
+        else:
+            execution[key] = value
+    await ms.init_momentum_shadow_db(db)
+    async with aiosqlite.connect(db) as conn:
+        await conn.execute(
+            "INSERT INTO momentum_shadow_trades (trading_date,ticker,variant,entry_bar_ts,raw_entry,entry_fill,"
+            "stop_price,target_price,quantity,initial_risk,config_json,execution_json,dataset_fingerprint,created_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (DAY, ticker, variant, f"{DAY}T14:30:00+05:30", 100.0, 100.05, 98.0, 104.0, 10, 20.5, "{}",
+             json.dumps(execution, sort_keys=True), "sha256:test", f"{DAY}T09:00:00+00:00"))
+        await conn.commit()
+
+
+async def _receipt_of(db, ticker, variant):
+    async with aiosqlite.connect(db) as conn:
+        return await (await conn.execute(
+            "SELECT status, detail, terminal_bar_ts FROM momentum_shadow_terminal_receipts WHERE ticker=? AND "
+            "variant=?", (ticker, variant))).fetchone()
+
+
+@pytest.mark.asyncio
+async def test_each_trade_is_resolved_under_its_own_saved_execution():
+    """[O26e, the O26d recheck's F1] The terminal pass decided once per ticker under today's model: a legacy trade
+    whose saved execution never declared the closing-auction model was closed by it. Now each trade's own record
+    decides; a rerun changes nothing."""
+    import momentum_shadow as ms
+    db = settings.DB_PATH
+    nfo_master(DAY, "AAA")
+    await ms.persist_momentum_shadow_results(db, [_accepted("AAA")])               # MOM_RS_PULLBACK: today's
+    await _saved_trade(db, "AAA", "MOM_BASE", cas_time_exit=None)                   # an older record
+    assert ms.cas_time_exit_evidence("AAA", DAY, execution=ms._saved_execution(
+        {"execution_json": __import__("json").dumps({k: v for k, v in ms.momentum_shadow_execution_config().items()
+                                                     if k != "cas_time_exit"})})) == "NO_MODEL"
+
+    async def fetch(ticker):
+        return _bars(QUIET[:2])                                                     # ends with the 15:00 bar
+
+    assert await ms.resolve_momentum_shadow_day(db, DAY, fetch) == {"open": 2, "closed": 1, "censored": 1,
+                                                                    "tickers": 1}
+    assert await _receipt_of(db, "AAA", "MOM_RS_PULLBACK") == ("CLOSED", ms.LAST_CONTINUOUS, f"{DAY}T15:15:00+05:30")
+    assert (await _receipt_of(db, "AAA", "MOM_BASE"))[:2] == ("CENSORED", "no_terminal_bar:cas_no_model")
+    assert await ms.resolve_momentum_shadow_day(db, DAY, fetch) == {"open": 1, "closed": 0, "censored": 1,
+                                                                    "tickers": 1}
+    assert (await _receipt_of(db, "AAA", "MOM_BASE"))[:2] == ("CENSORED", "no_terminal_bar:cas_no_model")
+
+
+@pytest.mark.asyncio
+async def test_a_declared_time_exit_and_slippage_are_the_trades_own():
+    """[O26e] A record declaring a 15:00 exit (and 10 bps) leaves at the 15:00 open; one declaring 15:30 gets no
+    derived 15:15 bar (the model is only for a 15:15 exit) and stays censored."""
+    import momentum_shadow as ms
+    db = settings.DB_PATH
+    nfo_master(DAY, "AAA")
+    await _saved_trade(db, "AAA", "MOM_BASE", time_exit_minute=0, exit_slippage_bps=10.0)
+    await _saved_trade(db, "AAA", "MOM_RECENCY_5", time_exit_minute=30)
+
+    async def fetch(ticker):
+        return _bars(QUIET[:2])
+
+    await ms.resolve_momentum_shadow_day(db, DAY, fetch)
+    async with aiosqlite.connect(db) as conn:
+        closed = await (await conn.execute(
+            "SELECT event_type, reason, bar_ts, exit_fill FROM momentum_shadow_trade_events WHERE variant='MOM_BASE' "
+            "AND event_type='CLOSED'")).fetchone()
+    assert closed[:3] == ("CLOSED", "time_exit", f"{DAY}T15:00:00+05:30")
+    assert closed[3] == pytest.approx(100.5 * (1 - 10 / 10000), abs=1e-6)
+    assert (await _receipt_of(db, "AAA", "MOM_RECENCY_5"))[:2] == ("CENSORED", "no_terminal_bar")
+    later = ms.momentum_shadow_execution_config() | {"time_exit_minute": 30}
+    assert ms.cas_time_exit_evidence("AAA", DAY, execution=later) == "NO_MODEL"
+
+
+@pytest.mark.asyncio
+async def test_no_dated_master_leaves_the_trade_censored():
+    import momentum_shadow as ms
+    db = settings.DB_PATH
+    await ms.persist_momentum_shadow_results(db, [_accepted("AAA")])
+
+    async def fetch(ticker):
+        return _bars(QUIET[:2])
+
+    assert (await ms.resolve_momentum_shadow_day(db, DAY, fetch))["censored"] == 1
+    assert (await _receipt(db, "AAA"))[:2] == ("CENSORED", "no_terminal_bar:cas_no_dated_master")
 
 
 @pytest.mark.asyncio

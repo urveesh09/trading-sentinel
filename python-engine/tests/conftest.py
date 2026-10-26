@@ -48,6 +48,35 @@ def pytest_sessionfinish(session, exitstatus):
                             "so the run can exit", yellow=True)
 
 
+# -- No real network [O26c, O26d 2026-10-26] -------------------------
+# The suite runs on the developer's machine, whose .env holds the real bot
+# tokens. On Oct 26 a test that calls every scheduled job polled the real
+# partner bot during market hours: Production's own poll got Telegram's 409
+# three times (and backed off 10 minutes each time), and the penny hourly
+# report test called Telegram too. Every test gets fake tokens
+# (patch_settings), and tests/netguard refuses lookups and connections to
+# any non-local host, numeric addresses and asyncio included. Its folder goes
+# first on PYTHONPATH so a Python child process that inherits the
+# environment loads the same guard (its docstring says what is not covered).
+
+_NETGUARD_DIR = os.path.join(os.path.dirname(__file__), "netguard")
+
+
+def _install_netguard():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("sentinel_netguard", os.path.join(_NETGUARD_DIR, "sitecustomize.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules["sentinel_netguard"] = module
+    if os.environ.get(module.OPT_IN) != "1":
+        os.environ["PYTHONPATH"] = os.pathsep.join(
+            [_NETGUARD_DIR] + [p for p in os.environ.get("PYTHONPATH", "").split(os.pathsep) if p])
+    return module
+
+
+netguard = _install_netguard()
+
+
 # -- Fake Settings ----------------------------------------------------
 
 @pytest.fixture(autouse=True)
@@ -60,6 +89,12 @@ def patch_settings(monkeypatch, tmp_path):
 
     db_file = str(tmp_path / "test_cache.db")
     monkeypatch.setattr(settings, "DB_PATH", db_file)
+    for name in ("TELEGRAM_BOT_TOKEN", "PARTNER_TELEGRAM_BOT_TOKEN"):        # [O26c] never the real bots
+        monkeypatch.setattr(settings, name, f"test-{name.lower()}")
+    for name in ("TELEGRAM_CHAT_ID", "PARTNER_TELEGRAM_CHAT_ID"):
+        monkeypatch.setattr(settings, name, "1")
+    for name in ("PARTNER_KITE_API_KEY", "PARTNER_KITE_API_SECRET"):
+        monkeypatch.setattr(settings, name, f"test-{name.lower()}")
     monkeypatch.setattr(settings, "INITIAL_BANKROLL", 5000.0)
     monkeypatch.setattr(settings, "RISK_PCT", 0.10)
     monkeypatch.setattr(settings, "MAX_OPEN_POSITIONS", 6)

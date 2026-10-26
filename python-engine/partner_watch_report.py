@@ -17,8 +17,15 @@ Ticks (``partner_watch_state`` ``ticks:<day>:<process start>``): how they
 ended, their length and the order-book read's, and the order stream's
 numbers. Seconds and milliseconds are p50 / p95 / max.
 
-Facts about the watch's timing and delivery; nothing about whether its
-advice made or saved money.
+[O26] Trades (``partner_watch_trips``), per day: closed, won and lost, the
+result after charges (exact during the day, from Zerodha's trade book; "from
+the orders" when a fill was not in it yet), what is open, and each trade with
+what a check would have warned about at its buy (the run before it, a losing
+exit just before, the size against the usual).
+
+Facts about the watch's timing and delivery, and the partner's own results;
+nothing about whether its advice made or saved money (partner_watch_score
+scores the warnings).
 """
 from __future__ import annotations
 
@@ -60,7 +67,7 @@ def report(db_path: str, first_day: Optional[str] = None, last_day: Optional[str
     try:
         cols = {row[1] for row in db.execute("PRAGMA table_info(partner_watch_messages)")}
         if not cols:
-            return {"first_day": first_day, "last_day": last_day, "messages": {}, "ticks": {}}
+            return {"first_day": first_day, "last_day": last_day, "messages": {}, "ticks": {}, "trades": {}}
         if first_day is None:
             first_day = db.execute("SELECT MAX(session_date) FROM partner_watch_messages").fetchone()[0]
         last_day = last_day or first_day
@@ -70,6 +77,7 @@ def report(db_path: str, first_day: Optional[str] = None, last_day: Optional[str
             "WHERE session_date>=? AND session_date<=? ORDER BY created_at", (first_day, last_day)).fetchall()
         ticks = db.execute("SELECT key, value FROM partner_watch_state WHERE key>=? AND key<?",
                            (f"ticks:{first_day}", f"ticks:{last_day}~")).fetchall()
+        trips = _trips(db, first_day, last_day)
     finally:
         db.close()
     kinds: dict = {}
@@ -114,7 +122,65 @@ def report(db_path: str, first_day: Optional[str] = None, last_day: Optional[str
             "updates": sum(int(stream.get("updates") or 0) for stream in merged["stream"]),
             "errors": _summed(stream.get("errors") or {} for stream in merged["stream"]),
             "lag_ms": spread(lags)} if merged["stream"] else None
-    return {"first_day": first_day, "last_day": last_day, "messages": kinds, "ticks": days}
+    return {"first_day": first_day, "last_day": last_day, "messages": kinds, "ticks": days, "trades": trips}
+
+
+TRIP_COLS = ("session_date", "first_at", "closed_at", "tradingsymbol", "product", "bought", "sold", "entry", "exit",
+             "realised", "exact", "carried", "run_pct", "prior_exit", "usual", "cash", "opening_qty", "opening_value",
+             "opening_final", "paid_share")
+
+
+def _trips(db, first_day: str, last_day: str) -> dict:
+    """[O26] The trades the watch stored (``partner_watch_trips``), by day, in buy order; {} before O26."""
+    if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='partner_watch_trips'").fetchone():
+        return {}
+    out: dict = {}
+    have = {row[1] for row in db.execute("PRAGMA table_info(partner_watch_trips)")}
+    cols = [c if c in have else f"NULL AS {c}" for c in TRIP_COLS]
+    for row in db.execute(f"SELECT {', '.join(cols)} FROM partner_watch_trips WHERE session_date>=? AND "
+                          "session_date<=? ORDER BY session_date, first_at", (first_day, last_day)):
+        trip = dict(zip(TRIP_COLS, row))
+        try:
+            trip["prior_exit"] = json.loads(trip["prior_exit"]) if trip["prior_exit"] else None
+        except ValueError:
+            trip["prior_exit"] = None
+        out.setdefault(trip["session_date"], []).append(trip)
+    return out
+
+
+def day_totals(trips: list) -> dict:
+    """[O26] A day's trades bought that day (carried ones apart): closed, won, lost, the result after charges,
+    whether every closed one is from Zerodha's trade book, and how many are still open."""
+    today = [t for t in trips if not t["carried"]]
+    closed = [t for t in today if t["realised"] is not None]
+    return {"closed": len(closed), "won": sum(t["realised"] > 0 for t in closed),
+            "lost": sum(t["realised"] < 0 for t in closed), "net": round(sum(t["realised"] for t in closed), 2),
+            "exact": all(t["exact"] for t in closed), "open": sum(t["realised"] is None for t in today),
+            "carried": len(trips) - len(today)}
+
+
+def _rupees(value: float) -> str:
+    return f"{'−' if value < 0 else '+'}₹{abs(value):,.0f}"
+
+
+def _trip_line(trip: dict) -> str:
+    at = (_dt(trip["first_at"]) or datetime.min).strftime("%H:%M")
+    held = f"{trip['bought']} @ {trip['entry']:g}" if trip["entry"] is not None else f"{trip['bought']}"
+    if trip["realised"] is not None:
+        out = f" → {trip['exit']:g} {_rupees(trip['realised'])}" + ("" if trip["exact"] else " (from orders)")
+    else:
+        out = f", open ({trip['sold']} sold)" if trip["sold"] else ", open"
+    from partner_watch_score import POSITIVE, evidence_of
+    marks = []
+    if trip["run_pct"] is not None:
+        marks.append(f"run {math.floor(trip['run_pct'] * 100 + 1e-9)}%")
+    if evidence_of(trip)["AFTER_LOSS"] == POSITIVE:    # [O26d] the scorer's frozen rule, on the stored evidence
+        marks.append(f"{trip['prior_exit']['minutes']} min after a {_rupees(trip['prior_exit']['result'])} exit")
+    if trip["usual"] and trip["paid_share"] is not None:
+        marks.append(f"size {trip['paid_share']:.0%} (usual {trip['usual']:.0%})")
+    carried = " carried" if trip["carried"] else ""
+    return f"    {at} {trip['tradingsymbol']} {trip['product']}{carried} {held}{out}" + (
+        f"  [{'; '.join(marks)}]" if marks else "")
 
 
 def _summed(dicts) -> dict:
@@ -132,7 +198,7 @@ def _span(values: Optional[dict], unit: str) -> str:
 def render(data: dict) -> str:
     """The report as plain text."""
     lines = [f"Trade watch, {data['first_day']} to {data['last_day']}"]
-    if not data["messages"] and not data["ticks"]:
+    if not data["messages"] and not data["ticks"] and not data.get("trades"):
         return "\n".join(lines + ["Nothing recorded."])
     lines.append("Messages: sent/all, how they ended; seen and sent in seconds (p50 / p95 / max); found by")
     for kind in sorted(data["messages"]):
@@ -153,6 +219,13 @@ def render(data: dict) -> str:
             lines.append(f"  Stream: {'/'.join(stream['states']) or '-'}; connections {stream['connects']}; order "
                          f"updates {stream['updates']}; errors {errors}; exchange to receipt "
                          f"{_span(stream['lag_ms'], 'ms')}")
+    for day in sorted(data.get("trades") or {}):
+        trips, totals = data["trades"][day], day_totals(data["trades"][day])
+        lines.append(f"Trades {day}: {totals['closed']} closed ({totals['won']} won, {totals['lost']} lost), "
+                     f"{_rupees(totals['net'])} after charges"
+                     + ("" if totals["exact"] else " (some fills from the orders, not the trade book)")
+                     + f"; {totals['open']} open" + (f"; {totals['carried']} carried in" if totals["carried"] else ""))
+        lines.extend(_trip_line(trip) for trip in trips)
     return "\n".join(lines)
 
 

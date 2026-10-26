@@ -7,8 +7,9 @@ test the same immutable frames before choosing where to record the evidence.
 """
 from __future__ import annotations
 
+import asyncio
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
 import math
@@ -72,6 +73,10 @@ class MomentumShadowExecution:
     sebi_pct: float = 0.000001
     ipft_pct: float = 0.000000001
     gst_pct: float = 0.18
+    # [O26d] A closing-auction stock's 15:15 time exit, valued at its 15:00 bar's close (modelled, not a fill),
+    # only with dated evidence (``cas_time_exit_evidence``). Versioned: a replay applies it only to an execution
+    # that declares it.
+    cas_time_exit: str = "cas_phase1_last_continuous_close_v1"
 
 
 EXECUTION = MomentumShadowExecution(
@@ -408,16 +413,34 @@ async def init_momentum_shadow_db(db_path: str) -> None:
         await db.commit()
 
 
+def _saved_execution(trade) -> dict:
+    """[O26e] The execution saved with a trade when it opened ({} when unreadable)."""
+    try:
+        saved = json.loads(trade["execution_json"])
+    except (KeyError, IndexError, TypeError, ValueError):
+        return {}
+    return saved if isinstance(saved, dict) else {}
+
+
+def _time_exit_of(execution: dict | None) -> tuple[int, int]:
+    """[O26e] A saved execution's declared time exit (the published one for a record without it)."""
+    execution = execution or {}
+    return (int(execution.get("time_exit_hour", EXECUTION.time_exit_hour)),
+            int(execution.get("time_exit_minute", EXECUTION.time_exit_minute)))
+
+
 def _exit_for_bar(trade, bar: dict, *, overnight: bool = False) -> tuple[str, float] | None:
     stop, target = float(trade["stop_price"]), float(trade["target_price"])
     bar_open = float(bar["open"])
-    slip = EXECUTION.exit_slippage_bps / 10000.0
+    # [O26e] The trade's own saved slippage and time exit (as its costs already are), not today's.
+    saved = _saved_execution(trade)
+    slip = float(saved.get("exit_slippage_bps", EXECUTION.exit_slippage_bps)) / 10000.0
     if overnight:
         return "overnight_gap_exit", bar_open * (1.0 - slip)
     parsed = datetime.fromisoformat(str(bar["bar_ts"]).replace("Z", "+00:00"))
     # Bar timestamps are starts. At/after the cutoff only the open was known
     # at the declared exit instant; inspecting this bar's extremes is hindsight.
-    if (parsed.hour, parsed.minute) >= (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute):
+    if (parsed.hour, parsed.minute) >= _time_exit_of(saved):
         return "time_exit", bar_open * (1.0 - slip)
     if bar_open <= stop:
         return "stop_gap", bar_open * (1.0 - slip)
@@ -544,9 +567,84 @@ async def _advance_and_open(db, result: dict, created_at: str) -> None:
           fingerprint, created_at))
 
 
-def _at_or_after_time_exit(bar_ts: str) -> bool:
+def _at_or_after_time_exit(bar_ts: str, exit_at: tuple[int, int] | None = None) -> bool:
     parsed = datetime.fromisoformat(str(bar_ts).replace("Z", "+00:00"))
-    return (parsed.hour, parsed.minute) >= (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute)
+    return (parsed.hour, parsed.minute) >= (exit_at or (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute))
+
+
+LAST_CONTINUOUS = "time_exit_last_continuous"     # [O26c] the receipt detail of a derived 15:15 price
+CAS_ELIGIBLE = "ELIGIBLE"
+
+
+def cas_time_exit_evidence(ticker: str, trading_date: str, *, archive_root: str | None = None,
+                           execution: dict | None = None) -> str:
+    """[O26d] Whether a session with no 15:15 bar is explained by NSE's closing auction (independent review R3:
+    any missing candle had become a synthetic exit). ELIGIBLE only when all hold:
+      * the execution declares the model (``cas_time_exit``; older executions did not);
+      * the session is one on which CAS stocks' continuous trading ended at 15:15
+        (``market_calendar.cas_phase1_in_force``: 2026-08-03 to before 2026-12-07);
+      * the ticker had stock futures in the NFO contract master archived that day (dated, not today's list).
+    Otherwise NO_MODEL, NOT_IN_FORCE, NO_DATED_MASTER or NOT_LISTED: the trade stays censored.
+    [O26e] ``execution`` is the trade's own saved one; the model is defined only for a declared 15:15 exit."""
+    from market_calendar import CAS_OPEN_TIME, cas_phase1_in_force
+    execution = execution if execution is not None else asdict(EXECUTION)
+    if (execution.get("cas_time_exit") != EXECUTION.cas_time_exit
+            or _time_exit_of(execution) != (CAS_OPEN_TIME.hour, CAS_OPEN_TIME.minute)):
+        return "NO_MODEL"
+    try:
+        day = date.fromisoformat(str(trading_date)[:10])
+    except ValueError:
+        return "NOT_IN_FORCE"
+    if not cas_phase1_in_force(day):
+        return "NOT_IN_FORCE"
+    from research_archive import contract_master_underlyings
+    names = contract_master_underlyings(archive_root or settings.RESEARCH_ARCHIVE_PATH, provider="KITE",
+                                        segment="NFO", day=day.isoformat())
+    if names is None:
+        return "NO_DATED_MASTER"
+    return CAS_ELIGIBLE if str(ticker).strip().upper() in names else "NOT_LISTED"
+
+
+def _last_continuous_at_time_exit(bars: list[dict], exit_at: tuple[int, int] | None = None) -> dict | None:
+    """[O26c] For a stock in NSE's closing auction continuous trading ends at
+    15:15, so the session has no 15:15 bar and the declared 15:15 exit never
+    got one (Oct 26: 22 of 75 RS_PULLBACK trades, every one an F&O stock,
+    censored; only the others were ever scored). The price at 15:15 is then
+    the close of the bar just before it (15:00-15:15): returned as the 15:15
+    bar, its open that close, marked ``modelled`` (a price, not a fill). None
+    when the latest bar is not the 15:00 one (nothing is invented). [O26d] The
+    caller first needs ``cas_time_exit_evidence`` ELIGIBLE."""
+    if not bars:
+        return None
+    last = max(bars, key=lambda bar: datetime.fromisoformat(str(bar["bar_ts"]).replace("Z", "+00:00")))
+    parsed = datetime.fromisoformat(str(last["bar_ts"]).replace("Z", "+00:00"))
+    due = parsed + timedelta(minutes=15)
+    if (due.hour, due.minute) != (exit_at or (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute)):
+        return None
+    price = last["close"]
+    return {"bar_ts": due.isoformat(), "open": price, "high": price, "low": price, "close": price,
+            "modelled": EXECUTION.cas_time_exit}
+
+
+async def _terminal_bars(ticker: str, trading_date: str, bars: list[dict], execution: dict) -> tuple:
+    """[O26e] One trade's bars for the terminal pass, under its own saved execution (the O26d recheck's F1: one
+    ticker-wide decision under today's model had closed a legacy trade by a model it never declared): up to its
+    declared time exit; without a bar there, the derived 15:15 bar only when that execution declares the model and
+    the dated evidence holds. Returns (bars, terminal, derived, evidence)."""
+    exit_at = _time_exit_of(execution)
+    terminal = next((bar for bar in bars if _at_or_after_time_exit(bar["bar_ts"], exit_at)), None)
+    if terminal is not None:
+        return bars[:bars.index(terminal) + 1], terminal, None, None
+    derived = _last_continuous_at_time_exit(bars, exit_at)
+    if derived is None:
+        return bars, None, None, None
+    try:
+        evidence = await asyncio.to_thread(cas_time_exit_evidence, ticker, trading_date, execution=execution)
+    except Exception:                 # unreadable evidence is missing evidence: censored, its receipt says so
+        evidence = "EVIDENCE_ERROR"
+    if evidence != CAS_ELIGIBLE:
+        return bars, None, None, evidence
+    return bars + [derived], derived, derived, evidence
 
 
 async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bars) -> dict:
@@ -561,6 +659,13 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
     bar are not passed. The usual stop/target/time-exit rules decide each
     trade; a trade still open afterwards gets a CENSORED receipt saying why.
     Nothing is invented: a missing bar or a failed fetch stays censored.
+    [O26c] A closing-auction stock has no 15:15 bar: its 15:15 price is the
+    15:00 bar's close (``_last_continuous_at_time_exit``), receipt detail
+    LAST_CONTINUOUS. [O26d] Only with dated evidence that it was one that day
+    (``cas_time_exit_evidence``); otherwise the trade stays censored, its
+    detail saying which evidence was missing. Bars are taken in time order.
+    [O26e] Each trade is judged under its own saved execution
+    (``_terminal_bars``): its time exit, and the model only if it declared it.
 
     [A22-M2] Each ticker's bars are fetched with no database connection
     open, then applied in one short transaction for that ticker: a slow
@@ -574,7 +679,7 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
     async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row
         rows = await (await db.execute("""
-            SELECT t.ticker, t.variant FROM momentum_shadow_trades t
+            SELECT t.ticker, t.variant, t.execution_json FROM momentum_shadow_trades t
             WHERE t.trading_date=? AND NOT EXISTS (
                 SELECT 1 FROM momentum_shadow_trade_events e
                 WHERE e.trading_date=t.trading_date AND e.ticker=t.ticker
@@ -583,21 +688,23 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
         """, (trading_date,))).fetchall()
     by_ticker: dict = {}
     for row in rows:
-        by_ticker.setdefault(row["ticker"], []).append(row["variant"])
+        by_ticker.setdefault(row["ticker"], []).append((row["variant"], _saved_execution(row)))
     summary.update(open=len(rows), tickers=len(by_ticker))
-    for ticker, variants in by_ticker.items():
-        error = None
+    for ticker, trades in by_ticker.items():
+        error, day_bars = None, []
         try:
             frame = await fetch_bars(ticker)
-            bars = [bar for bar in _bars(frame if frame is not None else pd.DataFrame())
-                    if bar["bar_ts"][:10] == trading_date]
-            terminal = next((bar for bar in bars if _at_or_after_time_exit(bar["bar_ts"])), None)
-            if terminal is not None:
-                bars = [bar for bar in bars if bar["bar_ts"] <= terminal["bar_ts"]]
+            day_bars = sorted((bar for bar in _bars(frame if frame is not None else pd.DataFrame())
+                               if bar["bar_ts"][:10] == trading_date),
+                              key=lambda bar: datetime.fromisoformat(bar["bar_ts"].replace("Z", "+00:00")))
         except Exception as exc:     # a failed fetch is a censored outcome, not a crash
-            bars, terminal, error = [], None, type(exc).__name__
+            error = type(exc).__name__
+        plans = {variant: ([], None, None, None) if error else
+                 await _terminal_bars(ticker, trading_date, day_bars, execution)
+                 for variant, execution in trades}
         async with aiosqlite.connect(db_path) as db:
-            for variant in variants:
+            for variant, _execution in trades:
+                bars, terminal, derived, evidence = plans[variant]
                 await _advance_and_open(db, {"trading_date": trading_date, "ticker": ticker,
                                              "variant": variant, "accepted": False, "bars": bars}, created_at)
                 db.row_factory = aiosqlite.Row
@@ -606,11 +713,14 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
                     "AND variant=? AND event_type='CLOSED'", (trading_date, ticker, variant))).fetchone()
                 if closed is not None:
                     status, detail, bar_ts = "CLOSED", str(closed["reason"]), closed["bar_ts"]
+                    if derived is not None and bar_ts == derived["bar_ts"]:
+                        detail = LAST_CONTINUOUS
                     summary["closed"] += 1
                 else:
                     status, bar_ts = "CENSORED", None
                     detail = (f"fetch_failed:{error}" if error else
-                              "no_terminal_bar" if terminal is None else "unresolved_after_terminal_bar")
+                              (f"no_terminal_bar:cas_{evidence.lower()}" if evidence else "no_terminal_bar")
+                              if terminal is None else "unresolved_after_terminal_bar")
                     summary["censored"] += 1
                 await db.execute("""
                     INSERT INTO momentum_shadow_terminal_receipts
@@ -720,6 +830,15 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
             # overnight gap, not the variant: shown apart, never scored.
             missed = [row for row in closes if row[4] == "overnight_gap_exit"]
             closes = [row for row in closes if row[4] != "overnight_gap_exit"]
+            # [O26d] Closing-auction time exits valued at the 15:00 close: scored (else every F&O stock drops
+            # out), and counted apart as modelled prices, not fills.
+            modelled = await (await db.execute("""
+                SELECT COUNT(*), SUM(e.net_pnl) FROM momentum_shadow_terminal_receipts r
+                JOIN momentum_shadow_trade_events e
+                  ON e.trading_date=r.trading_date AND e.ticker=r.ticker AND e.variant=r.variant
+                 AND e.event_type='CLOSED'
+                WHERE r.variant=? AND r.status='CLOSED' AND r.detail=?
+            """, (variant, LAST_CONTINUOUS))).fetchone()
             outcome = {
                 "paper_entries": entries,
                 "open_trades": open_count,
@@ -728,6 +847,8 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
                 "scored_closes": len(closes),
                 "missed_time_exit_closes": len(missed),
                 "missed_time_exit_net_pnl": round(sum(float(row[2]) for row in missed), 6) if missed else None,
+                "modelled_time_exit_closes": int(modelled[0] or 0),
+                "modelled_time_exit_net_pnl": round(float(modelled[1]), 6) if modelled[0] else None,
                 "gross_pnl": None,
                 "costs": None,
                 "net_pnl": None,
@@ -746,6 +867,9 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
                 "The virtual book exits the full quantity at target 1; live partial exits, runners, and trailing stops are not modelled.",
                 "After the close a terminal pass gives each open virtual trade its remaining bars up to the "
                 "15:15 open; a trade it cannot resolve is CENSORED (no bar or fetch failed), never filled.",
+                "A closing-auction stock (dated F&O evidence, 2026-08-03 to 2026-12-06) has no 15:15 bar: its "
+                "15:15 exit is valued at the 15:00 close, a modelled price, not a fill "
+                "(modelled_time_exit_closes).",
             ]
             if closes:
                 gross_values = [float(row[0]) for row in closes]

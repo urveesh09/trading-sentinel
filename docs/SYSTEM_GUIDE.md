@@ -1,5 +1,80 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, Dev, commit `1d99c12`)
+
+- **`momentum_shadow`**:
+  - `_saved_execution(trade)`, `_time_exit_of(execution)`; `_exit_for_bar` uses the trade's saved `exit_slippage_bps` and time exit;
+  - `_terminal_bars(ticker, day, bars, execution)` decides each trade's bars, terminal and derived bar;
+  - `cas_time_exit_evidence` requires the declared 15:15 exit.
+- **`position_tracker`**:
+  - `minute_path(minutes, day_bar, entered_at=)` returns `(path, coverage)` (rules in its docstring; constants `MINUTE_PATH_FIRST` 09:16, `MINUTE_PATH_LAST` 15:25, `MINUTE_PATH_MAX_GAP` 5, `MINUTE_PATH_TOLERANCE` 0.1%);
+  - `day_exits` results carry `coverage` and `rule` (`DAY_EXITS_RULE`), and the tracker logs both;
+  - the research lifecycle is v3.
+
+## October 26 — O26d Daily exits ordered (minute bars when needed), partner trade evidence and frozen score v2, closing-auction exit on dated evidence, test network guard, F&O pass counter (actual behavior, Dev, commit `4205eef`)
+
+- **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
+- **`position_tracker.day_exits(status, stop, entry, t1, t2, bar, entered_at=, minutes=)`**:
+  - returns `t1` (the half's price), `close` (status, price), `stop` and `basis` (`DAILY`, `DAILY_STOP_FIRST`, `DAILY_ENTRY_DAY` or `MINUTES`);
+  - `update_daily_positions` fetches the day's minute bars only when the basis is not `DAILY`; a T1 half and a close on one day are written as two updates;
+  - `research_penny_cnc_lifecycle.tracker_step(pos, bar, day, minutes=)` returns its events as a list; the lifecycle is v2.
+- **`partner_watch_trips`**:
+  - new columns `prior_exit`, `cash`, `opening_order`, `opening_qty`, `opening_value`, `opening_final`, `opening_exact`;
+  - `run_pct`, `usual` and `cash` are first known; everything else is rewritten;
+  - `paid_share = ROUND(opening_value / first-known cash, 4)`;
+  - `_store_trips(..., orders)` reads the opening order's status.
+- **`partner_watch_score`**:
+  - `SPEC` v2 and `SPEC_ID`; `evidence_of(trip)` gives POSITIVE/NEGATIVE/UNKNOWN per warning;
+  - `score` compares POSITIVE with NEGATIVE and counts UNKNOWN; `_side` counts `from_orders`;
+  - `partner_watch_report` marks an after-loss buy by the same rule.
+- **`momentum_shadow`**:
+  - `EXECUTION.cas_time_exit`; `cas_time_exit_evidence(ticker, day)`;
+  - the terminal pass sorts bars, derives the 15:15 bar only when that is ELIGIBLE, and otherwise records `no_terminal_bar:cas_<reason>`;
+  - the derived bar carries `modelled`; the comparison adds `modelled_time_exit_closes` and `modelled_time_exit_net_pnl`.
+- **`market_calendar`**: `CAS_PHASE1_FROM` (2026-08-03), `CAS_PHASE1_UNTIL` (2026-12-07, exclusive), `cas_phase1_in_force(day)`.
+- **`research_archive.contract_master_underlyings(root, provider=, segment=, day=)`**: the underlyings with FUT contracts in that day's archived masters, or None.
+- **`scheduler_setup`**: a tick that waited for the lock skips when `fno_pass["ticks"]` moved meanwhile (no clock comparison).
+- **Tests**: `tests/netguard/sitecustomize.py` blocks non-local lookups and connections (sockets and asyncio) in the test process and in Python children; `SENTINEL_TEST_NETWORK=1` opts out.
+- **DAY**: "That includes about ₹X of charges (estimated) on N orders."
+
+## October 26 — O26c Audit fixes: last halt check before a buy, check expiry at send, future clocks, closing-auction time exits, daily stop-first, F&O to 15:39, no network in tests; DAY charges, refusal size (actual behavior, Dev, commit `a848bcb`)
+
+- **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
+- **`kite_client.place_order`**: after `_own_cash_refusal` and `_reserve_account_cash`, `entry_blocker()` runs again before the POST. A halt then releases the hold (`release_not_sent`, reason `halted_before_dispatch`) and returns its NOT_SENT refusal.
+- **`partner_watch._deliver`**: for a CHECK, after the build/claim loop, `_outdated_check(entry, _now())`. Past `valid_until`: `_unmark`, close REFRESHING, `_refresh_later` (log `partner_watch_check_outdated … at_send=1`).
+- **`quote_freshness`**: INVALID when the read or the receipt is more than QUOTE_FRESH after `now`; `level_state` then says UNVERIFIED.
+- **`momentum_shadow.resolve_momentum_shadow_day`**: no bar at/after 15:15 but the 15:00 bar → `_last_continuous_at_time_exit` adds a 15:15 bar priced at the 15:00 close; a close on it has receipt detail `LAST_CONTINUOUS` (`time_exit_last_continuous`). `momentum_replay._with_last_continuous` does the same for `_simulate`.
+- **`position_tracker.update_daily_positions`** (and `research_penny_cnc_lifecycle.tracker_step`): `target1_hit` only while OPEN; a bar touching the stop and a target takes the stop unless it opened at a target (log `daily_bar_stop_and_target_touched`).
+- **`scheduler_setup`**: `_fno_open_after_cutoff(nm)`: 15:26–15:39, true while `fast_exit_has_work()` or `fno_dr_book.open_structures` (paper). The regular F&O tick runs then; the fast exit's window is 09:15–15:39 (still work-gated).
+- **`tests/conftest.py`**: `socket.getaddrinfo` refuses non-local hosts; `patch_settings` sets fake `TELEGRAM_BOT_TOKEN`, `PARTNER_TELEGRAM_BOT_TOKEN`, chat ids and partner Kite key/secret.
+- **Partner messages**:
+  - `day_so_far` adds `charges` and `orders`; `day_text` says "That includes ₹X of charges on N orders."
+  - `refused_text(row, rows, still_open, cash=, usual=)`: a BUY refused for funds adds its share of the day's cash and the usual share. `_b_refused` gets the usual from `_usual_share(..., before=placed_at)`.
+
+## October 26 — O26b A far bigger buy still warns on a quiet day; the day's trades stored; the check's warnings scored by a frozen rule (actual behavior, Dev, commit `cf6befc`)
+
+- **SIZE.** `_deliver`, on muting a PLAN or ADDED for Quiet, calls `_size_through_quiet`. When `size_reasons(kind, context, cash)` finds a size warning, a `size:<message key>` row (kind SIZE) goes to the outbox.
+  - The reasons: PLAN's `bought_px × bought`, or ADDED's `held_value`, over `USUAL_SIZE_MULT` × `usual` of the day's cash; or PLAN's `after_loss` with `bigger`.
+  - `_b_size` builds it only while the trade is held: `size_text`, the reasons plus `plan_summary`, then `QUIET_SIZE_NOTE`.
+  - SIZE is in QUIET_KEEPS and `_QUOTED`; PRIORITY 2; LIFETIME 180 s. `_revise` now takes `trips` and puts `held_value` and `usual` in ADDED's context.
+- **`partner_watch_trips`** (key: session_date, position_key). Written by `_store_trips` in `_events` (step 6) for each trip whose signature changed. The signature: bought, sold, buy and sell values, closed_at, exact, the plan's run, the day's cash.
+  - `trip_row` gives the fills, `realised`, `orders`, `exact` and `carried`.
+  - It also gives the buy-time `run_pct`, `after_loss` (JSON), `usual` and `paid_share` (the opening order's value over the day's cash). These are kept as first known (`_TRIP_UPSERT`, COALESCE).
+  - A failed write is logged (`partner_watch_trips_write_failed`) and tried on the next tick.
+- **`partner_watch_report`**: `report()` adds `trades` (by day); `day_totals`; `render` lists "Trades <day>" and each trade.
+- **`partner_watch_score`** (`load`, `warnings_of`, `score`, `render`; `python -m partner_watch_score [FIRST [LAST]]`). It reads the database read-only, applies the rule frozen in its module docstring (FROZEN_FROM 2026-10-27, MIN_WARNED 20, four checks), and reports checked and unchecked trades apart.
+
+## October 26 — O26 The trade watch's day so far (DAY) and run figures rounded down (actual behavior, Dev, commit `6ec5ce1`)
+
+- **DAY** (`partner_watch.day_so_far(trips, cash)`, `day_text`, `_b_day`), from each book read in `_events`:
+  - Today's closed trips (`Trip.realised()`, after charges; carried trips left out) are summed. `step` = how many DAY_STEP (0.10) shares of the day's cash (`_state.cash`: opening balance plus intraday pay-in) the loss is.
+  - With `step > 0` the outbox gets `day:<day>:<step>` (INSERT OR IGNORE: once a day per step, restart-safe). Only the step reached now is queued.
+  - At send time the text is built from the latest view. The step must be exactly the one queued, else `superseded`: back above it, or past the next, whose own message tells it.
+  - The text: result and share of the cash (rounded down); trades closed, won and lost; those bought within `partner_coach.REENTRY_WINDOW_MIN` (30) of a losing exit (`_after_loss`) with their sum; trades still open; the check for the latest trade's option (`_check_example`); `DAY_NOTE`.
+  - DAY is in QUIET_KEEPS (PRIORITY 2, LIFETIME 600 s). No cash read: no DAY.
+- **Run figures** (`_pct_down`): the 15-minute run in the check and the PLAN message is in whole percent rounded down, so a figure shown as 20% always has the check's chased-spike warning (`partner_insights.SPIKE_RUN_PCT`).
+- `WATCH_ON_TEXT` and `QUIET_TOAST` name the DAY step.
+
 ## October 25 — O25N Once-a-day partner messages: retried only when provably unsent (actual behavior, commit `967c2d6`)
 
 - **`partner_orchestrator.send_daily(db, kind, day, text, now, reply_markup, until)`** is used by the brief, the wrap, the coach note, the review prompt and the 07:00 reminder.

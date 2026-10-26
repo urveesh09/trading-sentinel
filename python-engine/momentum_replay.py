@@ -20,7 +20,7 @@ import pandas as pd
 from config import settings
 from engine import evaluate_momentum_signal
 from models import Regime
-from momentum_shadow import momentum_shadow_execution_config
+from momentum_shadow import CAS_ELIGIBLE, cas_time_exit_evidence, momentum_shadow_execution_config
 
 
 class ReplayDataError(ValueError):
@@ -279,7 +279,32 @@ def _costs(entry: float, exit_price: float, quantity: int, execution: dict) -> f
     )
 
 
+def _with_last_continuous(future: pd.DataFrame, trading_date: str, execution: dict,
+                          ticker: str | None = None) -> pd.DataFrame:
+    """[O26c] As ``momentum_shadow``'s terminal pass: a session with its 15:00 bar but no 15:15 bar (a
+    closing-auction stock: continuous trading ends at 15:15) gets a 15:15 bar priced at the 15:00 close, so its
+    declared 15:15 exit is taken that day instead of at the next session's open. [O26d] Only when
+    ``cas_time_exit_evidence`` is ELIGIBLE (the execution declares the model, the session is in CAS phase 1, the
+    ticker had stock futures in that day's archived master); a missing candle otherwise stays missing."""
+    exit_at = (execution["time_exit_hour"], execution["time_exit_minute"])
+    stamps = [pd.Timestamp(stamp) for stamp in future.index]
+    session = sorted((i for i, stamp in enumerate(stamps) if stamp.date().isoformat() == trading_date),
+                     key=lambda i: stamps[i])
+    if not session or any((stamps[i].hour, stamps[i].minute) >= exit_at for i in session):
+        return future
+    due = stamps[session[-1]] + pd.Timedelta(minutes=15)
+    if (due.hour, due.minute) != exit_at:
+        return future
+    if cas_time_exit_evidence(ticker or "", trading_date, execution=execution) != CAS_ELIGIBLE:
+        return future
+    last = future.iloc[session[-1]]
+    price = float(last["close"])
+    row = dict(last) | {"open": price, "high": price, "low": price, "close": price}
+    return pd.concat([future, pd.DataFrame([row], index=pd.DatetimeIndex([due]))]).sort_index(kind="stable")
+
+
 def _simulate(candidate: dict, future: pd.DataFrame, execution: dict) -> dict:
+    future = _with_last_continuous(future, candidate["trading_date"], execution, candidate["ticker"])
     decision = candidate["decision"]
     raw_entry = float(decision["entry_price"])
     entry = raw_entry * (1 + execution["entry_slippage_bps"] / 10000.0)

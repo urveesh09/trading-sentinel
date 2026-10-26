@@ -199,6 +199,38 @@ def test_fill_model_is_stop_first_cost_aware_and_full_quantity():
     assert trade["net_pnl"] == pytest.approx(trade["gross_pnl"] - trade["costs"])
 
 
+def test_a_closing_auction_stock_exits_at_1515_at_its_last_continuous_price():
+    """[O26c] As the runtime terminal pass: no 15:15 bar (continuous trading ended at 15:15) means the 15:15 exit
+    at the 15:00 bar's close that day, not at the next session's open. [O26d] Only with the same dated evidence."""
+    from tests.test_oct21_audit_fixes import nfo_master
+    nfo_master("2026-10-26", "AAA")
+    execution = replay.momentum_shadow_execution_config()
+    candidate = {
+        "variant": "MOM_RS_PULLBACK", "ticker": "AAA", "trading_date": "2026-10-26",
+        "bar_ts": "2026-10-26T13:00:00", "dataset_fingerprint": "sha256:test",
+        "decision": {"entry_price": 100, "stop_loss": 97, "target_1": 106, "shares": 10},
+    }
+    future = pd.DataFrame({
+        "open": [100.2, 100.5, 95.0], "high": [100.8, 101.0, 95.5], "low": [99.6, 100.1, 94.0],
+        "close": [100.5, 100.9, 95.2], "volume": [10, 10, 10],
+    }, index=pd.to_datetime(["2026-10-26T14:45:00", "2026-10-26T15:00:00", "2026-10-27T09:15:00"]))
+    trade = replay._simulate(candidate, future, execution)
+    assert (trade["exit_reason"], trade["exit_bar_ts"]) == ("time_exit", "2026-10-26T15:15:00")
+    assert trade["exit_fill"] == pytest.approx(100.9 * (1 - execution["exit_slippage_bps"] / 10000), abs=1e-6)
+    with_bar = pd.concat([future.iloc[:2], pd.DataFrame(
+        {"open": [101.3], "high": [101.4], "low": [100.0], "close": [100.2], "volume": [10]},
+        index=pd.to_datetime(["2026-10-26T15:15:00"]))])
+    assert replay._simulate(candidate, with_bar, execution)["exit_fill"] == pytest.approx(
+        101.3 * (1 - execution["exit_slippage_bps"] / 10000), abs=1e-6)          # a real 15:15 bar: its open
+    assert len(replay._with_last_continuous(future.iloc[:1], "2026-10-26", execution, "AAA")) == 1   # no 15:00 bar
+    # [O26d] Not listed that day, or an execution that never declared the model: the next session's open, as before.
+    for ticker, declared in (("BBB", execution), ("AAA", {k: v for k, v in execution.items() if k != "cas_time_exit"})):
+        trade = replay._simulate(candidate | {"ticker": ticker}, future, declared)
+        assert (trade["exit_reason"], trade["exit_bar_ts"]) == ("overnight_gap_exit", "2026-10-27T09:15:00")
+    # Unsorted bars are put in time order before the session's last bar is read.
+    assert replay._simulate(candidate, future.iloc[::-1], execution)["exit_bar_ts"] == "2026-10-26T15:15:00"
+
+
 def test_live_exit_lifecycle_calls_shipped_exit_and_keeps_partial_runner(monkeypatch):
     execution = replay.momentum_shadow_execution_config()
     candidate = {

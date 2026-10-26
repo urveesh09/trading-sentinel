@@ -1,12 +1,85 @@
 # Handover receipt and operator checklist
 
+## October 26 — O26e The O26d recheck's two gaps fixed (Dev, commit `1d99c12`, pushed)
+
+- [x] Each research trade's terminal pass uses its own saved execution; legacy records never get the closing-auction model (F1).
+- [x] Minute bars replace the stop-first result only when they cover the whole session with no gap over 5 minutes (F2).
+- [x] Tests: full suite 6,123 passed, 1 failed, 4 skipped (11 min 26 s). The failure was a second queue-order test in `test_s5_provider_lanes.py` with the same Windows-clock assumption. All five queue-order tests now run at `QUEUE_RATE` 20/s; the file then passed 3 of 3 alone and 12 of 12 run four at a time. No engine code changed after the full run. Focused: tracker and mirror 52, shadow 25. The reviewer's recheck scenarios: 6 passed, and the 2 defect reproductions now fail.
+- [ ] PR, merge and deploy of O26–O26e (owner instructed, Oct 26 evening): receipt to follow.
+- [ ] Confirm SEBI's December 7 CAS timings before that date.
+
+## October 26 — O26d The independent review of O26–O26c fixed (Dev, commit `4205eef`, pushed, not deployed)
+
+- [x] Production runs `f9547c5` (PR #118); O26, O26b, O26c and O26d are Dev only.
+- [x] Daily paper exits are ordered: open first, T1 before T2, stop before target after the open (the breakeven stop included); entry-day open unused; minute bars on days the daily bar cannot order (R1).
+- [x] A partly filled opening order is sized as it fills; buy-time facts stay first known (R4).
+- [x] Unknown warning evidence is left out, not counted as "no warning"; the score rule is its own frozen SPEC v2 (R2, R6).
+- [x] The closing-auction 15:15 exit needs dated evidence (window 2026-08-03 to 2026-12-06, the stock in that day's archived F&O master) and is reported as modelled (R3).
+- [x] Tests cannot reach the network by numeric address or asyncio either, in Python children too (R5).
+- [x] The intermittent scheduler test: Windows' 15.6 ms clock; the tick now counts passes.
+- [x] DAY's charges are labelled estimated.
+- [x] Tests: full suite (`python -m pytest tests ../scripts -q`): 6,110 passed, 4 skipped, exit 0 (11 min 24 s). The first full run had 2 failures, both explained and fixed (HIGHLOW-1's expectation; the lanes test's timing). Focused: tracker and mirror 48, partner watch and score 130, closing auction and replay 50, scheduler 29, network guard 11.
+- [ ] Rollout with the next PR (owner's go-ahead): engine only; no setting.
+- [ ] Confirm SEBI's December 7 CAS timings before that date.
+- [ ] Owner: Oct 26's 22 censored research trades stay censored unless you want a backfill.
+- [ ] Next session: SADHNANIQ should close once in each Smart book.
+
+## October 26 — O26c The Oct 26 audit's findings fixed; DAY charges and refusal size (Dev, commit `a848bcb`, pushed, not deployed)
+
+- [x] Production runs `f9547c5` (PR #118); O26, O26b and O26c are Dev only.
+- [x] A halt tripped while a buy's cash is read stops the buy before the POST and gives its hold back (O26-H1).
+- [x] A check whose prices went old during its database claim is worked out again, not sent (O26-C1); future read/receipt clocks are INVALID (O26-C2).
+- [x] Closing-auction (F&O) stocks get their 15:15 research exit at the 15:00 close (runtime and replay); before, every one was censored (O26-R1).
+- [x] The daily paper tracker takes the stop when a bar touches both, and stops the rest after T1 (O26-P1).
+- [x] F&O passes run to 15:39 while a position is open (O26-M1).
+- [x] The 409s were Dev's test suite polling the real partner bot; tests now have fake tokens and no network (O26-T1).
+- [x] DAY shows the charges; a buy refused for funds shows its share of the cash.
+- [x] Tests: Dev (Windows venv) full engine + scripts suites: 6,069 passed, 4 skipped, exit 0 (O26b's 6,056 plus 13 new cases). A run that refused every outside lookup passed too (before the last 10 cases): it listed the tests that had reached Telegram and NSE. Each fix's new test fails on the old code (checked with HEAD's file swapped in).
+- [ ] Rollout with the next PR (owner's go-ahead): engine only; no setting.
+- [ ] Owner: Oct 26's 22 censored research trades stay censored unless you want a backfill.
+- [ ] Next session: SADHNANIQ should close once in each Smart book.
+
+## October 26 — O26b A far bigger buy still warns on a quiet day; trades stored during the day; warnings scored by a frozen rule (Dev, commit `cf6befc`, pushed, not deployed)
+
+- [x] On a quiet day, a buy over 1.5x the partner's usual size, or bigger right after a loss, still gets one short size warning (SIZE). It is dropped if the trade is sold before it goes.
+- [x] Every trade is stored as it changes (`partner_watch_trips`); `partner_watch_report <day>` lists them with the exact result after charges.
+- [x] `partner_watch_score` scores the check's warnings by a rule frozen today. It decides only on days from Oct 27 and gives no verdict before 20 warned trades.
+- [x] A restart no longer wipes a closed trade's buy-time facts (found by the new tests, fixed before the commit).
+- [x] The flaky "send cut off part way" test is explained (the PLAN's send was sometimes the one that hung) and fixed: it waits for the PLAN first (35/35 runs).
+- [x] Tests: partner files 633 passed. Full Dev (Windows venv) engine + scripts suites: 6,056 passed, 4 skipped, exit 0, 12 min 5 s (O26's 6,045 plus 11 new tests); the first full run had the one flaky test (fixed, above).
+- [ ] Rollout with the next PR (owner's go-ahead): engine only; the new table creates itself; no setting.
+
+## October 26 — O26 The trade watch tells the day so far once a step of the partner's cash; run figures agree with the warning (Dev, commit `6ec5ce1`, pushed, not deployed)
+
+- [x] DAY message: each further 10% of the day's cash lost today, once a step, also on a Quiet day. It gives the numbers (result, won and lost, buys soon after a loss, still open, the check to send) and never blocks.
+- [x] The check's and the plan's run figure are rounded down: "20%" always comes with the chased-spike warning.
+- [x] Tests: watch 112 passed; partner files 622 passed. Full Dev (Windows venv) engine + scripts suites: 6,045 passed, 4 skipped, exit 0, 11 min 50 s (O25N's 6,040 plus the 5 new tests).
+- [ ] Rollout with the next PR (owner's go-ahead): engine only, no setting, no migration.
+- Evidence behind it (Production, Oct 26, read-only): 21 buys in under three hours, about −₹5,300 after charges (estimated from the watch's looks), Quiet tapped at 09:28, nothing about the day as a whole. Not changed from one day: no threshold, no rule.
+
 ## October 25 — O25N O25M's open items closed; promoted to Production (commit `967c2d6`, pushed)
 
 - [x] The brief, wrap, coach note and review prompt are retried only after a send that provably never left (5, 10, 20 min; 4 sends; within 60 min), from the stored text with "Written at". A possible delivery is never resent. New job `partner_daily_retry`.
 - [x] A CHECK work-out cut off by a restart is worked out again (row `refreshing` until replaced).
 - [x] Env audit (read-only, names and switches only): no orphan or missing names; no `.env` change needed. The real-money switches are still off and the owner halt is still on.
 - [x] Tests: Dev (Windows venv) full engine + scripts suites: 6,039 passed, 4 skipped, 1 failed (the calendar-gate guard wanted the new cron's [CALENDAR-GATE] marker; added, then the guard, scheduler, golden and ledger tests: 40 passed). 6,040 = O25M's 6,031 plus 9 new tests. Tests do not show the partner's results or profitability.
-- [ ] Production rollout receipt: recorded in the next docs commit.
+- [x] Rollout done 18:45–18:56 IST:
+  - PR #118 merged as `f9547c5`;
+  - 8 database snapshots `quick_check=ok`, rollback tags `:7468853-20261025`;
+  - Production fast-forwarded, built and recreated one service at a time, nginx restarted;
+  - `verify_deployment.py` passed; env audit identical except the release SHA;
+  - the new jobs are registered; switches off; owner halt on; no order or message.
+- [x] Oct 25, 23:02 IST, config only: the owner put a new partner Kite app's `PARTNER_KITE_API_KEY` and
+  `PARTNER_KITE_API_SECRET` in Production's root `.env` (`PARTNER_KITE_USER_ID` unchanged).
+  - Only `python-engine` reads them, so only it was recreated (`up -d --no-deps --no-build --force-recreate`):
+    same image, release `f9547c5`, healthy; no traceback; `/health` reasons unchanged (no_kite_token,
+    instrument_cache_unavailable, order_execution_unverified).
+  - Checked without printing values: both set, cleanly written, different from the owner's `KITE_API_KEY`, and
+    the running engine has them. Zerodha's login page accepts the new key (a session is opened; a made-up key
+    gets 400). The secret is proven only by the partner's first login with the new app.
+  - The gateway reads only `PARTNER_KITE_USER_ID` (unchanged, matches); no other file holds these values.
+  - Owner: the new app's redirect URL must be `<public URL>/api/partner-kite/callback`.
+  - No code change, no deploy, no backup (no data change).
 
 ## October 25 — O25M R1–R3 fixed in Dev (commit `07e22da`, pushed)
 
@@ -14,7 +87,7 @@
 - [x] R2: quotes need both clocks, zoned and believable. Missing or unreadable is UNVERIFIED, and a future exchange time is INVALID; neither checks a level. A typed price never makes an old quote current; an old future places no level.
 - [x] R3: the partner's reminder is retried only after a send that provably never left (5, 10, 20 min; 4 sends; 07:00–08:30) and never after a possible delivery. New job `partner_login_reminder_retry`.
 - [x] Tests: Dev (Windows venv) full engine suite 5,744 passed, 4 skipped (617 s) plus scripts/tests 287 passed: 6,031 in all (O25k's 6,015 plus the 16 new tests); focused partner suites 165 passed; the O25L review's four reproductions now fail against this code. Tests do not show the partner's results or profitability.
-- [ ] Rollout to Production (PR, backup, rebuild, recreate, verify): owner's call. Production runs `7468853` without these fixes.
+- [x] (O25N) Rolled out to Production with O25N as `f9547c5` (see the O25N receipt).
 - [x] (O25N) The brief, EOD, coach note and review prompt now use the daily-send ledger.
 
 ## October 25 — O25L independent release/partner audit

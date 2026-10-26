@@ -91,6 +91,24 @@ CAS_ORDER_ENTRY_END: time = time(15, 25)
 CAS_LIMIT_ENTRY_ONLY_END: time = time(15, 30)
 CAS_MATCHING_END: time = time(15, 35)
 CAS_POST_CLOSE_END: time = time(16, 0)
+# [O26d 2026-10-26] The sessions on which a CAS stock's continuous trading is
+# documented to end at CAS_OPEN_TIME. Zerodha's CAS page (checked 2026-10-26,
+# https://zerodha.com/z-connect/general/everything-you-need-to-know-about-closing-auction-session-cas):
+# "Important changes from August 3, 2026"; "Stocks that form part of CAS:
+# trading stops at 3:15 pm"; Phase I = stocks with F&O on both NSE and BSE.
+# Its update of 2026-10-16: SEBI's revised CAS and closing timings take effect
+# on December 7, 2026 (new timings not confirmed here), so the window ends
+# there until they are. The 2026-01-19 cited above is not borne out by that
+# page. Production's 15-minute cache agrees for Oct 26: the 23 F&O stocks with
+# a 15:00 bar had no 15:15 bar; all 38 others did.
+CAS_PHASE1_FROM: date = date(2026, 8, 3)
+CAS_PHASE1_UNTIL: date = date(2026, 12, 7)      # exclusive
+
+
+def cas_phase1_in_force(day: date) -> bool:
+    """[O26d] Whether ``day`` is a session on which CAS stocks' continuous
+    trading ended at 15:15 (CAS_PHASE1_FROM <= day < CAS_PHASE1_UNTIL)."""
+    return CAS_PHASE1_FROM <= day < CAS_PHASE1_UNTIL
 
 # [ROADMAP-3.10 2026-07-12] Static NSE trading-holiday list -- the
 # LAST-RESORT fallback when both the DB cache is empty and the

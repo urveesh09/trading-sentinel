@@ -2,7 +2,7 @@ import sqlite3
 
 import aiosqlite
 import math
-from datetime import datetime
+from datetime import datetime, time, timedelta, timezone
 import structlog
 from typing import List
 from models import OpenPosition
@@ -22,6 +22,174 @@ def settlement_costs(pos: dict, exit_price: float, shares: int, exit_date) -> fl
     session it was bought pays intraday charges, held overnight delivery."""
     intraday = charged_as_intraday(pos.get('product_type'), pos['entry_date'], exit_date, default_product="CNC")
     return calc_penny_costs(pos['entry_price'], exit_price, shares, is_intraday=intraday)
+
+
+# [O26d] The order of one day's exits. Shared with research_penny_cnc_lifecycle.tracker_step,
+# so the tracker and its research mirror cannot drift apart.
+_IST = timezone(timedelta(hours=5, minutes=30))
+# [O26e] What a day's minute bars must show before they replace the stop-first result (the O26d
+# recheck's F2: three bars, the first hour after the entry missing, had booked T1 and T2). The
+# whole session, entry day included: from its first minute, to the last minutes of continuous
+# trading (15:30; a closing-auction stock, which stops at 15:15, never qualifies), never more than
+# MINUTE_PATH_MAX_GAP minutes without a bar, and reaching the day's own high and low. Kite leaves
+# out a minute without trades, but a gap cannot be told from a provider loss, so a long one is not
+# taken as a quiet stretch. Versioned: DAY_EXITS_RULE.
+DAY_EXITS_RULE = "day_exits_v2_minute_path_complete"
+MINUTE_PATH_TOLERANCE = 0.001      # the day's own high and low within 0.1%
+MINUTE_PATH_FIRST = time(9, 16)    # the first bar at or before
+MINUTE_PATH_LAST = time(15, 25)    # the last bar at or after
+MINUTE_PATH_MAX_GAP = 5            # minutes between one bar's start and the next's, at most
+
+
+def bar_exits(status: str, stop: float, entry_price: float, target_1: float, target_2, bar: dict,
+              *, open_known: bool = True) -> dict:
+    """[O26d] What one bar does to a paper position, in the only order its prices allow.
+
+    Known first, at the open: through the stop, all out at the open; at T2, all out at the open;
+    at T1, the T1 half at the open and the stop to breakeven. ``open_known=False`` (the bar the
+    position was bought in) takes the entry as the open: that bar's own open came before it.
+    After the open a bar cannot say whether its high or its low came first, so a stop in reach is
+    taken before a target, including the breakeven stop a T1 half made active earlier in the same
+    bar. Rising from under T1 the price passes T1 before T2, so T2 takes the T1 half first (unless
+    T2 is at or under T1).
+
+    Returns ``{"t1": price|None, "close": (status, price)|None, "stop": stop after the bar,
+    "ambiguous": bool}``. ``ambiguous`` marks a result the stop-first rule chose.
+    """
+    o = float(bar["open"]) if open_known else float(entry_price)
+    h, l = float(bar["high"]), float(bar["low"])
+    t2 = float(target_2) if target_2 is not None else None
+    t1_due = status == "OPEN"
+    t1, t1_inside = None, False
+    if open_known:
+        if o <= stop:
+            return {"t1": None, "close": ("STOPPED_OUT", o), "stop": stop, "ambiguous": False}
+        if t2 is not None and o >= t2:
+            return {"t1": None, "close": ("CLOSED_T2", o), "stop": stop, "ambiguous": False}
+        if t1_due and o >= target_1:
+            t1, t1_due, stop = o, False, max(stop, entry_price)
+    if t1_due:
+        reach = target_1 if t2 is None else min(target_1, t2)
+        if l <= stop:
+            return {"t1": None, "close": ("STOPPED_OUT", stop), "stop": stop, "ambiguous": h >= reach}
+        if t2 is not None and t2 <= target_1 and h >= t2:
+            return {"t1": None, "close": ("CLOSED_T2", t2), "stop": stop, "ambiguous": False}
+        if h < target_1:
+            return {"t1": None, "close": None, "stop": stop, "ambiguous": False}
+        t1, t1_inside, stop = target_1, True, max(stop, entry_price)
+    t2_hit = t2 is not None and h >= t2
+    if l <= stop:
+        return {"t1": t1, "close": ("STOPPED_OUT", stop), "stop": stop, "ambiguous": t1_inside or t2_hit}
+    if t2_hit:
+        return {"t1": t1, "close": ("CLOSED_T2", t2), "stop": stop, "ambiguous": False}
+    return {"t1": t1, "close": None, "stop": stop, "ambiguous": False}
+
+
+def _ist_naive(value) -> datetime:
+    when = datetime.fromisoformat(value) if isinstance(value, str) else value
+    return when.astimezone(_IST).replace(tzinfo=None) if when.tzinfo else when
+
+
+def minute_path(minutes, day_bar: dict, *, entered_at=None) -> tuple:
+    """[O26d, O26e] ``(path, coverage)``: the day's minute bars in time order (from the entry minute
+    on the entry day) and ``COMPLETE``, or ``(None, reason)`` when they cannot stand for the day:
+    NONE, MIXED_DATES, NOT_ENTRY_DATE, CONFLICTING_BARS (one minute, two different bars),
+    INCOHERENT_BAR (not finite and positive, or open/close outside low-high), LATE_START,
+    EARLY_END, GAP_<n>M (n minutes between two bars), RANGE_MISMATCH (not the day's high and low).
+    The whole day is checked before the entry-day cut, so the minutes after the entry are known
+    to be all of them."""
+    if not minutes:
+        return None, "NONE"
+    by_start: dict = {}
+    for m in minutes:
+        bar = {"start": _ist_naive(m["start"]), **{k: float(m[k]) for k in ("open", "high", "low", "close")}}
+        values = (bar["open"], bar["high"], bar["low"], bar["close"])
+        if not all(math.isfinite(v) and v > 0 for v in values) or not (
+                bar["low"] <= min(bar["open"], bar["close"]) <= max(bar["open"], bar["close"]) <= bar["high"]):
+            return None, "INCOHERENT_BAR"
+        seen = by_start.setdefault(bar["start"], bar)
+        if seen != bar:
+            return None, "CONFLICTING_BARS"
+    path = [by_start[start] for start in sorted(by_start)]
+    day = path[0]["start"].date()
+    if any(m["start"].date() != day for m in path):
+        return None, "MIXED_DATES"
+    if entered_at is not None and _ist_naive(entered_at).date() != day:
+        return None, "NOT_ENTRY_DATE"
+    if path[0]["start"].time() > MINUTE_PATH_FIRST:
+        return None, "LATE_START"
+    if path[-1]["start"].time() < MINUTE_PATH_LAST:
+        return None, "EARLY_END"
+    gap = max((b["start"] - a["start"] for a, b in zip(path, path[1:])), default=timedelta(0))
+    if gap > timedelta(minutes=MINUTE_PATH_MAX_GAP):
+        return None, f"GAP_{int(gap.total_seconds() // 60)}M"
+    high, low = max(m["high"] for m in path), min(m["low"] for m in path)
+    day_high, day_low = float(day_bar["high"]), float(day_bar["low"])
+    if abs(high - day_high) > day_high * MINUTE_PATH_TOLERANCE or abs(low - day_low) > day_low * MINUTE_PATH_TOLERANCE:
+        return None, "RANGE_MISMATCH"
+    if entered_at is not None:
+        since = _ist_naive(entered_at).replace(second=0, microsecond=0)
+        path = [m for m in path if m["start"] >= since]
+        if not path:
+            return None, "NO_BAR_AFTER_ENTRY"
+    return path, "COMPLETE"
+
+
+def usable_minutes(minutes, day_bar: dict, *, entered_at=None):
+    """[O26d] ``minute_path``'s path alone (None when the minutes cannot stand for the day)."""
+    return minute_path(minutes, day_bar, entered_at=entered_at)[0]
+
+
+def day_exits(status: str, stop: float, entry_price: float, target_1: float, target_2, day_bar: dict,
+              *, entered_at=None, minutes=None) -> dict:
+    """[O26d] One day's exits for a paper position, and what they rest on (``basis``).
+
+    ``entered_at`` is the entry instant on the entry day (None on later days): the daily bar then
+    also holds prices from before the entry, so its open is not used and its touches are not
+    trusted alone. A day the daily bar cannot order (``ambiguous``, or any touch on the entry day)
+    is walked minute by minute when complete minute bars are given (``MINUTES``); without them the
+    daily bar decides (``DAILY_STOP_FIRST`` or ``DAILY_ENTRY_DAY``) and ``coverage`` says why the
+    minutes were not used (``minute_path``). A caller fetches minutes only when the basis says the
+    daily bar was not enough. Every result names its rule (``DAY_EXITS_RULE``)."""
+    entry_day = entered_at is not None
+    daily = bar_exits(status, stop, entry_price, target_1, target_2, day_bar, open_known=not entry_day)
+    if entry_day and (daily["t1"] is not None or daily["close"] is not None):
+        basis = "DAILY_ENTRY_DAY"
+    elif daily["ambiguous"]:
+        basis = "DAILY_STOP_FIRST"
+    else:
+        return {**daily, "basis": "DAILY", "coverage": None, "rule": DAY_EXITS_RULE}
+    path, coverage = minute_path(minutes, day_bar, entered_at=entered_at)
+    if path is None:
+        return {**daily, "basis": basis, "coverage": coverage, "rule": DAY_EXITS_RULE}
+    t1 = None
+    for n, bar in enumerate(path):
+        step = bar_exits(status, stop, entry_price, target_1, target_2, bar, open_known=not (entry_day and n == 0))
+        stop = step["stop"]
+        if step["t1"] is not None:
+            t1, status = step["t1"], "CLOSED_T1"
+        if step["close"] is not None:
+            return {"t1": t1, "close": step["close"], "stop": stop, "ambiguous": step["ambiguous"],
+                    "basis": "MINUTES", "coverage": coverage, "rule": DAY_EXITS_RULE}
+    return {"t1": t1, "close": None, "stop": stop, "ambiguous": False, "basis": "MINUTES", "coverage": coverage,
+            "rule": DAY_EXITS_RULE}
+
+
+async def _session_minutes(kite_client, ticker: str, day: str):
+    """[O26d] The day's minute bars for ``day_exits``; None when the client has none or they fail
+    (the daily bar then decides)."""
+    fetch = getattr(kite_client, "get_intraday", None)
+    if fetch is None:
+        return None
+    try:
+        frame = await fetch(ticker, f"{day} 09:15:00", f"{day} 15:30:00", "minute")
+        return [{"start": ts.to_pydatetime() if hasattr(ts, "to_pydatetime") else ts,
+                 "open": float(row["open"]), "high": float(row["high"]), "low": float(row["low"]),
+                 "close": float(row["close"])}
+                for ts, row in frame.iterrows() if str(ts)[:10] == day]
+    except Exception as exc:
+        logger.warning("daily_position_minutes_unavailable ticker=%s day=%s error=%s", ticker, day, str(exc))
+        return None
 
 
 async def _init_pnl_outbox(db_path: str) -> None:
@@ -317,139 +485,128 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
                     effective_target_2 = hard_cap_price
 
         current_status = pos['status']
-        status = current_status
-        exit_price = None
-        hit_t1_today = False
         entry_date = datetime.fromisoformat(pos['entry_date']).date()
         today = datetime.strptime(current_date_str, "%Y-%m-%d").date()
         days_held = (today - entry_date).days
-        # [BUG-FIX 2026-07-01] Use intraday high/low, not just today_close.
-        # The previous code only checked today_close, which misses:
-        #   - TP hits where the bar touched target and closed below
-        #   - SL hits where the bar wicked through stop and closed above
-        # Today's penny stocks need both. Without this fix the strategy
-        # leaves Rs 3,092 of paper P&L and Rs 12 of live P&L on the table
-        # per typical day (verified on 2026-07-01 backout).
-        # On ambiguity (both SL and TP touched same day), we assume
-        # stop-hit-first since most execution priority is SL-first at most
-        # brokers. A more conservative choice is target-first for momentum
-        # trades; but losses are bounded by the stop_hit branch's use of
-        # the trailing stop, not today's low, so slippage is small.
-        stop_hit   = today_low  <= trailing_stop
-        target2_hit = today_high >= effective_target_2 if effective_target_2 is not None else False
-        target1_hit = today_high >= pos['target_1']
-        # [GAP-THROUGH 2026-07-31] Fill at a price the market actually traded.
-        # This branch used to book `exit_price = trailing_stop` unconditionally,
-        # i.e. it assumed a stop order always fills exactly at its trigger. When
-        # a stock gaps through the stop, that price never existed. 2026-07-30
-        # SIGMA: stop 50.30, the bar OPENED at 48.00 and the day's low was
-        # 47.20, yet both EDGE legs were booked out at exactly 50.304 -- a
-        # 6.4% better exit than the close, on a fill that could not have
-        # happened (Zerodha had in fact rejected the stop order outright).
-        # penny_edge_engine.simulate_position has clamped to the open since
-        # ROADMAP-3.3; position_tracker never got the same treatment.
-        # Symmetric on the target side: a gap-up above the target fills at the
-        # open, which is better than the limit, so max() there.
-        if stop_hit and not (target2_hit or target1_hit):
-            status = "STOPPED_OUT"
-            exit_price = min(trailing_stop, today_open)
-        elif target2_hit:
-            status = "CLOSED_T2"
-            exit_price = max(effective_target_2, today_open)
-        elif target1_hit and current_status == "OPEN":
-            status = "CLOSED_T1"
-            exit_price = max(pos['target_1'], today_open)
-            hit_t1_today = True
-        elif days_held >= 15:
-            status = "CLOSED_TIME"
-            exit_price = today_close
-        if status != current_status:
-            if hit_t1_today:
-                closed_shares = math.floor(pos['shares'] * 0.5)
-                if closed_shares == 0: 
-                    closed_shares = 1 # If only 1 share, sell it all
-                remaining_shares = pos['shares'] - closed_shares
-                gross = (exit_price - pos['entry_price']) * closed_shares
-                costs = settlement_costs(pos, exit_price, closed_shares, current_date_str)
-                realised_pnl = gross - costs
-                if remaining_shares == 0:
-                    # Full close (if you only had 1 share)
-                    risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
-                    r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
-                    async with aiosqlite.connect(db_path) as db:
-                        cur = await db.execute("""
-                            UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?,
-                            status=?, exit_price=?, exit_date=?, realised_pnl=?, r_multiple=?
-                            WHERE ticker=? AND entry_date=? AND source=? AND shares=?
-                              AND exit_date IS NULL
-                        """, (highest_close, trailing_stop, "CLOSED_T1", exit_price, current_date_str, 
-                            realised_pnl, r_multiple, ticker, pos['entry_date'], source,
-                            pos['shares']))
-                        if cur.rowcount == 1:
-                            await db.execute(
-                                "INSERT OR IGNORE INTO position_pnl_outbox "
-                                "(event_key,ticker,pnl,source,created_at) VALUES (?,?,?,?,?)",
-                                (f"{source}|{ticker}|{pos['entry_date']}|{pos['shares']}|T1FULL",
-                                 ticker, realised_pnl, source, datetime.utcnow().isoformat()),
-                            )
-                        await db.commit()
-                else:
-                    # Partial close (Let the remaining 50% ride)
-                    trailing_stop = max(trailing_stop, pos['entry_price']) # Move to breakeven
-                    async with aiosqlite.connect(db_path) as db:
-                        cur = await db.execute("""
-                            UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?,
-                            status=?, shares=?, realised_pnl=COALESCE(realised_pnl, 0)+?
-                            WHERE ticker=? AND entry_date=? AND source=? AND shares=?
-                              AND exit_date IS NULL
-                        """, (highest_close, trailing_stop, "CLOSED_T1", remaining_shares,
-                              realised_pnl, ticker, pos['entry_date'], source, pos['shares']))
-                        if cur.rowcount == 1:
-                            await db.execute(
-                                "INSERT OR IGNORE INTO position_pnl_outbox "
-                                "(event_key,ticker,pnl,source,created_at) VALUES (?,?,?,?,?)",
-                                (f"{source}|{ticker}|{pos['entry_date']}|{pos['shares']}|T1PART",
-                                 ticker, realised_pnl, source, datetime.utcnow().isoformat()),
-                            )
-                        await db.commit()
-                if cur.rowcount != 1:
-                    logger.warning(
-                        "daily_position_settlement_stale ticker=%s source=%s expected_shares=%s",
-                        ticker, source, pos['shares'],
-                    )
-            else:
-                # Normal Full Close (Stop Loss, Target 2, or Time Expiry)
-                gross = (exit_price - pos['entry_price']) * pos['shares']
-                costs = settlement_costs(pos, exit_price, pos['shares'], current_date_str)
-                realised_pnl = gross - costs
-                total_realised_pnl = float(pos.get('realised_pnl') or 0) + realised_pnl
-                risk_initial = float(pos.get('initial_capital_at_risk') or 0)
-                if risk_initial <= 0:
-                    risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
-                r_multiple = total_realised_pnl / risk_initial if risk_initial > 0 else 0
+        # [BUG-FIX 2026-07-01] Use intraday high/low, not just today_close: a
+        # bar can touch a target or wick through the stop and close inside.
+        # [O26c 2026-10-26] A bar touching both took the target (Oct 26 audit
+        # O26-P1); the stop is taken first.
+        # [O26d 2026-10-26] day_exits orders the day (independent review R1):
+        # what the open settles first; T1 before T2 on the way up; a stop in
+        # reach before a target after the open, including the breakeven stop a
+        # T1 half made active that bar. On the entry day the bar's open and part
+        # of its range came before the entry, so the open is not used. A day the
+        # daily bar cannot order is walked through its minute bars when they
+        # cover it; otherwise the stop-first result stands.
+        entered_at = pos['entry_date'] if _ist_naive(pos['entry_date']).date() == today else None
+        bar = {"open": today_open, "high": today_high, "low": today_low}
+        args = (current_status, trailing_stop, pos['entry_price'], pos['target_1'], effective_target_2, bar)
+        exits = day_exits(*args, entered_at=entered_at)
+        if exits["basis"] != "DAILY":
+            minutes = await _session_minutes(kite_client, ticker, current_date_str)
+            if minutes:
+                exits = day_exits(*args, entered_at=entered_at, minutes=minutes)
+            logger.info("daily_bar_exit_order ticker=%s source=%s basis=%s coverage=%s rule=%s t1=%s close=%s",
+                        ticker, source, exits["basis"], exits["coverage"], exits["rule"], exits["t1"],
+                        exits["close"])
+        trailing_stop = exits["stop"]
+        t1_price, close = exits["t1"], exits["close"]
+        if t1_price is None and close is None and days_held >= 15:
+            close = ("CLOSED_TIME", today_close)
+        shares = pos['shares']
+        prior_realised = float(pos.get('realised_pnl') or 0)
+        if t1_price is not None:
+            closed_shares = math.floor(shares * 0.5)
+            if closed_shares == 0:
+                closed_shares = 1 # If only 1 share, sell it all
+            remaining_shares = shares - closed_shares
+            gross = (t1_price - pos['entry_price']) * closed_shares
+            costs = settlement_costs(pos, t1_price, closed_shares, current_date_str)
+            realised_pnl = gross - costs
+            if remaining_shares == 0:
+                # Full close (if you only had 1 share)
+                close = None
+                risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * shares
+                r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
                 async with aiosqlite.connect(db_path) as db:
                     cur = await db.execute("""
                         UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?,
                         status=?, exit_price=?, exit_date=?, realised_pnl=?, r_multiple=?
                         WHERE ticker=? AND entry_date=? AND source=? AND shares=?
                           AND exit_date IS NULL
-                    """, (highest_close, trailing_stop, status, exit_price, current_date_str, 
-                        total_realised_pnl, r_multiple, ticker, pos['entry_date'], source,
-                        pos['shares']))
+                    """, (highest_close, trailing_stop, "CLOSED_T1", t1_price, current_date_str,
+                        realised_pnl, r_multiple, ticker, pos['entry_date'], source,
+                        shares))
                     if cur.rowcount == 1:
                         await db.execute(
                             "INSERT OR IGNORE INTO position_pnl_outbox "
                             "(event_key,ticker,pnl,source,created_at) VALUES (?,?,?,?,?)",
-                            (f"{source}|{ticker}|{pos['entry_date']}|{pos['shares']}|{status}",
+                            (f"{source}|{ticker}|{pos['entry_date']}|{shares}|T1FULL",
                              ticker, realised_pnl, source, datetime.utcnow().isoformat()),
                         )
                     await db.commit()
-                if cur.rowcount != 1:
-                    logger.warning(
-                        "daily_position_settlement_stale ticker=%s source=%s expected_shares=%s",
-                        ticker, source, pos['shares'],
+            else:
+                # Partial close (Let the remaining 50% ride; the stop is at breakeven)
+                async with aiosqlite.connect(db_path) as db:
+                    cur = await db.execute("""
+                        UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?,
+                        status=?, shares=?, realised_pnl=COALESCE(realised_pnl, 0)+?
+                        WHERE ticker=? AND entry_date=? AND source=? AND shares=?
+                          AND exit_date IS NULL
+                    """, (highest_close, trailing_stop, "CLOSED_T1", remaining_shares,
+                          realised_pnl, ticker, pos['entry_date'], source, shares))
+                    if cur.rowcount == 1:
+                        await db.execute(
+                            "INSERT OR IGNORE INTO position_pnl_outbox "
+                            "(event_key,ticker,pnl,source,created_at) VALUES (?,?,?,?,?)",
+                            (f"{source}|{ticker}|{pos['entry_date']}|{shares}|T1PART",
+                             ticker, realised_pnl, source, datetime.utcnow().isoformat()),
+                        )
+                    await db.commit()
+                # [O26d] The rest closes in this same pass when the day also took
+                # it, with the keys and figures the next day's pass would use.
+                shares, prior_realised = remaining_shares, prior_realised + realised_pnl
+            if cur.rowcount != 1:
+                logger.warning(
+                    "daily_position_settlement_stale ticker=%s source=%s expected_shares=%s",
+                    ticker, source, pos['shares'],
+                )
+                continue
+        if close is not None:
+            # Normal Full Close (Stop Loss, Target 2, or Time Expiry)
+            status, exit_price = close
+            gross = (exit_price - pos['entry_price']) * shares
+            costs = settlement_costs(pos, exit_price, shares, current_date_str)
+            realised_pnl = gross - costs
+            total_realised_pnl = prior_realised + realised_pnl
+            risk_initial = float(pos.get('initial_capital_at_risk') or 0)
+            if risk_initial <= 0:
+                risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * shares
+            r_multiple = total_realised_pnl / risk_initial if risk_initial > 0 else 0
+            async with aiosqlite.connect(db_path) as db:
+                cur = await db.execute("""
+                    UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?,
+                    status=?, exit_price=?, exit_date=?, realised_pnl=?, r_multiple=?
+                    WHERE ticker=? AND entry_date=? AND source=? AND shares=?
+                      AND exit_date IS NULL
+                """, (highest_close, trailing_stop, status, exit_price, current_date_str,
+                    total_realised_pnl, r_multiple, ticker, pos['entry_date'], source,
+                    shares))
+                if cur.rowcount == 1:
+                    await db.execute(
+                        "INSERT OR IGNORE INTO position_pnl_outbox "
+                        "(event_key,ticker,pnl,source,created_at) VALUES (?,?,?,?,?)",
+                        (f"{source}|{ticker}|{pos['entry_date']}|{shares}|{status}",
+                         ticker, realised_pnl, source, datetime.utcnow().isoformat()),
                     )
-        else:
+                await db.commit()
+            if cur.rowcount != 1:
+                logger.warning(
+                    "daily_position_settlement_stale ticker=%s source=%s expected_shares=%s",
+                    ticker, source, shares,
+                )
+        elif t1_price is None:
             # Just update the trailing stop and highest close for the day
             async with aiosqlite.connect(db_path) as db:
                 await db.execute("""

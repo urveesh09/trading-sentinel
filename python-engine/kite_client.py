@@ -2429,6 +2429,13 @@ class KiteClient:
             )
             if refusal is not None:
                 return refusal
+            # [O26c] Either halt can be tripped while the cash reads above are
+            # awaited. Recheck after the last await before the POST; nothing
+            # has left, so the hold is given back as not sent.
+            blocked = entry_blocker()
+            if blocked is not None:
+                self.account_cash_reservations.release_not_sent(reservation_id, "halted_before_dispatch")
+                return blocked
         try:
             _record_endpoint(self, "order")     # counted at dispatch; refusals above never reach HTTP
             resp = await self._orders_http.post(f"/orders/{variety}", data=params)
