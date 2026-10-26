@@ -23,6 +23,13 @@ from kite_client import RateLimiter, provider_lane
 IST = pytz.timezone("Asia/Kolkata")
 
 
+# [O26d/O26e] The order tests queue every waiter before the first token refills. At 200/s a token
+# comes every 5 ms, and Windows' monotonic clock moves in 15.6 ms steps: one step while the waiters
+# queued (likely under a full-suite load) let an early waiter take a token before the later lanes
+# arrived (two of these failed once each in O26d/O26e full runs, passing alone). 20/s leaves 50 ms.
+QUEUE_RATE = 20.0
+
+
 async def _queue(limiter, admitted, specs):
     """Queue ``(name, priority)`` waiters in order and return their tasks."""
     async def request(name, priority):
@@ -38,7 +45,7 @@ async def _queue(limiter, admitted, specs):
 
 @pytest.mark.asyncio
 async def test_normal_request_is_not_queued_behind_bulk_backlog():
-    limiter = RateLimiter(rate=200.0, burst=1)
+    limiter = RateLimiter(rate=QUEUE_RATE, burst=1)
     await limiter.acquire()
     admitted = []
     bulk = await _queue(limiter, admitted, [(f"bulk-{i}", "bulk") for i in range(30)])
@@ -50,7 +57,7 @@ async def test_normal_request_is_not_queued_behind_bulk_backlog():
 
 @pytest.mark.asyncio
 async def test_bulk_is_not_starved_by_sustained_normal_work():
-    limiter = RateLimiter(rate=200.0, burst=1, normal_burst=3)
+    limiter = RateLimiter(rate=QUEUE_RATE, burst=1, normal_burst=3)
     await limiter.acquire()
     admitted = []
     tasks = await _queue(limiter, admitted, [("bulk-0", "bulk")])
@@ -61,7 +68,7 @@ async def test_bulk_is_not_starved_by_sustained_normal_work():
 
 @pytest.mark.asyncio
 async def test_management_still_preempts_normal_and_bulk_with_bounded_fairness():
-    limiter = RateLimiter(rate=200.0, burst=1, management_burst=2)
+    limiter = RateLimiter(rate=QUEUE_RATE, burst=1, management_burst=2)
     await limiter.acquire()
     admitted = []
     tasks = await _queue(limiter, admitted, [("bulk-0", "bulk"), ("normal-0", "normal")])
@@ -76,7 +83,7 @@ async def test_management_still_preempts_normal_and_bulk_with_bounded_fairness()
 @pytest.mark.asyncio
 async def test_management_yields_to_bulk_when_only_bulk_waits():
     """S2 fairness is preserved for the screener when no normal work waits."""
-    limiter = RateLimiter(rate=200.0, burst=1, management_burst=2)
+    limiter = RateLimiter(rate=QUEUE_RATE, burst=1, management_burst=2)
     await limiter.acquire()
     admitted = []
     tasks = await _queue(limiter, admitted, [("bulk-0", "bulk")])
@@ -87,10 +94,7 @@ async def test_management_yields_to_bulk_when_only_bulk_waits():
 
 @pytest.mark.asyncio
 async def test_without_bulk_waiters_ordering_is_unchanged_from_s2():
-    # [O26d] 20/s, not 200/s: a token every 50 ms. Windows' monotonic clock moves in 15.6 ms steps, so at 200/s one
-    # step while the waiters queued (likely under a full-suite load) handed a normal waiter the token before the
-    # management ones were queued (failed once in the O26d full run, passed alone).
-    limiter = RateLimiter(rate=20.0, burst=1, management_burst=2)
+    limiter = RateLimiter(rate=QUEUE_RATE, burst=1, management_burst=2)
     await limiter.acquire()
     admitted = []
     tasks = await _queue(limiter, admitted, [(f"normal-{i}", "normal") for i in range(3)])

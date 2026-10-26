@@ -40,7 +40,9 @@ from research_data_contracts import IST, DailyDataset, IntradayDataset
 
 # v2 [O26c/O26d]: the tracker's exit order changed (stop before target, T1 before T2, entry-day open
 # unused, minute bars for a day the daily bar cannot order); v1 results are not comparable.
-LIFECYCLE_VERSION = "penny_cnc_connors_lifecycle_v2"
+# v3 [O26e]: minute bars are used only when they cover the whole session without a gap over 5 minutes
+# (position_tracker.DAY_EXITS_RULE); v2 results are not comparable.
+LIFECYCLE_VERSION = "penny_cnc_connors_lifecycle_v3"
 SCOPE = "LIFECYCLE"
 SCAN_MINUTE = 9 * 60 + 30
 PARTIAL_LAST_BAR = time(9, 29)
@@ -326,8 +328,9 @@ def run_penny_cnc_lifecycle(
     status = ("UNAVAILABLE" if funnel["evaluations"] == 0
               else "PARTIAL" if unresolved or missing_daily or funnel["NO_PARTIAL_CANDLE_EVIDENCE"]
               else "COMPLETE")
-    declared = {"version": LIFECYCLE_VERSION, "config": asdict(config), "start": start, "end": end,
-                "settle_through": through.isoformat(),
+    from position_tracker import DAY_EXITS_RULE
+    declared = {"version": LIFECYCLE_VERSION, "exit_rule": DAY_EXITS_RULE, "config": asdict(config),
+                "start": start, "end": end, "settle_through": through.isoformat(),
                 "intraday": intraday.manifest.get("dataset_sha256"),
                 "daily": daily.manifest.get("dataset_sha256"), "bankroll": bankroll}
     return {
@@ -340,8 +343,9 @@ def run_penny_cnc_lifecycle(
             "entry_clock": "09:30 IST scan; last daily bar = today's partial candle (09:15-09:29 minutes)",
             "fill": "LTP at 09:30 (open of the traded 09:30 bar); executor drift/stop checks",
             "exits": ("15:45 tracker on final daily bars ordered by position_tracker.day_exits: open first, "
-                      "T1 50% before T2, stop before target after the open, minute bars for a day the daily "
-                      "bar cannot order, 15-day time"),
+                      "T1 50% before T2, stop before target after the open, complete minute bars for a day "
+                      "the daily bar cannot order, 15-day time"),
+            "exit_rule": DAY_EXITS_RULE,
             "trail": "disabled: Connors decisions carry no atr_14",
             "costs": "position_tracker.settlement_costs (S23-COST1), as the tracker books",
             "regime": f"declared constant {config.regime}",

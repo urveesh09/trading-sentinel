@@ -27,9 +27,18 @@ def settlement_costs(pos: dict, exit_price: float, shares: int, exit_date) -> fl
 # [O26d] The order of one day's exits. Shared with research_penny_cnc_lifecycle.tracker_step,
 # so the tracker and its research mirror cannot drift apart.
 _IST = timezone(timedelta(hours=5, minutes=30))
-MINUTE_PATH_TOLERANCE = 0.001      # minute bars must reach the day's own high and low within 0.1%
-MINUTE_PATH_FIRST = time(9, 16)    # and cover the session: from its first minute
-MINUTE_PATH_LAST = time(15, 14)    # to the end of continuous trading (15:15 for closing-auction stocks)
+# [O26e] What a day's minute bars must show before they replace the stop-first result (the O26d
+# recheck's F2: three bars, the first hour after the entry missing, had booked T1 and T2). The
+# whole session, entry day included: from its first minute, to the last minutes of continuous
+# trading (15:30; a closing-auction stock, which stops at 15:15, never qualifies), never more than
+# MINUTE_PATH_MAX_GAP minutes without a bar, and reaching the day's own high and low. Kite leaves
+# out a minute without trades, but a gap cannot be told from a provider loss, so a long one is not
+# taken as a quiet stretch. Versioned: DAY_EXITS_RULE.
+DAY_EXITS_RULE = "day_exits_v2_minute_path_complete"
+MINUTE_PATH_TOLERANCE = 0.001      # the day's own high and low within 0.1%
+MINUTE_PATH_FIRST = time(9, 16)    # the first bar at or before
+MINUTE_PATH_LAST = time(15, 25)    # the last bar at or after
+MINUTE_PATH_MAX_GAP = 5            # minutes between one bar's start and the next's, at most
 
 
 def bar_exits(status: str, stop: float, entry_price: float, target_1: float, target_2, bar: dict,
@@ -81,27 +90,54 @@ def _ist_naive(value) -> datetime:
     return when.astimezone(_IST).replace(tzinfo=None) if when.tzinfo else when
 
 
-def usable_minutes(minutes, day_bar: dict, *, entered_at=None):
-    """[O26d] The day's minute bars in time order, from the entry minute on the entry day, or None
-    when they cannot stand for the day: empty, not to the end of continuous trading, not from the
-    open (a later day), or not reaching the daily bar's own high and low."""
+def minute_path(minutes, day_bar: dict, *, entered_at=None) -> tuple:
+    """[O26d, O26e] ``(path, coverage)``: the day's minute bars in time order (from the entry minute
+    on the entry day) and ``COMPLETE``, or ``(None, reason)`` when they cannot stand for the day:
+    NONE, MIXED_DATES, NOT_ENTRY_DATE, CONFLICTING_BARS (one minute, two different bars),
+    INCOHERENT_BAR (not finite and positive, or open/close outside low-high), LATE_START,
+    EARLY_END, GAP_<n>M (n minutes between two bars), RANGE_MISMATCH (not the day's high and low).
+    The whole day is checked before the entry-day cut, so the minutes after the entry are known
+    to be all of them."""
     if not minutes:
-        return None
-    path = sorted(({**m, "start": _ist_naive(m["start"])} for m in minutes), key=lambda m: m["start"])
+        return None, "NONE"
+    by_start: dict = {}
+    for m in minutes:
+        bar = {"start": _ist_naive(m["start"]), **{k: float(m[k]) for k in ("open", "high", "low", "close")}}
+        values = (bar["open"], bar["high"], bar["low"], bar["close"])
+        if not all(math.isfinite(v) and v > 0 for v in values) or not (
+                bar["low"] <= min(bar["open"], bar["close"]) <= max(bar["open"], bar["close"]) <= bar["high"]):
+            return None, "INCOHERENT_BAR"
+        seen = by_start.setdefault(bar["start"], bar)
+        if seen != bar:
+            return None, "CONFLICTING_BARS"
+    path = [by_start[start] for start in sorted(by_start)]
+    day = path[0]["start"].date()
+    if any(m["start"].date() != day for m in path):
+        return None, "MIXED_DATES"
+    if entered_at is not None and _ist_naive(entered_at).date() != day:
+        return None, "NOT_ENTRY_DATE"
+    if path[0]["start"].time() > MINUTE_PATH_FIRST:
+        return None, "LATE_START"
+    if path[-1]["start"].time() < MINUTE_PATH_LAST:
+        return None, "EARLY_END"
+    gap = max((b["start"] - a["start"] for a, b in zip(path, path[1:])), default=timedelta(0))
+    if gap > timedelta(minutes=MINUTE_PATH_MAX_GAP):
+        return None, f"GAP_{int(gap.total_seconds() // 60)}M"
+    high, low = max(m["high"] for m in path), min(m["low"] for m in path)
+    day_high, day_low = float(day_bar["high"]), float(day_bar["low"])
+    if abs(high - day_high) > day_high * MINUTE_PATH_TOLERANCE or abs(low - day_low) > day_low * MINUTE_PATH_TOLERANCE:
+        return None, "RANGE_MISMATCH"
     if entered_at is not None:
         since = _ist_naive(entered_at).replace(second=0, microsecond=0)
         path = [m for m in path if m["start"] >= since]
-    if not path or path[-1]["start"].time() < MINUTE_PATH_LAST:
-        return None
-    high, low = max(m["high"] for m in path), min(m["low"] for m in path)
-    day_high, day_low = float(day_bar["high"]), float(day_bar["low"])
-    if high > day_high * (1 + MINUTE_PATH_TOLERANCE) or low < day_low * (1 - MINUTE_PATH_TOLERANCE):
-        return None
-    if entered_at is None and (path[0]["start"].time() > MINUTE_PATH_FIRST
-                               or high < day_high * (1 - MINUTE_PATH_TOLERANCE)
-                               or low > day_low * (1 + MINUTE_PATH_TOLERANCE)):
-        return None
-    return path
+        if not path:
+            return None, "NO_BAR_AFTER_ENTRY"
+    return path, "COMPLETE"
+
+
+def usable_minutes(minutes, day_bar: dict, *, entered_at=None):
+    """[O26d] ``minute_path``'s path alone (None when the minutes cannot stand for the day)."""
+    return minute_path(minutes, day_bar, entered_at=entered_at)[0]
 
 
 def day_exits(status: str, stop: float, entry_price: float, target_1: float, target_2, day_bar: dict,
@@ -111,9 +147,10 @@ def day_exits(status: str, stop: float, entry_price: float, target_1: float, tar
     ``entered_at`` is the entry instant on the entry day (None on later days): the daily bar then
     also holds prices from before the entry, so its open is not used and its touches are not
     trusted alone. A day the daily bar cannot order (``ambiguous``, or any touch on the entry day)
-    is walked minute by minute when usable minute bars are given (``MINUTES``); without them the
-    daily bar decides (``DAILY_STOP_FIRST`` or ``DAILY_ENTRY_DAY``). A caller fetches minutes only
-    when the basis says the daily bar was not enough."""
+    is walked minute by minute when complete minute bars are given (``MINUTES``); without them the
+    daily bar decides (``DAILY_STOP_FIRST`` or ``DAILY_ENTRY_DAY``) and ``coverage`` says why the
+    minutes were not used (``minute_path``). A caller fetches minutes only when the basis says the
+    daily bar was not enough. Every result names its rule (``DAY_EXITS_RULE``)."""
     entry_day = entered_at is not None
     daily = bar_exits(status, stop, entry_price, target_1, target_2, day_bar, open_known=not entry_day)
     if entry_day and (daily["t1"] is not None or daily["close"] is not None):
@@ -121,10 +158,10 @@ def day_exits(status: str, stop: float, entry_price: float, target_1: float, tar
     elif daily["ambiguous"]:
         basis = "DAILY_STOP_FIRST"
     else:
-        return {**daily, "basis": "DAILY"}
-    path = usable_minutes(minutes, day_bar, entered_at=entered_at)
+        return {**daily, "basis": "DAILY", "coverage": None, "rule": DAY_EXITS_RULE}
+    path, coverage = minute_path(minutes, day_bar, entered_at=entered_at)
     if path is None:
-        return {**daily, "basis": basis}
+        return {**daily, "basis": basis, "coverage": coverage, "rule": DAY_EXITS_RULE}
     t1 = None
     for n, bar in enumerate(path):
         step = bar_exits(status, stop, entry_price, target_1, target_2, bar, open_known=not (entry_day and n == 0))
@@ -133,8 +170,9 @@ def day_exits(status: str, stop: float, entry_price: float, target_1: float, tar
             t1, status = step["t1"], "CLOSED_T1"
         if step["close"] is not None:
             return {"t1": t1, "close": step["close"], "stop": stop, "ambiguous": step["ambiguous"],
-                    "basis": "MINUTES"}
-    return {"t1": t1, "close": None, "stop": stop, "ambiguous": False, "basis": "MINUTES"}
+                    "basis": "MINUTES", "coverage": coverage, "rule": DAY_EXITS_RULE}
+    return {"t1": t1, "close": None, "stop": stop, "ambiguous": False, "basis": "MINUTES", "coverage": coverage,
+            "rule": DAY_EXITS_RULE}
 
 
 async def _session_minutes(kite_client, ticker: str, day: str):
@@ -469,8 +507,9 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
             minutes = await _session_minutes(kite_client, ticker, current_date_str)
             if minutes:
                 exits = day_exits(*args, entered_at=entered_at, minutes=minutes)
-            logger.info("daily_bar_exit_order ticker=%s source=%s basis=%s t1=%s close=%s", ticker, source,
-                        exits["basis"], exits["t1"], exits["close"])
+            logger.info("daily_bar_exit_order ticker=%s source=%s basis=%s coverage=%s rule=%s t1=%s close=%s",
+                        ticker, source, exits["basis"], exits["coverage"], exits["rule"], exits["t1"],
+                        exits["close"])
         trailing_stop = exits["stop"]
         t1_price, close = exits["t1"], exits["close"]
         if t1_price is None and close is None and days_held >= 15:

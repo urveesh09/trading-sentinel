@@ -1,5 +1,38 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 26 — O26e The O26d recheck's two gaps fixed: each research trade resolved under its own saved execution, minute bars used only when they are the whole session (done, Dev, branch `codex/production-correction-hedge-p0`, pushed)
+
+- Owner ask (Oct 26, 21:00): the recheck (`docs/2026-10-26-o26d-independent-recheck.md`, committed with this slice): "Fix if you think it's an issue … Merge and deploy in prod and rebuild and restart. The 22 let it be". Both findings were agreed.
+- [x] **F1 (P2): per-trade execution in the terminal pass.**
+  - `momentum_shadow.resolve_momentum_shadow_day` reads each open trade's `execution_json`. `_terminal_bars` gives each trade its own bars: up to its declared time exit; the derived 15:15 bar only when that execution declares `cas_time_exit` and the dated evidence holds.
+  - A legacy trade with no model stays censored, `no_terminal_bar:cas_no_model`; a rerun changes nothing.
+  - `cas_time_exit_evidence` is NO_MODEL unless the declared exit is 15:15.
+  - `_exit_for_bar` takes the trade's own saved slippage and time exit, as its costs already were. All stored records declare 15:15 and 5 bps, so their results do not change.
+- [x] **F2 (P2): minute-path completeness.**
+  - `position_tracker.minute_path` returns `(path, coverage)`. The whole session must be there, entry day included, checked before the entry-day cut:
+    - one date (and the entry's date);
+    - coherent finite bars, with no conflicting duplicate minute;
+    - the first bar at or before 09:16 and the last at or after 15:25;
+    - at most 5 minutes between bars;
+    - the day's own high and low within 0.1%.
+  - Otherwise the stop-first or entry-day daily result stands, and `coverage` names the reason (`LATE_START`, `GAP_61M` …).
+  - A gap is not taken as a quiet stretch: Kite leaves out minutes without trades, but nothing tells that apart from a provider loss. Production's cache holds only partial minute windows, so there was no data to calibrate a volume check.
+  - A closing-auction stock (no continuous trading after 15:15) never qualifies.
+  - `DAY_EXITS_RULE` = `day_exits_v2_minute_path_complete` is in every result and log line. The research mirror is `penny_cnc_connors_lifecycle_v3` and declares the rule. `usable_minutes` remains as a wrapper.
+- The reviewer's recheck scenarios on this code: the six corrected cases still pass, and the two defect reproductions now fail.
+- Files:
+  - `python-engine/momentum_shadow.py`, `position_tracker.py`, `research_penny_cnc_lifecycle.py`.
+  - Tests: `test_oct21_audit_fixes.py` (+2), `test_research_penny_cnc_lifecycle.py` (+12 cases).
+  - `docs/SYSTEM_CODE_ATLAS.md`; the recheck document.
+- Tests: full suite 6,123 passed, 1 failed, 4 skipped (11 min 26 s). The failure was a second queue-order test in `test_s5_provider_lanes.py` with the same Windows-clock assumption. All five queue-order tests now run at `QUEUE_RATE` 20/s; the file then passed 3 of 3 alone and 12 of 12 run four at a time. No engine code changed after the full run. Focused: tracker and mirror 52, shadow 25. The reviewer's recheck scenarios: 6 passed, and the 2 defect reproductions now fail. Tests do not show profitability.
+- Config impact: no setting, no table. Paper tracker: minute bars are used on fewer days (more stop-first results).
+- Rollout: PR to `evolve/smart-strategies` with O26–O26e, merged and deployed on the owner's instruction (receipt below when done). Rollback: the previous images tagged `sentinel-rollback/<service>:f9547c5-20261026`; the additive `partner_watch_trips` table stays.
+- Remaining:
+  - The chandelier look-ahead (unchanged).
+  - SEBI's December 7 CAS timings: confirm before that date.
+  - Oct 26's 22 censored research trades: the owner said leave them.
+  - Check SADHNANIQ's next-session close.
+
 ## October 26 — O26d The independent review of O26–O26c fixed: the daily tracker orders a day's exits, unknown warning evidence kept apart from "no warning", a partly filled order sized as it fills, the frozen score really frozen, the closing-auction exit only with dated evidence, no network from tests, the one flaky scheduler test (done, Dev, commit `4205eef`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 26 evening), on the independent review (`docs/2026-10-26-independent-development-review.md`, committed with this slice): "Please fix this make the system better".

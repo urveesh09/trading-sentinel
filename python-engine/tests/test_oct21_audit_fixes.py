@@ -212,6 +212,86 @@ async def test_without_that_evidence_a_session_ending_at_1500_stays_censored():
     assert (await _receipt(db, "DDD"))[:2] == ("CENSORED", "no_terminal_bar")
 
 
+async def _saved_trade(db, ticker, variant, **changes):
+    """[O26e] A trade stored with its own execution (as an older engine wrote it): ``changes`` set fields, a None
+    drops one. Trades are immutable once inserted, so the old record is inserted as it was."""
+    import json
+    import momentum_shadow as ms
+    execution = ms.momentum_shadow_execution_config()
+    for key, value in changes.items():
+        if value is None:
+            execution.pop(key)
+        else:
+            execution[key] = value
+    await ms.init_momentum_shadow_db(db)
+    async with aiosqlite.connect(db) as conn:
+        await conn.execute(
+            "INSERT INTO momentum_shadow_trades (trading_date,ticker,variant,entry_bar_ts,raw_entry,entry_fill,"
+            "stop_price,target_price,quantity,initial_risk,config_json,execution_json,dataset_fingerprint,created_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (DAY, ticker, variant, f"{DAY}T14:30:00+05:30", 100.0, 100.05, 98.0, 104.0, 10, 20.5, "{}",
+             json.dumps(execution, sort_keys=True), "sha256:test", f"{DAY}T09:00:00+00:00"))
+        await conn.commit()
+
+
+async def _receipt_of(db, ticker, variant):
+    async with aiosqlite.connect(db) as conn:
+        return await (await conn.execute(
+            "SELECT status, detail, terminal_bar_ts FROM momentum_shadow_terminal_receipts WHERE ticker=? AND "
+            "variant=?", (ticker, variant))).fetchone()
+
+
+@pytest.mark.asyncio
+async def test_each_trade_is_resolved_under_its_own_saved_execution():
+    """[O26e, the O26d recheck's F1] The terminal pass decided once per ticker under today's model: a legacy trade
+    whose saved execution never declared the closing-auction model was closed by it. Now each trade's own record
+    decides; a rerun changes nothing."""
+    import momentum_shadow as ms
+    db = settings.DB_PATH
+    nfo_master(DAY, "AAA")
+    await ms.persist_momentum_shadow_results(db, [_accepted("AAA")])               # MOM_RS_PULLBACK: today's
+    await _saved_trade(db, "AAA", "MOM_BASE", cas_time_exit=None)                   # an older record
+    assert ms.cas_time_exit_evidence("AAA", DAY, execution=ms._saved_execution(
+        {"execution_json": __import__("json").dumps({k: v for k, v in ms.momentum_shadow_execution_config().items()
+                                                     if k != "cas_time_exit"})})) == "NO_MODEL"
+
+    async def fetch(ticker):
+        return _bars(QUIET[:2])                                                     # ends with the 15:00 bar
+
+    assert await ms.resolve_momentum_shadow_day(db, DAY, fetch) == {"open": 2, "closed": 1, "censored": 1,
+                                                                    "tickers": 1}
+    assert await _receipt_of(db, "AAA", "MOM_RS_PULLBACK") == ("CLOSED", ms.LAST_CONTINUOUS, f"{DAY}T15:15:00+05:30")
+    assert (await _receipt_of(db, "AAA", "MOM_BASE"))[:2] == ("CENSORED", "no_terminal_bar:cas_no_model")
+    assert await ms.resolve_momentum_shadow_day(db, DAY, fetch) == {"open": 1, "closed": 0, "censored": 1,
+                                                                    "tickers": 1}
+    assert (await _receipt_of(db, "AAA", "MOM_BASE"))[:2] == ("CENSORED", "no_terminal_bar:cas_no_model")
+
+
+@pytest.mark.asyncio
+async def test_a_declared_time_exit_and_slippage_are_the_trades_own():
+    """[O26e] A record declaring a 15:00 exit (and 10 bps) leaves at the 15:00 open; one declaring 15:30 gets no
+    derived 15:15 bar (the model is only for a 15:15 exit) and stays censored."""
+    import momentum_shadow as ms
+    db = settings.DB_PATH
+    nfo_master(DAY, "AAA")
+    await _saved_trade(db, "AAA", "MOM_BASE", time_exit_minute=0, exit_slippage_bps=10.0)
+    await _saved_trade(db, "AAA", "MOM_RECENCY_5", time_exit_minute=30)
+
+    async def fetch(ticker):
+        return _bars(QUIET[:2])
+
+    await ms.resolve_momentum_shadow_day(db, DAY, fetch)
+    async with aiosqlite.connect(db) as conn:
+        closed = await (await conn.execute(
+            "SELECT event_type, reason, bar_ts, exit_fill FROM momentum_shadow_trade_events WHERE variant='MOM_BASE' "
+            "AND event_type='CLOSED'")).fetchone()
+    assert closed[:3] == ("CLOSED", "time_exit", f"{DAY}T15:00:00+05:30")
+    assert closed[3] == pytest.approx(100.5 * (1 - 10 / 10000), abs=1e-6)
+    assert (await _receipt_of(db, "AAA", "MOM_RECENCY_5"))[:2] == ("CENSORED", "no_terminal_bar")
+    later = ms.momentum_shadow_execution_config() | {"time_exit_minute": 30}
+    assert ms.cas_time_exit_evidence("AAA", DAY, execution=later) == "NO_MODEL"
+
+
 @pytest.mark.asyncio
 async def test_no_dated_master_leaves_the_trade_censored():
     import momentum_shadow as ms

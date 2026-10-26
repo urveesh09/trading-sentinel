@@ -413,16 +413,34 @@ async def init_momentum_shadow_db(db_path: str) -> None:
         await db.commit()
 
 
+def _saved_execution(trade) -> dict:
+    """[O26e] The execution saved with a trade when it opened ({} when unreadable)."""
+    try:
+        saved = json.loads(trade["execution_json"])
+    except (KeyError, IndexError, TypeError, ValueError):
+        return {}
+    return saved if isinstance(saved, dict) else {}
+
+
+def _time_exit_of(execution: dict | None) -> tuple[int, int]:
+    """[O26e] A saved execution's declared time exit (the published one for a record without it)."""
+    execution = execution or {}
+    return (int(execution.get("time_exit_hour", EXECUTION.time_exit_hour)),
+            int(execution.get("time_exit_minute", EXECUTION.time_exit_minute)))
+
+
 def _exit_for_bar(trade, bar: dict, *, overnight: bool = False) -> tuple[str, float] | None:
     stop, target = float(trade["stop_price"]), float(trade["target_price"])
     bar_open = float(bar["open"])
-    slip = EXECUTION.exit_slippage_bps / 10000.0
+    # [O26e] The trade's own saved slippage and time exit (as its costs already are), not today's.
+    saved = _saved_execution(trade)
+    slip = float(saved.get("exit_slippage_bps", EXECUTION.exit_slippage_bps)) / 10000.0
     if overnight:
         return "overnight_gap_exit", bar_open * (1.0 - slip)
     parsed = datetime.fromisoformat(str(bar["bar_ts"]).replace("Z", "+00:00"))
     # Bar timestamps are starts. At/after the cutoff only the open was known
     # at the declared exit instant; inspecting this bar's extremes is hindsight.
-    if (parsed.hour, parsed.minute) >= (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute):
+    if (parsed.hour, parsed.minute) >= _time_exit_of(saved):
         return "time_exit", bar_open * (1.0 - slip)
     if bar_open <= stop:
         return "stop_gap", bar_open * (1.0 - slip)
@@ -549,9 +567,9 @@ async def _advance_and_open(db, result: dict, created_at: str) -> None:
           fingerprint, created_at))
 
 
-def _at_or_after_time_exit(bar_ts: str) -> bool:
+def _at_or_after_time_exit(bar_ts: str, exit_at: tuple[int, int] | None = None) -> bool:
     parsed = datetime.fromisoformat(str(bar_ts).replace("Z", "+00:00"))
-    return (parsed.hour, parsed.minute) >= (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute)
+    return (parsed.hour, parsed.minute) >= (exit_at or (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute))
 
 
 LAST_CONTINUOUS = "time_exit_last_continuous"     # [O26c] the receipt detail of a derived 15:15 price
@@ -566,10 +584,12 @@ def cas_time_exit_evidence(ticker: str, trading_date: str, *, archive_root: str 
       * the session is one on which CAS stocks' continuous trading ended at 15:15
         (``market_calendar.cas_phase1_in_force``: 2026-08-03 to before 2026-12-07);
       * the ticker had stock futures in the NFO contract master archived that day (dated, not today's list).
-    Otherwise NO_MODEL, NOT_IN_FORCE, NO_DATED_MASTER or NOT_LISTED: the trade stays censored."""
-    from market_calendar import cas_phase1_in_force
-    declared = (execution if execution is not None else asdict(EXECUTION)).get("cas_time_exit")
-    if declared != EXECUTION.cas_time_exit:
+    Otherwise NO_MODEL, NOT_IN_FORCE, NO_DATED_MASTER or NOT_LISTED: the trade stays censored.
+    [O26e] ``execution`` is the trade's own saved one; the model is defined only for a declared 15:15 exit."""
+    from market_calendar import CAS_OPEN_TIME, cas_phase1_in_force
+    execution = execution if execution is not None else asdict(EXECUTION)
+    if (execution.get("cas_time_exit") != EXECUTION.cas_time_exit
+            or _time_exit_of(execution) != (CAS_OPEN_TIME.hour, CAS_OPEN_TIME.minute)):
         return "NO_MODEL"
     try:
         day = date.fromisoformat(str(trading_date)[:10])
@@ -585,7 +605,7 @@ def cas_time_exit_evidence(ticker: str, trading_date: str, *, archive_root: str 
     return CAS_ELIGIBLE if str(ticker).strip().upper() in names else "NOT_LISTED"
 
 
-def _last_continuous_at_time_exit(bars: list[dict]) -> dict | None:
+def _last_continuous_at_time_exit(bars: list[dict], exit_at: tuple[int, int] | None = None) -> dict | None:
     """[O26c] For a stock in NSE's closing auction continuous trading ends at
     15:15, so the session has no 15:15 bar and the declared 15:15 exit never
     got one (Oct 26: 22 of 75 RS_PULLBACK trades, every one an F&O stock,
@@ -599,11 +619,32 @@ def _last_continuous_at_time_exit(bars: list[dict]) -> dict | None:
     last = max(bars, key=lambda bar: datetime.fromisoformat(str(bar["bar_ts"]).replace("Z", "+00:00")))
     parsed = datetime.fromisoformat(str(last["bar_ts"]).replace("Z", "+00:00"))
     due = parsed + timedelta(minutes=15)
-    if (due.hour, due.minute) != (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute):
+    if (due.hour, due.minute) != (exit_at or (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute)):
         return None
     price = last["close"]
     return {"bar_ts": due.isoformat(), "open": price, "high": price, "low": price, "close": price,
             "modelled": EXECUTION.cas_time_exit}
+
+
+async def _terminal_bars(ticker: str, trading_date: str, bars: list[dict], execution: dict) -> tuple:
+    """[O26e] One trade's bars for the terminal pass, under its own saved execution (the O26d recheck's F1: one
+    ticker-wide decision under today's model had closed a legacy trade by a model it never declared): up to its
+    declared time exit; without a bar there, the derived 15:15 bar only when that execution declares the model and
+    the dated evidence holds. Returns (bars, terminal, derived, evidence)."""
+    exit_at = _time_exit_of(execution)
+    terminal = next((bar for bar in bars if _at_or_after_time_exit(bar["bar_ts"], exit_at)), None)
+    if terminal is not None:
+        return bars[:bars.index(terminal) + 1], terminal, None, None
+    derived = _last_continuous_at_time_exit(bars, exit_at)
+    if derived is None:
+        return bars, None, None, None
+    try:
+        evidence = await asyncio.to_thread(cas_time_exit_evidence, ticker, trading_date, execution=execution)
+    except Exception:                 # unreadable evidence is missing evidence: censored, its receipt says so
+        evidence = "EVIDENCE_ERROR"
+    if evidence != CAS_ELIGIBLE:
+        return bars, None, None, evidence
+    return bars + [derived], derived, derived, evidence
 
 
 async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bars) -> dict:
@@ -623,6 +664,8 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
     LAST_CONTINUOUS. [O26d] Only with dated evidence that it was one that day
     (``cas_time_exit_evidence``); otherwise the trade stays censored, its
     detail saying which evidence was missing. Bars are taken in time order.
+    [O26e] Each trade is judged under its own saved execution
+    (``_terminal_bars``): its time exit, and the model only if it declared it.
 
     [A22-M2] Each ticker's bars are fetched with no database connection
     open, then applied in one short transaction for that ticker: a slow
@@ -636,7 +679,7 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
     async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row
         rows = await (await db.execute("""
-            SELECT t.ticker, t.variant FROM momentum_shadow_trades t
+            SELECT t.ticker, t.variant, t.execution_json FROM momentum_shadow_trades t
             WHERE t.trading_date=? AND NOT EXISTS (
                 SELECT 1 FROM momentum_shadow_trade_events e
                 WHERE e.trading_date=t.trading_date AND e.ticker=t.ticker
@@ -645,28 +688,23 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
         """, (trading_date,))).fetchall()
     by_ticker: dict = {}
     for row in rows:
-        by_ticker.setdefault(row["ticker"], []).append(row["variant"])
+        by_ticker.setdefault(row["ticker"], []).append((row["variant"], _saved_execution(row)))
     summary.update(open=len(rows), tickers=len(by_ticker))
-    for ticker, variants in by_ticker.items():
-        error = None
+    for ticker, trades in by_ticker.items():
+        error, day_bars = None, []
         try:
             frame = await fetch_bars(ticker)
-            bars = sorted((bar for bar in _bars(frame if frame is not None else pd.DataFrame())
-                           if bar["bar_ts"][:10] == trading_date),
-                          key=lambda bar: datetime.fromisoformat(bar["bar_ts"].replace("Z", "+00:00")))
-            terminal = next((bar for bar in bars if _at_or_after_time_exit(bar["bar_ts"])), None)
-            derived, evidence = None, None
-            if terminal is not None:
-                bars = bars[:bars.index(terminal) + 1]
-            elif _last_continuous_at_time_exit(bars) is not None:
-                evidence = await asyncio.to_thread(cas_time_exit_evidence, ticker, trading_date)
-                if evidence == CAS_ELIGIBLE:
-                    terminal = derived = _last_continuous_at_time_exit(bars)
-                    bars = bars + [derived]
+            day_bars = sorted((bar for bar in _bars(frame if frame is not None else pd.DataFrame())
+                               if bar["bar_ts"][:10] == trading_date),
+                              key=lambda bar: datetime.fromisoformat(bar["bar_ts"].replace("Z", "+00:00")))
         except Exception as exc:     # a failed fetch is a censored outcome, not a crash
-            bars, terminal, derived, evidence, error = [], None, None, None, type(exc).__name__
+            error = type(exc).__name__
+        plans = {variant: ([], None, None, None) if error else
+                 await _terminal_bars(ticker, trading_date, day_bars, execution)
+                 for variant, execution in trades}
         async with aiosqlite.connect(db_path) as db:
-            for variant in variants:
+            for variant, _execution in trades:
+                bars, terminal, derived, evidence = plans[variant]
                 await _advance_and_open(db, {"trading_date": trading_date, "ticker": ticker,
                                              "variant": variant, "accepted": False, "bars": bars}, created_at)
                 db.row_factory = aiosqlite.Row

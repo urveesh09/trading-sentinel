@@ -1372,7 +1372,7 @@ Related tests: `python-engine/tests/test_momentum_selective.py`
 
 Broker-free paper-shadow evaluation for declared Momentum variants. This module deliberately imports only the pure strategy evaluator plus storage and serialization libraries. It has no Kite, executor, order, or scheduler dependency. Evaluation and persistence are separate operations so callers can test the same immutable frames before choosing where to record the evidence.
 
-Top-level declarations: `MomentumShadowVariant` (line 33), `MomentumShadowExecution` (line 57), `momentum_shadow_execution_config` (line 94), `_json_safe` (line 99), `_normalise_timestamp` (line 115), `_frame_fingerprint` (line 121), `_bars` (line 140), `_identity` (line 158), `_ticker` (line 186), `_selected_variants` (line 193), `evaluate_momentum_shadows` (line 205), `_selective_decision` (line 311), `init_momentum_shadow_db` (line 322), `_exit_for_bar` (line 416), `_declared_costs` (line 438), `_advance_and_open` (line 460), `_at_or_after_time_exit` (line 552), `cas_time_exit_evidence` (line 561), `_last_continuous_at_time_exit` (line 588), `resolve_momentum_shadow_day` (line 609), `persist_momentum_shadow_results` (line 700), `momentum_shadow_comparison` (line 740), `momentum_shadow_near_misses` (line 896)
+Top-level declarations: `MomentumShadowVariant` (line 33), `MomentumShadowExecution` (line 57), `momentum_shadow_execution_config` (line 94), `_json_safe` (line 99), `_normalise_timestamp` (line 115), `_frame_fingerprint` (line 121), `_bars` (line 140), `_identity` (line 158), `_ticker` (line 186), `_selected_variants` (line 193), `evaluate_momentum_shadows` (line 205), `_selective_decision` (line 311), `init_momentum_shadow_db` (line 322), `_saved_execution` (line 416), `_time_exit_of` (line 425), `_exit_for_bar` (line 432), `_declared_costs` (line 456), `_advance_and_open` (line 478), `_at_or_after_time_exit` (line 570), `cas_time_exit_evidence` (line 579), `_last_continuous_at_time_exit` (line 608), `_terminal_bars` (line 629), `resolve_momentum_shadow_day` (line 650), `persist_momentum_shadow_results` (line 738), `momentum_shadow_comparison` (line 778), `momentum_shadow_near_misses` (line 934)
 
 Engine dependencies: `config`, `cost_schedules`, `engine`, `market_calendar`, `momentum_rs_pullback`, `momentum_selective`, `research_archive`
 
@@ -2206,7 +2206,7 @@ Related tests: `python-engine/tests/test_portfolio_parity.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `settlement_costs` (line 17), `bar_exits` (line 35), `_ist_naive` (line 79), `usable_minutes` (line 84), `day_exits` (line 107), `_session_minutes` (line 140), `_init_pnl_outbox` (line 157), `_deliver_pnl_outbox` (line 170), `_add_column_if_missing` (line 194), `init_positions_db` (line 226), `get_open_positions` (line 295), `update_daily_positions` (line 337)
+Top-level declarations: `settlement_costs` (line 17), `bar_exits` (line 44), `_ist_naive` (line 88), `minute_path` (line 93), `usable_minutes` (line 138), `day_exits` (line 143), `_session_minutes` (line 178), `_init_pnl_outbox` (line 195), `_deliver_pnl_outbox` (line 208), `_add_column_if_missing` (line 232), `init_positions_db` (line 264), `get_open_positions` (line 333), `update_daily_positions` (line 375)
 
 Engine dependencies: `chandelier_stop`, `config`, `equity_charges`, `models`, `penny_risk`
 
@@ -2450,7 +2450,7 @@ Declared tables: `selected_leg_collection_gaps`, `selected_leg_subscriptions`
 
 [B2 2026-10-03] Exact classic Penny CNC Connors lifecycle replay (offline). Replays what the shipped ``PENNY_PAPER`` CNC book does, not what the Connors spec describes: * 09:30 IST entry scan (``run_penny_connors_scan``): the scanner fetches Kite day candles *up to today*, so the last bar is today's in-progress candle (~09:15-09:30). It is rebuilt here from validated minute bars; the real ``evaluate_connors_entry`` then runs with the scanner's exact inputs and a real ``PennyRiskEngine``; admission applies the per-ticker reservation, CNC/total caps and the executor's drift / stop checks; paper fills at LTP. * 15:45 IST ``position_tracker.update_daily_positions`` on each final daily bar, throu
 
-Top-level declarations: `PennyCncConfig` (line 59), `partial_candle` (line 77), `scanner_daily_frame` (line 87), `connors_decision` (line 98), `tracker_step` (line 119), `_ltp_at` (line 185), `run_penny_cnc_lifecycle` (line 195)
+Top-level declarations: `PennyCncConfig` (line 61), `partial_candle` (line 79), `scanner_daily_frame` (line 89), `connors_decision` (line 100), `tracker_step` (line 121), `_ltp_at` (line 187), `run_penny_cnc_lifecycle` (line 197)
 
 Engine dependencies: `config`, `penny_engine_connors`, `penny_executor`, `penny_models`, `penny_regime`, `penny_risk`, `position_tracker`, `research_data_contracts`
 

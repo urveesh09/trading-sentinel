@@ -259,7 +259,7 @@ def test_entry_day_minutes_before_the_entry_are_not_evidence(tmp_path):
 
 @pytest.mark.parametrize("trim", ["late_start", "early_end", "missing_low", "empty"])
 def test_minutes_that_cannot_stand_for_the_day_leave_the_stop_first_result(tmp_path, trim):
-    """[O26d] Minute bars that start late, end before 15:14, miss the day's low or are absent are not used."""
+    """[O26d] Minute bars that start late, end early, miss the day's low or are absent are not used."""
     days = _days(2)
     rows = _minutes(days[1], [(0, 10.1), (30, 10.7), (200, 9.6), (374, 10.5)])
     day_bar = _day_bar(rows)
@@ -268,6 +268,74 @@ def test_minutes_that_cannot_stand_for_the_day_leave_the_stop_first_result(tmp_p
     bars_by_day = [(days[0], QUIET), (days[1], day_bar)]
     real = asyncio.run(_real_tracker(tmp_path, _position(), bars_by_day, minutes={days[1].isoformat(): rows}))
     assert real[1][0] == "STOPPED_OUT" and real[1][1] == 40 and real[1][3] == pytest.approx(9.7)
+
+
+def _without(rows, first, last):
+    """``rows`` less the bars starting from ``first`` to before ``last`` (hh, mm)."""
+    return [r for r in rows if not (first <= (r["start"].hour, r["start"].minute) < last)]
+
+
+@pytest.mark.parametrize("shape,coverage", [
+    ("complete", "COMPLETE"),
+    ("four_minutes_missing", "COMPLETE"),                       # 5 minutes between two bars: allowed
+    ("five_minutes_missing", "GAP_6M"),
+    ("first_hour_after_entry_missing", "GAP_61M"),
+    ("two_hour_hole", "GAP_121M"),
+    ("ends_at_1514", "EARLY_END"),                              # a non-CAS stock trades to 15:30
+    ("starts_at_0920", "LATE_START"),
+    ("conflicting_minute", "CONFLICTING_BARS"),
+    ("incoherent_bar", "INCOHERENT_BAR"),
+    ("two_dates", "MIXED_DATES"),
+    ("misses_the_day_low", "RANGE_MISMATCH"),
+])
+def test_minute_bars_stand_for_a_day_only_when_they_are_all_of_it(shape, coverage):
+    """[O26e, the O26d recheck's F2] Only a whole session (09:16 to 15:25, no more than 5 minutes between bars, the
+    day's own high and low, one date, coherent bars) replaces the stop-first result; otherwise the reason is kept."""
+    from position_tracker import minute_path
+    day = _days(2)[1]
+    rows = _minutes(day, [(0, 10.1), (30, 10.7), (200, 9.6), (374, 10.5)])
+    day_bar = _day_bar(rows)
+    later = [r | {"start": r["start"] + timedelta(days=1)} for r in rows[-3:]]
+    shaped = {
+        "complete": rows, "four_minutes_missing": _without(rows, (11, 0), (11, 4)),
+        "five_minutes_missing": _without(rows, (11, 0), (11, 5)),
+        "first_hour_after_entry_missing": _without(rows, (9, 30), (10, 30)),
+        "two_hour_hole": _without(rows, (11, 0), (13, 0)), "ends_at_1514": _without(rows, (15, 15), (15, 30)),
+        "starts_at_0920": _without(rows, (9, 15), (9, 20)),
+        "conflicting_minute": rows + [rows[100] | {"close": rows[100]["close"] + 0.01,
+                                                   "high": rows[100]["high"] + 0.01}],
+        "incoherent_bar": rows[:50] + [rows[50] | {"high": rows[50]["low"] - 0.01}] + rows[51:],
+        "two_dates": rows + later, "misses_the_day_low": [r for r in rows if r["low"] > 9.65],
+    }[shape]
+    path, got = minute_path(shaped, day_bar)
+    assert got == coverage or (coverage == "RANGE_MISMATCH" and got.startswith("GAP_")), (shape, got)
+    assert (path is not None) == (coverage == "COMPLETE")
+    assert minute_path(rows + [dict(rows[100])], day_bar)[1] == "COMPLETE"      # an exact duplicate is one bar
+
+
+def test_a_sparse_entry_day_path_does_not_book_targets_the_minutes_never_showed(tmp_path):
+    """[O26e, F2's reproduction] Entry 09:30 at 10, stop 9.7, T1 10.3, T2 10.6; the day 10.1/10.7/9.6. Bars only at
+    10:30, 15:13 and 15:14, all above the stop: the first hour after the entry is missing. They booked T1 and T2;
+    now the entry day's stop-first result stands (all 40 at 9.7), runtime and mirror alike."""
+    from position_tracker import day_exits
+    day = _days(1)[0]
+    stamp = lambda h, m: datetime(day.year, day.month, day.day, h, m)
+    sparse = [{"start": stamp(10, 30), "open": 10.2, "high": 10.7, "low": 10.1, "close": 10.6},
+              {"start": stamp(15, 13), "open": 10.5, "high": 10.55, "low": 10.4, "close": 10.5},
+              {"start": stamp(15, 14), "open": 10.5, "high": 10.5, "low": 10.45, "close": 10.5}]
+    day_bar = _bar(10.1, 10.7, 9.6, 10.5)
+    got = day_exits("OPEN", 9.7, 10.0, 10.3, 10.6, day_bar, entered_at=ENTRY_DATE_UTC, minutes=sparse)
+    assert (got["basis"], got["coverage"], got["t1"], got["close"]) == (
+        "DAILY_ENTRY_DAY", "LATE_START", None, ("STOPPED_OUT", 9.7))
+    minutes = {day.isoformat(): sparse}
+    real = asyncio.run(_real_tracker(tmp_path, _position(), [(day, day_bar)], minutes=minutes))
+    assert real[0][:4] == ("STOPPED_OUT", 40, 9.7, pytest.approx(9.7))
+    assert _pure_tracker(_position(), [(day, day_bar)], minutes)[0][:5] == real[0][:5]
+    # The same day with every minute after the entry missing for an hour: still not used.
+    rows = _minutes(day, [(0, 10.1), (14, 9.6), (15, 10.0), (60, 10.7), (374, 10.5)])
+    holed = _without(rows, (9, 31), (10, 31))
+    got = day_exits("OPEN", 9.7, 10.0, 10.3, 10.6, _day_bar(rows), entered_at=ENTRY_DATE_UTC, minutes=holed)
+    assert got["basis"] == "DAILY_ENTRY_DAY" and got["coverage"].startswith("GAP_")
 
 
 def test_unsorted_minutes_are_put_in_time_order():

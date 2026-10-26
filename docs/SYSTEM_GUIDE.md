@@ -1,5 +1,16 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, Dev)
+
+- **`momentum_shadow`**:
+  - `_saved_execution(trade)`, `_time_exit_of(execution)`; `_exit_for_bar` uses the trade's saved `exit_slippage_bps` and time exit;
+  - `_terminal_bars(ticker, day, bars, execution)` decides each trade's bars, terminal and derived bar;
+  - `cas_time_exit_evidence` requires the declared 15:15 exit.
+- **`position_tracker`**:
+  - `minute_path(minutes, day_bar, entered_at=)` returns `(path, coverage)` (rules in its docstring; constants `MINUTE_PATH_FIRST` 09:16, `MINUTE_PATH_LAST` 15:25, `MINUTE_PATH_MAX_GAP` 5, `MINUTE_PATH_TOLERANCE` 0.1%);
+  - `day_exits` results carry `coverage` and `rule` (`DAY_EXITS_RULE`), and the tracker logs both;
+  - the research lifecycle is v3.
+
 ## October 26 — O26d Daily exits ordered (minute bars when needed), partner trade evidence and frozen score v2, closing-auction exit on dated evidence, test network guard, F&O pass counter (actual behavior, Dev, commit `4205eef`)
 
 - **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.

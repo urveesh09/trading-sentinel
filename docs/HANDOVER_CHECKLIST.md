@@ -1,5 +1,13 @@
 # Handover receipt and operator checklist
 
+## October 26 — O26e The O26d recheck's two gaps fixed (Dev, pushed)
+
+- [x] Each research trade's terminal pass uses its own saved execution; legacy records never get the closing-auction model (F1).
+- [x] Minute bars replace the stop-first result only when they cover the whole session with no gap over 5 minutes (F2).
+- [x] Tests: full suite 6,123 passed, 1 failed, 4 skipped (11 min 26 s). The failure was a second queue-order test in `test_s5_provider_lanes.py` with the same Windows-clock assumption. All five queue-order tests now run at `QUEUE_RATE` 20/s; the file then passed 3 of 3 alone and 12 of 12 run four at a time. No engine code changed after the full run. Focused: tracker and mirror 52, shadow 25. The reviewer's recheck scenarios: 6 passed, and the 2 defect reproductions now fail.
+- [ ] PR, merge and deploy of O26–O26e (owner instructed, Oct 26 evening): receipt to follow.
+- [ ] Confirm SEBI's December 7 CAS timings before that date.
+
 ## October 26 — O26d The independent review of O26–O26c fixed (Dev, commit `4205eef`, pushed, not deployed)
 
 - [x] Production runs `f9547c5` (PR #118); O26, O26b, O26c and O26d are Dev only.
