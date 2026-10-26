@@ -8,6 +8,7 @@ and quantity, an unreadable GTT list, a send that never left, a plan stop the
 price is already under, a plan replaced after a restart, and a slow plan.
 """
 import asyncio
+import json
 import time
 from dataclasses import replace
 from datetime import date, datetime, timedelta
@@ -1661,15 +1662,22 @@ async def test_a_send_cut_off_part_way_is_not_sent_twice(watch, kite, monkeypatc
     market = _market(D(11, 0))
     kite["orders"] = [_o("101", "BUY", D(11, 0), average_price=75.05)]
     await pw.watch_tick(D(11, 0, 5), market=market)
+    # [O26] The PLAN goes first: under a full suite's load its send was sometimes still due here, and then it was
+    # the send that hung, leaving NO_STOP queued (the flake of Oct 24 and Oct 26).
+    await pw.settle()
+    assert [m["kind"] for m in watch] == ["watch_plan"]
     started, fast = asyncio.Event(), partner_bot.send_partner_result
+    hung = []
 
     async def hang(text, **kw):
+        hung.append(kw.get("kind"))
         started.set()
         await asyncio.sleep(3600)
 
     monkeypatch.setattr(partner_bot, "send_partner_result", hang)
     await pw.watch_tick(D(11, 2, 5), market=market)                         # NO_STOP: its send hangs
     await asyncio.wait_for(started.wait(), 2)
+    assert hung == ["watch_no_stop"]
     await background_tasks.drain(grace=0, timeout=2)                        # the shutdown
     monkeypatch.setattr(partner_bot, "send_partner_result", fast)
     pw.reset()
@@ -2645,3 +2653,175 @@ async def test_a_step_no_longer_true_when_sent_is_not_sent_and_no_cash_means_no_
     for at in (D(10, 12, 5), D(10, 12, 10)):
         await pw.watch_tick(at, market=market)
     assert len(watch) == 1
+
+
+async def _trip_rows(db):
+    async with aiosqlite.connect(db) as conn:
+        conn.row_factory = aiosqlite.Row
+        rows = await (await conn.execute("SELECT * FROM partner_watch_trips ORDER BY first_at")).fetchall()
+    return [dict(row) for row in rows]
+
+
+async def _usual_26(db):
+    """Five earlier days of one 65 x ₹30 buy on ₹7,536.70: the partner's usual share is 26%."""
+    await _seed(db)
+    await zerodha.init_partner_broker_db(db)
+    async with aiosqlite.connect(db) as conn:
+        for i, day in enumerate(("2026-10-16", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22")):
+            await conn.execute(
+                "INSERT INTO partner_trade_reports(dedup_key,source,received_at,trade_at,trade_at_basis,action,"
+                "session_date,tradingsymbol,exchange,lots,lot_size,price,price_basis) "
+                "VALUES(?, 'ZERODHA', ?, ?, 'EXCHANGE_FILL', 'BUY', ?, ?, 'NFO', 1, 65, 30.0, 'BROKER_FILL')",
+                (f"kite:9{i}", f"{day}T16:00:00+05:30", f"{day}T10:0{i}:00+05:30", day, SYMBOL))
+            await conn.execute("INSERT OR REPLACE INTO partner_account_days(session_date,opening_balance,intraday_payin,"
+                               "read_at) VALUES(?,?,0,?)", (day, 7536.7, f"{day}T16:00:00+05:30"))
+        await conn.commit()
+
+
+@pytest.mark.asyncio
+async def test_every_trade_is_stored_as_it_changes_with_what_a_check_would_have_warned(watch, kite):
+    """[O26] The day's trades are in the database during the day (Oct 26's result had to be estimated from the
+    looks): fills, the result after charges, and the warnings at the buy. The report lists them."""
+    import partner_watch_report as report
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(9, 59, 55), market=market)
+    kite["orders"] = [_o("101", "BUY", D(10, 0), average_price=80.0)]
+    kite["trades"] = [_fill("101", 65, 80.0, D(10, 0))]
+    await pw.watch_tick(D(10, 0, 5), market=market)
+    await pw.settle()
+    await pw.watch_tick(D(10, 0, 10), market=market)                 # the plan is in: its run is stored
+    [row] = await _trip_rows(db)
+    assert (row["position_key"], row["bought"], row["sold"], row["entry"], row["realised"], row["closed_at"]) == (
+        "101", 65, 0, 80.0, None, None)
+    assert row["run_pct"] is not None and row["paid_share"] == round(80.0 * 65 / 7536.7, 4) and row["usual"] is None
+    kite["orders"].append(_o("102", "SELL", D(10, 5), average_price=70.0))
+    kite["trades"].append(_fill("102", 65, 70.0, D(10, 5)))
+    await pw.watch_tick(D(10, 5, 5), market=market)
+    # Bought again five minutes after that loss, twice the size.
+    kite["orders"].append(_o("103", "BUY", D(10, 10), qty=130, average_price=78.0))
+    kite["trades"].append(_fill("103", 130, 78.0, D(10, 10)))
+    await pw.watch_tick(D(10, 10, 5), market=market)
+    first, second = await _trip_rows(db)
+    loss = round((70.0 - 80.0) * 65 - round_trip_costs(80.0, 70.0, 65, "NFO", orders=2), 2)
+    assert (first["sold"], first["exit"], first["realised"], first["exact"], first["closed_at"]) == (
+        65, 70.0, loss, 1, D(10, 5).isoformat())
+    assert json.loads(second["after_loss"]) == {"loss": -loss, "at": "10:05", "minutes": 5, "bigger": "130 after 65"}
+    assert (second["bought"], second["realised"], second["carried"]) == (130, None, 0)
+    pw.reset()                                                        # a restart writes the same rows again
+    await pw.watch_tick(D(10, 11), market=market)
+    assert [r["position_key"] for r in await _trip_rows(db)] == ["101", "103"]
+    text = report.render(report.report(db, "2026-10-23"))
+    assert f"Trades 2026-10-23: 1 closed (0 won, 1 lost), −₹{-loss:,.0f} after charges; 1 open" in text
+    assert f"    10:00 {SYMBOL} NRML 65 @ 80 → 70 −₹{-loss:,.0f}  [run " in text
+    assert f"    10:10 {SYMBOL} NRML 130 @ 78, open  [run " in text and f"5 min after a −₹{-loss:,.0f} exit" in text
+
+
+def test_a_muted_buy_warns_about_its_size_only_when_it_is_far_bigger_than_usual():
+    cash = 7536.7
+    plan = {"bought": 65, "bought_px": 75.05, "usual": 0.26}
+    assert pw.size_reasons("PLAN", plan, cash) == {"paid": 4878.25, "share": round(4878.25 / cash, 4), "usual": 0.26}
+    assert pw.size_reasons("PLAN", plan | {"usual": 0.5}, cash) == {}                 # 65% is under 1.5 x 50%
+    assert pw.size_reasons("PLAN", plan | {"usual": None}, cash) == {}                # no usual known: no claim
+    assert pw.size_reasons("PLAN", plan, None) == {}                                  # no cash: no share
+    after = {"loss": 695.0, "at": "10:05", "minutes": 5, "bigger": "130 after 65"}
+    assert pw.size_reasons("PLAN", plan | {"usual": None, "after_loss": after}, cash) == {"after_loss": after}
+    assert pw.size_reasons("PLAN", plan | {"usual": None, "after_loss": after | {"bigger": None}}, cash) == {}
+    assert pw.size_reasons("ADDED", {"held_value": 6500.0, "usual": 0.5}, cash)["share"] == round(6500 / cash, 4)
+    assert pw.size_reasons("ADDED", {"held_value": 4000.0, "usual": 0.5}, cash) == {}
+    assert pw.size_reasons("NO_STOP", plan, cash) == {}
+
+
+@pytest.mark.asyncio
+async def test_on_a_quiet_day_a_far_bigger_buy_still_gets_its_size_warning(watch, kite):
+    """[O26] Owner, Oct 26: Quiet mutes the plans, but a buy far bigger than the partner's usual still warns."""
+    db = settings.DB_PATH
+    await _usual_26(db)
+    await zerodha.create_session("reqtok12", D(9, 0))
+    market = _market(D(11, 29, 30))
+    await pw.watch_tick(D(11, 29, 0), market=market)
+    await pw.handle_button(db, "watch:quiet:20261023", D(11, 29, 5))
+    kite["orders"] = [_o("101", "BUY", D(11, 29, 17), average_price=75.05)]
+    await pw.watch_tick(D(11, 29, 25), market=market)
+    await pw.settle()
+    lines = watch[-1]["text"].splitlines()
+    assert watch[-1]["kind"] == "watch_size" and len(watch) == 1
+    assert lines[0] == "⚠️ NIFTY 22300 PE: ₹4,878 in this trade, 65% of your cash: much bigger than your usual 26%."
+    assert lines[1].startswith("🛑 Plan stop ₹") and "loss if it sells there about −₹" in lines[1]
+    assert lines[-1] == pw.QUIET_SIZE_NOTE and watch[-1]["keyboard"] is None
+    outcomes = {r[1]: r[4] for r in await _messages(db)}
+    assert outcomes["PLAN"] == "muted" and outcomes["SIZE"] == "acknowledged"
+    for at in (D(11, 29, 40), D(11, 30)):
+        await pw.watch_tick(at, market=market)
+    assert len(watch) == 1                                            # once
+
+
+@pytest.mark.asyncio
+async def test_without_quiet_the_plan_carries_the_size_warning_and_no_size_message_goes(watch, kite):
+    db = settings.DB_PATH
+    await _usual_26(db)
+    await zerodha.create_session("reqtok12", D(9, 0))
+    market = _market(D(11, 29, 30))
+    await pw.watch_tick(D(11, 29, 0), market=market)
+    kite["orders"] = [_o("101", "BUY", D(11, 29, 17), average_price=75.05)]
+    await pw.watch_tick(D(11, 29, 25), market=market)
+    await pw.settle()
+    assert [m["kind"] for m in watch] == ["watch_plan"] and "much bigger than your usual 26%" in watch[0]["text"]
+    assert "SIZE" not in {r[1] for r in await _messages(db)}
+
+
+@pytest.mark.asyncio
+async def test_a_quiet_buy_bigger_right_after_a_loss_warns_and_a_warning_for_a_trade_sold_is_dropped(watch, kite):
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(9, 59, 55), market=market)
+    await pw.handle_button(db, "watch:quiet:20261023", D(9, 59, 58))
+    # Small losses, so the day stays inside its first DAY step and only SIZE messages go.
+    kite["orders"] = [_o("101", "BUY", D(10, 0), average_price=80.0), _o("102", "SELL", D(10, 5), average_price=78.0)]
+    await pw.watch_tick(D(10, 5, 5), market=market)
+    kite["orders"].append(_o("103", "BUY", D(10, 10), qty=130, average_price=78.0))
+    await pw.watch_tick(D(10, 10, 5), market=market)
+    await pw.settle()
+    lines = watch[-1]["text"].splitlines()
+    assert [m["kind"] for m in watch] == ["watch_size"]
+    assert lines[0].startswith("⚠️ NIFTY 22300 PE: your last trade closed −₹") and lines[0].endswith(
+        " at 10:05, 5 min before this buy. This is 130 after 65.")
+    assert lines[-1] == pw.QUIET_SIZE_NOTE
+    # The next one is not sent at once (Telegram did not take it); the trade is sold before the retry.
+    count = len(watch)
+    kite["outcomes"].append("unsent_connect")
+    kite["orders"] += [_o("104", "SELL", D(10, 20), qty=130, average_price=77.5),
+                       _o("105", "BUY", D(10, 21), qty=195, average_price=60.0)]
+    await pw.watch_tick(D(10, 21, 5), market=market)
+    await pw.settle()
+    assert watch[-1]["kind"] == "watch_size" and watch[-1]["state"] == "unsent_connect" and len(watch) == count + 1
+    kite["orders"].append(_o("106", "SELL", D(10, 21, 10), qty=195, average_price=61.0))
+    for at in (D(10, 21, 20), D(10, 21, 40)):
+        await pw.watch_tick(at, market=market)
+    assert len(watch) == count + 1
+    assert [r[4] for r in await _messages(db) if r[1] == "SIZE"] == ["acknowledged", "superseded"]
+
+
+@pytest.mark.asyncio
+async def test_on_a_quiet_day_an_add_that_makes_the_trade_far_bigger_than_usual_warns(watch, kite):
+    db = settings.DB_PATH
+    await _usual_26(db)
+    await zerodha.create_session("reqtok12", D(9, 0))
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(9, 59, 55), market=market)
+    await pw.handle_button(db, "watch:quiet:20261023", D(9, 59, 58))
+    kite["orders"] = [_o("101", "BUY", D(10, 0), average_price=40.0)]          # ₹2,600: 34%, under 1.5 x 26%
+    await pw.watch_tick(D(10, 0, 5), market=market)
+    await pw.settle()
+    await pw.watch_tick(D(10, 0, 10), market=market)
+    assert watch == []
+    kite["orders"].append(_o("102", "BUY", D(10, 1), average_price=40.0))      # ₹5,200 held: 69%
+    await pw.watch_tick(D(10, 1, 5), market=market)
+    await pw.settle()
+    assert [m["kind"] for m in watch] == ["watch_size"]
+    assert watch[-1]["text"].splitlines()[0] == ("⚠️ NIFTY 22300 PE: ₹5,200 in this trade now, 69% of your cash: much "
+                                                 "bigger than your usual 26%.")
+    outcomes = {r[1]: r[4] for r in await _messages(db)}
+    assert outcomes["ADDED"] == "muted" and outcomes["PLAN"] == "muted"

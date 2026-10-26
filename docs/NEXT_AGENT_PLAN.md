@@ -1,5 +1,45 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 26 — O26b O26's open items, on the owner's go-ahead: a far bigger buy still warns on a quiet day; every trade stored during the day; the check's warnings scored by a frozen rule (done, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 26): "Go ahead do it ensure quality of development". This covers O26's three open items: Quiet lets the size warning through, each trade is saved during the day, and the warnings are checked later for whether they predict losses.
+- Done:
+  - [x] **SIZE (`partner_watch.size_reasons`, `_size_through_quiet`, `size_text`, `_b_size`).**
+    - When "Quiet today" mutes a PLAN or ADDED, the same warning the PLAN would carry still goes as SIZE, in two cases:
+      - the money in the trade is over 1.5x the partner's usual share of cash (for ADDED, what is held after the add);
+      - a buy bigger than the losing trade just before it (the PLAN's "bigger").
+    - It says the size, the loss just before, and the plan in one line (`plan_summary`: never a stop to place against an old or crossed price), then "🔕 Quiet is on: this one is sent because of the size."
+    - Rare by construction. Built from the latest read: `superseded` once the trade is sold. QUIET_KEEPS, PRIORITY 2, LIFETIME 180 s. Without Quiet the PLAN carries it and no SIZE goes.
+  - [x] **Trades stored during the day (`partner_watch_trips`, `trip_row`, `_store_trips`).**
+    - Each tick writes the trades that changed (a buy, a sale, a later trade-book fill, the plan's run, the day's cash), all of them after a restart.
+    - Stored: fills, the result after charges, `exact` (every fill from Zerodha's trade book), carried.
+    - Also stored, from the buy: what a check would have warned about — the plan's 15-minute run, a losing exit within 30 minutes (with "bigger"), the usual share and this buy's share.
+    - Those buy-time facts are kept as first known (an upsert with COALESCE).
+  - [x] **`partner_watch_report`** adds "Trades <day>": closed, won, lost, the result after charges ("from the orders" when a fill was not in the trade book yet), open, carried, and each trade with its buy-time warnings.
+  - [x] **`partner_watch_score`** (new; read-only), frozen before the days it decides on.
+    - Closed, not-carried trades from FROZEN_FROM (2026-10-27). Oct 26, the day these were designed on, is never scored.
+    - Warnings: CHASED_SPIKE (run ≥ 20%), AFTER_LOSS, BIGGER_AFTER_LOSS, UNUSUAL_SIZE (> 1.5x usual), ANY.
+    - SUPPORTED only when all four hold: at least 20 warned trades; the warned mean is below the unwarned mean; the warned total is negative; and it is still negative without the single worst warned loss. Otherwise TOO_FEW or NOT_SUPPORTED.
+    - Checked trades (a check reply for the same option in the 15 minutes before the buy) are reported apart from unchecked ones.
+    - A verdict informs the owner and changes nothing.
+- Found by the new tests and fixed before the commit: after a restart, a closed trade's row was written again before its plan was read back (the watch does not reload plans for closed trades), so its run went to unknown. The buy-time facts are now kept as first known.
+- The flaky `test_a_send_cut_off_part_way_is_not_sent_twice` (Oct 24, and again in this change's first full run) is explained and fixed:
+  - Under the full suite's load the buy's PLAN was sometimes still unsent when the test made sends hang. The PLAN's send hung, and NO_STOP stayed queued and went after the restart. The log had no PLAN acknowledgement.
+  - The test now waits for the PLAN, then checks that the send that hung is NO_STOP: 35 of 35 runs, 10 of them under CPU load.
+  - The watch's code was right; the test assumed an order.
+- Files: `python-engine/partner_watch.py`, `partner_watch_report.py`, new `partner_watch_score.py`; tests `tests/test_partner_watch.py` (+6; the cut-off send test made deterministic) and new `tests/test_partner_watch_score.py` (5); `docs/SYSTEM_CODE_ATLAS.md` (289 modules).
+- Tests: every partner test file 633 passed. Full Dev (Windows venv) engine + scripts suites: 6,056 passed, 4 skipped, exit 0, 12 min 5 s (O26's 6,045 plus 11 new tests); the first full run had the one flaky test (fixed, above). Tests do not show the partner's results or profitability.
+- Config impact: no setting.
+  - New table `partner_watch_trips`, created by `init_partner_watch_db` (IF NOT EXISTS; no migration step).
+  - New `partner_watch_messages` kind SIZE; ADDED's context also keeps `held_value` and `usual`.
+- Operator, once deployed:
+  - `docker exec -u quantuser python-engine python -m partner_watch_report <day>` gives the day's trades, exact during the day.
+  - `docker exec -u quantuser python-engine python -m partner_watch_score` gives the frozen scoring; it says TOO_FEW until there are 20 warned trades.
+- Rollout: with the next PR to `evolve/smart-strategies` on the owner's go-ahead; the engine image only. Rollback: revert the commit. The table can stay; nothing reads it then.
+- Remaining:
+  - The first verdict needs at least 20 warned closed trades on days from Oct 27, and the code must be running in Production to store them.
+  - Oct 26's trades reach `partner_orders` with the 15:50 sync, not `partner_watch_trips` (this code was not deployed); it is the design day anyway.
+
 ## October 26 — O26 The partner's first watched day: the day so far told once a step of their cash, through "Quiet today"; a run figure that agrees with its warning (done, Dev, commit `6ec5ce1`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 26), after the first watched day: make the system flexible and smarter for most cases, not trained on one day, always towards better profit; improvements in Dev only.
@@ -28,10 +68,7 @@
 - Tests: the watch's file 112 passed (107 before); every partner test file 622 passed. Full Dev (Windows venv) engine + scripts suites: 6,045 passed, 4 skipped, exit 0, 11 min 50 s (O25N's 6,040 plus the 5 new tests). Tests do not show the partner's results or profitability.
 - Config impact: no new setting, no schema change, no migration. New `partner_watch_messages` kind `DAY`.
 - Rollout: with the next PR to `evolve/smart-strategies` on the owner's go-ahead; the engine image only. Rollback: revert the commit.
-- Remaining:
-  - Score the after-a-loss and chased-spike warnings over recorded days, out of sample, from the 15:50 sync's stored orders with each buy's plan version.
-  - Proposal: store the watch's closed trips during the day, so a day can be assessed exactly before the 15:50 sync.
-  - Owner decision open: whether Quiet should let a buy's size warning through (much bigger than usual; bigger after a loss).
+- Remaining: all three were taken up by O26b (above): a frozen scoring of the warnings (`partner_watch_score`), the trades stored during the day, and the size warning on a quiet day (the owner's go-ahead).
 
 ## October 25 — O25N The O25M open items closed: once-a-day partner messages retried safely, the CHECK work-out survives a restart; promoted to Production (done, commit `967c2d6`, branch `codex/production-correction-hedge-p0`, pushed)
 

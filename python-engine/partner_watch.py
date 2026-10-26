@@ -96,13 +96,24 @@ What it sends (live, loss first)
             (60 s), the positions while the overnight list is unknown
             (120 s), the GTTs while a holding's protection is unknown
             (120 s). BACK when that read works again.
+  SIZE      [O26] on a Quiet day only: a muted PLAN or ADDED whose trade is
+            much bigger than the partner's usual (the PLAN's size warning:
+            over 1.5x their usual share of cash), or a buy bigger than the
+            losing trade just before it, still warns (``size_reasons``): the
+            size, the loss just before, the plan in one line. Rare by
+            construction; owner's decision, Oct 26. Only while held.
   "Quiet today" (a button on PLAN and NO_STOP) mutes PLAN, ADDED, NO_STOP,
   PARTIAL and CLOSE. LOWERED, REMOVED, UNFILLED, REFUSED, EXCESS, ORPHAN,
-  PRODUCT, DAY, BLIND and BACK always go, because those are the moments a loss
-  grows (or the watch cannot see it). [O26] A buy's own warnings (after a
-  loss, a chased spike) stay muted with its PLAN: on Oct 26 they would have
-  been on 20 of 21 buys, so a message each would be noise, and DAY tells the
-  pattern once a step instead.
+  PRODUCT, DAY, SIZE, BLIND and BACK always go, because those are the moments
+  a loss grows (or the watch cannot see it). [O26] A buy's other warnings
+  (after a loss, a chased spike) stay muted with its PLAN: on Oct 26 they
+  would have been on 20 of 21 buys, so a message each would be noise, and
+  DAY tells the pattern once a step instead.
+
+[O26] Every trade is stored when it changes (``partner_watch_trips``): its
+fills and result after charges, and what a check would have warned about at
+its buy. partner_watch_report lists the day's trades from it (exact during
+the day); partner_watch_score scores the warnings on later days.
 
 [O24g] Every stop moved down in one read (SL orders modified, GTTs
 modified, a stop replaced) is one LOWERED message, judged together
@@ -307,7 +318,7 @@ COUNT_FROM_TRADE = 5
 DAY_STEP = 0.10
 FUTURE_BARS_DAYS = 21                      # as the F&O engine (fno_orchestrator.RVOL_FETCH_CALENDAR_DAYS)
 TICK = 0.05
-QUIET_KEEPS = ("LOWERED", "REMOVED", "UNFILLED", "REFUSED", "EXCESS", "ORPHAN", "PRODUCT", "DAY")
+QUIET_KEEPS = ("LOWERED", "REMOVED", "UNFILLED", "REFUSED", "EXCESS", "ORPHAN", "PRODUCT", "DAY", "SIZE")
 ALWAYS_SENT = ("WATCH_ON", "PROMPT", "RECONNECT", "BLIND", "BACK", "CHECK")
 GUARD_TOLERANCE = 0.005                    # a stop within 0.5% under the buy price still guards it
 QUIET_PREFIX = "watch"
@@ -318,12 +329,13 @@ COVERED = ("FULL", "PARTIAL")
 # How long a message is still worth sending again after a failed send (seconds).
 LIFETIME_SEC = {"PLAN": 180, "ADDED": 180, "NO_STOP": 900, "PARTIAL": 900, "REMOVED": 900, "UNFILLED": 120,
                 "LOWERED": 120, "REFUSED": 300, "CLOSE": 1200, "WATCH_ON": 600, "PROMPT": 1800, "RECONNECT": 1800,
-                "EXCESS": 900, "ORPHAN": 900, "PRODUCT": 900, "BLIND": 600, "BACK": 300, "CHECK": 120, "DAY": 600}
+                "EXCESS": 900, "ORPHAN": 900, "PRODUCT": 900, "BLIND": 600, "BACK": 300, "CHECK": 120, "DAY": 600,
+                "SIZE": 180}
 MAX_ATTEMPTS = 4
 RETRY_GAP = timedelta(seconds=10)
 # [O24d] The outbox sends the most urgent first.
 PRIORITY = {"UNFILLED": 0, "REMOVED": 1, "LOWERED": 1, "REFUSED": 1, "EXCESS": 1, "ORPHAN": 1, "PRODUCT": 1,
-            "BLIND": 1, "CHECK": 1, "NO_STOP": 2, "PARTIAL": 2, "DAY": 2, "ADDED": 3,
+            "BLIND": 1, "CHECK": 1, "NO_STOP": 2, "PARTIAL": 2, "DAY": 2, "SIZE": 2, "ADDED": 3,
             "PLAN": 3, "CLOSE": 4, "BACK": 4, "WATCH_ON": 5, "PROMPT": 5, "RECONNECT": 5}
 SENT, DONE, RETRY, MUTED, WAIT, LATER = "SENT", "DONE", "RETRY", "MUTED", "WAIT", "LATER"
 QUEUED = "queued"
@@ -375,6 +387,29 @@ CREATE TABLE IF NOT EXISTS partner_watch_state (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL,
   updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS partner_watch_trips (
+  session_date TEXT NOT NULL,
+  position_key TEXT NOT NULL,
+  exchange TEXT NOT NULL,
+  tradingsymbol TEXT NOT NULL,
+  product TEXT NOT NULL,
+  first_at TEXT NOT NULL,
+  closed_at TEXT,
+  bought INTEGER NOT NULL,
+  sold INTEGER NOT NULL,
+  entry REAL,
+  exit REAL,
+  realised REAL,
+  orders INTEGER NOT NULL,
+  exact INTEGER NOT NULL,
+  carried INTEGER NOT NULL,
+  run_pct REAL,
+  after_loss TEXT,
+  usual REAL,
+  paid_share REAL,
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (session_date, position_key)
 );
 """
 # [O24c] Added in place to tables written by O24.
@@ -1797,7 +1832,7 @@ RECONNECT_TEXT = ("🔌 The trade watch stopped (the system restarted) and needs
                   "Your orders are untouched.")
 # A button's answer is cut at 190 characters (partner_fill_capture._answer; Telegram allows 200).
 QUIET_TOAST = ("Quiet for today. Still sent: a stop moved down, cancelled or not selling; a refused order; sell "
-               f"orders over what you hold; each further {DAY_STEP:.0%} of your cash lost today.")
+               f"orders over what you hold; a buy far bigger than usual; each {DAY_STEP:.0%} of your cash lost.")
 # [O24f] The watch cannot see part of the book (``_health``), and then can again.
 BLIND_TEXT = {
     "orders": ("⚠️ The trade watch cannot read your Zerodha orders since {since} (it tries every 5 s). Until it can, "
@@ -2181,6 +2216,7 @@ async def _deliver(db_path: str, entry: _Entry, now: datetime) -> str:
         return LATER
     if (entry.kind not in QUIET_KEEPS and entry.kind not in ALWAYS_SENT
             and await quiet(db_path, now.date().isoformat())):
+        await _size_through_quiet(db_path, entry, now)
         await _close(db_path, entry.key, "muted")
         return MUTED
     if entry.kind == "CHECK":
@@ -2290,7 +2326,7 @@ async def _build(db_path: str, entry: _Entry, now: datetime, view=None):
     return await builder(db_path, context, view, now) if builder else None
 
 
-_QUOTED = ("PLAN", "ADDED", "NO_STOP", "PARTIAL", "REMOVED", "UNFILLED")
+_QUOTED = ("PLAN", "ADDED", "NO_STOP", "PARTIAL", "REMOVED", "UNFILLED", "SIZE")
 
 
 async def _prefetch(entries: list, now: datetime) -> None:
@@ -2501,6 +2537,7 @@ class _State:
     unread: dict = field(default_factory=dict)        # [O24f] read -> its first failure since it last worked
     detected_by: Optional[str] = None                 # [O24g] the tick now running: poll | stream
     blind: dict = field(default_factory=dict)         # [O24f] read -> the failure the partner was told of (BLIND)
+    trip_sigs: dict = field(default_factory=dict)     # [O26] trip key -> what its stored row was written from
 
 
 _state = _State()
@@ -2932,10 +2969,16 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
                 continue
         if meta is not None:
             try:
-                await _revise(db_path, day, trip, meta, holdings, now)
+                await _revise(db_path, day, trip, meta, holdings, now, trips)
             except Exception as exc:  # [O24e] nothing stored: the change is seen again next tick; the tick goes on
                 logger.warning("partner_watch_revise_failed key=%s err=%s", trip.key, type(exc).__name__)
-    # 6. The shadow looks, beside the tick.
+    # 6. [O26] The day's trades, stored when one changes: exact results during the day, and the warnings a check
+    # would have given at each buy (scored later by partner_watch_score). A failed write is tried on the next tick.
+    try:
+        await _store_trips(db_path, day, trips, now)
+    except Exception as exc:
+        logger.warning("partner_watch_trips_write_failed err=%s", type(exc).__name__)
+    # 7. The shadow looks, beside the tick.
     if (holdings and (_state.looks_at is None or now - _state.looks_at >= LOOK_EVERY)
             and (_state.looks_task is None or _state.looks_task.done())):
         _state.looks_at = now
@@ -3487,6 +3530,61 @@ def _day_line(trip: Trip, trips: list) -> Optional[str]:
     return f"Trade {len(today)} today · {_amt(charges)} in charges so far."
 
 
+_TRIP_COLS = ("session_date", "position_key", "exchange", "tradingsymbol", "product", "first_at", "closed_at",
+              "bought", "sold", "entry", "exit", "realised", "orders", "exact", "carried", "run_pct", "after_loss",
+              "usual", "paid_share", "updated_at")
+# What a check would have said at the buy is kept as first known: a restart, before a closed trade's plan is read
+# again (or the day's cash), would otherwise write it as unknown.
+_AT_BUY = ("run_pct", "after_loss", "usual", "paid_share")
+_TRIP_UPSERT = (
+    f"INSERT INTO partner_watch_trips({','.join(_TRIP_COLS)}) VALUES({','.join('?' * len(_TRIP_COLS))}) "
+    "ON CONFLICT(session_date, position_key) DO UPDATE SET "
+    + ", ".join(f"{c}=COALESCE(partner_watch_trips.{c}, excluded.{c})" if c in _AT_BUY else f"{c}=excluded.{c}"
+                for c in _TRIP_COLS if c not in ("session_date", "position_key")))
+
+
+def trip_row(day: str, trip: Trip, trips: list, *, run_pct: Optional[float], usual: Optional[float],
+             cash: Optional[float], now: datetime) -> dict:
+    """[O26] One trade as stored in ``partner_watch_trips``: its fills (``exact`` when every one is from Zerodha's
+    trade book) and its result after charges once closed; and what a check would have warned about at its buy:
+    the 15-minute run before it (the plan's), a losing exit within 30 minutes before it (``_after_loss``, with
+    "bigger" when more units were bought than that trade had), the partner's usual share of cash and this buy's
+    share (its opening order)."""
+    first = trip.buys[next(iter(trip.buys))] if trip.buys else None
+    after = None if trip.carried else _after_loss(trip, trips)
+    return {"session_date": day, "position_key": trip.key, "exchange": trip.exchange,
+            "tradingsymbol": trip.tradingsymbol, "product": trip.product, "first_at": trip.first_at.isoformat(),
+            "closed_at": trip.closed_at.isoformat() if trip.closed_at else None, "bought": trip.bought,
+            "sold": trip.sold, "entry": round(trip.entry, 4) if trip.entry else None,
+            "exit": round(trip.exit, 4) if trip.exit else None, "realised": trip.realised(),
+            "orders": trip.buy_orders + trip.sell_orders, "exact": int(trip.exact), "carried": int(trip.carried),
+            "run_pct": run_pct, "after_loss": json.dumps(after) if after else None, "usual": usual,
+            "paid_share": round(first["value"] / cash, 4) if first and cash else None, "updated_at": now.isoformat()}
+
+
+async def _store_trips(db_path: str, day: str, trips: list, now: datetime) -> int:
+    """[O26] Write the trades that changed since their row was written (every one after a restart): a buy, a
+    sale, a fill the trade book showed later, the plan's run, the day's cash read. How many were written."""
+    rows, sigs = [], {}
+    for trip in trips:
+        meta = _state.planned.get(trip.key)
+        run = meta["plan"].run_pct if meta is not None else None
+        sig = (trip.bought, trip.sold, round(trip.buy_value, 2), round(trip.sell_value, 2), trip.closed_at,
+               trip.exact, run, _state.cash)
+        if _state.trip_sigs.get(trip.key) == sig:
+            continue
+        usual = None if trip.carried else await _usual_share(db_path, trip, trips, now)
+        rows.append(trip_row(day, trip, trips, run_pct=run, usual=usual, cash=_state.cash, now=now))
+        sigs[trip.key] = sig
+    if not rows:
+        return 0
+    async with aiosqlite.connect(db_path) as db:
+        await db.executemany(_TRIP_UPSERT, [tuple(row[c] for c in _TRIP_COLS) for row in rows])
+        await db.commit()
+    _state.trip_sigs.update(sigs)
+    return len(rows)
+
+
 DAY_NOTE = "The numbers, not a rule: whether to trade on is your call."
 
 
@@ -3658,7 +3756,8 @@ async def _plan_job(db_path: str, day: str, trip: Trip, trips: list, now: dateti
     return int(item is not None)
 
 
-async def _revise(db_path: str, day: str, trip: Trip, meta: dict, holdings: list, now: datetime) -> None:
+async def _revise(db_path: str, day: str, trip: Trip, meta: dict, holdings: list, now: datetime,
+                  trips: Optional[list] = None) -> None:
     """[O24c] A later plan version when the trade's size changed: a new buy
     order (ADDED, told while fresh), more fills of a known one (FILLED) or a
     partial sale (TRIMMED). [O24d] The version's size and average are what
@@ -3688,7 +3787,10 @@ async def _revise(db_path: str, day: str, trip: Trip, meta: dict, holdings: list
         episode = _episode(day, holding)
         context = {"episode": episode, "added": added,
                    "added_px": round(sum(trip.buys[i]["value"] for i in new_ids) / added, 4),
-                   "first_px": round(first["value"] / first["qty"], 4), "loss_before": loss_before}
+                   "first_px": round(first["value"] / first["qty"], 4), "loss_before": loss_before,
+                   # [O26] for the size warning that still goes on a quiet day (``size_reasons``)
+                   "held_value": round(current.entry * current.open_qty, 2),
+                   "usual": await _usual_share(db_path, trip, trips or [trip], now)}
         item = (f"added:{episode}:{new_ids[-1]}", "ADDED", holding, context, first_new, episode)
     # [O24e] The version and its ADDED message in one transaction: a failed write leaves neither, and the change
     # is seen again on the next tick.
@@ -3909,6 +4011,82 @@ async def _b_product(db_path: str, context: dict, view: View, now: datetime):
             f"{product} sell orders on {same[0].product} units", None)
 
 
+QUIET_SIZE_NOTE = "🔕 Quiet is on: this one is sent because of the size."
+
+
+def size_reasons(kind: str, context: dict, cash: Optional[float]) -> dict:
+    """[O26] Why a muted PLAN or ADDED still warns (owner, Oct 26): the money in the trade is much more than the
+    partner usually puts in (more than partner_insights.USUAL_SIZE_MULT, 1.5x, their usual share of cash: the
+    PLAN's own size warning), or a buy bigger than the losing trade just before it (the PLAN's "bigger" after a
+    loss). Empty when neither."""
+    from partner_insights import USUAL_SIZE_MULT
+    out: dict = {}
+    usual = context.get("usual")
+    if kind == "PLAN":
+        paid = float(context.get("bought_px") or 0) * int(context.get("bought") or 0)
+    elif kind == "ADDED":
+        paid = float(context.get("held_value") or 0)
+        out["added"] = True
+    else:
+        return {}
+    if usual and cash and paid and paid / cash > USUAL_SIZE_MULT * usual:
+        out.update(paid=round(paid, 2), share=round(paid / cash, 4), usual=usual)
+    after = context.get("after_loss") if kind == "PLAN" else None
+    if after and after.get("bigger"):
+        out["after_loss"] = after
+    return out if ("share" in out or "after_loss" in out) else {}
+
+
+async def _size_through_quiet(db_path: str, entry: _Entry, now: datetime) -> None:
+    """[O26] A PLAN or ADDED muted by "Quiet today" leaves its size warning in the outbox as SIZE, when it has
+    one (``size_reasons``). On a day without Quiet the PLAN itself carries it."""
+    if entry.kind not in ("PLAN", "ADDED"):
+        return
+    try:
+        context = json.loads(entry.context or "null")
+    except ValueError:
+        return
+    if not isinstance(context, dict):
+        return
+    why = size_reasons(entry.kind, context, _state.cash)
+    if not why:
+        return
+    episode = context.get("episode")
+    subject = _state.view.holding(episode) if _state.view is not None and episode else None
+    await _enqueue(db_path, f"size:{entry.key}", now.date().isoformat(), "SIZE", subject, now,
+                   context={"episode": episode, **why}, event_at=_dt(entry.event_at), episode=episode)
+
+
+def size_text(holding, why: dict, plan: Optional[Plan], quote: Optional[dict], cover: Optional[Cover],
+              now: datetime) -> str:
+    """[O26] The SIZE message: the size against the usual, the losing trade just before when this buy is bigger,
+    the plan in one line (``plan_summary``: never a stop to place against an old or crossed price)."""
+    name, lines = _name(holding), []
+    if why.get("share") is not None:
+        lines.append(f"⚠️ {name}: {_amt(why['paid'])} in this trade{' now' if why.get('added') else ''}, "
+                     f"{why['share']:.0%} of your cash: much bigger than your usual {why['usual']:.0%}.")
+    after = why.get("after_loss")
+    if after:
+        lead = "Your" if lines else f"{name}: your"
+        lines.append(f"⚠️ {lead} last trade closed −{_amt(after['loss'])} at {after['at']}, "
+                     f"{after['minutes']} min before this buy. This is {after['bigger']}.")
+    if plan is not None:
+        lines.append(f"🛑 {_upper(plan_summary(plan, quote, cover, now))}.")
+    lines.append(QUIET_SIZE_NOTE)
+    return "\n".join(lines)
+
+
+async def _b_size(db_path: str, context: dict, view: View, now: datetime):
+    """[O26] Only while the trade is held: sold meanwhile, its size no longer matters."""
+    holding = view.holding(context.get("episode"))
+    if holding is None:
+        return None
+    plan, _set_at = await _plan_for(db_path, holding, view.day)
+    plan = _current(plan, holding)
+    text = size_text(holding, context, plan, await _price_now(holding, now), view.covers.get(holding.hkey), now)
+    return text, "a much bigger size than usual, on a quiet day", None
+
+
 async def _b_day(db_path: str, context: dict, view: View, now: datetime):
     """[O26] From the latest read: not sent when the day is no longer at that step (back above it, or past the
     next one, whose own message tells it)."""
@@ -3921,6 +4099,7 @@ async def _b_day(db_path: str, context: dict, view: View, now: datetime):
 _BUILDERS = {
     "PLAN": _b_plan, "ADDED": _b_added, "UNFILLED": _b_unfilled, "LOWERED": _b_lowered, "REFUSED": _b_refused,
     "CLOSE": _b_close, "EXCESS": _b_excess, "ORPHAN": _b_orphan, "PRODUCT": _b_product, "DAY": _b_day,
+    "SIZE": _b_size,
     "NO_STOP": lambda *args: _b_cover("NO_STOP", *args),
     "PARTIAL": lambda *args: _b_cover("PARTIAL", *args),
     "REMOVED": lambda *args: _b_cover("REMOVED", *args),

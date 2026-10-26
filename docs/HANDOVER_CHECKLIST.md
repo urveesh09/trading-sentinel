@@ -1,5 +1,15 @@
 # Handover receipt and operator checklist
 
+## October 26 — O26b A far bigger buy still warns on a quiet day; trades stored during the day; warnings scored by a frozen rule (Dev, pushed, not deployed)
+
+- [x] On a quiet day, a buy over 1.5x the partner's usual size, or bigger right after a loss, still gets one short size warning (SIZE). It is dropped if the trade is sold before it goes.
+- [x] Every trade is stored as it changes (`partner_watch_trips`); `partner_watch_report <day>` lists them with the exact result after charges.
+- [x] `partner_watch_score` scores the check's warnings by a rule frozen today. It decides only on days from Oct 27 and gives no verdict before 20 warned trades.
+- [x] A restart no longer wipes a closed trade's buy-time facts (found by the new tests, fixed before the commit).
+- [x] The flaky "send cut off part way" test is explained (the PLAN's send was sometimes the one that hung) and fixed: it waits for the PLAN first (35/35 runs).
+- [x] Tests: partner files 633 passed. Full Dev (Windows venv) engine + scripts suites: 6,056 passed, 4 skipped, exit 0, 12 min 5 s (O26's 6,045 plus 11 new tests); the first full run had the one flaky test (fixed, above).
+- [ ] Rollout with the next PR (owner's go-ahead): engine only; the new table creates itself; no setting.
+
 ## October 26 — O26 The trade watch tells the day so far once a step of the partner's cash; run figures agree with the warning (Dev, commit `6ec5ce1`, pushed, not deployed)
 
 - [x] DAY message: each further 10% of the day's cash lost today, once a step, also on a Quiet day. It gives the numbers (result, won and lost, buys soon after a loss, still open, the check to send) and never blocks.
