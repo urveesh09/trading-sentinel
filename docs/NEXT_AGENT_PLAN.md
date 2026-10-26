@@ -1,5 +1,68 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 26 — O26d The independent review of O26–O26c fixed: the daily tracker orders a day's exits, unknown warning evidence kept apart from "no warning", a partly filled order sized as it fills, the frozen score really frozen, the closing-auction exit only with dated evidence, no network from tests, the one flaky scheduler test (done, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 26 evening), on the independent review (`docs/2026-10-26-independent-development-review.md`, committed with this slice): "Please fix this make the system better".
+- Current state: Production runs `f9547c5` (PR #118). O26, O26b, O26c and O26d are Dev only.
+- Each finding was checked against the code, then fixed with tests. The reviewer's six reproductions (outside the repo, run on the result):
+  - R2, R3 and R6 now fail: the defects are gone.
+  - R1 and R4 fail on the changed API; their scenarios are tests here.
+  - R5's reproduction replaces `socket.connect` itself, so it cannot fail; a real connect is tested instead.
+- Fixed:
+  - [x] **R1 (P2): the daily tracker's exit order.**
+    - `position_tracker.day_exits` (with `bar_exits` and `usable_minutes`) is shared by `update_daily_positions` and the research mirror `research_penny_cnc_lifecycle.tracker_step`.
+    - The open settles only what it reaches: through the stop, all out at the open; at T2, all out at the open; at T1, the T1 half at the open and the stop to breakeven.
+    - After the open, a stop in reach comes before a target, including the breakeven stop a T1 half made active in the same bar.
+    - Rising from under T1, the price passes T1 before T2: a day reaching T2 takes the T1 half first. It used to close everything at T2.
+    - The entry day's open came before the entry, so it is not used (the entry price stands in).
+    - A day the daily bar cannot order (stop-first chose, or any touch on the entry day) is walked through its minute bars (`get_intraday(..., "minute")`, those days only) when they cover it: from 09:16 to 15:14, reaching the day's high and low within 0.1%, from the entry minute on the entry day. Otherwise the stop-first result stands. Logged as `daily_bar_exit_order basis=...`.
+    - A T1 half and a close on one day are the two writes the next day's pass would have made (same keys).
+    - The mirror is `penny_cnc_connors_lifecycle_v2` (v1 results are not comparable); `tracker_step` returns a list of events.
+    - The review's example (open at T1 10.3, high 10.7, low 9.5): the T1 half at 10.3 and the rest at 10.0. It closed all 40 at 10.6.
+    - `test_position_tracker_highlow` HIGHLOW-1 changed: its day (T1 = entry 100, high 101, close 98) closed under the breakeven stop, so the price crossed it after T1. The rest is now stopped at 100 the same day; it used to ride overnight under its own stop.
+  - [x] **R4 (P2): a partly filled opening order.**
+    - `partner_watch_trips` keeps the buy-time facts (`run_pct`, `usual`, `cash`: first known) apart from the opening order's fills (`opening_order`, `opening_qty`, `opening_value`, `opening_final`, `opening_exact`: written again as they grow).
+    - `paid_share` is the opening value over the first-known cash, so a restart's later cash read is not used. Later add orders are not in it.
+    - `prior_exit` (the trade closed last before the buy; only trades closed by then) replaces `after_loss`.
+    - The table is Dev only (O26b): no Production migration. Older Dev tables get the columns added.
+  - [x] **R2 (P2): unknown evidence.**
+    - `partner_watch_score.evidence_of`: each warning is POSITIVE, NEGATIVE or UNKNOWN (no run, no usual or cash, an opening order that can still fill).
+    - POSITIVE is compared against NEGATIVE only; UNKNOWN is counted and shown. ANY is NEGATIVE only when all four are.
+    - Each side says how many trades came from the orders rather than the trade book.
+  - [x] **R6: the frozen rule.**
+    - `SPEC` v2 holds its own thresholds (20% run, 30-minute window, 1.5x usual, 20 warned, 15-minute check look-back) and its cohort and comparison rules.
+    - `SPEC_ID` `v2-a3150fcf5a68` is in every result and the report header. A test pins it and shows that moving the live thresholds changes nothing.
+    - Frozen before Oct 27, the first decision day.
+  - [x] **R3 (P2): the closing-auction exit.**
+    - `momentum_shadow.cas_time_exit_evidence` is ELIGIBLE only when all hold: the execution declares `cas_time_exit` (`cas_phase1_last_continuous_close_v1`, new in `EXECUTION`); the session is in `market_calendar.cas_phase1_in_force` (2026-08-03 to before 2026-12-07); the ticker had stock futures in that day's archived NFO master (`research_archive.contract_master_underlyings`; Production has one per day since 2026-09-10).
+    - Otherwise the trade stays censored, detail `no_terminal_bar:cas_<reason>`.
+    - The derived bar is marked `modelled`; `momentum_shadow_comparison` counts `modelled_time_exit_closes` apart. Bars are sorted first.
+    - `momentum_replay._with_last_continuous` uses the same evidence.
+    - Found while checking: Zerodha's CAS page gives 2026-08-03 as the start (the code's comments said 2026-01-19, not borne out), and SEBI's revised framework from 2026-12-07 (new timings not confirmed). The window ends there until they are.
+  - [x] **R5: the test network guard.**
+    - `tests/netguard/sitecustomize.py` refuses lookups, `connect`/`connect_ex`/`sendto` and asyncio `sock_connect` to non-local addresses, numeric and named.
+    - `conftest` installs it and puts its folder first on `PYTHONPATH`, so Python child processes that inherit the environment get it.
+    - Not covered: a child given its own `PYTHONPATH`, and non-Python programs. `SENTINEL_TEST_NETWORK=1` is the explicit opt-in.
+    - `tests/test_network_guard.py` (11 tests).
+  - [x] **The one failed scheduler test (cause found).** The tick skipped when `tick_started >= waiting_since` (two `monotonic()` readings). Windows' clock moves every 15.6 ms, so a pass right after another was skipped. It is now a pass counter (`fno_pass["ticks"]`). Production's Linux clock is fine-grained: little live effect. A frozen-clock test fails on the old code.
+  - [x] The same clock made `test_s5_provider_lanes::test_without_bulk_waiters_ordering_is_unchanged_from_s2` fail once in this slice's first full run (it passed alone): at 200/s a 15.6 ms step refilled a token while its waiters queued. The test now runs at 20/s; the limiter is unchanged.
+- Partner enrichment: DAY says "about ₹X of charges (estimated)": they are worked out from the fills, not the contract note.
+- Files:
+  - `python-engine/position_tracker.py`, `research_penny_cnc_lifecycle.py`, `partner_watch.py`, `partner_watch_score.py`, `partner_watch_report.py`, `momentum_shadow.py`, `momentum_replay.py`, `market_calendar.py`, `research_archive.py`, `scheduler_setup.py`.
+  - Tests: `tests/conftest.py`, `tests/netguard/sitecustomize.py` (new), `test_network_guard.py` (new), `test_research_penny_cnc_lifecycle.py`, `test_partner_watch.py`, `test_partner_watch_score.py`, `test_oct21_audit_fixes.py`, `test_momentum_replay.py`, `test_scheduler_closures_invoke.py`, `test_position_tracker_highlow.py`, `test_s5_provider_lanes.py`.
+  - `docs/SYSTEM_CODE_ATLAS.md`; the review document.
+- Tests: full suite (`python -m pytest tests ../scripts -q`): 6,110 passed, 4 skipped, exit 0 (11 min 24 s). The first full run had 2 failures, both explained and fixed (HIGHLOW-1's expectation; the lanes test's timing). Focused: tracker and mirror 48, partner watch and score 130, closing auction and replay 50, scheduler 29, network guard 11. Tests do not show profitability or the partner's results.
+- Config impact: no setting.
+  - Paper books: the daily tracker's results change; they are more conservative where a day cannot be ordered, and minute bars are fetched on those days only.
+  - `partner_watch_trips` columns (a Dev table).
+  - Momentum shadow: new trades carry the new execution field; an F&O stock's time exit needs that day's archived master.
+- Rollout: with the next PR to `evolve/smart-strategies` on the owner's go-ahead; the engine image only. Rollback: revert the commit.
+- Remaining:
+  - The chandelier trail is still raised with the day's close before that day's low is checked (more stops, not fewer; unchanged).
+  - SEBI's December 7 timings: confirm them from the circular, then add the next window (a new execution version).
+  - Oct 26's 22 censored research trades: the owner's call (Production has the dated master for Oct 26).
+  - Check SADHNANIQ's next-session close.
+
 ## October 26 — O26c The Oct 26 audit's findings fixed: no buy sent after a halt, no check sent past its prices, closing-auction stocks scored, the daily tracker takes the stop first, the test suite never reaches the network; two partner messages say more (done, Dev, commit `a848bcb`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 26): the day's audit (`docs/2026-10-26-production-deep-audit.md` in Production): "if you have any improvement for the partner system or for the trading, go ahead with the working and the enrichment".

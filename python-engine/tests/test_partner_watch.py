@@ -25,6 +25,7 @@ from config import settings
 from fno_chain import RISK_FREE_RATE, years_to_expiry
 from partner_coach import round_trip_costs
 from tests.test_partner_broker_sync import T, _order, _trade, _ts, kite, partner_app  # noqa: F401
+import partner_watch_score as pw_score
 from tests.test_partner_fill_capture import _seed
 
 DAY = date(2026, 10, 23)
@@ -2637,7 +2638,7 @@ def test_the_day_so_far_counts_the_closed_trades_and_the_buys_soon_after_a_loss(
     # [O26c] The charges in that result, and the orders paid on: every buy and sell order of the six trades.
     assert day["charges"] == round(sum(t.charges() for t in trips), 2) and day["charges"] > 0
     assert day["orders"] == sum(t.buy_orders + t.sell_orders for t in trips)
-    assert text[2] == f"That includes {pw._amt(day['charges'])} of charges on {day['orders']} orders."
+    assert text[2] == f"That includes about {pw._amt(day['charges'])} of charges (estimated) on {day['orders']} orders."
     assert all(t.realised() == round((t.exit - t.entry) * min(t.bought, t.sold) - t.charges(), 2) for t in trips)
     assert text[3] == f"2 of them bought within 30 min of a losing exit: {pw._signed(day['quick_sum'])} together."
     assert text[4] == "Before the next buy, a check shows its stop and loss first: send check 22300 pe."
@@ -2689,7 +2690,7 @@ async def test_the_day_so_far_is_told_once_a_step_even_on_a_quiet_day(watch, kit
     lines = watch[-1]["text"].splitlines()
     assert lines[0].startswith("📉 Today so far: −₹1,") and lines[0].endswith("14% of your ₹7,537 cash.")
     assert lines[1].startswith("2 trades closed: 2 lost −₹1,")
-    assert lines[2] == "That includes ₹117 of charges on 4 orders."          # [O26c]
+    assert lines[2] == "That includes about ₹117 of charges (estimated) on 4 orders."          # [O26c, O26d]
     assert lines[3].startswith("1 of them bought within 30 min of a losing exit: −₹")
     assert lines[4:] == ["Before the next buy, a check shows its stop and loss first: send check 22300 pe.",
                          pw.DAY_NOTE]
@@ -2785,8 +2786,12 @@ async def test_every_trade_is_stored_as_it_changes_with_what_a_check_would_have_
     loss = round((70.0 - 80.0) * 65 - round_trip_costs(80.0, 70.0, 65, "NFO", orders=2), 2)
     assert (first["sold"], first["exit"], first["realised"], first["exact"], first["closed_at"]) == (
         65, 70.0, loss, 1, D(10, 5).isoformat())
-    assert json.loads(second["after_loss"]) == {"loss": -loss, "at": "10:05", "minutes": 5, "bigger": "130 after 65"}
+    assert json.loads(first["prior_exit"]) == {"state": "NONE"}
+    assert json.loads(second["prior_exit"]) == {"state": "KNOWN", "result": loss, "at": "10:05", "minutes": 5,
+                                                "bought": 65}
     assert (second["bought"], second["realised"], second["carried"]) == (130, None, 0)
+    assert (second["opening_order"], second["opening_qty"], second["opening_value"], second["opening_final"],
+            second["opening_exact"], second["cash"]) == ("103", 130, 130 * 78.0, 1, 1, 7536.7)
     pw.reset()                                                        # a restart writes the same rows again
     await pw.watch_tick(D(10, 11), market=market)
     assert [r["position_key"] for r in await _trip_rows(db)] == ["101", "103"]
@@ -2794,6 +2799,102 @@ async def test_every_trade_is_stored_as_it_changes_with_what_a_check_would_have_
     assert f"Trades 2026-10-23: 1 closed (0 won, 1 lost), −₹{-loss:,.0f} after charges; 1 open" in text
     assert f"    10:00 {SYMBOL} NRML 65 @ 80 → 70 −₹{-loss:,.0f}  [run " in text
     assert f"    10:10 {SYMBOL} NRML 130 @ 78, open  [run " in text and f"5 min after a −₹{-loss:,.0f} exit" in text
+
+
+async def _stored(path):
+    import partner_watch_score as score
+    async with aiosqlite.connect(path) as conn:
+        conn.row_factory = aiosqlite.Row
+        rows = [dict(r) for r in await (await conn.execute("SELECT * FROM partner_watch_trips ORDER BY first_at"))
+                .fetchall()]
+    for row in rows:
+        row["prior_exit"] = json.loads(row["prior_exit"]) if row["prior_exit"] else None
+        row["evidence"] = score.evidence_of(row)
+    return rows
+
+
+def _fresh_state(monkeypatch, cash, usual):
+    monkeypatch.setattr(pw, "_state", pw._State())
+    pw._state.cash = cash
+
+    async def _usual(*_args, **_kwargs):
+        return usual
+    monkeypatch.setattr(pw, "_usual_share", _usual)
+
+
+@pytest.mark.asyncio
+async def test_the_opening_orders_size_grows_with_its_fills_and_what_was_known_at_the_buy_stays(tmp_path, monkeypatch):
+    """[O26d, independent review R4] The first fill (65 of 650 at ₹100 on ₹1,00,000) was stored as a 6.5% buy and
+    kept so after the same order filled 650: a 65% buy against a usual 20% was never UNUSUAL_SIZE. The opening
+    order's fills are written again as they grow; the cash, usual share and run stay as first known."""
+    path = str(tmp_path / "trips.db")
+    await pw.init_partner_watch_db(path)
+    day, now = "2026-10-23", D(10, 1)
+    _fresh_state(monkeypatch, 100000.0, 0.2)
+    rows = [_row("101", "BUY", 650, 100.0, D(10, 0), status="OPEN", filled_quantity=65)]
+    await pw._store_trips(path, day, pw.trips_from_orders(rows), now, rows)
+    [row] = await _stored(path)
+    assert (row["opening_qty"], row["opening_value"], row["opening_final"], row["paid_share"]) == (65, 6500.0, 0, 0.065)
+    assert row["evidence"]["UNUSUAL_SIZE"] == pw_score.UNKNOWN          # it can still fill more: not "no warning"
+    rows = [_row("101", "BUY", 650, 100.0, D(10, 0, 30))]
+    await pw._store_trips(path, day, pw.trips_from_orders(rows), now, rows)
+    [row] = await _stored(path)
+    assert (row["opening_qty"], row["opening_value"], row["opening_final"], row["paid_share"]) == (
+        650, 65000.0, 1, 0.65)
+    assert row["evidence"]["UNUSUAL_SIZE"] == pw_score.POSITIVE
+    # A restart reads the cash again after the day's results, and no usual yet: the buy-time ones stay.
+    _fresh_state(monkeypatch, 60000.0, None)
+    trades = [_fill("101", 650, 100.6, D(10, 0, 30))]                   # the trade book shows the exact fills
+    await pw._store_trips(path, day, pw.trips_from_orders(rows, trades=trades), now, rows)
+    [row] = await _stored(path)
+    assert (row["cash"], row["usual"], row["opening_value"], row["opening_exact"], row["paid_share"]) == (
+        100000.0, 0.2, 65390.0, 1, 0.6539)
+    # A later buy order adds to the trade, not to the opening order's size.
+    rows.append(_row("102", "BUY", 650, 101.0, D(10, 20)))
+    await pw._store_trips(path, day, pw.trips_from_orders(rows, trades=trades), now, rows)
+    [row] = await _stored(path)
+    assert (row["bought"], row["opening_qty"], row["opening_value"]) == (1300, 650, 65390.0)
+
+
+@pytest.mark.asyncio
+async def test_a_partly_filled_then_cancelled_opening_order_is_sized_by_what_it_filled(tmp_path, monkeypatch):
+    path = str(tmp_path / "trips.db")
+    await pw.init_partner_watch_db(path)
+    _fresh_state(monkeypatch, 100000.0, 0.2)
+    rows = [_row("201", "BUY", 650, 100.0, D(10, 0), status="CANCELLED", filled_quantity=65)]
+    await pw._store_trips(path, "2026-10-23", pw.trips_from_orders(rows), D(10, 1), rows)
+    [row] = await _stored(path)
+    assert (row["opening_qty"], row["opening_final"], row["paid_share"]) == (65, 1, 0.065)
+    assert row["evidence"]["UNUSUAL_SIZE"] == pw_score.NEGATIVE         # done at 6.5%: known not unusual
+
+
+@pytest.mark.asyncio
+async def test_bigger_after_a_loss_compares_the_opening_order_with_the_losing_trade(tmp_path, monkeypatch):
+    """[O26d] The old rule compared every unit bought in the trade (adds too) and froze its first answer."""
+    path = str(tmp_path / "trips.db")
+    await pw.init_partner_watch_db(path)
+    _fresh_state(monkeypatch, 100000.0, None)
+    day = "2026-10-23"
+    lost = [_row("301", "BUY", 65, 80.0, D(10, 0)), _row("302", "SELL", 65, 70.0, D(10, 5))]
+    # Five minutes after that loss: an order for 130, 60 filled so far.
+    rows = lost + [_row("303", "BUY", 130, 78.0, D(10, 10), status="OPEN", filled_quantity=60)]
+    await pw._store_trips(path, day, pw.trips_from_orders(rows), D(10, 10, 5), rows)
+    first, second = await _stored(path)
+    assert first["evidence"]["AFTER_LOSS"] == pw_score.NEGATIVE          # nothing had closed before it
+    assert second["evidence"]["AFTER_LOSS"] == pw_score.POSITIVE
+    assert second["evidence"]["BIGGER_AFTER_LOSS"] == pw_score.UNKNOWN   # 60 so far, of an order still open
+    rows[-1] = _row("303", "BUY", 130, 78.0, D(10, 10, 20))
+    await pw._store_trips(path, day, pw.trips_from_orders(rows), D(10, 10, 25), rows)
+    assert (await _stored(path))[1]["evidence"]["BIGGER_AFTER_LOSS"] == pw_score.POSITIVE
+    # The same size again, then an add: 65 after 65 is not bigger, though the trade now holds 130.
+    other = lost + [_row("304", "BUY", 65, 78.0, D(10, 10)), _row("305", "BUY", 65, 79.0, D(10, 12))]
+    path2 = str(tmp_path / "trips2.db")
+    await pw.init_partner_watch_db(path2)
+    _fresh_state(monkeypatch, 100000.0, None)                           # what was written is per run, not per file
+    await pw._store_trips(path2, day, pw.trips_from_orders(other), D(10, 12, 5), other)
+    second = (await _stored(path2))[1]
+    assert (second["bought"], second["opening_qty"], second["evidence"]["BIGGER_AFTER_LOSS"]) == (
+        130, 65, pw_score.NEGATIVE)
 
 
 def test_a_muted_buy_warns_about_its_size_only_when_it_is_far_bigger_than_usual():

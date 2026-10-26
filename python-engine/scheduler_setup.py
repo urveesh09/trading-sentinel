@@ -124,7 +124,12 @@ def register_fno_scheduler_jobs(scheduler):
     # by FNO_TICK_FAST_EXIT_WAIT_SEC), and a flat fast pass never takes the
     # lock at all.
     fno_lock = asyncio.Lock()
-    fno_pass = {"holder": None, "tick_started": float("-inf")}
+    # [O26d] "ticks" counts regular passes started: a tick that waited for the
+    # lock skips when another one started meanwhile. It compared two
+    # monotonic() readings, and Windows' clock moves every 15.6 ms: a pass run
+    # right after another read as started during the wait and was skipped
+    # (the independent review's one failed scheduler test).
+    fno_pass = {"holder": None, "tick_started": float("-inf"), "ticks": 0}
 
     async def _notify_fno(summary: dict) -> None:
         from fno_orchestrator import format_fno_telegram
@@ -186,6 +191,7 @@ def register_fno_scheduler_jobs(scheduler):
             logger.info("fno_tick_skip reason=fno_pass_in_progress")
             return
         waiting_since = monotonic()
+        ticks_before = fno_pass["ticks"]
         if fno_lock.locked():
             logger.info("fno_tick_wait reason=fast_exit_pass_in_progress")
         try:
@@ -195,7 +201,7 @@ def register_fno_scheduler_jobs(scheduler):
             logger.warning("fno_tick_skip reason=fno_lock_wait_timeout waited_sec=%.3f",
                            monotonic() - waiting_since)
             return
-        if fno_pass["tick_started"] >= waiting_since:
+        if fno_pass["ticks"] != ticks_before:
             # Another regular pass (bar-close trigger) ran while this one waited.
             fno_lock.release()
             logger.info("fno_tick_skip reason=fno_pass_in_progress")
@@ -207,6 +213,7 @@ def register_fno_scheduler_jobs(scheduler):
         try:
             try:
                 fno_pass["holder"], fno_pass["tick_started"] = "tick", started
+                fno_pass["ticks"] += 1
                 summary = await run_fno_tick(
                     _main.kite,
                     regime=_main._fno_regime_str(),

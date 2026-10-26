@@ -48,26 +48,33 @@ def pytest_sessionfinish(session, exitstatus):
                             "so the run can exit", yellow=True)
 
 
-# -- No real network [O26c 2026-10-26] -------------------------------
+# -- No real network [O26c, O26d 2026-10-26] -------------------------
 # The suite runs on the developer's machine, whose .env holds the real bot
 # tokens. On Oct 26 a test that calls every scheduled job polled the real
 # partner bot during market hours: Production's own poll got Telegram's 409
 # three times (and backed off 10 minutes each time), and the penny hourly
-# report test called Telegram too. Every test now gets fake tokens, and a
-# name lookup of any non-local host is refused, so nothing leaves.
+# report test called Telegram too. Every test gets fake tokens
+# (patch_settings), and tests/netguard refuses lookups and connections to
+# any non-local host, numeric addresses and asyncio included. Its folder goes
+# first on PYTHONPATH so a Python child process that inherits the
+# environment loads the same guard (its docstring says what is not covered).
 
-_LOCAL_HOSTS = {"", "localhost", "127.0.0.1", "::1", "0.0.0.0", "testserver"}
-_real_getaddrinfo = __import__("socket").getaddrinfo
-
-
-def _local_only_getaddrinfo(host, *args, **kwargs):
-    name = host.decode() if isinstance(host, bytes) else str(host or "")
-    if name in _LOCAL_HOSTS or name.endswith((".test", ".invalid", ".localhost")):
-        return _real_getaddrinfo(host, *args, **kwargs)
-    raise OSError(f"tests may not reach the network (lookup of {name!r} refused by conftest)")
+_NETGUARD_DIR = os.path.join(os.path.dirname(__file__), "netguard")
 
 
-__import__("socket").getaddrinfo = _local_only_getaddrinfo
+def _install_netguard():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("sentinel_netguard", os.path.join(_NETGUARD_DIR, "sitecustomize.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules["sentinel_netguard"] = module
+    if os.environ.get(module.OPT_IN) != "1":
+        os.environ["PYTHONPATH"] = os.pathsep.join(
+            [_NETGUARD_DIR] + [p for p in os.environ.get("PYTHONPATH", "").split(os.pathsep) if p])
+    return module
+
+
+netguard = _install_netguard()
 
 
 # -- Fake Settings ----------------------------------------------------

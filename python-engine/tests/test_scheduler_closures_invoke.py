@@ -175,6 +175,70 @@ async def test_fno_ticks_run_to_1539_only_while_something_is_still_open(monkeypa
         assert tick.await_count == runs, (when, single, dr)
 
 
+def _fno_clock(monkeypatch, hour=10, minute=0):
+    from datetime import datetime
+    from unittest.mock import AsyncMock, MagicMock
+    import main
+    import fno_orchestrator
+    import scheduler_setup
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return main.IST.localize(datetime(2026, 10, 27, hour, minute))
+
+    monkeypatch.setattr(scheduler_setup, "datetime", Clock)
+    monkeypatch.setattr(main, "is_trading_day", AsyncMock(return_value=True))
+    monkeypatch.setattr(main, "kite", MagicMock(access_token="test"))
+    tick = AsyncMock(return_value={})
+    monkeypatch.setattr(fno_orchestrator, "run_fno_tick", tick)
+    return tick
+
+
+@pytest.mark.asyncio
+async def test_a_tick_right_after_another_is_not_taken_for_one_that_ran_while_it_waited(monkeypatch):
+    """[O26d] The independent review's one failed scheduler test (the 15:39 case, passing alone): a tick skips when
+    another regular pass started while it waited for the lock, and that compared two monotonic() readings. Windows'
+    clock moves every 15.6 ms, so a pass right after another read as started during its wait. Frozen clock here."""
+    import scheduler_setup
+    tick = _fno_clock(monkeypatch)
+    monkeypatch.setattr(scheduler_setup, "monotonic", lambda: 1000.0)
+    job = _registered_jobs()["_run_fno_tick_safe"]
+    await job()
+    await job()
+    assert tick.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_a_tick_that_waited_for_the_fast_exit_skips_when_another_tick_ran_meanwhile(monkeypatch):
+    """Kept: two ticks wait for a fast-exit pass; the first runs, the second sees it ran and skips."""
+    import asyncio
+    from unittest.mock import AsyncMock
+    import fno_orchestrator
+    from config import settings
+    tick = _fno_clock(monkeypatch)
+    monkeypatch.setattr(settings, "FNO_FAST_EXIT_ENABLED", True)
+    monkeypatch.setattr(settings, "FNO_TICK_FAST_EXIT_WAIT_SEC", 5)
+    release, inside = asyncio.Event(), asyncio.Event()
+
+    async def fast_exit(kite):
+        inside.set()                                                # it holds the F&O lock now
+        await release.wait()
+        return {}
+
+    monkeypatch.setattr(fno_orchestrator, "run_fno_fast_exit", fast_exit)
+    monkeypatch.setattr(fno_orchestrator, "fast_exit_has_work", AsyncMock(return_value=True))
+    jobs = _registered_jobs()
+    fast = asyncio.create_task(jobs["_run_fno_fast_exit_safe"]())
+    await asyncio.wait_for(inside.wait(), timeout=10)
+    ticks = [asyncio.create_task(jobs["_run_fno_tick_safe"]()) for _ in range(2)]
+    await asyncio.sleep(0.05)
+    assert tick.await_count == 0                                    # both wait for the fast exit
+    release.set()
+    await asyncio.gather(fast, *ticks)
+    assert tick.await_count == 1
+
+
 @pytest.mark.parametrize("closure_name", ALL_CLOSURES)
 @pytest.mark.asyncio
 async def test_closure_resolves_its_globals_when_called(closure_name, monkeypatch):

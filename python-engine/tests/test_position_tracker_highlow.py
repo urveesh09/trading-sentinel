@@ -67,7 +67,10 @@ async def _get_status_shares(db_path):
 
 @pytest.mark.asyncio
 async def test_tp_hit_detected_via_high_even_when_close_below_target(tmp_path):
-    """[HIGHLOW-1]"""
+    """[HIGHLOW-1] [O26d] The high finds the T1 half (100) though the day closed under it. The close (98) is also
+    under the breakeven stop the half made active (100), so the price crossed it after T1: the rest is stopped at
+    100 the same day. It used to stay open overnight, under its own stop."""
+    import aiosqlite
     db_path = str(tmp_path / "t1.db")
     await _seed_one_position(
         db_path, entry_price=100.0, shares=10,
@@ -78,8 +81,10 @@ async def test_tp_hit_detected_via_high_even_when_close_below_target(tmp_path):
     record_cb = AsyncMock()
     await update_daily_positions(db_path, kite, "2025-10-10", record_cb)
     status, shares = await _get_status_shares(db_path)
-    assert status == "CLOSED_T1"
-    assert shares == 5
+    assert (status, shares) == ("STOPPED_OUT", 5)
+    async with aiosqlite.connect(db_path) as db:
+        keys = [row[0] for row in await (await db.execute("SELECT event_key FROM position_pnl_outbox")).fetchall()]
+    assert sorted(key.rsplit("|", 2)[-2:][1] for key in keys) == ["STOPPED_OUT", "T1PART"]
 
 
 @pytest.mark.asyncio

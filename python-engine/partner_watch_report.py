@@ -126,7 +126,8 @@ def report(db_path: str, first_day: Optional[str] = None, last_day: Optional[str
 
 
 TRIP_COLS = ("session_date", "first_at", "closed_at", "tradingsymbol", "product", "bought", "sold", "entry", "exit",
-             "realised", "exact", "carried", "run_pct", "after_loss", "usual", "paid_share")
+             "realised", "exact", "carried", "run_pct", "prior_exit", "usual", "cash", "opening_qty", "opening_value",
+             "opening_final", "paid_share")
 
 
 def _trips(db, first_day: str, last_day: str) -> dict:
@@ -134,13 +135,15 @@ def _trips(db, first_day: str, last_day: str) -> dict:
     if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='partner_watch_trips'").fetchone():
         return {}
     out: dict = {}
-    for row in db.execute(f"SELECT {', '.join(TRIP_COLS)} FROM partner_watch_trips WHERE session_date>=? AND "
+    have = {row[1] for row in db.execute("PRAGMA table_info(partner_watch_trips)")}
+    cols = [c if c in have else f"NULL AS {c}" for c in TRIP_COLS]
+    for row in db.execute(f"SELECT {', '.join(cols)} FROM partner_watch_trips WHERE session_date>=? AND "
                           "session_date<=? ORDER BY session_date, first_at", (first_day, last_day)):
         trip = dict(zip(TRIP_COLS, row))
         try:
-            trip["after_loss"] = json.loads(trip["after_loss"]) if trip["after_loss"] else None
+            trip["prior_exit"] = json.loads(trip["prior_exit"]) if trip["prior_exit"] else None
         except ValueError:
-            trip["after_loss"] = None
+            trip["prior_exit"] = None
         out.setdefault(trip["session_date"], []).append(trip)
     return out
 
@@ -167,11 +170,12 @@ def _trip_line(trip: dict) -> str:
         out = f" → {trip['exit']:g} {_rupees(trip['realised'])}" + ("" if trip["exact"] else " (from orders)")
     else:
         out = f", open ({trip['sold']} sold)" if trip["sold"] else ", open"
+    from partner_watch_score import POSITIVE, evidence_of
     marks = []
     if trip["run_pct"] is not None:
         marks.append(f"run {math.floor(trip['run_pct'] * 100 + 1e-9)}%")
-    if trip["after_loss"]:
-        marks.append(f"{trip['after_loss']['minutes']} min after a {_rupees(-trip['after_loss']['loss'])} exit")
+    if evidence_of(trip)["AFTER_LOSS"] == POSITIVE:    # [O26d] the scorer's frozen rule, on the stored evidence
+        marks.append(f"{trip['prior_exit']['minutes']} min after a {_rupees(trip['prior_exit']['result'])} exit")
     if trip["usual"] and trip["paid_share"] is not None:
         marks.append(f"size {trip['paid_share']:.0%} (usual {trip['usual']:.0%})")
     carried = " carried" if trip["carried"] else ""

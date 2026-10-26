@@ -1,5 +1,31 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 26 — O26d Daily exits ordered (minute bars when needed), partner trade evidence and frozen score v2, closing-auction exit on dated evidence, test network guard, F&O pass counter (actual behavior, Dev)
+
+- **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
+- **`position_tracker.day_exits(status, stop, entry, t1, t2, bar, entered_at=, minutes=)`**:
+  - returns `t1` (the half's price), `close` (status, price), `stop` and `basis` (`DAILY`, `DAILY_STOP_FIRST`, `DAILY_ENTRY_DAY` or `MINUTES`);
+  - `update_daily_positions` fetches the day's minute bars only when the basis is not `DAILY`; a T1 half and a close on one day are written as two updates;
+  - `research_penny_cnc_lifecycle.tracker_step(pos, bar, day, minutes=)` returns its events as a list; the lifecycle is v2.
+- **`partner_watch_trips`**:
+  - new columns `prior_exit`, `cash`, `opening_order`, `opening_qty`, `opening_value`, `opening_final`, `opening_exact`;
+  - `run_pct`, `usual` and `cash` are first known; everything else is rewritten;
+  - `paid_share = ROUND(opening_value / first-known cash, 4)`;
+  - `_store_trips(..., orders)` reads the opening order's status.
+- **`partner_watch_score`**:
+  - `SPEC` v2 and `SPEC_ID`; `evidence_of(trip)` gives POSITIVE/NEGATIVE/UNKNOWN per warning;
+  - `score` compares POSITIVE with NEGATIVE and counts UNKNOWN; `_side` counts `from_orders`;
+  - `partner_watch_report` marks an after-loss buy by the same rule.
+- **`momentum_shadow`**:
+  - `EXECUTION.cas_time_exit`; `cas_time_exit_evidence(ticker, day)`;
+  - the terminal pass sorts bars, derives the 15:15 bar only when that is ELIGIBLE, and otherwise records `no_terminal_bar:cas_<reason>`;
+  - the derived bar carries `modelled`; the comparison adds `modelled_time_exit_closes` and `modelled_time_exit_net_pnl`.
+- **`market_calendar`**: `CAS_PHASE1_FROM` (2026-08-03), `CAS_PHASE1_UNTIL` (2026-12-07, exclusive), `cas_phase1_in_force(day)`.
+- **`research_archive.contract_master_underlyings(root, provider=, segment=, day=)`**: the underlyings with FUT contracts in that day's archived masters, or None.
+- **`scheduler_setup`**: a tick that waited for the lock skips when `fno_pass["ticks"]` moved meanwhile (no clock comparison).
+- **Tests**: `tests/netguard/sitecustomize.py` blocks non-local lookups and connections (sockets and asyncio) in the test process and in Python children; `SENTINEL_TEST_NETWORK=1` opts out.
+- **DAY**: "That includes about ₹X of charges (estimated) on N orders."
+
 ## October 26 — O26c Audit fixes: last halt check before a buy, check expiry at send, future clocks, closing-auction time exits, daily stop-first, F&O to 15:39, no network in tests; DAY charges, refusal size (actual behavior, Dev, commit `a848bcb`)
 
 - **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.

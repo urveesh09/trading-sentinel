@@ -10,14 +10,16 @@ spec describes:
   real ``PennyRiskEngine``; admission applies the per-ticker reservation,
   CNC/total caps and the executor's drift / stop checks; paper fills at LTP.
 * 15:45 IST ``position_tracker.update_daily_positions`` on each final daily
-  bar: stop (also when a target was hit that day, unless it opened at the
-  target [O26c]), T2, T1 partial (50%, stop to breakeven), 15-calendar-day
-  time stop. Connors rows carry no ATR, so the
+  bar, through the tracker's own ``day_exits`` [O26d]: what the open settles
+  first; T1 (50%, stop to breakeven) before T2; a stop in reach before a
+  target after the open; the entry day's open not used; a day the daily bar
+  cannot order walked through its minute bars when the dataset has them;
+  15-calendar-day time stop. Connors rows carry no ATR, so the
   chandelier trail is disabled. ``evaluate_connors_exit`` has no runtime
   caller and is deliberately not used.
 
-The tracker branch order is re-implemented as a pure function and proved
-equal to the real tracker by a parity test. Live ``PENNY`` CNC rows are not
+The tracker's exit order is the tracker's own pure function; its accounting
+is re-implemented and proved equal to the real tracker by a parity test. Live ``PENNY`` CNC rows are not
 managed by the tracker (only a broker SL-M), so that book is UNSUPPORTED.
 Not named ``penny_*``: it reuses ``engine.calc_zerodha_costs`` as the tracker
 does, which the Penny runtime isolation rule forbids for ``penny_*`` modules.
@@ -36,7 +38,9 @@ import pandas as pd
 
 from research_data_contracts import IST, DailyDataset, IntradayDataset
 
-LIFECYCLE_VERSION = "penny_cnc_connors_lifecycle_v1"
+# v2 [O26c/O26d]: the tracker's exit order changed (stop before target, T1 before T2, entry-day open
+# unused, minute bars for a day the daily bar cannot order); v1 results are not comparable.
+LIFECYCLE_VERSION = "penny_cnc_connors_lifecycle_v2"
 SCOPE = "LIFECYCLE"
 SCAN_MINUTE = 9 * 60 + 30
 PARTIAL_LAST_BAR = time(9, 29)
@@ -112,15 +116,17 @@ def connors_decision(ticker: str, bars: pd.DataFrame, *, risk_engine, regime: st
 
 # ---- 15:45 tracker (mirror position_tracker.update_daily_positions) ----------
 
-def tracker_step(pos: dict, bar: dict, current_day: date) -> dict:
-    """Apply one daily tracker pass; returns the event (``hold`` when unchanged).
+def tracker_step(pos: dict, bar: dict, current_day: date, minutes=None) -> list:
+    """Apply one daily tracker pass; returns its events (none when the position holds).
 
     ``pos`` keys: entry_price, entry_date (ISO), shares, stop_loss_initial,
     trailing_stop_current, target_1, target_2, highest_close_since_entry,
     status (OPEN|CLOSED_T1), realised_pnl, atr_14_at_entry, regime_at_entry.
-    Mutates ``pos`` exactly as the tracker's UPDATE would.
+    ``minutes`` are the day's minute bars (dicts with ``start``), used as the
+    tracker uses them: only for a day its daily bar cannot order [O26d].
+    Mutates ``pos`` exactly as the tracker's UPDATEs would.
     """
-    from position_tracker import settlement_costs
+    from position_tracker import _ist_naive, day_exits, settlement_costs
     o, h, l, c = bar["open"], bar["high"], bar["low"], bar["close"]
     highest_close = float(max(float(pos["highest_close_since_entry"]), c))
     if pos.get("atr_14_at_entry"):
@@ -134,52 +140,44 @@ def tracker_step(pos: dict, bar: dict, current_day: date) -> dict:
             cap = pos["entry_price"] + settings.HARD_CAP_R_REGIME1 * risk
             if effective_target_2 is None or effective_target_2 > cap:
                 effective_target_2 = cap
-    current_status = pos["status"]
-    status, exit_price, hit_t1_today = current_status, None, False
     days_held = (current_day - datetime.fromisoformat(pos["entry_date"]).date()).days
-    stop_hit = l <= trailing_stop
-    target2_hit = h >= effective_target_2 if effective_target_2 is not None else False
-    target1_hit = h >= pos["target_1"] and current_status == "OPEN"
-    if stop_hit and (target2_hit or target1_hit):        # [O26c] the stop first, unless it opened at a target
-        if not ((effective_target_2 is not None and o >= effective_target_2)
-                or (target1_hit and o >= pos["target_1"])):
-            target2_hit = target1_hit = False
-    if stop_hit and not (target2_hit or target1_hit):
-        status, exit_price = "STOPPED_OUT", min(trailing_stop, o)
-    elif target2_hit:
-        status, exit_price = "CLOSED_T2", max(effective_target_2, o)
-    elif target1_hit:
-        status, exit_price, hit_t1_today = "CLOSED_T1", max(pos["target_1"], o), True
-    elif days_held >= TIME_STOP_CALENDAR_DAYS:
-        status, exit_price = "CLOSED_TIME", c
+    entered_at = pos["entry_date"] if _ist_naive(pos["entry_date"]).date() == current_day else None
+    args = (pos["status"], trailing_stop, pos["entry_price"], pos["target_1"], effective_target_2,
+            {"open": o, "high": h, "low": l})
+    exits = day_exits(*args, entered_at=entered_at)
+    if exits["basis"] != "DAILY" and minutes:
+        exits = day_exits(*args, entered_at=entered_at, minutes=minutes)
+    trailing_stop = exits["stop"]
+    t1_price, close = exits["t1"], exits["close"]
+    if t1_price is None and close is None and days_held >= TIME_STOP_CALENDAR_DAYS:
+        close = ("CLOSED_TIME", c)
     pos["highest_close_since_entry"] = highest_close
-    if status == current_status:
-        pos["trailing_stop_current"] = trailing_stop
-        return {"event": "hold"}
-    if hit_t1_today:
+    pos["trailing_stop_current"] = trailing_stop
+    events = []
+    if t1_price is not None:
         closed = math.floor(pos["shares"] * 0.5) or 1
         remaining = pos["shares"] - closed
-        gross = (exit_price - pos["entry_price"]) * closed
-        costs = settlement_costs(pos, exit_price, closed, current_day)
+        gross = (t1_price - pos["entry_price"]) * closed
+        costs = settlement_costs(pos, t1_price, closed, current_day)
         pnl = gross - costs
         if remaining == 0:
-            pos.update(status="CLOSED_T1", trailing_stop_current=trailing_stop, closed=True,
-                       exit_price=exit_price, realised_pnl=pnl)
-            return {"event": "close", "reason": "CLOSED_T1", "shares": closed,
-                    "price": exit_price, "gross": gross, "costs": costs, "pnl": pnl}
+            pos.update(status="CLOSED_T1", closed=True, exit_price=t1_price, realised_pnl=pnl)
+            return [{"event": "close", "reason": "CLOSED_T1", "shares": closed, "price": t1_price,
+                     "gross": gross, "costs": costs, "pnl": pnl, "basis": exits["basis"]}]
         pos.update(status="CLOSED_T1", shares=remaining,
-                   trailing_stop_current=max(trailing_stop, pos["entry_price"]),
                    realised_pnl=float(pos.get("realised_pnl") or 0) + pnl)
-        return {"event": "partial", "reason": "T1_PARTIAL", "shares": closed,
-                "price": exit_price, "gross": gross, "costs": costs, "pnl": pnl}
-    gross = (exit_price - pos["entry_price"]) * pos["shares"]
-    costs = settlement_costs(pos, exit_price, pos["shares"], current_day)
-    pnl = gross - costs
-    pos.update(status=status, trailing_stop_current=trailing_stop, closed=True,
-               exit_price=exit_price,
-               realised_pnl=float(pos.get("realised_pnl") or 0) + pnl)
-    return {"event": "close", "reason": status, "shares": pos["shares"], "price": exit_price,
-            "gross": gross, "costs": costs, "pnl": pnl}
+        events.append({"event": "partial", "reason": "T1_PARTIAL", "shares": closed, "price": t1_price,
+                       "gross": gross, "costs": costs, "pnl": pnl, "basis": exits["basis"]})
+    if close is not None:
+        status, exit_price = close
+        gross = (exit_price - pos["entry_price"]) * pos["shares"]
+        costs = settlement_costs(pos, exit_price, pos["shares"], current_day)
+        pnl = gross - costs
+        pos.update(status=status, closed=True, exit_price=exit_price,
+                   realised_pnl=float(pos.get("realised_pnl") or 0) + pnl)
+        events.append({"event": "close", "reason": status, "shares": pos["shares"], "price": exit_price,
+                       "gross": gross, "costs": costs, "pnl": pnl, "basis": exits["basis"]})
+    return events
 
 
 # ---- replay ----------------------------------------------------------------
@@ -292,9 +290,10 @@ def run_penny_cnc_lifecycle(
             if bar is None:
                 missing_daily.append({"ticker": ticker, "trading_date": day_text})
                 continue
-            event = tracker_step(pos, {"open": bar.open, "high": bar.high, "low": bar.low,
-                                       "close": bar.close}, day)
-            if event["event"] != "hold":
+            minutes = [{"start": m.start, "open": m.open, "high": m.high, "low": m.low, "close": m.close}
+                       for m in intraday.bars.get((ticker, day_text)) or () if m.executable]
+            for event in tracker_step(pos, {"open": bar.open, "high": bar.high, "low": bar.low,
+                                            "close": bar.close}, day, minutes=minutes):
                 pos["events"].append({"trading_date": day_text, **{
                     k: (round(v, 4) if isinstance(v, float) else v) for k, v in event.items()}})
             if pos.get("closed"):
@@ -340,7 +339,9 @@ def run_penny_cnc_lifecycle(
         "assumptions": {
             "entry_clock": "09:30 IST scan; last daily bar = today's partial candle (09:15-09:29 minutes)",
             "fill": "LTP at 09:30 (open of the traded 09:30 bar); executor drift/stop checks",
-            "exits": "15:45 tracker on final daily bars (stop unless target hit, T2, T1 50%, 15-day time)",
+            "exits": ("15:45 tracker on final daily bars ordered by position_tracker.day_exits: open first, "
+                      "T1 50% before T2, stop before target after the open, minute bars for a day the daily "
+                      "bar cannot order, 15-day time"),
             "trail": "disabled: Connors decisions carry no atr_14",
             "costs": "position_tracker.settlement_costs (S23-COST1), as the tracker books",
             "regime": f"declared constant {config.regime}",
@@ -354,7 +355,8 @@ def run_penny_cnc_lifecycle(
         "warnings": [
             "LIFECYCLE scope: not a point-in-time universe, regime or full portfolio return.",
             "Retrospective exploratory evidence; no holdout, tuning, funding or partner authority.",
-            "Entry-day exits use the whole day's range, including trading before the 09:30 fill (shipped).",
+            ("Entry-day exits without minute bars use the whole day's range after the fill price, "
+             "including trading before the 09:30 fill (shipped)."),
         ],
         "can_place_orders": False, "can_qualify": False,
     }

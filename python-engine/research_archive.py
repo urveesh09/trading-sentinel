@@ -20,6 +20,7 @@ import time
 import uuid
 import threading
 from contextvars import ContextVar
+import functools
 from functools import wraps
 from datetime import datetime, timezone
 from pathlib import Path
@@ -372,6 +373,38 @@ def archive_contract_master(
                 "limitations": ["Token mappings are dated observations; instrument tokens may be reused."]}
     _atomic_bytes(base / "manifest.json", _canonical_json(manifest) + b"\n")
     return manifest
+
+
+def contract_master_underlyings(archive_root: str, *, provider: str, segment: str, day: str,
+                                instrument_types: Sequence[str] = ("FUT",)) -> Optional[frozenset]:
+    """[O26d] The underlyings with a contract of ``instrument_types`` in the
+    masters archived on ``day`` (UTC observation day, every one read that day),
+    or None when none was archived then: dated instrument evidence, never
+    today's list for a past day. Read-only; cached per (root, segment, day)."""
+    base = Path(archive_root) / "contract-masters" / _safe_component(provider) / _safe_component(segment) / day
+    try:
+        stamps = tuple(sorted((path.name, path.stat().st_mtime_ns) for path in base.iterdir()
+                              if (path / "contracts.jsonl").is_file()))
+    except OSError:
+        return None
+    if not stamps:
+        return None
+    return _master_underlyings(str(base), stamps, tuple(sorted(t.upper() for t in instrument_types)))
+
+
+@functools.lru_cache(maxsize=16)
+def _master_underlyings(base: str, stamps: tuple, instrument_types: tuple) -> frozenset:
+    names = set()
+    for digest, _mtime in stamps:
+        with open(Path(base) / digest / "contracts.jsonl", encoding="utf-8") as handle:
+            for line in handle:
+                try:
+                    record = json.loads(line)
+                except ValueError:
+                    continue
+                if record.get("instrument_type") in instrument_types and record.get("underlying"):
+                    names.add(str(record["underlying"]).upper())
+    return frozenset(names)
 
 
 @guarded_write

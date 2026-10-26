@@ -1,5 +1,21 @@
 # Handover receipt and operator checklist
 
+## October 26 — O26d The independent review of O26–O26c fixed (Dev, pushed, not deployed)
+
+- [x] Production runs `f9547c5` (PR #118); O26, O26b, O26c and O26d are Dev only.
+- [x] Daily paper exits are ordered: open first, T1 before T2, stop before target after the open (the breakeven stop included); entry-day open unused; minute bars on days the daily bar cannot order (R1).
+- [x] A partly filled opening order is sized as it fills; buy-time facts stay first known (R4).
+- [x] Unknown warning evidence is left out, not counted as "no warning"; the score rule is its own frozen SPEC v2 (R2, R6).
+- [x] The closing-auction 15:15 exit needs dated evidence (window 2026-08-03 to 2026-12-06, the stock in that day's archived F&O master) and is reported as modelled (R3).
+- [x] Tests cannot reach the network by numeric address or asyncio either, in Python children too (R5).
+- [x] The intermittent scheduler test: Windows' 15.6 ms clock; the tick now counts passes.
+- [x] DAY's charges are labelled estimated.
+- [x] Tests: full suite (`python -m pytest tests ../scripts -q`): 6,110 passed, 4 skipped, exit 0 (11 min 24 s). The first full run had 2 failures, both explained and fixed (HIGHLOW-1's expectation; the lanes test's timing). Focused: tracker and mirror 48, partner watch and score 130, closing auction and replay 50, scheduler 29, network guard 11.
+- [ ] Rollout with the next PR (owner's go-ahead): engine only; no setting.
+- [ ] Confirm SEBI's December 7 CAS timings before that date.
+- [ ] Owner: Oct 26's 22 censored research trades stay censored unless you want a backfill.
+- [ ] Next session: SADHNANIQ should close once in each Smart book.
+
 ## October 26 — O26c The Oct 26 audit's findings fixed; DAY charges and refusal size (Dev, commit `a848bcb`, pushed, not deployed)
 
 - [x] Production runs `f9547c5` (PR #118); O26, O26b and O26c are Dev only.

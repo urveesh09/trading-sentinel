@@ -87,7 +87,10 @@ async def test_management_yields_to_bulk_when_only_bulk_waits():
 
 @pytest.mark.asyncio
 async def test_without_bulk_waiters_ordering_is_unchanged_from_s2():
-    limiter = RateLimiter(rate=200.0, burst=1, management_burst=2)
+    # [O26d] 20/s, not 200/s: a token every 50 ms. Windows' monotonic clock moves in 15.6 ms steps, so at 200/s one
+    # step while the waiters queued (likely under a full-suite load) handed a normal waiter the token before the
+    # management ones were queued (failed once in the O26d full run, passed alone).
+    limiter = RateLimiter(rate=20.0, burst=1, management_burst=2)
     await limiter.acquire()
     admitted = []
     tasks = await _queue(limiter, admitted, [(f"normal-{i}", "normal") for i in range(3)])

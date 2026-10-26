@@ -113,7 +113,11 @@ What it sends (live, loss first)
 [O26] Every trade is stored when it changes (``partner_watch_trips``): its
 fills and result after charges, and what a check would have warned about at
 its buy. partner_watch_report lists the day's trades from it (exact during
-the day); partner_watch_score scores the warnings on later days.
+the day); partner_watch_score scores the warnings on later days. [O26d] What
+was known at the buy (the run, the usual share, the day's cash, the trade
+closed last before it) is kept apart from the opening order's fills, which
+are written again as they grow, so a first partial fill does not fix its
+size.
 
 [O24g] Every stop moved down in one read (SL orders modified, GTTs
 modified, a stop replaced) is one LOWERED message, judged together
@@ -405,8 +409,14 @@ CREATE TABLE IF NOT EXISTS partner_watch_trips (
   exact INTEGER NOT NULL,
   carried INTEGER NOT NULL,
   run_pct REAL,
-  after_loss TEXT,
+  prior_exit TEXT,
   usual REAL,
+  cash REAL,
+  opening_order TEXT,
+  opening_qty INTEGER,
+  opening_value REAL,
+  opening_final INTEGER,
+  opening_exact INTEGER,
   paid_share REAL,
   updated_at TEXT NOT NULL,
   PRIMARY KEY (session_date, position_key)
@@ -423,6 +433,10 @@ _ADDED_COLS = {
                                ("detected_by", "TEXT")),
     "partner_watch_looks": (("bid_qty", "INTEGER"), ("ask_qty", "INTEGER"), ("quote_at", "TEXT"),
                             ("trade_at", "TEXT"), ("received_at", "TEXT")),
+    # [O26d] a Dev table made by O26b, before the opening order's fills and the evidence were stored apart
+    "partner_watch_trips": (("prior_exit", "TEXT"), ("cash", "REAL"), ("opening_order", "TEXT"),
+                            ("opening_qty", "INTEGER"), ("opening_value", "REAL"), ("opening_final", "INTEGER"),
+                            ("opening_exact", "INTEGER")),
 }
 
 
@@ -561,7 +575,7 @@ class Trip:
     sell_orders: int = 0
     closed_at: Optional[datetime] = None
     carried: bool = False
-    buys: dict = field(default_factory=dict)        # buy order id -> {"qty", "value", "at" (first fill)}, in fill order
+    buys: dict = field(default_factory=dict)        # buy order id -> {"qty", "value", "at" (first fill), "exact"}
     sell_ids: list = field(default_factory=list)
     last_fill_at: Optional[datetime] = None
     exact: bool = True                              # every fill from Zerodha's trade book
@@ -672,10 +686,11 @@ def trips_from_fills(fills: list, carried: Optional[list] = None, day: Optional[
             trip.bought += fill.qty
             trip.buy_value += fill.qty * fill.price
             if fill.order_id not in trip.buys:
-                trip.buys[fill.order_id] = {"qty": 0, "value": 0.0, "at": fill.at}
+                trip.buys[fill.order_id] = {"qty": 0, "value": 0.0, "at": fill.at, "exact": True}
                 trip.buy_orders += 1
             trip.buys[fill.order_id]["qty"] += fill.qty
             trip.buys[fill.order_id]["value"] += fill.qty * fill.price
+            trip.buys[fill.order_id]["exact"] = trip.buys[fill.order_id]["exact"] and fill.exact
         elif trip is not None and trip.open_qty:
             take = min(fill.qty, trip.open_qty)
             trip.sold += take
@@ -3006,7 +3021,7 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     # 6. [O26] The day's trades, stored when one changes: exact results during the day, and the warnings a check
     # would have given at each buy (scored later by partner_watch_score). A failed write is tried on the next tick.
     try:
-        await _store_trips(db_path, day, trips, now)
+        await _store_trips(db_path, day, trips, now, rows)
     except Exception as exc:
         logger.warning("partner_watch_trips_write_failed err=%s", type(exc).__name__)
     # 7. The shadow looks, beside the tick.
@@ -3565,50 +3580,82 @@ def _day_line(trip: Trip, trips: list) -> Optional[str]:
 
 
 _TRIP_COLS = ("session_date", "position_key", "exchange", "tradingsymbol", "product", "first_at", "closed_at",
-              "bought", "sold", "entry", "exit", "realised", "orders", "exact", "carried", "run_pct", "after_loss",
-              "usual", "paid_share", "updated_at")
-# What a check would have said at the buy is kept as first known: a restart, before a closed trade's plan is read
-# again (or the day's cash), would otherwise write it as unknown.
-_AT_BUY = ("run_pct", "after_loss", "usual", "paid_share")
+              "bought", "sold", "entry", "exit", "realised", "orders", "exact", "carried", "run_pct", "prior_exit",
+              "usual", "cash", "opening_order", "opening_qty", "opening_value", "opening_final", "opening_exact",
+              "paid_share", "updated_at")
+# [O26d] Two kinds of fact (independent review R4). What was known at the buy is kept as first known: the plan's
+# run, the usual share, the day's cash (a restart reads the cash again later in the day, after its results; and
+# before the plan is read again it would write the run as unknown). The opening order's fills are execution facts:
+# they grow until it is done, and the trade book can make them exact later, so they are written again each time,
+# and its share of cash is worked out from them and the first-known cash.
+_AT_BUY = ("run_pct", "usual", "cash")
 _TRIP_UPSERT = (
     f"INSERT INTO partner_watch_trips({','.join(_TRIP_COLS)}) VALUES({','.join('?' * len(_TRIP_COLS))}) "
     "ON CONFLICT(session_date, position_key) DO UPDATE SET "
-    + ", ".join(f"{c}=COALESCE(partner_watch_trips.{c}, excluded.{c})" if c in _AT_BUY else f"{c}=excluded.{c}"
+    + ", ".join(f"{c}=COALESCE(partner_watch_trips.{c}, excluded.{c})" if c in _AT_BUY
+                else "paid_share=ROUND(excluded.opening_value / COALESCE(partner_watch_trips.cash, excluded.cash), 4)"
+                if c == "paid_share" else f"{c}=excluded.{c}"
                 for c in _TRIP_COLS if c not in ("session_date", "position_key")))
+_DONE = ("COMPLETE", "CANCELLED", "REJECTED")
+
+
+def _prior_exit(trip: Trip, trips: list) -> dict:
+    """[O26d] What a check could know at this buy about the trade closed last before it today: its result after
+    charges, when, how many minutes before the buy and how many units it had; ``{"state": "NONE"}`` when none had
+    closed (known: no exit before it). Only trades closed by the buy count, so a later fill cannot change it.
+    partner_watch_score applies its frozen window and sign to it (review R2/R6)."""
+    closed = [t for t in trips if t is not trip and t.closed_at is not None and t.closed_at <= trip.first_at]
+    if not closed:
+        return {"state": "NONE"}
+    last = max(closed, key=lambda t: t.closed_at)
+    result = last.realised()
+    return {"state": "KNOWN" if result is not None else "UNKNOWN", "result": result, "at": _hhmm(last.closed_at),
+            "minutes": int((trip.first_at - last.closed_at).total_seconds() // 60), "bought": last.bought}
 
 
 def trip_row(day: str, trip: Trip, trips: list, *, run_pct: Optional[float], usual: Optional[float],
-             cash: Optional[float], now: datetime) -> dict:
+             cash: Optional[float], now: datetime, opening_status: Optional[str] = None) -> dict:
     """[O26] One trade as stored in ``partner_watch_trips``: its fills (``exact`` when every one is from Zerodha's
-    trade book) and its result after charges once closed; and what a check would have warned about at its buy:
-    the 15-minute run before it (the plan's), a losing exit within 30 minutes before it (``_after_loss``, with
-    "bigger" when more units were bought than that trade had), the partner's usual share of cash and this buy's
-    share (its opening order)."""
-    first = trip.buys[next(iter(trip.buys))] if trip.buys else None
-    after = None if trip.carried else _after_loss(trip, trips)
+    trade book) and its result after charges once closed; and what a check could have known at its buy: the
+    15-minute run before it (the plan's), the trade closed last before it (``_prior_exit``), the partner's usual
+    share of cash and the day's cash. [O26d] And the opening order: its id, the units and value it has filled in
+    this trade, whether it is done (Zerodha says so, or the trade closed: its later fills open another trade) and
+    exact; ``paid_share`` is that value over the cash."""
+    opening_id, opening = next(iter(trip.buys.items()), (None, None))
+    final = trip.closed_at is not None or str(opening_status or "").upper().startswith(_DONE)
     return {"session_date": day, "position_key": trip.key, "exchange": trip.exchange,
             "tradingsymbol": trip.tradingsymbol, "product": trip.product, "first_at": trip.first_at.isoformat(),
             "closed_at": trip.closed_at.isoformat() if trip.closed_at else None, "bought": trip.bought,
             "sold": trip.sold, "entry": round(trip.entry, 4) if trip.entry else None,
             "exit": round(trip.exit, 4) if trip.exit else None, "realised": trip.realised(),
             "orders": trip.buy_orders + trip.sell_orders, "exact": int(trip.exact), "carried": int(trip.carried),
-            "run_pct": run_pct, "after_loss": json.dumps(after) if after else None, "usual": usual,
-            "paid_share": round(first["value"] / cash, 4) if first and cash else None, "updated_at": now.isoformat()}
+            "run_pct": run_pct, "prior_exit": None if trip.carried else json.dumps(_prior_exit(trip, trips)),
+            "usual": usual, "cash": cash, "opening_order": opening_id,
+            "opening_qty": opening["qty"] if opening else None,
+            "opening_value": round(opening["value"], 2) if opening else None,
+            "opening_final": int(final) if opening else None,
+            "opening_exact": int(opening["exact"]) if opening else None,
+            "paid_share": round(opening["value"] / cash, 4) if opening and cash else None,
+            "updated_at": now.isoformat()}
 
 
-async def _store_trips(db_path: str, day: str, trips: list, now: datetime) -> int:
+async def _store_trips(db_path: str, day: str, trips: list, now: datetime, orders: Optional[list] = None) -> int:
     """[O26] Write the trades that changed since their row was written (every one after a restart): a buy, a
-    sale, a fill the trade book showed later, the plan's run, the day's cash read. How many were written."""
+    sale, a fill the trade book showed later, the plan's run, the day's cash read; [O26d] the opening order done.
+    ``orders``: the day's order rows (their status). How many were written."""
+    statuses = {str(row.get("order_id")): row.get("status") for row in orders or []}
     rows, sigs = [], {}
     for trip in trips:
         meta = _state.planned.get(trip.key)
         run = meta["plan"].run_pct if meta is not None else None
+        opening_status = statuses.get(next(iter(trip.buys), None))
         sig = (trip.bought, trip.sold, round(trip.buy_value, 2), round(trip.sell_value, 2), trip.closed_at,
-               trip.exact, run, _state.cash)
+               trip.exact, run, _state.cash, opening_status)
         if _state.trip_sigs.get(trip.key) == sig:
             continue
         usual = None if trip.carried else await _usual_share(db_path, trip, trips, now)
-        rows.append(trip_row(day, trip, trips, run_pct=run, usual=usual, cash=_state.cash, now=now))
+        rows.append(trip_row(day, trip, trips, run_pct=run, usual=usual, cash=_state.cash, now=now,
+                             opening_status=opening_status))
         sigs[trip.key] = sig
     if not rows:
         return 0
@@ -3668,7 +3715,8 @@ def day_text(day: dict, cash: float) -> str:
     closed = f"{day['closed']} trade{'s' if day['closed'] != 1 else ''} closed"
     lines.append(f"{closed}: {', '.join(parts)}." if parts else f"{closed}.")
     if day.get("charges"):
-        lines.append(f"That includes {_amt(day['charges'])} of charges on {day['orders']} orders.")
+        # [O26d] Worked out from the fills, not read from the contract note: said so.
+        lines.append(f"That includes about {_amt(day['charges'])} of charges (estimated) on {day['orders']} orders.")
     if day["quick"]:
         lines.append(f"{day['quick']} of them bought within {REENTRY_WINDOW_MIN} min of a losing exit: "
                      f"{_signed(day['quick_sum'])} together.")
