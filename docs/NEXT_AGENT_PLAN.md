@@ -1,5 +1,38 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 26 — O26 The partner's first watched day: the day so far told once a step of their cash, through "Quiet today"; a run figure that agrees with its warning (done, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 26), after the first watched day: make the system flexible and smarter for most cases, not trained on one day, always towards better profit; improvements in Dev only.
+- Production evidence, Oct 26 (read-only, Production `f9547c5`):
+  - The partner logged in at 07:05 with the new Kite app (its secret proven). 21 buys of NIFTY weekly options from 09:17 to 11:56; 19 closed by 13:08.
+  - Result about −₹5,300 after charges. This is an estimate: the sells are stored only by the 15:50 sync, so each exit was taken from the watch's looks (a fired stop at its trigger). It matches the watch's own figure for the 09:38 trade (−₹723 against −₹725). That is about 30% of the day's cash (about ₹16,700).
+  - "Quiet today" was tapped at 09:28. After it, 19 PLAN, 2 NO_STOP and 1 ADDED were muted. What went: 6 LOWERED, 3 REFUSED (buys bigger than the cash), 3 CHECK replies.
+  - Nothing told the partner about the day as a whole.
+  - The check was used 3 times, 09:36–09:46. Both of its warnings were right, and the partner held back each time. At 09:38 a 19.7% run read "up 20%" with no chased-spike warning; they bought 17 s later and lost about ₹725.
+  - What-if (estimate): skipping every buy that a check would have warned about gives about ₹3,900 less loss. But 20 of 21 buys were warned, both big winners among them. On this one day, neither warning alone separated winners from losers.
+- Decisions, and why:
+  - A buy's own warnings stay muted under Quiet: 20 of 21 would have gone, and noise gets the bot muted. One DAY message a step tells the pattern instead.
+  - No threshold or rule is changed from one day's results (freeze, then score). DAY_STEP is a messaging cadence on the partner's own cash, not a value fitted to Oct 26.
+  - The trend line stays. It is the F&O engine's own 5-minute EMA reading, a fact; the 09:38 miss was the run figure.
+  - Never a block: DAY gives the numbers and ends "whether to trade on is your call".
+- Done:
+  - [x] **DAY (`partner_watch.day_so_far`, `day_text`, `_b_day`).**
+    - Each time the day's loss (today's closed trades after charges, carried ones left out) passes another DAY_STEP (10%) of the day's cash (opening balance plus money added).
+    - It says: the result and its share of the cash; the trades closed, won and lost; how many were bought within 30 minutes of a losing exit and what they made together; what is still open; and the check to send before the next buy (the latest trade's option, e.g. `check 22300 pe`).
+    - One message a step a day (key `day:<day>:<step>`); only the step reached now, so a jump past two steps is one message; a restart repeats none.
+    - Built from the latest read at send time: a day back above the step, or past the next one (whose own message tells it), is `superseded`.
+    - In QUIET_KEEPS; PRIORITY 2; LIFETIME 600 s. Without the day's cash it is never sent.
+  - [x] **Run figures rounded down (`_pct_down`)** in the check and the PLAN message: "20%" now always comes with the chased-spike warning (SPIKE_RUN_PCT 0.20), and 19.7% reads 19%.
+  - [x] The watch-on text and the Quiet answer name the DAY step. The answer is 164 characters, under the 190 that `partner_fill_capture._answer` keeps.
+- Files: `python-engine/partner_watch.py`; `tests/test_partner_watch.py` (+5: Oct 26's first six trades, the 19.7%/20% run, the Quiet answer's length, a step told once through Quiet and after a restart, a step no longer true and no cash); `docs/SYSTEM_CODE_ATLAS.md`.
+- Tests: the watch's file 112 passed (107 before); every partner test file 622 passed. Full Dev (Windows venv) engine + scripts suites: 6,045 passed, 4 skipped, exit 0, 11 min 50 s (O25N's 6,040 plus the 5 new tests). Tests do not show the partner's results or profitability.
+- Config impact: no new setting, no schema change, no migration. New `partner_watch_messages` kind `DAY`.
+- Rollout: with the next PR to `evolve/smart-strategies` on the owner's go-ahead; the engine image only. Rollback: revert the commit.
+- Remaining:
+  - Score the after-a-loss and chased-spike warnings over recorded days, out of sample, from the 15:50 sync's stored orders with each buy's plan version.
+  - Proposal: store the watch's closed trips during the day, so a day can be assessed exactly before the 15:50 sync.
+  - Owner decision open: whether Quiet should let a buy's size warning through (much bigger than usual; bigger after a loss).
+
 ## October 25 — O25N The O25M open items closed: once-a-day partner messages retried safely, the CHECK work-out survives a restart; promoted to Production (done, commit `967c2d6`, branch `codex/production-correction-hedge-p0`, pushed)
 
 - Owner ask (Oct 25): "yes all the open you close then commit push merge and deploy and restart and rebuild the prod while ensuring all the env are in line".

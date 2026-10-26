@@ -1,5 +1,16 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 26 — O26 The trade watch's day so far (DAY) and run figures rounded down (actual behavior, Dev)
+
+- **DAY** (`partner_watch.day_so_far(trips, cash)`, `day_text`, `_b_day`), from each book read in `_events`:
+  - Today's closed trips (`Trip.realised()`, after charges; carried trips left out) are summed. `step` = how many DAY_STEP (0.10) shares of the day's cash (`_state.cash`: opening balance plus intraday pay-in) the loss is.
+  - With `step > 0` the outbox gets `day:<day>:<step>` (INSERT OR IGNORE: once a day per step, restart-safe). Only the step reached now is queued.
+  - At send time the text is built from the latest view. The step must be exactly the one queued, else `superseded`: back above it, or past the next, whose own message tells it.
+  - The text: result and share of the cash (rounded down); trades closed, won and lost; those bought within `partner_coach.REENTRY_WINDOW_MIN` (30) of a losing exit (`_after_loss`) with their sum; trades still open; the check for the latest trade's option (`_check_example`); `DAY_NOTE`.
+  - DAY is in QUIET_KEEPS (PRIORITY 2, LIFETIME 600 s). No cash read: no DAY.
+- **Run figures** (`_pct_down`): the 15-minute run in the check and the PLAN message is in whole percent rounded down, so a figure shown as 20% always has the check's chased-spike warning (`partner_insights.SPIKE_RUN_PCT`).
+- `WATCH_ON_TEXT` and `QUIET_TOAST` name the DAY step.
+
 ## October 25 — O25N Once-a-day partner messages: retried only when provably unsent (actual behavior, commit `967c2d6`)
 
 - **`partner_orchestrator.send_daily(db, kind, day, text, now, reply_markup, until)`** is used by the brief, the wrap, the coach note, the review prompt and the 07:00 reminder.

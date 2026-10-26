@@ -2517,3 +2517,131 @@ async def test_a_check_being_worked_out_again_when_the_engine_restarts_is_worked
     assert watch[-1]["state"] == "acknowledged" and "🔁 Prices read again at 11:00:42" in watch[-1]["text"]
     assert await _checks(db) == [("check:1", "outdated"), ("check:1:r1", "acknowledged")]
     assert len(watch) == 2
+
+
+# ---------------------------------------------------------------------------
+# [O26] Oct 26, the first watched day: the day as a whole, and a run figure that agrees with its warning
+# ---------------------------------------------------------------------------
+
+PUT_300, PUT_450 = "NIFTY26OCT22300PE", "NIFTY26OCT22450PE"
+
+
+def _oct26_first_six():
+    """Oct 26's first six round trips (prices from Production's looks and stops), on the test day."""
+    legs = [("1", PUT_300, 49.8, D(9, 17, 14), 64.95, D(9, 28, 49)),
+            ("2", PUT_450, 123.4, D(9, 21, 34), 126.0, D(9, 28, 14)),
+            ("3", PUT_450, 103.4, D(9, 30, 54), 104.0, D(9, 42, 54)),
+            ("4", PUT_300, 63.3, D(9, 38, 44), 53.0, D(9, 43, 14)),
+            ("5", PUT_300, 55.05, D(9, 43, 59), 40.0, D(9, 52, 54)),
+            ("6", PUT_450, 102.6, D(9, 43, 59), 80.0, D(9, 52, 39))]
+    rows = []
+    for n, symbol, buy, bought_at, sell, sold_at in legs:
+        rows += [_row(f"b{n}", "BUY", 65, buy, bought_at, tradingsymbol=symbol),
+                 _row(f"s{n}", "SELL", 65, sell, sold_at, tradingsymbol=symbol)]
+    return sorted(pw.trips_from_orders(rows), key=lambda t: t.first_at)
+
+
+def test_the_day_so_far_counts_the_closed_trades_and_the_buys_soon_after_a_loss():
+    trips = _oct26_first_six()
+    results = [t.realised() for t in trips]
+    day = pw.day_so_far(trips, 16700.0)
+    assert day["net"] == round(sum(results), 2) and day["closed"] == 6
+    assert (day["won"], day["lost"]) == (sum(r > 0 for r in results), sum(r < 0 for r in results)) == (2, 4)
+    # 09:43:59, twice: 45 s after the 22300 PE's stop sold at a loss. The 09:30 and 09:38 buys came after wins.
+    assert day["quick"] == 2 and day["quick_sum"] == round(results[4] + results[5], 2)
+    assert day["step"] == 1 and day["step"] == int(-day["net"] // 1670) and day["at"] == D(9, 52, 54)
+    assert day["check"] == "check 22300 pe" and day["open"] == 0
+    text = pw.day_text(day, 16700.0).splitlines()
+    assert text[0] == (f"📉 Today so far: −{pw._amt(-day['net'])} after charges, {pw._pct_down(day['share'])} of your "
+                       f"₹16,700 cash.")
+    assert text[1] == f"6 trades closed: 2 won {pw._signed(day['won_sum'])}, 4 lost {pw._signed(day['lost_sum'])}."
+    assert text[2] == f"2 of them bought within 30 min of a losing exit: {pw._signed(day['quick_sum'])} together."
+    assert text[3] == "Before the next buy, a check shows its stop and loss first: send check 22300 pe."
+    assert text[4] == pw.DAY_NOTE and not any("stop trading" in line.lower() for line in text)
+    # Nothing without the day's cash, nothing before a close, and a day not under is step 0.
+    assert pw.day_so_far(trips, None) is None
+    assert pw.day_so_far([replace(t, sold=0, sell_value=0.0, closed_at=None) for t in trips], 16700.0) is None
+    assert pw.day_so_far(trips[:2], 16700.0)["step"] == 0
+    assert pw._check_example("SENSEX26O3081000CE") == "check sensex 81000 ce"
+
+
+def test_a_run_shown_as_20_percent_always_has_the_chased_spike_warning():
+    """[O26] Oct 26 09:38: a 19.7% run read "up 20%" with no warning. A figure is now rounded down, so "20%" is shown
+    only with the warning and 19.7% reads 19%."""
+    assert [pw._pct_down(v) for v in (0.1997, 0.2, 0.2049, -0.237)] == ["19%", "20%", "20%", "23%"]
+    for run, shown, warned in ((0.1970, "up 19%", False), (0.2, "up 20%", True), (0.2475, "up 24%", True)):
+        plan = pw.Plan(entry=60.45, qty=65, stop=40.45, stop_basis="SWING", swing=20.0, loss=1354.0, cash=16700.0,
+                       run_pct=run, run_from=50.5)
+        text = pw.check_text("NIFTY 22300 PE", date(2026, 10, 27), plan, None, lots=1, qty=65, given=60.45,
+                             future="NIFTY future", opt_type="PE")
+        assert f"{shown} in the last 15 min (from ₹50.5)" in text
+        assert ("⚠️ It rose" in text) is warned
+        if warned:
+            assert f"⚠️ It rose {shown[3:]} in 15 minutes" in text
+        after = pw.plan_text(_holding(65, entry=60.45), plan, lots=1)
+        assert f"{shown} in the 15 min before you bought" in after
+
+
+def test_the_quiet_answer_fits_the_button_answer():
+    assert len(pw.QUIET_TOAST) <= 190 and "10% of your cash" in pw.QUIET_TOAST
+    assert "each time the day's loss passes another 10% of your cash" in pw.WATCH_ON_TEXT
+
+
+@pytest.mark.asyncio
+async def test_the_day_so_far_is_told_once_a_step_even_on_a_quiet_day(watch, kite):
+    """[O26] The partner's cash is ₹7,536.70, so a step is ₹753.67. Quiet mutes the plans; each step of the day's loss
+    is still told, once, from the latest read, and a restart repeats none."""
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(9, 59, 55), market=market)
+    await pw.handle_button(db, "watch:quiet:20261023", D(9, 59, 58))
+    kite["orders"] = [_o("101", "BUY", D(10, 0), average_price=80.0), _o("102", "SELL", D(10, 5), average_price=70.0)]
+    await pw.watch_tick(D(10, 5, 5), market=market)
+    assert [m["kind"] for m in watch] == []                           # −₹695: under one step, and the plan is muted
+    kite["orders"] += [_o("103", "BUY", D(10, 10), average_price=80.0), _o("104", "SELL", D(10, 15), average_price=75.0)]
+    await pw.watch_tick(D(10, 15, 5), market=market)
+    assert [m["kind"] for m in watch] == ["watch_day"]
+    lines = watch[-1]["text"].splitlines()
+    assert lines[0].startswith("📉 Today so far: −₹1,") and lines[0].endswith("14% of your ₹7,537 cash.")
+    assert lines[1].startswith("2 trades closed: 2 lost −₹1,")
+    assert lines[2].startswith("1 of them bought within 30 min of a losing exit: −₹")
+    assert lines[3:] == ["Before the next buy, a check shows its stop and loss first: send check 22300 pe.", pw.DAY_NOTE]
+    for at in (D(10, 15, 10), D(10, 15, 30)):
+        await pw.watch_tick(at, market=market)
+    assert len(watch) == 1                                            # once a step
+    pw.reset()                                                        # a restart: the step is in the outbox
+    await pw.watch_tick(D(10, 16), market=market)
+    await pw.watch_tick(D(10, 16, 5), market=market)
+    assert len(watch) == 1
+    kite["orders"] += [_o("105", "BUY", D(10, 20), average_price=80.0), _o("106", "SELL", D(10, 25), average_price=68.0)]
+    await pw.watch_tick(D(10, 25, 5), market=market)
+    assert [m["kind"] for m in watch] == ["watch_day", "watch_day"]
+    assert "3 trades closed: 3 lost" in watch[-1]["text"] and "2 of them bought within 30 min" in watch[-1]["text"]
+    rows = [r for r in await _messages(db) if r[1] == "DAY"]
+    assert [(r[0], r[4]) for r in rows] == [("day:2026-10-23:1", "acknowledged"), ("day:2026-10-23:2", "acknowledged")]
+    assert rows[0][5] == D(10, 15).isoformat()                        # the event: the sale that crossed the step
+
+
+@pytest.mark.asyncio
+async def test_a_step_no_longer_true_when_sent_is_not_sent_and_no_cash_means_no_step(watch, kite):
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(10, 0))
+    kite["orders"] = [_o("101", "BUY", D(10, 0), average_price=80.0), _o("102", "SELL", D(10, 5), average_price=62.0)]
+    kite["outcomes"].append("unsent_connect")                         # the first send does not leave
+    await pw.watch_tick(D(10, 5, 5), market=market)
+    assert [(m["kind"], m["state"]) for m in watch] == [("watch_day", "unsent_connect")]
+    # A win before the retry takes the day back above the step: the step is not told.
+    kite["orders"] += [_o("103", "BUY", D(10, 6), average_price=80.0), _o("104", "SELL", D(10, 6, 20), average_price=95.0)]
+    for at in (D(10, 6, 25), D(10, 6, 40)):
+        await pw.watch_tick(at, market=market)
+    assert len(watch) == 1
+    assert [(r[0], r[4]) for r in await _messages(db) if r[1] == "DAY"] == [("day:2026-10-23:1", "superseded")]
+    # Without the day's cash there is no step to count.
+    pw.reset()
+    kite["margins"] = {}
+    kite["orders"] += [_o("105", "BUY", D(10, 10), average_price=80.0), _o("106", "SELL", D(10, 12), average_price=40.0)]
+    for at in (D(10, 12, 5), D(10, 12, 10)):
+        await pw.watch_tick(at, market=market)
+    assert len(watch) == 1

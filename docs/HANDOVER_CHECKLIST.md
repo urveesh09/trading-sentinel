@@ -1,5 +1,13 @@
 # Handover receipt and operator checklist
 
+## October 26 — O26 The trade watch tells the day so far once a step of the partner's cash; run figures agree with the warning (Dev, pushed, not deployed)
+
+- [x] DAY message: each further 10% of the day's cash lost today, once a step, also on a Quiet day. It gives the numbers (result, won and lost, buys soon after a loss, still open, the check to send) and never blocks.
+- [x] The check's and the plan's run figure are rounded down: "20%" always comes with the chased-spike warning.
+- [x] Tests: watch 112 passed; partner files 622 passed. Full Dev (Windows venv) engine + scripts suites: 6,045 passed, 4 skipped, exit 0, 11 min 50 s (O25N's 6,040 plus the 5 new tests).
+- [ ] Rollout with the next PR (owner's go-ahead): engine only, no setting, no migration.
+- Evidence behind it (Production, Oct 26, read-only): 21 buys in under three hours, about −₹5,300 after charges (estimated from the watch's looks), Quiet tapped at 09:28, nothing about the day as a whole. Not changed from one day: no threshold, no rule.
+
 ## October 25 — O25N O25M's open items closed; promoted to Production (commit `967c2d6`, pushed)
 
 - [x] The brief, wrap, coach note and review prompt are retried only after a send that provably never left (5, 10, 20 min; 4 sends; within 60 min), from the stored text with "Written at". A possible delivery is never resent. New job `partner_daily_retry`.

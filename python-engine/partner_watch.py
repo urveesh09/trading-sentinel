@@ -82,14 +82,27 @@ What it sends (live, loss first)
   PRODUCT   [O24f] sell orders of a product not held, on an option held as
             another (an MIS sell on NRML units opens an MIS short).
   CLOSE     15:20 with an option still held: what the close does to it.
+  DAY       [O26] each time the day's loss passes another DAY_STEP (10%) of
+            the day's cash (``day_so_far``): today's closed trades after
+            charges, the wins and losses, the trades bought within 30 minutes
+            of a losing exit and what they made, what is still open, and the
+            check to send before the next buy. Once a step a day; built from
+            the latest read, so a day back above the step (or past the next,
+            whose own message tells it) is not sent. Without the day's cash
+            it is never sent (no step is invented). Oct 26: 21 buys in under
+            three hours, about 30% of the day's cash lost, and nothing about
+            the day as a whole was said.
   BLIND     [O24f] a read the watch needs has failed for a while: the orders
             (60 s), the positions while the overnight list is unknown
             (120 s), the GTTs while a holding's protection is unknown
             (120 s). BACK when that read works again.
   "Quiet today" (a button on PLAN and NO_STOP) mutes PLAN, ADDED, NO_STOP,
   PARTIAL and CLOSE. LOWERED, REMOVED, UNFILLED, REFUSED, EXCESS, ORPHAN,
-  PRODUCT, BLIND and BACK always go, because those are the moments a loss
-  grows (or the watch cannot see it).
+  PRODUCT, DAY, BLIND and BACK always go, because those are the moments a loss
+  grows (or the watch cannot see it). [O26] A buy's own warnings (after a
+  loss, a chased spike) stay muted with its PLAN: on Oct 26 they would have
+  been on 20 of 21 buys, so a message each would be noise, and DAY tells the
+  pattern once a step instead.
 
 [O24g] Every stop moved down in one read (SL orders modified, GTTs
 modified, a stop replaced) is one LOWERED message, judged together
@@ -225,6 +238,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import math
 import re
 import statistics
 import time as _time
@@ -288,9 +302,12 @@ SWING_WINDOW_MIN = 5
 SWING_MIN_BARS = 10
 RUN_LOOKBACK_MIN = 15
 COUNT_FROM_TRADE = 5
+# [O26] The day so far (DAY) is told each time the day's loss passes another step of this share of the day's cash.
+# A fixed share of the partner's own cash, so it scales with what they trade; not fitted to any day's numbers.
+DAY_STEP = 0.10
 FUTURE_BARS_DAYS = 21                      # as the F&O engine (fno_orchestrator.RVOL_FETCH_CALENDAR_DAYS)
 TICK = 0.05
-QUIET_KEEPS = ("LOWERED", "REMOVED", "UNFILLED", "REFUSED", "EXCESS", "ORPHAN", "PRODUCT")
+QUIET_KEEPS = ("LOWERED", "REMOVED", "UNFILLED", "REFUSED", "EXCESS", "ORPHAN", "PRODUCT", "DAY")
 ALWAYS_SENT = ("WATCH_ON", "PROMPT", "RECONNECT", "BLIND", "BACK", "CHECK")
 GUARD_TOLERANCE = 0.005                    # a stop within 0.5% under the buy price still guards it
 QUIET_PREFIX = "watch"
@@ -301,12 +318,12 @@ COVERED = ("FULL", "PARTIAL")
 # How long a message is still worth sending again after a failed send (seconds).
 LIFETIME_SEC = {"PLAN": 180, "ADDED": 180, "NO_STOP": 900, "PARTIAL": 900, "REMOVED": 900, "UNFILLED": 120,
                 "LOWERED": 120, "REFUSED": 300, "CLOSE": 1200, "WATCH_ON": 600, "PROMPT": 1800, "RECONNECT": 1800,
-                "EXCESS": 900, "ORPHAN": 900, "PRODUCT": 900, "BLIND": 600, "BACK": 300, "CHECK": 120}
+                "EXCESS": 900, "ORPHAN": 900, "PRODUCT": 900, "BLIND": 600, "BACK": 300, "CHECK": 120, "DAY": 600}
 MAX_ATTEMPTS = 4
 RETRY_GAP = timedelta(seconds=10)
 # [O24d] The outbox sends the most urgent first.
 PRIORITY = {"UNFILLED": 0, "REMOVED": 1, "LOWERED": 1, "REFUSED": 1, "EXCESS": 1, "ORPHAN": 1, "PRODUCT": 1,
-            "BLIND": 1, "CHECK": 1, "NO_STOP": 2, "PARTIAL": 2, "ADDED": 3,
+            "BLIND": 1, "CHECK": 1, "NO_STOP": 2, "PARTIAL": 2, "DAY": 2, "ADDED": 3,
             "PLAN": 3, "CLOSE": 4, "BACK": 4, "WATCH_ON": 5, "PROMPT": 5, "RECONNECT": 5}
 SENT, DONE, RETRY, MUTED, WAIT, LATER = "SENT", "DONE", "RETRY", "MUTED", "WAIT", "LATER"
 QUEUED = "queued"
@@ -421,6 +438,13 @@ def _amt(value: float) -> str:
 
 def _signed(value: float) -> str:
     return f"{'−' if value < 0 else '+'}{_amt(value)}"
+
+
+def _pct_down(value: float) -> str:
+    """[O26] A share in whole percent, rounded down (its size; the words say up or down). A figure shown as 20%
+    is then at least 20%, so a warning at a threshold and the number beside it agree: on Oct 26 at 09:38 a
+    19.7% run read "up 20%" with no chased-spike warning, two minutes after a 20% one that had it."""
+    return f"{math.floor(abs(value) * 100 + 1e-9)}%"
 
 
 def _hhmm(at: Optional[datetime]) -> str:
@@ -1291,9 +1315,9 @@ def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tup
     if plan.stop_basis in ("INDEX", "SWING") and plan.swing:
         facts.append(f"normal 5-min swing {_px(plan.swing)}")
     if plan.run_pct is not None and plan.run_from:
-        facts.append(f"up {plan.run_pct:.0%} in the 15 min before you bought (from {_px(plan.run_from)})"
+        facts.append(f"up {_pct_down(plan.run_pct)} in the 15 min before you bought (from {_px(plan.run_from)})"
                      if plan.run_pct >= 0 else
-                     f"down {abs(plan.run_pct):.0%} in the 15 min before you bought")
+                     f"down {_pct_down(plan.run_pct)} in the 15 min before you bought")
     if plan.trend:
         facts.append(f"the {future}'s 5-min trend is with you" if plan.trend == "WITH" else
                      f"the {future}'s 5-min trend is against you")
@@ -1762,7 +1786,8 @@ def close_text(trip, *, expiry_today: bool, theta_day: Optional[float]) -> str:
 
 WATCH_ON_TEXT = ("✅ Trade watch on until {close}. I'll message you when a buy has no stop or only part of it is "
                  "covered, when a stop is moved down or cancelled, when a stop fires and does not sell, when "
-                 "Zerodha refuses an order, when sell orders could sell more than you hold, and before the close; "
+                 "Zerodha refuses an order, when sell orders could sell more than you hold, each time the day's "
+                 f"loss passes another {DAY_STEP:.0%} of your cash, and before the close; "
                  "and if I cannot read your account for a while. Messages only: nothing is ever placed, changed "
                  "or cancelled for you. Before a buy you can send me, for example: check 22300 pe.")
 PROMPT_TEXT = ("🌅 Good morning. Log in to Zerodha to switch on today's trade watch: I'll message you when a buy "
@@ -1770,8 +1795,9 @@ PROMPT_TEXT = ("🌅 Good morning. Log in to Zerodha to switch on today's trade 
                "order. Messages only: nothing is ever placed for you.")
 RECONNECT_TEXT = ("🔌 The trade watch stopped (the system restarted) and needs your Zerodha login again. "
                   "Your orders are untouched.")
-QUIET_TOAST = ("Quiet for today. You will still hear when a stop is moved down, cancelled or does not sell, when "
-               "Zerodha refuses an order, or when sell orders could sell more than you hold.")
+# A button's answer is cut at 190 characters (partner_fill_capture._answer; Telegram allows 200).
+QUIET_TOAST = ("Quiet for today. Still sent: a stop moved down, cancelled or not selling; a refused order; sell "
+               f"orders over what you hold; each further {DAY_STEP:.0%} of your cash lost today.")
 # [O24f] The watch cannot see part of the book (``_health``), and then can again.
 BLIND_TEXT = {
     "orders": ("⚠️ The trade watch cannot read your Zerodha orders since {since} (it tries every 5 s). Until it can, "
@@ -2869,6 +2895,11 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
             if episode not in _state.close_checked:
                 _state.close_checked.add(episode)
                 out.append((f"close:{episode}", "CLOSE", holding, {"episode": episode}, None, episode))
+    # 4. [O26] The day so far, once each time its loss passes another DAY_STEP of the day's cash: only the step
+    # reached now (a jump past two steps is one message), its key the day and the step, so a restart repeats none.
+    so_far = day_so_far(trips, _state.cash)
+    if so_far is not None and so_far["step"] > 0:
+        out.append((f"day:{day}:{so_far['step']}", "DAY", None, {"step": so_far["step"]}, so_far["at"], None))
     # The view every message is built from; then the outbox goes.
     _state.view = View(day=day, at=now, rows=rows, trips=trips, holdings=holdings, covers=covers,
                        gtts=_state.gtts if _gtts_fresh(now, GTT_REFRESH) else None, positions=_state.positions,
@@ -2876,7 +2907,7 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     await _enqueue_many(db_path, day, out, now, _state.detected_by)
     if _outbox["pending"]:
         _kick()
-    # 4. Plans: a new trade's first plan beside the tick; later versions here.
+    # 5. Plans: a new trade's first plan beside the tick; later versions here.
     started = []
     held = {(h.exchange, h.tradingsymbol, h.product) for h in holdings}
     for trip in trips:
@@ -2904,7 +2935,7 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
                 await _revise(db_path, day, trip, meta, holdings, now)
             except Exception as exc:  # [O24e] nothing stored: the change is seen again next tick; the tick goes on
                 logger.warning("partner_watch_revise_failed key=%s err=%s", trip.key, type(exc).__name__)
-    # 5. The shadow looks, beside the tick.
+    # 6. The shadow looks, beside the tick.
     if (holdings and (_state.looks_at is None or now - _state.looks_at >= LOOK_EVERY)
             and (_state.looks_task is None or _state.looks_task.done())):
         _state.looks_at = now
@@ -3456,6 +3487,62 @@ def _day_line(trip: Trip, trips: list) -> Optional[str]:
     return f"Trade {len(today)} today · {_amt(charges)} in charges so far."
 
 
+DAY_NOTE = "The numbers, not a rule: whether to trade on is your call."
+
+
+def day_so_far(trips: list, cash: Optional[float]) -> Optional[dict]:
+    """[O26] Today's closed trades (not ones carried in): their result after charges, the wins and the losses, the
+    ones bought within REENTRY_WINDOW_MIN of a losing exit (``_after_loss``), what is still open, and ``step``: how
+    many DAY_STEPs of the day's cash the loss is (0 when not under). None without the day's cash or a closed
+    trade."""
+    if not cash:
+        return None
+    today = [t for t in trips if not t.carried]
+    closed = [(t, t.realised()) for t in today]
+    closed = [(t, r) for t, r in closed if r is not None]
+    if not closed:
+        return None
+    net = round(sum(r for _, r in closed), 2)
+    won = [r for _, r in closed if r > 0]
+    lost = [r for _, r in closed if r < 0]
+    quick = [r for t, r in closed if _after_loss(t, today) is not None]
+    latest = max(today, key=lambda t: t.first_at)
+    return {"net": net, "closed": len(closed), "won": len(won), "won_sum": round(sum(won), 2), "lost": len(lost),
+            "lost_sum": round(sum(lost), 2), "quick": len(quick), "quick_sum": round(sum(quick), 2),
+            "open": sum(1 for t in today if t.open_qty), "at": max(t.closed_at for t, _ in closed),
+            "step": math.floor(-net / (DAY_STEP * cash) + 1e-9) if net < 0 else 0, "share": max(-net, 0.0) / cash,
+            "check": _check_example(latest.tradingsymbol)}
+
+
+def _check_example(symbol: str) -> Optional[str]:
+    """[O26] The check for an option as the partner would send it: "check 22800 ce", "check sensex 81000 ce"."""
+    parsed = zerodha.parse_option_symbol(symbol)
+    if parsed is None:
+        return None
+    index = "" if parsed["underlying"] == "NIFTY" else f"{parsed['underlying'].lower()} "
+    return f"check {index}{parsed['strike']:g} {parsed['opt_type'].lower()}"
+
+
+def day_text(day: dict, cash: float) -> str:
+    """[O26] The DAY message: the day's closed trades as numbers, and the check before the next buy."""
+    from partner_coach import REENTRY_WINDOW_MIN
+    lines = [f"📉 Today so far: {_signed(day['net'])} after charges, {_pct_down(day['share'])} of your "
+             f"{_amt(cash)} cash."]
+    parts = ([f"{day['won']} won {_signed(day['won_sum'])}"] if day["won"] else []) + (
+        [f"{day['lost']} lost {_signed(day['lost_sum'])}"] if day["lost"] else [])
+    closed = f"{day['closed']} trade{'s' if day['closed'] != 1 else ''} closed"
+    lines.append(f"{closed}: {', '.join(parts)}." if parts else f"{closed}.")
+    if day["quick"]:
+        lines.append(f"{day['quick']} of them bought within {REENTRY_WINDOW_MIN} min of a losing exit: "
+                     f"{_signed(day['quick_sum'])} together.")
+    if day["open"]:
+        lines.append(f"{day['open']} trade{'s' if day['open'] != 1 else ''} still open.")
+    if day.get("check"):
+        lines.append(f"Before the next buy, a check shows its stop and loss first: send {day['check']}.")
+    lines.append(DAY_NOTE)
+    return "\n".join(lines)
+
+
 def _start_plan(db_path: str, day: str, trip: Trip, holding: Optional[Holding], trips: list, now: datetime,
                 market: Market) -> asyncio.Task:
     """[O24d] The plan is for what is held (Zerodha's count and average
@@ -3822,9 +3909,18 @@ async def _b_product(db_path: str, context: dict, view: View, now: datetime):
             f"{product} sell orders on {same[0].product} units", None)
 
 
+async def _b_day(db_path: str, context: dict, view: View, now: datetime):
+    """[O26] From the latest read: not sent when the day is no longer at that step (back above it, or past the
+    next one, whose own message tells it)."""
+    so_far = day_so_far(view.trips, _state.cash)
+    if so_far is None or so_far["step"] != context.get("step"):
+        return None
+    return day_text(so_far, _state.cash), f"day so far {_signed(so_far['net'])}", None
+
+
 _BUILDERS = {
     "PLAN": _b_plan, "ADDED": _b_added, "UNFILLED": _b_unfilled, "LOWERED": _b_lowered, "REFUSED": _b_refused,
-    "CLOSE": _b_close, "EXCESS": _b_excess, "ORPHAN": _b_orphan, "PRODUCT": _b_product,
+    "CLOSE": _b_close, "EXCESS": _b_excess, "ORPHAN": _b_orphan, "PRODUCT": _b_product, "DAY": _b_day,
     "NO_STOP": lambda *args: _b_cover("NO_STOP", *args),
     "PARTIAL": lambda *args: _b_cover("PARTIAL", *args),
     "REMOVED": lambda *args: _b_cover("REMOVED", *args),
@@ -3955,7 +4051,7 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
     if plan.stop_basis in ("INDEX", "SWING") and plan.swing:
         facts.append(f"normal 5-min swing {_px(plan.swing)}")
     if plan.run_pct is not None and plan.run_from:
-        facts.append(f"{'up' if plan.run_pct >= 0 else 'down'} {abs(plan.run_pct):.0%} in the last 15 min "
+        facts.append(f"{'up' if plan.run_pct >= 0 else 'down'} {_pct_down(plan.run_pct)} in the last 15 min "
                      f"(from {_px(plan.run_from)})")
     if plan.trend:
         facts.append(f"the {future}'s 5-min trend is {'with' if plan.trend == 'WITH' else 'against'} this {kind}")
@@ -3968,8 +4064,8 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
                      + ("its levels are from its last closed 5-minute bar." if plan.fut is not None else
                         "no futures stop or target."))
     if plan.run_pct is not None and plan.run_pct >= SPIKE_RUN_PCT:
-        lines.append(f"⚠️ It rose {plan.run_pct:.0%} in 15 minutes: your review calls a buy after a run like this a "
-                     f"chased spike.")
+        lines.append(f"⚠️ It rose {_pct_down(plan.run_pct)} in 15 minutes: your review calls a buy after a run like "
+                     f"this a chased spike.")
     if after_loss:
         line = (f"⚠️ Your last trade closed −{_amt(after_loss['loss'])} at {after_loss['at']}, "
                 f"{after_loss['minutes']} min ago.")
