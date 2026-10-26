@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 26 — O26d The independent review of O26–O26c fixed: the daily tracker orders a day's exits, unknown warning evidence kept apart from "no warning", a partly filled order sized as it fills, the frozen score really frozen, the closing-auction exit only with dated evidence, no network from tests, the one flaky scheduler test (done, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26d The independent review of O26–O26c fixed: the daily tracker orders a day's exits, unknown warning evidence kept apart from "no warning", a partly filled order sized as it fills, the frozen score really frozen, the closing-auction exit only with dated evidence, no network from tests, the one flaky scheduler test (done, Dev, commit `4205eef`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 26 evening), on the independent review (`docs/2026-10-26-independent-development-review.md`, committed with this slice): "Please fix this make the system better".
 - Current state: Production runs `f9547c5` (PR #118). O26, O26b, O26c and O26d are Dev only.

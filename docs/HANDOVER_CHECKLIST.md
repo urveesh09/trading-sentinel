@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 26 — O26d The independent review of O26–O26c fixed (Dev, pushed, not deployed)
+## October 26 — O26d The independent review of O26–O26c fixed (Dev, commit `4205eef`, pushed, not deployed)
 
 - [x] Production runs `f9547c5` (PR #118); O26, O26b, O26c and O26d are Dev only.
 - [x] Daily paper exits are ordered: open first, T1 before T2, stop before target after the open (the breakeven stop included); entry-day open unused; minute bars on days the daily bar cannot order (R1).

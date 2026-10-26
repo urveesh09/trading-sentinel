@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 26 — O26d Daily exits ordered (minute bars when needed), partner trade evidence and frozen score v2, closing-auction exit on dated evidence, test network guard, F&O pass counter (actual behavior, Dev)
+## October 26 — O26d Daily exits ordered (minute bars when needed), partner trade evidence and frozen score v2, closing-auction exit on dated evidence, test network guard, F&O pass counter (actual behavior, Dev, commit `4205eef`)
 
 - **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
 - **`position_tracker.day_exits(status, stop, entry, t1, t2, bar, entered_at=, minutes=)`**:
