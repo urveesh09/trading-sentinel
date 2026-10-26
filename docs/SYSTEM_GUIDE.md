@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 26 — O26 The trade watch's day so far (DAY) and run figures rounded down (actual behavior, Dev)
+## October 26 — O26 The trade watch's day so far (DAY) and run figures rounded down (actual behavior, Dev, commit `6ec5ce1`)
 
 - **DAY** (`partner_watch.day_so_far(trips, cash)`, `day_text`, `_b_day`), from each book read in `_events`:
   - Today's closed trips (`Trip.realised()`, after charges; carried trips left out) are summed. `step` = how many DAY_STEP (0.10) shares of the day's cash (`_state.cash`: opening balance plus intraday pay-in) the loss is.

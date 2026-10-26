@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 26 — O26 The trade watch tells the day so far once a step of the partner's cash; run figures agree with the warning (Dev, pushed, not deployed)
+## October 26 — O26 The trade watch tells the day so far once a step of the partner's cash; run figures agree with the warning (Dev, commit `6ec5ce1`, pushed, not deployed)
 
 - [x] DAY message: each further 10% of the day's cash lost today, once a step, also on a Quiet day. It gives the numbers (result, won and lost, buys soon after a loss, still open, the check to send) and never blocks.
 - [x] The check's and the plan's run figure are rounded down: "20%" always comes with the chased-spike warning.

@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 26 — O26 The partner's first watched day: the day so far told once a step of their cash, through "Quiet today"; a run figure that agrees with its warning (done, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26 The partner's first watched day: the day so far told once a step of their cash, through "Quiet today"; a run figure that agrees with its warning (done, Dev, commit `6ec5ce1`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 26), after the first watched day: make the system flexible and smarter for most cases, not trained on one day, always towards better profit; improvements in Dev only.
 - Production evidence, Oct 26 (read-only, Production `f9547c5`):
