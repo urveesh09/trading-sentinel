@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 26 — O26e The O26d recheck's two gaps fixed: each research trade resolved under its own saved execution, minute bars used only when they are the whole session (done, Dev, commit `1d99c12`, branch `codex/production-correction-hedge-p0`, pushed)
+## October 26 — O26e The O26d recheck's two gaps fixed: each research trade resolved under its own saved execution, minute bars used only when they are the whole session (done, Dev, commit `1d99c12`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26, 21:00): the recheck (`docs/2026-10-26-o26d-independent-recheck.md`, committed with this slice): "Fix if you think it's an issue … Merge and deploy in prod and rebuild and restart. The 22 let it be". Both findings were agreed.
 - [x] **F1 (P2): per-trade execution in the terminal pass.**
@@ -26,14 +26,26 @@
   - `docs/SYSTEM_CODE_ATLAS.md`; the recheck document.
 - Tests: full suite 6,123 passed, 1 failed, 4 skipped (11 min 26 s). The failure was a second queue-order test in `test_s5_provider_lanes.py` with the same Windows-clock assumption. All five queue-order tests now run at `QUEUE_RATE` 20/s; the file then passed 3 of 3 alone and 12 of 12 run four at a time. No engine code changed after the full run. Focused: tracker and mirror 52, shadow 25. The reviewer's recheck scenarios: 6 passed, and the 2 defect reproductions now fail. Tests do not show profitability.
 - Config impact: no setting, no table. Paper tracker: minute bars are used on fewer days (more stop-first results).
-- Rollout: PR to `evolve/smart-strategies` with O26–O26e, merged and deployed on the owner's instruction (receipt below when done). Rollback: the previous images tagged `sentinel-rollback/<service>:f9547c5-20261026`; the additive `partner_watch_trips` table stays.
+- Rollout: PR #119 to `evolve/smart-strategies` with O26–O26e, merged and deployed on the owner's instruction (receipt below). Rollback: the previous images tagged `sentinel-rollback/<service>:f9547c5-20261026`; the additive `partner_watch_trips` table stays.
+- **Rollout receipt (done Oct 26, 21:35–21:44 IST):**
+  - PR #119 merged as a merge commit, `3b945eb` on `evolve/smart-strategies`, carrying O26 to O26e (`f9547c5` kept; the release branch had no commit of its own beyond its merges).
+  - Backups, outside the repositories, in `C:\Users\Urveesh\sentinel-operations\production-rollout-20261026-o26\`:
+    - 8 SQLite databases as single-step online snapshots from a read-only, network-less sidecar, every one `quick_check=ok` (cache.db 3.20 GB in 43 s);
+    - the previous images tagged `sentinel-rollback/<service>:f9547c5-20261026`.
+  - Production: on `evolve/smart-strategies` with no tracked change, `git merge --ff-only` to `3b945eb`.
+  - Build: gateway, engine and agent built one at a time, stamped `3b945eb` / `2026-10-26T16:10:09Z`; each image's stamp checked.
+  - Engine, gateway and agent recreated one at a time (`--no-deps --no-build --force-recreate`), each healthy before the next; nginx restarted and healthy.
+  - `scripts/verify_deployment.py --expected-sha 3b945eb…` passed (exit 0, verified 16:13:58 UTC); the receipt is in `%USERPROFILE%\sentinel-operations\release-receipts\`.
+  - Env audit, read-only, before and after (switches, times and presence only): identical except the release SHA. `FNO_LIVE_TEST_ENABLED` False, the owner halt on (`momentum,penny,edge`). No `.env` change.
+  - After: no traceback in the engine, gateway or agent logs; the scheduler jobs registered; `partner_watch_trips` created (26 columns).
+  - The 22 censored research trades of Oct 26 stay as they are (owner, Oct 26).
 - Remaining:
   - The chandelier look-ahead (unchanged).
   - SEBI's December 7 CAS timings: confirm before that date.
   - Oct 26's 22 censored research trades: the owner said leave them.
   - Check SADHNANIQ's next-session close.
 
-## October 26 — O26d The independent review of O26–O26c fixed: the daily tracker orders a day's exits, unknown warning evidence kept apart from "no warning", a partly filled order sized as it fills, the frozen score really frozen, the closing-auction exit only with dated evidence, no network from tests, the one flaky scheduler test (done, Dev, commit `4205eef`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26d The independent review of O26–O26c fixed: the daily tracker orders a day's exits, unknown warning evidence kept apart from "no warning", a partly filled order sized as it fills, the frozen score really frozen, the closing-auction exit only with dated evidence, no network from tests, the one flaky scheduler test (done, Dev, commit `4205eef`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26 evening), on the independent review (`docs/2026-10-26-independent-development-review.md`, committed with this slice): "Please fix this make the system better".
 - Current state: Production runs `f9547c5` (PR #118). O26, O26b, O26c and O26d are Dev only.
@@ -96,7 +108,7 @@
   - Oct 26's 22 censored research trades: the owner's call (Production has the dated master for Oct 26).
   - Check SADHNANIQ's next-session close.
 
-## October 26 — O26c The Oct 26 audit's findings fixed: no buy sent after a halt, no check sent past its prices, closing-auction stocks scored, the daily tracker takes the stop first, the test suite never reaches the network; two partner messages say more (done, Dev, commit `a848bcb`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26c The Oct 26 audit's findings fixed: no buy sent after a halt, no check sent past its prices, closing-auction stocks scored, the daily tracker takes the stop first, the test suite never reaches the network; two partner messages say more (done, Dev, commit `a848bcb`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26): the day's audit (`docs/2026-10-26-production-deep-audit.md` in Production): "if you have any improvement for the partner system or for the trading, go ahead with the working and the enrichment".
 - Current state (the audit's O26-D1):
@@ -153,7 +165,7 @@
   - Oct 26's 22 censored identities: the owner's call.
   - Check SADHNANIQ's next-session close.
 
-## October 26 — O26b O26's open items, on the owner's go-ahead: a far bigger buy still warns on a quiet day; every trade stored during the day; the check's warnings scored by a frozen rule (done, Dev, commit `cf6befc`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26b O26's open items, on the owner's go-ahead: a far bigger buy still warns on a quiet day; every trade stored during the day; the check's warnings scored by a frozen rule (done, Dev, commit `cf6befc`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26): "Go ahead do it ensure quality of development". This covers O26's three open items: Quiet lets the size warning through, each trade is saved during the day, and the warnings are checked later for whether they predict losses.
 - Done:
@@ -193,7 +205,7 @@
   - The first verdict needs at least 20 warned closed trades on days from Oct 27, and the code must be running in Production to store them.
   - Oct 26's trades reach `partner_orders` with the 15:50 sync, not `partner_watch_trips` (this code was not deployed); it is the design day anyway.
 
-## October 26 — O26 The partner's first watched day: the day so far told once a step of their cash, through "Quiet today"; a run figure that agrees with its warning (done, Dev, commit `6ec5ce1`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26 The partner's first watched day: the day so far told once a step of their cash, through "Quiet today"; a run figure that agrees with its warning (done, Dev, commit `6ec5ce1`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26), after the first watched day: make the system flexible and smarter for most cases, not trained on one day, always towards better profit; improvements in Dev only.
 - Production evidence, Oct 26 (read-only, Production `f9547c5`):

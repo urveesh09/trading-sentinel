@@ -1,14 +1,14 @@
 # Handover receipt and operator checklist
 
-## October 26 — O26e The O26d recheck's two gaps fixed (Dev, commit `1d99c12`, pushed)
+## October 26 — O26e The O26d recheck's two gaps fixed (Dev, commit `1d99c12`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] Each research trade's terminal pass uses its own saved execution; legacy records never get the closing-auction model (F1).
 - [x] Minute bars replace the stop-first result only when they cover the whole session with no gap over 5 minutes (F2).
 - [x] Tests: full suite 6,123 passed, 1 failed, 4 skipped (11 min 26 s). The failure was a second queue-order test in `test_s5_provider_lanes.py` with the same Windows-clock assumption. All five queue-order tests now run at `QUEUE_RATE` 20/s; the file then passed 3 of 3 alone and 12 of 12 run four at a time. No engine code changed after the full run. Focused: tracker and mirror 52, shadow 25. The reviewer's recheck scenarios: 6 passed, and the 2 defect reproductions now fail.
-- [ ] PR, merge and deploy of O26–O26e (owner instructed, Oct 26 evening): receipt to follow.
+- [x] PR #119 merged as `3b945eb` and deployed Oct 26, 21:35–21:44 IST: backups `quick_check=ok`, rollback images tagged, three images stamped and recreated one at a time, `verify_deployment` passed, switches unchanged (receipt in the plan).
 - [ ] Confirm SEBI's December 7 CAS timings before that date.
 
-## October 26 — O26d The independent review of O26–O26c fixed (Dev, commit `4205eef`, pushed, not deployed)
+## October 26 — O26d The independent review of O26–O26c fixed (Dev, commit `4205eef`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] Production runs `f9547c5` (PR #118); O26, O26b, O26c and O26d are Dev only.
 - [x] Daily paper exits are ordered: open first, T1 before T2, stop before target after the open (the breakeven stop included); entry-day open unused; minute bars on days the daily bar cannot order (R1).
@@ -24,7 +24,7 @@
 - [ ] Owner: Oct 26's 22 censored research trades stay censored unless you want a backfill.
 - [ ] Next session: SADHNANIQ should close once in each Smart book.
 
-## October 26 — O26c The Oct 26 audit's findings fixed; DAY charges and refusal size (Dev, commit `a848bcb`, pushed, not deployed)
+## October 26 — O26c The Oct 26 audit's findings fixed; DAY charges and refusal size (Dev, commit `a848bcb`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] Production runs `f9547c5` (PR #118); O26, O26b and O26c are Dev only.
 - [x] A halt tripped while a buy's cash is read stops the buy before the POST and gives its hold back (O26-H1).
@@ -39,7 +39,7 @@
 - [ ] Owner: Oct 26's 22 censored research trades stay censored unless you want a backfill.
 - [ ] Next session: SADHNANIQ should close once in each Smart book.
 
-## October 26 — O26b A far bigger buy still warns on a quiet day; trades stored during the day; warnings scored by a frozen rule (Dev, commit `cf6befc`, pushed, not deployed)
+## October 26 — O26b A far bigger buy still warns on a quiet day; trades stored during the day; warnings scored by a frozen rule (Dev, commit `cf6befc`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] On a quiet day, a buy over 1.5x the partner's usual size, or bigger right after a loss, still gets one short size warning (SIZE). It is dropped if the trade is sold before it goes.
 - [x] Every trade is stored as it changes (`partner_watch_trips`); `partner_watch_report <day>` lists them with the exact result after charges.
@@ -49,7 +49,7 @@
 - [x] Tests: partner files 633 passed. Full Dev (Windows venv) engine + scripts suites: 6,056 passed, 4 skipped, exit 0, 12 min 5 s (O26's 6,045 plus 11 new tests); the first full run had the one flaky test (fixed, above).
 - [ ] Rollout with the next PR (owner's go-ahead): engine only; the new table creates itself; no setting.
 
-## October 26 — O26 The trade watch tells the day so far once a step of the partner's cash; run figures agree with the warning (Dev, commit `6ec5ce1`, pushed, not deployed)
+## October 26 — O26 The trade watch tells the day so far once a step of the partner's cash; run figures agree with the warning (Dev, commit `6ec5ce1`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] DAY message: each further 10% of the day's cash lost today, once a step, also on a Quiet day. It gives the numbers (result, won and lost, buys soon after a loss, still open, the check to send) and never blocks.
 - [x] The check's and the plan's run figure are rounded down: "20%" always comes with the chased-spike warning.

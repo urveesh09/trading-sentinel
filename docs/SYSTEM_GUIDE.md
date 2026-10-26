@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, Dev, commit `1d99c12`)
+## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, commit `1d99c12`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **`momentum_shadow`**:
   - `_saved_execution(trade)`, `_time_exit_of(execution)`; `_exit_for_bar` uses the trade's saved `exit_slippage_bps` and time exit;
@@ -11,7 +11,7 @@
   - `day_exits` results carry `coverage` and `rule` (`DAY_EXITS_RULE`), and the tracker logs both;
   - the research lifecycle is v3.
 
-## October 26 — O26d Daily exits ordered (minute bars when needed), partner trade evidence and frozen score v2, closing-auction exit on dated evidence, test network guard, F&O pass counter (actual behavior, Dev, commit `4205eef`)
+## October 26 — O26d Daily exits ordered (minute bars when needed), partner trade evidence and frozen score v2, closing-auction exit on dated evidence, test network guard, F&O pass counter (actual behavior, commit `4205eef`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
 - **`position_tracker.day_exits(status, stop, entry, t1, t2, bar, entered_at=, minutes=)`**:
@@ -37,7 +37,7 @@
 - **Tests**: `tests/netguard/sitecustomize.py` blocks non-local lookups and connections (sockets and asyncio) in the test process and in Python children; `SENTINEL_TEST_NETWORK=1` opts out.
 - **DAY**: "That includes about ₹X of charges (estimated) on N orders."
 
-## October 26 — O26c Audit fixes: last halt check before a buy, check expiry at send, future clocks, closing-auction time exits, daily stop-first, F&O to 15:39, no network in tests; DAY charges, refusal size (actual behavior, Dev, commit `a848bcb`)
+## October 26 — O26c Audit fixes: last halt check before a buy, check expiry at send, future clocks, closing-auction time exits, daily stop-first, F&O to 15:39, no network in tests; DAY charges, refusal size (actual behavior, commit `a848bcb`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
 - **`kite_client.place_order`**: after `_own_cash_refusal` and `_reserve_account_cash`, `entry_blocker()` runs again before the POST. A halt then releases the hold (`release_not_sent`, reason `halted_before_dispatch`) and returns its NOT_SENT refusal.
@@ -51,7 +51,7 @@
   - `day_so_far` adds `charges` and `orders`; `day_text` says "That includes ₹X of charges on N orders."
   - `refused_text(row, rows, still_open, cash=, usual=)`: a BUY refused for funds adds its share of the day's cash and the usual share. `_b_refused` gets the usual from `_usual_share(..., before=placed_at)`.
 
-## October 26 — O26b A far bigger buy still warns on a quiet day; the day's trades stored; the check's warnings scored by a frozen rule (actual behavior, Dev, commit `cf6befc`)
+## October 26 — O26b A far bigger buy still warns on a quiet day; the day's trades stored; the check's warnings scored by a frozen rule (actual behavior, commit `cf6befc`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **SIZE.** `_deliver`, on muting a PLAN or ADDED for Quiet, calls `_size_through_quiet`. When `size_reasons(kind, context, cash)` finds a size warning, a `size:<message key>` row (kind SIZE) goes to the outbox.
   - The reasons: PLAN's `bought_px × bought`, or ADDED's `held_value`, over `USUAL_SIZE_MULT` × `usual` of the day's cash; or PLAN's `after_loss` with `bigger`.
@@ -64,7 +64,7 @@
 - **`partner_watch_report`**: `report()` adds `trades` (by day); `day_totals`; `render` lists "Trades <day>" and each trade.
 - **`partner_watch_score`** (`load`, `warnings_of`, `score`, `render`; `python -m partner_watch_score [FIRST [LAST]]`). It reads the database read-only, applies the rule frozen in its module docstring (FROZEN_FROM 2026-10-27, MIN_WARNED 20, four checks), and reports checked and unchecked trades apart.
 
-## October 26 — O26 The trade watch's day so far (DAY) and run figures rounded down (actual behavior, Dev, commit `6ec5ce1`)
+## October 26 — O26 The trade watch's day so far (DAY) and run figures rounded down (actual behavior, commit `6ec5ce1`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **DAY** (`partner_watch.day_so_far(trips, cash)`, `day_text`, `_b_day`), from each book read in `_events`:
   - Today's closed trips (`Trip.realised()`, after charges; carried trips left out) are summed. `step` = how many DAY_STEP (0.10) shares of the day's cash (`_state.cash`: opening balance plus intraday pay-in) the loss is.
