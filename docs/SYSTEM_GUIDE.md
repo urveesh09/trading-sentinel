@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, Dev)
+## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, Dev, commit `1d99c12`)
 
 - **`momentum_shadow`**:
   - `_saved_execution(trade)`, `_time_exit_of(execution)`; `_exit_for_bar` uses the trade's saved `exit_slippage_bps` and time exit;

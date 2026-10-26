@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 26 — O26e The O26d recheck's two gaps fixed (Dev, pushed)
+## October 26 — O26e The O26d recheck's two gaps fixed (Dev, commit `1d99c12`, pushed)
 
 - [x] Each research trade's terminal pass uses its own saved execution; legacy records never get the closing-auction model (F1).
 - [x] Minute bars replace the stop-first result only when they cover the whole session with no gap over 5 minutes (F2).
