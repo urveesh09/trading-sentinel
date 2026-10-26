@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 26 — O26c Audit fixes: last halt check before a buy, check expiry at send, future clocks, closing-auction time exits, daily stop-first, F&O to 15:39, no network in tests; DAY charges, refusal size (actual behavior, Dev)
+## October 26 — O26c Audit fixes: last halt check before a buy, check expiry at send, future clocks, closing-auction time exits, daily stop-first, F&O to 15:39, no network in tests; DAY charges, refusal size (actual behavior, Dev, commit `a848bcb`)
 
 - **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
 - **`kite_client.place_order`**: after `_own_cash_refusal` and `_reserve_account_cash`, `entry_blocker()` runs again before the POST. A halt then releases the hold (`release_not_sent`, reason `halted_before_dispatch`) and returns its NOT_SENT refusal.

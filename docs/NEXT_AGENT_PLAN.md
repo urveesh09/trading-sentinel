@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 26 — O26c The Oct 26 audit's findings fixed: no buy sent after a halt, no check sent past its prices, closing-auction stocks scored, the daily tracker takes the stop first, the test suite never reaches the network; two partner messages say more (done, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26c The Oct 26 audit's findings fixed: no buy sent after a halt, no check sent past its prices, closing-auction stocks scored, the daily tracker takes the stop first, the test suite never reaches the network; two partner messages say more (done, Dev, commit `a848bcb`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 26): the day's audit (`docs/2026-10-26-production-deep-audit.md` in Production): "if you have any improvement for the partner system or for the trading, go ahead with the working and the enrichment".
 - Current state (the audit's O26-D1):

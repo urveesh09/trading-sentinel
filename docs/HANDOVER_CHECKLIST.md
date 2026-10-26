@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 26 — O26c The Oct 26 audit's findings fixed; DAY charges and refusal size (Dev, pushed, not deployed)
+## October 26 — O26c The Oct 26 audit's findings fixed; DAY charges and refusal size (Dev, commit `a848bcb`, pushed, not deployed)
 
 - [x] Production runs `f9547c5` (PR #118); O26, O26b and O26c are Dev only.
 - [x] A halt tripped while a buy's cash is read stops the buy before the POST and gives its hold back (O26-H1).
