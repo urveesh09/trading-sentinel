@@ -335,9 +335,22 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         # brokers. A more conservative choice is target-first for momentum
         # trades; but losses are bounded by the stop_hit branch's use of
         # the trailing stop, not today's low, so slippage is small.
+        # [O26c 2026-10-26] The branch below did the opposite of this
+        # comment: a bar touching both booked the target (Oct 26 audit
+        # O26-P1). A daily bar cannot say which came first, so the stop is
+        # taken, unless the day opened at or above a target (that fill came
+        # first). And T1 counts only while it is still to be taken: after the
+        # T1 half, a day reaching T1 and the breakeven stop held the rest.
         stop_hit   = today_low  <= trailing_stop
         target2_hit = today_high >= effective_target_2 if effective_target_2 is not None else False
-        target1_hit = today_high >= pos['target_1']
+        target1_hit = today_high >= pos['target_1'] and current_status == "OPEN"
+        if stop_hit and (target2_hit or target1_hit):
+            opened_at_target = ((effective_target_2 is not None and today_open >= effective_target_2)
+                                or (target1_hit and today_open >= pos['target_1']))
+            if not opened_at_target:
+                target2_hit = target1_hit = False
+                logger.info("daily_bar_stop_and_target_touched ticker=%s source=%s stop=%s high=%s -- stop taken "
+                            "first", ticker, source, trailing_stop, today_high)
         # [GAP-THROUGH 2026-07-31] Fill at a price the market actually traded.
         # This branch used to book `exit_price = trailing_stop` unconditionally,
         # i.e. it assumed a stop order always fills exactly at its trigger. When
@@ -356,7 +369,7 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         elif target2_hit:
             status = "CLOSED_T2"
             exit_price = max(effective_target_2, today_open)
-        elif target1_hit and current_status == "OPEN":
+        elif target1_hit:
             status = "CLOSED_T1"
             exit_price = max(pos['target_1'], today_open)
             hit_t1_today = True

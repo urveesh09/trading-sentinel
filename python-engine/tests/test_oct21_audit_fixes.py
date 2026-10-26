@@ -103,7 +103,7 @@ async def test_missing_data_is_censored_and_a_later_pass_can_close_it():
     async def broken(ticker):
         if ticker == "AAA":
             raise RuntimeError("provider down")
-        return _bars(QUIET[:2])                     # nothing at or after 15:15
+        return _bars(QUIET[:1])                     # nothing at or after 15:00 ([O26c] a 15:00 bar gives 15:15)
 
     summary = await ms.resolve_momentum_shadow_day(db, DAY, broken)
     assert summary["censored"] == 2 and summary["closed"] == 0
@@ -119,6 +119,35 @@ async def test_missing_data_is_censored_and_a_later_pass_can_close_it():
 
     await ms.resolve_momentum_shadow_day(db, DAY, fixed)
     assert (await _receipt(db, "AAA"))[0] == "CLOSED" and (await _receipt(db, "BBB"))[0] == "CLOSED"
+
+
+@pytest.mark.asyncio
+async def test_a_closing_auction_stock_takes_its_1515_exit_at_the_last_continuous_price():
+    """[O26c, Oct 26 audit O26-R1] F&O stocks trade continuously only to 15:15 (the closing auction follows), so
+    their session has no 15:15 bar: all 22 censored trades of Oct 26 were such stocks. Their 15:15 price is the
+    15:00 bar's close; the 15:00 bar's own stop and target still come first."""
+    import momentum_shadow as ms
+    db = settings.DB_PATH
+    await ms.persist_momentum_shadow_results(db, [_accepted("AAA"), _accepted("BBB")])
+
+    async def fetch(ticker):
+        return _bars(QUIET[:2] if ticker == "AAA" else
+                     [(14, 45, 100.2, 100.8, 99.6, 100.5), (15, 0, 100.0, 100.1, 97.5, 97.8)])
+
+    summary = await ms.resolve_momentum_shadow_day(db, DAY, fetch)
+    assert summary == {"open": 2, "closed": 2, "censored": 0, "tickers": 2}
+    closed = (await _events(db, "AAA"))[-1]
+    assert closed[:3] == ("CLOSED", "time_exit", f"{DAY}T15:15:00+05:30")
+    assert closed[3] == pytest.approx(100.9 * (1 - 5 / 10000), abs=1e-6)          # the 15:00 bar's close
+    assert await _receipt(db, "AAA") == ("CLOSED", ms.LAST_CONTINUOUS, f"{DAY}T15:15:00+05:30")
+    assert (await _events(db, "BBB"))[-1][:3] == ("CLOSED", "stop", f"{DAY}T15:00:00+05:30")
+    assert await _receipt(db, "BBB") == ("CLOSED", "stop", f"{DAY}T15:00:00+05:30")
+    # Production's bars carry no zone (as its stored trades): the derived bar keeps that form; none without 15:00.
+    naive = [{"bar_ts": f"{DAY}T15:00:00", "open": 1.0, "high": 1.0, "low": 1.0, "close": 2.5}]
+    assert ms._last_continuous_at_time_exit(naive) == {"bar_ts": f"{DAY}T15:15:00", "open": 2.5, "high": 2.5,
+                                                         "low": 2.5, "close": 2.5}
+    assert ms._last_continuous_at_time_exit([naive[0] | {"bar_ts": f"{DAY}T14:45:00"}]) is None
+    assert ms._last_continuous_at_time_exit([]) is None
 
 
 @pytest.mark.asyncio

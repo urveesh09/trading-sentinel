@@ -582,14 +582,20 @@ class Trip:
     def exit(self) -> Optional[float]:
         return self.sell_value / self.sold if self.sold else None
 
-    def realised(self) -> Optional[float]:
-        """Net result of a closed trip after charges."""
+    def charges(self) -> Optional[float]:
+        """[O26c] A closed trip's charges: what ``realised`` takes off (every order's brokerage counted)."""
         if self.open_qty or not self.sold or self.entry is None or self.exit is None:
             return None
         from partner_coach import round_trip_costs
-        qty = min(self.bought, self.sold)
-        return round((self.exit - self.entry) * qty - round_trip_costs(
-            self.entry, self.exit, qty, self.exchange, orders=self.buy_orders + self.sell_orders), 2)
+        return round_trip_costs(self.entry, self.exit, min(self.bought, self.sold), self.exchange,
+                                orders=self.buy_orders + self.sell_orders)
+
+    def realised(self) -> Optional[float]:
+        """Net result of a closed trip after charges."""
+        charges = self.charges()
+        if charges is None:
+            return None
+        return round((self.exit - self.entry) * min(self.bought, self.sold) - charges, 2)
 
 
 def _fill_at(row: dict) -> Optional[datetime]:
@@ -1041,15 +1047,20 @@ def quote_freshness(quote: Optional[dict], now: Optional[datetime] = None) -> st
       - UNVERIFIED: the exchange's quote time or our receipt time is missing,
         unreadable or without a zone (unknown, not old);
       - INVALID: the exchange's quote time is more than QUOTE_CLOCK_SKEW after
-        we received it;
+        we received it, or [O26c] our read or receipt is more than
+        QUOTE_FRESH after ``now`` (a clock that went back, or a stored time
+        from later);
       - MISSING: no quote.
     [O25M] Before, a quote without the exchange's time, or with one ten
-    minutes ahead, passed as fresh when our own read was recent."""
+    minutes ahead, passed as fresh when our own read was recent. [O26c]
+    Before, a quote whose three clocks were all ten minutes ahead passed."""
     if not quote:
         return "MISSING"
     received = _aware(quote.get("received_at"))
     looked = quote.get("looked_at")
     read = _aware(looked) if looked is not None else received
+    if now is not None and any(t is not None and t - now > QUOTE_FRESH for t in (read, received)):
+        return "INVALID"
     if now is not None and read is not None and now - read > QUOTE_FRESH:
         return "STALE"
     exchange = _aware(quote.get("quote_at"))
@@ -1791,8 +1802,11 @@ def added_text(holding, *, added: int, added_px: float, first_px: Optional[float
     return line + covers
 
 
-def refused_text(row: dict, rows: list, still_open: Optional[int]) -> str:
-    from partner_insights import refusal_plain
+def refused_text(row: dict, rows: list, still_open: Optional[int], *, cash: Optional[float] = None,
+                 usual: Optional[float] = None) -> str:
+    """[O26c] A buy refused for funds also says what share of the day's cash it was, and the usual share (Oct 26:
+    five buys refused, one for ₹17,244 on ₹17,218: the whole account in one trade)."""
+    from partner_insights import _MARGIN, refusal_plain
     side = "buy" if row["transaction_type"] == "BUY" else "sell"
     why = refusal_plain(row, rows) or (row.get("status_message") or "no reason given").strip()
     line = f"❗ Zerodha refused your {side} order on {_option(row['tradingsymbol'])}: {why}"
@@ -1800,6 +1814,12 @@ def refused_text(row: dict, rows: list, still_open: Optional[int]) -> str:
         line += "."
     if side == "sell" and still_open:
         line += f" The trade ({still_open}) is still open."
+    found = _MARGIN.search(str(row.get("status_message") or "")) if side == "buy" and cash else None
+    if found:
+        need = float(found.group(1).replace(",", ""))
+        line += (f" That is more than all of your {_amt(cash)} cash in one trade" if need > cash else
+                 f" That is {need / cash:.0%} of your {_amt(cash)} cash in one trade")
+        line += f"; your usual is {usual:.0%}." if usual else "."
     return line
 
 
@@ -2262,6 +2282,17 @@ async def _deliver(db_path: str, entry: _Entry, now: datetime) -> str:
     else:
         logger.info("partner_watch_build_again_later kind=%s key=%s", entry.kind, entry.key)
         return WAIT                   # the book kept changing while it was built: the next tick tries again
+    if entry.kind == "CHECK":
+        # [O26c] Building and marking awaited the database: prices that went past valid_until meanwhile are not
+        # sent either. The row as it was, then worked out again as above, from prices read now.
+        late = _now()
+        outdated = _outdated_check(entry, late)
+        if outdated is not None:
+            await _unmark(db_path, entry)
+            await _close(db_path, entry.key, REFRESHING)
+            logger.info("partner_watch_check_outdated key=%s attempts=%d at_send=1", entry.key, entry.attempts)
+            _refresh_later(db_path, entry, outdated, late)
+            return DONE
     from partner_bot import send_partner_result
     result = await send_partner_result(text, kind=f"watch_{entry.kind.lower()}", reply_markup=keyboard)
     delivered = bool(result.delivered)
@@ -3481,10 +3512,12 @@ async def _changed(db_path: str, day: str, holding: Holding, gone: list, added: 
                                       "first": first}, None, episode)
 
 
-async def _usual_share(db_path: str, trip: Trip, trips: list, now: datetime) -> Optional[float]:
+async def _usual_share(db_path: str, trip: Optional[Trip], trips: list, now: datetime, *,
+                       before: Optional[datetime] = None) -> Optional[float]:
     """[O24-SZ] The share of cash the partner usually puts into a trade:
     their earlier trades as the review counts them
-    (partner_coach.size_history), then today's trips before this one."""
+    (partner_coach.size_history), then today's trips before this one
+    ([O26c] or before ``before``: a refused buy has no trip)."""
     from partner_coach import size_history
     from partner_insights import usual_size
     if _state.size_shares is None:
@@ -3495,8 +3528,9 @@ async def _usual_share(db_path: str, trip: Trip, trips: list, now: datetime) -> 
             return None
     shares = list(_state.size_shares)
     if _state.cash:
+        cut = before if before is not None else trip.first_at
         shares += [round(t.entry * t.bought / _state.cash, 4) for t in trips
-                   if not t.carried and t.first_at < trip.first_at and t.entry]
+                   if not t.carried and t.first_at < cut and t.entry]
     return usual_size(shares)
 
 
@@ -3592,7 +3626,8 @@ def day_so_far(trips: list, cash: Optional[float]) -> Optional[dict]:
     """[O26] Today's closed trades (not ones carried in): their result after charges, the wins and the losses, the
     ones bought within REENTRY_WINDOW_MIN of a losing exit (``_after_loss``), what is still open, and ``step``: how
     many DAY_STEPs of the day's cash the loss is (0 when not under). None without the day's cash or a closed
-    trade."""
+    trade. [O26c] Also the charges in that result and the orders they were paid on (Oct 26: ₹1,669 on 55
+    orders, a quarter of the day's loss)."""
     if not cash:
         return None
     today = [t for t in trips if not t.carried]
@@ -3607,6 +3642,8 @@ def day_so_far(trips: list, cash: Optional[float]) -> Optional[dict]:
     latest = max(today, key=lambda t: t.first_at)
     return {"net": net, "closed": len(closed), "won": len(won), "won_sum": round(sum(won), 2), "lost": len(lost),
             "lost_sum": round(sum(lost), 2), "quick": len(quick), "quick_sum": round(sum(quick), 2),
+            "charges": round(sum(t.charges() for t, _ in closed), 2),
+            "orders": sum(t.buy_orders + t.sell_orders for t, _ in closed),
             "open": sum(1 for t in today if t.open_qty), "at": max(t.closed_at for t, _ in closed),
             "step": math.floor(-net / (DAY_STEP * cash) + 1e-9) if net < 0 else 0, "share": max(-net, 0.0) / cash,
             "check": _check_example(latest.tradingsymbol)}
@@ -3630,6 +3667,8 @@ def day_text(day: dict, cash: float) -> str:
         [f"{day['lost']} lost {_signed(day['lost_sum'])}"] if day["lost"] else [])
     closed = f"{day['closed']} trade{'s' if day['closed'] != 1 else ''} closed"
     lines.append(f"{closed}: {', '.join(parts)}." if parts else f"{closed}.")
+    if day.get("charges"):
+        lines.append(f"That includes {_amt(day['charges'])} of charges on {day['orders']} orders.")
     if day["quick"]:
         lines.append(f"{day['quick']} of them bought within {REENTRY_WINDOW_MIN} min of a losing exit: "
                      f"{_signed(day['quick_sum'])} together.")
@@ -3954,7 +3993,11 @@ async def _b_refused(db_path: str, context: dict, view: View, now: datetime):
     if row is None:
         return None
     same = [h for h in view.holdings if h.exchange == row["exchange"] and h.tradingsymbol == row["tradingsymbol"]]
-    return refused_text(row, view.rows, sum(h.qty for h in same) or None), "explained Zerodha's refusal", None
+    usual = None
+    if row["transaction_type"] == "BUY" and _state.cash:
+        usual = await _usual_share(db_path, None, view.trips, now, before=_dt(row.get("placed_at")) or now)
+    return (refused_text(row, view.rows, sum(h.qty for h in same) or None, cash=_state.cash, usual=usual),
+            "explained Zerodha's refusal", None)
 
 
 async def _b_close(db_path: str, context: dict, view: View, now: datetime):

@@ -143,6 +143,24 @@ def register_fno_scheduler_jobs(scheduler):
         except Exception as notify_exc:
             logger.warning("fno_tick_notify_failed err=%s", notify_exc)
 
+    async def _fno_open_after_cutoff(nm: int) -> bool:
+        """[O26c] Derivatives trade to 15:40. Past the usual 15:25 cutoff, until
+        15:39, an F&O pass runs only while a position or a structure is still
+        open: an exit not yet filled is still worked, and a broker's own 15:25
+        MIS square-off is read back the same day, not the next morning."""
+        if not (15 * 60 + 25 < nm < 15 * 60 + 40):
+            return False
+        from fno_orchestrator import fast_exit_has_work
+        import fno_dr_book
+        if await fast_exit_has_work():
+            return True
+        try:
+            if await fno_dr_book.open_structures(settings.DB_PATH):      # the paper book's structures
+                return True
+        except Exception as exc:
+            logger.warning("fno_open_after_cutoff_read_failed err=%s", type(exc).__name__)
+        return False
+
     @telemetry_job(settings.DB_PATH, "fno_tick")
     async def _run_fno_tick_safe():
         from fno_orchestrator import run_fno_tick
@@ -152,8 +170,9 @@ def register_fno_scheduler_jobs(scheduler):
         now_ist = datetime.now(IST)
         nm = now_ist.hour * 60 + now_ist.minute
         # Gate to session hours (09:15 - 15:25; exits incl. the 15:10
-        # hard flat need ticks past the entry window).
-        if not (9 * 60 + 15 <= nm <= 15 * 60 + 25):
+        # hard flat need ticks past the entry window). [O26c] To 15:39
+        # while something is still open.
+        if not (9 * 60 + 15 <= nm <= 15 * 60 + 25) and not await _fno_open_after_cutoff(nm):
             return
         logger.info("fno_tick_invoked now_ist=%s", now_ist.strftime("%H:%M:%S"))
         today = now_ist.date()
@@ -268,7 +287,7 @@ def register_fno_scheduler_jobs(scheduler):
         from fno_orchestrator import fast_exit_has_work
         now_ist = datetime.now(IST)
         nm = now_ist.hour * 60 + now_ist.minute
-        if not (9 * 60 + 15 <= nm <= 15 * 60 + 25) or fno_lock.locked():
+        if not (9 * 60 + 15 <= nm < 15 * 60 + 40) or fno_lock.locked():     # [O26c] to 15:39: work-gated below
             return
         if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH) or not _main.kite.access_token:
             return

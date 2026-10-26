@@ -726,6 +726,30 @@ async def test_a_refusal_is_explained_and_quiet_keeps_only_the_loss_alarms(watch
 
 
 @pytest.mark.asyncio
+async def test_a_buy_refused_for_funds_says_its_share_of_the_cash(watch, kite):
+    """[O26c] Oct 26: five buys refused for funds, one needing ₹17,244 on ₹17,218: all of the account in one trade.
+    The refusal now says so, beside the partner's usual share (when known); it goes on a quiet day too."""
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(11, 36))
+    await pw.watch_tick(D(11, 36), market=market)
+    await pw.handle_button(db, "watch:quiet:20261023", D(11, 36, 5))
+    need = "Insufficient funds. Margin required: 7790.40. Margin available: 7536.70. Check orderbook for open orders."
+    kite["orders"] = [_o("101", "BUY", D(11, 36, 43), status="REJECTED", status_message=need, quantity=130,
+                         filled_quantity=0, average_price=0)]
+    await pw.watch_tick(D(11, 36, 50), market=market)
+    assert watch[-1]["kind"] == "watch_refused"
+    assert watch[-1]["text"] == ("❗ Zerodha refused your buy order on NIFTY 22300 PE: the buy needed ₹7,790 and your "
+                                 "account had ₹7,537. That is more than all of your ₹7,537 cash in one trade.")
+    row = {"transaction_type": "BUY", "tradingsymbol": SYMBOL, "exchange": "NFO", "order_id": "1",
+           "placed_at": D(11, 0).isoformat(), "status_message": need.replace("7790.40", "6029.36")}
+    assert pw.refused_text(row, [row], None, cash=7536.7, usual=0.42).endswith(
+        "That is 80% of your ₹7,537 cash in one trade; your usual is 42%.")
+    assert "your cash" not in pw.refused_text(row | {"status_message": "RMS: blocked"}, [row], None, cash=7536.7)
+    assert "your cash" not in pw.refused_text(row, [row], None)                       # no cash known: as before
+
+
+@pytest.mark.asyncio
 async def test_after_a_restart_old_events_are_not_told_again_and_old_buys_get_no_plan_message(watch, kite):
     db = settings.DB_PATH
     await _login()
@@ -2324,6 +2348,44 @@ async def test_a_check_retried_while_its_prices_are_current_goes_as_it_is(watch,
 
 
 @pytest.mark.asyncio
+async def test_a_check_whose_prices_go_old_while_it_is_marked_is_worked_out_again(watch, kite, monkeypatch):
+    """[O26c, Oct 26 audit O26-C1] Reproduced: due 0.1 s before its prices' valid_until, the database claim took
+    2 s; the reply went with "the ask now" read 17 s earlier. Now the clock is read again after the claim: the row
+    goes back as it was and is worked out again from prices read then."""
+    import fno_underlyings
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    db = settings.DB_PATH
+    market = _market(D(11, 0))
+    monkeypatch.setattr(pw, "_market", market)
+    pw._state.clock = (D(11, 0, 2), time.monotonic())
+    kite["outcomes"].append("unsent_connect")
+    await pw.answer_check(db, "check 22300 pe", D(11, 0, 2), key="check:1")
+    async with aiosqlite.connect(db) as conn:
+        context = json.loads((await (await conn.execute(
+            "SELECT context FROM partner_watch_messages WHERE message_key='check:1'")).fetchone())[0])
+    until = datetime.fromisoformat(context["valid_until"])
+    due = until - timedelta(seconds=0.1)
+    real_mark = pw._mark
+
+    async def slow_mark(db_path, entry, text, summary, now):
+        await real_mark(db_path, entry, text, summary, now)
+        pw._state.clock = (until + timedelta(seconds=2), time.monotonic())        # the claim waited 2 s
+
+    monkeypatch.setattr(pw, "_mark", slow_mark)
+    market.quotes[SYMBOL] = {"bid": 79.9, "ask": 80.0, "ltp": 79.95}
+    pw._state.clock = (due, time.monotonic())
+    for entry in await pw._due(db, due):
+        assert await pw._deliver(db, entry, due) == pw.DONE
+    while pw._check_tasks:
+        await asyncio.gather(*list(pw._check_tasks))
+    assert [m["text"] for m in watch].count(watch[0]["text"]) == 1                # the old prices never went again
+    monkeypatch.setattr(pw, "_mark", real_mark)
+    await _send_due(db, until + timedelta(seconds=3))
+    assert watch[-1]["state"] == "acknowledged" and "at ₹80 (the ask now; bid ₹79.9)." in watch[-1]["text"]
+    assert await _checks(db) == [("check:1", "outdated"), ("check:1:r1", "acknowledged")]
+
+
+@pytest.mark.asyncio
 async def test_a_check_still_unsent_after_it_was_worked_out_again_asks_for_the_check_again(watch, kite, monkeypatch):
     """[O25M, O25L R1] Once worked out again (CHECK_REFRESHES): a refused retry (here Telegram's rate limit) that goes old
     too becomes a note to ask again, with no numbers in it."""
@@ -2405,6 +2467,15 @@ def test_a_quote_checks_a_level_only_when_both_its_clocks_hold():
     assert pw.quote_freshness(exchange(-1), at + timedelta(seconds=15)) == "FRESH"
     assert pw.quote_freshness(exchange(-1), at + timedelta(seconds=16)) == "STALE"       # our own read 16 s old
     assert pw.quote_freshness(None, at) == "MISSING"
+    # [O26c, Oct 26 audit O26-C2] Reproduced: all three clocks ten minutes ahead (a clock that went back) was FRESH.
+    ahead = at + timedelta(minutes=10)
+    later = {"looked_at": ahead, "received_at": ahead.isoformat(),
+             "quote_at": (ahead - timedelta(seconds=1)).isoformat()}
+    assert pw.quote_freshness(read | later, at) == "INVALID" and pw.level_state(90.0, read | later, at) == "UNVERIFIED"
+    assert pw.quote_freshness(exchange(-1), at - timedelta(seconds=15)) == "FRESH"       # a read just after the tick
+    assert pw.quote_freshness(exchange(-1), at - timedelta(seconds=16)) == "INVALID"
+    receipt_ahead = exchange(-1) | {"looked_at": at - timedelta(seconds=1)}
+    assert pw.quote_freshness(receipt_ahead, at - timedelta(seconds=16)) == "INVALID"   # the receipt alone ahead
     held = _holding(65, entry=100.0)
     plan = pw.Plan(entry=100.0, qty=65, stop=90.0, stop_basis="INDEX", stop_index=22601.0, loss=700.0, cash=20000.0)
     fired = {"order_id": "201", "trigger": 70.0, "limit": 69.0, "pending": 65, "kind": "SL"}
@@ -2563,9 +2634,14 @@ def test_the_day_so_far_counts_the_closed_trades_and_the_buys_soon_after_a_loss(
     assert text[0] == (f"📉 Today so far: −{pw._amt(-day['net'])} after charges, {pw._pct_down(day['share'])} of your "
                        f"₹16,700 cash.")
     assert text[1] == f"6 trades closed: 2 won {pw._signed(day['won_sum'])}, 4 lost {pw._signed(day['lost_sum'])}."
-    assert text[2] == f"2 of them bought within 30 min of a losing exit: {pw._signed(day['quick_sum'])} together."
-    assert text[3] == "Before the next buy, a check shows its stop and loss first: send check 22300 pe."
-    assert text[4] == pw.DAY_NOTE and not any("stop trading" in line.lower() for line in text)
+    # [O26c] The charges in that result, and the orders paid on: every buy and sell order of the six trades.
+    assert day["charges"] == round(sum(t.charges() for t in trips), 2) and day["charges"] > 0
+    assert day["orders"] == sum(t.buy_orders + t.sell_orders for t in trips)
+    assert text[2] == f"That includes {pw._amt(day['charges'])} of charges on {day['orders']} orders."
+    assert all(t.realised() == round((t.exit - t.entry) * min(t.bought, t.sold) - t.charges(), 2) for t in trips)
+    assert text[3] == f"2 of them bought within 30 min of a losing exit: {pw._signed(day['quick_sum'])} together."
+    assert text[4] == "Before the next buy, a check shows its stop and loss first: send check 22300 pe."
+    assert text[5] == pw.DAY_NOTE and not any("stop trading" in line.lower() for line in text)
     # Nothing without the day's cash, nothing before a close, and a day not under is step 0.
     assert pw.day_so_far(trips, None) is None
     assert pw.day_so_far([replace(t, sold=0, sell_value=0.0, closed_at=None) for t in trips], 16700.0) is None
@@ -2613,8 +2689,10 @@ async def test_the_day_so_far_is_told_once_a_step_even_on_a_quiet_day(watch, kit
     lines = watch[-1]["text"].splitlines()
     assert lines[0].startswith("📉 Today so far: −₹1,") and lines[0].endswith("14% of your ₹7,537 cash.")
     assert lines[1].startswith("2 trades closed: 2 lost −₹1,")
-    assert lines[2].startswith("1 of them bought within 30 min of a losing exit: −₹")
-    assert lines[3:] == ["Before the next buy, a check shows its stop and loss first: send check 22300 pe.", pw.DAY_NOTE]
+    assert lines[2] == "That includes ₹117 of charges on 4 orders."          # [O26c]
+    assert lines[3].startswith("1 of them bought within 30 min of a losing exit: −₹")
+    assert lines[4:] == ["Before the next buy, a check shows its stop and loss first: send check 22300 pe.",
+                         pw.DAY_NOTE]
     for at in (D(10, 15, 10), D(10, 15, 30)):
         await pw.watch_tick(at, market=market)
     assert len(watch) == 1                                            # once a step

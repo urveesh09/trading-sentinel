@@ -48,6 +48,28 @@ def pytest_sessionfinish(session, exitstatus):
                             "so the run can exit", yellow=True)
 
 
+# -- No real network [O26c 2026-10-26] -------------------------------
+# The suite runs on the developer's machine, whose .env holds the real bot
+# tokens. On Oct 26 a test that calls every scheduled job polled the real
+# partner bot during market hours: Production's own poll got Telegram's 409
+# three times (and backed off 10 minutes each time), and the penny hourly
+# report test called Telegram too. Every test now gets fake tokens, and a
+# name lookup of any non-local host is refused, so nothing leaves.
+
+_LOCAL_HOSTS = {"", "localhost", "127.0.0.1", "::1", "0.0.0.0", "testserver"}
+_real_getaddrinfo = __import__("socket").getaddrinfo
+
+
+def _local_only_getaddrinfo(host, *args, **kwargs):
+    name = host.decode() if isinstance(host, bytes) else str(host or "")
+    if name in _LOCAL_HOSTS or name.endswith((".test", ".invalid", ".localhost")):
+        return _real_getaddrinfo(host, *args, **kwargs)
+    raise OSError(f"tests may not reach the network (lookup of {name!r} refused by conftest)")
+
+
+__import__("socket").getaddrinfo = _local_only_getaddrinfo
+
+
 # -- Fake Settings ----------------------------------------------------
 
 @pytest.fixture(autouse=True)
@@ -60,6 +82,12 @@ def patch_settings(monkeypatch, tmp_path):
 
     db_file = str(tmp_path / "test_cache.db")
     monkeypatch.setattr(settings, "DB_PATH", db_file)
+    for name in ("TELEGRAM_BOT_TOKEN", "PARTNER_TELEGRAM_BOT_TOKEN"):        # [O26c] never the real bots
+        monkeypatch.setattr(settings, name, f"test-{name.lower()}")
+    for name in ("TELEGRAM_CHAT_ID", "PARTNER_TELEGRAM_CHAT_ID"):
+        monkeypatch.setattr(settings, name, "1")
+    for name in ("PARTNER_KITE_API_KEY", "PARTNER_KITE_API_SECRET"):
+        monkeypatch.setattr(settings, name, f"test-{name.lower()}")
     monkeypatch.setattr(settings, "INITIAL_BANKROLL", 5000.0)
     monkeypatch.setattr(settings, "RISK_PCT", 0.10)
     monkeypatch.setattr(settings, "MAX_OPEN_POSITIONS", 6)

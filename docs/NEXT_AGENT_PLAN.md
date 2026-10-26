@@ -1,5 +1,62 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 26 — O26c The Oct 26 audit's findings fixed: no buy sent after a halt, no check sent past its prices, closing-auction stocks scored, the daily tracker takes the stop first, the test suite never reaches the network; two partner messages say more (done, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+
+- Owner ask (Oct 26): the day's audit (`docs/2026-10-26-production-deep-audit.md` in Production): "if you have any improvement for the partner system or for the trading, go ahead with the working and the enrichment".
+- Current state (the audit's O26-D1):
+  - Production runs `f9547c5` (PR #118, deployed Oct 25 18:56 IST). The Oct 26 audit verified it from the image, `/health` and 325 source hashes.
+  - O26, O26b and O26c are Dev only.
+  - The partner's new Kite app secret was proven by their 07:05:56 login.
+- Agreed and fixed. Each was reproduced first by a test that fails on the old code.
+  - [x] **O26-H1 (P1 before live): a halt tripped while a buy's cash is read.**
+    - `kite_client.place_order` checked both halts before and after the rate limiter, then awaited the own-cash read and the reservation. One fake order POST went out with the global halt on.
+    - Both halts are now checked again after those reads, immediately before the POST. A refusal gives the hold back as `halted_before_dispatch` (nothing was sent). Exits are unchanged.
+    - The gateway already rechecked right before its `placeOrder` (`executor.js`).
+  - [x] **O26-C1: a check whose prices go old while its row is claimed.**
+    - `_deliver` tested `valid_until` only at its start; a 2 s database claim sent "the ask now" 17 s after the read.
+    - It now reads the clock again after the build and the claim. A check past `valid_until` is put back, marked refreshing and worked out again from prices read then.
+  - [x] **O26-C2: future clocks.** `quote_freshness` is INVALID when our read or receipt is more than QUOTE_FRESH after `now` (a clock that went back); all three clocks ten minutes ahead passed as FRESH.
+  - [x] **O26-R1: 22 of 75 RS_PULLBACK trades censored.**
+    - Cause found: NSE's closing auction. Cash stocks with derivatives trade continuously only to 15:15, so they have no 15:15 bar.
+    - Production's cache for the day: the 23 tickers without a 15:15 bar are all F&O stocks; the 38 with one are mostly not.
+    - The terminal pass therefore censored every F&O stock: the cohort was scored on the smaller stocks only.
+    - Now a session with its 15:00 bar and no 15:15 bar takes the 15:15 exit at the 15:00 bar's close (the last continuous price). The 15:00 bar's own stop and target still come first. Receipt detail `time_exit_last_continuous`.
+    - `momentum_replay._simulate` does the same, so replays keep runtime parity; it took such trades at the next session's open.
+    - Oct 26's 22 receipts stay censored: a pass resolves only the day it runs. A backfill would be a Production data write, the owner's call.
+  - [x] **O26-P1: the daily tracker's stop/target order.**
+    - `position_tracker`'s comment said stop first; its branch booked the target when one bar touched both. A daily bar cannot order the touches.
+    - The stop is now taken, unless the day opened at a target (that fill came first) or at/under the stop (the stop at the open).
+    - Found while there: T1 counted after the T1 half was taken. A later day touching T1 and the breakeven stop held the rest. T1 now counts only while the position is OPEN.
+    - The research mirror `research_penny_cnc_lifecycle.tracker_step` changed identically (the parity test covers both).
+    - Oct 26's VGL target close is not affected: it closed at its high (₹56) and never neared its stop.
+  - [x] **O26-M1: F&O management after 15:25.** `_run_fno_tick_safe` and `_run_fno_fast_exit_safe` stopped at 15:25 while derivatives trade to 15:40. They now run 15:26–15:39 only while a single leg (paper or live) or a paper structure is open, so an exit not yet filled is worked and a broker's own 15:25 MIS square-off is read back the same day.
+  - [x] **O26-T1: the competing Telegram poller was this Dev test suite.**
+    - The three 409s (13:46:48, 14:22:19, 14:37:19 IST) fell inside the three full test runs of O26 and O26b.
+    - `test_every_scheduled_job_resolves_its_globals` runs every job, including `partner_inbox_tick`. During market hours that polled the real partner bot with the token in Dev's `.env`.
+    - Production backs off 10 minutes after a 409: the partner's inbox (checks, buttons) was paused about 30 minutes in the afternoon.
+    - A run that refused every outside name lookup listed the rest:
+      - `test_penny_hourly_report…accepts_universe_as_of_kwargs` called Telegram too (with Dev's owner token: it may have sent penny hourly reports to the owner during test runs);
+      - seven tests looked up www.nseindia.com.
+    - `tests/conftest.py` now gives every test fake bot tokens, a fake chat id and fake partner Kite keys, and refuses a lookup of any non-local host.
+- Partner enrichment (from the day's numbers):
+  - [x] DAY adds "That includes ₹X of charges on N orders." (`Trip.charges`, the charges `realised` takes off). On Oct 26, charges were ₹1,669 on 55 orders, a quarter of the loss.
+  - [x] A buy refused for funds adds "That is more than all of your ₹X cash in one trade" (or its share), and the usual share when known (`refused_text`, `_usual_share(before=)`). On Oct 26, five buys were refused; one needed ₹17,244 on ₹17,218.
+- Not changed, and why:
+  - O26-F2 (SADHNANIQ open in both Smart books): the penny_smart files are hashed (owner rule). Check read-only that the next session closes it once per policy.
+  - O26-S1 (two telemetry write locks, replayed) and O26-Q1 (degraded corporate inputs): observed, recovered or data-side; no code change.
+  - BLUECOAST's 11.9% spread admitted by ON_TIGHT_SPREAD: that shadow's rule is frozen while it is scored; its API already says it caps the fill premium, not the spread.
+- Files:
+  - `python-engine/kite_client.py`, `partner_watch.py`, `momentum_shadow.py`, `momentum_replay.py`, `position_tracker.py`, `research_penny_cnc_lifecycle.py`, `scheduler_setup.py`.
+  - Tests: `tests/conftest.py`, `test_f1a_own_cash.py` (+2), `test_partner_watch.py` (+2, 3 extended), `test_oct21_audit_fixes.py` (+1, 1 changed), `test_momentum_replay.py` (+1), `test_research_penny_cnc_lifecycle.py` (+4 cases, 2 renamed), `test_scheduler_closures_invoke.py` (+1).
+  - `docs/SYSTEM_CODE_ATLAS.md`.
+- Tests: Dev (Windows venv) full engine + scripts suites: 6,069 passed, 4 skipped, exit 0 (O26b's 6,056 plus 13 new cases). A run that refused every outside lookup passed too (before the last 10 cases): it listed the tests that had reached Telegram and NSE. Each fix's new test fails on the old code (checked with HEAD's file swapped in). Tests do not show profitability or the partner's results.
+- Config impact: no setting, no table. New receipt detail value; F&O ticks may run 15:26–15:39 when something is open.
+- Rollout: with the next PR to `evolve/smart-strategies` on the owner's go-ahead; the engine image only. Rollback: revert the commit.
+- Remaining:
+  - On the entry day a daily bar also holds prices from before the entry. Ordering by minute bars after the entry needs the tracker and its mirror changed together.
+  - Oct 26's 22 censored identities: the owner's call.
+  - Check SADHNANIQ's next-session close.
+
 ## October 26 — O26b O26's open items, on the owner's go-ahead: a far bigger buy still warns on a quiet day; every trade stored during the day; the check's warnings scored by a frozen rule (done, Dev, commit `cf6befc`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 26): "Go ahead do it ensure quality of development". This covers O26's three open items: Quiet lets the size warning through, each trade is saved during the day, and the warnings are checked later for whether they predict losses.

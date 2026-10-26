@@ -133,3 +133,54 @@ def test_exits_are_never_checked(monkeypatch):
         tradingsymbol="AAA", transaction_type="SELL", quantity=100, order_type="LIMIT", price=99.0,
         intent="exit", channel="penny"))
     assert result["status"] == "PLACED" and len(posts) == 1
+
+
+# ---------------------------------------------------------------- [O26c] a halt during the cash reads
+
+def _held(client):
+    conn = client.account_cash_reservations._connect()
+    return [tuple(r) for r in conn.execute("SELECT state, release_reason FROM account_cash_reservations")]
+
+
+def test_a_halt_tripped_while_the_cash_is_read_stops_the_buy_and_gives_the_hold_back(monkeypatch, tmp_path):
+    import halt_switch
+    import kite_client
+    client, posts = _client(monkeypatch)
+    monkeypatch.setattr(halt_switch, "HALT_DIR", str(tmp_path))
+    monkeypatch.setattr(kite_client, "assert_not_halted", halt_switch.assert_not_halted)
+    reads = []
+    real = client.get_funds_margins
+
+    async def margins():
+        reads.append(1)
+        if len(reads) == 2:                                   # the reservation's read: an operator halts
+            halt_switch.trip("operator", by="test")
+        return await real()
+
+    client.get_funds_margins = margins
+    result = _buy(client)
+    assert result["halted"] is True and result["dispatch_certainty"] == "NOT_SENT" and posts == []
+    assert _held(client) == [("RELEASED", "halted_before_dispatch")]
+    exit_ = asyncio.run(client.place_order(
+        tradingsymbol="AAA", transaction_type="SELL", quantity=100, order_type="LIMIT", price=99.0,
+        intent="exit", channel="penny"))
+    assert exit_["status"] == "PLACED" and len(posts) == 1   # an exit still goes while halted
+
+
+def test_an_owner_halt_set_while_the_cash_is_read_stops_the_buy(monkeypatch):
+    import kite_client
+    client, posts = _client(monkeypatch)
+    allowed = type("Verdict", (), {"allowed": True, "reason": ""})()
+    halted = type("Verdict", (), {"allowed": False, "reason": "owner"})()
+    reads = []
+    monkeypatch.setattr(kite_client, "is_owner_entry_halted", lambda channel: halted if reads else allowed)
+    real = client.orders_snapshot
+
+    async def orders():
+        reads.append(1)                                       # the owner halts during the first cash read
+        return await real()
+
+    client.orders_snapshot = orders
+    result = _buy(client)
+    assert result["owner_entry_halted"] is True and result["dispatch_certainty"] == "NOT_SENT" and posts == []
+    assert _held(client) == [("RELEASED", "halted_before_dispatch")]

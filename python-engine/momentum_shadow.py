@@ -8,7 +8,7 @@ test the same immutable frames before choosing where to record the evidence.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
 import math
@@ -549,6 +549,28 @@ def _at_or_after_time_exit(bar_ts: str) -> bool:
     return (parsed.hour, parsed.minute) >= (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute)
 
 
+LAST_CONTINUOUS = "time_exit_last_continuous"     # [O26c] the receipt detail of a derived 15:15 price
+
+
+def _last_continuous_at_time_exit(bars: list[dict]) -> dict | None:
+    """[O26c] For a stock in NSE's closing auction (cash stocks with
+    derivatives, since 2026-01-19) continuous trading ends at 15:15, so the
+    session has no 15:15 bar and the declared 15:15 exit never got one (Oct
+    26: 22 of 75 RS_PULLBACK trades, every one an F&O stock, censored; only
+    the others were ever scored). The price at 15:15 is then the close of the
+    bar just before it (15:00-15:15): returned as the 15:15 bar, its open that
+    close. None when that bar is missing too (nothing is invented)."""
+    if not bars:
+        return None
+    last = bars[-1]
+    parsed = datetime.fromisoformat(str(last["bar_ts"]).replace("Z", "+00:00"))
+    due = parsed + timedelta(minutes=15)
+    if (due.hour, due.minute) != (EXECUTION.time_exit_hour, EXECUTION.time_exit_minute):
+        return None
+    price = last["close"]
+    return {"bar_ts": due.isoformat(), "open": price, "high": price, "low": price, "close": price}
+
+
 async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bars) -> dict:
     """[S21-R1] After the close, give each still-open virtual trade of the day
     the bars the scans never passed it.
@@ -561,6 +583,9 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
     bar are not passed. The usual stop/target/time-exit rules decide each
     trade; a trade still open afterwards gets a CENSORED receipt saying why.
     Nothing is invented: a missing bar or a failed fetch stays censored.
+    [O26c] A closing-auction stock has no 15:15 bar: its 15:15 price is the
+    15:00 bar's close (``_last_continuous_at_time_exit``), receipt detail
+    LAST_CONTINUOUS.
 
     [A22-M2] Each ticker's bars are fetched with no database connection
     open, then applied in one short transaction for that ticker: a slow
@@ -592,10 +617,15 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
             bars = [bar for bar in _bars(frame if frame is not None else pd.DataFrame())
                     if bar["bar_ts"][:10] == trading_date]
             terminal = next((bar for bar in bars if _at_or_after_time_exit(bar["bar_ts"])), None)
+            derived = None
             if terminal is not None:
                 bars = [bar for bar in bars if bar["bar_ts"] <= terminal["bar_ts"]]
+            else:
+                terminal = derived = _last_continuous_at_time_exit(bars)
+                if derived is not None:
+                    bars = bars + [derived]
         except Exception as exc:     # a failed fetch is a censored outcome, not a crash
-            bars, terminal, error = [], None, type(exc).__name__
+            bars, terminal, derived, error = [], None, None, type(exc).__name__
         async with aiosqlite.connect(db_path) as db:
             for variant in variants:
                 await _advance_and_open(db, {"trading_date": trading_date, "ticker": ticker,
@@ -606,6 +636,8 @@ async def resolve_momentum_shadow_day(db_path: str, trading_date: str, fetch_bar
                     "AND variant=? AND event_type='CLOSED'", (trading_date, ticker, variant))).fetchone()
                 if closed is not None:
                     status, detail, bar_ts = "CLOSED", str(closed["reason"]), closed["bar_ts"]
+                    if derived is not None and bar_ts == derived["bar_ts"]:
+                        detail = LAST_CONTINUOUS
                     summary["closed"] += 1
                 else:
                     status, bar_ts = "CENSORED", None

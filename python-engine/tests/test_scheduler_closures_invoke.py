@@ -133,6 +133,48 @@ async def test_fno_completion_log_preserves_management_observations(monkeypatch)
     assert completion[0].kwargs["management_lag_sec"] == 2
 
 
+@pytest.mark.asyncio
+async def test_fno_ticks_run_to_1539_only_while_something_is_still_open(monkeypatch):
+    """[O26c, Oct 26 audit O26-M1] Derivatives trade to 15:40; the tick stopped at 15:25 even with a position open
+    (an exit not yet filled, or a broker's 15:25 MIS square-off never read back until the next morning)."""
+    from datetime import datetime
+    from unittest.mock import AsyncMock, MagicMock
+    import main
+    import fno_dr_book
+    import fno_orchestrator
+    import scheduler_setup
+
+    at = {"t": None}
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return main.IST.localize(at["t"])
+
+    monkeypatch.setattr(scheduler_setup, "datetime", Clock)
+    monkeypatch.setattr(main, "is_trading_day", AsyncMock(return_value=True))
+    monkeypatch.setattr(main, "kite", MagicMock(access_token="test"))
+    tick = AsyncMock(return_value={})
+    monkeypatch.setattr(fno_orchestrator, "run_fno_tick", tick)
+    held = {"single": False, "structures": []}
+
+    async def work(db_path=None):
+        return held["single"]
+
+    async def structures(db_path, source="FNO_PAPER"):
+        return held["structures"]
+
+    monkeypatch.setattr(fno_orchestrator, "fast_exit_has_work", work)
+    monkeypatch.setattr(fno_dr_book, "open_structures", structures)
+    job = _registered_jobs()["_run_fno_tick_safe"]
+    for when, single, dr, runs in (((15, 20), False, [], 1), ((15, 30), False, [], 0), ((15, 30), True, [], 1),
+                                   ((15, 39), False, [{"id": 1}], 1), ((15, 40), True, [], 0)):
+        at["t"], held["single"], held["structures"] = datetime(2026, 10, 27, *when), single, dr
+        tick.reset_mock()
+        await job()
+        assert tick.await_count == runs, (when, single, dr)
+
+
 @pytest.mark.parametrize("closure_name", ALL_CLOSURES)
 @pytest.mark.asyncio
 async def test_closure_resolves_its_globals_when_called(closure_name, monkeypatch):

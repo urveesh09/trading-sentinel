@@ -1,5 +1,19 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 26 — O26c Audit fixes: last halt check before a buy, check expiry at send, future clocks, closing-auction time exits, daily stop-first, F&O to 15:39, no network in tests; DAY charges, refusal size (actual behavior, Dev)
+
+- **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
+- **`kite_client.place_order`**: after `_own_cash_refusal` and `_reserve_account_cash`, `entry_blocker()` runs again before the POST. A halt then releases the hold (`release_not_sent`, reason `halted_before_dispatch`) and returns its NOT_SENT refusal.
+- **`partner_watch._deliver`**: for a CHECK, after the build/claim loop, `_outdated_check(entry, _now())`. Past `valid_until`: `_unmark`, close REFRESHING, `_refresh_later` (log `partner_watch_check_outdated … at_send=1`).
+- **`quote_freshness`**: INVALID when the read or the receipt is more than QUOTE_FRESH after `now`; `level_state` then says UNVERIFIED.
+- **`momentum_shadow.resolve_momentum_shadow_day`**: no bar at/after 15:15 but the 15:00 bar → `_last_continuous_at_time_exit` adds a 15:15 bar priced at the 15:00 close; a close on it has receipt detail `LAST_CONTINUOUS` (`time_exit_last_continuous`). `momentum_replay._with_last_continuous` does the same for `_simulate`.
+- **`position_tracker.update_daily_positions`** (and `research_penny_cnc_lifecycle.tracker_step`): `target1_hit` only while OPEN; a bar touching the stop and a target takes the stop unless it opened at a target (log `daily_bar_stop_and_target_touched`).
+- **`scheduler_setup`**: `_fno_open_after_cutoff(nm)`: 15:26–15:39, true while `fast_exit_has_work()` or `fno_dr_book.open_structures` (paper). The regular F&O tick runs then; the fast exit's window is 09:15–15:39 (still work-gated).
+- **`tests/conftest.py`**: `socket.getaddrinfo` refuses non-local hosts; `patch_settings` sets fake `TELEGRAM_BOT_TOKEN`, `PARTNER_TELEGRAM_BOT_TOKEN`, chat ids and partner Kite key/secret.
+- **Partner messages**:
+  - `day_so_far` adds `charges` and `orders`; `day_text` says "That includes ₹X of charges on N orders."
+  - `refused_text(row, rows, still_open, cash=, usual=)`: a BUY refused for funds adds its share of the day's cash and the usual share. `_b_refused` gets the usual from `_usual_share(..., before=placed_at)`.
+
 ## October 26 — O26b A far bigger buy still warns on a quiet day; the day's trades stored; the check's warnings scored by a frozen rule (actual behavior, Dev, commit `cf6befc`)
 
 - **SIZE.** `_deliver`, on muting a PLAN or ADDED for Quiet, calls `_size_through_quiet`. When `size_reasons(kind, context, cash)` finds a size warning, a `size:<message key>` row (kind SIZE) goes to the outbox.

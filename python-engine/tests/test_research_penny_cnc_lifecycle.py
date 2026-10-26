@@ -98,9 +98,12 @@ SCENARIOS = {
     "t1_then_breakeven_stop": [_bar(10.0, 10.35, 9.95, 10.2), _bar(10.1, 10.15, 9.9, 10.0)],
     "t1_then_t2": [_bar(10.0, 10.35, 9.95, 10.2), _bar(10.3, 10.7, 10.2, 10.6)],
     "time_stop": [_bar(10.0, 10.1, 9.9, 10.05)] * 13,
-    "after_t1_stop_and_t1_same_day_holds": [_bar(10.0, 10.35, 9.95, 10.2), _bar(10.2, 10.4, 9.9, 10.1),
+    # [O26c] Both touched on one daily bar: the stop, unless the day opened at a target or at/under the stop.
+    "after_t1_stop_and_t1_same_day_stops": [_bar(10.0, 10.35, 9.95, 10.2), _bar(10.2, 10.4, 9.9, 10.1),
                                             _bar(10.1, 10.2, 10.05, 10.1)],
-    "stop_and_t1_same_day_takes_t1": [_bar(10.0, 10.35, 9.6, 10.0)],
+    "stop_and_t1_same_day_takes_the_stop": [_bar(10.0, 10.35, 9.6, 10.0)],
+    "opened_at_t2_then_fell_through_the_stop_takes_t2": [_bar(10.8, 10.9, 9.5, 9.6)],
+    "opened_under_the_stop_then_rallied_takes_the_stop": [_bar(9.5, 10.9, 9.4, 10.6)],
 }
 
 
@@ -113,6 +116,22 @@ def test_tracker_matches_the_real_position_tracker(tmp_path, name):
     for got, want in zip(pure, real):
         assert got[:5] == want[:5], (name, got, want)
         assert (got[5] is None and want[5] is None) or got[5] == pytest.approx(want[5]), name
+
+
+@pytest.mark.parametrize("name,want", [
+    ("stop_and_t1_same_day_takes_the_stop", [("STOPPED_OUT", 9.7)]),
+    ("after_t1_stop_and_t1_same_day_stops", [("CLOSED_T1", None), ("STOPPED_OUT", 10.0)]),
+    ("opened_at_t2_then_fell_through_the_stop_takes_t2", [("CLOSED_T2", 10.8)]),
+    ("opened_under_the_stop_then_rallied_takes_the_stop", [("STOPPED_OUT", 9.5)]),
+])
+def test_a_daily_bar_touching_the_stop_and_a_target_takes_the_stop(tmp_path, name, want):
+    """[O26c, Oct 26 audit O26-P1] The tracker's comment said stop-first; its branch took the target (stop 95,
+    target 110, a bar touching both: CLOSED_T2 at 110). And after the T1 half, a day touching T1 and the breakeven
+    stop held the rest. A daily bar cannot order the touches: the stop is taken unless the day opened at a target."""
+    bars = SCENARIOS[name]
+    real = asyncio.run(_real_tracker(tmp_path, _position(), list(zip(_days(len(bars)), bars))))
+    for got, (status, price) in zip(real, want):
+        assert got[0] == status and (price is None or got[3] == pytest.approx(price)), (name, got)
 
 
 def test_one_share_t1_closes_fully_like_the_real_tracker(tmp_path):

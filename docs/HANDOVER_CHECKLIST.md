@@ -1,5 +1,20 @@
 # Handover receipt and operator checklist
 
+## October 26 — O26c The Oct 26 audit's findings fixed; DAY charges and refusal size (Dev, pushed, not deployed)
+
+- [x] Production runs `f9547c5` (PR #118); O26, O26b and O26c are Dev only.
+- [x] A halt tripped while a buy's cash is read stops the buy before the POST and gives its hold back (O26-H1).
+- [x] A check whose prices went old during its database claim is worked out again, not sent (O26-C1); future read/receipt clocks are INVALID (O26-C2).
+- [x] Closing-auction (F&O) stocks get their 15:15 research exit at the 15:00 close (runtime and replay); before, every one was censored (O26-R1).
+- [x] The daily paper tracker takes the stop when a bar touches both, and stops the rest after T1 (O26-P1).
+- [x] F&O passes run to 15:39 while a position is open (O26-M1).
+- [x] The 409s were Dev's test suite polling the real partner bot; tests now have fake tokens and no network (O26-T1).
+- [x] DAY shows the charges; a buy refused for funds shows its share of the cash.
+- [x] Tests: Dev (Windows venv) full engine + scripts suites: 6,069 passed, 4 skipped, exit 0 (O26b's 6,056 plus 13 new cases). A run that refused every outside lookup passed too (before the last 10 cases): it listed the tests that had reached Telegram and NSE. Each fix's new test fails on the old code (checked with HEAD's file swapped in).
+- [ ] Rollout with the next PR (owner's go-ahead): engine only; no setting.
+- [ ] Owner: Oct 26's 22 censored research trades stay censored unless you want a backfill.
+- [ ] Next session: SADHNANIQ should close once in each Smart book.
+
 ## October 26 — O26b A far bigger buy still warns on a quiet day; trades stored during the day; warnings scored by a frozen rule (Dev, commit `cf6befc`, pushed, not deployed)
 
 - [x] On a quiet day, a buy over 1.5x the partner's usual size, or bigger right after a loss, still gets one short size warning (SIZE). It is dropped if the trade is sold before it goes.

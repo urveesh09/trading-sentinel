@@ -10,8 +10,9 @@ spec describes:
   real ``PennyRiskEngine``; admission applies the per-ticker reservation,
   CNC/total caps and the executor's drift / stop checks; paper fills at LTP.
 * 15:45 IST ``position_tracker.update_daily_positions`` on each final daily
-  bar: stop (unless a target was also hit), T2, T1 partial (50%, stop to
-  breakeven), 15-calendar-day time stop. Connors rows carry no ATR, so the
+  bar: stop (also when a target was hit that day, unless it opened at the
+  target [O26c]), T2, T1 partial (50%, stop to breakeven), 15-calendar-day
+  time stop. Connors rows carry no ATR, so the
   chandelier trail is disabled. ``evaluate_connors_exit`` has no runtime
   caller and is deliberately not used.
 
@@ -138,12 +139,16 @@ def tracker_step(pos: dict, bar: dict, current_day: date) -> dict:
     days_held = (current_day - datetime.fromisoformat(pos["entry_date"]).date()).days
     stop_hit = l <= trailing_stop
     target2_hit = h >= effective_target_2 if effective_target_2 is not None else False
-    target1_hit = h >= pos["target_1"]
+    target1_hit = h >= pos["target_1"] and current_status == "OPEN"
+    if stop_hit and (target2_hit or target1_hit):        # [O26c] the stop first, unless it opened at a target
+        if not ((effective_target_2 is not None and o >= effective_target_2)
+                or (target1_hit and o >= pos["target_1"])):
+            target2_hit = target1_hit = False
     if stop_hit and not (target2_hit or target1_hit):
         status, exit_price = "STOPPED_OUT", min(trailing_stop, o)
     elif target2_hit:
         status, exit_price = "CLOSED_T2", max(effective_target_2, o)
-    elif target1_hit and current_status == "OPEN":
+    elif target1_hit:
         status, exit_price, hit_t1_today = "CLOSED_T1", max(pos["target_1"], o), True
     elif days_held >= TIME_STOP_CALENDAR_DAYS:
         status, exit_price = "CLOSED_TIME", c
