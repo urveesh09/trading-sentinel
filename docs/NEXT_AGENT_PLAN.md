@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 26 — O26b O26's open items, on the owner's go-ahead: a far bigger buy still warns on a quiet day; every trade stored during the day; the check's warnings scored by a frozen rule (done, Dev, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26b O26's open items, on the owner's go-ahead: a far bigger buy still warns on a quiet day; every trade stored during the day; the check's warnings scored by a frozen rule (done, Dev, commit `cf6befc`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
 
 - Owner ask (Oct 26): "Go ahead do it ensure quality of development". This covers O26's three open items: Quiet lets the size warning through, each trade is saved during the day, and the warnings are checked later for whether they predict losses.
 - Done:

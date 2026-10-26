@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 26 — O26b A far bigger buy still warns on a quiet day; the day's trades stored; the check's warnings scored by a frozen rule (actual behavior, Dev)
+## October 26 — O26b A far bigger buy still warns on a quiet day; the day's trades stored; the check's warnings scored by a frozen rule (actual behavior, Dev, commit `cf6befc`)
 
 - **SIZE.** `_deliver`, on muting a PLAN or ADDED for Quiet, calls `_size_through_quiet`. When `size_reasons(kind, context, cash)` finds a size warning, a `size:<message key>` row (kind SIZE) goes to the outbox.
   - The reasons: PLAN's `bought_px × bought`, or ADDED's `held_value`, over `USUAL_SIZE_MULT` × `usual` of the day's cash; or PLAN's `after_loss` with `bigger`.

@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 26 — O26b A far bigger buy still warns on a quiet day; trades stored during the day; warnings scored by a frozen rule (Dev, pushed, not deployed)
+## October 26 — O26b A far bigger buy still warns on a quiet day; trades stored during the day; warnings scored by a frozen rule (Dev, commit `cf6befc`, pushed, not deployed)
 
 - [x] On a quiet day, a buy over 1.5x the partner's usual size, or bigger right after a loss, still gets one short size warning (SIZE). It is dropped if the trade is sold before it goes.
 - [x] Every trade is stored as it changes (`partner_watch_trips`); `partner_watch_report <day>` lists them with the exact result after charges.
