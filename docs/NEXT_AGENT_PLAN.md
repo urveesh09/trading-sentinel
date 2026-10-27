@@ -1,5 +1,15 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 27 — O27d The F&O strategy testing playbook: how the Oct 27 tests ran, where the Production data comes from, every strategy tried, how another agent tests their own, and the daily forward test (done, Dev, commit pending (recorded in the next docs commit), not pushed)
+
+- Owner ask (Oct 27, 20:20): "create a comprehensive documentation as to how did you run the test … where did you access the data for production … so that … another agent … can also do it. What all strategies have been used … everything about the daily recurring test".
+- Files:
+  - `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md` (new);
+  - `docs/research/fno/2026-10-27-consistency-grid/reference-scripts/` (the exploration and analysis scripts with a README; seen data, not evidence);
+  - `docs/RESEARCH_TESTING_METHOD.md` (pointer, and the F&O window ledger row updated: everything to Oct 26 seen for entries and exits; Oct 28 – Nov 27 held by the forward panel).
+- No code, setting or runtime change. Tests: not applicable (documentation only).
+- Remaining: as O27c; the owner registers the 16:00 task.
+
 ## October 27 — O27c Forward panel: the best O27/O27b candidates replayed beside the shipped book on every new session, Oct 28 – Nov 27, from a pinned copy run daily (done, Dev, commit `e6af14b`, branch `codex/production-correction-hedge-p0`, not pushed)
 
 - Owner ask (Oct 27, 20:00): "integrate the best and then let's do this run tomorrow and ahead to test this in upcoming month".

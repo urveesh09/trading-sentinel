@@ -1,5 +1,10 @@
 # Handover receipt and operator checklist
 
+## October 27 — O27d F&O strategy testing playbook (Dev, commit pending (recorded in the next docs commit), not pushed)
+
+- [x] `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md`, reference scripts, and the method doc's pointer and F&O ledger row.
+- [ ] Hand the playbook to any agent testing F&O strategies. A new forward panel must be frozen before its start date.
+
 ## October 27 — O27c F&O forward panel (Dev, commit `e6af14b`, not pushed)
 
 - [x] Panel and rule frozen before Oct 28 (`docs/research/fno/2026-10-28-forward-panel/freeze.json`).

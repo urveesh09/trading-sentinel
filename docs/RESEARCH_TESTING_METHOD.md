@@ -105,6 +105,8 @@ for every daily module.
 
 ## F&O studies (archived quotes, not Yahoo)
 
+The complete worked example is [FNO_STRATEGY_TESTING_PLAYBOOK.md](FNO_STRATEGY_TESTING_PLAYBOOK.md). It covers the Oct 27, 2026 grid, the evolution and the daily forward panel, and how to test a new strategy.
+
 F&O option history is not on Yahoo. The engine already archives every NIFTY
 quote batch (future + ATM±5 calls/puts, two expiries, raw packets) on the data
 volume. Export it read-only, then study it with the same tool:
@@ -135,7 +137,7 @@ planner, gates, exit ladder, costs and brakes; never fork them for research.
 | Range | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
 | Swing | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
 | Momentum | Sep 24–30, 2026; all of Aug 10–Oct 1 for round 3 design | Aug 10–Sep 23 + Oct 1, 2026 (T2) | Kite Jan–Jul 2026 (reserved for `momentum-smart-t3`), forward data |
-| F&O single-leg | Sep 10–23, 2026 | Sep 24–Oct 1, 2026 (`fno-trader-v1`) | archive sessions from Oct 5, 2026 |
+| F&O single-leg | Sep 10 – Oct 26, 2026, for entries **and** exits (the Oct 24 entry study, the O27 grid, the O27b evolution) | Sep 24–Oct 1, 2026 (`fno-trader-v1`); Oct 12–23 (`fno-entry-t2`) | forward sessions from Oct 28, 2026; Oct 28 – Nov 27 is held by the O27c forward panel |
 
 Historical note: the T1 Penny and EDGE freezes were made with the earlier
 per-module scripts (`scripts/run_penny_trader_oos.py`,

@@ -1,5 +1,16 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 27 — O27d F&O strategy testing playbook (documentation, Dev, commit pending (recorded in the next docs commit))
+
+- `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md` is the single reference for F&O strategy testing:
+  - the read-only export of the Production research archive;
+  - the `fno_policy_replay` contract and its limits;
+  - the `FnoShadowVariant` genes;
+  - the metrics; every strategy tested on Oct 27 (exploration, the O27 grid, the O27b evolution, the O27c panel);
+  - the recipe for a new strategy;
+  - the daily forward panel (pinned copy, 16:00 IST task, report, rule, troubleshooting).
+- `docs/RESEARCH_TESTING_METHOD.md` links it, and its F&O ledger row is current.
+
 ## October 27 — O27c F&O forward panel runner (actual behavior, Dev, commit `e6af14b`)
 
 - `scripts/run_fno_forward_panel.py` holds `PANEL` (six genomes in the `run_fno_evolution.GENES` order) and the window `START`–`END` (2026-10-28 – 2026-11-27).
