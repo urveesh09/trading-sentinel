@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 27 — O27b Research genes on the F&O shadow variant and the evolution runner (actual behavior, Dev, freeze `3f97f2c`, results commit pending (recorded in the next docs commit))
+## October 27 — O27b Research genes on the F&O shadow variant and the evolution runner (actual behavior, Dev, freeze `3f97f2c`, results commit `080330d`)
 
 - **`fno_shadow.FnoShadowVariant` gains optional research genes**, each a no-op at its default. `_variant_signal` reads them; no recorded live shadow sets one.
   - Before the break test:

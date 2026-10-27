@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 27 — O27b F&O evolution round (Dev, freeze `3f97f2c`, results commit pending (recorded in the next docs commit), not pushed)
+## October 27 — O27b F&O evolution round (Dev, freeze `3f97f2c`, results commit `080330d`, not pushed)
 
 - [x] Web parameters reviewed: the stocks-in-play ORB (5–25 min ranges, RVOL > 1, ATR stop), Crabel's stretch and NR4/NR7, gap and VWAP filters, a time cutoff. Our own variation: an EMA 9/21 trend check.
 - [x] What the winning days had in common (window A only) recorded in the study README.

@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 27 — O27b The F&O evolution round: 17-gene genomes bred from the O27 grid's good arms plus literature genes, evolved on window A only, finalists checked once on B (done, Dev, freeze `3f97f2c`, results commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, not pushed)
+## October 27 — O27b The F&O evolution round: 17-gene genomes bred from the O27 grid's good arms plus literature genes, evolved on window A only, finalists checked once on B (done, Dev, freeze `3f97f2c`, results commit `080330d`, branch `codex/production-correction-hedge-p0`, not pushed)
 
 - Owner ask (Oct 27, evening): "do something like how the human gene works … see which parameters … on the winning days were working … make a good combination … add a little bit of more new thing … search the web for some parameters that you are not using … the combinations that did the worst … you do not even consider". The owner allowed stopping Production for RAM; not needed (6 cores are the limit; Production idles under 1% CPU).
 - Descriptive look at what the winning days had in common (window A only, 43 distinct grid entries):
