@@ -1,4 +1,4 @@
-## October 27 — O27f genome round 3 (research, done, Dev, freeze `3b8f9ef`, results commit pending (recorded in the identity commit), not pushed)
+## October 27 — O27f genome round 3 (research, done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
 
 - Research tools only, not imported by any runtime module:
   - `docs/research/fno/2026-10-27-genome-round3/lab.py` is the O27f lab. It is a `SingleLegReplay` subclass whose copied `_entry` is held to the shipped trades by a test and a run-time gate.

@@ -1,4 +1,4 @@
-## October 27 — O27f genome round 3 (done, Dev, freeze `3b8f9ef`, results commit pending (recorded in the identity commit), not pushed)
+## October 27 — O27f genome round 3 (done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
 
 - [x] O27f lab, tests (7) and freeze committed before scoring (`3b8f9ef`); the frozen run is done (2,217 replays, parity gate passed); results are written up.
 - [x] O27g forward panel B frozen before Oct 28, with 3 tests passing; pinned copy made; panel A's launcher calls it.

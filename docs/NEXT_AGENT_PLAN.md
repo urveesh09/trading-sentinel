@@ -1,4 +1,4 @@
-## October 27 — O27f genome round 3: new entry families, option-contract genes, a walk-forward of the search itself and a random-entry null (done, Dev, freeze `3b8f9ef`, results commit pending (recorded in the identity commit), not pushed)
+## October 27 — O27f genome round 3: new entry families, option-contract genes, a walk-forward of the search itself and a random-entry null (done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
 
 - Owner ask (Oct 27, 21:30, after reading O27e): "if you have learnt anything from that then go ahead and try new combinations or new things … assess the results if they were better … test new strategies".
 - **Study:** `docs/research/fno/2026-10-27-genome-round3/` (`lab.py`, `test_lab.py`, `freeze.json`, `analyze.py`, `results.json`, `README.md`). Freeze `3b8f9ef` was committed before scoring.
