@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 27 — O27d The F&O strategy testing playbook: how the Oct 27 tests ran, where the Production data comes from, every strategy tried, how another agent tests their own, and the daily forward test (done, Dev, commit pending (recorded in the next docs commit), not pushed)
+## October 27 — O27d The F&O strategy testing playbook: how the Oct 27 tests ran, where the Production data comes from, every strategy tried, how another agent tests their own, and the daily forward test (done, Dev, commit `ed3b9fa`, not pushed)
 
 - Owner ask (Oct 27, 20:20): "create a comprehensive documentation as to how did you run the test … where did you access the data for production … so that … another agent … can also do it. What all strategies have been used … everything about the daily recurring test".
 - Files:

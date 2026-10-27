@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 27 — O27d F&O strategy testing playbook (Dev, commit pending (recorded in the next docs commit), not pushed)
+## October 27 — O27d F&O strategy testing playbook (Dev, commit `ed3b9fa`, not pushed)
 
 - [x] `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md`, reference scripts, and the method doc's pointer and F&O ledger row.
 - [ ] Hand the playbook to any agent testing F&O strategies. A new forward panel must be frozen before its start date.

@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 27 — O27d F&O strategy testing playbook (documentation, Dev, commit pending (recorded in the next docs commit))
+## October 27 — O27d F&O strategy testing playbook (documentation, Dev, commit `ed3b9fa`)
 
 - `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md` is the single reference for F&O strategy testing:
   - the read-only export of the Production research archive;
