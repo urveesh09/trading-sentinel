@@ -4,7 +4,7 @@
 
 - [x] Panel and rule frozen before Oct 28 (`docs/research/fno/2026-10-28-forward-panel/freeze.json`).
 - [x] Tests: `tests/test_fno_forward_panel.py` (new, 3) with the evolution, grid, shadow and replay suites: 41 passed (2 existing third-party deprecation warnings), 36 s.
-- [ ] Pinned copy and 16:00 IST (Monday–Friday) scheduled task: 16:00 re-pin pending (recorded in the next docs commit).
+- [ ] Pinned copy and 16:00 IST (Monday–Friday) scheduled task: re-pinned for 16:00 by commit `3dc3342`; the pinned copy was rebuilt from it on Oct 27 at 20:20 IST (source and FNO settings hashes equal the freeze; `run_panel.cmd` ran end to end: export, 0 forward sessions, report, exit 0). The 16:00 IST Monday–Friday task is NOT registered yet: the agent's registration was refused by the permission check (persistence). The owner runs `register_task.ps1` from the pinned folder, or the agent runs `run_panel.cmd` on request.
 - [ ] Weekly: read `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\docs\research\fno\2026-10-28-forward-panel\_local\REPORT.md`. Nov 27: apply the frozen rule; the owner decides.
 
 ## October 27 — O27b F&O evolution round (Dev, freeze `3f97f2c`, results commit `080330d`, not pushed)

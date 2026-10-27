@@ -19,7 +19,7 @@
   - A byte-for-byte pinned copy of this commit's files sits in `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\`. Byte copies are used because Git converts line endings and the run checks source hashes.
   - A Windows scheduled task, "Sentinel F&O forward panel", runs it at 16:00 IST Monday to Friday (StartWhenAvailable). The owner moved it from 06:30 on Oct 27 evening because the PC is usually off then. The export now includes the day's own finished session (`--include-finished-today`, from 15:50 IST; the quote collector's last tick is 15:40).
   - Reports land in that copy's `docs\research\fno\2026-10-28-forward-panel\_local\REPORT.md`.
-  - Status: 16:00 re-pin pending (recorded in the next docs commit).
+  - Status: re-pinned for 16:00 by commit `3dc3342`; the pinned copy was rebuilt from it on Oct 27 at 20:20 IST (source and FNO settings hashes equal the freeze; `run_panel.cmd` ran end to end: export, 0 forward sessions, report, exit 0). The 16:00 IST Monday–Friday task is NOT registered yet: the agent's registration was refused by the permission check (persistence). The owner runs `register_task.ps1` from the pinned folder, or the agent runs `run_panel.cmd` on request.
 - Tests: `tests/test_fno_forward_panel.py` (new, 3) with the evolution, grid, shadow and replay suites: 41 passed (2 existing third-party deprecation warnings), 36 s. Tests do not show profitability.
 - Config impact: none in Dev or Production. Production is only read, via a read-only throwaway container at 16:00 IST, after the 15:40 close.
 - Rollback: `Unregister-ScheduledTask -TaskName "Sentinel F&O forward panel"`, then delete the pinned folder.
