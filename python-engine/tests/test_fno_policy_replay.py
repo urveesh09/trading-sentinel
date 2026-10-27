@@ -258,3 +258,20 @@ def test_entry_signal_arms_trade_the_shadow_variants_through_the_live_book(datas
     monkeypatch.setattr(fno_shadow, "_variant_signal", spy)
     run_replay(dataset, start=DAY.isoformat(), end=DAY.isoformat(), policy="FNO_SIG_OR_45")
     assert seen and set(seen) == {"FNO_OR_45"}
+
+
+def test_a_grid_arm_is_a_policy_object_with_its_own_variant(dataset):
+    """[O27] run_replay takes a ReplayPolicy (a research grid's arm) carrying an FnoShadowVariant object, and an
+    already-open ReplayData. The shipped break as a variant object, with the live exits, trades exactly as
+    CURRENT."""
+    from dataclasses import replace
+    import fno_shadow
+    from fno_policy_replay import ReplayData, ReplayPolicy
+    variant = replace(fno_shadow.VARIANTS["FNO_BASE"], name="GRID_OR30")
+    arm = ReplayPolicy(name="GRID_OR30", manage_every_observation=True, signal_variant=variant)
+    current = run_replay(dataset, start=DAY.isoformat(), end=DAY.isoformat(), policy="CURRENT")
+    graded = run_replay(dataset, start=DAY.isoformat(), end=DAY.isoformat(), policy=arm, data=ReplayData(dataset))
+    key = ("bar_ts", "tradingsymbol", "entry_time", "entry_premium", "exit_time", "exit_reason", "net_pnl")
+    assert current["trades"] and [{k: t[k] for k in key} for t in graded["trades"]] == [
+        {k: t[k] for k in key} for t in current["trades"]]
+    assert graded["policy"]["signal_variant"]["name"] == "GRID_OR30"

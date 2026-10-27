@@ -1,0 +1,673 @@
+{
+  "module": "fno_nifty_single",
+  "start": "2026-09-10",
+  "end": "2026-10-26",
+  "status": "PARTIAL",
+  "fidelity": "PORTFOLIO_PROXY",
+  "population": "PRIMARY",
+  "coverage": "PARTIAL",
+  "reason": "Completed frozen research; incomplete archive and assumed execution prevent a faithful whole-system replay.",
+  "metrics": {
+    "closed_trades": 13,
+    "signals": 36,
+    "filled_fee_pnl": 0,
+    "assumed_pnl": 10801.0927,
+    "modeled_net": 10801.0927,
+    "unresolved": 0,
+    "charges": 931.4073,
+    "closed_trade_drawdown": 1990.8913
+  },
+  "inputs": [
+    "configuration.json",
+    "freeze.json",
+    "lab.py",
+    "test_lab.py",
+    "calendar.json",
+    "settings-parity.json",
+    "_local/dataset-manifest.json",
+    "_local/data-verification.json"
+  ],
+  "artifacts": [
+    "results.json",
+    "selection.json",
+    "summary.json",
+    "audit.json",
+    "parity.json",
+    "ANALYSIS.md",
+    "analyze.py",
+    "chart.py",
+    "chart-data.json",
+    "research-results.png",
+    "research-results.svg",
+    "_local/coverage.json",
+    "_local/search.log"
+  ],
+  "assumptions": [
+    "Inherited ask entry / bid-else-LTP exit for exact control parity; separate strict bid/depth diagnostic.",
+    "Whole-lot planner, modeled charges, closed-bar 90-second entry clocks and sampled management.",
+    "Filled_fee_pnl=0 means no verified actual executions; every quoted-price result is in assumed_pnl."
+  ],
+  "limitations": [
+    "Every historical session was already seen; neither B nor this search provides untouched validation.",
+    "September 18 unavailable; eight recorded sessions have gaps longer than 180 seconds. No interpolation.",
+    "Minute-sampled quotes cannot establish executable fills, intragap stop prices, queue position or partial fills.",
+    "Closed-trade drawdown excludes intratrade marked losses; all P&L here uses assumed quote-touch execution.",
+    "Historical prior closes seed risk; spread closes are exogenous. No unified shared-capital counterfactual.",
+    "Exchange calendar cross-checked; contract lot/token identity still archive-derived.",
+    "The supplied helper pins pre-freeze Git HEAD; the required freeze commit causes a retained metadata validation failure.",
+    "No new strategy qualifies for deployment or consistent-future-profit claims."
+  ],
+  "daily_results": [
+    {
+      "date": "2026-09-10",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 1,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": -343.516,
+        "modeled_net": -343.516,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-11",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-12",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-09-13",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-09-14",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-09-15",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. Verified expiry; inherited entry guard applies.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-16",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-17",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 1,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": -456.7931,
+        "modeled_net": -456.7931,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-18",
+      "status": "UNAVAILABLE",
+      "reason": "Expected exchange session missing from archive; P&L is unknown, never zero.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-09-19",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-09-20",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-09-21",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-22",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. Verified expiry; inherited entry guard applies.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-23",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 1,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 582.6427,
+        "modeled_net": 582.6427,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-24",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 1,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": -440.1351,
+        "modeled_net": -440.1351,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-25",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. 3 gaps >180s; max 281.0s; archive ends 2026-09-25T15:30:25.436655+05:30.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-26",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-09-27",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-09-28",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. 9 gaps >180s; max 273.7s; archive ends 2026-09-28T15:30:25.704104+05:30.",
+      "metrics": {
+        "closed_trades": 3,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 1910.5793,
+        "modeled_net": 1910.5793,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-29",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. 10 gaps >180s; max 286.2s; archive ends 2026-09-29T15:30:25.465636+05:30. Verified expiry; inherited entry guard applies.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-09-30",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 2,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 19.9907,
+        "modeled_net": 19.9907,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-01",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. 11 gaps >180s; max 318.8s; archive ends 2026-10-01T15:30:25.484474+05:30.",
+      "metrics": {
+        "closed_trades": 1,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 7107.6745,
+        "modeled_net": 7107.6745,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-02",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-03",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-04",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-05",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-06",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. Verified expiry; inherited entry guard applies.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-07",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 1,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": -1460.9177,
+        "modeled_net": -1460.9177,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-08",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-09",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. 1 gaps >180s; max 181.1s; archive ends 2026-10-09T15:40:26.068326+05:30.",
+      "metrics": {
+        "closed_trades": 1,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 366.3589,
+        "modeled_net": 366.3589,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-10",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-11",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-12",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-13",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. 1 gaps >180s; max 5697.1s; archive ends 2026-10-13T15:40:26.066326+05:30. Verified expiry; inherited entry guard applies.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-14",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-15",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. 2 gaps >180s; max 1080.0s; archive ends 2026-10-15T15:40:26.073166+05:30.",
+      "metrics": {
+        "closed_trades": 1,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 3515.2085,
+        "modeled_net": 3515.2085,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-16",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. 1 gaps >180s; max 182.0s; archive ends 2026-10-16T10:08:26.061329+05:30.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-17",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-18",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-19",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills. Verified expiry; inherited entry guard applies.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-20",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-21",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-22",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-23",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    },
+    {
+      "date": "2026-10-24",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-25",
+      "status": "NOT_APPLICABLE",
+      "reason": "Exchange weekend/dated NSE holiday calendar; no trading session.",
+      "metrics": {
+        "closed_trades": null,
+        "signals": null,
+        "filled_fee_pnl": null,
+        "assumed_pnl": null,
+        "modeled_net": null,
+        "unresolved": null
+      }
+    },
+    {
+      "date": "2026-10-26",
+      "status": "PARTIAL",
+      "reason": "Recorded-quote portfolio proxy; all execution is assumed, not actual fills.",
+      "metrics": {
+        "closed_trades": 0,
+        "signals": null,
+        "filled_fee_pnl": 0,
+        "assumed_pnl": 0.0,
+        "modeled_net": 0.0,
+        "unresolved": 0
+      }
+    }
+  ]
+}

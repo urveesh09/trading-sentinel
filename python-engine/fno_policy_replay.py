@@ -79,7 +79,7 @@ class ReplayPolicy:
     trend_day_lookback: int = 10
     exit_overrides: tuple = ()               # ((setting, value), ...) applied to the exit ladder params
     reentry_confirmation: Optional[bool] = None   # None = live setting
-    signal_variant: Optional[str] = None     # [O24g] fno_shadow.VARIANTS entry signal instead of the live one
+    signal_variant: Optional[object] = None  # [O24g] fno_shadow.VARIANTS name, or [O27] an FnoShadowVariant itself
 
 
 POLICIES = {
@@ -113,6 +113,13 @@ POLICIES = {
     "FNO_SIG_OR_45": ReplayPolicy(name="FNO_SIG_OR_45", manage_every_observation=True, signal_variant="FNO_OR_45"),
     "FNO_SIG_CONTINUATION": ReplayPolicy(name="FNO_SIG_CONTINUATION", manage_every_observation=True,
                                          signal_variant="FNO_CONTINUATION"),
+    # [O27h 2026-10-27] The O27f FINAL pick with its own exits (time stop 120 min, trail 2 ATR, no profit lock).
+    # Over Sep 10 - Oct 26 it reproduces the O27f lab's 14 trades (a seen-data result; the walk-forward failed).
+    "FNO_SIG_TREND_PULLBACK": ReplayPolicy(name="FNO_SIG_TREND_PULLBACK", manage_every_observation=True,
+                                           signal_variant="FNO_TREND_PULLBACK",
+                                           exit_overrides=(("FNO_PROFIT_LOCK_ENABLED", False),
+                                                           ("FNO_TIME_STOP_MIN", 120.0),
+                                                           ("FNO_TRAIL_ATR_MULT", 2.0))),
 }
 
 
@@ -516,7 +523,8 @@ class SingleLegReplay:
         self.notes[f"regime_{regime_source}"] += 1
         if self.policy.signal_variant:
             from fno_shadow import VARIANTS, _variant_signal
-            sig = _variant_signal(frame, regime, now, VARIANTS[self.policy.signal_variant])
+            variant = self.policy.signal_variant
+            sig = _variant_signal(frame, regime, now, VARIANTS[variant] if isinstance(variant, str) else variant)
         else:
             sig = evaluate_fno_mom(frame, regime, now)
         if sig.direction is None:
@@ -669,9 +677,13 @@ def parity_report(replayed: list[dict], live: list[dict]) -> dict:
             "replay_only": sorted(set(replay_by) - set(live_by))}
 
 
-def run_replay(root: str | Path, *, start: str, end: str, policy: str = "BASELINE") -> dict:
-    data = ReplayData(root)
-    result = SingleLegReplay(data, resolve_policy(policy)).run(start, end)
+def run_replay(root: str | Path, *, start: str, end: str, policy: str | ReplayPolicy = "BASELINE",
+               data: Optional[ReplayData] = None) -> dict:
+    """``policy``: a declared arm's name, CURRENT, or [O27] a ReplayPolicy (a research grid's arm). ``data``: an
+    already-open ReplayData over ``root`` (a research runner's cached reader); default opens ``root``."""
+    data = data or ReplayData(root)
+    arm = policy if isinstance(policy, ReplayPolicy) else resolve_policy(policy)
+    result = SingleLegReplay(data, arm).run(start, end)
     result["parity_vs_live"] = parity_report(result["trades"], data.live_single_leg(start, end))
     result["dataset"] = {k: data.manifest[k] for k in ("schema", "source", "quote_days", "unsealed_days")}
     calendar, source = data.option_expiries()

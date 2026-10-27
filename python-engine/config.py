@@ -1020,6 +1020,8 @@ class Settings(BaseSettings):
     # Broker-free opening-range research sidecar. Disabling it removes all
     # local CPU/SQLite work without changing any F&O strategy or arming flag.
     FNO_SHADOW_ENABLED:        bool  = True
+    # [O27h] One owner message when the trend-day pullback shadow signals (fno_shadow_alert; messages only).
+    FNO_SHADOW_OWNER_ALERTS:   bool  = True
     # Independent kill-switch for the Phase-2 defined-risk paper book. It rides
     # the same tick as the single-leg engine but is newer/experimental, so it
     # gets its own lever: flip this True to silence ONLY the DR book (e.g. if it

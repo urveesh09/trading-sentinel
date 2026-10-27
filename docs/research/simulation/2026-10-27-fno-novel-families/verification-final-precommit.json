@@ -1,0 +1,16 @@
+{
+  "checked_at_utc": "2026-10-27T15:44:54.889532+00:00",
+  "current_head": "3e2bcfe9d70f6bd338f047ab989958b0b69a4015",
+  "original_policy_head": "07abebd096b77786dc0b6b1a9b874181a58f26f7",
+  "pre_score_freeze_commit": "3e2bcfe9d70f6bd338f047ab989958b0b69a4015",
+  "original_helper_validation": "INVALID",
+  "original_helper_errors": [
+    "Policy source or Git SHA changed after freeze"
+  ],
+  "additional_audit": "PASSED_SOURCE_INPUT_RAW_LEDGER_REPORT_AND_DAILY_CHECKS",
+  "financial_trade_checks": 128,
+  "search_metric_checks": 121,
+  "whole_system_profit_available": false,
+  "strategy_qualified": false,
+  "explanation": "Required freeze/results commits change HEAD; no frozen source/input/helper was changed. This separate audit does not turn the original helper failure into a pass."
+}

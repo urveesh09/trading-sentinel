@@ -1,0 +1,517 @@
+{
+  "financial_trade_checks": 128,
+  "reports": [
+    {
+      "arm": "CURRENT",
+      "independent_net": 10801.0926,
+      "charges": 931.4074,
+      "closed": 13,
+      "unresolved": 0,
+      "holds_crossing_recording_gaps": [
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T10:25:26.463051+05:30",
+          "exit": "2026-09-28T11:11:26.150073+05:30",
+          "gap_seconds": 213.438
+        },
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T10:25:26.463051+05:30",
+          "exit": "2026-09-28T11:11:26.150073+05:30",
+          "gap_seconds": 272.984
+        },
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T11:55:26.284679+05:30",
+          "exit": "2026-09-28T12:41:26.171846+05:30",
+          "gap_seconds": 272.162
+        },
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T13:36:25.445574+05:30",
+          "exit": "2026-09-28T14:46:59.931959+05:30",
+          "gap_seconds": 272.654
+        },
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T13:36:25.445574+05:30",
+          "exit": "2026-09-28T14:46:59.931959+05:30",
+          "gap_seconds": 272.399
+        },
+        {
+          "symbol": "NIFTY26O0622650PE",
+          "entry": "2026-10-01T12:21:26.213735+05:30",
+          "exit": "2026-10-01T13:03:56.156757+05:30",
+          "gap_seconds": 271.346
+        },
+        {
+          "symbol": "NIFTY26O1922800CE",
+          "entry": "2026-10-15T09:55:28.061547+05:30",
+          "exit": "2026-10-15T11:17:28.353178+05:30",
+          "gap_seconds": 239.208
+        }
+      ],
+      "all_checked": true
+    },
+    {
+      "arm": "ed0d136bdd80ee89",
+      "independent_net": 31063.3251,
+      "charges": 2795.1749,
+      "closed": 38,
+      "unresolved": 0,
+      "holds_crossing_recording_gaps": [
+        {
+          "symbol": "NIFTY26SEP23100CE",
+          "entry": "2026-09-25T10:10:25.426006+05:30",
+          "exit": "2026-09-25T11:10:43.709320+05:30",
+          "gap_seconds": 280.969
+        },
+        {
+          "symbol": "NIFTY26O0622650CE",
+          "entry": "2026-10-01T10:06:25.449596+05:30",
+          "exit": "2026-10-01T11:07:26.159268+05:30",
+          "gap_seconds": 318.776
+        },
+        {
+          "symbol": "NIFTY26O0622650CE",
+          "entry": "2026-10-01T10:06:25.449596+05:30",
+          "exit": "2026-10-01T11:07:26.159268+05:30",
+          "gap_seconds": 223.891
+        },
+        {
+          "symbol": "NIFTY26O0622650PE",
+          "entry": "2026-10-01T12:13:26.165302+05:30",
+          "exit": "2026-10-01T13:03:56.156757+05:30",
+          "gap_seconds": 270.94
+        },
+        {
+          "symbol": "NIFTY26O0622650PE",
+          "entry": "2026-10-01T12:13:26.165302+05:30",
+          "exit": "2026-10-01T13:03:56.156757+05:30",
+          "gap_seconds": 271.346
+        },
+        {
+          "symbol": "NIFTY26O0622400PE",
+          "entry": "2026-10-01T14:00:59.134010+05:30",
+          "exit": "2026-10-01T14:30:59.035892+05:30",
+          "gap_seconds": 270.601
+        },
+        {
+          "symbol": "NIFTY26O1922850CE",
+          "entry": "2026-10-15T10:11:27.053295+05:30",
+          "exit": "2026-10-15T11:18:25.297592+05:30",
+          "gap_seconds": 239.208
+        },
+        {
+          "symbol": "NIFTY26O1922800CE",
+          "entry": "2026-10-15T09:55:28.061547+05:30",
+          "exit": "2026-10-15T14:16:26.197048+05:30",
+          "gap_seconds": 239.208
+        }
+      ],
+      "all_checked": true
+    },
+    {
+      "arm": "44e24db7c965d7b1",
+      "independent_net": -4731.6798,
+      "charges": 896.6798,
+      "closed": 13,
+      "unresolved": 0,
+      "holds_crossing_recording_gaps": [],
+      "all_checked": true
+    },
+    {
+      "arm": "CURRENT STRICT",
+      "independent_net": 10486.2246,
+      "charges": 931.0254,
+      "closed": 13,
+      "unresolved": 0,
+      "holds_crossing_recording_gaps": [
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T10:25:26.463051+05:30",
+          "exit": "2026-09-28T11:11:26.150073+05:30",
+          "gap_seconds": 213.438
+        },
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T10:25:26.463051+05:30",
+          "exit": "2026-09-28T11:11:26.150073+05:30",
+          "gap_seconds": 272.984
+        },
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T11:55:26.284679+05:30",
+          "exit": "2026-09-28T12:41:26.171846+05:30",
+          "gap_seconds": 272.162
+        },
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T13:36:25.445574+05:30",
+          "exit": "2026-09-28T14:46:59.931959+05:30",
+          "gap_seconds": 272.654
+        },
+        {
+          "symbol": "NIFTY26SEP22900PE",
+          "entry": "2026-09-28T13:36:25.445574+05:30",
+          "exit": "2026-09-28T14:46:59.931959+05:30",
+          "gap_seconds": 272.399
+        },
+        {
+          "symbol": "NIFTY26O0622650PE",
+          "entry": "2026-10-01T12:21:26.213735+05:30",
+          "exit": "2026-10-01T13:03:56.156757+05:30",
+          "gap_seconds": 271.346
+        },
+        {
+          "symbol": "NIFTY26O1922850CE",
+          "entry": "2026-10-15T09:55:28.061547+05:30",
+          "exit": "2026-10-15T11:17:27.342590+05:30",
+          "gap_seconds": 239.208
+        }
+      ],
+      "all_checked": true
+    },
+    {
+      "arm": "ed0d136bdd80ee89 STRICT",
+      "independent_net": 35139.8969,
+      "charges": 2813.6031,
+      "closed": 38,
+      "unresolved": 0,
+      "holds_crossing_recording_gaps": [
+        {
+          "symbol": "NIFTY26SEP23050CE",
+          "entry": "2026-09-25T10:10:25.426006+05:30",
+          "exit": "2026-09-25T11:10:43.709320+05:30",
+          "gap_seconds": 280.969
+        },
+        {
+          "symbol": "NIFTY26O0622650CE",
+          "entry": "2026-10-01T10:06:25.449596+05:30",
+          "exit": "2026-10-01T11:07:26.159268+05:30",
+          "gap_seconds": 318.776
+        },
+        {
+          "symbol": "NIFTY26O0622650CE",
+          "entry": "2026-10-01T10:06:25.449596+05:30",
+          "exit": "2026-10-01T11:07:26.159268+05:30",
+          "gap_seconds": 223.891
+        },
+        {
+          "symbol": "NIFTY26O0622750PE",
+          "entry": "2026-10-01T12:13:26.165302+05:30",
+          "exit": "2026-10-01T13:08:25.530567+05:30",
+          "gap_seconds": 270.94
+        },
+        {
+          "symbol": "NIFTY26O0622750PE",
+          "entry": "2026-10-01T12:13:26.165302+05:30",
+          "exit": "2026-10-01T13:08:25.530567+05:30",
+          "gap_seconds": 271.346
+        },
+        {
+          "symbol": "NIFTY26O0622400PE",
+          "entry": "2026-10-01T14:00:59.134010+05:30",
+          "exit": "2026-10-01T14:30:59.035892+05:30",
+          "gap_seconds": 270.601
+        },
+        {
+          "symbol": "NIFTY26O1922900CE",
+          "entry": "2026-10-15T10:13:27.052643+05:30",
+          "exit": "2026-10-15T11:13:27.056148+05:30",
+          "gap_seconds": 239.208
+        },
+        {
+          "symbol": "NIFTY26O1922850CE",
+          "entry": "2026-10-15T09:55:28.061547+05:30",
+          "exit": "2026-10-15T14:16:25.183935+05:30",
+          "gap_seconds": 239.208
+        }
+      ],
+      "all_checked": true
+    },
+    {
+      "arm": "44e24db7c965d7b1 STRICT",
+      "independent_net": -4715.5142,
+      "charges": 883.7642,
+      "closed": 13,
+      "unresolved": 0,
+      "holds_crossing_recording_gaps": [],
+      "all_checked": true
+    }
+  ],
+  "search_metric_checks": 121,
+  "source_and_dataset_bindings_valid": true,
+  "production_git_sha_and_status_unchanged": true,
+  "production_sha": "3b945ebcccaed9c9f7347605b9030c573c7dbace",
+  "actual_orders": 0,
+  "coverage": {
+    "archive_sessions": 29,
+    "missing_expected_session": [
+      "2026-09-18"
+    ],
+    "sessions": [
+      {
+        "day": "2026-09-10",
+        "observations": 341,
+        "first": "2026-09-10T09:15:25.441386+05:30",
+        "last": "2026-09-10T15:30:25.457045+05:30",
+        "max_gap_seconds": 121.956668,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-11",
+        "observations": 341,
+        "first": "2026-09-11T09:15:28.500770+05:30",
+        "last": "2026-09-11T15:30:25.497788+05:30",
+        "max_gap_seconds": 144.749557,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-15",
+        "observations": 327,
+        "first": "2026-09-15T09:28:26.915663+05:30",
+        "last": "2026-09-15T15:30:25.432521+05:30",
+        "max_gap_seconds": 162.511396,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-16",
+        "observations": 328,
+        "first": "2026-09-16T09:27:26.932915+05:30",
+        "last": "2026-09-16T15:30:25.447217+05:30",
+        "max_gap_seconds": 122.09014,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-17",
+        "observations": 341,
+        "first": "2026-09-17T09:15:28.347306+05:30",
+        "last": "2026-09-17T15:30:25.463700+05:30",
+        "max_gap_seconds": 120.31843,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-21",
+        "observations": 344,
+        "first": "2026-09-21T09:15:28.626083+05:30",
+        "last": "2026-09-21T15:30:25.472595+05:30",
+        "max_gap_seconds": 144.516334,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-22",
+        "observations": 341,
+        "first": "2026-09-22T09:15:28.471984+05:30",
+        "last": "2026-09-22T15:30:25.432292+05:30",
+        "max_gap_seconds": 124.624272,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-23",
+        "observations": 328,
+        "first": "2026-09-23T09:29:26.921420+05:30",
+        "last": "2026-09-23T15:30:25.500063+05:30",
+        "max_gap_seconds": 144.211114,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-24",
+        "observations": 358,
+        "first": "2026-09-24T09:15:28.257971+05:30",
+        "last": "2026-09-24T15:30:25.471997+05:30",
+        "max_gap_seconds": 125.862195,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-25",
+        "observations": 318,
+        "first": "2026-09-25T09:41:30.403997+05:30",
+        "last": "2026-09-25T15:30:25.436655+05:30",
+        "max_gap_seconds": 280.96947,
+        "gaps_over_180_seconds": 3,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-28",
+        "observations": 339,
+        "first": "2026-09-28T09:15:29.015147+05:30",
+        "last": "2026-09-28T15:30:25.704104+05:30",
+        "max_gap_seconds": 273.662059,
+        "gaps_over_180_seconds": 9,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-29",
+        "observations": 335,
+        "first": "2026-09-29T09:16:26.398472+05:30",
+        "last": "2026-09-29T15:30:25.465636+05:30",
+        "max_gap_seconds": 286.207773,
+        "gaps_over_180_seconds": 10,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-09-30",
+        "observations": 348,
+        "first": "2026-09-30T09:15:31.547452+05:30",
+        "last": "2026-09-30T15:30:25.459674+05:30",
+        "max_gap_seconds": 167.255059,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-01",
+        "observations": 333,
+        "first": "2026-10-01T09:15:29.302303+05:30",
+        "last": "2026-10-01T15:30:25.484474+05:30",
+        "max_gap_seconds": 318.775534,
+        "gaps_over_180_seconds": 11,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-05",
+        "observations": 376,
+        "first": "2026-10-05T09:15:29.371662+05:30",
+        "last": "2026-10-05T15:30:25.393597+05:30",
+        "max_gap_seconds": 70.94712,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-06",
+        "observations": 383,
+        "first": "2026-10-06T09:15:29.395315+05:30",
+        "last": "2026-10-06T15:40:25.412802+05:30",
+        "max_gap_seconds": 130.449615,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-07",
+        "observations": 510,
+        "first": "2026-10-07T09:15:29.523320+05:30",
+        "last": "2026-10-07T15:40:25.418522+05:30",
+        "max_gap_seconds": 76.47431,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-08",
+        "observations": 614,
+        "first": "2026-10-08T09:15:29.424285+05:30",
+        "last": "2026-10-08T15:40:25.409186+05:30",
+        "max_gap_seconds": 63.536823,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-09",
+        "observations": 706,
+        "first": "2026-10-09T09:15:31.325795+05:30",
+        "last": "2026-10-09T15:40:26.068326+05:30",
+        "max_gap_seconds": 181.054054,
+        "gaps_over_180_seconds": 1,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-12",
+        "observations": 386,
+        "first": "2026-10-12T09:15:31.452317+05:30",
+        "last": "2026-10-12T15:40:26.074045+05:30",
+        "max_gap_seconds": 67.843567,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-13",
+        "observations": 516,
+        "first": "2026-10-13T09:15:31.271397+05:30",
+        "last": "2026-10-13T15:40:26.066326+05:30",
+        "max_gap_seconds": 5697.138717,
+        "gaps_over_180_seconds": 1,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-14",
+        "observations": 94,
+        "first": "2026-10-14T09:15:30.776801+05:30",
+        "last": "2026-10-14T10:48:53.981719+05:30",
+        "max_gap_seconds": 72.656424,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-15",
+        "observations": 665,
+        "first": "2026-10-15T09:15:30.058320+05:30",
+        "last": "2026-10-15T15:40:26.073166+05:30",
+        "max_gap_seconds": 1080.001678,
+        "gaps_over_180_seconds": 2,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-16",
+        "observations": 52,
+        "first": "2026-10-16T09:15:31.930043+05:30",
+        "last": "2026-10-16T10:08:26.061329+05:30",
+        "max_gap_seconds": 182.000499,
+        "gaps_over_180_seconds": 1,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-19",
+        "observations": 564,
+        "first": "2026-10-19T09:15:28.890245+05:30",
+        "last": "2026-10-19T15:40:26.060508+05:30",
+        "max_gap_seconds": 95.258624,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-21",
+        "observations": 386,
+        "first": "2026-10-21T09:15:31.393813+05:30",
+        "last": "2026-10-21T15:40:26.063966+05:30",
+        "max_gap_seconds": 88.949669,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-22",
+        "observations": 386,
+        "first": "2026-10-22T09:15:31.321883+05:30",
+        "last": "2026-10-22T15:40:26.070513+05:30",
+        "max_gap_seconds": 85.688315,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-23",
+        "observations": 386,
+        "first": "2026-10-23T09:15:31.435818+05:30",
+        "last": "2026-10-23T15:40:26.069964+05:30",
+        "max_gap_seconds": 78.87003,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      },
+      {
+        "day": "2026-10-26",
+        "observations": 386,
+        "first": "2026-10-26T09:15:31.324574+05:30",
+        "last": "2026-10-26T15:40:26.068816+05:30",
+        "max_gap_seconds": 62.974427,
+        "gaps_over_180_seconds": 0,
+        "exclusions": {}
+      }
+    ]
+  }
+}

@@ -1493,6 +1493,11 @@ async def run_fno_tick(
     if not settings.FNO_DISABLE_PAPER:
         import fno_risk_alert
         await fno_risk_alert.check_paper(db_path, now_ist)
+    # [O27h] The owner hears when the trend-day pullback shadow signals (recorded by earlier ticks' shadow
+    # writes; messages only, never an order; the check never fails the tick).
+    if settings.FNO_SHADOW_ENABLED:
+        import fno_shadow_alert
+        await fno_shadow_alert.check(db_path, now_ist)
 
     # ---- 1b) defined-risk paper book (Phase 2) -----------------------
     # Rides this same tick: manage any open structure to current mids, then

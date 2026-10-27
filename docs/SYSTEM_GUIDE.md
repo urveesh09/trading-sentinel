@@ -1,6 +1,92 @@
+## October 27 — O27h Trend-day pullback shadow and its owner message (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
+
+- The F&O shadow registry has six variants. `FNO_TREND_PULLBACK` (O27f FINAL pick) is recorded live with the other five in `fno_shadow_evaluations`. It is broker-free and cannot reach an order, sizing or a position.
+- On each F&O tick `fno_shadow_alert.check` tells the owner once per new pullback thesis (day and direction) inside the entry window. Switch: `FNO_SHADOW_OWNER_ALERTS`.
+- The paper and live single-leg books still trade the shipped opening-range break; the proving week and the real-money test are unchanged.
+- `fno_policy_replay` arm `FNO_SIG_TREND_PULLBACK` replays the shadow with its exits (equal to the O27f lab's trades).
+
+## October 27 — O27f genome round 3 (research, done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
+
+- Research tools only, not imported by any runtime module:
+  - `docs/research/fno/2026-10-27-genome-round3/lab.py` is the O27f lab. It is a `SingleLegReplay` subclass whose copied `_entry` is held to the shipped trades by a test and a run-time gate.
+  - `docs/research/fno/2026-10-28-forward-panel-b/panel_b.py` is forward panel B. It reuses panel A's exporter, cache, metrics and rule, adds a random-entry control, and runs from a pinned copy after panel A each day.
+- No runtime behaviour, setting or migration changed.
+- O27f result: on the archived sessions, search picks do not hold forward (walk-forward +₹1,011 against the shipped book's +₹9,528 on the same 16 sessions).
+
+## October 27 — O27e novel F&O entry families (research completed; Dev only)
+
+- [Learning/results](research/simulation/2026-10-27-fno-novel-families/ANALYSIS.md)
+  and [audit notes](research/simulation/2026-10-27-fno-novel-families/COMPLETION.md).
+- Pre-score freeze: `3e2bcfe`; 121 genomes / 115 distinct A trade histories across
+  three novel entry families. Exact CURRENT parity, 123 effective settings match.
+- Efficiency break models +INR 31,063.33 versus shipped +10,801.09, but closed-trade
+  drawdown 6,748.74 fails the frozen B risk cap. Neighbour sensitivity is fragile.
+  Compression loses; failed auction has no eligible arm. No candidate qualifies.
+- All dates seen; 29 archived sessions / 30 expected, September 18 unavailable.
+  Eight sessions have recording gaps >180s. No untouched-validation/profit claim.
+- Final regression: 57 pass, two existing warnings. Independent audit reconciles
+  128 closed trade records and 121 arm metrics; frozen source/data remain intact.
+- Generic skill REPORT is INVALID for its pre-freeze HEAD pin after the required
+  freeze commit. Failure retained; separate source/input/raw-ledger audit passes.
+- Research files and local commits only; no application, Production, settings,
+  broker, paper rules, scheduler, pinned O27c panel, push or deployment changes.
+- Remaining: separately approved prospective evidence; keep shipped rules.
+- Rollback: ordinary Git removal of isolated research; no runtime caller imports it.
+
 # Trading Sentinel — system guide and engineering handover
 
-## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, Dev, commit `1d99c12`)
+## October 27 — O27d F&O strategy testing playbook (documentation, Dev, commit `ed3b9fa`)
+
+- `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md` is the single reference for F&O strategy testing:
+  - the read-only export of the Production research archive;
+  - the `fno_policy_replay` contract and its limits;
+  - the `FnoShadowVariant` genes;
+  - the metrics; every strategy tested on Oct 27 (exploration, the O27 grid, the O27b evolution, the O27c panel);
+  - the recipe for a new strategy;
+  - the daily forward panel (pinned copy, 16:00 IST task, report, rule, troubleshooting).
+- `docs/RESEARCH_TESTING_METHOD.md` links it, and its F&O ledger row is current.
+
+## October 27 — O27c F&O forward panel runner (actual behavior, Dev, commit `e6af14b`)
+
+- `scripts/run_fno_forward_panel.py` holds `PANEL` (six genomes in the `run_fno_evolution.GENES` order) and the window `START`–`END` (2026-10-28 – 2026-11-27).
+- `run`:
+  - verifies the bound sources and the `FNO_*` settings hash;
+  - exports the Production archive read-only (`docker run --rm` on `production_trading-sentinel-python-engine:latest`, with `production_trading-sentinel_trading_data:/data:ro`). It passes `--include-finished-today`: `export(..., include_finished_today=True)` copies today's unsealed journal from 15:50 IST (`FINISHED_AFTER_IST_MIN`), and every other caller's behavior is unchanged;
+  - accepts a finished but unsealed newest session;
+  - replays each arm with `SessionCache`, which pickles each session by content hash;
+  - writes `_local/latest.json`, `REPORT.md` and `history.jsonl`, keeping only the newest export.
+- `decide` applies the frozen rule: PROVISIONAL until Nov 27, FINAL after.
+- Nothing in the engine, the scheduler or Production changes.
+
+## October 27 — O27b Research genes on the F&O shadow variant and the evolution runner (actual behavior, Dev, freeze `3f97f2c`, results commit `080330d`)
+
+- **`fno_shadow.FnoShadowVariant` gains optional research genes**, each a no-op at its default. `_variant_signal` reads them; no recorded live shadow sets one.
+  - Before the break test:
+    - `latest_entry_min`;
+    - `ema_spans`, which replaces `FNO_EMA_FAST`/`SLOW` for the trend check and its minimum-bar count;
+    - `buffer_atr` or `stretch_buffer`, which sets the break level.
+  - On a fresh break, `_gene_reject` applies, in order: `vwap_side`, `or_bias` (`with`/`against`: the opening range's last close vs the day's open), `gap_align` (gaps ≥ `GAP_MIN_FRACTION` 0.1%), `max_or_width_ratio` (vs the prior 10 sessions' mean range width) and `narrow_prior_days` (NR-n).
+  - Later checks: `min_rvol` replaces `FNO_MIN_RVOL`; `stop_atr_mult` and `target_r` replace `FNO_STOP_ATR_MULT` and `FNO_TARGET_R`.
+  - `_prior_sessions(closed, day, or_minutes)` returns the daily OHLC and range width of earlier sessions in the frame. It is cached per frame window, in a module dict cleared at 256 entries.
+- **`scripts/run_fno_evolution.py`:**
+  - The genome is 17 genes (`GENES`); `SHIPPED` is the live book.
+  - `freeze`/`run`. Evaluations are cached under `_local/A` and `_local/FULL`, with the O27 dataset's parse cache under `_local/observations`.
+  - `results.json` holds the generation history, every evaluation's fitness, the plateau, the B checks, the holdout metrics and the allele effects.
+
+## October 27 — O27 F&O consistency grid tooling (actual behavior, Dev, freeze `d4cfb7e`, results commit `32f4271`)
+
+- **`fno_shadow.FnoShadowVariant.ema_filter`** (default True): False skips the multi-day EMA(21/50) agreement in `_variant_signal`. Every live shadow keeps True, so recorded rows gain only `"ema_filter": true` in `config_json`.
+- **`fno_policy_replay`**:
+  - `ReplayPolicy.signal_variant` is a `VARIANTS` name or an `FnoShadowVariant`.
+  - `run_replay(root, start=, end=, policy=<name | CURRENT | ReplayPolicy>, data=<ReplayData | None>)`.
+  - Still research only, with no runtime caller.
+- **`scripts/run_fno_consistency_grid.py`**:
+  - `freeze` binds the 361 arms, windows, rule, source and dataset hashes, and the effective `FNO_*` settings hash; `run --jobs N` scores each arm once.
+  - `CachedReplayData` pickles parsed sessions under the study's `_local/observations/<manifest>/`.
+  - Window metrics: net, net excluding the best winner, max drawdown, CS, per-lot net, green/red days, green weeks.
+- The Oct 27 run's results are in `docs/research/fno/2026-10-27-consistency-grid/README.md`. They change no runtime behavior: the paper and live books still run CURRENT.
+
+## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, commit `1d99c12`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **`momentum_shadow`**:
   - `_saved_execution(trade)`, `_time_exit_of(execution)`; `_exit_for_bar` uses the trade's saved `exit_slippage_bps` and time exit;
@@ -11,7 +97,7 @@
   - `day_exits` results carry `coverage` and `rule` (`DAY_EXITS_RULE`), and the tracker logs both;
   - the research lifecycle is v3.
 
-## October 26 — O26d Daily exits ordered (minute bars when needed), partner trade evidence and frozen score v2, closing-auction exit on dated evidence, test network guard, F&O pass counter (actual behavior, Dev, commit `4205eef`)
+## October 26 — O26d Daily exits ordered (minute bars when needed), partner trade evidence and frozen score v2, closing-auction exit on dated evidence, test network guard, F&O pass counter (actual behavior, commit `4205eef`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
 - **`position_tracker.day_exits(status, stop, entry, t1, t2, bar, entered_at=, minutes=)`**:
@@ -37,7 +123,7 @@
 - **Tests**: `tests/netguard/sitecustomize.py` blocks non-local lookups and connections (sockets and asyncio) in the test process and in Python children; `SENTINEL_TEST_NETWORK=1` opts out.
 - **DAY**: "That includes about ₹X of charges (estimated) on N orders."
 
-## October 26 — O26c Audit fixes: last halt check before a buy, check expiry at send, future clocks, closing-auction time exits, daily stop-first, F&O to 15:39, no network in tests; DAY charges, refusal size (actual behavior, Dev, commit `a848bcb`)
+## October 26 — O26c Audit fixes: last halt check before a buy, check expiry at send, future clocks, closing-auction time exits, daily stop-first, F&O to 15:39, no network in tests; DAY charges, refusal size (actual behavior, commit `a848bcb`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **Production** runs `f9547c5` (PR #118); everything from O26 on is Dev only.
 - **`kite_client.place_order`**: after `_own_cash_refusal` and `_reserve_account_cash`, `entry_blocker()` runs again before the POST. A halt then releases the hold (`release_not_sent`, reason `halted_before_dispatch`) and returns its NOT_SENT refusal.
@@ -51,7 +137,7 @@
   - `day_so_far` adds `charges` and `orders`; `day_text` says "That includes ₹X of charges on N orders."
   - `refused_text(row, rows, still_open, cash=, usual=)`: a BUY refused for funds adds its share of the day's cash and the usual share. `_b_refused` gets the usual from `_usual_share(..., before=placed_at)`.
 
-## October 26 — O26b A far bigger buy still warns on a quiet day; the day's trades stored; the check's warnings scored by a frozen rule (actual behavior, Dev, commit `cf6befc`)
+## October 26 — O26b A far bigger buy still warns on a quiet day; the day's trades stored; the check's warnings scored by a frozen rule (actual behavior, commit `cf6befc`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **SIZE.** `_deliver`, on muting a PLAN or ADDED for Quiet, calls `_size_through_quiet`. When `size_reasons(kind, context, cash)` finds a size warning, a `size:<message key>` row (kind SIZE) goes to the outbox.
   - The reasons: PLAN's `bought_px × bought`, or ADDED's `held_value`, over `USUAL_SIZE_MULT` × `usual` of the day's cash; or PLAN's `after_loss` with `bigger`.
@@ -64,7 +150,7 @@
 - **`partner_watch_report`**: `report()` adds `trades` (by day); `day_totals`; `render` lists "Trades <day>" and each trade.
 - **`partner_watch_score`** (`load`, `warnings_of`, `score`, `render`; `python -m partner_watch_score [FIRST [LAST]]`). It reads the database read-only, applies the rule frozen in its module docstring (FROZEN_FROM 2026-10-27, MIN_WARNED 20, four checks), and reports checked and unchecked trades apart.
 
-## October 26 — O26 The trade watch's day so far (DAY) and run figures rounded down (actual behavior, Dev, commit `6ec5ce1`)
+## October 26 — O26 The trade watch's day so far (DAY) and run figures rounded down (actual behavior, commit `6ec5ce1`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **DAY** (`partner_watch.day_so_far(trips, cash)`, `day_text`, `_b_day`), from each book read in `_events`:
   - Today's closed trips (`Trip.realised()`, after charges; carried trips left out) are summed. `step` = how many DAY_STEP (0.10) shares of the day's cash (`_state.cash`: opening balance plus intraday pay-in) the loss is.

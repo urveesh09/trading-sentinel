@@ -37,6 +37,28 @@ class FnoShadowVariant:
     confirmation_bars: int = 0
     max_extension_atr: float | None = None
     pullback_atr: float | None = None    # crossing_or_pullback: how near the break level a pullback must come
+    ema_filter: bool = True              # [O27] False: the multi-day EMA(21/50) agreement is not required
+    # [O27b] Research genes for the evolution round (scripts/run_fno_evolution.py). Every default leaves the
+    # variant exactly as before; no recorded live shadow sets one.
+    ema_spans: tuple[int, int] | None = None     # trend-check EMA spans (None: FNO_EMA_FAST / FNO_EMA_SLOW)
+    buffer_atr: float | None = None              # break buffer in ATR (None: FNO_OR_BUFFER_ATR)
+    stretch_buffer: bool = False                 # Crabel's stretch: the buffer is the prior 10 sessions' mean
+                                                 # distance from the open to its nearer extreme
+    min_rvol: float | None = None                # None: FNO_MIN_RVOL
+    vwap_side: bool = False                      # the break closes on the trade's side of today's VWAP
+    or_bias: str | None = None                   # "with" / "against" the opening range's own direction
+                                                 # (its last close vs the day's open)
+    gap_align: bool = False                      # only with today's opening gap, when it is at least 0.1%
+    max_or_width_ratio: float | None = None      # the range no wider than this x the prior 10 sessions' mean
+    narrow_prior_days: int | None = None         # NR-n: the previous session's range the narrowest of the last n
+    latest_entry_min: int | None = None          # no signal at or after this IST minute of the day
+    stop_atr_mult: float | None = None           # None: FNO_STOP_ATR_MULT
+    target_r: float | None = None                # None: FNO_TARGET_R
+    # [O27h] freshness "trend_pullback" (the O27f TREND_PULLBACK genome); unused by every other freshness.
+    trend_atr: float | None = None               # trend day: the close at least this many ATR from the day's open
+    trend_side: float | None = None              # ... and at least this share of today's closes on that side of VWAP
+    pullback_touch_atr: float | None = None      # a low (high) of the last 3 bars within this many ATR of VWAP
+    entry_from_min: int | None = None            # the judged bar closes at or after this IST minute of the day
 
 
 _VARIANT_ROWS = (
@@ -50,6 +72,13 @@ _VARIANT_ROWS = (
     # within 0.25 ATR of the break level since its latest extreme, and the last closed bar resumes the trend. One
     # new number (0.25), set a priori; every other check, the stop and the target are the base's.
     FnoShadowVariant("FNO_CONTINUATION", int(settings.FNO_OR_MINUTES), "crossing_or_pullback", pullback_atr=0.25),
+    # [O27h 2026-10-27] The O27f FINAL pick (docs/research/fno/2026-10-27-genome-round3), recorded live as a
+    # shadow on the owner's word while the paper and live books keep the shipped break: from 11:30, on a trend day
+    # (close >= 1.5 ATR from the day's open, >= 75% of today's closes on that side of VWAP), a pullback to within
+    # 0.5 ATR of VWAP and a resumption bar; stop 1.5 ATR, target 3R. Its replay arm (FNO_SIG_TREND_PULLBACK) adds
+    # the genome's exits. Seen-data result only; the O27f walk-forward failed.
+    FnoShadowVariant("FNO_TREND_PULLBACK", 20, "trend_pullback", ema_filter=False, stop_atr_mult=1.5, target_r=3.0,
+                     trend_atr=1.5, trend_side=0.75, pullback_touch_atr=0.5, entry_from_min=11 * 60 + 30),
 )
 VARIANTS: Mapping[str, FnoShadowVariant] = MappingProxyType({
     variant.name: variant for variant in _VARIANT_ROWS
@@ -110,6 +139,112 @@ def pullback_resumed(bars: pd.DataFrame, long: bool, level: float, atr: float, t
     return max(highs[i] for i in after) >= level - tolerance_atr * atr and closes[-1] < lows[-2]
 
 
+GAP_MIN_FRACTION = 0.001          # [O27b] gap_align ignores opening gaps under 0.1%
+_PRIOR_CACHE: dict = {}
+
+
+def _prior_sessions(closed: pd.DataFrame, day: date, or_minutes: int) -> list[dict]:
+    """[O27b] Open, high, low, close and opening-range width of every session before ``day`` in the frame,
+    oldest first. Pure; cached per frame window because a replay asks the same day many times."""
+    prior = closed[[stamp < day for stamp in closed.index.date]]
+    if prior.empty:
+        return []
+    key = (day, or_minutes, len(prior), prior.index[0], prior.index[-1], float(prior["close"].iloc[-1]))
+    if key in _PRIOR_CACHE:
+        return _PRIOR_CACHE[key]
+    rows = []
+    for session, session_bars in prior.groupby(prior.index.date):
+        opening = session_bars[[SESSION_OPEN_MIN <= _minutes_ist(stamp) < SESSION_OPEN_MIN + or_minutes
+                                for stamp in session_bars.index]]
+        rows.append({"day": session, "open": float(session_bars["open"].iloc[0]),
+                     "high": float(session_bars["high"].max()), "low": float(session_bars["low"].min()),
+                     "close": float(session_bars["close"].iloc[-1]),
+                     "or_width": (float(opening["high"].max() - opening["low"].min())
+                                  if len(opening) == or_minutes // 5 else None)})
+    if len(_PRIOR_CACHE) > 256:
+        _PRIOR_CACHE.clear()
+    _PRIOR_CACHE[key] = rows
+    return rows
+
+
+def _trend_pullback_signal(
+    bars: pd.DataFrame, regime: str, now_ist: datetime, variant: FnoShadowVariant,
+) -> MomSignal:
+    """[O27h] The trend-day VWAP pullback, computed exactly as the O27f lab computed it (its replay reproduces
+    the lab's trades). Closed bars only: Wilder ATR over the whole frame, today's volume-weighted VWAP (the
+    running mean typical price while volume is zero), the share of today's closes on each side of VWAP."""
+    out = MomSignal()
+    if bars is None or bars.empty:
+        out.reject_reason = "no_bars"
+        return out
+    naive_now = now_ist.replace(tzinfo=None)
+    frame = bars[~bars.index.duplicated(keep="last")].sort_index()
+    closed = frame[frame.index + timedelta(minutes=5) <= naive_now]
+    sessions = closed.index.date
+    day = naive_now.date()
+    today = closed[sessions == day]
+    if today.empty:
+        out.reject_reason = "no_closed_bars_today"
+        return out
+    last_ts = today.index[-1]
+    out.bar_ts = last_ts.strftime("%Y-%m-%d %H:%M:%S")
+    out.close = float(today["close"].iloc[-1])
+    if not (sessions < day).any():
+        out.reject_reason = "no_prior_session"
+        return out
+    if _minutes_ist(today.index[0]) != SESSION_OPEN_MIN:
+        out.reject_reason = "session_open_bar_missing"
+        return out
+    opening = today[[_minutes_ist(stamp) < SESSION_OPEN_MIN + variant.opening_range_minutes for stamp in today.index]]
+    if len(opening) == variant.opening_range_minutes // 5:
+        out.or_high, out.or_low = float(opening["high"].max()), float(opening["low"].min())
+    if _minutes_ist(last_ts) + 5 < int(variant.entry_from_min or 0):
+        out.reject_reason = "before_trend_window"
+        return out
+
+    previous = closed["close"].shift(1)
+    true_range = pd.concat([closed["high"] - closed["low"], (closed["high"] - previous).abs(),
+                            (closed["low"] - previous).abs()], axis=1).max(axis=1)
+    atr = float(true_range.ewm(alpha=1 / settings.FNO_ATR_LEN, adjust=False).mean().iloc[-1])
+    if not (math.isfinite(atr) and atr > 0):
+        out.reject_reason = "atr_unavailable"
+        return out
+    out.atr = atr
+    typical = (today["high"] + today["low"] + today["close"]) / 3
+    volume = today["volume"].astype(float)
+    group = today.index.date            # a grouped cumulative sum, as the lab's, to the last bit
+    vwap_series = ((typical * volume).groupby(group).cumsum()
+                   / volume.groupby(group).cumsum().replace(0, float("nan")))
+    vwap_series = vwap_series.fillna(typical.expanding().mean())
+    vwap = float(vwap_series.iloc[-1])
+    count = len(today)
+    above = float((today["close"] > vwap_series).sum()) / count
+    below = float((today["close"] < vwap_series).sum()) / count
+    bar = today.iloc[-1]
+    close, open_, high, low = float(bar["close"]), float(bar["open"]), float(bar["high"]), float(bar["low"])
+    day_open = float(today["open"].iloc[0])
+    prior_high = float(today["high"].iloc[-2]) if count > 1 else float("nan")
+    prior_low = float(today["low"].iloc[-2]) if count > 1 else float("nan")
+    recent_low, recent_high = float(today["low"].iloc[-3:].min()), float(today["high"].iloc[-3:].max())
+    touch, trend = float(variant.pullback_touch_atr), float(variant.trend_atr)
+    long = ((close - day_open) >= trend * atr and above >= variant.trend_side
+            and recent_low <= vwap + touch * atr and close > open_ and close > prior_high and close > vwap)
+    short = ((day_open - close) >= trend * atr and below >= variant.trend_side
+             and recent_high >= vwap - touch * atr and close < open_ and close < prior_low and close < vwap)
+    if not (long or short):
+        out.reject_reason = "no_trend_pullback"
+        return out
+    if regime == "REGIME_3_CRISIS":
+        out.reject_reason = "regime_crisis"
+        return out
+    side = 1 if long else -1
+    risk = float(variant.stop_atr_mult) * atr
+    out.direction = FnoDirection.LONG if long else FnoDirection.SHORT
+    out.stop_underlying = close - side * risk
+    out.target_underlying = close + side * float(variant.target_r) * risk
+    return out
+
+
 def _variant_signal(
     bars: pd.DataFrame, regime: str, now_ist: datetime,
     variant: FnoShadowVariant,
@@ -117,6 +252,8 @@ def _variant_signal(
     """Evaluate one declared variant without mutating global strategy settings."""
     if variant.name == "FNO_BASE":
         return evaluate_fno_mom(bars, regime, now_ist)
+    if variant.freshness == "trend_pullback":
+        return _trend_pullback_signal(bars, regime, now_ist, variant)
 
     out = MomSignal()
     if bars is None or bars.empty:
@@ -144,23 +281,36 @@ def _variant_signal(
     if _minutes_ist(last_ts) < or_end:
         out.reject_reason = "inside_opening_range_window"
         return out
+    if variant.latest_entry_min is not None and now_ist.hour * 60 + now_ist.minute >= variant.latest_entry_min:
+        out.reject_reason = "after_latest_entry"
+        return out
 
     atr = wilder_atr(closed, settings.FNO_ATR_LEN)
     if atr is None:
         out.reject_reason = "atr_unavailable"
         return out
     out.atr = atr
-    if len(closed) < settings.FNO_EMA_SLOW + 1:
+    fast_span, slow_span = variant.ema_spans or (settings.FNO_EMA_FAST, settings.FNO_EMA_SLOW)
+    if len(closed) < slow_span + 1:
         out.reject_reason = "ema_insufficient_bars"
         return out
-    fast = closed["close"].ewm(span=settings.FNO_EMA_FAST, adjust=False).mean()
-    slow = closed["close"].ewm(span=settings.FNO_EMA_SLOW, adjust=False).mean()
+    fast = closed["close"].ewm(span=fast_span, adjust=False).mean()
+    slow = closed["close"].ewm(span=slow_span, adjust=False).mean()
     out.ema_fast, out.ema_slow = float(fast.iloc[-1]), float(slow.iloc[-1])
     rvol = _rvol_time_adjusted(closed, last_ts)
     out.rvol = rvol if rvol is not None else 0.0
 
-    long_level = out.or_high + settings.FNO_OR_BUFFER_ATR * atr
-    short_level = out.or_low - settings.FNO_OR_BUFFER_ATR * atr
+    buffer = (settings.FNO_OR_BUFFER_ATR if variant.buffer_atr is None else variant.buffer_atr) * atr
+    history: list[dict] | None = None
+    if variant.stretch_buffer:
+        history = _prior_sessions(closed, naive_now.date(), variant.opening_range_minutes)
+        reach = [min(row["high"] - row["open"], row["open"] - row["low"]) for row in history[-10:]]
+        if len(reach) < 5:
+            out.reject_reason = "stretch_unavailable"
+            return out
+        buffer = sum(reach) / len(reach)
+    long_level = out.or_high + buffer
+    short_level = out.or_low - buffer
     long_break, short_break = out.close > long_level, out.close < short_level
     if not long_break and not short_break:
         out.reject_reason = "no_or_break"
@@ -199,35 +349,83 @@ def _variant_signal(
     else:
         raise ValueError(f"unknown freshness {variant.freshness!r} for {variant.name}")
 
+    reason = _gene_reject(variant, closed, today_bars, or_bars, long_break, out, naive_now.date(), history)
+    if reason:
+        out.reject_reason = reason
+        return out
+
     if regime == "REGIME_3_CRISIS":
         out.reject_reason = "regime_crisis"
         return out
-    if (long_break and out.ema_fast <= out.ema_slow) or (
+    if variant.ema_filter and ((long_break and out.ema_fast <= out.ema_slow) or (
         short_break and out.ema_fast >= out.ema_slow
-    ):
+    )):
         out.reject_reason = "ema_trend_disagreement"
         return out
     if rvol is None:
         out.reject_reason = "rvol_baseline_unavailable"
         return out
-    if rvol < settings.FNO_MIN_RVOL:
+    if rvol < (settings.FNO_MIN_RVOL if variant.min_rvol is None else variant.min_rvol):
         out.reject_reason = "rvol_below_min"
         return out
 
-    distance = settings.FNO_STOP_ATR_MULT * atr
+    distance = (settings.FNO_STOP_ATR_MULT if variant.stop_atr_mult is None else variant.stop_atr_mult) * atr
+    target_r = settings.FNO_TARGET_R if variant.target_r is None else variant.target_r
     if long_break:
         out.stop_underlying = max(out.or_low, out.close - distance)
         risk_points = out.close - out.stop_underlying
-        out.target_underlying = out.close + settings.FNO_TARGET_R * risk_points
+        out.target_underlying = out.close + target_r * risk_points
         out.direction = FnoDirection.LONG
     else:
         out.stop_underlying = min(out.or_high, out.close + distance)
         risk_points = out.stop_underlying - out.close
-        out.target_underlying = out.close - settings.FNO_TARGET_R * risk_points
+        out.target_underlying = out.close - target_r * risk_points
         out.direction = FnoDirection.SHORT
     if risk_points <= 0:
         out.direction, out.reject_reason = None, "degenerate_stop_distance"
     return out
+
+
+def _gene_reject(variant: FnoShadowVariant, closed: pd.DataFrame, today_bars: pd.DataFrame, or_bars: pd.DataFrame,
+                 long: bool, out: MomSignal, day: date, history: list[dict] | None) -> str | None:
+    """[O27b] The research genes' checks on a fresh break (the reason it is refused, else None). Causal: closed bars
+    of today and earlier sessions only."""
+    day_open = float(today_bars["open"].iloc[0])
+    if variant.vwap_side:
+        volume = today_bars["volume"].astype(float)
+        if float(volume.sum()) <= 0:
+            return "vwap_unavailable"
+        typical = (today_bars["high"] + today_bars["low"] + today_bars["close"]) / 3.0
+        vwap = float((typical * volume).sum() / volume.sum())
+        if (long and out.close <= vwap) or (not long and out.close >= vwap):
+            return "vwap_side_against"
+    if variant.or_bias:
+        drift = float(or_bars["close"].iloc[-1]) - day_open
+        with_bias = drift > 0 if long else drift < 0
+        if with_bias != (variant.or_bias == "with"):
+            return f"opening_range_bias_not_{variant.or_bias}"
+    if not (variant.gap_align or variant.max_or_width_ratio is not None or variant.narrow_prior_days):
+        return None
+    history = history if history is not None else _prior_sessions(closed, day, variant.opening_range_minutes)
+    if not history:
+        return "prior_sessions_unavailable"
+    if variant.gap_align:
+        gap = (day_open - history[-1]["close"]) / history[-1]["close"]
+        if abs(gap) >= GAP_MIN_FRACTION and ((long and gap < 0) or (not long and gap > 0)):
+            return "against_opening_gap"
+    if variant.max_or_width_ratio is not None:
+        widths = [row["or_width"] for row in history[-10:] if row["or_width"]]
+        if len(widths) < 5:
+            return "or_width_history_unavailable"
+        if out.or_high - out.or_low > variant.max_or_width_ratio * sum(widths) / len(widths):
+            return "opening_range_too_wide"
+    if variant.narrow_prior_days:
+        if len(history) < variant.narrow_prior_days:
+            return "narrow_range_history_unavailable"
+        ranges = [row["high"] - row["low"] for row in history[-variant.narrow_prior_days:]]
+        if ranges[-1] > min(ranges):
+            return "previous_session_not_narrow"
+    return None
 
 
 def evaluate_fno_shadows(

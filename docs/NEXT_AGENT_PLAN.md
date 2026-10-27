@@ -1,6 +1,210 @@
+## October 27 — O27h The trend-day VWAP pullback runs live as a shadow beside the shipped strategy, with an owner message when it signals (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
+
+- Owner ask (Oct 27, 23:05): "your trend-day VWAP pullback implement that in fno right now, and make the current strategy as a shadow or make this a shadow and continue the current strategy … commit push it all and merge and then deploy in prod".
+- **Decision: the pullback is the shadow; the shipped opening-range break keeps trading.** The owner offered either. The proving week (Oct 26–30) freezes the paper single-leg rules, and the real-money test (Nov 2–6) mirrors the paper book. Swapping the main strategy now would void both. Nothing here can place or size an order.
+- **Behaviour:**
+  - `fno_shadow.VARIANTS["FNO_TREND_PULLBACK"]` (freshness `trend_pullback`) is evaluated on every NIFTY tick with the other shadows and stored in `fno_shadow_evaluations`.
+    - The rule: from 11:30, on a trend day (close ≥ 1.5 ATR from the day's open, ≥ 75% of today's closes on that side of VWAP), a low (high) of the last 3 bars within 0.5 ATR of VWAP and a resumption bar (close beyond the open, the previous bar's extreme and VWAP).
+    - Stop 1.5 ATR, target 3R; no signal in a crisis regime.
+  - `fno_shadow_alert.check` runs on each F&O tick (when `FNO_SHADOW_ENABLED`). It sends one owner message per new thesis (day and direction) whose bar closes inside the entry window: the bar, the futures level, stop, target, exits, and the option ask when a resolved chain priced it.
+    - A failed send retries on the next tick. Told theses are kept in `fno_shadow_alert_told`.
+    - `FNO_SHADOW_OWNER_ALERTS` (default true) silences the messages.
+  - Replay arm `FNO_SIG_TREND_PULLBACK`: the shadow through the whole book with the genome's exits (120-min time stop, 2-ATR trail, no profit lock).
+  - The full-book daily result comes from forward panel B (O27g, 16:00 IST).
+- **Proof:** the replay arm reproduces the O27f lab's 14 trades exactly over Sep 10 – Oct 26 (₹17,347.49; `docs/research/fno/2026-10-27-genome-round3/test_runtime_parity.py`). This is a seen-data result: the O27f walk-forward failed, so this is an observation, not a qualification.
+- Files:
+  - `python-engine/fno_shadow.py` (variant fields, the variant, `_trend_pullback_signal`);
+  - `python-engine/fno_policy_replay.py` (the arm);
+  - `python-engine/fno_shadow_alert.py` (new);
+  - `python-engine/config.py` (`FNO_SHADOW_OWNER_ALERTS`);
+  - `python-engine/fno_orchestrator.py` (one call after the risk alert);
+  - tests: `tests/test_fno_shadow.py` (+3; the variant count is now 6; the EMA assertion is limited to the opening-range shadows) and `tests/test_fno_shadow_alert.py` (4 new).
+- Tests: focused shadow, alert, replay and orchestrator 69 passed; runtime parity 2 passed; full engine suite 5,861 passed, 4 skipped, exit 0 (10 min 56 s); scripts 287 passed.
+- Config and migration: one new setting, default true; two additive tables created on first use. No `.env` change.
+- Rollout: PR to `evolve/smart-strategies`, merge and deploy on the owner's instruction (Oct 27).
+- Rollback: `FNO_SHADOW_OWNER_ALERTS=false` (messages) or `FNO_SHADOW_ENABLED=false` (all shadows), or revert the commit.
+- Remaining: read the shadow's messages on Oct 28; panel B scores its full trade after the close. Nothing is promoted before Nov 27 or during a proving week.
+
+## October 27 — O27f genome round 3: new entry families, option-contract genes, a walk-forward of the search itself and a random-entry null (done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
+
+- Owner ask (Oct 27, 21:30, after reading O27e): "if you have learnt anything from that then go ahead and try new combinations or new things … assess the results if they were better … test new strategies".
+- **Study:** `docs/research/fno/2026-10-27-genome-round3/` (`lab.py`, `test_lab.py`, `freeze.json`, `analyze.py`, `results.json`, `README.md`). Freeze `3b8f9ef` was committed before scoring.
+- **What ran:**
+  - 2,217 full replays through the shipped single-leg book. The run-time parity gate passed (13 trades, ₹10,801.09).
+  - Five new entry families (TREND_PULLBACK, PDL_BREAK, VWAP_BAND, MOMO_BURST, ENSEMBLE) and new genes (SENSEX confirmation, multi-day trend, AM/PM, VWAP-lost exit, delta 0.55/0.65, nearest/next expiry), with cross-family crossover.
+  - An anchored walk-forward of the whole search (F1/F2/F3 test blocks, 16 sessions).
+  - A random-entry NULL family with the same budget.
+- **Verdict (frozen rule): the search fails.**
+  - Over the 16 test sessions, the REAL walk-forward made +₹1,011 on 6 trades (1 of 3 folds positive).
+  - NULL made +₹3,682 on 9; SHIPPED made +₹9,528 on 4.
+  - Keep the shipped book.
+- **Learning:**
+  - Past rank does not predict future rank: A against B Spearman −0.23; week to week +0.08.
+  - Random entries with good exits made money (66% of NULL genomes were positive; the best made +₹28,265).
+  - The let-winners-run exit genes (3R, LOOSE, holding trend days) are the most stable.
+  - Delta 0.65 and next-week expiry mostly lose trades to the risk cap; filters mostly remove trades.
+  - Evolution barely improved on the first random draw.
+  - The fitness favoured sparse traders.
+- **Most consistent on seen data:** TREND_PULLBACK (FINAL pick). 14 trades, +₹17,347, max DD ₹3,418, 8 green / 1 red days, 6 / 0 weeks, all 23 neighbours profitable, direction-flip −₹11,761. It is a forward-test candidate only.
+- **O27g forward panel B:** `docs/research/fno/2026-10-28-forward-panel-b/` (`panel_b.py`, `test_panel_b.py` with 3 passing tests, `freeze.json`, `README.md`). It was frozen before Oct 28. Arms:
+  - SHIPPED;
+  - O27F_TREND_PULLBACK;
+  - O27F_ENSEMBLE_EFF_MOMO;
+  - O27E_EFFICIENCY_BREAK;
+  - NULL_CONTROL.
+
+  It uses panel A's rule, and a candidate must also beat the random-entry control. A pinned copy is called by panel A's 16:00 launcher.
+- Tests: 7 lab tests and 3 panel B tests passed. No runtime, setting, paper, live or panel A change; nothing is promoted.
+- Remaining:
+  - the owner registers the 16:00 task (panel A's `register_task.ps1`, which covers both panels);
+  - read both reports weekly;
+  - decide after Nov 27;
+  - a future search needs a per-trade or frequency-aware fitness.
+
+## October 27 — O27e novel F&O entry families (research completed; Dev only)
+
+- [Learning/results](research/simulation/2026-10-27-fno-novel-families/ANALYSIS.md)
+  and [audit notes](research/simulation/2026-10-27-fno-novel-families/COMPLETION.md).
+- Pre-score freeze: `3e2bcfe`; 121 genomes / 115 distinct A trade histories across
+  three novel entry families. Exact CURRENT parity, 123 effective settings match.
+- Efficiency break models +INR 31,063.33 versus shipped +10,801.09, but closed-trade
+  drawdown 6,748.74 fails the frozen B risk cap. Neighbour sensitivity is fragile.
+  Compression loses; failed auction has no eligible arm. No candidate qualifies.
+- All dates seen; 29 archived sessions / 30 expected, September 18 unavailable.
+  Eight sessions have recording gaps >180s. No untouched-validation/profit claim.
+- Final regression: 57 pass, two existing warnings. Independent audit reconciles
+  128 closed trade records and 121 arm metrics; frozen source/data remain intact.
+- Generic skill REPORT is INVALID for its pre-freeze HEAD pin after the required
+  freeze commit. Failure retained; separate source/input/raw-ledger audit passes.
+- Research files and local commits only; no application, Production, settings,
+  broker, paper rules, scheduler, pinned O27c panel, push or deployment changes.
+- Remaining: separately approved prospective evidence; keep shipped rules.
+- Rollback: ordinary Git removal of isolated research; no runtime caller imports it.
+
 # Trading Sentinel — next-agent execution plan
 
-## October 26 — O26e The O26d recheck's two gaps fixed: each research trade resolved under its own saved execution, minute bars used only when they are the whole session (done, Dev, commit `1d99c12`, branch `codex/production-correction-hedge-p0`, pushed)
+## October 27 — O27d The F&O strategy testing playbook: how the Oct 27 tests ran, where the Production data comes from, every strategy tried, how another agent tests their own, and the daily forward test (done, Dev, commit `ed3b9fa`, not pushed)
+
+- Owner ask (Oct 27, 20:20): "create a comprehensive documentation as to how did you run the test … where did you access the data for production … so that … another agent … can also do it. What all strategies have been used … everything about the daily recurring test".
+- Files:
+  - `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md` (new);
+  - `docs/research/fno/2026-10-27-consistency-grid/reference-scripts/` (the exploration and analysis scripts with a README; seen data, not evidence);
+  - `docs/RESEARCH_TESTING_METHOD.md` (pointer, and the F&O window ledger row updated: everything to Oct 26 seen for entries and exits; Oct 28 – Nov 27 held by the forward panel).
+- No code, setting or runtime change. Tests: not applicable (documentation only).
+- Remaining: as O27c; the owner registers the 16:00 task.
+
+## October 27 — O27c Forward panel: the best O27/O27b candidates replayed beside the shipped book on every new session, Oct 28 – Nov 27, from a pinned copy run daily (done, Dev, commit `e6af14b`, branch `codex/production-correction-hedge-p0`, not pushed)
+
+- Owner ask (Oct 27, 20:00): "integrate the best and then let's do this run tomorrow and ahead to test this in upcoming month".
+- Decision:
+  - Integrated as a forward test, not into the paper or live book. No candidate passed a held-out check.
+  - The proving week (Oct 26–30) freezes the paper single-leg rules, and the Nov 2–6 real-money test mirrors the paper book.
+- Panel (frozen in `docs/research/fno/2026-10-28-forward-panel/freeze.json` before Oct 28 existed):
+  - control: SHIPPED;
+  - evolution: EVO_PLATEAU_1, EVO_BEST_FITNESS and EVO_OR20_LET_RUN;
+  - O27: O27_PICK and O27_OR20_NOEMA.
+- Rule: promising = forward trades ≥ 5, net > 0, net without the best day > 0, net > SHIPPED, DD ≤ max(1.5 × SHIPPED, ₹5,000). Read on Nov 27; interim reports are provisional.
+- Files:
+  - `scripts/run_fno_forward_panel.py` (freeze/run: read-only export, replay, REPORT.md, latest.json, history.jsonl);
+  - `tests/test_fno_forward_panel.py` (provenance of every arm, rule, run outputs);
+  - the study README; atlas.
+- Daily operation:
+  - A byte-for-byte pinned copy of this commit's files sits in `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\`. Byte copies are used because Git converts line endings and the run checks source hashes.
+  - A Windows scheduled task, "Sentinel F&O forward panel", runs it at 16:00 IST Monday to Friday (StartWhenAvailable). The owner moved it from 06:30 on Oct 27 evening because the PC is usually off then. The export now includes the day's own finished session (`--include-finished-today`, from 15:50 IST; the quote collector's last tick is 15:40).
+  - Reports land in that copy's `docs\research\fno\2026-10-28-forward-panel\_local\REPORT.md`.
+  - Status: re-pinned for 16:00 by commit `3dc3342`; the pinned copy was rebuilt from it on Oct 27 at 20:20 IST (source and FNO settings hashes equal the freeze; `run_panel.cmd` ran end to end: export, 0 forward sessions, report, exit 0). The 16:00 IST Monday–Friday task is NOT registered yet: the agent's registration was refused by the permission check (persistence). The owner runs `register_task.ps1` from the pinned folder, or the agent runs `run_panel.cmd` on request.
+- Tests: `tests/test_fno_forward_panel.py` (new, 3) with the evolution, grid, shadow and replay suites: 41 passed (2 existing third-party deprecation warnings), 36 s. Tests do not show profitability.
+- Config impact: none in Dev or Production. Production is only read, via a read-only throwaway container at 16:00 IST, after the 15:40 close.
+- Rollback: `Unregister-ScheduledTask -TaskName "Sentinel F&O forward panel"`, then delete the pinned folder.
+- 16:00 change:
+  - `scripts/export_fno_replay_dataset.py` gained `--include-finished-today` (`FINISHED_AFTER_IST_MIN` 15:50); without the flag its behavior is unchanged.
+  - The panel passes the flag.
+  - The panel was re-frozen before any forward session (first freeze `e6af14b`). Tests: `test_fno_forward_panel.py` (5, two new), `test_oct18_sim_fidelity.py`, evolution and grid suites: 22 passed (27 s).
+- Remaining:
+  - Read the report weekly and decide on Nov 27.
+  - Fix the load-sensitive scheduler test.
+
+## October 27 — O27b The F&O evolution round: 17-gene genomes bred from the O27 grid's good arms plus literature genes, evolved on window A only, finalists checked once on B (done, Dev, freeze `3f97f2c`, results commit `080330d`, branch `codex/production-correction-hedge-p0`, not pushed)
+
+- Owner ask (Oct 27, evening): "do something like how the human gene works … see which parameters … on the winning days were working … make a good combination … add a little bit of more new thing … search the web for some parameters that you are not using … the combinations that did the worst … you do not even consider". The owner allowed stopping Production for RAM; not needed (6 cores are the limit; Production idles under 1% CPU).
+- Descriptive look at what the winning days had in common (window A only, 43 distinct grid entries):
+  - A few afternoon trend-day breakdowns, in the gap's direction, made most of the money.
+  - Breaks against the opening range's own drift did better.
+  - Going with the gap was better; a narrower range than usual was mildly better; a previous-session NR4 was worse.
+  - VWAP side never differed.
+- Plan (frozen in `docs/research/fno/2026-10-27-evolution/freeze.json` before scoring):
+  - 13 entry genes and 4 exit genes; seeds from the 31 eligible O27 arms (30-minute time stop and continuation dropped).
+  - Population 40, 10 generations, tournament 3, uniform crossover, 12% one-step mutation, 4 elites, 4 immigrants, seed 20261027.
+  - Fitness on A: (net − best day) ÷ max(DD, ₹1,000) − 0.5 per losing half; fewer than 8 trades is infeasible.
+  - 5 finalists ranked by the median fitness of the genome and its one-step neighbours.
+  - B check: ≥ 3 trades, net ≥ 0, DD ≤ max(1.5 × shipped, ₹5,000); "B without Oct 21/23/26" shown for information.
+  - The shipped genome must equal CURRENT on A.
+- Files and contracts:
+  - `python-engine/fno_shadow.py`: the research genes on `FnoShadowVariant`, all defaulting to the base behavior:
+    - `ema_spans`, `buffer_atr`, `stretch_buffer`, `min_rvol`;
+    - `vwap_side`, `or_bias` (with/against), `gap_align`;
+    - `max_or_width_ratio`, `narrow_prior_days`, `latest_entry_min`;
+    - `stop_atr_mult`, `target_r`.
+  - New helpers in `fno_shadow.py`: `_prior_sessions` (cached per frame window) and `_gene_reject`.
+  - `scripts/run_fno_evolution.py`: freeze/run, the GA, plateau, holdout, allele effects.
+  - Tests: `tests/test_fno_evolution.py` (new), and one gene test in `test_fno_shadow.py`.
+- Tests: focused `tests/test_fno_evolution.py tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py tests/test_fno_orchestrator.py`: 73 passed (2 existing third-party deprecation warnings), 39 s; the full suite runs before the results commit. Tests do not show profitability.
+- Config impact: none. No live shadow sets a gene, and no setting, table, paper or live rule changes. Proving week untouched.
+- Rollout: research only. A pass becomes, on the owner's word, a forward-only replay from Oct 28. Rollback: revert (no runtime caller sets a gene).
+- [x] Run Oct 27, 18:42–19:40 IST (10 workers; Production left up): 400 bred plus 117 neighbour evaluations. Parity held.
+  - Verdict: `NONE_PASSED_KEEP_SHIPPED`.
+  - The finalists (EMA 21/50 kept; OR20/OR30, width ≤ 1.25×, lock off/late, T75, trail 1.5) earned +₹15k to +₹21k on A, against the shipped +₹7,286. On B every one made 0–1 trades: the EMA check refused the late-October trends, so all failed "≥ 3 trades".
+  - Allele lessons: first confirmation, NR4/NR7, tight range caps, a 12:00 cutoff, stretch, RVOL 1.5 and both opening-range bias filters mostly killed trading. The shipped RVOL, target, stop, buffer and cutoff sit at or near the best alleles.
+  - Genes interact: "let it run" exits on the shipped entry lowered A to +₹2,917.
+- Remaining (owner's call):
+  - A forward-only panel from Oct 28: shipped, evolved finalist 1, and `OR20_NOEMA|LOCK_LATE|T75|TR1.5`. Dev replay after each sealed session; no Production change.
+  - The load-sensitive scheduler test (see the handover).
+
+## October 27 — O27 The F&O consistency grid: 360 entry × exit combinations of the single-leg book, ranked for consistency, frozen before scoring (done, Dev, freeze `d4cfb7e`, results commit `32f4271`, branch `codex/production-correction-hedge-p0`, not pushed)
+
+- Owner ask (Oct 27, after the close): "test multiple strategies mix and match … I don't want the most earning one. I want the one that is most consistent", using the archived F&O days. Earlier the same day: make the book able to take small profits instead of only filtering.
+- Problem:
+  - The single-leg book made one trade in six sessions (Oct 19–26).
+  - On Oct 21, 23 and 26 the shipped break fired on the right bar. The lagging multi-day EMA(21/50) check rejected it, and "fresh break only" then lost the whole trend day.
+  - Quick-scalp designs explored on seen data: 12 single-leg designs all lost after charges (−₹427 to −₹8,932). Of 6 spread versions, one made +₹962 over 22 trades (noise). Scratchpad only, not part of the frozen grid.
+- Plan (frozen in `docs/research/fno/2026-10-27-consistency-grid/freeze.json` before any arm was scored):
+  - 10 entries (OR30 shipped, OR20, OR45, CONFIRM1, CONT, each with and without the EMA check) × 36 exits (lock TIGHT/LIVE/LATE/OFF × time stop 30/45/75 × trail 0.6/1.0/1.5) = 360 arms, plus a parity arm.
+  - The full live book is replayed for each arm over 29 sealed sessions (Sep 10 – Oct 26).
+  - Ranking uses the median consistency score of the arm and its one-step exit neighbours on A (Sep 10 – Oct 9), then a do-no-harm check on B (Oct 12 – Oct 26).
+  - Rule and caveats are in the study README. All data is seen; B is partly circular for the no-EMA arms.
+- Files and contracts:
+  - `python-engine/fno_shadow.py`: `FnoShadowVariant.ema_filter` (default True; the live shadows are unchanged).
+  - `python-engine/fno_policy_replay.py`: `ReplayPolicy.signal_variant` takes a name or a variant object; `run_replay(policy=str | ReplayPolicy, data=None)`.
+  - `scripts/run_fno_consistency_grid.py`: freeze/run, a per-session parse cache under `_local/`, the frozen rule.
+  - Tests: `tests/test_fno_consistency_grid.py` (new), plus one each in `test_fno_shadow.py` and `test_fno_policy_replay.py`.
+- Acceptance:
+  - The parity arm trades exactly as CURRENT.
+  - `run` refuses changed inputs and scores each arm once.
+  - Results are reported with A/B/full-window figures, CURRENT's rank and the contamination caveat.
+- Tests: focused suites `tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py`: 35 passed (2 existing third-party deprecation warnings), 23 s; the full suite runs before the results commit. Tests do not show profitability.
+- Config impact: none. No setting, table, live shadow, paper or live rule changes. Proving-week rules untouched.
+- Rollout: research only; nothing to deploy. A recommendation becomes, on the owner's word, a broker-free live shadow plus a nightly replay forward from Oct 28. Rollback: revert the commit (no runtime caller).
+- [x] Grid run Oct 27, 16:39–17:37 IST (6 workers, Production left running); results are in the study README and `results.json`.
+  - Parity held.
+  - Verdict under the frozen rule: `SHADOW_CANDIDATE`, `OR20|LOCK_LATE|T75|TR1.5`.
+    - All windows: 11 trades, +₹12,916, max DD ₹2,877.
+    - It made **0 trades in B** (Oct 12–26), so its check tested nothing. The rule's gap (zero trades pass "net ≥ 0") was found after scoring; it is reported, not repaired.
+  - CURRENT ranks 27th of the 32 eligible arms (83rd percentile of all 360 on full-window CS).
+  - Post hoc, if at least one B trade had been required: `OR20_NOEMA|LOCK_LATE|T75|TR1.5` (all windows: 19 trades, +₹30,567, DD ₹3,423). Its B trades fall on the days that motivated the idea.
+  - Robust across arms:
+    - The 20-minute range is the most robust entry family.
+    - A 30-minute time stop is worst.
+    - Lock and trail settings barely matter.
+    - CONT with the EMA check loses (1 of 36 exits profitable).
+    - The EMA check depends on the regime: removing it raised net in only 1–4 of 36 exits on A but in 36/36 on B.
+    - No arm earns daily.
+  - 32 no-EMA arms hold one Oct 21 put that cannot be priced (deeper in the money than the archived strikes).
+- Remaining (owner's call):
+  - Forward-only evidence: re-export after each sealed session and replay the frozen pick, the post-hoc no-EMA arm and CURRENT on sessions from Oct 28. No Production change; proving-week and Nov 2 plans untouched.
+  - A smarter, regime-aware trend check is a new hypothesis, to be frozen before forward scoring.
+  - Decide after about 10 forward sessions.
+
+## October 26 — O26e The O26d recheck's two gaps fixed: each research trade resolved under its own saved execution, minute bars used only when they are the whole session (done, Dev, commit `1d99c12`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26, 21:00): the recheck (`docs/2026-10-26-o26d-independent-recheck.md`, committed with this slice): "Fix if you think it's an issue … Merge and deploy in prod and rebuild and restart. The 22 let it be". Both findings were agreed.
 - [x] **F1 (P2): per-trade execution in the terminal pass.**
@@ -26,14 +230,26 @@
   - `docs/SYSTEM_CODE_ATLAS.md`; the recheck document.
 - Tests: full suite 6,123 passed, 1 failed, 4 skipped (11 min 26 s). The failure was a second queue-order test in `test_s5_provider_lanes.py` with the same Windows-clock assumption. All five queue-order tests now run at `QUEUE_RATE` 20/s; the file then passed 3 of 3 alone and 12 of 12 run four at a time. No engine code changed after the full run. Focused: tracker and mirror 52, shadow 25. The reviewer's recheck scenarios: 6 passed, and the 2 defect reproductions now fail. Tests do not show profitability.
 - Config impact: no setting, no table. Paper tracker: minute bars are used on fewer days (more stop-first results).
-- Rollout: PR to `evolve/smart-strategies` with O26–O26e, merged and deployed on the owner's instruction (receipt below when done). Rollback: the previous images tagged `sentinel-rollback/<service>:f9547c5-20261026`; the additive `partner_watch_trips` table stays.
+- Rollout: PR #119 to `evolve/smart-strategies` with O26–O26e, merged and deployed on the owner's instruction (receipt below). Rollback: the previous images tagged `sentinel-rollback/<service>:f9547c5-20261026`; the additive `partner_watch_trips` table stays.
+- **Rollout receipt (done Oct 26, 21:35–21:44 IST):**
+  - PR #119 merged as a merge commit, `3b945eb` on `evolve/smart-strategies`, carrying O26 to O26e (`f9547c5` kept; the release branch had no commit of its own beyond its merges).
+  - Backups, outside the repositories, in `C:\Users\Urveesh\sentinel-operations\production-rollout-20261026-o26\`:
+    - 8 SQLite databases as single-step online snapshots from a read-only, network-less sidecar, every one `quick_check=ok` (cache.db 3.20 GB in 43 s);
+    - the previous images tagged `sentinel-rollback/<service>:f9547c5-20261026`.
+  - Production: on `evolve/smart-strategies` with no tracked change, `git merge --ff-only` to `3b945eb`.
+  - Build: gateway, engine and agent built one at a time, stamped `3b945eb` / `2026-10-26T16:10:09Z`; each image's stamp checked.
+  - Engine, gateway and agent recreated one at a time (`--no-deps --no-build --force-recreate`), each healthy before the next; nginx restarted and healthy.
+  - `scripts/verify_deployment.py --expected-sha 3b945eb…` passed (exit 0, verified 16:13:58 UTC); the receipt is in `%USERPROFILE%\sentinel-operations\release-receipts\`.
+  - Env audit, read-only, before and after (switches, times and presence only): identical except the release SHA. `FNO_LIVE_TEST_ENABLED` False, the owner halt on (`momentum,penny,edge`). No `.env` change.
+  - After: no traceback in the engine, gateway or agent logs; the scheduler jobs registered; `partner_watch_trips` created (26 columns).
+  - The 22 censored research trades of Oct 26 stay as they are (owner, Oct 26).
 - Remaining:
   - The chandelier look-ahead (unchanged).
   - SEBI's December 7 CAS timings: confirm before that date.
   - Oct 26's 22 censored research trades: the owner said leave them.
   - Check SADHNANIQ's next-session close.
 
-## October 26 — O26d The independent review of O26–O26c fixed: the daily tracker orders a day's exits, unknown warning evidence kept apart from "no warning", a partly filled order sized as it fills, the frozen score really frozen, the closing-auction exit only with dated evidence, no network from tests, the one flaky scheduler test (done, Dev, commit `4205eef`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26d The independent review of O26–O26c fixed: the daily tracker orders a day's exits, unknown warning evidence kept apart from "no warning", a partly filled order sized as it fills, the frozen score really frozen, the closing-auction exit only with dated evidence, no network from tests, the one flaky scheduler test (done, Dev, commit `4205eef`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26 evening), on the independent review (`docs/2026-10-26-independent-development-review.md`, committed with this slice): "Please fix this make the system better".
 - Current state: Production runs `f9547c5` (PR #118). O26, O26b, O26c and O26d are Dev only.
@@ -96,7 +312,7 @@
   - Oct 26's 22 censored research trades: the owner's call (Production has the dated master for Oct 26).
   - Check SADHNANIQ's next-session close.
 
-## October 26 — O26c The Oct 26 audit's findings fixed: no buy sent after a halt, no check sent past its prices, closing-auction stocks scored, the daily tracker takes the stop first, the test suite never reaches the network; two partner messages say more (done, Dev, commit `a848bcb`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26c The Oct 26 audit's findings fixed: no buy sent after a halt, no check sent past its prices, closing-auction stocks scored, the daily tracker takes the stop first, the test suite never reaches the network; two partner messages say more (done, Dev, commit `a848bcb`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26): the day's audit (`docs/2026-10-26-production-deep-audit.md` in Production): "if you have any improvement for the partner system or for the trading, go ahead with the working and the enrichment".
 - Current state (the audit's O26-D1):
@@ -153,7 +369,7 @@
   - Oct 26's 22 censored identities: the owner's call.
   - Check SADHNANIQ's next-session close.
 
-## October 26 — O26b O26's open items, on the owner's go-ahead: a far bigger buy still warns on a quiet day; every trade stored during the day; the check's warnings scored by a frozen rule (done, Dev, commit `cf6befc`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26b O26's open items, on the owner's go-ahead: a far bigger buy still warns on a quiet day; every trade stored during the day; the check's warnings scored by a frozen rule (done, Dev, commit `cf6befc`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26): "Go ahead do it ensure quality of development". This covers O26's three open items: Quiet lets the size warning through, each trade is saved during the day, and the warnings are checked later for whether they predict losses.
 - Done:
@@ -193,7 +409,7 @@
   - The first verdict needs at least 20 warned closed trades on days from Oct 27, and the code must be running in Production to store them.
   - Oct 26's trades reach `partner_orders` with the 15:50 sync, not `partner_watch_trips` (this code was not deployed); it is the design day anyway.
 
-## October 26 — O26 The partner's first watched day: the day so far told once a step of their cash, through "Quiet today"; a run figure that agrees with its warning (done, Dev, commit `6ec5ce1`, branch `codex/production-correction-hedge-p0`, pushed, not deployed)
+## October 26 — O26 The partner's first watched day: the day so far told once a step of their cash, through "Quiet today"; a run figure that agrees with its warning (done, Dev, commit `6ec5ce1`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26), after the first watched day: make the system flexible and smarter for most cases, not trained on one day, always towards better profit; improvements in Dev only.
 - Production evidence, Oct 26 (read-only, Production `f9547c5`):

@@ -1,14 +1,86 @@
+## October 27 — O27h Trend-day pullback shadow (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
+
+- [x] The shadow variant, its replay arm (exactly the lab's 14 trades), the owner message and the tests.
+- [ ] Oct 28: the owner sees a message if the pullback signals (from 11:30). Forward panel B scores its full trade after 16:00, once the owner has registered the task.
+- [ ] Nothing is promoted on one day; panel B's frozen rule is read after Nov 27.
+
+## October 27 — O27f genome round 3 (done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
+
+- [x] O27f lab, tests (7) and freeze committed before scoring (`3b8f9ef`); the frozen run is done (2,217 replays, parity gate passed); results are written up.
+- [x] O27g forward panel B frozen before Oct 28, with 3 tests passing; pinned copy made; panel A's launcher calls it.
+- [ ] Owner: register the 16:00 Mon–Fri task (`register_task.ps1` in the panel A pinned folder; it now runs both panels).
+- [ ] Read both panel reports weekly. The frozen rules are read after Nov 27. Nothing is promoted on seen data or during a proving week.
+
+## October 27 — O27e novel F&O entry families (research completed; Dev only)
+
+- [Learning/results](research/simulation/2026-10-27-fno-novel-families/ANALYSIS.md)
+  and [audit notes](research/simulation/2026-10-27-fno-novel-families/COMPLETION.md).
+- Pre-score freeze: `3e2bcfe`; 121 genomes / 115 distinct A trade histories across
+  three novel entry families. Exact CURRENT parity, 123 effective settings match.
+- Efficiency break models +INR 31,063.33 versus shipped +10,801.09, but closed-trade
+  drawdown 6,748.74 fails the frozen B risk cap. Neighbour sensitivity is fragile.
+  Compression loses; failed auction has no eligible arm. No candidate qualifies.
+- All dates seen; 29 archived sessions / 30 expected, September 18 unavailable.
+  Eight sessions have recording gaps >180s. No untouched-validation/profit claim.
+- Final regression: 57 pass, two existing warnings. Independent audit reconciles
+  128 closed trade records and 121 arm metrics; frozen source/data remain intact.
+- Generic skill REPORT is INVALID for its pre-freeze HEAD pin after the required
+  freeze commit. Failure retained; separate source/input/raw-ledger audit passes.
+- Research files and local commits only; no application, Production, settings,
+  broker, paper rules, scheduler, pinned O27c panel, push or deployment changes.
+- Remaining: separately approved prospective evidence; keep shipped rules.
+- Rollback: ordinary Git removal of isolated research; no runtime caller imports it.
+
 # Handover receipt and operator checklist
 
-## October 26 — O26e The O26d recheck's two gaps fixed (Dev, commit `1d99c12`, pushed)
+## October 27 — O27d F&O strategy testing playbook (Dev, commit `ed3b9fa`, not pushed)
+
+- [x] `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md`, reference scripts, and the method doc's pointer and F&O ledger row.
+- [ ] Hand the playbook to any agent testing F&O strategies. A new forward panel must be frozen before its start date.
+
+## October 27 — O27c F&O forward panel (Dev, commit `e6af14b`, not pushed)
+
+- [x] Panel and rule frozen before Oct 28 (`docs/research/fno/2026-10-28-forward-panel/freeze.json`).
+- [x] Tests: `tests/test_fno_forward_panel.py` (new, 3) with the evolution, grid, shadow and replay suites: 41 passed (2 existing third-party deprecation warnings), 36 s.
+- [ ] Pinned copy and 16:00 IST (Monday–Friday) scheduled task: re-pinned for 16:00 by commit `3dc3342`; the pinned copy was rebuilt from it on Oct 27 at 20:20 IST (source and FNO settings hashes equal the freeze; `run_panel.cmd` ran end to end: export, 0 forward sessions, report, exit 0). The 16:00 IST Monday–Friday task is NOT registered yet: the agent's registration was refused by the permission check (persistence). The owner runs `register_task.ps1` from the pinned folder, or the agent runs `run_panel.cmd` on request.
+- [ ] Weekly: read `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\docs\research\fno\2026-10-28-forward-panel\_local\REPORT.md`. Nov 27: apply the frozen rule; the owner decides.
+
+## October 27 — O27b F&O evolution round (Dev, freeze `3f97f2c`, results commit `080330d`, not pushed)
+
+- [x] Web parameters reviewed: the stocks-in-play ORB (5–25 min ranges, RVOL > 1, ATR stop), Crabel's stretch and NR4/NR7, gap and VWAP filters, a time cutoff. Our own variation: an EMA 9/21 trend check.
+- [x] What the winning days had in common (window A only) recorded in the study README.
+- [x] Genes, GA, fitness, plateau and B check frozen before scoring (`docs/research/fno/2026-10-27-evolution/freeze.json`).
+- [x] Tests: focused `tests/test_fno_evolution.py tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py tests/test_fno_orchestrator.py`: 73 passed (2 existing third-party deprecation warnings), 39 s; the full suite runs before the results commit.
+- [x] Run: verdict `NONE_PASSED_KEEP_SHIPPED`. The finalists earned +₹15k to +₹21k on A but made 0–1 trades on B (the EMA check refused late-October trends). Details are in the study README and `results.json`.
+- [x] Full suite after the gene code, run beside the 10-worker evolution:
+  - engine: 5,848 passed, 4 skipped, 1 failed (16 min 6 s); `scripts/tests` 287 passed.
+  - The failure, `test_scheduler_closures_invoke.py::test_a_tick_that_waited_for_the_fast_exit_skips_when_another_tick_ran_meanwhile` (await count 2 vs 1), is timing-sensitive under full CPU load. Alone, still under load, it passed 2 of 3.
+  - It does not touch `fno_shadow` or the research scripts.
+- [ ] Make that scheduler test independent of CPU load (open).
+- [ ] Owner decides on a forward-only replay of any passing genome. No paper or live change in the proving week.
+
+## October 27 — O27 F&O consistency grid (Dev, freeze `d4cfb7e`, results commit `32f4271`, not pushed)
+
+- [x] Read-only export of the Production archive, 29 sealed NIFTY sessions Sep 10 – Oct 26 (`_local/dataset/`, not in git).
+- [x] Dev and Production `FNO_*` settings compared by per-key hash: all 123 equal (names only printed).
+- [x] Grid and selection rule frozen before scoring (`docs/research/fno/2026-10-27-consistency-grid/freeze.json`).
+- [x] Tests: focused suites `tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py`: 35 passed (2 existing third-party deprecation warnings), 23 s; the full suite runs before the results commit.
+- [x] Grid run (361 arms, 58 min, 6 workers; Production left running). Parity held.
+  - Frozen verdict: `SHADOW_CANDIDATE` `OR20|LOCK_LATE|T75|TR1.5`, with 0 trades in B, so its check is empty (rule gap reported).
+  - CURRENT ranks 27th of 32 eligible.
+  - Details: study README.
+- [x] Full suite after the grid code: engine 5,844 passed, 4 skipped, 0 failed (14 min 14 s, run alongside the grid); `scripts/tests` 287 passed.
+- [ ] If an arm is recommended: the owner decides on a broker-free live shadow plus a forward replay. No paper or live change in the proving week.
+
+## October 26 — O26e The O26d recheck's two gaps fixed (Dev, commit `1d99c12`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] Each research trade's terminal pass uses its own saved execution; legacy records never get the closing-auction model (F1).
 - [x] Minute bars replace the stop-first result only when they cover the whole session with no gap over 5 minutes (F2).
 - [x] Tests: full suite 6,123 passed, 1 failed, 4 skipped (11 min 26 s). The failure was a second queue-order test in `test_s5_provider_lanes.py` with the same Windows-clock assumption. All five queue-order tests now run at `QUEUE_RATE` 20/s; the file then passed 3 of 3 alone and 12 of 12 run four at a time. No engine code changed after the full run. Focused: tracker and mirror 52, shadow 25. The reviewer's recheck scenarios: 6 passed, and the 2 defect reproductions now fail.
-- [ ] PR, merge and deploy of O26–O26e (owner instructed, Oct 26 evening): receipt to follow.
+- [x] PR #119 merged as `3b945eb` and deployed Oct 26, 21:35–21:44 IST: backups `quick_check=ok`, rollback images tagged, three images stamped and recreated one at a time, `verify_deployment` passed, switches unchanged (receipt in the plan).
 - [ ] Confirm SEBI's December 7 CAS timings before that date.
 
-## October 26 — O26d The independent review of O26–O26c fixed (Dev, commit `4205eef`, pushed, not deployed)
+## October 26 — O26d The independent review of O26–O26c fixed (Dev, commit `4205eef`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] Production runs `f9547c5` (PR #118); O26, O26b, O26c and O26d are Dev only.
 - [x] Daily paper exits are ordered: open first, T1 before T2, stop before target after the open (the breakeven stop included); entry-day open unused; minute bars on days the daily bar cannot order (R1).
@@ -24,7 +96,7 @@
 - [ ] Owner: Oct 26's 22 censored research trades stay censored unless you want a backfill.
 - [ ] Next session: SADHNANIQ should close once in each Smart book.
 
-## October 26 — O26c The Oct 26 audit's findings fixed; DAY charges and refusal size (Dev, commit `a848bcb`, pushed, not deployed)
+## October 26 — O26c The Oct 26 audit's findings fixed; DAY charges and refusal size (Dev, commit `a848bcb`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] Production runs `f9547c5` (PR #118); O26, O26b and O26c are Dev only.
 - [x] A halt tripped while a buy's cash is read stops the buy before the POST and gives its hold back (O26-H1).
@@ -39,7 +111,7 @@
 - [ ] Owner: Oct 26's 22 censored research trades stay censored unless you want a backfill.
 - [ ] Next session: SADHNANIQ should close once in each Smart book.
 
-## October 26 — O26b A far bigger buy still warns on a quiet day; trades stored during the day; warnings scored by a frozen rule (Dev, commit `cf6befc`, pushed, not deployed)
+## October 26 — O26b A far bigger buy still warns on a quiet day; trades stored during the day; warnings scored by a frozen rule (Dev, commit `cf6befc`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] On a quiet day, a buy over 1.5x the partner's usual size, or bigger right after a loss, still gets one short size warning (SIZE). It is dropped if the trade is sold before it goes.
 - [x] Every trade is stored as it changes (`partner_watch_trips`); `partner_watch_report <day>` lists them with the exact result after charges.
@@ -49,7 +121,7 @@
 - [x] Tests: partner files 633 passed. Full Dev (Windows venv) engine + scripts suites: 6,056 passed, 4 skipped, exit 0, 12 min 5 s (O26's 6,045 plus 11 new tests); the first full run had the one flaky test (fixed, above).
 - [ ] Rollout with the next PR (owner's go-ahead): engine only; the new table creates itself; no setting.
 
-## October 26 — O26 The trade watch tells the day so far once a step of the partner's cash; run figures agree with the warning (Dev, commit `6ec5ce1`, pushed, not deployed)
+## October 26 — O26 The trade watch tells the day so far once a step of the partner's cash; run figures agree with the warning (Dev, commit `6ec5ce1`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] DAY message: each further 10% of the day's cash lost today, once a step, also on a Quiet day. It gives the numbers (result, won and lost, buys soon after a loss, still open, the check to send) and never blocks.
 - [x] The check's and the plan's run figure are rounded down: "20%" always comes with the chased-spike warning.

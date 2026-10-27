@@ -1,0 +1,12 @@
+.........................................................                [100%]
+============================== warnings summary ===============================
+python-engine/tests/test_fno_shadow.py::test_authenticated_registry_and_comparison_endpoint
+  C:\Users\Urveesh\Desktop\trading-sentinel\python-engine\winvenv\Lib\site-packages\starlette\routing.py:657: DeprecationWarning: async generator function lifespans are deprecated, use an @contextlib.asynccontextmanager function instead
+    warnings.warn(
+
+python-engine/tests/test_fno_shadow.py::test_authenticated_registry_and_comparison_endpoint
+  C:\Users\Urveesh\Desktop\trading-sentinel\python-engine\winvenv\Lib\site-packages\httpx\_client.py:680: DeprecationWarning: The 'app' shortcut is now deprecated. Use the explicit style 'transport=WSGITransport(app=...)' instead.
+    warnings.warn(message, DeprecationWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+57 passed, 2 warnings in 37.18s

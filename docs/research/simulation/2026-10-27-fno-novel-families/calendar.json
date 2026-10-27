@@ -1,0 +1,25 @@
+{
+  "as_of": "2026-10-27",
+  "sources": [
+    "https://nsearchives.nseindia.com/content/circulars/FAOP71777.pdf",
+    "https://www.nseindia.com/static/products-services/equity-derivatives-contract-specifications"
+  ],
+  "holidays_in_window": [
+    "2026-09-14",
+    "2026-10-02",
+    "2026-10-20"
+  ],
+  "nifty_expiries_in_window": [
+    "2026-09-15",
+    "2026-09-22",
+    "2026-09-29",
+    "2026-10-06",
+    "2026-10-13",
+    "2026-10-19"
+  ],
+  "expiry_policy": "Tuesday, advanced to preceding trading day on an exchange holiday; Oct 20 advanced to Oct 19",
+  "missing_expected_archive_sessions": [
+    "2026-09-18"
+  ],
+  "limitations": "Contract lot/token identity still comes from recorded broker packets; this is an independent calendar cross-check, not a dated instrument-master reconstruction."
+}

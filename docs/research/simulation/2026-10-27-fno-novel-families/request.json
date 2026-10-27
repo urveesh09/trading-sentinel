@@ -1,0 +1,16 @@
+{
+  "schema": "sentinel_simulation_v1",
+  "start": "2026-09-10",
+  "end": "2026-10-26",
+  "as_of": "2026-10-27",
+  "timezone": "Asia/Kolkata",
+  "created_at": "2026-10-27T20:45:45.237604+05:30",
+  "repo": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel",
+  "production": "C:\\Users\\Urveesh\\Desktop\\Production_Trading-sentinel",
+  "modules": [
+    "fno_nifty_single",
+    "fno_novel_candidate_1",
+    "fno_novel_candidate_2"
+  ],
+  "whole_system_profit_available": false
+}
