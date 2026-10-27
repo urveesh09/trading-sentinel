@@ -85,7 +85,9 @@ def test_without_the_ema_filter_a_break_against_the_multi_day_trend_is_taken():
     assert taken.direction is FnoDirection.LONG
     risk = taken.close - taken.stop_underlying
     assert risk > 0 and taken.target_underlying == pytest.approx(taken.close + settings.FNO_TARGET_R * risk)
-    assert all(variant.ema_filter for variant in fno_shadow.VARIANTS.values())
+    # Every recorded opening-range shadow keeps it; [O27h] the trend-day pullback has no EMA check at all.
+    assert all(variant.ema_filter for variant in fno_shadow.VARIANTS.values()
+               if variant.freshness != "trend_pullback")
 
 
 def test_the_research_genes_each_change_one_check_and_default_to_the_base():
@@ -157,7 +159,7 @@ async def test_persistence_is_idempotent_and_comparison_separates_counts(db_path
     rows = fno_shadow.evaluate_fno_shadows(
         _bars(), "REGIME_1_BULL", IST.localize(datetime(2026, 7, 10, 10, 1)),
     )
-    assert await fno_shadow.persist_fno_shadow_results(db_path, rows) == len(fno_shadow.VARIANTS) == 5
+    assert await fno_shadow.persist_fno_shadow_results(db_path, rows) == len(fno_shadow.VARIANTS) == 6  # [O27h]
     assert await fno_shadow.persist_fno_shadow_results(db_path, rows) == 0
     comparison = await fno_shadow.fno_shadow_comparison(db_path)
     base = next(row for row in comparison["variants"] if row["variant"] == "FNO_BASE")
@@ -359,3 +361,71 @@ def test_pullback_resumed_reads_closed_bars_both_ways():
     short = frame([100, 97, 90, 96, 92], [101, 98, 92, 99, 95], [99, 96, 88, 94, 91])
     assert fno_shadow.pullback_resumed(short, False, 98.0, 4.0, 0.25)
     assert not fno_shadow.pullback_resumed(short, True, 98.0, 4.0, 0.25)            # not beyond a long level
+
+
+# ---- [O27h] the trend-day VWAP pullback shadow --------------------------------------------------------------------
+
+def _pullback_day(pull=((25100, 25080), (25080, 25058)), resume=(25059, 25085), mirror=False) -> pd.DataFrame:
+    """Five flat sessions, then a steady climb from 24,998 to 25,100 by 11:20, a pullback toward VWAP (about
+    25,051) and a resumption bar at 11:35 closing above the previous bar's high. ``mirror`` reflects every price
+    about 25,000 (the same day, falling)."""
+    frames = [pd.DataFrame({"open": 25000.0, "high": 25010.0, "low": 24990.0, "close": 25000.0, "volume": 100.0},
+                           index=pd.date_range(f"{day} 09:15", periods=74, freq="5min"))
+              for day in ("2026-07-03", "2026-07-06", "2026-07-07", "2026-07-08", "2026-07-09")]
+    rows, previous = [], 24998.0
+    for step in range(26):
+        rows.append((previous, 25000.0 + 4 * step))
+        previous = 25000.0 + 4 * step
+    rows += [*pull, resume]
+    opens, closes = [float(o) for o, _ in rows], [float(c) for _, c in rows]
+    frames.append(pd.DataFrame({"open": opens, "high": [max(o, c) + 1 for o, c in zip(opens, closes)],
+                                "low": [min(o, c) - 3 for o, c in zip(opens, closes)], "close": closes,
+                                "volume": 100.0}, index=pd.date_range("2026-07-10 09:15", periods=len(rows), freq="5min")))
+    frame = pd.concat(frames)
+    if mirror:
+        frame = pd.DataFrame({"open": 50000 - frame["open"], "high": 50000 - frame["low"],
+                              "low": 50000 - frame["high"], "close": 50000 - frame["close"],
+                              "volume": frame["volume"]}, index=frame.index)
+    return frame
+
+
+def _pullback(frame, hhmm="11:41", regime="REGIME_1_BULL"):
+    now = IST.localize(datetime.fromisoformat(f"2026-07-10 {hhmm}:00"))
+    return fno_shadow._variant_signal(frame, regime, now, fno_shadow.VARIANTS["FNO_TREND_PULLBACK"])
+
+
+def test_trend_pullback_takes_the_resumption_bar_both_ways_with_its_stop_and_3r_target():
+    up, down = _pullback(_pullback_day()), _pullback(_pullback_day(mirror=True))
+    assert (up.bar_ts, up.direction, down.direction) == ("2026-07-10 11:35:00", FnoDirection.LONG,
+                                                         FnoDirection.SHORT)
+    assert up.close == 25085.0 and down.close == 24915.0 and up.atr == pytest.approx(down.atr)
+    assert up.stop_underlying == pytest.approx(25085.0 - 1.5 * up.atr)
+    assert up.target_underlying == pytest.approx(25085.0 + 3.0 * 1.5 * up.atr)
+    assert down.stop_underlying == pytest.approx(24915.0 + 1.5 * down.atr)
+    assert down.target_underlying == pytest.approx(24915.0 - 4.5 * down.atr)
+
+
+def test_trend_pullback_needs_the_window_a_real_pullback_a_resumption_and_no_crisis():
+    assert _pullback(_pullback_day(), "11:21").reject_reason == "before_trend_window"       # bar closes 11:20
+    assert _pullback(_pullback_day(), "11:36").reject_reason == "no_trend_pullback"         # the pullback bar
+    shallow = _pullback_day(pull=((25100, 25098), (25098, 25096)), resume=(25096, 25104))
+    assert _pullback(shallow).reject_reason == "no_trend_pullback"                         # never near VWAP
+    assert _pullback(_pullback_day(), regime="REGIME_3_CRISIS").reject_reason == "regime_crisis"
+    future = _pullback_day()
+    assert _pullback(future, "11:39").bar_ts == "2026-07-10 11:30:00"                       # 11:35 not closed yet
+
+
+def test_trend_pullback_is_registered_and_leaves_every_other_variant_unchanged():
+    variant = fno_shadow.VARIANTS["FNO_TREND_PULLBACK"]
+    assert (variant.freshness, variant.trend_atr, variant.trend_side, variant.pullback_touch_atr,
+            variant.entry_from_min, variant.stop_atr_mult, variant.target_r) == ("trend_pullback", 1.5, 0.75, 0.5,
+                                                                                  690, 1.5, 3.0)
+    for name, other in fno_shadow.VARIANTS.items():
+        if name != "FNO_TREND_PULLBACK":
+            assert (other.trend_atr, other.trend_side, other.pullback_touch_atr, other.entry_from_min) == (None,) * 4
+    from fno_policy_replay import resolve_policy
+    arm = resolve_policy("FNO_SIG_TREND_PULLBACK")
+    assert arm.signal_variant == "FNO_TREND_PULLBACK" and arm.manage_every_observation
+    assert dict(arm.exit_overrides) == {"FNO_PROFIT_LOCK_ENABLED": False, "FNO_TIME_STOP_MIN": 120.0,
+                                        "FNO_TRAIL_ATR_MULT": 2.0}
+

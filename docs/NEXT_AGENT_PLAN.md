@@ -1,3 +1,30 @@
+## October 27 — O27h The trend-day VWAP pullback runs live as a shadow beside the shipped strategy, with an owner message when it signals (Dev, commit pending (recorded in the identity commit), deploy on the owner's instruction)
+
+- Owner ask (Oct 27, 23:05): "your trend-day VWAP pullback implement that in fno right now, and make the current strategy as a shadow or make this a shadow and continue the current strategy … commit push it all and merge and then deploy in prod".
+- **Decision: the pullback is the shadow; the shipped opening-range break keeps trading.** The owner offered either. The proving week (Oct 26–30) freezes the paper single-leg rules, and the real-money test (Nov 2–6) mirrors the paper book. Swapping the main strategy now would void both. Nothing here can place or size an order.
+- **Behaviour:**
+  - `fno_shadow.VARIANTS["FNO_TREND_PULLBACK"]` (freshness `trend_pullback`) is evaluated on every NIFTY tick with the other shadows and stored in `fno_shadow_evaluations`.
+    - The rule: from 11:30, on a trend day (close ≥ 1.5 ATR from the day's open, ≥ 75% of today's closes on that side of VWAP), a low (high) of the last 3 bars within 0.5 ATR of VWAP and a resumption bar (close beyond the open, the previous bar's extreme and VWAP).
+    - Stop 1.5 ATR, target 3R; no signal in a crisis regime.
+  - `fno_shadow_alert.check` runs on each F&O tick (when `FNO_SHADOW_ENABLED`). It sends one owner message per new thesis (day and direction) whose bar closes inside the entry window: the bar, the futures level, stop, target, exits, and the option ask when a resolved chain priced it.
+    - A failed send retries on the next tick. Told theses are kept in `fno_shadow_alert_told`.
+    - `FNO_SHADOW_OWNER_ALERTS` (default true) silences the messages.
+  - Replay arm `FNO_SIG_TREND_PULLBACK`: the shadow through the whole book with the genome's exits (120-min time stop, 2-ATR trail, no profit lock).
+  - The full-book daily result comes from forward panel B (O27g, 16:00 IST).
+- **Proof:** the replay arm reproduces the O27f lab's 14 trades exactly over Sep 10 – Oct 26 (₹17,347.49; `docs/research/fno/2026-10-27-genome-round3/test_runtime_parity.py`). This is a seen-data result: the O27f walk-forward failed, so this is an observation, not a qualification.
+- Files:
+  - `python-engine/fno_shadow.py` (variant fields, the variant, `_trend_pullback_signal`);
+  - `python-engine/fno_policy_replay.py` (the arm);
+  - `python-engine/fno_shadow_alert.py` (new);
+  - `python-engine/config.py` (`FNO_SHADOW_OWNER_ALERTS`);
+  - `python-engine/fno_orchestrator.py` (one call after the risk alert);
+  - tests: `tests/test_fno_shadow.py` (+3; the variant count is now 6; the EMA assertion is limited to the opening-range shadows) and `tests/test_fno_shadow_alert.py` (4 new).
+- Tests: focused shadow, alert, replay and orchestrator 69 passed; runtime parity 2 passed; full engine suite 5,861 passed, 4 skipped, exit 0 (10 min 56 s); scripts 287 passed.
+- Config and migration: one new setting, default true; two additive tables created on first use. No `.env` change.
+- Rollout: PR to `evolve/smart-strategies`, merge and deploy on the owner's instruction (Oct 27).
+- Rollback: `FNO_SHADOW_OWNER_ALERTS=false` (messages) or `FNO_SHADOW_ENABLED=false` (all shadows), or revert the commit.
+- Remaining: read the shadow's messages on Oct 28; panel B scores its full trade after the close. Nothing is promoted before Nov 27 or during a proving week.
+
 ## October 27 — O27f genome round 3: new entry families, option-contract genes, a walk-forward of the search itself and a random-entry null (done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
 
 - Owner ask (Oct 27, 21:30, after reading O27e): "if you have learnt anything from that then go ahead and try new combinations or new things … assess the results if they were better … test new strategies".

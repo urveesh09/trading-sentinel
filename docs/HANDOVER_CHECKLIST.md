@@ -1,3 +1,9 @@
+## October 27 — O27h Trend-day pullback shadow (Dev, commit pending (recorded in the identity commit), deploy on the owner's instruction)
+
+- [x] The shadow variant, its replay arm (exactly the lab's 14 trades), the owner message and the tests.
+- [ ] Oct 28: the owner sees a message if the pullback signals (from 11:30). Forward panel B scores its full trade after 16:00, once the owner has registered the task.
+- [ ] Nothing is promoted on one day; panel B's frozen rule is read after Nov 27.
+
 ## October 27 — O27f genome round 3 (done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
 
 - [x] O27f lab, tests (7) and freeze committed before scoring (`3b8f9ef`); the frozen run is done (2,217 replays, parity gate passed); results are written up.

@@ -844,7 +844,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 72), `_read_cap` (line 76), `_record_management_read` (line 81), `_timed_database_operation` (line 111), `_management_quote` (line 132), `_oldest_quote_age_sec` (line 148), `_settle_exit_receipt` (line 165), `_fno_pool_paper` (line 226), `_fno_pool_live` (line 231), `_live_leg_enabled` (line 237), `_live_orders_enabled` (line 242), `_live_leg_managed` (line 247), `_load_dr_entry_inputs` (line 265), `_fno_equity` (line 335), `_fno_halted` (line 341), `_fetch_futures_bars` (line 363), `_record_shadow_observation` (line 371), `_schedule_shadow_observation` (line 388), `_manage_open_positions` (line 421), `_exit_event_recorder` (line 758), `_find_tagged_order` (line 770), `_recover_tagged_exit` (line 800), `_executor_for_position` (line 828), `_broker_mis_held` (line 841), `_page_live_exit_once` (line 873), `_live_exit_not_filled` (line 886), `_follow_working_exit` (line 920), `_book_exit_fill` (line 948), `_try_entry_for_leg` (line 993), `post_admission_entry_reject` (line 1291), `_insert_entry_position` (line 1309), `_manage_single_leg_books` (line 1320), `run_fno_tick` (line 1420), `_single_leg_entries` (line 1681), `fast_exit_has_work` (line 1853), `run_fno_fast_exit` (line 1870), `_bar_already_logged` (line 1912), `format_fno_telegram` (line 1934)
+Top-level declarations: `_now_min` (line 72), `_read_cap` (line 76), `_record_management_read` (line 81), `_timed_database_operation` (line 111), `_management_quote` (line 132), `_oldest_quote_age_sec` (line 148), `_settle_exit_receipt` (line 165), `_fno_pool_paper` (line 226), `_fno_pool_live` (line 231), `_live_leg_enabled` (line 237), `_live_orders_enabled` (line 242), `_live_leg_managed` (line 247), `_load_dr_entry_inputs` (line 265), `_fno_equity` (line 335), `_fno_halted` (line 341), `_fetch_futures_bars` (line 363), `_record_shadow_observation` (line 371), `_schedule_shadow_observation` (line 388), `_manage_open_positions` (line 421), `_exit_event_recorder` (line 758), `_find_tagged_order` (line 770), `_recover_tagged_exit` (line 800), `_executor_for_position` (line 828), `_broker_mis_held` (line 841), `_page_live_exit_once` (line 873), `_live_exit_not_filled` (line 886), `_follow_working_exit` (line 920), `_book_exit_fill` (line 948), `_try_entry_for_leg` (line 993), `post_admission_entry_reject` (line 1291), `_insert_entry_position` (line 1309), `_manage_single_leg_books` (line 1320), `run_fno_tick` (line 1420), `_single_leg_entries` (line 1686), `fast_exit_has_work` (line 1858), `run_fno_fast_exit` (line 1875), `_bar_already_logged` (line 1917), `format_fno_telegram` (line 1939)
 
 Engine dependencies: `affordability`, `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `fno_underlyings`, `kite_client`, `operator_alert`, `performance`
 
@@ -854,7 +854,7 @@ Related tests: `python-engine/tests/test_fno_orchestrator.py`
 
 Full-policy single-leg F&O replay over archived quotes (research only). The replay re-runs the *shipped* NIFTY single-leg paper book tick by tick on evidence the live system actually had: * futures 5-minute candles (``fut_candles``) for the day's front future, * every archived NIFTY quote batch (front future + ATM±5 calls/puts for two expiries, raw provider packets verified by ``verify_archive_event``), * the live ``fno_signals`` regime per bar (point-in-time, never re-derived). Decisions call the production code: ``evaluate_fno_mom`` (signal), ``fno_chain._parse_quote_entry`` + ``ChainSnapshot`` (chain view), ``fno_entry_plan.plan_single_leg_entry`` (strike, gates, sizing, max loss, reward/
 
-Top-level declarations: `FnoReplayError` (line 65), `ReplayPolicy` (line 72), `resolve_policy` (line 119), `Observation` (line 136), `ReplayData` (line 143), `_last_closed_bar` (line 280), `_aware` (line 287), `OpenLeg` (line 295), `Book` (line 327), `_close_record` (line 338), `SingleLegReplay` (line 362), `summarize` (line 640), `parity_report` (line 656), `run_replay` (line 673)
+Top-level declarations: `FnoReplayError` (line 65), `ReplayPolicy` (line 72), `resolve_policy` (line 126), `Observation` (line 143), `ReplayData` (line 150), `_last_closed_bar` (line 287), `_aware` (line 294), `OpenLeg` (line 302), `Book` (line 334), `_close_record` (line 345), `SingleLegReplay` (line 369), `summarize` (line 647), `parity_report` (line 663), `run_replay` (line 680)
 
 Engine dependencies: `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_exit_experiment`, `fno_exit_rules`, `fno_models`, `fno_risk`, `fno_shadow`, `fno_shared_risk`, `intraday_spread_archive_adapter`
 
@@ -908,13 +908,25 @@ Declared tables: `fno_risk_alert_state`
 
 Broker-free F&O opening-range paper-shadow experiment. The baseline delegates to the production evaluator verbatim. Variants consume the same already-fetched futures frame and, optionally, an already-resolved chain snapshot. This module has no executor, order, Kite, sizing, position, or ledger dependency and cannot influence a trading decision.
 
-Top-level declarations: `FnoShadowVariant` (line 33), `_json_safe` (line 76), `_json` (line 91), `_selected` (line 95), `pullback_resumed` (line 105), `_prior_sessions` (line 134), `_variant_signal` (line 158), `_gene_reject` (line 297), `evaluate_fno_shadows` (line 339), `attach_resolved_cost_estimates` (line 379), `init_fno_shadow_db` (line 432), `persist_fno_shadow_results` (line 454), `persist_fno_shadow_results_sync` (line 502), `fno_shadow_comparison` (line 507)
+Top-level declarations: `FnoShadowVariant` (line 33), `_json_safe` (line 88), `_json` (line 103), `_selected` (line 107), `pullback_resumed` (line 117), `_prior_sessions` (line 146), `_trend_pullback_signal` (line 170), `_variant_signal` (line 248), `_gene_reject` (line 389), `evaluate_fno_shadows` (line 431), `attach_resolved_cost_estimates` (line 471), `init_fno_shadow_db` (line 524), `persist_fno_shadow_results` (line 546), `persist_fno_shadow_results_sync` (line 594), `fno_shadow_comparison` (line 599)
 
 Engine dependencies: `config`, `cost_schedules`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_models`
 
-Related tests: `python-engine/tests/test_fno_shadow.py`
+Related tests: `python-engine/tests/test_fno_shadow.py`, `python-engine/tests/test_fno_shadow_alert.py`
 
 Declared tables: `fno_shadow_evaluations`
+
+## `python-engine/fno_shadow_alert.py`
+
+[O27h 2026-10-27] Tell the owner when the trend-day pullback shadow signals. Messages only; it never trades. On Oct 27 the owner asked for the O27f trend-day VWAP pullback to run as a shadow beside the shipped strategy and "see it work tomorrow". The paper and live books keep the shipped opening-range break (the proving week freezes their rules); ``fno_shadow`` records the pullback's every evaluation in ``fno_shadow_evaluations``. On each F&O tick this module reads today's accepted rows of the alerted variants and sends one owner message per new thesis (variant, day, direction): the bar, the futures level, its stop and target, and the option it would buy when a resolved chain priced it. A me
+
+Top-level declarations: `_points` (line 28), `alert_text` (line 32), `_init` (line 47), `_in_entry_window` (line 57), `check` (line 64)
+
+Engine dependencies: `config`, `fno_shadow`, `operator_alert`
+
+Related tests: `python-engine/tests/test_fno_shadow_alert.py`
+
+Declared tables: `fno_shadow_alert_told`
 
 ## `python-engine/fno_shared_risk.py`
 

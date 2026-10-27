@@ -113,6 +113,13 @@ POLICIES = {
     "FNO_SIG_OR_45": ReplayPolicy(name="FNO_SIG_OR_45", manage_every_observation=True, signal_variant="FNO_OR_45"),
     "FNO_SIG_CONTINUATION": ReplayPolicy(name="FNO_SIG_CONTINUATION", manage_every_observation=True,
                                          signal_variant="FNO_CONTINUATION"),
+    # [O27h 2026-10-27] The O27f FINAL pick with its own exits (time stop 120 min, trail 2 ATR, no profit lock).
+    # Over Sep 10 - Oct 26 it reproduces the O27f lab's 14 trades (a seen-data result; the walk-forward failed).
+    "FNO_SIG_TREND_PULLBACK": ReplayPolicy(name="FNO_SIG_TREND_PULLBACK", manage_every_observation=True,
+                                           signal_variant="FNO_TREND_PULLBACK",
+                                           exit_overrides=(("FNO_PROFIT_LOCK_ENABLED", False),
+                                                           ("FNO_TIME_STOP_MIN", 120.0),
+                                                           ("FNO_TRAIL_ATR_MULT", 2.0))),
 }
 
 
