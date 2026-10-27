@@ -86,6 +86,45 @@ The data is the O27 export (`docs/research/fno/2026-10-27-consistency-grid/_loca
 
 ---
 
-## Results
+## Results (run Oct 27, 18:42–19:40 IST, 10 workers; `results.json`)
 
-Pending: filled in after `run`.
+- **Verdict:** `NONE_PASSED_KEEP_SHIPPED`.
+  - Parity held: the shipped genome traded exactly as CURRENT on A.
+  - 400 genomes were bred over 10 generations, plus 117 neighbour evaluations (517 in all).
+- **What evolution found on A.** Best fitness went from 1.91 (the O27 pick) to 9.53. The finalists earned +₹15k to +₹21k on A with drawdowns of ₹1.5k–2.9k, against the shipped +₹7,286 / ₹1,991.
+  - The finalists converged on: a crossing break, the **EMA 21/50 check kept**, a 20- or 30-minute range, buffer 0.25–0.4 ATR, the range no wider than 1.25× usual, lock off or late, a 75-minute time stop and a 1.5-ATR trail.
+- **On B (Oct 12–26, never seen by evolution), every finalist made 0 or 1 trades.** The EMA 21/50 check refused the late-October trend days, as it did for the shipped book (1 trade, +₹3,515). Each failed "≥ 3 trades" (net ≥ 0 and drawdown passed), so none can be called better.
+  - Evolution amplified window A's regime. The winners are September–early-October specialists.
+
+| Plateau rank | Genome (non-shipped genes) | A: trades, net, DD | B: trades, net | Check |
+| --- | --- | --- | --- | --- |
+| 1 (2.75) | OR20, buffer 0.4, width ≤ 1.25×, stop 1.0 ATR, lock off, T75, trail 1.5 | 9, +15,330, 1,853 | 1, +2,568 | fail (trades) |
+| 2 (2.53) | OR30, RVOL 1.0, width ≤ 1.25×, target 1.2R, lock late, T75 (0.25R), trail 1.5 | 8, +17,502, 1,991 | 1, +2,568 | fail (trades) |
+| 3 (2.21) | OR30, buffer 0.4, RVOL 1.0, with the gap, width ≤ 1.25×, lock off, T75, trail 1.5 (best fitness, 9.53) | 8, +21,035, 1,461 | 1, +2,568 | fail (trades) |
+| 4–5 (1.81) | OR20, lock off, T75 (0.25R), trail 1.5 (± VWAP, which never mattered) | 11, +21,110, 2,877 | 0, 0 | fail (trades) |
+| shipped | — | 12, +7,286, 1,991 | 1, +3,515 | — |
+
+**What the genes taught.** Allele effects over all 517 evaluated genomes on A:
+- **Filters that mostly killed trading** (share of genomes with ≥ 8 trades):
+  - first-confirmation entries 0%;
+  - opening-range bias "against" 0% and "with" 12%;
+  - previous-day NR4/NR7 0%;
+  - range ≤ 0.8× usual 0% and ≤ 1.0× 11%;
+  - a 12:00 entry cutoff 0%;
+  - Crabel stretch buffer 5%;
+  - RVOL 1.5 9%.
+
+  The descriptive "against the bias did better" pattern did not survive as a rule: as a filter it removed too many trades. A pattern in past winners is not a strategy.
+- **The shipped values are at or near the best alleles:** RVOL 1.2, target 1.8R, stop 1.5 ATR, buffer 0.25 ATR, the 14:45 cutoff.
+- **The faster EMA 9/21 (our variation)** did not beat 21/50 on A: best 8.68, with 26% of genomes trading enough.
+- **Genes interact; they are not independently good.** "Let winners run" exits (lock off, T75, trail 1.5) on the *shipped* entry *lower* A to +₹2,917 (O27 grid). They pay only with particular entries, which is the mark of fitting one window.
+
+**Conclusion.**
+- The parameter space has been searched thoroughly: 360 grid arms plus 517 evolved genomes. Nothing beats the shipped book on data it was not tuned on, because the unseen window barely traded for any EMA-based entry.
+- What would decide it is forward evidence across a regime change, not more search on these 29 sessions.
+- A forward-only panel (owner's call, Dev replay, no Production change) would be:
+  - the shipped book;
+  - evolved finalist 1;
+  - the O27 post-hoc regime-agnostic entry `OR20_NOEMA|LOCK_LATE|T75|TR1.5`;
+  - scored with this round's check on sessions from Oct 28.
+- No genome is qualified, and tests do not show profitability.

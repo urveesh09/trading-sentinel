@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 27 — O27b The F&O evolution round: 17-gene genomes bred from the O27 grid's good arms plus literature genes, evolved on window A only, finalists checked once on B (in progress, Dev, branch `codex/production-correction-hedge-p0`)
+## October 27 — O27b The F&O evolution round: 17-gene genomes bred from the O27 grid's good arms plus literature genes, evolved on window A only, finalists checked once on B (done, Dev, freeze `3f97f2c`, results commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, not pushed)
 
 - Owner ask (Oct 27, evening): "do something like how the human gene works … see which parameters … on the winning days were working … make a good combination … add a little bit of more new thing … search the web for some parameters that you are not using … the combinations that did the worst … you do not even consider". The owner allowed stopping Production for RAM; not needed (6 cores are the limit; Production idles under 1% CPU).
 - Descriptive look at what the winning days had in common (window A only, 43 distinct grid entries):
@@ -27,7 +27,14 @@
 - Tests: focused `tests/test_fno_evolution.py tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py tests/test_fno_orchestrator.py`: 73 passed (2 existing third-party deprecation warnings), 39 s; the full suite runs before the results commit. Tests do not show profitability.
 - Config impact: none. No live shadow sets a gene, and no setting, table, paper or live rule changes. Proving week untouched.
 - Rollout: research only. A pass becomes, on the owner's word, a forward-only replay from Oct 28. Rollback: revert (no runtime caller sets a gene).
-- Remaining: run, then record the results and commit identity.
+- [x] Run Oct 27, 18:42–19:40 IST (10 workers; Production left up): 400 bred plus 117 neighbour evaluations. Parity held.
+  - Verdict: `NONE_PASSED_KEEP_SHIPPED`.
+  - The finalists (EMA 21/50 kept; OR20/OR30, width ≤ 1.25×, lock off/late, T75, trail 1.5) earned +₹15k to +₹21k on A, against the shipped +₹7,286. On B every one made 0–1 trades: the EMA check refused the late-October trends, so all failed "≥ 3 trades".
+  - Allele lessons: first confirmation, NR4/NR7, tight range caps, a 12:00 cutoff, stretch, RVOL 1.5 and both opening-range bias filters mostly killed trading. The shipped RVOL, target, stop, buffer and cutoff sit at or near the best alleles.
+  - Genes interact: "let it run" exits on the shipped entry lowered A to +₹2,917.
+- Remaining (owner's call):
+  - A forward-only panel from Oct 28: shipped, evolved finalist 1, and `OR20_NOEMA|LOCK_LATE|T75|TR1.5`. Dev replay after each sealed session; no Production change.
+  - The load-sensitive scheduler test (see the handover).
 
 ## October 27 — O27 The F&O consistency grid: 360 entry × exit combinations of the single-leg book, ranked for consistency, frozen before scoring (done, Dev, freeze `d4cfb7e`, results commit `32f4271`, branch `codex/production-correction-hedge-p0`, not pushed)
 
