@@ -88,6 +88,38 @@ def test_without_the_ema_filter_a_break_against_the_multi_day_trend_is_taken():
     assert all(variant.ema_filter for variant in fno_shadow.VARIANTS.values())
 
 
+def test_the_research_genes_each_change_one_check_and_default_to_the_base():
+    """[O27b] The 09:55 long break of ``_bars``: flat prior sessions (range 20, opening range 20), today's open
+    25,000, a 09:15-09:40 range closing at its open, a close of 25,017 just over the 25,015 level."""
+    bars = _bars()
+    now = IST.localize(datetime(2026, 7, 10, 10, 1))
+    base = replace(fno_shadow.VARIANTS["FNO_BASE"], name="GENE_BASE")
+
+    def signal(**genes):
+        return fno_shadow._variant_signal(bars, "REGIME_1_BULL", now, replace(base, **genes))
+
+    plain = signal()
+    assert plain.direction is FnoDirection.LONG
+    assert signal(ema_spans=(9, 21), vwap_side=True, gap_align=True, narrow_prior_days=4, max_or_width_ratio=1.25,
+                  min_rvol=1.0, latest_entry_min=14 * 60 + 45).direction is FnoDirection.LONG
+    assert signal(latest_entry_min=10 * 60).reject_reason == "after_latest_entry"
+    assert signal(or_bias="with").reject_reason == "opening_range_bias_not_with"      # the range closed at its open
+    assert signal(or_bias="against").direction is FnoDirection.LONG
+    assert signal(max_or_width_ratio=0.8).reject_reason == "opening_range_too_wide"
+    assert signal(min_rvol=50.0).reject_reason == "rvol_below_min"
+    assert signal(stretch_buffer=True).reject_reason == "no_or_break"       # stretch 10 points: level 25,020
+    wide = signal(stop_atr_mult=0.5, target_r=1.0)
+    assert wide.stop_underlying == pytest.approx(max(wide.or_low, wide.close - 0.5 * wide.atr))
+    assert wide.target_underlying == pytest.approx(wide.close + (wide.close - wide.stop_underlying))
+    # Every gene at its default is the base evaluator exactly.
+    assert (plain.stop_underlying, plain.target_underlying, plain.rvol) == pytest.approx(
+        (evaluate_fno_mom(bars, "REGIME_1_BULL", now).stop_underlying,
+         evaluate_fno_mom(bars, "REGIME_1_BULL", now).target_underlying,
+         evaluate_fno_mom(bars, "REGIME_1_BULL", now).rvol))
+    history = fno_shadow._prior_sessions(bars, DAY, 30)
+    assert len(history) == 5 and history[-1]["or_width"] == 20.0 and history[-1]["high"] - history[-1]["low"] == 20.0
+
+
 def test_confirmation_variant_accepts_only_first_bounded_bar_after_cross():
     bars = _bars(include_confirmation=True)
     now = IST.localize(datetime(2026, 7, 10, 10, 6))

@@ -1,5 +1,14 @@
 # Handover receipt and operator checklist
 
+## October 27 — O27b F&O evolution round (Dev, in progress)
+
+- [x] Web parameters reviewed: the stocks-in-play ORB (5–25 min ranges, RVOL > 1, ATR stop), Crabel's stretch and NR4/NR7, gap and VWAP filters, a time cutoff. Our own variation: an EMA 9/21 trend check.
+- [x] What the winning days had in common (window A only) recorded in the study README.
+- [x] Genes, GA, fitness, plateau and B check frozen before scoring (`docs/research/fno/2026-10-27-evolution/freeze.json`).
+- [x] Tests: focused `tests/test_fno_evolution.py tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py tests/test_fno_orchestrator.py`: 73 passed (2 existing third-party deprecation warnings), 39 s; the full suite runs before the results commit.
+- [ ] Run; record the results, the verdict and the commit identity.
+- [ ] Owner decides on a forward-only replay of any passing genome. No paper or live change in the proving week.
+
 ## October 27 — O27 F&O consistency grid (Dev, freeze `d4cfb7e`, results commit `32f4271`, not pushed)
 
 - [x] Read-only export of the Production archive, 29 sealed NIFTY sessions Sep 10 – Oct 26 (`_local/dataset/`, not in git).

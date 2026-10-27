@@ -1,5 +1,34 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 27 — O27b The F&O evolution round: 17-gene genomes bred from the O27 grid's good arms plus literature genes, evolved on window A only, finalists checked once on B (in progress, Dev, branch `codex/production-correction-hedge-p0`)
+
+- Owner ask (Oct 27, evening): "do something like how the human gene works … see which parameters … on the winning days were working … make a good combination … add a little bit of more new thing … search the web for some parameters that you are not using … the combinations that did the worst … you do not even consider". The owner allowed stopping Production for RAM; not needed (6 cores are the limit; Production idles under 1% CPU).
+- Descriptive look at what the winning days had in common (window A only, 43 distinct grid entries):
+  - A few afternoon trend-day breakdowns, in the gap's direction, made most of the money.
+  - Breaks against the opening range's own drift did better.
+  - Going with the gap was better; a narrower range than usual was mildly better; a previous-session NR4 was worse.
+  - VWAP side never differed.
+- Plan (frozen in `docs/research/fno/2026-10-27-evolution/freeze.json` before scoring):
+  - 13 entry genes and 4 exit genes; seeds from the 31 eligible O27 arms (30-minute time stop and continuation dropped).
+  - Population 40, 10 generations, tournament 3, uniform crossover, 12% one-step mutation, 4 elites, 4 immigrants, seed 20261027.
+  - Fitness on A: (net − best day) ÷ max(DD, ₹1,000) − 0.5 per losing half; fewer than 8 trades is infeasible.
+  - 5 finalists ranked by the median fitness of the genome and its one-step neighbours.
+  - B check: ≥ 3 trades, net ≥ 0, DD ≤ max(1.5 × shipped, ₹5,000); "B without Oct 21/23/26" shown for information.
+  - The shipped genome must equal CURRENT on A.
+- Files and contracts:
+  - `python-engine/fno_shadow.py`: the research genes on `FnoShadowVariant`, all defaulting to the base behavior:
+    - `ema_spans`, `buffer_atr`, `stretch_buffer`, `min_rvol`;
+    - `vwap_side`, `or_bias` (with/against), `gap_align`;
+    - `max_or_width_ratio`, `narrow_prior_days`, `latest_entry_min`;
+    - `stop_atr_mult`, `target_r`.
+  - New helpers in `fno_shadow.py`: `_prior_sessions` (cached per frame window) and `_gene_reject`.
+  - `scripts/run_fno_evolution.py`: freeze/run, the GA, plateau, holdout, allele effects.
+  - Tests: `tests/test_fno_evolution.py` (new), and one gene test in `test_fno_shadow.py`.
+- Tests: focused `tests/test_fno_evolution.py tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py tests/test_fno_orchestrator.py`: 73 passed (2 existing third-party deprecation warnings), 39 s; the full suite runs before the results commit. Tests do not show profitability.
+- Config impact: none. No live shadow sets a gene, and no setting, table, paper or live rule changes. Proving week untouched.
+- Rollout: research only. A pass becomes, on the owner's word, a forward-only replay from Oct 28. Rollback: revert (no runtime caller sets a gene).
+- Remaining: run, then record the results and commit identity.
+
 ## October 27 — O27 The F&O consistency grid: 360 entry × exit combinations of the single-leg book, ranked for consistency, frozen before scoring (done, Dev, freeze `d4cfb7e`, results commit `32f4271`, branch `codex/production-correction-hedge-p0`, not pushed)
 
 - Owner ask (Oct 27, after the close): "test multiple strategies mix and match … I don't want the most earning one. I want the one that is most consistent", using the archived F&O days. Earlier the same day: make the book able to take small profits instead of only filtering.

@@ -908,7 +908,7 @@ Declared tables: `fno_risk_alert_state`
 
 Broker-free F&O opening-range paper-shadow experiment. The baseline delegates to the production evaluator verbatim. Variants consume the same already-fetched futures frame and, optionally, an already-resolved chain snapshot. This module has no executor, order, Kite, sizing, position, or ledger dependency and cannot influence a trading decision.
 
-Top-level declarations: `FnoShadowVariant` (line 33), `_json_safe` (line 60), `_json` (line 75), `_selected` (line 79), `pullback_resumed` (line 89), `_variant_signal` (line 114), `evaluate_fno_shadows` (line 234), `attach_resolved_cost_estimates` (line 274), `init_fno_shadow_db` (line 327), `persist_fno_shadow_results` (line 349), `persist_fno_shadow_results_sync` (line 397), `fno_shadow_comparison` (line 402)
+Top-level declarations: `FnoShadowVariant` (line 33), `_json_safe` (line 76), `_json` (line 91), `_selected` (line 95), `pullback_resumed` (line 105), `_prior_sessions` (line 134), `_variant_signal` (line 158), `_gene_reject` (line 297), `evaluate_fno_shadows` (line 339), `attach_resolved_cost_estimates` (line 379), `init_fno_shadow_db` (line 432), `persist_fno_shadow_results` (line 454), `persist_fno_shadow_results_sync` (line 502), `fno_shadow_comparison` (line 507)
 
 Engine dependencies: `config`, `cost_schedules`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_models`
 

@@ -1,5 +1,20 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 27 — O27b Research genes on the F&O shadow variant and the evolution runner (actual behavior, Dev)
+
+- **`fno_shadow.FnoShadowVariant` gains optional research genes**, each a no-op at its default. `_variant_signal` reads them; no recorded live shadow sets one.
+  - Before the break test:
+    - `latest_entry_min`;
+    - `ema_spans`, which replaces `FNO_EMA_FAST`/`SLOW` for the trend check and its minimum-bar count;
+    - `buffer_atr` or `stretch_buffer`, which sets the break level.
+  - On a fresh break, `_gene_reject` applies, in order: `vwap_side`, `or_bias` (`with`/`against`: the opening range's last close vs the day's open), `gap_align` (gaps ≥ `GAP_MIN_FRACTION` 0.1%), `max_or_width_ratio` (vs the prior 10 sessions' mean range width) and `narrow_prior_days` (NR-n).
+  - Later checks: `min_rvol` replaces `FNO_MIN_RVOL`; `stop_atr_mult` and `target_r` replace `FNO_STOP_ATR_MULT` and `FNO_TARGET_R`.
+  - `_prior_sessions(closed, day, or_minutes)` returns the daily OHLC and range width of earlier sessions in the frame. It is cached per frame window, in a module dict cleared at 256 entries.
+- **`scripts/run_fno_evolution.py`:**
+  - The genome is 17 genes (`GENES`); `SHIPPED` is the live book.
+  - `freeze`/`run`. Evaluations are cached under `_local/A` and `_local/FULL`, with the O27 dataset's parse cache under `_local/observations`.
+  - `results.json` holds the generation history, every evaluation's fitness, the plateau, the B checks, the holdout metrics and the allele effects.
+
 ## October 27 — O27 F&O consistency grid tooling (actual behavior, Dev, freeze `d4cfb7e`, results commit `32f4271`)
 
 - **`fno_shadow.FnoShadowVariant.ema_filter`** (default True): False skips the multi-day EMA(21/50) agreement in `_variant_signal`. Every live shadow keeps True, so recorded rows gain only `"ema_filter": true` in `config_json`.
