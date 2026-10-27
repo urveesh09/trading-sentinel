@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 27 — O27c F&O forward panel runner (actual behavior, Dev, commit pending (recorded in the next docs commit))
+## October 27 — O27c F&O forward panel runner (actual behavior, Dev, commit `e6af14b`)
 
 - `scripts/run_fno_forward_panel.py` holds `PANEL` (six genomes in the `run_fno_evolution.GENES` order) and the window `START`–`END` (2026-10-28 – 2026-11-27).
 - `run`:
