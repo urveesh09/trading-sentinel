@@ -1,4 +1,4 @@
-## October 27 — O27h The trend-day VWAP pullback runs live as a shadow beside the shipped strategy, with an owner message when it signals (Dev, commit pending (recorded in the identity commit), deploy on the owner's instruction)
+## October 27 — O27h The trend-day VWAP pullback runs live as a shadow beside the shipped strategy, with an owner message when it signals (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
 
 - Owner ask (Oct 27, 23:05): "your trend-day VWAP pullback implement that in fno right now, and make the current strategy as a shadow or make this a shadow and continue the current strategy … commit push it all and merge and then deploy in prod".
 - **Decision: the pullback is the shadow; the shipped opening-range break keeps trading.** The owner offered either. The proving week (Oct 26–30) freezes the paper single-leg rules, and the real-money test (Nov 2–6) mirrors the paper book. Swapping the main strategy now would void both. Nothing here can place or size an order.

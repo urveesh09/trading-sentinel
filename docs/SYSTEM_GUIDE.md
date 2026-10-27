@@ -1,4 +1,4 @@
-## October 27 — O27h Trend-day pullback shadow and its owner message (Dev, commit pending (recorded in the identity commit), deploy on the owner's instruction)
+## October 27 — O27h Trend-day pullback shadow and its owner message (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
 
 - The F&O shadow registry has six variants. `FNO_TREND_PULLBACK` (O27f FINAL pick) is recorded live with the other five in `fno_shadow_evaluations`. It is broker-free and cannot reach an order, sizing or a position.
 - On each F&O tick `fno_shadow_alert.check` tells the owner once per new pullback thesis (day and direction) inside the entry window. Switch: `FNO_SHADOW_OWNER_ALERTS`.
