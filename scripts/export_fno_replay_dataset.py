@@ -14,7 +14,8 @@ What it copies (nothing in /data is modified; SQLite is opened mode=ro):
   the observed NIFTY/SENSEX futures + option quotes with raw provider packets.
   A past session's still-open journal (the collector seals a day only when a
   later session runs) is copied too and listed under ``unsealed_days``; the
-  active day's journal is never copied;
+  active day's journal is not copied, unless ``--include-finished-today`` and it
+  is 15:50 IST or later (the collector stops at 15:40) [O27c];
 * from ``cache.db``: the cached candles (every interval, tagged) of every
   futures token the archive identifies as a NIFTY or SENSEX future, the ``fno_signals`` evaluation log (point-in-
   time regime and live accept/reject decisions) and the single-leg / defined-
@@ -36,6 +37,9 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 TABLES = ("fno_signals", "fno_positions", "fno_dr_positions")
+# [O27c] The quote collector's last tick is 15:40 IST (the F&O close; later ticks journal only to
+# collection-runs/), so from 15:50 IST a run may take that day's journal (--include-finished-today).
+FINISHED_AFTER_IST_MIN = 15 * 60 + 50
 
 
 def _sha(path: Path) -> str:
@@ -67,7 +71,8 @@ def _scan_contracts(quote_root: Path) -> tuple[dict[int, str], dict[str, list[st
     return tokens, {name: sorted(values) for name, values in sorted(expiries.items())}
 
 
-def export(data: Path, out: Path) -> dict:
+def export(data: Path, out: Path, *, include_finished_today: bool = False,
+           now_utc: datetime | None = None) -> dict:
     quote_root = data / "research" / "quotes"
     if not quote_root.is_dir():
         raise SystemExit(f"no research quote archive under {data}")
@@ -75,10 +80,14 @@ def export(data: Path, out: Path) -> dict:
     if any(out.iterdir()):
         raise SystemExit(f"{out} is not empty; exports are written once")
     files, unsealed = {}, []
-    today = datetime.now(timezone.utc).date().isoformat()
+    now_utc = now_utc or datetime.now(timezone.utc)
+    today = now_utc.date().isoformat()
+    ist = now_utc + timedelta(hours=5, minutes=30)
+    finished_today = (ist.date().isoformat() if include_finished_today
+                      and ist.hour * 60 + ist.minute >= FINISHED_AFTER_IST_MIN else None)
     for segment in sorted([*quote_root.glob("*/quotes-*.jsonl.*"), *quote_root.glob("*/quotes.jsonl.open")]):
         if segment.name.endswith(".open"):
-            if segment.parent.name >= today:
+            if segment.parent.name >= today and segment.parent.name != finished_today:
                 continue  # the active session is still being written
             unsealed.append(segment.parent.name)
         target = out / "quotes" / segment.parent.name / segment.name
@@ -89,7 +98,6 @@ def export(data: Path, out: Path) -> dict:
     # [SX-F1] The exit loop's own looks at each held option (fno_exit_paths.py),
     # for replaying exit rules at the live clock. Finished sessions only (the
     # files are named by IST date; the exit loop stops at the 15:30 close).
-    ist = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
     for path in sorted((data / "research" / "fno_exit_paths").glob("*.jsonl")):
         if path.stem > ist.date().isoformat() or (path.stem == ist.date().isoformat()
                                                    and ist.hour * 60 + ist.minute < 15 * 60 + 35):
@@ -142,8 +150,10 @@ def main() -> None:
     cli = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     cli.add_argument("--data", type=Path, required=True, help="mounted data volume (read-only)")
     cli.add_argument("--out", type=Path, required=True, help="empty output directory")
+    cli.add_argument("--include-finished-today", action="store_true",
+                     help="[O27c] from 15:50 IST also copy today's finished journal (listed under unsealed_days)")
     args = cli.parse_args()
-    manifest = export(args.data, args.out)
+    manifest = export(args.data, args.out, include_finished_today=args.include_finished_today)
     print(json.dumps({k: manifest[k] for k in ("quote_days", "unsealed_days", "nifty_future_tokens", "row_counts")},
                      indent=2))
 

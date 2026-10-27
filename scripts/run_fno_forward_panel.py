@@ -10,7 +10,8 @@ check on the 29 archived sessions, so they are not traded; each day they are rep
 the decision rule, the sources and the effective F&O settings before the first forward session exists. Each ``run``:
 
 1. takes a fresh read-only export of the Production research archive (a throwaway container, the data volume
-   mounted read-only, ``scripts/export_fno_replay_dataset.py``) into ``_local/exports/<stamp>/``;
+   mounted read-only, ``scripts/export_fno_replay_dataset.py --include-finished-today``: from 15:50 IST the day's
+   own finished session is included) into ``_local/exports/<stamp>/``;
 2. replays every panel arm from the window's first session to the newest exported one (parsed sessions cached per
    session content);
 3. writes ``_local/latest.json``, ``_local/REPORT.md`` and a line in ``_local/history.jsonl``, and keeps only the
@@ -104,7 +105,8 @@ def _export(folder: Path) -> None:
     subprocess.run(["docker", "run", "--rm", "--memory", "1g", "-v", f"{VOLUME}:/data:ro",
                     "-v", f"{folder.resolve().as_posix()}:/out", "-v", f"{scripts}:/scripts:ro",
                     "--entrypoint", "python", IMAGE, "/scripts/export_fno_replay_dataset.py", "--data", "/data",
-                    "--out", "/out"], check=True, capture_output=True, text=True, timeout=1800)
+                    "--out", "/out", "--include-finished-today"], check=True, capture_output=True, text=True,
+                   timeout=1800)
 
 
 def _verify(folder: Path) -> dict:

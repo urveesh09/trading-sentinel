@@ -7,7 +7,7 @@ The best candidates from the O27 grid and the O27b evolution are tested **forwar
 - Nothing trades: no candidate passed a held-out check on the 29 archived sessions.
 - The proving week (Oct 26–30) and the Nov 2–6 real-money test keep the paper book as it is.
 
-This file and `freeze.json` were committed on Oct 27, before the first forward session existed.
+This file and `freeze.json` were committed on Oct 27, before the first forward session existed. The freeze was re-made the same evening, still before any forward session, when the owner moved the daily run to 16:00 IST: the PC is usually off at 06:30, and a 16:00 run can include that day's own session. The first freeze is in commit `e6af14b`.
 
 ## Panel
 
@@ -24,8 +24,8 @@ The tests tie each arm to its source: the evolution's `results.json` finalists a
 
 ## Daily run
 
-`scripts/run_fno_forward_panel.py run` runs from a pinned copy of this commit's files in `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\`. A Windows scheduled task, "Sentinel F&O forward panel", starts it at 06:30 IST every day, or as soon as the PC is on if that time was missed. Each run:
-1. Takes a read-only export of the Production research archive in a throwaway container, with the data volume mounted read-only. A session becomes exportable once its UTC date has passed, so the 06:30 run replays up to the previous session.
+`scripts/run_fno_forward_panel.py run` runs from a pinned copy of this commit's files in `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\`. A Windows scheduled task, "Sentinel F&O forward panel", starts it at 16:00 IST Monday to Friday, or as soon as the PC is on if that time was missed. Each run:
+1. Takes a read-only export of the Production research archive in a throwaway container, with the data volume mounted read-only. It uses `--include-finished-today`: from 15:50 IST the day's own journal is final (the quote collector's last tick is 15:40) and is included, so the 16:00 run replays up to that same day.
 2. Replays every arm from Oct 28 to the newest exported session.
 3. Writes `_local/REPORT.md` (a table plus daily net per arm), `_local/latest.json` and `_local/history.jsonl` in the pinned copy's study folder. Only the newest export is kept.
 

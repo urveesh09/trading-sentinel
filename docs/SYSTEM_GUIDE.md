@@ -5,7 +5,7 @@
 - `scripts/run_fno_forward_panel.py` holds `PANEL` (six genomes in the `run_fno_evolution.GENES` order) and the window `START`–`END` (2026-10-28 – 2026-11-27).
 - `run`:
   - verifies the bound sources and the `FNO_*` settings hash;
-  - exports the Production archive read-only (`docker run --rm` on `production_trading-sentinel-python-engine:latest`, with `production_trading-sentinel_trading_data:/data:ro`);
+  - exports the Production archive read-only (`docker run --rm` on `production_trading-sentinel-python-engine:latest`, with `production_trading-sentinel_trading_data:/data:ro`). It passes `--include-finished-today`: `export(..., include_finished_today=True)` copies today's unsealed journal from 15:50 IST (`FINISHED_AFTER_IST_MIN`), and every other caller's behavior is unchanged;
   - accepts a finished but unsealed newest session;
   - replays each arm with `SessionCache`, which pickles each session by content hash;
   - writes `_local/latest.json`, `REPORT.md` and `history.jsonl`, keeping only the newest export.
