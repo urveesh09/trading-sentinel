@@ -1,3 +1,21 @@
+## October 27 — O27e novel F&O entry families (research freeze; Dev only)
+
+- Owner requests new strategy mechanics and genetic combinations beyond O27/O27b.
+- [Study](research/simulation/2026-10-27-fno-novel-families/README.md) and
+  [plan](research/simulation/2026-10-27-fno-novel-families/PLAN.md): three new entry
+  families, five generations of eight genomes per family, neighbour checks and two
+  finalists. All historical dates are seen; no untouched-validation claim.
+- Scope: NIFTY single-leg portfolio proxy only. No Production, paper rules, settings,
+  broker calls, scheduler or existing O27c forward-panel changes. Original application
+  sources remain unchanged. Independent calendar cross-check passes; September 18
+  is missing from the 29-session archive.
+- Before scoring: 14 new synthetic tests and 43 existing F&O regressions pass; two
+  pre-existing dependency warnings. Effective FNO settings: all 123 match Production.
+  Full dataset hashes verified. Code atlas regenerated without a change.
+- Results pending; freeze is committed before scoring. At most six offline research
+  workers after hours. A winner, if any, remains a hypothesis requiring new data.
+- Rollback: normal Git removal of this isolated study; no runtime caller imports it.
+
 # Handover receipt and operator checklist
 
 ## October 27 — O27d F&O strategy testing playbook (Dev, commit `ed3b9fa`, not pushed)
