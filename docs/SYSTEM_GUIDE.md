@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 27 — O27 F&O consistency grid tooling (actual behavior, Dev)
+## October 27 — O27 F&O consistency grid tooling (actual behavior, Dev, freeze `d4cfb7e`, results commit pending (recorded in the next docs commit))
 
 - **`fno_shadow.FnoShadowVariant.ema_filter`** (default True): False skips the multi-day EMA(21/50) agreement in `_variant_signal`. Every live shadow keeps True, so recorded rows gain only `"ema_filter": true` in `config_json`.
 - **`fno_policy_replay`**:
@@ -11,6 +11,7 @@
   - `freeze` binds the 361 arms, windows, rule, source and dataset hashes, and the effective `FNO_*` settings hash; `run --jobs N` scores each arm once.
   - `CachedReplayData` pickles parsed sessions under the study's `_local/observations/<manifest>/`.
   - Window metrics: net, net excluding the best winner, max drawdown, CS, per-lot net, green/red days, green weeks.
+- The Oct 27 run's results are in `docs/research/fno/2026-10-27-consistency-grid/README.md`. They change no runtime behavior: the paper and live books still run CURRENT.
 
 ## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, commit `1d99c12`, deployed by PR #119 (`3b945eb`, Oct 26))
 

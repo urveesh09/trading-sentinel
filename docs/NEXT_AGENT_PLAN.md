@@ -1,12 +1,12 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 27 — O27 The F&O consistency grid: 360 entry × exit combinations of the single-leg book, ranked for consistency, frozen before scoring (in progress, Dev, branch `codex/production-correction-hedge-p0`)
+## October 27 — O27 The F&O consistency grid: 360 entry × exit combinations of the single-leg book, ranked for consistency, frozen before scoring (done, Dev, freeze `d4cfb7e`, results commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, not pushed)
 
 - Owner ask (Oct 27, after the close): "test multiple strategies mix and match … I don't want the most earning one. I want the one that is most consistent", using the archived F&O days. Earlier the same day: make the book able to take small profits instead of only filtering.
 - Problem:
   - The single-leg book made one trade in six sessions (Oct 19–26).
   - On Oct 21, 23 and 26 the shipped break fired on the right bar. The lagging multi-day EMA(21/50) check rejected it, and "fresh break only" then lost the whole trend day.
-  - Quick-scalp designs explored on seen data all lost after charges (18 arms, −₹427 to −₹8,932). Scratchpad only, not part of the frozen grid.
+  - Quick-scalp designs explored on seen data: 12 single-leg designs all lost after charges (−₹427 to −₹8,932). Of 6 spread versions, one made +₹962 over 22 trades (noise). Scratchpad only, not part of the frozen grid.
 - Plan (frozen in `docs/research/fno/2026-10-27-consistency-grid/freeze.json` before any arm was scored):
   - 10 entries (OR30 shipped, OR20, OR45, CONFIRM1, CONT, each with and without the EMA check) × 36 exits (lock TIGHT/LIVE/LATE/OFF × time stop 30/45/75 × trail 0.6/1.0/1.5) = 360 arms, plus a parity arm.
   - The full live book is replayed for each arm over 29 sealed sessions (Sep 10 – Oct 26).
@@ -24,7 +24,25 @@
 - Tests: focused suites `tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py`: 35 passed (2 existing third-party deprecation warnings), 23 s; the full suite runs before the results commit. Tests do not show profitability.
 - Config impact: none. No setting, table, live shadow, paper or live rule changes. Proving-week rules untouched.
 - Rollout: research only; nothing to deploy. A recommendation becomes, on the owner's word, a broker-free live shadow plus a nightly replay forward from Oct 28. Rollback: revert the commit (no runtime caller).
-- Remaining: run the grid, then record the results and the commit identity in the next docs commit.
+- [x] Grid run Oct 27, 16:39–17:37 IST (6 workers, Production left running); results are in the study README and `results.json`.
+  - Parity held.
+  - Verdict under the frozen rule: `SHADOW_CANDIDATE`, `OR20|LOCK_LATE|T75|TR1.5`.
+    - All windows: 11 trades, +₹12,916, max DD ₹2,877.
+    - It made **0 trades in B** (Oct 12–26), so its check tested nothing. The rule's gap (zero trades pass "net ≥ 0") was found after scoring; it is reported, not repaired.
+  - CURRENT ranks 27th of the 32 eligible arms (83rd percentile of all 360 on full-window CS).
+  - Post hoc, if at least one B trade had been required: `OR20_NOEMA|LOCK_LATE|T75|TR1.5` (all windows: 19 trades, +₹30,567, DD ₹3,423). Its B trades fall on the days that motivated the idea.
+  - Robust across arms:
+    - The 20-minute range is the most robust entry family.
+    - A 30-minute time stop is worst.
+    - Lock and trail settings barely matter.
+    - CONT with the EMA check loses (1 of 36 exits profitable).
+    - The EMA check depends on the regime: removing it raised net in only 1–4 of 36 exits on A but in 36/36 on B.
+    - No arm earns daily.
+  - 32 no-EMA arms hold one Oct 21 put that cannot be priced (deeper in the money than the archived strikes).
+- Remaining (owner's call):
+  - Forward-only evidence: re-export after each sealed session and replay the frozen pick, the post-hoc no-EMA arm and CURRENT on sessions from Oct 28. No Production change; proving-week and Nov 2 plans untouched.
+  - A smarter, regime-aware trend check is a new hypothesis, to be frozen before forward scoring.
+  - Decide after about 10 forward sessions.
 
 ## October 26 — O26e The O26d recheck's two gaps fixed: each research trade resolved under its own saved execution, minute bars used only when they are the whole session (done, Dev, commit `1d99c12`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 

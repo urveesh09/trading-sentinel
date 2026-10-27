@@ -77,6 +77,39 @@ python scripts/run_fno_consistency_grid.py run --out docs/research/fno/2026-10-2
 
 ---
 
-## Results
+## Results (run Oct 27, 16:39–17:37 IST, 6 workers; `results.json`)
 
-Pending: filled in after `run`.
+- **Parity:** the shipped break, run through the variant code path, traded exactly as CURRENT, so the EMA comparisons are clean.
+- **Verdict under the frozen rule:** `SHADOW_CANDIDATE`, pick `OR20|LOCK_LATE|T75|TR1.5`; 32 of the 360 arms were eligible on A.
+  - CURRENT ranks 27th of the 32. On full-window CS it is at the 83rd percentile of all 360 arms.
+- **The rule had a gap, found only after scoring, so it is reported here rather than repaired.** An arm with **no trades** in B_check passes "net ≥ 0". The pick made **0 trades from Oct 12 to Oct 26**, as did 10 of the 32 eligible arms, so its check tested nothing.
+  - The pick stands as the frozen rule's answer, but it has no out-of-sample support.
+  - Post hoc, and not the frozen rule: if at least one trade in B had been required, the first passing arm would be #7, `OR20_NOEMA|LOCK_LATE|T75|TR1.5`. Its B trades fall on Oct 21, 23 and 26, the days that suggested the no-EMA idea.
+
+| Arm (window: trades, net ₹, max DD ₹) | A Sep 10–Oct 9 | B Oct 12–26 | All 29 sessions | Net without the top two trades | Days traded / green |
+| --- | --- | --- | --- | --- | --- |
+| `OR20\|LOCK_LATE\|T75\|TR1.5` (frozen pick) | 11, +12,916, 2,877 | 0, 0, 0 | 11, +12,916, 2,877 (PF 3.0) | −1,616 | 8 / 5 |
+| `OR20_NOEMA\|LOCK_LATE\|T75\|TR1.5` (post hoc) | 15, +11,266, 3,423 | 4, +19,301, 831 (+1 unpriced) | 19, +30,567, 3,423 (PF 3.9) | +13,693 | 15 / 10 |
+| CURRENT `OR30\|LOCK_LIVE\|T45\|TR1.0` | 12, +7,286, 1,991 | 1, +3,515, 0 | 13, +10,801, 1,991 (PF 3.0) | +178 | 10 / 6 |
+
+What holds across many arms is more reliable than any single winner:
+- **No arm is a daily earner.** The best arms trade on 8–15 of 29 sessions and are green on 5–11. Every arm's profit comes mostly from a few trend days held with a trail. The single-leg opening-range book loses small often and wins big rarely.
+- **A 20-minute opening range is the most robust entry.**
+  - All 36 OR20 exits are profitable over the full window, at the lowest median drawdown of the frequent families (₹2,877).
+  - 21 of the 32 eligible arms are OR20 or OR20_NOEMA.
+  - The top six ranks are OR20 with a 75-minute time stop, a plateau rather than one lucky setting.
+- **Time stop:** 30 minutes is the worst setting (70% of arms profitable; median ₹5,498). 45 minutes gives 90% and ₹10,244; 75 minutes gives 86% and ₹9,635.
+- **Profit lock and trail settings barely matter.** Medians range ₹7.2k–10.2k; the extra rupees are not worth more tuning.
+- **Continuation (CONT, with the EMA check) loses:** only 1 of 36 exits is profitable, at a median of −₹4,182. CONFIRM1 trades too rarely to judge (3–5 trades).
+- **The EMA check depends on the regime, and neither keeping nor removing it wins everywhere.**
+  - On A, removing it raised net in only 3 of 36 exits for OR30, 4/36 for OR20 and 1/36 for OR45. The medians fell from ₹6,194 to −₹1,510, ₹6,493 to ₹3,304 and ₹4,542 to ₹1,366: the check filtered bad trades in September and early October.
+  - On B, removing it raised net in 36/36 exits for OR30, OR20, CONFIRM1 and CONT. It lagged the late-October trends; those days motivated the idea.
+  - A smarter trend check, one that notices when the multi-day trend has turned, is a new hypothesis. It would be frozen and judged on forward sessions only.
+- **Unpriced:** 32 arms (every no-EMA family except CONFIRM1, 8 exits each, on Oct 21) hold the same put (NIFTY 23050 PE, bought 10:45) that went deeper in the money than the archived ATM±5 strikes, so it cannot be priced or scored. These puts were held through a 311-point fall, so the B figures of those arms probably understate them; the amount is unknown.
+- **Earlier exploration (scratchpad, not frozen, Sep 10–Oct 23):** 12 quick-scalp single-leg designs all lost after charges, from −₹427 to −₹8,932. These were momentum bursts, pullbacks and fades with ₹200 targets or 0.6-ATR exits. Of 6 debit-spread versions, one was positive: +₹962 over 22 trades, which is noise. Charges plus spread are about ₹75 a round trip, against moves that pick a side correctly only 42% of the time before −₹300.
+
+**Next steps (owner's call):**
+- Forward-only evidence for the frozen pick, the post-hoc no-EMA arm and CURRENT.
+  - Re-export the archive after each session seals, replay the three arms on sessions from Oct 28, and score them with the same metrics.
+  - This needs no Production change. The paper and live books stay as they are through the proving week and the Nov 2 real-money test.
+- Decide after about 10 forward sessions. Nothing here qualifies a strategy, and tests do not show profitability.
