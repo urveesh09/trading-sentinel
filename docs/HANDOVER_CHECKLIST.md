@@ -1,4 +1,4 @@
-## October 27 — O27h Trend-day pullback shadow (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
+## October 27 — O27h Trend-day pullback shadow (Dev, commit `faaf366`, pushed, deployed by PR #120 (`104485b`, Oct 27))
 
 - [x] The shadow variant, its replay arm (exactly the lab's 14 trades), the owner message and the tests.
 - [ ] Oct 28: the owner sees a message if the pullback signals (from 11:30). Forward panel B scores its full trade after 16:00, once the owner has registered the task.

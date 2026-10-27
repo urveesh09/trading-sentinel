@@ -1,4 +1,4 @@
-## October 27 — O27h The trend-day VWAP pullback runs live as a shadow beside the shipped strategy, with an owner message when it signals (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
+## October 27 — O27h The trend-day VWAP pullback runs live as a shadow beside the shipped strategy, with an owner message when it signals (Dev, commit `faaf366`, pushed, deployed by PR #120 (`104485b`, Oct 27))
 
 - Owner ask (Oct 27, 23:05): "your trend-day VWAP pullback implement that in fno right now, and make the current strategy as a shadow or make this a shadow and continue the current strategy … commit push it all and merge and then deploy in prod".
 - **Decision: the pullback is the shadow; the shipped opening-range break keeps trading.** The owner offered either. The proving week (Oct 26–30) freezes the paper single-leg rules, and the real-money test (Nov 2–6) mirrors the paper book. Swapping the main strategy now would void both. Nothing here can place or size an order.
@@ -24,6 +24,22 @@
 - Rollout: PR to `evolve/smart-strategies`, merge and deploy on the owner's instruction (Oct 27).
 - Rollback: `FNO_SHADOW_OWNER_ALERTS=false` (messages) or `FNO_SHADOW_ENABLED=false` (all shadows), or revert the commit.
 - Remaining: read the shadow's messages on Oct 28; panel B scores its full trade after the close. Nothing is promoted before Nov 27 or during a proving week.
+- **Known limit:** the alert does not know the expiry calendar. On a NIFTY expiry day (next: Nov 3) it can tell a signal that the book's expiry-day gate would not trade. Each message says "not traded".
+- **Rollout receipt (done Oct 27, about 23:27–23:36 IST):**
+  - PR #120 merged as a merge commit, `104485b` on `evolve/smart-strategies`. It carries O27h and the O27–O27g research (`3b945eb` kept; the release branch had no commit of its own beyond its merges).
+  - Backups, outside the repositories, in `C:\Users\Urveesh\sentinel-operations\production-rollout-20261027-o27h\`:
+    - 8 SQLite databases from a read-only, network-less sidecar, every one `quick_check=ok` (cache.db 3.28 GB in 49 s);
+    - the previous images tagged `sentinel-rollback/<service>:3b945eb-20261027`.
+  - Production: on `evolve/smart-strategies` with no tracked change, `git merge --ff-only` to `104485b`.
+  - Build: gateway, engine and agent built one at a time, stamped `104485b` / `2026-10-27T18:00:58Z`; each image's stamp checked.
+  - Engine, gateway and agent recreated one at a time (`--no-deps --no-build --force-recreate`), each healthy before the next (30 s, 10 s, 5 s); nginx restarted and healthy.
+  - `scripts/verify_deployment.py --expected-sha 104485b…` passed (exit 0, verified 18:05:27 UTC). The receipt is in `%USERPROFILE%\sentinel-operations\release-receipts\`.
+  - Switches before and after (no values of secrets):
+    - unchanged: `FNO_LIVE_TEST_ENABLED` False, `FNO_DISABLE_PAPER` False, `FNO_SHADOW_ENABLED` True, the owner halt set;
+    - new: `FNO_SHADOW_OWNER_ALERTS` True (its default).
+    - No `.env` change.
+  - After: the engine lists six shadows including `FNO_TREND_PULLBACK`, and the replay arm resolves. No traceback in the engine, gateway or agent logs; the scheduler jobs run.
+  - Real-data smoke (Dev export, read-only): the shadow signalled LONG 11:35 on Oct 27 (a NIFTY expiry day, no book entry), LONG 11:50 on Oct 26 and SHORT 13:50 on Oct 23.
 
 ## October 27 — O27f genome round 3: new entry families, option-contract genes, a walk-forward of the search itself and a random-entry null (done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
 
