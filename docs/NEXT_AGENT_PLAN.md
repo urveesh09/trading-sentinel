@@ -1,5 +1,32 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 27 — O27c Forward panel: the best O27/O27b candidates replayed beside the shipped book on every new session, Oct 28 – Nov 27, from a pinned copy run daily (done, Dev, commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, not pushed)
+
+- Owner ask (Oct 27, 20:00): "integrate the best and then let's do this run tomorrow and ahead to test this in upcoming month".
+- Decision:
+  - Integrated as a forward test, not into the paper or live book. No candidate passed a held-out check.
+  - The proving week (Oct 26–30) freezes the paper single-leg rules, and the Nov 2–6 real-money test mirrors the paper book.
+- Panel (frozen in `docs/research/fno/2026-10-28-forward-panel/freeze.json` before Oct 28 existed):
+  - control: SHIPPED;
+  - evolution: EVO_PLATEAU_1, EVO_BEST_FITNESS and EVO_OR20_LET_RUN;
+  - O27: O27_PICK and O27_OR20_NOEMA.
+- Rule: promising = forward trades ≥ 5, net > 0, net without the best day > 0, net > SHIPPED, DD ≤ max(1.5 × SHIPPED, ₹5,000). Read on Nov 27; interim reports are provisional.
+- Files:
+  - `scripts/run_fno_forward_panel.py` (freeze/run: read-only export, replay, REPORT.md, latest.json, history.jsonl);
+  - `tests/test_fno_forward_panel.py` (provenance of every arm, rule, run outputs);
+  - the study README; atlas.
+- Daily operation:
+  - A byte-for-byte pinned copy of this commit's files sits in `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\`. Byte copies are used because Git converts line endings and the run checks source hashes.
+  - A Windows scheduled task, "Sentinel F&O forward panel", runs it at 06:30 IST daily (StartWhenAvailable).
+  - Reports land in that copy's `docs\research\fno\2026-10-28-forward-panel\_local\REPORT.md`.
+  - Status: pinned copy and daily task: pending (recorded in the next docs commit).
+- Tests: `tests/test_fno_forward_panel.py` (new, 3) with the evolution, grid, shadow and replay suites: 41 passed (2 existing third-party deprecation warnings), 36 s. Tests do not show profitability.
+- Config impact: none in Dev or Production. Production is only read, via a read-only throwaway container at 06:30 IST, outside market hours.
+- Rollback: `Unregister-ScheduledTask -TaskName "Sentinel F&O forward panel"`, then delete the pinned folder.
+- Remaining:
+  - Read the report weekly and decide on Nov 27.
+  - Fix the load-sensitive scheduler test.
+
 ## October 27 — O27b The F&O evolution round: 17-gene genomes bred from the O27 grid's good arms plus literature genes, evolved on window A only, finalists checked once on B (done, Dev, freeze `3f97f2c`, results commit `080330d`, branch `codex/production-correction-hedge-p0`, not pushed)
 
 - Owner ask (Oct 27, evening): "do something like how the human gene works … see which parameters … on the winning days were working … make a good combination … add a little bit of more new thing … search the web for some parameters that you are not using … the combinations that did the worst … you do not even consider". The owner allowed stopping Production for RAM; not needed (6 cores are the limit; Production idles under 1% CPU).

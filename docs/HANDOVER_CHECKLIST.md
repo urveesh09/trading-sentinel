@@ -1,5 +1,12 @@
 # Handover receipt and operator checklist
 
+## October 27 — O27c F&O forward panel (Dev, commit pending (recorded in the next docs commit), not pushed)
+
+- [x] Panel and rule frozen before Oct 28 (`docs/research/fno/2026-10-28-forward-panel/freeze.json`).
+- [x] Tests: `tests/test_fno_forward_panel.py` (new, 3) with the evolution, grid, shadow and replay suites: 41 passed (2 existing third-party deprecation warnings), 36 s.
+- [ ] Pinned copy and 06:30 IST scheduled task: pinned copy and daily task: pending (recorded in the next docs commit).
+- [ ] Weekly: read `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\docs\research\fno\2026-10-28-forward-panel\_local\REPORT.md`. Nov 27: apply the frozen rule; the owner decides.
+
 ## October 27 — O27b F&O evolution round (Dev, freeze `3f97f2c`, results commit `080330d`, not pushed)
 
 - [x] Web parameters reviewed: the stocks-in-play ORB (5–25 min ranges, RVOL > 1, ATR stop), Crabel's stretch and NR4/NR7, gap and VWAP filters, a time cutoff. Our own variation: an EMA 9/21 trend check.

@@ -1,5 +1,17 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 27 — O27c F&O forward panel runner (actual behavior, Dev, commit pending (recorded in the next docs commit))
+
+- `scripts/run_fno_forward_panel.py` holds `PANEL` (six genomes in the `run_fno_evolution.GENES` order) and the window `START`–`END` (2026-10-28 – 2026-11-27).
+- `run`:
+  - verifies the bound sources and the `FNO_*` settings hash;
+  - exports the Production archive read-only (`docker run --rm` on `production_trading-sentinel-python-engine:latest`, with `production_trading-sentinel_trading_data:/data:ro`);
+  - accepts a finished but unsealed newest session;
+  - replays each arm with `SessionCache`, which pickles each session by content hash;
+  - writes `_local/latest.json`, `REPORT.md` and `history.jsonl`, keeping only the newest export.
+- `decide` applies the frozen rule: PROVISIONAL until Nov 27, FINAL after.
+- Nothing in the engine, the scheduler or Production changes.
+
 ## October 27 — O27b Research genes on the F&O shadow variant and the evolution runner (actual behavior, Dev, freeze `3f97f2c`, results commit `080330d`)
 
 - **`fno_shadow.FnoShadowVariant` gains optional research genes**, each a no-op at its default. `_variant_signal` reads them; no recorded live shadow sets one.
