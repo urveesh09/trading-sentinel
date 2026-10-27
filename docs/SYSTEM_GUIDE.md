@@ -1,3 +1,10 @@
+## October 27 — O27f genome round 3 (research, frozen before scoring, Dev, commit pending (recorded in the results commit), not pushed)
+
+- Research tool only: `docs/research/fno/2026-10-27-genome-round3/lab.py` (not imported by any runtime module).
+  - It replays genomes through the shipped single-leg book via a `SingleLegReplay` subclass.
+  - Its copied `_entry` is held to the shipped trades by a test and a run-time parity gate.
+- No runtime behaviour, setting or migration changed.
+
 ## October 27 — O27e novel F&O entry families (research completed; Dev only)
 
 - [Learning/results](research/simulation/2026-10-27-fno-novel-families/ANALYSIS.md)

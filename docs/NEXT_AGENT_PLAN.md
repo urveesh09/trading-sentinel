@@ -1,3 +1,27 @@
+## October 27 — O27f genome round 3: new entry families, option-contract genes, a walk-forward of the search itself and a random-entry null (frozen before scoring, Dev, commit pending (recorded in the results commit), not pushed)
+
+- Owner ask (Oct 27, 21:30, after reading O27e): "if you have learnt anything from that then go ahead and try new combinations or new things … assess the results if they were better … test new strategies".
+- Problem:
+  - Three searches (O27, O27b, O27e) used the same 29 seen sessions.
+  - None measured whether *searching* this data finds anything that holds on sessions the search did not see.
+- Files: `docs/research/fno/2026-10-27-genome-round3/`:
+  - `lab.py`, `test_lab.py`, `freeze.json`, `README.md` (plan);
+  - outputs in the ignored `_local/`.
+- Contract:
+  - **Book:** every genome is replayed once over Sep 10 – Oct 26 through the shipped single-leg book. `LabReplay` copies `_entry` with three marked changes: the lab signal, the expiry week, and the target delta while planning.
+  - **Parity gate:** the run aborts unless the copy with no genome trades exactly as the shipped book.
+  - **Search:**
+    - five new entry families plus a random-entry NULL family with the same budget;
+    - new genes: SENSEX confirmation, multi-day trend, AM/PM windows, the VWAP-lost exit, delta 0.55/0.65, nearest/next expiry;
+    - cross-family crossover.
+  - **Walk-forward:** anchored folds F1/F2/F3 (16 test sessions) plus FINAL. Each fold searches only its own training sessions and picks by plateau.
+- Acceptance:
+  - 7 lab tests: prefix invariance of features and every family, mirror symmetry, the bar lookup equal to the replay rule, the passthrough equal to the shipped book, the genome operators, and the metric arithmetic;
+  - the parity gate;
+  - the frozen verdict rule (README).
+- Rollout: research only. No runtime, setting, paper, live or forward-panel change. Rollback: drop the folder.
+- Remaining: run, write-up, owner report.
+
 ## October 27 — O27e novel F&O entry families (research completed; Dev only)
 
 - [Learning/results](research/simulation/2026-10-27-fno-novel-families/ANALYSIS.md)

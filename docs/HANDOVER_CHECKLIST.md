@@ -1,3 +1,8 @@
+## October 27 — O27f genome round 3 (frozen before scoring, Dev, commit pending (recorded in the results commit), not pushed)
+
+- [x] Lab, tests (7 passed) and freeze written before scoring.
+- [ ] Run the frozen search (`lab.py run --jobs 8`), write the results up, and report to the owner. Nothing is promoted on seen data.
+
 ## October 27 — O27e novel F&O entry families (research completed; Dev only)
 
 - [Learning/results](research/simulation/2026-10-27-fno-novel-families/ANALYSIS.md)
