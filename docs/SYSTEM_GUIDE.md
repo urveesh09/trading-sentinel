@@ -1,9 +1,10 @@
-## October 27 — O27f genome round 3 (research, frozen before scoring, Dev, commit pending (recorded in the results commit), not pushed)
+## October 27 — O27f genome round 3 (research, done, Dev, freeze `3b8f9ef`, results commit pending (recorded in the identity commit), not pushed)
 
-- Research tool only: `docs/research/fno/2026-10-27-genome-round3/lab.py` (not imported by any runtime module).
-  - It replays genomes through the shipped single-leg book via a `SingleLegReplay` subclass.
-  - Its copied `_entry` is held to the shipped trades by a test and a run-time parity gate.
+- Research tools only, not imported by any runtime module:
+  - `docs/research/fno/2026-10-27-genome-round3/lab.py` is the O27f lab. It is a `SingleLegReplay` subclass whose copied `_entry` is held to the shipped trades by a test and a run-time gate.
+  - `docs/research/fno/2026-10-28-forward-panel-b/panel_b.py` is forward panel B. It reuses panel A's exporter, cache, metrics and rule, adds a random-entry control, and runs from a pinned copy after panel A each day.
 - No runtime behaviour, setting or migration changed.
+- O27f result: on the archived sessions, search picks do not hold forward (walk-forward +₹1,011 against the shipped book's +₹9,528 on the same 16 sessions).
 
 ## October 27 — O27e novel F&O entry families (research completed; Dev only)
 

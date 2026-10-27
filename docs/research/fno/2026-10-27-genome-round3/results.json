@@ -1,0 +1,2833 @@
+{
+ "freeze_sha256": "9dc2cd43f6b3c47659a399f6f03cd96f2de58f55a00e081014f7b67ac2748d5d",
+ "replays": 2218,
+ "lot_size": 65,
+ "parity": {
+  "trades": 13,
+  "net": 10801.09
+ },
+ "walk_forward": {
+  "REAL": {
+   "folds": [
+    {
+     "fold": "F1",
+     "train_window": [
+      "2026-09-10",
+      "2026-09-30"
+     ],
+     "test_window": [
+      "2026-10-01",
+      "2026-10-09"
+     ],
+     "pick": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 1.5,
+      "tp_side": 0.75,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.5,
+      "tp_from": 690,
+      "rvol": 1.2,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.65,
+      "expiry": "NEAR"
+     },
+     "digest": "3e2f8118f5669794",
+     "train_fitness": 6.10678,
+     "plateau": 5.58047,
+     "train": {
+      "sessions": 13,
+      "trades": 6,
+      "unresolved": 0,
+      "net": 9142.41,
+      "net_without_best_day": 5356.78,
+      "dd": 0.0,
+      "stressed": 8259.26,
+      "win_rate": 1.0,
+      "profit_factor": null,
+      "green_days": 4,
+      "red_days": 0,
+      "worst_day": 0.0,
+      "weeks": 4,
+      "green_weeks": 3,
+      "red_weeks": 0,
+      "charges": 412.59,
+      "daily": {
+       "2026-09-10": 0.0,
+       "2026-09-11": 3785.63,
+       "2026-09-15": 0.0,
+       "2026-09-16": 0.0,
+       "2026-09-17": 0.0,
+       "2026-09-21": 1758.54,
+       "2026-09-22": 0.0,
+       "2026-09-23": 0.0,
+       "2026-09-24": 794.3,
+       "2026-09-25": 0.0,
+       "2026-09-28": 2803.94,
+       "2026-09-29": 0.0,
+       "2026-09-30": 0.0
+      },
+      "exit_reasons": {
+       "trail_stop": 2,
+       "profit_lock": 2,
+       "time_stop": 1,
+       "hard_flat_1510": 1
+      }
+     },
+     "test_result": {
+      "sessions": 6,
+      "trades": 1,
+      "unresolved": 0,
+      "net": -1524.66,
+      "net_without_best_day": -1524.66,
+      "dd": 1524.66,
+      "stressed": -1672.64,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "green_days": 0,
+      "red_days": 1,
+      "worst_day": -1524.66,
+      "weeks": 2,
+      "green_weeks": 0,
+      "red_weeks": 1,
+      "charges": 71.91,
+      "daily": {
+       "2026-10-01": 0.0,
+       "2026-10-05": 0.0,
+       "2026-10-06": 0.0,
+       "2026-10-07": 0.0,
+       "2026-10-08": -1524.66,
+       "2026-10-09": 0.0
+      },
+      "exit_reasons": {
+       "underlying_stop": 1
+      }
+     },
+     "evaluated_by_fold": 812
+    },
+    {
+     "fold": "F2",
+     "train_window": [
+      "2026-09-10",
+      "2026-10-09"
+     ],
+     "test_window": [
+      "2026-10-12",
+      "2026-10-16"
+     ],
+     "pick": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 1.5,
+      "tp_side": 0.75,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.5,
+      "tp_from": 690,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 2.0,
+      "target_r": 1.8,
+      "exit": "LATE",
+      "vwap_exit": "ON",
+      "delta": 0.65,
+      "expiry": "NEAR"
+     },
+     "digest": "a8ae8bc6cca90da5",
+     "train_fitness": 5.98622,
+     "plateau": 4.463425,
+     "train": {
+      "sessions": 19,
+      "trades": 9,
+      "unresolved": 0,
+      "net": 8657.2,
+      "net_without_best_day": 5186.22,
+      "dd": 797.51,
+      "stressed": 7330.19,
+      "win_rate": 0.8889,
+      "profit_factor": 11.855,
+      "green_days": 6,
+      "red_days": 1,
+      "worst_day": -797.51,
+      "weeks": 5,
+      "green_weeks": 4,
+      "red_weeks": 0,
+      "charges": 628.04,
+      "daily": {
+       "2026-09-10": 0.0,
+       "2026-09-11": 3470.98,
+       "2026-09-15": 0.0,
+       "2026-09-16": 0.0,
+       "2026-09-17": 0.0,
+       "2026-09-21": 1657.98,
+       "2026-09-22": 0.0,
+       "2026-09-23": -797.51,
+       "2026-09-24": 479.66,
+       "2026-09-25": 0.0,
+       "2026-09-28": 2803.94,
+       "2026-09-29": 0.0,
+       "2026-09-30": 0.0,
+       "2026-10-01": 0.0,
+       "2026-10-05": 0.0,
+       "2026-10-06": 0.0,
+       "2026-10-07": 0.0,
+       "2026-10-08": 956.81,
+       "2026-10-09": 85.34
+      },
+      "exit_reasons": {
+       "profit_lock": 1,
+       "hard_flat_1510": 2,
+       "time_stop": 5,
+       "trail_stop": 1
+      }
+     },
+     "test_result": {
+      "sessions": 5,
+      "trades": 0,
+      "unresolved": 0,
+      "net": 0.0,
+      "net_without_best_day": 0.0,
+      "dd": 0.0,
+      "stressed": 0.0,
+      "win_rate": null,
+      "profit_factor": null,
+      "green_days": 0,
+      "red_days": 0,
+      "worst_day": 0.0,
+      "weeks": 1,
+      "green_weeks": 0,
+      "red_weeks": 0,
+      "charges": 0.0,
+      "daily": {
+       "2026-10-12": 0.0,
+       "2026-10-13": 0.0,
+       "2026-10-14": 0.0,
+       "2026-10-15": 0.0,
+       "2026-10-16": 0.0
+      },
+      "exit_reasons": {}
+     },
+     "evaluated_by_fold": 797
+    },
+    {
+     "fold": "F3",
+     "train_window": [
+      "2026-09-10",
+      "2026-10-16"
+     ],
+     "test_window": [
+      "2026-10-19",
+      "2026-10-26"
+     ],
+     "pick": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 1.5,
+      "tp_side": 0.75,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.5,
+      "tp_from": 630,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "LATE",
+      "vwap_exit": "OFF",
+      "delta": 0.65,
+      "expiry": "NEAR"
+     },
+     "digest": "18f34d199974c51d",
+     "train_fitness": 10.474047,
+     "plateau": 5.931903,
+     "train": {
+      "sessions": 24,
+      "trades": 11,
+      "unresolved": 0,
+      "net": 18063.14,
+      "net_without_best_day": 9807.38,
+      "dd": 797.51,
+      "stressed": 16438.05,
+      "win_rate": 0.9091,
+      "profit_factor": 23.649,
+      "green_days": 6,
+      "red_days": 1,
+      "worst_day": -797.51,
+      "weeks": 6,
+      "green_weeks": 4,
+      "red_weeks": 0,
+      "charges": 780.36,
+      "daily": {
+       "2026-09-10": 0.0,
+       "2026-09-11": 3712.49,
+       "2026-09-15": 0.0,
+       "2026-09-16": 0.0,
+       "2026-09-17": 0.0,
+       "2026-09-21": 1469.85,
+       "2026-09-22": 0.0,
+       "2026-09-23": -797.51,
+       "2026-09-24": 8255.76,
+       "2026-09-25": 0.0,
+       "2026-09-28": 2803.94,
+       "2026-09-29": 0.0,
+       "2026-09-30": 0.0,
+       "2026-10-01": 0.0,
+       "2026-10-05": 0.0,
+       "2026-10-06": 0.0,
+       "2026-10-07": 0.0,
+       "2026-10-08": 2533.28,
+       "2026-10-09": 85.34,
+       "2026-10-12": 0.0,
+       "2026-10-13": 0.0,
+       "2026-10-14": 0.0,
+       "2026-10-15": 0.0,
+       "2026-10-16": 0.0
+      },
+      "exit_reasons": {
+       "time_stop": 5,
+       "profit_lock": 1,
+       "hard_flat_1510": 3,
+       "trail_stop": 2
+      }
+     },
+     "test_result": {
+      "sessions": 5,
+      "trades": 5,
+      "unresolved": 0,
+      "net": 2535.17,
+      "net_without_best_day": 518.06,
+      "dd": 1472.48,
+      "stressed": 1786.09,
+      "win_rate": 0.6,
+      "profit_factor": 2.315,
+      "green_days": 2,
+      "red_days": 0,
+      "worst_day": 0.0,
+      "weeks": 2,
+      "green_weeks": 2,
+      "red_weeks": 0,
+      "charges": 396.33,
+      "daily": {
+       "2026-10-19": 0.0,
+       "2026-10-21": 0.0,
+       "2026-10-22": 0.0,
+       "2026-10-23": 518.06,
+       "2026-10-26": 2017.11
+      },
+      "exit_reasons": {
+       "profit_lock": 3,
+       "hard_flat_1510": 1,
+       "time_stop": 1
+      }
+     },
+     "evaluated_by_fold": 821
+    }
+   ],
+   "oos": {
+    "sessions": 16,
+    "trades": 6,
+    "unresolved": 0,
+    "net": 1010.51,
+    "net_without_best_day": -1006.6,
+    "dd": 1524.66,
+    "stressed": 113.45,
+    "win_rate": 0.5,
+    "profit_factor": 1.293,
+    "green_days": 2,
+    "red_days": 1,
+    "worst_day": -1524.66,
+    "weeks": 5,
+    "green_weeks": 2,
+    "red_weeks": 1,
+    "charges": 468.24,
+    "daily": {
+     "2026-10-01": 0.0,
+     "2026-10-05": 0.0,
+     "2026-10-06": 0.0,
+     "2026-10-07": 0.0,
+     "2026-10-08": -1524.66,
+     "2026-10-09": 0.0,
+     "2026-10-12": 0.0,
+     "2026-10-13": 0.0,
+     "2026-10-14": 0.0,
+     "2026-10-15": 0.0,
+     "2026-10-16": 0.0,
+     "2026-10-19": 0.0,
+     "2026-10-21": 0.0,
+     "2026-10-22": 0.0,
+     "2026-10-23": 518.06,
+     "2026-10-26": 2017.11
+    },
+    "exit_reasons": {
+     "underlying_stop": 1,
+     "profit_lock": 3,
+     "hard_flat_1510": 1,
+     "time_stop": 1
+    }
+   },
+   "positive_folds": 1
+  },
+  "NULL": {
+   "folds": [
+    {
+     "fold": "F1",
+     "train_window": [
+      "2026-09-10",
+      "2026-09-30"
+     ],
+     "test_window": [
+      "2026-10-01",
+      "2026-10-09"
+     ],
+     "pick": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 3,
+      "rvol": 1.2,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "LATE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEXT"
+     },
+     "digest": "e8f9a40809dc9021",
+     "train_fitness": 7.32801,
+     "plateau": 4.847878,
+     "train": {
+      "sessions": 13,
+      "trades": 8,
+      "unresolved": 0,
+      "net": 11028.41,
+      "net_without_best_day": 6328.01,
+      "dd": 637.03,
+      "stressed": 9822.14,
+      "win_rate": 0.875,
+      "profit_factor": 18.312,
+      "green_days": 6,
+      "red_days": 1,
+      "worst_day": -637.03,
+      "weeks": 4,
+      "green_weeks": 4,
+      "red_weeks": 0,
+      "charges": 665.09,
+      "daily": {
+       "2026-09-10": 824.97,
+       "2026-09-11": 706.86,
+       "2026-09-15": 0.0,
+       "2026-09-16": 2204.83,
+       "2026-09-17": 957.17,
+       "2026-09-21": 0.0,
+       "2026-09-22": 0.0,
+       "2026-09-23": 0.0,
+       "2026-09-24": 4700.4,
+       "2026-09-25": -637.03,
+       "2026-09-28": 2271.21,
+       "2026-09-29": 0.0,
+       "2026-09-30": 0.0
+      },
+      "exit_reasons": {
+       "hard_flat_1510": 4,
+       "trail_stop": 2,
+       "time_stop": 2
+      }
+     },
+     "test_result": {
+      "sessions": 6,
+      "trades": 3,
+      "unresolved": 0,
+      "net": 4408.61,
+      "net_without_best_day": -1039.62,
+      "dd": 2192.97,
+      "stressed": 3954.01,
+      "win_rate": 0.3333,
+      "profit_factor": 3.01,
+      "green_days": 1,
+      "red_days": 1,
+      "worst_day": -1039.62,
+      "weeks": 2,
+      "green_weeks": 1,
+      "red_weeks": 1,
+      "charges": 258.39,
+      "daily": {
+       "2026-10-01": 5448.23,
+       "2026-10-05": -1039.62,
+       "2026-10-06": 0.0,
+       "2026-10-07": 0.0,
+       "2026-10-08": 0.0,
+       "2026-10-09": 0.0
+      },
+      "exit_reasons": {
+       "trail_stop": 1,
+       "underlying_stop": 2
+      }
+     },
+     "evaluated_by_fold": 287
+    },
+    {
+     "fold": "F2",
+     "train_window": [
+      "2026-09-10",
+      "2026-10-09"
+     ],
+     "test_window": [
+      "2026-10-12",
+      "2026-10-16"
+     ],
+     "pick": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 3,
+      "rvol": 1.2,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 2.0,
+      "target_r": 1.5,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     },
+     "digest": "74fa4f4aba2d25a0",
+     "train_fitness": 7.033585,
+     "plateau": 6.160326,
+     "train": {
+      "sessions": 19,
+      "trades": 16,
+      "unresolved": 0,
+      "net": 17908.49,
+      "net_without_best_day": 7695.34,
+      "dd": 1196.12,
+      "stressed": 15411.11,
+      "win_rate": 0.5625,
+      "profit_factor": 7.455,
+      "green_days": 7,
+      "red_days": 3,
+      "worst_day": -863.5,
+      "weeks": 5,
+      "green_weeks": 4,
+      "red_weeks": 1,
+      "charges": 1149.51,
+      "daily": {
+       "2026-09-10": 1323.78,
+       "2026-09-11": 2859.31,
+       "2026-09-15": 0.0,
+       "2026-09-16": 498.54,
+       "2026-09-17": 91.46,
+       "2026-09-21": 0.0,
+       "2026-09-22": 0.0,
+       "2026-09-23": 0.0,
+       "2026-09-24": 4690.47,
+       "2026-09-25": 291.4,
+       "2026-09-28": -451.38,
+       "2026-09-29": 0.0,
+       "2026-09-30": -744.73,
+       "2026-10-01": 10213.15,
+       "2026-10-05": -863.5,
+       "2026-10-06": 0.0,
+       "2026-10-07": 0.0,
+       "2026-10-08": 0.0,
+       "2026-10-09": 0.0
+      },
+      "exit_reasons": {
+       "hard_flat_1510": 2,
+       "VWAP_LOST": 9,
+       "trail_stop": 4,
+       "time_stop": 1
+      }
+     },
+     "test_result": {
+      "sessions": 5,
+      "trades": 0,
+      "unresolved": 0,
+      "net": 0.0,
+      "net_without_best_day": 0.0,
+      "dd": 0.0,
+      "stressed": 0.0,
+      "win_rate": null,
+      "profit_factor": null,
+      "green_days": 0,
+      "red_days": 0,
+      "worst_day": 0.0,
+      "weeks": 1,
+      "green_weeks": 0,
+      "red_weeks": 0,
+      "charges": 0.0,
+      "daily": {
+       "2026-10-12": 0.0,
+       "2026-10-13": 0.0,
+       "2026-10-14": 0.0,
+       "2026-10-15": 0.0,
+       "2026-10-16": 0.0
+      },
+      "exit_reasons": {}
+     },
+     "evaluated_by_fold": 302
+    },
+    {
+     "fold": "F3",
+     "train_window": [
+      "2026-09-10",
+      "2026-10-16"
+     ],
+     "test_window": [
+      "2026-10-19",
+      "2026-10-26"
+     ],
+     "pick": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 3,
+      "rvol": 0.8,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.5,
+      "target_r": 1.8,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     },
+     "digest": "88fa82276ae336f4",
+     "train_fitness": 3.903945,
+     "plateau": 3.08681,
+     "train": {
+      "sessions": 24,
+      "trades": 20,
+      "unresolved": 0,
+      "net": 17921.55,
+      "net_without_best_day": 9311.32,
+      "dd": 2735.45,
+      "stressed": 14835.94,
+      "win_rate": 0.6,
+      "profit_factor": 3.47,
+      "green_days": 8,
+      "red_days": 3,
+      "worst_day": -1985.91,
+      "weeks": 6,
+      "green_weeks": 4,
+      "red_weeks": 1,
+      "charges": 1422.45,
+      "daily": {
+       "2026-09-10": 4462.79,
+       "2026-09-11": 2392.21,
+       "2026-09-15": 0.0,
+       "2026-09-16": 1184.3,
+       "2026-09-17": 905.82,
+       "2026-09-21": 251.36,
+       "2026-09-22": 0.0,
+       "2026-09-23": 0.0,
+       "2026-09-24": 3574.62,
+       "2026-09-25": -749.55,
+       "2026-09-28": -1985.91,
+       "2026-09-29": 0.0,
+       "2026-09-30": 249.46,
+       "2026-10-01": 8610.23,
+       "2026-10-05": -973.79,
+       "2026-10-06": 0.0,
+       "2026-10-07": 0.0,
+       "2026-10-08": 0.0,
+       "2026-10-09": 0.0,
+       "2026-10-12": 0.0,
+       "2026-10-13": 0.0,
+       "2026-10-14": 0.0,
+       "2026-10-15": 0.0,
+       "2026-10-16": 0.0
+      },
+      "exit_reasons": {
+       "hard_flat_1510": 8,
+       "trail_stop": 6,
+       "underlying_stop": 5,
+       "time_stop": 1
+      }
+     },
+     "test_result": {
+      "sessions": 5,
+      "trades": 6,
+      "unresolved": 0,
+      "net": -726.59,
+      "net_without_best_day": -7040.36,
+      "dd": 7040.36,
+      "stressed": -1617.56,
+      "win_rate": 0.1667,
+      "profit_factor": 0.907,
+      "green_days": 1,
+      "red_days": 2,
+      "worst_day": -5383.6,
+      "weeks": 2,
+      "green_weeks": 1,
+      "red_weeks": 1,
+      "charges": 443.84,
+      "daily": {
+       "2026-10-19": 0.0,
+       "2026-10-21": -1656.76,
+       "2026-10-22": 0.0,
+       "2026-10-23": -5383.6,
+       "2026-10-26": 6313.77
+      },
+      "exit_reasons": {
+       "underlying_stop": 3,
+       "trail_stop": 1,
+       "hard_flat_1510": 2
+      }
+     },
+     "evaluated_by_fold": 309
+    }
+   ],
+   "oos": {
+    "sessions": 16,
+    "trades": 9,
+    "unresolved": 0,
+    "net": 3682.01,
+    "net_without_best_day": -2631.76,
+    "dd": 9233.33,
+    "stressed": 2336.46,
+    "win_rate": 0.2222,
+    "profit_factor": 1.367,
+    "green_days": 2,
+    "red_days": 3,
+    "worst_day": -5383.6,
+    "weeks": 5,
+    "green_weeks": 2,
+    "red_weeks": 2,
+    "charges": 702.24,
+    "daily": {
+     "2026-10-01": 5448.23,
+     "2026-10-05": -1039.62,
+     "2026-10-06": 0.0,
+     "2026-10-07": 0.0,
+     "2026-10-08": 0.0,
+     "2026-10-09": 0.0,
+     "2026-10-12": 0.0,
+     "2026-10-13": 0.0,
+     "2026-10-14": 0.0,
+     "2026-10-15": 0.0,
+     "2026-10-16": 0.0,
+     "2026-10-19": 0.0,
+     "2026-10-21": -1656.76,
+     "2026-10-22": 0.0,
+     "2026-10-23": -5383.6,
+     "2026-10-26": 6313.77
+    },
+    "exit_reasons": {
+     "trail_stop": 2,
+     "underlying_stop": 5,
+     "hard_flat_1510": 2
+    }
+   },
+   "positive_folds": 1
+  },
+  "references_on_oos_sessions": {
+   "SHIPPED": {
+    "sessions": 16,
+    "trades": 4,
+    "unresolved": 0,
+    "net": 9528.32,
+    "net_without_best_day": 2420.65,
+    "dd": 1460.92,
+    "stressed": 8932.59,
+    "win_rate": 0.75,
+    "profit_factor": 7.522,
+    "green_days": 3,
+    "red_days": 1,
+    "worst_day": -1460.92,
+    "weeks": 5,
+    "green_weeks": 2,
+    "red_weeks": 1,
+    "charges": 302.93,
+    "daily": {
+     "2026-10-01": 7107.67,
+     "2026-10-05": 0.0,
+     "2026-10-06": 0.0,
+     "2026-10-07": -1460.92,
+     "2026-10-08": 0.0,
+     "2026-10-09": 366.36,
+     "2026-10-12": 0.0,
+     "2026-10-13": 0.0,
+     "2026-10-14": 0.0,
+     "2026-10-15": 3515.21,
+     "2026-10-16": 0.0,
+     "2026-10-19": 0.0,
+     "2026-10-21": 0.0,
+     "2026-10-22": 0.0,
+     "2026-10-23": 0.0,
+     "2026-10-26": 0.0
+    },
+    "exit_reasons": {
+     "trail_stop": 2,
+     "underlying_stop": 1,
+     "time_stop": 1
+    }
+   },
+   "O27_OR20_NOEMA_LATE_T75_TR1.5": {
+    "sessions": 16,
+    "trades": 10,
+    "unresolved": 1,
+    "net": 29286.69,
+    "net_without_best_day": 19836.63,
+    "dd": 3422.99,
+    "stressed": 27652.18,
+    "win_rate": 0.6,
+    "profit_factor": 5.989,
+    "green_days": 6,
+    "red_days": 2,
+    "worst_day": -3422.99,
+    "weeks": 5,
+    "green_weeks": 4,
+    "red_weeks": 1,
+    "charges": 818.06,
+    "daily": {
+     "2026-10-01": 5491.87,
+     "2026-10-05": 492.63,
+     "2026-10-06": 0.0,
+     "2026-10-07": -3422.99,
+     "2026-10-08": 7423.97,
+     "2026-10-09": 0.0,
+     "2026-10-12": -831.11,
+     "2026-10-13": 0.0,
+     "2026-10-14": 0.0,
+     "2026-10-15": 0.0,
+     "2026-10-16": 0.0,
+     "2026-10-19": 0.0,
+     "2026-10-21": 9450.07,
+     "2026-10-22": 0.0,
+     "2026-10-23": 5540.58,
+     "2026-10-26": 5141.69
+    },
+    "exit_reasons": {
+     "underlying_stop": 4,
+     "trail_stop": 4,
+     "time_stop": 1,
+     "profit_lock": 1
+    }
+   },
+   "O27E_EFFICIENCY_BREAK": {
+    "sessions": 16,
+    "trades": 19,
+    "unresolved": 0,
+    "net": 20830.76,
+    "net_without_best_day": 12423.0,
+    "dd": 6748.74,
+    "stressed": 17599.82,
+    "win_rate": 0.5789,
+    "profit_factor": 2.211,
+    "green_days": 7,
+    "red_days": 2,
+    "worst_day": -1862.19,
+    "weeks": 5,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "charges": 1483.74,
+    "daily": {
+     "2026-10-01": 2081.42,
+     "2026-10-05": 1242.41,
+     "2026-10-06": 0.0,
+     "2026-10-07": 93.34,
+     "2026-10-08": 0.0,
+     "2026-10-09": -1457.0,
+     "2026-10-12": 4967.61,
+     "2026-10-13": 0.0,
+     "2026-10-14": 0.0,
+     "2026-10-15": 8407.76,
+     "2026-10-16": 0.0,
+     "2026-10-19": 0.0,
+     "2026-10-21": 5670.97,
+     "2026-10-22": 0.0,
+     "2026-10-23": 1686.44,
+     "2026-10-26": -1862.19
+    },
+    "exit_reasons": {
+     "time_stop": 9,
+     "trail_stop": 6,
+     "underlying_stop": 2,
+     "premium_backstop": 2
+    }
+   }
+  },
+  "oos_sessions": [
+   "2026-10-01",
+   "2026-10-05",
+   "2026-10-06",
+   "2026-10-07",
+   "2026-10-08",
+   "2026-10-09",
+   "2026-10-12",
+   "2026-10-13",
+   "2026-10-14",
+   "2026-10-15",
+   "2026-10-16",
+   "2026-10-19",
+   "2026-10-21",
+   "2026-10-22",
+   "2026-10-23",
+   "2026-10-26"
+  ],
+  "verdict": {
+   "oos_positive": true,
+   "beats_shipped": false,
+   "beats_null": false,
+   "folds_positive_ge_2": false,
+   "search_works": false
+  }
+ },
+ "families": {
+  "TREND_PULLBACK": {
+   "pool": 122,
+   "full_net_positive_share": 0.385,
+   "full_net_median": 0.0,
+   "full_trades_median": 3.0,
+   "A_fitness_p50": -4.571,
+   "A_fitness_p90": -0.898,
+   "A_fitness_best": 4.419,
+   "best_on_A": {
+    "genome": {
+     "family": "TREND_PULLBACK",
+     "tp_trend": 2.5,
+     "tp_side": 0.75,
+     "tp_anchor": "EMA20",
+     "tp_touch": 0.5,
+     "tp_from": 750,
+     "rvol": 0.0,
+     "htf": "OFF",
+     "xidx": "OFF",
+     "window": "PM",
+     "stop_atr": 2.0,
+     "target_r": 1.8,
+     "exit": "LATE",
+     "vwap_exit": "ON",
+     "delta": 0.65,
+     "expiry": "NEAR"
+    },
+    "A": {
+     "sessions": 19,
+     "trades": 14,
+     "unresolved": 0,
+     "net": 19991.4,
+     "net_without_best_day": 8832.74,
+     "dd": 2440.37,
+     "stressed": 17917.25,
+     "win_rate": 0.6429,
+     "profit_factor": 7.23,
+     "green_days": 5,
+     "red_days": 2,
+     "worst_day": -2440.37,
+     "weeks": 5,
+     "green_weeks": 4,
+     "red_weeks": 0,
+     "charges": 1016.6,
+     "daily": {
+      "2026-09-10": 0.0,
+      "2026-09-11": 3072.76,
+      "2026-09-15": 0.0,
+      "2026-09-16": 0.0,
+      "2026-09-17": 0.0,
+      "2026-09-21": 1657.98,
+      "2026-09-22": 0.0,
+      "2026-09-23": -2440.37,
+      "2026-09-24": 11158.66,
+      "2026-09-25": 0.0,
+      "2026-09-28": 5110.52,
+      "2026-09-29": 0.0,
+      "2026-09-30": 0.0,
+      "2026-10-01": 0.0,
+      "2026-10-05": 0.0,
+      "2026-10-06": 0.0,
+      "2026-10-07": 0.0,
+      "2026-10-08": -65.49,
+      "2026-10-09": 1497.33
+     },
+     "exit_reasons": {
+      "time_stop": 5,
+      "profit_lock": 1,
+      "hard_flat_1510": 2,
+      "underlying_stop": 1,
+      "trail_stop": 5
+     }
+    },
+    "B": {
+     "sessions": 10,
+     "trades": 11,
+     "unresolved": 0,
+     "net": -4946.65,
+     "net_without_best_day": -6884.94,
+     "dd": 10954.49,
+     "stressed": -6598.5,
+     "win_rate": 0.6364,
+     "profit_factor": 0.554,
+     "green_days": 3,
+     "red_days": 2,
+     "worst_day": -8694.76,
+     "weeks": 3,
+     "green_weeks": 1,
+     "red_weeks": 2,
+     "charges": 887.4,
+     "daily": {
+      "2026-10-12": 1938.29,
+      "2026-10-13": 0.0,
+      "2026-10-14": 0.0,
+      "2026-10-15": 924.28,
+      "2026-10-16": 0.0,
+      "2026-10-19": 0.0,
+      "2026-10-21": 929.42,
+      "2026-10-22": 0.0,
+      "2026-10-23": -8694.76,
+      "2026-10-26": -43.88
+     },
+     "exit_reasons": {
+      "time_stop": 4,
+      "hard_flat_1510": 1,
+      "trail_stop": 1,
+      "underlying_stop": 2,
+      "VWAP_LOST": 1,
+      "profit_lock": 2
+     }
+    }
+   },
+   "pool_walk_forward_test_nets": [
+    -1524.66,
+    2862.57,
+    -7809.22
+   ],
+   "pool_walk_forward_total": -6471.31
+  },
+  "PDL_BREAK": {
+   "pool": 122,
+   "full_net_positive_share": 0.533,
+   "full_net_median": 358.36,
+   "full_trades_median": 3.0,
+   "A_fitness_p50": -4.714,
+   "A_fitness_p90": -4.286,
+   "A_fitness_best": -2.191,
+   "best_on_A": {
+    "genome": {
+     "family": "PDL_BREAK",
+     "pd_buffer": 0.1,
+     "pd_first": false,
+     "rvol": 0.0,
+     "htf": "OFF",
+     "xidx": "OFF",
+     "window": "PM",
+     "stop_atr": 1.5,
+     "target_r": 2.4,
+     "exit": "LATE",
+     "vwap_exit": "ON",
+     "delta": 0.55,
+     "expiry": "NEXT"
+    },
+    "A": {
+     "sessions": 19,
+     "trades": 7,
+     "unresolved": 0,
+     "net": -1127.36,
+     "net_without_best_day": -3585.6,
+     "dd": 3617.18,
+     "stressed": -2174.58,
+     "win_rate": 0.5714,
+     "profit_factor": 0.701,
+     "green_days": 1,
+     "red_days": 3,
+     "worst_day": -2060.23,
+     "weeks": 5,
+     "green_weeks": 1,
+     "red_weeks": 2,
+     "charges": 548.86,
+     "daily": {
+      "2026-09-10": 2458.24,
+      "2026-09-11": 0.0,
+      "2026-09-15": 0.0,
+      "2026-09-16": 0.0,
+      "2026-09-17": -2060.23,
+      "2026-09-21": -688.65,
+      "2026-09-22": 0.0,
+      "2026-09-23": -836.72,
+      "2026-09-24": 0.0,
+      "2026-09-25": 0.0,
+      "2026-09-28": 0.0,
+      "2026-09-29": 0.0,
+      "2026-09-30": 0.0,
+      "2026-10-01": 0.0,
+      "2026-10-05": 0.0,
+      "2026-10-06": 0.0,
+      "2026-10-07": 0.0,
+      "2026-10-08": 0.0,
+      "2026-10-09": 0.0
+     },
+     "exit_reasons": {
+      "hard_flat_1510": 2,
+      "time_stop": 3,
+      "underlying_stop": 2
+     }
+    },
+    "B": {
+     "sessions": 10,
+     "trades": 0,
+     "unresolved": 0,
+     "net": 0.0,
+     "net_without_best_day": 0.0,
+     "dd": 0.0,
+     "stressed": 0.0,
+     "win_rate": null,
+     "profit_factor": null,
+     "green_days": 0,
+     "red_days": 0,
+     "worst_day": 0.0,
+     "weeks": 3,
+     "green_weeks": 0,
+     "red_weeks": 0,
+     "charges": 0.0,
+     "daily": {
+      "2026-10-12": 0.0,
+      "2026-10-13": 0.0,
+      "2026-10-14": 0.0,
+      "2026-10-15": 0.0,
+      "2026-10-16": 0.0,
+      "2026-10-19": 0.0,
+      "2026-10-21": 0.0,
+      "2026-10-22": 0.0,
+      "2026-10-23": 0.0,
+      "2026-10-26": 0.0
+     },
+     "exit_reasons": {}
+    }
+   },
+   "pool_walk_forward_test_nets": [
+    0.0,
+    0.0,
+    1512.53
+   ],
+   "pool_walk_forward_total": 1512.53
+  },
+  "VWAP_BAND": {
+   "pool": 122,
+   "full_net_positive_share": 0.484,
+   "full_net_median": 0.0,
+   "full_trades_median": 7.0,
+   "A_fitness_p50": -4.143,
+   "A_fitness_p90": -2.056,
+   "A_fitness_best": 1.402,
+   "best_on_A": {
+    "genome": {
+     "family": "VWAP_BAND",
+     "vb_k": 1.0,
+     "vb_slope": 6,
+     "rvol": 0.8,
+     "htf": "WITH",
+     "xidx": "OFF",
+     "window": "PM",
+     "stop_atr": 2.0,
+     "target_r": 3.0,
+     "exit": "LOOSE",
+     "vwap_exit": "ON",
+     "delta": 0.55,
+     "expiry": "NEXT"
+    },
+    "A": {
+     "sessions": 19,
+     "trades": 8,
+     "unresolved": 0,
+     "net": 7052.09,
+     "net_without_best_day": 626.09,
+     "dd": 1039.17,
+     "stressed": 5849.48,
+     "win_rate": 0.625,
+     "profit_factor": 6.671,
+     "green_days": 5,
+     "red_days": 1,
+     "worst_day": -1039.17,
+     "weeks": 5,
+     "green_weeks": 4,
+     "red_weeks": 0,
+     "charges": 650.41,
+     "daily": {
+      "2026-09-10": 212.51,
+      "2026-09-11": 0.0,
+      "2026-09-15": 0.0,
+      "2026-09-16": 0.0,
+      "2026-09-17": 0.0,
+      "2026-09-21": 229.97,
+      "2026-09-22": 0.0,
+      "2026-09-23": 0.0,
+      "2026-09-24": 0.0,
+      "2026-09-25": 503.76,
+      "2026-09-28": -1039.17,
+      "2026-09-29": 0.0,
+      "2026-09-30": 0.0,
+      "2026-10-01": 6426.0,
+      "2026-10-05": 719.02,
+      "2026-10-06": 0.0,
+      "2026-10-07": 0.0,
+      "2026-10-08": 0.0,
+      "2026-10-09": 0.0
+     },
+     "exit_reasons": {
+      "time_stop": 6,
+      "hard_flat_1510": 1,
+      "trail_stop": 1
+     }
+    },
+    "B": {
+     "sessions": 10,
+     "trades": 0,
+     "unresolved": 0,
+     "net": 0.0,
+     "net_without_best_day": 0.0,
+     "dd": 0.0,
+     "stressed": 0.0,
+     "win_rate": null,
+     "profit_factor": null,
+     "green_days": 0,
+     "red_days": 0,
+     "worst_day": 0.0,
+     "weeks": 3,
+     "green_weeks": 0,
+     "red_weeks": 0,
+     "charges": 0.0,
+     "daily": {
+      "2026-10-12": 0.0,
+      "2026-10-13": 0.0,
+      "2026-10-14": 0.0,
+      "2026-10-15": 0.0,
+      "2026-10-16": 0.0,
+      "2026-10-19": 0.0,
+      "2026-10-21": 0.0,
+      "2026-10-22": 0.0,
+      "2026-10-23": 0.0,
+      "2026-10-26": 0.0
+     },
+     "exit_reasons": {}
+    }
+   },
+   "pool_walk_forward_test_nets": [
+    -34.17,
+    0.0,
+    -1145.38
+   ],
+   "pool_walk_forward_total": -1179.55
+  },
+  "MOMO_BURST": {
+   "pool": 122,
+   "full_net_positive_share": 0.418,
+   "full_net_median": -597.46,
+   "full_trades_median": 6.0,
+   "A_fitness_p50": -4.429,
+   "A_fitness_p90": -1.682,
+   "A_fitness_best": 3.575,
+   "best_on_A": {
+    "genome": {
+     "family": "MOMO_BURST",
+     "mb_bars": 2,
+     "mb_move": 1.5,
+     "rvol": 1.0,
+     "htf": "WITH",
+     "xidx": "OFF",
+     "window": "PM",
+     "stop_atr": 1.5,
+     "target_r": 3.0,
+     "exit": "RUN",
+     "vwap_exit": "ON",
+     "delta": 0.55,
+     "expiry": "NEAR"
+    },
+    "A": {
+     "sessions": 19,
+     "trades": 7,
+     "unresolved": 0,
+     "net": 11945.18,
+     "net_without_best_day": 6057.28,
+     "dd": 1794.8,
+     "stressed": 10893.35,
+     "win_rate": 0.5714,
+     "profit_factor": 4.472,
+     "green_days": 3,
+     "red_days": 2,
+     "worst_day": -1242.72,
+     "weeks": 5,
+     "green_weeks": 2,
+     "red_weeks": 1,
+     "charges": 567.32,
+     "daily": {
+      "2026-09-10": 0.0,
+      "2026-09-11": 0.0,
+      "2026-09-15": 0.0,
+      "2026-09-16": -403.09,
+      "2026-09-17": -1242.72,
+      "2026-09-21": 0.0,
+      "2026-09-22": 0.0,
+      "2026-09-23": 0.0,
+      "2026-09-24": 0.0,
+      "2026-09-25": 0.0,
+      "2026-09-28": 0.0,
+      "2026-09-29": 0.0,
+      "2026-09-30": 5887.9,
+      "2026-10-01": 5169.81,
+      "2026-10-05": 0.0,
+      "2026-10-06": 0.0,
+      "2026-10-07": 0.0,
+      "2026-10-08": 2533.28,
+      "2026-10-09": 0.0
+     },
+     "exit_reasons": {
+      "VWAP_LOST": 1,
+      "underlying_stop": 1,
+      "trail_stop": 2,
+      "hard_flat_1510": 2,
+      "time_stop": 1
+     }
+    },
+    "B": {
+     "sessions": 10,
+     "trades": 2,
+     "unresolved": 0,
+     "net": -709.37,
+     "net_without_best_day": -709.37,
+     "dd": 709.37,
+     "stressed": -1005.34,
+     "win_rate": 0.0,
+     "profit_factor": 0.0,
+     "green_days": 0,
+     "red_days": 2,
+     "worst_day": -542.28,
+     "weeks": 3,
+     "green_weeks": 0,
+     "red_weeks": 2,
+     "charges": 143.87,
+     "daily": {
+      "2026-10-12": 0.0,
+      "2026-10-13": 0.0,
+      "2026-10-14": 0.0,
+      "2026-10-15": -542.28,
+      "2026-10-16": 0.0,
+      "2026-10-19": 0.0,
+      "2026-10-21": 0.0,
+      "2026-10-22": 0.0,
+      "2026-10-23": -167.09,
+      "2026-10-26": 0.0
+     },
+     "exit_reasons": {
+      "time_stop": 1,
+      "VWAP_LOST": 1
+     }
+    }
+   },
+   "pool_walk_forward_test_nets": [
+    -1836.05,
+    -542.28,
+    -1260.45
+   ],
+   "pool_walk_forward_total": -3638.78
+  },
+  "ENSEMBLE": {
+   "pool": 123,
+   "full_net_positive_share": 0.439,
+   "full_net_median": -64.14,
+   "full_trades_median": 5,
+   "A_fitness_p50": -4.429,
+   "A_fitness_p90": -1.937,
+   "A_fitness_best": 2.382,
+   "best_on_A": {
+    "genome": {
+     "family": "ENSEMBLE",
+     "en_members": [
+      "ORB20",
+      "EFF",
+      "VWB",
+      "MOMO"
+     ],
+     "en_k": 1,
+     "en_window": 3,
+     "rvol": 1.2,
+     "htf": "WITH",
+     "xidx": "OFF",
+     "window": "PM",
+     "stop_atr": 2.0,
+     "target_r": 3.0,
+     "exit": "LIVE",
+     "vwap_exit": "OFF",
+     "delta": 0.55,
+     "expiry": "NEAR"
+    },
+    "A": {
+     "sessions": 19,
+     "trades": 9,
+     "unresolved": 0,
+     "net": 14780.71,
+     "net_without_best_day": 4687.94,
+     "dd": 1968.37,
+     "stressed": 13428.63,
+     "win_rate": 0.6667,
+     "profit_factor": 8.509,
+     "green_days": 3,
+     "red_days": 3,
+     "worst_day": -866.77,
+     "weeks": 5,
+     "green_weeks": 2,
+     "red_weeks": 2,
+     "charges": 728.29,
+     "daily": {
+      "2026-09-10": -866.77,
+      "2026-09-11": -584.98,
+      "2026-09-15": 0.0,
+      "2026-09-16": -516.62,
+      "2026-09-17": 0.0,
+      "2026-09-21": 0.0,
+      "2026-09-22": 0.0,
+      "2026-09-23": 0.0,
+      "2026-09-24": 0.0,
+      "2026-09-25": 0.0,
+      "2026-09-28": 0.0,
+      "2026-09-29": 0.0,
+      "2026-09-30": 5929.15,
+      "2026-10-01": 10092.77,
+      "2026-10-05": 727.16,
+      "2026-10-06": 0.0,
+      "2026-10-07": 0.0,
+      "2026-10-08": 0.0,
+      "2026-10-09": 0.0
+     },
+     "exit_reasons": {
+      "time_stop": 4,
+      "profit_lock": 3,
+      "hard_flat_1510": 1,
+      "trail_stop": 1
+     }
+    },
+    "B": {
+     "sessions": 10,
+     "trades": 5,
+     "unresolved": 0,
+     "net": -7434.76,
+     "net_without_best_day": -7434.76,
+     "dd": 7834.59,
+     "stressed": -8175.45,
+     "win_rate": 0.4,
+     "profit_factor": 0.051,
+     "green_days": 0,
+     "red_days": 3,
+     "worst_day": -3800.3,
+     "weeks": 3,
+     "green_weeks": 0,
+     "red_weeks": 3,
+     "charges": 362.76,
+     "daily": {
+      "2026-10-12": 0.0,
+      "2026-10-13": 0.0,
+      "2026-10-14": 0.0,
+      "2026-10-15": -640.46,
+      "2026-10-16": 0.0,
+      "2026-10-19": 0.0,
+      "2026-10-21": 0.0,
+      "2026-10-22": 0.0,
+      "2026-10-23": -3800.3,
+      "2026-10-26": -2994.01
+     },
+     "exit_reasons": {
+      "time_stop": 3,
+      "underlying_stop": 1,
+      "premium_backstop": 1
+     }
+    }
+   },
+   "pool_walk_forward_test_nets": [
+    -2073.59,
+    -640.46,
+    5199.84
+   ],
+   "pool_walk_forward_total": 2485.79
+  },
+  "NULL_RANDOM": {
+   "pool": 120,
+   "full_net_positive_share": 0.367,
+   "full_net_median": -375.94,
+   "full_trades_median": 4.0,
+   "A_fitness_p50": -4.714,
+   "A_fitness_p90": -2.2,
+   "A_fitness_best": 2.472,
+   "best_on_A": {
+    "genome": {
+     "family": "NULL_RANDOM",
+     "nr_p": 0.04,
+     "nr_seed": 3,
+     "rvol": 1.2,
+     "htf": "WITH",
+     "xidx": "OFF",
+     "window": "PM",
+     "stop_atr": 1.5,
+     "target_r": 1.5,
+     "exit": "RUN",
+     "vwap_exit": "ON",
+     "delta": 0.55,
+     "expiry": "NEAR"
+    },
+    "A": {
+     "sessions": 19,
+     "trades": 9,
+     "unresolved": 0,
+     "net": 8755.12,
+     "net_without_best_day": 4560.42,
+     "dd": 2728.07,
+     "stressed": 7416.84,
+     "win_rate": 0.6667,
+     "profit_factor": 3.34,
+     "green_days": 6,
+     "red_days": 1,
+     "worst_day": -744.73,
+     "weeks": 5,
+     "green_weeks": 4,
+     "red_weeks": 0,
+     "charges": 673.13,
+     "daily": {
+      "2026-09-10": 1323.78,
+      "2026-09-11": 622.55,
+      "2026-09-15": 0.0,
+      "2026-09-16": 498.54,
+      "2026-09-17": 0.0,
+      "2026-09-21": 0.0,
+      "2026-09-22": 0.0,
+      "2026-09-23": 0.0,
+      "2026-09-24": 0.0,
+      "2026-09-25": 304.62,
+      "2026-09-28": 2555.67,
+      "2026-09-29": 0.0,
+      "2026-09-30": -744.73,
+      "2026-10-01": 4194.71,
+      "2026-10-05": 0.0,
+      "2026-10-06": 0.0,
+      "2026-10-07": 0.0,
+      "2026-10-08": 0.0,
+      "2026-10-09": 0.0
+     },
+     "exit_reasons": {
+      "hard_flat_1510": 2,
+      "VWAP_LOST": 3,
+      "time_stop": 1,
+      "trail_stop": 2,
+      "underlying_stop": 1
+     }
+    },
+    "B": {
+     "sessions": 10,
+     "trades": 2,
+     "unresolved": 0,
+     "net": -3028.61,
+     "net_without_best_day": -3260.56,
+     "dd": 3260.56,
+     "stressed": -3325.89,
+     "win_rate": 0.5,
+     "profit_factor": 0.071,
+     "green_days": 1,
+     "red_days": 1,
+     "worst_day": -3260.56,
+     "weeks": 3,
+     "green_weeks": 0,
+     "red_weeks": 1,
+     "charges": 149.11,
+     "daily": {
+      "2026-10-12": 0.0,
+      "2026-10-13": 0.0,
+      "2026-10-14": 0.0,
+      "2026-10-15": 0.0,
+      "2026-10-16": 0.0,
+      "2026-10-19": 0.0,
+      "2026-10-21": 231.95,
+      "2026-10-22": 0.0,
+      "2026-10-23": -3260.56,
+      "2026-10-26": 0.0
+     },
+     "exit_reasons": {
+      "VWAP_LOST": 1,
+      "underlying_stop": 1
+     }
+    }
+   },
+   "pool_walk_forward_test_nets": [
+    4194.71,
+    0.0,
+    -3028.61
+   ],
+   "pool_walk_forward_total": 1166.1
+  }
+ },
+ "alleles": {
+  "rvol": {
+   "0.0": {
+    "n": 171,
+    "mean_net": -70.5,
+    "positive_share": 0.409,
+    "mean_trades": 6.6
+   },
+   "0.8": {
+    "n": 140,
+    "mean_net": 1615.2,
+    "positive_share": 0.521,
+    "mean_trades": 6.9
+   },
+   "1.0": {
+    "n": 146,
+    "mean_net": 273.4,
+    "positive_share": 0.397,
+    "mean_trades": 6.6
+   },
+   "1.2": {
+    "n": 143,
+    "mean_net": 443.4,
+    "positive_share": 0.483,
+    "mean_trades": 5.6
+   }
+  },
+  "htf": {
+   "OFF": {
+    "n": 286,
+    "mean_net": 333.1,
+    "positive_share": 0.402,
+    "mean_trades": 8.3
+   },
+   "WITH": {
+    "n": 314,
+    "mean_net": 707.4,
+    "positive_share": 0.494,
+    "mean_trades": 4.7
+   }
+  },
+  "xidx": {
+   "OFF": {
+    "n": 296,
+    "mean_net": 761.1,
+    "positive_share": 0.476,
+    "mean_trades": 7.4
+   },
+   "ON": {
+    "n": 304,
+    "mean_net": 303.1,
+    "positive_share": 0.424,
+    "mean_trades": 5.4
+   }
+  },
+  "window": {
+   "ALL": {
+    "n": 207,
+    "mean_net": 264.6,
+    "positive_share": 0.469,
+    "mean_trades": 6.9
+   },
+   "AM": {
+    "n": 200,
+    "mean_net": 1934.9,
+    "positive_share": 0.515,
+    "mean_trades": 5.0
+   },
+   "PM": {
+    "n": 193,
+    "mean_net": -644.2,
+    "positive_share": 0.363,
+    "mean_trades": 7.4
+   }
+  },
+  "stop_atr": {
+   "1.0": {
+    "n": 208,
+    "mean_net": -99.1,
+    "positive_share": 0.442,
+    "mean_trades": 6.0
+   },
+   "1.5": {
+    "n": 188,
+    "mean_net": 1135.8,
+    "positive_share": 0.468,
+    "mean_trades": 6.5
+   },
+   "2.0": {
+    "n": 204,
+    "mean_net": 610.2,
+    "positive_share": 0.441,
+    "mean_trades": 6.8
+   }
+  },
+  "target_r": {
+   "1.5": {
+    "n": 156,
+    "mean_net": -232.4,
+    "positive_share": 0.391,
+    "mean_trades": 5.5
+   },
+   "1.8": {
+    "n": 149,
+    "mean_net": 566.5,
+    "positive_share": 0.477,
+    "mean_trades": 6.4
+   },
+   "2.4": {
+    "n": 155,
+    "mean_net": 114.2,
+    "positive_share": 0.445,
+    "mean_trades": 6.8
+   },
+   "3.0": {
+    "n": 140,
+    "mean_net": 1796.9,
+    "positive_share": 0.493,
+    "mean_trades": 6.9
+   }
+  },
+  "exit": {
+   "LIVE": {
+    "n": 175,
+    "mean_net": 252.7,
+    "positive_share": 0.406,
+    "mean_trades": 7.0
+   },
+   "LATE": {
+    "n": 128,
+    "mean_net": 335.1,
+    "positive_share": 0.453,
+    "mean_trades": 7.0
+   },
+   "LOOSE": {
+    "n": 150,
+    "mean_net": 1254.0,
+    "positive_share": 0.507,
+    "mean_trades": 6.2
+   },
+   "RUN": {
+    "n": 147,
+    "mean_net": 287.0,
+    "positive_share": 0.442,
+    "mean_trades": 5.5
+   }
+  },
+  "vwap_exit": {
+   "OFF": {
+    "n": 299,
+    "mean_net": 242.7,
+    "positive_share": 0.438,
+    "mean_trades": 6.2
+   },
+   "ON": {
+    "n": 301,
+    "mean_net": 813.4,
+    "positive_share": 0.462,
+    "mean_trades": 6.6
+   }
+  },
+  "delta": {
+   "0.55": {
+    "n": 301,
+    "mean_net": 1303.4,
+    "positive_share": 0.528,
+    "mean_trades": 7.4
+   },
+   "0.65": {
+    "n": 299,
+    "mean_net": -250.5,
+    "positive_share": 0.371,
+    "mean_trades": 5.4
+   }
+  },
+  "expiry": {
+   "NEAR": {
+    "n": 295,
+    "mean_net": 584.8,
+    "positive_share": 0.505,
+    "mean_trades": 8.9
+   },
+   "NEXT": {
+    "n": 305,
+    "mean_net": 475.1,
+    "positive_share": 0.397,
+    "mean_trades": 4.0
+   }
+  }
+ },
+ "generalisation": {
+  "REAL": {
+   "mean_B_net": -1200.12,
+   "positive_B": 3,
+   "k": 10
+  },
+  "NULL": {
+   "mean_B_net": -3082.69,
+   "positive_B": 1,
+   "k": 10
+  },
+  "REAL_spearman_A_fitness_vs_B_net": -0.023
+ },
+ "persistence": {
+  "weekly": [
+   {
+    "from": "2026-09-10",
+    "to": "2026-09-15",
+    "genomes": 124,
+    "spearman": -0.489
+   },
+   {
+    "from": "2026-09-15",
+    "to": "2026-09-21",
+    "genomes": 81,
+    "spearman": 0.304
+   },
+   {
+    "from": "2026-09-21",
+    "to": "2026-09-28",
+    "genomes": 215,
+    "spearman": 0.066
+   },
+   {
+    "from": "2026-09-28",
+    "to": "2026-10-05",
+    "genomes": 195,
+    "spearman": -0.0
+   },
+   {
+    "from": "2026-10-05",
+    "to": "2026-10-12",
+    "genomes": 163,
+    "spearman": 0.198
+   },
+   {
+    "from": "2026-10-12",
+    "to": "2026-10-19",
+    "genomes": 154,
+    "spearman": 0.379
+   },
+   {
+    "from": "2026-10-19",
+    "to": "2026-10-26",
+    "genomes": 81,
+    "spearman": 0.068
+   }
+  ],
+  "A_vs_B": {
+   "genomes": 125,
+   "spearman": -0.225,
+   "same_sign": 47
+  },
+  "mean_weekly_spearman": 0.075
+ },
+ "final": {
+  "pick": {
+   "genome": {
+    "family": "TREND_PULLBACK",
+    "tp_trend": 1.5,
+    "tp_side": 0.75,
+    "tp_anchor": "VWAP",
+    "tp_touch": 0.5,
+    "tp_from": 690,
+    "rvol": 0.0,
+    "htf": "OFF",
+    "xidx": "OFF",
+    "window": "ALL",
+    "stop_atr": 1.5,
+    "target_r": 3.0,
+    "exit": "RUN",
+    "vwap_exit": "OFF",
+    "delta": 0.55,
+    "expiry": "NEAR"
+   },
+   "digest": "a6d7762768c82811",
+   "fitness": 4.151722,
+   "plateau": 2.17146,
+   "neighbours": 23
+  },
+  "short": "TREND_PULLBACK(tp_trend=1.5, tp_side=0.75, tp_anchor=VWAP, tp_touch=0.5, tp_from=690, target_r=3.0, exit=RUN)",
+  "FULL": {
+   "sessions": 29,
+   "trades": 14,
+   "unresolved": 0,
+   "net": 17347.49,
+   "net_without_best_day": 11626.71,
+   "dd": 3417.89,
+   "stressed": 15286.74,
+   "win_rate": 0.7143,
+   "profit_factor": 4.091,
+   "green_days": 8,
+   "red_days": 1,
+   "worst_day": -2194.6,
+   "weeks": 8,
+   "green_weeks": 6,
+   "red_weeks": 0,
+   "charges": 963.01,
+   "daily": {
+    "2026-09-10": 0.0,
+    "2026-09-11": 2888.82,
+    "2026-09-15": 0.0,
+    "2026-09-16": 0.0,
+    "2026-09-17": 0.0,
+    "2026-09-21": 670.8,
+    "2026-09-22": 0.0,
+    "2026-09-23": -2194.6,
+    "2026-09-24": 5720.79,
+    "2026-09-25": 0.0,
+    "2026-09-28": 1731.75,
+    "2026-09-29": 0.0,
+    "2026-09-30": 0.0,
+    "2026-10-01": 0.0,
+    "2026-10-05": 0.0,
+    "2026-10-06": 0.0,
+    "2026-10-07": 0.0,
+    "2026-10-08": 2533.28,
+    "2026-10-09": 264.5,
+    "2026-10-12": 0.0,
+    "2026-10-13": 0.0,
+    "2026-10-14": 0.0,
+    "2026-10-15": 0.0,
+    "2026-10-16": 0.0,
+    "2026-10-19": 0.0,
+    "2026-10-21": 0.0,
+    "2026-10-22": 0.0,
+    "2026-10-23": 539.37,
+    "2026-10-26": 5192.78
+   },
+   "exit_reasons": {
+    "hard_flat_1510": 9,
+    "underlying_stop": 2,
+    "trail_stop": 2,
+    "premium_backstop": 1
+   }
+  },
+  "A": {
+   "sessions": 19,
+   "trades": 9,
+   "unresolved": 0,
+   "net": 11615.35,
+   "net_without_best_day": 5894.56,
+   "dd": 2194.6,
+   "stressed": 10294.18,
+   "win_rate": 0.7778,
+   "profit_factor": 6.293,
+   "green_days": 6,
+   "red_days": 1,
+   "worst_day": -2194.6,
+   "weeks": 5,
+   "green_weeks": 4,
+   "red_weeks": 0,
+   "charges": 604.66,
+   "daily": {
+    "2026-09-10": 0.0,
+    "2026-09-11": 2888.82,
+    "2026-09-15": 0.0,
+    "2026-09-16": 0.0,
+    "2026-09-17": 0.0,
+    "2026-09-21": 670.8,
+    "2026-09-22": 0.0,
+    "2026-09-23": -2194.6,
+    "2026-09-24": 5720.79,
+    "2026-09-25": 0.0,
+    "2026-09-28": 1731.75,
+    "2026-09-29": 0.0,
+    "2026-09-30": 0.0,
+    "2026-10-01": 0.0,
+    "2026-10-05": 0.0,
+    "2026-10-06": 0.0,
+    "2026-10-07": 0.0,
+    "2026-10-08": 2533.28,
+    "2026-10-09": 264.5
+   },
+   "exit_reasons": {
+    "hard_flat_1510": 5,
+    "underlying_stop": 2,
+    "trail_stop": 2
+   }
+  },
+  "B": {
+   "sessions": 10,
+   "trades": 5,
+   "unresolved": 0,
+   "net": 5732.15,
+   "net_without_best_day": 539.37,
+   "dd": 3417.89,
+   "stressed": 4992.56,
+   "win_rate": 0.6,
+   "profit_factor": 2.677,
+   "green_days": 2,
+   "red_days": 0,
+   "worst_day": 0.0,
+   "weeks": 3,
+   "green_weeks": 2,
+   "red_weeks": 0,
+   "charges": 358.35,
+   "daily": {
+    "2026-10-12": 0.0,
+    "2026-10-13": 0.0,
+    "2026-10-14": 0.0,
+    "2026-10-15": 0.0,
+    "2026-10-16": 0.0,
+    "2026-10-19": 0.0,
+    "2026-10-21": 0.0,
+    "2026-10-22": 0.0,
+    "2026-10-23": 539.37,
+    "2026-10-26": 5192.78
+   },
+   "exit_reasons": {
+    "hard_flat_1510": 4,
+    "premium_backstop": 1
+   }
+  },
+  "neighbours": {
+   "count": 23,
+   "positive_full_net": 23,
+   "median_full_net": 12019.39,
+   "min_full_net": 3280.6
+  },
+  "flipped": {
+   "sessions": 29,
+   "trades": 5,
+   "unresolved": 0,
+   "net": -11761.41,
+   "net_without_best_day": -11761.41,
+   "dd": 11761.41,
+   "stressed": -12493.39,
+   "win_rate": 0.0,
+   "profit_factor": 0.0,
+   "green_days": 0,
+   "red_days": 3,
+   "worst_day": -4778.27,
+   "weeks": 8,
+   "green_weeks": 0,
+   "red_weeks": 3,
+   "charges": 327.91,
+   "daily": {
+    "2026-09-10": 0.0,
+    "2026-09-11": -3833.49,
+    "2026-09-15": 0.0,
+    "2026-09-16": 0.0,
+    "2026-09-17": 0.0,
+    "2026-09-21": 0.0,
+    "2026-09-22": 0.0,
+    "2026-09-23": 0.0,
+    "2026-09-24": 0.0,
+    "2026-09-25": 0.0,
+    "2026-09-28": 0.0,
+    "2026-09-29": 0.0,
+    "2026-09-30": 0.0,
+    "2026-10-01": 0.0,
+    "2026-10-05": 0.0,
+    "2026-10-06": 0.0,
+    "2026-10-07": 0.0,
+    "2026-10-08": 0.0,
+    "2026-10-09": 0.0,
+    "2026-10-12": 0.0,
+    "2026-10-13": 0.0,
+    "2026-10-14": 0.0,
+    "2026-10-15": 0.0,
+    "2026-10-16": 0.0,
+    "2026-10-19": 0.0,
+    "2026-10-21": 0.0,
+    "2026-10-22": 0.0,
+    "2026-10-23": -3149.65,
+    "2026-10-26": -4778.27
+   },
+   "exit_reasons": {
+    "underlying_stop": 2,
+    "premium_backstop": 3
+   }
+  },
+  "top5": [
+   {
+    "short": "ENSEMBLE(en_members=EFF+MOMO, en_k=2, en_window=3, rvol=0.8, window=AM, stop_atr=2.0, target_r=2.4, exit=LOOSE)",
+    "fitness": 5.383878,
+    "plateau": 1.485351,
+    "FULL": {
+     "sessions": 29,
+     "trades": 16,
+     "unresolved": 1,
+     "net": 24531.45,
+     "net_without_best_day": 14996.63,
+     "dd": 2994.01,
+     "stressed": 22151.75,
+     "win_rate": 0.5625,
+     "profit_factor": 5.073,
+     "green_days": 7,
+     "red_days": 4,
+     "worst_day": -2994.01,
+     "weeks": 8,
+     "green_weeks": 5,
+     "red_weeks": 2,
+     "charges": 1198.8,
+     "exit_reasons": {
+      "time_stop": 11,
+      "trail_stop": 2,
+      "hard_flat_1510": 2,
+      "premium_backstop": 1
+     }
+    }
+   },
+   {
+    "short": "TREND_PULLBACK(tp_trend=1.5, tp_side=0.6, tp_anchor=VWAP, tp_touch=0.5, tp_from=630, target_r=3.0, exit=LATE, vwap_exit=ON, expiry=NEXT)",
+    "fitness": 4.569311,
+    "plateau": 1.123175,
+    "FULL": {
+     "sessions": 29,
+     "trades": 15,
+     "unresolved": 0,
+     "net": 13935.64,
+     "net_without_best_day": 6637.33,
+     "dd": 1582.46,
+     "stressed": 11682.49,
+     "win_rate": 0.6,
+     "profit_factor": 5.057,
+     "green_days": 4,
+     "red_days": 4,
+     "worst_day": -734.05,
+     "weeks": 8,
+     "green_weeks": 4,
+     "red_weeks": 1,
+     "charges": 1212.61,
+     "exit_reasons": {
+      "time_stop": 6,
+      "trail_stop": 3,
+      "profit_lock": 1,
+      "VWAP_LOST": 4,
+      "hard_flat_1510": 1
+     }
+    }
+   },
+   {
+    "short": "TREND_PULLBACK(tp_trend=1.5, tp_side=0.75, tp_anchor=VWAP, tp_touch=0.5, tp_from=690, target_r=3.0, exit=RUN)",
+    "fitness": 4.151722,
+    "plateau": 2.17146,
+    "FULL": {
+     "sessions": 29,
+     "trades": 14,
+     "unresolved": 0,
+     "net": 17347.49,
+     "net_without_best_day": 11626.71,
+     "dd": 3417.89,
+     "stressed": 15286.74,
+     "win_rate": 0.7143,
+     "profit_factor": 4.091,
+     "green_days": 8,
+     "red_days": 1,
+     "worst_day": -2194.6,
+     "weeks": 8,
+     "green_weeks": 6,
+     "red_weeks": 0,
+     "charges": 963.01,
+     "exit_reasons": {
+      "hard_flat_1510": 9,
+      "underlying_stop": 2,
+      "trail_stop": 2,
+      "premium_backstop": 1
+     }
+    }
+   },
+   {
+    "short": "MOMO_BURST(mb_bars=2, mb_move=1.5, rvol=0.8, window=AM)",
+    "fitness": 3.778836,
+    "plateau": -0.888215,
+    "FULL": {
+     "sessions": 29,
+     "trades": 15,
+     "unresolved": 1,
+     "net": 17009.03,
+     "net_without_best_day": 9983.79,
+     "dd": 2933.1,
+     "stressed": 14773.48,
+     "win_rate": 0.7333,
+     "profit_factor": 3.806,
+     "green_days": 8,
+     "red_days": 3,
+     "worst_day": -2242.09,
+     "weeks": 8,
+     "green_weeks": 5,
+     "red_weeks": 2,
+     "charges": 1142.22,
+     "exit_reasons": {
+      "profit_lock": 4,
+      "underlying_stop": 2,
+      "time_stop": 5,
+      "trail_stop": 4
+     }
+    }
+   },
+   {
+    "short": "VWAP_BAND(vb_k=1.0, vb_slope=6, window=AM, stop_atr=2.0, target_r=3.0, exit=RUN)",
+    "fitness": 3.35262,
+    "plateau": 0.754341,
+    "FULL": {
+     "sessions": 29,
+     "trades": 20,
+     "unresolved": 2,
+     "net": 48542.2,
+     "net_without_best_day": 31271.49,
+     "dd": 10079.06,
+     "stressed": 45012.75,
+     "win_rate": 0.5,
+     "profit_factor": 3.499,
+     "green_days": 8,
+     "red_days": 3,
+     "worst_day": -10079.06,
+     "weeks": 8,
+     "green_weeks": 4,
+     "red_weeks": 2,
+     "charges": 1637.8,
+     "exit_reasons": {
+      "time_stop": 9,
+      "trail_stop": 3,
+      "underlying_stop": 2,
+      "hard_flat_1510": 4,
+      "premium_backstop": 2
+     }
+    }
+   }
+  ]
+ },
+ "references_full": {
+  "SHIPPED": {
+   "sessions": 29,
+   "trades": 13,
+   "unresolved": 0,
+   "net": 10801.09,
+   "net_without_best_day": 3693.42,
+   "dd": 1990.89,
+   "stressed": 8878.24,
+   "win_rate": 0.5385,
+   "profit_factor": 2.987,
+   "green_days": 6,
+   "red_days": 4,
+   "worst_day": -1460.92,
+   "weeks": 8,
+   "green_weeks": 3,
+   "red_weeks": 3,
+   "charges": 931.41,
+   "daily": {
+    "2026-09-10": -343.52,
+    "2026-09-11": 0.0,
+    "2026-09-15": 0.0,
+    "2026-09-16": 0.0,
+    "2026-09-17": -456.79,
+    "2026-09-21": 0.0,
+    "2026-09-22": 0.0,
+    "2026-09-23": 582.64,
+    "2026-09-24": -440.14,
+    "2026-09-25": 0.0,
+    "2026-09-28": 1910.58,
+    "2026-09-29": 0.0,
+    "2026-09-30": 19.99,
+    "2026-10-01": 7107.67,
+    "2026-10-05": 0.0,
+    "2026-10-06": 0.0,
+    "2026-10-07": -1460.92,
+    "2026-10-08": 0.0,
+    "2026-10-09": 366.36,
+    "2026-10-12": 0.0,
+    "2026-10-13": 0.0,
+    "2026-10-14": 0.0,
+    "2026-10-15": 3515.21,
+    "2026-10-16": 0.0,
+    "2026-10-19": 0.0,
+    "2026-10-21": 0.0,
+    "2026-10-22": 0.0,
+    "2026-10-23": 0.0,
+    "2026-10-26": 0.0
+   },
+   "exit_reasons": {
+    "time_stop": 7,
+    "trail_stop": 4,
+    "underlying_stop": 2
+   }
+  },
+  "O27_OR20_NOEMA_LATE_T75_TR1.5": {
+   "sessions": 29,
+   "trades": 19,
+   "unresolved": 1,
+   "net": 30566.8,
+   "net_without_best_day": 21116.73,
+   "dd": 3422.99,
+   "stressed": 27605.37,
+   "win_rate": 0.6316,
+   "profit_factor": 3.897,
+   "green_days": 10,
+   "red_days": 5,
+   "worst_day": -3422.99,
+   "weeks": 8,
+   "green_weeks": 5,
+   "red_weeks": 2,
+   "charges": 1445.7,
+   "daily": {
+    "2026-09-10": 1323.78,
+    "2026-09-11": 1260.0,
+    "2026-09-15": 0.0,
+    "2026-09-16": 0.0,
+    "2026-09-17": 0.0,
+    "2026-09-21": 0.0,
+    "2026-09-22": 0.0,
+    "2026-09-23": 404.24,
+    "2026-09-24": -943.56,
+    "2026-09-25": -1241.82,
+    "2026-09-28": 853.22,
+    "2026-09-29": 0.0,
+    "2026-09-30": -375.75,
+    "2026-10-01": 5491.87,
+    "2026-10-05": 492.63,
+    "2026-10-06": 0.0,
+    "2026-10-07": -3422.99,
+    "2026-10-08": 7423.97,
+    "2026-10-09": 0.0,
+    "2026-10-12": -831.11,
+    "2026-10-13": 0.0,
+    "2026-10-14": 0.0,
+    "2026-10-15": 0.0,
+    "2026-10-16": 0.0,
+    "2026-10-19": 0.0,
+    "2026-10-21": 9450.07,
+    "2026-10-22": 0.0,
+    "2026-10-23": 5540.58,
+    "2026-10-26": 5141.69
+   },
+   "exit_reasons": {
+    "hard_flat_1510": 1,
+    "trail_stop": 6,
+    "time_stop": 4,
+    "underlying_stop": 6,
+    "profit_lock": 2
+   }
+  },
+  "O27E_EFFICIENCY_BREAK": {
+   "sessions": 29,
+   "trades": 38,
+   "unresolved": 0,
+   "net": 31063.32,
+   "net_without_best_day": 22655.57,
+   "dd": 6748.74,
+   "stressed": 25034.53,
+   "win_rate": 0.5526,
+   "profit_factor": 2.276,
+   "green_days": 12,
+   "red_days": 7,
+   "worst_day": -2307.25,
+   "weeks": 8,
+   "green_weeks": 4,
+   "red_weeks": 4,
+   "charges": 2795.17,
+   "daily": {
+    "2026-09-10": 1323.78,
+    "2026-09-11": 6246.27,
+    "2026-09-15": 0.0,
+    "2026-09-16": -1347.77,
+    "2026-09-17": -1611.93,
+    "2026-09-21": -684.09,
+    "2026-09-22": 0.0,
+    "2026-09-23": 423.99,
+    "2026-09-24": 8291.95,
+    "2026-09-25": -128.13,
+    "2026-09-28": 25.75,
+    "2026-09-29": 0.0,
+    "2026-09-30": -2307.25,
+    "2026-10-01": 2081.42,
+    "2026-10-05": 1242.41,
+    "2026-10-06": 0.0,
+    "2026-10-07": 93.34,
+    "2026-10-08": 0.0,
+    "2026-10-09": -1457.0,
+    "2026-10-12": 4967.61,
+    "2026-10-13": 0.0,
+    "2026-10-14": 0.0,
+    "2026-10-15": 8407.76,
+    "2026-10-16": 0.0,
+    "2026-10-19": 0.0,
+    "2026-10-21": 5670.97,
+    "2026-10-22": 0.0,
+    "2026-10-23": 1686.44,
+    "2026-10-26": -1862.19
+   },
+   "exit_reasons": {
+    "hard_flat_1510": 3,
+    "time_stop": 20,
+    "trail_stop": 9,
+    "underlying_stop": 4,
+    "premium_backstop": 2
+   }
+  }
+ },
+ "history": [
+  {
+   "track": "REAL",
+   "fold": "F1",
+   "generation": 0,
+   "best": "a741f7a97056ad99",
+   "family": "TREND_PULLBACK",
+   "fitness": 5.3663,
+   "net": 8401.93,
+   "evaluated_by_fold": 615
+  },
+  {
+   "track": "REAL",
+   "fold": "F1",
+   "generation": 1,
+   "best": "a741f7a97056ad99",
+   "family": "TREND_PULLBACK",
+   "fitness": 5.3663,
+   "net": 8401.93,
+   "evaluated_by_fold": 630
+  },
+  {
+   "track": "REAL",
+   "fold": "F1",
+   "generation": 2,
+   "best": "a741f7a97056ad99",
+   "family": "TREND_PULLBACK",
+   "fitness": 5.3663,
+   "net": 8401.93,
+   "evaluated_by_fold": 646
+  },
+  {
+   "track": "REAL",
+   "fold": "F1",
+   "generation": 3,
+   "best": "a741f7a97056ad99",
+   "family": "TREND_PULLBACK",
+   "fitness": 5.3663,
+   "net": 8401.93,
+   "evaluated_by_fold": 662
+  },
+  {
+   "track": "REAL",
+   "fold": "F1",
+   "generation": 4,
+   "best": "65efb6df9631a9c4",
+   "family": "TREND_PULLBACK",
+   "fitness": 5.60897,
+   "net": 7187.19,
+   "evaluated_by_fold": 678
+  },
+  {
+   "track": "REAL",
+   "fold": "F1",
+   "generation": 5,
+   "best": "65efb6df9631a9c4",
+   "family": "TREND_PULLBACK",
+   "fitness": 5.60897,
+   "net": 7187.19,
+   "evaluated_by_fold": 694
+  },
+  {
+   "track": "REAL",
+   "fold": "F2",
+   "generation": 0,
+   "best": "e429acb45a711e28",
+   "family": "TREND_PULLBACK",
+   "fitness": 4.419427,
+   "net": 19991.4,
+   "evaluated_by_fold": 615
+  },
+  {
+   "track": "REAL",
+   "fold": "F2",
+   "generation": 1,
+   "best": "d37603a68b987882",
+   "family": "MOMO_BURST",
+   "fitness": 6.06952,
+   "net": 17110.88,
+   "evaluated_by_fold": 631
+  },
+  {
+   "track": "REAL",
+   "fold": "F2",
+   "generation": 2,
+   "best": "d37603a68b987882",
+   "family": "MOMO_BURST",
+   "fitness": 6.06952,
+   "net": 17110.88,
+   "evaluated_by_fold": 647
+  },
+  {
+   "track": "REAL",
+   "fold": "F2",
+   "generation": 3,
+   "best": "d37603a68b987882",
+   "family": "MOMO_BURST",
+   "fitness": 6.06952,
+   "net": 17110.88,
+   "evaluated_by_fold": 661
+  },
+  {
+   "track": "REAL",
+   "fold": "F2",
+   "generation": 4,
+   "best": "d37603a68b987882",
+   "family": "MOMO_BURST",
+   "fitness": 6.06952,
+   "net": 17110.88,
+   "evaluated_by_fold": 676
+  },
+  {
+   "track": "REAL",
+   "fold": "F2",
+   "generation": 5,
+   "best": "d37603a68b987882",
+   "family": "MOMO_BURST",
+   "fitness": 6.06952,
+   "net": 17110.88,
+   "evaluated_by_fold": 691
+  },
+  {
+   "track": "REAL",
+   "fold": "F3",
+   "generation": 0,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 10.29679,
+   "net": 19331.61,
+   "evaluated_by_fold": 615
+  },
+  {
+   "track": "REAL",
+   "fold": "F3",
+   "generation": 1,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 10.29679,
+   "net": 19331.61,
+   "evaluated_by_fold": 631
+  },
+  {
+   "track": "REAL",
+   "fold": "F3",
+   "generation": 2,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 10.29679,
+   "net": 19331.61,
+   "evaluated_by_fold": 647
+  },
+  {
+   "track": "REAL",
+   "fold": "F3",
+   "generation": 3,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 10.29679,
+   "net": 19331.61,
+   "evaluated_by_fold": 663
+  },
+  {
+   "track": "REAL",
+   "fold": "F3",
+   "generation": 4,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 10.29679,
+   "net": 19331.61,
+   "evaluated_by_fold": 678
+  },
+  {
+   "track": "REAL",
+   "fold": "F3",
+   "generation": 5,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 10.29679,
+   "net": 19331.61,
+   "evaluated_by_fold": 694
+  },
+  {
+   "track": "REAL",
+   "fold": "FINAL",
+   "generation": 0,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 5.383878,
+   "net": 24531.45,
+   "evaluated_by_fold": 615
+  },
+  {
+   "track": "REAL",
+   "fold": "FINAL",
+   "generation": 1,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 5.383878,
+   "net": 24531.45,
+   "evaluated_by_fold": 631
+  },
+  {
+   "track": "REAL",
+   "fold": "FINAL",
+   "generation": 2,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 5.383878,
+   "net": 24531.45,
+   "evaluated_by_fold": 647
+  },
+  {
+   "track": "REAL",
+   "fold": "FINAL",
+   "generation": 3,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 5.383878,
+   "net": 24531.45,
+   "evaluated_by_fold": 661
+  },
+  {
+   "track": "REAL",
+   "fold": "FINAL",
+   "generation": 4,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 5.383878,
+   "net": 24531.45,
+   "evaluated_by_fold": 677
+  },
+  {
+   "track": "REAL",
+   "fold": "FINAL",
+   "generation": 5,
+   "best": "96ff08e84b2c6afc",
+   "family": "ENSEMBLE",
+   "fitness": 5.383878,
+   "net": 24531.45,
+   "evaluated_by_fold": 693
+  },
+  {
+   "track": "NULL",
+   "fold": "F1",
+   "generation": 0,
+   "best": "7773c7fb587fce8a",
+   "family": "NULL_RANDOM",
+   "fitness": 3.00474,
+   "net": 4560.42,
+   "evaluated_by_fold": 124
+  },
+  {
+   "track": "NULL",
+   "fold": "F1",
+   "generation": 1,
+   "best": "432b6db7c4a62a6f",
+   "family": "NULL_RANDOM",
+   "fitness": 4.56499,
+   "net": 6120.66,
+   "evaluated_by_fold": 140
+  },
+  {
+   "track": "NULL",
+   "fold": "F1",
+   "generation": 2,
+   "best": "432b6db7c4a62a6f",
+   "family": "NULL_RANDOM",
+   "fitness": 4.56499,
+   "net": 6120.66,
+   "evaluated_by_fold": 156
+  },
+  {
+   "track": "NULL",
+   "fold": "F1",
+   "generation": 3,
+   "best": "432b6db7c4a62a6f",
+   "family": "NULL_RANDOM",
+   "fitness": 4.56499,
+   "net": 6120.66,
+   "evaluated_by_fold": 171
+  },
+  {
+   "track": "NULL",
+   "fold": "F1",
+   "generation": 4,
+   "best": "432b6db7c4a62a6f",
+   "family": "NULL_RANDOM",
+   "fitness": 4.56499,
+   "net": 6120.66,
+   "evaluated_by_fold": 184
+  },
+  {
+   "track": "NULL",
+   "fold": "F1",
+   "generation": 5,
+   "best": "e8f9a40809dc9021",
+   "family": "NULL_RANDOM",
+   "fitness": 7.32801,
+   "net": 11028.41,
+   "evaluated_by_fold": 200
+  },
+  {
+   "track": "NULL",
+   "fold": "F2",
+   "generation": 0,
+   "best": "7773c7fb587fce8a",
+   "family": "NULL_RANDOM",
+   "fitness": 2.471665,
+   "net": 8755.12,
+   "evaluated_by_fold": 124
+  },
+  {
+   "track": "NULL",
+   "fold": "F2",
+   "generation": 1,
+   "best": "72d0eaef1cdc5455",
+   "family": "NULL_RANDOM",
+   "fitness": 6.27831,
+   "net": 13094.56,
+   "evaluated_by_fold": 140
+  },
+  {
+   "track": "NULL",
+   "fold": "F2",
+   "generation": 2,
+   "best": "d8e4fcc683a337ad",
+   "family": "NULL_RANDOM",
+   "fitness": 6.409377,
+   "net": 11574.5,
+   "evaluated_by_fold": 156
+  },
+  {
+   "track": "NULL",
+   "fold": "F2",
+   "generation": 3,
+   "best": "74fa4f4aba2d25a0",
+   "family": "NULL_RANDOM",
+   "fitness": 7.033585,
+   "net": 17908.49,
+   "evaluated_by_fold": 172
+  },
+  {
+   "track": "NULL",
+   "fold": "F2",
+   "generation": 4,
+   "best": "8b227d47f0520fe5",
+   "family": "NULL_RANDOM",
+   "fitness": 9.64354,
+   "net": 18510.13,
+   "evaluated_by_fold": 188
+  },
+  {
+   "track": "NULL",
+   "fold": "F2",
+   "generation": 5,
+   "best": "8b227d47f0520fe5",
+   "family": "NULL_RANDOM",
+   "fitness": 9.64354,
+   "net": 18510.13,
+   "evaluated_by_fold": 204
+  },
+  {
+   "track": "NULL",
+   "fold": "F3",
+   "generation": 0,
+   "best": "7773c7fb587fce8a",
+   "family": "NULL_RANDOM",
+   "fitness": 2.338332,
+   "net": 8755.12,
+   "evaluated_by_fold": 124
+  },
+  {
+   "track": "NULL",
+   "fold": "F3",
+   "generation": 1,
+   "best": "7773c7fb587fce8a",
+   "family": "NULL_RANDOM",
+   "fitness": 2.338332,
+   "net": 8755.12,
+   "evaluated_by_fold": 140
+  },
+  {
+   "track": "NULL",
+   "fold": "F3",
+   "generation": 2,
+   "best": "7773c7fb587fce8a",
+   "family": "NULL_RANDOM",
+   "fitness": 2.338332,
+   "net": 8755.12,
+   "evaluated_by_fold": 156
+  },
+  {
+   "track": "NULL",
+   "fold": "F3",
+   "generation": 3,
+   "best": "d2cc5c297e326f53",
+   "family": "NULL_RANDOM",
+   "fitness": 5.906487,
+   "net": 11841.4,
+   "evaluated_by_fold": 172
+  },
+  {
+   "track": "NULL",
+   "fold": "F3",
+   "generation": 4,
+   "best": "d2cc5c297e326f53",
+   "family": "NULL_RANDOM",
+   "fitness": 5.906487,
+   "net": 11841.4,
+   "evaluated_by_fold": 188
+  },
+  {
+   "track": "NULL",
+   "fold": "F3",
+   "generation": 5,
+   "best": "d2cc5c297e326f53",
+   "family": "NULL_RANDOM",
+   "fitness": 5.906487,
+   "net": 11841.4,
+   "evaluated_by_fold": 204
+  },
+  {
+   "track": "NULL",
+   "fold": "FINAL",
+   "generation": 0,
+   "best": "7773c7fb587fce8a",
+   "family": "NULL_RANDOM",
+   "fitness": 0.641093,
+   "net": 5726.51,
+   "evaluated_by_fold": 124
+  },
+  {
+   "track": "NULL",
+   "fold": "FINAL",
+   "generation": 1,
+   "best": "7773c7fb587fce8a",
+   "family": "NULL_RANDOM",
+   "fitness": 0.641093,
+   "net": 5726.51,
+   "evaluated_by_fold": 140
+  },
+  {
+   "track": "NULL",
+   "fold": "FINAL",
+   "generation": 2,
+   "best": "cb108f3d0242b37a",
+   "family": "NULL_RANDOM",
+   "fitness": 2.257316,
+   "net": 27461.4,
+   "evaluated_by_fold": 156
+  },
+  {
+   "track": "NULL",
+   "fold": "FINAL",
+   "generation": 3,
+   "best": "cb108f3d0242b37a",
+   "family": "NULL_RANDOM",
+   "fitness": 2.257316,
+   "net": 27461.4,
+   "evaluated_by_fold": 171
+  },
+  {
+   "track": "NULL",
+   "fold": "FINAL",
+   "generation": 4,
+   "best": "cb108f3d0242b37a",
+   "family": "NULL_RANDOM",
+   "fitness": 2.257316,
+   "net": 27461.4,
+   "evaluated_by_fold": 185
+  },
+  {
+   "track": "NULL",
+   "fold": "FINAL",
+   "generation": 5,
+   "best": "cb108f3d0242b37a",
+   "family": "NULL_RANDOM",
+   "fitness": 2.257316,
+   "net": 27461.4,
+   "evaluated_by_fold": 201
+  }
+ ]
+}

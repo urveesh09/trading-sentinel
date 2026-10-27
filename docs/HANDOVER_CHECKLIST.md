@@ -1,7 +1,9 @@
-## October 27 — O27f genome round 3 (frozen before scoring, Dev, commit pending (recorded in the results commit), not pushed)
+## October 27 — O27f genome round 3 (done, Dev, freeze `3b8f9ef`, results commit pending (recorded in the identity commit), not pushed)
 
-- [x] Lab, tests (7 passed) and freeze written before scoring.
-- [ ] Run the frozen search (`lab.py run --jobs 8`), write the results up, and report to the owner. Nothing is promoted on seen data.
+- [x] O27f lab, tests (7) and freeze committed before scoring (`3b8f9ef`); the frozen run is done (2,217 replays, parity gate passed); results are written up.
+- [x] O27g forward panel B frozen before Oct 28, with 3 tests passing; pinned copy made; panel A's launcher calls it.
+- [ ] Owner: register the 16:00 Mon–Fri task (`register_task.ps1` in the panel A pinned folder; it now runs both panels).
+- [ ] Read both panel reports weekly. The frozen rules are read after Nov 27. Nothing is promoted on seen data or during a proving week.
 
 ## October 27 — O27e novel F&O entry families (research completed; Dev only)
 

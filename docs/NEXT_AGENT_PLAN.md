@@ -1,26 +1,38 @@
-## October 27 — O27f genome round 3: new entry families, option-contract genes, a walk-forward of the search itself and a random-entry null (frozen before scoring, Dev, commit pending (recorded in the results commit), not pushed)
+## October 27 — O27f genome round 3: new entry families, option-contract genes, a walk-forward of the search itself and a random-entry null (done, Dev, freeze `3b8f9ef`, results commit pending (recorded in the identity commit), not pushed)
 
 - Owner ask (Oct 27, 21:30, after reading O27e): "if you have learnt anything from that then go ahead and try new combinations or new things … assess the results if they were better … test new strategies".
-- Problem:
-  - Three searches (O27, O27b, O27e) used the same 29 seen sessions.
-  - None measured whether *searching* this data finds anything that holds on sessions the search did not see.
-- Files: `docs/research/fno/2026-10-27-genome-round3/`:
-  - `lab.py`, `test_lab.py`, `freeze.json`, `README.md` (plan);
-  - outputs in the ignored `_local/`.
-- Contract:
-  - **Book:** every genome is replayed once over Sep 10 – Oct 26 through the shipped single-leg book. `LabReplay` copies `_entry` with three marked changes: the lab signal, the expiry week, and the target delta while planning.
-  - **Parity gate:** the run aborts unless the copy with no genome trades exactly as the shipped book.
-  - **Search:**
-    - five new entry families plus a random-entry NULL family with the same budget;
-    - new genes: SENSEX confirmation, multi-day trend, AM/PM windows, the VWAP-lost exit, delta 0.55/0.65, nearest/next expiry;
-    - cross-family crossover.
-  - **Walk-forward:** anchored folds F1/F2/F3 (16 test sessions) plus FINAL. Each fold searches only its own training sessions and picks by plateau.
-- Acceptance:
-  - 7 lab tests: prefix invariance of features and every family, mirror symmetry, the bar lookup equal to the replay rule, the passthrough equal to the shipped book, the genome operators, and the metric arithmetic;
-  - the parity gate;
-  - the frozen verdict rule (README).
-- Rollout: research only. No runtime, setting, paper, live or forward-panel change. Rollback: drop the folder.
-- Remaining: run, write-up, owner report.
+- **Study:** `docs/research/fno/2026-10-27-genome-round3/` (`lab.py`, `test_lab.py`, `freeze.json`, `analyze.py`, `results.json`, `README.md`). Freeze `3b8f9ef` was committed before scoring.
+- **What ran:**
+  - 2,217 full replays through the shipped single-leg book. The run-time parity gate passed (13 trades, ₹10,801.09).
+  - Five new entry families (TREND_PULLBACK, PDL_BREAK, VWAP_BAND, MOMO_BURST, ENSEMBLE) and new genes (SENSEX confirmation, multi-day trend, AM/PM, VWAP-lost exit, delta 0.55/0.65, nearest/next expiry), with cross-family crossover.
+  - An anchored walk-forward of the whole search (F1/F2/F3 test blocks, 16 sessions).
+  - A random-entry NULL family with the same budget.
+- **Verdict (frozen rule): the search fails.**
+  - Over the 16 test sessions, the REAL walk-forward made +₹1,011 on 6 trades (1 of 3 folds positive).
+  - NULL made +₹3,682 on 9; SHIPPED made +₹9,528 on 4.
+  - Keep the shipped book.
+- **Learning:**
+  - Past rank does not predict future rank: A against B Spearman −0.23; week to week +0.08.
+  - Random entries with good exits made money (66% of NULL genomes were positive; the best made +₹28,265).
+  - The let-winners-run exit genes (3R, LOOSE, holding trend days) are the most stable.
+  - Delta 0.65 and next-week expiry mostly lose trades to the risk cap; filters mostly remove trades.
+  - Evolution barely improved on the first random draw.
+  - The fitness favoured sparse traders.
+- **Most consistent on seen data:** TREND_PULLBACK (FINAL pick). 14 trades, +₹17,347, max DD ₹3,418, 8 green / 1 red days, 6 / 0 weeks, all 23 neighbours profitable, direction-flip −₹11,761. It is a forward-test candidate only.
+- **O27g forward panel B:** `docs/research/fno/2026-10-28-forward-panel-b/` (`panel_b.py`, `test_panel_b.py` with 3 passing tests, `freeze.json`, `README.md`). It was frozen before Oct 28. Arms:
+  - SHIPPED;
+  - O27F_TREND_PULLBACK;
+  - O27F_ENSEMBLE_EFF_MOMO;
+  - O27E_EFFICIENCY_BREAK;
+  - NULL_CONTROL.
+
+  It uses panel A's rule, and a candidate must also beat the random-entry control. A pinned copy is called by panel A's 16:00 launcher.
+- Tests: 7 lab tests and 3 panel B tests passed. No runtime, setting, paper, live or panel A change; nothing is promoted.
+- Remaining:
+  - the owner registers the 16:00 task (panel A's `register_task.ps1`, which covers both panels);
+  - read both reports weekly;
+  - decide after Nov 27;
+  - a future search needs a per-trade or frequency-aware fitness.
 
 ## October 27 — O27e novel F&O entry families (research completed; Dev only)
 
