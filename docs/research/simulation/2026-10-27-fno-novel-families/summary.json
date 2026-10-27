@@ -1,0 +1,81 @@
+{
+  "genomes": 121,
+  "distinct_A_trade_histories": 115,
+  "profitable_A_genomes": 46,
+  "eligible_A_genomes": 7,
+  "families": {
+    "EFFICIENCY_BREAK": {
+      "evaluated": 42,
+      "eligible": 6
+    },
+    "COMPRESSION_RELEASE": {
+      "evaluated": 40,
+      "eligible": 1
+    },
+    "FAILED_AUCTION": {
+      "evaluated": 39,
+      "eligible": 0
+    }
+  },
+  "finalists": [
+    {
+      "genome": {
+        "family": "EFFICIENCY_BREAK",
+        "lookback": 4,
+        "efficiency": 0.35,
+        "buffer": 0.2,
+        "body": 0.55,
+        "vwap": false,
+        "compression": 3.0,
+        "rvol": 1.2,
+        "stop": 2.0,
+        "target": 1.8,
+        "exit": "LOOSE"
+      },
+      "B_checks": {
+        "trades": true,
+        "priced": true,
+        "positive": true,
+        "best_day_removed": true,
+        "beats_control": true,
+        "drawdown": false,
+        "stress": true
+      },
+      "all_B_checks_pass": false,
+      "posthoc_paired_daily_difference_95pct_block_bootstrap": [
+        -298.17,
+        1605.34
+      ]
+    },
+    {
+      "genome": {
+        "family": "COMPRESSION_RELEASE",
+        "lookback": 6,
+        "efficiency": 0.55,
+        "buffer": 0.2,
+        "body": 0.55,
+        "vwap": true,
+        "compression": 3.0,
+        "rvol": 0.8,
+        "stop": 1.5,
+        "target": 1.2,
+        "exit": "LOOSE"
+      },
+      "B_checks": {
+        "trades": true,
+        "priced": true,
+        "positive": false,
+        "best_day_removed": false,
+        "beats_control": false,
+        "drawdown": false,
+        "stress": false
+      },
+      "all_B_checks_pass": false,
+      "posthoc_paired_daily_difference_95pct_block_bootstrap": [
+        -1037.31,
+        -83.25
+      ]
+    }
+  ],
+  "verdict": "EXPLORATORY_ONLY_NO_UNTOUCHED_DATA regardless of apparent profit"
+}

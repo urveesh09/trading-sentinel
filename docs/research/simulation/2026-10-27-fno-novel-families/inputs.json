@@ -1,0 +1,13 @@
+{
+  "sealed_at": "2026-10-27T20:54:13.334302+05:30",
+  "files_sha256": {
+    "configuration.json": "be62c302f99c2d54c4e2c18a5616d0e10a14b7177ecd50e245ce1b7ae38aa88f",
+    "freeze.json": "c47171aa40c7ab24b736c54bc8a67dcbee6e84d628058dbc110137a743b2d449",
+    "lab.py": "ff07780811d0ae1a3e3d446fd16f4b5d7f8ab87bf97d2ccae82fe6e6977d4806",
+    "test_lab.py": "7629ccd2b8c2f36cae6b8c05d62a996551b35d3196fbef19f9149e521a33771b",
+    "calendar.json": "6d8f45ba3a4ee686598637435dc72f6d705f9b47fcb0a3061fd5df2010c9ef51",
+    "settings-parity.json": "9a04e3194620cf7455c6176bdc1ad39ada5ef3122b76d8cb950292e75cd0730c",
+    "_local/dataset-manifest.json": "3a22fe10eef620717c046e4836ded26594f9b69448cf4e30ef6fdfcc4efba93d",
+    "_local/data-verification.json": "8a3acf55933ada84740d65e63917c2963b99bb49c0e8a6275aad735a7d93d3af"
+  }
+}

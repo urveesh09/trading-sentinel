@@ -65,3 +65,19 @@ the evidence to pretend it did not run.
 ## Results
 
 Pending. No study result has been computed at the time this section is frozen.
+
+## Completed results (post-score)
+
+See [learning and results](ANALYSIS.md), [completion/audit notes](COMPLETION.md),
+[all evaluated arms](results.json), [independent audit](audit.json) and
+[commit-aware verification](verification.json).
+
+The frozen search evaluated 121 distinct genomes in three new entry families.
+Efficiency break modeled +INR 31,063.33 versus shipped +10,801.09, but its INR
+6,748.74 closed-trade drawdown fails the frozen later-period cap and neighbour
+sensitivity is weak. No candidate qualifies. All dates are previously seen.
+
+57 focused tests pass. The unmodified generic helper's REPORT remains INVALID
+because its original HEAD pin predates the mandatory freeze commit; that failure
+and the separate unchanged-source/raw-ledger audit are explained in COMPLETION.
+No Production/paper/forward-panel change or push/deployment was made.

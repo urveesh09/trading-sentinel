@@ -1,0 +1,234 @@
+{
+  "rule": {
+    "all_dates_seen": true,
+    "min_A_trades": 8,
+    "min_trades_each_A_third": 2,
+    "A_eligibility": "no unresolved; net > 0; net without best day > 0; stressed net > 0",
+    "fitness": "(net-best positive day)/max(closed-trade drawdown,1000) - .75*losing thirds - .75*empty thirds; fewer than 8 trades: -10+trades/8",
+    "plateau": "median of family leader and all one-step numeric/boolean/exit neighbours; family fixed",
+    "selection": "two family leaders by (eligible, plateau, fitness, digest), frozen before B; ineligible arms remain diagnostics only",
+    "B_diagnostic": ">=3 trades; zero unresolved; net>0; net excluding best day>0; net>control; DD<=max(1.5*control,5000); stressed net>0",
+    "fixed_trade_stress": "net - 1 rupee per option unit per side - 25% extra recorded charges; not a resimulation of sizing/brakes",
+    "verdict": "EXPLORATORY_ONLY_NO_UNTOUCHED_DATA regardless of apparent profit"
+  },
+  "candidates": [
+    {
+      "genome": {
+        "family": "EFFICIENCY_BREAK",
+        "lookback": 4,
+        "efficiency": 0.35,
+        "buffer": 0.2,
+        "body": 0.55,
+        "vwap": false,
+        "compression": 3.0,
+        "rvol": 1.2,
+        "stop": 2.0,
+        "target": 1.8,
+        "exit": "LOOSE"
+      },
+      "metrics": {
+        "trades": 25,
+        "unresolved": 0,
+        "net": 12192.738,
+        "charges": 1743.262,
+        "net_without_best_trade": 4454.2795,
+        "net_without_best_day": 3900.7928,
+        "drawdown_closed_trades": 4334.3983,
+        "win_rate": 0.52,
+        "profit_factor": 1.8552090977517783,
+        "stressed_net_fixed_trades": 8506.9225,
+        "active_days": 14,
+        "green_days": 8,
+        "red_days": 6,
+        "sessions": 19,
+        "daily": {
+          "2026-09-10": 1323.7759,
+          "2026-09-11": 6246.2674,
+          "2026-09-15": 0.0,
+          "2026-09-16": -1347.7655,
+          "2026-09-17": -1611.9345,
+          "2026-09-21": -684.0868,
+          "2026-09-22": 0.0,
+          "2026-09-23": 423.9904,
+          "2026-09-24": 8291.9452,
+          "2026-09-25": -128.1266,
+          "2026-09-28": 25.7491,
+          "2026-09-29": 0.0,
+          "2026-09-30": -2307.2473,
+          "2026-10-01": 2081.418,
+          "2026-10-05": 1242.4121,
+          "2026-10-06": 0.0,
+          "2026-10-07": 93.3437,
+          "2026-10-08": 0.0,
+          "2026-10-09": -1457.0031
+        },
+        "thirds": [
+          {
+            "net": 3926.2565,
+            "trades": 9
+          },
+          {
+            "net": 8613.5581,
+            "trades": 8
+          },
+          {
+            "net": -347.0766,
+            "trades": 8
+          }
+        ],
+        "exit_reasons": {
+          "hard_flat_1510": 3,
+          "time_stop": 14,
+          "trail_stop": 4,
+          "underlying_stop": 4
+        }
+      },
+      "fitness": 0.1499617778550717,
+      "eligible": true,
+      "plateau": -0.8265458056840448
+    },
+    {
+      "genome": {
+        "family": "COMPRESSION_RELEASE",
+        "lookback": 6,
+        "efficiency": 0.55,
+        "buffer": 0.2,
+        "body": 0.55,
+        "vwap": true,
+        "compression": 3.0,
+        "rvol": 0.8,
+        "stop": 1.5,
+        "target": 1.2,
+        "exit": "LOOSE"
+      },
+      "metrics": {
+        "trades": 8,
+        "unresolved": 0,
+        "net": 1204.8358,
+        "charges": 556.6642,
+        "net_without_best_trade": -691.2675,
+        "net_without_best_day": -691.2675,
+        "drawdown_closed_trades": 1711.2751,
+        "win_rate": 0.625,
+        "profit_factor": 1.3692041301094549,
+        "stressed_net_fixed_trades": 25.6697,
+        "active_days": 7,
+        "green_days": 4,
+        "red_days": 3,
+        "sessions": 19,
+        "daily": {
+          "2026-09-10": -1004.441,
+          "2026-09-11": 1896.1033,
+          "2026-09-15": 0.0,
+          "2026-09-16": -1528.5514,
+          "2026-09-17": -182.7237,
+          "2026-09-21": 0.0,
+          "2026-09-22": 0.0,
+          "2026-09-23": 0.0,
+          "2026-09-24": 0.0,
+          "2026-09-25": 383.5561,
+          "2026-09-28": 25.7491,
+          "2026-09-29": 0.0,
+          "2026-09-30": 1615.1434,
+          "2026-10-01": 0.0,
+          "2026-10-05": 0.0,
+          "2026-10-06": 0.0,
+          "2026-10-07": 0.0,
+          "2026-10-08": 0.0,
+          "2026-10-09": 0.0
+        },
+        "thirds": [
+          {
+            "net": -819.6128,
+            "trades": 5
+          },
+          {
+            "net": 409.3052,
+            "trades": 2
+          },
+          {
+            "net": 1615.1434,
+            "trades": 1
+          }
+        ],
+        "exit_reasons": {
+          "underlying_stop": 2,
+          "trail_stop": 3,
+          "time_stop": 2,
+          "hard_flat_1510": 1
+        }
+      },
+      "fitness": -1.1539487864925984,
+      "eligible": false,
+      "plateau": -2.3071215323869003
+    }
+  ],
+  "control_metrics": {
+    "trades": 13,
+    "unresolved": 0,
+    "net": 10801.0927,
+    "charges": 931.4073,
+    "net_without_best_trade": 3693.4182,
+    "net_without_best_day": 3693.4182,
+    "drawdown_closed_trades": 1990.8913,
+    "win_rate": 0.5384615384615384,
+    "profit_factor": 2.9867225131822264,
+    "stressed_net_fixed_trades": 8878.2409,
+    "active_days": 10,
+    "green_days": 6,
+    "red_days": 4,
+    "sessions": 29,
+    "daily": {
+      "2026-09-10": -343.516,
+      "2026-09-11": 0.0,
+      "2026-09-15": 0.0,
+      "2026-09-16": 0.0,
+      "2026-09-17": -456.7931,
+      "2026-09-21": 0.0,
+      "2026-09-22": 0.0,
+      "2026-09-23": 582.6427,
+      "2026-09-24": -440.1351,
+      "2026-09-25": 0.0,
+      "2026-09-28": 1910.5793,
+      "2026-09-29": 0.0,
+      "2026-09-30": 19.9907,
+      "2026-10-01": 7107.6745,
+      "2026-10-05": 0.0,
+      "2026-10-06": 0.0,
+      "2026-10-07": -1460.9177,
+      "2026-10-08": 0.0,
+      "2026-10-09": 366.3589,
+      "2026-10-12": 0.0,
+      "2026-10-13": 0.0,
+      "2026-10-14": 0.0,
+      "2026-10-15": 3515.2085,
+      "2026-10-16": 0.0,
+      "2026-10-19": 0.0,
+      "2026-10-21": 0.0,
+      "2026-10-22": 0.0,
+      "2026-10-23": 0.0,
+      "2026-10-26": 0.0
+    },
+    "thirds": [
+      {
+        "net": -657.8015,
+        "trades": 4
+      },
+      {
+        "net": 7943.6857,
+        "trades": 8
+      },
+      {
+        "net": 3515.2085,
+        "trades": 1
+      }
+    ],
+    "exit_reasons": {
+      "time_stop": 7,
+      "trail_stop": 4,
+      "underlying_stop": 2
+    }
+  },
+  "evaluated": 121,
+  "selected_before_B": true
+}

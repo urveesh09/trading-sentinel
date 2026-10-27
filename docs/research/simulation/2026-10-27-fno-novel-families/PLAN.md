@@ -47,4 +47,6 @@ or the existing pinned forward panel. Preserve all failed outputs.
 
 ## Remaining
 
-Implement/test, freeze and commit, execute, audit, document learning and limitations.
+Completed: implement/test; pre-score freeze commit; three-family evolution and neighbour checks; two frozen diagnostics; exact control parity; raw ledger/source/data audit; learning, plots and per-day receipts. Final focused tests: 57 pass. Generic helper HEAD-pin failure retained and explained in COMPLETION.md; separate commit-aware audit passes.
+
+Remaining: untouched prospective validation and recording improvements require a separately authorized plan. No candidate is qualified; no runtime changes.

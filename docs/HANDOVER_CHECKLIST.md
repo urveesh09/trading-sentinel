@@ -1,20 +1,22 @@
-## October 27 — O27e novel F&O entry families (research freeze; Dev only)
+## October 27 — O27e novel F&O entry families (research completed; Dev only)
 
-- Owner requests new strategy mechanics and genetic combinations beyond O27/O27b.
-- [Study](research/simulation/2026-10-27-fno-novel-families/README.md) and
-  [plan](research/simulation/2026-10-27-fno-novel-families/PLAN.md): three new entry
-  families, five generations of eight genomes per family, neighbour checks and two
-  finalists. All historical dates are seen; no untouched-validation claim.
-- Scope: NIFTY single-leg portfolio proxy only. No Production, paper rules, settings,
-  broker calls, scheduler or existing O27c forward-panel changes. Original application
-  sources remain unchanged. Independent calendar cross-check passes; September 18
-  is missing from the 29-session archive.
-- Before scoring: 14 new synthetic tests and 43 existing F&O regressions pass; two
-  pre-existing dependency warnings. Effective FNO settings: all 123 match Production.
-  Full dataset hashes verified. Code atlas regenerated without a change.
-- Results pending; freeze is committed before scoring. At most six offline research
-  workers after hours. A winner, if any, remains a hypothesis requiring new data.
-- Rollback: normal Git removal of this isolated study; no runtime caller imports it.
+- [Learning/results](research/simulation/2026-10-27-fno-novel-families/ANALYSIS.md)
+  and [audit notes](research/simulation/2026-10-27-fno-novel-families/COMPLETION.md).
+- Pre-score freeze: `3e2bcfe`; 121 genomes / 115 distinct A trade histories across
+  three novel entry families. Exact CURRENT parity, 123 effective settings match.
+- Efficiency break models +INR 31,063.33 versus shipped +10,801.09, but closed-trade
+  drawdown 6,748.74 fails the frozen B risk cap. Neighbour sensitivity is fragile.
+  Compression loses; failed auction has no eligible arm. No candidate qualifies.
+- All dates seen; 29 archived sessions / 30 expected, September 18 unavailable.
+  Eight sessions have recording gaps >180s. No untouched-validation/profit claim.
+- Final regression: 57 pass, two existing warnings. Independent audit reconciles
+  128 closed trade records and 121 arm metrics; frozen source/data remain intact.
+- Generic skill REPORT is INVALID for its pre-freeze HEAD pin after the required
+  freeze commit. Failure retained; separate source/input/raw-ledger audit passes.
+- Research files and local commits only; no application, Production, settings,
+  broker, paper rules, scheduler, pinned O27c panel, push or deployment changes.
+- Remaining: separately approved prospective evidence; keep shipped rules.
+- Rollback: ordinary Git removal of isolated research; no runtime caller imports it.
 
 # Handover receipt and operator checklist
 
