@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import asyncio
 import copy
+from dataclasses import replace
 from datetime import date, datetime
 import inspect
 import threading
@@ -19,7 +20,7 @@ import fno_orchestrator
 import fno_shadow
 from config import settings
 from fno_engine_mom import evaluate_fno_mom
-from fno_models import Contract, ContractQuote
+from fno_models import Contract, ContractQuote, FnoDirection
 
 
 IST = pytz.timezone("Asia/Kolkata")
@@ -64,6 +65,27 @@ def test_baseline_is_exact_production_evaluator_parity():
     assert row["bar_ts"] == production.bar_ts
     assert row["features"]["stop_underlying"] == production.stop_underlying
     assert row["features"]["target_underlying"] == production.target_underlying
+
+
+def test_without_the_ema_filter_a_break_against_the_multi_day_trend_is_taken():
+    """[O27] After falling sessions the EMA(21) is under the EMA(50), so the shipped evaluator rejects the 09:55
+    long break; a variant with ema_filter=False takes it with every other check, the stop and the target as the
+    base's. The recorded live shadows all keep the EMA check."""
+    bars = _bars()
+    prior = bars.index.date < DAY
+    count = int(prior.sum())
+    fall = pd.Series([2.0 * (count - i) for i in range(count)], index=bars.index[prior])
+    for column in ("open", "high", "low", "close"):
+        bars.loc[prior, column] = bars.loc[prior, column] + fall
+    now = IST.localize(datetime(2026, 7, 10, 10, 1))
+    assert evaluate_fno_mom(bars, "REGIME_1_BULL", now).reject_reason == "ema_trend_disagreement"
+    with_ema = replace(fno_shadow.VARIANTS["FNO_BASE"], name="OR30_EMA")       # the variant code path
+    assert fno_shadow._variant_signal(bars, "REGIME_1_BULL", now, with_ema).reject_reason == "ema_trend_disagreement"
+    taken = fno_shadow._variant_signal(bars, "REGIME_1_BULL", now, replace(with_ema, ema_filter=False))
+    assert taken.direction is FnoDirection.LONG
+    risk = taken.close - taken.stop_underlying
+    assert risk > 0 and taken.target_underlying == pytest.approx(taken.close + settings.FNO_TARGET_R * risk)
+    assert all(variant.ema_filter for variant in fno_shadow.VARIANTS.values())
 
 
 def test_confirmation_variant_accepts_only_first_bounded_bar_after_cross():

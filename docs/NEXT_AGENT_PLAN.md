@@ -1,5 +1,31 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 27 — O27 The F&O consistency grid: 360 entry × exit combinations of the single-leg book, ranked for consistency, frozen before scoring (in progress, Dev, branch `codex/production-correction-hedge-p0`)
+
+- Owner ask (Oct 27, after the close): "test multiple strategies mix and match … I don't want the most earning one. I want the one that is most consistent", using the archived F&O days. Earlier the same day: make the book able to take small profits instead of only filtering.
+- Problem:
+  - The single-leg book made one trade in six sessions (Oct 19–26).
+  - On Oct 21, 23 and 26 the shipped break fired on the right bar. The lagging multi-day EMA(21/50) check rejected it, and "fresh break only" then lost the whole trend day.
+  - Quick-scalp designs explored on seen data all lost after charges (18 arms, −₹427 to −₹8,932). Scratchpad only, not part of the frozen grid.
+- Plan (frozen in `docs/research/fno/2026-10-27-consistency-grid/freeze.json` before any arm was scored):
+  - 10 entries (OR30 shipped, OR20, OR45, CONFIRM1, CONT, each with and without the EMA check) × 36 exits (lock TIGHT/LIVE/LATE/OFF × time stop 30/45/75 × trail 0.6/1.0/1.5) = 360 arms, plus a parity arm.
+  - The full live book is replayed for each arm over 29 sealed sessions (Sep 10 – Oct 26).
+  - Ranking uses the median consistency score of the arm and its one-step exit neighbours on A (Sep 10 – Oct 9), then a do-no-harm check on B (Oct 12 – Oct 26).
+  - Rule and caveats are in the study README. All data is seen; B is partly circular for the no-EMA arms.
+- Files and contracts:
+  - `python-engine/fno_shadow.py`: `FnoShadowVariant.ema_filter` (default True; the live shadows are unchanged).
+  - `python-engine/fno_policy_replay.py`: `ReplayPolicy.signal_variant` takes a name or a variant object; `run_replay(policy=str | ReplayPolicy, data=None)`.
+  - `scripts/run_fno_consistency_grid.py`: freeze/run, a per-session parse cache under `_local/`, the frozen rule.
+  - Tests: `tests/test_fno_consistency_grid.py` (new), plus one each in `test_fno_shadow.py` and `test_fno_policy_replay.py`.
+- Acceptance:
+  - The parity arm trades exactly as CURRENT.
+  - `run` refuses changed inputs and scores each arm once.
+  - Results are reported with A/B/full-window figures, CURRENT's rank and the contamination caveat.
+- Tests: focused suites `tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py`: 35 passed (2 existing third-party deprecation warnings), 23 s; the full suite runs before the results commit. Tests do not show profitability.
+- Config impact: none. No setting, table, live shadow, paper or live rule changes. Proving-week rules untouched.
+- Rollout: research only; nothing to deploy. A recommendation becomes, on the owner's word, a broker-free live shadow plus a nightly replay forward from Oct 28. Rollback: revert the commit (no runtime caller).
+- Remaining: run the grid, then record the results and the commit identity in the next docs commit.
+
 ## October 26 — O26e The O26d recheck's two gaps fixed: each research trade resolved under its own saved execution, minute bars used only when they are the whole session (done, Dev, commit `1d99c12`, branch `codex/production-correction-hedge-p0`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - Owner ask (Oct 26, 21:00): the recheck (`docs/2026-10-26-o26d-independent-recheck.md`, committed with this slice): "Fix if you think it's an issue … Merge and deploy in prod and rebuild and restart. The 22 let it be". Both findings were agreed.

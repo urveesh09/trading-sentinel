@@ -79,7 +79,7 @@ class ReplayPolicy:
     trend_day_lookback: int = 10
     exit_overrides: tuple = ()               # ((setting, value), ...) applied to the exit ladder params
     reentry_confirmation: Optional[bool] = None   # None = live setting
-    signal_variant: Optional[str] = None     # [O24g] fno_shadow.VARIANTS entry signal instead of the live one
+    signal_variant: Optional[object] = None  # [O24g] fno_shadow.VARIANTS name, or [O27] an FnoShadowVariant itself
 
 
 POLICIES = {
@@ -516,7 +516,8 @@ class SingleLegReplay:
         self.notes[f"regime_{regime_source}"] += 1
         if self.policy.signal_variant:
             from fno_shadow import VARIANTS, _variant_signal
-            sig = _variant_signal(frame, regime, now, VARIANTS[self.policy.signal_variant])
+            variant = self.policy.signal_variant
+            sig = _variant_signal(frame, regime, now, VARIANTS[variant] if isinstance(variant, str) else variant)
         else:
             sig = evaluate_fno_mom(frame, regime, now)
         if sig.direction is None:
@@ -669,9 +670,13 @@ def parity_report(replayed: list[dict], live: list[dict]) -> dict:
             "replay_only": sorted(set(replay_by) - set(live_by))}
 
 
-def run_replay(root: str | Path, *, start: str, end: str, policy: str = "BASELINE") -> dict:
-    data = ReplayData(root)
-    result = SingleLegReplay(data, resolve_policy(policy)).run(start, end)
+def run_replay(root: str | Path, *, start: str, end: str, policy: str | ReplayPolicy = "BASELINE",
+               data: Optional[ReplayData] = None) -> dict:
+    """``policy``: a declared arm's name, CURRENT, or [O27] a ReplayPolicy (a research grid's arm). ``data``: an
+    already-open ReplayData over ``root`` (a research runner's cached reader); default opens ``root``."""
+    data = data or ReplayData(root)
+    arm = policy if isinstance(policy, ReplayPolicy) else resolve_policy(policy)
+    result = SingleLegReplay(data, arm).run(start, end)
     result["parity_vs_live"] = parity_report(result["trades"], data.live_single_leg(start, end))
     result["dataset"] = {k: data.manifest[k] for k in ("schema", "source", "quote_days", "unsealed_days")}
     calendar, source = data.option_expiries()

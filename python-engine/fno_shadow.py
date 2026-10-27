@@ -37,6 +37,7 @@ class FnoShadowVariant:
     confirmation_bars: int = 0
     max_extension_atr: float | None = None
     pullback_atr: float | None = None    # crossing_or_pullback: how near the break level a pullback must come
+    ema_filter: bool = True              # [O27] False: the multi-day EMA(21/50) agreement is not required
 
 
 _VARIANT_ROWS = (
@@ -202,9 +203,9 @@ def _variant_signal(
     if regime == "REGIME_3_CRISIS":
         out.reject_reason = "regime_crisis"
         return out
-    if (long_break and out.ema_fast <= out.ema_slow) or (
+    if variant.ema_filter and ((long_break and out.ema_fast <= out.ema_slow) or (
         short_break and out.ema_fast >= out.ema_slow
-    ):
+    )):
         out.reject_reason = "ema_trend_disagreement"
         return out
     if rvol is None:

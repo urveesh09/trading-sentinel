@@ -1,5 +1,14 @@
 # Handover receipt and operator checklist
 
+## October 27 — O27 F&O consistency grid (Dev, in progress)
+
+- [x] Read-only export of the Production archive, 29 sealed NIFTY sessions Sep 10 – Oct 26 (`_local/dataset/`, not in git).
+- [x] Dev and Production `FNO_*` settings compared by per-key hash: all 123 equal (names only printed).
+- [x] Grid and selection rule frozen before scoring (`docs/research/fno/2026-10-27-consistency-grid/freeze.json`).
+- [x] Tests: focused suites `tests/test_fno_consistency_grid.py tests/test_fno_shadow.py tests/test_fno_policy_replay.py tests/test_preregistered_study_runner.py`: 35 passed (2 existing third-party deprecation warnings), 23 s; the full suite runs before the results commit.
+- [ ] Run the grid; record the results, CURRENT's rank and the verdict; record the commit identity.
+- [ ] If an arm is recommended: the owner decides on a broker-free live shadow plus a forward replay. No paper or live change in the proving week.
+
 ## October 26 — O26e The O26d recheck's two gaps fixed (Dev, commit `1d99c12`, pushed, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - [x] Each research trade's terminal pass uses its own saved execution; legacy records never get the closing-auction model (F1).

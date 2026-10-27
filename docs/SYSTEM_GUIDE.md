@@ -1,5 +1,17 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 27 — O27 F&O consistency grid tooling (actual behavior, Dev)
+
+- **`fno_shadow.FnoShadowVariant.ema_filter`** (default True): False skips the multi-day EMA(21/50) agreement in `_variant_signal`. Every live shadow keeps True, so recorded rows gain only `"ema_filter": true` in `config_json`.
+- **`fno_policy_replay`**:
+  - `ReplayPolicy.signal_variant` is a `VARIANTS` name or an `FnoShadowVariant`.
+  - `run_replay(root, start=, end=, policy=<name | CURRENT | ReplayPolicy>, data=<ReplayData | None>)`.
+  - Still research only, with no runtime caller.
+- **`scripts/run_fno_consistency_grid.py`**:
+  - `freeze` binds the 361 arms, windows, rule, source and dataset hashes, and the effective `FNO_*` settings hash; `run --jobs N` scores each arm once.
+  - `CachedReplayData` pickles parsed sessions under the study's `_local/observations/<manifest>/`.
+  - Window metrics: net, net excluding the best winner, max drawdown, CS, per-lot net, green/red days, green weeks.
+
 ## October 26 — O26e Terminal pass per saved execution; minute path must be the whole session (actual behavior, commit `1d99c12`, deployed by PR #119 (`3b945eb`, Oct 26))
 
 - **`momentum_shadow`**:
