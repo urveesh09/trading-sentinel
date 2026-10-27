@@ -1,6 +1,6 @@
 # Handover receipt and operator checklist
 
-## October 27 — O27 F&O consistency grid (Dev, freeze `d4cfb7e`, results commit pending (recorded in the next docs commit), not pushed)
+## October 27 — O27 F&O consistency grid (Dev, freeze `d4cfb7e`, results commit `32f4271`, not pushed)
 
 - [x] Read-only export of the Production archive, 29 sealed NIFTY sessions Sep 10 – Oct 26 (`_local/dataset/`, not in git).
 - [x] Dev and Production `FNO_*` settings compared by per-key hash: all 123 equal (names only printed).

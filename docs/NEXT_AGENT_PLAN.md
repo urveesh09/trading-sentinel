@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 27 — O27 The F&O consistency grid: 360 entry × exit combinations of the single-leg book, ranked for consistency, frozen before scoring (done, Dev, freeze `d4cfb7e`, results commit pending (recorded in the next docs commit), branch `codex/production-correction-hedge-p0`, not pushed)
+## October 27 — O27 The F&O consistency grid: 360 entry × exit combinations of the single-leg book, ranked for consistency, frozen before scoring (done, Dev, freeze `d4cfb7e`, results commit `32f4271`, branch `codex/production-correction-hedge-p0`, not pushed)
 
 - Owner ask (Oct 27, after the close): "test multiple strategies mix and match … I don't want the most earning one. I want the one that is most consistent", using the archived F&O days. Earlier the same day: make the book able to take small profits instead of only filtering.
 - Problem:

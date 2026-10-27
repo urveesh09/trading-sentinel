@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 27 — O27 F&O consistency grid tooling (actual behavior, Dev, freeze `d4cfb7e`, results commit pending (recorded in the next docs commit))
+## October 27 — O27 F&O consistency grid tooling (actual behavior, Dev, freeze `d4cfb7e`, results commit `32f4271`)
 
 - **`fno_shadow.FnoShadowVariant.ema_filter`** (default True): False skips the multi-day EMA(21/50) agreement in `_variant_signal`. Every live shadow keeps True, so recorded rows gain only `"ema_filter": true` in `config_json`.
 - **`fno_policy_replay`**:
