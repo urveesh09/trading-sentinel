@@ -1,4 +1,4 @@
-## October 28 — O29c The NIFTY paper book: four strategies, breakouts only on a HIGH opening drive (Dev, commit pending; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+## October 28 — O29c The NIFTY paper book: four strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
 
 - With `FNO_BOOK=UNION_DRIVE` (the default), the single-leg paper book's NIFTY signal comes from `fno_book.book_signal`.
   - **Order:** the first of SHIPPED, OR20, EFF and TPB that signals on the bar.

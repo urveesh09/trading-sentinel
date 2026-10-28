@@ -1,4 +1,4 @@
-## October 28 — O29c The paper book's NIFTY strategy: the four studied strategies, breakouts only on a HIGH opening drive (Dev, commit pending; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+## October 28 — O29c The paper book's NIFTY strategy: the four studied strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
 
 - Owner (Oct 28 evening, after O29b): "the best strategy was the combination of the four and if we have understood that today was not a good day which is two day then I agree. We can not trade on that day ... you don't have to take my call, just, the best strategy and some other strategies are shadow and go ahead and make the change."
 - **The call:** UNION_DRIVE (O28 THEORY_DRIVE, panel C's arm) becomes the single-leg paper book's strategy for NIFTY. The shipped break stays as a shadow (fno_shadow FNO_BASE), and panels A–D keep scoring the alternatives.

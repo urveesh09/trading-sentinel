@@ -1,4 +1,4 @@
-## October 28 — O29c Four-strategy NIFTY book (Dev, commit pending; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+## October 28 — O29c Four-strategy NIFTY book (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
 
 - [x] `fno_book` and its wiring, tests, and research parity (an exact trade match over 31 sessions).
 - [ ] Owner: merge and deploy go-ahead. After the deploy, check that the engine starts and that the `fno_opening_drive` row for the day appears after 09:45 (`SELECT * FROM fno_opening_drive ORDER BY session_date DESC LIMIT 3`, read-only).
