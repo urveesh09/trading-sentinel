@@ -1,4 +1,4 @@
-## October 28 — O28 Regime router: when the best F&O strategies won, and whether switching them by a 09:45 condition helps (research, Dev, freeze `728cdf8`, results in the commit that adds this section, pushed)
+## October 28 — O28 Regime router: when the best F&O strategies won, and whether switching them by a 09:45 condition helps (research, Dev, freeze `728cdf8`, results `d3b9a70`, pushed)
 
 - Owner ask (Oct 28): find under what market condition the trend-day pullback, the O27e efficiency break and the other best strategies won, whether that can be identified in time, and test "if that condition is met, then the specific strategy for that condition be deployed" on the ~20-day history; "ensure correctness".
 - Study: `docs/research/fno/2026-10-28-regime-router/` (`router.py`, `test_router.py`, `analyze.py`, `freeze.json`, `results.json`, `README.md`). Research only: no runtime module imports it, and no orders.

@@ -1,4 +1,4 @@
-## October 28 — O28 Regime router study (research only, research, Dev, freeze `728cdf8`, results in the commit that adds this section, pushed)
+## October 28 — O28 Regime router study (research only, research, Dev, freeze `728cdf8`, results `d3b9a70`, pushed)
 
 - No system behaviour changed. The paper and live F&O books still trade the shipped opening-range break, and the `FNO_TREND_PULLBACK` shadow and its owner message are unchanged.
 - Finding: the best F&O strategies won mainly on trend days. Of the five 09:45 conditions tested, only a strong opening drive leaned the right way consistently (for the two breakouts), and it is unproven. Switching strategies by condition did not beat running them together (`docs/research/fno/2026-10-28-regime-router/README.md`).

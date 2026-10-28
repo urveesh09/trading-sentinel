@@ -1,4 +1,4 @@
-## October 28 — O28 Regime router study (research, Dev, freeze `728cdf8`, results in the commit that adds this section, pushed)
+## October 28 — O28 Regime router study (research, Dev, freeze `728cdf8`, results `d3b9a70`, pushed)
 
 - [x] Frozen before scoring (`728cdf8`); parity exact for all four components; 252 replays; verdict `CONDITIONS_NOT_SHOWN_TO_ADD_VALUE`.
 - [ ] Owner: decide whether `UNION` and `THEORY_DRIVE` go into a forward panel (research only; no paper or live change in the proving week).
