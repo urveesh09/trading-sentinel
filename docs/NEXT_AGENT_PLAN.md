@@ -1,3 +1,21 @@
+## October 28 — O29e The four-strategy book on every paper underlying (NIFTY and SENSEX) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
+
+- **Owner (Oct 28 night, after the O29d report):** "go ahead with this and also the strategies. Let them also be used on other than nifty. At least on paper ... deployed this and restart and rebuild the system as well."
+- **The call is the owner's, not the check's:** the O29d SENSEX check failed its frozen worst-day bound (−₹5,317 against −₹5,000), though it made +₹12,759 where the shipped break lost ₹8,622. The check's verdict stays recorded as failed.
+- **Code:**
+  - `fno_book.enabled_for` covers every underlying the paper book trades (`FNO_TRADING_UNDERLYINGS`: NIFTY and SENSEX).
+  - `fno_opening_drive` keeps one row per session and underlying. The O29c layout (keyed by session) is migrated on start.
+  - `SEED_SENSEX` holds SENSEX's own research values (38, Sep 2 – Oct 28), and `drive_today(..., underlying=)` gives each underlying its own drive and history.
+  - `with_participation`: SENSEX's OR20, EFF and TPB read NIFTY's futures volume for the same bar (RVOL, VWAP), as its shipped signal does; prices stay SENSEX's.
+  - The orchestrator passes the underlying and its `rvol_bars`.
+  - The real-money test stays NIFTY only (`fno_live_test`).
+- **Acceptance:**
+  - `tests/test_fno_book.py` (the SENSEX tick trades as the book on its own drive; NIFTY's history is not SENSEX's; the migration; the volume swap) plus `tests/test_fno_sensex.py`: 24 passed.
+  - **Research parity:** `docs/research/fno/2026-10-28-sensex-check/test_engine_parity.py`. The engine's SENSEX path (raw SENSEX bars, NIFTY as `rvol_bars`, the seeded history) trades exactly as the check's UNION_DRIVE arm (30 trades).
+  - The F&O tests and the NIFTY parity results are in the handover.
+- **Config and migration:** no `.env` change. The table's key changes (migrated in place); Production never had the O29c table.
+- **Rollback:** `FNO_BOOK=SHIPPED` restores the shipped break on both underlyings.
+
 ## October 28 — O29d Real-money cash alert, the one-lot check, the SENSEX check, fades on two-way days (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
 
 - **Owner (Oct 28 evening, after O29c):**

@@ -28,8 +28,13 @@ the drive filter was the only one that held up out of sample (O29b), and on Oct 
 panels A-D keep scoring the alternatives from Oct 28; fno_shadow's variants (FNO_BASE is the shipped break) keep
 running as shadows.
 
-NIFTY only: the research replays NIFTY only, so SENSEX keeps the shipped strategy. ``FNO_BOOK=SHIPPED`` restores the
-shipped strategy for NIFTY. Each position keeps its strategy (``fno_positions.strategy``) and is managed with that
+[O29d] Every underlying the paper book trades: the owner's call (Oct 28 night: "Let them also be used on other than
+nifty. At least on paper."). SENSEX reads its own prices and drive (seeded from its own research values) and
+NIFTY's futures volume wherever a strategy reads volume (``with_participation``), as its shipped signal does. On
+SENSEX the O29d check (docs/research/fno/2026-10-28-sensex-check) made +Rs 12,759 where the shipped break lost
+Rs 8,622, but its worst day (-Rs 5,317) was past the frozen -Rs 5,000 bound: SENSEX runs it on the owner's call,
+not on that check. The real-money test stays NIFTY only (fno_live_test). ``FNO_BOOK=SHIPPED`` restores the shipped
+strategy everywhere. Each position keeps its strategy (``fno_positions.strategy``) and is managed with that
 strategy's exits, whatever the setting is later.
 """
 from __future__ import annotations
@@ -77,19 +82,51 @@ SEED = {"2026-09-02": 0.23665659617320556, "2026-09-03": 0.6990521327014098, "20
         "2026-10-16": 0.37540603248260535, "2026-10-19": 0.08088458043017613, "2026-10-21": 0.7017766497461901,
         "2026-10-22": 0.0003769317753431727, "2026-10-23": 0.7142857142857143, "2026-10-26": 0.13912310286678078,
         "2026-10-27": 0.3424657534246523, "2026-10-28": 0.08783783783784904}
+# [O29d] SENSEX's own values (SENSEX front future, 09:46), from docs/research/fno/2026-10-28-sensex-check.
+SEED_SENSEX = {"2026-09-02": 0.5206670214653346, "2026-09-03": 0.07812500000000197, "2026-09-04": 0.8199568910866009,
+               "2026-09-07": 0.5546093672640945, "2026-09-08": 0.646492434663006, "2026-09-09": 0.6567525259712429,
+               "2026-09-10": 0.06832901554405643, "2026-09-11": 0.6770186335403531, "2026-09-15": 0.5,
+               "2026-09-16": 0.3166630739383402, "2026-09-17": 0.40712589073633004,
+               "2026-09-18": 0.22617625985194414, "2026-09-21": 0.5654787462430162,
+               "2026-09-22": 0.006041707269549378, "2026-09-23": 0.2727768685215667, "2026-09-24": 0.290939318370768,
+               "2026-09-25": 0.2048624440179141, "2026-09-28": 0.9186135580237452, "2026-09-29": 0.6917313717477305,
+               "2026-09-30": 0.6485435050764045, "2026-10-01": 0.3739040742650963, "2026-10-05": 0.7957108114084162,
+               "2026-10-06": 0.22972972972977718, "2026-10-07": 0.34905533967573904,
+               "2026-10-08": 0.8101077666294882, "2026-10-09": 1.0, "2026-10-12": 0.2505499877780458,
+               "2026-10-13": 1.0, "2026-10-14": 0.22093237516122727, "2026-10-15": 0.77087451755627,
+               "2026-10-16": 0.3105278974256272, "2026-10-19": 0.0, "2026-10-21": 0.8022445162387518,
+               "2026-10-22": 0.16455166643424773, "2026-10-23": 0.05419639823308506,
+               "2026-10-26": 0.18177194588546974, "2026-10-27": 0.055809800200915645,
+               "2026-10-28": 0.4937735302635278}
+SEEDS = {"NIFTY": SEED, "SENSEX": SEED_SENSEX}
 
+# [O29d] One row per session per underlying (the O29c table was keyed by the session alone; it is migrated).
 _DDL = """
 CREATE TABLE IF NOT EXISTS fno_opening_drive (
-  session_date TEXT PRIMARY KEY,
+  session_date TEXT NOT NULL,
   underlying TEXT NOT NULL,
   value REAL NOT NULL,
   source TEXT NOT NULL,
-  recorded_at TEXT NOT NULL
+  recorded_at TEXT NOT NULL,
+  PRIMARY KEY (session_date, underlying)
 )"""
 
 
 def enabled_for(underlying: str) -> bool:
-    return str(settings.FNO_BOOK).upper() == BOOK and underlying.upper() == "NIFTY"
+    """[O29d] The book trades every underlying the paper book trades (NIFTY and SENSEX)."""
+    return str(settings.FNO_BOOK).upper() == BOOK and bool(str(underlying or "").strip())
+
+
+def with_participation(bars: Optional[pd.DataFrame], volume_bars: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
+    """[O29d] ``bars`` carrying the volume of ``volume_bars`` for the same 5-minute bar (0 where it has none). SENSEX
+    futures volume is too thin to measure participation, so SENSEX reads NIFTY's, as its shipped signal does
+    (``evaluate_fno_mom(rvol_bars=...)``); every price stays the underlying's own. None: ``bars`` unchanged."""
+    if volume_bars is None or bars is None or bars.empty:
+        return bars
+    source = volume_bars[~volume_bars.index.duplicated(keep="last")]
+    out = bars.copy()
+    out["volume"] = source["volume"].reindex(out.index).fillna(0.0).values
+    return out
 
 
 def exit_overrides(strategy: Optional[str]) -> dict:
@@ -141,36 +178,48 @@ def drive_side(value: Optional[float], history: list) -> Optional[str]:
 
 async def init_opening_drive_db(db_path: str) -> None:
     async with aiosqlite.connect(db_path) as db:
+        keys = [r[1] for r in sorted((r for r in await (await db.execute(
+            "PRAGMA table_info(fno_opening_drive)")).fetchall() if r[5]), key=lambda r: r[5])]
+        if keys == ["session_date"]:      # [O29d] the O29c layout: keep its rows under the per-underlying key
+            await db.execute("ALTER TABLE fno_opening_drive RENAME TO fno_opening_drive_o29c")
+            await db.execute(_DDL)
+            await db.execute("INSERT OR IGNORE INTO fno_opening_drive SELECT session_date, underlying, value, source, "
+                             "recorded_at FROM fno_opening_drive_o29c")
+            await db.execute("DROP TABLE fno_opening_drive_o29c")
         await db.execute(_DDL)
-        await db.executemany(
-            "INSERT OR IGNORE INTO fno_opening_drive(session_date,underlying,value,source,recorded_at) "
-            "VALUES(?, 'NIFTY', ?, 'O29b_seed', '2026-10-28T19:00:00+05:30')", sorted(SEED.items()))
+        for underlying, seed in SEEDS.items():
+            await db.executemany(
+                "INSERT OR IGNORE INTO fno_opening_drive(session_date,underlying,value,source,recorded_at) "
+                "VALUES(?, ?, ?, 'research_seed', '2026-10-28T19:00:00+05:30')",
+                [(d, underlying, v) for d, v in sorted(seed.items())])
         await db.commit()
 
 
-async def _record(db_path: str, day: date, value: float, source: str, now: datetime) -> None:
+async def _record(db_path: str, day: date, value: float, source: str, now: datetime, underlying: str) -> None:
     async with aiosqlite.connect(db_path) as db:
         await db.execute("INSERT OR IGNORE INTO fno_opening_drive(session_date,underlying,value,source,recorded_at) "
-                         "VALUES(?, 'NIFTY', ?, ?, ?)", (day.isoformat(), float(value), source, now.isoformat()))
+                         "VALUES(?, ?, ?, ?, ?)", (day.isoformat(), underlying, float(value), source, now.isoformat()))
         await db.commit()
 
 
-async def drive_history(db_path: str, day: date) -> list:
+async def drive_history(db_path: str, day: date, underlying: str = "NIFTY") -> list:
     async with aiosqlite.connect(db_path) as db:
         rows = await (await db.execute(
-            "SELECT value FROM fno_opening_drive WHERE session_date < ? ORDER BY session_date DESC LIMIT ?",
-            (day.isoformat(), DRIVE_LOOKBACK))).fetchall()
+            "SELECT value FROM fno_opening_drive WHERE underlying=? AND session_date < ? "
+            "ORDER BY session_date DESC LIMIT ?", (underlying, day.isoformat(), DRIVE_LOOKBACK))).fetchall()
     return [float(r[0]) for r in reversed(rows)]
 
 
 _TODAY: dict = {}
 
 
-async def drive_today(db_path: str, bars: Optional[pd.DataFrame], now: datetime) -> tuple:
-    """(today's drive, its side). Read once the 09:40 bar has closed and then kept for the day; earlier sessions in
-    the bars that the table lacks (the engine was down) are backfilled first."""
+async def drive_today(db_path: str, bars: Optional[pd.DataFrame], now: datetime, underlying: str = "NIFTY") -> tuple:
+    """(today's drive, its side) for ``underlying``, from its own futures bars. Read once the 09:40 bar has closed
+    and then kept for the day; earlier sessions in the bars that the table lacks (the engine was down) are
+    backfilled first."""
     day = now.date()
-    key = (db_path, day.isoformat())
+    underlying = underlying.upper()
+    key = (db_path, underlying, day.isoformat())
     if key in _TODAY:
         return _TODAY[key]
     value = opening_drive(bars, day, now)
@@ -181,10 +230,11 @@ async def drive_today(db_path: str, bars: Optional[pd.DataFrame], now: datetime)
     for earlier in sorted({d for d in closed.index.date if d < day}):
         past = opening_drive(closed, earlier, datetime.combine(earlier, datetime.min.time()) + timedelta(hours=16))
         if past is not None:
-            await _record(db_path, earlier, past, "backfill", now)
-    await _record(db_path, day, value, "live", now)
-    result = (value, drive_side(value, await drive_history(db_path, day)))
-    _TODAY.clear()
+            await _record(db_path, earlier, past, "backfill", now, underlying)
+    await _record(db_path, day, value, "live", now, underlying)
+    result = (value, drive_side(value, await drive_history(db_path, day, underlying)))
+    for stale in [k for k in _TODAY if k[2] != day.isoformat()]:
+        del _TODAY[stale]
     _TODAY[key] = result
     return result
 

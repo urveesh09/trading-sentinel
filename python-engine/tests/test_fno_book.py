@@ -1,6 +1,8 @@
-"""[O29c] The four-strategy NIFTY book (fno_book): the opening drive and its side, the order and the drive filter,
-each position's own exits, and the book inside the live tick. The research parity (the engine book trades exactly as
-the research UNION_DRIVE over Sep 10 - Oct 28) is docs/research/fno/2026-10-28-chop-study/test_engine_parity.py."""
+"""[O29c] The four-strategy book (fno_book): the opening drive and its side, the order and the drive filter, each
+position's own exits, and the book inside the live tick. [O29d] SENSEX too: its own drive history, NIFTY's volume.
+The research parity (the engine book trades exactly as the research UNION_DRIVE over Sep 10 - Oct 28) is
+docs/research/fno/2026-10-28-chop-study/test_engine_parity.py; on SENSEX, docs/research/fno/2026-10-28-sensex-check/
+test_engine_parity.py."""
 from dataclasses import replace
 from datetime import date, datetime, timedelta
 
@@ -152,20 +154,77 @@ def test_each_strategy_keeps_its_research_exits():
     assert fno_book.EXIT_OVERRIDES["TPB"]["FNO_TIME_STOP_MIN"] == 120.0
 
 
-def test_the_book_is_for_nifty_and_can_be_switched_back(monkeypatch):
+def test_the_book_is_for_every_traded_underlying_and_can_be_switched_back(monkeypatch):
     monkeypatch.setattr(settings, "FNO_BOOK", "UNION_DRIVE")
-    assert fno_book.enabled_for("NIFTY") and not fno_book.enabled_for("SENSEX")
+    assert fno_book.enabled_for("NIFTY") and fno_book.enabled_for("SENSEX") and not fno_book.enabled_for("")
     monkeypatch.setattr(settings, "FNO_BOOK", "SHIPPED")
-    assert not fno_book.enabled_for("NIFTY")
+    assert not fno_book.enabled_for("NIFTY") and not fno_book.enabled_for("SENSEX")
+
+
+# ---- [O29d] SENSEX ---------------------------------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_each_underlying_has_its_own_seeded_history(db_path):
+    await fno_book.init_opening_drive_db(db_path)
+    nifty = await fno_book.drive_history(db_path, date(2026, 10, 28), "NIFTY")
+    sensex = await fno_book.drive_history(db_path, date(2026, 10, 28), "SENSEX")
+    assert nifty[-1] == fno_book.SEED["2026-10-27"] and sensex[-1] == fno_book.SEED_SENSEX["2026-10-27"]
+    assert len(nifty) == len(sensex) == 20
+    assert fno_book.drive_side(fno_book.SEED["2026-10-28"], nifty) == "LOW"               # NIFTY two-way on Oct 28
+    assert fno_book.drive_side(fno_book.SEED_SENSEX["2026-10-28"], sensex) == "HIGH"      # SENSEX not (O29d check)
+
+
+@pytest.mark.asyncio
+async def test_the_o29c_table_is_migrated_to_one_row_per_underlying(db_path):
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("CREATE TABLE fno_opening_drive (session_date TEXT PRIMARY KEY, underlying TEXT NOT NULL, "
+                         "value REAL NOT NULL, source TEXT NOT NULL, recorded_at TEXT NOT NULL)")
+        await db.execute("INSERT INTO fno_opening_drive VALUES('2026-10-29', 'NIFTY', 0.42, 'live', 'x')")
+        await db.commit()
+    await fno_book.init_opening_drive_db(db_path)
+    await fno_book.init_opening_drive_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        kept = await (await db.execute("SELECT underlying, value, source FROM fno_opening_drive "
+                                       "WHERE session_date='2026-10-29'")).fetchall()
+        seeded = await (await db.execute("SELECT underlying, COUNT(*) FROM fno_opening_drive "
+                                         "WHERE source='research_seed' GROUP BY underlying")).fetchall()
+    assert kept == [("NIFTY", 0.42, "live")]
+    assert sorted(seeded) == [("NIFTY", len(fno_book.SEED)), ("SENSEX", len(fno_book.SEED_SENSEX))]
+
+
+def test_sensex_strategies_read_nifty_volume_and_their_own_prices():
+    sensex = _bars(ONE_WAY)
+    sensex["volume"] = 0.0
+    nifty = _bars(ONE_WAY).drop(pd.Timestamp("2026-07-10 09:55"))
+    out = fno_book.with_participation(sensex, nifty)
+    assert out[["open", "high", "low", "close"]].equals(sensex[["open", "high", "low", "close"]])
+    assert out.loc["2026-07-10 09:50", "volume"] == 100.0 and out.loc["2026-07-10 09:55", "volume"] == 0.0
+    assert (sensex["volume"] == 0.0).all()                                               # a copy
+    assert fno_book.with_participation(sensex, None) is sensex
+
+
+@pytest.mark.asyncio
+async def test_each_underlying_keeps_its_own_drive_for_the_day(db_path):
+    fno_book._TODAY.clear()
+    await _history(db_path, underlying="NIFTY")
+    await _history(db_path, underlying="SENSEX")
+    assert await fno_book.drive_today(db_path, _bars(ONE_WAY), at(9, 46), underlying="NIFTY") == (1.0, "HIGH")
+    assert await fno_book.drive_today(db_path, _bars(FLAT), at(9, 46), underlying="SENSEX") == (0.0, "LOW")
+    assert await fno_book.drive_today(db_path, _bars(FLAT), at(10, 30), underlying="NIFTY") == (1.0, "HIGH")
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute("SELECT underlying, value FROM fno_opening_drive WHERE session_date="
+                                       "'2026-07-10' ORDER BY underlying")).fetchall()
+    assert rows == [("NIFTY", 1.0), ("SENSEX", 0.0)]
+    fno_book._TODAY.clear()
 
 
 # ---- in the live tick -----------------------------------------------------------------------------------------------
 
-async def _history(db_path, value=0.2):
+async def _history(db_path, value=0.2, underlying="NIFTY"):
     await fno_book.init_opening_drive_db(db_path)
     async with aiosqlite.connect(db_path) as db:
-        await db.executemany("INSERT INTO fno_opening_drive VALUES(?, 'NIFTY', ?, 'test', 'x')",
-                             [(f"2026-06-{d:02d}", value) for d in range(1, 21)])
+        await db.executemany("INSERT INTO fno_opening_drive VALUES(?, ?, ?, 'test', 'x')",
+                             [(f"2026-06-{d:02d}", underlying, value) for d in range(1, 21)])
         await db.commit()
 
 
@@ -178,10 +237,11 @@ async def _paper(db_path):
             "SELECT id, status, strategy, exit_reason FROM fno_positions WHERE source='FNO_PAPER'")).fetchall()]
 
 
-async def _reasons(db_path):
+async def _reasons(db_path, underlying="NIFTY"):
     async with aiosqlite.connect(db_path) as db:
         return [r[0] for r in await (await db.execute(
-            "SELECT reject_reason FROM fno_signals WHERE leg='ENGINE' ORDER BY rowid")).fetchall()]
+            "SELECT reject_reason FROM fno_signals WHERE leg='ENGINE' AND underlying=? ORDER BY rowid",
+            (underlying,))).fetchall()]
 
 
 @pytest.fixture
@@ -245,3 +305,55 @@ async def test_the_shipped_setting_trades_the_shipped_break_on_any_morning(live,
     summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
     assert [e["source"] for e in summary["entries"]] == ["FNO_PAPER"]
     assert [p["strategy"] for p in await _paper(db_path)] == [None]
+
+
+@pytest.fixture
+def sensex_live(monkeypatch, db_path, book):  # noqa: F811
+    """[O29d] The paper book trading SENSEX alone, its future priced like the NIFTY fixture."""
+    import fno_underlyings
+    from performance import init_ledger
+    from tests.test_fno_orchestrator import FUT_TOKEN
+    from tests.test_fno_sensex import SENSEX_FUT, _sensex_book
+    sensex_book = _sensex_book()
+    monkeypatch.setitem(fno_underlyings._books, "SENSEX", sensex_book)
+    monkeypatch.setattr(settings, "FNO_TRADING_UNDERLYINGS", "SENSEX")
+    monkeypatch.setattr(settings, "FNO_BOOK", "UNION_DRIVE")
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    fno_book._TODAY.clear()
+
+    async def make(opening):
+        await init_ledger(db_path)
+        table = _quote_table(book, NOW)
+        table.update(_quote_table(sensex_book, NOW))
+        table[SENSEX_FUT] = dict(table[FUT_TOKEN])
+        return FakeKite(_bars(opening), table)
+    yield make
+    fno_book._TODAY.clear()
+
+
+@pytest.mark.asyncio
+async def test_sensex_trades_the_book_on_its_own_drive(sensex_live, db_path):
+    from fno_orchestrator import format_fno_telegram, run_fno_tick
+    await _history(db_path, underlying="SENSEX")
+    kite = await sensex_live(ONE_WAY)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    assert [e["symbol"][:6] for e in summary["entries"]] == ["SENSEX"]
+    assert "strategy=SHIPPED" in format_fno_telegram(summary)
+    assert [p["strategy"] for p in await _paper(db_path)] == ["SHIPPED"]
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute("SELECT underlying, value, source FROM fno_opening_drive "
+                                       "WHERE session_date='2026-07-10'")).fetchall()
+    assert rows == [("SENSEX", 1.0, "live")]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("history, reason", [("SENSEX", "drive_low:breakout_skipped"),
+                                             ("NIFTY", "drive_unknown:breakout_skipped")])
+async def test_a_two_way_sensex_morning_keeps_its_breakouts_out(sensex_live, db_path, history, reason):
+    """NIFTY's history is not SENSEX's: with only NIFTY's, SENSEX's side is not known."""
+    from fno_orchestrator import run_fno_tick
+    await _history(db_path, underlying=history)
+    kite = await sensex_live(FLAT)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    assert summary["entries"] == [] and await _paper(db_path) == []
+    assert reason in await _reasons(db_path, "SENSEX")

@@ -1,3 +1,9 @@
+## October 28 — O29e Book on SENSEX (paper) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
+
+- [x] `fno_book` per-underlying drive, SENSEX seed, the volume swap, orchestrator wiring; tests and SENSEX parity.
+- [ ] After the deploy, from Oct 29: check that SENSEX rows appear in `fno_opening_drive` after 09:45 (read-only), and that SENSEX entries carry `strategy=`.
+- [ ] The SENSEX book has no forward panel (the panels replay NIFTY only). Judge it from the paper book itself.
+
 ## October 28 — O29d Cash alert, one-lot and SENSEX checks (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
 
 - [x] `fno_live_test` cash-short alert and the morning line; tests.

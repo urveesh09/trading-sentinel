@@ -1728,8 +1728,10 @@ async def _single_leg_entries(
         # shipped evaluation above is shared (the capped-loss book) and is not changed; the book's is a copy.
         stage_started = monotonic()
         try:
-            _drive, side = await fno_book.drive_today(db_path, bars, evaluation_now_ist)
-            sig = fno_book.book_signal(bars, regime, evaluation_now_ist, shipped=sig, side=side)
+            # [O29d] Each underlying's own drive; SENSEX's strategies read NIFTY's volume (rvol_bars), as above.
+            _drive, side = await fno_book.drive_today(db_path, bars, evaluation_now_ist, underlying=name)
+            sig = fno_book.book_signal(fno_book.with_participation(bars, rvol_bars), regime, evaluation_now_ist,
+                                       shipped=sig, side=side)
         except Exception as exc:          # no entry rather than an unfiltered one
             logger.error("fno_book_signal_failed err=%s", str(exc), exc_info=True)
             sig = replace(sig, direction=None, strategy="", reject_reason="book_error")
