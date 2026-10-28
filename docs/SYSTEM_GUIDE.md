@@ -1,3 +1,10 @@
+## October 28 — O29e The four-strategy book on NIFTY and SENSEX (paper) (Dev; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact); deploy on the owner's Oct 28 night go-ahead)
+
+- With `FNO_BOOK=UNION_DRIVE`, every underlying in `FNO_TRADING_UNDERLYINGS` (NIFTY, SENSEX) trades the book on the paper single-leg book.
+- **Per underlying:** each one's breakouts depend on its own opening drive against its own previous 20 sessions (`fno_opening_drive`, keyed by session and underlying).
+- **SENSEX volume:** wherever SENSEX's strategies read volume, they read NIFTY's for the same bar.
+- **Real money:** the test stays NIFTY only.
+
 ## October 28 — O29d Real-money test: the owner is told when the money cannot buy a lot (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
 
 - **When a real buy is refused for money**, `fno_live_test.mirror_entry` tells the owner once a day (`fno_live_test_cash_short`). Two refusals count:
