@@ -1,4 +1,4 @@
-## October 28 — O29e The four-strategy book on every paper underlying (NIFTY and SENSEX) (Dev; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact); deploy on the owner's Oct 28 night go-ahead)
+## October 28 — O29e The four-strategy book on every paper underlying (NIFTY and SENSEX) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - **Owner (Oct 28 night, after the O29d report):** "go ahead with this and also the strategies. Let them also be used on other than nifty. At least on paper ... deployed this and restart and rebuild the system as well."
 - **The call is the owner's, not the check's:** the O29d SENSEX check failed its frozen worst-day bound (−₹5,317 against −₹5,000), though it made +₹12,759 where the shipped break lost ₹8,622. The check's verdict stays recorded as failed.

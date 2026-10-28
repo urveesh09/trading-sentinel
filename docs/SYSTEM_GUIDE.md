@@ -1,4 +1,4 @@
-## October 28 — O29e The four-strategy book on NIFTY and SENSEX (paper) (Dev; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact); deploy on the owner's Oct 28 night go-ahead)
+## October 28 — O29e The four-strategy book on NIFTY and SENSEX (paper) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - With `FNO_BOOK=UNION_DRIVE`, every underlying in `FNO_TRADING_UNDERLYINGS` (NIFTY, SENSEX) trades the book on the paper single-leg book.
 - **Per underlying:** each one's breakouts depend on its own opening drive against its own previous 20 sessions (`fno_opening_drive`, keyed by session and underlying).

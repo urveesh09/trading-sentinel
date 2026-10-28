@@ -1,4 +1,4 @@
-## October 28 — O29e Book on SENSEX (paper) (Dev; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact); deploy on the owner's Oct 28 night go-ahead)
+## October 28 — O29e Book on SENSEX (paper) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - [x] `fno_book` per-underlying drive, SENSEX seed, the volume swap, orchestrator wiring; tests and SENSEX parity.
 - [ ] After the deploy, from Oct 29: check that SENSEX rows appear in `fno_opening_drive` after 09:45 (read-only), and that SENSEX entries carry `strategy=`.
