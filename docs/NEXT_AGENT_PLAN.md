@@ -1,4 +1,4 @@
-## October 28 — O29d Real-money cash alert, the one-lot check, the SENSEX check, fades on two-way days (Dev; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+## October 28 — O29d Real-money cash alert, the one-lot check, the SENSEX check, fades on two-way days (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
 
 - **Owner (Oct 28 evening, after O29c):**
   - Why only NIFTY? "You can apply it anywhere you want ... ensure that the strategy is flexible and smart that the losses are less and the profits are consistent."

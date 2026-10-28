@@ -1,4 +1,4 @@
-## October 28 — O29d Real-money test: the owner is told when the money cannot buy a lot (Dev; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+## October 28 — O29d Real-money test: the owner is told when the money cannot buy a lot (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
 
 - **When a real buy is refused for money**, `fno_live_test.mirror_entry` tells the owner once a day (`fno_live_test_cash_short`). Two refusals count:
   - the test's own reservation cannot cover the lot's whole premium plus charges;

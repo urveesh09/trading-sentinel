@@ -1,4 +1,4 @@
-## October 28 — O29d Cash alert, one-lot and SENSEX checks (Dev; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+## October 28 — O29d Cash alert, one-lot and SENSEX checks (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
 
 - [x] `fno_live_test` cash-short alert and the morning line; tests.
 - [x] SENSEX check, frozen and scored (abfc27a, b9a9352): SENSEX unchanged.
