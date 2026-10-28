@@ -1,4 +1,4 @@
-## October 28 — O29 The Oct 28 review: four partner-watch fixes, and what the day showed (Dev; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+## October 28 — O29 The Oct 28 review: four partner-watch fixes, and what the day showed (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
 
 - Owner ask (Oct 28 evening): "how was the day? How did the partner perform? And what all learnings did we get? What bug fixes? … how did the strategies do did all of them together work better than our current strategies and report to me everything".
 - **Evidence** (Production, read-only; `partner_watch_report`, `partner_watch_score`, `fno_positions`, `fno_signals`, the panels' REPORT.md):

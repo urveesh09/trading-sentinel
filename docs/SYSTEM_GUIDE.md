@@ -1,4 +1,4 @@
-## October 28 — O29 Partner watch: cash, first-read refusals, overnight sales, the close note (Dev; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+## October 28 — O29 Partner watch: cash, first-read refusals, overnight sales, the close note (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
 
 - **Cash:** read at the first tick, then again every 5 minutes (`CASH_REFRESH`). Money added during the day counts from the next read.
 - **Refusals:** a refusal found on the day's first read (or after a restart) is told when it is at most 5 minutes old (`REFUSED_FIRST_READ`). An older one is not told, and the message key stops a repeat.

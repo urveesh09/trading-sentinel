@@ -1,4 +1,4 @@
-## October 28 — O29 Partner-watch fixes (Dev; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+## October 28 — O29 Partner-watch fixes (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
 
 - [x] Cash refresh, first-read refusals plus plain trigger wording, carried sales in DAY and the report, and the next-session expiry close note, all in Dev with tests.
 - [ ] Owner: merge and deploy when ready. It is not part of the paper or live F&O rules, so the proving week is unaffected.
