@@ -1,4 +1,4 @@
-## October 28 — O29e The four-strategy book on every paper underlying (NIFTY and SENSEX) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
+## October 28 — O29e The four-strategy book on every paper underlying (NIFTY and SENSEX) (Dev commit 95183ff, pushed; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed (PR #122); fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - **Owner (Oct 28 night, after the O29d report):** "go ahead with this and also the strategies. Let them also be used on other than nifty. At least on paper ... deployed this and restart and rebuild the system as well."
 - **The call is the owner's, not the check's:** the O29d SENSEX check failed its frozen worst-day bound (−₹5,317 against −₹5,000), though it made +₹12,759 where the shipped break lost ₹8,622. The check's verdict stays recorded as failed.
@@ -16,7 +16,7 @@
 - **Config and migration:** no `.env` change. The table's key changes (migrated in place); Production never had the O29c table.
 - **Rollback:** `FNO_BOOK=SHIPPED` restores the shipped break on both underlyings.
 
-## October 28 — O29d Real-money cash alert, the one-lot check, the SENSEX check, fades on two-way days (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+## October 28 — O29d Real-money cash alert, the one-lot check, the SENSEX check, fades on two-way days (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - **Owner (Oct 28 evening, after O29c):**
   - Why only NIFTY? "You can apply it anywhere you want ... ensure that the strategy is flexible and smart that the losses are less and the profits are consistent."
@@ -46,7 +46,7 @@
 - **Config and migration:** none; `FNO_LIVE_TEST_CAPITAL` stays ₹12,500. If ₹15,000 is deposited, the owner sets `FNO_LIVE_TEST_CAPITAL=15000`.
 - **Rollout:** with O29 and O29c, on the owner's Oct 28 go-ahead ("put that as the main strategy ... we will begin the real money test starting the coming Monday").
 
-## October 28 — O29c The paper book's NIFTY strategy: the four studied strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+## October 28 — O29c The paper book's NIFTY strategy: the four studied strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - Owner (Oct 28 evening, after O29b): "the best strategy was the combination of the four and if we have understood that today was not a good day which is two day then I agree. We can not trade on that day ... you don't have to take my call, just, the best strategy and some other strategies are shadow and go ahead and make the change."
 - **The call:** UNION_DRIVE (O28 THEORY_DRIVE, panel C's arm) becomes the single-leg paper book's strategy for NIFTY. The shipped break stays as a shadow (fno_shadow FNO_BASE), and panels A–D keep scoring the alternatives.
@@ -109,7 +109,7 @@
 - Config and migration: none. No Production change. The paper and live books are unchanged (proving week).
 - **Next, owner's call after Oct 30:** if panels C and D bear it out, a live shadow of the drive read at 09:45, and then the filter on the paper book's breakouts. Its evidence is weakest for the shipped strategy itself.
 
-## October 28 — O29 The Oct 28 review: four partner-watch fixes, and what the day showed (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+## October 28 — O29 The Oct 28 review: four partner-watch fixes, and what the day showed (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - Owner ask (Oct 28 evening): "how was the day? How did the partner perform? And what all learnings did we get? What bug fixes? … how did the strategies do did all of them together work better than our current strategies and report to me everything".
 - **Evidence** (Production, read-only; `partner_watch_report`, `partner_watch_score`, `fno_positions`, `fno_signals`, the panels' REPORT.md):

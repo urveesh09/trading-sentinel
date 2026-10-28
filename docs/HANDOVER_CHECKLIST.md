@@ -1,17 +1,31 @@
-## October 28 — O29e Book on SENSEX (paper) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
+## October 28 — Rollout receipt O29–O29e (Production 490bd1d)
+
+- PR #121 (O29, O29b research, O29c, O29d) was merged by the owner at 21:07 IST (9233bcf). PR #122 (O29e) was merged at 21:15 (490bd1d).
+- **Deploy:** Production fast-forwarded to 490bd1d. Following the runbook, `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC` were set, then node-gateway, python-engine and agent were built one at a time and recreated.
+- **Verification:**
+  - `scripts/verify_deployment.py --expected-sha 490bd1d…` passed. The receipt is in `sentinel-operations/release-receipts/`.
+  - The first verification returned 502 because nginx kept the recreated gateway's old address. `docker compose restart nginx` fixed it, and the local and public `/api/health` both return 200.
+- **Engine, read-only:**
+  - `FNO_BOOK=UNION_DRIVE`, on for NIFTY and SENSEX, with seeds of 38 values each.
+  - `fno_positions.strategy` is present, and the cash alert is present.
+  - The real-money switch is off (₹12,500, run Nov 2–6). No open F&O positions; no error lines since start.
+  - `fno_opening_drive` is created at the first 09:45 read on Oct 29.
+- [ ] Oct 29 after 09:45 (read-only): check the `fno_opening_drive` rows for NIFTY and SENSEX, and that F&O entry messages carry `strategy=`.
+
+## October 28 — O29e Book on SENSEX (paper) (Dev commit 95183ff, pushed; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed (PR #122); fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - [x] `fno_book` per-underlying drive, SENSEX seed, the volume swap, orchestrator wiring; tests and SENSEX parity.
 - [ ] After the deploy, from Oct 29: check that SENSEX rows appear in `fno_opening_drive` after 09:45 (read-only), and that SENSEX entries carry `strategy=`.
 - [ ] The SENSEX book has no forward panel (the panels replay NIFTY only). Judge it from the paper book itself.
 
-## October 28 — O29d Cash alert, one-lot and SENSEX checks (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+## October 28 — O29d Cash alert, one-lot and SENSEX checks (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - [x] `fno_live_test` cash-short alert and the morning line; tests.
 - [x] SENSEX check, frozen and scored (abfc27a, b9a9352): SENSEX unchanged.
 - [ ] Owner: if ₹15,000 is deposited, set `FNO_LIVE_TEST_CAPITAL=15000` before Nov 2.
 - [ ] Owner: a fade or mean-reversion book on two-way days is advice only. No change without the owner's call.
 
-## October 28 — O29c Four-strategy NIFTY book (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+## October 28 — O29c Four-strategy NIFTY book (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - [x] `fno_book` and its wiring, tests, and research parity (an exact trade match over 31 sessions).
 - [ ] Owner: merge and deploy go-ahead. After the deploy, check that the engine starts and that the `fno_opening_drive` row for the day appears after 09:45 (`SELECT * FROM fno_opening_drive ORDER BY session_date DESC LIMIT 3`, read-only).
@@ -26,7 +40,7 @@
 - [ ] Each evening: `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-d-20261029\docs\research\fno\2026-10-29-forward-panel-d\_local\REPORT.md`
 - [ ] Nov 27: read the frozen rule. Promotion is the owner's call, never in a proving week.
 
-## October 28 — O29 Partner-watch fixes (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+## October 28 — O29 Partner-watch fixes (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - [x] Cash refresh, first-read refusals plus plain trigger wording, carried sales in DAY and the report, and the next-session expiry close note, all in Dev with tests.
 - [ ] Owner: merge and deploy when ready. It is not part of the paper or live F&O rules, so the proving week is unaffected.

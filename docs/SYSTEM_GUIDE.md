@@ -1,11 +1,11 @@
-## October 28 — O29e The four-strategy book on NIFTY and SENSEX (paper) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
+## October 28 — O29e The four-strategy book on NIFTY and SENSEX (paper) (Dev commit 95183ff, pushed; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed (PR #122); fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - With `FNO_BOOK=UNION_DRIVE`, every underlying in `FNO_TRADING_UNDERLYINGS` (NIFTY, SENSEX) trades the book on the paper single-leg book.
 - **Per underlying:** each one's breakouts depend on its own opening drive against its own previous 20 sessions (`fno_opening_drive`, keyed by session and underlying).
 - **SENSEX volume:** wherever SENSEX's strategies read volume, they read NIFTY's for the same bar.
 - **Real money:** the test stays NIFTY only.
 
-## October 28 — O29d Real-money test: the owner is told when the money cannot buy a lot (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+## October 28 — O29d Real-money test: the owner is told when the money cannot buy a lot (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - **When a real buy is refused for money**, `fno_live_test.mirror_entry` tells the owner once a day (`fno_live_test_cash_short`). Two refusals count:
   - the test's own reservation cannot cover the lot's whole premium plus charges;
@@ -14,7 +14,7 @@
 - **09:25 readiness message:** it now warns when the test's equity is under a typical lot.
 - **SENSEX:** the shipped break, unchanged. The O29d SENSEX check failed its worst-day bound.
 
-## October 28 — O29c The NIFTY paper book: four strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+## October 28 — O29c The NIFTY paper book: four strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - With `FNO_BOOK=UNION_DRIVE` (the default), the single-leg paper book's NIFTY signal comes from `fno_book.book_signal`.
   - **Order:** the first of SHIPPED, OR20, EFF and TPB that signals on the bar.
@@ -28,7 +28,7 @@
 - Panel D replays the 09:45 opening-drive filter on SHIPPED, OR20 and EFF, and the O29b FINAL smart book, beside the shipped book on each session from Oct 29. It reads a read-only export of Production's research archive.
 - It runs when panel A's launcher calls it, once the owner adds the hook. It has no effect on Production, the paper book or the real-money test.
 
-## October 28 — O29 Partner watch: cash, first-read refusals, overnight sales, the close note (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+## October 28 — O29 Partner watch: cash, first-read refusals, overnight sales, the close note (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - **Cash:** read at the first tick, then again every 5 minutes (`CASH_REFRESH`). Money added during the day counts from the next read.
 - **Refusals:** a refusal found on the day's first read (or after a restart) is told when it is at most 5 minutes old (`REFUSED_FIRST_READ`). An older one is not told, and the message key stops a repeat.
