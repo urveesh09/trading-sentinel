@@ -73,6 +73,7 @@ UNDERLYING = "NIFTY"
 PREFLIGHT_BAR = "PREFLIGHT"
 _FLOOR_TOLD: set = set()
 _RUN_END_TOLD: set = set()
+_CASH_TOLD: set = set()
 _EVENTS_DDL = ("CREATE TABLE IF NOT EXISTS fno_live_execution_events (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                "position_id INTEGER, at TEXT NOT NULL, kind TEXT NOT NULL, detail TEXT)")
 _RUNS_DDL = ("CREATE TABLE IF NOT EXISTS fno_live_test_runs (label TEXT PRIMARY KEY, started_on TEXT NOT NULL, "
@@ -273,6 +274,36 @@ async def _tell_floor_once(now_ist: datetime, equity: float) -> None:
         logger.error("fno_live_test_floor_notice_failed err=%s", str(exc))
 
 
+async def _tell_cash_short_once(now_ist: datetime, *, symbol: str, needed: float, have: Optional[float],
+                                where: str) -> None:
+    """[O29d] The owner (Oct 28): "if the system loses its first few attempts itself, then we will not even have
+    money to buy one lot ... if it will, then before you make any further changes, you tell me." Once a day, the
+    first time a real buy is refused because the money left cannot pay for one lot. Nothing is changed here: no
+    cheaper strike, no other size; the test keeps buying only the lots it can pay for."""
+    day = now_ist.date().isoformat()
+    if day in _CASH_TOLD:
+        return
+    left = f"₹{have:,.0f}" if have is not None else "less"
+    try:
+        from operator_alert import notify_operator
+        told = await notify_operator(
+            f"⚠️ REAL-money F&O test: the paper book bought {symbol}, but one real lot needs about "
+            f"₹{needed:,.0f} and {where} has {left}, so it was NOT bought. Nothing has been changed: the test keeps "
+            "buying only the lots it can pay for. Your call: add money (and set FNO_LIVE_TEST_CAPITAL to match), "
+            "carry on as it is, or end the test (FNO_LIVE_TEST_ENABLED=false).", event="fno_live_test_cash_short")
+        if told:
+            _CASH_TOLD.add(day)
+    except Exception as exc:
+        logger.error("fno_live_test_cash_notice_failed err=%s", str(exc))
+
+
+def _broker_cash_left(message: str) -> Optional[float]:
+    """The own uncommitted cash a kite_client OWN_CASH_INSUFFICIENT refusal names, when it names one."""
+    import re
+    found = re.search(r"own uncommitted cash (-?[\d.]+)", message or "")
+    return float(found.group(1)) if found else None
+
+
 async def mirror_entry(kite, db_path: str, executor, *, sig, paper_entry: dict, underlying: str, instruments,
                        regime: str, now_ist: datetime, scan_id: str, action_clock=None) -> Optional[dict]:
     """Buy one real lot of the contract the paper book just bought; the entry
@@ -389,13 +420,17 @@ async def mirror_entry(kite, db_path: str, executor, *, sig, paper_entry: dict, 
     await init_shared_fno_risk_db(db_path)
     exchange = instruments.segment
     key = f"single:{SOURCE}:{contract.token}:{sig.bar_ts}"
+    worst_case = max_loss + calc_fno_costs(limit, 0.0, qty, exchange=exchange)
     admission = await reserve_shared_fno_risk(
         db_path, source=SOURCE, pool_rs=live_pool(), reservation_key=key, book="SINGLE_LEG",
-        worst_case_cash_rs=max_loss + calc_fno_costs(limit, 0.0, qty, exchange=exchange),
-        entry_day_ist=None, policy=None,
+        worst_case_cash_rs=worst_case, entry_day_ist=None, policy=None,
     )
     if not admission.allowed:
         await _log(False, f"live_test_{admission.reason}", **fields)
+        if admission.reason == "shared_worst_case_cash_exhausted":
+            left = getattr(admission.view, "available_worst_case_cash_rs", None)
+            await _tell_cash_short_once(now_ist, symbol=symbol, needed=worst_case,
+                                        have=left if left is not None else equity, where="the test")
         return None
     claim = await claim_shared_fno_entry_dispatch(
         db_path, reservation_key=key, source=SOURCE, book="SINGLE_LEG", pool_rs=live_pool(), entry_day_ist=None,
@@ -430,6 +465,10 @@ async def mirror_entry(kite, db_path: str, executor, *, sig, paper_entry: dict, 
             db_path, reservation_key=key, owner=claim.owner, outcome=outcome,
             evidence=result.get("evidence") or {"status": status})
         await _log(False, f"entry_{status}", **fields)
+        message = str((result.get("evidence") or {}).get("message") or "")
+        if message.startswith("OWN_CASH_INSUFFICIENT"):
+            await _tell_cash_short_once(now_ist, symbol=symbol, needed=limit * qty, have=_broker_cash_left(message),
+                                        where="the Zerodha account (free cash)")
         if applied not in DISPATCH_RELEASE_OUTCOMES:
             logger.critical("fno_live_test_entry_unresolved symbol=%s status=%s applied=%s reservation=%s",
                             symbol, status, applied, key)
@@ -722,6 +761,10 @@ async def morning_check(kite, db_path: str, now: datetime) -> Optional[str]:
         problems.append(f"equity ₹{equity:,.0f} is under the floor ₹{settings.FNO_LIVE_TEST_FLOOR:,.0f}")
     else:
         facts.append(f"equity ₹{equity:,.0f} (floor ₹{settings.FNO_LIVE_TEST_FLOOR:,.0f})")
+        typical = await typical_lot_cost(db_path)
+        if typical and equity < typical:      # [O29d] said before the day, not only at the first refused buy
+            facts.append(f"⚠️ the test's ₹{equity:,.0f} is under a typical lot (₹{typical:,.0f}): only cheaper lots "
+                         "can be bought; adding money or ending the test is your call")
     try:
         async with aiosqlite.connect(db_path) as db:
             carried = (await (await db.execute(

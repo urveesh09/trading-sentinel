@@ -1,3 +1,12 @@
+## October 28 — O29d Real-money test: the owner is told when the money cannot buy a lot (Dev; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+
+- **When a real buy is refused for money**, `fno_live_test.mirror_entry` tells the owner once a day (`fno_live_test_cash_short`). Two refusals count:
+  - the test's own reservation cannot cover the lot's whole premium plus charges;
+  - kite_client refuses the order because the account's free cash is short.
+- The message names the lot's cost and the money left, and says nothing was changed. The test keeps buying only lots it can pay for.
+- **09:25 readiness message:** it now warns when the test's equity is under a typical lot.
+- **SENSEX:** the shipped break, unchanged. The O29d SENSEX check failed its worst-day bound.
+
 ## October 28 — O29c The NIFTY paper book: four strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
 
 - With `FNO_BOOK=UNION_DRIVE` (the default), the single-leg paper book's NIFTY signal comes from `fno_book.book_signal`.

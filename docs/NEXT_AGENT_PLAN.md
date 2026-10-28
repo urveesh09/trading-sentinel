@@ -1,3 +1,33 @@
+## October 28 — O29d Real-money cash alert, the one-lot check, the SENSEX check, fades on two-way days (Dev; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+
+- **Owner (Oct 28 evening, after O29c):**
+  - Why only NIFTY? "You can apply it anywhere you want ... ensure that the strategy is flexible and smart that the losses are less and the profits are consistent."
+  - On ₹12,500–15,000 for one lot: "if the system loses its first few attempts itself, then we will not even have money to buy one lot ... if it will, then before you make any further changes, you tell me."
+  - Two-way days: advice first, before any change.
+  - "the best strategy ... put that as the main strategy and the rest as shadows, we will begin the real money test starting the coming Monday."
+- **One-lot check (scratchpad, research trades, live-test rules):**
+  - UNION_DRIVE's 32 NIFTY trades at one lot (65): one position at a time, at most 3 a day, only lots the money left can pay for, the ₹7,000 floor.
+  - Lot cost: ₹4,573–12,561 (median ₹9,012). One-lot net +₹40,245; worst trade −₹3,122; worst losing stretch −₹4,327 (4 losses).
+  - Of the 27 possible 5-session weeks, 26 ended up. Worst end: ₹11,680 from ₹12,500, ₹14,180 from ₹15,000.
+  - The only refused buy, from ₹12,500, was a ₹12,559 lot (₹59 short). From ₹15,000, no week refused a buy.
+  - After the worst stretch: ₹8,173 buys 14 of the 32 lots; ₹10,673 buys 24.
+  - Seen sessions only: this says how the book behaved, not that it will.
+- **SENSEX check:** `docs/research/fno/2026-10-28-sensex-check`, frozen abfc27a, results b9a9352.
+  - The engine's book, unchanged, on 31 SENSEX sessions it was never fitted to: +₹12,759, against −₹8,622 for the shipped break.
+  - It fails the frozen worst-day bound: Oct 28 lost −₹5,317 (SENSEX's opening drive was HIGH that day). Without its best day it made only +₹2,639.
+  - **SENSEX keeps the shipped break.**
+- **Fades on two-way (LOW-drive) mornings:** descriptive, from the stored O29b trades over 17 two-way sessions.
+  - About half of every family was positive: FADE 47%, VWAP_REVERT 50%, random entries 48%.
+  - The ten best September fades made money on 0 of 10 October two-way days once Oct 28 is left out.
+  - Advice only, no change. Panel D already observes a fade arm (DRIVE_BOOK_FADE).
+- **Code (`fno_live_test`):**
+  - `_tell_cash_short_once`: the owner is told, once a day, when a real buy is refused because the money cannot pay for one lot. Two refusals count: the shared reservation (`shared_worst_case_cash_exhausted`) and kite_client's `OWN_CASH_INSUFFICIENT`, which names the free cash.
+  - Nothing else changes: no cheaper strike, no other size.
+  - The 09:25 morning check adds a line when the test's equity is under a typical lot (the median of the last 20 NIFTY paper buys).
+- **Acceptance:** `tests/test_fno_live_test.py` 35 passed. The full engine suite result is in the handover.
+- **Config and migration:** none; `FNO_LIVE_TEST_CAPITAL` stays ₹12,500. If ₹15,000 is deposited, the owner sets `FNO_LIVE_TEST_CAPITAL=15000`.
+- **Rollout:** with O29 and O29c, on the owner's Oct 28 go-ahead ("put that as the main strategy ... we will begin the real money test starting the coming Monday").
+
 ## October 28 — O29c The paper book's NIFTY strategy: the four studied strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
 
 - Owner (Oct 28 evening, after O29b): "the best strategy was the combination of the four and if we have understood that today was not a good day which is two day then I agree. We can not trade on that day ... you don't have to take my call, just, the best strategy and some other strategies are shadow and go ahead and make the change."

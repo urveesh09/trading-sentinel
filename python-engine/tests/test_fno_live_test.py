@@ -373,26 +373,57 @@ async def test_the_mirror_refuses_what_the_test_rules_out(book, db_path, paper_e
     monkeypatch.setattr(book, "is_expiry_day", lambda day: True)
     assert await _mirror(book, db_path, broker, sig=sig) is None
     monkeypatch.setattr(book, "is_expiry_day", lambda day: False)
-    monkeypatch.setattr(settings, "FNO_LIVE_TEST_CAPITAL", 4000.0)                    # a lot costs more
-    monkeypatch.setattr(settings, "FNO_LIVE_TEST_FLOOR", 1000.0)
-    assert await _mirror(book, db_path, broker, sig=sig) is None
-    monkeypatch.setattr(settings, "FNO_LIVE_TEST_FLOOR", 7000.0)
     monkeypatch.setattr(fno_live_test, "_FLOOR_TOLD", set())
+    monkeypatch.setattr(fno_live_test, "_CASH_TOLD", set())
     told = []
 
     async def notify(text, *, event):
-        told.append(event)
+        told.append((event, text))
         return True
 
     import operator_alert
     monkeypatch.setattr(operator_alert, "notify_operator", notify)
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_CAPITAL", 4000.0)                    # a lot costs more
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_FLOOR", 1000.0)
+    assert await _mirror(book, db_path, broker, sig=sig) is None
+    assert await _mirror(book, db_path, broker, sig=sig) is None                      # told once a day
+    [(event, text)] = told
+    assert event == "fno_live_test_cash_short" and "was NOT bought" in text and "has ₹4,000" in text
+    assert "Nothing has been changed" in text
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_FLOOR", 7000.0)
     monkeypatch.setattr(settings, "FNO_LIVE_TEST_CAPITAL", 6500.0)                    # under the 7,000 floor
     assert await _mirror(book, db_path, broker, sig=sig) is None
-    assert await _mirror(book, db_path, broker, sig=sig) is None and told == ["fno_live_test_floor"]
+    assert await _mirror(book, db_path, broker, sig=sig) is None
+    assert [e for e, _ in told] == ["fno_live_test_cash_short", "fno_live_test_floor"]
     assert await _reasons(db_path) == ["live_test_price_ran", "live_test_expiry_day",
+                                       "live_test_shared_worst_case_cash_exhausted",
                                        "live_test_shared_worst_case_cash_exhausted", "live_test_floor",
                                        "live_test_floor"]
     assert broker.orders_placed == []
+
+
+@pytest.mark.asyncio
+async def test_a_buy_the_account_cannot_pay_is_told_with_the_cash_it_has(book, db_path, paper_entered, monkeypatch):
+    """[O29d] kite_client's own-cash refusal (the account holds less than the lot): the owner is told, once."""
+    broker, sig = paper_entered
+    monkeypatch.setattr(fno_live_test, "_CASH_TOLD", set())
+    told = []
+
+    async def notify(text, *, event):
+        told.append((event, text))
+        return True
+
+    async def refused(**kw):
+        return {"order_id": None, "status": "ERROR", "dispatch_certainty": "NOT_SENT", "own_cash_refused": True,
+                "message": "OWN_CASH_INSUFFICIENT: order value 9100.00 > own uncommitted cash 5321.50"}
+
+    import operator_alert
+    monkeypatch.setattr(operator_alert, "notify_operator", notify)
+    broker.place_order = refused
+    assert await _mirror(book, db_path, broker, sig=sig) is None
+    [(event, text)] = told
+    assert event == "fno_live_test_cash_short" and "the Zerodha account (free cash) has ₹5,322" in text
+    assert fno_live_test._broker_cash_left("OWN_CASH_EVIDENCE_UNAVAILABLE: margins missing") is None
 
 
 @pytest.mark.asyncio
@@ -673,6 +704,10 @@ async def test_the_morning_check_says_ready_or_names_what_is_missing(live_db, ar
     tunnel_down = await fno_live_test.morning_check(Account(route_down="ProxyError: 407"), live_db, monday)
     assert tunnel_down.startswith("⚠️ REAL-money F&O test NOT ready today: the order route does not answer "
                                   "(ProxyError: 407): check the tunnel on the VM")
+    monkeypatch.setattr(settings, "FNO_LIVE_TEST_CAPITAL", 8500.0)               # [O29d] above the floor, under a lot
+    assert (await fno_live_test.morning_check(Account(), live_db, monday)).endswith(
+        "equity ₹8,500 (floor ₹7,000); ⚠️ the test's ₹8,500 is under a typical lot (₹8,840): only cheaper lots can "
+        "be bought; adding money or ending the test is your call.")
     monkeypatch.setattr(settings, "FNO_LIVE_TEST_ENABLED", False)
     assert await fno_live_test.morning_check(Account(), live_db, monday) is None
 

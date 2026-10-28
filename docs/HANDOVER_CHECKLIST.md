@@ -1,3 +1,10 @@
+## October 28 — O29d Cash alert, one-lot and SENSEX checks (Dev; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+
+- [x] `fno_live_test` cash-short alert and the morning line; tests.
+- [x] SENSEX check, frozen and scored (abfc27a, b9a9352): SENSEX unchanged.
+- [ ] Owner: if ₹15,000 is deposited, set `FNO_LIVE_TEST_CAPITAL=15000` before Nov 2.
+- [ ] Owner: a fade or mean-reversion book on two-way days is advice only. No change without the owner's call.
+
 ## October 28 — O29c Four-strategy NIFTY book (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
 
 - [x] `fno_book` and its wiring, tests, and research parity (an exact trade match over 31 sessions).
