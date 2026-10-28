@@ -307,6 +307,8 @@ TICK_BUDGET_SEC = 4.0                      # the tick's reads and waits together
 DELIVERY_INLINE_SEC = 1.5                  # how long a tick (or a login) waits for its messages to go
 VIEW_FRESH = timedelta(seconds=15)         # a message is built only from a book read this recent
 CASH_TRIES = 3
+CASH_REFRESH = timedelta(minutes=5)        # [O29] the day's cash is read again this often (money added during the day)
+REFUSED_FIRST_READ = timedelta(minutes=5)  # [O29] a refusal the first read finds is told when this recent
 BUILD_TRIES = 3                            # [O24e] builds of one message while newer book reads keep arriving
 WAKE_GAP_SEC = 1.0                         # [O24g] ticks woken by the stream are at least this far apart
 TICK_STATS_EVERY = timedelta(seconds=60)   # [O24g] the tick timings are saved this often (partner_watch_report)
@@ -1818,9 +1820,10 @@ def added_text(holding, *, added: int, added_px: float, first_px: Optional[float
 
 
 def refused_text(row: dict, rows: list, still_open: Optional[int], *, cash: Optional[float] = None,
-                 usual: Optional[float] = None) -> str:
+                 usual: Optional[float] = None, unprotected: str = "") -> str:
     """[O26c] A buy refused for funds also says what share of the day's cash it was, and the usual share (Oct 26:
-    five buys refused, one for ₹17,244 on ₹17,218: the whole account in one trade)."""
+    five buys refused, one for ₹17,244 on ₹17,218: the whole account in one trade). [O29] ``unprotected``: for a
+    refused stop, what the trade has now (``_b_refused``)."""
     from partner_insights import _MARGIN, refusal_plain
     side = "buy" if row["transaction_type"] == "BUY" else "sell"
     why = refusal_plain(row, rows) or (row.get("status_message") or "no reason given").strip()
@@ -1828,7 +1831,7 @@ def refused_text(row: dict, rows: list, still_open: Optional[int], *, cash: Opti
     if not line.endswith("."):
         line += "."
     if side == "sell" and still_open:
-        line += f" The trade ({still_open}) is still open."
+        line += f" The trade ({still_open}) is still open.{unprotected}"
     found = _MARGIN.search(str(row.get("status_message") or "")) if side == "buy" and cash else None
     if found:
         need = float(found.group(1).replace(",", ""))
@@ -1838,7 +1841,11 @@ def refused_text(row: dict, rows: list, still_open: Optional[int], *, cash: Opti
     return line
 
 
-def close_text(trip, *, expiry_today: bool, theta_day: Optional[float]) -> str:
+def close_text(trip, *, expiry_today: bool, theta_day: Optional[float], expires_next: Optional[date] = None,
+               value: Optional[float] = None) -> str:
+    """[O29] ``expires_next``: the option expires on the next weekday's close, said instead of a day's decay; the
+    decay of one day is never more than what the option is worth now (``value``). Oct 28: "time decay is about
+    ₹46,725 a day" on 380 of a SENSEX put worth about ₹42,000 and expiring the next day."""
     from partner_broker_sync import CLOSE_MIN
     close = f"{CLOSE_MIN // 60}:{CLOSE_MIN % 60:02d}"
     line = (f"⏳ 20 minutes to the {close} close and you still hold {_name(trip)} "
@@ -1848,10 +1855,25 @@ def close_text(trip, *, expiry_today: bool, theta_day: Optional[float]) -> str:
                  "and an option out of the money ends at zero.")
     elif trip.product == "MIS":
         line += " As MIS, Zerodha squares it off near the close and charges for it."
+    elif expires_next is not None:
+        line += (f" As NRML it stays open overnight, and it expires at the next session's close ({expires_next:%d %b}):"
+                 f" an option out of the money then ends at zero")
+        line += f". It is worth about {_amt(value)} now." if value else "."
     else:
         line += " As NRML it stays open overnight"
-        line += (f": time decay is about {_amt(abs(theta_day) * trip.open_qty)} a day on it." if theta_day else ".")
+        decay = abs(theta_day) * trip.open_qty if theta_day else None
+        if decay and value:
+            decay = min(decay, value)
+        line += f": time decay is about {_amt(decay)} a day on it." if decay else "."
     return line
+
+
+def _next_weekday(day: date) -> date:
+    """The next Monday-to-Friday date (a holiday between is not known here)."""
+    day += timedelta(days=1)
+    while day.weekday() >= 5:
+        day += timedelta(days=1)
+    return day
 
 
 WATCH_ON_TEXT = ("✅ Trade watch on until {close}. I'll message you when a buy has no stop or only part of it is "
@@ -2553,6 +2575,7 @@ class _State:
     carried_known: bool = False
     cash: Optional[float] = None
     cash_tries: int = 0
+    cash_at: Optional[datetime] = None                # [O29] when the cash was last read (or a refresh failed)
     trades: Optional[list] = None
     fills_sig: Optional[tuple] = None
     trades_complete: bool = False
@@ -2652,9 +2675,16 @@ async def _is_trading_day(now: datetime) -> bool:
     return _state.trading_day
 
 
-async def _seed_cash(deadline: Optional[float] = None) -> None:
-    """The day's cash, read after the book; tried again (CASH_TRIES) while unknown."""
-    if _state.cash is not None or _state.cash_tries >= CASH_TRIES:
+async def _seed_cash(deadline: Optional[float] = None, now: Optional[datetime] = None) -> None:
+    """The day's cash, read after the book; tried again (CASH_TRIES) while unknown.
+
+    [O29] Once known, read again every CASH_REFRESH: money added during the day is cash too. Oct 27: ₹50,000 came in
+    by 13:40 on ₹10,677, and every size and loss share after it was said against ₹10,677 ("200% of your cash" for a
+    third of it). A refresh that fails keeps the last cash and is tried at the next refresh."""
+    if _state.cash is None:
+        if _state.cash_tries >= CASH_TRIES:
+            return
+    elif now is None or (_state.cash_at is not None and now - _state.cash_at < CASH_REFRESH):
         return
     try:
         account = zerodha.account_row(await _book("/user/margins/equity", deadline))
@@ -2662,12 +2692,20 @@ async def _seed_cash(deadline: Optional[float] = None) -> None:
         if exc.code == "TokenException":
             raise
         if exc.code != "budget":
-            _state.cash_tries += 1
+            if _state.cash is None:
+                _state.cash_tries += 1
+            else:
+                _state.cash_at = now
             logger.warning("partner_watch_cash_unread code=%s", exc.code)
         return
-    _state.cash_tries += 1
     from partner_insights import cash_of
-    _state.cash = cash_of(account) if account else None
+    cash = cash_of(account) if account else None
+    if _state.cash is None:
+        _state.cash_tries += 1
+        _state.cash = cash
+    elif cash:
+        _state.cash = cash
+    _state.cash_at = now
 
 
 def _trades_cover(rows: list, trades: Optional[list]) -> bool:
@@ -2827,7 +2865,7 @@ async def _watch_tick(now: Optional[datetime] = None, *, market: Optional[Market
         _ticks.orders_ms(_state.day, (_time.monotonic() - read_at) * 1000)
         _state.unread.pop("orders", None)
         await _refresh_book(rows, now, deadline)
-        await _seed_cash(deadline)
+        await _seed_cash(deadline, now)
     except zerodha.BrokerError as exc:
         logger.warning("partner_watch_read_failed code=%s", exc.code)
         await _enqueue_many(db_path, day, await _health(db_path, day, now), now)
@@ -2931,11 +2969,13 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     seeded = _state.seeded
     out: list = []
     moves: dict = {}          # [O24g] holding key -> its SL orders modified down in this read (told with the guard)
-    # 1. Refusals and stop moves are told only when seen happening (not from a book read after a restart).
+    # 1. Refusals and stop moves are told only when seen happening (not from a book read after a restart). [O29] A
+    # refusal on the first read is told when it is REFUSED_FIRST_READ recent (``_refused_just_now``).
     for row in rows:
         before = _state.orders.get(row["order_id"])
         status = str(row.get("status") or "").upper()
-        if status == "REJECTED" and seeded and (before is None or before[0] != "REJECTED"):
+        if status == "REJECTED" and (before is None or before[0] != "REJECTED") and (
+                seeded or _refused_just_now(row, now)):
             out.append(_refused(day, row, holdings, trips))
         trigger = zerodha._num(row.get("trigger_price")) or 0.0
         if row["transaction_type"] != "SELL" or status not in WAITING or trigger <= 0:
@@ -3031,6 +3071,15 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
         _state.looks_task = background_tasks.spawn(_record_looks(db_path, day, holdings, now, market),
                                                    name="partner_watch_looks")
     return started
+
+
+def _refused_just_now(row: dict, now: datetime) -> bool:
+    """[O29] Oct 28: the partner's two stop orders for options held overnight were refused at 09:15:00, the market
+    opening under their triggers, before the watch's first read of the day; a refusal on that read was never told.
+    One this recent is told now. After a restart the outbox already has a refusal told before it (its key), so it is
+    not sent twice."""
+    at = _dt(row.get("updated_at")) or _dt(row.get("placed_at"))
+    return at is not None and -timedelta(minutes=1) <= now - at <= REFUSED_FIRST_READ  # Zerodha's clock may lead
 
 
 def _refused(day: str, row: dict, holdings: list, trips: list) -> tuple:
@@ -3674,24 +3723,33 @@ def day_so_far(trips: list, cash: Optional[float]) -> Optional[dict]:
     ones bought within REENTRY_WINDOW_MIN of a losing exit (``_after_loss``), what is still open, and ``step``: how
     many DAY_STEPs of the day's cash the loss is (0 when not under). None without the day's cash or a closed
     trade. [O26c] Also the charges in that result and the orders they were paid on (Oct 26: ₹1,669 on 55
-    orders, a quarter of the day's loss)."""
+    orders, a quarter of the day's loss).
+
+    [O29] Options held from an earlier day and sold today are in the day's result too, counted apart ("held_*"):
+    Oct 28 opened with two calls bought at Oct 27's close selling for −₹12,444, and the first DAY message said −₹11,526
+    (16%) where the day had lost −₹23,970 (33%). A buy soon after such a losing sale counts as one after a loss, as
+    in the plan's warning."""
     if not cash:
         return None
     today = [t for t in trips if not t.carried]
     closed = [(t, t.realised()) for t in today]
     closed = [(t, r) for t, r in closed if r is not None]
-    if not closed:
+    held = [(t, t.realised()) for t in trips if t.carried]
+    held = [(t, r) for t, r in held if r is not None]
+    if not closed and not held:
         return None
-    net = round(sum(r for _, r in closed), 2)
+    every = closed + held
+    net = round(sum(r for _, r in every), 2)
     won = [r for _, r in closed if r > 0]
     lost = [r for _, r in closed if r < 0]
-    quick = [r for t, r in closed if _after_loss(t, today) is not None]
-    latest = max(today, key=lambda t: t.first_at)
+    quick = [r for t, r in closed if _after_loss(t, trips) is not None]
+    latest = max(today or [t for t, _ in held], key=lambda t: t.first_at)
     return {"net": net, "closed": len(closed), "won": len(won), "won_sum": round(sum(won), 2), "lost": len(lost),
             "lost_sum": round(sum(lost), 2), "quick": len(quick), "quick_sum": round(sum(quick), 2),
-            "charges": round(sum(t.charges() for t, _ in closed), 2),
-            "orders": sum(t.buy_orders + t.sell_orders for t, _ in closed),
-            "open": sum(1 for t in today if t.open_qty), "at": max(t.closed_at for t, _ in closed),
+            "held": len(held), "held_sum": round(sum(r for _, r in held), 2),
+            "charges": round(sum(t.charges() for t, _ in every), 2),
+            "orders": sum(t.buy_orders + t.sell_orders for t, _ in every),
+            "open": sum(1 for t in trips if t.open_qty), "at": max(t.closed_at for t, _ in every),
             "step": math.floor(-net / (DAY_STEP * cash) + 1e-9) if net < 0 else 0, "share": max(-net, 0.0) / cash,
             "check": _check_example(latest.tradingsymbol)}
 
@@ -3712,8 +3770,13 @@ def day_text(day: dict, cash: float) -> str:
              f"{_amt(cash)} cash."]
     parts = ([f"{day['won']} won {_signed(day['won_sum'])}"] if day["won"] else []) + (
         [f"{day['lost']} lost {_signed(day['lost_sum'])}"] if day["lost"] else [])
-    closed = f"{day['closed']} trade{'s' if day['closed'] != 1 else ''} closed"
-    lines.append(f"{closed}: {', '.join(parts)}." if parts else f"{closed}.")
+    if day["closed"]:
+        closed = f"{day['closed']} trade{'s' if day['closed'] != 1 else ''} closed"
+        lines.append(f"{closed}: {', '.join(parts)}." if parts else f"{closed}.")
+    if day.get("held"):
+        # [O29] Options held from an earlier day and sold today: their result against what was paid for them.
+        lines.append(f"{day['held']} held from an earlier day and sold today: {_signed(day['held_sum'])} against "
+                     f"what you paid.")
     if day.get("charges"):
         # [O26d] Worked out from the fills, not read from the contract note: said so.
         lines.append(f"That includes about {_amt(day['charges'])} of charges (estimated) on {day['orders']} orders.")
@@ -4044,8 +4107,18 @@ async def _b_refused(db_path: str, context: dict, view: View, now: datetime):
     usual = None
     if row["transaction_type"] == "BUY" and _state.cash:
         usual = await _usual_share(db_path, None, view.trips, now, before=_dt(row.get("placed_at")) or now)
-    return (refused_text(row, view.rows, sum(h.qty for h in same) or None, cash=_state.cash, usual=usual),
-            "explained Zerodha's refusal", None)
+    unprotected = ""
+    holding = _holding_for(view.holdings, row)
+    if row["transaction_type"] == "SELL" and (zerodha._num(row.get("trigger_price")) or 0) > 0 and holding:
+        # [O29] A refused stop that leaves the option held with no stop: said, with what selling now gives.
+        cover = view.covers.get(holding.hkey)
+        if cover is not None and cover.state == "ABSENT":
+            unprotected = " No other stop is in Zerodha: nothing limits its loss now."
+            quote = await _price_now(holding, now)
+            if quote_freshness(quote, now) == "FRESH":
+                unprotected += _sell_now(holding, quote, _state.cash)
+    return (refused_text(row, view.rows, sum(h.qty for h in same) or None, cash=_state.cash, usual=usual,
+                         unprotected=unprotected), "explained Zerodha's refusal", None)
 
 
 async def _b_close(db_path: str, context: dict, view: View, now: datetime):
@@ -4053,10 +4126,18 @@ async def _b_close(db_path: str, context: dict, view: View, now: datetime):
     if holding is None:
         return None
     contract = contract_of(holding.exchange, holding.tradingsymbol)
-    expiry_today = bool(contract is not None and getattr(contract, "expiry", None) == now.date())
+    expiry = getattr(contract, "expiry", None) if contract is not None else None
+    expiry_today = expiry == now.date()
     plan, _set_at = await _plan_for(db_path, holding, view.day)
-    return (close_text(holding, expiry_today=expiry_today, theta_day=plan.theta_day if plan else None),
-            "20 minutes to the close", None)
+    value = None
+    if not expiry_today:
+        # [O29] What it is worth now (a current bid, else the last price), the most a night's decay can take.
+        quote = await _price_now(holding, now)
+        price = ((quote or {}).get("bid") or (quote or {}).get("ltp")) if quote_freshness(quote, now) == "FRESH" else None
+        value = price * holding.open_qty if price else None
+    expires_next = expiry if expiry is not None and expiry == _next_weekday(now.date()) else None
+    return (close_text(holding, expiry_today=expiry_today, theta_day=plan.theta_day if plan else None,
+                       expires_next=expires_next, value=value), "20 minutes to the close", None)
 
 
 async def _b_excess(db_path: str, context: dict, view: View, now: datetime):

@@ -1,4 +1,177 @@
-## October 27 — O27h The trend-day VWAP pullback runs live as a shadow beside the shipped strategy, with an owner message when it signals (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
+## October 28 — O29d Real-money cash alert, the one-lot check, the SENSEX check, fades on two-way days (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+
+- **Owner (Oct 28 evening, after O29c):**
+  - Why only NIFTY? "You can apply it anywhere you want ... ensure that the strategy is flexible and smart that the losses are less and the profits are consistent."
+  - On ₹12,500–15,000 for one lot: "if the system loses its first few attempts itself, then we will not even have money to buy one lot ... if it will, then before you make any further changes, you tell me."
+  - Two-way days: advice first, before any change.
+  - "the best strategy ... put that as the main strategy and the rest as shadows, we will begin the real money test starting the coming Monday."
+- **One-lot check (scratchpad, research trades, live-test rules):**
+  - UNION_DRIVE's 32 NIFTY trades at one lot (65): one position at a time, at most 3 a day, only lots the money left can pay for, the ₹7,000 floor.
+  - Lot cost: ₹4,573–12,561 (median ₹9,012). One-lot net +₹40,245; worst trade −₹3,122; worst losing stretch −₹4,327 (4 losses).
+  - Of the 27 possible 5-session weeks, 26 ended up. Worst end: ₹11,680 from ₹12,500, ₹14,180 from ₹15,000.
+  - The only refused buy, from ₹12,500, was a ₹12,559 lot (₹59 short). From ₹15,000, no week refused a buy.
+  - After the worst stretch: ₹8,173 buys 14 of the 32 lots; ₹10,673 buys 24.
+  - Seen sessions only: this says how the book behaved, not that it will.
+- **SENSEX check:** `docs/research/fno/2026-10-28-sensex-check`, frozen abfc27a, results b9a9352.
+  - The engine's book, unchanged, on 31 SENSEX sessions it was never fitted to: +₹12,759, against −₹8,622 for the shipped break.
+  - It fails the frozen worst-day bound: Oct 28 lost −₹5,317 (SENSEX's opening drive was HIGH that day). Without its best day it made only +₹2,639.
+  - **SENSEX keeps the shipped break.**
+- **Fades on two-way (LOW-drive) mornings:** descriptive, from the stored O29b trades over 17 two-way sessions.
+  - About half of every family was positive: FADE 47%, VWAP_REVERT 50%, random entries 48%.
+  - The ten best September fades made money on 0 of 10 October two-way days once Oct 28 is left out.
+  - Advice only, no change. Panel D already observes a fade arm (DRIVE_BOOK_FADE).
+- **Code (`fno_live_test`):**
+  - `_tell_cash_short_once`: the owner is told, once a day, when a real buy is refused because the money cannot pay for one lot. Two refusals count: the shared reservation (`shared_worst_case_cash_exhausted`) and kite_client's `OWN_CASH_INSUFFICIENT`, which names the free cash.
+  - Nothing else changes: no cheaper strike, no other size.
+  - The 09:25 morning check adds a line when the test's equity is under a typical lot (the median of the last 20 NIFTY paper buys).
+- **Acceptance:** `tests/test_fno_live_test.py` 35 passed. The full engine suite result is in the handover.
+- **Config and migration:** none; `FNO_LIVE_TEST_CAPITAL` stays ₹12,500. If ₹15,000 is deposited, the owner sets `FNO_LIVE_TEST_CAPITAL=15000`.
+- **Rollout:** with O29 and O29c, on the owner's Oct 28 go-ahead ("put that as the main strategy ... we will begin the real money test starting the coming Monday").
+
+## October 28 — O29c The paper book's NIFTY strategy: the four studied strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+
+- Owner (Oct 28 evening, after O29b): "the best strategy was the combination of the four and if we have understood that today was not a good day which is two day then I agree. We can not trade on that day ... you don't have to take my call, just, the best strategy and some other strategies are shadow and go ahead and make the change."
+- **The call:** UNION_DRIVE (O28 THEORY_DRIVE, panel C's arm) becomes the single-leg paper book's strategy for NIFTY. The shipped break stays as a shadow (fno_shadow FNO_BASE), and panels A–D keep scoring the alternatives.
+- **Evidence (all on seen sessions):**
+  - 31 sessions, Sep 10 – Oct 28: 32 closed trades (1 unresolved), +₹44,170; without the best day +₹33,642; worst day −₹2,500; max drawdown ₹8,007; 9 green and 4 red days.
+  - For comparison: the four always on made +₹34,450 (worst day −₹5,955), and the shipped break +₹7,132 (+₹25 without its best day).
+  - O28 held-out: +₹33,828 against +₹27,706 and +₹9,528.
+  - The drive filter is the only one that held up in O29b. On Oct 28 it kept the book out.
+- **Code:**
+  - `fno_book.py` (new):
+    - the opening drive and its HIGH/LOW side: median of the previous 20, at least 5 needed;
+    - the table `fno_opening_drive`, seeded with the 38 research values from Sep 2 to Oct 28, with missing sessions backfilled from the bars;
+    - a port of the O27e efficiency break;
+    - `book_signal`: SHIPPED, OR20 (FNO_OR_20 without the EMA check), EFF, TPB, with the breakouts only on HIGH;
+    - per-strategy exits: OR20 lock 0.8R / T75 / TR1.5; EFF T60 / TR1.5 / no lock; TPB T120 / TR2 / no lock; SHIPPED live.
+  - `config.FNO_BOOK` = `UNION_DRIVE` (`SHIPPED` restores the shipped break).
+  - `MomSignal.strategy`; the column `fno_positions.strategy` (idempotent ALTER).
+  - `fno_orchestrator`: the book signal in the NIFTY single-leg pass. The shared shipped signal is not changed, so the capped-loss book is unaffected. A book error means no entry. Exits use `fno_book.exit_overrides(p.strategy)`. The Telegram entry line shows `strategy=`.
+  - `fno_live_test`: the mirrored real position keeps the paper trade's strategy.
+  - `tests/conftest.py` pins `FNO_BOOK=SHIPPED` for the older F&O tests.
+- **Acceptance:**
+  - `tests/test_fno_book.py` passes 12, including the live tick:
+    - a one-way morning trades as SHIPPED;
+    - a flat morning logs `drive_low:` / `drive_unknown:breakout_skipped` and does not trade;
+    - TPB's 120-minute time stop keeps a trade that the shipped 45-minute stop cuts;
+    - `FNO_BOOK=SHIPPED` restores the old behaviour.
+  - **Research parity**, `docs/research/fno/2026-10-28-chop-study/test_engine_parity.py` passes 2:
+    - the engine's drive and side equal the research table on all 31 sessions;
+    - the engine book, replayed through the shipped book with its own exits, trades exactly as the research UNION_DRIVE (33 trades).
+  - The full engine suite result is in the handover.
+- **Config and migration:** the new setting `FNO_BOOK` (default `UNION_DRIVE`), the new column `fno_positions.strategy`, the new table `fno_opening_drive`. No `.env` change is needed.
+- **Rollout:** Dev only, until the owner's merge and deploy go-ahead. Rollback: `FNO_BOOK=SHIPPED` in the root `.env` plus an engine restart (open positions keep their strategy's exits), or revert the commit.
+- **Scope and limits:**
+  - NIFTY only; SENSEX keeps the shipped break (the research is NIFTY-only).
+  - The real-money test (from Nov 2, NIFTY, one lot, ₹12,500) mirrors whatever the paper book buys, so it would mirror this book's trades.
+  - This changes the paper book inside the proving week, on the owner's Oct 28 instruction.
+  - Nothing here has forward evidence yet: panels C and D are the forward check.
+
+## October 28 — O29b Chop study: why the breakouts lost on Oct 28, the opening-drive filter, and forward panel D (study 903f28f/e8d3ee5, panel D c02a997, pushed; research only, not deployed)
+
+- Owner ask (Oct 28 evening): investigate why the strategies went so bad, which days they should not be used on, and how to know that in time; implement it, plus a strategy that makes money even then. Any number of combinations is allowed, and Production may be stopped for RAM. It was not stopped, because it was not needed.
+- **Study:** `docs/research/fno/2026-10-28-chop-study/` (`study.py`, `analyze.py`, `test_study.py`, `freeze.json`, `results.json`, `README.md`). Frozen in `903f28f` before scoring; results in `e8d3ee5`.
+  - 31 sessions (Sep 10 – Oct 28), from forward panel C's read-only export.
+  - 520 replays through the shipped book, with an anchored walk-forward whose last test block is Oct 27–28.
+  - Tracks: eight intraday day-state filters on SHIPPED/OR20/EFF/TPB; 360 fades with 48 random-entry controls; and smart books.
+- **Findings:**
+  - **Oct 28:** every breakout took the same two trades, the 09:51 call and the 10:21 put, and both were stopped out.
+  - **Over 31 sessions:** UNION made +₹40,695 on 18 trend days and −₹6,245 on 13 other days.
+  - **The 09:45 opening drive is again the only filter that held up.** It passed for EFF (out of sample +₹20,518 against +₹13,519; worst day −₹1,457 against −₹7,311) and marginally for OR20. It did not pass for SHIPPED or TPB. Oct 28's drive was LOW, so every drive-filtered book sat out.
+  - **The other filters mostly hurt** (efficiency so far, VWAP crosses, range used, a failed break so far).
+  - **Fades:** all 141 that traded on Oct 28 made money, but over 31 sessions they did no better than random entries (walk-forward −₹6,684 against −₹7,172). Rejected.
+  - **Smart books:** they failed on a −₹10,434 Oct 28 day.
+- **Forward panel D:** `docs/research/fno/2026-10-29-forward-panel-d/`, `c02a997`.
+  - Arms: SHIPPED, SHIPPED_DRIVE, OR20_DRIVE, EFF_DRIVE, and DRIVE_BOOK_FADE (observed only), from Oct 29 to Nov 27.
+  - Rule: panel A's, plus no day worse than −₹5,000.
+  - `test_panel_d.py` passes 4; it reproduces the study's path exactly. `test_study.py` passes 5, including O28 parity on 29 sessions.
+- **Rollout:**
+  - Pinned at `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-d-20261029\`. The bound inputs equal the freeze, and the launcher ran end to end (0 sessions).
+  - **The hook into the 16:00 task was blocked by the permission check (persistence).** The owner adds one line to panel A's `run_panel.cmd`; the handover has the command.
+- Config and migration: none. No Production change. The paper and live books are unchanged (proving week).
+- **Next, owner's call after Oct 30:** if panels C and D bear it out, a live shadow of the drive read at 09:45, and then the filter on the paper book's breakouts. Its evidence is weakest for the shipped strategy itself.
+
+## October 28 — O29 The Oct 28 review: four partner-watch fixes, and what the day showed (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+
+- Owner ask (Oct 28 evening): "how was the day? How did the partner perform? And what all learnings did we get? What bug fixes? … how did the strategies do did all of them together work better than our current strategies and report to me everything".
+- **Evidence** (Production, read-only; `partner_watch_report`, `partner_watch_score`, `fno_positions`, `fno_signals`, the panels' REPORT.md):
+  - **Partner:** 45 round trips bought on Oct 28, −₹40,320 after modelled charges (10 won, 35 lost). Two calls bought at Oct 27's close (15:31, 15:39) sold at the open for −₹12,444. The day's realised total was −₹52,764 on ₹71,136 of opening cash. No pre-buy check was sent.
+  - **The watch:** every message reached Telegram except one BLIND, during a host DNS outage from 13:27:40 to about 13:30 (Kite and Telegram both failed).
+  - **Paper F&O:** SENSEX 72800 PE −₹2,529 (premium backstop) and SENSEX 73200 CE +₹178 (profit lock), −₹2,351 in all. The 10:15 NIFTY signal was refused `pool_below_min_viable`: it needed ₹233,594 and the pool had ₹223,745.
+  - **Forward panels (first session):** SHIPPED −₹3,669; UNION −₹5,955 (OR20's 09:51 long, then the shipped 10:21 short), which triggered panel C's extreme-loss alarm; UNION_DRIVE ₹0 (opening drive LOW, so only TPB was on, and it did not trigger). Provisional until Nov 27.
+- **Fixed in the partner watch:**
+  1. **Cash read once a day.** Oct 27: ₹50,000 was added during the day (by 13:40) on ₹10,677, and every share after it was said against ₹10,677 ("200% of your cash"). The cash is now read again every `CASH_REFRESH` (5 min). A failed refresh keeps the last value.
+  2. **Refusals on the first read were never told.** Oct 28: the stops for the two overnight calls (₹330 and ₹100) were refused at 09:15:00 because the market opened under them. That was before the first read, so the partner heard only "no stop order yet" at 09:17, and sold at ₹160 and ₹50.
+     - A refusal at most `REFUSED_FIRST_READ` (5 min) old is now told. The outbox key keeps it to one message across restarts.
+     - `partner_insights.refusal_plain` now says in plain words that the price was already past the trigger.
+     - A refused stop that leaves the trade with no stop now says "nothing limits its loss now" and what selling at the bid gives.
+  3. **DAY left out options held overnight and sold today.** At 09:43 it said −₹11,526 (16%) where the day had lost −₹23,970 (33%). They are now in the day's result, on a line of their own, and a buy soon after their losing sale counts as one after a loss.
+     - `partner_watch_report` shows them and the day's total.
+     - The frozen score's cohort is unchanged (bought that day).
+  4. **CLOSE on an option expiring at the next session's close** said "time decay is about ₹46,725 a day" on a put worth about ₹42,000. It now says the option expires at that close and what it is worth now. Elsewhere, one day's decay is capped at the option's value.
+- Files: `partner_watch.py`, `partner_insights.py`, `partner_watch_report.py`; tests in `test_partner_watch.py` (+5) and `test_partner_stop_reading.py` (R6 now plain, +R7, +R8).
+- Acceptance: the partner-watch modules pass 159. The full engine suite result is in the handover.
+- Config and migration: none (module constants only). Rollout: Dev only, until the owner's merge and deploy. Rollback: revert the commit.
+- **Found, not changed (owner calls):**
+  - **The paper book's NIFTY leg on dear days.** The pool was ₹223,745 at 10:15: the ₹2,50,000 bankroll less paper losses. A lot must satisfy premium × 65 × 12.5 ≤ pool, and Oct 28's ATM put at about ₹287 failed that. Sizing is frozen through the proving week (Oct 26–30).
+  - **The real-money test is NIFTY-only with ₹12,500 and reserves the whole premium.** Six of the paper book's 15 NIFTY buys since Sep 1 cost more than ₹12,500 a lot (₹12,548–₹14,485), and Oct 28's candidates cost ₹18,665–₹19,009. The test would have skipped those trades.
+  - **The forward panels replay NIFTY only** (`fno_policy_replay.CachedReplayData.observations`), while the paper book also trades SENSEX. A panel's SHIPPED arm is therefore not the paper book. The arms are still compared on equal terms.
+  - **Partner score** (frozen v2, Oct 27–28): AFTER_LOSS is SUPPORTED (47 warned trades −₹25,354 against 20 unwarned +₹16,273). CHASED_SPIKE and UNUSUAL_SIZE are NOT_SUPPORTED. Oct 27's size shares were stored against ₹10,677 (fix 1).
+
+## October 28 — O28b Forward panel C: the four studied strategies in one book, and with the opening-drive gate, from Oct 28 (research, Dev, commit `feaeae4`, pushed; pinned and hooked into the 16:00 task)
+
+- Owner ask (Oct 28): "What you think will be the best performance that you should now put it in that development, and we will test tomorrow … all four of them together? … I will let you take that call … if you are fast enough, we can even test that from today itself … ensure that we do not make extreme losses also."
+- **The call:**
+  - No regime switch, because O28 showed switching by a 09:45 condition did not help.
+  - Forward-test running the four studied strategies together. On O28's held-out sessions that made +₹33,662, against +₹9,528 shipped and +₹8,530 for the pullback alone. Its worst day was larger: −₹2,784 against −₹1,461.
+  - Research only. The proving week freezes paper, and the real-money test mirrors paper.
+- **Study:** `docs/research/fno/2026-10-28-forward-panel-c/` (`panel_c.py`, `test_panel_c.py`, `freeze.json`, `README.md`).
+  - Arms: `SHIPPED`; `UNION` (SHIPPED + OR20 + EFF + TPB, always on); `UNION_DRIVE` (O28 `THEORY_DRIVE`).
+  - Both router arms were committed in O28 `d3b9a70` before the Oct 28 open.
+  - Every arm runs through the shipped book's brakes unchanged.
+- **Rule:** panel A's checks, plus no day worse than −₹5,000 (2% of the paper bankroll). A day worse than that, or a drawdown above ₹12,500 (5%), is flagged at the top of REPORT.md.
+- **Correctness:**
+  - On O28's data the forward machinery reproduces the O28 UNION path exactly, every trade and its strategy, and recomputes all 29 sessions' 09:45 values identically.
+  - `test_panel_c.py` 6 passed, together with `test_router.py` 15 (21).
+  - In the pinned copy, the bound inputs equal the freeze, and replaying Oct 21–26 gives 0 history mismatches.
+  - The launcher ran end to end at 08:21 IST: read-only export, 0 sessions, exit 0.
+- **Rollout:**
+  - Pinned copy at `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-c-20261028\` with `run_panel_c.cmd`, called by panel A's `run_panel.cmd` after panel B.
+  - The owner's task "Sentinel F&O forward panel" is registered (next run Oct 28, 16:00), so Oct 28 is the first scored session.
+- Config and migration: none. No Production change.
+- Remaining: read REPORT.md each evening. The verdict comes after Nov 27. Nothing is promoted in a proving week.
+
+## October 28 — O28 Regime router: when the best F&O strategies won, and whether switching them by a 09:45 condition helps (research, Dev, freeze `728cdf8`, results `d3b9a70`, pushed)
+
+- Owner ask (Oct 28): find under what market condition the trend-day pullback, the O27e efficiency break and the other best strategies won, whether that can be identified in time, and test "if that condition is met, then the specific strategy for that condition be deployed" on the ~20-day history; "ensure correctness".
+- Study: `docs/research/fno/2026-10-28-regime-router/` (`router.py`, `test_router.py`, `analyze.py`, `freeze.json`, `results.json`, `README.md`). Research only: no runtime module imports it, and no orders.
+- **Design (frozen in `728cdf8` before any router was scored):**
+  - Components, each exactly as studied:
+    - `SHIPPED` (CURRENT);
+    - `OR20` (O27 grid OR20, no EMA, late lock, T75, 1.5-ATR trail);
+    - `EFF` (O27e finalist `ed0d136bdd80ee89`);
+    - `TPB` (O27f pullback, the live shadow).
+  - Five conditions known at 09:45: opening-range width, opening drive, previous-day narrow range, gap and 5-day trend efficiency. Each is HIGH/LOW at the median of the previous 20 sessions.
+  - Each component gets ALWAYS, NEVER or one condition.
+  - Compared: a walk-forward router on the O27f folds, three literature routers, `UNION`, each component alone and 200 random routers.
+  - Every router is replayed once over the 29 sessions through the shipped book. The shipped `_entry` and `_manage` are unchanged, and each leg keeps its own component's exits.
+- **Correctness:**
+  - each component routed alone reproduced its stored trades exactly (13 / 20 / 38 / 14 records, to the rupee);
+  - the signal cache had 0 conflicts and 0 misses over 252 replays;
+  - the conditions were recomputed with later bars deleted and came out identical;
+  - `test_router.py` 15 passed.
+- **Result (verdict `CONDITIONS_NOT_SHOWN_TO_ADD_VALUE`):**
+  - The walk-forward router made +₹20,896 on the 16 held-out sessions, against +₹33,662 for running all four always (`UNION`). It lost all 3 folds and beat only 41% of the random routers.
+  - `THEORY_DRIVE` made +₹33,828: the same as UNION, with fewer trades.
+  - All four strategies made most of their money on hindsight trend days (18 of 29).
+  - Only one morning sign pointed the same way in both halves for EFF and OR20: the opening drive (11 of 14 drive mornings became trend days, against 7 of 15). It is not significant after Holm (p 0.15).
+  - The engine's regime label is not a separator (elevated on 25 of 29 days).
+  - The strategies' daily results correlate between −0.22 and +0.32, so running them together beat each alone on the held-out sessions. That is optimistic, because the components were chosen on these sessions.
+- **Decision:** no regime switch goes into the system. The forward candidates, declared before the Oct 28 open, are `UNION` and `THEORY_DRIVE`. A forward panel for them needs the owner's go-ahead (research only; the proving-week paper and live rules stay unchanged).
+- Config and migration: none. No engine, gateway or agent source changed, so the atlas is unchanged. Seen data only: tests are not profitability.
+- Remaining: the owner's decision on a forward panel C; re-run the frozen study from `728cdf8` when more sessions exist.
+
+## October 27 — O27h The trend-day VWAP pullback runs live as a shadow beside the shipped strategy, with an owner message when it signals (Dev, commit `faaf366`, pushed, deployed by PR #120 (`104485b`, Oct 27))
 
 - Owner ask (Oct 27, 23:05): "your trend-day VWAP pullback implement that in fno right now, and make the current strategy as a shadow or make this a shadow and continue the current strategy … commit push it all and merge and then deploy in prod".
 - **Decision: the pullback is the shadow; the shipped opening-range break keeps trading.** The owner offered either. The proving week (Oct 26–30) freezes the paper single-leg rules, and the real-money test (Nov 2–6) mirrors the paper book. Swapping the main strategy now would void both. Nothing here can place or size an order.
@@ -24,6 +197,22 @@
 - Rollout: PR to `evolve/smart-strategies`, merge and deploy on the owner's instruction (Oct 27).
 - Rollback: `FNO_SHADOW_OWNER_ALERTS=false` (messages) or `FNO_SHADOW_ENABLED=false` (all shadows), or revert the commit.
 - Remaining: read the shadow's messages on Oct 28; panel B scores its full trade after the close. Nothing is promoted before Nov 27 or during a proving week.
+- **Known limit:** the alert does not know the expiry calendar. On a NIFTY expiry day (next: Nov 3) it can tell a signal that the book's expiry-day gate would not trade. Each message says "not traded".
+- **Rollout receipt (done Oct 27, about 23:27–23:36 IST):**
+  - PR #120 merged as a merge commit, `104485b` on `evolve/smart-strategies`. It carries O27h and the O27–O27g research (`3b945eb` kept; the release branch had no commit of its own beyond its merges).
+  - Backups, outside the repositories, in `C:\Users\Urveesh\sentinel-operations\production-rollout-20261027-o27h\`:
+    - 8 SQLite databases from a read-only, network-less sidecar, every one `quick_check=ok` (cache.db 3.28 GB in 49 s);
+    - the previous images tagged `sentinel-rollback/<service>:3b945eb-20261027`.
+  - Production: on `evolve/smart-strategies` with no tracked change, `git merge --ff-only` to `104485b`.
+  - Build: gateway, engine and agent built one at a time, stamped `104485b` / `2026-10-27T18:00:58Z`; each image's stamp checked.
+  - Engine, gateway and agent recreated one at a time (`--no-deps --no-build --force-recreate`), each healthy before the next (30 s, 10 s, 5 s); nginx restarted and healthy.
+  - `scripts/verify_deployment.py --expected-sha 104485b…` passed (exit 0, verified 18:05:27 UTC). The receipt is in `%USERPROFILE%\sentinel-operations\release-receipts\`.
+  - Switches before and after (no values of secrets):
+    - unchanged: `FNO_LIVE_TEST_ENABLED` False, `FNO_DISABLE_PAPER` False, `FNO_SHADOW_ENABLED` True, the owner halt set;
+    - new: `FNO_SHADOW_OWNER_ALERTS` True (its default).
+    - No `.env` change.
+  - After: the engine lists six shadows including `FNO_TREND_PULLBACK`, and the replay arm resolves. No traceback in the engine, gateway or agent logs; the scheduler jobs run.
+  - Real-data smoke (Dev export, read-only): the shadow signalled LONG 11:35 on Oct 27 (a NIFTY expiry day, no book entry), LONG 11:50 on Oct 26 and SHORT 13:50 on Oct 23.
 
 ## October 27 — O27f genome round 3: new entry families, option-contract genes, a walk-forward of the search itself and a random-entry null (done, Dev, freeze `3b8f9ef`, results and panel B freeze `0b529f2`, not pushed)
 

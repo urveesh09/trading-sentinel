@@ -3004,3 +3004,117 @@ async def test_on_a_quiet_day_an_add_that_makes_the_trade_far_bigger_than_usual_
                                                  "bigger than your usual 26%.")
     outcomes = {r[1]: r[4] for r in await _messages(db)}
     assert outcomes["ADDED"] == "muted" and outcomes["PLAN"] == "muted"
+
+
+# ---------------------------------------------------------------------------
+# [O29] Oct 27-28 on Production: money added during the day, stops refused at the open, the calls held overnight, and the
+# close note on an option expiring the next session
+# ---------------------------------------------------------------------------
+
+TRIGGER_PASSED = ("Trigger price for stoploss orders need to be higher than the LTP for buys, and lower than the LTP for "
+                  "sells. [Read more.](https://links.zerodha.com/sl-orders-usage)")
+
+
+@pytest.mark.asyncio
+async def test_money_added_during_the_day_is_cash_from_the_next_refresh(watch, kite):
+    """[O29] Oct 27: ₹50,000 added by 13:40 on ₹10,677. The cash was read once, at the first tick, so every share
+    after it was said against ₹10,677 ("200% of your cash" for a third of it). It is read again every CASH_REFRESH;
+    a failed read keeps the last cash."""
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(10, 0), market=market)
+    assert pw._state.cash == 7536.7
+    kite["margins"]["available"]["intraday_payin"] = 50000.0
+    await pw.watch_tick(D(10, 4), market=market)
+    assert pw._state.cash == 7536.7                                   # not yet: read again after CASH_REFRESH
+    await pw.watch_tick(D(10, 5), market=market)
+    assert pw._state.cash == 57536.7
+    need = "Insufficient funds. Margin required: 7790.40. Margin available: 7536.70. Check orderbook for open orders."
+    kite["orders"] = [_o("101", "BUY", D(10, 5, 3), status="REJECTED", status_message=need, filled_quantity=0,
+                         average_price=0)]
+    await pw.watch_tick(D(10, 5, 8), market=market)
+    assert watch[-1]["text"].endswith("That is 14% of your ₹57,537 cash in one trade.")
+    kite["unreadable"] = ("/user/margins/equity",)
+    await pw.watch_tick(D(10, 10, 5), market=market)
+    assert (pw._state.cash, pw._state.cash_at) == (57536.7, D(10, 10, 5))     # kept; tried at the next refresh
+
+
+@pytest.mark.asyncio
+async def test_a_stop_refused_at_the_open_before_the_first_read_is_told_once(watch, kite):
+    """[O29] Oct 28: stops for two calls held from Oct 27 were refused at 09:15:00 (the market opened under their
+    triggers), before the watch's first read. A refusal on the first read was never told: the partner heard only "no
+    stop order yet" at 09:17 and sold at ₹160 and ₹50 against stops at ₹330 and ₹100. One that recent is told now,
+    once (a restart does not send it again); an old one still is not (the restart test above)."""
+    kite["carried"] = [{"exchange": "NFO", "tradingsymbol": SYMBOL, "product": "NRML", "quantity": 65,
+                        "overnight_quantity": 65, "average_price": 80.0}]
+    await _login()
+    market = _market(D(9, 15, 5))
+    kite["orders"] = [_o("201", "SELL", D(9, 15), order_type="SL", status="REJECTED", trigger_price=95.0,
+                         status_message=TRIGGER_PASSED)]
+    await pw.watch_tick(D(9, 15, 5), market=market)
+    [refused] = [m["text"] for m in watch if m["kind"] == "watch_refused"]
+    sell = pw._result_at(_holding(65, entry=80.0), 75.0)
+    assert refused == (
+        "❗ Zerodha refused your sell order on NIFTY 22300 PE: the price was already at or under its trigger ₹95 when "
+        "it reached the exchange (a sell stop has to sit under the price), so the stop was never placed. The trade (65) "
+        "is still open. No other stop is in Zerodha: nothing limits its loss now. Selling at the bid ₹75 now: about "
+        f"{pw._signed(sell)} with charges, {-sell / 7536.7:.0%} of your cash.")
+    pw.reset()
+    for at in (D(9, 16, 5), D(9, 16, 10)):
+        await pw.watch_tick(at, market=market)
+    assert len([m for m in watch if m["kind"] == "watch_refused"]) == 1
+
+
+def test_the_day_so_far_counts_options_held_overnight_and_sold_today():
+    """[O29] Oct 28: two calls bought at Oct 27's close sold at 09:26 and 09:30 for −₹12,444. The first DAY message
+    (09:43) said −₹11,526, 16% of ₹71,136, where the day had lost −₹23,970, 33%. They are in the day's result now,
+    said apart, and a buy just after their losing sale is one after a loss (as the plan's warning has it)."""
+    held_1 = pw.Trip("carry:1", "BFO", "SENSEX26OCT73600CE", "NRML", D(9, 15), bought=40, buy_value=40 * 379.7, sold=40,
+                     sell_value=40 * 160.0, sell_orders=1, closed_at=D(9, 26, 1), carried=True)
+    held_2 = pw.Trip("carry:2", "BFO", "SENSEX26OCT74300CE", "NRML", D(9, 15), bought=40, buy_value=40 * 138.425,
+                     sold=40, sell_value=40 * 50.0, sell_orders=1, closed_at=D(9, 30, 5), carried=True)
+    rows = [_row("b1", "BUY", 20, 610.95, D(9, 26, 44), tradingsymbol="SENSEX26OCT73200PE", exchange="BFO"),
+            _row("s1", "SELL", 20, 550.0, D(9, 42, 48), tradingsymbol="SENSEX26OCT73200PE", exchange="BFO")]
+    [bought] = pw.trips_from_orders(rows)
+    cash = 71136.0
+    day = pw.day_so_far([held_1, held_2, bought], cash)
+    held_sum = round(held_1.realised() + held_2.realised(), 2)
+    assert (day["held"], day["held_sum"], day["closed"]) == (2, held_sum, 1)
+    assert day["net"] == round(held_sum + bought.realised(), 2)
+    assert day["quick"] == 1                          # bought 43 s after the losing sale of a call held overnight
+    assert day["step"] == int(-day["net"] // 7113.6) == 1 and day["at"] == D(9, 42, 48)
+    assert day["charges"] == round(held_1.charges() + held_2.charges() + bought.charges(), 2)
+    text = pw.day_text(day, cash).splitlines()
+    assert text[0] == (f"📉 Today so far: {pw._signed(day['net'])} after charges, {pw._pct_down(day['share'])} of your "
+                       f"₹71,136 cash.")
+    assert text[1] == f"1 trade closed: 1 lost {pw._signed(bought.realised())}."
+    assert text[2] == f"2 held from an earlier day and sold today: {pw._signed(held_sum)} against what you paid."
+    # Before any buy of the day: the sales of the calls held overnight alone are the day so far.
+    only = pw.day_so_far([held_1, held_2], cash)
+    assert (only["closed"], only["net"], only["check"]) == (0, held_sum, "check sensex 73600 ce")
+    assert pw.day_text(only, cash).splitlines()[1].startswith("2 held from an earlier day and sold today: −₹")
+
+
+def test_the_close_note_says_an_option_expires_next_session_and_a_days_decay_is_never_more_than_its_worth():
+    """[O29] Oct 28 15:20: "time decay is about ₹46,725 a day" on 380 of a SENSEX put worth about ₹42,000 and
+    expiring at the next session's close: the theta at the buy, times a day, was more than the option's whole value."""
+    trip = pw.Trip("1", "BFO", "SENSEX26OCT72700PE", "NRML", D(13, 56), bought=380, buy_value=380 * 120.13)
+    assert pw.close_text(trip, expiry_today=False, theta_day=-122.96, expires_next=date(2026, 10, 29),
+                         value=41800.0).endswith(
+        "As NRML it stays open overnight, and it expires at the next session's close (29 Oct): an option out of the "
+        "money then ends at zero. It is worth about ₹41,800 now.")
+    assert pw.close_text(trip, expiry_today=False, theta_day=-122.96, value=41800.0).endswith(
+        "time decay is about ₹41,800 a day on it.")
+    assert pw.close_text(trip, expiry_today=False, theta_day=-10.0, value=41800.0).endswith(
+        "time decay is about ₹3,800 a day on it.")
+    assert [pw._next_weekday(d) for d in (date(2026, 10, 28), date(2026, 10, 30))] == [date(2026, 10, 29),
+                                                                                      date(2026, 11, 2)]
+
+
+def test_the_report_counts_the_options_held_overnight_and_sold_that_day():
+    import partner_watch_report as report
+    trips = [{"carried": 1, "realised": -8853.56, "exact": 1}, {"carried": 1, "realised": -3590.27, "exact": 1},
+             {"carried": 0, "realised": -1109.16, "exact": 1}, {"carried": 0, "realised": None, "exact": 1}]
+    totals = report.day_totals(trips)
+    assert (totals["closed"], totals["net"], totals["open"], totals["carried"]) == (1, -1109.16, 1, 2)
+    assert (totals["carried_closed"], totals["carried_net"]) == (2, -12443.83)

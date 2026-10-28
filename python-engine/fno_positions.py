@@ -235,6 +235,7 @@ class FnoPosition:
     settlement_generation: int
     best_premium: Optional[float] = None    # FNO-PROFIT-LOCK: best exit basis seen
     entry_order_id: Optional[str] = None    # [O25] PAPER-... or the broker's order id
+    strategy: Optional[str] = None          # [O29c] fno_book strategy (its exits); None = the shipped break
 
 
 _SELECT_COLS = (
@@ -243,7 +244,7 @@ _SELECT_COLS = (
     "entry_underlying, delta_at_entry, iv_at_entry, atr_at_entry, "
     "stop_underlying, target_underlying, premium_stop, trail_active, "
     "trail_stop_underlying, best_underlying, max_loss_rupees, status, bar_ts, "
-    "settlement_generation, best_premium, entry_order_id"
+    "settlement_generation, best_premium, entry_order_id, strategy"
 )
 
 
@@ -280,7 +281,8 @@ async def init_fno_positions_db(db_path: str) -> None:
                                  ("initial_lots", "INTEGER"),
                                  ("initial_max_loss_rupees", "REAL"),
                                  ("risk_fee_reserve_rupees", "REAL"),
-                                 ("best_premium", "REAL")):
+                                 ("best_premium", "REAL"),
+                                 ("strategy", "TEXT")):
             try:
                 await db.execute(f"ALTER TABLE fno_positions ADD COLUMN {column} {datatype}")
             except aiosqlite.OperationalError as exc:

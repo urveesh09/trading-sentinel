@@ -1,0 +1,2050 @@
+{
+ "sessions": 31,
+ "window": [
+  "2026-09-10",
+  "2026-10-28"
+ ],
+ "oct28_trades": {
+  "UNION": [
+   {
+    "component": "OR20",
+    "direction": "LONG",
+    "tradingsymbol": "NIFTY26N0322700CE",
+    "entry_time": "2026-10-28T09:51:28.074169+05:30",
+    "entry_premium": 177.25,
+    "exit_time": "2026-10-28T10:01:30.093378+05:30",
+    "exit_premium": 143.15,
+    "exit_reason": "underlying_stop",
+    "net_pnl": -2286.7587
+   },
+   {
+    "component": "SHIPPED",
+    "direction": "SHORT",
+    "tradingsymbol": "NIFTY26N0322600PE",
+    "entry_time": "2026-10-28T10:21:30.081027+05:30",
+    "entry_premium": 261.8,
+    "exit_time": "2026-10-28T11:00:25.204637+05:30",
+    "exit_premium": 206.6,
+    "exit_reason": "underlying_stop",
+    "net_pnl": -3668.6546
+   }
+  ],
+  "UNION_DRIVE": [],
+  "SHIPPED": [
+   {
+    "component": "SHIPPED",
+    "direction": "SHORT",
+    "tradingsymbol": "NIFTY26N0322600PE",
+    "entry_time": "2026-10-28T10:21:30.081027+05:30",
+    "entry_premium": 261.8,
+    "exit_time": "2026-10-28T11:00:25.204637+05:30",
+    "exit_premium": 206.6,
+    "exit_reason": "underlying_stop",
+    "net_pnl": -3668.6546
+   }
+  ],
+  "OR20": [
+   {
+    "component": "OR20",
+    "direction": "LONG",
+    "tradingsymbol": "NIFTY26N0322700CE",
+    "entry_time": "2026-10-28T09:51:28.074169+05:30",
+    "entry_premium": 177.25,
+    "exit_time": "2026-10-28T10:01:30.093378+05:30",
+    "exit_premium": 143.15,
+    "exit_reason": "underlying_stop",
+    "net_pnl": -2286.7587
+   },
+   {
+    "component": "OR20",
+    "direction": "SHORT",
+    "tradingsymbol": "NIFTY26N0322600PE",
+    "entry_time": "2026-10-28T10:21:30.081027+05:30",
+    "entry_premium": 261.8,
+    "exit_time": "2026-10-28T11:00:25.204637+05:30",
+    "exit_premium": 206.6,
+    "exit_reason": "underlying_stop",
+    "net_pnl": -3668.6546
+   }
+  ],
+  "EFF": [
+   {
+    "component": "EFF",
+    "direction": "LONG",
+    "tradingsymbol": "NIFTY26N0322700CE",
+    "entry_time": "2026-10-28T09:51:28.074169+05:30",
+    "entry_premium": 177.25,
+    "exit_time": "2026-10-28T10:05:28.300644+05:30",
+    "exit_premium": 133.85,
+    "exit_reason": "underlying_stop",
+    "net_pnl": -2890.0978
+   },
+   {
+    "component": "EFF",
+    "direction": "SHORT",
+    "tradingsymbol": "NIFTY26N0322600PE",
+    "entry_time": "2026-10-28T10:21:30.081027+05:30",
+    "entry_premium": 261.8,
+    "exit_time": "2026-10-28T11:02:25.121250+05:30",
+    "exit_premium": 195.0,
+    "exit_reason": "underlying_stop",
+    "net_pnl": -4421.2066
+   }
+  ],
+  "TPB": []
+ },
+ "per_day": {
+  "2026-09-10": {
+   "trend_day": false,
+   "body": 0.22378854625551942,
+   "er_close": 0.032,
+   "failed": true,
+   "vwap_crosses": 13,
+   "drive": "LOW",
+   "UNION": -343.52,
+   "SHIPPED": -343.52,
+   "OR20": 1323.78,
+   "EFF": 1323.78,
+   "TPB": 0.0
+  },
+  "2026-09-11": {
+   "trend_day": true,
+   "body": 0.7456301747929966,
+   "er_close": 0.191,
+   "failed": true,
+   "vwap_crosses": 3,
+   "drive": "HIGH",
+   "UNION": 8456.63,
+   "SHIPPED": 0.0,
+   "OR20": 1260.0,
+   "EFF": 6246.27,
+   "TPB": 2888.82
+  },
+  "2026-09-15": {
+   "trend_day": true,
+   "body": 0.810606060606061,
+   "er_close": 0.373,
+   "failed": false,
+   "vwap_crosses": 0,
+   "drive": "HIGH",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-09-16": {
+   "trend_day": false,
+   "body": 0.32520325203252354,
+   "er_close": 0.048,
+   "failed": false,
+   "vwap_crosses": 14,
+   "drive": "LOW",
+   "UNION": -1347.77,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": -1347.77,
+   "TPB": 0.0
+  },
+  "2026-09-17": {
+   "trend_day": false,
+   "body": 0.41208791208791207,
+   "er_close": 0.085,
+   "failed": true,
+   "vwap_crosses": 16,
+   "drive": "LOW",
+   "UNION": -1144.83,
+   "SHIPPED": -456.79,
+   "OR20": 0.0,
+   "EFF": -1611.93,
+   "TPB": 0.0
+  },
+  "2026-09-21": {
+   "trend_day": true,
+   "body": 0.7347826086956522,
+   "er_close": 0.177,
+   "failed": true,
+   "vwap_crosses": 2,
+   "drive": "HIGH",
+   "UNION": -377.16,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": -684.09,
+   "TPB": 670.8
+  },
+  "2026-09-22": {
+   "trend_day": false,
+   "body": 0.24008350730689118,
+   "er_close": 0.07,
+   "failed": false,
+   "vwap_crosses": 9,
+   "drive": "LOW",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-09-23": {
+   "trend_day": true,
+   "body": 0.6542882404951454,
+   "er_close": 0.132,
+   "failed": true,
+   "vwap_crosses": 4,
+   "drive": "LOW",
+   "UNION": 1006.63,
+   "SHIPPED": 582.64,
+   "OR20": 404.24,
+   "EFF": 423.99,
+   "TPB": -2194.6
+  },
+  "2026-09-24": {
+   "trend_day": true,
+   "body": 0.731614859742231,
+   "er_close": 0.246,
+   "failed": true,
+   "vwap_crosses": 6,
+   "drive": "HIGH",
+   "UNION": 4089.44,
+   "SHIPPED": -440.14,
+   "OR20": -943.56,
+   "EFF": 8291.95,
+   "TPB": 5720.79
+  },
+  "2026-09-25": {
+   "trend_day": true,
+   "body": 0.5241979336596013,
+   "er_close": 0.12,
+   "failed": true,
+   "vwap_crosses": 10,
+   "drive": "LOW",
+   "UNION": -1369.95,
+   "SHIPPED": 0.0,
+   "OR20": -1241.82,
+   "EFF": -128.13,
+   "TPB": 0.0
+  },
+  "2026-09-28": {
+   "trend_day": true,
+   "body": 0.8789251207729502,
+   "er_close": 0.385,
+   "failed": true,
+   "vwap_crosses": 0,
+   "drive": "HIGH",
+   "UNION": 367.08,
+   "SHIPPED": 1910.58,
+   "OR20": 853.22,
+   "EFF": 25.75,
+   "TPB": 1731.75
+  },
+  "2026-09-29": {
+   "trend_day": false,
+   "body": 0.21785906401290847,
+   "er_close": 0.038,
+   "failed": false,
+   "vwap_crosses": 9,
+   "drive": "HIGH",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-09-30": {
+   "trend_day": true,
+   "body": 0.5733606557377109,
+   "er_close": 0.136,
+   "failed": true,
+   "vwap_crosses": 9,
+   "drive": "LOW",
+   "UNION": -2593.03,
+   "SHIPPED": 19.99,
+   "OR20": -375.75,
+   "EFF": -2307.25,
+   "TPB": 0.0
+  },
+  "2026-10-01": {
+   "trend_day": false,
+   "body": 0.28841111693759724,
+   "er_close": 0.076,
+   "failed": true,
+   "vwap_crosses": 16,
+   "drive": "LOW",
+   "UNION": 1909.5,
+   "SHIPPED": 7107.67,
+   "OR20": 5491.87,
+   "EFF": 2081.42,
+   "TPB": 0.0
+  },
+  "2026-10-05": {
+   "trend_day": false,
+   "body": 0.04570383912248644,
+   "er_close": 0.008,
+   "failed": true,
+   "vwap_crosses": 11,
+   "drive": "HIGH",
+   "UNION": 1735.04,
+   "SHIPPED": 0.0,
+   "OR20": 492.63,
+   "EFF": 1242.41,
+   "TPB": 0.0
+  },
+  "2026-10-06": {
+   "trend_day": true,
+   "body": 0.7244791666666591,
+   "er_close": 0.202,
+   "failed": true,
+   "vwap_crosses": 1,
+   "drive": "LOW",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-10-07": {
+   "trend_day": false,
+   "body": 0.377637130801683,
+   "er_close": 0.065,
+   "failed": true,
+   "vwap_crosses": 10,
+   "drive": "LOW",
+   "UNION": -2784.13,
+   "SHIPPED": -1460.92,
+   "OR20": -3422.99,
+   "EFF": 93.34,
+   "TPB": 0.0
+  },
+  "2026-10-08": {
+   "trend_day": true,
+   "body": 0.8899826288361419,
+   "er_close": 0.297,
+   "failed": true,
+   "vwap_crosses": 0,
+   "drive": "HIGH",
+   "UNION": 9957.25,
+   "SHIPPED": 0.0,
+   "OR20": 7423.97,
+   "EFF": 0.0,
+   "TPB": 2533.28
+  },
+  "2026-10-09": {
+   "trend_day": true,
+   "body": 0.856687898089172,
+   "er_close": 0.238,
+   "failed": false,
+   "vwap_crosses": 2,
+   "drive": "HIGH",
+   "UNION": -1090.64,
+   "SHIPPED": 366.36,
+   "OR20": 0.0,
+   "EFF": -1457.0,
+   "TPB": 264.5
+  },
+  "2026-10-12": {
+   "trend_day": true,
+   "body": 0.7386200973375338,
+   "er_close": 0.243,
+   "failed": true,
+   "vwap_crosses": 0,
+   "drive": "HIGH",
+   "UNION": -1094.97,
+   "SHIPPED": 0.0,
+   "OR20": -831.11,
+   "EFF": 4967.61,
+   "TPB": 0.0
+  },
+  "2026-10-13": {
+   "trend_day": true,
+   "body": 0.9058708414872827,
+   "er_close": 0.398,
+   "failed": true,
+   "vwap_crosses": 4,
+   "drive": "HIGH",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-10-14": {
+   "trend_day": true,
+   "body": 0.5667793744716795,
+   "er_close": 0.12,
+   "failed": false,
+   "vwap_crosses": 10,
+   "drive": "LOW",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-10-15": {
+   "trend_day": true,
+   "body": 0.7599056603773602,
+   "er_close": 0.332,
+   "failed": false,
+   "vwap_crosses": 0,
+   "drive": "HIGH",
+   "UNION": 4067.61,
+   "SHIPPED": 3515.21,
+   "OR20": 0.0,
+   "EFF": 8407.76,
+   "TPB": 0.0
+  },
+  "2026-10-16": {
+   "trend_day": false,
+   "body": 0.22303325223033385,
+   "er_close": 0.048,
+   "failed": true,
+   "vwap_crosses": 3,
+   "drive": "LOW",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-10-19": {
+   "trend_day": true,
+   "body": 0.8448385053831535,
+   "er_close": 0.211,
+   "failed": false,
+   "vwap_crosses": 7,
+   "drive": "LOW",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-10-21": {
+   "trend_day": true,
+   "body": 0.5243128964059197,
+   "er_close": 0.181,
+   "failed": true,
+   "vwap_crosses": 1,
+   "drive": "HIGH",
+   "UNION": 9450.07,
+   "SHIPPED": 0.0,
+   "OR20": 9450.07,
+   "EFF": 5670.97,
+   "TPB": 0.0
+  },
+  "2026-10-22": {
+   "trend_day": false,
+   "body": 0.23529411764704927,
+   "er_close": 0.037,
+   "failed": true,
+   "vwap_crosses": 14,
+   "drive": "LOW",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-10-23": {
+   "trend_day": false,
+   "body": 0.456610088453264,
+   "er_close": 0.131,
+   "failed": false,
+   "vwap_crosses": 5,
+   "drive": "HIGH",
+   "UNION": 1686.44,
+   "SHIPPED": 0.0,
+   "OR20": 5540.58,
+   "EFF": 1686.44,
+   "TPB": 539.37
+  },
+  "2026-10-26": {
+   "trend_day": true,
+   "body": 0.6137142857142837,
+   "er_close": 0.146,
+   "failed": true,
+   "vwap_crosses": 7,
+   "drive": "LOW",
+   "UNION": 9825.73,
+   "SHIPPED": 0.0,
+   "OR20": 5141.69,
+   "EFF": -1862.19,
+   "TPB": 5192.78
+  },
+  "2026-10-27": {
+   "trend_day": false,
+   "body": 0.2336719883889652,
+   "er_close": 0.039,
+   "failed": true,
+   "vwap_crosses": 9,
+   "drive": "LOW",
+   "UNION": 0.0,
+   "SHIPPED": 0.0,
+   "OR20": 0.0,
+   "EFF": 0.0,
+   "TPB": 0.0
+  },
+  "2026-10-28": {
+   "trend_day": false,
+   "body": 0.29918962722852277,
+   "er_close": 0.081,
+   "failed": true,
+   "vwap_crosses": 3,
+   "drive": "LOW",
+   "UNION": -5955.41,
+   "SHIPPED": -3668.65,
+   "OR20": -5955.41,
+   "EFF": -7311.3,
+   "TPB": 0.0
+  }
+ },
+ "by_day_type": {
+  "trend day": {
+   "sessions": 18,
+   "UNION": 40694.69,
+   "SHIPPED": 5954.64,
+   "OR20": 21140.95,
+   "EFF": 27595.64,
+   "TPB": 16808.12
+  },
+  "not a trend day": {
+   "sessions": 13,
+   "UNION": -6244.68,
+   "SHIPPED": 1177.79,
+   "OR20": 3470.46,
+   "EFF": -3843.61,
+   "TPB": 539.37
+  },
+  "failed OR break by the close": {
+   "sessions": 22,
+   "UNION": 31134.37,
+   "SHIPPED": 3250.86,
+   "OR20": 19070.83,
+   "EFF": 16462.6,
+   "TPB": 16543.62
+  },
+  "no failed OR break": {
+   "sessions": 9,
+   "UNION": 3315.64,
+   "SHIPPED": 3881.57,
+   "OR20": 5540.58,
+   "EFF": 7289.43,
+   "TPB": 803.87
+  }
+ },
+ "filters_in_sample": {
+  "SHIPPED": {
+   "ALWAYS": {
+    "trades": 14,
+    "net": 7132.44,
+    "net_ex_best": 24.77,
+    "worst_day": -3668.65,
+    "max_dd": 3668.65,
+    "oct28": -3668.65
+   },
+   "drive:HIGH": {
+    "trades": 7,
+    "net": 4988.13,
+    "net_ex_best": 1472.92,
+    "worst_day": -440.14,
+    "max_dd": 1290.16,
+    "oct28": 0.0
+   },
+   "nofail": {
+    "trades": 5,
+    "net": 3432.42,
+    "net_ex_best": -82.79,
+    "worst_day": -363.88,
+    "max_dd": 707.4,
+    "oct28": 0.0
+   },
+   "er:0.2": {
+    "trades": 10,
+    "net": 1445.33,
+    "net_ex_best": -2069.88,
+    "worst_day": -3668.65,
+    "max_dd": 3668.65,
+    "oct28": -3668.65
+   },
+   "er:0.3": {
+    "trades": 6,
+    "net": 2123.49,
+    "net_ex_best": -1391.72,
+    "worst_day": -3668.65,
+    "max_dd": 3668.65,
+    "oct28": -3668.65
+   },
+   "vx:3": {
+    "trades": 8,
+    "net": 2342.26,
+    "net_ex_best": -1172.95,
+    "worst_day": -3668.65,
+    "max_dd": 3668.65,
+    "oct28": -3668.65
+   },
+   "used:0.8": {
+    "trades": 10,
+    "net": 3210.98,
+    "net_ex_best": -3896.69,
+    "worst_day": -3668.65,
+    "max_dd": 3668.65,
+    "oct28": -3668.65
+   },
+   "nofail+er:0.2": {
+    "trades": 4,
+    "net": 3775.93,
+    "net_ex_best": 260.72,
+    "worst_day": -363.88,
+    "max_dd": 363.88,
+    "oct28": 0.0
+   }
+  },
+  "OR20": {
+   "ALWAYS": {
+    "trades": 21,
+    "net": 24611.39,
+    "net_ex_best": 15161.32,
+    "worst_day": -5955.41,
+    "max_dd": 5955.41,
+    "oct28": -5955.41
+   },
+   "drive:HIGH": {
+    "trades": 9,
+    "net": 23245.8,
+    "net_ex_best": 13795.73,
+    "worst_day": -943.56,
+    "max_dd": 1448.72,
+    "oct28": 0.0
+   },
+   "nofail": {
+    "trades": 12,
+    "net": 20799.91,
+    "net_ex_best": 11349.84,
+    "worst_day": -2286.76,
+    "max_dd": 3627.86,
+    "oct28": -2286.76
+   },
+   "er:0.2": {
+    "trades": 12,
+    "net": -3665.91,
+    "net_ex_best": -9206.49,
+    "worst_day": -3668.65,
+    "max_dd": 7202.07,
+    "oct28": -3668.65
+   },
+   "er:0.3": {
+    "trades": 7,
+    "net": 6452.74,
+    "net_ex_best": -971.23,
+    "worst_day": -3668.65,
+    "max_dd": 3668.65,
+    "oct28": -3668.65
+   },
+   "vx:3": {
+    "trades": 10,
+    "net": 14020.28,
+    "net_ex_best": 4570.21,
+    "worst_day": -5955.41,
+    "max_dd": 5955.41,
+    "oct28": -5955.41
+   },
+   "used:0.8": {
+    "trades": 19,
+    "net": 24999.98,
+    "net_ex_best": 15549.91,
+    "worst_day": -5955.41,
+    "max_dd": 5955.41,
+    "oct28": -5955.41
+   },
+   "nofail+er:0.2": {
+    "trades": 8,
+    "net": 9765.58,
+    "net_ex_best": 2341.61,
+    "worst_day": -1615.81,
+    "max_dd": 3627.86,
+    "oct28": 0.0
+   }
+  },
+  "EFF": {
+   "ALWAYS": {
+    "trades": 40,
+    "net": 23752.02,
+    "net_ex_best": 15344.26,
+    "worst_day": -7311.3,
+    "max_dd": 13027.63,
+    "oct28": -7311.3
+   },
+   "drive:HIGH": {
+    "trades": 20,
+    "net": 34398.06,
+    "net_ex_best": 25990.3,
+    "worst_day": -1457.0,
+    "max_dd": 3854.14,
+    "oct28": 0.0
+   },
+   "nofail": {
+    "trades": 19,
+    "net": 16771.7,
+    "net_ex_best": 8363.94,
+    "worst_day": -2890.1,
+    "max_dd": 5244.73,
+    "oct28": -2890.1
+   },
+   "er:0.2": {
+    "trades": 10,
+    "net": -8533.39,
+    "net_ex_best": -10413.94,
+    "worst_day": -5657.04,
+    "max_dd": 8551.49,
+    "oct28": -4421.21
+   },
+   "er:0.3": {
+    "trades": 12,
+    "net": 9227.45,
+    "net_ex_best": 819.69,
+    "worst_day": -4421.21,
+    "max_dd": 8275.35,
+    "oct28": -4421.21
+   },
+   "vx:3": {
+    "trades": 19,
+    "net": 12460.85,
+    "net_ex_best": 4053.09,
+    "worst_day": -7311.3,
+    "max_dd": 11165.45,
+    "oct28": -7311.3
+   },
+   "used:0.8": {
+    "trades": 24,
+    "net": 27881.2,
+    "net_ex_best": 19440.43,
+    "worst_day": -7311.3,
+    "max_dd": 7311.3,
+    "oct28": -7311.3
+   },
+   "nofail+er:0.2": {
+    "trades": 11,
+    "net": 10384.54,
+    "net_ex_best": 1976.78,
+    "worst_day": -1528.55,
+    "max_dd": 4941.13,
+    "oct28": 0.0
+   }
+  },
+  "TPB": {
+   "ALWAYS": {
+    "trades": 14,
+    "net": 17347.49,
+    "net_ex_best": 11626.7,
+    "worst_day": -2194.6,
+    "max_dd": 3417.89,
+    "oct28": 0.0
+   },
+   "drive:HIGH": {
+    "trades": 9,
+    "net": 14349.32,
+    "net_ex_best": 8628.53,
+    "worst_day": 0.0,
+    "max_dd": 1317.65,
+    "oct28": 0.0
+   },
+   "nofail": {
+    "trades": 3,
+    "net": 803.87,
+    "net_ex_best": 264.5,
+    "worst_day": 0.0,
+    "max_dd": 1317.65,
+    "oct28": 0.0
+   },
+   "er:0.2": {
+    "trades": 3,
+    "net": 1180.27,
+    "net_ex_best": -1353.01,
+    "worst_day": -1617.51,
+    "max_dd": 1617.51,
+    "oct28": 0.0
+   },
+   "er:0.3": {
+    "trades": 3,
+    "net": 4529.53,
+    "net_ex_best": 1996.25,
+    "worst_day": 0.0,
+    "max_dd": 0.0,
+    "oct28": 0.0
+   },
+   "vx:3": {
+    "trades": 7,
+    "net": 4862.75,
+    "net_ex_best": 2329.47,
+    "worst_day": -2194.6,
+    "max_dd": 2194.6,
+    "oct28": 0.0
+   },
+   "used:0.8": {
+    "trades": 3,
+    "net": -1523.8,
+    "net_ex_best": -2194.6,
+    "worst_day": -2194.6,
+    "max_dd": 2194.6,
+    "oct28": 0.0
+   },
+   "nofail+er:0.2": {
+    "trades": 1,
+    "net": 264.5,
+    "net_ex_best": -0.0,
+    "worst_day": 0.0,
+    "max_dd": 0.0,
+    "oct28": 0.0
+   }
+  }
+ },
+ "walk_forward": {
+  "folds": [
+   {
+    "name": "F1",
+    "test": [
+     "2026-10-01",
+     "2026-10-09"
+    ],
+    "picks": {
+     "G:SHIPPED": {
+      "comps": [
+       [
+        "SHIPPED",
+        "vx:3",
+        null
+       ]
+      ]
+     },
+     "G:OR20": {
+      "comps": [
+       [
+        "OR20",
+        "nofail",
+        null
+       ]
+      ]
+     },
+     "G:EFF": {
+      "comps": [
+       [
+        "EFF",
+        "drive:HIGH",
+        null
+       ]
+      ]
+     },
+     "G:TPB": {
+      "comps": [
+       [
+        "TPB",
+        "drive:HIGH",
+        null
+       ]
+      ]
+     },
+     "F": {
+      "comps": [
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "VWAP_REVERT",
+         "k": 1.5,
+         "er_below": 1.0,
+         "stop": 1.0,
+         "target_r": 1.8,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     },
+     "NULL": {
+      "comps": [
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "NULL",
+         "p": 0.04,
+         "seed": 1,
+         "stop": 1.5,
+         "target_r": 1.8,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     },
+     "S": {
+      "comps": [
+       [
+        "SHIPPED",
+        "vx:3",
+        null
+       ],
+       [
+        "OR20",
+        "vx:3",
+        null
+       ],
+       [
+        "EFF",
+        "vx:3",
+        null
+       ],
+       [
+        "TPB",
+        "ALWAYS",
+        null
+       ],
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "VWAP_REVERT",
+         "k": 1.5,
+         "er_below": 0.3,
+         "stop": 1.0,
+         "target_r": 1.8,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     }
+    },
+    "test_net": {
+     "G:SHIPPED": 366.36,
+     "G:OR20": 4391.61,
+     "G:EFF": -214.59,
+     "G:TPB": 2797.78,
+     "F": -4314.43,
+     "NULL": 3890.0,
+     "S": 3257.08
+    },
+    "baseline_net": {
+     "SHIPPED": 6013.12,
+     "UNION": 9727.01,
+     "UNION_DRIVE": 9191.84,
+     "ungated:SHIPPED": 6013.12,
+     "ungated:OR20": 9985.47,
+     "ungated:EFF": 1960.17,
+     "ungated:TPB": 2797.78
+    }
+   },
+   {
+    "name": "F2",
+    "test": [
+     "2026-10-12",
+     "2026-10-16"
+    ],
+    "picks": {
+     "G:SHIPPED": {
+      "comps": [
+       [
+        "SHIPPED",
+        "vx:3",
+        null
+       ]
+      ]
+     },
+     "G:OR20": {
+      "comps": [
+       [
+        "OR20",
+        "used:0.8",
+        null
+       ]
+      ]
+     },
+     "G:EFF": {
+      "comps": [
+       [
+        "EFF",
+        "drive:HIGH",
+        null
+       ]
+      ]
+     },
+     "G:TPB": {
+      "comps": [
+       [
+        "TPB",
+        "drive:HIGH",
+        null
+       ]
+      ]
+     },
+     "F": {
+      "comps": [
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "VWAP_REVERT",
+         "k": 2.0,
+         "er_below": 1.0,
+         "stop": 1.0,
+         "target_r": 1.8,
+         "exit": "LATE"
+        }
+       ]
+      ]
+     },
+     "NULL": {
+      "comps": [
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "NULL",
+         "p": 0.04,
+         "seed": 1,
+         "stop": 1.5,
+         "target_r": 1.8,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     },
+     "S": {
+      "comps": [
+       [
+        "SHIPPED",
+        "used:0.8",
+        null
+       ],
+       [
+        "OR20",
+        "used:0.8",
+        null
+       ],
+       [
+        "EFF",
+        "used:0.8",
+        null
+       ],
+       [
+        "TPB",
+        "ALWAYS",
+        null
+       ],
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "VWAP_REVERT",
+         "k": 2.0,
+         "er_below": 1.0,
+         "stop": 1.5,
+         "target_r": 2.4,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     }
+    },
+    "test_net": {
+     "G:SHIPPED": 3515.21,
+     "G:OR20": -831.11,
+     "G:EFF": 13375.37,
+     "G:TPB": 0.0,
+     "F": -1355.46,
+     "NULL": -4225.31,
+     "S": 6089.61
+    },
+    "baseline_net": {
+     "SHIPPED": 3515.21,
+     "UNION": 2972.63,
+     "UNION_DRIVE": 2972.63,
+     "ungated:SHIPPED": 3515.21,
+     "ungated:OR20": -831.11,
+     "ungated:EFF": 13375.37,
+     "ungated:TPB": 0.0
+    }
+   },
+   {
+    "name": "F3",
+    "test": [
+     "2026-10-19",
+     "2026-10-26"
+    ],
+    "picks": {
+     "G:SHIPPED": {
+      "comps": [
+       [
+        "SHIPPED",
+        "vx:3",
+        null
+       ]
+      ]
+     },
+     "G:OR20": {
+      "comps": [
+       [
+        "OR20",
+        "used:0.8",
+        null
+       ]
+      ]
+     },
+     "G:EFF": {
+      "comps": [
+       [
+        "EFF",
+        "drive:HIGH",
+        null
+       ]
+      ]
+     },
+     "G:TPB": {
+      "comps": [
+       [
+        "TPB",
+        "drive:HIGH",
+        null
+       ]
+      ]
+     },
+     "F": {
+      "comps": [
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "VWAP_REVERT",
+         "k": 2.0,
+         "er_below": 1.0,
+         "stop": 1.5,
+         "target_r": 2.4,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     },
+     "NULL": {
+      "comps": [
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "NULL",
+         "p": 0.08,
+         "seed": 3,
+         "stop": 1.5,
+         "target_r": 1.8,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     },
+     "S": {
+      "comps": [
+       [
+        "SHIPPED",
+        "used:0.8",
+        null
+       ],
+       [
+        "OR20",
+        "used:0.8",
+        null
+       ],
+       [
+        "EFF",
+        "used:0.8",
+        null
+       ],
+       [
+        "TPB",
+        "ALWAYS",
+        null
+       ],
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "VWAP_REVERT",
+         "k": 2.0,
+         "er_below": 1.0,
+         "stop": 1.5,
+         "target_r": 2.4,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     }
+    },
+    "test_net": {
+     "G:SHIPPED": 0.0,
+     "G:OR20": 20132.34,
+     "G:EFF": 7357.41,
+     "G:TPB": 539.37,
+     "F": -1014.46,
+     "NULL": -6836.91,
+     "S": 48854.01
+    },
+    "baseline_net": {
+     "SHIPPED": 0.0,
+     "UNION": 20962.24,
+     "UNION_DRIVE": 21663.66,
+     "ungated:SHIPPED": 0.0,
+     "ungated:OR20": 20132.34,
+     "ungated:EFF": 5495.22,
+     "ungated:TPB": 5732.15
+    }
+   },
+   {
+    "name": "F4",
+    "test": [
+     "2026-10-27",
+     "2026-10-28"
+    ],
+    "picks": {
+     "G:SHIPPED": {
+      "comps": [
+       [
+        "SHIPPED",
+        "ALWAYS",
+        null
+       ]
+      ]
+     },
+     "G:OR20": {
+      "comps": [
+       [
+        "OR20",
+        "drive:HIGH",
+        null
+       ]
+      ]
+     },
+     "G:EFF": {
+      "comps": [
+       [
+        "EFF",
+        "drive:HIGH",
+        null
+       ]
+      ]
+     },
+     "G:TPB": {
+      "comps": [
+       [
+        "TPB",
+        "drive:HIGH",
+        null
+       ]
+      ]
+     },
+     "F": {
+      "comps": [
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "VWAP_REVERT",
+         "k": 2.0,
+         "er_below": 1.0,
+         "stop": 1.5,
+         "target_r": 2.4,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     },
+     "NULL": {
+      "comps": [
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "NULL",
+         "p": 0.04,
+         "seed": 1,
+         "stop": 1.5,
+         "target_r": 1.8,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     },
+     "S": {
+      "comps": [
+       [
+        "SHIPPED",
+        "used:0.8",
+        null
+       ],
+       [
+        "OR20",
+        "used:0.8",
+        null
+       ],
+       [
+        "EFF",
+        "used:0.8",
+        null
+       ],
+       [
+        "TPB",
+        "ALWAYS",
+        null
+       ],
+       [
+        "F",
+        "ALWAYS",
+        {
+         "family": "VWAP_REVERT",
+         "k": 2.0,
+         "er_below": 1.0,
+         "stop": 1.5,
+         "target_r": 2.4,
+         "exit": "LIVE"
+        }
+       ]
+      ]
+     }
+    },
+    "test_net": {
+     "G:SHIPPED": -3668.65,
+     "G:OR20": 0.0,
+     "G:EFF": 0.0,
+     "G:TPB": 0.0,
+     "F": 0.0,
+     "NULL": 0.0,
+     "S": -10434.53
+    },
+    "baseline_net": {
+     "SHIPPED": -3668.65,
+     "UNION": -5955.41,
+     "UNION_DRIVE": 0.0,
+     "ungated:SHIPPED": -3668.65,
+     "ungated:OR20": -5955.41,
+     "ungated:EFF": -7311.3,
+     "ungated:TPB": 0.0
+    }
+   }
+  ],
+  "out_of_sample": {
+   "G:SHIPPED": {
+    "net": 212.92,
+    "trades": 3,
+    "worst_day": -3668.65,
+    "green": 2,
+    "red": 1,
+    "per_fold": [
+     366.36,
+     3515.21,
+     0.0,
+     -3668.65
+    ]
+   },
+   "G:OR20": {
+    "net": 23692.84,
+    "trades": 7,
+    "worst_day": -1615.81,
+    "green": 4,
+    "red": 3,
+    "per_fold": [
+     4391.61,
+     -831.11,
+     20132.34,
+     0.0
+    ]
+   },
+   "G:EFF": {
+    "net": 20518.19,
+    "trades": 12,
+    "worst_day": -1457.0,
+    "green": 5,
+    "red": 1,
+    "per_fold": [
+     -214.59,
+     13375.37,
+     7357.41,
+     0.0
+    ]
+   },
+   "G:TPB": {
+    "net": 3337.15,
+    "trades": 4,
+    "worst_day": 0.0,
+    "green": 3,
+    "red": 0,
+    "per_fold": [
+     2797.78,
+     0.0,
+     539.37,
+     0.0
+    ]
+   },
+   "F": {
+    "net": -6684.35,
+    "trades": 10,
+    "worst_day": -2988.6,
+    "green": 4,
+    "red": 4,
+    "per_fold": [
+     -4314.43,
+     -1355.46,
+     -1014.46,
+     0.0
+    ]
+   },
+   "NULL": {
+    "net": -7172.22,
+    "trades": 18,
+    "worst_day": -3515.28,
+    "green": 4,
+    "red": 6,
+    "per_fold": [
+     3890.0,
+     -4225.31,
+     -6836.91,
+     0.0
+    ]
+   },
+   "S": {
+    "net": 47766.17,
+    "trades": 26,
+    "worst_day": -10434.53,
+    "green": 7,
+    "red": 5,
+    "per_fold": [
+     3257.08,
+     6089.61,
+     48854.01,
+     -10434.53
+    ]
+   }
+  },
+  "baselines": {
+   "SHIPPED": {
+    "net": 5859.68,
+    "trades": 5,
+    "worst_day": -3668.65,
+    "green": 3,
+    "red": 2,
+    "per_fold": [
+     6013.12,
+     3515.21,
+     0.0,
+     -3668.65
+    ]
+   },
+   "UNION": {
+    "net": 27706.47,
+    "trades": 26,
+    "worst_day": -5955.41,
+    "green": 7,
+    "red": 4,
+    "per_fold": [
+     9727.01,
+     2972.63,
+     20962.24,
+     -5955.41
+    ]
+   },
+   "UNION_DRIVE": {
+    "net": 33828.13,
+    "trades": 18,
+    "worst_day": -2500.45,
+    "green": 6,
+    "red": 2,
+    "per_fold": [
+     9191.84,
+     2972.63,
+     21663.66,
+     0.0
+    ]
+   },
+   "ungated:SHIPPED": {
+    "net": 5859.68,
+    "trades": 5,
+    "worst_day": -3668.65,
+    "green": 3,
+    "red": 2,
+    "per_fold": [
+     6013.12,
+     3515.21,
+     0.0,
+     -3668.65
+    ]
+   },
+   "ungated:OR20": {
+    "net": 23331.29,
+    "trades": 12,
+    "worst_day": -5955.41,
+    "green": 6,
+    "red": 3,
+    "per_fold": [
+     9985.47,
+     -831.11,
+     20132.34,
+     -5955.41
+    ]
+   },
+   "ungated:EFF": {
+    "net": 13519.46,
+    "trades": 21,
+    "worst_day": -7311.3,
+    "green": 7,
+    "red": 3,
+    "per_fold": [
+     1960.17,
+     13375.37,
+     5495.22,
+     -7311.3
+    ]
+   },
+   "ungated:TPB": {
+    "net": 8529.93,
+    "trades": 7,
+    "worst_day": 0.0,
+    "green": 4,
+    "red": 0,
+    "per_fold": [
+     2797.78,
+     0.0,
+     5732.15,
+     0.0
+    ]
+   }
+  }
+ },
+ "verdicts": {
+  "G:SHIPPED": false,
+  "G:OR20": true,
+  "G:EFF": true,
+  "G:TPB": false,
+  "F": false,
+  "S": false
+ },
+ "final_picks": {
+  "G:SHIPPED": {
+   "config": {
+    "comps": [
+     [
+      "SHIPPED",
+      "ALWAYS",
+      null
+     ]
+    ]
+   },
+   "full": {
+    "trades": 14,
+    "net": 7132.44,
+    "net_ex_best": 24.77,
+    "worst_day": -3668.65,
+    "max_dd": 3668.65,
+    "green": 6,
+    "red": 5,
+    "by_day": {
+     "2026-09-10": -343.52,
+     "2026-09-17": -456.79,
+     "2026-09-23": 582.64,
+     "2026-09-24": -440.14,
+     "2026-09-28": 1910.58,
+     "2026-09-30": 19.99,
+     "2026-10-01": 7107.67,
+     "2026-10-07": -1460.92,
+     "2026-10-09": 366.36,
+     "2026-10-15": 3515.21,
+     "2026-10-28": -3668.65
+    },
+    "unresolved": 0
+   },
+   "oct28": -3668.65
+  },
+  "G:OR20": {
+   "config": {
+    "comps": [
+     [
+      "OR20",
+      "drive:HIGH",
+      null
+     ]
+    ]
+   },
+   "full": {
+    "trades": 9,
+    "net": 23245.8,
+    "net_ex_best": 13795.73,
+    "worst_day": -943.56,
+    "max_dd": 1448.72,
+    "green": 6,
+    "red": 2,
+    "by_day": {
+     "2026-09-11": 1260.0,
+     "2026-09-24": -943.56,
+     "2026-09-28": 853.22,
+     "2026-10-05": 492.63,
+     "2026-10-08": 7423.97,
+     "2026-10-12": -831.11,
+     "2026-10-21": 9450.07,
+     "2026-10-23": 5540.58
+    },
+    "unresolved": 1
+   },
+   "oct28": 0.0
+  },
+  "G:EFF": {
+   "config": {
+    "comps": [
+     [
+      "EFF",
+      "drive:HIGH",
+      null
+     ]
+    ]
+   },
+   "full": {
+    "trades": 20,
+    "net": 34398.06,
+    "net_ex_best": 25990.3,
+    "worst_day": -1457.0,
+    "max_dd": 3854.14,
+    "green": 8,
+    "red": 2,
+    "by_day": {
+     "2026-09-11": 6246.27,
+     "2026-09-21": -684.09,
+     "2026-09-24": 8291.95,
+     "2026-09-28": 25.75,
+     "2026-10-05": 1242.41,
+     "2026-10-09": -1457.0,
+     "2026-10-12": 4967.61,
+     "2026-10-15": 8407.76,
+     "2026-10-21": 5670.97,
+     "2026-10-23": 1686.44
+    },
+    "unresolved": 0
+   },
+   "oct28": 0.0
+  },
+  "G:TPB": {
+   "config": {
+    "comps": [
+     [
+      "TPB",
+      "drive:HIGH",
+      null
+     ]
+    ]
+   },
+   "full": {
+    "trades": 9,
+    "net": 14349.32,
+    "net_ex_best": 8628.53,
+    "worst_day": 0.0,
+    "max_dd": 1317.65,
+    "green": 7,
+    "red": 0,
+    "by_day": {
+     "2026-09-11": 2888.82,
+     "2026-09-21": 670.8,
+     "2026-09-24": 5720.79,
+     "2026-09-28": 1731.75,
+     "2026-10-08": 2533.28,
+     "2026-10-09": 264.5,
+     "2026-10-23": 539.37
+    },
+    "unresolved": 0
+   },
+   "oct28": 0.0
+  },
+  "F": {
+   "config": {
+    "comps": [
+     [
+      "F",
+      "ALWAYS",
+      {
+       "family": "VWAP_REVERT",
+       "k": 1.5,
+       "er_below": 0.3,
+       "stop": 1.0,
+       "target_r": 1.8,
+       "exit": "LIVE"
+      }
+     ]
+    ]
+   },
+   "full": {
+    "trades": 25,
+    "net": 10423.68,
+    "net_ex_best": 3182.9,
+    "worst_day": -2988.6,
+    "max_dd": 5871.04,
+    "green": 9,
+    "red": 8,
+    "by_day": {
+     "2026-09-10": 165.3,
+     "2026-09-11": 421.48,
+     "2026-09-16": 584.14,
+     "2026-09-17": 6411.31,
+     "2026-09-21": -135.39,
+     "2026-09-23": 1108.83,
+     "2026-09-24": -722.78,
+     "2026-09-25": 732.98,
+     "2026-09-30": 488.06,
+     "2026-10-01": -2988.6,
+     "2026-10-05": -605.96,
+     "2026-10-07": 97.63,
+     "2026-10-08": -1282.07,
+     "2026-10-14": -82.05,
+     "2026-10-21": -913.93,
+     "2026-10-26": -96.05,
+     "2026-10-28": 7240.78
+    },
+    "unresolved": 0
+   },
+   "oct28": 7240.78
+  },
+  "NULL": {
+   "config": {
+    "comps": [
+     [
+      "F",
+      "ALWAYS",
+      {
+       "family": "NULL",
+       "p": 0.02,
+       "seed": 10,
+       "stop": 1.5,
+       "target_r": 1.8,
+       "exit": "LIVE"
+      }
+     ]
+    ]
+   },
+   "full": {
+    "trades": 22,
+    "net": 13946.19,
+    "net_ex_best": 7831.77,
+    "worst_day": -1739.46,
+    "max_dd": 2290.62,
+    "green": 9,
+    "red": 6,
+    "by_day": {
+     "2026-09-10": -1183.93,
+     "2026-09-11": 3949.69,
+     "2026-09-16": 543.54,
+     "2026-09-17": 3957.15,
+     "2026-09-21": -417.62,
+     "2026-09-23": -45.17,
+     "2026-09-24": 618.17,
+     "2026-09-28": -87.94,
+     "2026-10-05": -1739.46,
+     "2026-10-08": 235.88,
+     "2026-10-09": 2202.06,
+     "2026-10-12": -618.31,
+     "2026-10-15": 321.96,
+     "2026-10-26": 95.77,
+     "2026-10-28": 6114.42
+    },
+    "unresolved": 0
+   },
+   "oct28": 6114.42
+  },
+  "S": {
+   "config": {
+    "comps": [
+     [
+      "SHIPPED",
+      "drive:HIGH",
+      null
+     ],
+     [
+      "OR20",
+      "drive:HIGH",
+      null
+     ],
+     [
+      "EFF",
+      "drive:HIGH",
+      null
+     ],
+     [
+      "TPB",
+      "ALWAYS",
+      null
+     ],
+     [
+      "F",
+      "ALWAYS",
+      {
+       "family": "VWAP_REVERT",
+       "k": 2.0,
+       "er_below": 1.0,
+       "stop": 1.5,
+       "target_r": 2.4,
+       "exit": "LIVE"
+      }
+     ]
+    ]
+   },
+   "full": {
+    "trades": 49,
+    "net": 64545.82,
+    "net_ex_best": 49460.74,
+    "worst_day": -2349.04,
+    "max_dd": 4962.36,
+    "green": 16,
+    "red": 6,
+    "by_day": {
+     "2026-09-10": 452.26,
+     "2026-09-11": 7511.8,
+     "2026-09-16": 461.41,
+     "2026-09-17": 7865.72,
+     "2026-09-21": 411.78,
+     "2026-09-23": 406.47,
+     "2026-09-24": -1757.38,
+     "2026-09-25": -2.32,
+     "2026-09-28": 367.08,
+     "2026-09-30": -35.37,
+     "2026-10-01": -2349.04,
+     "2026-10-05": 6882.54,
+     "2026-10-07": 395.78,
+     "2026-10-08": 8547.05,
+     "2026-10-09": -2086.89,
+     "2026-10-12": -2095.55,
+     "2026-10-14": 41.61,
+     "2026-10-15": 7630.02,
+     "2026-10-21": 13879.91,
+     "2026-10-23": 1880.83,
+     "2026-10-26": 15085.08,
+     "2026-10-28": 1053.02
+    },
+    "unresolved": 0
+   },
+   "oct28": 1053.02
+  }
+ },
+ "oct28_counts": {
+  "fades": {
+   "configs": 360,
+   "traded": 141,
+   "made_money": 141,
+   "median_of_traded": 7240.78
+  },
+  "nulls": {
+   "configs": 48,
+   "traded": 25,
+   "made_money": 10,
+   "median_of_traded": -1120.04
+  }
+ },
+ "fades_by_full_net": [
+  {
+   "config": {
+    "family": "VWAP_REVERT",
+    "k": 1.5,
+    "er_below": 0.3,
+    "stop": 1.0,
+    "target_r": 1.8,
+    "exit": "LIVE"
+   },
+   "full": {
+    "trades": 25,
+    "net": 10423.68,
+    "net_ex_best": 3182.9,
+    "worst_day": -2988.6,
+    "max_dd": 5871.04,
+    "green": 9,
+    "red": 8
+   },
+   "oct28": 7240.78
+  },
+  {
+   "config": {
+    "family": "VWAP_REVERT",
+    "k": 2.0,
+    "er_below": 1.0,
+    "stop": 1.5,
+    "target_r": 2.4,
+    "exit": "LIVE"
+   },
+   "full": {
+    "trades": 25,
+    "net": 9360.09,
+    "net_ex_best": 1494.37,
+    "worst_day": -2349.04,
+    "max_dd": 4259.77,
+    "green": 9,
+    "red": 8
+   },
+   "oct28": 0.0
+  },
+  {
+   "config": {
+    "family": "VWAP_REVERT",
+    "k": 1.5,
+    "er_below": 1.0,
+    "stop": 1.0,
+    "target_r": 1.8,
+    "exit": "LIVE"
+   },
+   "full": {
+    "trades": 28,
+    "net": 9153.89,
+    "net_ex_best": 1913.11,
+    "worst_day": -2988.6,
+    "max_dd": 8307.95,
+    "green": 12,
+    "red": 7
+   },
+   "oct28": 7240.78
+  },
+  {
+   "config": {
+    "family": "VWAP_REVERT",
+    "k": 1.5,
+    "er_below": 0.3,
+    "stop": 1.0,
+    "target_r": 2.4,
+    "exit": "LIVE"
+   },
+   "full": {
+    "trades": 26,
+    "net": 8740.44,
+    "net_ex_best": 1499.66,
+    "worst_day": -2988.6,
+    "max_dd": 5871.04,
+    "green": 8,
+    "red": 9
+   },
+   "oct28": 7240.78
+  },
+  {
+   "config": {
+    "family": "VWAP_REVERT",
+    "k": 2.0,
+    "er_below": 1.0,
+    "stop": 1.5,
+    "target_r": 1.8,
+    "exit": "LIVE"
+   },
+   "full": {
+    "trades": 24,
+    "net": 7597.63,
+    "net_ex_best": -268.09,
+    "worst_day": -2349.04,
+    "max_dd": 3841.52,
+    "green": 9,
+    "red": 8
+   },
+   "oct28": 0.0
+  },
+  {
+   "config": {
+    "family": "VWAP_REVERT",
+    "k": 1.5,
+    "er_below": 1.0,
+    "stop": 1.0,
+    "target_r": 2.4,
+    "exit": "LIVE"
+   },
+   "full": {
+    "trades": 29,
+    "net": 7434.19,
+    "net_ex_best": 193.41,
+    "worst_day": -2988.6,
+    "max_dd": 8560.69,
+    "green": 11,
+    "red": 8
+   },
+   "oct28": 7240.78
+  },
+  {
+   "config": {
+    "family": "FADE",
+    "level": "OR20",
+    "within": 2,
+    "buffer": 0.1,
+    "stop": 1.0,
+    "target_r": 2.4,
+    "exit": "LIVE",
+    "window": "ALL"
+   },
+   "full": {
+    "trades": 17,
+    "net": 7226.4,
+    "net_ex_best": -14.38,
+    "worst_day": -1438.33,
+    "max_dd": 4775.08,
+    "green": 5,
+    "red": 9
+   },
+   "oct28": 7240.78
+  },
+  {
+   "config": {
+    "family": "FADE",
+    "level": "OR20",
+    "within": 3,
+    "buffer": 0.1,
+    "stop": 1.0,
+    "target_r": 2.4,
+    "exit": "LIVE",
+    "window": "ALL"
+   },
+   "full": {
+    "trades": 17,
+    "net": 7226.4,
+    "net_ex_best": -14.38,
+    "worst_day": -1438.33,
+    "max_dd": 4775.08,
+    "green": 5,
+    "red": 9
+   },
+   "oct28": 7240.78
+  },
+  {
+   "config": {
+    "family": "FADE",
+    "level": "OR20",
+    "within": 1,
+    "buffer": 0.1,
+    "stop": 1.0,
+    "target_r": 1.8,
+    "exit": "LIVE",
+    "window": "ALL"
+   },
+   "full": {
+    "trades": 17,
+    "net": 6836.46,
+    "net_ex_best": -404.32,
+    "worst_day": -1438.33,
+    "max_dd": 5395.92,
+    "green": 5,
+    "red": 10
+   },
+   "oct28": 7240.78
+  },
+  {
+   "config": {
+    "family": "FADE",
+    "level": "OR30",
+    "within": 1,
+    "buffer": 0.1,
+    "stop": 1.0,
+    "target_r": 1.8,
+    "exit": "LIVE",
+    "window": "ALL"
+   },
+   "full": {
+    "trades": 16,
+    "net": 6720.52,
+    "net_ex_best": -520.26,
+    "worst_day": -1308.78,
+    "max_dd": 5364.59,
+    "green": 5,
+    "red": 10
+   },
+   "oct28": 7240.78
+  }
+ ],
+ "fades_positive_full": 151,
+ "nulls_positive_full": 25
+}

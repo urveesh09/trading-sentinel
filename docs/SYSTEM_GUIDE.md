@@ -1,4 +1,47 @@
-## October 27 — O27h Trend-day pullback shadow and its owner message (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
+## October 28 — O29d Real-money test: the owner is told when the money cannot buy a lot (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+
+- **When a real buy is refused for money**, `fno_live_test.mirror_entry` tells the owner once a day (`fno_live_test_cash_short`). Two refusals count:
+  - the test's own reservation cannot cover the lot's whole premium plus charges;
+  - kite_client refuses the order because the account's free cash is short.
+- The message names the lot's cost and the money left, and says nothing was changed. The test keeps buying only lots it can pay for.
+- **09:25 readiness message:** it now warns when the test's equity is under a typical lot.
+- **SENSEX:** the shipped break, unchanged. The O29d SENSEX check failed its worst-day bound.
+
+## October 28 — O29c The NIFTY paper book: four strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+
+- With `FNO_BOOK=UNION_DRIVE` (the default), the single-leg paper book's NIFTY signal comes from `fno_book.book_signal`.
+  - **Order:** the first of SHIPPED, OR20, EFF and TPB that signals on the bar.
+  - **Filter:** SHIPPED, OR20 and EFF only when the 09:45 opening drive is above the median of the previous 20 sessions' drives (`fno_opening_drive`). On a LOW or unknown morning, only TPB can trade.
+- **Exits:** each position stores its strategy (`fno_positions.strategy`) and is managed with that strategy's exits. A position without one uses the live exits.
+- **Unchanged:** SENSEX, the capped-loss book and the shadows. `FNO_BOOK=SHIPPED` restores the shipped break for NIFTY.
+- The F&O Telegram entry line names the strategy.
+
+## October 28 — O29b Forward panel D (research only, study 903f28f/e8d3ee5, panel D c02a997, pushed; research only, not deployed)
+
+- Panel D replays the 09:45 opening-drive filter on SHIPPED, OR20 and EFF, and the O29b FINAL smart book, beside the shipped book on each session from Oct 29. It reads a read-only export of Production's research archive.
+- It runs when panel A's launcher calls it, once the owner adds the hook. It has no effect on Production, the paper book or the real-money test.
+
+## October 28 — O29 Partner watch: cash, first-read refusals, overnight sales, the close note (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+
+- **Cash:** read at the first tick, then again every 5 minutes (`CASH_REFRESH`). Money added during the day counts from the next read.
+- **Refusals:** a refusal found on the day's first read (or after a restart) is told when it is at most 5 minutes old (`REFUSED_FIRST_READ`). An older one is not told, and the message key stops a repeat.
+  - A stop refused because the price was already past its trigger reads in plain words (`refusal_plain`), in the watch and in the evening review.
+  - When a refused stop leaves the trade with no stop, the message says so and gives the bid's result.
+- **DAY:** the day's result includes options held from an earlier day and sold today, on a line of their own ("held from an earlier day and sold today"). A buy within 30 minutes of their losing sale counts as one after a loss. The frozen score still counts only trades bought that day.
+- **CLOSE:** an NRML option that expires on the next weekday's close says so, with what it is worth now. Otherwise one day's decay is capped at its value.
+- **`partner_watch_report`:** the trades line adds the carried-in sales and the day's total.
+
+## October 28 — O28b Forward panel C (research only, research, Dev, commit `feaeae4`, pushed; pinned and hooked into the 16:00 task)
+
+- Panel A's 16:00 IST task now also runs panel C (pinned in `sentinel-operations`). It replays `SHIPPED`, `UNION` (the four studied strategies in one book) and `UNION_DRIVE` on each session from Oct 28, from a read-only export of Production's research archive.
+- It has no effect on Production, the paper book or the real-money test.
+
+## October 28 — O28 Regime router study (research only, research, Dev, freeze `728cdf8`, results `d3b9a70`, pushed)
+
+- No system behaviour changed. The paper and live F&O books still trade the shipped opening-range break, and the `FNO_TREND_PULLBACK` shadow and its owner message are unchanged.
+- Finding: the best F&O strategies won mainly on trend days. Of the five 09:45 conditions tested, only a strong opening drive leaned the right way consistently (for the two breakouts), and it is unproven. Switching strategies by condition did not beat running them together (`docs/research/fno/2026-10-28-regime-router/README.md`).
+
+## October 27 — O27h Trend-day pullback shadow and its owner message (Dev, commit `faaf366`, pushed, deployed by PR #120 (`104485b`, Oct 27))
 
 - The F&O shadow registry has six variants. `FNO_TREND_PULLBACK` (O27f FINAL pick) is recorded live with the other five in `fno_shadow_evaluations`. It is broker-free and cannot reach an order, sizing or a position.
 - On each F&O tick `fno_shadow_alert.check` tells the owner once per new pullback thesis (day and direction) inside the entry window. Switch: `FNO_SHADOW_OWNER_ALERTS`.

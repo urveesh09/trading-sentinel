@@ -1,4 +1,44 @@
-## October 27 — O27h Trend-day pullback shadow (Dev, commit `faaf366`, pushed; PR, merge and deploy on the owner's instruction (receipt to follow))
+## October 28 — O29d Cash alert, one-lot and SENSEX checks (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+
+- [x] `fno_live_test` cash-short alert and the morning line; tests.
+- [x] SENSEX check, frozen and scored (abfc27a, b9a9352): SENSEX unchanged.
+- [ ] Owner: if ₹15,000 is deposited, set `FNO_LIVE_TEST_CAPITAL=15000` before Nov 2.
+- [ ] Owner: a fade or mean-reversion book on two-way days is advice only. No change without the owner's call.
+
+## October 28 — O29c Four-strategy NIFTY book (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+
+- [x] `fno_book` and its wiring, tests, and research parity (an exact trade match over 31 sessions).
+- [ ] Owner: merge and deploy go-ahead. After the deploy, check that the engine starts and that the `fno_opening_drive` row for the day appears after 09:45 (`SELECT * FROM fno_opening_drive ORDER BY session_date DESC LIMIT 3`, read-only).
+- [ ] After the first sessions: compare the paper book with forward panel C's UNION_DRIVE row (same strategy, replayed).
+- [ ] Rollback if needed: `FNO_BOOK=SHIPPED` in the root `.env`, then restart the engine.
+
+## October 28 — O29b Chop study and forward panel D (study 903f28f/e8d3ee5, panel D c02a997, pushed; research only, not deployed)
+
+- [x] Study frozen, run and analysed. Panel D built, frozen, pinned and smoke-tested (bound == freeze; launcher exit 0).
+- [ ] **Owner:** hook panel D into the 16:00 task (the agent's edit was blocked as persistence). In PowerShell:
+  `Add-Content -Path "C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\run_panel.cmd" -Value 'call "C:\Users\Urveesh\sentinel-operations\fno-forward-panel-d-20261029\run_panel_d.cmd"' -Encoding ascii`
+- [ ] Each evening: `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-d-20261029\docs\research\fno\2026-10-29-forward-panel-d\_local\REPORT.md`
+- [ ] Nov 27: read the frozen rule. Promotion is the owner's call, never in a proving week.
+
+## October 28 — O29 Partner-watch fixes (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+
+- [x] Cash refresh, first-read refusals plus plain trigger wording, carried sales in DAY and the report, and the next-session expiry close note, all in Dev with tests.
+- [ ] Owner: merge and deploy when ready. It is not part of the paper or live F&O rules, so the proving week is unaffected.
+- [ ] After deploy, on the first day with a top-up or overnight hold: check `partner_watch_report` and the DAY and REFUSED texts.
+- [ ] Owner calls listed in the plan: the paper NIFTY pool floor, ₹12,500 against NIFTY lot costs, and the NIFTY-only panels.
+
+## October 28 — O28b Forward panel C (research, Dev, commit `feaeae4`, pushed; pinned and hooked into the 16:00 task)
+
+- [x] Built, frozen, pinned and hooked after panel B. The end-to-end launcher run passed (0 sessions before the open).
+- [ ] Each evening: `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-c-20261028\docs\research\fno\2026-10-28-forward-panel-c\_local\REPORT.md` (watch the extreme-loss alarm line).
+- [ ] Nov 27: read the frozen rule. Promotion is the owner's call, never in a proving week.
+
+## October 28 — O28 Regime router study (research, Dev, freeze `728cdf8`, results `d3b9a70`, pushed)
+
+- [x] Frozen before scoring (`728cdf8`); parity exact for all four components; 252 replays; verdict `CONDITIONS_NOT_SHOWN_TO_ADD_VALUE`.
+- [ ] Owner: decide whether `UNION` and `THEORY_DRIVE` go into a forward panel (research only; no paper or live change in the proving week).
+
+## October 27 — O27h Trend-day pullback shadow (Dev, commit `faaf366`, pushed, deployed by PR #120 (`104485b`, Oct 27))
 
 - [x] The shadow variant, its replay arm (exactly the lab's 14 trades), the owner message and the tests.
 - [ ] Oct 28: the owner sees a message if the pullback signals (from 11:30). Forward panel B scores its full trade after 16:00, once the owner has registered the task.

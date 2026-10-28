@@ -148,8 +148,22 @@ def test_merge_takes_sl_stops_from_the_stored_book_and_gtts_from_the_read():
           message="Margin required: 159586.95. Margin available: 7536.70."),
      [], "you did not hold this option at that moment, so Zerodha counted the sale as a new short sale, which needs "
          "₹159,587 of margin; your account had ₹7,537."),
+    # [O29] A stop refused because the price was already past its trigger reads in plain words too (it was left to
+    # Zerodha's own text before). R7 is Oct 28 09:15's text, on a stop for an option held overnight.
     (_row("R6", "SELL", "REJECTED", "SL", trigger=120.0, placed=T(13, 54), qty=65,
-          message="Trigger price for stoploss sell orders should be lower than the last traded price."), [], None),
+          message="Trigger price for stoploss sell orders should be lower than the last traded price."), [],
+     "the price was already at or under its trigger ₹120 when it reached the exchange (a sell stop has to sit under "
+     "the price), so the stop was never placed."),
+    (_row("R7", "SELL", "REJECTED", "SL", trigger=330.0, placed=T(9, 15), qty=40,
+          message="Trigger price for stoploss orders need to be higher than the LTP for buys, and lower than the LTP "
+                  "for sells. [Read more.](https://links.zerodha.com/sl-orders-usage)"), [],
+     "the price was already at or under its trigger ₹330 when it reached the exchange (a sell stop has to sit under "
+     "the price), so the stop was never placed."),
+    (_row("R8", "BUY", "REJECTED", "SL", trigger=80.5, placed=T(9, 15), qty=65,
+          message="Trigger price for stoploss orders need to be higher than the LTP for buys, and lower than the LTP "
+                  "for sells."), [],
+     "the price was already at or over its trigger ₹80.5 when it reached the exchange (a buy stop has to sit over the "
+     "price), so it was never placed."),
 ])
 def test_refusals_read_in_plain_words(refused, others, expected):
     assert insights.refusal_plain(refused, [refused, *others]) == expected

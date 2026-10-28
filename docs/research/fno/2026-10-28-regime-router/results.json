@@ -1,0 +1,2704 @@
+{
+ "freeze_sha256": "c296bb004a38b219e2b5fa3574677cb8e3ed987551e707cceaf35368e55c5e89",
+ "parity": {
+  "SHIPPED": {
+   "trades": 13,
+   "net": 10801.09
+  },
+  "OR20": {
+   "trades": 20,
+   "net": 30566.8
+  },
+  "EFF": {
+   "trades": 38,
+   "net": 31063.32
+  },
+  "TPB": {
+   "trades": 14,
+   "net": 17347.49
+  }
+ },
+ "warm_conflicts": 0,
+ "replays": 252,
+ "oos_sessions": [
+  "2026-10-01",
+  "2026-10-05",
+  "2026-10-06",
+  "2026-10-07",
+  "2026-10-08",
+  "2026-10-09",
+  "2026-10-12",
+  "2026-10-13",
+  "2026-10-14",
+  "2026-10-15",
+  "2026-10-16",
+  "2026-10-19",
+  "2026-10-21",
+  "2026-10-22",
+  "2026-10-23",
+  "2026-10-26"
+ ],
+ "walk_forward": {
+  "routers": {
+   "F1": {
+    "SHIPPED": "nr:HIGH",
+    "OR20": "trend5:HIGH",
+    "EFF": "gap:HIGH",
+    "TPB": "open_drive:HIGH"
+   },
+   "F2": {
+    "SHIPPED": "nr:HIGH",
+    "OR20": "ALWAYS",
+    "EFF": "gap:HIGH",
+    "TPB": "open_drive:HIGH"
+   },
+   "F3": {
+    "SHIPPED": "ALWAYS",
+    "OR20": "trend5:HIGH",
+    "EFF": "open_drive:HIGH",
+    "TPB": "open_drive:HIGH"
+   },
+   "FINAL": {
+    "SHIPPED": "ALWAYS",
+    "OR20": "ALWAYS",
+    "EFF": "open_drive:HIGH",
+    "TPB": "ALWAYS"
+   }
+  },
+  "oos": {
+   "folds": {
+    "F1": {
+     "sessions": 6,
+     "trades": 9,
+     "net": 4324.82
+    },
+    "F2": {
+     "sessions": 5,
+     "trades": 1,
+     "net": -831.11
+    },
+    "F3": {
+     "sessions": 5,
+     "trades": 6,
+     "net": 17401.86
+    }
+   },
+   "sessions": 16,
+   "trades": 16,
+   "unresolved": 0,
+   "net": 20895.56,
+   "net_without_best_day": 14306.36,
+   "dd": 4539.16,
+   "stressed": 17699.52,
+   "win_rate": 0.625,
+   "profit_factor": 2.486,
+   "green_days": 7,
+   "red_days": 2,
+   "green_weeks": 4,
+   "red_weeks": 1,
+   "worst_day": -2086.89
+  },
+  "checks": {
+   "oos_net_gt_union": false,
+   "oos_net_gt_zero": true,
+   "oos_net_gt_shipped": true,
+   "ge_union_in_2_of_3_folds": false,
+   "ge_null_p90": false
+  },
+  "verdict": "CONDITIONS_NOT_SHOWN_TO_ADD_VALUE",
+  "null": {
+   "count": 200,
+   "median": 23589.57,
+   "p90": 36248.25,
+   "share_below_router": 0.41,
+   "share_positive": 0.93,
+   "best": 86194.25,
+   "worst": -5828.96
+  },
+  "baselines_oos": {
+   "UNION": {
+    "folds": {
+     "F1": {
+      "sessions": 6,
+      "trades": 12,
+      "net": 9727.01
+     },
+     "F2": {
+      "sessions": 5,
+      "trades": 5,
+      "net": 2972.63
+     },
+     "F3": {
+      "sessions": 5,
+      "trades": 7,
+      "net": 20962.24
+     }
+    },
+    "sessions": 16,
+    "trades": 24,
+    "unresolved": 1,
+    "net": 33661.89,
+    "net_without_best_day": 23704.64,
+    "dd": 5940.81,
+    "stressed": 29684.3,
+    "win_rate": 0.5417,
+    "profit_factor": 2.596,
+    "green_days": 7,
+    "red_days": 3,
+    "green_weeks": 5,
+    "red_weeks": 0,
+    "worst_day": -2784.13
+   },
+   "THEORY_IB": {
+    "folds": {
+     "F1": {
+      "sessions": 6,
+      "trades": 10,
+      "net": 3658.19
+     },
+     "F2": {
+      "sessions": 5,
+      "trades": 3,
+      "net": 4067.61
+     },
+     "F3": {
+      "sessions": 5,
+      "trades": 7,
+      "net": 20962.24
+     }
+    },
+    "sessions": 16,
+    "trades": 20,
+    "unresolved": 1,
+    "net": 28688.04,
+    "net_without_best_day": 18862.31,
+    "dd": 5940.81,
+    "stressed": 25302.43,
+    "win_rate": 0.6,
+    "profit_factor": 2.548,
+    "green_days": 8,
+    "red_days": 1,
+    "green_weeks": 5,
+    "red_weeks": 0,
+    "worst_day": -2784.13
+   },
+   "THEORY_DRIVE": {
+    "folds": {
+     "F1": {
+      "sessions": 6,
+      "trades": 6,
+      "net": 9191.84
+     },
+     "F2": {
+      "sessions": 5,
+      "trades": 5,
+      "net": 2972.63
+     },
+     "F3": {
+      "sessions": 5,
+      "trades": 7,
+      "net": 21663.66
+     }
+    },
+    "sessions": 16,
+    "trades": 18,
+    "unresolved": 1,
+    "net": 33828.14,
+    "net_without_best_day": 23300.98,
+    "dd": 8007.44,
+    "stressed": 30611.99,
+    "win_rate": 0.6111,
+    "profit_factor": 3.818,
+    "green_days": 6,
+    "red_days": 2,
+    "green_weeks": 4,
+    "red_weeks": 0,
+    "worst_day": -2500.45
+   },
+   "THEORY_NR": {
+    "folds": {
+     "F1": {
+      "sessions": 6,
+      "trades": 6,
+      "net": 7437.62
+     },
+     "F2": {
+      "sessions": 5,
+      "trades": 3,
+      "net": 4067.61
+     },
+     "F3": {
+      "sessions": 5,
+      "trades": 7,
+      "net": 21663.66
+     }
+    },
+    "sessions": 16,
+    "trades": 16,
+    "unresolved": 1,
+    "net": 33168.89,
+    "net_without_best_day": 22641.74,
+    "dd": 8007.44,
+    "stressed": 30378.62,
+    "win_rate": 0.625,
+    "profit_factor": 4.038,
+    "green_days": 6,
+    "red_days": 1,
+    "green_weeks": 4,
+    "red_weeks": 0,
+    "worst_day": -2784.13
+   },
+   "SHIPPED_ALONE": {
+    "folds": {
+     "F1": {
+      "sessions": 6,
+      "trades": 3,
+      "net": 6013.12
+     },
+     "F2": {
+      "sessions": 5,
+      "trades": 1,
+      "net": 3515.21
+     },
+     "F3": {
+      "sessions": 5,
+      "trades": 0,
+      "net": 0.0
+     }
+    },
+    "sessions": 16,
+    "trades": 4,
+    "unresolved": 0,
+    "net": 9528.32,
+    "net_without_best_day": 2420.65,
+    "dd": 1460.92,
+    "stressed": 8932.59,
+    "win_rate": 0.75,
+    "profit_factor": 7.522,
+    "green_days": 3,
+    "red_days": 1,
+    "green_weeks": 2,
+    "red_weeks": 1,
+    "worst_day": -1460.92
+   },
+   "OR20_ALONE": {
+    "folds": {
+     "F1": {
+      "sessions": 6,
+      "trades": 6,
+      "net": 9985.47
+     },
+     "F2": {
+      "sessions": 5,
+      "trades": 1,
+      "net": -831.11
+     },
+     "F3": {
+      "sessions": 5,
+      "trades": 3,
+      "net": 20132.34
+     }
+    },
+    "sessions": 16,
+    "trades": 10,
+    "unresolved": 1,
+    "net": 29286.69,
+    "net_without_best_day": 19836.63,
+    "dd": 3422.99,
+    "stressed": 27652.18,
+    "win_rate": 0.6,
+    "profit_factor": 5.989,
+    "green_days": 6,
+    "red_days": 2,
+    "green_weeks": 4,
+    "red_weeks": 1,
+    "worst_day": -3422.99
+   },
+   "EFF_ALONE": {
+    "folds": {
+     "F1": {
+      "sessions": 6,
+      "trades": 6,
+      "net": 1960.17
+     },
+     "F2": {
+      "sessions": 5,
+      "trades": 5,
+      "net": 13375.37
+     },
+     "F3": {
+      "sessions": 5,
+      "trades": 8,
+      "net": 5495.22
+     }
+    },
+    "sessions": 16,
+    "trades": 19,
+    "unresolved": 0,
+    "net": 20830.76,
+    "net_without_best_day": 12423.0,
+    "dd": 6748.74,
+    "stressed": 17599.82,
+    "win_rate": 0.5789,
+    "profit_factor": 2.211,
+    "green_days": 7,
+    "red_days": 2,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "worst_day": -1862.19
+   },
+   "TPB_ALONE": {
+    "folds": {
+     "F1": {
+      "sessions": 6,
+      "trades": 2,
+      "net": 2797.78
+     },
+     "F2": {
+      "sessions": 5,
+      "trades": 0,
+      "net": 0.0
+     },
+     "F3": {
+      "sessions": 5,
+      "trades": 5,
+      "net": 5732.15
+     }
+    },
+    "sessions": 16,
+    "trades": 7,
+    "unresolved": 0,
+    "net": 8529.93,
+    "net_without_best_day": 3337.15,
+    "dd": 3417.89,
+    "stressed": 7494.47,
+    "win_rate": 0.7143,
+    "profit_factor": 3.496,
+    "green_days": 4,
+    "red_days": 0,
+    "green_weeks": 3,
+    "red_weeks": 0,
+    "worst_day": 0.0
+   }
+  },
+  "hindsight_oracle_oos_approx": 49792.55
+ },
+ "full_in_sample": {
+  "UNION": {
+   "sessions": 29,
+   "trades": 49,
+   "unresolved": 1,
+   "net": 40405.42,
+   "net_without_best_day": 30448.17,
+   "dd": 5940.81,
+   "stressed": 32752.84,
+   "win_rate": 0.5102,
+   "profit_factor": 2.266,
+   "green_days": 11,
+   "red_days": 9,
+   "green_weeks": 6,
+   "red_weeks": 2,
+   "worst_day": -2784.13
+  },
+  "THEORY_IB": {
+   "sessions": 29,
+   "trades": 32,
+   "unresolved": 1,
+   "net": 39432.41,
+   "net_without_best_day": 29606.68,
+   "dd": 5940.81,
+   "stressed": 34284.46,
+   "win_rate": 0.5625,
+   "profit_factor": 2.618,
+   "green_days": 11,
+   "red_days": 4,
+   "green_weeks": 7,
+   "red_weeks": 0,
+   "worst_day": -2784.13
+  },
+  "THEORY_DRIVE": {
+   "sessions": 29,
+   "trades": 32,
+   "unresolved": 1,
+   "net": 44169.53,
+   "net_without_best_day": 33642.38,
+   "dd": 8007.44,
+   "stressed": 38905.85,
+   "win_rate": 0.5938,
+   "profit_factor": 3.533,
+   "green_days": 9,
+   "red_days": 4,
+   "green_weeks": 7,
+   "red_weeks": 0,
+   "worst_day": -2500.45
+  },
+  "THEORY_NR": {
+   "sessions": 29,
+   "trades": 32,
+   "unresolved": 1,
+   "net": 41137.09,
+   "net_without_best_day": 30609.94,
+   "dd": 8007.44,
+   "stressed": 35996.86,
+   "win_rate": 0.5312,
+   "profit_factor": 3.126,
+   "green_days": 9,
+   "red_days": 5,
+   "green_weeks": 6,
+   "red_weeks": 2,
+   "worst_day": -2784.13
+  },
+  "SHIPPED_ALONE": {
+   "sessions": 29,
+   "trades": 13,
+   "unresolved": 0,
+   "net": 10801.09,
+   "net_without_best_day": 3693.42,
+   "dd": 1990.89,
+   "stressed": 8878.24,
+   "win_rate": 0.5385,
+   "profit_factor": 2.987,
+   "green_days": 6,
+   "red_days": 4,
+   "green_weeks": 3,
+   "red_weeks": 3,
+   "worst_day": -1460.92
+  },
+  "OR20_ALONE": {
+   "sessions": 29,
+   "trades": 19,
+   "unresolved": 1,
+   "net": 30566.8,
+   "net_without_best_day": 21116.73,
+   "dd": 3422.99,
+   "stressed": 27605.37,
+   "win_rate": 0.6316,
+   "profit_factor": 3.897,
+   "green_days": 10,
+   "red_days": 5,
+   "green_weeks": 5,
+   "red_weeks": 2,
+   "worst_day": -3422.99
+  },
+  "EFF_ALONE": {
+   "sessions": 29,
+   "trades": 38,
+   "unresolved": 0,
+   "net": 31063.32,
+   "net_without_best_day": 22655.57,
+   "dd": 6748.74,
+   "stressed": 25034.53,
+   "win_rate": 0.5526,
+   "profit_factor": 2.276,
+   "green_days": 12,
+   "red_days": 7,
+   "green_weeks": 4,
+   "red_weeks": 4,
+   "worst_day": -2307.25
+  },
+  "TPB_ALONE": {
+   "sessions": 29,
+   "trades": 14,
+   "unresolved": 0,
+   "net": 17347.49,
+   "net_without_best_day": 11626.71,
+   "dd": 3417.89,
+   "stressed": 15286.74,
+   "win_rate": 0.7143,
+   "profit_factor": 4.091,
+   "green_days": 8,
+   "red_days": 1,
+   "green_weeks": 6,
+   "red_weeks": 0,
+   "worst_day": -2194.6
+  },
+  "FINAL_ROUTER_IN_SAMPLE": {
+   "sessions": 29,
+   "trades": 42,
+   "unresolved": 1,
+   "net": 46298.56,
+   "net_without_best_day": 34685.31,
+   "dd": 4153.29,
+   "stressed": 39415.64,
+   "win_rate": 0.5238,
+   "profit_factor": 2.746,
+   "green_days": 11,
+   "red_days": 8,
+   "green_weeks": 7,
+   "red_weeks": 1,
+   "worst_day": -3422.99
+  }
+ },
+ "gated_in_sample": {
+  "SHIPPED": {
+   "ALWAYS": {
+    "sessions": 29,
+    "trades": 13,
+    "unresolved": 0,
+    "net": 10801.09,
+    "net_without_best_day": 3693.42,
+    "dd": 1990.89,
+    "stressed": 8878.24,
+    "win_rate": 0.5385,
+    "profit_factor": 2.987,
+    "green_days": 6,
+    "red_days": 4,
+    "green_weeks": 3,
+    "red_weeks": 3,
+    "worst_day": -1460.92
+   },
+   "or_width:HIGH": {
+    "sessions": 29,
+    "trades": 8,
+    "unresolved": 0,
+    "net": 1619.14,
+    "net_without_best_day": -291.44,
+    "dd": 1143.94,
+    "stressed": 446.05,
+    "win_rate": 0.5,
+    "profit_factor": 1.816,
+    "green_days": 3,
+    "red_days": 3,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "worst_day": -456.79
+   },
+   "or_width:LOW": {
+    "sessions": 29,
+    "trades": 6,
+    "unresolved": 0,
+    "net": 8818.08,
+    "net_without_best_day": 1710.4,
+    "dd": 2354.77,
+    "stressed": 7923.72,
+    "win_rate": 0.5,
+    "profit_factor": 3.311,
+    "green_days": 3,
+    "red_days": 2,
+    "green_weeks": 2,
+    "red_weeks": 2,
+    "worst_day": -1460.92
+   },
+   "open_drive:HIGH": {
+    "sessions": 29,
+    "trades": 7,
+    "unresolved": 0,
+    "net": 4988.13,
+    "net_without_best_day": 1472.92,
+    "dd": 1290.16,
+    "stressed": 3963.42,
+    "win_rate": 0.5714,
+    "profit_factor": 4.221,
+    "green_days": 3,
+    "red_days": 2,
+    "green_weeks": 3,
+    "red_weeks": 1,
+    "worst_day": -440.14
+   },
+   "open_drive:LOW": {
+    "sessions": 29,
+    "trades": 7,
+    "unresolved": 0,
+    "net": 5449.08,
+    "net_without_best_day": -1658.59,
+    "dd": 2208.56,
+    "stressed": 4406.35,
+    "win_rate": 0.4286,
+    "profit_factor": 2.281,
+    "green_days": 3,
+    "red_days": 3,
+    "green_weeks": 2,
+    "red_weeks": 3,
+    "worst_day": -1460.92
+   },
+   "nr:HIGH": {
+    "sessions": 29,
+    "trades": 7,
+    "unresolved": 0,
+    "net": 9623.74,
+    "net_without_best_day": 2516.06,
+    "dd": 744.39,
+    "stressed": 8591.17,
+    "win_rate": 0.7143,
+    "profit_factor": 9.846,
+    "green_days": 4,
+    "red_days": 1,
+    "green_weeks": 3,
+    "red_weeks": 1,
+    "worst_day": -343.52
+   },
+   "nr:LOW": {
+    "sessions": 29,
+    "trades": 5,
+    "unresolved": 0,
+    "net": -757.27,
+    "net_without_best_day": -4272.48,
+    "dd": 4272.48,
+    "stressed": -1494.22,
+    "win_rate": 0.2,
+    "profit_factor": 0.823,
+    "green_days": 1,
+    "red_days": 4,
+    "green_weeks": 1,
+    "red_weeks": 4,
+    "worst_day": -1990.89
+   },
+   "gap:HIGH": {
+    "sessions": 29,
+    "trades": 7,
+    "unresolved": 0,
+    "net": 7483.56,
+    "net_without_best_day": 375.89,
+    "dd": 1460.92,
+    "stressed": 6452.2,
+    "win_rate": 0.5714,
+    "profit_factor": 3.829,
+    "green_days": 3,
+    "red_days": 2,
+    "green_weeks": 1,
+    "red_weeks": 2,
+    "worst_day": -1460.92
+   },
+   "gap:LOW": {
+    "sessions": 29,
+    "trades": 6,
+    "unresolved": 0,
+    "net": 3317.53,
+    "net_without_best_day": -197.68,
+    "dd": 2208.56,
+    "stressed": 2426.04,
+    "win_rate": 0.5,
+    "profit_factor": 2.189,
+    "green_days": 3,
+    "red_days": 2,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "worst_day": -456.79
+   },
+   "trend5:HIGH": {
+    "sessions": 29,
+    "trades": 3,
+    "unresolved": 0,
+    "net": 6307.37,
+    "net_without_best_day": -800.31,
+    "dd": 800.31,
+    "stressed": 5860.27,
+    "win_rate": 0.3333,
+    "profit_factor": 8.881,
+    "green_days": 1,
+    "red_days": 2,
+    "green_weeks": 1,
+    "red_weeks": 2,
+    "worst_day": -456.79
+   },
+   "trend5:LOW": {
+    "sessions": 29,
+    "trades": 11,
+    "unresolved": 0,
+    "net": 4129.85,
+    "net_without_best_day": 614.64,
+    "dd": 1990.89,
+    "stressed": 2509.5,
+    "win_rate": 0.5455,
+    "profit_factor": 1.826,
+    "green_days": 5,
+    "red_days": 3,
+    "green_weeks": 2,
+    "red_weeks": 2,
+    "worst_day": -1460.92
+   }
+  },
+  "OR20": {
+   "ALWAYS": {
+    "sessions": 29,
+    "trades": 19,
+    "unresolved": 1,
+    "net": 30566.8,
+    "net_without_best_day": 21116.73,
+    "dd": 3422.99,
+    "stressed": 27605.37,
+    "win_rate": 0.6316,
+    "profit_factor": 3.897,
+    "green_days": 10,
+    "red_days": 5,
+    "green_weeks": 5,
+    "red_weeks": 2,
+    "worst_day": -3422.99
+   },
+   "or_width:HIGH": {
+    "sessions": 29,
+    "trades": 8,
+    "unresolved": 0,
+    "net": 6988.71,
+    "net_without_best_day": -435.26,
+    "dd": 2185.38,
+    "stressed": 5808.45,
+    "win_rate": 0.625,
+    "profit_factor": 2.984,
+    "green_days": 4,
+    "red_days": 3,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "worst_day": -1241.82
+   },
+   "or_width:LOW": {
+    "sessions": 29,
+    "trades": 11,
+    "unresolved": 1,
+    "net": 20983.64,
+    "net_without_best_day": 11533.57,
+    "dd": 3422.99,
+    "stressed": 19339.55,
+    "win_rate": 0.6364,
+    "profit_factor": 3.985,
+    "green_days": 6,
+    "red_days": 2,
+    "green_weeks": 4,
+    "red_weeks": 1,
+    "worst_day": -3422.99
+   },
+   "open_drive:HIGH": {
+    "sessions": 29,
+    "trades": 9,
+    "unresolved": 1,
+    "net": 23245.8,
+    "net_without_best_day": 13795.73,
+    "dd": 1448.72,
+    "stressed": 21907.25,
+    "win_rate": 0.7778,
+    "profit_factor": 11.196,
+    "green_days": 6,
+    "red_days": 2,
+    "green_weeks": 4,
+    "red_weeks": 2,
+    "worst_day": -943.56
+   },
+   "open_drive:LOW": {
+    "sessions": 29,
+    "trades": 10,
+    "unresolved": 0,
+    "net": 4726.56,
+    "net_without_best_day": -765.31,
+    "dd": 3422.99,
+    "stressed": 3240.76,
+    "win_rate": 0.5,
+    "profit_factor": 1.571,
+    "green_days": 4,
+    "red_days": 3,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "worst_day": -3422.99
+   },
+   "nr:HIGH": {
+    "sessions": 29,
+    "trades": 9,
+    "unresolved": 0,
+    "net": 9040.04,
+    "net_without_best_day": 3548.17,
+    "dd": 2004.41,
+    "stressed": 7708.8,
+    "win_rate": 0.6667,
+    "profit_factor": 3.451,
+    "green_days": 6,
+    "red_days": 2,
+    "green_weeks": 4,
+    "red_weeks": 2,
+    "worst_day": -1241.82
+   },
+   "nr:LOW": {
+    "sessions": 29,
+    "trades": 10,
+    "unresolved": 1,
+    "net": 18932.32,
+    "net_without_best_day": 9482.25,
+    "dd": 4742.3,
+    "stressed": 17439.21,
+    "win_rate": 0.6,
+    "profit_factor": 3.759,
+    "green_days": 4,
+    "red_days": 3,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "worst_day": -3422.99
+   },
+   "gap:HIGH": {
+    "sessions": 29,
+    "trades": 10,
+    "unresolved": 1,
+    "net": 13181.23,
+    "net_without_best_day": 3731.16,
+    "dd": 3422.99,
+    "stressed": 11698.22,
+    "win_rate": 0.6,
+    "profit_factor": 3.032,
+    "green_days": 5,
+    "red_days": 2,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "worst_day": -3422.99
+   },
+   "gap:LOW": {
+    "sessions": 29,
+    "trades": 9,
+    "unresolved": 0,
+    "net": 14791.13,
+    "net_without_best_day": 7367.16,
+    "dd": 3232.71,
+    "stressed": 13449.78,
+    "win_rate": 0.6667,
+    "profit_factor": 4.64,
+    "green_days": 5,
+    "red_days": 3,
+    "green_weeks": 4,
+    "red_weeks": 3,
+    "worst_day": -1241.82
+   },
+   "trend5:HIGH": {
+    "sessions": 29,
+    "trades": 6,
+    "unresolved": 0,
+    "net": 11115.51,
+    "net_without_best_day": 5623.64,
+    "dd": 1615.81,
+    "stressed": 10225.13,
+    "win_rate": 0.8333,
+    "profit_factor": 7.879,
+    "green_days": 5,
+    "red_days": 0,
+    "green_weeks": 4,
+    "red_weeks": 0,
+    "worst_day": 0.0
+   },
+   "trend5:LOW": {
+    "sessions": 29,
+    "trades": 8,
+    "unresolved": 1,
+    "net": 8465.79,
+    "net_without_best_day": -984.28,
+    "dd": 6929.1,
+    "stressed": 7275.36,
+    "win_rate": 0.375,
+    "profit_factor": 2.222,
+    "green_days": 3,
+    "red_days": 5,
+    "green_weeks": 1,
+    "red_weeks": 4,
+    "worst_day": -1990.89
+   }
+  },
+  "EFF": {
+   "ALWAYS": {
+    "sessions": 29,
+    "trades": 38,
+    "unresolved": 0,
+    "net": 31063.32,
+    "net_without_best_day": 22655.57,
+    "dd": 6748.74,
+    "stressed": 25034.53,
+    "win_rate": 0.5526,
+    "profit_factor": 2.276,
+    "green_days": 12,
+    "red_days": 7,
+    "green_weeks": 4,
+    "red_weeks": 4,
+    "worst_day": -2307.25
+   },
+   "or_width:HIGH": {
+    "sessions": 29,
+    "trades": 8,
+    "unresolved": 0,
+    "net": 1874.68,
+    "net_without_best_day": -3092.93,
+    "dd": 4680.57,
+    "stressed": 692.35,
+    "win_rate": 0.375,
+    "profit_factor": 1.386,
+    "green_days": 2,
+    "red_days": 3,
+    "green_weeks": 2,
+    "red_weeks": 2,
+    "worst_day": -1611.93
+   },
+   "or_width:LOW": {
+    "sessions": 29,
+    "trades": 22,
+    "unresolved": 0,
+    "net": 21975.18,
+    "net_without_best_day": 13567.42,
+    "dd": 5348.64,
+    "stressed": 18578.6,
+    "win_rate": 0.5909,
+    "profit_factor": 2.415,
+    "green_days": 7,
+    "red_days": 3,
+    "green_weeks": 4,
+    "red_weeks": 3,
+    "worst_day": -2307.25
+   },
+   "open_drive:HIGH": {
+    "sessions": 29,
+    "trades": 20,
+    "unresolved": 0,
+    "net": 34398.06,
+    "net_without_best_day": 25990.3,
+    "dd": 3854.14,
+    "stressed": 31435.7,
+    "win_rate": 0.65,
+    "profit_factor": 6.231,
+    "green_days": 8,
+    "red_days": 2,
+    "green_weeks": 5,
+    "red_weeks": 1,
+    "worst_day": -1457.0
+   },
+   "open_drive:LOW": {
+    "sessions": 29,
+    "trades": 10,
+    "unresolved": 0,
+    "net": -9650.82,
+    "net_without_best_day": -10974.6,
+    "dd": 10974.6,
+    "stressed": -11129.96,
+    "win_rate": 0.3,
+    "profit_factor": 0.237,
+    "green_days": 1,
+    "red_days": 5,
+    "green_weeks": 1,
+    "red_weeks": 3,
+    "worst_day": -4213.15
+   },
+   "nr:HIGH": {
+    "sessions": 29,
+    "trades": 18,
+    "unresolved": 0,
+    "net": 6130.17,
+    "net_without_best_day": 1162.56,
+    "dd": 4691.6,
+    "stressed": 3471.02,
+    "win_rate": 0.5556,
+    "profit_factor": 1.485,
+    "green_days": 6,
+    "red_days": 4,
+    "green_weeks": 4,
+    "red_weeks": 3,
+    "worst_day": -1457.0
+   },
+   "nr:LOW": {
+    "sessions": 29,
+    "trades": 20,
+    "unresolved": 0,
+    "net": 25793.45,
+    "net_without_best_day": 17385.69,
+    "dd": 3854.14,
+    "stressed": 22830.63,
+    "win_rate": 0.55,
+    "profit_factor": 3.94,
+    "green_days": 6,
+    "red_days": 3,
+    "green_weeks": 5,
+    "red_weeks": 2,
+    "worst_day": -2307.25
+   },
+   "gap:HIGH": {
+    "sessions": 29,
+    "trades": 15,
+    "unresolved": 0,
+    "net": 22195.1,
+    "net_without_best_day": 13903.15,
+    "dd": 4334.4,
+    "stressed": 19974.75,
+    "win_rate": 0.7333,
+    "profit_factor": 4.0,
+    "green_days": 7,
+    "red_days": 1,
+    "green_weeks": 4,
+    "red_weeks": 1,
+    "worst_day": -1457.0
+   },
+   "gap:LOW": {
+    "sessions": 29,
+    "trades": 18,
+    "unresolved": 0,
+    "net": 10116.74,
+    "net_without_best_day": 1708.99,
+    "dd": 5530.81,
+    "stressed": 7446.74,
+    "win_rate": 0.4444,
+    "profit_factor": 1.803,
+    "green_days": 4,
+    "red_days": 4,
+    "green_weeks": 3,
+    "red_weeks": 3,
+    "worst_day": -2307.25
+   },
+   "trend5:HIGH": {
+    "sessions": 29,
+    "trades": 15,
+    "unresolved": 0,
+    "net": 6932.28,
+    "net_without_best_day": 686.01,
+    "dd": 4465.24,
+    "stressed": 4714.98,
+    "win_rate": 0.6,
+    "profit_factor": 1.588,
+    "green_days": 4,
+    "red_days": 3,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "worst_day": -1611.93
+   },
+   "trend5:LOW": {
+    "sessions": 29,
+    "trades": 23,
+    "unresolved": 0,
+    "net": 24991.34,
+    "net_without_best_day": 16583.58,
+    "dd": 4320.42,
+    "stressed": 21586.67,
+    "win_rate": 0.5217,
+    "profit_factor": 3.6,
+    "green_days": 8,
+    "red_days": 4,
+    "green_weeks": 3,
+    "red_weeks": 2,
+    "worst_day": -2307.25
+   }
+  },
+  "TPB": {
+   "ALWAYS": {
+    "sessions": 29,
+    "trades": 14,
+    "unresolved": 0,
+    "net": 17347.49,
+    "net_without_best_day": 11626.71,
+    "dd": 3417.89,
+    "stressed": 15286.74,
+    "win_rate": 0.7143,
+    "profit_factor": 4.091,
+    "green_days": 8,
+    "red_days": 1,
+    "green_weeks": 6,
+    "red_weeks": 0,
+    "worst_day": -2194.6
+   },
+   "or_width:HIGH": {
+    "sessions": 29,
+    "trades": 4,
+    "unresolved": 0,
+    "net": 603.18,
+    "net_without_best_day": -1930.1,
+    "dd": 2194.6,
+    "stressed": 14.6,
+    "win_rate": 0.5,
+    "profit_factor": 1.275,
+    "green_days": 2,
+    "red_days": 1,
+    "green_weeks": 1,
+    "red_weeks": 1,
+    "worst_day": -2194.6
+   },
+   "or_width:LOW": {
+    "sessions": 29,
+    "trades": 8,
+    "unresolved": 0,
+    "net": 9291.77,
+    "net_without_best_day": 4099.0,
+    "dd": 3417.89,
+    "stressed": 8115.28,
+    "win_rate": 0.75,
+    "profit_factor": 3.719,
+    "green_days": 4,
+    "red_days": 0,
+    "green_weeks": 4,
+    "red_weeks": 0,
+    "worst_day": 0.0
+   },
+   "open_drive:HIGH": {
+    "sessions": 29,
+    "trades": 9,
+    "unresolved": 0,
+    "net": 14349.32,
+    "net_without_best_day": 8628.53,
+    "dd": 1317.65,
+    "stressed": 13024.27,
+    "win_rate": 0.8889,
+    "profit_factor": 11.89,
+    "green_days": 7,
+    "red_days": 0,
+    "green_weeks": 5,
+    "red_weeks": 0,
+    "worst_day": 0.0
+   },
+   "open_drive:LOW": {
+    "sessions": 29,
+    "trades": 5,
+    "unresolved": 0,
+    "net": 2998.18,
+    "net_without_best_day": -2194.6,
+    "dd": 4294.85,
+    "stressed": 2262.47,
+    "win_rate": 0.4,
+    "profit_factor": 1.698,
+    "green_days": 1,
+    "red_days": 1,
+    "green_weeks": 1,
+    "red_weeks": 1,
+    "worst_day": -2194.6
+   },
+   "nr:HIGH": {
+    "sessions": 29,
+    "trades": 6,
+    "unresolved": 0,
+    "net": 3262.68,
+    "net_without_best_day": -1930.1,
+    "dd": 4030.35,
+    "stressed": 2381.03,
+    "win_rate": 0.5,
+    "profit_factor": 1.76,
+    "green_days": 2,
+    "red_days": 1,
+    "green_weeks": 2,
+    "red_weeks": 1,
+    "worst_day": -2194.6
+   },
+   "nr:LOW": {
+    "sessions": 29,
+    "trades": 7,
+    "unresolved": 0,
+    "net": 12353.07,
+    "net_without_best_day": 6632.28,
+    "dd": 1317.65,
+    "stressed": 11320.33,
+    "win_rate": 0.8571,
+    "profit_factor": 10.375,
+    "green_days": 5,
+    "red_days": 0,
+    "green_weeks": 4,
+    "red_weeks": 0,
+    "worst_day": 0.0
+   },
+   "gap:HIGH": {
+    "sessions": 29,
+    "trades": 5,
+    "unresolved": 0,
+    "net": 10605.86,
+    "net_without_best_day": 4885.07,
+    "dd": 0.0,
+    "stressed": 9872.45,
+    "win_rate": 1.0,
+    "profit_factor": null,
+    "green_days": 4,
+    "red_days": 0,
+    "green_weeks": 4,
+    "red_weeks": 0,
+    "worst_day": 0.0
+   },
+   "gap:LOW": {
+    "sessions": 29,
+    "trades": 9,
+    "unresolved": 0,
+    "net": 6741.63,
+    "net_without_best_day": 1548.85,
+    "dd": 3417.89,
+    "stressed": 5414.29,
+    "win_rate": 0.5556,
+    "profit_factor": 2.201,
+    "green_days": 4,
+    "red_days": 1,
+    "green_weeks": 3,
+    "red_weeks": 1,
+    "worst_day": -2194.6
+   },
+   "trend5:HIGH": {
+    "sessions": 29,
+    "trades": 5,
+    "unresolved": 0,
+    "net": 8081.6,
+    "net_without_best_day": 2888.82,
+    "dd": 2100.25,
+    "stressed": 7346.81,
+    "win_rate": 0.8,
+    "profit_factor": 4.848,
+    "green_days": 2,
+    "red_days": 0,
+    "green_weeks": 2,
+    "red_weeks": 0,
+    "worst_day": 0.0
+   },
+   "trend5:LOW": {
+    "sessions": 29,
+    "trades": 8,
+    "unresolved": 0,
+    "net": 3545.1,
+    "net_without_best_day": 1011.82,
+    "dd": 2194.6,
+    "stressed": 2368.44,
+    "win_rate": 0.625,
+    "profit_factor": 2.009,
+    "green_days": 5,
+    "red_days": 1,
+    "green_weeks": 3,
+    "red_weeks": 1,
+    "worst_day": -2194.6
+   }
+  }
+ },
+ "hindsight_oracle_full_approx": 68838.56,
+ "conditions": {
+  "SHIPPED": {
+   "or_width": {
+    "HIGH": {
+     "days": 15,
+     "net": 1619.13,
+     "trading_days": 6,
+     "mean_day": 107.94
+    },
+    "LOW": {
+     "days": 14,
+     "net": 9181.95,
+     "trading_days": 4,
+     "mean_day": 655.85
+    },
+    "p": 0.4169,
+    "p_holm": 1.0
+   },
+   "open_drive": {
+    "HIGH": {
+     "days": 14,
+     "net": 5352.01,
+     "trading_days": 4,
+     "mean_day": 382.29
+    },
+    "LOW": {
+     "days": 15,
+     "net": 5449.07,
+     "trading_days": 6,
+     "mean_day": 363.27
+    },
+    "p": 0.9748,
+    "p_holm": 1.0
+   },
+   "nr": {
+    "HIGH": {
+     "days": 16,
+     "net": 9623.73,
+     "trading_days": 5,
+     "mean_day": 601.48
+    },
+    "LOW": {
+     "days": 13,
+     "net": 1177.35,
+     "trading_days": 5,
+     "mean_day": 90.57
+    },
+    "p": 0.467,
+    "p_holm": 1.0
+   },
+   "gap": {
+    "HIGH": {
+     "days": 12,
+     "net": 7483.55,
+     "trading_days": 5,
+     "mean_day": 623.63
+    },
+    "LOW": {
+     "days": 17,
+     "net": 3317.53,
+     "trading_days": 5,
+     "mean_day": 195.15
+    },
+    "p": 0.5434,
+    "p_holm": 1.0
+   },
+   "trend5": {
+    "HIGH": {
+     "days": 10,
+     "net": 6307.36,
+     "trading_days": 3,
+     "mean_day": 630.74
+    },
+    "LOW": {
+     "days": 19,
+     "net": 4493.72,
+     "trading_days": 7,
+     "mean_day": 236.51
+    },
+    "p": 0.6227,
+    "p_holm": 1.0
+   }
+  },
+  "OR20": {
+   "or_width": {
+    "HIGH": {
+     "days": 15,
+     "net": 6988.72,
+     "trading_days": 7,
+     "mean_day": 465.91
+    },
+    "LOW": {
+     "days": 14,
+     "net": 23578.1,
+     "trading_days": 8,
+     "mean_day": 1684.15
+    },
+    "p": 0.2553,
+    "p_holm": 1.0
+   },
+   "open_drive": {
+    "HIGH": {
+     "days": 14,
+     "net": 23245.8,
+     "trading_days": 8,
+     "mean_day": 1660.41
+    },
+    "LOW": {
+     "days": 15,
+     "net": 7321.02,
+     "trading_days": 7,
+     "mean_day": 488.07
+    },
+    "p": 0.2703,
+    "p_holm": 1.0
+   },
+   "nr": {
+    "HIGH": {
+     "days": 16,
+     "net": 11634.5,
+     "trading_days": 8,
+     "mean_day": 727.16
+    },
+    "LOW": {
+     "days": 13,
+     "net": 18932.32,
+     "trading_days": 7,
+     "mean_day": 1456.33
+    },
+    "p": 0.4936,
+    "p_holm": 1.0
+   },
+   "gap": {
+    "HIGH": {
+     "days": 12,
+     "net": 13181.24,
+     "trading_days": 7,
+     "mean_day": 1098.44
+    },
+    "LOW": {
+     "days": 17,
+     "net": 17385.58,
+     "trading_days": 8,
+     "mean_day": 1022.68
+    },
+    "p": 0.9476,
+    "p_holm": 1.0
+   },
+   "trend5": {
+    "HIGH": {
+     "days": 10,
+     "net": 13709.97,
+     "trading_days": 5,
+     "mean_day": 1371.0
+    },
+    "LOW": {
+     "days": 19,
+     "net": 16856.85,
+     "trading_days": 10,
+     "mean_day": 887.2
+    },
+    "p": 0.6811,
+    "p_holm": 1.0
+   }
+  },
+  "EFF": {
+   "or_width": {
+    "HIGH": {
+     "days": 15,
+     "net": 10488.25,
+     "trading_days": 9,
+     "mean_day": 699.22
+    },
+    "LOW": {
+     "days": 14,
+     "net": 20575.08,
+     "trading_days": 10,
+     "mean_day": 1469.65
+    },
+    "p": 0.4831,
+    "p_holm": 1.0
+   },
+   "open_drive": {
+    "HIGH": {
+     "days": 14,
+     "net": 34398.07,
+     "trading_days": 10,
+     "mean_day": 2457.01
+    },
+    "LOW": {
+     "days": 15,
+     "net": -3334.74,
+     "trading_days": 9,
+     "mean_day": -222.32
+    },
+    "p": 0.0076,
+    "p_holm": 0.153
+   },
+   "nr": {
+    "HIGH": {
+     "days": 16,
+     "net": 5269.87,
+     "trading_days": 10,
+     "mean_day": 329.37
+    },
+    "LOW": {
+     "days": 13,
+     "net": 25793.46,
+     "trading_days": 9,
+     "mean_day": 1984.11
+    },
+    "p": 0.1209,
+    "p_holm": 1.0
+   },
+   "gap": {
+    "HIGH": {
+     "days": 12,
+     "net": 22195.11,
+     "trading_days": 8,
+     "mean_day": 1849.59
+    },
+    "LOW": {
+     "days": 17,
+     "net": 8868.22,
+     "trading_days": 11,
+     "mean_day": 521.66
+    },
+    "p": 0.2231,
+    "p_holm": 1.0
+   },
+   "trend5": {
+    "HIGH": {
+     "days": 10,
+     "net": 6071.99,
+     "trading_days": 7,
+     "mean_day": 607.2
+    },
+    "LOW": {
+     "days": 19,
+     "net": 24991.34,
+     "trading_days": 12,
+     "mean_day": 1315.33
+    },
+    "p": 0.5422,
+    "p_holm": 1.0
+   }
+  },
+  "TPB": {
+   "or_width": {
+    "HIGH": {
+     "days": 15,
+     "net": 8055.72,
+     "trading_days": 5,
+     "mean_day": 537.05
+    },
+    "LOW": {
+     "days": 14,
+     "net": 9291.77,
+     "trading_days": 4,
+     "mean_day": 663.7
+    },
+    "p": 0.8285,
+    "p_holm": 1.0
+   },
+   "open_drive": {
+    "HIGH": {
+     "days": 14,
+     "net": 14349.31,
+     "trading_days": 7,
+     "mean_day": 1024.95
+    },
+    "LOW": {
+     "days": 15,
+     "net": 2998.18,
+     "trading_days": 2,
+     "mean_day": 199.88
+    },
+    "p": 0.1781,
+    "p_holm": 1.0
+   },
+   "nr": {
+    "HIGH": {
+     "days": 16,
+     "net": 4994.43,
+     "trading_days": 4,
+     "mean_day": 312.15
+    },
+    "LOW": {
+     "days": 13,
+     "net": 12353.06,
+     "trading_days": 5,
+     "mean_day": 950.24
+    },
+    "p": 0.3017,
+    "p_holm": 1.0
+   },
+   "gap": {
+    "HIGH": {
+     "days": 12,
+     "net": 10605.86,
+     "trading_days": 4,
+     "mean_day": 883.82
+    },
+    "LOW": {
+     "days": 17,
+     "net": 6741.63,
+     "trading_days": 5,
+     "mean_day": 396.57
+    },
+    "p": 0.4695,
+    "p_holm": 1.0
+   },
+   "trend5": {
+    "HIGH": {
+     "days": 10,
+     "net": 8081.6,
+     "trading_days": 2,
+     "mean_day": 808.16
+    },
+    "LOW": {
+     "days": 19,
+     "net": 9265.89,
+     "trading_days": 7,
+     "mean_day": 487.68
+    },
+    "p": 0.6709,
+    "p_holm": 1.0
+   }
+  }
+ },
+ "halves_post_hoc": {
+  "SHIPPED": {
+   "or_width": {
+    "A": -561.15,
+    "B": -585.87,
+    "same_sign": true
+   },
+   "open_drive": {
+    "A": -340.82,
+    "B": 703.04,
+    "same_sign": false
+   },
+   "nr": {
+    "A": 1222.14,
+    "B": -878.8,
+    "same_sign": false
+   },
+   "gap": {
+    "A": 953.41,
+    "B": -585.87,
+    "same_sign": false
+   },
+   "trend5": {
+    "A": 699.46,
+    "B": -439.4,
+    "same_sign": false
+   }
+  },
+  "OR20": {
+   "or_width": {
+    "A": 280.17,
+    "B": -3563.17,
+    "same_sign": false
+   },
+   "open_drive": {
+    "A": 791.65,
+    "B": 1803.57,
+    "same_sign": true
+   },
+   "nr": {
+    "A": 294.43,
+    "B": -3029.23,
+    "same_sign": false
+   },
+   "gap": {
+    "A": -218.55,
+    "B": 720.66,
+    "same_sign": false
+   },
+   "trend5": {
+    "A": 825.83,
+    "B": 800.9,
+    "same_sign": true
+   }
+  },
+  "EFF": {
+   "or_width": {
+    "A": -332.14,
+    "B": -1075.26,
+    "same_sign": true
+   },
+   "open_drive": {
+    "A": 1665.62,
+    "B": 4518.99,
+    "same_sign": true
+   },
+   "nr": {
+    "A": -897.81,
+    "B": -3423.72,
+    "same_sign": true
+   },
+   "gap": {
+    "A": 2459.28,
+    "B": -782.19,
+    "same_sign": false
+   },
+   "trend5": {
+    "A": 604.63,
+    "B": -3522.69,
+    "same_sign": false
+   }
+  },
+  "TPB": {
+   "or_width": {
+    "A": 287.39,
+    "B": -955.36,
+    "same_sign": false
+   },
+   "open_drive": {
+    "A": 1753.9,
+    "B": -930.68,
+    "same_sign": false
+   },
+   "nr": {
+    "A": -1332.47,
+    "B": 730.62,
+    "same_sign": false
+   },
+   "gap": {
+    "A": 1233.96,
+    "B": -955.36,
+    "same_sign": false
+   },
+   "trend5": {
+    "A": -432.22,
+    "B": 2528.97,
+    "same_sign": false
+   }
+  }
+ },
+ "by_hindsight_day_type": {
+  "SHIPPED": {
+   "trend_days": 5954.64,
+   "other_days": 4846.44
+  },
+  "OR20": {
+   "trend_days": 21140.95,
+   "other_days": 9425.87
+  },
+  "EFF": {
+   "trend_days": 27595.64,
+   "other_days": 3467.69
+  },
+  "TPB": {
+   "trend_days": 16808.12,
+   "other_days": 539.37
+  }
+ },
+ "trend_days": [
+  "2026-09-11",
+  "2026-09-15",
+  "2026-09-21",
+  "2026-09-23",
+  "2026-09-24",
+  "2026-09-25",
+  "2026-09-28",
+  "2026-09-30",
+  "2026-10-06",
+  "2026-10-08",
+  "2026-10-09",
+  "2026-10-12",
+  "2026-10-13",
+  "2026-10-14",
+  "2026-10-15",
+  "2026-10-19",
+  "2026-10-21",
+  "2026-10-26"
+ ],
+ "foresight": {
+  "or_width": {
+   "HIGH": {
+    "days": 15,
+    "trend_days": 10
+   },
+   "LOW": {
+    "days": 14,
+    "trend_days": 8
+   }
+  },
+  "open_drive": {
+   "HIGH": {
+    "days": 14,
+    "trend_days": 11
+   },
+   "LOW": {
+    "days": 15,
+    "trend_days": 7
+   }
+  },
+  "nr": {
+   "HIGH": {
+    "days": 16,
+    "trend_days": 9
+   },
+   "LOW": {
+    "days": 13,
+    "trend_days": 9
+   }
+  },
+  "gap": {
+   "HIGH": {
+    "days": 12,
+    "trend_days": 6
+   },
+   "LOW": {
+    "days": 17,
+    "trend_days": 12
+   }
+  },
+  "trend5": {
+   "HIGH": {
+    "days": 10,
+    "trend_days": 4
+   },
+   "LOW": {
+    "days": 19,
+    "trend_days": 14
+   }
+  }
+ },
+ "by_engine_regime": {
+  "SHIPPED": {
+   "REGIME_2_ELEVATED": {
+    "days": 25,
+    "net": 11241.22
+   },
+   "REGIME_1_NORMAL": {
+    "days": 3,
+    "net": -440.14
+   },
+   "REGIME_3_CRISIS": {
+    "days": 1,
+    "net": 0.0
+   }
+  },
+  "OR20": {
+   "REGIME_2_ELEVATED": {
+    "days": 25,
+    "net": 30250.38
+   },
+   "REGIME_1_NORMAL": {
+    "days": 3,
+    "net": 316.44
+   },
+   "REGIME_3_CRISIS": {
+    "days": 1,
+    "net": 0.0
+   }
+  },
+  "EFF": {
+   "REGIME_2_ELEVATED": {
+    "days": 25,
+    "net": 16525.11
+   },
+   "REGIME_1_NORMAL": {
+    "days": 3,
+    "net": 14538.22
+   },
+   "REGIME_3_CRISIS": {
+    "days": 1,
+    "net": 0.0
+   }
+  },
+  "TPB": {
+   "REGIME_2_ELEVATED": {
+    "days": 25,
+    "net": 8737.88
+   },
+   "REGIME_1_NORMAL": {
+    "days": 3,
+    "net": 8609.61
+   },
+   "REGIME_3_CRISIS": {
+    "days": 1,
+    "net": 0.0
+   }
+  }
+ },
+ "daily_correlation": {
+  "SHIPPED~OR20": {
+   "spearman": 0.226,
+   "both_green_days": 3
+  },
+  "SHIPPED~EFF": {
+   "spearman": -0.077,
+   "both_green_days": 4
+  },
+  "SHIPPED~TPB": {
+   "spearman": 0.321,
+   "both_green_days": 2
+  },
+  "OR20~EFF": {
+   "spearman": 0.229,
+   "both_green_days": 8
+  },
+  "OR20~TPB": {
+   "spearman": 0.095,
+   "both_green_days": 5
+  },
+  "EFF~TPB": {
+   "spearman": -0.215,
+   "both_green_days": 4
+  }
+ },
+ "per_day": {
+  "2026-09-10": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "LOW",
+    "nr": "HIGH",
+    "gap": "LOW",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.467,
+    "open_drive": 0.0039,
+    "nr": 1.2435,
+    "gap": 0.0619,
+    "trend5": 0.7654
+   },
+   "hindsight": {
+    "body": 0.22378854625551942,
+    "range_rel": 0.8360341779611042,
+    "direction": "DOWN",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": -343.52,
+    "OR20": 1323.78,
+    "EFF": 1323.78,
+    "TPB": 0.0
+   }
+  },
+  "2026-09-11": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "HIGH",
+    "nr": "LOW",
+    "gap": "HIGH",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.3892,
+    "open_drive": 0.6061,
+    "nr": 0.836,
+    "gap": 1.3414,
+    "trend5": 0.7643
+   },
+   "hindsight": {
+    "body": 0.7456301747929966,
+    "range_rel": 1.7663308417289643,
+    "direction": "UP",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_1_NORMAL",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 1260.0,
+    "EFF": 6246.27,
+    "TPB": 2888.82
+   }
+  },
+  "2026-09-15": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "HIGH",
+    "nr": "HIGH",
+    "gap": "LOW",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.74,
+    "open_drive": 1.0,
+    "nr": 1.7663,
+    "gap": 0.37,
+    "trend5": 1.0
+   },
+   "hindsight": {
+    "body": 0.810606060606061,
+    "range_rel": 2.773109243697473,
+    "direction": "DOWN",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": 0.0,
+    "TPB": 0.0
+   }
+  },
+  "2026-09-16": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "LOW",
+    "nr": "HIGH",
+    "gap": "LOW",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.6567,
+    "open_drive": 0.1515,
+    "nr": 2.7731,
+    "gap": 0.0699,
+    "trend5": 1.0
+   },
+   "hindsight": {
+    "body": 0.32520325203252354,
+    "range_rel": 0.7365269461077746,
+    "direction": "UP",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": -1347.77,
+    "TPB": 0.0
+   }
+  },
+  "2026-09-17": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "LOW",
+    "nr": "LOW",
+    "gap": "LOW",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.5222,
+    "open_drive": 0.138,
+    "nr": 0.7365,
+    "gap": 0.0335,
+    "trend5": 0.7884
+   },
+   "hindsight": {
+    "body": 0.41208791208791207,
+    "range_rel": 0.8711468504690772,
+    "direction": "UP",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": -456.79,
+    "OR20": 0.0,
+    "EFF": -1611.93,
+    "TPB": 0.0
+   }
+  },
+  "2026-09-21": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "HIGH",
+    "nr": "LOW",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.2821,
+    "open_drive": 0.506,
+    "nr": 0.502,
+    "gap": 0.0682,
+    "trend5": 0.2729
+   },
+   "hindsight": {
+    "body": 0.7347826086956522,
+    "range_rel": 0.540616773223015,
+    "direction": "UP",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": -684.09,
+    "TPB": 670.8
+   }
+  },
+  "2026-09-22": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "LOW",
+    "nr": "LOW",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.2185,
+    "open_drive": 0.3124,
+    "nr": 0.5406,
+    "gap": 0.0312,
+    "trend5": 0.0929
+   },
+   "hindsight": {
+    "body": 0.24008350730689118,
+    "range_rel": 0.9966708281314939,
+    "direction": "DOWN",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": 0.0,
+    "TPB": 0.0
+   }
+  },
+  "2026-09-23": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "LOW",
+    "nr": "HIGH",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.4371,
+    "open_drive": 0.2138,
+    "nr": 0.9967,
+    "gap": 0.195,
+    "trend5": 0.7037
+   },
+   "hindsight": {
+    "body": 0.6542882404951454,
+    "range_rel": 0.7604895104895022,
+    "direction": "UP",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 582.64,
+    "OR20": 404.24,
+    "EFF": 423.99,
+    "TPB": -2194.6
+   }
+  },
+  "2026-09-24": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "HIGH",
+    "nr": "LOW",
+    "gap": "HIGH",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.6191,
+    "open_drive": 0.6208,
+    "nr": 0.7605,
+    "gap": 1.1775,
+    "trend5": 0.6838
+   },
+   "hindsight": {
+    "body": 0.731614859742231,
+    "range_rel": 1.8601043576364393,
+    "direction": "DOWN",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_1_NORMAL",
+   "net": {
+    "SHIPPED": -440.14,
+    "OR20": -943.56,
+    "EFF": 8291.95,
+    "TPB": 5720.79
+   }
+  },
+  "2026-09-25": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "LOW",
+    "nr": "HIGH",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.569,
+    "open_drive": 0.0187,
+    "nr": 1.8601,
+    "gap": 0.0089,
+    "trend5": 0.4679
+   },
+   "hindsight": {
+    "body": 0.5241979336596013,
+    "range_rel": 1.1625995701100138,
+    "direction": "UP",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": -1241.82,
+    "EFF": -128.13,
+    "TPB": 0.0
+   }
+  },
+  "2026-09-28": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "HIGH",
+    "nr": "HIGH",
+    "gap": "HIGH",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 1.346,
+    "open_drive": 0.9773,
+    "nr": 1.1626,
+    "gap": 0.4323,
+    "trend5": 0.3115
+   },
+   "hindsight": {
+    "body": 0.8789251207729502,
+    "range_rel": 1.9091537929444196,
+    "direction": "DOWN",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 1910.58,
+    "OR20": 853.22,
+    "EFF": 25.75,
+    "TPB": 1731.75
+   }
+  },
+  "2026-09-29": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "HIGH",
+    "nr": "HIGH",
+    "gap": "HIGH",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.8412,
+    "open_drive": 0.6557,
+    "nr": 1.9092,
+    "gap": 0.3156,
+    "trend5": 0.691
+   },
+   "hindsight": {
+    "body": 0.21785906401290847,
+    "range_rel": 0.8577888519749093,
+    "direction": "DOWN",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": 0.0,
+    "TPB": 0.0
+   }
+  },
+  "2026-09-30": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "LOW",
+    "nr": "LOW",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.3029,
+    "open_drive": 0.1129,
+    "nr": 0.8897,
+    "gap": 0.2413,
+    "trend5": 0.6867
+   },
+   "hindsight": {
+    "body": 0.5733606557377109,
+    "range_rel": 1.1045722046174777,
+    "direction": "DOWN",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 19.99,
+    "OR20": -375.75,
+    "EFF": -2307.25,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-01": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "LOW",
+    "nr": "HIGH",
+    "gap": "HIGH",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.3017,
+    "open_drive": 0.1813,
+    "nr": 1.1046,
+    "gap": 0.2838,
+    "trend5": 0.8244
+   },
+   "hindsight": {
+    "body": 0.28841111693759724,
+    "range_rel": 1.546383392799231,
+    "direction": "DOWN",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 7107.67,
+    "OR20": 5491.87,
+    "EFF": 2081.42,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-05": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "HIGH",
+    "nr": "HIGH",
+    "gap": "HIGH",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.3649,
+    "open_drive": 0.6262,
+    "nr": 1.5464,
+    "gap": 0.41,
+    "trend5": 0.7802
+   },
+   "hindsight": {
+    "body": 0.04570383912248644,
+    "range_rel": 0.8155050316809515,
+    "direction": "DOWN",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 492.63,
+    "EFF": 1242.41,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-06": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "LOW",
+    "nr": "LOW",
+    "gap": "LOW",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.2673,
+    "open_drive": 0.3877,
+    "nr": 0.8155,
+    "gap": 0.1433,
+    "trend5": 0.7622
+   },
+   "hindsight": {
+    "body": 0.7244791666666591,
+    "range_rel": 0.68802408084283,
+    "direction": "UP",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": 0.0,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-07": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "LOW",
+    "nr": "LOW",
+    "gap": "HIGH",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.2952,
+    "open_drive": 0.1094,
+    "nr": 0.688,
+    "gap": 0.4424,
+    "trend5": 0.1735
+   },
+   "hindsight": {
+    "body": 0.377637130801683,
+    "range_rel": 0.7687940961803534,
+    "direction": "DOWN",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": -1460.92,
+    "OR20": -3422.99,
+    "EFF": 93.34,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-08": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "HIGH",
+    "nr": "LOW",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.4866,
+    "open_drive": 0.9566,
+    "nr": 0.7688,
+    "gap": 0.1566,
+    "trend5": 0.3299
+   },
+   "hindsight": {
+    "body": 0.8899826288361419,
+    "range_rel": 1.4088758361886033,
+    "direction": "DOWN",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 7423.97,
+    "EFF": 0.0,
+    "TPB": 2533.28
+   }
+  },
+  "2026-10-09": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "HIGH",
+    "nr": "HIGH",
+    "gap": "HIGH",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.6103,
+    "open_drive": 0.8494,
+    "nr": 1.4089,
+    "gap": 0.3142,
+    "trend5": 0.4336
+   },
+   "hindsight": {
+    "body": 0.856687898089172,
+    "range_rel": 1.1829415310427993,
+    "direction": "UP",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 366.36,
+    "OR20": 0.0,
+    "EFF": -1457.0,
+    "TPB": 264.5
+   }
+  },
+  "2026-10-12": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "HIGH",
+    "nr": "HIGH",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.6414,
+    "open_drive": 0.4385,
+    "nr": 1.1829,
+    "gap": 0.127,
+    "trend5": 0.0907
+   },
+   "hindsight": {
+    "body": 0.7386200973375338,
+    "range_rel": 1.3863311636767761,
+    "direction": "DOWN",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": -831.11,
+    "EFF": 4967.61,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-13": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "HIGH",
+    "nr": "HIGH",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.9717,
+    "open_drive": 1.0,
+    "nr": 1.3863,
+    "gap": 0.004,
+    "trend5": 0.1721
+   },
+   "hindsight": {
+    "body": 0.9058708414872827,
+    "range_rel": 1.8377328634107803,
+    "direction": "UP",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": 0.0,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-14": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "LOW",
+    "nr": "HIGH",
+    "gap": "HIGH",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.3121,
+    "open_drive": 0.1056,
+    "nr": 1.8377,
+    "gap": 0.2308,
+    "trend5": 0.0407
+   },
+   "hindsight": {
+    "body": 0.5667793744716795,
+    "range_rel": 0.6920961797226911,
+    "direction": "DOWN",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": 0.0,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-15": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "HIGH",
+    "nr": "LOW",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.39,
+    "open_drive": 0.7562,
+    "nr": 0.6921,
+    "gap": 0.0598,
+    "trend5": 0.0197
+   },
+   "hindsight": {
+    "body": 0.7599056603773602,
+    "range_rel": 1.2070830723680495,
+    "direction": "UP",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 3515.21,
+    "OR20": 0.0,
+    "EFF": 8407.76,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-16": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "LOW",
+    "nr": "HIGH",
+    "gap": "HIGH",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.4796,
+    "open_drive": 0.3754,
+    "nr": 1.2071,
+    "gap": 0.1766,
+    "trend5": 0.4508
+   },
+   "hindsight": {
+    "body": 0.22303325223033385,
+    "range_rel": 0.6719712245898928,
+    "direction": "UP",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": 0.0,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-19": {
+   "side": {
+    "or_width": "HIGH",
+    "open_drive": "LOW",
+    "nr": "LOW",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.6054,
+    "open_drive": 0.0809,
+    "nr": 0.672,
+    "gap": 0.1352,
+    "trend5": 0.3572
+   },
+   "hindsight": {
+    "body": 0.8448385053831535,
+    "range_rel": 0.8933521923620932,
+    "direction": "DOWN",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_1_NORMAL",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": 0.0,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-21": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "HIGH",
+    "nr": "LOW",
+    "gap": "HIGH",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.4118,
+    "open_drive": 0.7018,
+    "nr": 0.8934,
+    "gap": 0.2855,
+    "trend5": 0.3642
+   },
+   "hindsight": {
+    "body": 0.5243128964059197,
+    "range_rel": 1.3638985005767041,
+    "direction": "DOWN",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 9450.07,
+    "EFF": 5670.97,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-22": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "LOW",
+    "nr": "HIGH",
+    "gap": "HIGH",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.3744,
+    "open_drive": 0.0004,
+    "nr": 1.3639,
+    "gap": 0.2509,
+    "trend5": 0.113
+   },
+   "hindsight": {
+    "body": 0.23529411764704927,
+    "range_rel": 0.7918632075471673,
+    "direction": "UP",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_3_CRISIS",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 0.0,
+    "EFF": 0.0,
+    "TPB": 0.0
+   }
+  },
+  "2026-10-23": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "HIGH",
+    "nr": "LOW",
+    "gap": "LOW",
+    "trend5": "LOW"
+   },
+   "values": {
+    "or_width": 0.3741,
+    "open_drive": 0.7143,
+    "nr": 0.7919,
+    "gap": 0.1646,
+    "trend5": 0.0857
+   },
+   "hindsight": {
+    "body": 0.456610088453264,
+    "range_rel": 1.2103587962962967,
+    "direction": "DOWN",
+    "trend_day": false
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 5540.58,
+    "EFF": 1686.44,
+    "TPB": 539.37
+   }
+  },
+  "2026-10-26": {
+   "side": {
+    "or_width": "LOW",
+    "open_drive": "LOW",
+    "nr": "HIGH",
+    "gap": "LOW",
+    "trend5": "HIGH"
+   },
+   "values": {
+    "or_width": 0.4044,
+    "open_drive": 0.1391,
+    "nr": 1.2104,
+    "gap": 0.0842,
+    "trend5": 0.6278
+   },
+   "hindsight": {
+    "body": 0.6137142857142837,
+    "range_rel": 1.0160831446321805,
+    "direction": "UP",
+    "trend_day": true
+   },
+   "engine_regime": "REGIME_2_ELEVATED",
+   "net": {
+    "SHIPPED": 0.0,
+    "OR20": 5141.69,
+    "EFF": -1862.19,
+    "TPB": 5192.78
+   }
+  }
+ }
+}

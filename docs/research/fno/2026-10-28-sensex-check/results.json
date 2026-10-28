@@ -1,0 +1,674 @@
+{
+ "freeze_sha256": "a0e2728f61fb7633135abc3ec4f0670764fb81dac9a17b02d6cc5ddb77bc4d2c",
+ "sessions": [
+  "2026-09-10",
+  "2026-09-11",
+  "2026-09-15",
+  "2026-09-16",
+  "2026-09-17",
+  "2026-09-21",
+  "2026-09-22",
+  "2026-09-23",
+  "2026-09-24",
+  "2026-09-25",
+  "2026-09-28",
+  "2026-09-29",
+  "2026-09-30",
+  "2026-10-01",
+  "2026-10-05",
+  "2026-10-06",
+  "2026-10-07",
+  "2026-10-08",
+  "2026-10-09",
+  "2026-10-12",
+  "2026-10-13",
+  "2026-10-14",
+  "2026-10-15",
+  "2026-10-16",
+  "2026-10-19",
+  "2026-10-21",
+  "2026-10-22",
+  "2026-10-23",
+  "2026-10-26",
+  "2026-10-27",
+  "2026-10-28"
+ ],
+ "metrics": {
+  "SHIPPED": {
+   "trades": 10,
+   "net": -8622.05,
+   "net_ex_best": -9289.63,
+   "worst_day": -2544.93,
+   "max_dd": 9027.07,
+   "green": 2,
+   "red": 7,
+   "by_day": {
+    "2026-09-21": -262.56,
+    "2026-09-23": 667.58,
+    "2026-09-25": -599.08,
+    "2026-09-30": -1996.42,
+    "2026-10-07": -1631.22,
+    "2026-10-09": 233.59,
+    "2026-10-13": -1778.68,
+    "2026-10-19": -710.33,
+    "2026-10-28": -2544.93
+   },
+   "unresolved": 0
+  },
+  "UNION_DRIVE": {
+   "trades": 30,
+   "net": 12759.4,
+   "net_ex_best": 2639.23,
+   "worst_day": -5317.28,
+   "max_dd": 8595.42,
+   "green": 7,
+   "red": 7,
+   "by_day": {
+    "2026-09-11": 7335.87,
+    "2026-09-21": 1536.06,
+    "2026-09-23": -790.88,
+    "2026-09-28": -617.01,
+    "2026-09-29": 232.26,
+    "2026-09-30": -1503.7,
+    "2026-10-05": -2656.23,
+    "2026-10-09": -634.17,
+    "2026-10-13": -2625.69,
+    "2026-10-19": 10120.17,
+    "2026-10-21": 5792.71,
+    "2026-10-23": 589.59,
+    "2026-10-26": 1297.71,
+    "2026-10-28": -5317.28
+   },
+   "unresolved": 0
+  },
+  "UNION": {
+   "trades": 48,
+   "net": 11486.91,
+   "net_ex_best": 1366.74,
+   "worst_day": -6681.92,
+   "max_dd": 12644.43,
+   "green": 10,
+   "red": 11,
+   "by_day": {
+    "2026-09-11": 7335.87,
+    "2026-09-15": 1923.37,
+    "2026-09-16": -1112.79,
+    "2026-09-21": 1536.06,
+    "2026-09-22": 2955.83,
+    "2026-09-23": -691.55,
+    "2026-09-25": 90.25,
+    "2026-09-28": -617.01,
+    "2026-09-29": 232.26,
+    "2026-09-30": -1503.7,
+    "2026-10-05": -2656.23,
+    "2026-10-06": 90.25,
+    "2026-10-07": -2522.57,
+    "2026-10-09": -634.17,
+    "2026-10-12": 5945.22,
+    "2026-10-13": -2625.69,
+    "2026-10-19": 10120.17,
+    "2026-10-21": 5366.84,
+    "2026-10-23": -229.27,
+    "2026-10-26": -6681.92,
+    "2026-10-27": -4834.3
+   },
+   "unresolved": 0
+  }
+ },
+ "verdict": {
+  "checks": {
+   "beats_shipped": true,
+   "positive_without_best_day": true,
+   "worst_day_within_bound": false
+  },
+  "replace_shipped_on_sensex": false
+ },
+ "sensex_drive": {
+  "2026-09-02": {
+   "value": 0.520667,
+   "side": null
+  },
+  "2026-09-03": {
+   "value": 0.078125,
+   "side": null
+  },
+  "2026-09-04": {
+   "value": 0.819957,
+   "side": null
+  },
+  "2026-09-07": {
+   "value": 0.554609,
+   "side": null
+  },
+  "2026-09-08": {
+   "value": 0.646492,
+   "side": null
+  },
+  "2026-09-09": {
+   "value": 0.656753,
+   "side": "HIGH"
+  },
+  "2026-09-10": {
+   "value": 0.068329,
+   "side": "LOW"
+  },
+  "2026-09-11": {
+   "value": 0.677019,
+   "side": "HIGH"
+  },
+  "2026-09-15": {
+   "value": 0.5,
+   "side": "LOW"
+  },
+  "2026-09-16": {
+   "value": 0.316663,
+   "side": "LOW"
+  },
+  "2026-09-17": {
+   "value": 0.407126,
+   "side": "LOW"
+  },
+  "2026-09-18": {
+   "value": 0.226176,
+   "side": "LOW"
+  },
+  "2026-09-21": {
+   "value": 0.565479,
+   "side": "HIGH"
+  },
+  "2026-09-22": {
+   "value": 0.006042,
+   "side": "LOW"
+  },
+  "2026-09-23": {
+   "value": 0.272777,
+   "side": "LOW"
+  },
+  "2026-09-24": {
+   "value": 0.290939,
+   "side": "LOW"
+  },
+  "2026-09-25": {
+   "value": 0.204862,
+   "side": "LOW"
+  },
+  "2026-09-28": {
+   "value": 0.918614,
+   "side": "HIGH"
+  },
+  "2026-09-29": {
+   "value": 0.691731,
+   "side": "HIGH"
+  },
+  "2026-09-30": {
+   "value": 0.648544,
+   "side": "HIGH"
+  },
+  "2026-10-01": {
+   "value": 0.373904,
+   "side": "LOW"
+  },
+  "2026-10-05": {
+   "value": 0.795711,
+   "side": "HIGH"
+  },
+  "2026-10-06": {
+   "value": 0.22973,
+   "side": "LOW"
+  },
+  "2026-10-07": {
+   "value": 0.349055,
+   "side": "LOW"
+  },
+  "2026-10-08": {
+   "value": 0.810108,
+   "side": "HIGH"
+  },
+  "2026-10-09": {
+   "value": 1.0,
+   "side": "HIGH"
+  },
+  "2026-10-12": {
+   "value": 0.25055,
+   "side": "LOW"
+  },
+  "2026-10-13": {
+   "value": 1.0,
+   "side": "HIGH"
+  },
+  "2026-10-14": {
+   "value": 0.220932,
+   "side": "LOW"
+  },
+  "2026-10-15": {
+   "value": 0.770875,
+   "side": "HIGH"
+  },
+  "2026-10-16": {
+   "value": 0.310528,
+   "side": "LOW"
+  },
+  "2026-10-19": {
+   "value": 0.0,
+   "side": "LOW"
+  },
+  "2026-10-21": {
+   "value": 0.802245,
+   "side": "HIGH"
+  },
+  "2026-10-22": {
+   "value": 0.164552,
+   "side": "LOW"
+  },
+  "2026-10-23": {
+   "value": 0.054196,
+   "side": "LOW"
+  },
+  "2026-10-26": {
+   "value": 0.181772,
+   "side": "LOW"
+  },
+  "2026-10-27": {
+   "value": 0.05581,
+   "side": "LOW"
+  },
+  "2026-10-28": {
+   "value": 0.493774,
+   "side": "HIGH"
+  }
+ },
+ "union_drive_trades": [
+  {
+   "bar_ts": "2026-09-11 11:10:00",
+   "component": "OR20",
+   "tradingsymbol": "SENSEX2691774600CE",
+   "entry_premium": 467.4,
+   "exit_premium": 445.45,
+   "exit_reason": "time_stop",
+   "net_pnl": -506.8671,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-11 13:50:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX2691774700CE",
+   "entry_premium": 462.3,
+   "exit_premium": 590.1,
+   "exit_reason": "trail_stop",
+   "net_pnl": 2482.7229,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-11 10:10:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX2691774500CE",
+   "entry_premium": 424.8,
+   "exit_premium": 696.65,
+   "exit_reason": "trail_stop",
+   "net_pnl": 5360.0176,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-21 11:05:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26SEP74700CE",
+   "entry_premium": 372.6,
+   "exit_premium": 406.2,
+   "exit_reason": "time_stop",
+   "net_pnl": 606.3986,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-21 13:20:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26SEP74700CE",
+   "entry_premium": 418.8,
+   "exit_premium": 468.7,
+   "exit_reason": "trail_stop",
+   "net_pnl": 929.6596,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-23 13:40:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26SEP74800CE",
+   "entry_premium": 235.65,
+   "exit_premium": 230.4,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -162.839,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-23 14:10:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26SEP74800CE",
+   "entry_premium": 259.05,
+   "exit_premium": 230.55,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -628.0387,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-28 11:40:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26O0173600CE",
+   "entry_premium": 249.25,
+   "exit_premium": 229.0,
+   "exit_reason": "time_stop",
+   "net_pnl": -462.899,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-28 13:25:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26O0173600CE",
+   "entry_premium": 219.55,
+   "exit_premium": 214.7,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -154.1137,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-29 11:10:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26O0173100CE",
+   "entry_premium": 195.5,
+   "exit_premium": 209.95,
+   "exit_reason": "time_stop",
+   "net_pnl": 232.2648,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-30 12:00:00",
+   "component": "SHIPPED",
+   "tradingsymbol": "SENSEX26O0173400CE",
+   "entry_premium": 85.55,
+   "exit_premium": 73.75,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -526.1788,
+   "entry_qty": 40
+  },
+  {
+   "bar_ts": "2026-09-30 12:45:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26O0173600CE",
+   "entry_premium": 87.7,
+   "exit_premium": 64.6,
+   "exit_reason": "premium_backstop",
+   "net_pnl": -977.5247,
+   "entry_qty": 40
+  },
+  {
+   "bar_ts": "2026-10-05 14:00:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26O0872900PE",
+   "entry_premium": 809.75,
+   "exit_premium": 737.4,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -1528.711,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-05 14:05:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26O0873000PE",
+   "entry_premium": 854.2,
+   "exit_premium": 802.05,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -1127.5166,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-09 09:45:00",
+   "component": "SHIPPED",
+   "tradingsymbol": "SENSEX26O1572400CE",
+   "entry_premium": 535.55,
+   "exit_premium": 550.85,
+   "exit_reason": "profit_lock",
+   "net_pnl": 233.5948,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-09 10:25:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26O1572500CE",
+   "entry_premium": 532.55,
+   "exit_premium": 536.95,
+   "exit_reason": "time_stop",
+   "net_pnl": 16.1436,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-09 12:05:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26O1572500CE",
+   "entry_premium": 527.25,
+   "exit_premium": 486.55,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -883.9126,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-13 09:45:00",
+   "component": "SHIPPED",
+   "tradingsymbol": "SENSEX26O1572700CE",
+   "entry_premium": 363.6,
+   "exit_premium": 277.7,
+   "exit_reason": "time_stop",
+   "net_pnl": -1778.6831,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-13 11:35:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26O1572800CE",
+   "entry_premium": 245.65,
+   "exit_premium": 206.15,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -847.0079,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-19 11:35:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26O2274400PE",
+   "entry_premium": 539.55,
+   "exit_premium": 790.05,
+   "exit_reason": "hard_flat_1510",
+   "net_pnl": 4928.5453,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-19 11:30:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26O2274500PE",
+   "entry_premium": 570.55,
+   "exit_premium": 834.3,
+   "exit_reason": "hard_flat_1510",
+   "net_pnl": 5191.6203,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-21 11:20:00",
+   "component": "OR20",
+   "tradingsymbol": "SENSEX26O2274200PE",
+   "entry_premium": 458.7,
+   "exit_premium": 775.6,
+   "exit_reason": "trail_stop",
+   "net_pnl": 6257.7605,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-21 12:10:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26O2273800PE",
+   "entry_premium": 535.7,
+   "exit_premium": 539.7,
+   "exit_reason": "time_stop",
+   "net_pnl": 8.0139,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-21 13:45:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26O2273600PE",
+   "entry_premium": 470.4,
+   "exit_premium": 450.15,
+   "exit_reason": "time_stop",
+   "net_pnl": -473.0691,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-23 13:50:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26OCT73500PE",
+   "entry_premium": 775.4,
+   "exit_premium": 740.05,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -788.526,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-23 14:20:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26OCT73400PE",
+   "entry_premium": 759.45,
+   "exit_premium": 832.6,
+   "exit_reason": "hard_flat_1510",
+   "net_pnl": 1378.1177,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-26 12:25:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26OCT73300CE",
+   "entry_premium": 658.65,
+   "exit_premium": 533.4,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -2577.7684,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-26 12:00:00",
+   "component": "TPB",
+   "tradingsymbol": "SENSEX26OCT73200CE",
+   "entry_premium": 649.35,
+   "exit_premium": 847.35,
+   "exit_reason": "hard_flat_1510",
+   "net_pnl": 3875.4748,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-28 09:45:00",
+   "component": "EFF",
+   "tradingsymbol": "SENSEX26OCT73000CE",
+   "entry_premium": 505.5,
+   "exit_premium": 370.15,
+   "exit_reason": "premium_backstop",
+   "net_pnl": -2772.3447,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-28 10:15:00",
+   "component": "SHIPPED",
+   "tradingsymbol": "SENSEX26OCT72800PE",
+   "entry_premium": 487.25,
+   "exit_premium": 363.25,
+   "exit_reason": "premium_backstop",
+   "net_pnl": -2544.9333,
+   "entry_qty": 20
+  }
+ ],
+ "shipped_trades": [
+  {
+   "bar_ts": "2026-09-21 11:50:00",
+   "tradingsymbol": "SENSEX26SEP74700CE",
+   "entry_premium": 407.4,
+   "exit_premium": 397.55,
+   "exit_reason": "time_stop",
+   "net_pnl": -262.5639,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-23 11:40:00",
+   "tradingsymbol": "SENSEX26SEP74800CE",
+   "entry_premium": 257.65,
+   "exit_premium": 294.05,
+   "exit_reason": "trail_stop",
+   "net_pnl": 667.5793,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-25 14:25:00",
+   "tradingsymbol": "SENSEX26O0174600CE",
+   "entry_premium": 237.0,
+   "exit_premium": 209.9,
+   "exit_reason": "hard_flat_1510",
+   "net_pnl": -599.0775,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-09-30 12:00:00",
+   "tradingsymbol": "SENSEX26O0173400CE",
+   "entry_premium": 85.55,
+   "exit_premium": 73.75,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -526.1788,
+   "entry_qty": 40
+  },
+  {
+   "bar_ts": "2026-09-30 14:35:00",
+   "tradingsymbol": "SENSEX26O0173200PE",
+   "entry_premium": 818.85,
+   "exit_premium": 749.45,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -1470.2407,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-07 13:55:00",
+   "tradingsymbol": "SENSEX26O0872900PE",
+   "entry_premium": 499.5,
+   "exit_premium": 421.3,
+   "exit_reason": "underlying_stop",
+   "net_pnl": -1631.223,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-09 09:45:00",
+   "tradingsymbol": "SENSEX26O1572400CE",
+   "entry_premium": 535.55,
+   "exit_premium": 550.85,
+   "exit_reason": "profit_lock",
+   "net_pnl": 233.5948,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-13 09:45:00",
+   "tradingsymbol": "SENSEX26O1572700CE",
+   "entry_premium": 363.6,
+   "exit_premium": 277.7,
+   "exit_reason": "time_stop",
+   "net_pnl": -1778.6831,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-19 12:00:00",
+   "tradingsymbol": "SENSEX26O2274300PE",
+   "entry_premium": 572.5,
+   "exit_premium": 540.6,
+   "exit_reason": "time_stop",
+   "net_pnl": -710.3253,
+   "entry_qty": 20
+  },
+  {
+   "bar_ts": "2026-10-28 10:15:00",
+   "tradingsymbol": "SENSEX26OCT72800PE",
+   "entry_premium": 487.25,
+   "exit_premium": 363.25,
+   "exit_reason": "premium_backstop",
+   "net_pnl": -2544.9333,
+   "entry_qty": 20
+  }
+ ]
+}

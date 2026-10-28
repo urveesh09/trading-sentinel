@@ -61,6 +61,7 @@ class MomSignal:
     rvol: float = 0.0
     stop_underlying: float = 0.0     # tightest of structural / volatility
     target_underlying: float = 0.0   # 1.5R from entry
+    strategy: str = ""               # [O29c] the book's strategy that fired (fno_book); "" = the shipped break
 
 
 def _minutes_ist(ts: pd.Timestamp) -> int:
