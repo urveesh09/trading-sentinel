@@ -1,0 +1,49 @@
+{
+ "study": "O29d SENSEX check",
+ "rule": {
+  "candidate": "UNION_DRIVE, the engine's fno_book exactly as committed in 01fa551 (no SENSEX-specific value)",
+  "replace_shipped_on_sensex_only_if": [
+   "its net over the SENSEX sessions Sep 10 - Oct 28 is above the shipped break's net on the same sessions",
+   "its net without its best day is above 0",
+   "its worst day is no worse than -Rs 5,000 (the panel C extreme-loss bound)"
+  ],
+  "otherwise": "SENSEX keeps the shipped break; nothing is tuned on these sessions in either case",
+  "metrics": "trades by entry day; net after BFO charges; drawdown over closed trades in exit order (O29b metrics)"
+ },
+ "arms": {
+  "SHIPPED": [
+   "SHIPPED"
+  ],
+  "UNION_DRIVE": [
+   "SHIPPED",
+   "OR20",
+   "EFF",
+   "TPB"
+  ],
+  "UNION": [
+   "SHIPPED",
+   "OR20",
+   "EFF",
+   "TPB"
+  ]
+ },
+ "window": [
+  "2026-09-10",
+  "2026-10-28"
+ ],
+ "sensex_futures": {
+  "216221445": "2026-09-24",
+  "221330181": "2026-10-29"
+ },
+ "extreme_day": -5000.0,
+ "sources_sha256": {
+  "docs/research/fno/2026-10-28-sensex-check/check.py": "50d7cf3ea5f010ec037aefc8b8aafb5cc0e9dbf4daa8d7d191f84c63873f7d40",
+  "python-engine/fno_book.py": "211ff173ee8a0480a773bdac58e98c120fe6045ae1b441474ebbcbd1bba6c2cd",
+  "python-engine/fno_policy_replay.py": "d167016914bc19f8f76422cbb2d49b00ab0c226dcb67e3029640e23c792191ac",
+  "python-engine/fno_engine_mom.py": "0e2b68b78d13be43026e724be5b3b30a4d154187ec3f8f38aa51a73388303a12",
+  "python-engine/fno_shadow.py": "1b03db80287b2cb5c7e665cd4837e41d52cf14ad40cd5d027d7dbd64b804ce2d",
+  "python-engine/fno_entry_plan.py": "deebaf3d34e42fb61d212743a660ef9217c5e40f501ff6ac3828d33585c7f684",
+  "python-engine/fno_exit_rules.py": "05e9a2910bc7fdc8a76f822b385df8687c55e58b03b9e0cf2d5b025588bb8467"
+ },
+ "seen": "no SENSEX session was used to choose the book's strategies, exits or filter"
+}
