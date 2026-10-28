@@ -1,0 +1,219 @@
+{
+ "study": "O29b",
+ "rule": {
+  "metrics": "trades by entry day; net after recorded charges; drawdown over closed trades in exit order",
+  "min_trades": "max(4, ceil(0.25 * sessions in the slice))",
+  "fitness": "(net - best day) / max(max drawdown, 1000); below min trades: -5 + trades / min; ties: net, then key",
+  "G_verdict": "a strategy's filter helps only if its walk-forward picks' out-of-sample net (F1-F4 tests) beats the unfiltered strategy on the same sessions and its worst out-of-sample day is no worse",
+  "F_verdict": "fades work only if the walk-forward fade picks' out-of-sample net is > 0, at least 2 of the 3 multi-session folds (F1-F3) are > 0, and it beats the NULL track's picks out of sample",
+  "S_verdict": "a smart book helps only if its walk-forward picks' out-of-sample net beats both SHIPPED and UNION on the same sessions with no out-of-sample day worse than Rs -5,000",
+  "candidate": "the FINAL fold's picks are forward-test candidates only (panel D); nothing is promoted on seen data, and nothing changes the paper or live books in the proving week"
+ },
+ "folds": [
+  {
+   "name": "F1",
+   "train": [
+    "2026-09-10",
+    "2026-09-30"
+   ],
+   "test": [
+    "2026-10-01",
+    "2026-10-09"
+   ]
+  },
+  {
+   "name": "F2",
+   "train": [
+    "2026-09-10",
+    "2026-10-09"
+   ],
+   "test": [
+    "2026-10-12",
+    "2026-10-16"
+   ]
+  },
+  {
+   "name": "F3",
+   "train": [
+    "2026-09-10",
+    "2026-10-16"
+   ],
+   "test": [
+    "2026-10-19",
+    "2026-10-26"
+   ]
+  },
+  {
+   "name": "F4",
+   "train": [
+    "2026-09-10",
+    "2026-10-26"
+   ],
+   "test": [
+    "2026-10-27",
+    "2026-10-28"
+   ]
+  },
+  {
+   "name": "FINAL",
+   "train": [
+    "2026-09-10",
+    "2026-10-28"
+   ],
+   "test": null
+  }
+ ],
+ "gates": [
+  "ALWAYS",
+  "drive:HIGH",
+  "nofail",
+  "er:0.2",
+  "er:0.3",
+  "vx:3",
+  "used:0.8",
+  "nofail+er:0.2"
+ ],
+ "fade_genes": {
+  "level": [
+   "OR30",
+   "OR20"
+  ],
+  "within": [
+   1,
+   2,
+   3
+  ],
+  "buffer": [
+   0.0,
+   0.1
+  ],
+  "stop": [
+   "STRUCT",
+   1.0,
+   1.5
+  ],
+  "target_r": [
+   1.8,
+   2.4
+  ],
+  "exit": [
+   "LIVE",
+   "LATE"
+  ],
+  "window": [
+   "ALL",
+   "AM"
+  ]
+ },
+ "vr_genes": {
+  "k": [
+   1.0,
+   1.5,
+   2.0
+  ],
+  "er_below": [
+   0.2,
+   0.3,
+   1.0
+  ],
+  "stop": [
+   1.0,
+   1.5
+  ],
+  "target_r": [
+   1.8,
+   2.4
+  ],
+  "exit": [
+   "LIVE",
+   "LATE"
+  ]
+ },
+ "null_genes": {
+  "p": [
+   0.02,
+   0.04,
+   0.08
+  ],
+  "seed": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15
+  ]
+ },
+ "fade_top": 3,
+ "counts": {
+  "gated": 32,
+  "fades": 360,
+  "nulls": 48
+ },
+ "baselines": {
+  "UNION": {
+   "comps": [
+    [
+     "SHIPPED",
+     "ALWAYS",
+     null
+    ],
+    [
+     "OR20",
+     "ALWAYS",
+     null
+    ],
+    [
+     "EFF",
+     "ALWAYS",
+     null
+    ],
+    [
+     "TPB",
+     "ALWAYS",
+     null
+    ]
+   ]
+  },
+  "UNION_DRIVE": {
+   "comps": [
+    [
+     "SHIPPED",
+     "drive:HIGH",
+     null
+    ],
+    [
+     "OR20",
+     "drive:HIGH",
+     null
+    ],
+    [
+     "EFF",
+     "drive:HIGH",
+     null
+    ],
+    [
+     "TPB",
+     "ALWAYS",
+     null
+    ]
+   ]
+  }
+ },
+ "sources_sha256": {
+  "study.py": "aa9cbdfd6c8a28ebd4ef5d7461dd838417196c04793cbe6d4c48263120234fd0",
+  "router.py": "f15c4f1688aa5d7f9a2232a523708d882380bfde112cc29f58e0c787c97872cc",
+  "lab.py": "c36e743ff3115f0ca752f2f8f6e5fe70ca89ad7f0797e441e27caa559eeb29a6"
+ },
+ "seen": "every session was seen by O27-O28; Oct 28 prompted this study"
+}
