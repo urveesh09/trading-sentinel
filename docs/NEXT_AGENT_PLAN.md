@@ -1,3 +1,33 @@
+## October 28 — O28 Regime router: when the best F&O strategies won, and whether switching them by a 09:45 condition helps (research, Dev, freeze `728cdf8`, results in the commit that adds this section, pushed)
+
+- Owner ask (Oct 28): find under what market condition the trend-day pullback, the O27e efficiency break and the other best strategies won, whether that can be identified in time, and test "if that condition is met, then the specific strategy for that condition be deployed" on the ~20-day history; "ensure correctness".
+- Study: `docs/research/fno/2026-10-28-regime-router/` (`router.py`, `test_router.py`, `analyze.py`, `freeze.json`, `results.json`, `README.md`). Research only: no runtime module imports it, and no orders.
+- **Design (frozen in `728cdf8` before any router was scored):**
+  - Components, each exactly as studied:
+    - `SHIPPED` (CURRENT);
+    - `OR20` (O27 grid OR20, no EMA, late lock, T75, 1.5-ATR trail);
+    - `EFF` (O27e finalist `ed0d136bdd80ee89`);
+    - `TPB` (O27f pullback, the live shadow).
+  - Five conditions known at 09:45: opening-range width, opening drive, previous-day narrow range, gap and 5-day trend efficiency. Each is HIGH/LOW at the median of the previous 20 sessions.
+  - Each component gets ALWAYS, NEVER or one condition.
+  - Compared: a walk-forward router on the O27f folds, three literature routers, `UNION`, each component alone and 200 random routers.
+  - Every router is replayed once over the 29 sessions through the shipped book. The shipped `_entry` and `_manage` are unchanged, and each leg keeps its own component's exits.
+- **Correctness:**
+  - each component routed alone reproduced its stored trades exactly (13 / 20 / 38 / 14 records, to the rupee);
+  - the signal cache had 0 conflicts and 0 misses over 252 replays;
+  - the conditions were recomputed with later bars deleted and came out identical;
+  - `test_router.py` 15 passed.
+- **Result (verdict `CONDITIONS_NOT_SHOWN_TO_ADD_VALUE`):**
+  - The walk-forward router made +₹20,896 on the 16 held-out sessions, against +₹33,662 for running all four always (`UNION`). It lost all 3 folds and beat only 41% of the random routers.
+  - `THEORY_DRIVE` made +₹33,828: the same as UNION, with fewer trades.
+  - All four strategies made most of their money on hindsight trend days (18 of 29).
+  - Only one morning sign pointed the same way in both halves for EFF and OR20: the opening drive (11 of 14 drive mornings became trend days, against 7 of 15). It is not significant after Holm (p 0.15).
+  - The engine's regime label is not a separator (elevated on 25 of 29 days).
+  - The strategies' daily results correlate between −0.22 and +0.32, so running them together beat each alone on the held-out sessions. That is optimistic, because the components were chosen on these sessions.
+- **Decision:** no regime switch goes into the system. The forward candidates, declared before the Oct 28 open, are `UNION` and `THEORY_DRIVE`. A forward panel for them needs the owner's go-ahead (research only; the proving-week paper and live rules stay unchanged).
+- Config and migration: none. No engine, gateway or agent source changed, so the atlas is unchanged. Seen data only: tests are not profitability.
+- Remaining: the owner's decision on a forward panel C; re-run the frozen study from `728cdf8` when more sessions exist.
+
 ## October 27 — O27h The trend-day VWAP pullback runs live as a shadow beside the shipped strategy, with an owner message when it signals (Dev, commit `faaf366`, pushed, deployed by PR #120 (`104485b`, Oct 27))
 
 - Owner ask (Oct 27, 23:05): "your trend-day VWAP pullback implement that in fno right now, and make the current strategy as a shadow or make this a shadow and continue the current strategy … commit push it all and merge and then deploy in prod".

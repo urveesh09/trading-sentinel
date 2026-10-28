@@ -1,3 +1,8 @@
+## October 28 — O28 Regime router study (research, Dev, freeze `728cdf8`, results in the commit that adds this section, pushed)
+
+- [x] Frozen before scoring (`728cdf8`); parity exact for all four components; 252 replays; verdict `CONDITIONS_NOT_SHOWN_TO_ADD_VALUE`.
+- [ ] Owner: decide whether `UNION` and `THEORY_DRIVE` go into a forward panel (research only; no paper or live change in the proving week).
+
 ## October 27 — O27h Trend-day pullback shadow (Dev, commit `faaf366`, pushed, deployed by PR #120 (`104485b`, Oct 27))
 
 - [x] The shadow variant, its replay arm (exactly the lab's 14 trades), the owner message and the tests.

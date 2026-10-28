@@ -1,3 +1,8 @@
+## October 28 — O28 Regime router study (research only, research, Dev, freeze `728cdf8`, results in the commit that adds this section, pushed)
+
+- No system behaviour changed. The paper and live F&O books still trade the shipped opening-range break, and the `FNO_TREND_PULLBACK` shadow and its owner message are unchanged.
+- Finding: the best F&O strategies won mainly on trend days. Of the five 09:45 conditions tested, only a strong opening drive leaned the right way consistently (for the two breakouts), and it is unproven. Switching strategies by condition did not beat running them together (`docs/research/fno/2026-10-28-regime-router/README.md`).
+
 ## October 27 — O27h Trend-day pullback shadow and its owner message (Dev, commit `faaf366`, pushed, deployed by PR #120 (`104485b`, Oct 27))
 
 - The F&O shadow registry has six variants. `FNO_TREND_PULLBACK` (O27f FINAL pick) is recorded live with the other five in `fno_shadow_evaluations`. It is broker-free and cannot reach an order, sizing or a position.
