@@ -1,3 +1,10 @@
+## October 28 — O29 Partner-watch fixes (Dev; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+
+- [x] Cash refresh, first-read refusals plus plain trigger wording, carried sales in DAY and the report, and the next-session expiry close note, all in Dev with tests.
+- [ ] Owner: merge and deploy when ready. It is not part of the paper or live F&O rules, so the proving week is unaffected.
+- [ ] After deploy, on the first day with a top-up or overnight hold: check `partner_watch_report` and the DAY and REFUSED texts.
+- [ ] Owner calls listed in the plan: the paper NIFTY pool floor, ₹12,500 against NIFTY lot costs, and the NIFTY-only panels.
+
 ## October 28 — O28b Forward panel C (research, Dev, commit `feaeae4`, pushed; pinned and hooked into the 16:00 task)
 
 - [x] Built, frozen, pinned and hooked after panel B. The end-to-end launcher run passed (0 sessions before the open).

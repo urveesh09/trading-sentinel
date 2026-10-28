@@ -1,3 +1,13 @@
+## October 28 — O29 Partner watch: cash, first-read refusals, overnight sales, the close note (Dev; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+
+- **Cash:** read at the first tick, then again every 5 minutes (`CASH_REFRESH`). Money added during the day counts from the next read.
+- **Refusals:** a refusal found on the day's first read (or after a restart) is told when it is at most 5 minutes old (`REFUSED_FIRST_READ`). An older one is not told, and the message key stops a repeat.
+  - A stop refused because the price was already past its trigger reads in plain words (`refusal_plain`), in the watch and in the evening review.
+  - When a refused stop leaves the trade with no stop, the message says so and gives the bid's result.
+- **DAY:** the day's result includes options held from an earlier day and sold today, on a line of their own ("held from an earlier day and sold today"). A buy within 30 minutes of their losing sale counts as one after a loss. The frozen score still counts only trades bought that day.
+- **CLOSE:** an NRML option that expires on the next weekday's close says so, with what it is worth now. Otherwise one day's decay is capped at its value.
+- **`partner_watch_report`:** the trades line adds the carried-in sales and the day's total.
+
 ## October 28 — O28b Forward panel C (research only, research, Dev, commit `feaeae4`, pushed; pinned and hooked into the 16:00 task)
 
 - Panel A's 16:00 IST task now also runs panel C (pinned in `sentinel-operations`). It replays `SHIPPED`, `UNION` (the four studied strategies in one book) and `UNION_DRIVE` on each session from Oct 28, from a read-only export of Production's research archive.

@@ -150,13 +150,16 @@ def _trips(db, first_day: str, last_day: str) -> dict:
 
 def day_totals(trips: list) -> dict:
     """[O26] A day's trades bought that day (carried ones apart): closed, won, lost, the result after charges,
-    whether every closed one is from Zerodha's trade book, and how many are still open."""
+    whether every closed one is from Zerodha's trade book, and how many are still open. [O29] And what the carried
+    ones sold that day made against what was paid for them (Oct 28: −₹12,444 on two calls from Oct 27's close)."""
     today = [t for t in trips if not t["carried"]]
     closed = [t for t in today if t["realised"] is not None]
+    carried_closed = [t for t in trips if t["carried"] and t["realised"] is not None]
     return {"closed": len(closed), "won": sum(t["realised"] > 0 for t in closed),
             "lost": sum(t["realised"] < 0 for t in closed), "net": round(sum(t["realised"] for t in closed), 2),
             "exact": all(t["exact"] for t in closed), "open": sum(t["realised"] is None for t in today),
-            "carried": len(trips) - len(today)}
+            "carried": len(trips) - len(today), "carried_closed": len(carried_closed),
+            "carried_net": round(sum(t["realised"] for t in carried_closed), 2)}
 
 
 def _rupees(value: float) -> str:
@@ -224,7 +227,9 @@ def render(data: dict) -> str:
         lines.append(f"Trades {day}: {totals['closed']} closed ({totals['won']} won, {totals['lost']} lost), "
                      f"{_rupees(totals['net'])} after charges"
                      + ("" if totals["exact"] else " (some fills from the orders, not the trade book)")
-                     + f"; {totals['open']} open" + (f"; {totals['carried']} carried in" if totals["carried"] else ""))
+                     + f"; {totals['open']} open" + (f"; {totals['carried']} carried in" if totals["carried"] else "")
+                     + (f" ({totals['carried_closed']} sold {_rupees(totals['carried_net'])}; the day "
+                        f"{_rupees(totals['net'] + totals['carried_net'])})" if totals["carried_closed"] else ""))
         lines.extend(_trip_line(trip) for trip in trips)
     return "\n".join(lines)
 

@@ -97,6 +97,8 @@ _FUNDS = re.compile(r"insufficient|margin|funds", re.IGNORECASE)
 # [O24-RF] "Margin required: 159586.95. Margin available: 7536.70." in Zerodha's refusal.
 _MARGIN = re.compile(r"margin required:\s*([0-9][0-9,]*(?:\.[0-9]+)?).*?margin available:\s*([0-9][0-9,]*(?:\.[0-9]+)?)",
                      re.IGNORECASE | re.DOTALL)
+# [O29] "Trigger price for stoploss orders need to be higher than the LTP for buys, and lower than the LTP for sells."
+_TRIGGER_PASSED = re.compile(r"trigger price for stop\s*loss", re.IGNORECASE)
 
 
 @dataclass
@@ -370,7 +372,18 @@ def refusal_plain(order: dict, orders: list) -> Optional[str]:
     for margin was counted as a new short sale: the option was not held,
     the buy and the sale used different products, the sale was for more
     than was held, or (the rest) another sell order was already waiting for
-    the lot."""
+    the lot.
+
+    [O29] A stop order refused because the price was already past its
+    trigger, also in plain words: Oct 28 09:15, two stops for options held
+    overnight, the market opening under them."""
+    trigger = order.get("trigger_price")
+    if _TRIGGER_PASSED.search(str(order.get("status_message") or "")) and trigger:
+        if order["transaction_type"] == "SELL":
+            return (f"the price was already at or under its trigger {_px(float(trigger))} when it reached the exchange "
+                    f"(a sell stop has to sit under the price), so the stop was never placed.")
+        return (f"the price was already at or over its trigger {_px(float(trigger))} when it reached the exchange "
+                f"(a buy stop has to sit over the price), so it was never placed.")
     found = _MARGIN.search(str(order.get("status_message") or ""))
     at = _dt(order.get("placed_at"))
     if not found or at is None:

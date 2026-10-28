@@ -1,3 +1,30 @@
+## October 28 — O29 The Oct 28 review: four partner-watch fixes, and what the day showed (Dev; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+
+- Owner ask (Oct 28 evening): "how was the day? How did the partner perform? And what all learnings did we get? What bug fixes? … how did the strategies do did all of them together work better than our current strategies and report to me everything".
+- **Evidence** (Production, read-only; `partner_watch_report`, `partner_watch_score`, `fno_positions`, `fno_signals`, the panels' REPORT.md):
+  - **Partner:** 45 round trips bought on Oct 28, −₹40,320 after modelled charges (10 won, 35 lost). Two calls bought at Oct 27's close (15:31, 15:39) sold at the open for −₹12,444. The day's realised total was −₹52,764 on ₹71,136 of opening cash. No pre-buy check was sent.
+  - **The watch:** every message reached Telegram except one BLIND, during a host DNS outage from 13:27:40 to about 13:30 (Kite and Telegram both failed).
+  - **Paper F&O:** SENSEX 72800 PE −₹2,529 (premium backstop) and SENSEX 73200 CE +₹178 (profit lock), −₹2,351 in all. The 10:15 NIFTY signal was refused `pool_below_min_viable`: it needed ₹233,594 and the pool had ₹223,745.
+  - **Forward panels (first session):** SHIPPED −₹3,669; UNION −₹5,955 (OR20's 09:51 long, then the shipped 10:21 short), which triggered panel C's extreme-loss alarm; UNION_DRIVE ₹0 (opening drive LOW, so only TPB was on, and it did not trigger). Provisional until Nov 27.
+- **Fixed in the partner watch:**
+  1. **Cash read once a day.** Oct 27: ₹50,000 was added during the day (by 13:40) on ₹10,677, and every share after it was said against ₹10,677 ("200% of your cash"). The cash is now read again every `CASH_REFRESH` (5 min). A failed refresh keeps the last value.
+  2. **Refusals on the first read were never told.** Oct 28: the stops for the two overnight calls (₹330 and ₹100) were refused at 09:15:00 because the market opened under them. That was before the first read, so the partner heard only "no stop order yet" at 09:17, and sold at ₹160 and ₹50.
+     - A refusal at most `REFUSED_FIRST_READ` (5 min) old is now told. The outbox key keeps it to one message across restarts.
+     - `partner_insights.refusal_plain` now says in plain words that the price was already past the trigger.
+     - A refused stop that leaves the trade with no stop now says "nothing limits its loss now" and what selling at the bid gives.
+  3. **DAY left out options held overnight and sold today.** At 09:43 it said −₹11,526 (16%) where the day had lost −₹23,970 (33%). They are now in the day's result, on a line of their own, and a buy soon after their losing sale counts as one after a loss.
+     - `partner_watch_report` shows them and the day's total.
+     - The frozen score's cohort is unchanged (bought that day).
+  4. **CLOSE on an option expiring at the next session's close** said "time decay is about ₹46,725 a day" on a put worth about ₹42,000. It now says the option expires at that close and what it is worth now. Elsewhere, one day's decay is capped at the option's value.
+- Files: `partner_watch.py`, `partner_insights.py`, `partner_watch_report.py`; tests in `test_partner_watch.py` (+5) and `test_partner_stop_reading.py` (R6 now plain, +R7, +R8).
+- Acceptance: the partner-watch modules pass 159. The full engine suite result is in the handover.
+- Config and migration: none (module constants only). Rollout: Dev only, until the owner's merge and deploy. Rollback: revert the commit.
+- **Found, not changed (owner calls):**
+  - **The paper book's NIFTY leg on dear days.** The pool was ₹223,745 at 10:15: the ₹2,50,000 bankroll less paper losses. A lot must satisfy premium × 65 × 12.5 ≤ pool, and Oct 28's ATM put at about ₹287 failed that. Sizing is frozen through the proving week (Oct 26–30).
+  - **The real-money test is NIFTY-only with ₹12,500 and reserves the whole premium.** Six of the paper book's 15 NIFTY buys since Sep 1 cost more than ₹12,500 a lot (₹12,548–₹14,485), and Oct 28's candidates cost ₹18,665–₹19,009. The test would have skipped those trades.
+  - **The forward panels replay NIFTY only** (`fno_policy_replay.CachedReplayData.observations`), while the paper book also trades SENSEX. A panel's SHIPPED arm is therefore not the paper book. The arms are still compared on equal terms.
+  - **Partner score** (frozen v2, Oct 27–28): AFTER_LOSS is SUPPORTED (47 warned trades −₹25,354 against 20 unwarned +₹16,273). CHASED_SPIKE and UNUSUAL_SIZE are NOT_SUPPORTED. Oct 27's size shares were stored against ₹10,677 (fix 1).
+
 ## October 28 — O28b Forward panel C: the four studied strategies in one book, and with the opening-drive gate, from Oct 28 (research, Dev, commit `feaeae4`, pushed; pinned and hooked into the 16:00 task)
 
 - Owner ask (Oct 28): "What you think will be the best performance that you should now put it in that development, and we will test tomorrow … all four of them together? … I will let you take that call … if you are fast enough, we can even test that from today itself … ensure that we do not make extreme losses also."
