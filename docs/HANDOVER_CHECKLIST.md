@@ -1,3 +1,9 @@
+## October 28 — O28b Forward panel C (research, Dev, commit `feaeae4`, pushed; pinned and hooked into the 16:00 task)
+
+- [x] Built, frozen, pinned and hooked after panel B. The end-to-end launcher run passed (0 sessions before the open).
+- [ ] Each evening: `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-c-20261028\docs\research\fno\2026-10-28-forward-panel-c\_local\REPORT.md` (watch the extreme-loss alarm line).
+- [ ] Nov 27: read the frozen rule. Promotion is the owner's call, never in a proving week.
+
 ## October 28 — O28 Regime router study (research, Dev, freeze `728cdf8`, results `d3b9a70`, pushed)
 
 - [x] Frozen before scoring (`728cdf8`); parity exact for all four components; 252 replays; verdict `CONDITIONS_NOT_SHOWN_TO_ADD_VALUE`.

@@ -1,3 +1,26 @@
+## October 28 — O28b Forward panel C: the four studied strategies in one book, and with the opening-drive gate, from Oct 28 (research, Dev, commit `feaeae4`, pushed; pinned and hooked into the 16:00 task)
+
+- Owner ask (Oct 28): "What you think will be the best performance that you should now put it in that development, and we will test tomorrow … all four of them together? … I will let you take that call … if you are fast enough, we can even test that from today itself … ensure that we do not make extreme losses also."
+- **The call:**
+  - No regime switch, because O28 showed switching by a 09:45 condition did not help.
+  - Forward-test running the four studied strategies together. On O28's held-out sessions that made +₹33,662, against +₹9,528 shipped and +₹8,530 for the pullback alone. Its worst day was larger: −₹2,784 against −₹1,461.
+  - Research only. The proving week freezes paper, and the real-money test mirrors paper.
+- **Study:** `docs/research/fno/2026-10-28-forward-panel-c/` (`panel_c.py`, `test_panel_c.py`, `freeze.json`, `README.md`).
+  - Arms: `SHIPPED`; `UNION` (SHIPPED + OR20 + EFF + TPB, always on); `UNION_DRIVE` (O28 `THEORY_DRIVE`).
+  - Both router arms were committed in O28 `d3b9a70` before the Oct 28 open.
+  - Every arm runs through the shipped book's brakes unchanged.
+- **Rule:** panel A's checks, plus no day worse than −₹5,000 (2% of the paper bankroll). A day worse than that, or a drawdown above ₹12,500 (5%), is flagged at the top of REPORT.md.
+- **Correctness:**
+  - On O28's data the forward machinery reproduces the O28 UNION path exactly, every trade and its strategy, and recomputes all 29 sessions' 09:45 values identically.
+  - `test_panel_c.py` 6 passed, together with `test_router.py` 15 (21).
+  - In the pinned copy, the bound inputs equal the freeze, and replaying Oct 21–26 gives 0 history mismatches.
+  - The launcher ran end to end at 08:21 IST: read-only export, 0 sessions, exit 0.
+- **Rollout:**
+  - Pinned copy at `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-c-20261028\` with `run_panel_c.cmd`, called by panel A's `run_panel.cmd` after panel B.
+  - The owner's task "Sentinel F&O forward panel" is registered (next run Oct 28, 16:00), so Oct 28 is the first scored session.
+- Config and migration: none. No Production change.
+- Remaining: read REPORT.md each evening. The verdict comes after Nov 27. Nothing is promoted in a proving week.
+
 ## October 28 — O28 Regime router: when the best F&O strategies won, and whether switching them by a 09:45 condition helps (research, Dev, freeze `728cdf8`, results `d3b9a70`, pushed)
 
 - Owner ask (Oct 28): find under what market condition the trend-day pullback, the O27e efficiency break and the other best strategies won, whether that can be identified in time, and test "if that condition is met, then the specific strategy for that condition be deployed" on the ~20-day history; "ensure correctness".

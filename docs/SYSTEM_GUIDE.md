@@ -1,3 +1,8 @@
+## October 28 — O28b Forward panel C (research only, research, Dev, commit `feaeae4`, pushed; pinned and hooked into the 16:00 task)
+
+- Panel A's 16:00 IST task now also runs panel C (pinned in `sentinel-operations`). It replays `SHIPPED`, `UNION` (the four studied strategies in one book) and `UNION_DRIVE` on each session from Oct 28, from a read-only export of Production's research archive.
+- It has no effect on Production, the paper book or the real-money test.
+
 ## October 28 — O28 Regime router study (research only, research, Dev, freeze `728cdf8`, results `d3b9a70`, pushed)
 
 - No system behaviour changed. The paper and live F&O books still trade the shipped opening-range break, and the `FNO_TREND_PULLBACK` shadow and its owner message are unchanged.
