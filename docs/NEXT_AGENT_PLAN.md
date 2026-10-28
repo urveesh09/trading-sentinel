@@ -1,3 +1,42 @@
+## October 28 — O29c The paper book's NIFTY strategy: the four studied strategies, breakouts only on a HIGH opening drive (Dev, commit pending; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+
+- Owner (Oct 28 evening, after O29b): "the best strategy was the combination of the four and if we have understood that today was not a good day which is two day then I agree. We can not trade on that day ... you don't have to take my call, just, the best strategy and some other strategies are shadow and go ahead and make the change."
+- **The call:** UNION_DRIVE (O28 THEORY_DRIVE, panel C's arm) becomes the single-leg paper book's strategy for NIFTY. The shipped break stays as a shadow (fno_shadow FNO_BASE), and panels A–D keep scoring the alternatives.
+- **Evidence (all on seen sessions):**
+  - 31 sessions, Sep 10 – Oct 28: 32 closed trades (1 unresolved), +₹44,170; without the best day +₹33,642; worst day −₹2,500; max drawdown ₹8,007; 9 green and 4 red days.
+  - For comparison: the four always on made +₹34,450 (worst day −₹5,955), and the shipped break +₹7,132 (+₹25 without its best day).
+  - O28 held-out: +₹33,828 against +₹27,706 and +₹9,528.
+  - The drive filter is the only one that held up in O29b. On Oct 28 it kept the book out.
+- **Code:**
+  - `fno_book.py` (new):
+    - the opening drive and its HIGH/LOW side: median of the previous 20, at least 5 needed;
+    - the table `fno_opening_drive`, seeded with the 38 research values from Sep 2 to Oct 28, with missing sessions backfilled from the bars;
+    - a port of the O27e efficiency break;
+    - `book_signal`: SHIPPED, OR20 (FNO_OR_20 without the EMA check), EFF, TPB, with the breakouts only on HIGH;
+    - per-strategy exits: OR20 lock 0.8R / T75 / TR1.5; EFF T60 / TR1.5 / no lock; TPB T120 / TR2 / no lock; SHIPPED live.
+  - `config.FNO_BOOK` = `UNION_DRIVE` (`SHIPPED` restores the shipped break).
+  - `MomSignal.strategy`; the column `fno_positions.strategy` (idempotent ALTER).
+  - `fno_orchestrator`: the book signal in the NIFTY single-leg pass. The shared shipped signal is not changed, so the capped-loss book is unaffected. A book error means no entry. Exits use `fno_book.exit_overrides(p.strategy)`. The Telegram entry line shows `strategy=`.
+  - `fno_live_test`: the mirrored real position keeps the paper trade's strategy.
+  - `tests/conftest.py` pins `FNO_BOOK=SHIPPED` for the older F&O tests.
+- **Acceptance:**
+  - `tests/test_fno_book.py` passes 12, including the live tick:
+    - a one-way morning trades as SHIPPED;
+    - a flat morning logs `drive_low:` / `drive_unknown:breakout_skipped` and does not trade;
+    - TPB's 120-minute time stop keeps a trade that the shipped 45-minute stop cuts;
+    - `FNO_BOOK=SHIPPED` restores the old behaviour.
+  - **Research parity**, `docs/research/fno/2026-10-28-chop-study/test_engine_parity.py` passes 2:
+    - the engine's drive and side equal the research table on all 31 sessions;
+    - the engine book, replayed through the shipped book with its own exits, trades exactly as the research UNION_DRIVE (33 trades).
+  - The full engine suite result is in the handover.
+- **Config and migration:** the new setting `FNO_BOOK` (default `UNION_DRIVE`), the new column `fno_positions.strategy`, the new table `fno_opening_drive`. No `.env` change is needed.
+- **Rollout:** Dev only, until the owner's merge and deploy go-ahead. Rollback: `FNO_BOOK=SHIPPED` in the root `.env` plus an engine restart (open positions keep their strategy's exits), or revert the commit.
+- **Scope and limits:**
+  - NIFTY only; SENSEX keeps the shipped break (the research is NIFTY-only).
+  - The real-money test (from Nov 2, NIFTY, one lot, ₹12,500) mirrors whatever the paper book buys, so it would mirror this book's trades.
+  - This changes the paper book inside the proving week, on the owner's Oct 28 instruction.
+  - Nothing here has forward evidence yet: panels C and D are the forward check.
+
 ## October 28 — O29b Chop study: why the breakouts lost on Oct 28, the opening-drive filter, and forward panel D (study 903f28f/e8d3ee5, panel D c02a997, pushed; research only, not deployed)
 
 - Owner ask (Oct 28 evening): investigate why the strategies went so bad, which days they should not be used on, and how to know that in time; implement it, plus a strategy that makes money even then. Any number of combinations is allowed, and Production may be stopped for RAM. It was not stopped, because it was not needed.

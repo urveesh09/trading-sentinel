@@ -1,3 +1,10 @@
+## October 28 — O29c Four-strategy NIFTY book (Dev, commit pending; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+
+- [x] `fno_book` and its wiring, tests, and research parity (an exact trade match over 31 sessions).
+- [ ] Owner: merge and deploy go-ahead. After the deploy, check that the engine starts and that the `fno_opening_drive` row for the day appears after 09:45 (`SELECT * FROM fno_opening_drive ORDER BY session_date DESC LIMIT 3`, read-only).
+- [ ] After the first sessions: compare the paper book with forward panel C's UNION_DRIVE row (same strategy, replayed).
+- [ ] Rollback if needed: `FNO_BOOK=SHIPPED` in the root `.env`, then restart the engine.
+
 ## October 28 — O29b Chop study and forward panel D (study 903f28f/e8d3ee5, panel D c02a997, pushed; research only, not deployed)
 
 - [x] Study frozen, run and analysed. Panel D built, frozen, pinned and smoke-tested (bound == freeze; launcher exit 0).

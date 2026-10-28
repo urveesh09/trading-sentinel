@@ -453,7 +453,7 @@ async def mirror_entry(kite, db_path: str, executor, *, sig, paper_entry: dict, 
             premium_stop=round((1.0 - settings.FNO_STOP_PREMIUM_PCT) * fill, 2),
             trail_active=0, trail_stop_underlying=None, best_underlying=row["entry_underlying"],
             max_loss_rupees=filled_loss, status="OPEN", entry_order_id=result.get("order_id"),
-            bar_ts=sig.bar_ts,
+            bar_ts=sig.bar_ts, strategy=getattr(sig, "strategy", "") or None,   # [O29c] the paper trade's exits
         )
     except Exception as exc:
         await resolve_shared_fno_entry_dispatch(

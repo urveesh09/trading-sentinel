@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import asyncio
 from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import replace
 from datetime import datetime, timedelta
 from time import monotonic
 from typing import Callable, List, Optional
@@ -34,6 +35,7 @@ from uuid import uuid4
 import pytz
 import structlog
 
+import fno_book
 import fno_broker_backstop
 import fno_live_test
 import fno_positions as fpos
@@ -547,7 +549,8 @@ async def _manage_open_positions(
                                                f"then use F&O exit recovery (/ops/fno-exit-intents/{p.id}).")
                 continue
         breach_key = (source, p.id)
-        exit_params = live_single_leg_exit_params(settings)
+        # [O29c] Each position is managed with its own strategy's exits (fno_book; none for the shipped break).
+        exit_params = {**live_single_leg_exit_params(settings), **fno_book.exit_overrides(p.strategy)}
         decision = evaluate_single_leg_exit(
             p, now_ist=now_ist, fut_price=position_fut, exit_px_basis=exit_px_basis,
             hard_flat=hard_flat, params=exit_params,
@@ -1247,6 +1250,7 @@ async def _try_entry_for_leg(
         status="OPEN",
         entry_order_id=result.get("order_id"),
         bar_ts=sig.bar_ts,
+        strategy=sig.strategy or None,
     ))
     except Exception:
         if reservation_key:
@@ -1284,7 +1288,7 @@ async def _try_entry_for_leg(
     return {
         "symbol": contract.tradingsymbol, "direction": sig.direction.value,
         "lots": lots, "fill": fill, "delta": round(delta_val, 2),
-        "iv": round(iv, 3), "source": source,
+        "iv": round(iv, 3), "source": source, "strategy": sig.strategy or None,
     }
 
 
@@ -1719,6 +1723,17 @@ async def _single_leg_entries(
         stages["entry_evaluation"] = round(
             monotonic() - stage_started, 3
         )
+    if fno_book.enabled_for(name) and sig.bar_ts:
+        # [O29c] The NIFTY book: the four studied strategies, the breakouts only on a HIGH opening drive. The
+        # shipped evaluation above is shared (the capped-loss book) and is not changed; the book's is a copy.
+        stage_started = monotonic()
+        try:
+            _drive, side = await fno_book.drive_today(db_path, bars, evaluation_now_ist)
+            sig = fno_book.book_signal(bars, regime, evaluation_now_ist, shipped=sig, side=side)
+        except Exception as exc:          # no entry rather than an unfiltered one
+            logger.error("fno_book_signal_failed err=%s", str(exc), exc_info=True)
+            sig = replace(sig, direction=None, strategy="", reject_reason="book_error")
+        stages["book_evaluation"] = round(monotonic() - stage_started, 3)
     if not sig.bar_ts:
         return f"engine:{sig.reject_reason}", bars
 
@@ -1954,9 +1969,10 @@ def format_fno_telegram(summary: dict) -> str:
         # [O25] A real order is said so in words, with the paper price beside it.
         real = "💰 REAL MONEY " if not is_paper_source(e["source"]) else ""
         paper = f" (paper bought @ {e['paper_fill']:.2f})" if e.get("paper_fill") is not None else ""
+        strategy = f" strategy={e['strategy']}" if e.get("strategy") else ""      # [O29c] which of the book's four
         out.append(
             f"{real}ENTRY [{e['source']}]{tag} `{e['symbol']}` {e['direction']} "
-            f"lots={e['lots']} @ {e['fill']:.2f} delta={e['delta']} iv={e['iv']}{paper}"
+            f"lots={e['lots']} @ {e['fill']:.2f} delta={e['delta']} iv={e['iv']}{strategy}{paper}"
         )
     for x in summary.get("exits", []):
         real = "💰 REAL MONEY " if not is_paper_source(x["source"]) else ""

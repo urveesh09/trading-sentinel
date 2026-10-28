@@ -1,3 +1,12 @@
+## October 28 — O29c The NIFTY paper book: four strategies, breakouts only on a HIGH opening drive (Dev, commit pending; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+
+- With `FNO_BOOK=UNION_DRIVE` (the default), the single-leg paper book's NIFTY signal comes from `fno_book.book_signal`.
+  - **Order:** the first of SHIPPED, OR20, EFF and TPB that signals on the bar.
+  - **Filter:** SHIPPED, OR20 and EFF only when the 09:45 opening drive is above the median of the previous 20 sessions' drives (`fno_opening_drive`). On a LOW or unknown morning, only TPB can trade.
+- **Exits:** each position stores its strategy (`fno_positions.strategy`) and is managed with that strategy's exits. A position without one uses the live exits.
+- **Unchanged:** SENSEX, the capped-loss book and the shadows. `FNO_BOOK=SHIPPED` restores the shipped break for NIFTY.
+- The F&O Telegram entry line names the strategy.
+
 ## October 28 — O29b Forward panel D (research only, study 903f28f/e8d3ee5, panel D c02a997, pushed; research only, not deployed)
 
 - Panel D replays the 09:45 opening-drive filter on SHIPPED, OR20 and EFF, and the O29b FINAL smart book, beside the shipped book on each session from Oct 29. It reads a read-only export of Production's research archive.

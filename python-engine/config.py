@@ -1052,6 +1052,12 @@ class Settings(BaseSettings):
     FNO_EXIT_QUOTE_READ_MAX_SEC: float = 5.0
     FNO_DR_MANAGEMENT_READ_MAX_SEC: float = 10.0
 
+    # [O29c 2026-10-28] The single-leg book's strategy for NIFTY (owner, Oct 28: the four studied strategies
+    # together, no breakout on a two-way morning). UNION_DRIVE: fno_book's SHIPPED, OR20, EFF and TPB in one book,
+    # the three breakouts only on a HIGH 09:45 opening drive, each position with its own exits. SHIPPED: the shipped
+    # break alone (the pre-O29c book). SENSEX keeps the shipped break either way.
+    FNO_BOOK:                  str   = "UNION_DRIVE"
+
     # --- universe ----------------------------------------------------------
     FNO_UNDERLYING:            str   = "NIFTY"    # primary trading underlying (capped-loss book, shadow)
     # [FNO-GROWTH 2026-10-04] Single-leg paper book underlyings. SENSEX (BSE's
