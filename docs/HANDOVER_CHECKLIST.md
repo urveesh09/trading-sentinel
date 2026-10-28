@@ -1,3 +1,11 @@
+## October 28 — O29b Chop study and forward panel D (study 903f28f/e8d3ee5, panel D c02a997, pushed; research only, not deployed)
+
+- [x] Study frozen, run and analysed. Panel D built, frozen, pinned and smoke-tested (bound == freeze; launcher exit 0).
+- [ ] **Owner:** hook panel D into the 16:00 task (the agent's edit was blocked as persistence). In PowerShell:
+  `Add-Content -Path "C:\Users\Urveesh\sentinel-operations\fno-forward-panel-20261028\run_panel.cmd" -Value 'call "C:\Users\Urveesh\sentinel-operations\fno-forward-panel-d-20261029\run_panel_d.cmd"' -Encoding ascii`
+- [ ] Each evening: `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-d-20261029\docs\research\fno\2026-10-29-forward-panel-d\_local\REPORT.md`
+- [ ] Nov 27: read the frozen rule. Promotion is the owner's call, never in a proving week.
+
 ## October 28 — O29 Partner-watch fixes (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
 
 - [x] Cash refresh, first-read refusals plus plain trigger wording, carried sales in DAY and the report, and the next-session expiry close note, all in Dev with tests.

@@ -1,3 +1,27 @@
+## October 28 — O29b Chop study: why the breakouts lost on Oct 28, the opening-drive filter, and forward panel D (study 903f28f/e8d3ee5, panel D c02a997, pushed; research only, not deployed)
+
+- Owner ask (Oct 28 evening): investigate why the strategies went so bad, which days they should not be used on, and how to know that in time; implement it, plus a strategy that makes money even then. Any number of combinations is allowed, and Production may be stopped for RAM. It was not stopped, because it was not needed.
+- **Study:** `docs/research/fno/2026-10-28-chop-study/` (`study.py`, `analyze.py`, `test_study.py`, `freeze.json`, `results.json`, `README.md`). Frozen in `903f28f` before scoring; results in `e8d3ee5`.
+  - 31 sessions (Sep 10 – Oct 28), from forward panel C's read-only export.
+  - 520 replays through the shipped book, with an anchored walk-forward whose last test block is Oct 27–28.
+  - Tracks: eight intraday day-state filters on SHIPPED/OR20/EFF/TPB; 360 fades with 48 random-entry controls; and smart books.
+- **Findings:**
+  - **Oct 28:** every breakout took the same two trades, the 09:51 call and the 10:21 put, and both were stopped out.
+  - **Over 31 sessions:** UNION made +₹40,695 on 18 trend days and −₹6,245 on 13 other days.
+  - **The 09:45 opening drive is again the only filter that held up.** It passed for EFF (out of sample +₹20,518 against +₹13,519; worst day −₹1,457 against −₹7,311) and marginally for OR20. It did not pass for SHIPPED or TPB. Oct 28's drive was LOW, so every drive-filtered book sat out.
+  - **The other filters mostly hurt** (efficiency so far, VWAP crosses, range used, a failed break so far).
+  - **Fades:** all 141 that traded on Oct 28 made money, but over 31 sessions they did no better than random entries (walk-forward −₹6,684 against −₹7,172). Rejected.
+  - **Smart books:** they failed on a −₹10,434 Oct 28 day.
+- **Forward panel D:** `docs/research/fno/2026-10-29-forward-panel-d/`, `c02a997`.
+  - Arms: SHIPPED, SHIPPED_DRIVE, OR20_DRIVE, EFF_DRIVE, and DRIVE_BOOK_FADE (observed only), from Oct 29 to Nov 27.
+  - Rule: panel A's, plus no day worse than −₹5,000.
+  - `test_panel_d.py` passes 4; it reproduces the study's path exactly. `test_study.py` passes 5, including O28 parity on 29 sessions.
+- **Rollout:**
+  - Pinned at `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-d-20261029\`. The bound inputs equal the freeze, and the launcher ran end to end (0 sessions).
+  - **The hook into the 16:00 task was blocked by the permission check (persistence).** The owner adds one line to panel A's `run_panel.cmd`; the handover has the command.
+- Config and migration: none. No Production change. The paper and live books are unchanged (proving week).
+- **Next, owner's call after Oct 30:** if panels C and D bear it out, a live shadow of the drive read at 09:45, and then the filter on the paper book's breakouts. Its evidence is weakest for the shipped strategy itself.
+
 ## October 28 — O29 The Oct 28 review: four partner-watch fixes, and what the day showed (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
 
 - Owner ask (Oct 28 evening): "how was the day? How did the partner perform? And what all learnings did we get? What bug fixes? … how did the strategies do did all of them together work better than our current strategies and report to me everything".

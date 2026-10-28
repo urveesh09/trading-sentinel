@@ -1,3 +1,8 @@
+## October 28 — O29b Forward panel D (research only, study 903f28f/e8d3ee5, panel D c02a997, pushed; research only, not deployed)
+
+- Panel D replays the 09:45 opening-drive filter on SHIPPED, OR20 and EFF, and the O29b FINAL smart book, beside the shipped book on each session from Oct 29. It reads a read-only export of Production's research archive.
+- It runs when panel A's launcher calls it, once the owner adds the hook. It has no effect on Production, the paper book or the real-money test.
+
 ## October 28 — O29 Partner watch: cash, first-read refusals, overnight sales, the close note (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
 
 - **Cash:** read at the first tick, then again every 5 minutes (`CASH_REFRESH`). Money added during the day counts from the next read.
