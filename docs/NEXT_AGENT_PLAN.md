@@ -11,7 +11,7 @@
 - **Acceptance:** a family helps only if the variant picked on one half is positive on the other half in both directions and beats the random books' median. Otherwise the advice stays: sit sideways days out.
 - **Config and migration:** none.
 
-## October 29 — O29h The paper book trades only on a trending market: UNION_ADX, yesterday's NIFTY ADX(14) ≥ 25 (Dev commits 2279a2e + cfe83dc, pushed; deployed: Production a51c791 (Oct 29, 17:25 IST), redeploying cfe83dc; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
+## October 29 — O29h The paper book trades only on a trending market: UNION_ADX, yesterday's NIFTY ADX(14) ≥ 25 (Dev commits 2279a2e + cfe83dc, pushed; deployed: Production a461bde (Oct 29, 17:34 IST, PR #123 + #124), verify_deployment passed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
 
 - **Owner (Oct 29 evening, after O29g):** "you are allowed to implement all of this ... Merge the code and deployed in production as well. You are permitted".
   - Clarified in the reply: on a sideways market the book sits out; it does not switch strategy.
