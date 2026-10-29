@@ -459,13 +459,14 @@ async def test_the_gate_is_read_once_a_day_kept_and_told_once(db_path, monkeypat
     monkeypatch.setattr(settings, "FNO_BOOK_ADX_MIN", 25.0)
     fno_book._ADX_TODAY.clear()
     kite = _DailyKite(_daily("CHOP"))
+    assert await fno_book.adx_today(db_path, kite, at(9, 29)) == (None, None) and kite.calls == []  # from 09:30
     kite.fail = True
-    assert await fno_book.adx_today(db_path, kite, at(9, 15)) == (None, None)          # not kept: tried again
+    assert await fno_book.adx_today(db_path, kite, at(9, 30)) == (None, None)          # not kept: tried again
     kite.fail = False
-    value, side = await fno_book.adx_today(db_path, kite, at(9, 16))
+    value, side = await fno_book.adx_today(db_path, kite, at(9, 31))
     assert side == "LOW" and value < 25
     assert await fno_book.adx_today(db_path, kite, at(10, 0)) == (value, side) and len(kite.calls) == 2
-    assert kite.calls[-1] == ("NIFTY 50", "2025-05-16", "2026-07-09")                 # 420 days, up to yesterday
+    assert kite.calls[-1] == ("NIFTY 50", "2025-05-16", "2026-07-10")    # 420 days through today (dropped later)
     fno_book._ADX_TODAY.clear()                                                         # a restart the same day
     assert await fno_book.adx_today(db_path, kite, at(11, 0)) == (value, side)
     assert [e for e, _ in told] == ["fno_book_adx_gate"] and "sits today out" in told[0][1]
