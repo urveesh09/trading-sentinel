@@ -10,10 +10,16 @@
 - **Not done:** the runbook's full consistent data backup. The latest is Sep 11, and recent deploys have not taken one. This change only adds the table `fno_regime_gate`.
 - [ ] Oct 30 after 09:30 (read-only): a `fno_regime_gate` row, the owner's `fno_book_adx_gate` Telegram line, and `strategy=` on any book entry.
 
-## October 29 — O29i Sideways-day study (research only) (research, Dev: frozen before scoring)
+## October 29 — O29i Sideways-day study (research only) (research, Dev: freeze d5b08c9, results committed; the failed-break fade helps on sideways days (in-sample), VWAP/RSI2 do not; nothing changed)
 
 - [x] `lab_i.py`, `test_lab_i.py` (2 passed: every family causal); freeze committed before scoring.
 - [ ] Results: see the study README. Nothing changes on paper or live because of a replay.
+- **Results (in-sample, per lot, sideways days only; `docs/research/fno/2026-10-29-sideways-study/README.md`):**
+  - **The failed opening-range break (FADE) helps:** 12 of 16 variants positive, H1 pick → H2 +₹6,752, H2 pick → H1 +₹12,533; the random median was −₹891 / −₹4,861. Best variant: +₹30,134, 119 trades, worst day −₹4,315.
+  - **PDL_FADE helps, but small:** 8 of 8 positive, +₹553 / +₹2,869.
+  - **VWAP_REVERT and RSI2 do not help.**
+  - **Joined to UNION_ADX:** +₹111,046 per lot, 9 green / 1 red months, against +₹80,912 for UNION_ADX alone. The fade adds weekly activity (22 / 18 one-lot weeks, against 8 / 5).
+- [ ] Owner's call: whether to add the fade on sideways days (at 1 lot). The NIFTY 2025 clean test of UNION_ADX and of the fade comes first.
 
 ## October 29 — O29h UNION_ADX trend gate (Dev commits 2279a2e + cfe83dc, pushed; deployed: Production a461bde (Oct 29, 17:34 IST, PR #123 + #124), verify_deployment passed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
 

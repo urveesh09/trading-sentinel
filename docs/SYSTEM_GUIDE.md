@@ -1,4 +1,4 @@
-## October 29 — O29i Sideways-day entries study (research only) (research, Dev: frozen before scoring)
+## October 29 — O29i Sideways-day entries study (research only) (research, Dev: freeze d5b08c9, results committed; the failed-break fade helps on sideways days (in-sample), VWAP/RSI2 do not; nothing changed)
 
 - Research only; no runtime change. It tests whether failed-break, VWAP-reversion, prior-day-rejection and RSI(2) entries make money per lot on the days the trend gate sits out.
 

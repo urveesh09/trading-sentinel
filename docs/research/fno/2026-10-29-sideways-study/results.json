@@ -1,0 +1,4552 @@
+{
+ "schema": "o29i_results_v1",
+ "freeze_sha256": "82034e6e9261022998288b74d405101978d707fcd6c1caebb9b99581fecdd729",
+ "metrics_per_lot": {
+  "FADE|level=OR30|stop=STRUCT|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 98,
+    "net": 3195,
+    "without_best_day": -3151,
+    "worst_day": -2819,
+    "dd": 21207,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 12,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": 12715,
+     "2026-02": -4511,
+     "2026-03": 1416,
+     "2026-04": -845,
+     "2026-05": -744,
+     "2026-06": -1566,
+     "2026-07": -8656,
+     "2026-08": 4955,
+     "2026-09": 433,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 44,
+    "net": 8029,
+    "without_best_day": 1684,
+    "worst_day": -2630,
+    "dd": 9256,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 7,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-01": 12715,
+     "2026-02": -4511,
+     "2026-03": 1416,
+     "2026-04": -845,
+     "2026-05": -744
+    }
+   },
+   "H2": {
+    "trades": 54,
+    "net": -4835,
+    "without_best_day": -9354,
+    "worst_day": -2819,
+    "dd": 11997,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -1566,
+     "2026-07": -8656,
+     "2026-08": 4955,
+     "2026-09": 433,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR30|stop=STRUCT|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 96,
+    "net": 7097,
+    "without_best_day": 657,
+    "worst_day": -3616,
+    "dd": 21890,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 10,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 16533,
+     "2026-02": -5449,
+     "2026-03": 534,
+     "2026-04": 4491,
+     "2026-05": -6072,
+     "2026-06": -6212,
+     "2026-07": 1156,
+     "2026-08": 3603,
+     "2026-09": -1486,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 44,
+    "net": 10037,
+    "without_best_day": 3597,
+    "worst_day": -3616,
+    "dd": 11550,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 16533,
+     "2026-02": -5449,
+     "2026-03": 534,
+     "2026-04": 4491,
+     "2026-05": -6072
+    }
+   },
+   "H2": {
+    "trades": 52,
+    "net": -2940,
+    "without_best_day": -6469,
+    "worst_day": -2836,
+    "dd": 10340,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -6212,
+     "2026-07": 1156,
+     "2026-08": 3603,
+     "2026-09": -1486,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR30|stop=STRUCT|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 112,
+    "net": 12649,
+    "without_best_day": 6303,
+    "worst_day": -3006,
+    "dd": 22370,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 14,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": 12751,
+     "2026-02": -3565,
+     "2026-03": 1338,
+     "2026-04": 5045,
+     "2026-05": -934,
+     "2026-06": -4195,
+     "2026-07": -6851,
+     "2026-08": 9284,
+     "2026-09": -224,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 49,
+    "net": 14635,
+    "without_best_day": 8289,
+    "worst_day": -3006,
+    "dd": 10546,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 8,
+    "red_weeks": 5,
+    "monthly": {
+     "2026-01": 12751,
+     "2026-02": -3565,
+     "2026-03": 1338,
+     "2026-04": 5045,
+     "2026-05": -934
+    }
+   },
+   "H2": {
+    "trades": 63,
+    "net": -1986,
+    "without_best_day": -7129,
+    "worst_day": -3004,
+    "dd": 11846,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -4195,
+     "2026-07": -6851,
+     "2026-08": 9284,
+     "2026-09": -224,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR30|stop=STRUCT|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 110,
+    "net": 3668,
+    "without_best_day": -2771,
+    "worst_day": -3616,
+    "dd": 26302,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 10,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 16537,
+     "2026-02": -4772,
+     "2026-03": -1491,
+     "2026-04": 3887,
+     "2026-05": -7898,
+     "2026-06": -8014,
+     "2026-07": 44,
+     "2026-08": 6943,
+     "2026-09": -1568,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 49,
+    "net": 6263,
+    "without_best_day": -177,
+    "worst_day": -3616,
+    "dd": 13049,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 4,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-01": 16537,
+     "2026-02": -4772,
+     "2026-03": -1491,
+     "2026-04": 3887,
+     "2026-05": -7898
+    }
+   },
+   "H2": {
+    "trades": 61,
+    "net": -2595,
+    "without_best_day": -7699,
+    "worst_day": -2836,
+    "dd": 13253,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -8014,
+     "2026-07": 44,
+     "2026-08": 6943,
+     "2026-09": -1568,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR30|stop=1.0|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 90,
+    "net": -3388,
+    "without_best_day": -9429,
+    "worst_day": -2819,
+    "dd": 13562,
+    "green_months": 6,
+    "red_months": 3,
+    "green_weeks": 9,
+    "red_weeks": 20,
+    "monthly": {
+     "2026-01": 1572,
+     "2026-02": -3481,
+     "2026-03": 55,
+     "2026-04": 1321,
+     "2026-05": -302,
+     "2026-06": 487,
+     "2026-07": -4935,
+     "2026-08": 82,
+     "2026-09": 1813,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 43,
+    "net": -835,
+    "without_best_day": -6876,
+    "worst_day": -1936,
+    "dd": 8058,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 1572,
+     "2026-02": -3481,
+     "2026-03": 55,
+     "2026-04": 1321,
+     "2026-05": -302
+    }
+   },
+   "H2": {
+    "trades": 47,
+    "net": -2553,
+    "without_best_day": -6065,
+    "worst_day": -2819,
+    "dd": 7032,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 4,
+    "red_weeks": 12,
+    "monthly": {
+     "2026-06": 487,
+     "2026-07": -4935,
+     "2026-08": 82,
+     "2026-09": 1813,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR30|stop=1.0|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 90,
+    "net": 11319,
+    "without_best_day": 5270,
+    "worst_day": -2819,
+    "dd": 12550,
+    "green_months": 6,
+    "red_months": 3,
+    "green_weeks": 10,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 4583,
+     "2026-02": 798,
+     "2026-03": -227,
+     "2026-04": 6751,
+     "2026-05": -3693,
+     "2026-06": -1127,
+     "2026-07": 44,
+     "2026-08": 177,
+     "2026-09": 4014,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 43,
+    "net": 8211,
+    "without_best_day": 2163,
+    "worst_day": -1936,
+    "dd": 9607,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 4,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-01": 4583,
+     "2026-02": 798,
+     "2026-03": -227,
+     "2026-04": 6751,
+     "2026-05": -3693
+    }
+   },
+   "H2": {
+    "trades": 47,
+    "net": 3108,
+    "without_best_day": -387,
+    "worst_day": -2819,
+    "dd": 4746,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -1127,
+     "2026-07": 44,
+     "2026-08": 177,
+     "2026-09": 4014,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR30|stop=1.0|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 106,
+    "net": -8004,
+    "without_best_day": -14045,
+    "worst_day": -3134,
+    "dd": 20969,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 10,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": -1510,
+     "2026-02": -3525,
+     "2026-03": 93,
+     "2026-04": 1059,
+     "2026-05": 168,
+     "2026-06": -7176,
+     "2026-07": -3455,
+     "2026-08": 5295,
+     "2026-09": 1046,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 48,
+    "net": -3715,
+    "without_best_day": -9755,
+    "worst_day": -2547,
+    "dd": 9561,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": -1510,
+     "2026-02": -3525,
+     "2026-03": 93,
+     "2026-04": 1059,
+     "2026-05": 168
+    }
+   },
+   "H2": {
+    "trades": 58,
+    "net": -4289,
+    "without_best_day": -9679,
+    "worst_day": -3134,
+    "dd": 11455,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 4,
+    "red_weeks": 12,
+    "monthly": {
+     "2026-06": -7176,
+     "2026-07": -3455,
+     "2026-08": 5295,
+     "2026-09": 1046,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR30|stop=1.0|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 110,
+    "net": -3211,
+    "without_best_day": -9252,
+    "worst_day": -3134,
+    "dd": 23234,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 10,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 1961,
+     "2026-02": -3930,
+     "2026-03": -140,
+     "2026-04": 4228,
+     "2026-05": -3130,
+     "2026-06": -8234,
+     "2026-07": 2877,
+     "2026-08": 3771,
+     "2026-09": -615,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 48,
+    "net": -1011,
+    "without_best_day": -7052,
+    "worst_day": -2547,
+    "dd": 11333,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 4,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-01": 1961,
+     "2026-02": -3930,
+     "2026-03": -140,
+     "2026-04": 4228,
+     "2026-05": -3130
+    }
+   },
+   "H2": {
+    "trades": 62,
+    "net": -2201,
+    "without_best_day": -7552,
+    "worst_day": -3134,
+    "dd": 11901,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -8234,
+     "2026-07": 2877,
+     "2026-08": 3771,
+     "2026-09": -615,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR20|stop=STRUCT|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 107,
+    "net": 17688,
+    "without_best_day": 6464,
+    "worst_day": -4315,
+    "dd": 17678,
+    "green_months": 6,
+    "red_months": 3,
+    "green_weeks": 14,
+    "red_weeks": 14,
+    "monthly": {
+     "2026-01": 12886,
+     "2026-02": -5037,
+     "2026-03": 2312,
+     "2026-04": 1326,
+     "2026-05": 5829,
+     "2026-06": 1934,
+     "2026-07": -3233,
+     "2026-08": 1800,
+     "2026-09": -129,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 48,
+    "net": 17317,
+    "without_best_day": 10971,
+    "worst_day": -2359,
+    "dd": 6528,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 7,
+    "red_weeks": 5,
+    "monthly": {
+     "2026-01": 12886,
+     "2026-02": -5037,
+     "2026-03": 2312,
+     "2026-04": 1326,
+     "2026-05": 5829
+    }
+   },
+   "H2": {
+    "trades": 59,
+    "net": 371,
+    "without_best_day": -10853,
+    "worst_day": -4315,
+    "dd": 11647,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": 1934,
+     "2026-07": -3233,
+     "2026-08": 1800,
+     "2026-09": -129,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR20|stop=STRUCT|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 103,
+    "net": 24086,
+    "without_best_day": 13390,
+    "worst_day": -3616,
+    "dd": 16046,
+    "green_months": 7,
+    "red_months": 2,
+    "green_weeks": 12,
+    "red_weeks": 16,
+    "monthly": {
+     "2026-01": 16704,
+     "2026-02": -6935,
+     "2026-03": 652,
+     "2026-04": 6663,
+     "2026-05": -302,
+     "2026-06": 4450,
+     "2026-07": 1582,
+     "2026-08": 192,
+     "2026-09": 1081,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 49,
+    "net": 16782,
+    "without_best_day": 10342,
+    "worst_day": -3616,
+    "dd": 8820,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-01": 16704,
+     "2026-02": -6935,
+     "2026-03": 652,
+     "2026-04": 6663,
+     "2026-05": -302
+    }
+   },
+   "H2": {
+    "trades": 54,
+    "net": 7304,
+    "without_best_day": -3391,
+    "worst_day": -2698,
+    "dd": 7226,
+    "green_months": 4,
+    "red_months": 0,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": 4450,
+     "2026-07": 1582,
+     "2026-08": 192,
+     "2026-09": 1081,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 119,
+    "net": 30134,
+    "without_best_day": 18909,
+    "worst_day": -4315,
+    "dd": 19217,
+    "green_months": 7,
+    "red_months": 2,
+    "green_weeks": 15,
+    "red_weeks": 14,
+    "monthly": {
+     "2026-01": 12946,
+     "2026-02": -5037,
+     "2026-03": 2234,
+     "2026-04": 7506,
+     "2026-05": 5733,
+     "2026-06": 1705,
+     "2026-07": -2236,
+     "2026-08": 5695,
+     "2026-09": 1588,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 52,
+    "net": 23382,
+    "without_best_day": 17036,
+    "worst_day": -2079,
+    "dd": 7402,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 8,
+    "red_weeks": 5,
+    "monthly": {
+     "2026-01": 12946,
+     "2026-02": -5037,
+     "2026-03": 2234,
+     "2026-04": 7506,
+     "2026-05": 5733
+    }
+   },
+   "H2": {
+    "trades": 67,
+    "net": 6752,
+    "without_best_day": -4472,
+    "worst_day": -4315,
+    "dd": 12288,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": 1705,
+     "2026-07": -2236,
+     "2026-08": 5695,
+     "2026-09": 1588,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 119,
+    "net": 21585,
+    "without_best_day": 10889,
+    "worst_day": -3616,
+    "dd": 18774,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 12,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": 16731,
+     "2026-02": -6935,
+     "2026-03": -1373,
+     "2026-04": 6348,
+     "2026-05": -2238,
+     "2026-06": 4932,
+     "2026-07": -617,
+     "2026-08": 3835,
+     "2026-09": 902,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 54,
+    "net": 12533,
+    "without_best_day": 6093,
+    "worst_day": -3616,
+    "dd": 10569,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 16731,
+     "2026-02": -6935,
+     "2026-03": -1373,
+     "2026-04": 6348,
+     "2026-05": -2238
+    }
+   },
+   "H2": {
+    "trades": 65,
+    "net": 9052,
+    "without_best_day": -1644,
+    "worst_day": -3420,
+    "dd": 8205,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": 4932,
+     "2026-07": -617,
+     "2026-08": 3835,
+     "2026-09": 902,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR20|stop=1.0|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 97,
+    "net": -461,
+    "without_best_day": -6502,
+    "worst_day": -2056,
+    "dd": 12656,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 12,
+    "red_weeks": 16,
+    "monthly": {
+     "2026-01": 907,
+     "2026-02": -5685,
+     "2026-03": 55,
+     "2026-04": 2410,
+     "2026-05": 5638,
+     "2026-06": -4094,
+     "2026-07": -1478,
+     "2026-08": -87,
+     "2026-09": 1872,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 45,
+    "net": 3325,
+    "without_best_day": -2716,
+    "worst_day": -1755,
+    "dd": 6546,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 6,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-01": 907,
+     "2026-02": -5685,
+     "2026-03": 55,
+     "2026-04": 2410,
+     "2026-05": 5638
+    }
+   },
+   "H2": {
+    "trades": 52,
+    "net": -3786,
+    "without_best_day": -7299,
+    "worst_day": -2056,
+    "dd": 6606,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -4094,
+     "2026-07": -1478,
+     "2026-08": -87,
+     "2026-09": 1872,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR20|stop=1.0|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 96,
+    "net": 8821,
+    "without_best_day": 2780,
+    "worst_day": -2698,
+    "dd": 17993,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 11,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": 4251,
+     "2026-02": -865,
+     "2026-03": -227,
+     "2026-04": 7865,
+     "2026-05": 1337,
+     "2026-06": -3703,
+     "2026-07": -4169,
+     "2026-08": -446,
+     "2026-09": 4778,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 46,
+    "net": 12361,
+    "without_best_day": 6320,
+    "worst_day": -1732,
+    "dd": 8715,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": 4251,
+     "2026-02": -865,
+     "2026-03": -227,
+     "2026-04": 7865,
+     "2026-05": 1337
+    }
+   },
+   "H2": {
+    "trades": 50,
+    "net": -3540,
+    "without_best_day": -6746,
+    "worst_day": -2698,
+    "dd": 9278,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -3703,
+     "2026-07": -4169,
+     "2026-08": -446,
+     "2026-09": 4778,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR20|stop=1.0|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 112,
+    "net": 4636,
+    "without_best_day": -1341,
+    "worst_day": -2547,
+    "dd": 15175,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 15,
+    "red_weeks": 14,
+    "monthly": {
+     "2026-01": -2153,
+     "2026-02": -5800,
+     "2026-03": 93,
+     "2026-04": 2485,
+     "2026-05": 6448,
+     "2026-06": -6397,
+     "2026-07": -420,
+     "2026-08": 6648,
+     "2026-09": 3732,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 51,
+    "net": 1073,
+    "without_best_day": -4904,
+    "worst_day": -2547,
+    "dd": 8563,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": -2153,
+     "2026-02": -5800,
+     "2026-03": 93,
+     "2026-04": 2485,
+     "2026-05": 6448
+    }
+   },
+   "H2": {
+    "trades": 61,
+    "net": 3563,
+    "without_best_day": -1828,
+    "worst_day": -2024,
+    "dd": 8069,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 9,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-06": -6397,
+     "2026-07": -420,
+     "2026-08": 6648,
+     "2026-09": 3732,
+     "2026-10": 0
+    }
+   }
+  },
+  "FADE|level=OR20|stop=1.0|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 116,
+    "net": 2585,
+    "without_best_day": -3437,
+    "worst_day": -3420,
+    "dd": 18911,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 11,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": 1652,
+     "2026-02": -5616,
+     "2026-03": -140,
+     "2026-04": 5654,
+     "2026-05": 1768,
+     "2026-06": -5553,
+     "2026-07": -2071,
+     "2026-08": 4382,
+     "2026-09": 2510,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 52,
+    "net": 3318,
+    "without_best_day": -2704,
+    "worst_day": -2547,
+    "dd": 8932,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 4,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-01": 1652,
+     "2026-02": -5616,
+     "2026-03": -140,
+     "2026-04": 5654,
+     "2026-05": 1768
+    }
+   },
+   "H2": {
+    "trades": 64,
+    "net": -733,
+    "without_best_day": -6085,
+    "worst_day": -3420,
+    "dd": 9979,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -5553,
+     "2026-07": -2071,
+     "2026-08": 4382,
+     "2026-09": 2510,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=1.5|stop=1.0|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 126,
+    "net": -13912,
+    "without_best_day": -20479,
+    "worst_day": -2819,
+    "dd": 28702,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 13,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": -2546,
+     "2026-02": -193,
+     "2026-03": 876,
+     "2026-04": 2172,
+     "2026-05": -3009,
+     "2026-06": -10980,
+     "2026-07": -9892,
+     "2026-08": 1644,
+     "2026-09": 8017,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 58,
+    "net": -2701,
+    "without_best_day": -5543,
+    "worst_day": -2228,
+    "dd": 7407,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 8,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-01": -2546,
+     "2026-02": -193,
+     "2026-03": 876,
+     "2026-04": 2172,
+     "2026-05": -3009
+    }
+   },
+   "H2": {
+    "trades": 68,
+    "net": -11211,
+    "without_best_day": -17778,
+    "worst_day": -2819,
+    "dd": 22851,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -10980,
+     "2026-07": -9892,
+     "2026-08": 1644,
+     "2026-09": 8017,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=1.5|stop=1.0|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 127,
+    "net": -20080,
+    "without_best_day": -28429,
+    "worst_day": -3239,
+    "dd": 37794,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 12,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": 617,
+     "2026-02": 5051,
+     "2026-03": 847,
+     "2026-04": 2367,
+     "2026-05": -11585,
+     "2026-06": -11249,
+     "2026-07": -10215,
+     "2026-08": -642,
+     "2026-09": 4731,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 57,
+    "net": -2705,
+    "without_best_day": -11054,
+    "worst_day": -2632,
+    "dd": 13188,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 6,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 617,
+     "2026-02": 5051,
+     "2026-03": 847,
+     "2026-04": 2367,
+     "2026-05": -11585
+    }
+   },
+   "H2": {
+    "trades": 70,
+    "net": -17376,
+    "without_best_day": -22383,
+    "worst_day": -3239,
+    "dd": 24606,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -11249,
+     "2026-07": -10215,
+     "2026-08": -642,
+     "2026-09": 4731,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=1.5|stop=1.0|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 123,
+    "net": -29484,
+    "without_best_day": -34750,
+    "worst_day": -2867,
+    "dd": 35478,
+    "green_months": 3,
+    "red_months": 5,
+    "green_weeks": 9,
+    "red_weeks": 16,
+    "monthly": {
+     "2026-01": 376,
+     "2026-02": 2243,
+     "2026-03": -1652,
+     "2026-04": 2982,
+     "2026-05": -6574,
+     "2026-06": -12400,
+     "2026-07": -11634,
+     "2026-08": -2826,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 70,
+    "net": -2625,
+    "without_best_day": -7891,
+    "worst_day": -2556,
+    "dd": 10175,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 8,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": 376,
+     "2026-02": 2243,
+     "2026-03": -1652,
+     "2026-04": 2982,
+     "2026-05": -6574
+    }
+   },
+   "H2": {
+    "trades": 53,
+    "net": -26859,
+    "without_best_day": -28511,
+    "worst_day": -2867,
+    "dd": 26859,
+    "green_months": 0,
+    "red_months": 3,
+    "green_weeks": 1,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -12400,
+     "2026-07": -11634,
+     "2026-08": -2826,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=1.5|stop=1.0|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 117,
+    "net": -27783,
+    "without_best_day": -36132,
+    "worst_day": -3651,
+    "dd": 39942,
+    "green_months": 3,
+    "red_months": 4,
+    "green_weeks": 9,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": 2747,
+     "2026-02": 6753,
+     "2026-03": -1681,
+     "2026-04": 3059,
+     "2026-05": -14652,
+     "2026-06": -13399,
+     "2026-07": -10611,
+     "2026-08": 0,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 69,
+    "net": -3773,
+    "without_best_day": -12122,
+    "worst_day": -2632,
+    "dd": 15931,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 8,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": 2747,
+     "2026-02": 6753,
+     "2026-03": -1681,
+     "2026-04": 3059,
+     "2026-05": -14652
+    }
+   },
+   "H2": {
+    "trades": 48,
+    "net": -24010,
+    "without_best_day": -26742,
+    "worst_day": -3651,
+    "dd": 24010,
+    "green_months": 0,
+    "red_months": 2,
+    "green_weeks": 1,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-06": -13399,
+     "2026-07": -10611,
+     "2026-08": 0,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=1.5|stop=1.5|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 137,
+    "net": -10871,
+    "without_best_day": -17663,
+    "worst_day": -3307,
+    "dd": 32007,
+    "green_months": 3,
+    "red_months": 6,
+    "green_weeks": 13,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": -3046,
+     "2026-02": -123,
+     "2026-03": 8966,
+     "2026-04": 2125,
+     "2026-05": -1001,
+     "2026-06": -14434,
+     "2026-07": -9049,
+     "2026-08": -1807,
+     "2026-09": 7498,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 61,
+    "net": 6921,
+    "without_best_day": 129,
+    "worst_day": -2647,
+    "dd": 6842,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 9,
+    "red_weeks": 5,
+    "monthly": {
+     "2026-01": -3046,
+     "2026-02": -123,
+     "2026-03": 8966,
+     "2026-04": 2125,
+     "2026-05": -1001
+    }
+   },
+   "H2": {
+    "trades": 76,
+    "net": -17792,
+    "without_best_day": -24360,
+    "worst_day": -3307,
+    "dd": 28007,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 4,
+    "red_weeks": 12,
+    "monthly": {
+     "2026-06": -14434,
+     "2026-07": -9049,
+     "2026-08": -1807,
+     "2026-09": 7498,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=1.5|stop=1.5|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 140,
+    "net": -8972,
+    "without_best_day": -18064,
+    "worst_day": -4739,
+    "dd": 43977,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 9,
+    "red_weeks": 21,
+    "monthly": {
+     "2026-01": 4207,
+     "2026-02": 5784,
+     "2026-03": 10511,
+     "2026-04": 2370,
+     "2026-05": -5207,
+     "2026-06": -17303,
+     "2026-07": -9623,
+     "2026-08": -4685,
+     "2026-09": 4974,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 62,
+    "net": 17664,
+    "without_best_day": 8572,
+    "worst_day": -3624,
+    "dd": 10635,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 6,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 4207,
+     "2026-02": 5784,
+     "2026-03": 10511,
+     "2026-04": 2370,
+     "2026-05": -5207
+    }
+   },
+   "H2": {
+    "trades": 78,
+    "net": -26636,
+    "without_best_day": -31644,
+    "worst_day": -4739,
+    "dd": 33485,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 3,
+    "red_weeks": 13,
+    "monthly": {
+     "2026-06": -17303,
+     "2026-07": -9623,
+     "2026-08": -4685,
+     "2026-09": 4974,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=1.5|stop=1.5|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 167,
+    "net": -18950,
+    "without_best_day": -25742,
+    "worst_day": -4492,
+    "dd": 38685,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 13,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": 3950,
+     "2026-02": 957,
+     "2026-03": 4474,
+     "2026-04": -454,
+     "2026-05": -4399,
+     "2026-06": -13823,
+     "2026-07": -11268,
+     "2026-08": -2217,
+     "2026-09": 3830,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 73,
+    "net": 4528,
+    "without_best_day": -2263,
+    "worst_day": -4492,
+    "dd": 10924,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 8,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": 3950,
+     "2026-02": 957,
+     "2026-03": 4474,
+     "2026-04": -454,
+     "2026-05": -4399
+    }
+   },
+   "H2": {
+    "trades": 94,
+    "net": -23478,
+    "without_best_day": -29196,
+    "worst_day": -3506,
+    "dd": 29341,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -13823,
+     "2026-07": -11268,
+     "2026-08": -2217,
+     "2026-09": 3830,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=1.5|stop=1.5|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 131,
+    "net": -34758,
+    "without_best_day": -43850,
+    "worst_day": -4739,
+    "dd": 54450,
+    "green_months": 3,
+    "red_months": 5,
+    "green_weeks": 6,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 3776,
+     "2026-02": 6220,
+     "2026-03": 5203,
+     "2026-04": -1939,
+     "2026-05": -9211,
+     "2026-06": -19468,
+     "2026-07": -14126,
+     "2026-08": -5214,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 75,
+    "net": 4050,
+    "without_best_day": -5042,
+    "worst_day": -4492,
+    "dd": 15784,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-01": 3776,
+     "2026-02": 6220,
+     "2026-03": 5203,
+     "2026-04": -1939,
+     "2026-05": -9211
+    }
+   },
+   "H2": {
+    "trades": 56,
+    "net": -38808,
+    "without_best_day": -41248,
+    "worst_day": -4739,
+    "dd": 38808,
+    "green_months": 0,
+    "red_months": 3,
+    "green_weeks": 1,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -19468,
+     "2026-07": -14126,
+     "2026-08": -5214,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=2.0|stop=1.0|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 103,
+    "net": -343,
+    "without_best_day": -7736,
+    "worst_day": -2230,
+    "dd": 22936,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 14,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": -603,
+     "2026-02": 612,
+     "2026-03": 8621,
+     "2026-04": 2721,
+     "2026-05": -5727,
+     "2026-06": -8281,
+     "2026-07": -6292,
+     "2026-08": -504,
+     "2026-09": 9110,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 50,
+    "net": 5624,
+    "without_best_day": -1770,
+    "worst_day": -2230,
+    "dd": 7688,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 9,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-01": -603,
+     "2026-02": 612,
+     "2026-03": 8621,
+     "2026-04": 2721,
+     "2026-05": -5727
+    }
+   },
+   "H2": {
+    "trades": 53,
+    "net": -5966,
+    "without_best_day": -10019,
+    "worst_day": -1569,
+    "dd": 15720,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -8281,
+     "2026-07": -6292,
+     "2026-08": -504,
+     "2026-09": 9110,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=2.0|stop=1.0|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 100,
+    "net": 10211,
+    "without_best_day": 687,
+    "worst_day": -3631,
+    "dd": 24451,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 13,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": 8032,
+     "2026-02": 4892,
+     "2026-03": 6496,
+     "2026-04": 4849,
+     "2026-05": -12044,
+     "2026-06": -6906,
+     "2026-07": -1188,
+     "2026-08": -1042,
+     "2026-09": 7122,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 51,
+    "net": 12225,
+    "without_best_day": 2701,
+    "worst_day": -3631,
+    "dd": 13347,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 8,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": 8032,
+     "2026-02": 4892,
+     "2026-03": 6496,
+     "2026-04": 4849,
+     "2026-05": -12044
+    }
+   },
+   "H2": {
+    "trades": 49,
+    "net": -2014,
+    "without_best_day": -6767,
+    "worst_day": -1569,
+    "dd": 11104,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -6906,
+     "2026-07": -1188,
+     "2026-08": -1042,
+     "2026-09": 7122,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 130,
+    "net": 4210,
+    "without_best_day": -3095,
+    "worst_day": -2387,
+    "dd": 18863,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 13,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": -1801,
+     "2026-02": 177,
+     "2026-03": 8136,
+     "2026-04": 446,
+     "2026-05": -3717,
+     "2026-06": -543,
+     "2026-07": -6985,
+     "2026-08": -1603,
+     "2026-09": 10101,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 58,
+    "net": 3240,
+    "without_best_day": -3629,
+    "worst_day": -2387,
+    "dd": 7751,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 8,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": -1801,
+     "2026-02": 177,
+     "2026-03": 8136,
+     "2026-04": 446,
+     "2026-05": -3717
+    }
+   },
+   "H2": {
+    "trades": 72,
+    "net": 970,
+    "without_best_day": -6336,
+    "worst_day": -2380,
+    "dd": 11965,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -543,
+     "2026-07": -6985,
+     "2026-08": -1603,
+     "2026-09": 10101,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 134,
+    "net": 7619,
+    "without_best_day": -845,
+    "worst_day": -4095,
+    "dd": 19663,
+    "green_months": 6,
+    "red_months": 3,
+    "green_weeks": 13,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": 72,
+     "2026-02": 5436,
+     "2026-03": 4255,
+     "2026-04": 3081,
+     "2026-05": -7593,
+     "2026-06": 1915,
+     "2026-07": -6580,
+     "2026-08": -1099,
+     "2026-09": 8132,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 60,
+    "net": 5251,
+    "without_best_day": -3212,
+    "worst_day": -4095,
+    "dd": 12635,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 7,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 72,
+     "2026-02": 5436,
+     "2026-03": 4255,
+     "2026-04": 3081,
+     "2026-05": -7593
+    }
+   },
+   "H2": {
+    "trades": 74,
+    "net": 2368,
+    "without_best_day": -5820,
+    "worst_day": -2380,
+    "dd": 10813,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": 1915,
+     "2026-07": -6580,
+     "2026-08": -1099,
+     "2026-09": 8132,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=2.0|stop=1.5|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 113,
+    "net": -2936,
+    "without_best_day": -10330,
+    "worst_day": -2247,
+    "dd": 23400,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 13,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": -1815,
+     "2026-02": 436,
+     "2026-03": 8977,
+     "2026-04": 4447,
+     "2026-05": -3179,
+     "2026-06": -9462,
+     "2026-07": -6319,
+     "2026-08": -2806,
+     "2026-09": 6785,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 52,
+    "net": 8866,
+    "without_best_day": 1473,
+    "worst_day": -1906,
+    "dd": 5389,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 8,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": -1815,
+     "2026-02": 436,
+     "2026-03": 8977,
+     "2026-04": 4447,
+     "2026-05": -3179
+    }
+   },
+   "H2": {
+    "trades": 61,
+    "net": -11802,
+    "without_best_day": -15855,
+    "worst_day": -2247,
+    "dd": 19145,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -9462,
+     "2026-07": -6319,
+     "2026-08": -2806,
+     "2026-09": 6785,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=2.0|stop=1.5|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 114,
+    "net": 4656,
+    "without_best_day": -3775,
+    "worst_day": -5262,
+    "dd": 27336,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 16,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": 4346,
+     "2026-02": 6569,
+     "2026-03": 7965,
+     "2026-04": 7642,
+     "2026-05": -3020,
+     "2026-06": -11750,
+     "2026-07": -8085,
+     "2026-08": -3390,
+     "2026-09": 4379,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 53,
+    "net": 23502,
+    "without_best_day": 15071,
+    "worst_day": -5262,
+    "dd": 7310,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 11,
+    "red_weeks": 4,
+    "monthly": {
+     "2026-01": 4346,
+     "2026-02": 6569,
+     "2026-03": 7965,
+     "2026-04": 7642,
+     "2026-05": -3020
+    }
+   },
+   "H2": {
+    "trades": 61,
+    "net": -18846,
+    "without_best_day": -22052,
+    "worst_day": -4442,
+    "dd": 24833,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -11750,
+     "2026-07": -8085,
+     "2026-08": -3390,
+     "2026-09": 4379,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=2.0|stop=1.5|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 135,
+    "net": 2579,
+    "without_best_day": -4727,
+    "worst_day": -3769,
+    "dd": 19711,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 13,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": -2791,
+     "2026-02": -1319,
+     "2026-03": 8112,
+     "2026-04": 2457,
+     "2026-05": -5322,
+     "2026-06": -1861,
+     "2026-07": -6454,
+     "2026-08": 1222,
+     "2026-09": 8534,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 59,
+    "net": 1137,
+    "without_best_day": -5732,
+    "worst_day": -1906,
+    "dd": 8817,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 7,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": -2791,
+     "2026-02": -1319,
+     "2026-03": 8112,
+     "2026-04": 2457,
+     "2026-05": -5322
+    }
+   },
+   "H2": {
+    "trades": 76,
+    "net": 1441,
+    "without_best_day": -5864,
+    "worst_day": -3769,
+    "dd": 11901,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -1861,
+     "2026-07": -6454,
+     "2026-08": 1222,
+     "2026-09": 8534,
+     "2026-10": 0
+    }
+   }
+  },
+  "VWAP_REVERT|k=2.0|stop=1.5|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 135,
+    "net": 14148,
+    "without_best_day": 5865,
+    "worst_day": -5727,
+    "dd": 18743,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 15,
+    "red_weeks": 16,
+    "monthly": {
+     "2026-01": 2209,
+     "2026-02": 4970,
+     "2026-03": 7505,
+     "2026-04": 5624,
+     "2026-05": -3141,
+     "2026-06": -475,
+     "2026-07": -7752,
+     "2026-08": -1185,
+     "2026-09": 6391,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 61,
+    "net": 17169,
+    "without_best_day": 8886,
+    "worst_day": -5727,
+    "dd": 9912,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 9,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-01": 2209,
+     "2026-02": 4970,
+     "2026-03": 7505,
+     "2026-04": 5624,
+     "2026-05": -3141
+    }
+   },
+   "H2": {
+    "trades": 74,
+    "net": -3021,
+    "without_best_day": -10356,
+    "worst_day": -4466,
+    "dd": 13941,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -475,
+     "2026-07": -7752,
+     "2026-08": -1185,
+     "2026-09": 6391,
+     "2026-10": 0
+    }
+   }
+  },
+  "PDL_FADE|stop=1.0|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 31,
+    "net": 5676,
+    "without_best_day": -965,
+    "worst_day": -1378,
+    "dd": 7996,
+    "green_months": 3,
+    "red_months": 5,
+    "green_weeks": 9,
+    "red_weeks": 14,
+    "monthly": {
+     "2026-01": -515,
+     "2026-02": 1946,
+     "2026-03": 0,
+     "2026-04": -766,
+     "2026-05": 10512,
+     "2026-06": -1990,
+     "2026-07": -3509,
+     "2026-08": -1141,
+     "2026-09": 1138,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 14,
+    "net": 11177,
+    "without_best_day": 4536,
+    "worst_day": -951,
+    "dd": 1890,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 4,
+    "monthly": {
+     "2026-01": -515,
+     "2026-02": 1946,
+     "2026-03": 0,
+     "2026-04": -766,
+     "2026-05": 10512
+    }
+   },
+   "H2": {
+    "trades": 17,
+    "net": -5502,
+    "without_best_day": -7785,
+    "worst_day": -1378,
+    "dd": 7996,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 4,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -1990,
+     "2026-07": -3509,
+     "2026-08": -1141,
+     "2026-09": 1138,
+     "2026-10": 0
+    }
+   }
+  },
+  "PDL_FADE|stop=1.0|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 31,
+    "net": 562,
+    "without_best_day": -4889,
+    "worst_day": -2354,
+    "dd": 9039,
+    "green_months": 4,
+    "red_months": 4,
+    "green_weeks": 8,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": 834,
+     "2026-02": 990,
+     "2026-03": 0,
+     "2026-04": -766,
+     "2026-05": 6882,
+     "2026-06": -2552,
+     "2026-07": -4057,
+     "2026-08": -885,
+     "2026-09": 116,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 14,
+    "net": 7940,
+    "without_best_day": 2489,
+    "worst_day": -2354,
+    "dd": 2354,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 5,
+    "red_weeks": 4,
+    "monthly": {
+     "2026-01": 834,
+     "2026-02": 990,
+     "2026-03": 0,
+     "2026-04": -766,
+     "2026-05": 6882
+    }
+   },
+   "H2": {
+    "trades": 17,
+    "net": -7378,
+    "without_best_day": -9039,
+    "worst_day": -1378,
+    "dd": 9039,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 3,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -2552,
+     "2026-07": -4057,
+     "2026-08": -885,
+     "2026-09": 116,
+     "2026-10": 0
+    }
+   }
+  },
+  "PDL_FADE|stop=1.0|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 38,
+    "net": 3648,
+    "without_best_day": -2993,
+    "worst_day": -1996,
+    "dd": 7870,
+    "green_months": 3,
+    "red_months": 5,
+    "green_weeks": 9,
+    "red_weeks": 14,
+    "monthly": {
+     "2026-01": -515,
+     "2026-02": 895,
+     "2026-03": 0,
+     "2026-04": -766,
+     "2026-05": 9078,
+     "2026-06": -2134,
+     "2026-07": -2805,
+     "2026-08": -952,
+     "2026-09": 849,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 17,
+    "net": 8691,
+    "without_best_day": 2050,
+    "worst_day": -951,
+    "dd": 1890,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 3,
+    "monthly": {
+     "2026-01": -515,
+     "2026-02": 895,
+     "2026-03": 0,
+     "2026-04": -766,
+     "2026-05": 9078
+    }
+   },
+   "H2": {
+    "trades": 21,
+    "net": -5043,
+    "without_best_day": -7327,
+    "worst_day": -1996,
+    "dd": 7327,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 3,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -2134,
+     "2026-07": -2805,
+     "2026-08": -952,
+     "2026-09": 849,
+     "2026-10": 0
+    }
+   }
+  },
+  "PDL_FADE|stop=1.0|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 38,
+    "net": 4688,
+    "without_best_day": -763,
+    "worst_day": -2354,
+    "dd": 5731,
+    "green_months": 4,
+    "red_months": 4,
+    "green_weeks": 9,
+    "red_weeks": 14,
+    "monthly": {
+     "2026-01": 834,
+     "2026-02": 632,
+     "2026-03": 0,
+     "2026-04": -766,
+     "2026-05": 4841,
+     "2026-06": -14,
+     "2026-07": 23,
+     "2026-08": -790,
+     "2026-09": -72,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 17,
+    "net": 5541,
+    "without_best_day": 91,
+    "worst_day": -2354,
+    "dd": 3005,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 4,
+    "red_weeks": 5,
+    "monthly": {
+     "2026-01": 834,
+     "2026-02": 632,
+     "2026-03": 0,
+     "2026-04": -766,
+     "2026-05": 4841
+    }
+   },
+   "H2": {
+    "trades": 21,
+    "net": -853,
+    "without_best_day": -4503,
+    "worst_day": -1996,
+    "dd": 5731,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -14,
+     "2026-07": 23,
+     "2026-08": -790,
+     "2026-09": -72,
+     "2026-10": 0
+    }
+   }
+  },
+  "PDL_FADE|stop=1.5|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 33,
+    "net": 12486,
+    "without_best_day": 5844,
+    "worst_day": -1904,
+    "dd": 6661,
+    "green_months": 5,
+    "red_months": 3,
+    "green_weeks": 12,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-01": -1261,
+     "2026-02": 1358,
+     "2026-03": 0,
+     "2026-04": 1323,
+     "2026-05": 10512,
+     "2026-06": 3540,
+     "2026-07": -2854,
+     "2026-08": -1005,
+     "2026-09": 872,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 14,
+    "net": 11932,
+    "without_best_day": 5291,
+    "worst_day": -1574,
+    "dd": 2636,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 6,
+    "red_weeks": 3,
+    "monthly": {
+     "2026-01": -1261,
+     "2026-02": 1358,
+     "2026-03": 0,
+     "2026-04": 1323,
+     "2026-05": 10512
+    }
+   },
+   "H2": {
+    "trades": 19,
+    "net": 553,
+    "without_best_day": -4527,
+    "worst_day": -1904,
+    "dd": 6661,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-06": 3540,
+     "2026-07": -2854,
+     "2026-08": -1005,
+     "2026-09": 872,
+     "2026-10": 0
+    }
+   }
+  },
+  "PDL_FADE|stop=1.5|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 33,
+    "net": 11258,
+    "without_best_day": 5807,
+    "worst_day": -2354,
+    "dd": 5182,
+    "green_months": 5,
+    "red_months": 3,
+    "green_weeks": 13,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-01": 88,
+     "2026-02": 1028,
+     "2026-03": 0,
+     "2026-04": 729,
+     "2026-05": 6882,
+     "2026-06": 4789,
+     "2026-07": -1290,
+     "2026-08": -842,
+     "2026-09": -126,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 14,
+    "net": 8727,
+    "without_best_day": 3277,
+    "worst_day": -2354,
+    "dd": 2636,
+    "green_months": 4,
+    "red_months": 0,
+    "green_weeks": 6,
+    "red_weeks": 3,
+    "monthly": {
+     "2026-01": 88,
+     "2026-02": 1028,
+     "2026-03": 0,
+     "2026-04": 729,
+     "2026-05": 6882
+    }
+   },
+   "H2": {
+    "trades": 19,
+    "net": 2531,
+    "without_best_day": -1813,
+    "worst_day": -1904,
+    "dd": 5182,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 7,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-06": 4789,
+     "2026-07": -1290,
+     "2026-08": -842,
+     "2026-09": -126,
+     "2026-10": 0
+    }
+   }
+  },
+  "PDL_FADE|stop=1.5|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 38,
+    "net": 8443,
+    "without_best_day": 1802,
+    "worst_day": -1904,
+    "dd": 6051,
+    "green_months": 5,
+    "red_months": 3,
+    "green_weeks": 12,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-01": -1261,
+     "2026-02": 516,
+     "2026-03": 0,
+     "2026-04": 729,
+     "2026-05": 8614,
+     "2026-06": 2938,
+     "2026-07": -2136,
+     "2026-08": -1050,
+     "2026-09": 93,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 17,
+    "net": 8598,
+    "without_best_day": 1957,
+    "worst_day": -1574,
+    "dd": 2636,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 7,
+    "red_weeks": 2,
+    "monthly": {
+     "2026-01": -1261,
+     "2026-02": 516,
+     "2026-03": 0,
+     "2026-04": 729,
+     "2026-05": 8614
+    }
+   },
+   "H2": {
+    "trades": 21,
+    "net": -155,
+    "without_best_day": -4617,
+    "worst_day": -1904,
+    "dd": 6051,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": 2938,
+     "2026-07": -2136,
+     "2026-08": -1050,
+     "2026-09": 93,
+     "2026-10": 0
+    }
+   }
+  },
+  "PDL_FADE|stop=1.5|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 38,
+    "net": 6195,
+    "without_best_day": 744,
+    "worst_day": -2354,
+    "dd": 5354,
+    "green_months": 3,
+    "red_months": 5,
+    "green_weeks": 11,
+    "red_weeks": 12,
+    "monthly": {
+     "2026-01": -382,
+     "2026-02": -830,
+     "2026-03": 0,
+     "2026-04": -555,
+     "2026-05": 4637,
+     "2026-06": 4148,
+     "2026-07": 153,
+     "2026-08": -771,
+     "2026-09": -205,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 17,
+    "net": 2869,
+    "without_best_day": -2581,
+    "worst_day": -2354,
+    "dd": 3319,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 4,
+    "red_weeks": 5,
+    "monthly": {
+     "2026-01": -382,
+     "2026-02": -830,
+     "2026-03": 0,
+     "2026-04": -555,
+     "2026-05": 4637
+    }
+   },
+   "H2": {
+    "trades": 21,
+    "net": 3326,
+    "without_best_day": -400,
+    "worst_day": -1927,
+    "dd": 5354,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-06": 4148,
+     "2026-07": 153,
+     "2026-08": -771,
+     "2026-09": -205,
+     "2026-10": 0
+    }
+   }
+  },
+  "RSI2|stop=1.0|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 122,
+    "net": -4702,
+    "without_best_day": -12115,
+    "worst_day": -3926,
+    "dd": 18297,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 12,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 1383,
+     "2026-02": -3709,
+     "2026-03": 1008,
+     "2026-04": 2821,
+     "2026-05": -4092,
+     "2026-06": -8308,
+     "2026-07": 3673,
+     "2026-08": -482,
+     "2026-09": 3005,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 57,
+    "net": -2589,
+    "without_best_day": -10003,
+    "worst_day": -3926,
+    "dd": 12357,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-01": 1383,
+     "2026-02": -3709,
+     "2026-03": 1008,
+     "2026-04": 2821,
+     "2026-05": -4092
+    }
+   },
+   "H2": {
+    "trades": 65,
+    "net": -2112,
+    "without_best_day": -7444,
+    "worst_day": -2251,
+    "dd": 11147,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -8308,
+     "2026-07": 3673,
+     "2026-08": -482,
+     "2026-09": 3005,
+     "2026-10": 0
+    }
+   }
+  },
+  "RSI2|stop=1.0|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 115,
+    "net": 2955,
+    "without_best_day": -5233,
+    "worst_day": -3926,
+    "dd": 24456,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 14,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": 6298,
+     "2026-02": 2037,
+     "2026-03": 4832,
+     "2026-04": 2939,
+     "2026-05": -12153,
+     "2026-06": -5868,
+     "2026-07": 8130,
+     "2026-08": -2285,
+     "2026-09": -975,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 53,
+    "net": 3953,
+    "without_best_day": -4235,
+    "worst_day": -3926,
+    "dd": 14744,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 7,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 6298,
+     "2026-02": 2037,
+     "2026-03": 4832,
+     "2026-04": 2939,
+     "2026-05": -12153
+    }
+   },
+   "H2": {
+    "trades": 62,
+    "net": -998,
+    "without_best_day": -5301,
+    "worst_day": -2192,
+    "dd": 9820,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -5868,
+     "2026-07": 8130,
+     "2026-08": -2285,
+     "2026-09": -975,
+     "2026-10": 0
+    }
+   }
+  },
+  "RSI2|stop=1.0|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 155,
+    "net": 12584,
+    "without_best_day": 4853,
+    "worst_day": -4619,
+    "dd": 17031,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 14,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": -964,
+     "2026-02": -681,
+     "2026-03": 6199,
+     "2026-04": 3377,
+     "2026-05": -4744,
+     "2026-06": -3719,
+     "2026-07": 2212,
+     "2026-08": 4267,
+     "2026-09": 6638,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 76,
+    "net": 3186,
+    "without_best_day": -4546,
+    "worst_day": -4619,
+    "dd": 12568,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 7,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": -964,
+     "2026-02": -681,
+     "2026-03": 6199,
+     "2026-04": 3377,
+     "2026-05": -4744
+    }
+   },
+   "H2": {
+    "trades": 79,
+    "net": 9398,
+    "without_best_day": 2470,
+    "worst_day": -3699,
+    "dd": 14270,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -3719,
+     "2026-07": 2212,
+     "2026-08": 4267,
+     "2026-09": 6638,
+     "2026-10": 0
+    }
+   }
+  },
+  "RSI2|stop=1.0|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 166,
+    "net": -1082,
+    "without_best_day": -9103,
+    "worst_day": -4619,
+    "dd": 27208,
+    "green_months": 6,
+    "red_months": 3,
+    "green_weeks": 16,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": 380,
+     "2026-02": 6532,
+     "2026-03": 4765,
+     "2026-04": 2564,
+     "2026-05": -11744,
+     "2026-06": -4465,
+     "2026-07": -2752,
+     "2026-08": 2042,
+     "2026-09": 1596,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 74,
+    "net": 2497,
+    "without_best_day": -5524,
+    "worst_day": -4619,
+    "dd": 18698,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 8,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": 380,
+     "2026-02": 6532,
+     "2026-03": 4765,
+     "2026-04": 2564,
+     "2026-05": -11744
+    }
+   },
+   "H2": {
+    "trades": 92,
+    "net": -3579,
+    "without_best_day": -9768,
+    "worst_day": -3722,
+    "dd": 17873,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 8,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-06": -4465,
+     "2026-07": -2752,
+     "2026-08": 2042,
+     "2026-09": 1596,
+     "2026-10": 0
+    }
+   }
+  },
+  "RSI2|stop=1.5|target_r=1.5|exit=LIVE": {
+   "FULL": {
+    "trades": 134,
+    "net": -5304,
+    "without_best_day": -13036,
+    "worst_day": -3965,
+    "dd": 21808,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 14,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": 2891,
+     "2026-02": -3201,
+     "2026-03": 1173,
+     "2026-04": 420,
+     "2026-05": -3854,
+     "2026-06": -9364,
+     "2026-07": 2345,
+     "2026-08": -1092,
+     "2026-09": 5377,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 59,
+    "net": -2571,
+    "without_best_day": -10303,
+    "worst_day": -3965,
+    "dd": 13946,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-01": 2891,
+     "2026-02": -3201,
+     "2026-03": 1173,
+     "2026-04": 420,
+     "2026-05": -3854
+    }
+   },
+   "H2": {
+    "trades": 75,
+    "net": -2733,
+    "without_best_day": -8029,
+    "worst_day": -2666,
+    "dd": 12774,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 8,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-06": -9364,
+     "2026-07": 2345,
+     "2026-08": -1092,
+     "2026-09": 5377,
+     "2026-10": 0
+    }
+   }
+  },
+  "RSI2|stop=1.5|target_r=1.5|exit=LATE": {
+   "FULL": {
+    "trades": 132,
+    "net": 2160,
+    "without_best_day": -5909,
+    "worst_day": -3486,
+    "dd": 25779,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 16,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": 7255,
+     "2026-02": 5533,
+     "2026-03": 4309,
+     "2026-04": 1353,
+     "2026-05": -11198,
+     "2026-06": -370,
+     "2026-07": -1855,
+     "2026-08": -4034,
+     "2026-09": 1167,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 57,
+    "net": 7252,
+    "without_best_day": -816,
+    "worst_day": -3486,
+    "dd": 18352,
+    "green_months": 4,
+    "red_months": 1,
+    "green_weeks": 9,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-01": 7255,
+     "2026-02": 5533,
+     "2026-03": 4309,
+     "2026-04": 1353,
+     "2026-05": -11198
+    }
+   },
+   "H2": {
+    "trades": 75,
+    "net": -5093,
+    "without_best_day": -10786,
+    "worst_day": -2859,
+    "dd": 18503,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -370,
+     "2026-07": -1855,
+     "2026-08": -4034,
+     "2026-09": 1167,
+     "2026-10": 0
+    }
+   }
+  },
+  "RSI2|stop=1.5|target_r=2.4|exit=LIVE": {
+   "FULL": {
+    "trades": 168,
+    "net": 1593,
+    "without_best_day": -6139,
+    "worst_day": -5025,
+    "dd": 24241,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 14,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": 187,
+     "2026-02": 870,
+     "2026-03": 6695,
+     "2026-04": -1904,
+     "2026-05": -5348,
+     "2026-06": -7790,
+     "2026-07": 3203,
+     "2026-08": -490,
+     "2026-09": 6169,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 78,
+    "net": 500,
+    "without_best_day": -7232,
+    "worst_day": -5025,
+    "dd": 14047,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 187,
+     "2026-02": 870,
+     "2026-03": 6695,
+     "2026-04": -1904,
+     "2026-05": -5348
+    }
+   },
+   "H2": {
+    "trades": 90,
+    "net": 1093,
+    "without_best_day": -5155,
+    "worst_day": -3094,
+    "dd": 16578,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -7790,
+     "2026-07": 3203,
+     "2026-08": -490,
+     "2026-09": 6169,
+     "2026-10": 0
+    }
+   }
+  },
+  "RSI2|stop=1.5|target_r=2.4|exit=LATE": {
+   "FULL": {
+    "trades": 175,
+    "net": 14519,
+    "without_best_day": 4010,
+    "worst_day": -5554,
+    "dd": 18383,
+    "green_months": 6,
+    "red_months": 3,
+    "green_weeks": 15,
+    "red_weeks": 16,
+    "monthly": {
+     "2026-01": 1148,
+     "2026-02": 8234,
+     "2026-03": 4405,
+     "2026-04": -3668,
+     "2026-05": -11366,
+     "2026-06": 15070,
+     "2026-07": -1020,
+     "2026-08": 66,
+     "2026-09": 1649,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 76,
+    "net": -1247,
+    "without_best_day": -9126,
+    "worst_day": -5554,
+    "dd": 18383,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 1148,
+     "2026-02": 8234,
+     "2026-03": 4405,
+     "2026-04": -3668,
+     "2026-05": -11366
+    }
+   },
+   "H2": {
+    "trades": 99,
+    "net": 15765,
+    "without_best_day": 5256,
+    "worst_day": -4450,
+    "dd": 12528,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 8,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-06": 15070,
+     "2026-07": -1020,
+     "2026-08": 66,
+     "2026-09": 1649,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL00|sideways": {
+   "FULL": {
+    "trades": 169,
+    "net": -17971,
+    "without_best_day": -22197,
+    "worst_day": -3202,
+    "dd": 27907,
+    "green_months": 3,
+    "red_months": 6,
+    "green_weeks": 10,
+    "red_weeks": 21,
+    "monthly": {
+     "2026-01": -2231,
+     "2026-02": -4380,
+     "2026-03": -2245,
+     "2026-04": 689,
+     "2026-05": -14022,
+     "2026-06": -550,
+     "2026-07": 3778,
+     "2026-08": 4646,
+     "2026-09": -3656,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 70,
+    "net": -22188,
+    "without_best_day": -24116,
+    "worst_day": -3202,
+    "dd": 23923,
+    "green_months": 1,
+    "red_months": 4,
+    "green_weeks": 3,
+    "red_weeks": 12,
+    "monthly": {
+     "2026-01": -2231,
+     "2026-02": -4380,
+     "2026-03": -2245,
+     "2026-04": 689,
+     "2026-05": -14022
+    }
+   },
+   "H2": {
+    "trades": 99,
+    "net": 4217,
+    "without_best_day": -8,
+    "worst_day": -2031,
+    "dd": 4474,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -550,
+     "2026-07": 3778,
+     "2026-08": 4646,
+     "2026-09": -3656,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL01|sideways": {
+   "FULL": {
+    "trades": 201,
+    "net": 8280,
+    "without_best_day": -2916,
+    "worst_day": -5421,
+    "dd": 46689,
+    "green_months": 3,
+    "red_months": 6,
+    "green_weeks": 10,
+    "red_weeks": 21,
+    "monthly": {
+     "2026-01": 43539,
+     "2026-02": -11511,
+     "2026-03": -14711,
+     "2026-04": -2382,
+     "2026-05": -10549,
+     "2026-06": -3838,
+     "2026-07": 7668,
+     "2026-08": -2569,
+     "2026-09": 2632,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 99,
+    "net": 4386,
+    "without_best_day": -6810,
+    "worst_day": -5421,
+    "dd": 39153,
+    "green_months": 1,
+    "red_months": 4,
+    "green_weeks": 3,
+    "red_weeks": 12,
+    "monthly": {
+     "2026-01": 43539,
+     "2026-02": -11511,
+     "2026-03": -14711,
+     "2026-04": -2382,
+     "2026-05": -10549
+    }
+   },
+   "H2": {
+    "trades": 102,
+    "net": 3894,
+    "without_best_day": -4022,
+    "worst_day": -2495,
+    "dd": 8037,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -3838,
+     "2026-07": 7668,
+     "2026-08": -2569,
+     "2026-09": 2632,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL02|sideways": {
+   "FULL": {
+    "trades": 134,
+    "net": -17795,
+    "without_best_day": -23907,
+    "worst_day": -3168,
+    "dd": 30410,
+    "green_months": 2,
+    "red_months": 7,
+    "green_weeks": 7,
+    "red_weeks": 23,
+    "monthly": {
+     "2026-01": 12615,
+     "2026-02": -12010,
+     "2026-03": -1326,
+     "2026-04": -6841,
+     "2026-05": -5247,
+     "2026-06": -534,
+     "2026-07": -1976,
+     "2026-08": 2747,
+     "2026-09": -5224,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 60,
+    "net": -12808,
+    "without_best_day": -18076,
+    "worst_day": -3168,
+    "dd": 25557,
+    "green_months": 1,
+    "red_months": 4,
+    "green_weeks": 3,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-01": 12615,
+     "2026-02": -12010,
+     "2026-03": -1326,
+     "2026-04": -6841,
+     "2026-05": -5247
+    }
+   },
+   "H2": {
+    "trades": 74,
+    "net": -4987,
+    "without_best_day": -11099,
+    "worst_day": -1970,
+    "dd": 10250,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 4,
+    "red_weeks": 12,
+    "monthly": {
+     "2026-06": -534,
+     "2026-07": -1976,
+     "2026-08": 2747,
+     "2026-09": -5224,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL03|sideways": {
+   "FULL": {
+    "trades": 78,
+    "net": -9885,
+    "without_best_day": -17775,
+    "worst_day": -2407,
+    "dd": 21246,
+    "green_months": 2,
+    "red_months": 7,
+    "green_weeks": 10,
+    "red_weeks": 20,
+    "monthly": {
+     "2026-01": 9188,
+     "2026-02": -1984,
+     "2026-03": 491,
+     "2026-04": -1806,
+     "2026-05": -7936,
+     "2026-06": -629,
+     "2026-07": -4926,
+     "2026-08": -776,
+     "2026-09": -1506,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 35,
+    "net": -2048,
+    "without_best_day": -9939,
+    "worst_day": -2407,
+    "dd": 13211,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-01": 9188,
+     "2026-02": -1984,
+     "2026-03": 491,
+     "2026-04": -1806,
+     "2026-05": -7936
+    }
+   },
+   "H2": {
+    "trades": 43,
+    "net": -7836,
+    "without_best_day": -9733,
+    "worst_day": -1745,
+    "dd": 11211,
+    "green_months": 0,
+    "red_months": 4,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -629,
+     "2026-07": -4926,
+     "2026-08": -776,
+     "2026-09": -1506,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL04|sideways": {
+   "FULL": {
+    "trades": 113,
+    "net": -13278,
+    "without_best_day": -21561,
+    "worst_day": -4856,
+    "dd": 26859,
+    "green_months": 3,
+    "red_months": 6,
+    "green_weeks": 11,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 11629,
+     "2026-02": -2240,
+     "2026-03": -3930,
+     "2026-04": -4121,
+     "2026-05": 400,
+     "2026-06": 2021,
+     "2026-07": -9820,
+     "2026-08": -1829,
+     "2026-09": -5390,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 50,
+    "net": 1738,
+    "without_best_day": -6545,
+    "worst_day": -4856,
+    "dd": 12242,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 6,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 11629,
+     "2026-02": -2240,
+     "2026-03": -3930,
+     "2026-04": -4121,
+     "2026-05": 400
+    }
+   },
+   "H2": {
+    "trades": 63,
+    "net": -15017,
+    "without_best_day": -20038,
+    "worst_day": -3011,
+    "dd": 23376,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": 2021,
+     "2026-07": -9820,
+     "2026-08": -1829,
+     "2026-09": -5390,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL05|sideways": {
+   "FULL": {
+    "trades": 46,
+    "net": 30707,
+    "without_best_day": 20012,
+    "worst_day": -3603,
+    "dd": 9764,
+    "green_months": 7,
+    "red_months": 2,
+    "green_weeks": 11,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-01": 6297,
+     "2026-02": -1336,
+     "2026-03": -2336,
+     "2026-04": 365,
+     "2026-05": 4806,
+     "2026-06": 8808,
+     "2026-07": 10854,
+     "2026-08": 510,
+     "2026-09": 2739,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 23,
+    "net": 7796,
+    "without_best_day": -1385,
+    "worst_day": -3603,
+    "dd": 7083,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 4,
+    "red_weeks": 7,
+    "monthly": {
+     "2026-01": 6297,
+     "2026-02": -1336,
+     "2026-03": -2336,
+     "2026-04": 365,
+     "2026-05": 4806
+    }
+   },
+   "H2": {
+    "trades": 23,
+    "net": 22912,
+    "without_best_day": 12216,
+    "worst_day": -2681,
+    "dd": 2681,
+    "green_months": 4,
+    "red_months": 0,
+    "green_weeks": 7,
+    "red_weeks": 4,
+    "monthly": {
+     "2026-06": 8808,
+     "2026-07": 10854,
+     "2026-08": 510,
+     "2026-09": 2739,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL06|sideways": {
+   "FULL": {
+    "trades": 49,
+    "net": -4762,
+    "without_best_day": -10441,
+    "worst_day": -1778,
+    "dd": 15590,
+    "green_months": 3,
+    "red_months": 6,
+    "green_weeks": 7,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": 8366,
+     "2026-02": -433,
+     "2026-03": 50,
+     "2026-04": -657,
+     "2026-05": -3068,
+     "2026-06": -2861,
+     "2026-07": -4580,
+     "2026-08": 1154,
+     "2026-09": -2733,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 18,
+    "net": 4258,
+    "without_best_day": -1421,
+    "worst_day": -1778,
+    "dd": 6571,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 4,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-01": 8366,
+     "2026-02": -433,
+     "2026-03": 50,
+     "2026-04": -657,
+     "2026-05": -3068
+    }
+   },
+   "H2": {
+    "trades": 31,
+    "net": -9019,
+    "without_best_day": -10418,
+    "worst_day": -1548,
+    "dd": 9019,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 3,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": -2861,
+     "2026-07": -4580,
+     "2026-08": 1154,
+     "2026-09": -2733,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL07|sideways": {
+   "FULL": {
+    "trades": 105,
+    "net": -14319,
+    "without_best_day": -17085,
+    "worst_day": -2945,
+    "dd": 19606,
+    "green_months": 3,
+    "red_months": 6,
+    "green_weeks": 11,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": -1158,
+     "2026-02": -3254,
+     "2026-03": 624,
+     "2026-04": -6212,
+     "2026-05": 416,
+     "2026-06": -1619,
+     "2026-07": -2607,
+     "2026-08": -3314,
+     "2026-09": 2805,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 46,
+    "net": -9584,
+    "without_best_day": -12351,
+    "worst_day": -2945,
+    "dd": 12206,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 6,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": -1158,
+     "2026-02": -3254,
+     "2026-03": 624,
+     "2026-04": -6212,
+     "2026-05": 416
+    }
+   },
+   "H2": {
+    "trades": 59,
+    "net": -4735,
+    "without_best_day": -7137,
+    "worst_day": -2359,
+    "dd": 10298,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -1619,
+     "2026-07": -2607,
+     "2026-08": -3314,
+     "2026-09": 2805,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL08|sideways": {
+   "FULL": {
+    "trades": 102,
+    "net": -35180,
+    "without_best_day": -36887,
+    "worst_day": -3191,
+    "dd": 35180,
+    "green_months": 0,
+    "red_months": 7,
+    "green_weeks": 1,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": -11332,
+     "2026-02": -5545,
+     "2026-03": -1309,
+     "2026-04": -1591,
+     "2026-05": -9596,
+     "2026-06": -4623,
+     "2026-07": -1184,
+     "2026-08": 0,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 68,
+    "net": -29373,
+    "without_best_day": -31080,
+    "worst_day": -3191,
+    "dd": 29373,
+    "green_months": 0,
+    "red_months": 5,
+    "green_weeks": 0,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": -11332,
+     "2026-02": -5545,
+     "2026-03": -1309,
+     "2026-04": -1591,
+     "2026-05": -9596
+    }
+   },
+   "H2": {
+    "trades": 34,
+    "net": -5807,
+    "without_best_day": -7393,
+    "worst_day": -1606,
+    "dd": 8462,
+    "green_months": 0,
+    "red_months": 2,
+    "green_weeks": 1,
+    "red_weeks": 4,
+    "monthly": {
+     "2026-06": -4623,
+     "2026-07": -1184,
+     "2026-08": 0,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL09|sideways": {
+   "FULL": {
+    "trades": 181,
+    "net": 19880,
+    "without_best_day": 4005,
+    "worst_day": -3800,
+    "dd": 21859,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 13,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": 21358,
+     "2026-02": -3931,
+     "2026-03": -3252,
+     "2026-04": -7036,
+     "2026-05": 6724,
+     "2026-06": -3482,
+     "2026-07": 4927,
+     "2026-08": 8685,
+     "2026-09": -4113,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 88,
+    "net": 13863,
+    "without_best_day": -2012,
+    "worst_day": -3800,
+    "dd": 21859,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 7,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 21358,
+     "2026-02": -3931,
+     "2026-03": -3252,
+     "2026-04": -7036,
+     "2026-05": 6724
+    }
+   },
+   "H2": {
+    "trades": 93,
+    "net": 6017,
+    "without_best_day": 260,
+    "worst_day": -3130,
+    "dd": 13116,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 6,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-06": -3482,
+     "2026-07": 4927,
+     "2026-08": 8685,
+     "2026-09": -4113,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL10|sideways": {
+   "FULL": {
+    "trades": 161,
+    "net": -27227,
+    "without_best_day": -34125,
+    "worst_day": -4501,
+    "dd": 39210,
+    "green_months": 1,
+    "red_months": 8,
+    "green_weeks": 7,
+    "red_weeks": 24,
+    "monthly": {
+     "2026-01": 11983,
+     "2026-02": -8790,
+     "2026-03": -8089,
+     "2026-04": -2669,
+     "2026-05": -6710,
+     "2026-06": -3118,
+     "2026-07": -1176,
+     "2026-08": -4472,
+     "2026-09": -4187,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 82,
+    "net": -14275,
+    "without_best_day": -21173,
+    "worst_day": -4501,
+    "dd": 26258,
+    "green_months": 1,
+    "red_months": 4,
+    "green_weeks": 5,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-01": 11983,
+     "2026-02": -8790,
+     "2026-03": -8089,
+     "2026-04": -2669,
+     "2026-05": -6710
+    }
+   },
+   "H2": {
+    "trades": 79,
+    "net": -12953,
+    "without_best_day": -17643,
+    "worst_day": -2524,
+    "dd": 17083,
+    "green_months": 0,
+    "red_months": 4,
+    "green_weeks": 2,
+    "red_weeks": 14,
+    "monthly": {
+     "2026-06": -3118,
+     "2026-07": -1176,
+     "2026-08": -4472,
+     "2026-09": -4187,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL11|sideways": {
+   "FULL": {
+    "trades": 25,
+    "net": -3047,
+    "without_best_day": -6179,
+    "worst_day": -5598,
+    "dd": 12117,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 9,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-01": 965,
+     "2026-02": -2848,
+     "2026-03": 3010,
+     "2026-04": 1252,
+     "2026-05": -5998,
+     "2026-06": -3622,
+     "2026-07": -2343,
+     "2026-08": 4320,
+     "2026-09": 2215,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 14,
+    "net": -3618,
+    "without_best_day": -6750,
+    "worst_day": -5598,
+    "dd": 9070,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 4,
+    "red_weeks": 4,
+    "monthly": {
+     "2026-01": 965,
+     "2026-02": -2848,
+     "2026-03": 3010,
+     "2026-04": 1252,
+     "2026-05": -5998
+    }
+   },
+   "H2": {
+    "trades": 11,
+    "net": 571,
+    "without_best_day": -1299,
+    "worst_day": -2872,
+    "dd": 5964,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 5,
+    "monthly": {
+     "2026-06": -3622,
+     "2026-07": -2343,
+     "2026-08": 4320,
+     "2026-09": 2215,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL12|sideways": {
+   "FULL": {
+    "trades": 125,
+    "net": 712,
+    "without_best_day": -9222,
+    "worst_day": -5662,
+    "dd": 14543,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 14,
+    "red_weeks": 14,
+    "monthly": {
+     "2026-01": 5140,
+     "2026-02": -7709,
+     "2026-03": 3703,
+     "2026-04": 2142,
+     "2026-05": -3011,
+     "2026-06": -4648,
+     "2026-07": 12978,
+     "2026-08": -5930,
+     "2026-09": -1955,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 63,
+    "net": 266,
+    "without_best_day": -9668,
+    "worst_day": -5662,
+    "dd": 9438,
+    "green_months": 3,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-01": 5140,
+     "2026-02": -7709,
+     "2026-03": 3703,
+     "2026-04": 2142,
+     "2026-05": -3011
+    }
+   },
+   "H2": {
+    "trades": 62,
+    "net": 446,
+    "without_best_day": -5676,
+    "worst_day": -3734,
+    "dd": 8436,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 7,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-06": -4648,
+     "2026-07": 12978,
+     "2026-08": -5930,
+     "2026-09": -1955,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL13|sideways": {
+   "FULL": {
+    "trades": 257,
+    "net": -14046,
+    "without_best_day": -29435,
+    "worst_day": -4856,
+    "dd": 37233,
+    "green_months": 2,
+    "red_months": 7,
+    "green_weeks": 10,
+    "red_weeks": 21,
+    "monthly": {
+     "2026-01": 21251,
+     "2026-02": -8165,
+     "2026-03": -8107,
+     "2026-04": -7360,
+     "2026-05": 11674,
+     "2026-06": -3941,
+     "2026-07": -10254,
+     "2026-08": -5085,
+     "2026-09": -4059,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 127,
+    "net": 9293,
+    "without_best_day": -6096,
+    "worst_day": -4856,
+    "dd": 25568,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-01": 21251,
+     "2026-02": -8165,
+     "2026-03": -8107,
+     "2026-04": -7360,
+     "2026-05": 11674
+    }
+   },
+   "H2": {
+    "trades": 130,
+    "net": -23339,
+    "without_best_day": -28651,
+    "worst_day": -2675,
+    "dd": 28362,
+    "green_months": 0,
+    "red_months": 4,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -3941,
+     "2026-07": -10254,
+     "2026-08": -5085,
+     "2026-09": -4059,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL14|sideways": {
+   "FULL": {
+    "trades": 111,
+    "net": -3056,
+    "without_best_day": -9043,
+    "worst_day": -4327,
+    "dd": 16318,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 11,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 4533,
+     "2026-02": -452,
+     "2026-03": 543,
+     "2026-04": -3777,
+     "2026-05": -3328,
+     "2026-06": -510,
+     "2026-07": 3313,
+     "2026-08": -5418,
+     "2026-09": 2040,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 54,
+    "net": -2481,
+    "without_best_day": -8148,
+    "worst_day": -4327,
+    "dd": 12361,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 6,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 4533,
+     "2026-02": -452,
+     "2026-03": 543,
+     "2026-04": -3777,
+     "2026-05": -3328
+    }
+   },
+   "H2": {
+    "trades": 57,
+    "net": -574,
+    "without_best_day": -6562,
+    "worst_day": -3532,
+    "dd": 10758,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 5,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-06": -510,
+     "2026-07": 3313,
+     "2026-08": -5418,
+     "2026-09": 2040,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL15|sideways": {
+   "FULL": {
+    "trades": 132,
+    "net": -23629,
+    "without_best_day": -33531,
+    "worst_day": -4744,
+    "dd": 36440,
+    "green_months": 2,
+    "red_months": 5,
+    "green_weeks": 7,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": 9744,
+     "2026-02": -7405,
+     "2026-03": 5779,
+     "2026-04": -9000,
+     "2026-05": -5920,
+     "2026-06": -10620,
+     "2026-07": -6206,
+     "2026-08": 0,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 93,
+    "net": -6803,
+    "without_best_day": -16704,
+    "worst_day": -4744,
+    "dd": 21452,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 6,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-01": 9744,
+     "2026-02": -7405,
+     "2026-03": 5779,
+     "2026-04": -9000,
+     "2026-05": -5920
+    }
+   },
+   "H2": {
+    "trades": 39,
+    "net": -16826,
+    "without_best_day": -23653,
+    "worst_day": -4304,
+    "dd": 17922,
+    "green_months": 0,
+    "red_months": 2,
+    "green_weeks": 1,
+    "red_weeks": 6,
+    "monthly": {
+     "2026-06": -10620,
+     "2026-07": -6206,
+     "2026-08": 0,
+     "2026-09": 0,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL16|sideways": {
+   "FULL": {
+    "trades": 187,
+    "net": -288,
+    "without_best_day": -17938,
+    "worst_day": -3757,
+    "dd": 25915,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 12,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 8428,
+     "2026-02": -8711,
+     "2026-03": 15981,
+     "2026-04": -1458,
+     "2026-05": -8396,
+     "2026-06": -382,
+     "2026-07": -13142,
+     "2026-08": 4271,
+     "2026-09": 3120,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 80,
+    "net": 5845,
+    "without_best_day": -11805,
+    "worst_day": -3757,
+    "dd": 15357,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 4,
+    "red_weeks": 11,
+    "monthly": {
+     "2026-01": 8428,
+     "2026-02": -8711,
+     "2026-03": 15981,
+     "2026-04": -1458,
+     "2026-05": -8396
+    }
+   },
+   "H2": {
+    "trades": 107,
+    "net": -6133,
+    "without_best_day": -11150,
+    "worst_day": -2585,
+    "dd": 18842,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 8,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-06": -382,
+     "2026-07": -13142,
+     "2026-08": 4271,
+     "2026-09": 3120,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL17|sideways": {
+   "FULL": {
+    "trades": 33,
+    "net": -13201,
+    "without_best_day": -15355,
+    "worst_day": -2727,
+    "dd": 13805,
+    "green_months": 1,
+    "red_months": 8,
+    "green_weeks": 7,
+    "red_weeks": 12,
+    "monthly": {
+     "2026-01": -1837,
+     "2026-02": -1028,
+     "2026-03": -1628,
+     "2026-04": -4030,
+     "2026-05": -2200,
+     "2026-06": -1504,
+     "2026-07": -757,
+     "2026-08": -271,
+     "2026-09": 54,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 19,
+    "net": -10724,
+    "without_best_day": -12878,
+    "worst_day": -2227,
+    "dd": 10724,
+    "green_months": 0,
+    "red_months": 5,
+    "green_weeks": 2,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": -1837,
+     "2026-02": -1028,
+     "2026-03": -1628,
+     "2026-04": -4030,
+     "2026-05": -2200
+    }
+   },
+   "H2": {
+    "trades": 14,
+    "net": -2477,
+    "without_best_day": -3255,
+    "worst_day": -2727,
+    "dd": 3082,
+    "green_months": 1,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 4,
+    "monthly": {
+     "2026-06": -1504,
+     "2026-07": -757,
+     "2026-08": -271,
+     "2026-09": 54,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL18|sideways": {
+   "FULL": {
+    "trades": 251,
+    "net": 8240,
+    "without_best_day": -8076,
+    "worst_day": -4623,
+    "dd": 37142,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 14,
+    "red_weeks": 17,
+    "monthly": {
+     "2026-01": 37479,
+     "2026-02": -5006,
+     "2026-03": -10326,
+     "2026-04": 1765,
+     "2026-05": -2044,
+     "2026-06": 1006,
+     "2026-07": -13008,
+     "2026-08": -3697,
+     "2026-09": 2071,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 114,
+    "net": 21868,
+    "without_best_day": 5552,
+    "worst_day": -4623,
+    "dd": 21705,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 7,
+    "red_weeks": 8,
+    "monthly": {
+     "2026-01": 37479,
+     "2026-02": -5006,
+     "2026-03": -10326,
+     "2026-04": 1765,
+     "2026-05": -2044
+    }
+   },
+   "H2": {
+    "trades": 137,
+    "net": -13628,
+    "without_best_day": -23899,
+    "worst_day": -4497,
+    "dd": 28364,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 7,
+    "red_weeks": 9,
+    "monthly": {
+     "2026-06": 1006,
+     "2026-07": -13008,
+     "2026-08": -3697,
+     "2026-09": 2071,
+     "2026-10": 0
+    }
+   }
+  },
+  "NULL19|sideways": {
+   "FULL": {
+    "trades": 180,
+    "net": 32172,
+    "without_best_day": 14868,
+    "worst_day": -5170,
+    "dd": 43559,
+    "green_months": 4,
+    "red_months": 5,
+    "green_weeks": 9,
+    "red_weeks": 22,
+    "monthly": {
+     "2026-01": 36180,
+     "2026-02": 19928,
+     "2026-03": -5286,
+     "2026-04": -5411,
+     "2026-05": -10766,
+     "2026-06": -4349,
+     "2026-07": 487,
+     "2026-08": 2853,
+     "2026-09": -1466,
+     "2026-10": 0
+    }
+   },
+   "H1": {
+    "trades": 80,
+    "net": 34646,
+    "without_best_day": 17343,
+    "worst_day": -5170,
+    "dd": 31709,
+    "green_months": 2,
+    "red_months": 3,
+    "green_weeks": 5,
+    "red_weeks": 10,
+    "monthly": {
+     "2026-01": 36180,
+     "2026-02": 19928,
+     "2026-03": -5286,
+     "2026-04": -5411,
+     "2026-05": -10766
+    }
+   },
+   "H2": {
+    "trades": 100,
+    "net": -2474,
+    "without_best_day": -8879,
+    "worst_day": -4203,
+    "dd": 11850,
+    "green_months": 2,
+    "red_months": 2,
+    "green_weeks": 4,
+    "red_weeks": 12,
+    "monthly": {
+     "2026-06": -4349,
+     "2026-07": 487,
+     "2026-08": 2853,
+     "2026-09": -1466,
+     "2026-10": 0
+    }
+   }
+  },
+  "UNION_ADX": {
+   "FULL": {
+    "trades": 106,
+    "net": 80912,
+    "without_best_day": 33625,
+    "worst_day": -6485,
+    "dd": 12519,
+    "green_months": 5,
+    "red_months": 1,
+    "green_weeks": 11,
+    "red_weeks": 5,
+    "monthly": {
+     "2026-01": -497,
+     "2026-02": 49671,
+     "2026-03": 7623,
+     "2026-04": 6200,
+     "2026-05": 0,
+     "2026-06": 0,
+     "2026-07": 0,
+     "2026-08": 0,
+     "2026-09": 3626,
+     "2026-10": 14289
+    }
+   },
+   "H1": {
+    "trades": 60,
+    "net": 62997,
+    "without_best_day": 15709,
+    "worst_day": -4759,
+    "dd": 11853,
+    "green_months": 3,
+    "red_months": 1,
+    "green_weeks": 6,
+    "red_weeks": 3,
+    "monthly": {
+     "2026-01": -497,
+     "2026-02": 49671,
+     "2026-03": 7623,
+     "2026-04": 6200,
+     "2026-05": 0
+    }
+   },
+   "H2": {
+    "trades": 46,
+    "net": 17915,
+    "without_best_day": 7452,
+    "worst_day": -6485,
+    "dd": 6485,
+    "green_months": 2,
+    "red_months": 0,
+    "green_weeks": 5,
+    "red_weeks": 2,
+    "monthly": {
+     "2026-06": 0,
+     "2026-07": 0,
+     "2026-08": 0,
+     "2026-09": 3626,
+     "2026-10": 14289
+    }
+   }
+  }
+ },
+ "null_median": {
+  "FULL": -7323.5,
+  "H1": -891.0,
+  "H2": -4861.0
+ },
+ "families": {
+  "FADE": {
+   "H1_pick": "FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LIVE",
+   "its_H2": 6752,
+   "H2_pick": "FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LATE",
+   "its_H1": 12533,
+   "positive_variants_full": 12,
+   "variants": 16,
+   "median_full": 5866.5,
+   "helps": true
+  },
+  "VWAP_REVERT": {
+   "H1_pick": "VWAP_REVERT|k=2.0|stop=1.5|target_r=1.5|exit=LATE",
+   "its_H2": -18846,
+   "H2_pick": "VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LATE",
+   "its_H1": 5251,
+   "positive_variants_full": 6,
+   "variants": 16,
+   "median_full": -5954.0,
+   "helps": false
+  },
+  "PDL_FADE": {
+   "H1_pick": "PDL_FADE|stop=1.5|target_r=1.5|exit=LIVE",
+   "its_H2": 553,
+   "H2_pick": "PDL_FADE|stop=1.5|target_r=2.4|exit=LATE",
+   "its_H1": 2869,
+   "positive_variants_full": 8,
+   "variants": 8,
+   "median_full": 5935.5,
+   "helps": true
+  },
+  "RSI2": {
+   "H1_pick": "RSI2|stop=1.5|target_r=1.5|exit=LATE",
+   "its_H2": -5093,
+   "H2_pick": "RSI2|stop=1.5|target_r=2.4|exit=LATE",
+   "its_H1": -1247,
+   "positive_variants_full": 5,
+   "variants": 8,
+   "median_full": 1876.5,
+   "helps": false
+  }
+ },
+ "combos": {
+  "UNION_ADX+FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LATE": {
+   "per_lot": {
+    "trades": 225,
+    "net": 102497,
+    "without_best_day": 55209,
+    "worst_day": -6485,
+    "dd": 18774,
+    "green_months": 8,
+    "red_months": 2,
+    "green_weeks": 22,
+    "red_weeks": 21,
+    "monthly": {
+     "2026-01": 16234,
+     "2026-02": 42736,
+     "2026-03": 6251,
+     "2026-04": 12548,
+     "2026-05": -2238,
+     "2026-06": 4932,
+     "2026-07": -617,
+     "2026-08": 3835,
+     "2026-09": 4528,
+     "2026-10": 14289
+    }
+   },
+   "one_lot_weeks": {
+    "weeks": 44,
+    "up": 21,
+    "down": 19,
+    "worst_end": 10622,
+    "mean_end": 16332
+   }
+  },
+  "UNION_ADX+FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LIVE": {
+   "per_lot": {
+    "trades": 225,
+    "net": 111046,
+    "without_best_day": 63758,
+    "worst_day": -6485,
+    "dd": 19217,
+    "green_months": 9,
+    "red_months": 1,
+    "green_weeks": 25,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": 12448,
+     "2026-02": 44634,
+     "2026-03": 9858,
+     "2026-04": 13706,
+     "2026-05": 5733,
+     "2026-06": 1705,
+     "2026-07": -2236,
+     "2026-08": 5695,
+     "2026-09": 5214,
+     "2026-10": 14289
+    }
+   },
+   "one_lot_weeks": {
+    "weeks": 44,
+    "up": 22,
+    "down": 18,
+    "worst_end": 10788,
+    "mean_end": 16371
+   }
+  },
+  "UNION_ADX+VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LATE": {
+   "per_lot": {
+    "trades": 240,
+    "net": 88531,
+    "without_best_day": 41243,
+    "worst_day": -6485,
+    "dd": 25315,
+    "green_months": 6,
+    "red_months": 4,
+    "green_weeks": 23,
+    "red_weeks": 21,
+    "monthly": {
+     "2026-01": -426,
+     "2026-02": 55107,
+     "2026-03": 11879,
+     "2026-04": 9282,
+     "2026-05": -7593,
+     "2026-06": 1915,
+     "2026-07": -6580,
+     "2026-08": -1099,
+     "2026-09": 11757,
+     "2026-10": 14289
+    }
+   },
+   "one_lot_weeks": {
+    "weeks": 44,
+    "up": 22,
+    "down": 19,
+    "worst_end": 10740,
+    "mean_end": 15982
+   }
+  },
+  "UNION_ADX+VWAP_REVERT|k=2.0|stop=1.5|target_r=1.5|exit=LATE": {
+   "per_lot": {
+    "trades": 220,
+    "net": 85569,
+    "without_best_day": 38281,
+    "worst_day": -6485,
+    "dd": 31362,
+    "green_months": 6,
+    "red_months": 4,
+    "green_weeks": 26,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": 3848,
+     "2026-02": 56240,
+     "2026-03": 15589,
+     "2026-04": 13842,
+     "2026-05": -3020,
+     "2026-06": -11750,
+     "2026-07": -8085,
+     "2026-08": -3390,
+     "2026-09": 8004,
+     "2026-10": 14289
+    }
+   },
+   "one_lot_weeks": {
+    "weeks": 44,
+    "up": 22,
+    "down": 19,
+    "worst_end": 10968,
+    "mean_end": 15681
+   }
+  },
+  "UNION_ADX+PDL_FADE|stop=1.5|target_r=2.4|exit=LATE": {
+   "per_lot": {
+    "trades": 144,
+    "net": 87107,
+    "without_best_day": 39819,
+    "worst_day": -6485,
+    "dd": 12358,
+    "green_months": 8,
+    "red_months": 2,
+    "green_weeks": 21,
+    "red_weeks": 16,
+    "monthly": {
+     "2026-01": -879,
+     "2026-02": 48840,
+     "2026-03": 7623,
+     "2026-04": 5645,
+     "2026-05": 4637,
+     "2026-06": 4148,
+     "2026-07": 153,
+     "2026-08": -771,
+     "2026-09": 3421,
+     "2026-10": 14289
+    }
+   },
+   "one_lot_weeks": {
+    "weeks": 44,
+    "up": 18,
+    "down": 16,
+    "worst_end": 12216,
+    "mean_end": 15615
+   }
+  },
+  "UNION_ADX+PDL_FADE|stop=1.5|target_r=1.5|exit=LIVE": {
+   "per_lot": {
+    "trades": 139,
+    "net": 93398,
+    "without_best_day": 46110,
+    "worst_day": -6485,
+    "dd": 11853,
+    "green_months": 7,
+    "red_months": 3,
+    "green_weeks": 22,
+    "red_weeks": 15,
+    "monthly": {
+     "2026-01": -1758,
+     "2026-02": 51029,
+     "2026-03": 7623,
+     "2026-04": 7523,
+     "2026-05": 10512,
+     "2026-06": 3540,
+     "2026-07": -2854,
+     "2026-08": -1005,
+     "2026-09": 4498,
+     "2026-10": 14289
+    }
+   },
+   "one_lot_weeks": {
+    "weeks": 44,
+    "up": 19,
+    "down": 15,
+    "worst_end": 12893,
+    "mean_end": 15794
+   }
+  },
+  "UNION_ADX+RSI2|stop=1.5|target_r=2.4|exit=LATE": {
+   "per_lot": {
+    "trades": 281,
+    "net": 95431,
+    "without_best_day": 48143,
+    "worst_day": -6485,
+    "dd": 29064,
+    "green_months": 8,
+    "red_months": 2,
+    "green_weeks": 24,
+    "red_weeks": 20,
+    "monthly": {
+     "2026-01": 651,
+     "2026-02": 57905,
+     "2026-03": 12028,
+     "2026-04": 2532,
+     "2026-05": -11366,
+     "2026-06": 15070,
+     "2026-07": -1020,
+     "2026-08": 66,
+     "2026-09": 5275,
+     "2026-10": 14289
+    }
+   },
+   "one_lot_weeks": {
+    "weeks": 44,
+    "up": 19,
+    "down": 22,
+    "worst_end": 7932,
+    "mean_end": 15482
+   }
+  },
+  "UNION_ADX+RSI2|stop=1.5|target_r=1.5|exit=LATE": {
+   "per_lot": {
+    "trades": 238,
+    "net": 83072,
+    "without_best_day": 35784,
+    "worst_day": -6485,
+    "dd": 31906,
+    "green_months": 6,
+    "red_months": 4,
+    "green_weeks": 25,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 6758,
+     "2026-02": 55204,
+     "2026-03": 11933,
+     "2026-04": 7553,
+     "2026-05": -11198,
+     "2026-06": -370,
+     "2026-07": -1855,
+     "2026-08": -4034,
+     "2026-09": 4793,
+     "2026-10": 14289
+    }
+   },
+   "one_lot_weeks": {
+    "weeks": 44,
+    "up": 20,
+    "down": 21,
+    "worst_end": 10183,
+    "mean_end": 15738
+   }
+  }
+ },
+ "union_adx": {
+  "per_lot": {
+   "trades": 106,
+   "net": 80912,
+   "without_best_day": 33625,
+   "worst_day": -6485,
+   "dd": 12519,
+   "green_months": 5,
+   "red_months": 1,
+   "green_weeks": 11,
+   "red_weeks": 5,
+   "monthly": {
+    "2026-01": -497,
+    "2026-02": 49671,
+    "2026-03": 7623,
+    "2026-04": 6200,
+    "2026-05": 0,
+    "2026-06": 0,
+    "2026-07": 0,
+    "2026-08": 0,
+    "2026-09": 3626,
+    "2026-10": 14289
+   }
+  },
+  "one_lot_weeks": {
+   "weeks": 44,
+   "up": 8,
+   "down": 5,
+   "worst_end": 12893,
+   "mean_end": 15595
+  }
+ }
+}
