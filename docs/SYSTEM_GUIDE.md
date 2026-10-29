@@ -1,11 +1,32 @@
-## October 28 — O29e The four-strategy book on NIFTY and SENSEX (paper) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
+## October 29 — O29i Sideways-day entries study (research only) (research, Dev: frozen before scoring)
+
+- Research only; no runtime change. It tests whether failed-break, VWAP-reversion, prior-day-rejection and RSI(2) entries make money per lot on the days the trend gate sits out.
+
+## October 29 — O29h The F&O paper book trades only when the market is trending (UNION_ADX) (Dev commit 2279a2e, pushed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploying on the owner's Oct 29 go-ahead)
+
+- With `FNO_BOOK=UNION_ADX` (the default), the single-leg paper book's four strategies trade only on a session whose previous day's NIFTY daily ADX(14) is at least `FNO_BOOK_ADX_MIN` (25). Otherwise the book takes no new trade that day.
+- The reading is taken once a day from the NIFTY 50 daily candles, kept in `fno_regime_gate`, and sent to the owner on Telegram.
+- No reading means no book trades (`adx_unknown`).
+- SENSEX uses NIFTY's reading. `UNION_DRIVE` (morning drive) and `SHIPPED` stay available as rollbacks.
+
+## October 29 — O29g Regime gates study (research only) (research, Dev: freeze 9d450aa, results committed; in-sample: the ADX gate helps, the published ideas do not transfer; clean 2025 test next; nothing changed)
+
+- Research only: no runtime change. `docs/research/fno/2026-10-29-why-study/` tests day-regime gates (ADX, realised vol, 20-day move) and two published intraday-momentum ideas on the O29f year data.
+
+## October 29 — O29f Year genome on ICICI Breeze history (research only) (research, Dev: freeze 1b14225, results 0d1f6fa, pushed; verdict: the search fails, the live book loses on the unseen months; not deployed, nothing changed)
+
+- Research only, no runtime change. Older NIFTY/SENSEX F&O minutes come from the owner's free ICICI Direct Breeze API, through tooling outside the repo (`%USERPROFILE%\sentinel-operations\breeze-history-20261029\`: history calls only, credentials never printed).
+- `docs/research/fno/2026-10-29-year-genome/yeardata.py` turns those candles into a `fno_policy_replay` dataset, under a declared candle model.
+- `lab.py` runs the book-genome walk-forward on Jan 1 – Oct 28 2026, under a RAM guard.
+
+## October 28 — O29e The four-strategy book on NIFTY and SENSEX (paper) (Dev commit 95183ff, pushed; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed (PR #122); fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - With `FNO_BOOK=UNION_DRIVE`, every underlying in `FNO_TRADING_UNDERLYINGS` (NIFTY, SENSEX) trades the book on the paper single-leg book.
 - **Per underlying:** each one's breakouts depend on its own opening drive against its own previous 20 sessions (`fno_opening_drive`, keyed by session and underlying).
 - **SENSEX volume:** wherever SENSEX's strategies read volume, they read NIFTY's for the same bar.
 - **Real money:** the test stays NIFTY only.
 
-## October 28 — O29d Real-money test: the owner is told when the money cannot buy a lot (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+## October 28 — O29d Real-money test: the owner is told when the money cannot buy a lot (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - **When a real buy is refused for money**, `fno_live_test.mirror_entry` tells the owner once a day (`fno_live_test_cash_short`). Two refusals count:
   - the test's own reservation cannot cover the lot's whole premium plus charges;
@@ -14,7 +35,7 @@
 - **09:25 readiness message:** it now warns when the test's equity is under a typical lot.
 - **SENSEX:** the shipped break, unchanged. The O29d SENSEX check failed its worst-day bound.
 
-## October 28 — O29c The NIFTY paper book: four strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+## October 28 — O29c The NIFTY paper book: four strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - With `FNO_BOOK=UNION_DRIVE` (the default), the single-leg paper book's NIFTY signal comes from `fno_book.book_signal`.
   - **Order:** the first of SHIPPED, OR20, EFF and TPB that signals on the bar.
@@ -28,7 +49,7 @@
 - Panel D replays the 09:45 opening-drive filter on SHIPPED, OR20 and EFF, and the O29b FINAL smart book, beside the shipped book on each session from Oct 29. It reads a read-only export of Production's research archive.
 - It runs when panel A's launcher calls it, once the owner adds the hook. It has no effect on Production, the paper book or the real-money test.
 
-## October 28 — O29 Partner watch: cash, first-read refusals, overnight sales, the close note (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+## October 28 — O29 Partner watch: cash, first-read refusals, overnight sales, the close note (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - **Cash:** read at the first tick, then again every 5 minutes (`CASH_REFRESH`). Money added during the day counts from the next read.
 - **Refusals:** a refusal found on the day's first read (or after a restart) is told when it is at most 5 minutes old (`REFUSED_FIRST_READ`). An older one is not told, and the message key stops a repeat.

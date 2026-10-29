@@ -1,4 +1,102 @@
-## October 28 — O29e The four-strategy book on every paper underlying (NIFTY and SENSEX) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
+## October 29 — O29i Sideways days: famous range-day entries on the days the trend gate sits out (research, Dev: frozen before scoring)
+
+- **Owner (Oct 29 evening, queued after O29h):** "on the days in system is sideways ... search for the most best strategies at that time ... capital invested you can reduce ... test out strategies that are famous for sideways days".
+- **Study (`docs/research/fno/2026-10-29-sideways-study/lab_i.py`; research only):** four textbook range-day entries, each gated to the days UNION_ADX sits out (yesterday's NIFTY ADX < 25), through the same shipped book:
+  - FADE (a failed opening-range break);
+  - VWAP_REVERT (a VWAP-band rejection);
+  - PDL_FADE (a rejection of yesterday's high or low);
+  - RSI2 (5-minute RSI(2) extremes).
+
+  A grid of 48 variants, 20 random-entry books on the same days, and UNION_ADX for reference: 69 books. Read per lot, with a two-fold H1↔H2 check.
+- **Acceptance:** a family helps only if the variant picked on one half is positive on the other half in both directions and beats the random books' median. Otherwise the advice stays: sit sideways days out.
+- **Config and migration:** none.
+
+## October 29 — O29h The paper book trades only on a trending market: UNION_ADX, yesterday's NIFTY ADX(14) ≥ 25 (Dev commit 2279a2e, pushed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploying on the owner's Oct 29 go-ahead)
+
+- **Owner (Oct 29 evening, after O29g):** "you are allowed to implement all of this ... Merge the code and deployed in production as well. You are permitted".
+  - Clarified in the reply: on a sideways market the book sits out; it does not switch strategy.
+  - The owner then queued a sideways-day strategy study, to come next.
+- **Behaviour (`FNO_BOOK=UNION_ADX`, the new default):**
+  - SHIPPED, OR20, EFF and TPB keep the same order and their own exits.
+  - All four trade only on a session whose previous day's NIFTY daily ADX(14) (Wilder; the O29g formula) is at least `FNO_BOOK_ADX_MIN` (25).
+  - Below it, or when it can't be read, the book sits the day out (`adx_low:` / `adx_unknown:` reasons).
+  - It reads `kite.get_historical("NIFTY 50", day − 420 days, yesterday)` once a day, kept in `fno_regime_gate`.
+  - The owner gets one Telegram line a day (`fno_book_adx_gate`) saying whether the book trades.
+  - SENSEX reads NIFTY's ADX.
+  - The opening drive is still read and kept.
+  - The real-money test (NIFTY, 1 lot) mirrors the paper book as before.
+- **Evidence (O29g, in-sample on Jan 1 – Oct 28 2026, per lot):** all four at ADX ≥ 25 made +₹80,912 on 106 trades (5 green / 1 red month, worst day −₹6,485, DD ₹12,519). The live UNION_DRIVE made +₹7,288. The clean test on NIFTY 2025 follows.
+- **Code:** `fno_book.py` (`adx`, `daily_adx`, `adx_side`, `adx_today`, `book_signal(gate="ADX")`), `fno_orchestrator.py` (wiring), `config.py` (`FNO_BOOK` default `UNION_ADX`, `FNO_BOOK_ADX_MIN` 25).
+- **Acceptance:**
+  - `tests/test_fno_book.py` 27 passed. The 9 new tests cover Wilder parity against an independent loop, yesterday-only reading, the threshold, the whole book sitting out, once-a-day read/keep/tell, and trending vs sideways ticks through `run_fno_tick`.
+  - F&O tests: 750 passed.
+  - **Research parity** (`docs/research/fno/2026-10-29-why-study/test_engine_parity.py`): the engine's ADX and side equal the research's on every O29g session, and the live 420-day window gives the same side.
+  - Full suite: see the handover.
+- **Config and migration:** no `.env` change (Production's `.env` has no `FNO_BOOK`). New table `fno_regime_gate` (CREATE IF NOT EXISTS).
+- **Rollback:** `FNO_BOOK=UNION_DRIVE` (the morning-drive book) or `SHIPPED` in the root `.env`, then restart python-engine.
+
+## October 29 — O29g Why the strategies lost and when they won: regime gates and two published ideas on the year (research, Dev: freeze 9d450aa, results committed; in-sample: the ADX gate helps, the published ideas do not transfer; clean 2025 test next; nothing changed)
+
+- **Owner (Oct 29, after O29f):** "try to understand why did those strategy lose and why did certain strategies win in certain environment ... search for winners who have made profit even in that time ... keep researching ... what features can get you there and then again test for the year long ... we don't need to win every week, but it should be consistent winning effort".
+- **Descriptive (`docs/research/fno/2026-10-29-why-study/features.py`, both halves Jan–May / Jun–Oct, per lot):**
+  - Every component did better when yesterday's daily ADX(14), 20-day realised vol and 20-day move were above their usual level, and worse when they were not.
+  - A narrow, trending previous day helped.
+  - The opening drive the live book gates on was not stable across halves.
+  - The day before expiry was the best day for TPB and the live book.
+- **Lab (`lab_g.py`, plugs into the O29f book unchanged):**
+  - regime gates known before the session: ADX ≥ 20 / ≥ 25, relative ADX / vol / 20-day move / yesterday's range and body, and the trend regime (2 of 3);
+  - NOISE_BAND (Zarattini, Aziz & Barbon 2024);
+  - LATE_MOMO (Gao, Han, Li & Zhou 2018, JFE);
+  - combos, and the same gates on 20 random-entry books.
+- **The frozen list is 137 books.** It is IN-SAMPLE on the year (the idea came from it), with a two-fold H1↔H2 selection check and a luck check. The clean tests are NIFTY 2025 (if Breeze serves it), SENSEX 2026 and the forward panel.
+- **Config and migration:** none. Research only.
+- **Results (in-sample on the year, per lot; `docs/research/fno/2026-10-29-why-study/README.md`):**
+  - **The gate:** with yesterday's ADX(14) ≥ 20/25 the strategies trade only in trending regimes and sit out the range-bound May–Aug.
+    - TPB at ADX ≥ 20: +₹54,816, 36 trades, worst day −₹4,415, DD ₹7,641, 12 green / 2 red weeks.
+    - All four at ADX ≥ 25: +₹80,912, 106 trades, 5 green / 1 red months.
+    - For comparison, the live UNION_DRIVE made +₹7,288 (18 / 23 weeks).
+  - **Two-fold check:** SHIPPED and OR20 pass both ways; EFF and TPB do not. On random-entry books the gate improved 13 of 20, but they still lose. Profit concentrates in Feb and Oct.
+  - **The published ideas do not transfer:** NOISE_BAND at 30 min made −₹33,399, and LATE_MOMO flips sign between halves.
+- [ ] Clean test on NIFTY 2025 (frozen books unchanged): download from 00:10 IST Oct 30, after the SENSEX remainder.
+- [ ] Owner's call: the forward panel for TPB at ADX ≥ 20 and all four at ADX ≥ 25.
+
+## October 29 — O29f Year genome: the search on almost a year of NIFTY data (ICICI Breeze history) (research, Dev: freeze 1b14225, results 0d1f6fa, pushed; verdict: the search fails, the live book loses on the unseen months; not deployed, nothing changed)
+
+- **Owner (Oct 29 morning):** older F&O months for free ("is there any way to get the older months data of this year from free anywhere?"), then "make new strategies like we did with the best components of winners with a little randomness and sometimes without randomness ... test these in this almost year long data and get back to me with the best winner ... ensure though that production ram is not hindered".
+- **Data (outside the repo, never committed):**
+  - The owner's ICICI Direct Breeze API (free) serves 1-minute candles of expired options and futures. The tooling is in `%USERPROFILE%\sentinel-operations\breeze-history-20261029\`: `download.py` is resumable, under 4,800 requests a day, history calls only, never orders. The key, secret and session live in `breeze.env` and are never printed.
+  - **Download, Dec 1 2025 – Oct 28 2026:** index; front future; next future for 21 days before each roll; daily NIFTY and NIFTY BANK; the nearest-weekly options each non-expiry day, from 4 strikes below the day's low to 4 (calls) or 7 (puts) above its high. NIFTY was complete on Oct 29; SENSEX finishes Oct 30.
+- **Study:** `docs/research/fno/2026-10-29-year-genome/`.
+  - `yeardata.py`: the declared candle model:
+    - one observation per minute, at the minute's close;
+    - bid and ask = close ∓ half the archive's 75th-percentile spread for that premium;
+    - an untraded contract keeps its price and its last trade time;
+    - the futures bars are the contract's own;
+    - the regime is the live label wherever Production logged one, else UNKNOWN (the gate is open). A rebuild with the live RegimeEngine called 30 of 32 Sep–Oct sessions a crisis where live logged 1, so it is kept as a description only;
+    - lot 65.
+  - `lab.py`: books of 1–4 members:
+    - a member is a named component (SHIPPED, OR20, EFF, TPB) or an O27f family, each with its own 09:45 gate and exits;
+    - recombination by member, and a declared 40% of children get no mutation;
+    - an anchored walk-forward over four test blocks (Apr–May, Jun–Jul, Aug–Sep, Oct), plus a NULL random-entry track;
+    - the frozen fixed books (the live UNION_DRIVE, its parts, UNION, the O28 theories) scored on Jan 1 – Sep 9, which no F&O study had used;
+    - a memory guard: at most 4 replays in market hours, and no new replay while free RAM is under 2 GB (1.5 GB after hours).
+- **Pre-freeze checks (disclosed; nothing selected on):**
+  - Archive parity, exact: SHIPPED 13 trades / ₹10,801.09, OR20 20 / ₹30,566.80, EFF 38 / ₹31,063.32, TPB 14 / ₹17,347.49, UNION_DRIVE 33 / ₹44,169.53, LAB_TPB 14 / ₹17,347.49.
+  - Timing smoke on a partial Sep export: about 0.1 s per session once the named signals are warmed. The partial Sep comparison showed the same setups, and per-trade rupees differing by a few hundred.
+  - `test_lab.py`: 8 passed.
+- **Acceptance:** the frozen walk-forward rule (`lab.RULE`). Tests are not profitability, and a replay is not a promotion.
+- **Config and migration:** none. Research only; no paper, live or proving-week change.
+- **Results (1,842 replays; 08:36–15:24 IST Oct 29; `results.json`):**
+  - **The search fails its frozen rule.** REAL out-of-sample (Apr 1 – Oct 28) made −₹16,870 on 89 trades, positive in only 1 of 4 folds, worst day −₹9,275. The live UNION_DRIVE made −₹17,801 on the same sessions and the NULL search −₹27,546. Every REAL pick made ₹77k–201k on its training months.
+  - **The live book on the unseen Jan 1 – Sep 9:** UNION_DRIVE made −₹24,500 (−₹27,156 per lot), with 3 green and 6 red months, and was negative every month from Apr to Aug. At one lot it lost about ₹17–18k in each of May and July.
+  - **Under the one-lot real-money rules over 44 weeks:** 17 weeks up and 21 down; the worst week ended at ₹8,379 from ₹15,000. On Sep–Oct it had been 26 of 27 up.
+  - **Positive on the unseen months:** TPB alone made +₹14,677 (+₹19,768 per lot) and THEORY_NR +₹42,410 (+₹17,837 per lot). Only 1 of 20 random-entry books beat either. Both are picked after seeing 11 fixed books, so this is evidence, not proof.
+  - **The FINAL pick** (TPB plus two momentum bursts, all on `trend5:LOW`) made +₹163,038 in-sample. It is a forward-test candidate only.
+  - **Candles against recorded quotes (Sep 10 – Oct 26):** about ₹100–200 per trade per lot optimistic. The sizing differs (fresh pool about 1.8 lots against the archive's live history about 1.1).
+  - **Interruptions:** Claude Code stopped the run twice for low memory. Production stayed healthy, and the run resumed from its saved replays.
+- [ ] Owner's call: the Nov 2–6 real-money test, in light of the unseen-month result. Any forward panel for TPB, THEORY_NR or the FINAL pick is also the owner's call; nothing is changed.
+
+## October 28 — O29e The four-strategy book on every paper underlying (NIFTY and SENSEX) (Dev commit 95183ff, pushed; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed (PR #122); fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - **Owner (Oct 28 night, after the O29d report):** "go ahead with this and also the strategies. Let them also be used on other than nifty. At least on paper ... deployed this and restart and rebuild the system as well."
 - **The call is the owner's, not the check's:** the O29d SENSEX check failed its frozen worst-day bound (−₹5,317 against −₹5,000), though it made +₹12,759 where the shipped break lost ₹8,622. The check's verdict stays recorded as failed.
@@ -16,7 +114,7 @@
 - **Config and migration:** no `.env` change. The table's key changes (migrated in place); Production never had the O29c table.
 - **Rollback:** `FNO_BOOK=SHIPPED` restores the shipped break on both underlyings.
 
-## October 28 — O29d Real-money cash alert, the one-lot check, the SENSEX check, fades on two-way days (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+## October 28 — O29d Real-money cash alert, the one-lot check, the SENSEX check, fades on two-way days (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - **Owner (Oct 28 evening, after O29c):**
   - Why only NIFTY? "You can apply it anywhere you want ... ensure that the strategy is flexible and smart that the losses are less and the profits are consistent."
@@ -46,7 +144,7 @@
 - **Config and migration:** none; `FNO_LIVE_TEST_CAPITAL` stays ₹12,500. If ₹15,000 is deposited, the owner sets `FNO_LIVE_TEST_CAPITAL=15000`.
 - **Rollout:** with O29 and O29c, on the owner's Oct 28 go-ahead ("put that as the main strategy ... we will begin the real money test starting the coming Monday").
 
-## October 28 — O29c The paper book's NIFTY strategy: the four studied strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+## October 28 — O29c The paper book's NIFTY strategy: the four studied strategies, breakouts only on a HIGH opening drive (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - Owner (Oct 28 evening, after O29b): "the best strategy was the combination of the four and if we have understood that today was not a good day which is two day then I agree. We can not trade on that day ... you don't have to take my call, just, the best strategy and some other strategies are shadow and go ahead and make the change."
 - **The call:** UNION_DRIVE (O28 THEORY_DRIVE, panel C's arm) becomes the single-leg paper book's strategy for NIFTY. The shipped break stays as a shadow (fno_shadow FNO_BASE), and panels A–D keep scoring the alternatives.
@@ -109,7 +207,7 @@
 - Config and migration: none. No Production change. The paper and live books are unchanged (proving week).
 - **Next, owner's call after Oct 30:** if panels C and D bear it out, a live shadow of the drive read at 09:45, and then the filter on the paper book's breakouts. Its evidence is weakest for the shipped strategy itself.
 
-## October 28 — O29 The Oct 28 review: four partner-watch fixes, and what the day showed (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+## October 28 — O29 The Oct 28 review: four partner-watch fixes, and what the day showed (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - Owner ask (Oct 28 evening): "how was the day? How did the partner perform? And what all learnings did we get? What bug fixes? … how did the strategies do did all of them together work better than our current strategies and report to me everything".
 - **Evidence** (Production, read-only; `partner_watch_report`, `partner_watch_score`, `fno_positions`, `fno_signals`, the panels' REPORT.md):

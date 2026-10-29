@@ -132,7 +132,7 @@ def patch_settings(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "FNO_INSTRUMENTS_JSON_PATH", str(tmp_path / "fno_instruments.json"))
     monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_PATH", str(tmp_path / "research"))
     # [O29c 2026-10-28] The F&O tests built on the shipped break keep it; tests of the four-strategy book
-    # (test_fno_book.py) set FNO_BOOK=UNION_DRIVE themselves.
+    # (test_fno_book.py) set FNO_BOOK=UNION_DRIVE or [O29h] UNION_ADX (the default since Oct 29) themselves.
     monkeypatch.setattr(settings, "FNO_BOOK", "SHIPPED")
     return settings
 

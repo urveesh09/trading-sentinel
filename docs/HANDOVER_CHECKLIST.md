@@ -1,17 +1,72 @@
-## October 28 — O29e Book on SENSEX (paper) (Dev commit 95183ff, pushed, merged and deployed with PR #121; fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
+## October 29 — O29i Sideways-day study (research only) (research, Dev: frozen before scoring)
+
+- [x] `lab_i.py`, `test_lab_i.py` (2 passed: every family causal); freeze committed before scoring.
+- [ ] Results: see the study README. Nothing changes on paper or live because of a replay.
+
+## October 29 — O29h UNION_ADX trend gate (Dev commit 2279a2e, pushed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploying on the owner's Oct 29 go-ahead)
+
+- [x] `fno_book` trend gate, orchestrator wiring, default `UNION_ADX`; tests 27 + F&O 750; research parity exact on 203 sessions.
+- [ ] After the deploy, from Oct 30: one `fno_book_adx_gate` Telegram line before the first F&O entry window, a `fno_regime_gate` row for the session, and `adx_low`/`adx_unknown` reasons in `fno_signals` when the book sits out (read-only check).
+- [ ] The NIFTY 2025 clean test of the gate (download 08:00 IST Oct 30, after the owner's ICICI login) and the owner's queued sideways-day strategy study.
+
+## October 29 — O29g Why-study (research only) (research, Dev: freeze 9d450aa, results committed; in-sample: the ADX gate helps, the published ideas do not transfer; clean 2025 test next; nothing changed)
+
+- [x] `features.py`, `lab_g.py` and `test_lab_g.py` (4 passed); freeze committed before scoring.
+- [ ] Results: see the study README. Nothing changes on paper or live because of a replay.
+- **Results (in-sample on the year, per lot; `docs/research/fno/2026-10-29-why-study/README.md`):**
+  - **The gate:** with yesterday's ADX(14) ≥ 20/25 the strategies trade only in trending regimes and sit out the range-bound May–Aug.
+    - TPB at ADX ≥ 20: +₹54,816, 36 trades, worst day −₹4,415, DD ₹7,641, 12 green / 2 red weeks.
+    - All four at ADX ≥ 25: +₹80,912, 106 trades, 5 green / 1 red months.
+    - For comparison, the live UNION_DRIVE made +₹7,288 (18 / 23 weeks).
+  - **Two-fold check:** SHIPPED and OR20 pass both ways; EFF and TPB do not. On random-entry books the gate improved 13 of 20, but they still lose. Profit concentrates in Feb and Oct.
+  - **The published ideas do not transfer:** NOISE_BAND at 30 min made −₹33,399, and LATE_MOMO flips sign between halves.
+- [ ] Clean test on NIFTY 2025 (frozen books unchanged): download from 00:10 IST Oct 30, after the SENSEX remainder.
+- [ ] Owner's call: the forward panel for TPB at ADX ≥ 20 and all four at ADX ≥ 25.
+
+## October 29 — O29f Year genome (research only) (research, Dev: freeze 1b14225, results 0d1f6fa, pushed; verdict: the search fails, the live book loses on the unseen months; not deployed, nothing changed)
+
+- [x] Breeze download tooling outside the repo; NIFTY Dec 2025 – Oct 2026 complete.
+- [x] `yeardata.py`, `lab.py`, `test_lab.py` (8 passed); archive parity exact for all six books.
+- [ ] SENSEX options: the download continues on Oct 30 after the owner's Breeze login (`login.py`; the session lasts one day).
+- [ ] Results: see the study README. Nothing changes on paper or live because of a replay.
+- **Results (1,842 replays; 08:36–15:24 IST Oct 29; `results.json`):**
+  - **The search fails its frozen rule.** REAL out-of-sample (Apr 1 – Oct 28) made −₹16,870 on 89 trades, positive in only 1 of 4 folds, worst day −₹9,275. The live UNION_DRIVE made −₹17,801 on the same sessions and the NULL search −₹27,546. Every REAL pick made ₹77k–201k on its training months.
+  - **The live book on the unseen Jan 1 – Sep 9:** UNION_DRIVE made −₹24,500 (−₹27,156 per lot), with 3 green and 6 red months, and was negative every month from Apr to Aug. At one lot it lost about ₹17–18k in each of May and July.
+  - **Under the one-lot real-money rules over 44 weeks:** 17 weeks up and 21 down; the worst week ended at ₹8,379 from ₹15,000. On Sep–Oct it had been 26 of 27 up.
+  - **Positive on the unseen months:** TPB alone made +₹14,677 (+₹19,768 per lot) and THEORY_NR +₹42,410 (+₹17,837 per lot). Only 1 of 20 random-entry books beat either. Both are picked after seeing 11 fixed books, so this is evidence, not proof.
+  - **The FINAL pick** (TPB plus two momentum bursts, all on `trend5:LOW`) made +₹163,038 in-sample. It is a forward-test candidate only.
+  - **Candles against recorded quotes (Sep 10 – Oct 26):** about ₹100–200 per trade per lot optimistic. The sizing differs (fresh pool about 1.8 lots against the archive's live history about 1.1).
+  - **Interruptions:** Claude Code stopped the run twice for low memory. Production stayed healthy, and the run resumed from its saved replays.
+- [ ] Owner's call: the Nov 2–6 real-money test, in light of the unseen-month result. Any forward panel for TPB, THEORY_NR or the FINAL pick is also the owner's call; nothing is changed.
+
+## October 28 — Rollout receipt O29–O29e (Production 490bd1d)
+
+- PR #121 (O29, O29b research, O29c, O29d) was merged by the owner at 21:07 IST (9233bcf). PR #122 (O29e) was merged at 21:15 (490bd1d).
+- **Deploy:** Production fast-forwarded to 490bd1d. Following the runbook, `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC` were set, then node-gateway, python-engine and agent were built one at a time and recreated.
+- **Verification:**
+  - `scripts/verify_deployment.py --expected-sha 490bd1d…` passed. The receipt is in `sentinel-operations/release-receipts/`.
+  - The first verification returned 502 because nginx kept the recreated gateway's old address. `docker compose restart nginx` fixed it, and the local and public `/api/health` both return 200.
+- **Engine, read-only:**
+  - `FNO_BOOK=UNION_DRIVE`, on for NIFTY and SENSEX, with seeds of 38 values each.
+  - `fno_positions.strategy` is present, and the cash alert is present.
+  - The real-money switch is off (₹12,500, run Nov 2–6). No open F&O positions; no error lines since start.
+  - `fno_opening_drive` is created at the first 09:45 read on Oct 29.
+- [ ] Oct 29 after 09:45 (read-only): check the `fno_opening_drive` rows for NIFTY and SENSEX, and that F&O entry messages carry `strategy=`.
+
+## October 28 — O29e Book on SENSEX (paper) (Dev commit 95183ff, pushed; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed (PR #122); fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - [x] `fno_book` per-underlying drive, SENSEX seed, the volume swap, orchestrator wiring; tests and SENSEX parity.
 - [ ] After the deploy, from Oct 29: check that SENSEX rows appear in `fno_opening_drive` after 09:45 (read-only), and that SENSEX entries carry `strategy=`.
 - [ ] The SENSEX book has no forward panel (the panels replay NIFTY only). Judge it from the paper book itself.
 
-## October 28 — O29d Cash alert, one-lot and SENSEX checks (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploy with O29/O29c on the owner's Oct 28 go-ahead)
+## October 28 — O29d Cash alert, one-lot and SENSEX checks (Dev commit 454a6d7 (research abfc27a, b9a9352), pushed; fno_live_test 35 passed, full suite 5852 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - [x] `fno_live_test` cash-short alert and the morning line; tests.
 - [x] SENSEX check, frozen and scored (abfc27a, b9a9352): SENSEX unchanged.
 - [ ] Owner: if ₹15,000 is deposited, set `FNO_LIVE_TEST_CAPITAL=15000` before Nov 2.
 - [ ] Owner: a fade or mean-reversion book on two-way days is advice only. No change without the owner's call.
 
-## October 28 — O29c Four-strategy NIFTY book (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); not deployed)
+## October 28 — O29c Four-strategy NIFTY book (Dev commit 01fa551, pushed; fno_book 12 + F&O 731 passed, research parity 2 passed, full suite 5879 passed / 1 load-sensitive scheduler test (passes alone 3/3); deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - [x] `fno_book` and its wiring, tests, and research parity (an exact trade match over 31 sessions).
 - [ ] Owner: merge and deploy go-ahead. After the deploy, check that the engine starts and that the `fno_opening_drive` row for the day appears after 09:45 (`SELECT * FROM fno_opening_drive ORDER BY session_date DESC LIMIT 3`, read-only).
@@ -26,7 +81,7 @@
 - [ ] Each evening: `C:\Users\Urveesh\sentinel-operations\fno-forward-panel-d-20261029\docs\research\fno\2026-10-29-forward-panel-d\_local\REPORT.md`
 - [ ] Nov 27: read the frozen rule. Promotion is the owner's call, never in a proving week.
 
-## October 28 — O29 Partner-watch fixes (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; not deployed)
+## October 28 — O29 Partner-watch fixes (Dev commit 0dbff8b, pushed; partner tests 159 passed, full engine suite 5868 passed / 4 skipped; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed)
 
 - [x] Cash refresh, first-read refusals plus plain trigger wording, carried sales in DAY and the report, and the next-session expiry close note, all in Dev with tests.
 - [ ] Owner: merge and deploy when ready. It is not part of the paper or live F&O rules, so the proving week is unaffected.
