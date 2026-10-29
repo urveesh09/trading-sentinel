@@ -1,9 +1,18 @@
-## October 29 — O29f Year genome (research only) (research, Dev: frozen before scoring; run in progress)
+## October 29 — O29f Year genome (research only) (research, Dev: freeze 1b14225, results committed; verdict: the search fails, the live book loses on the unseen months; not deployed, nothing changed)
 
 - [x] Breeze download tooling outside the repo; NIFTY Dec 2025 – Oct 2026 complete.
 - [x] `yeardata.py`, `lab.py`, `test_lab.py` (8 passed); archive parity exact for all six books.
 - [ ] SENSEX options: the download continues on Oct 30 after the owner's Breeze login (`login.py`; the session lasts one day).
 - [ ] Results: see the study README. Nothing changes on paper or live because of a replay.
+- **Results (1,842 replays; 08:36–15:24 IST Oct 29; `results.json`):**
+  - **The search fails its frozen rule.** REAL out-of-sample (Apr 1 – Oct 28) made −₹16,870 on 89 trades, positive in only 1 of 4 folds, worst day −₹9,275. The live UNION_DRIVE made −₹17,801 on the same sessions and the NULL search −₹27,546. Every REAL pick made ₹77k–201k on its training months.
+  - **The live book on the unseen Jan 1 – Sep 9:** UNION_DRIVE made −₹24,500 (−₹27,156 per lot), with 3 green and 6 red months, and was negative every month from Apr to Aug. At one lot it lost about ₹17–18k in each of May and July.
+  - **Under the one-lot real-money rules over 44 weeks:** 17 weeks up and 21 down; the worst week ended at ₹8,379 from ₹15,000. On Sep–Oct it had been 26 of 27 up.
+  - **Positive on the unseen months:** TPB alone made +₹14,677 (+₹19,768 per lot) and THEORY_NR +₹42,410 (+₹17,837 per lot). Only 1 of 20 random-entry books beat either. Both are picked after seeing 11 fixed books, so this is evidence, not proof.
+  - **The FINAL pick** (TPB plus two momentum bursts, all on `trend5:LOW`) made +₹163,038 in-sample. It is a forward-test candidate only.
+  - **Candles against recorded quotes (Sep 10 – Oct 26):** about ₹100–200 per trade per lot optimistic. The sizing differs (fresh pool about 1.8 lots against the archive's live history about 1.1).
+  - **Interruptions:** Claude Code stopped the run twice for low memory. Production stayed healthy, and the run resumed from its saved replays.
+- [ ] Owner's call: the Nov 2–6 real-money test, in light of the unseen-month result. Any forward panel for TPB, THEORY_NR or the FINAL pick is also the owner's call; nothing is changed.
 
 ## October 28 — Rollout receipt O29–O29e (Production 490bd1d)
 
