@@ -1,3 +1,7 @@
+## October 29 — O29i Sideways-day entries study (research only) (research, Dev: frozen before scoring)
+
+- Research only; no runtime change. It tests whether failed-break, VWAP-reversion, prior-day-rejection and RSI(2) entries make money per lot on the days the trend gate sits out.
+
 ## October 29 — O29h The F&O paper book trades only when the market is trending (UNION_ADX) (Dev commit 2279a2e, pushed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploying on the owner's Oct 29 go-ahead)
 
 - With `FNO_BOOK=UNION_ADX` (the default), the single-leg paper book's four strategies trade only on a session whose previous day's NIFTY daily ADX(14) is at least `FNO_BOOK_ADX_MIN` (25). Otherwise the book takes no new trade that day.

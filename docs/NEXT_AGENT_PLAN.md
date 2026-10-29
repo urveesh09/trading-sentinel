@@ -1,3 +1,16 @@
+## October 29 — O29i Sideways days: famous range-day entries on the days the trend gate sits out (research, Dev: frozen before scoring)
+
+- **Owner (Oct 29 evening, queued after O29h):** "on the days in system is sideways ... search for the most best strategies at that time ... capital invested you can reduce ... test out strategies that are famous for sideways days".
+- **Study (`docs/research/fno/2026-10-29-sideways-study/lab_i.py`; research only):** four textbook range-day entries, each gated to the days UNION_ADX sits out (yesterday's NIFTY ADX < 25), through the same shipped book:
+  - FADE (a failed opening-range break);
+  - VWAP_REVERT (a VWAP-band rejection);
+  - PDL_FADE (a rejection of yesterday's high or low);
+  - RSI2 (5-minute RSI(2) extremes).
+
+  A grid of 48 variants, 20 random-entry books on the same days, and UNION_ADX for reference: 69 books. Read per lot, with a two-fold H1↔H2 check.
+- **Acceptance:** a family helps only if the variant picked on one half is positive on the other half in both directions and beats the random books' median. Otherwise the advice stays: sit sideways days out.
+- **Config and migration:** none.
+
 ## October 29 — O29h The paper book trades only on a trending market: UNION_ADX, yesterday's NIFTY ADX(14) ≥ 25 (Dev commit 2279a2e, pushed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploying on the owner's Oct 29 go-ahead)
 
 - **Owner (Oct 29 evening, after O29g):** "you are allowed to implement all of this ... Merge the code and deployed in production as well. You are permitted".

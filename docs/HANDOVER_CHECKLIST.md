@@ -1,3 +1,8 @@
+## October 29 — O29i Sideways-day study (research only) (research, Dev: frozen before scoring)
+
+- [x] `lab_i.py`, `test_lab_i.py` (2 passed: every family causal); freeze committed before scoring.
+- [ ] Results: see the study README. Nothing changes on paper or live because of a replay.
+
 ## October 29 — O29h UNION_ADX trend gate (Dev commit 2279a2e, pushed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploying on the owner's Oct 29 go-ahead)
 
 - [x] `fno_book` trend gate, orchestrator wiring, default `UNION_ADX`; tests 27 + F&O 750; research parity exact on 203 sessions.
