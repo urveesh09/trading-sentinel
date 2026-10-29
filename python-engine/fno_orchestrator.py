@@ -1730,8 +1730,14 @@ async def _single_leg_entries(
         try:
             # [O29d] Each underlying's own drive; SENSEX's strategies read NIFTY's volume (rvol_bars), as above.
             _drive, side = await fno_book.drive_today(db_path, bars, evaluation_now_ist, underlying=name)
-            sig = fno_book.book_signal(fno_book.with_participation(bars, rvol_bars), regime, evaluation_now_ist,
-                                       shipped=sig, side=side)
+            if fno_book.mode() == fno_book.ADX_BOOK:
+                # [O29h] All four only on a trending market: yesterday's NIFTY daily ADX(14), for every underlying.
+                _adx, adx_side = await fno_book.adx_today(db_path, kite, evaluation_now_ist)
+                sig = fno_book.book_signal(fno_book.with_participation(bars, rvol_bars), regime, evaluation_now_ist,
+                                           shipped=sig, side=side, gate="ADX", adx_side=adx_side)
+            else:
+                sig = fno_book.book_signal(fno_book.with_participation(bars, rvol_bars), regime,
+                                           evaluation_now_ist, shipped=sig, side=side)
         except Exception as exc:          # no entry rather than an unfiltered one
             logger.error("fno_book_signal_failed err=%s", str(exc), exc_info=True)
             sig = replace(sig, direction=None, strategy="", reject_reason="book_error")

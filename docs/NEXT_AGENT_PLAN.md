@@ -1,3 +1,27 @@
+## October 29 — O29h The paper book trades only on a trending market: UNION_ADX, yesterday's NIFTY ADX(14) ≥ 25 (Dev, to deploy on the owner's Oct 29 go-ahead; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
+
+- **Owner (Oct 29 evening, after O29g):** "you are allowed to implement all of this ... Merge the code and deployed in production as well. You are permitted".
+  - Clarified in the reply: on a sideways market the book sits out; it does not switch strategy.
+  - The owner then queued a sideways-day strategy study, to come next.
+- **Behaviour (`FNO_BOOK=UNION_ADX`, the new default):**
+  - SHIPPED, OR20, EFF and TPB keep the same order and their own exits.
+  - All four trade only on a session whose previous day's NIFTY daily ADX(14) (Wilder; the O29g formula) is at least `FNO_BOOK_ADX_MIN` (25).
+  - Below it, or when it can't be read, the book sits the day out (`adx_low:` / `adx_unknown:` reasons).
+  - It reads `kite.get_historical("NIFTY 50", day − 420 days, yesterday)` once a day, kept in `fno_regime_gate`.
+  - The owner gets one Telegram line a day (`fno_book_adx_gate`) saying whether the book trades.
+  - SENSEX reads NIFTY's ADX.
+  - The opening drive is still read and kept.
+  - The real-money test (NIFTY, 1 lot) mirrors the paper book as before.
+- **Evidence (O29g, in-sample on Jan 1 – Oct 28 2026, per lot):** all four at ADX ≥ 25 made +₹80,912 on 106 trades (5 green / 1 red month, worst day −₹6,485, DD ₹12,519). The live UNION_DRIVE made +₹7,288. The clean test on NIFTY 2025 follows.
+- **Code:** `fno_book.py` (`adx`, `daily_adx`, `adx_side`, `adx_today`, `book_signal(gate="ADX")`), `fno_orchestrator.py` (wiring), `config.py` (`FNO_BOOK` default `UNION_ADX`, `FNO_BOOK_ADX_MIN` 25).
+- **Acceptance:**
+  - `tests/test_fno_book.py` 27 passed. The 9 new tests cover Wilder parity against an independent loop, yesterday-only reading, the threshold, the whole book sitting out, once-a-day read/keep/tell, and trending vs sideways ticks through `run_fno_tick`.
+  - F&O tests: 750 passed.
+  - **Research parity** (`docs/research/fno/2026-10-29-why-study/test_engine_parity.py`): the engine's ADX and side equal the research's on every O29g session, and the live 420-day window gives the same side.
+  - Full suite: see the handover.
+- **Config and migration:** no `.env` change (Production's `.env` has no `FNO_BOOK`). New table `fno_regime_gate` (CREATE IF NOT EXISTS).
+- **Rollback:** `FNO_BOOK=UNION_DRIVE` (the morning-drive book) or `SHIPPED` in the root `.env`, then restart python-engine.
+
 ## October 29 — O29g Why the strategies lost and when they won: regime gates and two published ideas on the year (research, Dev: freeze 9d450aa, results committed; in-sample: the ADX gate helps, the published ideas do not transfer; clean 2025 test next; nothing changed)
 
 - **Owner (Oct 29, after O29f):** "try to understand why did those strategy lose and why did certain strategies win in certain environment ... search for winners who have made profit even in that time ... keep researching ... what features can get you there and then again test for the year long ... we don't need to win every week, but it should be consistent winning effort".

@@ -1,3 +1,9 @@
+## October 29 — O29h UNION_ADX trend gate (Dev, to deploy on the owner's Oct 29 go-ahead; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
+
+- [x] `fno_book` trend gate, orchestrator wiring, default `UNION_ADX`; tests 27 + F&O 750; research parity exact on 203 sessions.
+- [ ] After the deploy, from Oct 30: one `fno_book_adx_gate` Telegram line before the first F&O entry window, a `fno_regime_gate` row for the session, and `adx_low`/`adx_unknown` reasons in `fno_signals` when the book sits out (read-only check).
+- [ ] The NIFTY 2025 clean test of the gate (download 08:00 IST Oct 30, after the owner's ICICI login) and the owner's queued sideways-day strategy study.
+
 ## October 29 — O29g Why-study (research only) (research, Dev: freeze 9d450aa, results committed; in-sample: the ADX gate helps, the published ideas do not transfer; clean 2025 test next; nothing changed)
 
 - [x] `features.py`, `lab_g.py` and `test_lab_g.py` (4 passed); freeze committed before scoring.

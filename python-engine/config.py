@@ -1056,7 +1056,11 @@ class Settings(BaseSettings):
     # together, no breakout on a two-way morning). UNION_DRIVE: fno_book's SHIPPED, OR20, EFF and TPB in one book,
     # the three breakouts only on a HIGH 09:45 opening drive, each position with its own exits. SHIPPED: the shipped
     # break alone (the pre-O29c book). SENSEX keeps the shipped break either way.
-    FNO_BOOK:                  str   = "UNION_DRIVE"
+    # [O29h 2026-10-29] UNION_ADX (the default since the owner's Oct 29 go-ahead): the same four strategies with their
+    # own exits, all of them only on a session whose previous day's NIFTY daily ADX(14) is at least
+    # FNO_BOOK_ADX_MIN - a trending market; otherwise the book sits the day out (O29g). UNION_DRIVE stays available.
+    FNO_BOOK:                  str   = "UNION_ADX"
+    FNO_BOOK_ADX_MIN:          float = 25.0
 
     # --- universe ----------------------------------------------------------
     FNO_UNDERLYING:            str   = "NIFTY"    # primary trading underlying (capped-loss book, shadow)

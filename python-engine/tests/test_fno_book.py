@@ -357,3 +357,183 @@ async def test_a_two_way_sensex_morning_keeps_its_breakouts_out(sensex_live, db_
     summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
     assert summary["entries"] == [] and await _paper(db_path) == []
     assert reason in await _reasons(db_path, "SENSEX")
+
+
+# ---- [O29h] the trend gate: yesterday's NIFTY daily ADX(14) ---------------------------------------------------------
+
+def _daily(kind: str, n: int = 120, end: str = "2026-07-09") -> pd.DataFrame:
+    """Daily NIFTY candles ending ``end``: TREND rises steadily (ADX 100); CHOP swings up and down around one level
+    every eight sessions (ADX about 11)."""
+    import math
+    idx = pd.bdate_range(end=end, periods=n)
+    rows, price = [], 24000.0
+    for i in range(n):
+        if kind == "TREND":
+            o, c = price, price * 1.006
+            rows.append((o, c * 1.002, o * 0.998, c))
+        else:
+            o, c = price, 24000 * (1 + 0.012 * math.sin(2 * math.pi * i / 8))
+            rows.append((o, max(o, c) + 40, min(o, c) - 40, c))
+        price = c
+    return pd.DataFrame(rows, columns=["open", "high", "low", "close"], index=idx)
+
+
+def _wilder(frame: pd.DataFrame, n: int = 14) -> float:
+    """An independent loop of Wilder's ADX with the same seeding (each smoother starts at its first value)."""
+    h, l, c = list(frame["high"]), list(frame["low"]), list(frame["close"])
+    atr = plus = minus = adx = None
+    for i in range(len(c)):
+        tr = h[i] - l[i] if i == 0 else max(h[i] - l[i], abs(h[i] - c[i - 1]), abs(l[i] - c[i - 1]))
+        atr = tr if atr is None else atr + (tr - atr) / n
+        if i == 0:
+            continue
+        up, down = h[i] - h[i - 1], l[i - 1] - l[i]
+        p = up if (up > down and up > 0) else 0.0
+        m = down if (down > up and down > 0) else 0.0
+        plus = p if plus is None else plus + (p - plus) / n
+        minus = m if minus is None else minus + (m - minus) / n
+        pdi, mdi = 100 * plus / atr, 100 * minus / atr
+        dx = 100 * abs(pdi - mdi) / (pdi + mdi)
+        adx = dx if adx is None else adx + (dx - adx) / n
+    return adx
+
+
+def test_the_daily_adx_is_wilders_and_reads_only_yesterday_and_before():
+    for kind in ("TREND", "CHOP"):
+        frame = _daily(kind)
+        assert float(fno_book.adx(frame).iloc[-1]) == pytest.approx(_wilder(frame), rel=1e-9)
+    trend, chop = _daily("TREND"), _daily("CHOP")
+    assert fno_book.daily_adx(trend, TODAY)[0] > 25 > fno_book.daily_adx(chop, TODAY)[0]
+    today = pd.DataFrame([(1.0, 99999.0, 0.5, 99000.0)], columns=["open", "high", "low", "close"],
+                         index=[pd.Timestamp(TODAY)])
+    assert fno_book.daily_adx(pd.concat([chop, today]), TODAY) == fno_book.daily_adx(chop, TODAY)
+    assert fno_book.daily_adx(chop, TODAY)[1] == date(2026, 7, 9)
+    assert fno_book.daily_adx(chop.iloc[-59:], TODAY) == (None, None)                # under 60 daily bars
+    with_date_column = chop.reset_index().rename(columns={"index": "date"})
+    assert fno_book.daily_adx(with_date_column, TODAY) == fno_book.daily_adx(chop, TODAY)
+
+
+def test_the_gate_opens_at_the_threshold_and_not_below(monkeypatch):
+    monkeypatch.setattr(settings, "FNO_BOOK_ADX_MIN", 25.0)
+    assert fno_book.adx_side(25.0) == "HIGH" and fno_book.adx_side(24.99) == "LOW" and fno_book.adx_side(None) is None
+    assert fno_book.adx_side(21.0, threshold=20) == "HIGH"
+
+
+def test_on_a_sideways_market_the_whole_book_sits_out(components):
+    components.update(OR20=FnoDirection.LONG, EFF=FnoDirection.LONG, TPB=FnoDirection.SHORT)
+    for adx_side in ("LOW", None):
+        sig = fno_book.book_signal(None, "R", NOW, shipped=_sig(FnoDirection.LONG), side="HIGH", gate="ADX",
+                                   adx_side=adx_side)
+        assert sig.direction is None and sig.strategy == ""
+        assert sig.reject_reason == f"adx_{(adx_side or 'unknown').lower()}:book_skipped"
+    assert fno_book.book_signal(None, "R", NOW, shipped=_sig(None, "no_or_break"), side="HIGH", gate="ADX",
+                                adx_side="LOW").reject_reason == "adx_low:no_or_break"
+    # trending: the declared order, and the opening drive no longer matters
+    sig = fno_book.book_signal(None, "R", NOW, shipped=_sig(None, "x"), side="LOW", gate="ADX", adx_side="HIGH")
+    assert (sig.strategy, sig.direction) == ("OR20", FnoDirection.LONG)
+    components.update(OR20=None, EFF=None)
+    assert fno_book.book_signal(None, "R", NOW, shipped=_sig(None, "x"), side=None, gate="ADX",
+                                adx_side="HIGH").strategy == "TPB"
+
+
+class _DailyKite:
+    def __init__(self, frame):
+        self.frame, self.calls, self.fail = frame, [], False
+
+    async def get_historical(self, ticker, frm, to):
+        self.calls.append((ticker, frm, to))
+        if self.fail:
+            raise RuntimeError("kite down")
+        return self.frame
+
+
+@pytest.mark.asyncio
+async def test_the_gate_is_read_once_a_day_kept_and_told_once(db_path, monkeypatch):
+    import operator_alert
+    told = []
+
+    async def notify(message, *, event="operator_alert"):
+        told.append((event, message))
+        return True
+    monkeypatch.setattr(operator_alert, "notify_operator", notify)
+    monkeypatch.setattr(settings, "FNO_BOOK_ADX_MIN", 25.0)
+    fno_book._ADX_TODAY.clear()
+    kite = _DailyKite(_daily("CHOP"))
+    kite.fail = True
+    assert await fno_book.adx_today(db_path, kite, at(9, 15)) == (None, None)          # not kept: tried again
+    kite.fail = False
+    value, side = await fno_book.adx_today(db_path, kite, at(9, 16))
+    assert side == "LOW" and value < 25
+    assert await fno_book.adx_today(db_path, kite, at(10, 0)) == (value, side) and len(kite.calls) == 2
+    assert kite.calls[-1] == ("NIFTY 50", "2025-05-16", "2026-07-09")                 # 420 days, up to yesterday
+    fno_book._ADX_TODAY.clear()                                                         # a restart the same day
+    assert await fno_book.adx_today(db_path, kite, at(11, 0)) == (value, side)
+    assert [e for e, _ in told] == ["fno_book_adx_gate"] and "sits today out" in told[0][1]
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute("SELECT session_date, side, threshold, last_bar FROM fno_regime_gate")).fetchall()
+    assert rows == [("2026-07-10", "LOW", 25.0, "2026-07-09")]
+    fno_book._ADX_TODAY.clear()
+
+
+def test_the_trend_gate_book_is_the_default_and_drive_or_shipped_stay_available(monkeypatch):
+    from config import Settings
+    assert Settings.model_fields["FNO_BOOK"].default == "UNION_ADX"
+    assert Settings.model_fields["FNO_BOOK_ADX_MIN"].default == 25.0
+    for name in ("UNION_ADX", "UNION_DRIVE"):
+        monkeypatch.setattr(settings, "FNO_BOOK", name)
+        assert fno_book.enabled_for("NIFTY") and fno_book.enabled_for("SENSEX")
+    monkeypatch.setattr(settings, "FNO_BOOK", "SHIPPED")
+    assert not fno_book.enabled_for("NIFTY")
+
+
+@pytest.fixture
+def adx_live(live, monkeypatch):
+    import operator_alert
+    told = []
+
+    async def notify(message, *, event="operator_alert"):
+        told.append(event)
+        return True
+    monkeypatch.setattr(operator_alert, "notify_operator", notify)
+    monkeypatch.setattr(settings, "FNO_BOOK", "UNION_ADX")
+    fno_book._ADX_TODAY.clear()
+
+    async def make(opening, daily):
+        kite = await live(opening)
+        kite.get_historical = _DailyKite(daily).get_historical
+        return kite
+    yield make, told
+    fno_book._ADX_TODAY.clear()
+
+
+@pytest.mark.asyncio
+async def test_a_trending_market_trades_the_book_even_on_a_two_way_morning(adx_live, db_path):
+    from fno_orchestrator import format_fno_telegram, run_fno_tick
+    make, told = adx_live
+    kite = await make(FLAT, _daily("TREND"))          # the drive would have kept the breakouts out
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    assert [e["source"] for e in summary["entries"]] == ["FNO_PAPER"]
+    assert "strategy=SHIPPED" in format_fno_telegram(summary)
+    assert [p["strategy"] for p in await _paper(db_path)] == ["SHIPPED"]
+    assert told == ["fno_book_adx_gate"]
+
+
+@pytest.mark.asyncio
+async def test_a_sideways_market_keeps_the_book_out_even_on_a_one_way_morning(adx_live, db_path):
+    from fno_orchestrator import run_fno_tick
+    make, _told = adx_live
+    await _history(db_path)
+    kite = await make(ONE_WAY, _daily("CHOP"))
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    assert summary["entries"] == [] and await _paper(db_path) == []
+    assert "adx_low:book_skipped" in await _reasons(db_path)
+
+
+@pytest.mark.asyncio
+async def test_without_a_trend_reading_the_book_sits_out(adx_live, db_path):
+    from fno_orchestrator import run_fno_tick
+    make, told = adx_live
+    kite = await make(ONE_WAY, _daily("TREND").iloc[-30:])        # too few daily bars to read ADX
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    assert summary["entries"] == [] and "adx_unknown:book_skipped" in await _reasons(db_path)
+    assert told == []

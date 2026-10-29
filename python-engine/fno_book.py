@@ -36,6 +36,19 @@ Rs 8,622, but its worst day (-Rs 5,317) was past the frozen -Rs 5,000 bound: SEN
 not on that check. The real-money test stays NIFTY only (fno_live_test). ``FNO_BOOK=SHIPPED`` restores the shipped
 strategy everywhere. Each position keeps its strategy (``fno_positions.strategy``) and is managed with that
 strategy's exits, whatever the setting is later.
+
+[O29h 2026-10-29] UNION_ADX, the default. The year of NIFTY minutes the owner's ICICI history made possible (O29f)
+showed all four strategies are trend strategies: they made their money in trending months and lost in the
+range-bound ones, and the opening drive did not tell the two apart over the year. Yesterday's daily trend strength
+did, in both halves of the year (O29g, docs/research/fno/2026-10-29-why-study). So UNION_ADX trades the same four
+strategies, in the same order with the same exits, only on a session whose previous day's NIFTY daily ADX(14)
+(Wilder, the research's formula) is at least FNO_BOOK_ADX_MIN (25, the textbook strong-trend level); below it, or
+when it cannot be read, the book sits the day out. It is decided before the session from the market, not from the
+book's own results. SENSEX reads NIFTY's ADX (the market's regime; the research tested NIFTY only). The owner's
+go-ahead (Oct 29): "you are allowed to implement all of this ... Merge the code and deployed in production". The
+evidence is in-sample on Jan 1 - Oct 28 2026 (TPB at ADX >= 20 and all four at ADX >= 25 were the most consistent
+books per lot); NIFTY 2025, never used to find it, is the clean test that follows. The opening drive is still read
+and kept in ``fno_opening_drive``.
 """
 from __future__ import annotations
 
@@ -48,12 +61,20 @@ from typing import Optional
 
 import aiosqlite
 import pandas as pd
+import structlog
 
 from config import settings
 from fno_engine_mom import MomSignal
 from fno_models import FnoDirection
 
+logger = structlog.get_logger()
+
 BOOK = "UNION_DRIVE"
+ADX_BOOK = "UNION_ADX"
+BOOKS = (BOOK, ADX_BOOK)
+ADX_LEN = 14
+ADX_HISTORY_CALENDAR_DAYS = 420   # about 285 daily bars: Wilder's smoothing has long forgotten its first value
+ADX_MIN_BARS = 60
 STRATEGIES = ("SHIPPED", "OR20", "EFF", "TPB")
 BREAKOUTS = ("SHIPPED", "OR20", "EFF")
 DRIVE_LOOKBACK = 20
@@ -112,9 +133,13 @@ CREATE TABLE IF NOT EXISTS fno_opening_drive (
 )"""
 
 
+def mode() -> str:
+    return str(settings.FNO_BOOK).upper()
+
+
 def enabled_for(underlying: str) -> bool:
     """[O29d] The book trades every underlying the paper book trades (NIFTY and SENSEX)."""
-    return str(settings.FNO_BOOK).upper() == BOOK and bool(str(underlying or "").strip())
+    return mode() in BOOKS and bool(str(underlying or "").strip())
 
 
 def with_participation(bars: Optional[pd.DataFrame], volume_bars: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
@@ -239,6 +264,102 @@ async def drive_today(db_path: str, bars: Optional[pd.DataFrame], now: datetime,
     return result
 
 
+# ---- [O29h] the trend gate: yesterday's NIFTY daily ADX(14) ----------------------------------------------------------
+
+_ADX_DDL = """
+CREATE TABLE IF NOT EXISTS fno_regime_gate (
+  session_date TEXT PRIMARY KEY,
+  adx14 REAL NOT NULL,
+  threshold REAL NOT NULL,
+  side TEXT NOT NULL,
+  last_bar TEXT NOT NULL,
+  bars INTEGER NOT NULL,
+  recorded_at TEXT NOT NULL
+)"""
+
+
+def adx(daily: pd.DataFrame, n: int = ADX_LEN) -> pd.Series:
+    """Wilder's ADX on daily bars, exactly the O29g research formula (features.adx)."""
+    high, low, close = daily["high"], daily["low"], daily["close"]
+    up, down = high.diff(), -low.diff()
+    plus = ((up > down) & (up > 0)) * up
+    minus = ((down > up) & (down > 0)) * down
+    tr = pd.concat([high - low, (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
+    atr = tr.ewm(alpha=1 / n, adjust=False).mean()
+    pdi = 100 * plus.ewm(alpha=1 / n, adjust=False).mean() / atr
+    mdi = 100 * minus.ewm(alpha=1 / n, adjust=False).mean() / atr
+    dx = 100 * (pdi - mdi).abs() / (pdi + mdi).replace(0, float("nan"))
+    return dx.ewm(alpha=1 / n, adjust=False).mean()
+
+
+def daily_adx(daily: Optional[pd.DataFrame], day: date) -> tuple:
+    """(ADX of the last daily bar before ``day``, that bar's date) - a bar dated ``day`` (today's running candle)
+    is never read; (None, None) with fewer than ADX_MIN_BARS bars."""
+    if daily is None or daily.empty:
+        return None, None
+    frame = daily.copy()
+    if "date" in frame.columns:
+        frame = frame.set_index("date")
+    frame.index = pd.to_datetime(frame.index).normalize()
+    frame = frame[~frame.index.duplicated(keep="last")].sort_index()
+    frame = frame[frame.index.date < day]
+    if len(frame) < ADX_MIN_BARS:
+        return None, None
+    value = float(adx(frame).iloc[-1])
+    return (None, None) if pd.isna(value) else (value, frame.index[-1].date())
+
+
+def adx_side(value: Optional[float], threshold: Optional[float] = None) -> Optional[str]:
+    threshold = float(settings.FNO_BOOK_ADX_MIN if threshold is None else threshold)
+    return None if value is None else ("HIGH" if value >= threshold else "LOW")
+
+
+_ADX_TODAY: dict = {}
+
+
+async def adx_today(db_path: str, kite, now: datetime) -> tuple:
+    """(yesterday's NIFTY ADX(14), its side against FNO_BOOK_ADX_MIN) for today's session, read once a day from the
+    daily candles and kept in ``fno_regime_gate``. The owner gets one message a day saying whether the book trades.
+    A failed read is not kept: the next tick tries again, and until then the book sits out (``adx_unknown``)."""
+    day = now.date()
+    key = (db_path, day.isoformat())
+    if key in _ADX_TODAY:
+        return _ADX_TODAY[key]
+    try:
+        daily = await kite.get_historical(
+            "NIFTY 50", (day - timedelta(days=ADX_HISTORY_CALENDAR_DAYS)).isoformat(),
+            (day - timedelta(days=1)).isoformat())
+    except Exception as exc:  # the book sits out rather than trading unfiltered
+        logger.warning("fno_book_adx_read_failed", err=str(exc))
+        return None, None
+    value, last_bar = daily_adx(daily, day)
+    if value is None:
+        logger.warning("fno_book_adx_unavailable", bars=0 if daily is None else len(daily))
+        return None, None
+    threshold = float(settings.FNO_BOOK_ADX_MIN)
+    side = adx_side(value, threshold)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(_ADX_DDL)
+        cur = await db.execute(
+            "INSERT OR IGNORE INTO fno_regime_gate(session_date,adx14,threshold,side,last_bar,bars,recorded_at) "
+            "VALUES(?,?,?,?,?,?,?)", (day.isoformat(), value, threshold, side, last_bar.isoformat(),
+                                      int(len(daily)), now.isoformat()))
+        first = cur.rowcount == 1
+        await db.commit()
+    if first:
+        from operator_alert import notify_operator
+        verdict = ("trending market - the F&O book trades today" if side == "HIGH" else
+                   "sideways market - the F&O book sits today out (no new trades)")
+        await notify_operator(
+            f"📈 F&O trend gate {day:%d %b}: NIFTY ADX(14) {value:.1f} (yesterday's daily candle; trades at "
+            f"{threshold:g} or more) → {verdict}. Paper only; the real-money test follows the paper book.",
+            event="fno_book_adx_gate")
+    for stale in [k for k in _ADX_TODAY if k[1] != day.isoformat()]:
+        del _ADX_TODAY[stale]
+    _ADX_TODAY[key] = (value, side)
+    return value, side
+
+
 # ---- the efficiency break (O27e lab, EFFICIENCY_BREAK only) ----------------------------------------------------------
 
 _FEATURES: "OrderedDict[int, tuple]" = OrderedDict()
@@ -345,15 +466,18 @@ def _variants() -> tuple:
 
 
 def book_signal(bars: pd.DataFrame, regime: str, now: datetime, *, shipped: MomSignal,
-                side: Optional[str]) -> MomSignal:
-    """The first strategy (SHIPPED, OR20, EFF, TPB) with a signal on this bar, the breakouts only on a HIGH drive; a
-    copy carrying ``strategy``. ``shipped`` is the tick's shipped evaluation (never changed: it is shared). Without a
-    signal: the shipped evaluation's fields, and why (``drive_low:`` / ``drive_unknown:`` when the breakouts were
-    off)."""
+                side: Optional[str], gate: str = "DRIVE", adx_side: Optional[str] = None) -> MomSignal:
+    """The first strategy (SHIPPED, OR20, EFF, TPB) with a signal on this bar; a copy carrying ``strategy``.
+    gate DRIVE (UNION_DRIVE): the breakouts only on a HIGH opening drive ``side``. gate ADX (UNION_ADX): all four
+    only when ``adx_side`` is HIGH. ``shipped`` is the tick's shipped evaluation (never changed: it is shared).
+    Without a signal: the shipped evaluation's fields, and why (``drive_low:`` / ``drive_unknown:`` /
+    ``adx_low:`` / ``adx_unknown:`` when the gate kept strategies off)."""
     from fno_shadow import _variant_signal
     or20, tpb = _variants()
     for name in STRATEGIES:
-        if name in BREAKOUTS and side != "HIGH":
+        if gate == "ADX" and adx_side != "HIGH":
+            break
+        if gate != "ADX" and name in BREAKOUTS and side != "HIGH":
             continue
         if name == "SHIPPED":
             sig = shipped
@@ -366,6 +490,8 @@ def book_signal(bars: pd.DataFrame, regime: str, now: datetime, *, shipped: MomS
         if sig.direction is not None:
             return replace(sig, strategy=name)
     reason = shipped.reject_reason or "no_signal"
-    if side != "HIGH":
+    if gate == "ADX" and adx_side != "HIGH":
+        reason = f"adx_{(adx_side or 'unknown').lower()}:{'book_skipped' if shipped.direction else reason}"
+    elif gate != "ADX" and side != "HIGH":
         reason = f"drive_{(side or 'unknown').lower()}:{'breakout_skipped' if shipped.direction else reason}"
     return replace(shipped, direction=None, strategy="", reject_reason=reason)

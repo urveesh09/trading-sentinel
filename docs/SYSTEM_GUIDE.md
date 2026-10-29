@@ -1,3 +1,10 @@
+## October 29 — O29h The F&O paper book trades only when the market is trending (UNION_ADX) (Dev, to deploy on the owner's Oct 29 go-ahead; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
+
+- With `FNO_BOOK=UNION_ADX` (the default), the single-leg paper book's four strategies trade only on a session whose previous day's NIFTY daily ADX(14) is at least `FNO_BOOK_ADX_MIN` (25). Otherwise the book takes no new trade that day.
+- The reading is taken once a day from the NIFTY 50 daily candles, kept in `fno_regime_gate`, and sent to the owner on Telegram.
+- No reading means no book trades (`adx_unknown`).
+- SENSEX uses NIFTY's reading. `UNION_DRIVE` (morning drive) and `SHIPPED` stay available as rollbacks.
+
 ## October 29 — O29g Regime gates study (research only) (research, Dev: freeze 9d450aa, results committed; in-sample: the ADX gate helps, the published ideas do not transfer; clean 2025 test next; nothing changed)
 
 - Research only: no runtime change. `docs/research/fno/2026-10-29-why-study/` tests day-regime gates (ADX, realised vol, 20-day move) and two published intraday-momentum ideas on the O29f year data.
