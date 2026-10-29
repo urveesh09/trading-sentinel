@@ -11,7 +11,7 @@
 - **Acceptance:** a family helps only if the variant picked on one half is positive on the other half in both directions and beats the random books' median. Otherwise the advice stays: sit sideways days out.
 - **Config and migration:** none.
 
-## October 29 — O29h The paper book trades only on a trending market: UNION_ADX, yesterday's NIFTY ADX(14) ≥ 25 (Dev commit 2279a2e, pushed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone; deploying on the owner's Oct 29 go-ahead)
+## October 29 — O29h The paper book trades only on a trending market: UNION_ADX, yesterday's NIFTY ADX(14) ≥ 25 (Dev commits 2279a2e + cfe83dc, pushed; deployed: Production a51c791 (Oct 29, 17:25 IST), redeploying cfe83dc; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
 
 - **Owner (Oct 29 evening, after O29g):** "you are allowed to implement all of this ... Merge the code and deployed in production as well. You are permitted".
   - Clarified in the reply: on a sideways market the book sits out; it does not switch strategy.
@@ -20,7 +20,7 @@
   - SHIPPED, OR20, EFF and TPB keep the same order and their own exits.
   - All four trade only on a session whose previous day's NIFTY daily ADX(14) (Wilder; the O29g formula) is at least `FNO_BOOK_ADX_MIN` (25).
   - Below it, or when it can't be read, the book sits the day out (`adx_low:` / `adx_unknown:` reasons).
-  - It reads `kite.get_historical("NIFTY 50", day − 420 days, yesterday)` once a day, kept in `fno_regime_gate`.
+  - It reads `kite.get_historical("NIFTY 50", day − 420 days, today)` once a day from 09:30, kept in `fno_regime_gate`. By then the 09:20 swing scan has refreshed the daily cache, so yesterday's candle is complete; today's running candle is dropped. This was the follow-up commit `cfe83dc`.
   - The owner gets one Telegram line a day (`fno_book_adx_gate`) saying whether the book trades.
   - SENSEX reads NIFTY's ADX.
   - The opening drive is still read and kept.

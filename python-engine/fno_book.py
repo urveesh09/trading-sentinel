@@ -75,6 +75,10 @@ BOOKS = (BOOK, ADX_BOOK)
 ADX_LEN = 14
 ADX_HISTORY_CALENDAR_DAYS = 420   # about 285 daily bars: Wilder's smoothing has long forgotten its first value
 ADX_MIN_BARS = 60
+# Read from 09:30: by then the 09:20 swing scan has refreshed the daily cache through today, so yesterday's candle
+# is the complete one (a cache row saved by the 14:45 scan holds yesterday's candle only as it was at 14:45).
+# Entries start at 09:45 (FNO_ENTRY_START_MIN), so nothing is lost.
+ADX_READ_FROM_MIN = 9 * 60 + 30
 STRATEGIES = ("SHIPPED", "OR20", "EFF", "TPB")
 BREAKOUTS = ("SHIPPED", "OR20", "EFF")
 DRIVE_LOOKBACK = 20
@@ -318,17 +322,20 @@ _ADX_TODAY: dict = {}
 
 
 async def adx_today(db_path: str, kite, now: datetime) -> tuple:
-    """(yesterday's NIFTY ADX(14), its side against FNO_BOOK_ADX_MIN) for today's session, read once a day from the
-    daily candles and kept in ``fno_regime_gate``. The owner gets one message a day saying whether the book trades.
-    A failed read is not kept: the next tick tries again, and until then the book sits out (``adx_unknown``)."""
+    """(yesterday's NIFTY ADX(14), its side against FNO_BOOK_ADX_MIN) for today's session, read once a day from 09:30
+    from the daily candles and kept in ``fno_regime_gate``. The owner gets one message a day saying whether the book
+    trades. A failed read is not kept: the next tick tries again, and until then the book sits out
+    (``adx_unknown``)."""
     day = now.date()
     key = (db_path, day.isoformat())
     if key in _ADX_TODAY:
         return _ADX_TODAY[key]
+    if now.hour * 60 + now.minute < ADX_READ_FROM_MIN:
+        return None, None
     try:
+        # Through today: the cache then holds yesterday's complete candle (today's running one is dropped below).
         daily = await kite.get_historical(
-            "NIFTY 50", (day - timedelta(days=ADX_HISTORY_CALENDAR_DAYS)).isoformat(),
-            (day - timedelta(days=1)).isoformat())
+            "NIFTY 50", (day - timedelta(days=ADX_HISTORY_CALENDAR_DAYS)).isoformat(), day.isoformat())
     except Exception as exc:  # the book sits out rather than trading unfiltered
         logger.warning("fno_book_adx_read_failed", err=str(exc))
         return None, None
