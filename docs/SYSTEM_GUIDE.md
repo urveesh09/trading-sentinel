@@ -1,3 +1,7 @@
+## October 29 — O29g Regime gates study (research only) (research, Dev: frozen before scoring; run in progress)
+
+- Research only: no runtime change. `docs/research/fno/2026-10-29-why-study/` tests day-regime gates (ADX, realised vol, 20-day move) and two published intraday-momentum ideas on the O29f year data.
+
 ## October 29 — O29f Year genome on ICICI Breeze history (research only) (research, Dev: freeze 1b14225, results 0d1f6fa, pushed; verdict: the search fails, the live book loses on the unseen months; not deployed, nothing changed)
 
 - Research only, no runtime change. Older NIFTY/SENSEX F&O minutes come from the owner's free ICICI Direct Breeze API, through tooling outside the repo (`%USERPROFILE%\sentinel-operations\breeze-history-20261029\`: history calls only, credentials never printed).

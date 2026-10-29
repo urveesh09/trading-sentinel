@@ -1,3 +1,19 @@
+## October 29 — O29g Why the strategies lost and when they won: regime gates and two published ideas on the year (research, Dev: frozen before scoring; run in progress)
+
+- **Owner (Oct 29, after O29f):** "try to understand why did those strategy lose and why did certain strategies win in certain environment ... search for winners who have made profit even in that time ... keep researching ... what features can get you there and then again test for the year long ... we don't need to win every week, but it should be consistent winning effort".
+- **Descriptive (`docs/research/fno/2026-10-29-why-study/features.py`, both halves Jan–May / Jun–Oct, per lot):**
+  - Every component did better when yesterday's daily ADX(14), 20-day realised vol and 20-day move were above their usual level, and worse when they were not.
+  - A narrow, trending previous day helped.
+  - The opening drive the live book gates on was not stable across halves.
+  - The day before expiry was the best day for TPB and the live book.
+- **Lab (`lab_g.py`, plugs into the O29f book unchanged):**
+  - regime gates known before the session: ADX ≥ 20 / ≥ 25, relative ADX / vol / 20-day move / yesterday's range and body, and the trend regime (2 of 3);
+  - NOISE_BAND (Zarattini, Aziz & Barbon 2024);
+  - LATE_MOMO (Gao, Han, Li & Zhou 2018, JFE);
+  - combos, and the same gates on 20 random-entry books.
+- **The frozen list is 137 books.** It is IN-SAMPLE on the year (the idea came from it), with a two-fold H1↔H2 selection check and a luck check. The clean tests are NIFTY 2025 (if Breeze serves it), SENSEX 2026 and the forward panel.
+- **Config and migration:** none. Research only.
+
 ## October 29 — O29f Year genome: the search on almost a year of NIFTY data (ICICI Breeze history) (research, Dev: freeze 1b14225, results 0d1f6fa, pushed; verdict: the search fails, the live book loses on the unseen months; not deployed, nothing changed)
 
 - **Owner (Oct 29 morning):** older F&O months for free ("is there any way to get the older months data of this year from free anywhere?"), then "make new strategies like we did with the best components of winners with a little randomness and sometimes without randomness ... test these in this almost year long data and get back to me with the best winner ... ensure though that production ram is not hindered".
