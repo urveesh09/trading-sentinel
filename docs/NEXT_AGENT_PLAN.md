@@ -1,3 +1,30 @@
+## October 29 — O29f Year genome: the search on almost a year of NIFTY data (ICICI Breeze history) (research, Dev: frozen before scoring; run in progress)
+
+- **Owner (Oct 29 morning):** older F&O months for free ("is there any way to get the older months data of this year from free anywhere?"), then "make new strategies like we did with the best components of winners with a little randomness and sometimes without randomness ... test these in this almost year long data and get back to me with the best winner ... ensure though that production ram is not hindered".
+- **Data (outside the repo, never committed):**
+  - The owner's ICICI Direct Breeze API (free) serves 1-minute candles of expired options and futures. The tooling is in `%USERPROFILE%\sentinel-operations\breeze-history-20261029\`: `download.py` is resumable, under 4,800 requests a day, history calls only, never orders. The key, secret and session live in `breeze.env` and are never printed.
+  - **Download, Dec 1 2025 – Oct 28 2026:** index; front future; next future for 21 days before each roll; daily NIFTY and NIFTY BANK; the nearest-weekly options each non-expiry day, from 4 strikes below the day's low to 4 (calls) or 7 (puts) above its high. NIFTY was complete on Oct 29; SENSEX finishes Oct 30.
+- **Study:** `docs/research/fno/2026-10-29-year-genome/`.
+  - `yeardata.py`: the declared candle model:
+    - one observation per minute, at the minute's close;
+    - bid and ask = close ∓ half the archive's 75th-percentile spread for that premium;
+    - an untraded contract keeps its price and its last trade time;
+    - the futures bars are the contract's own;
+    - the regime is the live label wherever Production logged one, else UNKNOWN (the gate is open). A rebuild with the live RegimeEngine called 30 of 32 Sep–Oct sessions a crisis where live logged 1, so it is kept as a description only;
+    - lot 65.
+  - `lab.py`: books of 1–4 members:
+    - a member is a named component (SHIPPED, OR20, EFF, TPB) or an O27f family, each with its own 09:45 gate and exits;
+    - recombination by member, and a declared 40% of children get no mutation;
+    - an anchored walk-forward over four test blocks (Apr–May, Jun–Jul, Aug–Sep, Oct), plus a NULL random-entry track;
+    - the frozen fixed books (the live UNION_DRIVE, its parts, UNION, the O28 theories) scored on Jan 1 – Sep 9, which no F&O study had used;
+    - a memory guard: at most 4 replays in market hours, and no new replay while free RAM is under 2 GB (1.5 GB after hours).
+- **Pre-freeze checks (disclosed; nothing selected on):**
+  - Archive parity, exact: SHIPPED 13 trades / ₹10,801.09, OR20 20 / ₹30,566.80, EFF 38 / ₹31,063.32, TPB 14 / ₹17,347.49, UNION_DRIVE 33 / ₹44,169.53, LAB_TPB 14 / ₹17,347.49.
+  - Timing smoke on a partial Sep export: about 0.1 s per session once the named signals are warmed. The partial Sep comparison showed the same setups, and per-trade rupees differing by a few hundred.
+  - `test_lab.py`: 8 passed.
+- **Acceptance:** the frozen walk-forward rule (`lab.RULE`). Tests are not profitability, and a replay is not a promotion.
+- **Config and migration:** none. Research only; no paper, live or proving-week change.
+
 ## October 28 — O29e The four-strategy book on every paper underlying (NIFTY and SENSEX) (Dev commit 95183ff, pushed; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed (PR #122); fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - **Owner (Oct 28 night, after the O29d report):** "go ahead with this and also the strategies. Let them also be used on other than nifty. At least on paper ... deployed this and restart and rebuild the system as well."

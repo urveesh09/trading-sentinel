@@ -1,0 +1,2364 @@
+{
+ "schema": "o29f_year_genome_v1",
+ "bindings": {
+  "sources": {
+   "python-engine/account_cash_reservations.py": "a775ce0e27c100121cc8b94ad46373ccef7b583f776fa32a00d19ca2d92828fc",
+   "python-engine/adaptive_penny_policy.py": "214494f3acd579d1c7dfb549b1e1b2e376621a811cf5475d2ee6793a5838ae6a",
+   "python-engine/affordability.py": "88fb4dbd7a9bb1b5bbe86099b69e412f8c766fd94b4ddee9be4328aadc8644af",
+   "python-engine/analytics.py": "bd5352b83cad994e7809efb77975460cb7f2ae7bd335e4f01a2ef14d2886f57f",
+   "python-engine/asymmetric_fill_model.py": "55a3b729dbb7ff22526aba049c259bef15606506ab37ecb3b59b6cd1c2b6bc33",
+   "python-engine/background_tasks.py": "8df5e28b4e4d18cb28f0449a06f8029fc7158e96fc800a747836714f68ff7c15",
+   "python-engine/backtest.py": "c4458c7b63e2e193835ae89628df3d7c0cd86457dfe392d5a30d0885a5c2097f",
+   "python-engine/backtest_catalogue.py": "c2098dbc0d270d4bbb5e4c147ea7991fa9ca589a4bc12ac17d97bbf020322ef4",
+   "python-engine/backtest_cli.py": "1f8a22506330d0ba45102581c25b67b286f258f91d2df0d1d45be9f9b694105a",
+   "python-engine/backtest_lab.py": "2d0708ad105b0aeb628c3a1f4480aa766c32ac33f280afcaf7bdcb73721a3326",
+   "python-engine/backtest_qualification.py": "8df82ab8048310ecf56d95d01048859b686069ffccc4996d26739dbe1f634139",
+   "python-engine/backtest_reporting.py": "3b816a12c6f6d0aad38e277b7177febbcb4629b6b7ba05e78d4b261f2b36b012",
+   "python-engine/boundary_safety.py": "a227352cac01e118b65569ba6576cb84610d6e0f3b214e9ff1e51f4291e09a17",
+   "python-engine/breadth.py": "7492f8a25b4f98e351e4147deb070cab76d969bb216fca4f874ef59d0eb4276d",
+   "python-engine/broker_internal_reconciliation.py": "b1ceacd634f287798f55b403cd434acffb8ae50bbf5d34383579bb8f1c8b0ab3",
+   "python-engine/broker_reconciliation.py": "1c820b04090c549a4464277a9f29347dc28be77a8edc0dfea32147fac1ba5d19",
+   "python-engine/capital_loss_tolerance.py": "545be6510730445f296beef5a92d85b47a5a1fa6621526501eb641fb78a684c2",
+   "python-engine/capital_policy.py": "f9a9274e83d5f0a2988243e5588b72d656cca01dbdf584883dd40b0d7ecb2e60",
+   "python-engine/capital_policy_cli.py": "92c5ca2ee2da707df9af3709fb48669c2f9c0c9548e1ffec19254b5a8539f9de",
+   "python-engine/capture_bundle.py": "4e49c2f0261a1ec4cb1853ece1aeb9451c0768a7535266890f1fc8c8210e3114",
+   "python-engine/cas_reachability_aggregate.py": "3ef22fdab1feb15e4138f416f22facde0552c388ddfa3a575f9f03b47667f794",
+   "python-engine/cas_reachability_atomic.py": "ec1efece4ab3ae51b6afe6a20aff431d214e66b876e26a364a25d28142a78053",
+   "python-engine/cas_reachability_branch_histogram.py": "63517357f83463ba5dd7a55a2a7fc48c7d3d57ff326de6130d62f3b39f343850",
+   "python-engine/cas_reachability_dedup.py": "e259fdc028a4e1c2db5cae69f0dd11bb86fcc007fbca0170d7d72551b204cda4",
+   "python-engine/cas_reachability_features.py": "25c1c56160c7e780fb6151d504899ce7f8007ede2582fd4c1b974e1c7bf8b807",
+   "python-engine/cas_reachability_freshness.py": "2bf0d9627c9cacbf4a4ed5882b122d846bd2cbe980e1ddffccc0c719b67d6e84",
+   "python-engine/cas_reachability_gate.py": "9b9c4a0ad99122de190c5f527d42d4b30a74926aa7421409f26402040a801350",
+   "python-engine/cas_reachability_listing.py": "3eea72a885ec5b84ada87c768186ca14ba6ce6eedf3515e0cc75973aac064253",
+   "python-engine/cas_reachability_recency.py": "4dce089b28b0a02d3a8a2989508b22931bc81aa8641b71bbfc8592cb446de4d4",
+   "python-engine/cas_reachability_threshold.py": "3166bdcf46d4b70b16ca15811629e1325d359ebd17491a4a53803bbae11f1759",
+   "python-engine/cas_reachability_verify.py": "70e0616b91afadb62640c649848359c094630d80a9f7f02baac2e7aa89d80c93",
+   "python-engine/chandelier_stop.py": "eb3021afd483811a402a5ae86d1efe5af1cca7a97cfb1fc7fd6f5bfd38208512",
+   "python-engine/conditional_protection_schema.py": "c9067a9380d7fed09e874547b32d4eff81d44dc570439910bf155662c7c82cfb",
+   "python-engine/config.py": "59e4e15e5f50da6fdbde63cdd738732da67426e302a66c2b26396e3baef504d0",
+   "python-engine/cost_audit.py": "127c1569e06f49f854fccc91ab1266df615a12831aecda716294f4739ea25efc",
+   "python-engine/cost_schedules.py": "7cc67993b9ec2673eb6944cb1635bb1e32479074c0276bcf02cb96b41387c9cd",
+   "python-engine/coverage_vocabulary.py": "6e5592045f68cf4535f06bc33ea1e13f8b5eba52e7f43fba3df37f0f7ff99df0",
+   "python-engine/daily_bootstrap.py": "bbd3e161326622e2b7879c6cb62cc8ae3fdfcc5f5e851a993f0c51b858754a57",
+   "python-engine/daily_decision_quality.py": "6c01058522c21fea3e4fec5c8d9d27119fcdbcbd2aefd901c47183f1eab61f50",
+   "python-engine/daily_portfolio.py": "84fa1f3825dc8e8d67d5f4b393c7a9a3cb5f4f4db92c4a2b35a34ed4a58a6b8e",
+   "python-engine/day_books.py": "c107a64c2a4c5feaf8c73e079b12551be7da92b16f1ac0647a3cd2517c8b5cc1",
+   "python-engine/decision_clocks_extensions.py": "6e30cbff6171309aecdeecc1be304026f6799b0e8c2c7d35750d75c64e9afdc2",
+   "python-engine/decision_policy.py": "30042d333a9c61282b5384cdb55351f6b5d19c0a80accbd1d710c8bedab6d16d",
+   "python-engine/dev_acceptance_harness.py": "5f98f0f86defe1757cac7bc3807198ddf1235e5d33e5e6c9cea2c5e54dec7449",
+   "python-engine/discrepancies.py": "fe0a0ec3212be1113aa2b71bce5150bec9a6392e7da60064c9aba1eb337fb98a",
+   "python-engine/dispatch_independence.py": "b94794604d84d32cfc7dd48b96b330b333f4d8467aad36c6a560814671b1255e",
+   "python-engine/edge_overnight_paper.py": "975123b344204ca264028104a35e0aa399e65086c245853a958ab9b1e50ee150",
+   "python-engine/edge_portfolio_replay.py": "19e546a9f1cb5549f48af43599562fffe4cfceb7c872ce7a9dadeaf03afb38ef",
+   "python-engine/edge_stats.py": "00d5cddc9aa05530ab970a55a60887a7a3541d36ed61d30051ee7a08f972c666",
+   "python-engine/engine.py": "0431aee13d599c683bf37c8af8d25b2cb695c4bdd35f20f03bc34e2d4effd2aa",
+   "python-engine/engine_auth.py": "cdeda0a5fd7768cd38b87576ff6a773458574320bab7d0c38e4c14f10211e53b",
+   "python-engine/equity_charges.py": "c054ace42a9fba6b22783cbd4a3cfc17e018712d007db0799e61e5236ac4070e",
+   "python-engine/event_calendar.py": "5199394039e72961ed9dcdac0614abe42440515c78ede5db27d796e3858b5a9b",
+   "python-engine/exit_experiment_metrics.py": "2b54f55117064fbef08bc25532e428b424c3e8c8e411ec7de2a3b95f55f3ed91",
+   "python-engine/exit_quality.py": "c6dc5721bebb4bbafa7e9d14f5067da1910e3096dbc4b5855e976b391a463dbc",
+   "python-engine/expiry_paper.py": "b79a2bbe13f13a34ef2ce1d981e9a05a9f7678d4f9d99c99f5bdecb29a394f0a",
+   "python-engine/fno_accept_watchdog.py": "2422eebe0a224a2363e6c7f234f8ae22e80308769e76466b943cf8d94bce012d",
+   "python-engine/fno_adaptive_risk.py": "622edf9b328b355e8d5af5ea46de0aaa50d7589d0e0517ca9edd41cd18a3a584",
+   "python-engine/fno_analytics.py": "2547fcfc23eefbb5600ae4d471e69bab66ab2a56ead1957defb77772260fb701",
+   "python-engine/fno_audit_report.py": "664b4fb526c2c5f646a0a352cf8ff2ad198b513e3743f80906ebae644ff85b78",
+   "python-engine/fno_backtest.py": "0444ddbb7eb3deb7f49ca8cae588358852a5bc83602e5ee308649a74d10de243",
+   "python-engine/fno_book.py": "6628f42abc777d86d49b22feb5d3a39c28fdb1e9cc44767bd850ad1c41988d6d",
+   "python-engine/fno_broker_backstop.py": "c579826823ff244dff609f685e77f7425c38512acd56642a7f2f0a7f0e52f6cb",
+   "python-engine/fno_chain.py": "8fae8a8048e5700530b247921adf3c58df00eff0cee8682f11f3707eda07137c",
+   "python-engine/fno_costs.py": "c148d3deadec3982b90ff617d0c9b3aec3e1794c69c48f69cc4aaaf9cb391e8a",
+   "python-engine/fno_defined_risk.py": "f68d3a0ac48fa095b4bbfadfe7d417831d0f1412176ebd8d6b395dd4c798655f",
+   "python-engine/fno_dr_book.py": "030b398249392eb2f497633c8069fab57799143df161d7d6199e350cc3e77e57",
+   "python-engine/fno_dr_exit_experiment.py": "ec7c554dad6d2171a32825e085bbdc8c5a0bc5cf7ac4cb2ddfa87a1db761d411",
+   "python-engine/fno_engine_mom.py": "0e2b68b78d13be43026e724be5b3b30a4d154187ec3f8f38aa51a73388303a12",
+   "python-engine/fno_entry_plan.py": "deebaf3d34e42fb61d212743a660ef9217c5e40f501ff6ac3828d33585c7f684",
+   "python-engine/fno_executor.py": "dfcb23f3112019885d89ca80bbb8b4484d68e4e68c6b935a281a5672e85f1b52",
+   "python-engine/fno_exit_cadence.py": "39ea31290a8ef955e3e8d11ec1b5d8d540c1f20dab20e95edad6cf43c2dfa1e0",
+   "python-engine/fno_exit_evidence.py": "15d47a50bc27aa8b507d3a912e620710afe6e7d1b2ad4cfabf5ed72e7afac116",
+   "python-engine/fno_exit_experiment.py": "013c2168a24bc208788a692de8d5acf26d4e58ecf60db8374024783cd1ef627b",
+   "python-engine/fno_exit_paths.py": "875ddadccd621747f0e24dcd531ca98f1b0574ae8d7c6614096f5f1fa8621a69",
+   "python-engine/fno_exit_recovery.py": "e84a31b5006fa47802345374e8e5254d7e346586060bd7a0783fc4bd7bfc7397",
+   "python-engine/fno_exit_report.py": "0312c4af029a9187d3a33c14f1be7272df4ccef244086074db11211156cc9a7f",
+   "python-engine/fno_exit_rules.py": "05e9a2910bc7fdc8a76f822b385df8687c55e58b03b9e0cf2d5b025588bb8467",
+   "python-engine/fno_gates.py": "338ea4625ab041c3046b055298b87d6be4ce8275276b2a89c410d3a0828ae2d9",
+   "python-engine/fno_hourly_report.py": "c9bb5f0b86a11d908283afc084fe4ffb6e475e8d11beca9fd4fa49b4cceeaddf",
+   "python-engine/fno_instruments.py": "48e1488292793b51f7148d8e83a91d46ae6c43eebea3b17d96ee51e26b0dc85c",
+   "python-engine/fno_live_preflight.py": "5f8a2692852432cd4c2d2b75d00b7aeeb0c789b416b62d07db120b8e6c9ab309",
+   "python-engine/fno_live_test.py": "3fdad9111c20ceaadacc8e43db443e75e82ac39720bb510afac421b0f125106e",
+   "python-engine/fno_models.py": "6030f04a67a07ff5c779a9e314ef129bfce6e05af13f94153d3765da7da9b913",
+   "python-engine/fno_oi_store.py": "155b0e538ed8dc0d6045971d5b1450da686a84ff0bad7b84ab35a94ffd5aaabf",
+   "python-engine/fno_orchestrator.py": "c7128e4b151761fd366029026fc3d30d0b64d95f1bae35c393c12b0e57e3b6fd",
+   "python-engine/fno_policy_replay.py": "d167016914bc19f8f76422cbb2d49b00ab0c226dcb67e3029640e23c792191ac",
+   "python-engine/fno_positions.py": "13ba1bbc10ae8c4e6f7db5e40ea48dcdc66b41a5e7f93041d17bb9190f68bcec",
+   "python-engine/fno_proving_week.py": "d43abfe59022d0a5b0edb4d3c36a6b0737d22d6b9f6faea5594bcc42712f4778",
+   "python-engine/fno_risk.py": "a20249254ae5a0d0fb83bcba2006e9657ec7d0a978ed2362cdfe2b3a40414631",
+   "python-engine/fno_risk_alert.py": "b25b2a407f25cac35c3f3610dc4a488943941e695dd6e4fd92da7b8943e09336",
+   "python-engine/fno_shadow.py": "1b03db80287b2cb5c7e665cd4837e41d52cf14ad40cd5d027d7dbd64b804ce2d",
+   "python-engine/fno_shadow_alert.py": "81fb6d9934fbcd90db657b5791fea73d07141edefb5f146ca571bf0fd271dbf1",
+   "python-engine/fno_shared_risk.py": "a86de5f4350ac84560006a0932f36ed3ef410a2e35070cc64d06fb06af3ead64",
+   "python-engine/fno_signal_log.py": "8e618dc50ff46e9e9488645d5e5668f8e4c112e931b65a27bf712a5e0bb1d231",
+   "python-engine/fno_signal_scan.py": "4208758f12cab520ca18b37ba8549edaad9be35d6cf44b067be36476ae69602a",
+   "python-engine/fno_spread_tilt.py": "63a3184ec6941edc266c752bd314eeeb75cfbb4f26e2902e43f8f8731a10f626",
+   "python-engine/fno_underlyings.py": "42c86d3528c262717dbc20407260d384665ae5dac19eec37aacdd6e5917cb64d",
+   "python-engine/gap_detector.py": "a110195e801bd481bb77284c04db24cde6394983e150c9b7c99cd3ef340b3d4b",
+   "python-engine/halt_switch.py": "217ea3119480597975a248082eab7f9cd71f724b135775e7f8595d024d69403e",
+   "python-engine/hedge_advisory.py": "5070a1e67db1c40a580f33965e4a30f498596a6f710bc6c990ba828aadef5f57",
+   "python-engine/hedge_analytics.py": "f2295fd9a6670df3c284a51347b3e0b20a25b9340e1915901bda701d99884145",
+   "python-engine/hedge_formatters.py": "223d69da53c534161ae280fc7954fab83579a5fd8c80a833fd3e8e80dfb599c4",
+   "python-engine/hedge_readiness.py": "b1fcff982ecb6711a25d9201f413e4d7f92e8cdaa8fc9f674a3309635dde845d",
+   "python-engine/hedge_strategies.py": "4418ba52a0fa1c9e94aa89d06a77a6e2343ab75e370d416176068b72d8e58a99",
+   "python-engine/holiday_drift.py": "8da5e344365b7e12cae5681147a1bb5f0441944c078a985e5c7216a9dc84f608",
+   "python-engine/indicators_adaptive.py": "e711df4e3e4697cac5228f1d8ac3e3d2a7512ac8c6b246c60ad3c878ea2f47ce",
+   "python-engine/integrated_dev_demo.py": "27cda575ee222a790e9023c9cbe5b072c052c77207544d317132850056b2eb95",
+   "python-engine/intraday_cache_diagnostic.py": "d01877abe4b0b33d4c803bf1269035fa25928819281cd003c18b42737e6477c0",
+   "python-engine/intraday_spread_archive_adapter.py": "4b56cf53a07ba136291be05e09ec2524f3e9a041b739192d227ee3689e825578",
+   "python-engine/intraday_spread_chronological.py": "00c560dcebabb103d7a2aaed3632836743a312047c7337fdb74fa94d950ad478",
+   "python-engine/intraday_spread_holdout.py": "3b9478ed34436bb833975703a60871f2400e77a0460d32b045ca5c5dcf358a60",
+   "python-engine/intraday_spread_holdout_adequacy.py": "eb1328c7f7022363e4915b7d93553da70ce2667735d2dd2436fae98423217be1",
+   "python-engine/intraday_spread_replay.py": "d12e01b3ccb34b2fa7b8ecb692113f072ca94e780ea19b55cad79b8ccd8af53c",
+   "python-engine/intraday_spread_research.py": "911246728a0e02b2d078f065436c7c9c67fcbdbffc7da93e9f9188fa3371d1d1",
+   "python-engine/intraday_spread_research_verify.py": "ee5fc76dd270e4d71709d9aea9be5e2a807e1bdd0499682750e71e0219d001fa",
+   "python-engine/intraday_spread_signal_artifact.py": "8d4c58b685da41671a98d312561f1f24049b106d799b3a486d96b43554c6d327",
+   "python-engine/kite_client.py": "62cd03795feef7a6ce1b325d38920848f955bf2c45701b121ef03158f5229f2e",
+   "python-engine/lifecycle_receipts.py": "f07c063a2a32d52dcbe1afcd7d948e307045ced18bfca708458bd84b7ce93302",
+   "python-engine/logging_setup.py": "0931df6118c70c2c53dd25079d61a08d593782948de7f4b79662a400160a2d73",
+   "python-engine/macro_events.py": "52e634f169531edb2c3081ef43f4a79f8a8b27400552a990875c46f37566c2d8",
+   "python-engine/main.py": "3b1f9ffccb1c29b42a765814ce9bc4b694e4e64bfbb4ddcd52bee5ae3645c2fd",
+   "python-engine/mark_to_market.py": "cf5b778982eb4d38a8cd55171e2bc5e5b704c5c7293d4d1f05c7d8652fd8834d",
+   "python-engine/market_calendar.py": "6f6535cdf297365c8e534069dd6826eb597587876c98dcecd35b865052abf90e",
+   "python-engine/market_data_sources.py": "7f98bdf81650c073a6dfb8be69444ade113905699e66703b2cda0825e221949a",
+   "python-engine/memory_metrics.py": "561b2130b8ebaadef3eeb395f135a42e443110a3e6cad3b6349b2a506acb1364",
+   "python-engine/models.py": "2bca0ee26ee6035ac3e64192647a87308cbacec415bffa3801faa260f8fd3dd1",
+   "python-engine/momentum_admission_cohorts.py": "0da0e942c84d67163999364f4b839e0a0c4e99b356d5bce72b2058014ca92d8d",
+   "python-engine/momentum_allocation_research.py": "968c24c5407ad36d3150b81e6638623c09b7b80a897452ae995fca92945836dd",
+   "python-engine/momentum_entry_timing_research.py": "c35639e98356316bc5f9bd9151130394c109ade57de98729e22a774687dd47bf",
+   "python-engine/momentum_exit_experiment.py": "06425feabc18d2943bad172caec3303990572f15298462ea07d4297bc7d739bb",
+   "python-engine/momentum_exit_study.py": "30dd75e0f44084a2d699bf959b1d5917b6a979191da39824a435b35ad2c80aa6",
+   "python-engine/momentum_exits.py": "85330d801b48011c5594dedb8d339bf46d3c829da5128066787e927849c06742",
+   "python-engine/momentum_paper.py": "f85a2767f26f35c68b2339296e58c6977c1415eaaf449ae8fc3a4d5c819ad384",
+   "python-engine/momentum_paper_audit.py": "102fb43dc5d2a7277b2df93587a3b7b665e00974c223aa7ce9dfbfd04d8975a9",
+   "python-engine/momentum_paper_evidence_review.py": "387e157d77fb2adb31b3e03cd99f729f4ec25ba32552eb724a74a08b14d03b3b",
+   "python-engine/momentum_paper_path_adapter.py": "082568a763f9b431d99ea54439696cf663bb730b0f7466c96b779b61fe9c9bc6",
+   "python-engine/momentum_path_envelope.py": "888338eaf9dad7cf0fd245994498acb483cc7630400e460d9d27b44f216d0594",
+   "python-engine/momentum_replay.py": "ef2e8524a95d5656f71be3dac6766169dd9136e33a5d735110ba32777a64aee8",
+   "python-engine/momentum_rs_pullback.py": "3eafc9ff30310c9270155a3989232df9dc89ce82a144b1296f09be5cb7dad737",
+   "python-engine/momentum_selective.py": "1d23b9181aff2b0e899c33b7ba53a735e0d2ea50166945d0475c3e544e332e5b",
+   "python-engine/momentum_shadow.py": "7faf57e01f1d256c7061679cb92695bab86c45397e0345d3a44b9c1c472a825c",
+   "python-engine/nifty_commands.py": "008dc8e508a956edc9a0aae1da469b5cd8be835d9aea440bf5471f54f2388c14",
+   "python-engine/non_fno_research.py": "871eba52eab010f605ee9fbc6a1a67f5b60961fcdd2b6f58b108d83aeea32daf",
+   "python-engine/notice_outbox.py": "632e09cc5824b410c9051162389e4c947883f779853f1b3db4d5d949dd5169eb",
+   "python-engine/operational_coverage.py": "e05240d1b47a76338570cd70fb0fc8085e0b91d82896a19adddc9a3abf93745d",
+   "python-engine/operator_alert.py": "110203a9acb4d440558a7d6c465c2685beb02edee0bcaeb8d2b564a36def2618",
+   "python-engine/operator_status.py": "cc2dd2111f1616e658939c4fc33a713f8529202a52f8e636dc465f92597aa3a4",
+   "python-engine/ops_freshness_diagnostic.py": "3738ae46424f6d7d494df2c14f6179d0bd0e3e5269b791786cc8a33437b6fa1d",
+   "python-engine/ops_metrics.py": "adbb1c63e19f87efa17485622d1fc263dc1f121f7ebd924e19203ad4dce9e5a7",
+   "python-engine/ops_watchdogs.py": "c03b5a630c77a31da81523231e8987692c6b4afa00d8d8676fd650973ad2ff69",
+   "python-engine/optional_ai_status.py": "cab063a17105d3284dbb5b4694028b7e579f9937d6ee216da87f679646e32e76",
+   "python-engine/options_math.py": "cd62879d56020aa5533c2f19c50930501f296619b460a4538f76a75de10ef105",
+   "python-engine/order_execution_readiness.py": "02bfec343e0c3ec9e36e3bf17fca2c0a38fcdd5deb4f0185ae4f7b5edbfce933",
+   "python-engine/owner_entry_halt.py": "104365c721dc83a6efe1de020377d73995eb122476669c2c1e476601e5bea64a",
+   "python-engine/partner_bot.py": "596c41efd475bbbfa71876957ae8f7d25f2e5df98929653d068a1b241df7c86a",
+   "python-engine/partner_broker_sync.py": "5faa57f025f8dec42051426be4a7b23e9081967d726c16578ed1b155b35b79ac",
+   "python-engine/partner_buyer.py": "4d07db2baf2bcdac633047991805fc39b3736e23ae245dedeadfffd5b0bfecb5",
+   "python-engine/partner_card_renderer.py": "14a2f1a145f3097e432d80fce2fff24d24215b54535dd1cb25f46489cb838ee5",
+   "python-engine/partner_coach.py": "b1b9a2418139cbfbaaaed9a54136ba103e82009834f3c0a3d1d386f4d3f2f92d",
+   "python-engine/partner_collection_attempts.py": "4b8c15dbed721ead982f99040f6201b1c7f9f8c9bb7e70add52716e2c0f14378",
+   "python-engine/partner_content.py": "2943f4e27cb863b3e76ed6a6722f2b1eff81975f59a9184e5d8db901cf62baba",
+   "python-engine/partner_decision_clock.py": "8187e21342b5cdfb09de03ff7ffc75f7f9d60b179618aa85790816d74daf1fd3",
+   "python-engine/partner_delivery_blockers.py": "7f41e50c69600feef58f47f263ab8b3a7fcc1685d7e3bc3455af4b0849eb63f9",
+   "python-engine/partner_fill_capture.py": "e29d95dd9a815f31798e3ff959228c6d38cb286eff9cd7590ee8d013ad9a3119",
+   "python-engine/partner_fixture_adapter.py": "26ac830a9167f17b1efd326da023a9c390864bf1d080edecaa52e4409f4adc54",
+   "python-engine/partner_full_policy_replay.py": "d82546fee4b360963cd733c8944089ee5d50b6b4dc03f2c9bf41626ad5d80f35",
+   "python-engine/partner_input_refresh.py": "5941272b5470ca9ea89e06a1c13299f07d084cf0a1cdf0b29f69f9669860ea5a",
+   "python-engine/partner_insights.py": "96502bf90f0aac7e742be699b4578d98c475349ceccd560bbf2746495a32e80b",
+   "python-engine/partner_lessons.py": "d2e4a630f4ddc4a6656d76437afe78b040ba3cae4a81a47e19c484e7adf7d38a",
+   "python-engine/partner_lifecycle_demo.py": "e4ad836e36e1778987a9bf9a9ee4528d93506866c5d98f475ff7b85c67d25392",
+   "python-engine/partner_manual_advisory.py": "239dc1009dfdc7e66d8ba615ae1b8f68c692b7c466ac2fb53d6de696b68085e2",
+   "python-engine/partner_orchestrator.py": "4b3b61c94c7af86704e627a43a2f550c9b4761d35a451653fc1b75773767250b",
+   "python-engine/partner_qualification.py": "10e090990a4c07d9ef994a0be1449167c7694d5aa2cc9f51b5df5bee1200d72e",
+   "python-engine/partner_qualification_authority.py": "43e541ff8ede82bd7cf2248ab5b711bb5b0b80b9de980c78ef6b0b60b5dc5032",
+   "python-engine/partner_qualification_package.py": "6acd35989ad08d86f07cd459bd4912bbe5d02f8189873ed5c8f8ec5f0644c172",
+   "python-engine/partner_qualification_review.py": "b1504b61ed728f975c9cfdd59fd75fd58751eae055bb42279206a1ce4254c918",
+   "python-engine/partner_qualification_verify.py": "ca4c493c071902797d116e892666a81ddbf7cb56a3063ce71849cfccd3be1932",
+   "python-engine/partner_research_capture.py": "675e92ae65e97d11952c7d2b2f64868f48c2160d88e808bde6690e16b1fbfe7b",
+   "python-engine/partner_review_pdf.py": "dcfd0fbc831b4ec11f16e94977e24634d671200620fa6af4a3196ac893b0b003",
+   "python-engine/partner_sizing.py": "b2be3cbd4551b985c5f6e164b3cbaae4ac2dd2c278edc4c2384d683961d142fe",
+   "python-engine/partner_source_adapter.py": "7c803ecf7f22b13b0c14ad5ebc4103ce7e7d4d9f13f1d7e344c3974d223a220b",
+   "python-engine/partner_thesis.py": "4339484beab76cde0660a9b387705adc18cf5fc7ff6d019c606044219aa3c58b",
+   "python-engine/partner_trade_paths.py": "0017e50a7f34bf4f85d7625b27794629dcf5eb0b405cb33e0c8b472c8aa80132",
+   "python-engine/partner_watch.py": "9062ac656880826c1b85812e61d64f83a1288312fa7b2b79ed98ded4f07b6c5a",
+   "python-engine/partner_watch_report.py": "5d7184768ddc264a26e327a02cc3ade3a86d6bd9fbe411255c07a75c51afd8f6",
+   "python-engine/partner_watch_score.py": "273c837a879284bcd4cd9c45ed2d7ab2ecb499dd285773fe033c69273eb9ef57",
+   "python-engine/partner_watch_stream.py": "71f0f12e95465e3d5bf449349870dbcc6656f0c0758e23f57b4a0eac61ce36d0",
+   "python-engine/penny_accept_watchdog.py": "bd0d1b2d73461105901442ede5c2807039c39250cfd2316fd558ed5a84ffc944",
+   "python-engine/penny_backtest.py": "a5d5e4a7466954c113f5fe91ab667616fce92d634fc39f6594bbc744a96e52de",
+   "python-engine/penny_backtest_v2.py": "92cc39b0f688f2623e1e3d77da427a63ba575891869726fc73d4fafaad99a2c1",
+   "python-engine/penny_bt_analysis.py": "d89a82a5ae86eddb86d7f9346c049f66f6b3d8ffbeed4271a8f1024fb59b44ac",
+   "python-engine/penny_commands.py": "06d121593149dc65e8c37f3057a75079724649f03a5b361c3e99d304daedb282",
+   "python-engine/penny_corp_fetcher.py": "84470270b5e0c9ca97c8a4bd6a3db774f0467e26bfcf6e7833a1514ad5cfdfd7",
+   "python-engine/penny_daily_attribution.py": "a9052beb5216971bc4c950b0149326b1bf89e6b00f875d6b41f860fc48316d7a",
+   "python-engine/penny_edge_backtest.py": "6832b9facdbeec2485fbec172f6d7349f2784358b139443c2644a8849c2f4007",
+   "python-engine/penny_edge_engine.py": "afd6bd3e46611898d0673d539ec44d2a514f30206c8d5447cd1b2c52f1a60f54",
+   "python-engine/penny_edge_live.py": "3245857c7708ec3ee51b6c6988b9f29b046ac60cfe882f3241c6f6dc6882ed8e",
+   "python-engine/penny_edge_orchestrator.py": "84615f6b9d21a6a2178d28eb67b894914e6def6c5cdadea8138843bfdb1a1948",
+   "python-engine/penny_engine_breakout.py": "cd4c473f3485c16c516e90593e5717bf2cf31537d62a8abd9c219d57c69dad09",
+   "python-engine/penny_engine_connors.py": "554b88468d55007cdb73d88debe01fa45fda6052c2bcadc231160f2b6d4b1ea6",
+   "python-engine/penny_execution_journal.py": "ed79b08f7b5868332a16d7409feea9a5a3d8329b7c0befd0aedcc41c32833fe2",
+   "python-engine/penny_executor.py": "8be3159ef5ef29b99d74d5096fd6a4ac895a8e28be8ee8657b8d9143116ae8e1",
+   "python-engine/penny_health.py": "0f449d7ebd93c172a3353dfca4e84c75045788a9f9894895c75f63af01420651",
+   "python-engine/penny_heatmap.py": "f6a94e68bb73ad61a31085b37c7caa598ea768368d37ef4a9e3616f63e61e345",
+   "python-engine/penny_hourly_report.py": "479bd203a77a0ffde1f23f447ab0b4c8faf4caeceb8eedd327a4472b3756a703",
+   "python-engine/penny_intraday_replay.py": "54b034c26ac8ea8cf49953cf3c456325da51bac47a000a7dac9125a1610272c4",
+   "python-engine/penny_lifecycle_replay.py": "3d38866756567e698ca3066edb0ca153c8098d79659d73a673c13703b3c8ea69",
+   "python-engine/penny_models.py": "22b20ceb875c5de543397b84fbc24c87c4e3c90206c9e7db6457ed230797e2b4",
+   "python-engine/penny_position_reservations.py": "b191924af08f53ebe122f52b40ec6c4a08add4668dacf08898ca5b6658c2a4e8",
+   "python-engine/penny_premarket_report.py": "bbe1af987f0429a8ce0e043b58f96cd3c35144030cdd49c6bc14ca1c3192f65a",
+   "python-engine/penny_prices.py": "eeec699f4a7fb83d564b1933f9c724ff9d4f8ce045428f8b892e89d5997607ec",
+   "python-engine/penny_profit_lock.py": "841e9a5a57ca4b8ad2ab8c192d97953f2ff02042ef47ea98877de9a19dbf9c70",
+   "python-engine/penny_regime.py": "7922276e82c5c676a9a2b78a398c913c54ef5d24e56789d72f8ec509a6c841e8",
+   "python-engine/penny_risk.py": "91ca4f1ae55a6e1d75a564802f294dbf316db74ef7b97a795f2ec8ff32e7d1cf",
+   "python-engine/penny_scanner.py": "cb6a3fef38c04f532d1e3f93cec92bec17412dc3bbbdaddcec92f89fa2b7f3f8",
+   "python-engine/penny_sector_filter.py": "ec121a4a366313b82851584c3c0aea66b6c3df2d0768f6ff4fd2b542c8936f16",
+   "python-engine/penny_shadow.py": "5e6a44021052e026399f9e4179eb3f7e1d7cb60b66e02bce768b45188133cda6",
+   "python-engine/penny_signal_log.py": "867c0342eb4f2a1ebdb28e79d0d1d1443cd3bc65e2e540512424bb3f6e935080",
+   "python-engine/penny_smart_book.py": "e78263f34d2780ded8620dc2495314d2197cd5db1d003f08f5ca29448319ad49",
+   "python-engine/penny_smart_policy.py": "60f937ca8ad2ec13099b5ae2e57dbabca50c763c0e3b48f57b082acc89038ebf",
+   "python-engine/penny_smart_shadow.py": "4c4802ae055b978a57d1b145c9e0cbf255983649095017f21b62fbc12226581a",
+   "python-engine/penny_smart_v2.py": "e02f797f17a9d6cf7eb50e8179903ad8cb209c8aa6b2cfee41abf83c7a148034",
+   "python-engine/penny_universe.py": "e10dd567e551cff8b07ce25c9d1b7420b636649dcd1877fcd66566fabf1c5a86",
+   "python-engine/performance.py": "32f40de510c43edc3ae96aaa080abcb1f4a861421b2a2af8f1237cf18ce496e1",
+   "python-engine/performance_analytics.py": "c43a7ded5bbeb9e9272e42cdd782598a3047eca8fe49b53be4c04577e8ffe9cc",
+   "python-engine/policy_identity.py": "917ffbaa42875cdf15e4d49d4097da62e2d2e562d1798056333c213a1cbdfdcc",
+   "python-engine/portfolio.py": "f45dc5ed692ee82c34bdf44f17a2b54926de91f43229d074281032b1e3865f3a",
+   "python-engine/portfolio_parity.py": "90545aa1526552fb4629ea2138385b723483f48d06f61607f1b2183b9aeaf6f3",
+   "python-engine/position_tracker.py": "924a1f633038c5d6ca508ad85c4fc29da6b9cc57fc579ef9ab8f838296fc78cb",
+   "python-engine/proactive_comparison_protocol.py": "17df2c916334fde908c681c0f3747632875999c0437df74c06d64fd67e3cd658",
+   "python-engine/proactive_demo.py": "54d5a705a8f62ef97b8bba51fc8d7dbef5d6e196ed11db4e1f5759c01b36b196",
+   "python-engine/proactive_diagnostics.py": "dfe4fbbe79cb73ae226e79d3bb3416cece13f843d7d22e36b82e8a87d6375bd9",
+   "python-engine/proactive_execution_research.py": "c839d6bbeb6f8a4fe52405286954b29ae4e389a1af94ca361adc256ae5648d06",
+   "python-engine/proactive_exit_research.py": "91d0e6a657aa6df51d704691132bc21f3b89e65e7086673d61211d495efa1b47",
+   "python-engine/proactive_intelligence.py": "3c7ab8c4c14e7c12011153708a6420ad8386bd56bfe9ac40f2ee5e64062f8261",
+   "python-engine/proactive_market_data.py": "b38ae90ef1db215c8a6b1f92e00bc48f05b5c0b108a90786e847476657e5ef03",
+   "python-engine/proactive_portfolio_research.py": "05b4606ed3286625aaee304c6583389c3be2d260b32f7c41ada9cb4c856879fb",
+   "python-engine/proactive_source_verifier.py": "0db3d49f367c71a1c9223f8de83352cdc155ddc9f3f83ed79be7d0c3541a8f4d",
+   "python-engine/promotion_bridge.py": "ee3249524b8b50ea644ac3e835e15616f27a39a850c6543b7fc6e107f37afb38",
+   "python-engine/promotion_readiness.py": "ef85c297add17292b714f3df770c57b2cb8490c85ce0c2e931f86a158966e1df",
+   "python-engine/qualification_verifier.py": "b05f19863a86d8be901483ee87e591b7a145eaf48de86e9c30671316b14acb03",
+   "python-engine/range_portfolio_replay.py": "7f30f2ff9a30810251e9fdea93c50aa0aad3629f8631193910f0ddf6afdb379d",
+   "python-engine/range_reversion.py": "318040537d9627f849db356ee2e49211d460b45163cdcfff45363e4117504a3b",
+   "python-engine/reconciliation_cli.py": "ef36f9560430daf9f04a46081dd53dd8c3cca70f9dc000290b4c50ddd12dbbfb",
+   "python-engine/reconciliation_evidence.py": "c1c4430b5e7e19492b87e730e375055b8e66dece97633ec52bfb90c8df00a25f",
+   "python-engine/regime.py": "d560b5c5f0d579fd4722b359601c746d6ef49b0d99e96cb0e8e903fa2301127f",
+   "python-engine/release_identity.py": "065424e373f276b86c0041ef3f0bd3938d2a4aceb8fa7b633a2367e0cad2b96e",
+   "python-engine/research_archive.py": "bd0d44d8b7d5c25c9c02c36d8c32793f3656cdeb6adaa3e115b5d06d8152b3af",
+   "python-engine/research_cli.py": "401a2f27a7d972d644d927093a8d951147f8d728019c522b3b5a850979e39d55",
+   "python-engine/research_daily_decision_replay.py": "ad2f87ce24c18a288de2602f240a34b16c68db08257ee5e485c04c0ca2049553",
+   "python-engine/research_data_contracts.py": "38905b3dfe52184d24ebe44ab5c03a3cb02657e7863ff7355931c53b9de2562f",
+   "python-engine/research_future_candles.py": "1aae403342808100cf81d978d92e5844bc2be7ca4ee7de4b1247d21cbb92ed6f",
+   "python-engine/research_leg_subscriptions.py": "a523c0bbf2501aeaf23a9a949be13acfe73b9b898c8139233fc02da5af2ddaac",
+   "python-engine/research_penny_cnc_lifecycle.py": "cc2dab2013cb043ed117d695de030404f38dc8bae3fcc18cd72ede7f0cc293fd",
+   "python-engine/research_quote_collector.py": "daf1514d5a79b40b39821d1e078c0c5de00f81424c9bdcdd3aabf8d46e29c220",
+   "python-engine/research_study.py": "e5a76afa966446af9569800134ee8779c9f49637e141bd32160e20ecac367094",
+   "python-engine/risk_engine.py": "fdb56399f659df293b562589bda631e3dc69dea00b8377c1faff82d7e955eacf",
+   "python-engine/routes_backtest.py": "1b44be150ba26c573a50cd89ab6a16e24c93a2958fa8637e32ea2cd6056ac160",
+   "python-engine/routes_commands.py": "31914a678dc283d8d0c1d373e8a97d047bf24c47c30f0ef26483d02c8f529643",
+   "python-engine/routes_fno_experiments.py": "68a16e9008fe9b218926d5511f2b5356b50094dec0abab0a3d5062c1a884331b",
+   "python-engine/routes_hedge.py": "ceb01a613dbdac43fb5713cc2b7f3c773fd5fd287696063338390568a9d00c8c",
+   "python-engine/routes_holidays.py": "640cfd5d2d28bc425da2bd6f57785fec9587f1df2f6494f3878d1876419fa05d",
+   "python-engine/routes_market_session.py": "f0ba83ef9b6f04a9b1de09a6141d5dbc9691a4fc9340195ed7a68249d92964cb",
+   "python-engine/routes_ops.py": "232e64a45a6fc6f121e1ff709a44ae8ac4de67333944316f832272da9d063e03",
+   "python-engine/routes_partner_coach.py": "9240b9ad19c747423eae62c7a6ca314be1e658942d8c28b60e6c17dd8fbbc753",
+   "python-engine/routes_penny_experiments.py": "05d8600434ff3e1cbf8e9c90ecf21ece2c247d1785d993d0d20240f1e72375f5",
+   "python-engine/routes_portfolio.py": "da6b0e61ba028f47a2b3f1324bac49ea0731fdde25ee76706c0c1c5f3d36a008",
+   "python-engine/routes_promotion_readiness.py": "c1dd1f0f1bee4b94847b618418e65867a7724cc66c562f18e0304df3df9c6b79",
+   "python-engine/saturation_diagnostic.py": "5703f21f4975ea8e8708aa5a4e30cbed8e60d51c6fb7b9a39dbc54634922d8db",
+   "python-engine/scheduler_setup.py": "ae902537d63e2259694f68fdf49a4b76f2ff5e4694ed4c3385ffcec69b7c1ea7",
+   "python-engine/scheduler_telemetry.py": "8e4de19bdccba8fed2c22b3f35ca2b41c0f750752f8590779cbbf52e53f99c89",
+   "python-engine/selected_legs_verifier.py": "e13d01c32ba716933927a60d489cc6d89af8ba669c8401e1fae2c6d5f6df2bc8",
+   "python-engine/session_csv.py": "58ac7b03b51ff53ad115812352f1c07780389d41f8ed2996528157d35ad59379",
+   "python-engine/settlement_assumptions.py": "3c072b4e0bcf2ff154c47cba2c029df4383929d912a4aa45ae85a3b980d6a04c",
+   "python-engine/signal_log.py": "230e81c64592c9fb7d41c0a103bab26c336e083b92752636ae8c861cfd94c643",
+   "python-engine/skill_test.py": "e494e79fa6dc73f90b9bb9d1197094f112a231e1c490950ecf16d0a2fe5ceb8d",
+   "python-engine/standard_capital.py": "914fcc500a3af814a14f2e81b7bad895ff6e70e99fb2f715835051cdd6f50124",
+   "python-engine/strategy_health.py": "876abcd3e1e46d9fd37a1fc977994e74428fe5e6c8f26c6b5d2094b376f4e079",
+   "python-engine/swing_portfolio_replay.py": "4c8ed2a8c6e8a9c51611aff0b69088551be881a01ae904c90b13ba7a7eb49a54",
+   "python-engine/token_lifecycle.py": "8530a2da83893e52ba6bc68162fd6f1143ebc4debb5f33a8a22845857511896a",
+   "python-engine/universe.py": "4009a8cdc83f4ae268733c28152b6756ccd39fd8755d3b08d3e115a3f1048695",
+   "python-engine/walk_forward.py": "3850f886c452bbb84024ece9761f6978136d404f42d666a4bf4d0d051b13c4dd",
+   "scripts/run_fno_consistency_grid.py": "7f5fd1be7e5d3343f5f9aab1b98f0b3e80a9da82c42216736a319ee87de221c9",
+   "docs/research/fno/2026-10-28-regime-router/router.py": "f15c4f1688aa5d7f9a2232a523708d882380bfde112cc29f58e0c787c97872cc",
+   "docs/research/fno/2026-10-27-genome-round3/lab.py": "c36e743ff3115f0ca752f2f8f6e5fe70ca89ad7f0797e441e27caa559eeb29a6",
+   "docs/research/simulation/2026-10-27-fno-novel-families/lab.py": "ff07780811d0ae1a3e3d446fd16f4b5d7f8ab87bf97d2ccae82fe6e6977d4806",
+   "docs/research/fno/2026-10-29-year-genome/lab.py": "c6bdfec442c3e0172d5fc7652d8fcdf865d74f15becb5fab6b7ae9932a889e16",
+   "docs/research/fno/2026-10-29-year-genome/yeardata.py": "210ca611dd7a4da016176b0801438a4097d352842a234717a4cb3374c2976109",
+   "docs/research/fno/2026-10-29-year-genome/test_lab.py": "132285f8e048b3069a7a0c596e2b2175e375e00371dd2976bc6255ac3252fa7a"
+  },
+  "year_manifest_sha256": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555",
+  "year_sessions": [
+   "2026-01-01",
+   "2026-01-02",
+   "2026-01-05",
+   "2026-01-06",
+   "2026-01-07",
+   "2026-01-08",
+   "2026-01-09",
+   "2026-01-12",
+   "2026-01-13",
+   "2026-01-14",
+   "2026-01-16",
+   "2026-01-19",
+   "2026-01-20",
+   "2026-01-21",
+   "2026-01-22",
+   "2026-01-23",
+   "2026-01-27",
+   "2026-01-28",
+   "2026-01-29",
+   "2026-01-30",
+   "2026-02-01",
+   "2026-02-02",
+   "2026-02-03",
+   "2026-02-04",
+   "2026-02-05",
+   "2026-02-06",
+   "2026-02-09",
+   "2026-02-10",
+   "2026-02-11",
+   "2026-02-12",
+   "2026-02-13",
+   "2026-02-16",
+   "2026-02-17",
+   "2026-02-18",
+   "2026-02-19",
+   "2026-02-20",
+   "2026-02-23",
+   "2026-02-24",
+   "2026-02-25",
+   "2026-02-26",
+   "2026-02-27",
+   "2026-03-02",
+   "2026-03-04",
+   "2026-03-05",
+   "2026-03-06",
+   "2026-03-09",
+   "2026-03-10",
+   "2026-03-11",
+   "2026-03-12",
+   "2026-03-13",
+   "2026-03-16",
+   "2026-03-17",
+   "2026-03-18",
+   "2026-03-19",
+   "2026-03-20",
+   "2026-03-23",
+   "2026-03-24",
+   "2026-03-25",
+   "2026-03-27",
+   "2026-03-30",
+   "2026-04-01",
+   "2026-04-02",
+   "2026-04-06",
+   "2026-04-07",
+   "2026-04-08",
+   "2026-04-09",
+   "2026-04-10",
+   "2026-04-13",
+   "2026-04-15",
+   "2026-04-16",
+   "2026-04-17",
+   "2026-04-20",
+   "2026-04-21",
+   "2026-04-22",
+   "2026-04-23",
+   "2026-04-24",
+   "2026-04-27",
+   "2026-04-28",
+   "2026-04-29",
+   "2026-04-30",
+   "2026-05-04",
+   "2026-05-05",
+   "2026-05-06",
+   "2026-05-07",
+   "2026-05-08",
+   "2026-05-11",
+   "2026-05-12",
+   "2026-05-13",
+   "2026-05-14",
+   "2026-05-15",
+   "2026-05-18",
+   "2026-05-19",
+   "2026-05-20",
+   "2026-05-21",
+   "2026-05-22",
+   "2026-05-25",
+   "2026-05-26",
+   "2026-05-27",
+   "2026-05-29",
+   "2026-06-01",
+   "2026-06-02",
+   "2026-06-03",
+   "2026-06-04",
+   "2026-06-05",
+   "2026-06-08",
+   "2026-06-09",
+   "2026-06-10",
+   "2026-06-11",
+   "2026-06-12",
+   "2026-06-15",
+   "2026-06-16",
+   "2026-06-17",
+   "2026-06-18",
+   "2026-06-19",
+   "2026-06-22",
+   "2026-06-23",
+   "2026-06-24",
+   "2026-06-25",
+   "2026-06-29",
+   "2026-06-30",
+   "2026-07-01",
+   "2026-07-02",
+   "2026-07-03",
+   "2026-07-06",
+   "2026-07-07",
+   "2026-07-08",
+   "2026-07-09",
+   "2026-07-10",
+   "2026-07-13",
+   "2026-07-14",
+   "2026-07-15",
+   "2026-07-16",
+   "2026-07-17",
+   "2026-07-20",
+   "2026-07-21",
+   "2026-07-22",
+   "2026-07-23",
+   "2026-07-24",
+   "2026-07-27",
+   "2026-07-28",
+   "2026-07-29",
+   "2026-07-30",
+   "2026-07-31",
+   "2026-08-03",
+   "2026-08-04",
+   "2026-08-05",
+   "2026-08-06",
+   "2026-08-07",
+   "2026-08-10",
+   "2026-08-11",
+   "2026-08-12",
+   "2026-08-13",
+   "2026-08-14",
+   "2026-08-17",
+   "2026-08-18",
+   "2026-08-19",
+   "2026-08-20",
+   "2026-08-21",
+   "2026-08-24",
+   "2026-08-25",
+   "2026-08-26",
+   "2026-08-27",
+   "2026-08-28",
+   "2026-08-31",
+   "2026-09-01",
+   "2026-09-02",
+   "2026-09-03",
+   "2026-09-04",
+   "2026-09-07",
+   "2026-09-08",
+   "2026-09-09",
+   "2026-09-10",
+   "2026-09-11",
+   "2026-09-15",
+   "2026-09-16",
+   "2026-09-17",
+   "2026-09-18",
+   "2026-09-21",
+   "2026-09-22",
+   "2026-09-23",
+   "2026-09-24",
+   "2026-09-25",
+   "2026-09-28",
+   "2026-09-29",
+   "2026-09-30",
+   "2026-10-01",
+   "2026-10-05",
+   "2026-10-06",
+   "2026-10-07",
+   "2026-10-08",
+   "2026-10-09",
+   "2026-10-12",
+   "2026-10-13",
+   "2026-10-14",
+   "2026-10-15",
+   "2026-10-16",
+   "2026-10-19",
+   "2026-10-21",
+   "2026-10-22",
+   "2026-10-23",
+   "2026-10-26",
+   "2026-10-27",
+   "2026-10-28"
+  ],
+  "archive": {
+   "manifest_sha256": "3a22fe10eef620717c046e4836ded26594f9b69448cf4e30ef6fdfcc4efba93d",
+   "quote_days": [
+    "2026-09-10",
+    "2026-09-11",
+    "2026-09-15",
+    "2026-09-16",
+    "2026-09-17",
+    "2026-09-21",
+    "2026-09-22",
+    "2026-09-23",
+    "2026-09-24",
+    "2026-09-25",
+    "2026-09-28",
+    "2026-09-29",
+    "2026-09-30",
+    "2026-10-01",
+    "2026-10-05",
+    "2026-10-06",
+    "2026-10-07",
+    "2026-10-08",
+    "2026-10-09",
+    "2026-10-12",
+    "2026-10-13",
+    "2026-10-14",
+    "2026-10-15",
+    "2026-10-16",
+    "2026-10-19",
+    "2026-10-21",
+    "2026-10-22",
+    "2026-10-23",
+    "2026-10-26"
+   ]
+  },
+  "settings": {
+   "current_arm": "OR30|LOCK_LIVE|T45|TR1.0",
+   "fno_settings_sha256": "462bda14a54ce1d86f6c6e011be08acc5199e00d7e4aa5b46de81dc38efef778",
+   "fno_settings_count": 125
+  },
+  "references": {
+   "SHIPPED": "b9f7fb83fa751052d12af2e1649bd68025c7eb6dbe4d0ad1ed017b6cb0468dec",
+   "OR20": "20bfc9c8b9fbf91a8e46d15429547d1ffc0eafff6178c66aa66c09b9c43023c5",
+   "EFF": "ddc9b3230ef54bfaee5dcc8c25d3b4577f53347ae94021cf6d324b30a5f047ff",
+   "TPB": "a940a96c59f93296e5656f8215f7c5c82a77263d4da62923ecb1fe507ec753ac"
+  }
+ },
+ "full": [
+  "2026-01-01",
+  "2026-10-28"
+ ],
+ "unseen": [
+  "2026-01-01",
+  "2026-09-09"
+ ],
+ "seen": [
+  "2026-09-10",
+  "2026-10-26"
+ ],
+ "folds": [
+  {
+   "name": "F1",
+   "train": [
+    "2026-01-01",
+    "2026-03-31"
+   ],
+   "test": [
+    "2026-04-01",
+    "2026-05-31"
+   ]
+  },
+  {
+   "name": "F2",
+   "train": [
+    "2026-01-01",
+    "2026-05-31"
+   ],
+   "test": [
+    "2026-06-01",
+    "2026-07-31"
+   ]
+  },
+  {
+   "name": "F3",
+   "train": [
+    "2026-01-01",
+    "2026-07-31"
+   ],
+   "test": [
+    "2026-08-01",
+    "2026-09-30"
+   ]
+  },
+  {
+   "name": "F4",
+   "train": [
+    "2026-01-01",
+    "2026-09-30"
+   ],
+   "test": [
+    "2026-10-01",
+    "2026-10-28"
+   ]
+  },
+  {
+   "name": "FINAL",
+   "train": [
+    "2026-01-01",
+    "2026-10-28"
+   ],
+   "test": null
+  }
+ ],
+ "named": [
+  "SHIPPED",
+  "OR20",
+  "EFF",
+  "TPB"
+ ],
+ "lab_families": [
+  "TREND_PULLBACK",
+  "PDL_BREAK",
+  "VWAP_BAND",
+  "MOMO_BURST"
+ ],
+ "family_genes": {
+  "TREND_PULLBACK": {
+   "tp_trend": [
+    1.0,
+    1.5,
+    2.5
+   ],
+   "tp_side": [
+    0.6,
+    0.75,
+    0.9
+   ],
+   "tp_anchor": [
+    "VWAP",
+    "EMA20"
+   ],
+   "tp_touch": [
+    0.25,
+    0.5,
+    1.0
+   ],
+   "tp_from": [
+    630,
+    690,
+    750
+   ]
+  },
+  "PDL_BREAK": {
+   "pd_buffer": [
+    0.0,
+    0.1,
+    0.25
+   ],
+   "pd_first": [
+    true,
+    false
+   ]
+  },
+  "VWAP_BAND": {
+   "vb_k": [
+    0.75,
+    1.0,
+    1.5,
+    2.0
+   ],
+   "vb_slope": [
+    3,
+    6
+   ]
+  },
+  "MOMO_BURST": {
+   "mb_bars": [
+    2,
+    3
+   ],
+   "mb_move": [
+    1.0,
+    1.5,
+    2.0
+   ]
+  },
+  "ENSEMBLE": {
+   "en_members": [
+    "ORB20",
+    "EFF",
+    "PDL",
+    "VWB",
+    "TPB",
+    "MOMO"
+   ],
+   "en_k": [
+    1,
+    2
+   ],
+   "en_window": [
+    1,
+    3
+   ]
+  },
+  "NULL_RANDOM": {
+   "nr_p": [
+    0.02,
+    0.04,
+    0.08
+   ],
+   "nr_seed": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ]
+  }
+ },
+ "year_shared_genes": {
+  "rvol": [
+   0.0,
+   0.8,
+   1.0,
+   1.2
+  ],
+  "htf": [
+   "OFF",
+   "WITH"
+  ],
+  "window": [
+   "ALL",
+   "AM",
+   "PM"
+  ],
+  "stop_atr": [
+   1.0,
+   1.5,
+   2.0
+  ],
+  "target_r": [
+   1.5,
+   1.8,
+   2.4,
+   3.0
+  ],
+  "exit": [
+   "LIVE",
+   "LATE",
+   "LOOSE",
+   "RUN"
+  ],
+  "vwap_exit": [
+   "OFF",
+   "ON"
+  ]
+ },
+ "fixed_shared": {
+  "xidx": "OFF",
+  "delta": 0.55,
+  "expiry": "NEAR"
+ },
+ "gates": [
+  "ALWAYS",
+  "or_width:HIGH",
+  "or_width:LOW",
+  "open_drive:HIGH",
+  "open_drive:LOW",
+  "nr:HIGH",
+  "nr:LOW",
+  "gap:HIGH",
+  "gap:LOW",
+  "trend5:HIGH",
+  "trend5:LOW"
+ ],
+ "named_exits": [
+  "OWN",
+  "LIVE",
+  "LATE",
+  "LOOSE",
+  "RUN"
+ ],
+ "exits": {
+  "LIVE": {},
+  "LATE": {
+   "FNO_TIME_STOP_MIN": 75.0,
+   "FNO_TRAIL_ATR_MULT": 1.5,
+   "FNO_PROFIT_LOCK_ARM_R": 0.8
+  },
+  "LOOSE": {
+   "FNO_TIME_STOP_MIN": 60.0,
+   "FNO_TRAIL_ATR_MULT": 1.5,
+   "FNO_PROFIT_LOCK_ENABLED": false
+  },
+  "RUN": {
+   "FNO_TIME_STOP_MIN": 120.0,
+   "FNO_TRAIL_ATR_MULT": 2.0,
+   "FNO_PROFIT_LOCK_ENABLED": false
+  }
+ },
+ "fixed_books": {
+  "UNION_DRIVE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "UNION": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "THEORY_IB": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "or_width:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "or_width:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "or_width:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "THEORY_NR": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "nr:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "nr:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "nr:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "SHIPPED": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "OR20": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "EFF": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "TPB": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "SHIPPED_DRIVE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "OR20_DRIVE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "EFF_DRIVE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  }
+ },
+ "null_fixed": [
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "gap:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 13,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.5,
+      "target_r": 1.5,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "or_width:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 6,
+      "rvol": 1.2,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "LOOSE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "or_width:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 4,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LIVE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "open_drive:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 1,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 2.0,
+      "target_r": 1.5,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "open_drive:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 11,
+      "rvol": 0.8,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LATE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "nr:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 1,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 2.0,
+      "target_r": 2.4,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 9,
+      "rvol": 1.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "or_width:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 4,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 1.5,
+      "exit": "RUN",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "trend5:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 6,
+      "rvol": 1.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 1.8,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "or_width:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 11,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 2.0,
+      "target_r": 2.4,
+      "exit": "LATE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "nr:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 4,
+      "rvol": 1.2,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 1.5,
+      "exit": "LOOSE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 4,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "LOOSE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 0,
+      "rvol": 1.2,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LOOSE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "or_width:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 15,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 1.8,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "trend5:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 12,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 1.8,
+      "exit": "LIVE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 14,
+      "rvol": 0.8,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LATE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 7,
+      "rvol": 1.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 1.8,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 8,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.0,
+      "target_r": 1.5,
+      "exit": "RUN",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "gap:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 0,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 1.8,
+      "exit": "LATE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 11,
+      "rvol": 1.2,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.0,
+      "target_r": 1.8,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "gap:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 2,
+      "rvol": 0.8,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 3.0,
+      "exit": "LATE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "nr:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 15,
+      "rvol": 1.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 1.8,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 12,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 2.0,
+      "target_r": 1.5,
+      "exit": "LATE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "open_drive:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 14,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "RUN",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 6,
+      "rvol": 0.8,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 1.5,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "or_width:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 11,
+      "rvol": 1.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 1.5,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "trend5:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 11,
+      "rvol": 1.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.0,
+      "target_r": 1.5,
+      "exit": "LIVE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "open_drive:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 5,
+      "rvol": 1.2,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 2.0,
+      "target_r": 1.8,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "nr:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 15,
+      "rvol": 1.2,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 3.0,
+      "exit": "LOOSE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 10,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "open_drive:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 4,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 11,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "gap:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 14,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 2.0,
+      "target_r": 1.5,
+      "exit": "LATE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "trend5:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 14,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.5,
+      "target_r": 1.8,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 14,
+      "rvol": 0.8,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.0,
+      "target_r": 3.0,
+      "exit": "LOOSE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "trend5:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 11,
+      "rvol": 0.8,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 3.0,
+      "exit": "LIVE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "open_drive:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 11,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 1.8,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 12,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "LOOSE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "open_drive:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 7,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LOOSE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 5,
+      "rvol": 0.8,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 1.5,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 8,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 3.0,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 8,
+      "rvol": 0.8,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 1.5,
+      "exit": "LIVE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.02,
+      "nr_seed": 15,
+      "rvol": 1.2,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 2.0,
+      "target_r": 3.0,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "gap:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 10,
+      "rvol": 0.8,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 2.0,
+      "target_r": 3.0,
+      "exit": "LATE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "gap:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 2,
+      "rvol": 1.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "RUN",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 10,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 1.8,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "open_drive:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 14,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "or_width:LOW",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 13,
+      "rvol": 0.8,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.5,
+      "target_r": 1.5,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "open_drive:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.08,
+      "nr_seed": 12,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.0,
+      "target_r": 1.8,
+      "exit": "LOOSE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "LAB",
+     "gate": "gap:HIGH",
+     "genome": {
+      "family": "NULL_RANDOM",
+      "nr_p": 0.04,
+      "nr_seed": 6,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.5,
+      "target_r": 1.8,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  }
+ ],
+ "seeds": [
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "or_width:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "or_width:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "or_width:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "nr:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "nr:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "nr:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 1.5,
+      "tp_side": 0.75,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.5,
+      "tp_from": 690,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 1.5,
+      "tp_side": 0.75,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.5,
+      "tp_from": 690,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  }
+ ],
+ "pool": {
+  "REAL": 160,
+  "NULL": 80,
+  "seed": 2026102901,
+  "p_named": 0.4,
+  "p_always": 0.4
+ },
+ "ga": {
+  "population": 24,
+  "parents_from_pool": 18,
+  "generations": 6,
+  "elites": 4,
+  "immigrants": 2,
+  "tournament": 3,
+  "p_no_mutation": 0.4,
+  "gene_mutation": 0.2,
+  "adjacent": 0.7,
+  "p_add": 0.15,
+  "p_drop": 0.15,
+  "p_swap": 0.1,
+  "p_member_gene_mix": 0.5,
+  "plateau_top": 3,
+  "plateau_neighbours": 12,
+  "seed": 2026102902
+ },
+ "guard": {
+  "min_free_gb_market": 2.0,
+  "min_free_gb_after": 1.5,
+  "market_jobs": 4,
+  "market_hours_ist": [
+   "09:00",
+   "15:45"
+  ]
+ },
+ "rule": {
+  "path": "each book replayed once over FULL (Jan 1 - Oct 28) through the shipped book; a window = its slice",
+  "min_trades": "max(10, ceil(0.30 * sessions in the slice))",
+  "fitness": "(net - best day) / max(closed-trade drawdown, 2000) + (green weeks - red weeks) / weeks + (green months - red months) / months - 1 if stressed net <= 0 - 1 if worst day < -5000; below min trades: -5 + trades / min",
+  "stress": "net - Rs 1 per option unit per side - 25% extra recorded charges (trade list held fixed)",
+  "plateau": "median training fitness of the book and 12 of its one-step neighbours (lowest digests)",
+  "pick": "the highest plateau among the 3 best training-fitness books the fold itself evaluated, ties by fitness then digest",
+  "walk_forward_verdict": "the search works only if REAL out-of-sample (F1-F4 tests, Apr 1 - Oct 28) is > 0, beats UNION_DRIVE (the live book) on the same sessions, beats the NULL track, has >= 3 of 4 folds > 0 and an out-of-sample worst day >= -5000",
+  "final": "the FINAL fold's REAL pick is a forward-test candidate only; nothing is promoted on a replay",
+  "unseen_check": "the fixed books (live UNION_DRIVE, its parts, UNION, the O28 theories) are frozen here and scored on Jan 1 - Sep 9, sessions no F&O study had used"
+ },
+ "qualification": "NOT_ASSESSED",
+ "can_place_orders": false
+}

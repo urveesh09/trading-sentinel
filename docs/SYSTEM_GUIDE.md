@@ -1,3 +1,9 @@
+## October 29 — O29f Year genome on ICICI Breeze history (research only) (research, Dev: frozen before scoring; run in progress)
+
+- Research only, no runtime change. Older NIFTY/SENSEX F&O minutes come from the owner's free ICICI Direct Breeze API, through tooling outside the repo (`%USERPROFILE%\sentinel-operations\breeze-history-20261029\`: history calls only, credentials never printed).
+- `docs/research/fno/2026-10-29-year-genome/yeardata.py` turns those candles into a `fno_policy_replay` dataset, under a declared candle model.
+- `lab.py` runs the book-genome walk-forward on Jan 1 – Oct 28 2026, under a RAM guard.
+
 ## October 28 — O29e The four-strategy book on NIFTY and SENSEX (paper) (Dev commit 95183ff, pushed; deployed: Production 490bd1d (Oct 28, 21:18 IST), verify_deployment passed (PR #122); fno_book + SENSEX tests 24 passed, F&O tests + NIFTY parity 700 passed, SENSEX parity 2 passed (30 trades exact))
 
 - With `FNO_BOOK=UNION_DRIVE`, every underlying in `FNO_TRADING_UNDERLYINGS` (NIFTY, SENSEX) trades the book on the paper single-leg book.

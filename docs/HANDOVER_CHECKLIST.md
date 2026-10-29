@@ -1,3 +1,10 @@
+## October 29 — O29f Year genome (research only) (research, Dev: frozen before scoring; run in progress)
+
+- [x] Breeze download tooling outside the repo; NIFTY Dec 2025 – Oct 2026 complete.
+- [x] `yeardata.py`, `lab.py`, `test_lab.py` (8 passed); archive parity exact for all six books.
+- [ ] SENSEX options: the download continues on Oct 30 after the owner's Breeze login (`login.py`; the session lasts one day).
+- [ ] Results: see the study README. Nothing changes on paper or live because of a replay.
+
 ## October 28 — Rollout receipt O29–O29e (Production 490bd1d)
 
 - PR #121 (O29, O29b research, O29c, O29d) was merged by the owner at 21:07 IST (9233bcf). PR #122 (O29e) was merged at 21:15 (490bd1d).
