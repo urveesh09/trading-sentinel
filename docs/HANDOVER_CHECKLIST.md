@@ -1,7 +1,16 @@
-## October 29 — O29g Why-study (research only) (research, Dev: frozen before scoring; run in progress)
+## October 29 — O29g Why-study (research only) (research, Dev: freeze 9d450aa, results committed; in-sample: the ADX gate helps, the published ideas do not transfer; clean 2025 test next; nothing changed)
 
 - [x] `features.py`, `lab_g.py` and `test_lab_g.py` (4 passed); freeze committed before scoring.
 - [ ] Results: see the study README. Nothing changes on paper or live because of a replay.
+- **Results (in-sample on the year, per lot; `docs/research/fno/2026-10-29-why-study/README.md`):**
+  - **The gate:** with yesterday's ADX(14) ≥ 20/25 the strategies trade only in trending regimes and sit out the range-bound May–Aug.
+    - TPB at ADX ≥ 20: +₹54,816, 36 trades, worst day −₹4,415, DD ₹7,641, 12 green / 2 red weeks.
+    - All four at ADX ≥ 25: +₹80,912, 106 trades, 5 green / 1 red months.
+    - For comparison, the live UNION_DRIVE made +₹7,288 (18 / 23 weeks).
+  - **Two-fold check:** SHIPPED and OR20 pass both ways; EFF and TPB do not. On random-entry books the gate improved 13 of 20, but they still lose. Profit concentrates in Feb and Oct.
+  - **The published ideas do not transfer:** NOISE_BAND at 30 min made −₹33,399, and LATE_MOMO flips sign between halves.
+- [ ] Clean test on NIFTY 2025 (frozen books unchanged): download from 00:10 IST Oct 30, after the SENSEX remainder.
+- [ ] Owner's call: the forward panel for TPB at ADX ≥ 20 and all four at ADX ≥ 25.
 
 ## October 29 — O29f Year genome (research only) (research, Dev: freeze 1b14225, results 0d1f6fa, pushed; verdict: the search fails, the live book loses on the unseen months; not deployed, nothing changed)
 

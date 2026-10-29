@@ -1,4 +1,4 @@
-## October 29 — O29g Regime gates study (research only) (research, Dev: frozen before scoring; run in progress)
+## October 29 — O29g Regime gates study (research only) (research, Dev: freeze 9d450aa, results committed; in-sample: the ADX gate helps, the published ideas do not transfer; clean 2025 test next; nothing changed)
 
 - Research only: no runtime change. `docs/research/fno/2026-10-29-why-study/` tests day-regime gates (ADX, realised vol, 20-day move) and two published intraday-momentum ideas on the O29f year data.
 
