@@ -1,4 +1,4 @@
-## October 29 — O29f Year genome (research only) (research, Dev: freeze 1b14225, results committed; verdict: the search fails, the live book loses on the unseen months; not deployed, nothing changed)
+## October 29 — O29f Year genome (research only) (research, Dev: freeze 1b14225, results 0d1f6fa, pushed; verdict: the search fails, the live book loses on the unseen months; not deployed, nothing changed)
 
 - [x] Breeze download tooling outside the repo; NIFTY Dec 2025 – Oct 2026 complete.
 - [x] `yeardata.py`, `lab.py`, `test_lab.py` (8 passed); archive parity exact for all six books.
