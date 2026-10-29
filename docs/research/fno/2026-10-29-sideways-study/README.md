@@ -39,7 +39,7 @@ The best variants:
 
 - **In-sample:** the ADX split itself was found on this year (O29g). The fade's two-fold check is the only cross-check here.
 - **Contrast with earlier work:** in O29b, on 17 two-way days in Sep–Oct, fades did no better than random. On the year's 120-odd low-ADX days, the failed-break fade held up. More days, and a different sideways definition (multi-day trend strength rather than one morning).
-- **The clean test** is NIFTY 2025, never used to find either rule. The download starts at 08:00 IST Oct 30 after the owner's ICICI login, and the frozen books are scored unchanged.
+- **The clean test** is NIFTY 2025, never used to find either rule. The download runs once the owner has renewed the ICICI session and says so (the 08:00 job waiting in the background was stopped by the session's memory guard on Oct 29 evening), and the frozen books are scored unchanged.
 
 ## Files
 
