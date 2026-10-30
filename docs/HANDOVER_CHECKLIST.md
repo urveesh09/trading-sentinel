@@ -1,10 +1,13 @@
-## October 30 - O30p option-depth research (before scoring; Dev only)
+## October 30 - O30n/O30p complete: 14 offspring rejected; fix evidence before more search
 
-- **Problem:** O30n micro exits/extra entry failed. Test the option chosen for the same signal: target delta 0.40, 0.65, 0.75 against each unchanged 0.55 parent (TPB / best blend), six offspring. No additional day filter.
-- **Files/contracts:** `docs/research/fno/2026-10-30-option-depth/`; process-local delta override at the existing entry planner, always restored; all exits, deadlines, affordability, stops, halts and costs retained. Actual sealed weekly contracts only. No Production code changes.
-- **Acceptance:** setting restoration on success/failure, exact reference parity, both years / four halves, own-parent comparison, Rs200/300 per-trade stress, null median, unresolved positions and per-parent cross-year selection. Freeze committed/pushed before scoring.
-- **Rollout/rollback:** research only; no deployment/config/migration. Two workers, free-memory guard. Stop workers to stop study. Existing 2024 exam untouched.
-- **Remaining:** run, report every failed arm, and retain exact Rs12,500 one-lot simulation as a separate acceptance task. A richer option might be unaffordable even if normalised returns improve.
+- **Dev only:** micro study freeze b8ed28d/results 8caea0c; option-depth freeze 75358a6. Fourteen candidate definitions replayed on both seen years, with live/TPB/best references and 20 random controls. Exact live parity +271/+80,912 per lot. No Production/code/config/capital change. [Full results and prioritised plan](research/fno/2026-10-30-option-depth/README.md).
+- **Learning:** no candidate beats its parent robustly across years. TPB retains positive stressed net; extra exits/entries or different delta did not improve both years. Total P&L is not the same as a robust or affordable owner-account return.
+- **New blocker:** 162 negative-volume raw candles; 56 present in sealed 2025 input, zero in sealed 2026. Results provisional; 139 request keys recorded outside Git for next-allowance provider verification/reacquisition. Preserve raw data; never guess corrections or overwrite old seals.
+- [ ] Data-quality verification, versioned repair and reference/sensitivity replays before any qualification; retain missing-market-window reasons.
+- [ ] Exact Rs12,500 one-lot cash/reservation/exit replay; existing weekly calculations are filtered-parent proxies.
+- [ ] Existing frozen 2024 exam once, then prospective quote/depth evidence; no 2024 retuning or runtime promotion on these results.
+- [ ] Verify partner-specific data freshness, session and delivery receipts independently of owner subscription/HTTP health; partner-first quote/history source confirmed in code.
+- **Download completed for today's allowance:** NIFTY 2025 complete; SENSEX options 1,736/4,057 (2,321 remain); exactly 4,800 calls, stopped. Two local downloader bugs fixed with five offline checks; 32 empty bad-scope attempts quarantined, ledger retained. Full execution receipt outside Git in sentinel-operations/breeze-history-20261029/RUN_RECEIPT_20261030.md. No unattended downloader remains.
 
 ## October 30 - O30n micro-adaptive research complete (freeze b8ed28d; Dev only)
 

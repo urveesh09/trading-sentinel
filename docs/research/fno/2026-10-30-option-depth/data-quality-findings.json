@@ -1,0 +1,24 @@
+{
+  "source": "read-only structural check after downloads, no prices modified",
+  "negative_volume_in_sealed_inputs": {
+    "2025": [
+      [
+        "future",
+        2,
+        2,
+        "14:33",
+        "14:34"
+      ],
+      [
+        "option",
+        54,
+        4,
+        "14:26",
+        "14:39"
+      ]
+    ],
+    "2026": []
+  },
+  "impact": "historical volume features / cumulative quote volume can be affected; rankings provisional; investigate/reacquire before qualification",
+  "raw_database_unchanged": true
+}

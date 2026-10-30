@@ -46,3 +46,7 @@ Both years were already used by prior research: this is development, not a new c
 `O30C_YEAR=2025 python lab_n.py run --jobs 2`, then 2026, then `python analyze_n.py`; use the documented engine venv. Frozen hashes bind source, settings and the sealed manifests. `input-verification.json` independently verifies both raw database hashes. `_local/` retains all raw replay trades and is ignored by Git.
 
 The VWAP idea is informed by [Zarattini and Aziz's VWAP study](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4631351); results on US equities do not transfer automatically to NIFTY option buyers. The bounded trials and full failure ledger follow the selection-risk concern in [Bailey et al., The Probability of Backtest Overfitting](https://www.davidhbailey.com/dhbpapers/backtest-prob.pdf). This study does not claim to have estimated PBO.
+
+## Subsequent integrity finding
+
+A post-download structural check found 56 negative-volume rows in the sealed 2025 input (2 futures, 54 options), none in the sealed 2026 input. All O30n rankings are provisional until provider verification and a versioned-data sensitivity replay. Raw evidence and this freeze remain unchanged. See the [quality finding and next plan](../2026-10-30-option-depth/README.md).
