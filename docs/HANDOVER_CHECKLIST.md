@@ -1,3 +1,18 @@
+## October 30 — O30c Why the live book broke even on 2025, and case rules tested on both NIFTY years (research, Dev: freezes a98b1f5 + b0defde, results committed; one case nearly passes: TPB trades on the days the ADX gate is closed; nothing changed)
+
+- [x] Tier 1 freeze `a98b1f5` before any case replay; results, investigation and the Tier 2 freeze `b0defde`; Tier 2 results committed.
+- **Why it failed on 2025 (`docs/research/fno/2026-10-30-case-study/README.md`, per lot):**
+  - EFF lost −₹21,796 inside the live book, after +₹29,629 in 2026.
+  - The ADX gate kept TPB out of its best 2025 days: TPB made +₹31,869 on the closed days.
+  - 2026 fell on 77% of days and 2025 rose on 55%. The book's puts paid in both years; its calls lost in 2025 (−₹27,214).
+- **Tier 1** (15 cases fixed before the investigation; the rule: beat the base in both years and not be worse in 3 of 4 half-years):
+  - **TPB trades on the gate's closed days:** +₹34,246 in 2025 and −₹680 in 2026; both years +₹1,14,748 against +₹81,183. It misses the rule by ₹680 and is the one real candidate.
+  - **Trend-direction cases and the other day gates** help one year and hurt the other.
+  - **TPB first on the ungated four** passes, but by a small amount.
+- **Tier 2** (cases from the investigation; in-sample): breakouts only with the trend, entries only 10:00–14:00, and the 20-day-move gate. None beats the candidate, even in-sample. Slicing patterns did not survive being built into the book.
+- **Next clean test:** NIFTY 2024 (unseen; about 4,500 Breeze requests), then the forward panel. The rule (frozen in `freeze-tier2.json`): beat the live book over the year and not be worse in either half.
+- [ ] Owner's call on "TPB on the closed days"; the NIFTY 2024 download and clean test.
+
 ## October 30 — O30 NIFTY 2025 clean test of the 2026 strategies (research, Dev: freeze 7d9eeb3, results committed; the ADX gate and the sideways fades do not hold on 2025, TPB alone is positive in both years; nothing changed)
 
 - [x] NIFTY 2025 downloaded (another agent, Oct 30 06:12–07:27 IST, 3,949 requests). `verify_download.py` was clean: 3,585 option requests ok, 0 expiry mismatches.

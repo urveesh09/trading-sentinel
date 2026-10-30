@@ -1,3 +1,32 @@
+## October 30 — O30c Why the live book broke even on 2025, and case rules tested on both NIFTY years (research, Dev: freezes a98b1f5 + b0defde, results committed; one case nearly passes: TPB trades on the days the ADX gate is closed; nothing changed)
+
+- **Owner (Oct 30, after O30):** "investigate. Why did it fail ... make different cases for different situation to counter them ... we don't have to change our strategy. We can add more to it ... test it again ... Will this make it over training or over tuning".
+- **Study (`docs/research/fno/2026-10-30-case-study/`; research only):**
+  - `lab_c.py`: Tier 1 cases on the four strategies (with and without the ADX gate), scored on both NIFTY years. The year is chosen by `O30C_YEAR`.
+  - `diagnose_c.py`: the investigation. It was frozen with Tier 1 and run after it.
+  - `lab_c2.py`: Tier 2, the investigation's cases, in-sample.
+- **Over-tuning guard:**
+  - Cases fixed in advance, with one textbook setting each.
+  - A case must win in both years, not just in total.
+  - Ideas found by looking are kept apart and need an unseen year.
+- **Config and migration:** none. Nothing is deployed.
+- **Why it failed on 2025 (`docs/research/fno/2026-10-30-case-study/README.md`, per lot):**
+  - EFF lost −₹21,796 inside the live book, after +₹29,629 in 2026.
+  - The ADX gate kept TPB out of its best 2025 days: TPB made +₹31,869 on the closed days.
+  - 2026 fell on 77% of days and 2025 rose on 55%. The book's puts paid in both years; its calls lost in 2025 (−₹27,214).
+- **Tier 1** (15 cases fixed before the investigation; the rule: beat the base in both years and not be worse in 3 of 4 half-years):
+  - **TPB trades on the gate's closed days:** +₹34,246 in 2025 and −₹680 in 2026; both years +₹1,14,748 against +₹81,183. It misses the rule by ₹680 and is the one real candidate.
+  - **Trend-direction cases and the other day gates** help one year and hurt the other.
+  - **TPB first on the ungated four** passes, but by a small amount.
+- **Tier 2** (cases from the investigation; in-sample): breakouts only with the trend, entries only 10:00–14:00, and the 20-day-move gate. None beats the candidate, even in-sample. Slicing patterns did not survive being built into the book.
+- **Next clean test:** NIFTY 2024 (unseen; about 4,500 Breeze requests), then the forward panel. The rule (frozen in `freeze-tier2.json`): beat the live book over the year and not be worse in either half.
+- [ ] **Owner's call:** whether to add "TPB on the closed days" to the live book. It needs an engine mode in which TPB is not gated: Dev → PR → deploy.
+- [ ] Download NIFTY 2024 (another agent; a download2024 calendar is needed), then freeze and score the candidate and the investigation's hypotheses (EFF unstable, calls vs puts) unchanged.
+- **Verification:**
+  - `test_lab_c.py` 3 passed and `test_lab_c2.py` 2 passed.
+  - The base books reproduce O30 / O29i exactly: +₹271 / +₹80,912, and UNION +₹27,140 / −₹2,691.
+  - 57 + 8 books × 2 years, with no traceback.
+
 ## October 30 — O30 NIFTY 2025 clean test of the 2026 strategies (research, Dev: freeze 7d9eeb3, results committed; the ADX gate and the sideways fades do not hold on 2025, TPB alone is positive in both years; nothing changed)
 
 - **Owner (Oct 30):** "check if the nifty all 3585 are downloaded ... If it is then run our test simulation in that year and this year together ... test for nifty".

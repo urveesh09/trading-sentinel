@@ -1,3 +1,7 @@
+## October 30 — O30c Why the live book broke even on 2025, and case rules tested on both NIFTY years (research, Dev: freezes a98b1f5 + b0defde, results committed; one case nearly passes: TPB trades on the days the ADX gate is closed; nothing changed)
+
+- Research only; no runtime change. The live book stays `FNO_BOOK=UNION_ADX` until the owner decides.
+
 ## October 30 — O30 NIFTY 2025 clean test of the 2026 strategies (research, Dev: freeze 7d9eeb3, results committed; the ADX gate and the sideways fades do not hold on 2025, TPB alone is positive in both years; nothing changed)
 
 - Research only; no runtime change. The 2026 strategies were replayed on NIFTY 2025. The live book stays `FNO_BOOK=UNION_ADX` until the owner decides.
