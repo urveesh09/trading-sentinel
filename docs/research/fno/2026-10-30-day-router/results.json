@@ -1,0 +1,1301 @@
+{
+ "schema": "o30m_results_v1",
+ "rule": {
+  "selection": "per kind of day: the (strategy, direction mode) whose worst half-year net per lot inside that kind of day is highest, if > 0 and with at least the declared trades in every half used; else sit out",
+  "cv": "choose on 2025 (its two halves) and score on 2026, and choose on 2026 and score on 2025",
+  "pass": "a partition passes if, in both directions, the chosen router's net on the unseen year beats the live book, the live book + TPB on closed days and the median of 200 random routers (a random library choice per kind of day) on that year",
+  "final": "the passing partition with the best worse-direction result is chosen on both years (four halves) and frozen for the one-time NIFTY 2024 test with the live book and the O30c candidate; if none passes, no router goes to 2024",
+  "exact": "chosen routers are replayed exactly; the slicing numbers are estimates",
+  "no_change": "nothing in the system changes on this result; the owner decides"
+ },
+ "routers": {
+  "schema": "o30m_routers_v1",
+  "references": {
+   "REF|LIVE": {
+    "2025": 271,
+    "2026": 80912
+   },
+   "REF|LIVE+tpb_all_days": {
+    "2025": 34517,
+    "2026": 80232
+   }
+  },
+  "cv": {
+   "P1_trend": {
+    "2025_to_2026": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH"
+       },
+       "pick": "L|TREND_PULLBACK|1",
+       "mode": "against",
+       "worst_half": 6786,
+       "train_total": 20642
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW"
+       },
+       "pick": "N|TPB|LATE",
+       "mode": "any",
+       "worst_half": 14562,
+       "train_total": 32481
+      }
+     ],
+     "test": {
+      "net": -27522,
+      "trades": 94,
+      "worst_day": -5528,
+      "dd": 38363,
+      "green_months": 3,
+      "red_months": 7
+     },
+     "random_median": 1179,
+     "beats": false
+    },
+    "2026_to_2025": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH"
+       },
+       "pick": "L|VWAP_BAND|3",
+       "mode": "any",
+       "worst_half": 31286,
+       "train_total": 63003
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW"
+       },
+       "pick": "S|FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LIVE",
+       "mode": "against",
+       "worst_half": 15399,
+       "train_total": 37483
+      }
+     ],
+     "test": {
+      "net": -54559,
+      "trades": 83,
+      "worst_day": -7304,
+      "dd": 54559,
+      "green_months": 2,
+      "red_months": 10
+     },
+     "random_median": -12184,
+     "beats": false
+    },
+    "passes": false,
+    "worse_direction_vs_candidate": -107754
+   },
+   "P2_trend_dir": {
+    "2025_to_2026": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "dmi_dir": "UP"
+       },
+       "pick": "L|MOMO_BURST|0",
+       "mode": "against",
+       "worst_half": 5416,
+       "train_total": 11883
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "UP"
+       },
+       "pick": "N|EFF|OWN",
+       "mode": "any",
+       "worst_half": 12917,
+       "train_total": 44899
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "DOWN"
+       },
+       "pick": "N|TPB|OWN|vwap",
+       "mode": "any",
+       "worst_half": 12796,
+       "train_total": 30016
+      }
+     ],
+     "test": {
+      "net": -21407,
+      "trades": 85,
+      "worst_day": -5528,
+      "dd": 44841,
+      "green_months": 3,
+      "red_months": 5
+     },
+     "random_median": -4372,
+     "beats": false
+    },
+    "2026_to_2025": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "dmi_dir": "DOWN"
+       },
+       "pick": "N|EFF|OWN",
+       "mode": "with",
+       "worst_half": 28349,
+       "train_total": 59830
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "UP"
+       },
+       "pick": "X|NOISE_BAND|k1.0|5m",
+       "mode": "against",
+       "worst_half": 16372,
+       "train_total": 32921
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "DOWN"
+       },
+       "pick": "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LATE",
+       "mode": "against",
+       "worst_half": 11360,
+       "train_total": 23500
+      }
+     ],
+     "test": {
+      "net": -5049,
+      "trades": 68,
+      "worst_day": -4062,
+      "dd": 29108,
+      "green_months": 3,
+      "red_months": 6
+     },
+     "random_median": -9991,
+     "beats": false
+    },
+    "passes": false,
+    "worse_direction_vs_candidate": -101639
+   },
+   "P3_trend_dir_vol": {
+    "2025_to_2026": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "dmi_dir": "DOWN",
+        "rv20": "LOW"
+       },
+       "pick": "L|TREND_PULLBACK|1",
+       "mode": "any",
+       "worst_half": 2949,
+       "train_total": 9354
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "UP",
+        "rv20": "HIGH"
+       },
+       "pick": "N|EFF|OWN",
+       "mode": "any",
+       "worst_half": 3526,
+       "train_total": 28057
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "UP",
+        "rv20": "LOW"
+       },
+       "pick": "N|EFF|OWN",
+       "mode": "any",
+       "worst_half": 7450,
+       "train_total": 16841
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "DOWN",
+        "rv20": "LOW"
+       },
+       "pick": "X|NOISE_BAND|k1.5|30m",
+       "mode": "with",
+       "worst_half": 9489,
+       "train_total": 20577
+      }
+     ],
+     "test": {
+      "net": -32990,
+      "trades": 54,
+      "worst_day": -4921,
+      "dd": 44635,
+      "green_months": 1,
+      "red_months": 6
+     },
+     "random_median": -6416,
+     "beats": false
+    },
+    "2026_to_2025": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "dmi_dir": "DOWN",
+        "rv20": "HIGH"
+       },
+       "pick": "N|EFF|OWN",
+       "mode": "any",
+       "worst_half": 21925,
+       "train_total": 44139
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "DOWN",
+        "rv20": "LOW"
+       },
+       "pick": "S|RSI2|stop=1.5|target_r=2.4|exit=LATE",
+       "mode": "with",
+       "worst_half": 3506,
+       "train_total": 8894
+      }
+     ],
+     "test": {
+      "net": -16702,
+      "trades": 14,
+      "worst_day": -6281,
+      "dd": 16702,
+      "green_months": 1,
+      "red_months": 3
+     },
+     "random_median": -3891,
+     "beats": false
+    },
+    "passes": false,
+    "worse_direction_vs_candidate": -113222
+   },
+   "P4_regime_dir": {
+    "2025_to_2026": {
+     "cells": [
+      {
+       "cell": {
+        "trend_regime": "HIGH",
+        "dmi_dir": "UP"
+       },
+       "pick": "N|TPB|RUN",
+       "mode": "against",
+       "worst_half": 8856,
+       "train_total": 20104
+      },
+      {
+       "cell": {
+        "trend_regime": "LOW",
+        "dmi_dir": "UP"
+       },
+       "pick": "L|PDL_BREAK|0",
+       "mode": "any",
+       "worst_half": 8800,
+       "train_total": 18173
+      },
+      {
+       "cell": {
+        "trend_regime": "LOW",
+        "dmi_dir": "DOWN"
+       },
+       "pick": "X|NOISE_BAND|k1.5|30m",
+       "mode": "with",
+       "worst_half": 12938,
+       "train_total": 26920
+      }
+     ],
+     "test": {
+      "net": -22920,
+      "trades": 28,
+      "worst_day": -4921,
+      "dd": 22920,
+      "green_months": 0,
+      "red_months": 5
+     },
+     "random_median": -6792,
+     "beats": false
+    },
+    "2026_to_2025": {
+     "cells": [
+      {
+       "cell": {
+        "trend_regime": "HIGH",
+        "dmi_dir": "DOWN"
+       },
+       "pick": "X|NOISE_BAND|k1.0|5m",
+       "mode": "with",
+       "worst_half": 18533,
+       "train_total": 38192
+      },
+      {
+       "cell": {
+        "trend_regime": "LOW",
+        "dmi_dir": "DOWN"
+       },
+       "pick": "S|RSI2|stop=1.5|target_r=2.4|exit=LATE",
+       "mode": "any",
+       "worst_half": 9438,
+       "train_total": 25732
+      }
+     ],
+     "test": {
+      "net": -24102,
+      "trades": 41,
+      "worst_day": -3543,
+      "dd": 26390,
+      "green_months": 1,
+      "red_months": 3
+     },
+     "random_median": -5086,
+     "beats": false
+    },
+    "passes": false,
+    "worse_direction_vs_candidate": -103152
+   },
+   "P5_trend_drive": {
+    "2025_to_2026": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "open_drive": "HIGH"
+       },
+       "pick": "L|TREND_PULLBACK|1",
+       "mode": "against",
+       "worst_half": 4882,
+       "train_total": 11395
+      },
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "open_drive": "LOW"
+       },
+       "pick": "L|TREND_PULLBACK|1",
+       "mode": "against",
+       "worst_half": 1904,
+       "train_total": 9248
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "open_drive": "HIGH"
+       },
+       "pick": "N|EFF|OWN",
+       "mode": "any",
+       "worst_half": 16347,
+       "train_total": 41657
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "open_drive": "LOW"
+       },
+       "pick": "N|TPB|RUN",
+       "mode": "any",
+       "worst_half": 8918,
+       "train_total": 21210
+      }
+     ],
+     "test": {
+      "net": -79000,
+      "trades": 146,
+      "worst_day": -6251,
+      "dd": 86935,
+      "green_months": 1,
+      "red_months": 9
+     },
+     "random_median": -2960,
+     "beats": false
+    },
+    "2026_to_2025": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "open_drive": "HIGH"
+       },
+       "pick": "X|NOISE_BAND|k1.0|5m",
+       "mode": "with",
+       "worst_half": 14552,
+       "train_total": 48468
+      },
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "open_drive": "LOW"
+       },
+       "pick": "L|MOMO_BURST|3",
+       "mode": "with",
+       "worst_half": 14243,
+       "train_total": 36638
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "open_drive": "HIGH"
+       },
+       "pick": "N|TPB|OWN|vwap",
+       "mode": "with",
+       "worst_half": 7816,
+       "train_total": 20602
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "open_drive": "LOW"
+       },
+       "pick": "S|FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LIVE",
+       "mode": "any",
+       "worst_half": 16379,
+       "train_total": 33119
+      }
+     ],
+     "test": {
+      "net": -23305,
+      "trades": 101,
+      "worst_day": -5759,
+      "dd": 31887,
+      "green_months": 4,
+      "red_months": 8
+     },
+     "random_median": -12302,
+     "beats": false
+    },
+    "passes": false,
+    "worse_direction_vs_candidate": -159232
+   },
+   "P6_trend_dir_drive": {
+    "2025_to_2026": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "dmi_dir": "UP",
+        "open_drive": "HIGH"
+       },
+       "pick": "L|TREND_PULLBACK|1",
+       "mode": "against",
+       "worst_half": 4882,
+       "train_total": 12463
+      },
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "dmi_dir": "DOWN",
+        "open_drive": "HIGH"
+       },
+       "pick": "S|VWAP_REVERT|k=1.5|stop=1.5|target_r=2.4|exit=LIVE",
+       "mode": "any",
+       "worst_half": 1263,
+       "train_total": 4329
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "UP",
+        "open_drive": "HIGH"
+       },
+       "pick": "N|EFF|OWN",
+       "mode": "any",
+       "worst_half": 19819,
+       "train_total": 61615
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "UP",
+        "open_drive": "LOW"
+       },
+       "pick": "L|TREND_PULLBACK|6",
+       "mode": "with",
+       "worst_half": 2273,
+       "train_total": 5939
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "DOWN",
+        "open_drive": "HIGH"
+       },
+       "pick": "S|FADE|level=OR30|stop=STRUCT|target_r=1.5|exit=LIVE",
+       "mode": "any",
+       "worst_half": 2466,
+       "train_total": 5184
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "DOWN",
+        "open_drive": "LOW"
+       },
+       "pick": "N|TPB|RUN",
+       "mode": "any",
+       "worst_half": 8427,
+       "train_total": 29095
+      }
+     ],
+     "test": {
+      "net": -45711,
+      "trades": 107,
+      "worst_day": -5528,
+      "dd": 51074,
+      "green_months": 4,
+      "red_months": 6
+     },
+     "random_median": -4631,
+     "beats": false
+    },
+    "2026_to_2025": {
+     "cells": [
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "dmi_dir": "DOWN",
+        "open_drive": "HIGH"
+       },
+       "pick": "N|EFF|OWN|vwap",
+       "mode": "any",
+       "worst_half": 16859,
+       "train_total": 46586
+      },
+      {
+       "cell": {
+        "adx_abs25": "HIGH",
+        "dmi_dir": "DOWN",
+        "open_drive": "LOW"
+       },
+       "pick": "L|MOMO_BURST|4",
+       "mode": "with",
+       "worst_half": 14244,
+       "train_total": 56970
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "UP",
+        "open_drive": "HIGH"
+       },
+       "pick": "X|NOISE_BAND|k1.0|5m",
+       "mode": "against",
+       "worst_half": 9689,
+       "train_total": 25297
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "UP",
+        "open_drive": "LOW"
+       },
+       "pick": "N|EFF|LIVE",
+       "mode": "against",
+       "worst_half": 5007,
+       "train_total": 12498
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "DOWN",
+        "open_drive": "HIGH"
+       },
+       "pick": "N|TPB|OWN|vwap",
+       "mode": "with",
+       "worst_half": 9267,
+       "train_total": 22053
+      },
+      {
+       "cell": {
+        "adx_abs25": "LOW",
+        "dmi_dir": "DOWN",
+        "open_drive": "LOW"
+       },
+       "pick": "S|RSI2|stop=1.5|target_r=2.4|exit=LATE",
+       "mode": "any",
+       "worst_half": 12267,
+       "train_total": 25051
+      }
+     ],
+     "test": {
+      "net": 2942,
+      "trades": 49,
+      "worst_day": -4897,
+      "dd": 21274,
+      "green_months": 2,
+      "red_months": 3
+     },
+     "random_median": -13771,
+     "beats": false
+    },
+    "passes": false,
+    "worse_direction_vs_candidate": -125943
+   }
+  },
+  "chosen_partition": null,
+  "shown_partition": "P2_trend_dir",
+  "final_in_sample_estimate": {
+   "2025": {
+    "net": 20482,
+    "trades": 19,
+    "worst_day": -3746,
+    "dd": 9756,
+    "green_months": 2,
+    "red_months": 4
+   },
+   "2026": {
+    "net": 17442,
+    "trades": 15,
+    "worst_day": -2333,
+    "dd": 6025,
+    "green_months": 4,
+    "red_months": 2
+   }
+  },
+  "routers": {
+   "CV_2025_to_2026|P2_trend_dir": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "UP"
+      },
+      "pick": "L|MOMO_BURST|0",
+      "mode": "against",
+      "worst_half": 5416,
+      "train_total": 11883
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP"
+      },
+      "pick": "N|EFF|OWN",
+      "mode": "any",
+      "worst_half": 12917,
+      "train_total": 44899
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "N|TPB|OWN|vwap",
+      "mode": "any",
+      "worst_half": 12796,
+      "train_total": 30016
+     }
+    ]
+   },
+   "CV_2026_to_2025|P2_trend_dir": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "N|EFF|OWN",
+      "mode": "with",
+      "worst_half": 28349,
+      "train_total": 59830
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP"
+      },
+      "pick": "X|NOISE_BAND|k1.0|5m",
+      "mode": "against",
+      "worst_half": 16372,
+      "train_total": 32921
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LATE",
+      "mode": "against",
+      "worst_half": 11360,
+      "train_total": 23500
+     }
+    ]
+   },
+   "FINAL|P2_trend_dir": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "N|TPB|OWN|vwap",
+      "mode": "with",
+      "worst_half": 5115,
+      "train_total": 37924
+     }
+    ],
+    "candidate_for_2024": false
+   }
+  }
+ },
+ "exact_per_lot": {
+  "CV_2025_to_2026|P2_trend_dir": {
+   "2025": {
+    "trades": 191,
+    "net": 55084,
+    "without_best_day": 33799,
+    "worst_day": -8627,
+    "dd": 15864,
+    "green_months": 8,
+    "red_months": 3,
+    "green_weeks": 20,
+    "red_weeks": 21,
+    "monthly": {
+     "2025-01": 0,
+     "2025-02": 13550,
+     "2025-03": 11053,
+     "2025-04": -9723,
+     "2025-05": 3784,
+     "2025-06": 14529,
+     "2025-07": 4839,
+     "2025-08": -2959,
+     "2025-09": 2077,
+     "2025-10": 15832,
+     "2025-11": -10105,
+     "2025-12": 12207
+    }
+   },
+   "2026": {
+    "trades": 83,
+    "net": -13787,
+    "without_best_day": -25480,
+    "worst_day": -5528,
+    "dd": 36873,
+    "green_months": 5,
+    "red_months": 4,
+    "green_weeks": 7,
+    "red_weeks": 19,
+    "monthly": {
+     "2026-01": 12664,
+     "2026-02": 1926,
+     "2026-03": 0,
+     "2026-04": -2875,
+     "2026-05": -13145,
+     "2026-06": 4667,
+     "2026-07": -11639,
+     "2026-08": -7451,
+     "2026-09": 1597,
+     "2026-10": 468
+    }
+   },
+   "both": {
+    "trades": 274,
+    "net": 41297,
+    "without_best_day": 20012,
+    "worst_day": -8627,
+    "dd": 36873,
+    "green_months": 13,
+    "red_months": 7,
+    "green_weeks": 27,
+    "red_weeks": 39,
+    "monthly": {
+     "2025-01": 0,
+     "2025-02": 13550,
+     "2025-03": 11053,
+     "2025-04": -9723,
+     "2025-05": 3784,
+     "2025-06": 14529,
+     "2025-07": 4839,
+     "2025-08": -2959,
+     "2025-09": 2077,
+     "2025-10": 15832,
+     "2025-11": -10105,
+     "2025-12": 12207,
+     "2026-01": 12664,
+     "2026-02": 1926,
+     "2026-03": 0,
+     "2026-04": -2875,
+     "2026-05": -13145,
+     "2026-06": 4667,
+     "2026-07": -11639,
+     "2026-08": -7451,
+     "2026-09": 1597,
+     "2026-10": 468
+    }
+   },
+   "weeks": {
+    "weeks": 96,
+    "up": 27,
+    "down": 36,
+    "worst_end": 10218,
+    "mean_end": 15504
+   }
+  },
+  "CV_2026_to_2025|P2_trend_dir": {
+   "2025": {
+    "trades": 105,
+    "net": -34803,
+    "without_best_day": -56595,
+    "worst_day": -8763,
+    "dd": 61765,
+    "green_months": 2,
+    "red_months": 7,
+    "green_weeks": 11,
+    "red_weeks": 21,
+    "monthly": {
+     "2025-01": 22208,
+     "2025-02": -8444,
+     "2025-03": -1862,
+     "2025-04": -11623,
+     "2025-05": -13560,
+     "2025-06": 544,
+     "2025-07": -3493,
+     "2025-08": -7685,
+     "2025-09": -10889,
+     "2025-10": 0,
+     "2025-11": 0,
+     "2025-12": 0
+    }
+   },
+   "2026": {
+    "trades": 115,
+    "net": 110602,
+    "without_best_day": 77411,
+    "worst_day": -5268,
+    "dd": 29157,
+    "green_months": 7,
+    "red_months": 3,
+    "green_weeks": 19,
+    "red_weeks": 21,
+    "monthly": {
+     "2026-01": 8139,
+     "2026-02": 43418,
+     "2026-03": 28379,
+     "2026-04": -10472,
+     "2026-05": -8439,
+     "2026-06": 7694,
+     "2026-07": 10153,
+     "2026-08": -2395,
+     "2026-09": 16564,
+     "2026-10": 17562
+    }
+   },
+   "both": {
+    "trades": 220,
+    "net": 75799,
+    "without_best_day": 42608,
+    "worst_day": -8763,
+    "dd": 61765,
+    "green_months": 9,
+    "red_months": 10,
+    "green_weeks": 30,
+    "red_weeks": 42,
+    "monthly": {
+     "2025-01": 22208,
+     "2025-02": -8444,
+     "2025-03": -1862,
+     "2025-04": -11623,
+     "2025-05": -13560,
+     "2025-06": 544,
+     "2025-07": -3493,
+     "2025-08": -7685,
+     "2025-09": -10889,
+     "2025-10": 0,
+     "2025-11": 0,
+     "2025-12": 0,
+     "2026-01": 8139,
+     "2026-02": 43418,
+     "2026-03": 28379,
+     "2026-04": -10472,
+     "2026-05": -8439,
+     "2026-06": 7694,
+     "2026-07": 10153,
+     "2026-08": -2395,
+     "2026-09": 16564,
+     "2026-10": 17562
+    }
+   },
+   "weeks": {
+    "weeks": 96,
+    "up": 25,
+    "down": 34,
+    "worst_end": 10467,
+    "mean_end": 15607
+   }
+  },
+  "FINAL|P2_trend_dir": {
+   "2025": {
+    "trades": 14,
+    "net": 8940,
+    "without_best_day": -12345,
+    "worst_day": -3862,
+    "dd": 12345,
+    "green_months": 1,
+    "red_months": 5,
+    "green_weeks": 1,
+    "red_weeks": 8,
+    "monthly": {
+     "2025-01": 0,
+     "2025-02": 13883,
+     "2025-03": 0,
+     "2025-04": 0,
+     "2025-05": 0,
+     "2025-06": -1655,
+     "2025-07": -418,
+     "2025-08": -1952,
+     "2025-09": -851,
+     "2025-10": 0,
+     "2025-11": 0,
+     "2025-12": -68
+    }
+   },
+   "2026": {
+    "trades": 16,
+    "net": 15514,
+    "without_best_day": 3775,
+    "worst_day": -2550,
+    "dd": 8047,
+    "green_months": 4,
+    "red_months": 2,
+    "green_weeks": 4,
+    "red_weeks": 4,
+    "monthly": {
+     "2026-01": 7259,
+     "2026-02": 3797,
+     "2026-03": 0,
+     "2026-04": 0,
+     "2026-05": 766,
+     "2026-06": 9406,
+     "2026-07": 0,
+     "2026-08": -4277,
+     "2026-09": -1437,
+     "2026-10": 0
+    }
+   },
+   "both": {
+    "trades": 30,
+    "net": 24454,
+    "without_best_day": 3169,
+    "worst_day": -3862,
+    "dd": 14123,
+    "green_months": 5,
+    "red_months": 7,
+    "green_weeks": 5,
+    "red_weeks": 12,
+    "monthly": {
+     "2025-01": 0,
+     "2025-02": 13883,
+     "2025-03": 0,
+     "2025-04": 0,
+     "2025-05": 0,
+     "2025-06": -1655,
+     "2025-07": -418,
+     "2025-08": -1952,
+     "2025-09": -851,
+     "2025-10": 0,
+     "2025-11": 0,
+     "2025-12": -68,
+     "2026-01": 7259,
+     "2026-02": 3797,
+     "2026-03": 0,
+     "2026-04": 0,
+     "2026-05": 766,
+     "2026-06": 9406,
+     "2026-07": 0,
+     "2026-08": -4277,
+     "2026-09": -1437,
+     "2026-10": 0
+    }
+   },
+   "weeks": {
+    "weeks": 96,
+    "up": 4,
+    "down": 12,
+    "worst_end": 11989,
+    "mean_end": 15066
+   }
+  },
+  "REF|LIVE": {
+   "2025": {
+    "trades": 138,
+    "net": 271,
+    "without_best_day": -18315,
+    "worst_day": -6281,
+    "dd": 31482,
+    "green_months": 4,
+    "red_months": 4,
+    "green_weeks": 7,
+    "red_weeks": 12,
+    "monthly": {
+     "2025-01": 14894,
+     "2025-02": -22171,
+     "2025-03": -6403,
+     "2025-04": 12952,
+     "2025-05": 4078,
+     "2025-06": 0,
+     "2025-07": 0,
+     "2025-08": -319,
+     "2025-09": 0,
+     "2025-10": -5381,
+     "2025-11": 2621,
+     "2025-12": 0
+    }
+   },
+   "2026": {
+    "trades": 106,
+    "net": 80912,
+    "without_best_day": 33625,
+    "worst_day": -6485,
+    "dd": 12519,
+    "green_months": 5,
+    "red_months": 1,
+    "green_weeks": 11,
+    "red_weeks": 5,
+    "monthly": {
+     "2026-01": -497,
+     "2026-02": 49671,
+     "2026-03": 7623,
+     "2026-04": 6200,
+     "2026-05": 0,
+     "2026-06": 0,
+     "2026-07": 0,
+     "2026-08": 0,
+     "2026-09": 3626,
+     "2026-10": 14289
+    }
+   },
+   "both": {
+    "trades": 244,
+    "net": 81183,
+    "without_best_day": 33895,
+    "worst_day": -6485,
+    "dd": 31482,
+    "green_months": 9,
+    "red_months": 5,
+    "green_weeks": 18,
+    "red_weeks": 17,
+    "monthly": {
+     "2025-01": 14894,
+     "2025-02": -22171,
+     "2025-03": -6403,
+     "2025-04": 12952,
+     "2025-05": 4078,
+     "2025-06": 0,
+     "2025-07": 0,
+     "2025-08": -319,
+     "2025-09": 0,
+     "2025-10": -5381,
+     "2025-11": 2621,
+     "2025-12": 0,
+     "2026-01": -497,
+     "2026-02": 49671,
+     "2026-03": 7623,
+     "2026-04": 6200,
+     "2026-05": 0,
+     "2026-06": 0,
+     "2026-07": 0,
+     "2026-08": 0,
+     "2026-09": 3626,
+     "2026-10": 14289
+    }
+   },
+   "weeks": {
+    "weeks": 96,
+    "up": 14,
+    "down": 18,
+    "worst_end": 7826,
+    "mean_end": 15195
+   }
+  },
+  "REF|LIVE+tpb_all_days": {
+   "2025": {
+    "trades": 214,
+    "net": 34517,
+    "without_best_day": 13255,
+    "worst_day": -6281,
+    "dd": 20398,
+    "green_months": 7,
+    "red_months": 5,
+    "green_weeks": 20,
+    "red_weeks": 26,
+    "monthly": {
+     "2025-01": 14894,
+     "2025-02": -7712,
+     "2025-03": 675,
+     "2025-04": 9068,
+     "2025-05": 9857,
+     "2025-06": 2203,
+     "2025-07": -813,
+     "2025-08": -3850,
+     "2025-09": 12567,
+     "2025-10": -3544,
+     "2025-11": 3052,
+     "2025-12": -1881
+    }
+   },
+   "2026": {
+    "trades": 169,
+    "net": 80232,
+    "without_best_day": 32944,
+    "worst_day": -6508,
+    "dd": 33331,
+    "green_months": 6,
+    "red_months": 4,
+    "green_weeks": 20,
+    "red_weeks": 18,
+    "monthly": {
+     "2026-01": 3436,
+     "2026-02": 60777,
+     "2026-03": 7273,
+     "2026-04": 6271,
+     "2026-05": -10426,
+     "2026-06": -349,
+     "2026-07": -1684,
+     "2026-08": -7346,
+     "2026-09": 4865,
+     "2026-10": 17414
+    }
+   },
+   "both": {
+    "trades": 383,
+    "net": 114748,
+    "without_best_day": 67460,
+    "worst_day": -6508,
+    "dd": 33331,
+    "green_months": 13,
+    "red_months": 9,
+    "green_weeks": 40,
+    "red_weeks": 44,
+    "monthly": {
+     "2025-01": 14894,
+     "2025-02": -7712,
+     "2025-03": 675,
+     "2025-04": 9068,
+     "2025-05": 9857,
+     "2025-06": 2203,
+     "2025-07": -813,
+     "2025-08": -3850,
+     "2025-09": 12567,
+     "2025-10": -3544,
+     "2025-11": 3052,
+     "2025-12": -1881,
+     "2026-01": 3436,
+     "2026-02": 60777,
+     "2026-03": 7273,
+     "2026-04": 6271,
+     "2026-05": -10426,
+     "2026-06": -349,
+     "2026-07": -1684,
+     "2026-08": -7346,
+     "2026-09": 4865,
+     "2026-10": 17414
+    }
+   },
+   "weeks": {
+    "weeks": 96,
+    "up": 35,
+    "down": 41,
+    "worst_end": 7826,
+    "mean_end": 15369
+   }
+  },
+  "B|UNION": {
+   "2025": {
+    "trades": 410,
+    "net": 27140,
+    "without_best_day": 5873,
+    "worst_day": -6281,
+    "dd": 29091,
+    "green_months": 7,
+    "red_months": 5,
+    "green_weeks": 26,
+    "red_weeks": 27,
+    "monthly": {
+     "2025-01": 14894,
+     "2025-02": -13120,
+     "2025-03": -9729,
+     "2025-04": 6477,
+     "2025-05": 23345,
+     "2025-06": 19485,
+     "2025-07": 4643,
+     "2025-08": -6345,
+     "2025-09": -5992,
+     "2025-10": 103,
+     "2025-11": -10530,
+     "2025-12": 3910
+    }
+   },
+   "2026": {
+    "trades": 317,
+    "net": -2691,
+    "without_best_day": -18614,
+    "worst_day": -8622,
+    "dd": 60166,
+    "green_months": 4,
+    "red_months": 6,
+    "green_weeks": 18,
+    "red_weeks": 26,
+    "monthly": {
+     "2026-01": 22967,
+     "2026-02": 621,
+     "2026-03": -11034,
+     "2026-04": 11187,
+     "2026-05": -22520,
+     "2026-06": -3663,
+     "2026-07": -7192,
+     "2026-08": -4816,
+     "2026-09": -5632,
+     "2026-10": 17391
+    }
+   },
+   "both": {
+    "trades": 727,
+    "net": 24449,
+    "without_best_day": 3181,
+    "worst_day": -8622,
+    "dd": 60166,
+    "green_months": 11,
+    "red_months": 11,
+    "green_weeks": 43,
+    "red_weeks": 53,
+    "monthly": {
+     "2025-01": 14894,
+     "2025-02": -13120,
+     "2025-03": -9729,
+     "2025-04": 6477,
+     "2025-05": 23345,
+     "2025-06": 19485,
+     "2025-07": 4643,
+     "2025-08": -6345,
+     "2025-09": -5992,
+     "2025-10": 103,
+     "2025-11": -10530,
+     "2025-12": 3910,
+     "2026-01": 22967,
+     "2026-02": 621,
+     "2026-03": -11034,
+     "2026-04": 11187,
+     "2026-05": -22520,
+     "2026-06": -3663,
+     "2026-07": -7192,
+     "2026-08": -4816,
+     "2026-09": -5632,
+     "2026-10": 17391
+    }
+   },
+   "weeks": {
+    "weeks": 96,
+    "up": 36,
+    "down": 57,
+    "worst_end": 7826,
+    "mean_end": 15271
+   }
+  }
+ }
+}
