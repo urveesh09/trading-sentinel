@@ -2,6 +2,7 @@
 
     O30C_YEAR=2025 python exact_s.py --name "TPB|HOUSE" --lots 3 --half
     O30C_YEAR=2026 python exact_s.py --name "LIVE|ADD2" --sizing shipped --half
+    O30C_YEAR=2025 python exact_s.py --name TPB --lots 3 --skip
 
 --lots N sizes every entry at N lots after the shipped planner accepts it (the planner's own gates, including the
 minimum-pool gate on the real equity, stay on); an add adds as many lots as the entry had; own cash as in the simulator.
@@ -18,6 +19,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import analyze_s as A  # noqa: E402
 import lab_s as S  # noqa: E402
+import lab_s2 as T2  # noqa: E402,F401  (the pass-over-stretched rule; books without "skip" are untouched)
 
 C, Y, O27F = S.C, S.Y, S.O27F
 from config import settings  # noqa: E402
@@ -77,6 +79,7 @@ def main() -> None:
     cli.add_argument("--lots", type=int, default=0)
     cli.add_argument("--sizing", choices=["fixed", "shipped"], default="fixed")
     cli.add_argument("--half", action="store_true")
+    cli.add_argument("--skip", action="store_true")
     a = cli.parse_args()
     reserve = 3 if "ADD2" in a.name else 2 if ("ADD1" in a.name or "HOUSE" in a.name) else 1
     RUN.update(lots=a.lots if a.sizing == "fixed" else 0, half=a.half, reserve=reserve)
@@ -86,8 +89,8 @@ def main() -> None:
     O27F.deny_network()
     C.table("year")
     Y._worker_init()
-    tag = f"exact|{a.sizing}|{a.lots}|{a.half}"
-    book = {**S.books()[a.name], "o30s": tag}
+    tag = f"exact|{a.sizing}|{a.lots}|{a.half}|{a.skip}"
+    book = {**S.books()[a.name], "o30s": tag, **({"skip": T2.LIMIT} if a.skip else {})}
     _key, trades = Y.evaluate((book, "year", C.WINDOW))
     closed = [t for t in trades if t.get("net_pnl") is not None]
     run = peak = fall = fall_rs = 0.0
@@ -103,9 +106,13 @@ def main() -> None:
     base, _sha = A.load()
     rule = ("fixed", a.lots) if a.sizing == "fixed" else ("risk", 0.02)
     brakes = "NONE" if a.sizing == "fixed" else "SHIPPED"
-    sim0 = A.sim(base[C.YEAR][a.name], rule, brakes, 0.0, a.half, reserve=reserve)
-    sim1 = A.sim(base[C.YEAR][a.name], rule, brakes, A.STRESS, a.half, reserve=reserve)
-    row = {"year": C.YEAR, "name": a.name, "sizing": a.sizing, "lots": a.lots, "half": a.half, "trades": len(closed),
+    rows_in = base[C.YEAR][a.name]
+    if a.skip:
+        raw = json.loads((LOCAL / f"results-t2-raw-{C.YEAR}.json").read_text(encoding="utf-8"))
+        rows_in = A.prep(raw["trades"][raw["books"][f"{a.name}|skip"]])
+    sim0 = A.sim(rows_in, rule, brakes, 0.0, a.half, reserve=reserve)
+    sim1 = A.sim(rows_in, rule, brakes, A.STRESS, a.half, reserve=reserve)
+    row = {"year": C.YEAR, "name": a.name, "sizing": a.sizing, "lots": a.lots, "half": a.half, "skip": a.skip, "trades": len(closed),
            "net": round(net), "net_plus_200": round(net - stress), "fall_pct": round(fall, 4), "fall_rs": round(fall_rs),
            "worst_day": round(min([0.0, *daily.values()])), "best_day": round(max([0.0, *daily.values()])),
            "best_day_date": max(daily, key=daily.get) if daily else None, "simulated_net": sim0["net"],
@@ -113,7 +120,8 @@ def main() -> None:
     target = HERE / "exact.json"
     rows = json.loads(target.read_text(encoding="utf-8")) if target.is_file() else []
     rows = [r for r in rows if not (r["year"] == row["year"] and r["name"] == row["name"] and r["sizing"] == row["sizing"]
-                                    and r["lots"] == row["lots"] and r["half"] == row["half"])] + [row]
+                                    and r["lots"] == row["lots"] and r["half"] == row["half"]
+                                    and r.get("skip", False) == row["skip"])] + [row]
     target.write_text(json.dumps(rows, indent=1), encoding="utf-8")
     print(json.dumps(row), flush=True)
 
