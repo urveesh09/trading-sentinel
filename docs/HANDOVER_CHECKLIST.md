@@ -1,3 +1,17 @@
+## October 30 — O30m Kind-of-day router over a 134-strategy library, and the NIFTY 2024 exam freeze (research, Dev: freeze 2bcec04, routers 33947f2, 2024 freeze 2a57ede; the router fails the cross-year check, the trend pullback is the one robust family; nothing changed)
+
+- [x] Library freeze `2bcec04` → library replays → the cross-year check (routers `33947f2`) → exact routers, persistence, and the 2024 freeze `2a57ede`.
+- **Results (`docs/research/fno/2026-10-30-day-router/README.md`, per lot):**
+  - **No kind-of-day router passes.** Chosen on one year, each of the six partitions loses on the other year (−₹5k to −₹79k), often below random routers.
+  - **Exact replays:** the router chosen on 2026 makes +₹1,10,602 there and −₹34,803 on 2025.
+  - **Persistence:** the 2025 vs 2026 rank correlation over 114 strategies is 0.12 (−0.36 to 0.18 inside kinds of day). 14 strategies are positive in both years, mostly trend-pullback variants, and 0 of 20 random books are.
+  - **ROBUST_CORE** (TPB, two pullback genomes, SHIPPED): +₹78,830 over both years, no better than TPB alone (+₹78,750, max DD ₹22,896).
+  - **Best book:** the O30c candidate, live + TPB on closed days, at +₹1,14,748.
+- **2024 exam:** frozen in `freeze-2024.json` (23 books, RULE_2024) with `lab_f.py` (mirror24 / export24 / warm24 / run).
+  - It runs after `download2024.py`, which is new in `sentinel-operations/breeze-history-20261029` with a 2024 calendar checked offline; DOWNLOAD_GUIDE §0.
+  - The engine must be unchanged since O29i, or the run must come from a worktree at `2a57ede`.
+- [ ] The 2024 download and exam (Oct 31), then the owner's call on the TPB case before the real-money week.
+
 ## October 30 — O30c Why the live book broke even on 2025, and case rules tested on both NIFTY years (research, Dev: freezes a98b1f5 + b0defde, results committed; one case nearly passes: TPB trades on the days the ADX gate is closed; nothing changed)
 
 - [x] Tier 1 freeze `a98b1f5` before any case replay; results, investigation and the Tier 2 freeze `b0defde`; Tier 2 results committed.

@@ -1,3 +1,21 @@
+## October 30 — O30m Kind-of-day router over a 134-strategy library, and the NIFTY 2024 exam freeze (research, Dev: freeze 2bcec04, routers 33947f2, 2024 freeze 2a57ede; the router fails the cross-year check, the trend pullback is the one robust family; nothing changed)
+
+- **Owner (Oct 30):** identify the kind of day (macro) and what the trade is doing (micro), and deploy the strategy that suits it; search widely without over-tuning; 2024 is the test.
+- **Study:** `lab_m.py` replays the library always-on on both years. `analyze_m.py select` builds the kind-of-day router and its cross-year check, and `report` gives the exact replays. `persistence_m.py` (after the verdict) explains it. `lab_f.py` holds the 2024 exam.
+- **Config and migration:** none. Nothing is deployed.
+- **Results (`docs/research/fno/2026-10-30-day-router/README.md`, per lot):**
+  - **No kind-of-day router passes.** Chosen on one year, each of the six partitions loses on the other year (−₹5k to −₹79k), often below random routers.
+  - **Exact replays:** the router chosen on 2026 makes +₹1,10,602 there and −₹34,803 on 2025.
+  - **Persistence:** the 2025 vs 2026 rank correlation over 114 strategies is 0.12 (−0.36 to 0.18 inside kinds of day). 14 strategies are positive in both years, mostly trend-pullback variants, and 0 of 20 random books are.
+  - **ROBUST_CORE** (TPB, two pullback genomes, SHIPPED): +₹78,830 over both years, no better than TPB alone (+₹78,750, max DD ₹22,896).
+  - **Best book:** the O30c candidate, live + TPB on closed days, at +₹1,14,748.
+- **2024 exam:** frozen in `freeze-2024.json` (23 books, RULE_2024) with `lab_f.py` (mirror24 / export24 / warm24 / run).
+  - It runs after `download2024.py`, which is new in `sentinel-operations/breeze-history-20261029` with a 2024 calendar checked offline; DOWNLOAD_GUIDE §0.
+  - The engine must be unchanged since O29i, or the run must come from a worktree at `2a57ede`.
+- [ ] **Oct 31:** `probe2024.py` and `download2024.py` (another agent, before the SENSEX remainder). Then `lab_f.py` mirror24 / export24 / run with `O30F_YEAR=2024`, scored once by RULE_2024.
+- [ ] **Owner's call after the 2024 exam:** add "TPB on the closed days" to the live book. That needs an engine mode in which TPB is ungated: Dev → PR → deploy.
+- **Verification:** `test_lab_m.py` 2 passed. The references reproduce O30 / O30c exactly. 136 library replays per year, with no traceback.
+
 ## October 30 — O30c Why the live book broke even on 2025, and case rules tested on both NIFTY years (research, Dev: freezes a98b1f5 + b0defde, results committed; one case nearly passes: TPB trades on the days the ADX gate is closed; nothing changed)
 
 - **Owner (Oct 30, after O30):** "investigate. Why did it fail ... make different cases for different situation to counter them ... we don't have to change our strategy. We can add more to it ... test it again ... Will this make it over training or over tuning".

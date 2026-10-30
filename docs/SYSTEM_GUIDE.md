@@ -1,3 +1,7 @@
+## October 30 — O30m Kind-of-day router over a 134-strategy library, and the NIFTY 2024 exam freeze (research, Dev: freeze 2bcec04, routers 33947f2, 2024 freeze 2a57ede; the router fails the cross-year check, the trend pullback is the one robust family; nothing changed)
+
+- Research only; no runtime change. The live book stays `FNO_BOOK=UNION_ADX` until the owner decides.
+
 ## October 30 — O30c Why the live book broke even on 2025, and case rules tested on both NIFTY years (research, Dev: freezes a98b1f5 + b0defde, results committed; one case nearly passes: TPB trades on the days the ADX gate is closed; nothing changed)
 
 - Research only; no runtime change. The live book stays `FNO_BOOK=UNION_ADX` until the owner decides.
