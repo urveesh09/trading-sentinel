@@ -61,5 +61,6 @@
   "orders_or_messages_sent": false,
   "no_2024_access": true,
   "config_migration_impact": "none",
-  "literature": "primary mechanism/payoff documents; accessible text versus abstract-only/access failures distinguished in SOURCES.md"
+  "literature": "primary mechanism/payoff documents; accessible text versus abstract-only/access failures distinguished in SOURCES.md",
+  "source_results_commit": "ad9a787fd299e5d3ed51f537c412e55cbe84c13b"
 }

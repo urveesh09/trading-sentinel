@@ -1,4 +1,4 @@
-## October 30 - O30q losing-session diagnosis and primary-source strategy review complete (research only)
+## October 30 - O30q losing-session diagnosis and primary-source strategy review complete (research only; source/results ad9a787)
 
 - **Result:** historical live-policy replay: 57 losing / 100 active sessions across 451 sessions. Small full-day ranges and low-net-progress paths recur in both years; entry stretch and a larger prior-day range associate with higher loss rates across four half-years. Hindsight labels are not entry rules. [Plain-language report, mechanisms and literature](research/fno/2026-10-30-loss-day-review/README.md).
 - **Counter-patterns:** 5/16 identical FADE and 5/16 VWAP-reversion variants positive on LIVE losing-date subsets in both years; 0 in either family positive on both complete years. Independent-book hindsight overlap is not a deployable hedge or additive P&L.
