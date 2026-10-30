@@ -63,7 +63,7 @@
    "python-engine/fno_analytics.py": "2547fcfc23eefbb5600ae4d471e69bab66ab2a56ead1957defb77772260fb701",
    "python-engine/fno_audit_report.py": "664b4fb526c2c5f646a0a352cf8ff2ad198b513e3743f80906ebae644ff85b78",
    "python-engine/fno_backtest.py": "0444ddbb7eb3deb7f49ca8cae588358852a5bc83602e5ee308649a74d10de243",
-   "python-engine/fno_book.py": "4a01292814e965e35b09444cf7cd27897d010c8fb265a8b4125d4e7697afb15e",
+   "python-engine/fno_book.py": "6cc1a416c41b4237f47d7560b425df421ce2294aa86cf6537dc8585926b4716b",
    "python-engine/fno_broker_backstop.py": "c579826823ff244dff609f685e77f7425c38512acd56642a7f2f0a7f0e52f6cb",
    "python-engine/fno_chain.py": "8fae8a8048e5700530b247921adf3c58df00eff0cee8682f11f3707eda07137c",
    "python-engine/fno_costs.py": "c148d3deadec3982b90ff617d0c9b3aec3e1794c69c48f69cc4aaaf9cb391e8a",

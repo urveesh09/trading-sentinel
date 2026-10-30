@@ -1,9 +1,27 @@
-## October 29 — O29i Sideways-day study (research only) (research, Dev: frozen before scoring)
+## October 29 — Rollout receipt O29h (Production a461bde)
+
+- **Merges:** PR #123 (O29f/O29g research, O29h UNION_ADX, O29i freeze) merged at 17:23 IST as a51c791 and deployed. PR #124 (the 09:30 read follow-up, cfe83dc) merged at 17:32 as a461bde.
+- **Deploy (on the owner's Oct 29 go-ahead), per the runbook:** the Production checkout was fast-forwarded and stamped with `SENTINEL_RELEASE_SHA` / `SENTINEL_BUILD_UTC`. node-gateway, python-engine and agent were built one at a time and recreated, and nginx was restarted.
+- **Verification:** `scripts/verify_deployment.py --expected-sha a461bde…` passed (receipt in `sentinel-operations/release-receipts/`), and local and public `/api/health` both return 200.
+- **Engine, read-only:**
+  - `FNO_BOOK=UNION_ADX` with ADX minimum 25, on for NIFTY and SENSEX; the gate is read from 09:30.
+  - The cached NIFTY 50 daily candles give ADX 35.7 for Oct 30, so the book trades.
+  - The real-money switch is off (₹12,500); no open F&O positions; no error lines since the restart.
+- **Not done:** the runbook's full consistent data backup. The latest is Sep 11, and recent deploys have not taken one. This change only adds the table `fno_regime_gate`.
+- [ ] Oct 30 after 09:30 (read-only): a `fno_regime_gate` row, the owner's `fno_book_adx_gate` Telegram line, and `strategy=` on any book entry.
+
+## October 29 — O29i Sideways-day study (research only) (research, Dev: freeze d5b08c9, results committed; the failed-break fade helps on sideways days (in-sample), VWAP/RSI2 do not; nothing changed)
 
 - [x] `lab_i.py`, `test_lab_i.py` (2 passed: every family causal); freeze committed before scoring.
 - [ ] Results: see the study README. Nothing changes on paper or live because of a replay.
+- **Results (in-sample, per lot, sideways days only; `docs/research/fno/2026-10-29-sideways-study/README.md`):**
+  - **The failed opening-range break (FADE) helps:** 12 of 16 variants positive, H1 pick → H2 +₹6,752, H2 pick → H1 +₹12,533; the random median was −₹891 / −₹4,861. Best variant: +₹30,134, 119 trades, worst day −₹4,315.
+  - **PDL_FADE helps, but small:** 8 of 8 positive, +₹553 / +₹2,869.
+  - **VWAP_REVERT and RSI2 do not help.**
+  - **Joined to UNION_ADX:** +₹111,046 per lot, 9 green / 1 red months, against +₹80,912 for UNION_ADX alone. The fade adds weekly activity (22 / 18 one-lot weeks, against 8 / 5).
+- [ ] Owner's call: whether to add the fade on sideways days (at 1 lot). The NIFTY 2025 clean test of UNION_ADX and of the fade comes first.
 
-## October 29 — O29h UNION_ADX trend gate (Dev commits 2279a2e + cfe83dc, pushed; deployed: Production a51c791 (Oct 29, 17:25 IST), redeploying cfe83dc; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
+## October 29 — O29h UNION_ADX trend gate (Dev commits 2279a2e + cfe83dc, pushed; deployed: Production a461bde (Oct 29, 17:34 IST, PR #123 + #124), verify_deployment passed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
 
 - [x] `fno_book` trend gate, orchestrator wiring, default `UNION_ADX`; tests 27 + F&O 750; research parity exact on 203 sessions.
 - [ ] After the deploy, from Oct 30: one `fno_book_adx_gate` Telegram line before the first F&O entry window, a `fno_regime_gate` row for the session, and `adx_low`/`adx_unknown` reasons in `fno_signals` when the book sits out (read-only check).

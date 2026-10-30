@@ -1,4 +1,4 @@
-## October 29 — O29i Sideways days: famous range-day entries on the days the trend gate sits out (research, Dev: frozen before scoring)
+## October 29 — O29i Sideways days: famous range-day entries on the days the trend gate sits out (research, Dev: freeze d5b08c9, results committed; the failed-break fade helps on sideways days (in-sample), VWAP/RSI2 do not; nothing changed)
 
 - **Owner (Oct 29 evening, queued after O29h):** "on the days in system is sideways ... search for the most best strategies at that time ... capital invested you can reduce ... test out strategies that are famous for sideways days".
 - **Study (`docs/research/fno/2026-10-29-sideways-study/lab_i.py`; research only):** four textbook range-day entries, each gated to the days UNION_ADX sits out (yesterday's NIFTY ADX < 25), through the same shipped book:
@@ -10,8 +10,14 @@
   A grid of 48 variants, 20 random-entry books on the same days, and UNION_ADX for reference: 69 books. Read per lot, with a two-fold H1↔H2 check.
 - **Acceptance:** a family helps only if the variant picked on one half is positive on the other half in both directions and beats the random books' median. Otherwise the advice stays: sit sideways days out.
 - **Config and migration:** none.
+- **Results (in-sample, per lot, sideways days only; `docs/research/fno/2026-10-29-sideways-study/README.md`):**
+  - **The failed opening-range break (FADE) helps:** 12 of 16 variants positive, H1 pick → H2 +₹6,752, H2 pick → H1 +₹12,533; the random median was −₹891 / −₹4,861. Best variant: +₹30,134, 119 trades, worst day −₹4,315.
+  - **PDL_FADE helps, but small:** 8 of 8 positive, +₹553 / +₹2,869.
+  - **VWAP_REVERT and RSI2 do not help.**
+  - **Joined to UNION_ADX:** +₹111,046 per lot, 9 green / 1 red months, against +₹80,912 for UNION_ADX alone. The fade adds weekly activity (22 / 18 one-lot weeks, against 8 / 5).
+- [ ] Owner's call: whether to add the fade on sideways days (at 1 lot). The NIFTY 2025 clean test of UNION_ADX and of the fade comes first.
 
-## October 29 — O29h The paper book trades only on a trending market: UNION_ADX, yesterday's NIFTY ADX(14) ≥ 25 (Dev commits 2279a2e + cfe83dc, pushed; deployed: Production a51c791 (Oct 29, 17:25 IST), redeploying cfe83dc; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
+## October 29 — O29h The paper book trades only on a trending market: UNION_ADX, yesterday's NIFTY ADX(14) ≥ 25 (Dev commits 2279a2e + cfe83dc, pushed; deployed: Production a461bde (Oct 29, 17:34 IST, PR #123 + #124), verify_deployment passed; fno_book 27 + F&O 750 passed, research parity exact on 203 sessions, full suite 5867 passed / 4 skipped plus test_scheduler_closures_invoke 29 passed alone)
 
 - **Owner (Oct 29 evening, after O29g):** "you are allowed to implement all of this ... Merge the code and deployed in production as well. You are permitted".
   - Clarified in the reply: on a sideways market the book sits out; it does not switch strategy.
