@@ -1,3 +1,22 @@
+## October 30 (night) — O30s: rupees on Rs 2.5 lakh, what size costs, and the pass-over-stretched rule (research, Dev; nothing changed in the system)
+
+- [x] O30s frozen, run, exact-replayed, written up; 2024 sheet 2 frozen before any 2024 data.
+- [ ] 2024 exam: sheet 1, then sheet 2 (needs the owner's login and the download).
+- **Owner (Oct 30):** "so many people earn literally lakhs in single days ... why can the system not even earn 2 lakhs in any single year? is it because of our conservativeness? ... search and make combinations and test it out ... tell me how much tradeoff".
+- **Problem:** every earlier F&O study was per lot. Nothing measured rupees on the book, what size costs, or the fall that comes with it.
+- **Files:** `docs/FNO_EARNING_POWER_2026-10-30.md` (the plain write-up), `docs/research/fno/2026-10-30-earning-power/` (`lab_s.py`, `analyze_s.py`, `reference_s.py`, `report_s.py`, `lab_s2.py`, `analyze_s2.py`, `report_s2.py`, `exact_s.py`, `exam_s.py`, tests, freezes, results), `docs/FNO_YEAR_DATA_TESTING_METHOD.md` section 15 (the method).
+- **Commits:** freeze `045351b`; results + Tier 2 freeze `fd8e4c1`; Tier 2 results + 2024 sheet 2 `ff08fca`. All pushed to Dev. **Not deployed; Production stays `a461bde`.**
+- **Verification:** 25 study tests pass. Shipped-mode references reproduce exactly (+271 / +80,912, +34,517 / +80,232, +36,694 / +42,056). The simulator's shipped sizing is within Rs 2,416 a year and one trade of the stored replays.
+- **Results:**
+  - The book uses 4-7% of the money per trade by design. Size alone fails: LIVE at 3 lots, no brakes, -34,479 in 2025 (-1,25,079 after Rs 200 per lot per trade); LIVE + add at 6 lots, exact, +5,79,750 in 2026 (best day 1,38,943) and -2,11,891 in 2025 (85% fall).
+  - 71 of 5,168 combinations pass the frozen rule, 67 of them TPB alone. Frozen pick: TPB + engine add, 3 lots, half when stretched, +61,695 / +65,438 after the extra cost. Choosing on one year fails.
+  - Feb 1, 2026 (Budget Sunday) is 58% of the live book's 2026 (+47,288 of +80,912 per lot).
+  - RETEST, FAILCONF, SQUEEZE, longer holds and side-by-side slots fail. Option selling (information only) lost in both years in its common form.
+  - **Tier 2, found by looking: pass over an entry stretched >= 0.5 from VWAP.** Exact, per lot: LIVE +27,769 / +55,524, BEST +56,904 / +51,885, TPB +52,230 / +45,652, all positive after Rs 200 per trade. Only TPB passes the strict frozen test; LIVE and BEST lose about Rs 25,000 of 2026, mostly one Budget-day trade. Random books gain too.
+- **Decisions:** no runtime change, lots not raised, the Nov 2 test stays one lot. The rule goes to the 2024 exam; adding it to the book is the owner's call afterwards.
+- **Config and migration:** none.
+- **Remaining:** owner's ICICI login on Oct 31; NIFTY 2024 download; sheet 1 (`analyze_f.py`), then sheet 2 (`exam_s.py run`, `score`), which has not been run because no 2024 data exists. A live version of the rule would be Dev -> PR -> deploy on the owner's word. Never equate these replays with a profitable strategy.
+
 ## October 30 - O30q losing-session diagnosis and primary-source strategy review complete (research only; source/results ad9a787)
 
 - **Result:** historical live-policy replay: 57 losing / 100 active sessions across 451 sessions. Small full-day ranges and low-net-progress paths recur in both years; entry stretch and a larger prior-day range associate with higher loss rates across four half-years. Hindsight labels are not entry rules. [Plain-language report, mechanisms and literature](research/fno/2026-10-30-loss-day-review/README.md).

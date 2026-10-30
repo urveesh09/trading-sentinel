@@ -107,7 +107,7 @@ for every daily module.
 
 The complete worked example is [FNO_STRATEGY_TESTING_PLAYBOOK.md](FNO_STRATEGY_TESTING_PLAYBOOK.md). It covers the Oct 27, 2026 grid, the evolution and the daily forward panel, and how to test a new strategy.
 
-Since Oct 29–30, 2026, F&O strategies are tested on year-long ICICI Breeze 1-minute data: NIFTY Jan–Oct 2026, 2025, and 2024 as a one-time exam. The method, with a copy-ready study template, is [FNO_YEAR_DATA_TESTING_METHOD.md](FNO_YEAR_DATA_TESTING_METHOD.md); the findings are in [FNO_RESEARCH_2026-10-30_SUMMARY.md](FNO_RESEARCH_2026-10-30_SUMMARY.md).
+Since Oct 29–30, 2026, F&O strategies are tested on year-long ICICI Breeze 1-minute data: NIFTY Jan–Oct 2026, 2025, and 2024 as a one-time exam. The method, with a copy-ready study template, is [FNO_YEAR_DATA_TESTING_METHOD.md](FNO_YEAR_DATA_TESTING_METHOD.md); the findings are in [FNO_RESEARCH_2026-10-30_SUMMARY.md](FNO_RESEARCH_2026-10-30_SUMMARY.md). Size in rupees (a RAW one-lot replay sized by a simulator, then exact replays) is section 15 of that method; the worked study is [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md).
 
 F&O option history is not on Yahoo. The engine already archives every NIFTY
 quote batch (future + ATM±5 calls/puts, two expiries, raw packets) on the data

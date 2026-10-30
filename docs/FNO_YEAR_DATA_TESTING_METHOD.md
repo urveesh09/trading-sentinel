@@ -4,6 +4,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 - **What those studies found:** [FNO_RESEARCH_2026-10-30_SUMMARY.md](FNO_RESEARCH_2026-10-30_SUMMARY.md).
 - **The earlier archive-quote method** (Sep–Oct 2026 quotes, the grid, the evolution, the forward panel): [FNO_STRATEGY_TESTING_PLAYBOOK.md](FNO_STRATEGY_TESTING_PLAYBOOK.md).
 - **The general research rules:** [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md).
+- **Testing size in rupees, not per lot:** section 15, with the worked study [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md).
 
 **The fastest way in:** copy `docs/research/fno/study_template/`, put your entry rule into `entries()`, and follow section 8. The template already does everything below; it was tested on Oct 30 (2 checks pass; the January 2025 plumbing run takes 15 trades).
 
@@ -88,6 +89,7 @@ sealed dataset --YearData--> fno_policy_replay.SingleLegReplay (the shipped book
 | `2026-10-30-case-study/lab_c2.py` | per-member cases (`dmi_breakouts`, `window_10_14`) |
 | `2026-10-30-day-router/lab_m.py` (O30m) | the 134-strategy library; the router gate grammar (`a:HIGH&b:UP&dir=with`); reuse of earlier replays |
 | `2026-10-30-day-router/lab_f.py` (O30f) | the 2024 exam; **`O30F_YEAR=2024`** points everything at 2024 |
+| `2026-10-30-earning-power/lab_s.py`, `lab_s2.py` (O30s) | RAW one-lot replays, adds to winners, the HOLD exit, the stretch reading, the pass-over-stretched rule |
 
 - **Patches go at module level.** Each module patches the one below it when it is imported (paths, the table function, the signal dispatch, the routing). Windows starts each worker by re-importing your main script, so a patch made inside a function would be missing in the workers.
 - **Choose the year with an environment variable, never in code.**
@@ -236,7 +238,7 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 | NIFTY Jan 1 – Oct 28, 2026 (Breeze year data; the Sep 10 – Oct 26 quote archive) | **Seen**: the ADX gate, the fades and the router choices were all made on it |
 | NIFTY 2025 | **Seen** since O30 (Oct 30): the clean test, then the case study and the router |
 | SENSEX Jan – Oct 2026 | Partly downloaded (Aug 14 – Oct 28 options); the paper book runs SENSEX, but no strategy was chosen on it. The day sides are NIFTY's, so it is not independent for day rules. |
-| **NIFTY 2024** | **Unseen.** Reserved for the one-time exam (`freeze-2024.json`, frozen at `2a57ede`). |
+| **NIFTY 2024** | **Unseen.** Reserved for the one-time exam: sheet 1 is `2026-10-30-day-router/freeze-2024.json` (`2a57ede`); sheet 2, separate and scored after it, is `2026-10-30-earning-power/freeze-2024.json` (`ff08fca`). |
 | **Forward sessions from Oct 29, 2026** | **Unseen** for strategy work. Forward panels A–D (O27c, O27g, O28b, O29b) run Oct 28 – Nov 27 (Oct 28 itself was used by O29b and the year data). |
 
 ---
@@ -255,6 +257,8 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 | A day with no trades where you expected some | Check the gate's side for that day in `_local/table-<year>.json`. A missing reading closes the gate (ADX needs about 60 daily bars). |
 | CRLF warnings on `git add` | Harmless; freezes compare parsed JSON. |
 | Workers didn't apply your patch | It was made inside a function. Move it to module level. |
+| `JSONDecodeError` on a `results-*.json`, or `FileExistsError` when you rerun | A slice was stopped while it wrote that file (`Y.write_new` is not atomic). Delete only that file and run the same command again: the replays in `evals/` are kept. New code should write to a temporary file and `os.replace` it (`exam_s.run`). |
+| A sized plan's exact replay differs from the simulator by one big trade | The shipped minimum-pool gate (premium x 65 x 25% <= 2% of the money) reads the real equity, so a bigger or smaller account admits different high-premium trades. Report both. |
 
 ---
 
@@ -263,6 +267,7 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 | Path | What |
 | --- | --- |
 | `docs/research/fno/study_template/` | `lab_x.py`, `analyze_x.py`, `test_lab_x.py`: copy this |
+| `docs/research/fno/2026-10-30-earning-power/` | O30s: `analyze_s.sim` (the rupee simulator), `exact_s.py` (exact sized replay), `reference_s.py` (hindsight ceiling, option selling), `exam_s.py` (2024 sheet 2) |
 | `docs/research/fno/run_slice.py` | run a long command in bounded slices |
 | `docs/research/fno/2026-10-29-year-genome/` | O29f: `yeardata.py` (candle model, export), `lab.py` (BookReplay, Runner), 2026 dataset |
 | `docs/research/fno/2026-10-29-why-study/` | O29g: `lab_g.py`, `features.py` (day features, `split_table`), `analyze_g.py` (metrics) |
@@ -287,3 +292,38 @@ Follow `docs/research/fno/study_template/lab_x.py`.
    - It applies `RULE_2024` and writes `results-2024.json` once.
    - It was written and committed on Oct 30, before any 2024 data existed.
    - Add a README section, and do not change any book or rule.
+
+5. **Then sheet 2** (O30s, `2026-10-30-earning-power/exam_s.py`), scored after sheet 1 and independently:
+   - `python docs/research/fno/run_slice.py --env O30F_YEAR=2024 --env O30S2_MODE=shipped -- docs/research/fno/2026-10-30-earning-power/exam_s.py run --jobs 3`, repeated until `DONE`;
+   - the same with `O30S2_MODE=raw`;
+   - `python docs/research/fno/2026-10-30-earning-power/exam_s.py score`, once. It writes `results-2024.json` once.
+   - If the engine changed after `ff08fca`, the run refuses; run it from a worktree at that commit.
+
+---
+
+## 15. Testing size in rupees (O30s)
+
+Everything above compares strategies per lot. A question about money ("how much can it earn on ₹2.5 lakh, and what does that cost?") needs rupees, and size changes the answer in ways per-lot numbers hide: a losing run takes the cash, the account can then afford fewer lots, and the recovery arrives too small. **Trades that made +₹10,125 on one lot lost ₹2,08,331 on ten.**
+
+**The method:**
+
+1. **Replay once as RAW.** One lot, kill switches off, up to 6 trades a day (`lab_s.RAW`, applied in the worker initializer, never at import, so the freeze's bindings still read the shipped settings).
+2. **Size afterwards.** `analyze_s.sim(rows, rule, brakes, stress, half, capital, day_cap, reserve)` walks the trades in time order. Before each entry it settles closed trades, applies brakes, sizes from the money known then, and checks own cash.
+   - `rule`: `("fixed", lots)`, `("risk", share of the money lost at the premium backstop)`, or `("shipped",)`, the shipped sizing.
+   - `brakes`: `NONE`, `SHIPPED`, `THROTTLE` (size cuts in a fall, no stop), `THROTTLE+DAY`.
+   - `stress`: extra rupees per lot per trade (an added lot pays it too).
+   - `half`: half size when the entry is stretched.
+3. **Prove the simulator.** `analyze_s.parity` runs the shipped sizing and brakes through it and compares with stored exact replays. The O30s difference was at most ₹2,416 a year and one trade.
+4. **Run the same sizing on the 20 random books.** Size must beat luck under the same size.
+5. **Replay exactly what you would act on** (`exact_s.py`, shipped code at real lots).
+   - Without brakes the simulator was about one trade from exact.
+   - With brakes it can be wrong: one frozen pass went from +₹11,895 simulated to −₹41,332 exact, because a skipped trade changes which later trades happen.
+6. **Choose size only across years.** The best combination on 2026 alone made +₹5.42 lakh there and −₹2.42 lakh on 2025 (a 97% fall).
+7. **Report the plan's fall, not only its profit:** the fall with and without the extra cost, the worst day and month, and the chance table (`analyze_s.boot`, one-year paths redrawn week by week from both years, which is a good case because those years are seen).
+8. **Check one-day dependence.** Feb 1, 2026 alone was 58% of the live book's 2026; `analyze_s2.per_lot` reports `without_budget_day` and `without_best_day`.
+
+**Kelly** (`analyze_s.kelly`) gives the lots above which long-run growth falls. Use it as a ceiling only: it is an estimate from seen data, and the literature advises betting a fraction of it.
+
+**Reading a bar's stretch:** `lab_s.stretch_at(frame, now, direction)`, and the pass-over rule is `lab_s2.route` (book field `"skip": 0.5`). Both use completed bars only. They are recorded on each trade as `stretch`.
+
+**Adding your strategy:** copy the book definition into your own study's `books()` with `"o30s": "raw1"`, apply `lab_s.apply_raw` in your worker initializer, freeze, run, then call `sim`.

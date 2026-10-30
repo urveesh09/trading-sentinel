@@ -3,6 +3,7 @@
 This is the complete account of the NIFTY F&O strategy research of October 29–30, 2026, written for the owner first and for any agent second.
 - **How to repeat or extend the tests:** [FNO_YEAR_DATA_TESTING_METHOD.md](FNO_YEAR_DATA_TESTING_METHOD.md).
 - **The data download:** `C:\Users\Urveesh\sentinel-operations\breeze-history-20261029\DOWNLOAD_GUIDE.md` (outside the repo).
+- **What came after this summary (O30s, Oct 30 night):** rupees on ₹2.5 lakh, what more size costs, the Budget-day dependence and the stretched-entry rule: [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md). The other agent's O30n, O30p and O30q studies are in `docs/research/fno/2026-10-30-micro-adaptation/`, `2026-10-30-option-depth/` and `2026-10-30-loss-day-review/`.
 
 Everything here is research on replays. **Nothing in the trading system was changed on Oct 30.** The live paper book is still `FNO_BOOK=UNION_ADX`, deployed Oct 29 (Production `a461bde`). The real-money test from Nov 2 mirrors that book at one lot and stays off until the owner switches it on.
 

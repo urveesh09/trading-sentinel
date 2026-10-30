@@ -1,3 +1,7 @@
+## October 30 (night) — O30s: rupees on Rs 2.5 lakh, what size costs, and the pass-over-stretched rule (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_EARNING_POWER_2026-10-30.md`. The shipped F&O limits it measured are unchanged: 2 lots (3 when proven), 2% risk capped at Rs 6,250, 15% of the money in premium, 3 trades a day, day / week / month / total stops at 3 / 6 / 10 / 15%.
+
 ## October 30 - O30q losing-session diagnosis and primary-source strategy review complete (research only; source/results ad9a787)
 
 - **Result:** historical live-policy replay: 57 losing / 100 active sessions across 451 sessions. Small full-day ranges and low-net-progress paths recur in both years; entry stretch and a larger prior-day range associate with higher loss rates across four half-years. Hindsight labels are not entry rules. [Plain-language report, mechanisms and literature](research/fno/2026-10-30-loss-day-review/README.md).
