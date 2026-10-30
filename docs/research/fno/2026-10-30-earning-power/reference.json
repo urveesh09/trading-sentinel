@@ -1,0 +1,174 @@
+{
+ "schema": "o30s_reference_v1",
+ "lot": 65,
+ "wing_points": 200,
+ "leg_stop": 1.3,
+ "leg_stress": 100.0,
+ "qualification": "INFORMATION_ONLY",
+ "can_place_orders": false,
+ "2025": {
+  "sessions": 248,
+  "skipped": {
+   "expiry_day_no_selling": 53,
+   "no_0945_spot": 1,
+   "no_expiry": 1
+  },
+  "ceiling_peak_per_lot": 966746,
+  "ceiling_direction_per_lot": 474166,
+  "median_peak_day": 4408,
+  "best_peak_day": 18690,
+  "top10pct_days_share_of_peak": 0.252,
+  "catch": {
+   "LIVE": {
+    "book_per_lot": -31839,
+    "share_of_ceiling": -0.033,
+    "on_top10pct_days": 25202,
+    "on_other_days": -57042,
+    "top10pct_days_traded": 6,
+    "top10pct_days": 19
+   },
+   "BEST": {
+    "book_per_lot": 4373,
+    "share_of_ceiling": 0.005,
+    "on_top10pct_days": 42866,
+    "on_other_days": -38493,
+    "top10pct_days_traded": 9,
+    "top10pct_days": 19
+   },
+   "TPB": {
+    "book_per_lot": 35194,
+    "share_of_ceiling": 0.036,
+    "on_top10pct_days": 1786,
+    "on_other_days": 33407,
+    "top10pct_days_traded": 5,
+    "top10pct_days": 19
+   }
+  },
+  "selling": {
+   "STRADDLE": {
+    "net": -15955,
+    "days": 193,
+    "fall_rs": 33487,
+    "worst_day": -8495,
+    "best_day": 10139,
+    "worst_week": -18525,
+    "green_months": 4,
+    "red_months": 8,
+    "correlation_with_BEST": 0.108,
+    "with_BEST_1_lot_each": {
+     "net": -11582,
+     "days": 194,
+     "fall_rs": 49917,
+     "worst_day": -18079,
+     "best_day": 24556,
+     "worst_week": -27246,
+     "green_months": 6,
+     "red_months": 6
+    }
+   },
+   "HEDGED": {
+    "net": -172916,
+    "days": 193,
+    "fall_rs": 181240,
+    "worst_day": -12226,
+    "best_day": 13256,
+    "worst_week": -28728,
+    "green_months": 1,
+    "red_months": 11,
+    "correlation_with_BEST": 0.306,
+    "with_BEST_1_lot_each": {
+     "net": -168543,
+     "days": 194,
+     "fall_rs": 186171,
+     "worst_day": -19170,
+     "best_day": 29067,
+     "worst_week": -37448,
+     "green_months": 1,
+     "red_months": 11
+    }
+   }
+  }
+ },
+ "2026": {
+  "sessions": 203,
+  "skipped": {
+   "expiry_day_no_selling": 43,
+   "no_0945_spot": 1
+  },
+  "ceiling_peak_per_lot": 969121,
+  "ceiling_direction_per_lot": 541577,
+  "median_peak_day": 4783,
+  "best_peak_day": 31088,
+  "top10pct_days_share_of_peak": 0.247,
+  "catch": {
+   "LIVE": {
+    "book_per_lot": 85662,
+    "share_of_ceiling": 0.088,
+    "on_top10pct_days": 117604,
+    "on_other_days": -31943,
+    "top10pct_days_traded": 9,
+    "top10pct_days": 15
+   },
+   "BEST": {
+    "book_per_lot": 77212,
+    "share_of_ceiling": 0.08,
+    "on_top10pct_days": 115271,
+    "on_other_days": -38059,
+    "top10pct_days_traded": 10,
+    "top10pct_days": 15
+   },
+   "TPB": {
+    "book_per_lot": 35550,
+    "share_of_ceiling": 0.037,
+    "on_top10pct_days": 24376,
+    "on_other_days": 11174,
+    "top10pct_days_traded": 3,
+    "top10pct_days": 15
+   }
+  },
+  "selling": {
+   "STRADDLE": {
+    "net": -52689,
+    "days": 159,
+    "fall_rs": 81249,
+    "worst_day": -12158,
+    "best_day": 6478,
+    "worst_week": -23614,
+    "green_months": 3,
+    "red_months": 7,
+    "correlation_with_BEST": -0.059,
+    "with_BEST_1_lot_each": {
+     "net": 24523,
+     "days": 160,
+     "fall_rs": 93679,
+     "worst_day": -20025,
+     "best_day": 41912,
+     "worst_week": -33704,
+     "green_months": 5,
+     "red_months": 5
+    }
+   },
+   "HEDGED": {
+    "net": -94851,
+    "days": 159,
+    "fall_rs": 134819,
+    "worst_day": -11292,
+    "best_day": 14988,
+    "worst_week": -31453,
+    "green_months": 3,
+    "red_months": 7,
+    "correlation_with_BEST": 0.18,
+    "with_BEST_1_lot_each": {
+     "net": -17639,
+     "days": 160,
+     "fall_rs": 152480,
+     "worst_day": -21383,
+     "best_day": 47826,
+     "worst_week": -41544,
+     "green_months": 4,
+     "red_months": 6
+    }
+   }
+  }
+ }
+}
