@@ -1,0 +1,21 @@
+{
+  "dataset_hashes": [
+    {
+      "dataset": "docs/research/fno/2026-10-30-nifty-2025-test/_local/dataset-nifty-2025",
+      "file": "breeze.sqlite",
+      "sha256": "405398f825ea619482bfd50660abb588d33476d49b4b43e0b8c406767dbd0cab",
+      "matches_manifest": true
+    },
+    {
+      "dataset": "docs/research/fno/2026-10-29-year-genome/_local/dataset-nifty",
+      "file": "breeze.sqlite",
+      "sha256": "8fb3a2b6c4f98056a0c8737a241689a72a6207c2c830648714c3c5d738bab627",
+      "matches_manifest": true
+    }
+  ],
+  "exam_2024_sha256": "9abedf31114f2c7ccecb9693ba68cbd0e3f18b3fea63704d7e64ea8b10bc022b",
+  "freeze_commit": "b8ed28d",
+  "focused_tests": "8 passed",
+  "raw_data_uploaded": false,
+  "production_changes": false
+}

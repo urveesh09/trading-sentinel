@@ -1,11 +1,9 @@
-## October 30 — O30n micro-adaptive research (planned/frozen before scoring)
+## October 30 - O30n micro-adaptive research complete (freeze b8ed28d; Dev only)
 
-- **Problem:** prior macro-only routers did not generalise. Test intraday thesis renewal/invalidation and a confirmed VWAP-reclaim entry, using the robust pullback family as parent.
-- **Scope/files:** `docs/research/fno/2026-10-30-micro-adaptation/` (`lab_n.py`, `analyze_n.py`, `test_lab_n.py`, `freeze.json`). Eight declared offspring; three references and 20 random books; both seen years scored separately. 2024 exam and forward data untouched.
-- **Contracts:** completed five-minute bars only; shipped admission/cash/costs and stop/backstop/hard-flat remain; optional continuation extension while trend is valid, two post-entry VWAP closes can exit at an observed positive bid. Missing bid does not invent a fill. No runtime imports this study.
-- **Acceptance:** causal-prefix tests, safety-priority and policy/ledger tests, exact baseline (+271/+80912 per lot), all variants reported, both years and four halves, drawdown and Rs200/300 extra per-trade stress, cross-year variant-selection diagnostic. A seen-year pass never qualifies real money.
-- **Rollout/rollback:** research only in Dev, frozen and pushed before scoring; no deployment/config/migration change. Stop the isolated workers to stop research. Keep at most two workers and 3 GiB free during market hours; downloader separate, no Production restarts.
-- **Remaining:** complete replays, report failures and useful candidates honestly, decide further unseen/forward qualification separately. Existing 2024 freeze remains unchanged.
+- **Result:** all eight declared offspring fail; 62 book/year evaluations complete, exact live baseline +271/+80,912 per lot. Eight focused tests pass. [Full results and learning](research/fno/2026-10-30-micro-adaptation/README.md).
+- **Learning:** extra VWAP exits reduced TPB profit; reclaim added trades but lost in 2025. TPB already has 120-minute / 2-ATR exits (RUN control reproduces it). TPB is positive under Rs200/trade stress in both years; the prior highest-net blend is negative after that stress in 2025.
+- **Remaining:** option-selection follow-up if supported; exact Rs12,500 one-lot replay (existing weekly figures are proxies); unchanged frozen 2024 exam and prospective quote/depth checks. No new strategy is qualified by this round.
+- **Status/rollout:** research only; no engine/config/schema change or Production action. Both sealed data hashes verified. Failed offspring preserved; no retuning this freeze.
 
 ## October 30 — O30 documentation: the Oct 29–30 research summary, the year-data testing method, a study template and the 2024 scorer (docs + research tooling, Dev; nothing changed in the system)
 
