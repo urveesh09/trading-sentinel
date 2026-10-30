@@ -238,7 +238,7 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 | NIFTY Jan 1 – Oct 28, 2026 (Breeze year data; the Sep 10 – Oct 26 quote archive) | **Seen**: the ADX gate, the fades and the router choices were all made on it |
 | NIFTY 2025 | **Seen** since O30 (Oct 30): the clean test, then the case study and the router |
 | SENSEX Jan – Oct 2026 | Partly downloaded (Aug 14 – Oct 28 options); the paper book runs SENSEX, but no strategy was chosen on it. The day sides are NIFTY's, so it is not independent for day rules. |
-| **NIFTY 2024** | **Unseen.** Reserved for the one-time exam: sheet 1 is `2026-10-30-day-router/freeze-2024.json` (`2a57ede`); sheet 2, separate and scored after it, is `2026-10-30-earning-power/freeze-2024.json` (`ff08fca`). |
+| **NIFTY 2024** | **Unseen.** Reserved for the one-time exam: sheet 1 is `2026-10-30-day-router/freeze-2024.json` (`2a57ede`); sheet 2, separate and scored after it, is `2026-10-30-earning-power/freeze-2024.json` (`ff08fca`); sheet 3, scored last, is `2026-10-30-risk-spectrum/freeze-2024.json` (`bc5a93a`). |
 | **Forward sessions from Oct 29, 2026** | **Unseen** for strategy work. Forward panels A–D (O27c, O27g, O28b, O29b) run Oct 28 – Nov 27 (Oct 28 itself was used by O29b and the year data). |
 
 ---
@@ -298,6 +298,7 @@ Follow `docs/research/fno/study_template/lab_x.py`.
    - the same with `O30S2_MODE=raw`;
    - `python docs/research/fno/2026-10-30-earning-power/exam_s.py score`, once. It writes `results-2024.json` once.
    - If the engine changed after `ff08fca`, the run refuses; run it from a worktree at that commit.
+6. **Then sheet 3** (O30r, `2026-10-30-risk-spectrum/exam_r.py`): `run_slice.py --env O30F_YEAR=2024 -- <folder>/exam_r.py run --jobs 3` until `DONE`, then `exam_r.py score`, once. It refuses if the engine changed after `bc5a93a`.
 
 ---
 
@@ -327,3 +328,10 @@ Everything above compares strategies per lot. A question about money ("how much 
 **Reading a bar's stretch:** `lab_s.stretch_at(frame, now, direction)`, and the pass-over rule is `lab_s2.route` (book field `"skip": 0.5`). Both use completed bars only. They are recorded on each trade as `stretch`.
 
 **Adding your strategy:** copy the book definition into your own study's `books()` with `"o30s": "raw1"`, apply `lab_s.apply_raw` in your worker initializer, freeze, run, then call `sim`.
+
+**Testing a whole risk ladder exactly (O30r, `2026-10-30-risk-spectrum/lab_r.py`):** every limit is a setting, so a level is a `cfg` on the book, applied per replay by `lab_r.run_book`.
+- Put extra cost inside the money path (`"cost": [per_lot, per_lot_per_lot]`). Subtracting it afterwards is wrong at high risk, because a smaller account buys fewer lots.
+- Carry the account across years (`"carry": <2025 replay key>`), so a wipe-out stays wiped out. Run 2025 first.
+- Prove every replay with `analyze_r.check_book`: charges, day cap, own cash, and lots from the planner's formula.
+- As-replayed rows at high risk reach hundreds of lots with no slippage. Never report them as achievable.
+- Results: [FNO_RISK_SPECTRUM_VERDICT_2026-10-30.md](FNO_RISK_SPECTRUM_VERDICT_2026-10-30.md).

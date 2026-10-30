@@ -1,3 +1,7 @@
+## October 30 (late) — O30r: the risk spectrum from today's level to all-in, and the final verdict (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_RISK_SPECTRUM_VERDICT_2026-10-30.md`.
+
 ## October 30 (night) — O30s: rupees on Rs 2.5 lakh, what size costs, and the pass-over-stretched rule (research, Dev; nothing changed in the system)
 
 - Research only; no runtime change. Findings: `docs/FNO_EARNING_POWER_2026-10-30.md`. The shipped F&O limits it measured are unchanged: 2 lots (3 when proven), 2% risk capped at Rs 6,250, 15% of the money in premium, 3 trades a day, day / week / month / total stops at 3 / 6 / 10 / 15%.

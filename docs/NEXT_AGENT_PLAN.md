@@ -1,3 +1,18 @@
+## October 30 (late) — O30r: the risk spectrum from today's level to all-in, and the final verdict (research, Dev; nothing changed in the system)
+
+- **Owner (Oct 30):** "are we being too conservative? ... test multiple parameters ... from the conservative we have right now ... to more radical that can loose everything in one shot ... tell me which level of conservativeness felt the best in the 2 years", then "tell me the final verdict on what days or trends what best strategy we have ... is our system atleast generally profitable?".
+- **Files:** `docs/FNO_RISK_SPECTRUM_VERDICT_2026-10-30.md` (the verdict), `docs/research/fno/2026-10-30-risk-spectrum/` (`lab_r.py`, `analyze_r.py`, `verdict_r.py`, `exam_r.py`, tests, freezes, results), `docs/FNO_YEAR_DATA_TESTING_METHOD.md` section 15.
+- **Commits:** freeze `8fd8de8`; results + 2024 sheet 3 `bc5a93a`. Pushed to Dev. **Not deployed; Production stays at release `c97cb8c`.**
+- **Verification:** 692 exact replays, `check_book` found 0 problems; `SHIPPED|AS` reproduces the stored rupees exactly; samples replayed twice are identical; 13 study tests pass.
+- **Results (with Rs 200 per lot per trade + Rs 5 per lot of order size in the path, an assumption):**
+  - Balanced pick: TPB + skip-stretched at 2% (Rs 5,000) risk, no lot cap, no brakes: +61,417 / +31,346, Rs 2.5L to 3,49,696, fall 21%. Second: the same at today's limits: +37,320 / +22,413, 3,29,141, fall 12%. Most money: 5%, 4,15,516, fall 51%. 25%: 31,351. All-in, no stops: 2,361.
+  - Today's live book at today's limits: -38,681 / +61,674, and it stops itself in March 2025. With the rule: +4,805 / +47,333.
+  - By day: big trend days earn for nearly every strategy; EFF earns on big two-way days; nothing is reliable on sideways days (1 of 116 positive in both years).
+  - TPB + rule, per lot, as replayed / +Rs 200: 16 / 14 of 22 months green, 16 / 14 of 20 three-month windows, weekly t 2.43 / 1.63. The best of 20 random books is +1,222.
+- **Decisions:** no runtime change. Lots not raised. Risk per trade stays Rs 5,000. The pick goes to the 2024 exam; the owner decides afterwards, including whether the Nov 2 test should trade the rule.
+- **Config and migration:** none.
+- **Remaining:** owner's ICICI login; NIFTY 2024 download; sheets 1, 2, 3 in that order. Never equate these replays with a profitable strategy.
+
 ## October 30 (night) — O30s: rupees on Rs 2.5 lakh, what size costs, and the pass-over-stretched rule (research, Dev; nothing changed in the system)
 
 - **Owner (Oct 30):** "so many people earn literally lakhs in single days ... why can the system not even earn 2 lakhs in any single year? is it because of our conservativeness? ... search and make combinations and test it out ... tell me how much tradeoff".
