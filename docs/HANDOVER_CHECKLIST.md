@@ -1,3 +1,11 @@
+## October 30 - O30p option-depth research (before scoring; Dev only)
+
+- **Problem:** O30n micro exits/extra entry failed. Test the option chosen for the same signal: target delta 0.40, 0.65, 0.75 against each unchanged 0.55 parent (TPB / best blend), six offspring. No additional day filter.
+- **Files/contracts:** `docs/research/fno/2026-10-30-option-depth/`; process-local delta override at the existing entry planner, always restored; all exits, deadlines, affordability, stops, halts and costs retained. Actual sealed weekly contracts only. No Production code changes.
+- **Acceptance:** setting restoration on success/failure, exact reference parity, both years / four halves, own-parent comparison, Rs200/300 per-trade stress, null median, unresolved positions and per-parent cross-year selection. Freeze committed/pushed before scoring.
+- **Rollout/rollback:** research only; no deployment/config/migration. Two workers, free-memory guard. Stop workers to stop study. Existing 2024 exam untouched.
+- **Remaining:** run, report every failed arm, and retain exact Rs12,500 one-lot simulation as a separate acceptance task. A richer option might be unaffordable even if normalised returns improve.
+
 ## October 30 - O30n micro-adaptive research complete (freeze b8ed28d; Dev only)
 
 - **Result:** all eight declared offspring fail; 62 book/year evaluations complete, exact live baseline +271/+80,912 per lot. Eight focused tests pass. [Full results and learning](research/fno/2026-10-30-micro-adaptation/README.md).
