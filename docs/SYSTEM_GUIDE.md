@@ -1,3 +1,7 @@
+## October 30 — O30 NIFTY 2025 clean test of the 2026 strategies (research, Dev: freeze 7d9eeb3, results committed; the ADX gate and the sideways fades do not hold on 2025, TPB alone is positive in both years; nothing changed)
+
+- Research only; no runtime change. The 2026 strategies were replayed on NIFTY 2025. The live book stays `FNO_BOOK=UNION_ADX` until the owner decides.
+
 ## October 29 — O29i Sideways-day entries study (research only) (research, Dev: freeze d5b08c9, results committed; the failed-break fade helps on sideways days (in-sample), VWAP/RSI2 do not; nothing changed)
 
 - Research only; no runtime change. It tests whether failed-break, VWAP-reversion, prior-day-rejection and RSI(2) entries make money per lot on the days the trend gate sits out.

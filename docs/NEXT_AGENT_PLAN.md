@@ -1,3 +1,29 @@
+## October 30 — O30 NIFTY 2025 clean test of the 2026 strategies (research, Dev: freeze 7d9eeb3, results committed; the ADX gate and the sideways fades do not hold on 2025, TPB alone is positive in both years; nothing changed)
+
+- **Owner (Oct 30):** "check if the nifty all 3585 are downloaded ... If it is then run our test simulation in that year and this year together ... test for nifty".
+- **Data:** NIFTY 2025 was downloaded on Oct 30 by another agent, following `sentinel-operations/breeze-history-20261029/DOWNLOAD_GUIDE.md`.
+  - All 3,585 option requests came back ok, with 0 expiry mismatches.
+  - The SENSEX remainder continues there.
+  - The study copies the NIFTY rows read-only into its own sealed file, without 2026 rows and without the Oct 21 Diwali Muhurat day: 248 sessions.
+- **Study (`docs/research/fno/2026-10-30-nifty-2025-test/`; research only):** 76 frozen books, unchanged from the 2026 studies, replayed once on 2025 through the same shipped book.
+  - **The books:** UNION_ADX, the O29i FADE / PDL_FADE picks, TPB at ADX ≥ 20, each strategy with and without the gate, UNION, UNION_DRIVE, and 60 random-entry books.
+  - **2026** is read back from the stored replays, after checking that the engine files are unchanged since O29i.
+- **Acceptance (frozen in `freeze.json` before scoring):**
+  - UNION_ADX must be > 0 and beat UNION, UNION_DRIVE and the gated random books' median.
+  - A fade must be > 0 on sideways days and beat the random sideways median.
+  - TPB at ADX ≥ 20 must be > 0 and beat TPB always.
+- **Config and migration:** none. Nothing is deployed.
+- **Results (per lot of 65; `docs/research/fno/2026-10-30-nifty-2025-test/README.md`):**
+  - **The live UNION_ADX made +₹271 on 2025** (138 trades, max DD ₹31,482, 4 green / 4 red months). It loses to UNION without the gate (+₹27,140) and to UNION_DRIVE (+₹64,712), so the trend book does not hold.
+  - **The sideways fades lost on 2025's sideways days:** FADE −₹14,518 and PDL_FADE −₹12,775 (the random books' median was −₹22,894). UNION_ADX + FADE made −₹14,248, so the fade is not recommended.
+  - **TPB alone was positive in both years:** always on +₹36,694 on 2025 (+₹78,750 with 2026); at ADX ≥ 20 +₹24,680 (+₹79,496 with 2026, max DD ₹14,966, the smallest).
+  - **Both years together:** UNION_ADX +₹81,183, all of it from 2026. UNION_DRIVE +₹72,000 (max DD ₹57,189). The ranking flips between years.
+  - **Caveat:** candles came out about ₹100–200 per trade per lot better than the recorded quotes (O29f), so books with many trades are flattered most.
+- [ ] **Owner's call before the real-money week (Nov 2–6):** keep UNION_ADX, return to UNION_DRIVE, or move to a TPB-only book.
+  - Returning to UNION_DRIVE takes only `FNO_BOOK=UNION_DRIVE` plus an engine restart.
+  - A TPB-only book needs a small engine change, which goes Dev → PR → deploy.
+- **Verification:** `test_lab_t.py` 2 passed. The warm-up had 0 memo conflicts. All 76 replays finished with no traceback.
+
 ## October 29 — O29i Sideways days: famous range-day entries on the days the trend gate sits out (research, Dev: freeze d5b08c9, results committed; the failed-break fade helps on sideways days (in-sample), VWAP/RSI2 do not; nothing changed)
 
 - **Owner (Oct 29 evening, queued after O29h):** "on the days in system is sideways ... search for the most best strategies at that time ... capital invested you can reduce ... test out strategies that are famous for sideways days".
