@@ -107,6 +107,8 @@ for every daily module.
 
 The complete worked example is [FNO_STRATEGY_TESTING_PLAYBOOK.md](FNO_STRATEGY_TESTING_PLAYBOOK.md). It covers the Oct 27, 2026 grid, the evolution and the daily forward panel, and how to test a new strategy.
 
+Since Oct 29–30, 2026, F&O strategies are tested on year-long ICICI Breeze 1-minute data: NIFTY Jan–Oct 2026, 2025, and 2024 as a one-time exam. The method, with a copy-ready study template, is [FNO_YEAR_DATA_TESTING_METHOD.md](FNO_YEAR_DATA_TESTING_METHOD.md); the findings are in [FNO_RESEARCH_2026-10-30_SUMMARY.md](FNO_RESEARCH_2026-10-30_SUMMARY.md).
+
 F&O option history is not on Yahoo. The engine already archives every NIFTY
 quote batch (future + ATM±5 calls/puts, two expiries, raw packets) on the data
 volume. Export it read-only, then study it with the same tool:
@@ -137,7 +139,7 @@ planner, gates, exit ladder, costs and brakes; never fork them for research.
 | Range | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
 | Swing | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
 | Momentum | Sep 24–30, 2026; all of Aug 10–Oct 1 for round 3 design | Aug 10–Sep 23 + Oct 1, 2026 (T2) | Kite Jan–Jul 2026 (reserved for `momentum-smart-t3`), forward data |
-| F&O single-leg | Sep 10 – Oct 26, 2026, for entries **and** exits (the Oct 24 entry study, the O27 grid, the O27b evolution) | Sep 24–Oct 1, 2026 (`fno-trader-v1`); Oct 12–23 (`fno-entry-t2`) | forward sessions from Oct 28, 2026; Oct 28 – Nov 27 is held by the O27c forward panel |
+| F&O single-leg | Sep 10 – Oct 26, 2026, for entries **and** exits (the Oct 24 entry study, the O27 grid, the O27b evolution); NIFTY Jan 1 – Oct 28, 2026 on Breeze data (O29f–O29i, O30c, O30m) | NIFTY 2025 on Breeze data (O30 clean test, Oct 30; since then also used by O30c / O30m) | NIFTY 2024 (reserved for the one-time O30f exam, `freeze-2024.json`); forward sessions from Oct 29, 2026 (forward panels Oct 28 – Nov 27) |
 
 Historical note: the T1 Penny and EDGE freezes were made with the earlier
 per-module scripts (`scripts/run_penny_trader_oos.py`,

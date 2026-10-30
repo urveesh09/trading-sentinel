@@ -1,3 +1,17 @@
+## October 30 — O30 documentation: the Oct 29–30 research summary, the year-data testing method, a study template and the 2024 scorer (docs + research tooling, Dev; nothing changed in the system)
+
+- **Owner (Oct 30):** "what all strategies you have done and everything about the testing and what issues happened in our strategy why it failed in one year and worked in another ... give me the documentation for how you did the testing the methodology for that, so if some other agent does that they can easily do the testing".
+- **New:**
+  - `docs/FNO_RESEARCH_2026-10-30_SUMMARY.md`: every study and strategy, results, why one year worked and the other failed, the over-tuning guard, the issues, next steps, and where everything is.
+  - `docs/FNO_YEAR_DATA_TESTING_METHOD.md`: data, the replay stack, module chain and year selection, how to express and add a strategy, the 12-step protocol, metrics, honesty checks, the window ledger, pitfalls, and the 2024 exam.
+  - `docs/research/fno/study_template/` (`lab_x.py`, `analyze_x.py`, `test_lab_x.py`): an example entry wired through the whole chain. Its 2 tests pass, and its January 2025 plumbing run takes 15 trades.
+  - `docs/research/fno/run_slice.py`: bounded foreground slices. It was tested on a job that finishes and on a job that gets stopped.
+  - `docs/research/fno/2026-10-30-day-router/analyze_f.py`: the `RULE_2024` scorer, committed before any 2024 data exists.
+- **Updated:**
+  - `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md`: a pointer, and §8's ledger marked superseded.
+  - `docs/RESEARCH_TESTING_METHOD.md`: a pointer, and the F&O ledger row.
+- **Config and migration:** none. Nothing is deployed.
+
 ## October 30 — O30m Kind-of-day router over a 134-strategy library, and the NIFTY 2024 exam freeze (research, Dev: freeze 2bcec04, routers 33947f2, 2024 freeze 2a57ede; the router fails the cross-year check, the trend pullback is the one robust family; nothing changed)
 
 - **Owner (Oct 30):** identify the kind of day (macro) and what the trade is doing (micro), and deploy the strategy that suits it; search widely without over-tuning; 2024 is the test.
