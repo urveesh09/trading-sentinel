@@ -3,7 +3,7 @@
 - **Owner (Oct 30):** "so many people earn literally lakhs in single days ... why can the system not even earn 2 lakhs in any single year? is it because of our conservativeness? ... search and make combinations and test it out ... tell me how much tradeoff".
 - **Problem:** every earlier F&O study was per lot. Nothing measured rupees on the book, what size costs, or the fall that comes with it.
 - **Files:** `docs/FNO_EARNING_POWER_2026-10-30.md` (the plain write-up), `docs/research/fno/2026-10-30-earning-power/` (`lab_s.py`, `analyze_s.py`, `reference_s.py`, `report_s.py`, `lab_s2.py`, `analyze_s2.py`, `report_s2.py`, `exact_s.py`, `exam_s.py`, tests, freezes, results), `docs/FNO_YEAR_DATA_TESTING_METHOD.md` section 15 (the method).
-- **Commits:** freeze `045351b`; results + Tier 2 freeze `fd8e4c1`; Tier 2 results + 2024 sheet 2 `ff08fca`. All pushed to Dev. **Not deployed; Production stays `a461bde`.**
+- **Commits:** freeze `045351b`; results + Tier 2 freeze `fd8e4c1`; Tier 2 results + 2024 sheet 2 `ff08fca`. All pushed to Dev. **Not deployed; Production stays at release `c97cb8c`, which runs the `a461bde` engine (PR #125 added research and docs only).**
 - **Verification:** 25 study tests pass. Shipped-mode references reproduce exactly (+271 / +80,912, +34,517 / +80,232, +36,694 / +42,056). The simulator's shipped sizing is within Rs 2,416 a year and one trade of the stored replays.
 - **Results:**
   - The book uses 4-7% of the money per trade by design. Size alone fails: LIVE at 3 lots, no brakes, -34,479 in 2025 (-1,25,079 after Rs 200 per lot per trade); LIVE + add at 6 lots, exact, +5,79,750 in 2026 (best day 1,38,943) and -2,11,891 in 2025 (85% fall).
