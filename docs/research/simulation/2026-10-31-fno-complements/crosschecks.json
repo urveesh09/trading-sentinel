@@ -1,0 +1,192 @@
+{
+  "at": "2026-10-31T17:06:07.427500",
+  "source_freeze": "86a4fd0",
+  "sources_match": true,
+  "datasets": {
+    "2024": {
+      "manifest_and_data_match": true,
+      "daily_snapshot_matches": true,
+      "all_random_controls_match": true,
+      "sessions": 248
+    },
+    "2025": {
+      "manifest_and_data_match": true,
+      "daily_snapshot_matches": true,
+      "all_random_controls_match": true,
+      "sessions": 248
+    },
+    "2026": {
+      "manifest_and_data_match": true,
+      "daily_snapshot_matches": true,
+      "all_random_controls_match": true,
+      "sessions": 203
+    }
+  },
+  "replay_count": 24,
+  "closed_records_across_independent_arms": 1087,
+  "unresolved": 0,
+  "max_net_reconciliation_error_rs": 4.98994102144934e-05,
+  "all_trade_financial_timing_checks": true,
+  "production_http": 200,
+  "arms": {
+    "2024|EX|MAIN": {
+      "closed": 25,
+      "sum_net": 16371.2836,
+      "eval_sha256": "064e593cb508f849e40d38868523f09cfa8f0a97a5f4d283a5aeb35c9d13b256"
+    },
+    "2024|RAW|MAIN": {
+      "closed": 28,
+      "sum_net": 9843.1021,
+      "eval_sha256": "2739b78a83b588aff0e9583579a7178c5430f3c67230abe0624010b863974ae2"
+    },
+    "2024|EX|TPB_PUT_CONTROL": {
+      "closed": 44,
+      "sum_net": 15337.4363,
+      "eval_sha256": "fc60bea675d44fee25e5d81f732fa7156c651afd44d1575dc787a49b69a1a5a6"
+    },
+    "2024|RAW|TPB_PUT_CONTROL": {
+      "closed": 19,
+      "sum_net": 16998.8864,
+      "eval_sha256": "c291a5c80a6db817609c043bcaed75442612412ffe4320236d446db0d711879c"
+    },
+    "2024|RAW|INTRADAY_DMI": {
+      "closed": 32,
+      "sum_net": 8195.3953,
+      "eval_sha256": "8eba4d2c4d7888b02c5b0d5297082d4249ae9c2993f2d433e3c940d2043fe6e0"
+    },
+    "2024|EX|INTRADAY_DMI": {
+      "closed": 56,
+      "sum_net": 10053.2972,
+      "eval_sha256": "95fc5bf959601b0e67266ccdb8105cc1152ddfe39f52e1def97e38d80d337aad"
+    },
+    "2024|RAW|SHOCK_RECOVERY": {
+      "closed": 16,
+      "sum_net": -3176.013,
+      "eval_sha256": "d4ad12dd314d1b96a6fcffd3065b2d033528fed68a67eb0c285f868bf3bfbe79"
+    },
+    "2024|EX|SHOCK_RECOVERY": {
+      "closed": 41,
+      "sum_net": 2680.69,
+      "eval_sha256": "283351ce750170e6e2f1e66b78b849ada65aafbb7b9cb41255a0410e4c735ff3"
+    },
+    "2025|EX|MAIN": {
+      "closed": 50,
+      "sum_net": 5709.8349,
+      "eval_sha256": "aed4df59079d4dd15a942a867a27cf47275b9f6f10bf076c32e1bc380592cd1b"
+    },
+    "2025|RAW|MAIN": {
+      "closed": 56,
+      "sum_net": 21502.0638,
+      "eval_sha256": "3eee56d99c35b24dd5820a38725acae505ac0abf3470c74907cb1a12c2daef1f"
+    },
+    "2025|EX|TPB_PUT_CONTROL": {
+      "closed": 98,
+      "sum_net": 47891.9913,
+      "eval_sha256": "b5e96fabc2f46601e947cbae20e5c882fd251d4db1f8804db4215ce301fb31b8"
+    },
+    "2025|RAW|TPB_PUT_CONTROL": {
+      "closed": 54,
+      "sum_net": 38631.3121,
+      "eval_sha256": "bbfc6657fe12befb6b3d5610b27678a34a2a31086df53652b55222d12e07288c"
+    },
+    "2025|RAW|INTRADAY_DMI": {
+      "closed": 59,
+      "sum_net": -28500.0136,
+      "eval_sha256": "cdbdeb66cf19e2704f820afbda287bc201ada30e1e9a06462bfe3a2a064f8345"
+    },
+    "2025|EX|INTRADAY_DMI": {
+      "closed": 101,
+      "sum_net": -34453.8275,
+      "eval_sha256": "ca442923c9335d9832404e0a6af6d32a7fb155e13e8a7e0c8a207b99532736cf"
+    },
+    "2025|RAW|SHOCK_RECOVERY": {
+      "closed": 19,
+      "sum_net": -1501.2876,
+      "eval_sha256": "ca22a41564ffb648736441d80d5f39e70f15f8d17c944001a709ff4b2cfb0c15"
+    },
+    "2025|EX|SHOCK_RECOVERY": {
+      "closed": 69,
+      "sum_net": -566.3948,
+      "eval_sha256": "8e4c2b197f926af4e056731ffc6601b349de5812aea009bf520aa82a49ce045f"
+    },
+    "2026|EX|MAIN": {
+      "closed": 33,
+      "sum_net": 30540.2141,
+      "eval_sha256": "e2f82de2325ac0910563e0cf6569e2abdd942da9e049213db7a9bf86068bf7e1"
+    },
+    "2026|RAW|MAIN": {
+      "closed": 36,
+      "sum_net": 35825.1571,
+      "eval_sha256": "ffea5af62917c23f94beaacd3c525de685c7d60d1630e71702549c03b35411c4"
+    },
+    "2026|EX|TPB_PUT_CONTROL": {
+      "closed": 64,
+      "sum_net": 77232.9839,
+      "eval_sha256": "79eb05d1bb66b51bea6264b2de9853358027d6dc8f40f91203e47fc1a56467ea"
+    },
+    "2026|RAW|TPB_PUT_CONTROL": {
+      "closed": 29,
+      "sum_net": 29359.4982,
+      "eval_sha256": "242e0cbe3116d742c047731beeb37612cd16dfc17cc417cbf84fb1966c073cd5"
+    },
+    "2026|RAW|INTRADAY_DMI": {
+      "closed": 47,
+      "sum_net": -27712.2751,
+      "eval_sha256": "0290fc73bef8a2860555802af6c764d67958e0aede53f519e559fd5e3e2dafa0"
+    },
+    "2026|EX|INTRADAY_DMI": {
+      "closed": 59,
+      "sum_net": -38703.6297,
+      "eval_sha256": "d0ddcd0785fadd5f0db8b7f5ee91ceb961cc20d0d51bd1692963fb249e40fbda"
+    },
+    "2026|RAW|SHOCK_RECOVERY": {
+      "closed": 9,
+      "sum_net": 12731.7887,
+      "eval_sha256": "4231e65370aef29a3c2e49a60d915a403f71649ee1a648d3ec2ef809f7eaa1c2"
+    },
+    "2026|EX|SHOCK_RECOVERY": {
+      "closed": 43,
+      "sum_net": 57148.8441,
+      "eval_sha256": "69c0855aef0d2ac755ec44221069ebb9b1f1ab277a2fef0d239e1cf413808488"
+    }
+  },
+  "scope": "Independent arms are not a single portfolio; yearly accounts restart. No historical-execution or profitability proof.",
+  "independent_admission_checks": {
+    "2024": {
+      "checked_trades": 261,
+      "daily_gate_and_member_attribution": true,
+      "lots_and_day_caps": true,
+      "last_candidate_signal_closes_by1330": true,
+      "latest_candidate_entry_clock": {
+        "RAW|INTRADAY_DMI": "13:10:59",
+        "EX|INTRADAY_DMI": "13:10:59",
+        "RAW|SHOCK_RECOVERY": "13:00:59",
+        "EX|SHOCK_RECOVERY": "13:00:59"
+      }
+    },
+    "2025": {
+      "checked_trades": 506,
+      "daily_gate_and_member_attribution": true,
+      "lots_and_day_caps": true,
+      "last_candidate_signal_closes_by1330": true,
+      "latest_candidate_entry_clock": {
+        "RAW|INTRADAY_DMI": "13:15:59",
+        "EX|INTRADAY_DMI": "13:15:59",
+        "RAW|SHOCK_RECOVERY": "13:21:59",
+        "EX|SHOCK_RECOVERY": "13:21:59"
+      }
+    },
+    "2026": {
+      "checked_trades": 320,
+      "daily_gate_and_member_attribution": true,
+      "lots_and_day_caps": true,
+      "last_candidate_signal_closes_by1330": true,
+      "latest_candidate_entry_clock": {
+        "RAW|INTRADAY_DMI": "13:30:59",
+        "EX|INTRADAY_DMI": "13:30:59",
+        "RAW|SHOCK_RECOVERY": "13:21:59",
+        "EX|SHOCK_RECOVERY": "13:21:59"
+      }
+    }
+  }
+}
