@@ -1,3 +1,14 @@
+## October 31 — O31h: winning-case diagnosis and two follow-up entries frozen (Dev research)
+
+- **Question:** when did O31g's failed complements earn, were those conditions visible at entry, and do related entry mechanisms improve them? Plan/source in `docs/research/simulation/2026-10-31-fno-conditional-followup/`. No application/Production changes.
+- **Diagnosis:** 182 old raw trades checked with future-bar/today-daily mutations. DMI had34 wins/138; recovery17/44. Each has profitable months/trades, but NONE of22 described single entry-known conditions per family is positive in every year. Selecting a positive, >=8-trade condition on two years yields no eligible choice in any fold. These are exploratory subsets, not new replays or independent holdouts.
+- **Sources/mechanisms:** primary literature separates information-driven continuation from temporary-pressure reversal; aggregate volume cannot reveal buyer/seller intent. Existing candles lack point-in-time news, signed order flow, depth and constituent residuals. No source's US/FX/futures results are presented as NIFTY-option profitability.
+- **Frozen follow-up:** TWO entries, both below dailyADX30: DMI break→later VWAP touch/hold→separate confirmation; shock→two inside bars holding its half→continuation breakout. Mirrored directions, structural bounded stops, RUN exits, existing skip/cash/risk/lot/deadline contracts. Exact rules in configuration.json. 21 planned replays (seven books/year), including fresh main and both original raw controls.
+- **Acceptance:** same strict all-year/sample/half-year/best-day/t checks as O31g, combined improvement EVERY year and fall<=main+1 point, source/data bindings, old raw trade-for-trade parity, financial reconciliation, no unresolved. All three years seen; a pass only allows prospective paper research. The 2023 exam stays unchanged/unscored.
+- **Verification:** 15 focused new tests pass, including state ordering, timeout/invalidation, missing inputs, mirrored directions and every-prefix/changed-tail checks. Source freeze will be committed/pushed before new scoring. Atlas regeneration, replay reconciliation and result handoff remain.
+- **Rollout/rollback/config:** research only; no config/migration/order authority/deploy. Stop research workers; preserve failures. Owner's existing dirty files/slices retained.
+
+
 ## October 31 — O31g complete: two additional F&O complements rejected (Dev research only)
 
 - **Outcome:** 24 new replays on 699 archived NIFTY sessions, rules/source frozen and pushed in `86a4fd0` first. Neither intraday-DMI trend emergence nor confirmed shock recovery passes. [Report and concrete next work](research/simulation/2026-10-31-fno-complements/README.md); `results.json`, `crosschecks.json` preserve all outcomes. No runtime strategy change.

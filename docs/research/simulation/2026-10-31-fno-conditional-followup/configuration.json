@@ -1,0 +1,18 @@
+{
+  "schema": "o31h_v1",
+  "scope": "NIFTY single long-option complements on prior daily ADX<30; main unchanged at>=30",
+  "years": ["2024", "2025", "2026 through October28"],
+  "classification": "all seen; diagnostic conditions and follow-up ideas found by looking; no fresh qualification",
+  "opening": "independent fresh Rs250000 yearly accounts, no opening positions",
+  "invariants": "normalized lot65; same expiry/delta0.55 selection, broker fees, cash/lot/risk gates, entry/hard-flat deadlines and stretch0.5 rule",
+  "exact": "complete shared main+one complement; original brakes/sizing; extra cost=(200+5*lots)*lots inside cash lifecycle",
+  "raw": "one lot, diagnostic brakes disabled, max6/day; Rs200/trade extra after replay, Rs300 sensitivity on identical trades",
+  "DMI_VWAP_RETEST": "old intraday-DMI break arms; within six subsequent contiguous five-minute bars, later touch within0.25ATR of VWAP with close holding correct side; another bar closes beyond previous extreme while ADX>=25 and DI ratio>=1.5; failure through VWAP invalidates; structural stop beyond pullback extreme+0.1ATR, floor0.5ATR, reject>2ATR; target2R; RUN exits; one attempt per direction",
+  "SHOCK_FLAG": "same shock as O31g (range>=2*prior12-bar median, body>=60%, close outer20%); two later inside bars hold directional half, then within6bars break their range with close on VWAP's correct side; failure through midpoint/range invalidates; stop beyond flag extreme+0.1ATR, floor0.5ATR, reject>2ATR; target2R; RUN exits; one entry per direction",
+  "candidate_clock": "last eligible signal closes13:30; original minute-observation execution clock and hardflat15:10",
+  "data": "same immutable Breeze snapshots/private daily warmup as O31g; negative volumes and other coverage limitations retained",
+  "exam": "existing2023 intraday/options exam unchanged/unopened, no new acquisition",
+  "authority": "offline, worker network disabled; no scheduler, notification, broker order, environment or Production changes",
+  "qualification": "NOT_ASSESSED",
+  "can_place_orders": false
+}
