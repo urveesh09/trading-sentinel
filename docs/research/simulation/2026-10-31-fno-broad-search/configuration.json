@@ -1,0 +1,22 @@
+{
+  "schema": "o31i_v1",
+  "scope": "NIFTY single-leg weak-day genome screen, selected shared main-book replays and separate matched vertical expressions",
+  "years": ["2024", "2025", "2026 through October28"],
+  "data_status": "all three years repeatedly seen; original2023 exam unchanged and unopened",
+  "population": "12 families x4 fixed balanced genomes; no iterative outcome-driven parameter changes",
+  "genes": [[10,1.0,2.0,"LIVE"],[20,1.5,2.0,"LIVE"],[10,1.5,3.0,"RUN"],[20,1.0,3.0,"RUN"]],
+  "signal_clock": "completed five-minute bars only; contiguous lookback; eligible signals09:45-14:00; old main entry end14:45 and hardflat15:10 retained",
+  "new_family_location_rule": "none; the old stretch0.5 rule remains specific to original main members, never globally assumed suitable for new families",
+  "diagnostic": "freshRs250000/year, one normalized lot65, original risk/premium/cash admission limits, max6/day, diagnostic brakes disabled; Rs200 extra/trade after replay, Rs300 sensitivity",
+  "combined": "main first four unchanged, candidate only on dailyADX<30, missing daily gate closed; old main keeps ADX30 and stretch0.5; shared sizing/cash/brakes and current cost+(200+5*lots)*lots",
+  "selection": "train proposals on2024+2025 only with positive net and12trades/year, max6 and1perfamily; BOTH/LONG/SHORT subsetting only a proposal followed by real replay",
+  "randomization": "48 fixed genomes; null sensitivity shared4-week block sign flips,4096 draws, seed310126; not a correction for all earlier searches",
+  "paired_expression": "reproduced raw-main and TPB-put signals, same recorded clocks,50/100/150-point verticals; positive-volume exact-minute prices required for both legs at entry AND exit; no proxy fill for unavailable legs",
+  "paired_cost": "current broker fee schedule four orders and modeled adverse bid/ask; extraRs200/400 per spread; one lot; current raw single-leg priced on same exact-minute basis for parity",
+  "paired_capital": "debit paid or full width*65 plus entry/exit fees reserved from own cash250000; credit never finances more exposure; no historical broker margin claim",
+  "paired_limit": "matched-expression diagnostic only; no spread-specific stop/admission/carry/shared portfolio replay; no live qualification",
+  "known_limits": "modeled spreads/candles,normalized lots,current fee schedule,UNKNOWN regime when unrecorded,known negative-volume/gap/special-session issues; no historical depth",
+  "authority": "offline research; no scheduler,broker orders,messages,Production edits,settings,migrations or capital activation",
+  "qualification": "NOT_ASSESSED",
+  "can_place_orders": false
+}
