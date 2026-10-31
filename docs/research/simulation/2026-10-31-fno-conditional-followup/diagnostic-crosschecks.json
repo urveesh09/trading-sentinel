@@ -1,0 +1,43 @@
+{
+  "years": {
+    "2024": {
+      "INTRADAY_DMI": {
+        "trades": 32,
+        "net_after200": 1795.4,
+        "every_bucket_partition_reconciles": true
+      },
+      "SHOCK_RECOVERY": {
+        "trades": 16,
+        "net_after200": -6376.01,
+        "every_bucket_partition_reconciles": true
+      }
+    },
+    "2025": {
+      "INTRADAY_DMI": {
+        "trades": 59,
+        "net_after200": -40300.01,
+        "every_bucket_partition_reconciles": true
+      },
+      "SHOCK_RECOVERY": {
+        "trades": 19,
+        "net_after200": -5301.29,
+        "every_bucket_partition_reconciles": true
+      }
+    },
+    "2026": {
+      "INTRADAY_DMI": {
+        "trades": 47,
+        "net_after200": -37112.28,
+        "every_bucket_partition_reconciles": true
+      },
+      "SHOCK_RECOVERY": {
+        "trades": 9,
+        "net_after200": 10931.79,
+        "every_bucket_partition_reconciles": true
+      }
+    }
+  },
+  "unique_trades": 182,
+  "entry_features_checked_against_future_mutations": 182,
+  "hindsight_not_used_in_entries": true
+}
