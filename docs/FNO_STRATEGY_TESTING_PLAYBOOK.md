@@ -4,7 +4,7 @@ This is the complete record of how the NIFTY F&O strategy tests of October 27, 2
 
 Read [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md) first: freeze before scoring, never tune on seen data, tests ≠ profitability.
 
-> **Update, Oct 30, 2026:** testing has moved on to year-long ICICI Breeze data: NIFTY Jan–Oct 2026, all of 2025, and 2024 as a one-time exam.
+> **Update, Oct 31, 2026:** testing has moved on to year-long ICICI Breeze data: NIFTY Jan–Oct 2026, all of 2025, and all of 2024 (the one-time exam, now used up).
 > - **The method and a copy-ready template:** [FNO_YEAR_DATA_TESTING_METHOD.md](FNO_YEAR_DATA_TESTING_METHOD.md).
 > - **What was found:** [FNO_RESEARCH_2026-10-30_SUMMARY.md](FNO_RESEARCH_2026-10-30_SUMMARY.md).
 > - **Superseded here:** the window ledger in section 8. The current ledger is section 11 of the method document.
@@ -437,7 +437,7 @@ Make a new dated panel (copy `run_fno_forward_panel.py`), with a new `START`/`EN
 
 ## 8. Window ledger for F&O single-leg (after Oct 27, 2026)
 
-> **Superseded on Oct 30, 2026.** NIFTY Jan–Oct 2026 and all of 2025 are now seen, and 2024 is reserved for a one-time exam. See section 11 of [FNO_YEAR_DATA_TESTING_METHOD.md](FNO_YEAR_DATA_TESTING_METHOD.md). The table below is kept as it stood on Oct 27.
+> **Superseded on Oct 31, 2026.** NIFTY Jan–Oct 2026, all of 2025 and all of 2024 are now seen. See section 11 of [FNO_YEAR_DATA_TESTING_METHOD.md](FNO_YEAR_DATA_TESTING_METHOD.md). The table below is kept as it stood on Oct 27.
 
 | Window | Status |
 | --- | --- |

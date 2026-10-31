@@ -5,8 +5,9 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 - **The earlier archive-quote method** (Sep–Oct 2026 quotes, the grid, the evolution, the forward panel): [FNO_STRATEGY_TESTING_PLAYBOOK.md](FNO_STRATEGY_TESTING_PLAYBOOK.md).
 - **The general research rules:** [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md).
 - **Testing size in rupees, not per lot:** section 15, with the worked study [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md).
+- **The 2024 exam's results (Oct 31):** [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md). Running an exam like it: section 14.
 
-**The fastest way in:** copy `docs/research/fno/study_template/`, put your entry rule into `entries()`, and follow section 8. The template already does everything below; it was tested on Oct 30 (2 checks pass; the January 2025 plumbing run takes 15 trades).
+**The fastest way in:** copy `docs/research/fno/study_template/`, put your entry rule into `entries()`, and follow section 8. The template already does everything below, on all three years. Proven on Oct 31: 2 checks pass; bindings and the January plumbing run work for 2024 (10 trades), 2025 (15) and 2026 (10); the three-year analysis reproduces the live book's figures.
 
 ---
 
@@ -16,8 +17,8 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 2. **Freeze before scoring.** Commit the books, the pass/fail rule and the analysis script (`freeze.json`, and push it) before the first replay of anything you will judge. The runners refuse to score if a bound file, a dataset or an `FNO_*` setting changed since the freeze.
 3. **Seen data is seen** (ledger in section 11). Choosing anything by looking at a year makes that year in-sample for it. Report in-sample results as description, never as proof.
 4. **Compare, don't admire.** Every study replays the live book (`REF|LIVE`) and 20 random-entry books beside the candidate.
-5. **Both years separately.** A rule must work in 2025 and in 2026 on its own, and in most half-years. A good total alone means nothing.
-6. **One-time exams.** NIFTY 2024 (`freeze-2024.json`) and the forward panel are scored once, unchanged. Never tune on them.
+5. **Every year separately.** A rule must work in 2024, 2025 and 2026 on its own, and in most half-years. A good total alone means nothing. O31 is why: 13 of the 14 strategies positive in both 2025 and 2026 lost money in 2024.
+6. **One-time exams.** The NIFTY 2024 exam was scored once on Oct 31 and is used up (section 14). The forward panels are still scored once, unchanged. Never tune on an exam.
 7. **No promises.** A replay is not a profit promise. Never write "max loss" or "breakeven" for real money.
 8. **Secrets.** Research needs none. Never print `.env`, `breeze.env`, tokens or keys.
 9. **The machine is shared with Production.**
@@ -33,7 +34,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 | --- | --- | --- | --- |
 | Jan 1 – Oct 28, 2026 | 203 | `docs/research/fno/2026-10-29-year-genome/_local/dataset-nifty` | `yeardata.py export` (O29f) |
 | 2025 | 248 (Oct 21 Muhurat dropped) | `docs/research/fno/2026-10-30-nifty-2025-test/_local/dataset-nifty-2025` | `lab_t.py mirror` + `export` (O30) |
-| 2024 | — | `docs/research/fno/2026-10-30-day-router/_local/dataset-nifty-2024` | after `download2024.py`: `O30F_YEAR=2024 lab_f.py mirror24` + `export24` |
+| 2024 | 248 (Nov 1 Muhurat dropped) | `docs/research/fno/2026-10-30-day-router/_local/dataset-nifty-2024` | `O30F_YEAR=2024 lab_f.py mirror24` + `export24`; fingerprint `2026-10-30-day-router/data-binding-2024.json` |
 
 - **The source** is ICICI Breeze 1-minute history, in `C:\Users\Urveesh\sentinel-operations\breeze-history-20261029\data\breeze-history.sqlite`.
   - It holds the index, the front futures with a 21-day pre-roll, the nearest weekly options (calls 4 strikes below the day's low to 4 above its high, puts up to 7 above), and daily NIFTY and NIFTY BANK bars.
@@ -53,6 +54,9 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
   - Jan 31, 2025 and Jan 30, 2026 have no index bars before about 11:53 (a Breeze gap).
   - Dec 31 of a year has no weekly expiry inside that year's data, so no options.
   - Diwali Muhurat days (Oct 21, 2025 and Nov 1, 2024) are not sessions.
+  - Mar 2 and May 18, 2024 are half-days: futures exist only 09:15–09:59 and 11:30–12:30, so nothing can trade in the break or after 12:30. A leg still open at the last bar is stored `UNRESOLVED` with no rupee result, and `check_book` counts it. Jan 20, 2024 is a full Saturday session.
+  - Expiry sessions have no same-day options, in every year, by design: the book makes no entries then, so the downloads skip them. The funnel shows `chain_unavailable:calendar_expiry_not_archived` on those days.
+  - NIFTY BANK's daily bar for Apr 19, 2024 is invalid at source (open and low). It is preserved. No scored book reads NIFTY BANK.
 
 ---
 
@@ -96,6 +100,7 @@ sealed dataset --YearData--> fno_policy_replay.SingleLegReplay (the shipped book
   - PowerShell: `$env:O30C_YEAR="2025"`.
   - Git Bash: `O30C_YEAR=2025 python ...`.
   - `run_slice.py --env O30C_YEAR=2025`.
+  - **For 2024, use `O30F_YEAR=2024` and leave `O30C_YEAR` unset.** Your script must `import lab_f` before `lab_c` (the template does). `lab_c` itself only knows 2025 and 2026, so `C.YEAR` reads 2026 on that path: use the template's `YEAR`, and `C.WINDOW` for the window.
 
 ---
 
@@ -187,19 +192,19 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 
 1. **Folder:** copy `study_template/` to `docs/research/fno/<yyyy-mm-dd>-<name>/` and rename the files if you like.
 2. **The question:** write the owner's question and the hypothesis in the module docstring.
-3. **The books:** your candidate(s), with one textbook setting each where possible, plus `REF|LIVE`, `REF|LIVE+tpb_all_days` (the current best candidate) and the 20 random books.
+3. **The books:** your candidate(s), with one textbook setting each where possible, plus `REF|LIVE`, `REF|LIVE+tpb_all_days` (it failed the 2024 exam; a comparison only) and the 20 random books. The best candidate after the exam is the four strategies with the stretched-entry rule (`lab_s2.books("shipped")["LIVE|skip"]`).
    - A grid multiplies the chance of a lucky pass; keep it small and say how many variants you tried.
 4. **The rule (`RULE`) and the analysis script:** written now.
-   - Minimum: the candidate beats its reference in **2025 and in 2026 separately**, is not worse in at least 3 of the 4 half-years, makes at least 40 trades a year, and beats the random books' median.
+   - Minimum: the candidate beats its reference in **2024, 2025 and 2026 separately**, is not worse in at least 4 of the 6 half-years, makes at least 40 trades a year, and beats the random books' median.
    - **If you select among variants:** choose on one year and score on the other, both ways (the O30m check). Only a method that passes both ways may choose on both years.
 5. **Tests:** `pytest` (causality, books).
 6. **Freeze:** `python lab_x.py freeze` writes `freeze.json`. It holds the per-year bindings: the engine and study file hashes, the dataset manifests, the daily bars and the settings. **Commit and push it alone,** without the other agent's working files: stage only your study paths.
 7. **Run each year** in slices until `DONE`.
 8. **Analyse:** `python analyze_x.py` applies the frozen rule and writes `results.json`.
-9. **Sanity check:** your `REF|LIVE` must reproduce the stored numbers exactly (+₹271 on 2025, +₹80,912 on 2026). If it doesn't, something in the setup differs; stop.
+9. **Sanity check:** your `REF|LIVE` must reproduce the stored numbers exactly (+₹21,762 on 2024, +₹271 on 2025, +₹80,912 on 2026). If it doesn't, something in the setup differs; stop.
 10. **Write up:** a study `README.md` (question, freeze commit, tables, verdict, caveats, files). Commit `results.json` and the README.
 11. **The docs ritual (AGENTS.md):** a section in `docs/NEXT_AGENT_PLAN.md`, `docs/HANDOVER_CHECKLIST.md` and `docs/SYSTEM_GUIDE.md` (research only, no runtime change), staged without touching other agents' unstaged edits.
-12. **Next step for a pass:** a pass is a candidate for an unseen check, not a go-live. A runtime change is a separate Dev change → PR → deploy on the owner's word.
+12. **Next step for a pass:** a pass is a candidate for an unseen check (the forward panels, real fills), not a go-live. All three years are now seen, so a pass on them is no longer an exam. A runtime change is a separate Dev change → PR → deploy on the owner's word.
 
 **Ideas you find by looking at results** (slicing tables, the investigation): freeze them separately as in-sample "Tier 2" (`lab_c2.py`). Never count them as proof. O30c showed such ideas failing even in-sample once built into the book.
 
@@ -210,9 +215,10 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 - **Per lot:** `net_pnl / lots_at_exit` per trade, summed per day (`analyze_g.per_lot`).
 - **What `per_lot` reports:** `net`, `without_best_day`, `worst_day`, `dd` (the largest fall of the running total), green/red months and weeks, and `monthly`.
 - **Windows:**
+  - 2024: H1 Jan–Jun, H2 Jul–Dec.
   - 2025: H1 Jan–Jun, H2 Jul–Dec.
   - 2026: H1 Jan–May, H2 Jun–Oct.
-  - Both years: concatenate the trade lists and the session lists.
+  - All years: concatenate the trade lists and the session lists.
 - **One-lot weeks** (`analyze_g.one_lot_weeks`): the real-money rules played week by week. Each week starts at ₹15,000 and stops below ₹7,000, with at most 3 trades a day, one position at a time, and lot 65 with the shipped charges. It reports up / down weeks and the worst week's end.
 - **Slicing versus exact:** cutting a strategy's always-on trades by kind of day is a fast estimate that ignores the book's state (brakes, drawdown halt, slot taken). Anything you would act on must be replayed exactly as a book.
 
@@ -231,14 +237,15 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 
 ---
 
-## 11. Window ledger (F&O single-leg, as of Oct 30, 2026)
+## 11. Window ledger (F&O single-leg, as of Oct 31, 2026)
 
 | Data | Status |
 | --- | --- |
 | NIFTY Jan 1 – Oct 28, 2026 (Breeze year data; the Sep 10 – Oct 26 quote archive) | **Seen**: the ADX gate, the fades and the router choices were all made on it |
 | NIFTY 2025 | **Seen** since O30 (Oct 30): the clean test, then the case study and the router |
-| SENSEX Jan – Oct 2026 | Partly downloaded (Aug 14 – Oct 28 options); the paper book runs SENSEX, but no strategy was chosen on it. The day sides are NIFTY's, so it is not independent for day rules. |
-| **NIFTY 2024** | **Unseen.** Reserved for the one-time exam: sheet 1 is `2026-10-30-day-router/freeze-2024.json` (`2a57ede`); sheet 2, separate and scored after it, is `2026-10-30-earning-power/freeze-2024.json` (`ff08fca`); sheet 3, scored last, is `2026-10-30-risk-spectrum/freeze-2024.json` (`bc5a93a`). |
+| SENSEX Jan – Oct 2026 | Partly downloaded (2,384 of 4,057 option requests on Oct 31); the paper book runs SENSEX, but no strategy was chosen on it. The day sides are NIFTY's, so it is not independent for day rules. |
+| **NIFTY 2024** | **Seen since Oct 31, 2026.** The one-time exam is used up: sheet 1 `2026-10-30-day-router/freeze-2024.json` (`2a57ede`), sheet 2 `2026-10-30-earning-power/freeze-2024.json` (`ff08fca`), sheet 3 `2026-10-30-risk-spectrum/freeze-2024.json` (`bc5a93a`), scored once each. Nothing may now be called unseen-tested on it. |
+| NIFTY 2023 and earlier | Not downloaded, and availability not probed. The only possible further exam year. |
 | **Forward sessions from Oct 29, 2026** | **Unseen** for strategy work. Forward panels A–D (O27c, O27g, O28b, O29b) run Oct 28 – Nov 27 (Oct 28 itself was used by O29b and the year data). |
 
 ---
@@ -258,6 +265,8 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 | CRLF warnings on `git add` | Harmless; freezes compare parsed JSON. |
 | Workers didn't apply your patch | It was made inside a function. Move it to module level. |
 | `JSONDecodeError` on a `results-*.json`, or `FileExistsError` when you rerun | A slice was stopped while it wrote that file (`Y.write_new` is not atomic). Delete only that file and run the same command again: the replays in `evals/` are kept. New code should write to a temporary file and `os.replace` it (`exam_s.run`). |
+| A gated book shows months with no trades | Do not assume a bug, and do not assume it is fine. Compute the gate independently from the sealed daily bars (O31: NIFTY's ADX really stayed under 25 from Feb to late Sep 2024, so the live book sat out by design). |
+| `check_book` reports `unresolved`, or a replay's `notes` shows `unresolved_at_session_end` | A leg was open at a session's last bar, normally on a half-day. It has no rupee result. Report it, and re-apply the verdict without those days and with the leg closed at the last bid (`2026-10-31-exam-2024/report_x.py`). |
 | A sized plan's exact replay differs from the simulator by one big trade | The shipped minimum-pool gate (premium x 65 x 25% <= 2% of the money) reads the real equity, so a bigger or smaller account admits different high-premium trades. Report both. |
 
 ---
@@ -267,6 +276,7 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 | Path | What |
 | --- | --- |
 | `docs/research/fno/study_template/` | `lab_x.py`, `analyze_x.py`, `test_lab_x.py`: copy this |
+| `docs/research/fno/2026-10-31-exam-2024/` | O31: `report_x.py` (the three sheets together, three-year tables, half-days, one lot on the real-money terms) |
 | `docs/research/fno/2026-10-30-earning-power/` | O30s: `analyze_s.sim` (the rupee simulator), `exact_s.py` (exact sized replay), `reference_s.py` (hindsight ceiling, option selling), `exam_s.py` (2024 sheet 2) |
 | `docs/research/fno/run_slice.py` | run a long command in bounded slices |
 | `docs/research/fno/2026-10-29-year-genome/` | O29f: `yeardata.py` (candle model, export), `lab.py` (BookReplay, Runner), 2026 dataset |
@@ -279,26 +289,36 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 
 ---
 
-## 14. Running the 2024 exam (when the data is in)
+## 14. Running a one-time exam (the NIFTY 2024 exam, run Oct 31, 2026)
 
-1. **Check the download:** `verify_download.py NIFTY 2024-01-01 2024-12-31` is clean (DOWNLOAD_GUIDE §0).
-2. **Seal the data:**
-   - `O30F_YEAR=2024 python docs/research/fno/2026-10-30-day-router/lab_f.py mirror24`
-   - then `... lab_f.py export24`.
-   - Commit nothing from `_local/`.
-3. **Replay:** `python docs/research/fno/run_slice.py --env O30F_YEAR=2024 -- docs/research/fno/2026-10-30-day-router/lab_f.py run --jobs 4`, repeated until `DONE`.
-   - It warms the 2024 memo, then replays the 23 frozen books and the 134-strategy library.
-4. **Score once:** `python docs/research/fno/2026-10-30-day-router/analyze_f.py`.
-   - It applies `RULE_2024` and writes `results-2024.json` once.
-   - It was written and committed on Oct 30, before any 2024 data existed.
-   - Add a README section, and do not change any book or rule.
+**The 2024 exam is finished and cannot be run again as a test.** The sheets refuse to write their results twice. These are the exact steps, kept as the worked example for another unseen year. Results: [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md).
 
-5. **Then sheet 2** (O30s, `2026-10-30-earning-power/exam_s.py`), scored after sheet 1 and independently:
-   - `python docs/research/fno/run_slice.py --env O30F_YEAR=2024 --env O30S2_MODE=shipped -- docs/research/fno/2026-10-30-earning-power/exam_s.py run --jobs 3`, repeated until `DONE`;
-   - the same with `O30S2_MODE=raw`;
-   - `python docs/research/fno/2026-10-30-earning-power/exam_s.py score`, once. It writes `results-2024.json` once.
-   - If the engine changed after `ff08fca`, the run refuses; run it from a worktree at that commit.
-6. **Then sheet 3** (O30r, `2026-10-30-risk-spectrum/exam_r.py`): `run_slice.py --env O30F_YEAR=2024 -- <folder>/exam_r.py run --jobs 3` until `DONE`, then `exam_r.py score`, once. It refuses if the engine changed after `bc5a93a`.
+**Before any data exists:** freeze the books, the rules and the scorer, and commit them (`2a57ede`, `ff08fca`, `bc5a93a`).
+
+Run from the repo root with `python-engine\winvenv\Scripts\python.exe` as `python`. Set `DAY=docs/research/fno/2026-10-30-day-router`, `POWER=docs/research/fno/2026-10-30-earning-power` and `RISK=docs/research/fno/2026-10-30-risk-spectrum`.
+
+1. **Check the download.** Its folder's own venv: `verify_download.py NIFTY 2024-01-01 2024-12-31`. No downloader may be running. Also read the download agent's receipt: it lists data problems for you to decide on.
+2. **Seal the data.** Commit nothing from `_local/`.
+   - `O30F_YEAR=2024 python $DAY/lab_f.py mirror24`
+   - `O30F_YEAR=2024 python $DAY/lab_f.py export24`
+3. **Record the fingerprint and data decisions, and commit them before any replay** (`$DAY/data-binding-2024.json`, `d1da1dc`): the hashes, row and session counts, bad-row counts, and a written decision for every oddity (half-days, invalid bars, stray bars, expiry days). Decide these now, while no result exists.
+4. **Sheet 1, replay:** `python docs/research/fno/run_slice.py --seconds 550 --env O30F_YEAR=2024 --log $DAY/_local/run-2024.log -- $DAY/lab_f.py run --jobs 5`, repeated until `DONE`.
+   - It warms the 2024 memo, then replays the 23 frozen books and the 134-strategy library. The log must say `reused 0 earlier replays`.
+   - About 27 minutes at 5 workers, after hours. `--jobs` does not change results; keep to the limits in section 1.
+5. **Check the replays' health before scoring:** every book covered every session, no `memo_conflict` and no `named_memo_miss` in `notes`, all entries inside the year.
+6. **Sheet 1, score once:** `python $DAY/analyze_f.py`. It applies `RULE_2024` and writes `results-2024.json` once.
+7. **Sheet 2, replay:**
+   - `python docs/research/fno/run_slice.py --env O30F_YEAR=2024 --env O30S2_MODE=shipped -- $POWER/exam_s.py run --jobs 5`, until `DONE` (about 1 minute);
+   - the same with `O30S2_MODE=raw` (about 7 minutes).
+8. **Sheet 2, score once:** `O30F_YEAR=2024 python $POWER/exam_s.py score`.
+9. **Sheet 3, replay:** `python docs/research/fno/run_slice.py --env O30F_YEAR=2024 -- $RISK/exam_r.py run --jobs 5`, until `DONE` (about 1 minute).
+10. **Prove it with `analyze_r.check_book`, then score once:** `O30F_YEAR=2024 python $RISK/exam_r.py score`.
+11. **Report them together:** `python docs/research/fno/2026-10-31-exam-2024/report_x.py`. It checks the data hashes, that the sheets reproduce each other trade for trade, and that each sheet's rule reproduces its stored verdict, then re-states every verdict without the half-days.
+12. **Look hard at anything odd before believing it,** especially a good result. Then commit `results-2024.json` from each sheet and write it up. Do not change any book or rule.
+
+**If the engine changed after a freeze,** sheets 2 and 3 refuse to run. Run from a worktree at that sheet's freeze commit. Sealed data in `_local/` is not in git, so point the worktree's `_local` at this checkout's.
+
+**Reading a scored rule honestly:** O31's `level_confirmed` came out true because the chosen level lost less per rupee of fall than the bigger one. Both lost money, so it confirms nothing. Report what a pass means, not only that it passed.
 
 ---
 

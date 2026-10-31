@@ -48,3 +48,7 @@ Use `python-engine/winvenv/Scripts/python.exe`. In order: `lab_s.py run` per yea
 ## 2024
 
 `freeze-2024.json` (`ff08fca`) is a second sheet, frozen before any 2024 data exists; the O30f sheet is unchanged and scored first. Run `exam_s.py run` (`O30F_YEAR=2024`, both `O30S2_MODE`), then `exam_s.py score` once. It asserts that the engine files have not changed since its freeze: if the engine has changed, run from a worktree at `ff08fca`. `exam_s.py run`, `score` have not been run (no data); their verdict logic is covered by `test_exam_s.py`.
+
+## Result of the 2024 exam (Oct 31, 2026)
+
+Sheet 2, `results-2024.json`. The stretched-entry rule **held**: better on LIVE, BEST and TPB, and the random median rose from -11,554 to -5,525. At 3 lots, no brakes, +200: only `LIVE|skip` passed (+16,344, fall 15.0%). `TPB|skip`, `BEST|skip` and the frozen pick failed. Full account: [`docs/FNO_2024_EXAM_2026-10-31.md`](../../../FNO_2024_EXAM_2026-10-31.md). Scored once; no book or rule was changed.

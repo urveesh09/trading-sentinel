@@ -99,3 +99,7 @@ Adding more robust strategies did not beat TPB alone. They take TPB's turns.
 - `freeze.json`, `routers.json`, `results.json`.
 - `persistence_m.py` and `persistence.json`: written after the verdict, to explain it.
 - `lab_f.py` and `freeze-2024.json`: the 2024 exam.
+
+## Result of the 2024 exam (Oct 31, 2026)
+
+Sheet 1, `results-2024.json`. Candidate (live + TPB on no-trend days) **failed**: -26,783 against live +21,762 per lot. `ROBUST_CORE` **failed**: -30,004. "Positive in both years" **did not carry**: 1 of 14. The routers, for information: `CV_2026_to_2025` +72,310, `CV_2025_to_2026` -56,298, `FINAL` -16,433. Full account: [`docs/FNO_2024_EXAM_2026-10-31.md`](../../../FNO_2024_EXAM_2026-10-31.md). Scored once; no book or rule was changed.

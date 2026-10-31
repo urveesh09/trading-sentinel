@@ -1,0 +1,92 @@
+{
+ "schema": "o30s_results_2024_v1",
+ "rule": {
+  "once": "NIFTY 2024 is scored once with these books and rules unchanged; nothing is tuned on it, and the O30f sheet is scored first and independently",
+  "stretch_rule_holds": "per lot at the shipped size and brakes, the rule beats the same book without it on at least 2 of LIVE, BEST and TPB over 2024, AND the median of the 20 random books (one lot, no brakes) is higher with the rule than without it",
+  "tpb_skip_candidate": "TPB|skip at 3 lots, no brakes, Rs 200 extra per lot per trade: net > 0 over 2024 and largest fall <= 25% of the running peak",
+  "best_skip_candidate": "BEST|skip at 3 lots on the same terms",
+  "live_skip_candidate": "LIVE|skip at 3 lots on the same terms",
+  "pick_candidate": "the O30s frozen pick (TPB|HOUSE, 3 lots, half size when stretched) on the same terms",
+  "no_change": "nothing in the system changes on this result; the owner decides"
+ },
+ "verdict": {
+  "stretch_rule_holds": true,
+  "rule_beat_on": [
+   "LIVE",
+   "BEST",
+   "TPB"
+  ],
+  "per_lot": {
+   "LIVE": 21762,
+   "LIVE|skip": 22436,
+   "BEST": -26783,
+   "BEST|skip": 9529,
+   "TPB": -26084,
+   "TPB|skip": 7768
+  },
+  "random_median": {
+   "without": -11554,
+   "with": -5525
+  },
+  "halves_per_lot": {
+   "LIVE": {
+    "H1": 18514,
+    "H2": 3248
+   },
+   "LIVE|skip": {
+    "H1": 6662,
+    "H2": 15774
+   },
+   "BEST": {
+    "H1": 7532,
+    "H2": -34315
+   },
+   "BEST|skip": {
+    "H1": 3259,
+    "H2": 6270
+   },
+   "TPB": {
+    "H1": -16682,
+    "H2": -9402
+   },
+   "TPB|skip": {
+    "H1": 3994,
+    "H2": 3774
+   }
+  },
+  "TPB|skip": {
+   "net_plus_200": 13669,
+   "fall_pct": 0.3828,
+   "worst_day": -9420,
+   "trades": 85,
+   "as_replayed": 64669,
+   "passes": false
+  },
+  "BEST|skip": {
+   "net_plus_200": -47759,
+   "fall_pct": 0.3124,
+   "worst_day": -21937,
+   "trades": 136,
+   "as_replayed": 33841,
+   "passes": false
+  },
+  "LIVE|skip": {
+   "net_plus_200": 16344,
+   "fall_pct": 0.15,
+   "worst_day": -21937,
+   "trades": 73,
+   "as_replayed": 60144,
+   "passes": true
+  },
+  "pick": {
+   "net_plus_200": -6775,
+   "fall_pct": 0.524,
+   "worst_day": -9420,
+   "trades": 104,
+   "as_replayed": 46625,
+   "passes": false
+  }
+ },
+ "qualification": "NOT_ASSESSED",
+ "can_place_orders": false
+}

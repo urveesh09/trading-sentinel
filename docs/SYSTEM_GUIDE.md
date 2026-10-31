@@ -1,3 +1,7 @@
+## October 31 — O31: the one-time NIFTY 2024 exam scored (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_2024_EXAM_2026-10-31.md`. NIFTY 2024 is now seen.
+
 ## October 30 (late) — O30r: the risk spectrum from today's level to all-in, and the final verdict (research, Dev; nothing changed in the system)
 
 - Research only; no runtime change. Findings: `docs/FNO_RISK_SPECTRUM_VERDICT_2026-10-30.md`.

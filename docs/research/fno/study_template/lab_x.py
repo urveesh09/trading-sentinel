@@ -7,12 +7,13 @@ Example strategy (EDIT or replace): EXAMPLE_ORB15, a 15-minute opening-range bre
 09:15-09:30 range (plus a buffer of ATR) buys the option in that direction, at most one entry per side per day, no
 entry after `last_entry_min`; stop `stop_atr` x ATR, target `target_r` x risk, exits from `exit`.
 
-Declared before any replay (freeze.json): the books, RULE and analyze_x.py. Scored on NIFTY 2025 and Jan - Oct 2026
-through the shipped single-leg book (O29f BookReplay), per lot. The year is chosen by O30C_YEAR (2025 | 2026).
+Declared before any replay (freeze.json): the books, RULE and analyze_x.py. Scored on NIFTY 2024, 2025 and Jan - Oct 2026
+through the shipped single-leg book (O29f BookReplay), per lot. The year is chosen by O30F_YEAR=2024 or O30C_YEAR=2025 | 2026.
 
     O30C_YEAR=2025 python lab_x.py smoke                 # plumbing check on January only (never a result)
     python lab_x.py freeze                               # then commit and push freeze.json alone
-    python ../run_slice.py --env O30C_YEAR=2025 -- <this folder>/lab_x.py run --jobs 4      # repeat until DONE
+    python ../run_slice.py --env O30F_YEAR=2024 -- <this folder>/lab_x.py run --jobs 4      # repeat until DONE
+    python ../run_slice.py --env O30C_YEAR=2025 -- <this folder>/lab_x.py run --jobs 4
     python ../run_slice.py --env O30C_YEAR=2026 -- <this folder>/lab_x.py run --jobs 4
     python analyze_x.py                                  # the frozen verdict -> results.json
 """
@@ -28,10 +29,13 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = next(p for p in HERE.parents if (p / "python-engine/fno_policy_replay.py").is_file())
-sys.path.insert(0, str(ROOT / "docs/research/fno/2026-10-30-case-study"))
+sys.path[:0] = [str(ROOT / "docs/research/fno/2026-10-30-case-study"), str(ROOT / "docs/research/fno/2026-10-30-day-router")]
+if os.environ.get("O30F_YEAR") == "2024":
+    import lab_f  # noqa: E402,F401  (must come first: points the machinery below at the sealed 2024 data)
 import lab_c as C  # noqa: E402  (year setup via O30C_YEAR; regime table with DMI / EMA sides; case routing)
 
 Y, G, O27F = C.Y, C.G, C.O27F
+YEAR = "2024" if os.environ.get("O30F_YEAR") == "2024" else C.YEAR
 LOCAL = HERE / "_local"
 Y.EVALS = LOCAL / "evals"
 FAMILY = "EXAMPLE_ORB15"                                   # EDIT
@@ -105,12 +109,12 @@ def books() -> dict:
 
 
 RULE = {                                                    # EDIT, before any replay
-    "question": "does EXAMPLE_ORB15 make money per lot in both NIFTY years, and does adding it improve the live book?",
-    "alone": "CAND|alone helps if it nets > 0 in 2025 AND in 2026, is not negative in more than 1 of the 4 half-years, "
-             "makes >= 40 trades a year and beats the median of the 20 random-entry books in both years",
-    "added": "CAND|added_to_live helps if it beats REF|LIVE in both years and is not worse in 3 of the 4 half-years",
-    "status": "2025 and 2026 are both seen; a pass is a candidate for the unseen checks (NIFTY 2024 if still unused, "
-              "the forward panel), never a go-live on this replay",
+    "question": "does EXAMPLE_ORB15 make money per lot in all three NIFTY years, and does adding it improve the live book?",
+    "alone": "CAND|alone helps if it nets > 0 in 2024, 2025 AND 2026, is not negative in more than 1 of the 6 half-years, "
+             "makes >= 40 trades a year and beats the median of the 20 random-entry books in every year",
+    "added": "CAND|added_to_live helps if it beats REF|LIVE in every year and is not worse in 4 of the 6 half-years",
+    "status": "2024, 2025 and 2026 are all seen; a pass is a candidate for the unseen checks (the forward panel, real "
+              "fills), never a go-live on this replay",
 }
 
 
@@ -125,9 +129,9 @@ def year_bindings() -> dict:
 
 def freeze() -> None:
     parts = {}
-    for year in ("2025", "2026"):
-        out = subprocess.check_output([sys.executable, str(HERE / "lab_x.py"), "bindings"], cwd=ROOT,
-                                      env={**os.environ, "O30C_YEAR": year})
+    clean = {k: v for k, v in os.environ.items() if k not in ("O30F_YEAR", "O30C_YEAR")}
+    for year, env in (("2024", {"O30F_YEAR": "2024"}), ("2025", {"O30C_YEAR": "2025"}), ("2026", {"O30C_YEAR": "2026"})):
+        out = subprocess.check_output([sys.executable, str(HERE / "lab_x.py"), "bindings"], cwd=ROOT, env={**clean, **env})
         parts[year] = json.loads(out.decode("utf-8").strip().splitlines()[-1])
     Y.write_new(HERE / "freeze.json", {"schema": "template_year_study_v1", "bindings": parts, "books": books(),
                                        "rule": RULE, "qualification": "NOT_ASSESSED", "can_place_orders": False})
@@ -136,7 +140,7 @@ def freeze() -> None:
 
 def run(jobs: int) -> None:
     frozen = json.loads((HERE / "freeze.json").read_text(encoding="utf-8"))
-    assert frozen["bindings"][C.YEAR] == json.loads(json.dumps(year_bindings(), default=str)), "inputs changed"
+    assert frozen["bindings"][YEAR] == json.loads(json.dumps(year_bindings(), default=str)), "inputs changed"
     rel = (HERE / "freeze.json").relative_to(ROOT).as_posix()
     assert json.loads(subprocess.check_output(["git", "show", f"HEAD:{rel}"], cwd=ROOT)) == frozen, "not committed"
     O27F.deny_network()
@@ -145,10 +149,10 @@ def run(jobs: int) -> None:
     with ProcessPoolExecutor(max_workers=jobs, initializer=C._init) as ex:
         runner = Y.Runner(ex, jobs)
         runner.run(list(all_books.values()), source="year", window=C.WINDOW)
-    Y.write_new(LOCAL / f"results-raw-{C.YEAR}.json", {
-        "freeze_sha256": Y.grid._sha(HERE / "freeze.json"), "year": C.YEAR,
+    Y.write_new(LOCAL / f"results-raw-{YEAR}.json", {
+        "freeze_sha256": Y.grid._sha(HERE / "freeze.json"), "year": YEAR,
         "books": {n: Y.task_key(b, "year", C.WINDOW) for n, b in all_books.items()}, "trades": runner.trades})
-    print("DONE", C.YEAR, len(runner.trades), flush=True)
+    print("DONE", YEAR, len(runner.trades), flush=True)
 
 
 def smoke() -> None:
@@ -156,9 +160,9 @@ def smoke() -> None:
     O27F.deny_network()
     Y.EVALS = LOCAL / "smoke"
     Y.speedups()
-    window = (f"{C.YEAR}-01-01", f"{C.YEAR}-01-31")
+    window = (f"{YEAR}-01-01", f"{YEAR}-01-31")
     _key, trades = Y.evaluate((books()["CAND|alone"], "year", window))
-    print(f"smoke {C.YEAR} January: {len(trades)} trades (plumbing check only, not a result)")
+    print(f"smoke {YEAR} January: {len(trades)} trades (plumbing check only, not a result)")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 # The risk spectrum and the final verdict on the F&O book
 
+> **Corrected by the 2024 exam (Oct 31, 2026):** see [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md). On a year it had never seen, the pick here (TPB + rule, ₹5,000, no cap, no brakes) lost ₹60,581 with a 38.6% fall. The stretched-entry rule itself passed, and the best candidate is now the four strategies with that rule, at today's limits. This page is kept as written on Oct 30.
+
 **Study O30r, October 30, 2026.** Research only. Nothing in the trading system changed, and Production was not touched. The real-money test from Nov 2 is unchanged.
 
 Companion to [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md). Numbers and code: [`research/fno/2026-10-30-risk-spectrum/`](research/fno/2026-10-30-risk-spectrum/README.md).

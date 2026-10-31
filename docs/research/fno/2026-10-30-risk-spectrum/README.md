@@ -20,6 +20,10 @@ Research only. No runtime change, nothing deployed. The plain write-up and the v
 - As-replayed rows at high risk reach hundreds of lots with no slippage and are not executable; one NIFTY order is limited to 54 lots since Oct 5, 2026.
 - `analyze_s.sim` runs below exact at higher levels on the rule books and differs either way on the live book, because a larger account admits high-premium trades the one-lot replay refused.
 
-**2024:** `exam_r.py` (`freeze-2024.json`), a third sheet, scored after the O30f and O30s sheets. Not run: no 2024 data exists. It refuses if the engine changed after its freeze; use a worktree at that commit.
+**2024:** `exam_r.py` (`freeze-2024.json`), a third sheet, scored after the O30f and O30s sheets on Oct 31 (below). It refuses if the engine changed after its freeze; use a worktree at that commit.
 
 **Reproduce:** `O30C_YEAR=2025 lab_r.py run --jobs 5` in `run_slice.py` slices until DONE, then 2026 (2025 must come first: the carried runs read it), `O30C_YEAR=2026 analyze_r.py`, `lab_r.py verify` per year, `verdict_r.py`. Tests: `python -m pytest test_lab_r.py test_exam_r.py -q --timeout=140 -p no:cacheprovider` (13 passed).
+
+## Result of the 2024 exam (Oct 31, 2026)
+
+Sheet 3, `results-2024.json`. The pick `TPB+rule|R2|OFF|COST` **failed**: -60,581, fall 38.6%. `level_confirmed` is true only because R2 lost less per rupee of fall than R5; both lost. Best on 2024: `LIVE+rule|SHIPPED|COST`, -219, fall 7.5%. Full account: [`docs/FNO_2024_EXAM_2026-10-31.md`](../../../FNO_2024_EXAM_2026-10-31.md). Scored once; no book or rule was changed.
