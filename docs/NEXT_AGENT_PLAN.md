@@ -1,3 +1,18 @@
+## October 31 (afternoon) — O31b/O31c: the final book at today's lot limits (research, Dev; nothing changed in the system)
+
+- **Owner (Oct 31):** "how do we improve it? ... We should have a lot limit as original as we have now go ahead test that and in general, give me a overall output of what do you think? Should we have as a final features and option strategy and one that will be consistent and ensure that losses are less".
+- **Files:** `docs/FNO_FINAL_STRATEGY_2026-10-31.md` (the answer), `docs/research/fno/2026-10-31-final-book/` (`lab_o.py`, `lab_o2.py`, `analyze_o.py`, `analyze_o2.py`, `report_o.py`, tests, freezes, results, README).
+- **Commits:** O31b freeze `9977e71`, results `4d7b100`; O31c freeze `dca512d`; write-up in the commit recording this section. Pushed to Dev. **Not deployed; Production stays at release `c97cb8c`.** Engine unchanged.
+- **Verification:** 403 exact replays, `check_book` 0 problems; parity with the 2024 exam and O30r figures asserted; 11 study tests pass; the write-up's figures checked against the stored results by script.
+- **Results (Rs 2.5 lakh, each year alone, cost in the path):**
+  - Lot limit: today's (2, 3 once proven) is best: -219 / +4,805 / +47,333. 1 lot +35,669, 2 lots +48,840, 3 lots +46,587, 5 lots +39,842 over the three years.
+  - O31b: none of 46 single changes helped in every year; choosing on two years lost to no change on the third, all three times.
+  - O31c, by the rules fixed in advance: the skip rule failed its plateau test (limit 0.65 missed by Rs 816) and ADX 30 failed its (ADX 28 lost 2,456 in 2024; ADX 27's fall is larger). Frozen call: **the book as live today; both on paper only.**
+  - Beyond the frozen call, descriptive: the rule beats no rule in 28 of 30 surface cells; entries inside the limit earn and those beyond lose in every bucket; ADX 30, 32 and 35 are positive in all three years. Candidate: four + rule + ADX 30: +16,371 / +5,710 / +30,540, worst fall 7.5%, one account 2,99,454 (fall 7.8%), worst month -3,673 per lot, 21 of 148 weeks traded. Not proof. Never equate these replays with a profitable strategy.
+- **Decisions:** no runtime change. Monday's real-money test stays on today's book at one lot; this reverses the exam page's recommendation to add the rule first. Rs 15,000 stays recommended. Forward check frozen in the write-up's section 6.
+- **Config and migration:** none. To switch later: `FNO_BOOK_ADX_MIN=30` is a setting; the skip rule needs engine code, tests and a deploy.
+- **Remaining:** the owner may overrule for Monday; Kite renewal; Nov 2-6 real fills replace the assumed Rs 200; monthly forward replays from Oct 29 sessions after the owner's ICICI login; forward panels Nov 27; SENSEX remainder.
+
 ## October 31 — O31: the one-time NIFTY 2024 exam scored (research, Dev; nothing changed in the system)
 
 - **Owner (Oct 31):** "The 2024 days is there now run our test in it. Also I hope we have documentation on how to run the test, give me that too".

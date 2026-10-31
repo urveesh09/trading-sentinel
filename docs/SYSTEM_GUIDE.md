@@ -1,3 +1,7 @@
+## October 31 (afternoon) — O31b/O31c: the final book at today's lot limits (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_FINAL_STRATEGY_2026-10-31.md`. The live book, lots and brakes are unchanged.
+
 ## October 31 — O31: the one-time NIFTY 2024 exam scored (research, Dev; nothing changed in the system)
 
 - Research only; no runtime change. Findings: `docs/FNO_2024_EXAM_2026-10-31.md`. NIFTY 2024 is now seen.

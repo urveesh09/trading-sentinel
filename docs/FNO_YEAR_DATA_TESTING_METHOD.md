@@ -6,6 +6,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 - **The general research rules:** [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md).
 - **Testing size in rupees, not per lot:** section 15, with the worked study [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md).
 - **The 2024 exam's results (Oct 31):** [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md). Running an exam like it: section 14.
+- **The final-strategy study (Oct 31):** [FNO_FINAL_STRATEGY_2026-10-31.md](FNO_FINAL_STRATEGY_2026-10-31.md). A worked example of testing changes on three seen years without fooling yourself: one change at a time, help in every year, held-out-year selection, and a plateau check (`docs/research/fno/2026-10-31-final-book/`).
 
 **The fastest way in:** copy `docs/research/fno/study_template/`, put your entry rule into `entries()`, and follow section 8. The template already does everything below, on all three years. Proven on Oct 31: 2 checks pass; bindings and the January plumbing run work for 2024 (10 trades), 2025 (15) and 2026 (10); the three-year analysis reproduces the live book's figures.
 
@@ -267,6 +268,7 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 | `JSONDecodeError` on a `results-*.json`, or `FileExistsError` when you rerun | A slice was stopped while it wrote that file (`Y.write_new` is not atomic). Delete only that file and run the same command again: the replays in `evals/` are kept. New code should write to a temporary file and `os.replace` it (`exam_s.run`). |
 | A gated book shows months with no trades | Do not assume a bug, and do not assume it is fine. Compute the gate independently from the sealed daily bars (O31: NIFTY's ADX really stayed under 25 from Feb to late Sep 2024, so the live book sat out by design). |
 | `check_book` reports `unresolved`, or a replay's `notes` shows `unresolved_at_session_end` | A leg was open at a session's last bar, normally on a half-day. It has no rupee result. Report it, and re-apply the verdict without those days and with the leg closed at the last bid (`2026-10-31-exam-2024/report_x.py`). |
+| A good setting looks like a lone spike | Two different causes look the same. Replay a surface at one lot with brakes off, so one changed trade cannot change the rest, and bucket the trades by the setting's own measure (`report_o.py`). O31c: the rule's limit is a real slope, not luck, but it still failed the test fixed in advance, and that result stands. |
 | A sized plan's exact replay differs from the simulator by one big trade | The shipped minimum-pool gate (premium x 65 x 25% <= 2% of the money) reads the real equity, so a bigger or smaller account admits different high-premium trades. Report both. |
 
 ---
@@ -277,6 +279,7 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 | --- | --- |
 | `docs/research/fno/study_template/` | `lab_x.py`, `analyze_x.py`, `test_lab_x.py`: copy this |
 | `docs/research/fno/2026-10-31-exam-2024/` | O31: `report_x.py` (the three sheets together, three-year tables, half-days, one lot on the real-money terms) |
+| `docs/research/fno/2026-10-31-final-book/` | O31b/c: `lab_o.py` (one change at a time, the carried three-year account), `lab_o2.py` (the plateau surface, new ADX sides, random controls), `report_o.py` (stretch buckets) |
 | `docs/research/fno/2026-10-30-earning-power/` | O30s: `analyze_s.sim` (the rupee simulator), `exact_s.py` (exact sized replay), `reference_s.py` (hindsight ceiling, option selling), `exam_s.py` (2024 sheet 2) |
 | `docs/research/fno/run_slice.py` | run a long command in bounded slices |
 | `docs/research/fno/2026-10-29-year-genome/` | O29f: `yeardata.py` (candle model, export), `lab.py` (BookReplay, Runner), 2026 dataset |
