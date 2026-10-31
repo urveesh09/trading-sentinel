@@ -1,0 +1,7710 @@
+{
+ "scope": "descriptive historical research, not Production realised P&L or a predictive strategy test",
+ "sources": {
+  "2025": {
+   "manifest": "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+   "database_matches_manifest": true,
+   "day_table": "ebde3be9cfcde6e385ebac8673534f1d2ac27796e61f5aa9dcb2fb858d2be12a",
+   "trades": "50c495ccf1dcce2321a751e575c3c45ae9698c7c6864eff254513b16b6d6029d"
+  },
+  "2026": {
+   "manifest": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555",
+   "database_matches_manifest": true,
+   "day_table": "7b83f085180d89c1f250f30c5923bf29f179402ef29239d98aeffe4381d3c1c1",
+   "trades": "4e7ee72a3ca87092d405dd72448caec03cca2cab4baf77450dc10611d926b583"
+  }
+ },
+ "years": {
+  "2025": {
+   "books": {
+    "REF|LIVE": {
+     "summary": {
+      "days": 248,
+      "active": 54,
+      "losing_days": 33,
+      "winning_days": 21,
+      "flat_active_days": 0,
+      "no_trade_days": 194,
+      "loss_rate_active": 0.611,
+      "net": 271,
+      "loss_days_net": -83233,
+      "win_days_net": 83503,
+      "median_loss": -2523,
+      "median_win": 2318
+     },
+     "quality_sensitive_summary": {
+      "days": 243,
+      "active": 53,
+      "losing_days": 33,
+      "winning_days": 20,
+      "flat_active_days": 0,
+      "no_trade_days": 190,
+      "loss_rate_active": 0.623,
+      "net": -2958,
+      "loss_days_net": -83233,
+      "win_days_net": 80275,
+      "median_loss": -2523,
+      "median_win": 1946
+     },
+     "halves": {
+      "H1": {
+       "days": 123,
+       "active": 40,
+       "losing_days": 26,
+       "winning_days": 14,
+       "flat_active_days": 0,
+       "no_trade_days": 83,
+       "loss_rate_active": 0.65,
+       "net": 3350,
+       "loss_days_net": -64700,
+       "win_days_net": 68050,
+       "median_loss": -2328,
+       "median_win": 2815
+      },
+      "H2": {
+       "days": 125,
+       "active": 14,
+       "losing_days": 7,
+       "winning_days": 7,
+       "flat_active_days": 0,
+       "no_trade_days": 111,
+       "loss_rate_active": 0.5,
+       "net": -3079,
+       "loss_days_net": -18532,
+       "win_days_net": 15453,
+       "median_loss": -2986,
+       "median_win": 1132
+      }
+     },
+     "day_splits": {
+      "open_drive": {
+       "HIGH": {
+        "days": 28,
+        "active": 28,
+        "losing_days": 16,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.571,
+        "net": 9774,
+        "loss_days_net": -49748,
+        "win_days_net": 59522,
+        "median_loss": -3236,
+        "median_win": 1946
+       },
+       "LOW": {
+        "days": 26,
+        "active": 26,
+        "losing_days": 17,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.654,
+        "net": -9504,
+        "loss_days_net": -33484,
+        "win_days_net": 23981,
+        "median_loss": -1605,
+        "median_win": 2402
+       }
+      },
+      "or_width": {
+       "HIGH": {
+        "days": 32,
+        "active": 32,
+        "losing_days": 20,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.625,
+        "net": -958,
+        "loss_days_net": -50426,
+        "win_days_net": 49469,
+        "median_loss": -2806,
+        "median_win": 1113
+       },
+       "LOW": {
+        "days": 22,
+        "active": 22,
+        "losing_days": 13,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.591,
+        "net": 1228,
+        "loss_days_net": -32806,
+        "win_days_net": 34034,
+        "median_loss": -2046,
+        "median_win": 3692
+       }
+      },
+      "gap": {
+       "HIGH": {
+        "days": 35,
+        "active": 35,
+        "losing_days": 23,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.657,
+        "net": -2961,
+        "loss_days_net": -66425,
+        "win_days_net": 63464,
+        "median_loss": -2986,
+        "median_win": 3047
+       },
+       "LOW": {
+        "days": 19,
+        "active": 19,
+        "losing_days": 10,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.526,
+        "net": 3232,
+        "loss_days_net": -16807,
+        "win_days_net": 20039,
+        "median_loss": -1338,
+        "median_win": 1132
+       }
+      },
+      "nr": {
+       "HIGH": {
+        "days": 28,
+        "active": 28,
+        "losing_days": 21,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.75,
+        "net": -32725,
+        "loss_days_net": -55607,
+        "win_days_net": 22882,
+        "median_loss": -2603,
+        "median_win": 2402
+       },
+       "LOW": {
+        "days": 26,
+        "active": 26,
+        "losing_days": 12,
+        "winning_days": 14,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.462,
+        "net": 32996,
+        "loss_days_net": -27625,
+        "win_days_net": 60621,
+        "median_loss": -2201,
+        "median_win": 1946
+       }
+      },
+      "trend5": {
+       "HIGH": {
+        "days": 21,
+        "active": 21,
+        "losing_days": 13,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.619,
+        "net": -18036,
+        "loss_days_net": -35153,
+        "win_days_net": 17117,
+        "median_loss": -2967,
+        "median_win": 1706
+       },
+       "LOW": {
+        "days": 33,
+        "active": 33,
+        "losing_days": 20,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.606,
+        "net": 18307,
+        "loss_days_net": -48079,
+        "win_days_net": 66386,
+        "median_loss": -2328,
+        "median_win": 3228
+       }
+      },
+      "adx14": {
+       "HIGH": {
+        "days": 17,
+        "active": 17,
+        "losing_days": 8,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.471,
+        "net": 16982,
+        "loss_days_net": -21135,
+        "win_days_net": 38117,
+        "median_loss": -2794,
+        "median_win": 1573
+       },
+       "LOW": {
+        "days": 21,
+        "active": 21,
+        "losing_days": 16,
+        "winning_days": 5,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.762,
+        "net": -30980,
+        "loss_days_net": -39373,
+        "win_days_net": 8393,
+        "median_loss": -2064,
+        "median_win": 1374
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "rv20": {
+       "HIGH": {
+        "days": 9,
+        "active": 9,
+        "losing_days": 4,
+        "winning_days": 5,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.444,
+        "net": 12778,
+        "loss_days_net": -14176,
+        "win_days_net": 26955,
+        "median_loss": -3654,
+        "median_win": 2402
+       },
+       "LOW": {
+        "days": 29,
+        "active": 29,
+        "losing_days": 20,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.69,
+        "net": -26776,
+        "loss_days_net": -46332,
+        "win_days_net": 19556,
+        "median_loss": -2166,
+        "median_win": 1374
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "ret20_abs": {
+       "HIGH": {
+        "days": 28,
+        "active": 28,
+        "losing_days": 16,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.571,
+        "net": 13257,
+        "loss_days_net": -32365,
+        "win_days_net": 45623,
+        "median_loss": -1707,
+        "median_win": 1988
+       },
+       "LOW": {
+        "days": 10,
+        "active": 10,
+        "losing_days": 8,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.8,
+        "net": -27255,
+        "loss_days_net": -28143,
+        "win_days_net": 887,
+        "median_loss": -3429,
+        "median_win": 444
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "prev_range_rel": {
+       "HIGH": {
+        "days": 20,
+        "active": 20,
+        "losing_days": 16,
+        "winning_days": 4,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.8,
+        "net": -27276,
+        "loss_days_net": -38940,
+        "win_days_net": 11664,
+        "median_loss": -2206,
+        "median_win": 1748
+       },
+       "LOW": {
+        "days": 18,
+        "active": 18,
+        "losing_days": 8,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.444,
+        "net": 13278,
+        "loss_days_net": -21568,
+        "win_days_net": 34847,
+        "median_loss": -2806,
+        "median_win": 1474
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "prev_body": {
+       "HIGH": {
+        "days": 19,
+        "active": 19,
+        "losing_days": 10,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.526,
+        "net": -6414,
+        "loss_days_net": -25489,
+        "win_days_net": 19076,
+        "median_loss": -2208,
+        "median_win": 1132
+       },
+       "LOW": {
+        "days": 19,
+        "active": 19,
+        "losing_days": 14,
+        "winning_days": 5,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.737,
+        "net": -7584,
+        "loss_days_net": -35019,
+        "win_days_net": 27434,
+        "median_loss": -2563,
+        "median_win": 2402
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "trend_regime": {
+       "HIGH": {
+        "days": 18,
+        "active": 18,
+        "losing_days": 8,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.444,
+        "net": 21289,
+        "loss_days_net": -20232,
+        "win_days_net": 41520,
+        "median_loss": -2794,
+        "median_win": 1988
+       },
+       "LOW": {
+        "days": 20,
+        "active": 20,
+        "losing_days": 16,
+        "winning_days": 4,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.8,
+        "net": -35286,
+        "loss_days_net": -40276,
+        "win_days_net": 4990,
+        "median_loss": -2064,
+        "median_win": 835
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "dmi_dir": {
+       "DOWN": {
+        "days": 36,
+        "active": 36,
+        "losing_days": 24,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": -12214,
+        "loss_days_net": -62472,
+        "win_days_net": 50258,
+        "median_loss": -2785,
+        "median_win": 2773
+       },
+       "UP": {
+        "days": 18,
+        "active": 18,
+        "losing_days": 9,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 12485,
+        "loss_days_net": -20760,
+        "win_days_net": 33245,
+        "median_loss": -1491,
+        "median_win": 1374
+       }
+      },
+      "ema_dir": {
+       "DOWN": {
+        "days": 34,
+        "active": 34,
+        "losing_days": 21,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.618,
+        "net": 1008,
+        "loss_days_net": -52942,
+        "win_days_net": 53951,
+        "median_loss": -2603,
+        "median_win": 3228
+       },
+       "UP": {
+        "days": 20,
+        "active": 20,
+        "losing_days": 12,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.6,
+        "net": -738,
+        "loss_days_net": -30290,
+        "win_days_net": 29553,
+        "median_loss": -1971,
+        "median_win": 1253
+       }
+      },
+      "h_trend_day": {
+       "False": {
+        "days": 28,
+        "active": 28,
+        "losing_days": 20,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.714,
+        "net": -17599,
+        "loss_days_net": -53123,
+        "win_days_net": 35524,
+        "median_loss": -2745,
+        "median_win": 2393
+       },
+       "True": {
+        "days": 26,
+        "active": 26,
+        "losing_days": 13,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 17869,
+        "loss_days_net": -30110,
+        "win_days_net": 47979,
+        "median_loss": -2133,
+        "median_win": 2318
+       }
+      },
+      "h_small_range": {
+       "False": {
+        "days": 41,
+        "active": 41,
+        "losing_days": 23,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.561,
+        "net": 16307,
+        "loss_days_net": -61599,
+        "win_days_net": 77906,
+        "median_loss": -2967,
+        "median_win": 2360
+       },
+       "True": {
+        "days": 13,
+        "active": 13,
+        "losing_days": 10,
+        "winning_days": 3,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.769,
+        "net": -16037,
+        "loss_days_net": -21634,
+        "win_days_net": 5597,
+        "median_loss": -1707,
+        "median_win": 1573
+       }
+      },
+      "h_reversing_day": {
+       "False": {
+        "days": 28,
+        "active": 28,
+        "losing_days": 14,
+        "winning_days": 14,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 29943,
+        "loss_days_net": -37191,
+        "win_days_net": 67133,
+        "median_loss": -2785,
+        "median_win": 2815
+       },
+       "True": {
+        "days": 26,
+        "active": 26,
+        "losing_days": 19,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.731,
+        "net": -29672,
+        "loss_days_net": -46042,
+        "win_days_net": 16370,
+        "median_loss": -1880,
+        "median_win": 1132
+       }
+      }
+     },
+     "trade_mechanisms": {
+      "trades": 138,
+      "losing_trades": 80,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 11,
+        "losses": 2,
+        "net": 21817
+       },
+       "premium_backstop": {
+        "trades": 8,
+        "losses": 8,
+        "net": -18692
+       },
+       "profit_lock": {
+        "trades": 15,
+        "losses": 0,
+        "net": 10121
+       },
+       "time_stop": {
+        "trades": 48,
+        "losses": 28,
+        "net": -6074
+       },
+       "trail_stop": {
+        "trades": 14,
+        "losses": 0,
+        "net": 68784
+       },
+       "underlying_stop": {
+        "trades": 42,
+        "losses": 42,
+        "net": -75686
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 65,
+        "losses": 45,
+        "net": -27214
+       },
+       "SHORT": {
+        "trades": 73,
+        "losses": 35,
+        "net": 27484
+       }
+      },
+      "by_member": {
+       "EFF": {
+        "trades": 74,
+        "losses": 49,
+        "net": -21796
+       },
+       "OR20": {
+        "trades": 19,
+        "losses": 10,
+        "net": 8299
+       },
+       "SHIPPED": {
+        "trades": 29,
+        "losses": 12,
+        "net": 8970
+       },
+       "TPB": {
+        "trades": 16,
+        "losses": 9,
+        "net": 4797
+       }
+      },
+      "by_entry_hour": {
+       "10": {
+        "trades": 45,
+        "losses": 24,
+        "net": 24321
+       },
+       "11": {
+        "trades": 35,
+        "losses": 21,
+        "net": -16836
+       },
+       "12": {
+        "trades": 24,
+        "losses": 17,
+        "net": -8081
+       },
+       "13": {
+        "trades": 15,
+        "losses": 7,
+        "net": 9300
+       },
+       "14": {
+        "trades": 4,
+        "losses": 2,
+        "net": 1700
+       },
+       "9": {
+        "trades": 15,
+        "losses": 9,
+        "net": -10133
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 38,
+        "losses": 25,
+        "net": -18663
+       },
+       "2": {
+        "trades": 31,
+        "losses": 14,
+        "net": 29442
+       },
+       "3": {
+        "trades": 25,
+        "losses": 17,
+        "net": -15
+       },
+       "4": {
+        "trades": 3,
+        "losses": 1,
+        "net": 1132
+       },
+       "5": {
+        "trades": 8,
+        "losses": 4,
+        "net": 1721
+       },
+       "6": {
+        "trades": 33,
+        "losses": 19,
+        "net": -13346
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 78,
+        "losses": 43,
+        "net": -5500
+       },
+       "LOW": {
+        "trades": 21,
+        "losses": 11,
+        "net": 4991
+       },
+       "MID": {
+        "trades": 34,
+        "losses": 22,
+        "net": 6999
+       },
+       "MISSING": {
+        "trades": 5,
+        "losses": 4,
+        "net": -6219
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 110,
+        "losses": 64,
+        "net": 3220
+       },
+       "2+": {
+        "trades": 23,
+        "losses": 12,
+        "net": 3270
+       },
+       "MISSING": {
+        "trades": 5,
+        "losses": 4,
+        "net": -6219
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 75,
+        "losses": 40,
+        "net": 33144
+       },
+       "STRETCHED": {
+        "trades": 63,
+        "losses": 40,
+        "net": -32873
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 79,
+        "losses": 45,
+        "net": 9164
+       },
+       "True": {
+        "trades": 59,
+        "losses": 35,
+        "net": -8894
+       }
+      },
+      "gross_positive_but_net_negative": 4,
+      "losing_trade_gross": -108436,
+      "losing_trade_costs": 5043,
+      "underlying_favorable_at_exit_losses": 14,
+      "underlying_exit_known_losses": 80,
+      "had_favorable_half_open_range_before_exit": 7,
+      "favorable_half_open_range_after_losing_exit": 25,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "trade_mechanisms_quality_sensitive": {
+      "trades": 136,
+      "losing_trades": 80,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 11,
+        "losses": 2,
+        "net": 21817
+       },
+       "premium_backstop": {
+        "trades": 8,
+        "losses": 8,
+        "net": -18692
+       },
+       "profit_lock": {
+        "trades": 15,
+        "losses": 0,
+        "net": 10121
+       },
+       "time_stop": {
+        "trades": 47,
+        "losses": 28,
+        "net": -6766
+       },
+       "trail_stop": {
+        "trades": 13,
+        "losses": 0,
+        "net": 66247
+       },
+       "underlying_stop": {
+        "trades": 42,
+        "losses": 42,
+        "net": -75686
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 63,
+        "losses": 45,
+        "net": -30442
+       },
+       "SHORT": {
+        "trades": 73,
+        "losses": 35,
+        "net": 27484
+       }
+      },
+      "by_member": {
+       "EFF": {
+        "trades": 73,
+        "losses": 49,
+        "net": -22487
+       },
+       "OR20": {
+        "trades": 18,
+        "losses": 10,
+        "net": 5763
+       },
+       "SHIPPED": {
+        "trades": 29,
+        "losses": 12,
+        "net": 8970
+       },
+       "TPB": {
+        "trades": 16,
+        "losses": 9,
+        "net": 4797
+       }
+      },
+      "by_entry_hour": {
+       "10": {
+        "trades": 44,
+        "losses": 24,
+        "net": 21784
+       },
+       "11": {
+        "trades": 35,
+        "losses": 21,
+        "net": -16836
+       },
+       "12": {
+        "trades": 23,
+        "losses": 17,
+        "net": -8772
+       },
+       "13": {
+        "trades": 15,
+        "losses": 7,
+        "net": 9300
+       },
+       "14": {
+        "trades": 4,
+        "losses": 2,
+        "net": 1700
+       },
+       "9": {
+        "trades": 15,
+        "losses": 9,
+        "net": -10133
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 38,
+        "losses": 25,
+        "net": -18663
+       },
+       "2": {
+        "trades": 31,
+        "losses": 14,
+        "net": 29442
+       },
+       "3": {
+        "trades": 25,
+        "losses": 17,
+        "net": -15
+       },
+       "4": {
+        "trades": 3,
+        "losses": 1,
+        "net": 1132
+       },
+       "5": {
+        "trades": 8,
+        "losses": 4,
+        "net": 1721
+       },
+       "6": {
+        "trades": 31,
+        "losses": 19,
+        "net": -16574
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 77,
+        "losses": 43,
+        "net": -6191
+       },
+       "LOW": {
+        "trades": 20,
+        "losses": 11,
+        "net": 2454
+       },
+       "MID": {
+        "trades": 34,
+        "losses": 22,
+        "net": 6999
+       },
+       "MISSING": {
+        "trades": 5,
+        "losses": 4,
+        "net": -6219
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 108,
+        "losses": 64,
+        "net": -8
+       },
+       "2+": {
+        "trades": 23,
+        "losses": 12,
+        "net": 3270
+       },
+       "MISSING": {
+        "trades": 5,
+        "losses": 4,
+        "net": -6219
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 74,
+        "losses": 40,
+        "net": 30607
+       },
+       "STRETCHED": {
+        "trades": 62,
+        "losses": 40,
+        "net": -33565
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 77,
+        "losses": 45,
+        "net": 5936
+       },
+       "True": {
+        "trades": 59,
+        "losses": 35,
+        "net": -8894
+       }
+      },
+      "gross_positive_but_net_negative": 4,
+      "losing_trade_gross": -108436,
+      "losing_trade_costs": 5043,
+      "underlying_favorable_at_exit_losses": 14,
+      "underlying_exit_known_losses": 80,
+      "had_favorable_half_open_range_before_exit": 7,
+      "favorable_half_open_range_after_losing_exit": 25,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "worst_days": [
+      {
+       "date": "2025-04-08",
+       "trades": 3,
+       "net": -6281.216399999999,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.007639928737717766,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-02-03",
+       "trades": 2,
+       "net": -5936.520399999999,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.035722861030335014,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-01-07",
+       "trades": 2,
+       "net": -5226.33735,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.021047937569677197,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": null,
+       "rv20": null,
+       "ret20_abs": null,
+       "prev_range_rel": null,
+       "prev_body": null,
+       "trend_regime": null,
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-10-27",
+       "trades": 3,
+       "net": -4704.5231,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.06592542677448436,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-01-27",
+       "trades": 3,
+       "net": -4434.007,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.054112227173173794,
+       "h_reversing_day": false,
+       "open_drive": "LOW",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": null,
+       "rv20": null,
+       "ret20_abs": null,
+       "prev_range_rel": null,
+       "prev_body": null,
+       "trend_regime": null,
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-02-28",
+       "trades": 3,
+       "net": -4402.6788,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.11796346330218171,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-02-04",
+       "trades": 3,
+       "net": -4051.8356999999996,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.11582920500118032,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-03-03",
+       "trades": 3,
+       "net": -3758.3649,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.03243949776211059,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-02-07",
+       "trades": 3,
+       "net": -3511.3847,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.0333402705515095,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-08-08",
+       "trades": 3,
+       "net": -3383.3521,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.11056893687707424,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "HIGH",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      }
+     ]
+    },
+    "REF|TPB": {
+     "summary": {
+      "days": 248,
+      "active": 71,
+      "losing_days": 41,
+      "winning_days": 30,
+      "flat_active_days": 0,
+      "no_trade_days": 177,
+      "loss_rate_active": 0.577,
+      "net": 36694,
+      "loss_days_net": -73392,
+      "win_days_net": 110086,
+      "median_loss": -1478,
+      "median_win": 1996
+     },
+     "quality_sensitive_summary": {
+      "days": 243,
+      "active": 71,
+      "losing_days": 41,
+      "winning_days": 30,
+      "flat_active_days": 0,
+      "no_trade_days": 172,
+      "loss_rate_active": 0.577,
+      "net": 36694,
+      "loss_days_net": -73392,
+      "win_days_net": 110086,
+      "median_loss": -1478,
+      "median_win": 1996
+     },
+     "halves": {
+      "H1": {
+       "days": 123,
+       "active": 36,
+       "losing_days": 22,
+       "winning_days": 14,
+       "flat_active_days": 0,
+       "no_trade_days": 87,
+       "loss_rate_active": 0.611,
+       "net": 8955,
+       "loss_days_net": -45575,
+       "win_days_net": 54531,
+       "median_loss": -1944,
+       "median_win": 948
+      },
+      "H2": {
+       "days": 125,
+       "active": 35,
+       "losing_days": 19,
+       "winning_days": 16,
+       "flat_active_days": 0,
+       "no_trade_days": 90,
+       "loss_rate_active": 0.543,
+       "net": 27739,
+       "loss_days_net": -27817,
+       "win_days_net": 55556,
+       "median_loss": -896,
+       "median_win": 3203
+      }
+     },
+     "day_splits": {
+      "open_drive": {
+       "HIGH": {
+        "days": 33,
+        "active": 33,
+        "losing_days": 21,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.636,
+        "net": 3879,
+        "loss_days_net": -35875,
+        "win_days_net": 39754,
+        "median_loss": -1059,
+        "median_win": 1222
+       },
+       "LOW": {
+        "days": 38,
+        "active": 38,
+        "losing_days": 20,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.526,
+        "net": 32815,
+        "loss_days_net": -37517,
+        "win_days_net": 70332,
+        "median_loss": -1776,
+        "median_win": 2701
+       }
+      },
+      "or_width": {
+       "HIGH": {
+        "days": 36,
+        "active": 36,
+        "losing_days": 21,
+        "winning_days": 15,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.583,
+        "net": 11651,
+        "loss_days_net": -36143,
+        "win_days_net": 47794,
+        "median_loss": -1655,
+        "median_win": 1371
+       },
+       "LOW": {
+        "days": 35,
+        "active": 35,
+        "losing_days": 20,
+        "winning_days": 15,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.571,
+        "net": 25044,
+        "loss_days_net": -37249,
+        "win_days_net": 62293,
+        "median_loss": -1457,
+        "median_win": 3393
+       }
+      },
+      "gap": {
+       "HIGH": {
+        "days": 39,
+        "active": 39,
+        "losing_days": 25,
+        "winning_days": 14,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.641,
+        "net": 11910,
+        "loss_days_net": -44085,
+        "win_days_net": 55995,
+        "median_loss": -1279,
+        "median_win": 3395
+       },
+       "LOW": {
+        "days": 32,
+        "active": 32,
+        "losing_days": 16,
+        "winning_days": 16,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 24784,
+        "loss_days_net": -29308,
+        "win_days_net": 54092,
+        "median_loss": -2068,
+        "median_win": 966
+       }
+      },
+      "nr": {
+       "HIGH": {
+        "days": 38,
+        "active": 38,
+        "losing_days": 19,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 37702,
+        "loss_days_net": -40233,
+        "win_days_net": 77935,
+        "median_loss": -1990,
+        "median_win": 1073
+       },
+       "LOW": {
+        "days": 33,
+        "active": 33,
+        "losing_days": 22,
+        "winning_days": 11,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": -1008,
+        "loss_days_net": -33159,
+        "win_days_net": 32151,
+        "median_loss": -1203,
+        "median_win": 3008
+       }
+      },
+      "trend5": {
+       "HIGH": {
+        "days": 34,
+        "active": 34,
+        "losing_days": 23,
+        "winning_days": 11,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.676,
+        "net": -4699,
+        "loss_days_net": -40568,
+        "win_days_net": 35869,
+        "median_loss": -1655,
+        "median_win": 3393
+       },
+       "LOW": {
+        "days": 37,
+        "active": 37,
+        "losing_days": 18,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.486,
+        "net": 41393,
+        "loss_days_net": -32824,
+        "win_days_net": 74217,
+        "median_loss": -1238,
+        "median_win": 1598
+       }
+      },
+      "adx14": {
+       "HIGH": {
+        "days": 17,
+        "active": 17,
+        "losing_days": 7,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.412,
+        "net": 22826,
+        "loss_days_net": -14410,
+        "win_days_net": 37236,
+        "median_loss": -2009,
+        "median_win": 4198
+       },
+       "LOW": {
+        "days": 53,
+        "active": 53,
+        "losing_days": 33,
+        "winning_days": 20,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.623,
+        "net": 20727,
+        "loss_days_net": -52123,
+        "win_days_net": 72850,
+        "median_loss": -1435,
+        "median_win": 1222
+       },
+       "None": {
+        "days": 1,
+        "active": 1,
+        "losing_days": 1,
+        "winning_days": 0,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 1.0,
+        "net": -6859,
+        "loss_days_net": -6859,
+        "win_days_net": 0,
+        "median_loss": -6859,
+        "median_win": null
+       }
+      },
+      "rv20": {
+       "HIGH": {
+        "days": 26,
+        "active": 26,
+        "losing_days": 16,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.615,
+        "net": 1905,
+        "loss_days_net": -28024,
+        "win_days_net": 29929,
+        "median_loss": -1566,
+        "median_win": 948
+       },
+       "LOW": {
+        "days": 44,
+        "active": 44,
+        "losing_days": 24,
+        "winning_days": 20,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.545,
+        "net": 41648,
+        "loss_days_net": -38509,
+        "win_days_net": 80157,
+        "median_loss": -1357,
+        "median_win": 2701
+       },
+       "None": {
+        "days": 1,
+        "active": 1,
+        "losing_days": 1,
+        "winning_days": 0,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 1.0,
+        "net": -6859,
+        "loss_days_net": -6859,
+        "win_days_net": 0,
+        "median_loss": -6859,
+        "median_win": null
+       }
+      },
+      "ret20_abs": {
+       "HIGH": {
+        "days": 29,
+        "active": 29,
+        "losing_days": 16,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.552,
+        "net": 30801,
+        "loss_days_net": -32076,
+        "win_days_net": 62877,
+        "median_loss": -2012,
+        "median_win": 4770
+       },
+       "LOW": {
+        "days": 41,
+        "active": 41,
+        "losing_days": 24,
+        "winning_days": 17,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.585,
+        "net": 12752,
+        "loss_days_net": -34457,
+        "win_days_net": 47210,
+        "median_loss": -1105,
+        "median_win": 822
+       },
+       "None": {
+        "days": 1,
+        "active": 1,
+        "losing_days": 1,
+        "winning_days": 0,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 1.0,
+        "net": -6859,
+        "loss_days_net": -6859,
+        "win_days_net": 0,
+        "median_loss": -6859,
+        "median_win": null
+       }
+      },
+      "prev_range_rel": {
+       "HIGH": {
+        "days": 37,
+        "active": 37,
+        "losing_days": 18,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.486,
+        "net": 42980,
+        "loss_days_net": -35424,
+        "win_days_net": 78404,
+        "median_loss": -1999,
+        "median_win": 1073
+       },
+       "LOW": {
+        "days": 33,
+        "active": 33,
+        "losing_days": 22,
+        "winning_days": 11,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 572,
+        "loss_days_net": -31110,
+        "win_days_net": 31682,
+        "median_loss": -1203,
+        "median_win": 3008
+       },
+       "None": {
+        "days": 1,
+        "active": 1,
+        "losing_days": 1,
+        "winning_days": 0,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 1.0,
+        "net": -6859,
+        "loss_days_net": -6859,
+        "win_days_net": 0,
+        "median_loss": -6859,
+        "median_win": null
+       }
+      },
+      "prev_body": {
+       "HIGH": {
+        "days": 39,
+        "active": 39,
+        "losing_days": 20,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.513,
+        "net": 48183,
+        "loss_days_net": -38535,
+        "win_days_net": 86718,
+        "median_loss": -1944,
+        "median_win": 3008
+       },
+       "LOW": {
+        "days": 31,
+        "active": 31,
+        "losing_days": 20,
+        "winning_days": 11,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.645,
+        "net": -4630,
+        "loss_days_net": -27998,
+        "win_days_net": 23368,
+        "median_loss": -1203,
+        "median_win": 847
+       },
+       "None": {
+        "days": 1,
+        "active": 1,
+        "losing_days": 1,
+        "winning_days": 0,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 1.0,
+        "net": -6859,
+        "loss_days_net": -6859,
+        "win_days_net": 0,
+        "median_loss": -6859,
+        "median_win": null
+       }
+      },
+      "trend_regime": {
+       "HIGH": {
+        "days": 24,
+        "active": 24,
+        "losing_days": 11,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.458,
+        "net": 30003,
+        "loss_days_net": -23628,
+        "win_days_net": 53631,
+        "median_loss": -2120,
+        "median_win": 3398
+       },
+       "LOW": {
+        "days": 46,
+        "active": 46,
+        "losing_days": 29,
+        "winning_days": 17,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.63,
+        "net": 13550,
+        "loss_days_net": -42905,
+        "win_days_net": 56455,
+        "median_loss": -1279,
+        "median_win": 847
+       },
+       "None": {
+        "days": 1,
+        "active": 1,
+        "losing_days": 1,
+        "winning_days": 0,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 1.0,
+        "net": -6859,
+        "loss_days_net": -6859,
+        "win_days_net": 0,
+        "median_loss": -6859,
+        "median_win": null
+       }
+      },
+      "dmi_dir": {
+       "DOWN": {
+        "days": 30,
+        "active": 30,
+        "losing_days": 18,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.6,
+        "net": 25661,
+        "loss_days_net": -36173,
+        "win_days_net": 61833,
+        "median_loss": -1776,
+        "median_win": 3630
+       },
+       "UP": {
+        "days": 41,
+        "active": 41,
+        "losing_days": 23,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.561,
+        "net": 11034,
+        "loss_days_net": -37220,
+        "win_days_net": 48253,
+        "median_loss": -1435,
+        "median_win": 1734
+       }
+      },
+      "ema_dir": {
+       "DOWN": {
+        "days": 29,
+        "active": 29,
+        "losing_days": 16,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.552,
+        "net": 31315,
+        "loss_days_net": -35614,
+        "win_days_net": 66929,
+        "median_loss": -2003,
+        "median_win": 4999
+       },
+       "UP": {
+        "days": 42,
+        "active": 42,
+        "losing_days": 25,
+        "winning_days": 17,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.595,
+        "net": 5379,
+        "loss_days_net": -37778,
+        "win_days_net": 43157,
+        "median_loss": -1347,
+        "median_win": 1073
+       }
+      },
+      "h_trend_day": {
+       "False": {
+        "days": 33,
+        "active": 33,
+        "losing_days": 27,
+        "winning_days": 6,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.818,
+        "net": -34620,
+        "loss_days_net": -48624,
+        "win_days_net": 14004,
+        "median_loss": -1990,
+        "median_win": 1222
+       },
+       "True": {
+        "days": 38,
+        "active": 38,
+        "losing_days": 14,
+        "winning_days": 24,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.368,
+        "net": 71315,
+        "loss_days_net": -24768,
+        "win_days_net": 96083,
+        "median_loss": -1122,
+        "median_win": 2701
+       }
+      },
+      "h_small_range": {
+       "False": {
+        "days": 51,
+        "active": 51,
+        "losing_days": 28,
+        "winning_days": 23,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.549,
+        "net": 51684,
+        "loss_days_net": -54097,
+        "win_days_net": 105781,
+        "median_loss": -1944,
+        "median_win": 3398
+       },
+       "True": {
+        "days": 20,
+        "active": 20,
+        "losing_days": 13,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.65,
+        "net": -14990,
+        "loss_days_net": -19296,
+        "win_days_net": 4306,
+        "median_loss": -1279,
+        "median_win": 436
+       }
+      },
+      "h_reversing_day": {
+       "False": {
+        "days": 40,
+        "active": 40,
+        "losing_days": 12,
+        "winning_days": 28,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.3,
+        "net": 87185,
+        "loss_days_net": -22622,
+        "win_days_net": 109807,
+        "median_loss": -1776,
+        "median_win": 2701
+       },
+       "True": {
+        "days": 31,
+        "active": 31,
+        "losing_days": 29,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.935,
+        "net": -50490,
+        "loss_days_net": -50770,
+        "win_days_net": 280,
+        "median_loss": -1435,
+        "median_win": 140
+       }
+      }
+     },
+     "trade_mechanisms": {
+      "trades": 107,
+      "losing_trades": 61,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 34,
+        "losses": 4,
+        "net": 66877
+       },
+       "premium_backstop": {
+        "trades": 4,
+        "losses": 4,
+        "net": -8563
+       },
+       "time_stop": {
+        "trades": 25,
+        "losses": 17,
+        "net": -5263
+       },
+       "trail_stop": {
+        "trades": 8,
+        "losses": 0,
+        "net": 41364
+       },
+       "underlying_stop": {
+        "trades": 36,
+        "losses": 36,
+        "net": -57720
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 48,
+        "losses": 28,
+        "net": 3948
+       },
+       "SHORT": {
+        "trades": 59,
+        "losses": 33,
+        "net": 32746
+       }
+      },
+      "by_member": {
+       "TPB": {
+        "trades": 107,
+        "losses": 61,
+        "net": 36694
+       }
+      },
+      "by_entry_hour": {
+       "11": {
+        "trades": 40,
+        "losses": 24,
+        "net": 14561
+       },
+       "12": {
+        "trades": 28,
+        "losses": 18,
+        "net": 2254
+       },
+       "13": {
+        "trades": 24,
+        "losses": 11,
+        "net": 21527
+       },
+       "14": {
+        "trades": 15,
+        "losses": 8,
+        "net": -1648
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 25,
+        "losses": 15,
+        "net": -11881
+       },
+       "2": {
+        "trades": 26,
+        "losses": 15,
+        "net": 20027
+       },
+       "3": {
+        "trades": 13,
+        "losses": 7,
+        "net": 7070
+       },
+       "4": {
+        "trades": 7,
+        "losses": 3,
+        "net": 10993
+       },
+       "5": {
+        "trades": 14,
+        "losses": 7,
+        "net": 6149
+       },
+       "6": {
+        "trades": 22,
+        "losses": 14,
+        "net": 4336
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 13,
+        "losses": 8,
+        "net": -1891
+       },
+       "LOW": {
+        "trades": 65,
+        "losses": 37,
+        "net": 20467
+       },
+       "MID": {
+        "trades": 29,
+        "losses": 16,
+        "net": 18118
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 71,
+        "losses": 41,
+        "net": 22798
+       },
+       "2+": {
+        "trades": 36,
+        "losses": 20,
+        "net": 13896
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 92,
+        "losses": 49,
+        "net": 43541
+       },
+       "STRETCHED": {
+        "trades": 15,
+        "losses": 12,
+        "net": -6847
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 54,
+        "losses": 26,
+        "net": 37521
+       },
+       "True": {
+        "trades": 53,
+        "losses": 35,
+        "net": -827
+       }
+      },
+      "gross_positive_but_net_negative": 2,
+      "losing_trade_gross": -73343,
+      "losing_trade_costs": 3392,
+      "underlying_favorable_at_exit_losses": 14,
+      "underlying_exit_known_losses": 61,
+      "had_favorable_half_open_range_before_exit": 8,
+      "favorable_half_open_range_after_losing_exit": 8,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "trade_mechanisms_quality_sensitive": {
+      "trades": 107,
+      "losing_trades": 61,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 34,
+        "losses": 4,
+        "net": 66877
+       },
+       "premium_backstop": {
+        "trades": 4,
+        "losses": 4,
+        "net": -8563
+       },
+       "time_stop": {
+        "trades": 25,
+        "losses": 17,
+        "net": -5263
+       },
+       "trail_stop": {
+        "trades": 8,
+        "losses": 0,
+        "net": 41364
+       },
+       "underlying_stop": {
+        "trades": 36,
+        "losses": 36,
+        "net": -57720
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 48,
+        "losses": 28,
+        "net": 3948
+       },
+       "SHORT": {
+        "trades": 59,
+        "losses": 33,
+        "net": 32746
+       }
+      },
+      "by_member": {
+       "TPB": {
+        "trades": 107,
+        "losses": 61,
+        "net": 36694
+       }
+      },
+      "by_entry_hour": {
+       "11": {
+        "trades": 40,
+        "losses": 24,
+        "net": 14561
+       },
+       "12": {
+        "trades": 28,
+        "losses": 18,
+        "net": 2254
+       },
+       "13": {
+        "trades": 24,
+        "losses": 11,
+        "net": 21527
+       },
+       "14": {
+        "trades": 15,
+        "losses": 8,
+        "net": -1648
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 25,
+        "losses": 15,
+        "net": -11881
+       },
+       "2": {
+        "trades": 26,
+        "losses": 15,
+        "net": 20027
+       },
+       "3": {
+        "trades": 13,
+        "losses": 7,
+        "net": 7070
+       },
+       "4": {
+        "trades": 7,
+        "losses": 3,
+        "net": 10993
+       },
+       "5": {
+        "trades": 14,
+        "losses": 7,
+        "net": 6149
+       },
+       "6": {
+        "trades": 22,
+        "losses": 14,
+        "net": 4336
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 13,
+        "losses": 8,
+        "net": -1891
+       },
+       "LOW": {
+        "trades": 65,
+        "losses": 37,
+        "net": 20467
+       },
+       "MID": {
+        "trades": 29,
+        "losses": 16,
+        "net": 18118
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 71,
+        "losses": 41,
+        "net": 22798
+       },
+       "2+": {
+        "trades": 36,
+        "losses": 20,
+        "net": 13896
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 92,
+        "losses": 49,
+        "net": 43541
+       },
+       "STRETCHED": {
+        "trades": 15,
+        "losses": 12,
+        "net": -6847
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 54,
+        "losses": 26,
+        "net": 37521
+       },
+       "True": {
+        "trades": 53,
+        "losses": 35,
+        "net": -827
+       }
+      },
+      "gross_positive_but_net_negative": 2,
+      "losing_trade_gross": -73343,
+      "losing_trade_costs": 3392,
+      "underlying_favorable_at_exit_losses": 14,
+      "underlying_exit_known_losses": 61,
+      "had_favorable_half_open_range_before_exit": 8,
+      "favorable_half_open_range_after_losing_exit": 8,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "worst_days": [
+      {
+       "date": "2025-01-21",
+       "trades": 2,
+       "net": -6858.5265,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.0905086795060016,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": null,
+       "rv20": null,
+       "ret20_abs": null,
+       "prev_range_rel": null,
+       "prev_body": null,
+       "trend_regime": null,
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-04-08",
+       "trades": 1,
+       "net": -5003.0722,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.007639928737717766,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-08-05",
+       "trades": 2,
+       "net": -3745.5575,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": true,
+       "h_full_day_er": 0.036446033063125285,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-02-18",
+       "trades": 2,
+       "net": -3575.0098,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.023548848992179433,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-10-27",
+       "trades": 2,
+       "net": -3426.527766666667,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.06592542677448436,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-11-13",
+       "trades": 2,
+       "net": -3092.0589499999996,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.012775471095496508,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-02-19",
+       "trades": 2,
+       "net": -2773.39955,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.023015994909713088,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-05-16",
+       "trades": 1,
+       "net": -2745.1155,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.0007108583614724583,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-09-05",
+       "trades": 1,
+       "net": -2616.30445,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.019652339672311014,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-03-10",
+       "trades": 2,
+       "net": -2523.299,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.06642274891716521,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      }
+     ]
+    },
+    "REF|BEST": {
+     "summary": {
+      "days": 248,
+      "active": 105,
+      "losing_days": 63,
+      "winning_days": 42,
+      "flat_active_days": 0,
+      "no_trade_days": 143,
+      "loss_rate_active": 0.6,
+      "net": 34517,
+      "loss_days_net": -128727,
+      "win_days_net": 163243,
+      "median_loss": -1906,
+      "median_win": 1508
+     },
+     "quality_sensitive_summary": {
+      "days": 243,
+      "active": 104,
+      "losing_days": 63,
+      "winning_days": 41,
+      "flat_active_days": 0,
+      "no_trade_days": 139,
+      "loss_rate_active": 0.606,
+      "net": 31288,
+      "loss_days_net": -128727,
+      "win_days_net": 160015,
+      "median_loss": -1906,
+      "median_win": 1395
+     },
+     "halves": {
+      "H1": {
+       "days": 123,
+       "active": 65,
+       "losing_days": 40,
+       "winning_days": 25,
+       "flat_active_days": 0,
+       "no_trade_days": 58,
+       "loss_rate_active": 0.615,
+       "net": 28985,
+       "loss_days_net": -87616,
+       "win_days_net": 116601,
+       "median_loss": -2083,
+       "median_win": 2318
+      },
+      "H2": {
+       "days": 125,
+       "active": 40,
+       "losing_days": 23,
+       "winning_days": 17,
+       "flat_active_days": 0,
+       "no_trade_days": 85,
+       "loss_rate_active": 0.575,
+       "net": 5532,
+       "loss_days_net": -41111,
+       "win_days_net": 46642,
+       "median_loss": -1491,
+       "median_win": 1395
+      }
+     },
+     "day_splits": {
+      "open_drive": {
+       "HIGH": {
+        "days": 51,
+        "active": 51,
+        "losing_days": 31,
+        "winning_days": 20,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.608,
+        "net": 21819,
+        "loss_days_net": -66411,
+        "win_days_net": 88230,
+        "median_loss": -2120,
+        "median_win": 1376
+       },
+       "LOW": {
+        "days": 54,
+        "active": 54,
+        "losing_days": 32,
+        "winning_days": 22,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.593,
+        "net": 12697,
+        "loss_days_net": -62316,
+        "win_days_net": 75013,
+        "median_loss": -1902,
+        "median_win": 1898
+       }
+      },
+      "or_width": {
+       "HIGH": {
+        "days": 59,
+        "active": 59,
+        "losing_days": 35,
+        "winning_days": 24,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.593,
+        "net": 18522,
+        "loss_days_net": -67357,
+        "win_days_net": 85880,
+        "median_loss": -1880,
+        "median_win": 1083
+       },
+       "LOW": {
+        "days": 46,
+        "active": 46,
+        "losing_days": 28,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.609,
+        "net": 15994,
+        "loss_days_net": -61369,
+        "win_days_net": 77363,
+        "median_loss": -1976,
+        "median_win": 3635
+       }
+      },
+      "gap": {
+       "HIGH": {
+        "days": 61,
+        "active": 61,
+        "losing_days": 40,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.656,
+        "net": 13462,
+        "loss_days_net": -86056,
+        "win_days_net": 99518,
+        "median_loss": -1889,
+        "median_win": 2402
+       },
+       "LOW": {
+        "days": 44,
+        "active": 44,
+        "losing_days": 23,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.523,
+        "net": 21054,
+        "loss_days_net": -42671,
+        "win_days_net": 63725,
+        "median_loss": -2120,
+        "median_win": 1073
+       }
+      },
+      "nr": {
+       "HIGH": {
+        "days": 54,
+        "active": 54,
+        "losing_days": 33,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.611,
+        "net": 3577,
+        "loss_days_net": -74673,
+        "win_days_net": 78250,
+        "median_loss": -2133,
+        "median_win": 1073
+       },
+       "LOW": {
+        "days": 51,
+        "active": 51,
+        "losing_days": 30,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.588,
+        "net": 30939,
+        "loss_days_net": -54054,
+        "win_days_net": 84993,
+        "median_loss": -1889,
+        "median_win": 3008
+       }
+      },
+      "trend5": {
+       "HIGH": {
+        "days": 47,
+        "active": 47,
+        "losing_days": 31,
+        "winning_days": 16,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.66,
+        "net": -20157,
+        "loss_days_net": -64267,
+        "win_days_net": 44110,
+        "median_loss": -1906,
+        "median_win": 1706
+       },
+       "LOW": {
+        "days": 58,
+        "active": 58,
+        "losing_days": 32,
+        "winning_days": 26,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.552,
+        "net": 54674,
+        "loss_days_net": -64459,
+        "win_days_net": 119133,
+        "median_loss": -1963,
+        "median_win": 1508
+       }
+      },
+      "adx14": {
+       "HIGH": {
+        "days": 24,
+        "active": 24,
+        "losing_days": 12,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 20574,
+        "loss_days_net": -30196,
+        "win_days_net": 50771,
+        "median_loss": -2609,
+        "median_win": 2656
+       },
+       "LOW": {
+        "days": 65,
+        "active": 65,
+        "losing_days": 42,
+        "winning_days": 23,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.646,
+        "net": -326,
+        "loss_days_net": -75806,
+        "win_days_net": 75480,
+        "median_loss": -1552,
+        "median_win": 1093
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "rv20": {
+       "HIGH": {
+        "days": 29,
+        "active": 29,
+        "losing_days": 17,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.586,
+        "net": 19716,
+        "loss_days_net": -33051,
+        "win_days_net": 52768,
+        "median_loss": -1906,
+        "median_win": 1748
+       },
+       "LOW": {
+        "days": 60,
+        "active": 60,
+        "losing_days": 37,
+        "winning_days": 23,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.617,
+        "net": 532,
+        "loss_days_net": -72951,
+        "win_days_net": 73483,
+        "median_loss": -1809,
+        "median_win": 1374
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "ret20_abs": {
+       "HIGH": {
+        "days": 42,
+        "active": 42,
+        "losing_days": 24,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.571,
+        "net": 29539,
+        "loss_days_net": -49243,
+        "win_days_net": 78782,
+        "median_loss": -2064,
+        "median_win": 2815
+       },
+       "LOW": {
+        "days": 47,
+        "active": 47,
+        "losing_days": 30,
+        "winning_days": 17,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.638,
+        "net": -9291,
+        "loss_days_net": -56759,
+        "win_days_net": 47468,
+        "median_loss": -1573,
+        "median_win": 822
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "prev_range_rel": {
+       "HIGH": {
+        "days": 48,
+        "active": 48,
+        "losing_days": 29,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.604,
+        "net": 7668,
+        "loss_days_net": -64784,
+        "win_days_net": 72453,
+        "median_loss": -2240,
+        "median_win": 1073
+       },
+       "LOW": {
+        "days": 41,
+        "active": 41,
+        "losing_days": 25,
+        "winning_days": 16,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.61,
+        "net": 12580,
+        "loss_days_net": -41218,
+        "win_days_net": 53798,
+        "median_loss": -1491,
+        "median_win": 2314
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "prev_body": {
+       "HIGH": {
+        "days": 50,
+        "active": 50,
+        "losing_days": 25,
+        "winning_days": 25,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 39749,
+        "loss_days_net": -50330,
+        "win_days_net": 90079,
+        "median_loss": -1499,
+        "median_win": 1374
+       },
+       "LOW": {
+        "days": 39,
+        "active": 39,
+        "losing_days": 29,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.744,
+        "net": -19501,
+        "loss_days_net": -55672,
+        "win_days_net": 36171,
+        "median_loss": -1906,
+        "median_win": 1234
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "trend_regime": {
+       "HIGH": {
+        "days": 30,
+        "active": 30,
+        "losing_days": 15,
+        "winning_days": 15,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 29903,
+        "loss_days_net": -37273,
+        "win_days_net": 67176,
+        "median_loss": -2603,
+        "median_win": 2402
+       },
+       "LOW": {
+        "days": 59,
+        "active": 59,
+        "losing_days": 39,
+        "winning_days": 20,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.661,
+        "net": -9655,
+        "loss_days_net": -68729,
+        "win_days_net": 59074,
+        "median_loss": -1287,
+        "median_win": 834
+       },
+       "None": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 9,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 14269,
+        "loss_days_net": -22724,
+        "win_days_net": 36993,
+        "median_loss": -2133,
+        "median_win": 4520
+       }
+      },
+      "dmi_dir": {
+       "DOWN": {
+        "days": 56,
+        "active": 56,
+        "losing_days": 36,
+        "winning_days": 20,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.643,
+        "net": 18891,
+        "loss_days_net": -77522,
+        "win_days_net": 96413,
+        "median_loss": -2089,
+        "median_win": 2773
+       },
+       "UP": {
+        "days": 49,
+        "active": 49,
+        "losing_days": 27,
+        "winning_days": 22,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.551,
+        "net": 15626,
+        "loss_days_net": -51204,
+        "win_days_net": 66830,
+        "median_loss": -1809,
+        "median_win": 1113
+       }
+      },
+      "ema_dir": {
+       "DOWN": {
+        "days": 52,
+        "active": 52,
+        "losing_days": 31,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.596,
+        "net": 32816,
+        "loss_days_net": -67386,
+        "win_days_net": 100202,
+        "median_loss": -2240,
+        "median_win": 3228
+       },
+       "UP": {
+        "days": 53,
+        "active": 53,
+        "losing_days": 32,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.604,
+        "net": 1701,
+        "loss_days_net": -61340,
+        "win_days_net": 63041,
+        "median_loss": -1732,
+        "median_win": 1093
+       }
+      },
+      "h_trend_day": {
+       "False": {
+        "days": 54,
+        "active": 54,
+        "losing_days": 41,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.759,
+        "net": -43412,
+        "loss_days_net": -87940,
+        "win_days_net": 44528,
+        "median_loss": -2120,
+        "median_win": 1093
+       },
+       "True": {
+        "days": 51,
+        "active": 51,
+        "losing_days": 22,
+        "winning_days": 29,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.431,
+        "net": 77929,
+        "loss_days_net": -40786,
+        "win_days_net": 118715,
+        "median_loss": -1732,
+        "median_win": 2318
+       }
+      },
+      "h_small_range": {
+       "False": {
+        "days": 76,
+        "active": 76,
+        "losing_days": 42,
+        "winning_days": 34,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.553,
+        "net": 65743,
+        "loss_days_net": -89561,
+        "win_days_net": 155304,
+        "median_loss": -2126,
+        "median_win": 2705
+       },
+       "True": {
+        "days": 29,
+        "active": 29,
+        "losing_days": 21,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.724,
+        "net": -31227,
+        "loss_days_net": -39166,
+        "win_days_net": 7939,
+        "median_loss": -1605,
+        "median_win": 821
+       }
+      },
+      "h_reversing_day": {
+       "False": {
+        "days": 55,
+        "active": 55,
+        "losing_days": 22,
+        "winning_days": 33,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.4,
+        "net": 101735,
+        "loss_days_net": -44859,
+        "win_days_net": 146594,
+        "median_loss": -2064,
+        "median_win": 2402
+       },
+       "True": {
+        "days": 50,
+        "active": 50,
+        "losing_days": 41,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.82,
+        "net": -67218,
+        "loss_days_net": -83868,
+        "win_days_net": 16650,
+        "median_loss": -1880,
+        "median_win": 1093
+       }
+      }
+     },
+     "trade_mechanisms": {
+      "trades": 214,
+      "losing_trades": 123,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 32,
+        "losses": 5,
+        "net": 58602
+       },
+       "premium_backstop": {
+        "trades": 9,
+        "losses": 9,
+        "net": -20184
+       },
+       "profit_lock": {
+        "trades": 15,
+        "losses": 0,
+        "net": 10145
+       },
+       "time_stop": {
+        "trades": 69,
+        "losses": 42,
+        "net": -10791
+       },
+       "trail_stop": {
+        "trades": 22,
+        "losses": 0,
+        "net": 110053
+       },
+       "underlying_stop": {
+        "trades": 67,
+        "losses": 67,
+        "net": -113310
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 99,
+        "losses": 63,
+        "net": -22190
+       },
+       "SHORT": {
+        "trades": 115,
+        "losses": 60,
+        "net": 56707
+       }
+      },
+      "by_member": {
+       "EFF": {
+        "trades": 73,
+        "losses": 48,
+        "net": -20146
+       },
+       "OR20": {
+        "trades": 19,
+        "losses": 10,
+        "net": 8346
+       },
+       "SHIPPED": {
+        "trades": 29,
+        "losses": 12,
+        "net": 9041
+       },
+       "TPB": {
+        "trades": 93,
+        "losses": 53,
+        "net": 37275
+       }
+      },
+      "by_entry_hour": {
+       "10": {
+        "trades": 44,
+        "losses": 23,
+        "net": 25899
+       },
+       "11": {
+        "trades": 64,
+        "losses": 37,
+        "net": 3666
+       },
+       "12": {
+        "trades": 43,
+        "losses": 29,
+        "net": -3926
+       },
+       "13": {
+        "trades": 33,
+        "losses": 17,
+        "net": 19635
+       },
+       "14": {
+        "trades": 15,
+        "losses": 8,
+        "net": -719
+       },
+       "9": {
+        "trades": 15,
+        "losses": 9,
+        "net": -10039
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 52,
+        "losses": 32,
+        "net": -21651
+       },
+       "2": {
+        "trades": 54,
+        "losses": 27,
+        "net": 56064
+       },
+       "3": {
+        "trades": 32,
+        "losses": 20,
+        "net": 4440
+       },
+       "4": {
+        "trades": 10,
+        "losses": 4,
+        "net": 11983
+       },
+       "5": {
+        "trades": 16,
+        "losses": 10,
+        "net": -2976
+       },
+       "6": {
+        "trades": 50,
+        "losses": 30,
+        "net": -13342
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 88,
+        "losses": 48,
+        "net": 157
+       },
+       "LOW": {
+        "trades": 71,
+        "losses": 40,
+        "net": 25714
+       },
+       "MID": {
+        "trades": 50,
+        "losses": 31,
+        "net": 14817
+       },
+       "MISSING": {
+        "trades": 5,
+        "losses": 4,
+        "net": -6172
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 164,
+        "losses": 93,
+        "net": 31755
+       },
+       "2+": {
+        "trades": 45,
+        "losses": 26,
+        "net": 8933
+       },
+       "MISSING": {
+        "trades": 5,
+        "losses": 4,
+        "net": -6172
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 141,
+        "losses": 76,
+        "net": 61704
+       },
+       "STRETCHED": {
+        "trades": 73,
+        "losses": 47,
+        "net": -27187
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 116,
+        "losses": 63,
+        "net": 31327
+       },
+       "True": {
+        "trades": 98,
+        "losses": 60,
+        "net": 3189
+       }
+      },
+      "gross_positive_but_net_negative": 6,
+      "losing_trade_gross": -153975,
+      "losing_trade_costs": 7187,
+      "underlying_favorable_at_exit_losses": 24,
+      "underlying_exit_known_losses": 123,
+      "had_favorable_half_open_range_before_exit": 12,
+      "favorable_half_open_range_after_losing_exit": 29,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "trade_mechanisms_quality_sensitive": {
+      "trades": 212,
+      "losing_trades": 123,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 32,
+        "losses": 5,
+        "net": 58602
+       },
+       "premium_backstop": {
+        "trades": 9,
+        "losses": 9,
+        "net": -20184
+       },
+       "profit_lock": {
+        "trades": 15,
+        "losses": 0,
+        "net": 10145
+       },
+       "time_stop": {
+        "trades": 68,
+        "losses": 42,
+        "net": -11482
+       },
+       "trail_stop": {
+        "trades": 21,
+        "losses": 0,
+        "net": 107517
+       },
+       "underlying_stop": {
+        "trades": 67,
+        "losses": 67,
+        "net": -113310
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 97,
+        "losses": 63,
+        "net": -25418
+       },
+       "SHORT": {
+        "trades": 115,
+        "losses": 60,
+        "net": 56707
+       }
+      },
+      "by_member": {
+       "EFF": {
+        "trades": 72,
+        "losses": 48,
+        "net": -20838
+       },
+       "OR20": {
+        "trades": 18,
+        "losses": 10,
+        "net": 5810
+       },
+       "SHIPPED": {
+        "trades": 29,
+        "losses": 12,
+        "net": 9041
+       },
+       "TPB": {
+        "trades": 93,
+        "losses": 53,
+        "net": 37275
+       }
+      },
+      "by_entry_hour": {
+       "10": {
+        "trades": 43,
+        "losses": 23,
+        "net": 23363
+       },
+       "11": {
+        "trades": 64,
+        "losses": 37,
+        "net": 3666
+       },
+       "12": {
+        "trades": 42,
+        "losses": 29,
+        "net": -4617
+       },
+       "13": {
+        "trades": 33,
+        "losses": 17,
+        "net": 19635
+       },
+       "14": {
+        "trades": 15,
+        "losses": 8,
+        "net": -719
+       },
+       "9": {
+        "trades": 15,
+        "losses": 9,
+        "net": -10039
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 52,
+        "losses": 32,
+        "net": -21651
+       },
+       "2": {
+        "trades": 54,
+        "losses": 27,
+        "net": 56064
+       },
+       "3": {
+        "trades": 32,
+        "losses": 20,
+        "net": 4440
+       },
+       "4": {
+        "trades": 10,
+        "losses": 4,
+        "net": 11983
+       },
+       "5": {
+        "trades": 16,
+        "losses": 10,
+        "net": -2976
+       },
+       "6": {
+        "trades": 48,
+        "losses": 30,
+        "net": -16571
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 87,
+        "losses": 48,
+        "net": -534
+       },
+       "LOW": {
+        "trades": 70,
+        "losses": 40,
+        "net": 23178
+       },
+       "MID": {
+        "trades": 50,
+        "losses": 31,
+        "net": 14817
+       },
+       "MISSING": {
+        "trades": 5,
+        "losses": 4,
+        "net": -6172
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 162,
+        "losses": 93,
+        "net": 28527
+       },
+       "2+": {
+        "trades": 45,
+        "losses": 26,
+        "net": 8933
+       },
+       "MISSING": {
+        "trades": 5,
+        "losses": 4,
+        "net": -6172
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 140,
+        "losses": 76,
+        "net": 59167
+       },
+       "STRETCHED": {
+        "trades": 72,
+        "losses": 47,
+        "net": -27879
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 114,
+        "losses": 63,
+        "net": 28099
+       },
+       "True": {
+        "trades": 98,
+        "losses": 60,
+        "net": 3189
+       }
+      },
+      "gross_positive_but_net_negative": 6,
+      "losing_trade_gross": -153975,
+      "losing_trade_costs": 7187,
+      "underlying_favorable_at_exit_losses": 24,
+      "underlying_exit_known_losses": 123,
+      "had_favorable_half_open_range_before_exit": 12,
+      "favorable_half_open_range_after_losing_exit": 29,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "worst_days": [
+      {
+       "date": "2025-04-08",
+       "trades": 3,
+       "net": -6281.216399999999,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.007639928737717766,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-02-03",
+       "trades": 2,
+       "net": -5936.520399999999,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.035722861030335014,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-01-07",
+       "trades": 2,
+       "net": -5226.33735,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.021047937569677197,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": null,
+       "rv20": null,
+       "ret20_abs": null,
+       "prev_range_rel": null,
+       "prev_body": null,
+       "trend_regime": null,
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-10-27",
+       "trades": 3,
+       "net": -4633.7232,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.06592542677448436,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-01-27",
+       "trades": 3,
+       "net": -4434.007,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.054112227173173794,
+       "h_reversing_day": false,
+       "open_drive": "LOW",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": null,
+       "rv20": null,
+       "ret20_abs": null,
+       "prev_range_rel": null,
+       "prev_body": null,
+       "trend_regime": null,
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-02-04",
+       "trades": 3,
+       "net": -4051.8356999999996,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.11582920500118032,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2025-03-03",
+       "trades": 3,
+       "net": -3758.3649,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.03243949776211059,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-08-05",
+       "trades": 2,
+       "net": -3721.95755,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": true,
+       "h_full_day_er": 0.036446033063125285,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-02-18",
+       "trades": 2,
+       "net": -3575.0098,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.023548848992179433,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2025-02-07",
+       "trades": 3,
+       "net": -3511.3847,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.0333402705515095,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      }
+     ]
+    }
+   },
+   "quality_dates": [
+    "2025-01-31",
+    "2025-06-20",
+    "2025-06-27",
+    "2025-07-04",
+    "2025-07-11"
+   ],
+   "family_overlap_HINDSIGHT_ONLY": {
+    "SHIPPED": {
+     "variants": 6,
+     "live_loss_days_median_net": -16468.5,
+     "live_win_days_median_net": 17044.0,
+     "median_positive_live_loss_days": 5.5,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "OR20": {
+     "variants": 6,
+     "live_loss_days_median_net": -24899.0,
+     "live_win_days_median_net": 28610.5,
+     "median_positive_live_loss_days": 7.0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "EFF": {
+     "variants": 6,
+     "live_loss_days_median_net": -38802.5,
+     "live_win_days_median_net": 26937.5,
+     "median_positive_live_loss_days": 3.0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "TPB": {
+     "variants": 6,
+     "live_loss_days_median_net": -12833.0,
+     "live_win_days_median_net": 10325.0,
+     "median_positive_live_loss_days": 2.0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "TREND_PULLBACK": {
+     "variants": 8,
+     "live_loss_days_median_net": -3672.0,
+     "live_win_days_median_net": 1496.5,
+     "median_positive_live_loss_days": 3.0,
+     "positive_variants_on_live_loss_days": 1
+    },
+    "PDL_BREAK": {
+     "variants": 8,
+     "live_loss_days_median_net": -3213.5,
+     "live_win_days_median_net": 92.5,
+     "median_positive_live_loss_days": 2.0,
+     "positive_variants_on_live_loss_days": 1
+    },
+    "VWAP_BAND": {
+     "variants": 8,
+     "live_loss_days_median_net": -20952.0,
+     "live_win_days_median_net": -5363.0,
+     "median_positive_live_loss_days": 4.0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "MOMO_BURST": {
+     "variants": 8,
+     "live_loss_days_median_net": -10501.0,
+     "live_win_days_median_net": -4547.0,
+     "median_positive_live_loss_days": 4.0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "TPB_O27F": {
+     "variants": 1,
+     "live_loss_days_median_net": -12833,
+     "live_win_days_median_net": 14260,
+     "median_positive_live_loss_days": 2,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "NOISE_BAND": {
+     "variants": 4,
+     "live_loss_days_median_net": -29441.5,
+     "live_win_days_median_net": -8910.0,
+     "median_positive_live_loss_days": 1.0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "LATE_MOMO": {
+     "variants": 4,
+     "live_loss_days_median_net": -14844.0,
+     "live_win_days_median_net": -2396.0,
+     "median_positive_live_loss_days": 5.5,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "FADE": {
+     "variants": 16,
+     "live_loss_days_median_net": 953.5,
+     "live_win_days_median_net": -8486.5,
+     "median_positive_live_loss_days": 11.0,
+     "positive_variants_on_live_loss_days": 10
+    },
+    "VWAP_REVERT": {
+     "variants": 16,
+     "live_loss_days_median_net": 6093.0,
+     "live_win_days_median_net": -10364.0,
+     "median_positive_live_loss_days": 12.5,
+     "positive_variants_on_live_loss_days": 12
+    },
+    "PDL_FADE": {
+     "variants": 8,
+     "live_loss_days_median_net": -4392.0,
+     "live_win_days_median_net": -6925.0,
+     "median_positive_live_loss_days": 3.0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "RSI2": {
+     "variants": 8,
+     "live_loss_days_median_net": -11241.0,
+     "live_win_days_median_net": -6632.0,
+     "median_positive_live_loss_days": 7.5,
+     "positive_variants_on_live_loss_days": 1
+    },
+    "UNION": {
+     "variants": 1,
+     "live_loss_days_median_net": -81748,
+     "live_win_days_median_net": 83503,
+     "median_positive_live_loss_days": 0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "RANDOM": {
+     "variants": 20,
+     "live_loss_days_median_net": -8548.5,
+     "live_win_days_median_net": -3513.0,
+     "median_positive_live_loss_days": 5.0,
+     "positive_variants_on_live_loss_days": 2
+    },
+    "LIVE": {
+     "variants": 1,
+     "live_loss_days_median_net": -83233,
+     "live_win_days_median_net": 83503,
+     "median_positive_live_loss_days": 0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "LIVE+tpb_all_days": {
+     "variants": 1,
+     "live_loss_days_median_net": -81489,
+     "live_win_days_median_net": 83645,
+     "median_positive_live_loss_days": 0,
+     "positive_variants_on_live_loss_days": 0
+    }
+   }
+  },
+  "2026": {
+   "books": {
+    "REF|LIVE": {
+     "summary": {
+      "days": 203,
+      "active": 46,
+      "losing_days": 24,
+      "winning_days": 22,
+      "flat_active_days": 0,
+      "no_trade_days": 157,
+      "loss_rate_active": 0.522,
+      "net": 80912,
+      "loss_days_net": -58323,
+      "win_days_net": 139236,
+      "median_loss": -2463,
+      "median_win": 3593
+     },
+     "quality_sensitive_summary": {
+      "days": 202,
+      "active": 45,
+      "losing_days": 23,
+      "winning_days": 22,
+      "flat_active_days": 0,
+      "no_trade_days": 157,
+      "loss_rate_active": 0.511,
+      "net": 84942,
+      "loss_days_net": -54294,
+      "win_days_net": 139236,
+      "median_loss": -2433,
+      "median_win": 3593
+     },
+     "halves": {
+      "H1": {
+       "days": 99,
+       "active": 26,
+       "losing_days": 14,
+       "winning_days": 12,
+       "flat_active_days": 0,
+       "no_trade_days": 73,
+       "loss_rate_active": 0.538,
+       "net": 62997,
+       "loss_days_net": -36118,
+       "win_days_net": 99115,
+       "median_loss": -2633,
+       "median_win": 2942
+      },
+      "H2": {
+       "days": 104,
+       "active": 20,
+       "losing_days": 10,
+       "winning_days": 10,
+       "flat_active_days": 0,
+       "no_trade_days": 84,
+       "loss_rate_active": 0.5,
+       "net": 17915,
+       "loss_days_net": -22206,
+       "win_days_net": 40121,
+       "median_loss": -1944,
+       "median_win": 3663
+      }
+     },
+     "day_splits": {
+      "open_drive": {
+       "HIGH": {
+        "days": 24,
+        "active": 24,
+        "losing_days": 9,
+        "winning_days": 15,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.375,
+        "net": 28545,
+        "loss_days_net": -24002,
+        "win_days_net": 52546,
+        "median_loss": -2662,
+        "median_win": 3426
+       },
+       "LOW": {
+        "days": 22,
+        "active": 22,
+        "losing_days": 15,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.682,
+        "net": 52368,
+        "loss_days_net": -34322,
+        "win_days_net": 86689,
+        "median_loss": -2242,
+        "median_win": 5133
+       }
+      },
+      "or_width": {
+       "HIGH": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 8,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 20448,
+        "loss_days_net": -15463,
+        "win_days_net": 35911,
+        "median_loss": -1596,
+        "median_win": 3512
+       },
+       "LOW": {
+        "days": 30,
+        "active": 30,
+        "losing_days": 16,
+        "winning_days": 14,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.533,
+        "net": 60465,
+        "loss_days_net": -42861,
+        "win_days_net": 103325,
+        "median_loss": -2633,
+        "median_win": 3766
+       }
+      },
+      "gap": {
+       "HIGH": {
+        "days": 20,
+        "active": 20,
+        "losing_days": 11,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.55,
+        "net": 17916,
+        "loss_days_net": -34328,
+        "win_days_net": 52244,
+        "median_loss": -2662,
+        "median_win": 3728
+       },
+       "LOW": {
+        "days": 26,
+        "active": 26,
+        "losing_days": 13,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 62997,
+        "loss_days_net": -23995,
+        "win_days_net": 86992,
+        "median_loss": -1545,
+        "median_win": 2885
+       }
+      },
+      "nr": {
+       "HIGH": {
+        "days": 21,
+        "active": 21,
+        "losing_days": 10,
+        "winning_days": 11,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.476,
+        "net": 23969,
+        "loss_days_net": -17275,
+        "win_days_net": 41244,
+        "median_loss": -1596,
+        "median_win": 3426
+       },
+       "LOW": {
+        "days": 25,
+        "active": 25,
+        "losing_days": 14,
+        "winning_days": 11,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.56,
+        "net": 56944,
+        "loss_days_net": -41048,
+        "win_days_net": 97992,
+        "median_loss": -3301,
+        "median_win": 3598
+       }
+      },
+      "trend5": {
+       "HIGH": {
+        "days": 14,
+        "active": 14,
+        "losing_days": 6,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.429,
+        "net": 3859,
+        "loss_days_net": -16815,
+        "win_days_net": 20675,
+        "median_loss": -3016,
+        "median_win": 2351
+       },
+       "LOW": {
+        "days": 32,
+        "active": 32,
+        "losing_days": 18,
+        "winning_days": 14,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.562,
+        "net": 77053,
+        "loss_days_net": -41508,
+        "win_days_net": 118561,
+        "median_loss": -2227,
+        "median_win": 3593
+       }
+      },
+      "adx14": {
+       "HIGH": {
+        "days": 43,
+        "active": 43,
+        "losing_days": 22,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.512,
+        "net": 81410,
+        "loss_days_net": -54238,
+        "win_days_net": 135648,
+        "median_loss": -2463,
+        "median_win": 3598
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": -497,
+        "loss_days_net": -4085,
+        "win_days_net": 3588,
+        "median_loss": -2043,
+        "median_win": 3588
+       }
+      },
+      "rv20": {
+       "HIGH": {
+        "days": 37,
+        "active": 37,
+        "losing_days": 19,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.514,
+        "net": 75541,
+        "loss_days_net": -51977,
+        "win_days_net": 127518,
+        "median_loss": -2579,
+        "median_win": 3771
+       },
+       "LOW": {
+        "days": 6,
+        "active": 6,
+        "losing_days": 3,
+        "winning_days": 3,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 5868,
+        "loss_days_net": -2261,
+        "win_days_net": 8129,
+        "median_loss": -367,
+        "median_win": 3426
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": -497,
+        "loss_days_net": -4085,
+        "win_days_net": 3588,
+        "median_loss": -2043,
+        "median_win": 3588
+       }
+      },
+      "ret20_abs": {
+       "HIGH": {
+        "days": 35,
+        "active": 35,
+        "losing_days": 17,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.486,
+        "net": 86611,
+        "loss_days_net": -35223,
+        "win_days_net": 121834,
+        "median_loss": -2212,
+        "median_win": 3663
+       },
+       "LOW": {
+        "days": 8,
+        "active": 8,
+        "losing_days": 5,
+        "winning_days": 3,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.625,
+        "net": -5202,
+        "loss_days_net": -19015,
+        "win_days_net": 13814,
+        "median_loss": -3419,
+        "median_win": 2885
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": -497,
+        "loss_days_net": -4085,
+        "win_days_net": 3588,
+        "median_loss": -2043,
+        "median_win": 3588
+       }
+      },
+      "prev_range_rel": {
+       "HIGH": {
+        "days": 21,
+        "active": 21,
+        "losing_days": 13,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.619,
+        "net": 5783,
+        "loss_days_net": -28042,
+        "win_days_net": 33825,
+        "median_loss": -2212,
+        "median_win": 3714
+       },
+       "LOW": {
+        "days": 22,
+        "active": 22,
+        "losing_days": 9,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.409,
+        "net": 75626,
+        "loss_days_net": -26196,
+        "win_days_net": 101823,
+        "median_loss": -3346,
+        "median_win": 3598
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": -497,
+        "loss_days_net": -4085,
+        "win_days_net": 3588,
+        "median_loss": -2043,
+        "median_win": 3588
+       }
+      },
+      "prev_body": {
+       "HIGH": {
+        "days": 29,
+        "active": 29,
+        "losing_days": 13,
+        "winning_days": 16,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.448,
+        "net": 89011,
+        "loss_days_net": -29442,
+        "win_days_net": 118453,
+        "median_loss": -2433,
+        "median_win": 3512
+       },
+       "LOW": {
+        "days": 14,
+        "active": 14,
+        "losing_days": 9,
+        "winning_days": 5,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.643,
+        "net": -7601,
+        "loss_days_net": -24796,
+        "win_days_net": 17195,
+        "median_loss": -3257,
+        "median_win": 3943
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": -497,
+        "loss_days_net": -4085,
+        "win_days_net": 3588,
+        "median_loss": -2043,
+        "median_win": 3588
+       }
+      },
+      "trend_regime": {
+       "HIGH": {
+        "days": 43,
+        "active": 43,
+        "losing_days": 22,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.512,
+        "net": 81410,
+        "loss_days_net": -54238,
+        "win_days_net": 135648,
+        "median_loss": -2463,
+        "median_win": 3598
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": -497,
+        "loss_days_net": -4085,
+        "win_days_net": 3588,
+        "median_loss": -2043,
+        "median_win": 3588
+       }
+      },
+      "dmi_dir": {
+       "DOWN": {
+        "days": 41,
+        "active": 41,
+        "losing_days": 22,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.537,
+        "net": 80977,
+        "loss_days_net": -47080,
+        "win_days_net": 128056,
+        "median_loss": -2338,
+        "median_win": 3598
+       },
+       "UP": {
+        "days": 5,
+        "active": 5,
+        "losing_days": 2,
+        "winning_days": 3,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.4,
+        "net": -64,
+        "loss_days_net": -11244,
+        "win_days_net": 11180,
+        "median_loss": -5622,
+        "median_win": 652
+       }
+      },
+      "ema_dir": {
+       "DOWN": {
+        "days": 38,
+        "active": 38,
+        "losing_days": 20,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.526,
+        "net": 93712,
+        "loss_days_net": -44291,
+        "win_days_net": 138003,
+        "median_loss": -2227,
+        "median_win": 3836
+       },
+       "UP": {
+        "days": 8,
+        "active": 8,
+        "losing_days": 4,
+        "winning_days": 4,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": -12800,
+        "loss_days_net": -14033,
+        "win_days_net": 1233,
+        "median_loss": -3421,
+        "median_win": 265
+       }
+      },
+      "h_trend_day": {
+       "False": {
+        "days": 26,
+        "active": 26,
+        "losing_days": 13,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 31486,
+        "loss_days_net": -31965,
+        "win_days_net": 63451,
+        "median_loss": -2433,
+        "median_win": 3728
+       },
+       "True": {
+        "days": 20,
+        "active": 20,
+        "losing_days": 11,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.55,
+        "net": 49426,
+        "loss_days_net": -26358,
+        "win_days_net": 75784,
+        "median_loss": -2579,
+        "median_win": 3426
+       }
+      },
+      "h_small_range": {
+       "False": {
+        "days": 33,
+        "active": 33,
+        "losing_days": 14,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.424,
+        "net": 107409,
+        "loss_days_net": -30248,
+        "win_days_net": 137657,
+        "median_loss": -2227,
+        "median_win": 3728
+       },
+       "True": {
+        "days": 13,
+        "active": 13,
+        "losing_days": 10,
+        "winning_days": 3,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.769,
+        "net": -26497,
+        "loss_days_net": -28076,
+        "win_days_net": 1579,
+        "median_loss": -2537,
+        "median_win": 652
+       }
+      },
+      "h_reversing_day": {
+       "False": {
+        "days": 23,
+        "active": 23,
+        "losing_days": 8,
+        "winning_days": 15,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.348,
+        "net": 107441,
+        "loss_days_net": -20238,
+        "win_days_net": 127679,
+        "median_loss": -2620,
+        "median_win": 3728
+       },
+       "True": {
+        "days": 23,
+        "active": 23,
+        "losing_days": 16,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.696,
+        "net": -26529,
+        "loss_days_net": -38085,
+        "win_days_net": 11556,
+        "median_loss": -2322,
+        "median_win": 652
+       }
+      }
+     },
+     "trade_mechanisms": {
+      "trades": 106,
+      "losing_trades": 59,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 10,
+        "losses": 2,
+        "net": 35148
+       },
+       "premium_backstop": {
+        "trades": 3,
+        "losses": 3,
+        "net": -5450
+       },
+       "profit_lock": {
+        "trades": 6,
+        "losses": 0,
+        "net": 4958
+       },
+       "time_stop": {
+        "trades": 41,
+        "losses": 26,
+        "net": -15426
+       },
+       "trail_stop": {
+        "trades": 18,
+        "losses": 0,
+        "net": 126533
+       },
+       "underlying_stop": {
+        "trades": 28,
+        "losses": 28,
+        "net": -64851
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 58,
+        "losses": 32,
+        "net": 17793
+       },
+       "SHORT": {
+        "trades": 48,
+        "losses": 27,
+        "net": 63120
+       }
+      },
+      "by_member": {
+       "EFF": {
+        "trades": 56,
+        "losses": 36,
+        "net": 29629
+       },
+       "OR20": {
+        "trades": 21,
+        "losses": 13,
+        "net": 4070
+       },
+       "SHIPPED": {
+        "trades": 21,
+        "losses": 7,
+        "net": 23851
+       },
+       "TPB": {
+        "trades": 8,
+        "losses": 3,
+        "net": 23362
+       }
+      },
+      "by_entry_hour": {
+       "10": {
+        "trades": 27,
+        "losses": 13,
+        "net": 5421
+       },
+       "11": {
+        "trades": 24,
+        "losses": 17,
+        "net": 19005
+       },
+       "12": {
+        "trades": 18,
+        "losses": 9,
+        "net": 51194
+       },
+       "13": {
+        "trades": 12,
+        "losses": 6,
+        "net": 13730
+       },
+       "14": {
+        "trades": 10,
+        "losses": 6,
+        "net": -8044
+       },
+       "9": {
+        "trades": 15,
+        "losses": 8,
+        "net": -394
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 26,
+        "losses": 11,
+        "net": 25752
+       },
+       "2": {
+        "trades": 3,
+        "losses": 1,
+        "net": 47288
+       },
+       "3": {
+        "trades": 6,
+        "losses": 4,
+        "net": -661
+       },
+       "4": {
+        "trades": 24,
+        "losses": 17,
+        "net": -15427
+       },
+       "5": {
+        "trades": 28,
+        "losses": 16,
+        "net": 25766
+       },
+       "6": {
+        "trades": 19,
+        "losses": 10,
+        "net": -1805
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 52,
+        "losses": 30,
+        "net": 16287
+       },
+       "LOW": {
+        "trades": 13,
+        "losses": 6,
+        "net": 15407
+       },
+       "MID": {
+        "trades": 39,
+        "losses": 22,
+        "net": 47414
+       },
+       "MISSING": {
+        "trades": 2,
+        "losses": 1,
+        "net": 1804
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 80,
+        "losses": 45,
+        "net": 51872
+       },
+       "2+": {
+        "trades": 24,
+        "losses": 13,
+        "net": 27237
+       },
+       "MISSING": {
+        "trades": 2,
+        "losses": 1,
+        "net": 1804
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 51,
+        "losses": 26,
+        "net": 59785
+       },
+       "STRETCHED": {
+        "trades": 55,
+        "losses": 33,
+        "net": 21127
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 61,
+        "losses": 35,
+        "net": 20164
+       },
+       "True": {
+        "trades": 45,
+        "losses": 24,
+        "net": 60748
+       }
+      },
+      "gross_positive_but_net_negative": 1,
+      "losing_trade_gross": -91380,
+      "losing_trade_costs": 3874,
+      "underlying_favorable_at_exit_losses": 9,
+      "underlying_exit_known_losses": 59,
+      "had_favorable_half_open_range_before_exit": 8,
+      "favorable_half_open_range_after_losing_exit": 23,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "trade_mechanisms_quality_sensitive": {
+      "trades": 104,
+      "losing_trades": 57,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 10,
+        "losses": 2,
+        "net": 35148
+       },
+       "premium_backstop": {
+        "trades": 3,
+        "losses": 3,
+        "net": -5450
+       },
+       "profit_lock": {
+        "trades": 6,
+        "losses": 0,
+        "net": 4958
+       },
+       "time_stop": {
+        "trades": 41,
+        "losses": 26,
+        "net": -15426
+       },
+       "trail_stop": {
+        "trades": 18,
+        "losses": 0,
+        "net": 126533
+       },
+       "underlying_stop": {
+        "trades": 26,
+        "losses": 26,
+        "net": -60822
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 56,
+        "losses": 30,
+        "net": 21822
+       },
+       "SHORT": {
+        "trades": 48,
+        "losses": 27,
+        "net": 63120
+       }
+      },
+      "by_member": {
+       "EFF": {
+        "trades": 55,
+        "losses": 35,
+        "net": 31783
+       },
+       "OR20": {
+        "trades": 20,
+        "losses": 12,
+        "net": 5946
+       },
+       "SHIPPED": {
+        "trades": 21,
+        "losses": 7,
+        "net": 23851
+       },
+       "TPB": {
+        "trades": 8,
+        "losses": 3,
+        "net": 23362
+       }
+      },
+      "by_entry_hour": {
+       "10": {
+        "trades": 27,
+        "losses": 13,
+        "net": 5421
+       },
+       "11": {
+        "trades": 24,
+        "losses": 17,
+        "net": 19005
+       },
+       "12": {
+        "trades": 18,
+        "losses": 9,
+        "net": 51194
+       },
+       "13": {
+        "trades": 11,
+        "losses": 5,
+        "net": 15606
+       },
+       "14": {
+        "trades": 9,
+        "losses": 5,
+        "net": -5890
+       },
+       "9": {
+        "trades": 15,
+        "losses": 8,
+        "net": -394
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 26,
+        "losses": 11,
+        "net": 25752
+       },
+       "2": {
+        "trades": 3,
+        "losses": 1,
+        "net": 47288
+       },
+       "3": {
+        "trades": 6,
+        "losses": 4,
+        "net": -661
+       },
+       "4": {
+        "trades": 22,
+        "losses": 15,
+        "net": -11398
+       },
+       "5": {
+        "trades": 28,
+        "losses": 16,
+        "net": 25766
+       },
+       "6": {
+        "trades": 19,
+        "losses": 10,
+        "net": -1805
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 50,
+        "losses": 28,
+        "net": 20316
+       },
+       "LOW": {
+        "trades": 13,
+        "losses": 6,
+        "net": 15407
+       },
+       "MID": {
+        "trades": 39,
+        "losses": 22,
+        "net": 47414
+       },
+       "MISSING": {
+        "trades": 2,
+        "losses": 1,
+        "net": 1804
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 78,
+        "losses": 43,
+        "net": 55901
+       },
+       "2+": {
+        "trades": 24,
+        "losses": 13,
+        "net": 27237
+       },
+       "MISSING": {
+        "trades": 2,
+        "losses": 1,
+        "net": 1804
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 51,
+        "losses": 26,
+        "net": 59785
+       },
+       "STRETCHED": {
+        "trades": 53,
+        "losses": 31,
+        "net": 25157
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 59,
+        "losses": 33,
+        "net": 24194
+       },
+       "True": {
+        "trades": 45,
+        "losses": 24,
+        "net": 60748
+       }
+      },
+      "gross_positive_but_net_negative": 1,
+      "losing_trade_gross": -87500,
+      "losing_trade_costs": 3726,
+      "underlying_favorable_at_exit_losses": 9,
+      "underlying_exit_known_losses": 57,
+      "had_favorable_half_open_range_before_exit": 7,
+      "favorable_half_open_range_after_losing_exit": 23,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "worst_days": [
+      {
+       "date": "2026-10-28",
+       "trades": 2,
+       "net": -6484.81685,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.044464775846294366,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-02-05",
+       "trades": 3,
+       "net": -4759.0689999999995,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": true,
+       "h_full_day_er": 0.03920783011848225,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2026-03-23",
+       "trades": 3,
+       "net": -4244.0215,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.046952823325312185,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-01-30",
+       "trades": 2,
+       "net": -4029.4834,
+       "quality_flag": true,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.02066336256195204,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": null,
+       "rv20": null,
+       "ret20_abs": null,
+       "prev_range_rel": null,
+       "prev_body": null,
+       "trend_regime": null,
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-04-10",
+       "trades": 3,
+       "net": -3422.4546499999997,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": true,
+       "h_full_day_er": 0.07256235827664423,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2026-04-09",
+       "trades": 1,
+       "net": -3418.56955,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.01274080114157555,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2026-03-13",
+       "trades": 3,
+       "net": -3345.8549,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.09504447268106576,
+       "h_reversing_day": false,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-10-23",
+       "trades": 2,
+       "net": -3256.921566666667,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.0677856681730145,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-03-12",
+       "trades": 3,
+       "net": -2686.0628,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.01518476257351047,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-10-09",
+       "trades": 3,
+       "net": -2661.8963999999996,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.09491617090319045,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      }
+     ]
+    },
+    "REF|TPB": {
+     "summary": {
+      "days": 203,
+      "active": 57,
+      "losing_days": 34,
+      "winning_days": 23,
+      "flat_active_days": 0,
+      "no_trade_days": 146,
+      "loss_rate_active": 0.596,
+      "net": 42056,
+      "loss_days_net": -60614,
+      "win_days_net": 102669,
+      "median_loss": -1622,
+      "median_win": 3057
+     },
+     "quality_sensitive_summary": {
+      "days": 202,
+      "active": 57,
+      "losing_days": 34,
+      "winning_days": 23,
+      "flat_active_days": 0,
+      "no_trade_days": 145,
+      "loss_rate_active": 0.596,
+      "net": 42056,
+      "loss_days_net": -60614,
+      "win_days_net": 102669,
+      "median_loss": -1622,
+      "median_win": 3057
+     },
+     "halves": {
+      "H1": {
+       "days": 99,
+       "active": 22,
+       "losing_days": 12,
+       "winning_days": 10,
+       "flat_active_days": 0,
+       "no_trade_days": 77,
+       "loss_rate_active": 0.545,
+       "net": 30799,
+       "loss_days_net": -30443,
+       "win_days_net": 61243,
+       "median_loss": -1962,
+       "median_win": 5146
+      },
+      "H2": {
+       "days": 104,
+       "active": 35,
+       "losing_days": 22,
+       "winning_days": 13,
+       "flat_active_days": 0,
+       "no_trade_days": 69,
+       "loss_rate_active": 0.629,
+       "net": 11257,
+       "loss_days_net": -30170,
+       "win_days_net": 41427,
+       "median_loss": -1081,
+       "median_win": 2040
+      }
+     },
+     "day_splits": {
+      "open_drive": {
+       "HIGH": {
+        "days": 36,
+        "active": 36,
+        "losing_days": 19,
+        "winning_days": 17,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.528,
+        "net": 24197,
+        "loss_days_net": -34435,
+        "win_days_net": 58632,
+        "median_loss": -1497,
+        "median_win": 2631
+       },
+       "LOW": {
+        "days": 21,
+        "active": 21,
+        "losing_days": 15,
+        "winning_days": 6,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.714,
+        "net": 17859,
+        "loss_days_net": -26179,
+        "win_days_net": 44038,
+        "median_loss": -1773,
+        "median_win": 7519
+       }
+      },
+      "or_width": {
+       "HIGH": {
+        "days": 25,
+        "active": 25,
+        "losing_days": 13,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.52,
+        "net": 39289,
+        "loss_days_net": -21249,
+        "win_days_net": 60538,
+        "median_loss": -1168,
+        "median_win": 3514
+       },
+       "LOW": {
+        "days": 32,
+        "active": 32,
+        "losing_days": 21,
+        "winning_days": 11,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.656,
+        "net": 2767,
+        "loss_days_net": -39364,
+        "win_days_net": 42132,
+        "median_loss": -1773,
+        "median_win": 2344
+       }
+      },
+      "gap": {
+       "HIGH": {
+        "days": 30,
+        "active": 30,
+        "losing_days": 15,
+        "winning_days": 15,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.5,
+        "net": 43702,
+        "loss_days_net": -24946,
+        "win_days_net": 68647,
+        "median_loss": -1777,
+        "median_win": 3057
+       },
+       "LOW": {
+        "days": 27,
+        "active": 27,
+        "losing_days": 19,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.704,
+        "net": -1646,
+        "loss_days_net": -35668,
+        "win_days_net": 34022,
+        "median_loss": -1462,
+        "median_win": 2174
+       }
+      },
+      "nr": {
+       "HIGH": {
+        "days": 22,
+        "active": 22,
+        "losing_days": 12,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.545,
+        "net": 15163,
+        "loss_days_net": -24954,
+        "win_days_net": 40117,
+        "median_loss": -2004,
+        "median_win": 2743
+       },
+       "LOW": {
+        "days": 35,
+        "active": 35,
+        "losing_days": 22,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.629,
+        "net": 26892,
+        "loss_days_net": -35660,
+        "win_days_net": 62552,
+        "median_loss": -1424,
+        "median_win": 3057
+       }
+      },
+      "trend5": {
+       "HIGH": {
+        "days": 30,
+        "active": 30,
+        "losing_days": 23,
+        "winning_days": 7,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.767,
+        "net": -8962,
+        "loss_days_net": -41323,
+        "win_days_net": 32360,
+        "median_loss": -1747,
+        "median_win": 3057
+       },
+       "LOW": {
+        "days": 27,
+        "active": 27,
+        "losing_days": 11,
+        "winning_days": 16,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.407,
+        "net": 51018,
+        "loss_days_net": -19291,
+        "win_days_net": 70309,
+        "median_loss": -1497,
+        "median_win": 2895
+       }
+      },
+      "adx14": {
+       "HIGH": {
+        "days": 23,
+        "active": 23,
+        "losing_days": 9,
+        "winning_days": 14,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.391,
+        "net": 39305,
+        "loss_days_net": -19215,
+        "win_days_net": 58520,
+        "median_loss": -1993,
+        "median_win": 2701
+       },
+       "LOW": {
+        "days": 31,
+        "active": 31,
+        "losing_days": 23,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.742,
+        "net": -1183,
+        "loss_days_net": -36343,
+        "win_days_net": 35160,
+        "median_loss": -995,
+        "median_win": 3608
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3933,
+        "loss_days_net": -5056,
+        "win_days_net": 8989,
+        "median_loss": -2528,
+        "median_win": 8989
+       }
+      },
+      "rv20": {
+       "HIGH": {
+        "days": 20,
+        "active": 20,
+        "losing_days": 8,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.4,
+        "net": 47418,
+        "loss_days_net": -16341,
+        "win_days_net": 63759,
+        "median_loss": -1962,
+        "median_win": 4083
+       },
+       "LOW": {
+        "days": 34,
+        "active": 34,
+        "losing_days": 24,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.706,
+        "net": -9296,
+        "loss_days_net": -39217,
+        "win_days_net": 29922,
+        "median_loss": -1297,
+        "median_win": 2024
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3933,
+        "loss_days_net": -5056,
+        "win_days_net": 8989,
+        "median_loss": -2528,
+        "median_win": 8989
+       }
+      },
+      "ret20_abs": {
+       "HIGH": {
+        "days": 22,
+        "active": 22,
+        "losing_days": 10,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.455,
+        "net": 37519,
+        "loss_days_net": -20638,
+        "win_days_net": 58157,
+        "median_loss": -1952,
+        "median_win": 3252
+       },
+       "LOW": {
+        "days": 32,
+        "active": 32,
+        "losing_days": 22,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.688,
+        "net": 603,
+        "loss_days_net": -34920,
+        "win_days_net": 35523,
+        "median_loss": -1424,
+        "median_win": 2319
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3933,
+        "loss_days_net": -5056,
+        "win_days_net": 8989,
+        "median_loss": -2528,
+        "median_win": 8989
+       }
+      },
+      "prev_range_rel": {
+       "HIGH": {
+        "days": 22,
+        "active": 22,
+        "losing_days": 13,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.591,
+        "net": 3984,
+        "loss_days_net": -25774,
+        "win_days_net": 29758,
+        "median_loss": -1993,
+        "median_win": 2007
+       },
+       "LOW": {
+        "days": 32,
+        "active": 32,
+        "losing_days": 19,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.594,
+        "net": 34139,
+        "loss_days_net": -29784,
+        "win_days_net": 63923,
+        "median_loss": -1168,
+        "median_win": 3581
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3933,
+        "loss_days_net": -5056,
+        "win_days_net": 8989,
+        "median_loss": -2528,
+        "median_win": 8989
+       }
+      },
+      "prev_body": {
+       "HIGH": {
+        "days": 27,
+        "active": 27,
+        "losing_days": 15,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.556,
+        "net": 29367,
+        "loss_days_net": -31434,
+        "win_days_net": 60801,
+        "median_loss": -1910,
+        "median_win": 3514
+       },
+       "LOW": {
+        "days": 27,
+        "active": 27,
+        "losing_days": 17,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.63,
+        "net": 8756,
+        "loss_days_net": -24123,
+        "win_days_net": 32879,
+        "median_loss": -1421,
+        "median_win": 2319
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3933,
+        "loss_days_net": -5056,
+        "win_days_net": 8989,
+        "median_loss": -2528,
+        "median_win": 8989
+       }
+      },
+      "trend_regime": {
+       "HIGH": {
+        "days": 21,
+        "active": 21,
+        "losing_days": 8,
+        "winning_days": 13,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.381,
+        "net": 41337,
+        "loss_days_net": -17084,
+        "win_days_net": 58421,
+        "median_loss": -1952,
+        "median_win": 3057
+       },
+       "LOW": {
+        "days": 33,
+        "active": 33,
+        "losing_days": 24,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.727,
+        "net": -3214,
+        "loss_days_net": -38473,
+        "win_days_net": 35259,
+        "median_loss": -1081,
+        "median_win": 2631
+       },
+       "None": {
+        "days": 3,
+        "active": 3,
+        "losing_days": 2,
+        "winning_days": 1,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3933,
+        "loss_days_net": -5056,
+        "win_days_net": 8989,
+        "median_loss": -2528,
+        "median_win": 8989
+       }
+      },
+      "dmi_dir": {
+       "DOWN": {
+        "days": 45,
+        "active": 45,
+        "losing_days": 24,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.533,
+        "net": 49746,
+        "loss_days_net": -45707,
+        "win_days_net": 95453,
+        "median_loss": -1823,
+        "median_win": 3057
+       },
+       "UP": {
+        "days": 12,
+        "active": 12,
+        "losing_days": 10,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.833,
+        "net": -7690,
+        "loss_days_net": -14906,
+        "win_days_net": 7216,
+        "median_loss": -865,
+        "median_win": 3608
+       }
+      },
+      "ema_dir": {
+       "DOWN": {
+        "days": 38,
+        "active": 38,
+        "losing_days": 17,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.447,
+        "net": 59368,
+        "loss_days_net": -36085,
+        "win_days_net": 95453,
+        "median_loss": -2014,
+        "median_win": 3057
+       },
+       "UP": {
+        "days": 19,
+        "active": 19,
+        "losing_days": 17,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.895,
+        "net": -17312,
+        "loss_days_net": -24529,
+        "win_days_net": 7216,
+        "median_loss": -995,
+        "median_win": 3608
+       }
+      },
+      "h_trend_day": {
+       "False": {
+        "days": 28,
+        "active": 28,
+        "losing_days": 23,
+        "winning_days": 5,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.821,
+        "net": -5926,
+        "loss_days_net": -41978,
+        "win_days_net": 36052,
+        "median_loss": -1747,
+        "median_win": 6265
+       },
+       "True": {
+        "days": 29,
+        "active": 29,
+        "losing_days": 11,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.379,
+        "net": 47982,
+        "loss_days_net": -18636,
+        "win_days_net": 66617,
+        "median_loss": -1497,
+        "median_win": 2488
+       }
+      },
+      "h_small_range": {
+       "False": {
+        "days": 39,
+        "active": 39,
+        "losing_days": 20,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.513,
+        "net": 56982,
+        "loss_days_net": -36103,
+        "win_days_net": 93085,
+        "median_loss": -1823,
+        "median_win": 3446
+       },
+       "True": {
+        "days": 18,
+        "active": 18,
+        "losing_days": 14,
+        "winning_days": 4,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.778,
+        "net": -14926,
+        "loss_days_net": -24511,
+        "win_days_net": 9584,
+        "median_loss": -1442,
+        "median_win": 2176
+       }
+      },
+      "h_reversing_day": {
+       "False": {
+        "days": 25,
+        "active": 25,
+        "losing_days": 7,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.28,
+        "net": 85206,
+        "loss_days_net": -11246,
+        "win_days_net": 96452,
+        "median_loss": -1747,
+        "median_win": 4083
+       },
+       "True": {
+        "days": 32,
+        "active": 32,
+        "losing_days": 27,
+        "winning_days": 5,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.844,
+        "net": -43150,
+        "loss_days_net": -49367,
+        "win_days_net": 6218,
+        "median_loss": -1497,
+        "median_win": 716
+       }
+      }
+     },
+     "trade_mechanisms": {
+      "trades": 85,
+      "losing_trades": 54,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 35,
+        "losses": 11,
+        "net": 51996
+       },
+       "time_stop": {
+        "trades": 9,
+        "losses": 8,
+        "net": -2340
+       },
+       "trail_stop": {
+        "trades": 6,
+        "losses": 0,
+        "net": 43389
+       },
+       "underlying_stop": {
+        "trades": 35,
+        "losses": 35,
+        "net": -50989
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 45,
+        "losses": 33,
+        "net": -16213
+       },
+       "SHORT": {
+        "trades": 40,
+        "losses": 21,
+        "net": 58269
+       }
+      },
+      "by_member": {
+       "TPB": {
+        "trades": 85,
+        "losses": 54,
+        "net": 42056
+       }
+      },
+      "by_entry_hour": {
+       "11": {
+        "trades": 27,
+        "losses": 17,
+        "net": 29318
+       },
+       "12": {
+        "trades": 20,
+        "losses": 13,
+        "net": 10824
+       },
+       "13": {
+        "trades": 22,
+        "losses": 13,
+        "net": 6730
+       },
+       "14": {
+        "trades": 16,
+        "losses": 11,
+        "net": -4816
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 21,
+        "losses": 11,
+        "net": 22981
+       },
+       "3": {
+        "trades": 4,
+        "losses": 2,
+        "net": 7691
+       },
+       "4": {
+        "trades": 23,
+        "losses": 15,
+        "net": 8373
+       },
+       "5": {
+        "trades": 18,
+        "losses": 11,
+        "net": 15926
+       },
+       "6": {
+        "trades": 19,
+        "losses": 15,
+        "net": -12915
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 16,
+        "losses": 10,
+        "net": 3765
+       },
+       "LOW": {
+        "trades": 41,
+        "losses": 24,
+        "net": 33397
+       },
+       "MID": {
+        "trades": 28,
+        "losses": 20,
+        "net": 4893
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 51,
+        "losses": 33,
+        "net": 24114
+       },
+       "2+": {
+        "trades": 34,
+        "losses": 21,
+        "net": 17942
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 64,
+        "losses": 40,
+        "net": 42507
+       },
+       "STRETCHED": {
+        "trades": 21,
+        "losses": 14,
+        "net": -451
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 52,
+        "losses": 37,
+        "net": -15966
+       },
+       "True": {
+        "trades": 33,
+        "losses": 17,
+        "net": 58021
+       }
+      },
+      "gross_positive_but_net_negative": 4,
+      "losing_trade_gross": -60037,
+      "losing_trade_costs": 3293,
+      "underlying_favorable_at_exit_losses": 7,
+      "underlying_exit_known_losses": 54,
+      "had_favorable_half_open_range_before_exit": 11,
+      "favorable_half_open_range_after_losing_exit": 6,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "trade_mechanisms_quality_sensitive": {
+      "trades": 85,
+      "losing_trades": 54,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 35,
+        "losses": 11,
+        "net": 51996
+       },
+       "time_stop": {
+        "trades": 9,
+        "losses": 8,
+        "net": -2340
+       },
+       "trail_stop": {
+        "trades": 6,
+        "losses": 0,
+        "net": 43389
+       },
+       "underlying_stop": {
+        "trades": 35,
+        "losses": 35,
+        "net": -50989
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 45,
+        "losses": 33,
+        "net": -16213
+       },
+       "SHORT": {
+        "trades": 40,
+        "losses": 21,
+        "net": 58269
+       }
+      },
+      "by_member": {
+       "TPB": {
+        "trades": 85,
+        "losses": 54,
+        "net": 42056
+       }
+      },
+      "by_entry_hour": {
+       "11": {
+        "trades": 27,
+        "losses": 17,
+        "net": 29318
+       },
+       "12": {
+        "trades": 20,
+        "losses": 13,
+        "net": 10824
+       },
+       "13": {
+        "trades": 22,
+        "losses": 13,
+        "net": 6730
+       },
+       "14": {
+        "trades": 16,
+        "losses": 11,
+        "net": -4816
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 21,
+        "losses": 11,
+        "net": 22981
+       },
+       "3": {
+        "trades": 4,
+        "losses": 2,
+        "net": 7691
+       },
+       "4": {
+        "trades": 23,
+        "losses": 15,
+        "net": 8373
+       },
+       "5": {
+        "trades": 18,
+        "losses": 11,
+        "net": 15926
+       },
+       "6": {
+        "trades": 19,
+        "losses": 15,
+        "net": -12915
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 16,
+        "losses": 10,
+        "net": 3765
+       },
+       "LOW": {
+        "trades": 41,
+        "losses": 24,
+        "net": 33397
+       },
+       "MID": {
+        "trades": 28,
+        "losses": 20,
+        "net": 4893
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 51,
+        "losses": 33,
+        "net": 24114
+       },
+       "2+": {
+        "trades": 34,
+        "losses": 21,
+        "net": 17942
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 64,
+        "losses": 40,
+        "net": 42507
+       },
+       "STRETCHED": {
+        "trades": 21,
+        "losses": 14,
+        "net": -451
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 52,
+        "losses": 37,
+        "net": -15966
+       },
+       "True": {
+        "trades": 33,
+        "losses": 17,
+        "net": 58021
+       }
+      },
+      "gross_positive_but_net_negative": 4,
+      "losing_trade_gross": -60037,
+      "losing_trade_costs": 3293,
+      "underlying_favorable_at_exit_losses": 7,
+      "underlying_exit_known_losses": 54,
+      "had_favorable_half_open_range_before_exit": 11,
+      "favorable_half_open_range_after_losing_exit": 6,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "worst_days": [
+      {
+       "date": "2026-05-13",
+       "trades": 2,
+       "net": -5527.5231,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.0007130972189212665,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "HIGH",
+       "gap": "LOW",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-02-05",
+       "trades": 3,
+       "net": -4415.2306,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": true,
+       "h_full_day_er": 0.03920783011848225,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2026-08-07",
+       "trades": 3,
+       "net": -4106.4178,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.011528943079614943,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2026-05-22",
+       "trades": 3,
+       "net": -3867.64295,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.03549937024770074,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-01-16",
+       "trades": 2,
+       "net": -3278.74035,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.015360717984120694,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": null,
+       "rv20": null,
+       "ret20_abs": null,
+       "prev_range_rel": null,
+       "prev_body": null,
+       "trend_regime": null,
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-02-20",
+       "trades": 2,
+       "net": -2424.21495,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.03815180556061723,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "HIGH",
+       "gap": "LOW",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-06-10",
+       "trades": 2,
+       "net": -2402.0179,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.03243786549707587,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-06-12",
+       "trades": 1,
+       "net": -2333.2501,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.13680656054027956,
+       "h_reversing_day": false,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "HIGH",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-06-04",
+       "trades": 1,
+       "net": -2200.2022,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.05800479945149172,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-07-09",
+       "trades": 1,
+       "net": -2121.3729,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.006803244032746632,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "HIGH",
+       "trend5": "LOW",
+       "adx14": "LOW",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      }
+     ]
+    },
+    "REF|BEST": {
+     "summary": {
+      "days": 203,
+      "active": 87,
+      "losing_days": 54,
+      "winning_days": 33,
+      "flat_active_days": 0,
+      "no_trade_days": 116,
+      "loss_rate_active": 0.621,
+      "net": 80232,
+      "loss_days_net": -111151,
+      "win_days_net": 191383,
+      "median_loss": -1823,
+      "median_win": 3588
+     },
+     "quality_sensitive_summary": {
+      "days": 202,
+      "active": 86,
+      "losing_days": 53,
+      "winning_days": 33,
+      "flat_active_days": 0,
+      "no_trade_days": 116,
+      "loss_rate_active": 0.616,
+      "net": 84261,
+      "loss_days_net": -107121,
+      "win_days_net": 191383,
+      "median_loss": -1777,
+      "median_win": 3588
+     },
+     "halves": {
+      "H1": {
+       "days": 99,
+       "active": 40,
+       "losing_days": 23,
+       "winning_days": 17,
+       "flat_active_days": 0,
+       "no_trade_days": 59,
+       "loss_rate_active": 0.575,
+       "net": 67331,
+       "loss_days_net": -60328,
+       "win_days_net": 127659,
+       "median_loss": -2433,
+       "median_win": 4585
+      },
+      "H2": {
+       "days": 104,
+       "active": 47,
+       "losing_days": 31,
+       "winning_days": 16,
+       "flat_active_days": 0,
+       "no_trade_days": 57,
+       "loss_rate_active": 0.66,
+       "net": 12901,
+       "loss_days_net": -50823,
+       "win_days_net": 63724,
+       "median_loss": -1450,
+       "median_win": 3242
+      }
+     },
+     "day_splits": {
+      "open_drive": {
+       "HIGH": {
+        "days": 49,
+        "active": 49,
+        "losing_days": 27,
+        "winning_days": 22,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.551,
+        "net": 38800,
+        "loss_days_net": -54871,
+        "win_days_net": 93672,
+        "median_loss": -1869,
+        "median_win": 3507
+       },
+       "LOW": {
+        "days": 38,
+        "active": 38,
+        "losing_days": 27,
+        "winning_days": 11,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.711,
+        "net": 41431,
+        "loss_days_net": -56280,
+        "win_days_net": 97711,
+        "median_loss": -1777,
+        "median_win": 3943
+       }
+      },
+      "or_width": {
+       "HIGH": {
+        "days": 34,
+        "active": 34,
+        "losing_days": 20,
+        "winning_days": 14,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.588,
+        "net": 32244,
+        "loss_days_net": -36412,
+        "win_days_net": 68656,
+        "median_loss": -1528,
+        "median_win": 3577
+       },
+       "LOW": {
+        "days": 53,
+        "active": 53,
+        "losing_days": 34,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.642,
+        "net": 47988,
+        "loss_days_net": -74739,
+        "win_days_net": 122727,
+        "median_loss": -2156,
+        "median_win": 3588
+       }
+      },
+      "gap": {
+       "HIGH": {
+        "days": 41,
+        "active": 41,
+        "losing_days": 25,
+        "winning_days": 16,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.61,
+        "net": 20507,
+        "loss_days_net": -57457,
+        "win_days_net": 77963,
+        "median_loss": -2212,
+        "median_win": 3658
+       },
+       "LOW": {
+        "days": 46,
+        "active": 46,
+        "losing_days": 29,
+        "winning_days": 17,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.63,
+        "net": 59725,
+        "loss_days_net": -53694,
+        "win_days_net": 113419,
+        "median_loss": -1510,
+        "median_win": 3124
+       }
+      },
+      "nr": {
+       "HIGH": {
+        "days": 37,
+        "active": 37,
+        "losing_days": 19,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.514,
+        "net": 32471,
+        "loss_days_net": -38032,
+        "win_days_net": 70503,
+        "median_loss": -1902,
+        "median_win": 3275
+       },
+       "LOW": {
+        "days": 50,
+        "active": 50,
+        "losing_days": 35,
+        "winning_days": 15,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.7,
+        "net": 47761,
+        "loss_days_net": -73119,
+        "win_days_net": 120880,
+        "median_loss": -1773,
+        "median_win": 3728
+       }
+      },
+      "trend5": {
+       "HIGH": {
+        "days": 38,
+        "active": 38,
+        "losing_days": 26,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.684,
+        "net": -23721,
+        "loss_days_net": -52732,
+        "win_days_net": 29011,
+        "median_loss": -1775,
+        "median_win": 2319
+       },
+       "LOW": {
+        "days": 49,
+        "active": 49,
+        "losing_days": 28,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.571,
+        "net": 103953,
+        "loss_days_net": -58419,
+        "win_days_net": 162372,
+        "median_loss": -1885,
+        "median_win": 5707
+       }
+      },
+      "adx14": {
+       "HIGH": {
+        "days": 50,
+        "active": 50,
+        "losing_days": 27,
+        "winning_days": 23,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.54,
+        "net": 78049,
+        "loss_days_net": -65588,
+        "win_days_net": 143637,
+        "median_loss": -2333,
+        "median_win": 3426
+       },
+       "LOW": {
+        "days": 31,
+        "active": 31,
+        "losing_days": 23,
+        "winning_days": 8,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.742,
+        "net": -1254,
+        "loss_days_net": -36422,
+        "win_days_net": 35168,
+        "median_loss": -995,
+        "median_win": 3608
+       },
+       "None": {
+        "days": 6,
+        "active": 6,
+        "losing_days": 4,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3436,
+        "loss_days_net": -9141,
+        "win_days_net": 12577,
+        "median_loss": -2528,
+        "median_win": 6289
+       }
+      },
+      "rv20": {
+       "HIGH": {
+        "days": 45,
+        "active": 45,
+        "losing_days": 24,
+        "winning_days": 21,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.533,
+        "net": 87372,
+        "loss_days_net": -62336,
+        "win_days_net": 149708,
+        "median_loss": -2425,
+        "median_win": 5054
+       },
+       "LOW": {
+        "days": 36,
+        "active": 36,
+        "losing_days": 26,
+        "winning_days": 10,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.722,
+        "net": -10576,
+        "loss_days_net": -39674,
+        "win_days_net": 29098,
+        "median_loss": -1081,
+        "median_win": 2319
+       },
+       "None": {
+        "days": 6,
+        "active": 6,
+        "losing_days": 4,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3436,
+        "loss_days_net": -9141,
+        "win_days_net": 12577,
+        "median_loss": -2528,
+        "median_win": 6289
+       }
+      },
+      "ret20_abs": {
+       "HIGH": {
+        "days": 43,
+        "active": 43,
+        "losing_days": 24,
+        "winning_days": 19,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.558,
+        "net": 80314,
+        "loss_days_net": -49435,
+        "win_days_net": 129748,
+        "median_loss": -2001,
+        "median_win": 3728
+       },
+       "LOW": {
+        "days": 38,
+        "active": 38,
+        "losing_days": 26,
+        "winning_days": 12,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.684,
+        "net": -3518,
+        "loss_days_net": -52575,
+        "win_days_net": 49057,
+        "median_loss": -1635,
+        "median_win": 2746
+       },
+       "None": {
+        "days": 6,
+        "active": 6,
+        "losing_days": 4,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3436,
+        "loss_days_net": -9141,
+        "win_days_net": 12577,
+        "median_loss": -2528,
+        "median_win": 6289
+       }
+      },
+      "prev_range_rel": {
+       "HIGH": {
+        "days": 37,
+        "active": 37,
+        "losing_days": 23,
+        "winning_days": 14,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.622,
+        "net": 4779,
+        "loss_days_net": -49713,
+        "win_days_net": 54492,
+        "median_loss": -2121,
+        "median_win": 2676
+       },
+       "LOW": {
+        "days": 44,
+        "active": 44,
+        "losing_days": 27,
+        "winning_days": 17,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.614,
+        "net": 72016,
+        "loss_days_net": -52297,
+        "win_days_net": 124313,
+        "median_loss": -1693,
+        "median_win": 3943
+       },
+       "None": {
+        "days": 6,
+        "active": 6,
+        "losing_days": 4,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3436,
+        "loss_days_net": -9141,
+        "win_days_net": 12577,
+        "median_loss": -2528,
+        "median_win": 6289
+       }
+      },
+      "prev_body": {
+       "HIGH": {
+        "days": 46,
+        "active": 46,
+        "losing_days": 24,
+        "winning_days": 22,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.522,
+        "net": 97037,
+        "loss_days_net": -52319,
+        "win_days_net": 149357,
+        "median_loss": -2012,
+        "median_win": 3577
+       },
+       "LOW": {
+        "days": 35,
+        "active": 35,
+        "losing_days": 26,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.743,
+        "net": -20242,
+        "loss_days_net": -49690,
+        "win_days_net": 29449,
+        "median_loss": -1599,
+        "median_win": 3057
+       },
+       "None": {
+        "days": 6,
+        "active": 6,
+        "losing_days": 4,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3436,
+        "loss_days_net": -9141,
+        "win_days_net": 12577,
+        "median_loss": -2528,
+        "median_win": 6289
+       }
+      },
+      "trend_regime": {
+       "HIGH": {
+        "days": 48,
+        "active": 48,
+        "losing_days": 26,
+        "winning_days": 22,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.542,
+        "net": 80112,
+        "loss_days_net": -63426,
+        "win_days_net": 143539,
+        "median_loss": -2227,
+        "median_win": 3577
+       },
+       "LOW": {
+        "days": 33,
+        "active": 33,
+        "losing_days": 24,
+        "winning_days": 9,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.727,
+        "net": -3317,
+        "loss_days_net": -38584,
+        "win_days_net": 35267,
+        "median_loss": -1081,
+        "median_win": 2631
+       },
+       "None": {
+        "days": 6,
+        "active": 6,
+        "losing_days": 4,
+        "winning_days": 2,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.667,
+        "net": 3436,
+        "loss_days_net": -9141,
+        "win_days_net": 12577,
+        "median_loss": -2528,
+        "median_win": 6289
+       }
+      },
+      "dmi_dir": {
+       "DOWN": {
+        "days": 71,
+        "active": 71,
+        "losing_days": 43,
+        "winning_days": 28,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.606,
+        "net": 83555,
+        "loss_days_net": -89432,
+        "win_days_net": 172987,
+        "median_loss": -2100,
+        "median_win": 3658
+       },
+       "UP": {
+        "days": 16,
+        "active": 16,
+        "losing_days": 11,
+        "winning_days": 5,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.688,
+        "net": -3323,
+        "loss_days_net": -21719,
+        "win_days_net": 18396,
+        "median_loss": -994,
+        "median_win": 2631
+       }
+      },
+      "ema_dir": {
+       "DOWN": {
+        "days": 62,
+        "active": 62,
+        "losing_days": 35,
+        "winning_days": 27,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.565,
+        "net": 104404,
+        "loss_days_net": -78530,
+        "win_days_net": 182934,
+        "median_loss": -2212,
+        "median_win": 3943
+       },
+       "UP": {
+        "days": 25,
+        "active": 25,
+        "losing_days": 19,
+        "winning_days": 6,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.76,
+        "net": -24172,
+        "loss_days_net": -32621,
+        "win_days_net": 8449,
+        "median_loss": -1168,
+        "median_win": 559
+       }
+      },
+      "h_trend_day": {
+       "False": {
+        "days": 48,
+        "active": 48,
+        "losing_days": 33,
+        "winning_days": 15,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.688,
+        "net": -223,
+        "loss_days_net": -69778,
+        "win_days_net": 69554,
+        "median_loss": -1773,
+        "median_win": 3588
+       },
+       "True": {
+        "days": 39,
+        "active": 39,
+        "losing_days": 21,
+        "winning_days": 18,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.538,
+        "net": 80455,
+        "loss_days_net": -41373,
+        "win_days_net": 121828,
+        "median_loss": -2100,
+        "median_win": 4006
+       }
+      },
+      "h_small_range": {
+       "False": {
+        "days": 60,
+        "active": 60,
+        "losing_days": 32,
+        "winning_days": 28,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.533,
+        "net": 118919,
+        "loss_days_net": -64293,
+        "win_days_net": 183212,
+        "median_loss": -1984,
+        "median_win": 3836
+       },
+       "True": {
+        "days": 27,
+        "active": 27,
+        "losing_days": 22,
+        "winning_days": 5,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.815,
+        "net": -38687,
+        "loss_days_net": -46858,
+        "win_days_net": 8171,
+        "median_loss": -1635,
+        "median_win": 877
+       }
+      },
+      "h_reversing_day": {
+       "False": {
+        "days": 36,
+        "active": 36,
+        "losing_days": 14,
+        "winning_days": 22,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.389,
+        "net": 141070,
+        "loss_days_net": -30325,
+        "win_days_net": 171395,
+        "median_loss": -2233,
+        "median_win": 5380
+       },
+       "True": {
+        "days": 51,
+        "active": 51,
+        "losing_days": 40,
+        "winning_days": 11,
+        "flat_active_days": 0,
+        "no_trade_days": 0,
+        "loss_rate_active": 0.784,
+        "net": -60838,
+        "loss_days_net": -80826,
+        "win_days_net": 19988,
+        "median_loss": -1659,
+        "median_win": 877
+       }
+      }
+     },
+     "trade_mechanisms": {
+      "trades": 169,
+      "losing_trades": 104,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 32,
+        "losses": 9,
+        "net": 71618
+       },
+       "premium_backstop": {
+        "trades": 3,
+        "losses": 3,
+        "net": -5482
+       },
+       "profit_lock": {
+        "trades": 6,
+        "losses": 0,
+        "net": 4950
+       },
+       "time_stop": {
+        "trades": 49,
+        "losses": 33,
+        "net": -16453
+       },
+       "trail_stop": {
+        "trades": 20,
+        "losses": 0,
+        "net": 135467
+       },
+       "underlying_stop": {
+        "trades": 59,
+        "losses": 59,
+        "net": -109869
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 94,
+        "losses": 61,
+        "net": -4668
+       },
+       "SHORT": {
+        "trades": 75,
+        "losses": 43,
+        "net": 84900
+       }
+      },
+      "by_member": {
+       "EFF": {
+        "trades": 56,
+        "losses": 36,
+        "net": 29027
+       },
+       "OR20": {
+        "trades": 21,
+        "losses": 13,
+        "net": 3944
+       },
+       "SHIPPED": {
+        "trades": 21,
+        "losses": 7,
+        "net": 23819
+       },
+       "TPB": {
+        "trades": 71,
+        "losses": 48,
+        "net": 23441
+       }
+      },
+      "by_entry_hour": {
+       "10": {
+        "trades": 27,
+        "losses": 13,
+        "net": 5264
+       },
+       "11": {
+        "trades": 48,
+        "losses": 34,
+        "net": 27381
+       },
+       "12": {
+        "trades": 31,
+        "losses": 19,
+        "net": 52338
+       },
+       "13": {
+        "trades": 27,
+        "losses": 17,
+        "net": 4612
+       },
+       "14": {
+        "trades": 21,
+        "losses": 13,
+        "net": -8890
+       },
+       "9": {
+        "trades": 15,
+        "losses": 8,
+        "net": -472
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 41,
+        "losses": 21,
+        "net": 37691
+       },
+       "2": {
+        "trades": 3,
+        "losses": 1,
+        "net": 47288
+       },
+       "3": {
+        "trades": 8,
+        "losses": 5,
+        "net": 5069
+       },
+       "4": {
+        "trades": 42,
+        "losses": 30,
+        "net": -14162
+       },
+       "5": {
+        "trades": 38,
+        "losses": 23,
+        "net": 20950
+       },
+       "6": {
+        "trades": 37,
+        "losses": 24,
+        "net": -16605
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 65,
+        "losses": 38,
+        "net": 15841
+       },
+       "LOW": {
+        "trades": 43,
+        "losses": 28,
+        "net": 22631
+       },
+       "MID": {
+        "trades": 59,
+        "losses": 37,
+        "net": 39957
+       },
+       "MISSING": {
+        "trades": 2,
+        "losses": 1,
+        "net": 1804
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 116,
+        "losses": 71,
+        "net": 51245
+       },
+       "2+": {
+        "trades": 51,
+        "losses": 32,
+        "net": 27183
+       },
+       "MISSING": {
+        "trades": 2,
+        "losses": 1,
+        "net": 1804
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 97,
+        "losses": 60,
+        "net": 63433
+       },
+       "STRETCHED": {
+        "trades": 72,
+        "losses": 44,
+        "net": 16798
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 101,
+        "losses": 65,
+        "net": 2477
+       },
+       "True": {
+        "trades": 68,
+        "losses": 39,
+        "net": 77755
+       }
+      },
+      "gross_positive_but_net_negative": 5,
+      "losing_trade_gross": -140488,
+      "losing_trade_costs": 6850,
+      "underlying_favorable_at_exit_losses": 16,
+      "underlying_exit_known_losses": 104,
+      "had_favorable_half_open_range_before_exit": 16,
+      "favorable_half_open_range_after_losing_exit": 28,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "trade_mechanisms_quality_sensitive": {
+      "trades": 167,
+      "losing_trades": 102,
+      "by_exit": {
+       "hard_flat_1510": {
+        "trades": 32,
+        "losses": 9,
+        "net": 71618
+       },
+       "premium_backstop": {
+        "trades": 3,
+        "losses": 3,
+        "net": -5482
+       },
+       "profit_lock": {
+        "trades": 6,
+        "losses": 0,
+        "net": 4950
+       },
+       "time_stop": {
+        "trades": 49,
+        "losses": 33,
+        "net": -16453
+       },
+       "trail_stop": {
+        "trades": 20,
+        "losses": 0,
+        "net": 135467
+       },
+       "underlying_stop": {
+        "trades": 57,
+        "losses": 57,
+        "net": -105839
+       }
+      },
+      "by_direction": {
+       "LONG": {
+        "trades": 92,
+        "losses": 59,
+        "net": -638
+       },
+       "SHORT": {
+        "trades": 75,
+        "losses": 43,
+        "net": 84900
+       }
+      },
+      "by_member": {
+       "EFF": {
+        "trades": 55,
+        "losses": 35,
+        "net": 31181
+       },
+       "OR20": {
+        "trades": 20,
+        "losses": 12,
+        "net": 5820
+       },
+       "SHIPPED": {
+        "trades": 21,
+        "losses": 7,
+        "net": 23819
+       },
+       "TPB": {
+        "trades": 71,
+        "losses": 48,
+        "net": 23441
+       }
+      },
+      "by_entry_hour": {
+       "10": {
+        "trades": 27,
+        "losses": 13,
+        "net": 5264
+       },
+       "11": {
+        "trades": 48,
+        "losses": 34,
+        "net": 27381
+       },
+       "12": {
+        "trades": 31,
+        "losses": 19,
+        "net": 52338
+       },
+       "13": {
+        "trades": 26,
+        "losses": 16,
+        "net": 6488
+       },
+       "14": {
+        "trades": 20,
+        "losses": 12,
+        "net": -6737
+       },
+       "9": {
+        "trades": 15,
+        "losses": 8,
+        "net": -472
+       }
+      },
+      "by_dte": {
+       "1": {
+        "trades": 41,
+        "losses": 21,
+        "net": 37691
+       },
+       "2": {
+        "trades": 3,
+        "losses": 1,
+        "net": 47288
+       },
+       "3": {
+        "trades": 8,
+        "losses": 5,
+        "net": 5069
+       },
+       "4": {
+        "trades": 40,
+        "losses": 28,
+        "net": -10132
+       },
+       "5": {
+        "trades": 38,
+        "losses": 23,
+        "net": 20950
+       },
+       "6": {
+        "trades": 37,
+        "losses": 24,
+        "net": -16605
+       }
+      },
+      "by_entry_efficiency": {
+       "HIGH": {
+        "trades": 63,
+        "losses": 36,
+        "net": 19870
+       },
+       "LOW": {
+        "trades": 43,
+        "losses": 28,
+        "net": 22631
+       },
+       "MID": {
+        "trades": 59,
+        "losses": 37,
+        "net": 39957
+       },
+       "MISSING": {
+        "trades": 2,
+        "losses": 1,
+        "net": 1804
+       }
+      },
+      "by_entry_crossings": {
+       "0-1": {
+        "trades": 114,
+        "losses": 69,
+        "net": 55275
+       },
+       "2+": {
+        "trades": 51,
+        "losses": 32,
+        "net": 27183
+       },
+       "MISSING": {
+        "trades": 2,
+        "losses": 1,
+        "net": 1804
+       }
+      },
+      "by_entry_stretch": {
+       "NEAR": {
+        "trades": 97,
+        "losses": 60,
+        "net": 63433
+       },
+       "STRETCHED": {
+        "trades": 70,
+        "losses": 42,
+        "net": 20828
+       }
+      },
+      "by_daily_direction": {
+       "False": {
+        "trades": 99,
+        "losses": 63,
+        "net": 6506
+       },
+       "True": {
+        "trades": 68,
+        "losses": 39,
+        "net": 77755
+       }
+      },
+      "gross_positive_but_net_negative": 5,
+      "losing_trade_gross": -136607,
+      "losing_trade_costs": 6701,
+      "underlying_favorable_at_exit_losses": 16,
+      "underlying_exit_known_losses": 102,
+      "had_favorable_half_open_range_before_exit": 15,
+      "favorable_half_open_range_after_losing_exit": 28,
+      "last_two_excursions_are_hindsight_only": true
+     },
+     "worst_days": [
+      {
+       "date": "2026-10-28",
+       "trades": 2,
+       "net": -6508.4169,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.044464775846294366,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-05-13",
+       "trades": 2,
+       "net": -5527.5231,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.0007130972189212665,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "HIGH",
+       "gap": "LOW",
+       "nr": "HIGH",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "HIGH",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-02-05",
+       "trades": 3,
+       "net": -4735.46905,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": true,
+       "h_full_day_er": 0.03920783011848225,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2026-03-23",
+       "trades": 3,
+       "net": -4196.8215,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.046952823325312185,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "HIGH",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-08-07",
+       "trades": 3,
+       "net": -4106.4178,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.011528943079614943,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "LOW",
+       "dmi_dir": "UP",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2026-01-30",
+       "trades": 2,
+       "net": -4029.4834,
+       "quality_flag": true,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.02066336256195204,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "LOW",
+       "adx14": null,
+       "rv20": null,
+       "ret20_abs": null,
+       "prev_range_rel": null,
+       "prev_body": null,
+       "trend_regime": null,
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-05-22",
+       "trades": 3,
+       "net": -3891.2429,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": true,
+       "h_full_day_er": 0.03549937024770074,
+       "h_reversing_day": true,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "LOW",
+       "rv20": "LOW",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      },
+      {
+       "date": "2026-04-09",
+       "trades": 1,
+       "net": -3418.56955,
+       "quality_flag": false,
+       "h_trend_day": false,
+       "h_small_range": false,
+       "h_full_day_er": 0.01274080114157555,
+       "h_reversing_day": true,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "HIGH",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2026-04-10",
+       "trades": 3,
+       "net": -3398.8545999999997,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": true,
+       "h_full_day_er": 0.07256235827664423,
+       "h_reversing_day": false,
+       "open_drive": "HIGH",
+       "or_width": "LOW",
+       "gap": "LOW",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "LOW",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "UP"
+      },
+      {
+       "date": "2026-03-13",
+       "trades": 3,
+       "net": -3369.4548999999997,
+       "quality_flag": false,
+       "h_trend_day": true,
+       "h_small_range": false,
+       "h_full_day_er": 0.09504447268106576,
+       "h_reversing_day": false,
+       "open_drive": "LOW",
+       "or_width": "LOW",
+       "gap": "HIGH",
+       "nr": "LOW",
+       "trend5": "HIGH",
+       "adx14": "HIGH",
+       "rv20": "HIGH",
+       "ret20_abs": "HIGH",
+       "prev_range_rel": "LOW",
+       "prev_body": "LOW",
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN",
+       "ema_dir": "DOWN"
+      }
+     ]
+    }
+   },
+   "quality_dates": [
+    "2026-01-30"
+   ],
+   "family_overlap_HINDSIGHT_ONLY": {
+    "SHIPPED": {
+     "variants": 6,
+     "live_loss_days_median_net": -5083.0,
+     "live_win_days_median_net": 37741.0,
+     "median_positive_live_loss_days": 2.5,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "OR20": {
+     "variants": 6,
+     "live_loss_days_median_net": -15943.0,
+     "live_win_days_median_net": 42745.0,
+     "median_positive_live_loss_days": 2.0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "EFF": {
+     "variants": 6,
+     "live_loss_days_median_net": -40569.0,
+     "live_win_days_median_net": 71396.0,
+     "median_positive_live_loss_days": 3.5,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "TPB": {
+     "variants": 6,
+     "live_loss_days_median_net": 5675.0,
+     "live_win_days_median_net": 34271.0,
+     "median_positive_live_loss_days": 6.0,
+     "positive_variants_on_live_loss_days": 6
+    },
+    "TREND_PULLBACK": {
+     "variants": 8,
+     "live_loss_days_median_net": -7535.0,
+     "live_win_days_median_net": 2021.0,
+     "median_positive_live_loss_days": 1.0,
+     "positive_variants_on_live_loss_days": 2
+    },
+    "PDL_BREAK": {
+     "variants": 8,
+     "live_loss_days_median_net": -2507.0,
+     "live_win_days_median_net": 9667.0,
+     "median_positive_live_loss_days": 2.0,
+     "positive_variants_on_live_loss_days": 2
+    },
+    "VWAP_BAND": {
+     "variants": 8,
+     "live_loss_days_median_net": -4586.5,
+     "live_win_days_median_net": 26024.5,
+     "median_positive_live_loss_days": 2.5,
+     "positive_variants_on_live_loss_days": 1
+    },
+    "MOMO_BURST": {
+     "variants": 8,
+     "live_loss_days_median_net": -1439.0,
+     "live_win_days_median_net": 12401.0,
+     "median_positive_live_loss_days": 3.5,
+     "positive_variants_on_live_loss_days": 3
+    },
+    "TPB_O27F": {
+     "variants": 1,
+     "live_loss_days_median_net": 5675,
+     "live_win_days_median_net": 39805,
+     "median_positive_live_loss_days": 6,
+     "positive_variants_on_live_loss_days": 1
+    },
+    "NOISE_BAND": {
+     "variants": 4,
+     "live_loss_days_median_net": -8640.5,
+     "live_win_days_median_net": 595.0,
+     "median_positive_live_loss_days": 1.5,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "LATE_MOMO": {
+     "variants": 4,
+     "live_loss_days_median_net": 5095.0,
+     "live_win_days_median_net": 8886.0,
+     "median_positive_live_loss_days": 7.0,
+     "positive_variants_on_live_loss_days": 3
+    },
+    "FADE": {
+     "variants": 16,
+     "live_loss_days_median_net": 1942.0,
+     "live_win_days_median_net": -5826.5,
+     "median_positive_live_loss_days": 6.0,
+     "positive_variants_on_live_loss_days": 9
+    },
+    "VWAP_REVERT": {
+     "variants": 16,
+     "live_loss_days_median_net": -2183.5,
+     "live_win_days_median_net": -1527.0,
+     "median_positive_live_loss_days": 7.5,
+     "positive_variants_on_live_loss_days": 6
+    },
+    "PDL_FADE": {
+     "variants": 8,
+     "live_loss_days_median_net": 517.0,
+     "live_win_days_median_net": -7420.5,
+     "median_positive_live_loss_days": 4.0,
+     "positive_variants_on_live_loss_days": 4
+    },
+    "RSI2": {
+     "variants": 8,
+     "live_loss_days_median_net": 2176.5,
+     "live_win_days_median_net": -18155.0,
+     "median_positive_live_loss_days": 10.0,
+     "positive_variants_on_live_loss_days": 6
+    },
+    "UNION": {
+     "variants": 1,
+     "live_loss_days_median_net": -67146,
+     "live_win_days_median_net": 79916,
+     "median_positive_live_loss_days": 0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "RANDOM": {
+     "variants": 20,
+     "live_loss_days_median_net": -4427.0,
+     "live_win_days_median_net": -381.5,
+     "median_positive_live_loss_days": 3.0,
+     "positive_variants_on_live_loss_days": 5
+    },
+    "LIVE": {
+     "variants": 1,
+     "live_loss_days_median_net": -58323,
+     "live_win_days_median_net": 139236,
+     "median_positive_live_loss_days": 0,
+     "positive_variants_on_live_loss_days": 0
+    },
+    "LIVE+tpb_all_days": {
+     "variants": 1,
+     "live_loss_days_median_net": -55135,
+     "live_win_days_median_net": 138845,
+     "median_positive_live_loss_days": 1,
+     "positive_variants_on_live_loss_days": 0
+    }
+   }
+  }
+ },
+ "quality": "PROVISIONAL",
+ "no_2024_access": true,
+ "no_new_replay_or_trading_change": true
+}

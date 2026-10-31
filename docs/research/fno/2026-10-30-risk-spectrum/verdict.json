@@ -1,0 +1,2046 @@
+{
+ "schema": "o30r_verdict_v1",
+ "status": "descriptive; hindsight kinds cannot be traded in advance",
+ "best_fade": "S|FADE|level=OR20|stop=1.0|target_r=2.4|exit=LIVE",
+ "mix": {
+  "2025": {
+   "BIG_TWO_WAY": 45,
+   "BIG_TREND": 78,
+   "SIDEWAYS": 74,
+   "QUIET_TREND": 51
+  },
+  "2026": {
+   "SIDEWAYS": 64,
+   "BIG_TREND": 47,
+   "BIG_TWO_WAY": 58,
+   "QUIET_TREND": 34
+  }
+ },
+ "moves": {
+  "2025": {
+   "up_days": 115,
+   "sessions": 248,
+   "median_range": 192.3,
+   "trend_days_up": 64,
+   "trend_days_down": 65
+  },
+  "2026": {
+   "up_days": 101,
+   "sessions": 203,
+   "median_range": 258.8,
+   "trend_days_up": 37,
+   "trend_days_down": 44
+  }
+ },
+ "matrix": {
+  "SHIPPED alone": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TWO_WAY": {
+      "net": -7433,
+      "trades": 34
+     },
+     "BIG_TREND": {
+      "net": 33618,
+      "trades": 44
+     },
+     "SIDEWAYS": {
+      "net": -8478,
+      "trades": 36
+     },
+     "QUIET_TREND": {
+      "net": -11186,
+      "trades": 20
+     }
+    },
+    "2026": {
+     "BIG_TREND": {
+      "net": 34859,
+      "trades": 23
+     },
+     "SIDEWAYS": {
+      "net": -22598,
+      "trades": 31
+     },
+     "BIG_TWO_WAY": {
+      "net": 799,
+      "trades": 33
+     },
+     "QUIET_TREND": {
+      "net": -5362,
+      "trades": 18
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": 2903,
+       "trades": 49
+      },
+      "LOW": {
+       "net": 3619,
+       "trades": 85
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": -8519,
+       "trades": 68
+      },
+      "LOW": {
+       "net": 15040,
+       "trades": 66
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 12449,
+       "trades": 65
+      },
+      "UP": {
+       "net": -5927,
+       "trades": 69
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "LOW": {
+       "net": -23287,
+       "trades": 76
+      },
+      "HIGH": {
+       "net": 30986,
+       "trades": 29
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": -14087,
+       "trades": 57
+      },
+      "LOW": {
+       "net": 21786,
+       "trades": 48
+      }
+     },
+     "direction_up_down": {
+      "UP": {
+       "net": -11967,
+       "trades": 22
+      },
+      "DOWN": {
+       "net": 19666,
+       "trades": 83
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": 6521,
+     "plus_200": -20279,
+     "trades": 134
+    },
+    "2026": {
+     "net": 7699,
+     "plus_200": -13301,
+     "trades": 105
+    }
+   },
+   "consistency": {
+    "net": 14220,
+    "months": 22,
+    "green_months": 11,
+    "red_months": 11,
+    "worst_month": -11637,
+    "rolling_3m": 20,
+    "rolling_3m_green": 11,
+    "weeks_up": 35,
+    "weeks_down": 52,
+    "weeks_flat": 9,
+    "fall": 22292,
+    "worst_day": -5079,
+    "best_day": 20048,
+    "without_best_day": -5827,
+    "weekly_t": 0.43
+   },
+   "consistency_plus_200": {
+    "net": -33580,
+    "months": 22,
+    "green_months": 8,
+    "red_months": 14,
+    "worst_month": -13037,
+    "rolling_3m": 20,
+    "rolling_3m_green": 5,
+    "weeks_up": 31,
+    "weeks_down": 56,
+    "weeks_flat": 9,
+    "fall": 51036,
+    "worst_day": -5279,
+    "best_day": 19648,
+    "without_best_day": -53227,
+    "weekly_t": -1.02
+   }
+  },
+  "OR20 alone": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TWO_WAY": {
+      "net": -20932,
+      "trades": 44
+     },
+     "BIG_TREND": {
+      "net": 44836,
+      "trades": 46
+     },
+     "SIDEWAYS": {
+      "net": -15956,
+      "trades": 49
+     },
+     "QUIET_TREND": {
+      "net": -13991,
+      "trades": 20
+     }
+    },
+    "2026": {
+     "SIDEWAYS": {
+      "net": -50125,
+      "trades": 44
+     },
+     "BIG_TREND": {
+      "net": 51281,
+      "trades": 22
+     },
+     "BIG_TWO_WAY": {
+      "net": 5109,
+      "trades": 49
+     },
+     "QUIET_TREND": {
+      "net": -12859,
+      "trades": 18
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": 1290,
+       "trades": 58
+      },
+      "LOW": {
+       "net": -7332,
+       "trades": 101
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": -14192,
+       "trades": 79
+      },
+      "LOW": {
+       "net": 8149,
+       "trades": 80
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 3901,
+       "trades": 78
+      },
+      "UP": {
+       "net": -9944,
+       "trades": 81
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "LOW": {
+       "net": -34320,
+       "trades": 94
+      },
+      "HIGH": {
+       "net": 27726,
+       "trades": 39
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": -12478,
+       "trades": 70
+      },
+      "HIGH": {
+       "net": 5884,
+       "trades": 63
+      }
+     },
+     "direction_up_down": {
+      "UP": {
+       "net": -11540,
+       "trades": 23
+      },
+      "DOWN": {
+       "net": 4946,
+       "trades": 110
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": -6043,
+     "plus_200": -37843,
+     "trades": 159
+    },
+    "2026": {
+     "net": -6594,
+     "plus_200": -33194,
+     "trades": 133
+    }
+   },
+   "consistency": {
+    "net": -12636,
+    "months": 22,
+    "green_months": 10,
+    "red_months": 12,
+    "worst_month": -16996,
+    "rolling_3m": 20,
+    "rolling_3m_green": 7,
+    "weeks_up": 39,
+    "weeks_down": 52,
+    "weeks_flat": 5,
+    "fall": 38739,
+    "worst_day": -6802,
+    "best_day": 20048,
+    "without_best_day": -32684,
+    "weekly_t": -0.31
+   },
+   "consistency_plus_200": {
+    "net": -71036,
+    "months": 22,
+    "green_months": 7,
+    "red_months": 15,
+    "worst_month": -20396,
+    "rolling_3m": 20,
+    "rolling_3m_green": 1,
+    "weeks_up": 32,
+    "weeks_down": 59,
+    "weeks_flat": 5,
+    "fall": 89992,
+    "worst_day": -7202,
+    "best_day": 19648,
+    "without_best_day": -90684,
+    "weekly_t": -1.74
+   }
+  },
+  "EFF alone": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TWO_WAY": {
+      "net": 32552,
+      "trades": 75
+     },
+     "BIG_TREND": {
+      "net": 50878,
+      "trades": 128
+     },
+     "SIDEWAYS": {
+      "net": -54794,
+      "trades": 87
+     },
+     "QUIET_TREND": {
+      "net": -29017,
+      "trades": 45
+     }
+    },
+    "2026": {
+     "SIDEWAYS": {
+      "net": -49807,
+      "trades": 72
+     },
+     "BIG_TREND": {
+      "net": 29508,
+      "trades": 72
+     },
+     "BIG_TWO_WAY": {
+      "net": 50069,
+      "trades": 84
+     },
+     "QUIET_TREND": {
+      "net": -41954,
+      "trades": 37
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": -14547,
+       "trades": 111
+      },
+      "LOW": {
+       "net": 14166,
+       "trades": 224
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": 56108,
+       "trades": 177
+      },
+      "LOW": {
+       "net": -56489,
+       "trades": 158
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": -51317,
+       "trades": 159
+      },
+      "UP": {
+       "net": 50936,
+       "trades": 176
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "LOW": {
+       "net": -51772,
+       "trades": 184
+      },
+      "HIGH": {
+       "net": 39589,
+       "trades": 81
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": 10635,
+       "trades": 128
+      },
+      "HIGH": {
+       "net": -22818,
+       "trades": 137
+      }
+     },
+     "direction_up_down": {
+      "UP": {
+       "net": -31627,
+       "trades": 48
+      },
+      "DOWN": {
+       "net": 19443,
+       "trades": 217
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": -381,
+     "plus_200": -67381,
+     "trades": 335
+    },
+    "2026": {
+     "net": -12184,
+     "plus_200": -65184,
+     "trades": 265
+    }
+   },
+   "consistency": {
+    "net": -12564,
+    "months": 22,
+    "green_months": 10,
+    "red_months": 12,
+    "worst_month": -25874,
+    "rolling_3m": 20,
+    "rolling_3m_green": 9,
+    "weeks_up": 38,
+    "weeks_down": 58,
+    "weeks_flat": 0,
+    "fall": 104212,
+    "worst_day": -9268,
+    "best_day": 30839,
+    "without_best_day": -43403,
+    "weekly_t": -0.19
+   },
+   "consistency_plus_200": {
+    "net": -132564,
+    "months": 22,
+    "green_months": 8,
+    "red_months": 14,
+    "worst_month": -30899,
+    "rolling_3m": 20,
+    "rolling_3m_green": 6,
+    "weeks_up": 33,
+    "weeks_down": 63,
+    "weeks_flat": 0,
+    "fall": 164294,
+    "worst_day": -9868,
+    "best_day": 30239,
+    "without_best_day": -162803,
+    "weekly_t": -2.01
+   }
+  },
+  "TPB alone": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TREND": {
+      "net": 70293,
+      "trades": 36
+     },
+     "QUIET_TREND": {
+      "net": -2030,
+      "trades": 30
+     },
+     "SIDEWAYS": {
+      "net": -21943,
+      "trades": 30
+     },
+     "BIG_TWO_WAY": {
+      "net": -9626,
+      "trades": 11
+     }
+    },
+    "2026": {
+     "BIG_TWO_WAY": {
+      "net": 20516,
+      "trades": 19
+     },
+     "QUIET_TREND": {
+      "net": -4082,
+      "trades": 19
+     },
+     "BIG_TREND": {
+      "net": 49926,
+      "trades": 23
+     },
+     "SIDEWAYS": {
+      "net": -24305,
+      "trades": 24
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": 4825,
+       "trades": 29
+      },
+      "LOW": {
+       "net": 31869,
+       "trades": 78
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": 3879,
+       "trades": 51
+      },
+      "LOW": {
+       "net": 32815,
+       "trades": 56
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 25661,
+       "trades": 47
+      },
+      "UP": {
+       "net": 11034,
+       "trades": 60
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "LOW": {
+       "net": -3424,
+       "trades": 62
+      },
+      "HIGH": {
+       "net": 45480,
+       "trades": 23
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": 17859,
+       "trades": 31
+      },
+      "HIGH": {
+       "net": 24197,
+       "trades": 54
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 49746,
+       "trades": 66
+      },
+      "UP": {
+       "net": -7690,
+       "trades": 19
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": 36694,
+     "plus_200": 15294,
+     "trades": 107
+    },
+    "2026": {
+     "net": 42056,
+     "plus_200": 25056,
+     "trades": 85
+    }
+   },
+   "consistency": {
+    "net": 78750,
+    "months": 22,
+    "green_months": 14,
+    "red_months": 8,
+    "worst_month": -10402,
+    "rolling_3m": 20,
+    "rolling_3m_green": 16,
+    "weeks_up": 37,
+    "weeks_down": 37,
+    "weeks_flat": 22,
+    "fall": 22896,
+    "worst_day": -6859,
+    "best_day": 21261,
+    "without_best_day": 57489,
+    "weekly_t": 1.77
+   },
+   "consistency_plus_200": {
+    "net": 40350,
+    "months": 22,
+    "green_months": 12,
+    "red_months": 10,
+    "worst_month": -12002,
+    "rolling_3m": 20,
+    "rolling_3m_green": 13,
+    "weeks_up": 33,
+    "weeks_down": 41,
+    "weeks_flat": 22,
+    "fall": 31896,
+    "worst_day": -7259,
+    "best_day": 20861,
+    "without_best_day": 19489,
+    "weekly_t": 0.91
+   }
+  },
+  "Four together, no gate": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TWO_WAY": {
+      "net": 30556,
+      "trades": 85
+     },
+     "BIG_TREND": {
+      "net": 77203,
+      "trades": 149
+     },
+     "SIDEWAYS": {
+      "net": -47299,
+      "trades": 105
+     },
+     "QUIET_TREND": {
+      "net": -33319,
+      "trades": 71
+     }
+    },
+    "2026": {
+     "SIDEWAYS": {
+      "net": -50022,
+      "trades": 90
+     },
+     "BIG_TREND": {
+      "net": 42105,
+      "trades": 79
+     },
+     "BIG_TWO_WAY": {
+      "net": 55693,
+      "trades": 94
+     },
+     "QUIET_TREND": {
+      "net": -50467,
+      "trades": 54
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": 1755,
+       "trades": 137
+      },
+      "LOW": {
+       "net": 25385,
+       "trades": 273
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": 60773,
+       "trades": 217
+      },
+      "LOW": {
+       "net": -33633,
+       "trades": 193
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": -20609,
+       "trades": 195
+      },
+      "UP": {
+       "net": 47749,
+       "trades": 215
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "LOW": {
+       "net": -15462,
+       "trades": 215
+      },
+      "HIGH": {
+       "net": 12771,
+       "trades": 102
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": 6045,
+       "trades": 144
+      },
+      "HIGH": {
+       "net": -8736,
+       "trades": 173
+      }
+     },
+     "direction_up_down": {
+      "UP": {
+       "net": -6534,
+       "trades": 63
+      },
+      "DOWN": {
+       "net": 3843,
+       "trades": 254
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": 27140,
+     "plus_200": -54860,
+     "trades": 410
+    },
+    "2026": {
+     "net": -2691,
+     "plus_200": -66091,
+     "trades": 317
+    }
+   },
+   "consistency": {
+    "net": 24449,
+    "months": 22,
+    "green_months": 11,
+    "red_months": 11,
+    "worst_month": -22520,
+    "rolling_3m": 20,
+    "rolling_3m_green": 9,
+    "weeks_up": 43,
+    "weeks_down": 53,
+    "weeks_flat": 0,
+    "fall": 60166,
+    "worst_day": -8622,
+    "best_day": 21267,
+    "without_best_day": 3181,
+    "weekly_t": 0.37
+   },
+   "consistency_plus_200": {
+    "net": -120951,
+    "months": 22,
+    "green_months": 7,
+    "red_months": 15,
+    "worst_month": -26920,
+    "rolling_3m": 20,
+    "rolling_3m_green": 3,
+    "weeks_up": 33,
+    "weeks_down": 63,
+    "weeks_flat": 0,
+    "fall": 143364,
+    "worst_day": -9222,
+    "best_day": 20667,
+    "without_best_day": -141619,
+    "weekly_t": -1.87
+   }
+  },
+  "Four together, ADX gate (LIVE)": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TWO_WAY": {
+      "net": 5591,
+      "trades": 40
+     },
+     "BIG_TREND": {
+      "net": 28412,
+      "trades": 39
+     },
+     "SIDEWAYS": {
+      "net": -22119,
+      "trades": 28
+     },
+     "QUIET_TREND": {
+      "net": -11613,
+      "trades": 31
+     }
+    },
+    "2026": {
+     "QUIET_TREND": {
+      "net": -15162,
+      "trades": 19
+     },
+     "BIG_TWO_WAY": {
+      "net": 54701,
+      "trades": 30
+     },
+     "SIDEWAYS": {
+      "net": -23215,
+      "trades": 28
+     },
+     "BIG_TREND": {
+      "net": 64588,
+      "trades": 29
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": 271,
+       "trades": 138
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": 9774,
+       "trades": 74
+      },
+      "LOW": {
+       "net": -9504,
+       "trades": 64
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": -12214,
+       "trades": 92
+      },
+      "UP": {
+       "net": 12485,
+       "trades": 46
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "HIGH": {
+       "net": 80912,
+       "trades": 106
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": 52368,
+       "trades": 50
+      },
+      "HIGH": {
+       "net": 28545,
+       "trades": 56
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 80977,
+       "trades": 95
+      },
+      "UP": {
+       "net": -64,
+       "trades": 11
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": 271,
+     "plus_200": -27329,
+     "trades": 138
+    },
+    "2026": {
+     "net": 80912,
+     "plus_200": 59712,
+     "trades": 106
+    }
+   },
+   "consistency": {
+    "net": 81183,
+    "months": 22,
+    "green_months": 9,
+    "red_months": 5,
+    "worst_month": -22171,
+    "rolling_3m": 20,
+    "rolling_3m_green": 11,
+    "weeks_up": 18,
+    "weeks_down": 17,
+    "weeks_flat": 61,
+    "fall": 31482,
+    "worst_day": -6485,
+    "best_day": 47288,
+    "without_best_day": 33895,
+    "weekly_t": 1.33
+   },
+   "consistency_plus_200": {
+    "net": 32383,
+    "months": 22,
+    "green_months": 9,
+    "red_months": 5,
+    "worst_month": -24971,
+    "rolling_3m": 20,
+    "rolling_3m_green": 10,
+    "weeks_up": 16,
+    "weeks_down": 19,
+    "weeks_flat": 61,
+    "fall": 41868,
+    "worst_day": -6885,
+    "best_day": 46688,
+    "without_best_day": -14305,
+    "weekly_t": 0.55
+   }
+  },
+  "LIVE + TPB on closed days (BEST)": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TWO_WAY": {
+      "net": 7497,
+      "trades": 46
+     },
+     "BIG_TREND": {
+      "net": 87254,
+      "trades": 66
+     },
+     "SIDEWAYS": {
+      "net": -46787,
+      "trades": 54
+     },
+     "QUIET_TREND": {
+      "net": -13447,
+      "trades": 48
+     }
+    },
+    "2026": {
+     "BIG_TWO_WAY": {
+      "net": 42065,
+      "trades": 42
+     },
+     "QUIET_TREND": {
+      "net": -16904,
+      "trades": 31
+     },
+     "BIG_TREND": {
+      "net": 95261,
+      "trades": 48
+     },
+     "SIDEWAYS": {
+      "net": -40191,
+      "trades": 48
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": 2156,
+       "trades": 137
+      },
+      "LOW": {
+       "net": 32361,
+       "trades": 77
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": 21819,
+       "trades": 108
+      },
+      "LOW": {
+       "net": 12697,
+       "trades": 106
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 18891,
+       "trades": 123
+      },
+      "UP": {
+       "net": 15626,
+       "trades": 91
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "LOW": {
+       "net": -3479,
+       "trades": 62
+      },
+      "HIGH": {
+       "net": 83711,
+       "trades": 107
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": 41431,
+       "trades": 72
+      },
+      "HIGH": {
+       "net": 38800,
+       "trades": 97
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 83555,
+       "trades": 142
+      },
+      "UP": {
+       "net": -3323,
+       "trades": 27
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": 34517,
+     "plus_200": -8283,
+     "trades": 214
+    },
+    "2026": {
+     "net": 80232,
+     "plus_200": 46432,
+     "trades": 169
+    }
+   },
+   "consistency": {
+    "net": 114748,
+    "months": 22,
+    "green_months": 13,
+    "red_months": 9,
+    "worst_month": -10426,
+    "rolling_3m": 20,
+    "rolling_3m_green": 14,
+    "weeks_up": 40,
+    "weeks_down": 44,
+    "weeks_flat": 12,
+    "fall": 33331,
+    "worst_day": -6508,
+    "best_day": 47288,
+    "without_best_day": 67460,
+    "weekly_t": 1.61
+   },
+   "consistency_plus_200": {
+    "net": 38148,
+    "months": 22,
+    "green_months": 12,
+    "red_months": 10,
+    "worst_month": -12112,
+    "rolling_3m": 20,
+    "rolling_3m_green": 8,
+    "weeks_up": 36,
+    "weeks_down": 48,
+    "weeks_flat": 12,
+    "fall": 43931,
+    "worst_day": -6908,
+    "best_day": 46688,
+    "without_best_day": -8540,
+    "weekly_t": 0.54
+   }
+  },
+  "Failed-break FADE (sideways idea, O29i best)": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TWO_WAY": {
+      "net": -5705,
+      "trades": 41
+     },
+     "BIG_TREND": {
+      "net": -20793,
+      "trades": 43
+     },
+     "SIDEWAYS": {
+      "net": -10586,
+      "trades": 56
+     },
+     "QUIET_TREND": {
+      "net": -3389,
+      "trades": 26
+     }
+    },
+    "2026": {
+     "SIDEWAYS": {
+      "net": 4187,
+      "trades": 55
+     },
+     "BIG_TWO_WAY": {
+      "net": -1607,
+      "trades": 45
+     },
+     "QUIET_TREND": {
+      "net": -2619,
+      "trades": 29
+     },
+     "BIG_TREND": {
+      "net": -7465,
+      "trades": 22
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": -14372,
+       "trades": 61
+      },
+      "LOW": {
+       "net": -26102,
+       "trades": 105
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": -8709,
+       "trades": 80
+      },
+      "LOW": {
+       "net": -31764,
+       "trades": 86
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": -30067,
+       "trades": 79
+      },
+      "UP": {
+       "net": -10407,
+       "trades": 87
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "LOW": {
+       "net": 2804,
+       "trades": 111
+      },
+      "HIGH": {
+       "net": -10307,
+       "trades": 40
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": 3940,
+       "trades": 77
+      },
+      "HIGH": {
+       "net": -11443,
+       "trades": 74
+      }
+     },
+     "direction_up_down": {
+      "UP": {
+       "net": 6979,
+       "trades": 39
+      },
+      "DOWN": {
+       "net": -14483,
+       "trades": 112
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": -40473,
+     "plus_200": -73673,
+     "trades": 166
+    },
+    "2026": {
+     "net": -7503,
+     "plus_200": -37703,
+     "trades": 151
+    }
+   },
+   "consistency": {
+    "net": -47976,
+    "months": 22,
+    "green_months": 7,
+    "red_months": 15,
+    "worst_month": -8868,
+    "rolling_3m": 20,
+    "rolling_3m_green": 3,
+    "weeks_up": 31,
+    "weeks_down": 61,
+    "weeks_flat": 4,
+    "fall": 64109,
+    "worst_day": -3474,
+    "best_day": 5930,
+    "without_best_day": -53906,
+    "weekly_t": -1.78
+   },
+   "consistency_plus_200": {
+    "net": -111376,
+    "months": 22,
+    "green_months": 5,
+    "red_months": 17,
+    "worst_month": -13868,
+    "rolling_3m": 20,
+    "rolling_3m_green": 2,
+    "weeks_up": 20,
+    "weeks_down": 72,
+    "weeks_flat": 4,
+    "fall": 118516,
+    "worst_day": -3745,
+    "best_day": 5530,
+    "without_best_day": -116906,
+    "weekly_t": -4.19
+   }
+  },
+  "LIVE + skip stretched": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TWO_WAY": {
+      "net": 20685,
+      "trades": 27
+     },
+     "BIG_TREND": {
+      "net": 33066,
+      "trades": 28
+     },
+     "SIDEWAYS": {
+      "net": -13830,
+      "trades": 22
+     },
+     "QUIET_TREND": {
+      "net": -12152,
+      "trades": 20
+     }
+    },
+    "2026": {
+     "QUIET_TREND": {
+      "net": -8350,
+      "trades": 14
+     },
+     "BIG_TWO_WAY": {
+      "net": 36921,
+      "trades": 19
+     },
+     "BIG_TREND": {
+      "net": 30725,
+      "trades": 18
+     },
+     "SIDEWAYS": {
+      "net": -3773,
+      "trades": 15
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": 27769,
+       "trades": 97
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": 16613,
+       "trades": 55
+      },
+      "LOW": {
+       "net": 11156,
+       "trades": 42
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 19564,
+       "trades": 66
+      },
+      "UP": {
+       "net": 8205,
+       "trades": 31
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "HIGH": {
+       "net": 55524,
+       "trades": 66
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": 41260,
+       "trades": 30
+      },
+      "HIGH": {
+       "net": 14263,
+       "trades": 36
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 50205,
+       "trades": 59
+      },
+      "UP": {
+       "net": 5319,
+       "trades": 7
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": 27769,
+     "plus_200": 8369,
+     "trades": 97
+    },
+    "2026": {
+     "net": 55524,
+     "plus_200": 42324,
+     "trades": 66
+    }
+   },
+   "consistency": {
+    "net": 83293,
+    "months": 22,
+    "green_months": 8,
+    "red_months": 5,
+    "worst_month": -17111,
+    "rolling_3m": 20,
+    "rolling_3m_green": 13,
+    "weeks_up": 16,
+    "weeks_down": 17,
+    "weeks_flat": 63,
+    "fall": 22252,
+    "worst_day": -6354,
+    "best_day": 23202,
+    "without_best_day": 60091,
+    "weekly_t": 1.86
+   },
+   "consistency_plus_200": {
+    "net": 50693,
+    "months": 22,
+    "green_months": 7,
+    "red_months": 6,
+    "worst_month": -19311,
+    "rolling_3m": 20,
+    "rolling_3m_green": 8,
+    "weeks_up": 16,
+    "weeks_down": 17,
+    "weeks_flat": 63,
+    "fall": 26852,
+    "worst_day": -6954,
+    "best_day": 22802,
+    "without_best_day": 27891,
+    "weekly_t": 1.18
+   }
+  },
+  "BEST + skip stretched": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TWO_WAY": {
+      "net": 22720,
+      "trades": 31
+     },
+     "BIG_TREND": {
+      "net": 83800,
+      "trades": 53
+     },
+     "SIDEWAYS": {
+      "net": -34974,
+      "trades": 44
+     },
+     "QUIET_TREND": {
+      "net": -14643,
+      "trades": 37
+     }
+    },
+    "2026": {
+     "QUIET_TREND": {
+      "net": -10736,
+      "trades": 23
+     },
+     "BIG_TREND": {
+      "net": 58201,
+      "trades": 34
+     },
+     "BIG_TWO_WAY": {
+      "net": 22566,
+      "trades": 28
+     },
+     "SIDEWAYS": {
+      "net": -18146,
+      "trades": 32
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": 29450,
+       "trades": 96
+      },
+      "LOW": {
+       "net": 27454,
+       "trades": 69
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": 29457,
+       "trades": 86
+      },
+      "LOW": {
+       "net": 27447,
+       "trades": 79
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 39024,
+       "trades": 92
+      },
+      "UP": {
+       "net": 17879,
+       "trades": 73
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "LOW": {
+       "net": -1321,
+       "trades": 51
+      },
+      "HIGH": {
+       "net": 53206,
+       "trades": 66
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": 30324,
+       "trades": 51
+      },
+      "HIGH": {
+       "net": 21561,
+       "trades": 66
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 45391,
+       "trades": 97
+      },
+      "UP": {
+       "net": 6493,
+       "trades": 20
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": 56904,
+     "plus_200": 23904,
+     "trades": 165
+    },
+    "2026": {
+     "net": 51885,
+     "plus_200": 28485,
+     "trades": 117
+    }
+   },
+   "consistency": {
+    "net": 108789,
+    "months": 22,
+    "green_months": 14,
+    "red_months": 8,
+    "worst_month": -11897,
+    "rolling_3m": 20,
+    "rolling_3m_green": 14,
+    "weeks_up": 37,
+    "weeks_down": 42,
+    "weeks_flat": 17,
+    "fall": 23983,
+    "worst_day": -6331,
+    "best_day": 23202,
+    "without_best_day": 85587,
+    "weekly_t": 2.04
+   },
+   "consistency_plus_200": {
+    "net": 52389,
+    "months": 22,
+    "green_months": 11,
+    "red_months": 11,
+    "worst_month": -15297,
+    "rolling_3m": 20,
+    "rolling_3m_green": 12,
+    "weeks_up": 35,
+    "weeks_down": 44,
+    "weeks_flat": 17,
+    "fall": 36983,
+    "worst_day": -6931,
+    "best_day": 22802,
+    "without_best_day": 29587,
+    "weekly_t": 1.01
+   }
+  },
+  "TPB + skip stretched": {
+   "after_the_day": {
+    "2025": {
+     "BIG_TREND": {
+      "net": 75529,
+      "trades": 33
+     },
+     "QUIET_TREND": {
+      "net": -1774,
+      "trades": 29
+     },
+     "SIDEWAYS": {
+      "net": -17023,
+      "trades": 25
+     },
+     "BIG_TWO_WAY": {
+      "net": -4502,
+      "trades": 8
+     }
+    },
+    "2026": {
+     "QUIET_TREND": {
+      "net": -1269,
+      "trades": 15
+     },
+     "BIG_TREND": {
+      "net": 51884,
+      "trades": 21
+     },
+     "SIDEWAYS": {
+      "net": -15996,
+      "trades": 19
+     },
+     "BIG_TWO_WAY": {
+      "net": 11033,
+      "trades": 15
+     }
+    }
+   },
+   "known_before": {
+    "2025": {
+     "adx": {
+      "HIGH": {
+       "net": 24304,
+       "trades": 26
+      },
+      "LOW": {
+       "net": 27926,
+       "trades": 69
+      }
+     },
+     "open_drive": {
+      "HIGH": {
+       "net": 17892,
+       "trades": 47
+      },
+      "LOW": {
+       "net": 34338,
+       "trades": 48
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 33752,
+       "trades": 40
+      },
+      "UP": {
+       "net": 18478,
+       "trades": 55
+      }
+     }
+    },
+    "2026": {
+     "adx": {
+      "LOW": {
+       "net": -1172,
+       "trades": 51
+      },
+      "HIGH": {
+       "net": 46824,
+       "trades": 19
+      }
+     },
+     "open_drive": {
+      "LOW": {
+       "net": 23821,
+       "trades": 28
+      },
+      "HIGH": {
+       "net": 21831,
+       "trades": 42
+      }
+     },
+     "direction_up_down": {
+      "DOWN": {
+       "net": 46998,
+       "trades": 55
+      },
+      "UP": {
+       "net": -1346,
+       "trades": 15
+      }
+     }
+    }
+   },
+   "years": {
+    "2025": {
+     "net": 52230,
+     "plus_200": 33230,
+     "trades": 95
+    },
+    "2026": {
+     "net": 45652,
+     "plus_200": 31652,
+     "trades": 70
+    }
+   },
+   "consistency": {
+    "net": 97882,
+    "months": 22,
+    "green_months": 16,
+    "red_months": 6,
+    "worst_month": -8635,
+    "rolling_3m": 20,
+    "rolling_3m_green": 16,
+    "weeks_up": 37,
+    "weeks_down": 34,
+    "weeks_flat": 25,
+    "fall": 20981,
+    "worst_day": -5528,
+    "best_day": 17789,
+    "without_best_day": 80093,
+    "weekly_t": 2.43
+   },
+   "consistency_plus_200": {
+    "net": 64882,
+    "months": 22,
+    "green_months": 14,
+    "red_months": 8,
+    "worst_month": -10035,
+    "rolling_3m": 20,
+    "rolling_3m_green": 14,
+    "weeks_up": 34,
+    "weeks_down": 37,
+    "weeks_flat": 25,
+    "fall": 27197,
+    "worst_day": -5928,
+    "best_day": 17389,
+    "without_best_day": 47493,
+    "weekly_t": 1.63
+   }
+  }
+ },
+ "scan_after_the_day": {
+  "BIG_TREND": {
+   "positive_both_years": 47,
+   "of": 116,
+   "random_positive_both_years": 6,
+   "random_of": 20,
+   "top": [
+    {
+     "name": "REF|LIVE+tpb_all_days",
+     "y2025": 87254,
+     "y2026": 95261
+    },
+    {
+     "name": "N|OR20|LOOSE",
+     "y2025": 52901,
+     "y2026": 52245
+    },
+    {
+     "name": "N|TPB|RUN",
+     "y2025": 70293,
+     "y2026": 49926
+    },
+    {
+     "name": "N|TPB|OWN",
+     "y2025": 70293,
+     "y2026": 49926
+    },
+    {
+     "name": "L|TPB_O27F",
+     "y2025": 70293,
+     "y2026": 49926
+    },
+    {
+     "name": "N|TPB|OWN|vwap",
+     "y2025": 68966,
+     "y2026": 47052
+    }
+   ]
+  },
+  "BIG_TWO_WAY": {
+   "positive_both_years": 24,
+   "of": 116,
+   "random_positive_both_years": 5,
+   "random_of": 20,
+   "top": [
+    {
+     "name": "N|EFF|OWN",
+     "y2025": 32552,
+     "y2026": 50069
+    },
+    {
+     "name": "N|EFF|LOOSE",
+     "y2025": 32552,
+     "y2026": 50069
+    },
+    {
+     "name": "B|UNION",
+     "y2025": 30556,
+     "y2026": 55693
+    },
+    {
+     "name": "L|MOMO_BURST|7",
+     "y2025": 28774,
+     "y2026": 20562
+    },
+    {
+     "name": "S|FADE|level=OR20|stop=STRUCT|target_r=1.5|exit=LATE",
+     "y2025": 15542,
+     "y2026": 12760
+    },
+    {
+     "name": "S|FADE|level=OR20|stop=1.0|target_r=1.5|exit=LATE",
+     "y2025": 16787,
+     "y2026": 9015
+    }
+   ]
+  },
+  "QUIET_TREND": {
+   "positive_both_years": 5,
+   "of": 116,
+   "random_positive_both_years": 1,
+   "random_of": 20,
+   "top": [
+    {
+     "name": "X|LATE_MOMO|FHH|0.006",
+     "y2025": 4312,
+     "y2026": 11828
+    },
+    {
+     "name": "X|LATE_MOMO|DAY|0.003",
+     "y2025": 2670,
+     "y2026": 18211
+    },
+    {
+     "name": "X|LATE_MOMO|FHH|0.003",
+     "y2025": 1316,
+     "y2026": 11733
+    },
+    {
+     "name": "S|VWAP_REVERT|k=1.5|stop=1.0|target_r=1.5|exit=LIVE",
+     "y2025": 390,
+     "y2026": 2621
+    },
+    {
+     "name": "L|PDL_BREAK|6",
+     "y2025": 222,
+     "y2026": 291
+    },
+    {
+     "name": "L|PDL_BREAK|5",
+     "y2025": 0,
+     "y2026": 435
+    }
+   ]
+  },
+  "SIDEWAYS": {
+   "positive_both_years": 1,
+   "of": 116,
+   "random_positive_both_years": 0,
+   "random_of": 20,
+   "top": [
+    {
+     "name": "S|FADE|level=OR20|stop=1.0|target_r=1.5|exit=LATE",
+     "y2025": 2273,
+     "y2026": 17986
+    },
+    {
+     "name": "L|TREND_PULLBACK|5",
+     "y2025": -312,
+     "y2026": -6
+    },
+    {
+     "name": "S|VWAP_REVERT|k=1.5|stop=1.5|target_r=2.4|exit=LATE",
+     "y2025": -2,
+     "y2026": -1221
+    },
+    {
+     "name": "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=1.5|exit=LATE",
+     "y2025": -1232,
+     "y2026": 14473
+    },
+    {
+     "name": "L|TREND_PULLBACK|4",
+     "y2025": -2894,
+     "y2026": 1387
+    },
+    {
+     "name": "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LATE",
+     "y2025": -3029,
+     "y2026": 14772
+    }
+   ]
+  }
+ },
+ "scan_adx": {
+  "ADX_HIGH": {
+   "positive_both_years": 21,
+   "of": 116,
+   "random_positive_both_years": 2,
+   "random_of": 20,
+   "top": [
+    {
+     "name": "N|OR20|LIVE",
+     "y2025": 10747,
+     "y2026": 30041
+    },
+    {
+     "name": "N|TPB|OWN|vwap",
+     "y2025": 6327,
+     "y2026": 32161
+    },
+    {
+     "name": "N|TPB|RUN",
+     "y2025": 4825,
+     "y2026": 45480
+    },
+    {
+     "name": "N|TPB|OWN",
+     "y2025": 4825,
+     "y2026": 45480
+    },
+    {
+     "name": "L|TPB_O27F",
+     "y2025": 4825,
+     "y2026": 45480
+    },
+    {
+     "name": "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=1.5|exit=LATE",
+     "y2025": 6958,
+     "y2026": 4241
+    }
+   ]
+  },
+  "ADX_LOW": {
+   "positive_both_years": 9,
+   "of": 116,
+   "random_positive_both_years": 0,
+   "random_of": 20,
+   "top": [
+    {
+     "name": "L|TREND_PULLBACK|4",
+     "y2025": 13157,
+     "y2026": 5893
+    },
+    {
+     "name": "L|TREND_PULLBACK|0",
+     "y2025": 5250,
+     "y2026": 10414
+    },
+    {
+     "name": "L|TREND_PULLBACK|5",
+     "y2025": 23160,
+     "y2026": 4705
+    },
+    {
+     "name": "L|PDL_BREAK|7",
+     "y2025": 4425,
+     "y2026": 10134
+    },
+    {
+     "name": "L|PDL_BREAK|0",
+     "y2025": 6531,
+     "y2026": 4305
+    },
+    {
+     "name": "N|TPB|LIVE",
+     "y2025": 18383,
+     "y2026": 3956
+    }
+   ]
+  }
+ },
+ "random_books_two_years": {
+  "median": -31502,
+  "best": 1222,
+  "worst": -87263,
+  "positive": 1,
+  "of": 20
+ },
+ "single_changes": {
+  "Add the ADX trend gate": {
+   "before": {
+    "2025": {
+     "net": 27140,
+     "fall": 29091
+    },
+    "2026": {
+     "net": -2691,
+     "fall": 60166
+    }
+   },
+   "after": {
+    "2025": {
+     "net": 271,
+     "fall": 31482
+    },
+    "2026": {
+     "net": 80912,
+     "fall": 12519
+    }
+   }
+  },
+  "Let TPB trade the closed days": {
+   "before": {
+    "2025": {
+     "net": 271,
+     "fall": 31482
+    },
+    "2026": {
+     "net": 80912,
+     "fall": 12519
+    }
+   },
+   "after": {
+    "2025": {
+     "net": 34517,
+     "fall": 20398
+    },
+    "2026": {
+     "net": 80232,
+     "fall": 33331
+    }
+   }
+  },
+  "Skip stretched entries, LIVE": {
+   "before": {
+    "2025": {
+     "net": 271,
+     "fall": 31482
+    },
+    "2026": {
+     "net": 80912,
+     "fall": 12519
+    }
+   },
+   "after": {
+    "2025": {
+     "net": 27769,
+     "fall": 22252
+    },
+    "2026": {
+     "net": 55524,
+     "fall": 7363
+    }
+   }
+  },
+  "Skip stretched entries, BEST": {
+   "before": {
+    "2025": {
+     "net": 34517,
+     "fall": 20398
+    },
+    "2026": {
+     "net": 80232,
+     "fall": 33331
+    }
+   },
+   "after": {
+    "2025": {
+     "net": 56904,
+     "fall": 16991
+    },
+    "2026": {
+     "net": 51885,
+     "fall": 23983
+    }
+   }
+  },
+  "Skip stretched entries, TPB": {
+   "before": {
+    "2025": {
+     "net": 36694,
+     "fall": 14966
+    },
+    "2026": {
+     "net": 42056,
+     "fall": 22896
+    }
+   },
+   "after": {
+    "2025": {
+     "net": 52230,
+     "fall": 13277
+    },
+    "2026": {
+     "net": 45652,
+     "fall": 20981
+    }
+   }
+  }
+ },
+ "qualification": "NOT_ASSESSED",
+ "can_place_orders": false
+}

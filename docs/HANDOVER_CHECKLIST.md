@@ -1,3 +1,187 @@
+## October 31 (evening) — O31e: the main book's weak spots, a new test, and a fixed NIFTY 2023 exam (research, Dev; nothing changed in the system)
+
+- [x] Diagnosis; 15 changes, 15 specialists and 20 random books frozen, run and scored; NIFTY 2023 exam fixed.
+- [ ] NIFTY 2023: owner's login, probe, download, seal, score once (`freeze-2023.json`).
+- **Owner (Oct 31):** "situations where the strategy didn't perform the best. You identify those situations and in those situations, what better strategy we can put in that you search you implement a new test".
+- **Files:** `docs/FNO_WEAK_SPOTS_2026-10-31.md` (the answer), `docs/research/fno/2026-10-31-weak-spots/` (`sides_w.py`, `run_diag.py`, `diagnose_w.py`, `lab_w.py`, `analyze_w.py`, `report_w.py`, tests, `freeze.json`, `freeze-2023.json`, results, README).
+- **Commits:** freeze `e6a7c78`; results and write-up in the commit recording this section. Pushed to Dev. **Not deployed; Production stays at release `c97cb8c`.** No runtime file changed in O31e.
+- **Verification:** 201 replays, `check_book` 0 problems; parity with the main book asserted; 8 study tests pass (every new entry and reading causal); the write-up's figures checked against the stored results by script.
+- **Results (found by looking, three seen years):**
+  - Weak spots inside the main book, one lot after Rs 200: calls -7,662, puts +50,833, each year the same sign; EFF -13,956 on 71 of 120 trades; entries behind VWAP -13,525; big-gap days -5,590.
+  - Sit-out days are 87% of sessions. Calls -1,24,270; entries in the gap's direction -1,47,646; afternoon entries negative every year. 0 of 116 stored strategies earn every year; puts alone 3.
+  - Strict rule: no change and no specialist passes. Exact with the cost in the path: main +16,371 / +5,710 / +30,540; main + TPB puts on sit-out days +15,337 / +47,892 / +77,233 (better_balance, t 1.73); puts only from ADX 25 +24,293 / +31,699 / +68,432 (better every year, t 1.34); main without EFF +12,558 / +27,328 / +26,136, worst fall 3.7%, about 17 trades a year. TPB buying puts alone: +13,199 / +27,831 / +23,559, t 1.89 against the required 2.
+  - The last-half-hour effect loses most: -1,18,237 per lot. CPR, first-hour range, Supertrend, gap fade and range expansion do not pass.
+  - Random entries show almost no put-call gap (-84,856 against -81,952 on sit-out days). Never equate these replays with a profitable strategy.
+- **Decisions:** no engine change from O31e; the main book stays as the owner asked. A one-sided book's risk in a long calm rise is unmeasured, so the NIFTY 2023 exam is fixed in `freeze-2023.json` before any 2023 data exists.
+- **Config and migration:** none.
+- **Remaining:** owner's word to merge and deploy O31d (PR open); owner's ICICI login, then a 2023 probe and download by the download agent (not probed; needs `download2023.py` and a mirror path like `lab_f.py`'s); score the 2023 exam once; Kite renewal; Rs 15,000 setting.
+
+## October 31 (evening) — O31d: the main F&O book is now four strategies + skip rule + ADX 30 (Dev; not deployed)
+
+- [x] Engine change, tests, full suite, parity on all three years.
+- [ ] Owner's word to merge and deploy (PR to `evolve/smart-strategies`, then the release runbook).
+- **Owner (Oct 31):** "whatever you think we should improve you go ahead and do it. The lot limit the strategies, everything and the best strategy that we have come up with that has been consistent. At least you put that as a main strategy". This overrules O31c's frozen call (real money stays on the old book, both on paper): it is the owner's decision, recorded as such.
+- **Problem:** the live book (`UNION_ADX`, ADX 25, no entry-location check) is the weakest setup tested over three years.
+- **Files and contracts:** `python-engine/config.py` (`FNO_BOOK_ADX_MIN` default 30, new `FNO_BOOK_MAX_STRETCH` default 0.5), `python-engine/fno_book.py` (`entry_stretch`; `book_signal` passes over a stretched first signal under gate ADX, reason `stretched:<strategy>`), `python-engine/tests/test_fno_book.py`, `docs/research/fno/2026-10-31-final-book/parity_engine.py`.
+- **Behaviour:** only the ADX book changes. A stretched first signal means no entry on that tick, as in the research; a later bar may still enter. Unknown inputs (no six opening bars, no range, no earlier session) do not block. SENSEX paper uses the same rule on its own prices with NIFTY's volume, as its other signals do; the research tested NIFTY only. Lots (2, 3 once proven), exits, brakes, and the real-money test's mirroring are unchanged. `fno_live_test` needs no change: it follows the paper book.
+- **Acceptance checks:** `tests/test_fno_book.py` 32 passed. Full engine suite in two runs: 3,210 + 2,691 passed, 1 + 3 skipped, 0 failed. Parity on the sealed data: 92,268 bar readings of `entry_stretch` against the research's `stretch_at`, 0 different; replays of the candidate through the engine's function identical to the stored replays in all three years (25, 50 and 33 trades).
+- **Status:** committed and pushed to Dev. **Not merged, not deployed; Production stays at release `c97cb8c`.** Merge and deploy need the owner's explicit word.
+- **Config and migration:** no migration. New setting with a default. Rollback by env: `FNO_BOOK_ADX_MIN=25`, `FNO_BOOK_MAX_STRETCH=0`.
+- **Effect to expect:** far fewer trades (about 38 a year in replays). If ADX is under 30 on a morning, the 09:30 owner alert says the book sits out, and the real-money test sits out with it, so the Nov 2-6 test may gather few or no fills. The evidence stays replay evidence; never equate it with a profitable strategy.
+- **The old book as a comparison:** the monthly forward replay frozen in `docs/FNO_FINAL_STRATEGY_2026-10-31.md` section 6 keeps scoring `SKIP|none` and `BASE`. `fno_signals` records `stretched:` and `adx_low:` rejections, and `fno_regime_gate` records each morning's ADX. Those research freezes bind the engine files, so run them from a worktree at `cb1e9b2`; the strategy code they replay is research code and did not change.
+- **Remaining:** owner's go-ahead to merge and deploy; Kite renewal; Rs 15,000 setting; O31e (the search for the situations this book does worst in).
+
+## October 31 (afternoon) — O31b/O31c: the final book at today's lot limits (research, Dev; nothing changed in the system)
+
+- [x] Lot limit tested; 46 single changes; plateau check; final call recorded; forward check frozen.
+- [ ] Owner: overrule Monday's book? Rs 15,000? Kite renewal.
+- [ ] Monthly forward replay of `SKIP|none`, `BASE`, `ADX|30` from Oct 29 sessions (write-up section 6).
+- **Owner (Oct 31):** "how do we improve it? ... We should have a lot limit as original as we have now go ahead test that and in general, give me a overall output of what do you think? Should we have as a final features and option strategy and one that will be consistent and ensure that losses are less".
+- **Files:** `docs/FNO_FINAL_STRATEGY_2026-10-31.md` (the answer), `docs/research/fno/2026-10-31-final-book/` (`lab_o.py`, `lab_o2.py`, `analyze_o.py`, `analyze_o2.py`, `report_o.py`, tests, freezes, results, README).
+- **Commits:** O31b freeze `9977e71`, results `4d7b100`; O31c freeze `dca512d`; write-up in the commit recording this section. Pushed to Dev. **Not deployed; Production stays at release `c97cb8c`.** Engine unchanged.
+- **Verification:** 403 exact replays, `check_book` 0 problems; parity with the 2024 exam and O30r figures asserted; 11 study tests pass; the write-up's figures checked against the stored results by script.
+- **Results (Rs 2.5 lakh, each year alone, cost in the path):**
+  - Lot limit: today's (2, 3 once proven) is best: -219 / +4,805 / +47,333. 1 lot +35,669, 2 lots +48,840, 3 lots +46,587, 5 lots +39,842 over the three years.
+  - O31b: none of 46 single changes helped in every year; choosing on two years lost to no change on the third, all three times.
+  - O31c, by the rules fixed in advance: the skip rule failed its plateau test (limit 0.65 missed by Rs 816) and ADX 30 failed its (ADX 28 lost 2,456 in 2024; ADX 27's fall is larger). Frozen call: **the book as live today; both on paper only.**
+  - Beyond the frozen call, descriptive: the rule beats no rule in 28 of 30 surface cells; entries inside the limit earn and those beyond lose in every bucket; ADX 30, 32 and 35 are positive in all three years. Candidate: four + rule + ADX 30: +16,371 / +5,710 / +30,540, worst fall 7.5%, one account 2,99,454 (fall 7.8%), worst month -3,673 per lot, 21 of 148 weeks traded. Not proof. Never equate these replays with a profitable strategy.
+- **Decisions:** no runtime change. Monday's real-money test stays on today's book at one lot; this reverses the exam page's recommendation to add the rule first. Rs 15,000 stays recommended. Forward check frozen in the write-up's section 6.
+- **Config and migration:** none. To switch later: `FNO_BOOK_ADX_MIN=30` is a setting; the skip rule needs engine code, tests and a deploy.
+- **Remaining:** the owner may overrule for Monday; Kite renewal; Nov 2-6 real fills replace the assumed Rs 200; monthly forward replays from Oct 29 sessions after the owner's ICICI login; forward panels Nov 27; SENSEX remainder.
+
+## October 31 — O31: the one-time NIFTY 2024 exam scored (research, Dev; nothing changed in the system)
+
+- [x] 2024 data sealed and fingerprinted before any replay; sheets 1, 2, 3 run and scored once, in order; results written up; method and template updated.
+- [ ] Owner: stretched-entry rule in the live book and the Nov 2 test? Rs 15,000? Kite renewal.
+- **Owner (Oct 31):** "The 2024 days is there now run our test in it. Also I hope we have documentation on how to run the test, give me that too".
+- **Files:** `docs/FNO_2024_EXAM_2026-10-31.md` (the results), `docs/research/fno/2026-10-31-exam-2024/` (`report_x.py`, `report.json`, README), `2026-10-30-day-router/data-binding-2024.json`, `results-2024.json` in the day-router, earning-power and risk-spectrum studies, `docs/FNO_YEAR_DATA_TESTING_METHOD.md` (section 14 rewritten; ledger: 2024 is now seen), `docs/research/fno/study_template/` (now all three years).
+- **Commits:** data binding `d1da1dc`, before any replay; results and documents in the commit recording this section. Pushed to Dev. **Not deployed; Production stays at release `c97cb8c`.** Engine unchanged.
+- **Verification:** dataset, manifest and mirror hashes unchanged; three books identical trade for trade across separately run sheets; 30,854 trades read, 0 outside 2024, 0 on expiry days; each sheet's rule re-applied reproduces its stored verdict; `check_book` 0 problems on sheet 3; every verdict unchanged without the two half-days; the ADX gate matches an independent calculation; daily bars match known closes; template bindings, January plumbing in all three years and the three-year analysis proven; exam and template tests pass.
+- **Results:** sheet 1: TPB-on-no-trend-days candidate failed (-26,783 against +21,762 per lot), `ROBUST_CORE` failed (-30,004), "positive in both years" did not carry (1 of 14). Sheet 2: the stretched-entry rule held (better on 3 of 3 books, random median -11,554 to -5,525); only `LIVE|skip` passed at 3 lots (+16,344, fall 15.0%). Sheet 3: the pick failed (-60,581, fall 38.6%).
+- **Three years, per lot, after Rs 200 per trade:** four + rule +8,436 / +8,369 / +42,324, the only book tested positive in all three; live book -838 / -27,329 / +59,712; TPB alone -36,884 / +15,294 / +25,056. Rupees on Rs 2.5 lakh with the cost in the path, today's limits: four + rule -219 / +4,805 / +47,333; live book -33,726 / -38,681 / +61,674. Weekly t for four + rule 2.04, or 1.19 after cost; without each year's best day and after cost, +2,043 per lot. Never equate these replays with a profitable strategy.
+- **One lot:** in 2026, 49% of paper trades cost over Rs 12,500 for one lot, 33% over Rs 15,000, 7% over Rs 20,000. Chance of ending below the Rs 7,000 floor in 20 sessions after cost: live book 15.1% at Rs 12,500, 7.5% at Rs 15,000; with the rule 5.6% and 0.8%.
+- **Decisions:** no runtime change. The owner decides whether the stretched-entry rule enters the live book and the Nov 2 test (recommended, behind a switch; needs Dev, PR and deploy with go-ahead) and whether to use Rs 15,000 (recommended). Not adopted: TPB on no-trend days, more lots, the no-cap level.
+- **Config and migration:** none.
+- **Remaining:** the owner's two calls above; Kite renewal before Monday; real fills from Nov 2; forward panels Nov 27; SENSEX download remainder (1,673 requests). NIFTY 2024 can never be an unseen test again.
+
+## October 30 (late) — O30r: the risk spectrum from today's level to all-in, and the final verdict (research, Dev; nothing changed in the system)
+
+- [x] O30r frozen, run, proven, written up; 2024 sheet 3 frozen before any 2024 data.
+- [ ] 2024 exam: sheets 1, 2, 3 (needs the owner's login and the download).
+- **Owner (Oct 30):** "are we being too conservative? ... test multiple parameters ... from the conservative we have right now ... to more radical that can loose everything in one shot ... tell me which level of conservativeness felt the best in the 2 years", then "tell me the final verdict on what days or trends what best strategy we have ... is our system atleast generally profitable?".
+- **Files:** `docs/FNO_RISK_SPECTRUM_VERDICT_2026-10-30.md` (the verdict), `docs/research/fno/2026-10-30-risk-spectrum/` (`lab_r.py`, `analyze_r.py`, `verdict_r.py`, `exam_r.py`, tests, freezes, results), `docs/FNO_YEAR_DATA_TESTING_METHOD.md` section 15.
+- **Commits:** freeze `8fd8de8`; results + 2024 sheet 3 `bc5a93a`. Pushed to Dev. **Not deployed; Production stays at release `c97cb8c`.**
+- **Verification:** 692 exact replays, `check_book` found 0 problems; `SHIPPED|AS` reproduces the stored rupees exactly; samples replayed twice are identical; 13 study tests pass.
+- **Results (with Rs 200 per lot per trade + Rs 5 per lot of order size in the path, an assumption):**
+  - Balanced pick: TPB + skip-stretched at 2% (Rs 5,000) risk, no lot cap, no brakes: +61,417 / +31,346, Rs 2.5L to 3,49,696, fall 21%. Second: the same at today's limits: +37,320 / +22,413, 3,29,141, fall 12%. Most money: 5%, 4,15,516, fall 51%. 25%: 31,351. All-in, no stops: 2,361.
+  - Today's live book at today's limits: -38,681 / +61,674, and it stops itself in March 2025. With the rule: +4,805 / +47,333.
+  - By day: big trend days earn for nearly every strategy; EFF earns on big two-way days; nothing is reliable on sideways days (1 of 116 positive in both years).
+  - TPB + rule, per lot, as replayed / +Rs 200: 16 / 14 of 22 months green, 16 / 14 of 20 three-month windows, weekly t 2.43 / 1.63. The best of 20 random books is +1,222.
+- **Decisions:** no runtime change. Lots not raised. Risk per trade stays Rs 5,000. The pick goes to the 2024 exam; the owner decides afterwards, including whether the Nov 2 test should trade the rule.
+- **Config and migration:** none.
+- **Remaining:** owner's ICICI login; NIFTY 2024 download; sheets 1, 2, 3 in that order. Never equate these replays with a profitable strategy.
+
+## October 30 (night) — O30s: rupees on Rs 2.5 lakh, what size costs, and the pass-over-stretched rule (research, Dev; nothing changed in the system)
+
+- [x] O30s frozen, run, exact-replayed, written up; 2024 sheet 2 frozen before any 2024 data.
+- [ ] 2024 exam: sheet 1, then sheet 2 (needs the owner's login and the download).
+- **Owner (Oct 30):** "so many people earn literally lakhs in single days ... why can the system not even earn 2 lakhs in any single year? is it because of our conservativeness? ... search and make combinations and test it out ... tell me how much tradeoff".
+- **Problem:** every earlier F&O study was per lot. Nothing measured rupees on the book, what size costs, or the fall that comes with it.
+- **Files:** `docs/FNO_EARNING_POWER_2026-10-30.md` (the plain write-up), `docs/research/fno/2026-10-30-earning-power/` (`lab_s.py`, `analyze_s.py`, `reference_s.py`, `report_s.py`, `lab_s2.py`, `analyze_s2.py`, `report_s2.py`, `exact_s.py`, `exam_s.py`, tests, freezes, results), `docs/FNO_YEAR_DATA_TESTING_METHOD.md` section 15 (the method).
+- **Commits:** freeze `045351b`; results + Tier 2 freeze `fd8e4c1`; Tier 2 results + 2024 sheet 2 `ff08fca`. All pushed to Dev. **Not deployed; Production stays at release `c97cb8c`, which runs the `a461bde` engine (PR #125 added research and docs only).**
+- **Verification:** 25 study tests pass. Shipped-mode references reproduce exactly (+271 / +80,912, +34,517 / +80,232, +36,694 / +42,056). The simulator's shipped sizing is within Rs 2,416 a year and one trade of the stored replays.
+- **Results:**
+  - The book uses 4-7% of the money per trade by design. Size alone fails: LIVE at 3 lots, no brakes, -34,479 in 2025 (-1,25,079 after Rs 200 per lot per trade); LIVE + add at 6 lots, exact, +5,79,750 in 2026 (best day 1,38,943) and -2,11,891 in 2025 (85% fall).
+  - 71 of 5,168 combinations pass the frozen rule, 67 of them TPB alone. Frozen pick: TPB + engine add, 3 lots, half when stretched, +61,695 / +65,438 after the extra cost. Choosing on one year fails.
+  - Feb 1, 2026 (Budget Sunday) is 58% of the live book's 2026 (+47,288 of +80,912 per lot).
+  - RETEST, FAILCONF, SQUEEZE, longer holds and side-by-side slots fail. Option selling (information only) lost in both years in its common form.
+  - **Tier 2, found by looking: pass over an entry stretched >= 0.5 from VWAP.** Exact, per lot: LIVE +27,769 / +55,524, BEST +56,904 / +51,885, TPB +52,230 / +45,652, all positive after Rs 200 per trade. Only TPB passes the strict frozen test; LIVE and BEST lose about Rs 25,000 of 2026, mostly one Budget-day trade. Random books gain too.
+- **Decisions:** no runtime change, lots not raised, the Nov 2 test stays one lot. The rule goes to the 2024 exam; adding it to the book is the owner's call afterwards.
+- **Config and migration:** none.
+- **Remaining:** owner's ICICI login on Oct 31; NIFTY 2024 download; sheet 1 (`analyze_f.py`), then sheet 2 (`exam_s.py run`, `score`), which has not been run because no 2024 data exists. A live version of the rule would be Dev -> PR -> deploy on the owner's word. Never equate these replays with a profitable strategy.
+
+## October 30 - O30q losing-session diagnosis and primary-source strategy review complete (research only; source/results ad9a787)
+
+- **Result:** historical live-policy replay: 57 losing / 100 active sessions across 451 sessions. Small full-day ranges and low-net-progress paths recur in both years; entry stretch and a larger prior-day range associate with higher loss rates across four half-years. Hindsight labels are not entry rules. [Plain-language report, mechanisms and literature](research/fno/2026-10-30-loss-day-review/README.md).
+- **Counter-patterns:** 5/16 identical FADE and 5/16 VWAP-reversion variants positive on LIVE losing-date subsets in both years; 0 in either family positive on both complete years. Independent-book hindsight overlap is not a deployable hedge or additive P&L.
+- **Priorities:** after data repair, predeclare at most two new studies: second-chance breakout/retest continuation and confirmed failed-break/retest reversal, tested over all sessions with missed winners and shared cash/risk. Compression-release and option-payoff-aware/defined-risk expression are lower-priority separate hypotheses, subject to current authority/capital constraints.
+- **Verification:** +271/+80,912 historical reference totals reproduced; daily/trade/session sums, both sealed data hashes, completed-bar causality and outcome partition checks pass. Quality sensitivity and four-half comparisons included; 2025 remains provisional. No new strategy replay, 2024 access, Production edit, config/migration change or deployment. Production availability HTTP 200 checked after the reported outage; no restart performed.
+- **Files:** `diagnose.py`, `crosscheck.py`, `diagnosis.json`, `crosschecks.json`, `configuration.json`, `PLAN.md`, `SOURCES.md`, `README.md`; per-trade/day details ignored under `_local/`. Raw evidence preserved. Remaining: provider-volume verification, exact Rs12,500 one-lot replay and fresh prospective qualification before any runtime proposal.
+
+## October 30 - O30n/O30p complete: 14 offspring rejected; fix evidence before more search
+
+- **Dev only:** micro study freeze b8ed28d/results 8caea0c; option-depth freeze 75358a6. Fourteen candidate definitions replayed on both seen years, with live/TPB/best references and 20 random controls. Exact live parity +271/+80,912 per lot. No Production/code/config/capital change. [Full results and prioritised plan](research/fno/2026-10-30-option-depth/README.md).
+- **Learning:** no candidate beats its parent robustly across years. TPB retains positive stressed net; extra exits/entries or different delta did not improve both years. Total P&L is not the same as a robust or affordable owner-account return.
+- **New blocker:** 162 negative-volume raw candles; 56 present in sealed 2025 input, zero in sealed 2026. Results provisional; 139 request keys recorded outside Git for next-allowance provider verification/reacquisition. Preserve raw data; never guess corrections or overwrite old seals.
+- [ ] Data-quality verification, versioned repair and reference/sensitivity replays before any qualification; retain missing-market-window reasons.
+- [ ] Exact Rs12,500 one-lot cash/reservation/exit replay; existing weekly calculations are filtered-parent proxies.
+- [ ] Existing frozen 2024 exam once, then prospective quote/depth evidence; no 2024 retuning or runtime promotion on these results.
+- [ ] Verify partner-specific data freshness, session and delivery receipts independently of owner subscription/HTTP health; partner-first quote/history source confirmed in code.
+- **Download completed for today's allowance:** NIFTY 2025 complete; SENSEX options 1,736/4,057 (2,321 remain); exactly 4,800 calls, stopped. Two local downloader bugs fixed with five offline checks; 32 empty bad-scope attempts quarantined, ledger retained. Full execution receipt outside Git in sentinel-operations/breeze-history-20261029/RUN_RECEIPT_20261030.md. No unattended downloader remains.
+
+## October 30 - O30n micro-adaptive research complete (freeze b8ed28d; Dev only)
+
+- **Result:** all eight declared offspring fail; 62 book/year evaluations complete, exact live baseline +271/+80,912 per lot. Eight focused tests pass. [Full results and learning](research/fno/2026-10-30-micro-adaptation/README.md).
+- **Learning:** extra VWAP exits reduced TPB profit; reclaim added trades but lost in 2025. TPB already has 120-minute / 2-ATR exits (RUN control reproduces it). TPB is positive under Rs200/trade stress in both years; the prior highest-net blend is negative after that stress in 2025.
+- **Remaining:** option-selection follow-up if supported; exact Rs12,500 one-lot replay (existing weekly figures are proxies); unchanged frozen 2024 exam and prospective quote/depth checks. No new strategy is qualified by this round.
+- **Status/rollout:** research only; no engine/config/schema change or Production action. Both sealed data hashes verified. Failed offspring preserved; no retuning this freeze.
+
+## October 30 — O30 documentation: the Oct 29–30 research summary, the year-data testing method, a study template and the 2024 scorer (docs + research tooling, Dev; nothing changed in the system)
+
+- [x] Summary, method, template, slice tool and the 2024 scorer committed.
+- **Owner (Oct 30):** "what all strategies you have done and everything about the testing and what issues happened in our strategy why it failed in one year and worked in another ... give me the documentation for how you did the testing the methodology for that, so if some other agent does that they can easily do the testing".
+- **New:**
+  - `docs/FNO_RESEARCH_2026-10-30_SUMMARY.md`: every study and strategy, results, why one year worked and the other failed, the over-tuning guard, the issues, next steps, and where everything is.
+  - `docs/FNO_YEAR_DATA_TESTING_METHOD.md`: data, the replay stack, module chain and year selection, how to express and add a strategy, the 12-step protocol, metrics, honesty checks, the window ledger, pitfalls, and the 2024 exam.
+  - `docs/research/fno/study_template/` (`lab_x.py`, `analyze_x.py`, `test_lab_x.py`): an example entry wired through the whole chain. Its 2 tests pass, and its January 2025 plumbing run takes 15 trades.
+  - `docs/research/fno/run_slice.py`: bounded foreground slices. It was tested on a job that finishes and on a job that gets stopped.
+  - `docs/research/fno/2026-10-30-day-router/analyze_f.py`: the `RULE_2024` scorer, committed before any 2024 data exists.
+- **Updated:**
+  - `docs/FNO_STRATEGY_TESTING_PLAYBOOK.md`: a pointer, and §8's ledger marked superseded.
+  - `docs/RESEARCH_TESTING_METHOD.md`: a pointer, and the F&O ledger row.
+- **Config and migration:** none. Nothing is deployed.
+
+## October 30 — O30m Kind-of-day router over a 134-strategy library, and the NIFTY 2024 exam freeze (research, Dev: freeze 2bcec04, routers 33947f2, 2024 freeze 2a57ede; the router fails the cross-year check, the trend pullback is the one robust family; nothing changed)
+
+- [x] Library freeze `2bcec04` → library replays → the cross-year check (routers `33947f2`) → exact routers, persistence, and the 2024 freeze `2a57ede`.
+- **Results (`docs/research/fno/2026-10-30-day-router/README.md`, per lot):**
+  - **No kind-of-day router passes.** Chosen on one year, each of the six partitions loses on the other year (−₹5k to −₹79k), often below random routers.
+  - **Exact replays:** the router chosen on 2026 makes +₹1,10,602 there and −₹34,803 on 2025.
+  - **Persistence:** the 2025 vs 2026 rank correlation over 114 strategies is 0.12 (−0.36 to 0.18 inside kinds of day). 14 strategies are positive in both years, mostly trend-pullback variants, and 0 of 20 random books are.
+  - **ROBUST_CORE** (TPB, two pullback genomes, SHIPPED): +₹78,830 over both years, no better than TPB alone (+₹78,750, max DD ₹22,896).
+  - **Best book:** the O30c candidate, live + TPB on closed days, at +₹1,14,748.
+- **2024 exam:** frozen in `freeze-2024.json` (23 books, RULE_2024) with `lab_f.py` (mirror24 / export24 / warm24 / run).
+  - It runs after `download2024.py`, which is new in `sentinel-operations/breeze-history-20261029` with a 2024 calendar checked offline; DOWNLOAD_GUIDE §0.
+  - The engine must be unchanged since O29i, or the run must come from a worktree at `2a57ede`.
+- [ ] The 2024 download and exam (Oct 31), then the owner's call on the TPB case before the real-money week.
+
+## October 30 — O30c Why the live book broke even on 2025, and case rules tested on both NIFTY years (research, Dev: freezes a98b1f5 + b0defde, results committed; one case nearly passes: TPB trades on the days the ADX gate is closed; nothing changed)
+
+- [x] Tier 1 freeze `a98b1f5` before any case replay; results, investigation and the Tier 2 freeze `b0defde`; Tier 2 results committed.
+- **Why it failed on 2025 (`docs/research/fno/2026-10-30-case-study/README.md`, per lot):**
+  - EFF lost −₹21,796 inside the live book, after +₹29,629 in 2026.
+  - The ADX gate kept TPB out of its best 2025 days: TPB made +₹31,869 on the closed days.
+  - 2026 fell on 77% of days and 2025 rose on 55%. The book's puts paid in both years; its calls lost in 2025 (−₹27,214).
+- **Tier 1** (15 cases fixed before the investigation; the rule: beat the base in both years and not be worse in 3 of 4 half-years):
+  - **TPB trades on the gate's closed days:** +₹34,246 in 2025 and −₹680 in 2026; both years +₹1,14,748 against +₹81,183. It misses the rule by ₹680 and is the one real candidate.
+  - **Trend-direction cases and the other day gates** help one year and hurt the other.
+  - **TPB first on the ungated four** passes, but by a small amount.
+- **Tier 2** (cases from the investigation; in-sample): breakouts only with the trend, entries only 10:00–14:00, and the 20-day-move gate. None beats the candidate, even in-sample. Slicing patterns did not survive being built into the book.
+- **Next clean test:** NIFTY 2024 (unseen; about 4,500 Breeze requests), then the forward panel. The rule (frozen in `freeze-tier2.json`): beat the live book over the year and not be worse in either half.
+- [ ] Owner's call on "TPB on the closed days"; the NIFTY 2024 download and clean test.
+
+## October 30 — O30 NIFTY 2025 clean test of the 2026 strategies (research, Dev: freeze 7d9eeb3, results committed; the ADX gate and the sideways fades do not hold on 2025, TPB alone is positive in both years; nothing changed)
+
+- [x] NIFTY 2025 downloaded (another agent, Oct 30 06:12–07:27 IST, 3,949 requests). `verify_download.py` was clean: 3,585 option requests ok, 0 expiry mismatches.
+- [x] Freeze `7d9eeb3` committed before any 2025 replay; 76 replays; results committed.
+- **Results (per lot of 65; `docs/research/fno/2026-10-30-nifty-2025-test/README.md`):**
+  - **The live UNION_ADX made +₹271 on 2025** (138 trades, max DD ₹31,482, 4 green / 4 red months). It loses to UNION without the gate (+₹27,140) and to UNION_DRIVE (+₹64,712), so the trend book does not hold.
+  - **The sideways fades lost on 2025's sideways days:** FADE −₹14,518 and PDL_FADE −₹12,775 (the random books' median was −₹22,894). UNION_ADX + FADE made −₹14,248, so the fade is not recommended.
+  - **TPB alone was positive in both years:** always on +₹36,694 on 2025 (+₹78,750 with 2026); at ADX ≥ 20 +₹24,680 (+₹79,496 with 2026, max DD ₹14,966, the smallest).
+  - **Both years together:** UNION_ADX +₹81,183, all of it from 2026. UNION_DRIVE +₹72,000 (max DD ₹57,189). The ranking flips between years.
+  - **Caveat:** candles came out about ₹100–200 per trade per lot better than the recorded quotes (O29f), so books with many trades are flattered most.
+- [ ] Owner's call: keep UNION_ADX, return to UNION_DRIVE (environment only), or move to a TPB-only book (engine change) before Nov 2. The fade on sideways days is not recommended.
+
 ## October 29 — Rollout receipt O29h (Production a461bde)
 
 - **Merges:** PR #123 (O29f/O29g research, O29h UNION_ADX, O29i freeze) merged at 17:23 IST as a51c791 and deployed. PR #124 (the 09:30 read follow-up, cfe83dc) merged at 17:32 as a461bde.

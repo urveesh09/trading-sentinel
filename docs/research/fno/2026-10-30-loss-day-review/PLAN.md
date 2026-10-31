@@ -1,0 +1,11 @@
+# Loss-day diagnosis: scope declared before aggregation
+
+Question: what distinguishes losing from winning days of the historical NIFTY live-policy replay, and what published strategy mechanisms could address those failures?
+
+Scope: already-recorded 2025 and Jan-Oct 2026 replays of REF|LIVE, REF|TPB and REF|BEST. This is a descriptive study of research paths, not a statement of realised Production P&L. Production may run later code; no live performance is inferred from Dev logs. No new strategy replay, fit, broker call, download, 2024 access, configuration change or deployment.
+
+Comparisons: active net-losing vs active net-winning sessions, each year and four half-years; flat/no-trade days separate. Premarket/morning features already saved in the original case-study table; entry-time five-minute efficiency, VWAP crossings and stretch computed only on completed bars. Whole-session efficiency/range/reversals, subsequent favorable excursions and post-exit moves are explanatory hindsight, never entry gates. Report missing inputs separately. Direction, component, exit, time, expiry distance, gross/charges and same-direction-underlying option losses distinguish mechanisms.
+
+Sensitivity: retain full input and also exclude every session with any negative volume in the sealed evidence or fewer than 300 index minutes (descriptive sensitivity only). No patching or dropping of raw data in the original results. 2025 sealed data and all results remain provisional. Compare existing contrarian/continuation families on both losing and winning LIVE sessions as hindsight overlap only, never an additive portfolio or strategy selected by knowing a losing day in advance.
+
+Files/contracts: diagnose.py, diagnosis.json, README.md, configuration.json; ignored _local for per-trade/per-day detail. Acceptance: original live normalized totals +271/+80912 reproduced; daily sums reconcile to trade totals; losses/wins/no-trade counts reconcile to session inventory; source and dataset hashes recorded; results finite; no unknown evidence treated as zero feature. Descriptive no-op analysis requires no live code changes. Rollout/rollback: research-only Dev; stop the process to stop; preserve originals. Remaining: web literature map, honest limits and bounded prospective experiment proposals, no candidate implementation now.

@@ -1,0 +1,736 @@
+{
+ "schema": "o30m_routers_v1",
+ "references": {
+  "REF|LIVE": {
+   "2025": 271,
+   "2026": 80912
+  },
+  "REF|LIVE+tpb_all_days": {
+   "2025": 34517,
+   "2026": 80232
+  }
+ },
+ "cv": {
+  "P1_trend": {
+   "2025_to_2026": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH"
+      },
+      "pick": "L|TREND_PULLBACK|1",
+      "mode": "against",
+      "worst_half": 6786,
+      "train_total": 20642
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW"
+      },
+      "pick": "N|TPB|LATE",
+      "mode": "any",
+      "worst_half": 14562,
+      "train_total": 32481
+     }
+    ],
+    "test": {
+     "net": -27522,
+     "trades": 94,
+     "worst_day": -5528,
+     "dd": 38363,
+     "green_months": 3,
+     "red_months": 7
+    },
+    "random_median": 1179,
+    "beats": false
+   },
+   "2026_to_2025": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH"
+      },
+      "pick": "L|VWAP_BAND|3",
+      "mode": "any",
+      "worst_half": 31286,
+      "train_total": 63003
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW"
+      },
+      "pick": "S|FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LIVE",
+      "mode": "against",
+      "worst_half": 15399,
+      "train_total": 37483
+     }
+    ],
+    "test": {
+     "net": -54559,
+     "trades": 83,
+     "worst_day": -7304,
+     "dd": 54559,
+     "green_months": 2,
+     "red_months": 10
+    },
+    "random_median": -12184,
+    "beats": false
+   },
+   "passes": false,
+   "worse_direction_vs_candidate": -107754
+  },
+  "P2_trend_dir": {
+   "2025_to_2026": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "UP"
+      },
+      "pick": "L|MOMO_BURST|0",
+      "mode": "against",
+      "worst_half": 5416,
+      "train_total": 11883
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP"
+      },
+      "pick": "N|EFF|OWN",
+      "mode": "any",
+      "worst_half": 12917,
+      "train_total": 44899
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "N|TPB|OWN|vwap",
+      "mode": "any",
+      "worst_half": 12796,
+      "train_total": 30016
+     }
+    ],
+    "test": {
+     "net": -21407,
+     "trades": 85,
+     "worst_day": -5528,
+     "dd": 44841,
+     "green_months": 3,
+     "red_months": 5
+    },
+    "random_median": -4372,
+    "beats": false
+   },
+   "2026_to_2025": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "N|EFF|OWN",
+      "mode": "with",
+      "worst_half": 28349,
+      "train_total": 59830
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP"
+      },
+      "pick": "X|NOISE_BAND|k1.0|5m",
+      "mode": "against",
+      "worst_half": 16372,
+      "train_total": 32921
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LATE",
+      "mode": "against",
+      "worst_half": 11360,
+      "train_total": 23500
+     }
+    ],
+    "test": {
+     "net": -5049,
+     "trades": 68,
+     "worst_day": -4062,
+     "dd": 29108,
+     "green_months": 3,
+     "red_months": 6
+    },
+    "random_median": -9991,
+    "beats": false
+   },
+   "passes": false,
+   "worse_direction_vs_candidate": -101639
+  },
+  "P3_trend_dir_vol": {
+   "2025_to_2026": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "DOWN",
+       "rv20": "LOW"
+      },
+      "pick": "L|TREND_PULLBACK|1",
+      "mode": "any",
+      "worst_half": 2949,
+      "train_total": 9354
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP",
+       "rv20": "HIGH"
+      },
+      "pick": "N|EFF|OWN",
+      "mode": "any",
+      "worst_half": 3526,
+      "train_total": 28057
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP",
+       "rv20": "LOW"
+      },
+      "pick": "N|EFF|OWN",
+      "mode": "any",
+      "worst_half": 7450,
+      "train_total": 16841
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN",
+       "rv20": "LOW"
+      },
+      "pick": "X|NOISE_BAND|k1.5|30m",
+      "mode": "with",
+      "worst_half": 9489,
+      "train_total": 20577
+     }
+    ],
+    "test": {
+     "net": -32990,
+     "trades": 54,
+     "worst_day": -4921,
+     "dd": 44635,
+     "green_months": 1,
+     "red_months": 6
+    },
+    "random_median": -6416,
+    "beats": false
+   },
+   "2026_to_2025": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "DOWN",
+       "rv20": "HIGH"
+      },
+      "pick": "N|EFF|OWN",
+      "mode": "any",
+      "worst_half": 21925,
+      "train_total": 44139
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN",
+       "rv20": "LOW"
+      },
+      "pick": "S|RSI2|stop=1.5|target_r=2.4|exit=LATE",
+      "mode": "with",
+      "worst_half": 3506,
+      "train_total": 8894
+     }
+    ],
+    "test": {
+     "net": -16702,
+     "trades": 14,
+     "worst_day": -6281,
+     "dd": 16702,
+     "green_months": 1,
+     "red_months": 3
+    },
+    "random_median": -3891,
+    "beats": false
+   },
+   "passes": false,
+   "worse_direction_vs_candidate": -113222
+  },
+  "P4_regime_dir": {
+   "2025_to_2026": {
+    "cells": [
+     {
+      "cell": {
+       "trend_regime": "HIGH",
+       "dmi_dir": "UP"
+      },
+      "pick": "N|TPB|RUN",
+      "mode": "against",
+      "worst_half": 8856,
+      "train_total": 20104
+     },
+     {
+      "cell": {
+       "trend_regime": "LOW",
+       "dmi_dir": "UP"
+      },
+      "pick": "L|PDL_BREAK|0",
+      "mode": "any",
+      "worst_half": 8800,
+      "train_total": 18173
+     },
+     {
+      "cell": {
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "X|NOISE_BAND|k1.5|30m",
+      "mode": "with",
+      "worst_half": 12938,
+      "train_total": 26920
+     }
+    ],
+    "test": {
+     "net": -22920,
+     "trades": 28,
+     "worst_day": -4921,
+     "dd": 22920,
+     "green_months": 0,
+     "red_months": 5
+    },
+    "random_median": -6792,
+    "beats": false
+   },
+   "2026_to_2025": {
+    "cells": [
+     {
+      "cell": {
+       "trend_regime": "HIGH",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "X|NOISE_BAND|k1.0|5m",
+      "mode": "with",
+      "worst_half": 18533,
+      "train_total": 38192
+     },
+     {
+      "cell": {
+       "trend_regime": "LOW",
+       "dmi_dir": "DOWN"
+      },
+      "pick": "S|RSI2|stop=1.5|target_r=2.4|exit=LATE",
+      "mode": "any",
+      "worst_half": 9438,
+      "train_total": 25732
+     }
+    ],
+    "test": {
+     "net": -24102,
+     "trades": 41,
+     "worst_day": -3543,
+     "dd": 26390,
+     "green_months": 1,
+     "red_months": 3
+    },
+    "random_median": -5086,
+    "beats": false
+   },
+   "passes": false,
+   "worse_direction_vs_candidate": -103152
+  },
+  "P5_trend_drive": {
+   "2025_to_2026": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "open_drive": "HIGH"
+      },
+      "pick": "L|TREND_PULLBACK|1",
+      "mode": "against",
+      "worst_half": 4882,
+      "train_total": 11395
+     },
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "open_drive": "LOW"
+      },
+      "pick": "L|TREND_PULLBACK|1",
+      "mode": "against",
+      "worst_half": 1904,
+      "train_total": 9248
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "open_drive": "HIGH"
+      },
+      "pick": "N|EFF|OWN",
+      "mode": "any",
+      "worst_half": 16347,
+      "train_total": 41657
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "open_drive": "LOW"
+      },
+      "pick": "N|TPB|RUN",
+      "mode": "any",
+      "worst_half": 8918,
+      "train_total": 21210
+     }
+    ],
+    "test": {
+     "net": -79000,
+     "trades": 146,
+     "worst_day": -6251,
+     "dd": 86935,
+     "green_months": 1,
+     "red_months": 9
+    },
+    "random_median": -2960,
+    "beats": false
+   },
+   "2026_to_2025": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "open_drive": "HIGH"
+      },
+      "pick": "X|NOISE_BAND|k1.0|5m",
+      "mode": "with",
+      "worst_half": 14552,
+      "train_total": 48468
+     },
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "open_drive": "LOW"
+      },
+      "pick": "L|MOMO_BURST|3",
+      "mode": "with",
+      "worst_half": 14243,
+      "train_total": 36638
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "open_drive": "HIGH"
+      },
+      "pick": "N|TPB|OWN|vwap",
+      "mode": "with",
+      "worst_half": 7816,
+      "train_total": 20602
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "open_drive": "LOW"
+      },
+      "pick": "S|FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LIVE",
+      "mode": "any",
+      "worst_half": 16379,
+      "train_total": 33119
+     }
+    ],
+    "test": {
+     "net": -23305,
+     "trades": 101,
+     "worst_day": -5759,
+     "dd": 31887,
+     "green_months": 4,
+     "red_months": 8
+    },
+    "random_median": -12302,
+    "beats": false
+   },
+   "passes": false,
+   "worse_direction_vs_candidate": -159232
+  },
+  "P6_trend_dir_drive": {
+   "2025_to_2026": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "UP",
+       "open_drive": "HIGH"
+      },
+      "pick": "L|TREND_PULLBACK|1",
+      "mode": "against",
+      "worst_half": 4882,
+      "train_total": 12463
+     },
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "DOWN",
+       "open_drive": "HIGH"
+      },
+      "pick": "S|VWAP_REVERT|k=1.5|stop=1.5|target_r=2.4|exit=LIVE",
+      "mode": "any",
+      "worst_half": 1263,
+      "train_total": 4329
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP",
+       "open_drive": "HIGH"
+      },
+      "pick": "N|EFF|OWN",
+      "mode": "any",
+      "worst_half": 19819,
+      "train_total": 61615
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP",
+       "open_drive": "LOW"
+      },
+      "pick": "L|TREND_PULLBACK|6",
+      "mode": "with",
+      "worst_half": 2273,
+      "train_total": 5939
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN",
+       "open_drive": "HIGH"
+      },
+      "pick": "S|FADE|level=OR30|stop=STRUCT|target_r=1.5|exit=LIVE",
+      "mode": "any",
+      "worst_half": 2466,
+      "train_total": 5184
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN",
+       "open_drive": "LOW"
+      },
+      "pick": "N|TPB|RUN",
+      "mode": "any",
+      "worst_half": 8427,
+      "train_total": 29095
+     }
+    ],
+    "test": {
+     "net": -45711,
+     "trades": 107,
+     "worst_day": -5528,
+     "dd": 51074,
+     "green_months": 4,
+     "red_months": 6
+    },
+    "random_median": -4631,
+    "beats": false
+   },
+   "2026_to_2025": {
+    "cells": [
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "DOWN",
+       "open_drive": "HIGH"
+      },
+      "pick": "N|EFF|OWN|vwap",
+      "mode": "any",
+      "worst_half": 16859,
+      "train_total": 46586
+     },
+     {
+      "cell": {
+       "adx_abs25": "HIGH",
+       "dmi_dir": "DOWN",
+       "open_drive": "LOW"
+      },
+      "pick": "L|MOMO_BURST|4",
+      "mode": "with",
+      "worst_half": 14244,
+      "train_total": 56970
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP",
+       "open_drive": "HIGH"
+      },
+      "pick": "X|NOISE_BAND|k1.0|5m",
+      "mode": "against",
+      "worst_half": 9689,
+      "train_total": 25297
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "UP",
+       "open_drive": "LOW"
+      },
+      "pick": "N|EFF|LIVE",
+      "mode": "against",
+      "worst_half": 5007,
+      "train_total": 12498
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN",
+       "open_drive": "HIGH"
+      },
+      "pick": "N|TPB|OWN|vwap",
+      "mode": "with",
+      "worst_half": 9267,
+      "train_total": 22053
+     },
+     {
+      "cell": {
+       "adx_abs25": "LOW",
+       "dmi_dir": "DOWN",
+       "open_drive": "LOW"
+      },
+      "pick": "S|RSI2|stop=1.5|target_r=2.4|exit=LATE",
+      "mode": "any",
+      "worst_half": 12267,
+      "train_total": 25051
+     }
+    ],
+    "test": {
+     "net": 2942,
+     "trades": 49,
+     "worst_day": -4897,
+     "dd": 21274,
+     "green_months": 2,
+     "red_months": 3
+    },
+    "random_median": -13771,
+    "beats": false
+   },
+   "passes": false,
+   "worse_direction_vs_candidate": -125943
+  }
+ },
+ "chosen_partition": null,
+ "shown_partition": "P2_trend_dir",
+ "final_in_sample_estimate": {
+  "2025": {
+   "net": 20482,
+   "trades": 19,
+   "worst_day": -3746,
+   "dd": 9756,
+   "green_months": 2,
+   "red_months": 4
+  },
+  "2026": {
+   "net": 17442,
+   "trades": 15,
+   "worst_day": -2333,
+   "dd": 6025,
+   "green_months": 4,
+   "red_months": 2
+  }
+ },
+ "routers": {
+  "CV_2025_to_2026|P2_trend_dir": {
+   "cells": [
+    {
+     "cell": {
+      "adx_abs25": "HIGH",
+      "dmi_dir": "UP"
+     },
+     "pick": "L|MOMO_BURST|0",
+     "mode": "against",
+     "worst_half": 5416,
+     "train_total": 11883
+    },
+    {
+     "cell": {
+      "adx_abs25": "LOW",
+      "dmi_dir": "UP"
+     },
+     "pick": "N|EFF|OWN",
+     "mode": "any",
+     "worst_half": 12917,
+     "train_total": 44899
+    },
+    {
+     "cell": {
+      "adx_abs25": "LOW",
+      "dmi_dir": "DOWN"
+     },
+     "pick": "N|TPB|OWN|vwap",
+     "mode": "any",
+     "worst_half": 12796,
+     "train_total": 30016
+    }
+   ]
+  },
+  "CV_2026_to_2025|P2_trend_dir": {
+   "cells": [
+    {
+     "cell": {
+      "adx_abs25": "HIGH",
+      "dmi_dir": "DOWN"
+     },
+     "pick": "N|EFF|OWN",
+     "mode": "with",
+     "worst_half": 28349,
+     "train_total": 59830
+    },
+    {
+     "cell": {
+      "adx_abs25": "LOW",
+      "dmi_dir": "UP"
+     },
+     "pick": "X|NOISE_BAND|k1.0|5m",
+     "mode": "against",
+     "worst_half": 16372,
+     "train_total": 32921
+    },
+    {
+     "cell": {
+      "adx_abs25": "LOW",
+      "dmi_dir": "DOWN"
+     },
+     "pick": "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LATE",
+     "mode": "against",
+     "worst_half": 11360,
+     "train_total": 23500
+    }
+   ]
+  },
+  "FINAL|P2_trend_dir": {
+   "cells": [
+    {
+     "cell": {
+      "adx_abs25": "LOW",
+      "dmi_dir": "DOWN"
+     },
+     "pick": "N|TPB|OWN|vwap",
+     "mode": "with",
+     "worst_half": 5115,
+     "train_total": 37924
+    }
+   ],
+   "candidate_for_2024": false
+  }
+ }
+}

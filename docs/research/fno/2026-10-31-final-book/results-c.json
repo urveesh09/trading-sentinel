@@ -1,0 +1,1140 @@
+{
+ "schema": "o31c_results_v1",
+ "rule": {
+  "status": "Found by looking at O31b on three seen years. Nothing here can be proof, and it is decided by the rules below, fixed before these replays",
+  "rule_plateau": "The rule is on a plateau if, on the surface at ADX 25, per lot after Rs 200 a trade over the three years, limits 0.35, 0.5 and 0.65 ALL beat no rule. If not, it is fragile: it stays off the real-money test and goes to paper only, whatever the 2024 exam said",
+  "adx_plateau": "ADX 30 is on a plateau if, at today's limits with the cost in the path, ADX 28, 30 and 32 are each positive in all three years, and on the surface (limit 0.5, after Rs 200) ADX 27, 30 and 32 each beat ADX 25 on the three-year fall. If so, ADX 30 is recommended as the consistency setting",
+  "random": "The strict filter is reported as a market effect, not a skill, if the 20 random books gain as much from ADX 30 as the four strategies do. Either way it can still reduce losses. Random books are one lot, brakes off",
+  "final": "If the rule is on a plateau and ADX 30 is: four strategies + rule + ADX 30 at today's limits. If only the rule: four strategies + rule + ADX 25. If only ADX 30: four strategies + ADX 30, rule on paper. If neither: the book as live today",
+  "no_change": "Nothing in the system changes on this result; the owner decides."
+ },
+ "correctness": {
+  "replays": 253,
+  "problems": {}
+ },
+ "surface_per_lot_after_200": {
+  "A20|Snone": {
+   "years": {
+    "2024": {
+     "net": -51374,
+     "gross": -4774,
+     "trades": 233
+    },
+    "2025": {
+     "net": -117966,
+     "gross": -43366,
+     "trades": 373
+    },
+    "2026": {
+     "net": 40545,
+     "gross": 78145,
+     "trades": 188
+    }
+   },
+   "total": -128795,
+   "worst_year": -117966,
+   "fall": 181102
+  },
+  "A20|S25": {
+   "years": {
+    "2024": {
+     "net": -3083,
+     "gross": 12317,
+     "trades": 77
+    },
+    "2025": {
+     "net": -47148,
+     "gross": -18948,
+     "trades": 141
+    },
+    "2026": {
+     "net": -1069,
+     "gross": 10131,
+     "trades": 56
+    }
+   },
+   "total": -51300,
+   "worst_year": -47148,
+   "fall": 69883
+  },
+  "A20|S35": {
+   "years": {
+    "2024": {
+     "net": -14649,
+     "gross": 2751,
+     "trades": 87
+    },
+    "2025": {
+     "net": -25821,
+     "gross": 9779,
+     "trades": 178
+    },
+    "2026": {
+     "net": 9842,
+     "gross": 24642,
+     "trades": 74
+    }
+   },
+   "total": -30628,
+   "worst_year": -25821,
+   "fall": 58875
+  },
+  "A20|S50": {
+   "years": {
+    "2024": {
+     "net": -1818,
+     "gross": 21182,
+     "trades": 115
+    },
+    "2025": {
+     "net": -46608,
+     "gross": 5592,
+     "trades": 261
+    },
+    "2026": {
+     "net": 32204,
+     "gross": 53804,
+     "trades": 108
+    }
+   },
+   "total": -16222,
+   "worst_year": -46608,
+   "fall": 80954
+  },
+  "A20|S65": {
+   "years": {
+    "2024": {
+     "net": -10460,
+     "gross": 17540,
+     "trades": 140
+    },
+    "2025": {
+     "net": -60845,
+     "gross": 1355,
+     "trades": 311
+    },
+    "2026": {
+     "net": 3032,
+     "gross": 29432,
+     "trades": 132
+    }
+   },
+   "total": -68273,
+   "worst_year": -60845,
+   "fall": 104846
+  },
+  "A20|S75": {
+   "years": {
+    "2024": {
+     "net": -22323,
+     "gross": 8877,
+     "trades": 156
+    },
+    "2025": {
+     "net": -63932,
+     "gross": 1268,
+     "trades": 326
+    },
+    "2026": {
+     "net": 2177,
+     "gross": 31577,
+     "trades": 147
+    }
+   },
+   "total": -84078,
+   "worst_year": -63932,
+   "fall": 115372
+  },
+  "A25|Snone": {
+   "years": {
+    "2024": {
+     "net": -10900,
+     "gross": 20900,
+     "trades": 159
+    },
+    "2025": {
+     "net": -71239,
+     "gross": -31839,
+     "trades": 197
+    },
+    "2026": {
+     "net": 58462,
+     "gross": 85662,
+     "trades": 136
+    }
+   },
+   "total": -23677,
+   "worst_year": -71239,
+   "fall": 103577
+  },
+  "A25|S25": {
+   "years": {
+    "2024": {
+     "net": -11559,
+     "gross": -759,
+     "trades": 54
+    },
+    "2025": {
+     "net": -6422,
+     "gross": 6378,
+     "trades": 64
+    },
+    "2026": {
+     "net": -10312,
+     "gross": -3112,
+     "trades": 36
+    }
+   },
+   "total": -28293,
+   "worst_year": -11559,
+   "fall": 37793
+  },
+  "A25|S35": {
+   "years": {
+    "2024": {
+     "net": -2873,
+     "gross": 9327,
+     "trades": 61
+    },
+    "2025": {
+     "net": 2384,
+     "gross": 17984,
+     "trades": 78
+    },
+    "2026": {
+     "net": 17590,
+     "gross": 28190,
+     "trades": 53
+    }
+   },
+   "total": 17101,
+   "worst_year": -2873,
+   "fall": 30616
+  },
+  "A25|S50": {
+   "years": {
+    "2024": {
+     "net": 2965,
+     "gross": 18565,
+     "trades": 78
+    },
+    "2025": {
+     "net": -7575,
+     "gross": 17225,
+     "trades": 124
+    },
+    "2026": {
+     "net": 48683,
+     "gross": 63083,
+     "trades": 72
+    }
+   },
+   "total": 44073,
+   "worst_year": -7575,
+   "fall": 32907
+  },
+  "A25|S65": {
+   "years": {
+    "2024": {
+     "net": -29627,
+     "gross": -11827,
+     "trades": 89
+    },
+    "2025": {
+     "net": -23684,
+     "gross": 6716,
+     "trades": 152
+    },
+    "2026": {
+     "net": 28818,
+     "gross": 47218,
+     "trades": 92
+    }
+   },
+   "total": -24493,
+   "worst_year": -29627,
+   "fall": 61158
+  },
+  "A25|S75": {
+   "years": {
+    "2024": {
+     "net": -21412,
+     "gross": -612,
+     "trades": 104
+    },
+    "2025": {
+     "net": -21445,
+     "gross": 10755,
+     "trades": 161
+    },
+    "2026": {
+     "net": 31286,
+     "gross": 52086,
+     "trades": 104
+    }
+   },
+   "total": -11571,
+   "worst_year": -21445,
+   "fall": 51495
+  },
+  "A27|Snone": {
+   "years": {
+    "2024": {
+     "net": -28495,
+     "gross": -8095,
+     "trades": 102
+    },
+    "2025": {
+     "net": -49290,
+     "gross": -19490,
+     "trades": 149
+    },
+    "2026": {
+     "net": 29317,
+     "gross": 50117,
+     "trades": 104
+    }
+   },
+   "total": -48468,
+   "worst_year": -49290,
+   "fall": 85090
+  },
+  "A27|S25": {
+   "years": {
+    "2024": {
+     "net": 119,
+     "gross": 8119,
+     "trades": 40
+    },
+    "2025": {
+     "net": 1878,
+     "gross": 11078,
+     "trades": 46
+    },
+    "2026": {
+     "net": -5328,
+     "gross": 672,
+     "trades": 30
+    }
+   },
+   "total": -3331,
+   "worst_year": -5328,
+   "fall": 22307
+  },
+  "A27|S35": {
+   "years": {
+    "2024": {
+     "net": 7139,
+     "gross": 16139,
+     "trades": 45
+    },
+    "2025": {
+     "net": 11039,
+     "gross": 22239,
+     "trades": 56
+    },
+    "2026": {
+     "net": -1396,
+     "gross": 7004,
+     "trades": 42
+    }
+   },
+   "total": 16782,
+   "worst_year": -1396,
+   "fall": 23971
+  },
+  "A27|S50": {
+   "years": {
+    "2024": {
+     "net": -16096,
+     "gross": -4896,
+     "trades": 56
+    },
+    "2025": {
+     "net": -1765,
+     "gross": 17035,
+     "trades": 94
+    },
+    "2026": {
+     "net": 36629,
+     "gross": 48229,
+     "trades": 58
+    }
+   },
+   "total": 18768,
+   "worst_year": -16096,
+   "fall": 38045
+  },
+  "A27|S65": {
+   "years": {
+    "2024": {
+     "net": -22562,
+     "gross": -10162,
+     "trades": 62
+    },
+    "2025": {
+     "net": -11796,
+     "gross": 11404,
+     "trades": 116
+    },
+    "2026": {
+     "net": 21678,
+     "gross": 36278,
+     "trades": 73
+    }
+   },
+   "total": -12680,
+   "worst_year": -22562,
+   "fall": 39859
+  },
+  "A27|S75": {
+   "years": {
+    "2024": {
+     "net": -28232,
+     "gross": -14032,
+     "trades": 71
+    },
+    "2025": {
+     "net": -10697,
+     "gross": 13903,
+     "trades": 123
+    },
+    "2026": {
+     "net": 30513,
+     "gross": 47113,
+     "trades": 83
+    }
+   },
+   "total": -8416,
+   "worst_year": -28232,
+   "fall": 44386
+  },
+  "A30|Snone": {
+   "years": {
+    "2024": {
+     "net": -19022,
+     "gross": -8222,
+     "trades": 54
+    },
+    "2025": {
+     "net": -24438,
+     "gross": -5438,
+     "trades": 95
+    },
+    "2026": {
+     "net": 26388,
+     "gross": 40788,
+     "trades": 72
+    }
+   },
+   "total": -17072,
+   "worst_year": -24438,
+   "fall": 47615
+  },
+  "A30|S25": {
+   "years": {
+    "2024": {
+     "net": 3873,
+     "gross": 7873,
+     "trades": 20
+    },
+    "2025": {
+     "net": 8614,
+     "gross": 13814,
+     "trades": 26
+    },
+    "2026": {
+     "net": -11974,
+     "gross": -8374,
+     "trades": 18
+    }
+   },
+   "total": 513,
+   "worst_year": -11974,
+   "fall": 18122
+  },
+  "A30|S35": {
+   "years": {
+    "2024": {
+     "net": 3250,
+     "gross": 7450,
+     "trades": 21
+    },
+    "2025": {
+     "net": 22121,
+     "gross": 28321,
+     "trades": 31
+    },
+    "2026": {
+     "net": -5702,
+     "gross": -502,
+     "trades": 26
+    }
+   },
+   "total": 19669,
+   "worst_year": -5702,
+   "fall": 16246
+  },
+  "A30|S50": {
+   "years": {
+    "2024": {
+     "net": 4243,
+     "gross": 9843,
+     "trades": 28
+    },
+    "2025": {
+     "net": 10302,
+     "gross": 21502,
+     "trades": 56
+    },
+    "2026": {
+     "net": 28625,
+     "gross": 35825,
+     "trades": 36
+    }
+   },
+   "total": 43170,
+   "worst_year": 4243,
+   "fall": 13142
+  },
+  "A30|S65": {
+   "years": {
+    "2024": {
+     "net": -1184,
+     "gross": 5016,
+     "trades": 31
+    },
+    "2025": {
+     "net": 15162,
+     "gross": 28762,
+     "trades": 68
+    },
+    "2026": {
+     "net": 10163,
+     "gross": 19363,
+     "trades": 46
+    }
+   },
+   "total": 24141,
+   "worst_year": -1184,
+   "fall": 18161
+  },
+  "A30|S75": {
+   "years": {
+    "2024": {
+     "net": -1602,
+     "gross": 5598,
+     "trades": 36
+    },
+    "2025": {
+     "net": 16136,
+     "gross": 30536,
+     "trades": 72
+    },
+    "2026": {
+     "net": 25405,
+     "gross": 36205,
+     "trades": 54
+    }
+   },
+   "total": 39939,
+   "worst_year": -1602,
+   "fall": 15261
+  },
+  "A32|Snone": {
+   "years": {
+    "2024": {
+     "net": -11810,
+     "gross": -3610,
+     "trades": 41
+    },
+    "2025": {
+     "net": -17527,
+     "gross": -3327,
+     "trades": 71
+    },
+    "2026": {
+     "net": 16325,
+     "gross": 28725,
+     "trades": 62
+    }
+   },
+   "total": -13012,
+   "worst_year": -17527,
+   "fall": 31382
+  },
+  "A32|S25": {
+   "years": {
+    "2024": {
+     "net": 2966,
+     "gross": 5566,
+     "trades": 13
+    },
+    "2025": {
+     "net": 9704,
+     "gross": 12704,
+     "trades": 15
+    },
+    "2026": {
+     "net": -14162,
+     "gross": -11162,
+     "trades": 15
+    }
+   },
+   "total": -1492,
+   "worst_year": -14162,
+   "fall": 16839
+  },
+  "A32|S35": {
+   "years": {
+    "2024": {
+     "net": 2417,
+     "gross": 5017,
+     "trades": 13
+    },
+    "2025": {
+     "net": 19971,
+     "gross": 23771,
+     "trades": 19
+    },
+    "2026": {
+     "net": -5050,
+     "gross": -1050,
+     "trades": 20
+    }
+   },
+   "total": 17338,
+   "worst_year": -5050,
+   "fall": 18120
+  },
+  "A32|S50": {
+   "years": {
+    "2024": {
+     "net": 5746,
+     "gross": 9346,
+     "trades": 18
+    },
+    "2025": {
+     "net": 10186,
+     "gross": 17986,
+     "trades": 39
+    },
+    "2026": {
+     "net": 20259,
+     "gross": 26059,
+     "trades": 29
+    }
+   },
+   "total": 36191,
+   "worst_year": 5746,
+   "fall": 9229
+  },
+  "A32|S65": {
+   "years": {
+    "2024": {
+     "net": 322,
+     "gross": 4322,
+     "trades": 20
+    },
+    "2025": {
+     "net": 13686,
+     "gross": 23086,
+     "trades": 47
+    },
+    "2026": {
+     "net": 2477,
+     "gross": 10277,
+     "trades": 39
+    }
+   },
+   "total": 16485,
+   "worst_year": 322,
+   "fall": 17068
+  },
+  "A32|S75": {
+   "years": {
+    "2024": {
+     "net": 1113,
+     "gross": 5913,
+     "trades": 24
+    },
+    "2025": {
+     "net": 14421,
+     "gross": 24221,
+     "trades": 49
+    },
+    "2026": {
+     "net": 17718,
+     "gross": 27118,
+     "trades": 47
+    }
+   },
+   "total": 33252,
+   "worst_year": 1113,
+   "fall": 17012
+  },
+  "A35|Snone": {
+   "years": {
+    "2024": {
+     "net": -8798,
+     "gross": -1198,
+     "trades": 38
+    },
+    "2025": {
+     "net": -13647,
+     "gross": -6847,
+     "trades": 34
+    },
+    "2026": {
+     "net": 2931,
+     "gross": 12731,
+     "trades": 49
+    }
+   },
+   "total": -19514,
+   "worst_year": -13647,
+   "fall": 33108
+  },
+  "A35|S25": {
+   "years": {
+    "2024": {
+     "net": 4675,
+     "gross": 6875,
+     "trades": 11
+    },
+    "2025": {
+     "net": 7840,
+     "gross": 9240,
+     "trades": 7
+    },
+    "2026": {
+     "net": -11529,
+     "gross": -8729,
+     "trades": 14
+    }
+   },
+   "total": 986,
+   "worst_year": -11529,
+   "fall": 14206
+  },
+  "A35|S35": {
+   "years": {
+    "2024": {
+     "net": 4126,
+     "gross": 6326,
+     "trades": 11
+    },
+    "2025": {
+     "net": 4457,
+     "gross": 6257,
+     "trades": 9
+    },
+    "2026": {
+     "net": -13558,
+     "gross": -10558,
+     "trades": 15
+    }
+   },
+   "total": -4975,
+   "worst_year": -13558,
+   "fall": 16235
+  },
+  "A35|S50": {
+   "years": {
+    "2024": {
+     "net": 8758,
+     "gross": 11758,
+     "trades": 15
+    },
+    "2025": {
+     "net": 9787,
+     "gross": 12987,
+     "trades": 16
+    },
+    "2026": {
+     "net": 9339,
+     "gross": 14339,
+     "trades": 25
+    }
+   },
+   "total": 27884,
+   "worst_year": 8758,
+   "fall": 7294
+  },
+  "A35|S65": {
+   "years": {
+    "2024": {
+     "net": 3334,
+     "gross": 6734,
+     "trades": 17
+    },
+    "2025": {
+     "net": 10073,
+     "gross": 14273,
+     "trades": 21
+    },
+    "2026": {
+     "net": -2187,
+     "gross": 4413,
+     "trades": 33
+    }
+   },
+   "total": 11220,
+   "worst_year": -2187,
+   "fall": 13047
+  },
+  "A35|S75": {
+   "years": {
+    "2024": {
+     "net": 4125,
+     "gross": 8325,
+     "trades": 21
+    },
+    "2025": {
+     "net": 11935,
+     "gross": 16735,
+     "trades": 24
+    },
+    "2026": {
+     "net": 3862,
+     "gross": 11462,
+     "trades": 38
+    }
+   },
+   "total": 19922,
+   "worst_year": 3862,
+   "fall": 11737
+  }
+ },
+ "exact_rupees_with_cost": {
+  "A27": {
+   "years": {
+    "2024": -11635,
+    "2025": 672,
+    "2026": 36731
+   },
+   "falls": {
+    "2024": 0.1017,
+    "2025": 0.1137,
+    "2026": 0.0492
+   },
+   "trades": {
+    "2024": 49,
+    "2025": 80,
+    "2026": 51
+   },
+   "worst_day": -9720
+  },
+  "A28": {
+   "years": {
+    "2024": -2456,
+    "2025": 7841,
+    "2026": 30401
+   },
+   "falls": {
+    "2024": 0.0861,
+    "2025": 0.093,
+    "2026": 0.044
+   },
+   "trades": {
+    "2024": 40,
+    "2025": 65,
+    "2026": 48
+   },
+   "worst_day": -9720
+  },
+  "A32": {
+   "years": {
+    "2024": 12375,
+    "2025": 1485,
+    "2026": 23646
+   },
+   "falls": {
+    "2024": 0.0387,
+    "2025": 0.0585,
+    "2026": 0.0339
+   },
+   "trades": {
+    "2024": 16,
+    "2025": 35,
+    "2026": 28
+   },
+   "worst_day": -9720
+  },
+  "A35": {
+   "years": {
+    "2024": 15358,
+    "2025": 8565,
+    "2026": 4324
+   },
+   "falls": {
+    "2024": 0.0387,
+    "2025": 0.0231,
+    "2026": 0.0495
+   },
+   "trades": {
+    "2024": 14,
+    "2025": 15,
+    "2026": 24
+   },
+   "worst_day": -6969
+  },
+  "S35": {
+   "years": {
+    "2024": -9606,
+    "2025": 9104,
+    "2026": 27903
+   },
+   "falls": {
+    "2024": 0.1101,
+    "2025": 0.0835,
+    "2026": 0.1048
+   },
+   "trades": {
+    "2024": 57,
+    "2025": 64,
+    "2026": 51
+   },
+   "worst_day": -9515
+  },
+  "S65": {
+   "years": {
+    "2024": -39424,
+    "2025": -15908,
+    "2026": 24407
+   },
+   "falls": {
+    "2024": 0.1577,
+    "2025": 0.1366,
+    "2026": 0.0861
+   },
+   "trades": {
+    "2024": 66,
+    "2025": 117,
+    "2026": 83
+   },
+   "worst_day": -9888
+  },
+  "A30": {
+   "years": {
+    "2024": 16371,
+    "2025": 5710,
+    "2026": 30540
+   },
+   "falls": {
+    "2024": 0.0387,
+    "2025": 0.0747,
+    "2026": 0.048
+   },
+   "trades": {
+    "2024": 25,
+    "2025": 50,
+    "2026": 33
+   },
+   "worst_day": -9720
+  },
+  "A25": {
+   "years": {
+    "2024": -219,
+    "2025": 4805,
+    "2026": 47333
+   },
+   "falls": {
+    "2024": 0.0753,
+    "2025": 0.121,
+    "2026": 0.0546
+   },
+   "trades": {
+    "2024": 70,
+    "2025": 97,
+    "2026": 64
+   },
+   "worst_day": -9720
+  }
+ },
+ "a30_as_replayed": {
+  "2024": {
+   "net": 25655,
+   "end": 275655,
+   "fall_pct": 0.0298,
+   "fall_rs": 7692,
+   "trades": 25,
+   "days": 16,
+   "avg_lots": 1.68,
+   "max_lots": 3,
+   "avg_outlay": 14398,
+   "max_outlay": 26461,
+   "worst_trade": -3209,
+   "worst_trade_pct": -0.0125,
+   "worst_day": -4447,
+   "worst_day_date": "2024-01-03",
+   "worst_day_pct": -0.0174,
+   "best_day": 11268,
+   "green_months": 2,
+   "red_months": 0,
+   "last_trade": "2024-11-06",
+   "wiped_out": false
+  },
+  "2025": {
+   "net": 24466,
+   "end": 274466,
+   "fall_pct": 0.0612,
+   "fall_rs": 17846,
+   "trades": 51,
+   "days": 26,
+   "avg_lots": 1.78,
+   "max_lots": 3,
+   "avg_outlay": 14659,
+   "max_outlay": 26822,
+   "worst_trade": -6183,
+   "worst_trade_pct": -0.0214,
+   "worst_day": -8880,
+   "worst_day_date": "2025-08-18",
+   "worst_day_pct": -0.0313,
+   "best_day": 16595,
+   "green_months": 3,
+   "red_months": 1,
+   "last_trade": "2025-08-19",
+   "wiped_out": false
+  },
+  "2026": {
+   "net": 54339,
+   "end": 304339,
+   "fall_pct": 0.0295,
+   "fall_rs": 8544,
+   "trades": 34,
+   "days": 22,
+   "avg_lots": 1.47,
+   "max_lots": 3,
+   "avg_outlay": 17958,
+   "max_outlay": 27944,
+   "worst_trade": -4129,
+   "worst_trade_pct": -0.0159,
+   "worst_day": -6354,
+   "worst_day_date": "2026-03-23",
+   "worst_day_pct": -0.0243,
+   "best_day": 20390,
+   "green_months": 3,
+   "red_months": 1,
+   "last_trade": "2026-10-21",
+   "wiped_out": false
+  }
+ },
+ "carried": {
+  "BASE30": {
+   "net": 49454,
+   "end": 299454,
+   "fall_pct": 0.0778,
+   "fall_rs": 22916,
+   "trades": 109,
+   "days": 64,
+   "avg_lots": 1.64,
+   "max_lots": 3,
+   "avg_outlay": 15720,
+   "max_outlay": 29786,
+   "worst_trade": -8791,
+   "worst_trade_pct": -0.0311,
+   "worst_day": -9720,
+   "worst_day_date": "2025-08-18",
+   "worst_day_pct": -0.0341,
+   "best_day": 15755,
+   "green_months": 6,
+   "red_months": 4,
+   "last_trade": "2026-10-21",
+   "wiped_out": false
+  },
+  "BASE30|AS": {
+   "net": 104029,
+   "end": 354029,
+   "fall_pct": 0.0601,
+   "fall_rs": 19536,
+   "trades": 112,
+   "days": 64,
+   "avg_lots": 1.82,
+   "max_lots": 3,
+   "avg_outlay": 17662,
+   "max_outlay": 37284,
+   "worst_trade": -8210,
+   "worst_trade_pct": -0.0275,
+   "worst_day": -9219,
+   "worst_day_date": "2025-01-27",
+   "worst_day_pct": -0.0308,
+   "best_day": 24940,
+   "green_months": 8,
+   "red_months": 2,
+   "last_trade": "2026-10-21",
+   "wiped_out": false
+  }
+ },
+ "random": {
+  "A25": {
+   "median_total": -46883.0,
+   "best_total": 3723,
+   "positive_total": 2,
+   "positive_every_year": 0,
+   "median_by_year": {
+    "2024": -17100.0,
+    "2025": -17274.0,
+    "2026": -17548.5
+   },
+   "median_fall": 64437.0
+  },
+  "A30": {
+   "median_total": -32320.0,
+   "best_total": 11,
+   "positive_total": 1,
+   "positive_every_year": 0,
+   "median_by_year": {
+    "2024": -9063.5,
+    "2025": -9930.5,
+    "2026": -13671.5
+   },
+   "median_fall": 35912.5
+  },
+  "gain_real": -903,
+  "gain_random": 14563.0,
+  "market_effect": true
+ },
+ "rule_plateau": {
+  "no_rule": -23677,
+  "limits": {
+   "25": -28293,
+   "35": 17101,
+   "50": 44073,
+   "65": -24493,
+   "75": -11571
+  },
+  "on_plateau": false
+ },
+ "adx_plateau": {
+  "exact_money": {
+   "A28": {
+    "2024": -2456,
+    "2025": 7841,
+    "2026": 30401
+   },
+   "A30": {
+    "2024": 16371,
+    "2025": 5710,
+    "2026": 30540
+   },
+   "A32": {
+    "2024": 12375,
+    "2025": 1485,
+    "2026": 23646
+   }
+  },
+  "all_positive_every_year": false,
+  "surface_falls": {
+   "A27": 38045,
+   "A30": 13142,
+   "A32": 9229
+  },
+  "surface_fall_at_25": 32907,
+  "lower_fall_on_surface": false,
+  "on_plateau": false
+ },
+ "final": "the book as live today; both on paper only",
+ "qualification": "NOT_ASSESSED",
+ "can_place_orders": false
+}

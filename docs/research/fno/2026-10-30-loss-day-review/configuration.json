@@ -1,0 +1,66 @@
+{
+  "scope": "descriptive loss-day review of already-recorded frozen research; not realised Production P&L",
+  "base_dev_commit": "721042cad366d8592c74c1c14eeb8d3fb498136a",
+  "production_checkout_read_only": "c97cb8c3ba0eeb4ac8e9966135b07034d760b40d; not claimed as runtime replay equivalence",
+  "windows": {
+    "2025": [
+      "2025-01-01",
+      "2025-12-31"
+    ],
+    "2026": [
+      "2026-01-01",
+      "2026-10-28"
+    ]
+  },
+  "books": [
+    "REF|LIVE",
+    "REF|TPB",
+    "REF|BEST"
+  ],
+  "thresholds": {
+    "hindsight_small_range": 0.75,
+    "hindsight_efficiency": 0.05,
+    "entry_er_low": 0.25,
+    "entry_er_high": 0.5,
+    "entry_vwap_crosses": 2,
+    "entry_stretch_opening_range": 0.5
+  },
+  "financial_basis": "each annual fresh-book record normalised by lots_at_exit; no unified portfolio or owner cash outcome",
+  "price_features": "completed 5-minute entry bars; VWAP proxy from typical prices and bar volumes; full-day future path explicitly hindsight",
+  "input_hashes": {
+    "2025": {
+      "manifest": "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+      "database_matches_manifest": true,
+      "day_table": "ebde3be9cfcde6e385ebac8673534f1d2ac27796e61f5aa9dcb2fb858d2be12a",
+      "trades": "50c495ccf1dcce2321a751e575c3c45ae9698c7c6864eff254513b16b6d6029d"
+    },
+    "2026": {
+      "manifest": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555",
+      "database_matches_manifest": true,
+      "day_table": "7b83f085180d89c1f250f30c5923bf29f179402ef29239d98aeffe4381d3c1c1",
+      "trades": "4e7ee72a3ca87092d405dd72448caec03cca2cab4baf77450dc10611d926b583"
+    }
+  },
+  "source_hashes": {
+    "diagnose.py": "ed7b130bcd541e393dc84e5cc6786891b3780305a5b232ec84487446814f94d1",
+    "crosscheck.py": "5616cbd56414602053a79920ba68dd29c46acf6dc368ffc4efdd28dbf89045df",
+    "PLAN.md": "0d9f23835358cc152e90afbf160ac06ca4f20cb0452dcd61a87d8508db891750"
+  },
+  "validation": [
+    "original live +271/+80912 normalised totals reproduced",
+    "daily net and trade count reconciled",
+    "loss/win/flat/no-trade partition reconciled",
+    "both database hashes match manifests",
+    "future-bar perturbation leaves causal entry metrics unchanged",
+    "quality sensitivity and four-half checks saved"
+  ],
+  "research_status": "EXPLORATORY_PROVISIONAL",
+  "qualification_change": false,
+  "new_strategy_replay": false,
+  "production_changes": false,
+  "orders_or_messages_sent": false,
+  "no_2024_access": true,
+  "config_migration_impact": "none",
+  "literature": "primary mechanism/payoff documents; accessible text versus abstract-only/access failures distinguished in SOURCES.md",
+  "source_results_commit": "ad9a787fd299e5d3ed51f537c412e55cbe84c13b"
+}

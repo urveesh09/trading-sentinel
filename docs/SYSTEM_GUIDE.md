@@ -1,3 +1,69 @@
+## October 31 (evening) — O31e: the main book's weak spots, a new test, and a fixed NIFTY 2023 exam (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_WEAK_SPOTS_2026-10-31.md`.
+
+## October 31 (evening) — O31d: the main F&O book is now four strategies + skip rule + ADX 30 (Dev; not deployed)
+
+- **Runtime change (Dev):** `UNION_ADX` trades on yesterday's NIFTY ADX(14) >= `FNO_BOOK_ADX_MIN` (default now 30) and passes over the first signal of a tick when `fno_book.entry_stretch` >= `FNO_BOOK_MAX_STRETCH` (default 0.5; 0 turns it off): the last closed 5-minute close beyond today's VWAP, in the trade's direction, as a share of the first 30 minutes' range. Rejection reason `stretched:<strategy>`. Lots, exits and brakes unchanged. Not deployed until the owner's word.
+
+## October 31 (afternoon) — O31b/O31c: the final book at today's lot limits (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_FINAL_STRATEGY_2026-10-31.md`. The live book, lots and brakes are unchanged.
+
+## October 31 — O31: the one-time NIFTY 2024 exam scored (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_2024_EXAM_2026-10-31.md`. NIFTY 2024 is now seen.
+
+## October 30 (late) — O30r: the risk spectrum from today's level to all-in, and the final verdict (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_RISK_SPECTRUM_VERDICT_2026-10-30.md`.
+
+## October 30 (night) — O30s: rupees on Rs 2.5 lakh, what size costs, and the pass-over-stretched rule (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_EARNING_POWER_2026-10-30.md`. The shipped F&O limits it measured are unchanged: 2 lots (3 when proven), 2% risk capped at Rs 6,250, 15% of the money in premium, 3 trades a day, day / week / month / total stops at 3 / 6 / 10 / 15%.
+
+## October 30 - O30q losing-session diagnosis and primary-source strategy review complete (research only; source/results ad9a787)
+
+- **Result:** historical live-policy replay: 57 losing / 100 active sessions across 451 sessions. Small full-day ranges and low-net-progress paths recur in both years; entry stretch and a larger prior-day range associate with higher loss rates across four half-years. Hindsight labels are not entry rules. [Plain-language report, mechanisms and literature](research/fno/2026-10-30-loss-day-review/README.md).
+- **Counter-patterns:** 5/16 identical FADE and 5/16 VWAP-reversion variants positive on LIVE losing-date subsets in both years; 0 in either family positive on both complete years. Independent-book hindsight overlap is not a deployable hedge or additive P&L.
+- **Priorities:** after data repair, predeclare at most two new studies: second-chance breakout/retest continuation and confirmed failed-break/retest reversal, tested over all sessions with missed winners and shared cash/risk. Compression-release and option-payoff-aware/defined-risk expression are lower-priority separate hypotheses, subject to current authority/capital constraints.
+- **Verification:** +271/+80,912 historical reference totals reproduced; daily/trade/session sums, both sealed data hashes, completed-bar causality and outcome partition checks pass. Quality sensitivity and four-half comparisons included; 2025 remains provisional. No new strategy replay, 2024 access, Production edit, config/migration change or deployment. Production availability HTTP 200 checked after the reported outage; no restart performed.
+- **Files:** `diagnose.py`, `crosscheck.py`, `diagnosis.json`, `crosschecks.json`, `configuration.json`, `PLAN.md`, `SOURCES.md`, `README.md`; per-trade/day details ignored under `_local/`. Raw evidence preserved. Remaining: provider-volume verification, exact Rs12,500 one-lot replay and fresh prospective qualification before any runtime proposal.
+
+## October 30 - O30n/O30p complete: 14 offspring rejected; fix evidence before more search
+
+- **Dev only:** micro study freeze b8ed28d/results 8caea0c; option-depth freeze 75358a6. Fourteen candidate definitions replayed on both seen years, with live/TPB/best references and 20 random controls. Exact live parity +271/+80,912 per lot. No Production/code/config/capital change. [Full results and prioritised plan](research/fno/2026-10-30-option-depth/README.md).
+- **Learning:** no candidate beats its parent robustly across years. TPB retains positive stressed net; extra exits/entries or different delta did not improve both years. Total P&L is not the same as a robust or affordable owner-account return.
+- **New blocker:** 162 negative-volume raw candles; 56 present in sealed 2025 input, zero in sealed 2026. Results provisional; 139 request keys recorded outside Git for next-allowance provider verification/reacquisition. Preserve raw data; never guess corrections or overwrite old seals.
+- [ ] Data-quality verification, versioned repair and reference/sensitivity replays before any qualification; retain missing-market-window reasons.
+- [ ] Exact Rs12,500 one-lot cash/reservation/exit replay; existing weekly calculations are filtered-parent proxies.
+- [ ] Existing frozen 2024 exam once, then prospective quote/depth evidence; no 2024 retuning or runtime promotion on these results.
+- [ ] Verify partner-specific data freshness, session and delivery receipts independently of owner subscription/HTTP health; partner-first quote/history source confirmed in code.
+- **Download completed for today's allowance:** NIFTY 2025 complete; SENSEX options 1,736/4,057 (2,321 remain); exactly 4,800 calls, stopped. Two local downloader bugs fixed with five offline checks; 32 empty bad-scope attempts quarantined, ledger retained. Full execution receipt outside Git in sentinel-operations/breeze-history-20261029/RUN_RECEIPT_20261030.md. No unattended downloader remains.
+
+## October 30 - O30n micro-adaptive research complete (freeze b8ed28d; Dev only)
+
+- **Result:** all eight declared offspring fail; 62 book/year evaluations complete, exact live baseline +271/+80,912 per lot. Eight focused tests pass. [Full results and learning](research/fno/2026-10-30-micro-adaptation/README.md).
+- **Learning:** extra VWAP exits reduced TPB profit; reclaim added trades but lost in 2025. TPB already has 120-minute / 2-ATR exits (RUN control reproduces it). TPB is positive under Rs200/trade stress in both years; the prior highest-net blend is negative after that stress in 2025.
+- **Remaining:** option-selection follow-up if supported; exact Rs12,500 one-lot replay (existing weekly figures are proxies); unchanged frozen 2024 exam and prospective quote/depth checks. No new strategy is qualified by this round.
+- **Status/rollout:** research only; no engine/config/schema change or Production action. Both sealed data hashes verified. Failed offspring preserved; no retuning this freeze.
+
+## October 30 — O30 documentation: the Oct 29–30 research summary, the year-data testing method, a study template and the 2024 scorer (docs + research tooling, Dev; nothing changed in the system)
+
+- Docs and research tooling only; no runtime change. The F&O research method is `docs/FNO_YEAR_DATA_TESTING_METHOD.md`.
+
+## October 30 — O30m Kind-of-day router over a 134-strategy library, and the NIFTY 2024 exam freeze (research, Dev: freeze 2bcec04, routers 33947f2, 2024 freeze 2a57ede; the router fails the cross-year check, the trend pullback is the one robust family; nothing changed)
+
+- Research only; no runtime change. The live book stays `FNO_BOOK=UNION_ADX` until the owner decides.
+
+## October 30 — O30c Why the live book broke even on 2025, and case rules tested on both NIFTY years (research, Dev: freezes a98b1f5 + b0defde, results committed; one case nearly passes: TPB trades on the days the ADX gate is closed; nothing changed)
+
+- Research only; no runtime change. The live book stays `FNO_BOOK=UNION_ADX` until the owner decides.
+
+## October 30 — O30 NIFTY 2025 clean test of the 2026 strategies (research, Dev: freeze 7d9eeb3, results committed; the ADX gate and the sideways fades do not hold on 2025, TPB alone is positive in both years; nothing changed)
+
+- Research only; no runtime change. The 2026 strategies were replayed on NIFTY 2025. The live book stays `FNO_BOOK=UNION_ADX` until the owner decides.
+
 ## October 29 — O29i Sideways-day entries study (research only) (research, Dev: freeze d5b08c9, results committed; the failed-break fade helps on sideways days (in-sample), VWAP/RSI2 do not; nothing changed)
 
 - Research only; no runtime change. It tests whether failed-break, VWAP-reversion, prior-day-rejection and RSI(2) entries make money per lot on the days the trend gate sits out.
