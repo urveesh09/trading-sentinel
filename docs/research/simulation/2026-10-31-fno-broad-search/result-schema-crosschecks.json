@@ -1,0 +1,16 @@
+{
+  "screen": {
+    "original_sha256": "5d5a142b2e2aa3fd717499a42f2d632beb4f6007abfe8d3a60520f3c1c1d6edd",
+    "normalized_sha256": "a00c8ee4f6ab8ceec22325df1cd742e9af6af14f1c161482ab8ef6bb85157cf7",
+    "check_strings_converted": 48,
+    "verdicts_identical": true,
+    "other_metrics_identical": true
+  },
+  "selected": {
+    "original_sha256": "fca5a336dace940f44a51989c295b18ac438cb236b6247697ccecce8b163c2d6",
+    "normalized_sha256": "5c6ea9e683bf821c5e47739f542d6eae3be5341b93897ab2f12657a18491795c",
+    "check_strings_converted": 3,
+    "verdicts_identical": true,
+    "other_metrics_identical": true
+  }
+}

@@ -1,13 +1,15 @@
 {
   "schema": "o31i_ledger_reconciliation_v1",
   "counts": {
-    "records": 37755,
-    "closed_records": 37740,
-    "unresolved_original": 15
+    "records": 39085,
+    "closed_records": 39070,
+    "unresolved_original": 15,
+    "unresolved_corrected": 0
   },
-  "fresh_replay_files": 236,
+  "fresh_replay_files": 254,
   "max_net_error_rs": 4.999709000497177e-05,
   "financial_or_clock_errors": 0,
+  "all_nested_source_hashes_match": true,
   "corrected_control_parity": true,
   "ordinary_raw_record_parity": true,
   "reused_screen_files": 118,
@@ -1488,6 +1490,96 @@
     "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_b33da2913566ccea.json": {
       "sha256": "9703fc6a23dc6a24d5bdf839c62ecccc460f89afe568e373099284033a5d2c8f",
       "records": 198,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_de1df486e154f2fd.json": {
+      "sha256": "1be65863a36ba41c0eea275412a5122135dfe82d98ebc0bfdab75306f2225e02",
+      "records": 27,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_bb7a37a0bb22c12a.json": {
+      "sha256": "68a1b575389b857bebe9f51c67cc925e4f213fdc8ca8810dfb40fd56c020d0aa",
+      "records": 52,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_b592f56def695771.json": {
+      "sha256": "6114705dcd6e35ce8da40be746d54269871f40cf33764040d3c3bfec77fd658a",
+      "records": 50,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_38e1a7d5c1bc9c3a.json": {
+      "sha256": "c30972491295d4d45c9b9271aaf9f6f2eee7a0203814dbdabfa7e61ccc9aa52f",
+      "records": 75,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_f4635091f2eed957.json": {
+      "sha256": "ce2cd1c6d4f07dd9b898a3c39edce1b645eec0cf60ffc324de15c4de9d3ab5cf",
+      "records": 111,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_ec8697d5187694ce.json": {
+      "sha256": "af3058377a551e0fc0f9d632e05769fed130b0a26e4b159c5b655f04340a011e",
+      "records": 127,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2025-01-01_2025-12-31_de1df486e154f2fd.json": {
+      "sha256": "30ba5232aeb4b58e721006032e7e440b6b92dc07aaaa76ae432bc1972421faf5",
+      "records": 17,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2025-01-01_2025-12-31_bb7a37a0bb22c12a.json": {
+      "sha256": "dc4247dc2171ed5bc43d419dc9789bb1b836dc6b98f434c7b53aaa688bbd6736",
+      "records": 67,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2025-01-01_2025-12-31_b592f56def695771.json": {
+      "sha256": "47fcbc7b962efe805f2c76339844708d22f294f7aee6314ac2ca02f04620f1de",
+      "records": 43,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2025-01-01_2025-12-31_38e1a7d5c1bc9c3a.json": {
+      "sha256": "a7c754ee0c8beb303a3466d3df57f26d974286b63c4de63619e193b4f050340c",
+      "records": 93,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2025-01-01_2025-12-31_f4635091f2eed957.json": {
+      "sha256": "18c0f26489d70366f5853ef49122f9ccbc46d358f7871141b36000ccc97d1098",
+      "records": 105,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2025-01-01_2025-12-31_ec8697d5187694ce.json": {
+      "sha256": "334166bcca9136aeba3526a19ceb3a0cca06c5e7d809a170a71be6fec4698663",
+      "records": 153,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2026-01-01_2026-10-28_de1df486e154f2fd.json": {
+      "sha256": "eadb708889eb64f1cb563c4458802906dcf2bcdd269ade3673bca0d4ef57bfbf",
+      "records": 8,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2026-01-01_2026-10-28_bb7a37a0bb22c12a.json": {
+      "sha256": "1561ddec44091c81002b78ff506e7365050a0d85c6de7a22455fe6176dd4c2e8",
+      "records": 41,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2026-01-01_2026-10-28_b592f56def695771.json": {
+      "sha256": "9df38c14ff29f35d86e12965089b54883bff792bddb2edf002bd8564c1a457c8",
+      "records": 50,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2026-01-01_2026-10-28_38e1a7d5c1bc9c3a.json": {
+      "sha256": "fbc77b5d4f35a56a9da73d7a3eefd8d1828c96867819797335a0e3c3c43ebf2d",
+      "records": 81,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2026-01-01_2026-10-28_f4635091f2eed957.json": {
+      "sha256": "28ab91ae628fa1c3b263a3cbc00c9f97d642e3cdb04be770a0da9bbb600cb7ff",
+      "records": 103,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2026-01-01_2026-10-28_ec8697d5187694ce.json": {
+      "sha256": "7ba5e9f8426f15196a24481cf5722dd429031eb37914df55001e7147cd8ed1d8",
+      "records": 127,
       "unresolved": 0
     }
   }

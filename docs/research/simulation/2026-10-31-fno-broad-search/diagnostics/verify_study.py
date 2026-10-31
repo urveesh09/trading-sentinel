@@ -23,6 +23,12 @@ def inputs():
 
 
 def ledgers():
+    B.verify('screen')
+    for sub in ('calendar','expressions'):
+        f=load(HERE/sub/'freeze.json')
+        assert f['parent_freeze']==B.P.sha(HERE/'freeze.json')
+        assert all(B.P.sha(B.ROOT/p)==h for p,h in f['sources'].items())
+        if 'plan_sha256' in f:assert B.P.sha(HERE/sub/'PLAN.md')==f['plan_sha256']
     counts=Counter();max_error=0.;files={};special={'2024-03-02','2024-05-18'};calendar_changes={}
     for root in (HERE,HERE/'calendar'):
         for phase in ('screen','selected'):
@@ -67,7 +73,8 @@ def ledgers():
     reused=load(HERE/'calendar/_local/reuse-screen.json')
     assert len(reused)==118
     assert all(B.P.sha(B.ROOT/r['file'])==r['sha256'] and r['clock_override_active'] is False for r in reused.values())
-    out={'schema':'o31i_ledger_reconciliation_v1','counts':dict(counts),'fresh_replay_files':len(files),'max_net_error_rs':max_error,'financial_or_clock_errors':0,'corrected_control_parity':True,'ordinary_raw_record_parity':True,'reused_screen_files':len(reused),'reused_file_hashes_match':True,'calendar_changes':calendar_changes,
+    counts.setdefault('unresolved_original',0);counts.setdefault('unresolved_corrected',0)
+    out={'schema':'o31i_ledger_reconciliation_v1','counts':dict(counts),'fresh_replay_files':len(files),'max_net_error_rs':max_error,'financial_or_clock_errors':0,'all_nested_source_hashes_match':True,'corrected_control_parity':True,'ordinary_raw_record_parity':True,'reused_screen_files':len(reused),'reused_file_hashes_match':True,'calendar_changes':calendar_changes,
          'replay_file_sha256':{p.relative_to(B.ROOT).as_posix():v for p,v in files.items()}}
     B.P.write(HERE/'crosschecks.json',out)
     print('LEDGER_VERIFIED',dict(counts),'files',len(files),'max_error',max_error,flush=True)
