@@ -1,3 +1,12 @@
+## October 31 — O31i-E: same-forecast credit and neutral option expressions frozen (Dev research)
+
+- Independent nested research slice in `docs/research/simulation/2026-10-31-fno-broad-search/expressions/`, outside the parent's bound flat source set. It adds bullish-put/bearish-call credit spreads that preserve the signal forecast, and neutral ironfly/condor expressions. Parent48-genome entry rules/selection/source are unchanged; no expression prices scored yet.
+- Nine fixed expressions:50/100/150-point same-direction credits; neutral offsets0/50/100 with widths50/100; Rs200/400 extra per complete structure. Exact matched clocks, positive-volume same-minute legs, adverse modeled quotes, current four/eight-order fees; no invented missing quotes. Full-width/two-width own cash reserved; entry-only risk compatibility shown. No historical broker margin, spread lifecycle or portfolio-profit claim.
+- Exact binding: committed parent-evidence hashes must seal original control files and EVERY record's economics before pricing; source SHA, record index, contract, quantity, prices, clocks and stored risk fields retained. Changed economics fail even with the same key. Stored closing stops are not claimed to be immutable initial stops.
+- Five focused tests pass (cash/fee aggregation, missing/incoherent credit refusal, entry-risk causality, frozen matrix, exact-key/economic mutation rejection). Source/freeze committed before pricing; parent manifest and result reconciliation remain. Even a95%-coverage, all-year-positive diagnostic lead needs a real lifecycle, margins and fresh evidence; no qualified strategy or2023 exam change.
+- No application/config/migration/deployment/Production/order authority changes. Atlas regenerated as part of source handoff; raw evidence ignored. Rollback by stopping the research worker; keep all outcomes and owner's unrelated work.
+
+
 ## October 31 — O31i: owner-authorized broad F&O strategy/genome search frozen (Dev research)
 
 - **Scope:** owner allows as many strategy tests as useful, including genome search. This explicitly broadens the usual two-candidate rule. `docs/research/simulation/2026-10-31-fno-broad-search/PLAN.md` fixes48 genomes over12 entry families, eight random controls, three main/TPB controls:177 screen replays over2024/25/Jan–Oct28 2026. No application or Production edits.
