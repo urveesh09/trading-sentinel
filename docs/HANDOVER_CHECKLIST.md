@@ -1,3 +1,21 @@
+## October 31 (evening) — O31e: the main book's weak spots, a new test, and a fixed NIFTY 2023 exam (research, Dev; nothing changed in the system)
+
+- [x] Diagnosis; 15 changes, 15 specialists and 20 random books frozen, run and scored; NIFTY 2023 exam fixed.
+- [ ] NIFTY 2023: owner's login, probe, download, seal, score once (`freeze-2023.json`).
+- **Owner (Oct 31):** "situations where the strategy didn't perform the best. You identify those situations and in those situations, what better strategy we can put in that you search you implement a new test".
+- **Files:** `docs/FNO_WEAK_SPOTS_2026-10-31.md` (the answer), `docs/research/fno/2026-10-31-weak-spots/` (`sides_w.py`, `run_diag.py`, `diagnose_w.py`, `lab_w.py`, `analyze_w.py`, `report_w.py`, tests, `freeze.json`, `freeze-2023.json`, results, README).
+- **Commits:** freeze `e6a7c78`; results and write-up in the commit recording this section. Pushed to Dev. **Not deployed; Production stays at release `c97cb8c`.** No runtime file changed in O31e.
+- **Verification:** 201 replays, `check_book` 0 problems; parity with the main book asserted; 8 study tests pass (every new entry and reading causal); the write-up's figures checked against the stored results by script.
+- **Results (found by looking, three seen years):**
+  - Weak spots inside the main book, one lot after Rs 200: calls -7,662, puts +50,833, each year the same sign; EFF -13,956 on 71 of 120 trades; entries behind VWAP -13,525; big-gap days -5,590.
+  - Sit-out days are 87% of sessions. Calls -1,24,270; entries in the gap's direction -1,47,646; afternoon entries negative every year. 0 of 116 stored strategies earn every year; puts alone 3.
+  - Strict rule: no change and no specialist passes. Exact with the cost in the path: main +16,371 / +5,710 / +30,540; main + TPB puts on sit-out days +15,337 / +47,892 / +77,233 (better_balance, t 1.73); puts only from ADX 25 +24,293 / +31,699 / +68,432 (better every year, t 1.34); main without EFF +12,558 / +27,328 / +26,136, worst fall 3.7%, about 17 trades a year. TPB buying puts alone: +13,199 / +27,831 / +23,559, t 1.89 against the required 2.
+  - The last-half-hour effect loses most: -1,18,237 per lot. CPR, first-hour range, Supertrend, gap fade and range expansion do not pass.
+  - Random entries show almost no put-call gap (-84,856 against -81,952 on sit-out days). Never equate these replays with a profitable strategy.
+- **Decisions:** no engine change from O31e; the main book stays as the owner asked. A one-sided book's risk in a long calm rise is unmeasured, so the NIFTY 2023 exam is fixed in `freeze-2023.json` before any 2023 data exists.
+- **Config and migration:** none.
+- **Remaining:** owner's word to merge and deploy O31d (PR open); owner's ICICI login, then a 2023 probe and download by the download agent (not probed; needs `download2023.py` and a mirror path like `lab_f.py`'s); score the 2023 exam once; Kite renewal; Rs 15,000 setting.
+
 ## October 31 (evening) — O31d: the main F&O book is now four strategies + skip rule + ADX 30 (Dev; not deployed)
 
 - [x] Engine change, tests, full suite, parity on all three years.

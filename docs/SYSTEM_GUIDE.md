@@ -1,3 +1,7 @@
+## October 31 (evening) — O31e: the main book's weak spots, a new test, and a fixed NIFTY 2023 exam (research, Dev; nothing changed in the system)
+
+- Research only; no runtime change. Findings: `docs/FNO_WEAK_SPOTS_2026-10-31.md`.
+
 ## October 31 (evening) — O31d: the main F&O book is now four strategies + skip rule + ADX 30 (Dev; not deployed)
 
 - **Runtime change (Dev):** `UNION_ADX` trades on yesterday's NIFTY ADX(14) >= `FNO_BOOK_ADX_MIN` (default now 30) and passes over the first signal of a tick when `fno_book.entry_stretch` >= `FNO_BOOK_MAX_STRETCH` (default 0.5; 0 turns it off): the last closed 5-minute close beyond today's VWAP, in the trade's direction, as a share of the first 30 minutes' range. Rejection reason `stretched:<strategy>`. Lots, exits and brakes unchanged. Not deployed until the owner's word.

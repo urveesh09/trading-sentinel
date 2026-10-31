@@ -1,5 +1,7 @@
 # The final F&O strategy: what the evidence supports
 
+> **Later the same day (O31d, O31e):** the owner overruled this page's paper-first call, so the candidate in section 5 is now the main strategy in Dev (`eb4930d`), not yet deployed. The search for its weak spots and the fixed NIFTY 2023 exam are in [FNO_WEAK_SPOTS_2026-10-31.md](FNO_WEAK_SPOTS_2026-10-31.md).
+
 **Studies O31b and O31c, October 31, 2026.** Research only. Nothing in the trading system changed, and Production was not touched.
 
 Written for the owner first and for any agent second. It follows [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md). Numbers and code: [`research/fno/2026-10-31-final-book/`](research/fno/2026-10-31-final-book/). How to run tests like these: [FNO_YEAR_DATA_TESTING_METHOD.md](FNO_YEAR_DATA_TESTING_METHOD.md).
