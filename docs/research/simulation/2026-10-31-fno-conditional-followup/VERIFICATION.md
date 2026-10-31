@@ -1,8 +1,8 @@
 # O31h verification
 
 Pre-replay source/diagnosis/config/data freeze: **a45eadd**, pushed first.
-Results/handoff identity is recorded in Git history and the final document
-handoff. All work is Dev research; no application, config, migration, order
+Results: **fe94d2f**. The documentation handoff identity is recorded in Git
+history. All work is Dev research; no application, config, migration, order
 authority, capital activation or Production changes.
 
 Use `python-engine/winvenv/Scripts/python.exe` (Python3.11.9).
