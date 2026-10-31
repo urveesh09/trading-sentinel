@@ -1,3 +1,10 @@
+## October 31 — O31i-C: special-session calendar repair frozen before corrected scoring (Dev research)
+
+- Original broad2024 screen has15 unresolved arms on March2/May18 special split sessions. Preserved as unavailable for ranking; financial rankings not inspected to choose this repair. Official NSE notices set final close12:30. Separate nested `calendar/PLAN.md` fixes entry cutoff12:00/hard flat12:25 on ONLY those dates; no invented break/exit quotes, ordinary dates unchanged.
+- Nine focused tests pass: exact dates/cutoff boundaries, normal-call parity, nested/exception restoration and stricter existing clocks. Rerun ALL59 2024 books; reuse2025/26 screens only with inactive-date proof and file hashes. Parent rules/genes/sources unchanged; separate caches/results/selection preserve original failures. Commit corrected selection before child/shared-cash runs.
+- No application/config/migration/Production/order change or2023 exam change. Atlas regeneration and result reconciliation follow; all original in-sample/statistical limitations remain. Rollback: stop research worker, keep both versions and unrelated work.
+
+
 ## October 31 — O31i-E: same-forecast credit and neutral option expressions frozen (Dev research)
 
 - Independent nested research slice in `docs/research/simulation/2026-10-31-fno-broad-search/expressions/`, outside the parent's bound flat source set. It adds bullish-put/bearish-call credit spreads that preserve the signal forecast, and neutral ironfly/condor expressions. Parent48-genome entry rules/selection/source are unchanged; no expression prices scored yet.
