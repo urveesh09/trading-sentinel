@@ -1,3 +1,12 @@
+## October 31 — O31g: complementary F&O entry study frozen (Dev research only)
+
+- **Problem:** find a causal entry for days the ADX-30 main book sits out, without repeating failed retest/fade/squeeze searches. TWO hypotheses: intraday DMI trend emergence and confirmed shock recovery, mirrored in both directions. All 2024–26 data is already seen.
+- **Files/contracts:** `docs/research/simulation/2026-10-31-fno-complements/` (`PLAN.md`, `SOURCES.md`, `configuration.json`, `lab_gap.py`, `analyze_gap.py`, `test_gap.py`, `freeze.json`). Daily inputs are saved privately; datasets, runtime/research sources, settings, signal memos and reused random controls are fingerprinted before scoring. Existing 2023 exam is unchanged and unopened.
+- **Acceptance:** baseline parity +16,371/+5,710/+30,540; causal clocks and financial reconciliation; standalone positive every year after Rs200/lot/trade, sample/half-year/best-day/random/weekly-t checks; combined net better every year with paired t>=2 and fall no more than main+1 percentage point. Every failure retained. Detailed fixed rule in PLAN.md/freeze.json.
+- **Verification so far:** 13 focused mechanics/causality tests pass. Next: 24 exact/raw replays plus 60 previously recorded random controls; reconcile and document results. Raw one-lot diagnostic brakes are disabled, combined books retain shared cash and all main limits. Do not add independent-arm profits.
+- **Rollout/rollback:** frozen offline research only; stop workers to roll back. No application source, config, migration, real-money activation, Production edit or deployment. A research pass would permit prospective paper evaluation only. Source identity is recorded immediately after the freeze commit.
+
+
 ## October 31 (evening) — O31e: the main book's weak spots, a new test, and a fixed NIFTY 2023 exam (research, Dev; nothing changed in the system)
 
 - Research only; no runtime change. Findings: `docs/FNO_WEAK_SPOTS_2026-10-31.md`.
