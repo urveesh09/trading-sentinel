@@ -1,3 +1,9 @@
+## October 31 — O31i-E immutable parent economics sealed before expression pricing
+
+- All six reproduced raw MAIN/TPB controls match the prior independently verified study trade for trade: 222 closed records, zero unresolved. `expressions/parent-evidence.json` seals each source file and every complete trade record, including clocks/quantity/prices/stored risk fields. Commit before any spread/neutral expression is priced; mismatches refuse scoring.
+- Focused regression complete:127 passed (78 research/new-calendar checks plus49 current book/replay/weak-spot checks). Original screen2024/25 complete;2026 and corrected calendar run still in progress. No ranking/acceptance threshold changes or2023 exam contamination. Production health200; no application/Production edits or deployment.
+
+
 ## October 31 — O31i-C freeze receipt consistency
 
 - Corrected harness source/tests are2cf17d9; commit the matching regenerated freeze receipt before scoring. The launch guard correctly refused an unstaged receipt, so zero corrected replays ran. Source/hash/committed-receipt checks remain mandatory; no research rule or application behavior change.
