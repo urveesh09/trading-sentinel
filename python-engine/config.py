@@ -1059,8 +1059,12 @@ class Settings(BaseSettings):
     # [O29h 2026-10-29] UNION_ADX (the default since the owner's Oct 29 go-ahead): the same four strategies with their
     # own exits, all of them only on a session whose previous day's NIFTY daily ADX(14) is at least
     # FNO_BOOK_ADX_MIN - a trending market; otherwise the book sits the day out (O29g). UNION_DRIVE stays available.
+    # [O31d 2026-10-31] The owner's call after the 2024 exam: the most consistent book found becomes the main one. Same
+    # four strategies, exits, lots and brakes, on a stricter trend (ADX 30), passing over an entry already stretched
+    # beyond VWAP (fno_book.entry_stretch). Back to the Oct 29 book: FNO_BOOK_ADX_MIN=25, FNO_BOOK_MAX_STRETCH=0.
     FNO_BOOK:                  str   = "UNION_ADX"
-    FNO_BOOK_ADX_MIN:          float = 25.0
+    FNO_BOOK_ADX_MIN:          float = 30.0
+    FNO_BOOK_MAX_STRETCH:      float = 0.5        # share of the first 30 minutes' range beyond VWAP; 0 = no check
 
     # --- universe ----------------------------------------------------------
     FNO_UNDERLYING:            str   = "NIFTY"    # primary trading underlying (capped-loss book, shadow)

@@ -1,3 +1,18 @@
+## October 31 (evening) — O31d: the main F&O book is now four strategies + skip rule + ADX 30 (Dev; not deployed)
+
+- [x] Engine change, tests, full suite, parity on all three years.
+- [ ] Owner's word to merge and deploy (PR to `evolve/smart-strategies`, then the release runbook).
+- **Owner (Oct 31):** "whatever you think we should improve you go ahead and do it. The lot limit the strategies, everything and the best strategy that we have come up with that has been consistent. At least you put that as a main strategy". This overrules O31c's frozen call (real money stays on the old book, both on paper): it is the owner's decision, recorded as such.
+- **Problem:** the live book (`UNION_ADX`, ADX 25, no entry-location check) is the weakest setup tested over three years.
+- **Files and contracts:** `python-engine/config.py` (`FNO_BOOK_ADX_MIN` default 30, new `FNO_BOOK_MAX_STRETCH` default 0.5), `python-engine/fno_book.py` (`entry_stretch`; `book_signal` passes over a stretched first signal under gate ADX, reason `stretched:<strategy>`), `python-engine/tests/test_fno_book.py`, `docs/research/fno/2026-10-31-final-book/parity_engine.py`.
+- **Behaviour:** only the ADX book changes. A stretched first signal means no entry on that tick, as in the research; a later bar may still enter. Unknown inputs (no six opening bars, no range, no earlier session) do not block. SENSEX paper uses the same rule on its own prices with NIFTY's volume, as its other signals do; the research tested NIFTY only. Lots (2, 3 once proven), exits, brakes, and the real-money test's mirroring are unchanged. `fno_live_test` needs no change: it follows the paper book.
+- **Acceptance checks:** `tests/test_fno_book.py` 32 passed. Full engine suite in two runs: 3,210 + 2,691 passed, 1 + 3 skipped, 0 failed. Parity on the sealed data: 92,268 bar readings of `entry_stretch` against the research's `stretch_at`, 0 different; replays of the candidate through the engine's function identical to the stored replays in all three years (25, 50 and 33 trades).
+- **Status:** committed and pushed to Dev. **Not merged, not deployed; Production stays at release `c97cb8c`.** Merge and deploy need the owner's explicit word.
+- **Config and migration:** no migration. New setting with a default. Rollback by env: `FNO_BOOK_ADX_MIN=25`, `FNO_BOOK_MAX_STRETCH=0`.
+- **Effect to expect:** far fewer trades (about 38 a year in replays). If ADX is under 30 on a morning, the 09:30 owner alert says the book sits out, and the real-money test sits out with it, so the Nov 2-6 test may gather few or no fills. The evidence stays replay evidence; never equate it with a profitable strategy.
+- **The old book as a comparison:** the monthly forward replay frozen in `docs/FNO_FINAL_STRATEGY_2026-10-31.md` section 6 keeps scoring `SKIP|none` and `BASE`. `fno_signals` records `stretched:` and `adx_low:` rejections, and `fno_regime_gate` records each morning's ADX. Those research freezes bind the engine files, so run them from a worktree at `cb1e9b2`; the strategy code they replay is research code and did not change.
+- **Remaining:** owner's go-ahead to merge and deploy; Kite renewal; Rs 15,000 setting; O31e (the search for the situations this book does worst in).
+
 ## October 31 (afternoon) — O31b/O31c: the final book at today's lot limits (research, Dev; nothing changed in the system)
 
 - [x] Lot limit tested; 46 single changes; plateau check; final call recorded; forward check frozen.

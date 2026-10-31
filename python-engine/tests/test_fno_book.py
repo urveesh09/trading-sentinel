@@ -476,10 +476,94 @@ async def test_the_gate_is_read_once_a_day_kept_and_told_once(db_path, monkeypat
     fno_book._ADX_TODAY.clear()
 
 
+def _stretch_bars(today=None, prior=True) -> pd.DataFrame:
+    """Six opening 5-minute bars from 09:15 ranging 100 to 120 (range 20), then a climb: an earlier session, too."""
+    rows = []
+    if prior:
+        rows.append((pd.Timestamp("2026-07-09 15:25"), 100.0, 101.0, 99.0, 100.0, 1000.0))
+    opening = [(100, 104, 100, 103), (103, 108, 102, 106), (106, 112, 105, 110),
+               (110, 120, 109, 115), (115, 116, 108, 110), (110, 112, 106, 108)]
+    for i, (o, h, l, c) in enumerate(opening):
+        rows.append((pd.Timestamp("2026-07-10 09:15") + pd.Timedelta(minutes=5 * i), o, h, l, c, 1000.0))
+    for i, c in enumerate(today or [109.0, 112.0, 118.0, 125.0]):
+        rows.append((pd.Timestamp("2026-07-10 09:45") + pd.Timedelta(minutes=5 * i), c - 1, c + 1, c - 2, c, 1000.0))
+    return pd.DataFrame(rows, columns=["datetime", "open", "high", "low", "close", "volume"]).set_index("datetime")
+
+
+def _expected_stretch(bars, bar, side):
+    """An independent reading: running volume-weighted typical price, the close against it, over the opening range."""
+    today = bars[bars.index.date == TODAY]
+    upto = today[today.index <= pd.Timestamp(bar)]
+    num = sum((r.high + r.low + r.close) / 3 * r.volume for r in upto.itertuples())
+    vwap = num / sum(r.volume for r in upto.itertuples())
+    return round(side * (upto.close.iloc[-1] - vwap) / 20.0, 4)
+
+
+def test_the_stretch_is_the_researchs_reading_from_closed_bars_only():
+    bars = _stretch_bars()
+    assert fno_book.entry_stretch(bars, at(10, 0), FnoDirection.LONG) == pytest.approx(
+        _expected_stretch(bars, "2026-07-10 09:55", 1))                                 # 10:00 is still open
+    assert fno_book.entry_stretch(bars, at(10, 0), FnoDirection.SHORT) == pytest.approx(
+        -fno_book.entry_stretch(bars, at(10, 0), FnoDirection.LONG))
+    changed = bars.copy()
+    changed.loc[changed.index >= pd.Timestamp("2026-07-10 10:00"), ["high", "low", "close", "volume"]] *= 3
+    assert fno_book.entry_stretch(changed, at(10, 0), FnoDirection.LONG) == fno_book.entry_stretch(
+        bars, at(10, 0), FnoDirection.LONG), "a later bar cannot change it"
+
+
+def test_the_stretch_does_not_apply_without_its_inputs():
+    bars = _stretch_bars()
+    assert fno_book.entry_stretch(None, at(10, 0), FnoDirection.LONG) is None
+    assert fno_book.entry_stretch(bars.iloc[0:0], at(10, 0), FnoDirection.LONG) is None
+    assert fno_book.entry_stretch(_stretch_bars(prior=False), at(10, 0), FnoDirection.LONG) is None      # no earlier session
+    missing = bars.drop(pd.Timestamp("2026-07-10 09:25"))
+    assert fno_book.entry_stretch(missing, at(10, 0), FnoDirection.LONG) is None                         # an opening bar gone
+    flat = bars.copy()
+    flat.loc[:, ["high", "low"]] = 100.0
+    assert fno_book.entry_stretch(flat, at(10, 0), FnoDirection.LONG) is None                            # no range
+    no_volume = bars.copy()
+    no_volume["volume"] = 0.0
+    today = no_volume[no_volume.index.date == TODAY]
+    typical = ((today.high + today.low + today.close) / 3).iloc[:9].mean()
+    assert fno_book.entry_stretch(no_volume, at(10, 0), FnoDirection.LONG) == pytest.approx(
+        round((today.close.iloc[8] - typical) / 20.0, 4))                                                # as the research
+
+
+def test_a_stretched_first_signal_takes_no_entry_at_all(components, monkeypatch):
+    monkeypatch.setattr(settings, "FNO_BOOK_MAX_STRETCH", 0.5)
+    components.update(OR20=None, EFF=FnoDirection.SHORT, TPB=FnoDirection.LONG)
+    bars = _stretch_bars()
+    now = at(10, 5)
+    assert fno_book.entry_stretch(bars, now, FnoDirection.LONG) >= 0.5
+    shipped = _sig(FnoDirection.LONG)
+    sig = fno_book.book_signal(bars, "R", now, shipped=shipped, side="HIGH", gate="ADX", adx_side="HIGH")
+    assert sig.direction is None and sig.strategy == "" and sig.reject_reason == "stretched:SHIPPED"
+    assert sig.bar_ts == shipped.bar_ts and shipped.direction == FnoDirection.LONG    # the shared evaluation is untouched
+    # below the limit, or against the move, it enters
+    assert fno_book.book_signal(bars, "R", now, shipped=_sig(FnoDirection.SHORT), side="HIGH", gate="ADX",
+                                adx_side="HIGH").strategy == "SHIPPED"
+    monkeypatch.setattr(settings, "FNO_BOOK_MAX_STRETCH", 99.0)
+    assert fno_book.book_signal(bars, "R", now, shipped=_sig(FnoDirection.LONG), side="HIGH", gate="ADX",
+                                adx_side="HIGH").strategy == "SHIPPED"
+
+
+def test_the_stretch_check_can_be_turned_off_and_leaves_the_drive_book_alone(components, monkeypatch):
+    components.update(OR20=None, EFF=None, TPB=None)
+    bars = _stretch_bars()
+    now = at(10, 5)
+    monkeypatch.setattr(settings, "FNO_BOOK_MAX_STRETCH", 0.0)
+    assert fno_book.book_signal(bars, "R", now, shipped=_sig(FnoDirection.LONG), side="HIGH", gate="ADX",
+                                adx_side="HIGH").strategy == "SHIPPED"
+    monkeypatch.setattr(settings, "FNO_BOOK_MAX_STRETCH", 0.5)
+    assert fno_book.book_signal(bars, "R", now, shipped=_sig(FnoDirection.LONG), side="HIGH").strategy == "SHIPPED"
+
+
 def test_the_trend_gate_book_is_the_default_and_drive_or_shipped_stay_available(monkeypatch):
     from config import Settings
     assert Settings.model_fields["FNO_BOOK"].default == "UNION_ADX"
-    assert Settings.model_fields["FNO_BOOK_ADX_MIN"].default == 25.0
+    assert Settings.model_fields["FNO_BOOK_ADX_MIN"].default == 30.0
+    assert Settings.model_fields["FNO_BOOK_MAX_STRETCH"].default == 0.5
+    assert Settings.model_fields["FNO_MAX_LOTS"].default == 2 and Settings.model_fields["FNO_MAX_LOTS_PROVEN"].default == 3
     for name in ("UNION_ADX", "UNION_DRIVE"):
         monkeypatch.setattr(settings, "FNO_BOOK", name)
         assert fno_book.enabled_for("NIFTY") and fno_book.enabled_for("SENSEX")
@@ -508,8 +592,9 @@ def adx_live(live, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_a_trending_market_trades_the_book_even_on_a_two_way_morning(adx_live, db_path):
+async def test_a_trending_market_trades_the_book_even_on_a_two_way_morning(adx_live, db_path, monkeypatch):
     from fno_orchestrator import format_fno_telegram, run_fno_tick
+    monkeypatch.setattr(settings, "FNO_BOOK_MAX_STRETCH", 0.0)     # this bar is far past its narrow morning: see below
     make, told = adx_live
     kite = await make(FLAT, _daily("TREND"))          # the drive would have kept the breakouts out
     summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
@@ -517,6 +602,18 @@ async def test_a_trending_market_trades_the_book_even_on_a_two_way_morning(adx_l
     assert "strategy=SHIPPED" in format_fno_telegram(summary)
     assert [p["strategy"] for p in await _paper(db_path)] == ["SHIPPED"]
     assert told == ["fno_book_adx_gate"]
+
+
+@pytest.mark.asyncio
+async def test_a_stretched_entry_on_a_trending_market_is_passed_over_and_logged(adx_live, db_path, monkeypatch):
+    from fno_orchestrator import run_fno_tick
+    monkeypatch.setattr(settings, "FNO_BOOK_MAX_STRETCH", 0.5)
+    make, told = adx_live
+    kite = await make(FLAT, _daily("TREND"))
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    assert summary["entries"] == [] and await _paper(db_path) == []
+    assert "stretched:SHIPPED" in await _reasons(db_path)
+    assert told == ["fno_book_adx_gate"]                # the gate was open; it was the entry that was passed over
 
 
 @pytest.mark.asyncio

@@ -49,6 +49,15 @@ go-ahead (Oct 29): "you are allowed to implement all of this ... Merge the code 
 evidence is in-sample on Jan 1 - Oct 28 2026 (TPB at ADX >= 20 and all four at ADX >= 25 were the most consistent
 books per lot); NIFTY 2025, never used to find it, is the clean test that follows. The opening drive is still read
 and kept in ``fno_opening_drive``.
+
+[O31d 2026-10-31] The main book, the owner's call after the one-time NIFTY 2024 exam ("the best strategy that we have
+come up with that has been consistent ... you put that as a main strategy"). UNION_ADX now trades at ADX >= 30 and
+passes over an entry whose last closed 5-minute close already stands at least FNO_BOOK_MAX_STRETCH (0.5) of the first
+30 minutes' range beyond VWAP, in the trade's direction; a later bar may still enter at a better place. It reads the
+price at entry, never the book's own results. Lots, exits and brakes are unchanged. Replays, with an assumed extra cost
+(docs/FNO_FINAL_STRATEGY_2026-10-31.md): +16,371 / +5,710 / +30,540 on Rs 2.5 lakh in 2024 / 2025 / 2026, worst fall
+7.5%. All three years are seen and it failed a plateau test fixed in advance, narrowly: this is the owner's decision,
+not a proof. ``FNO_BOOK_ADX_MIN=25`` and ``FNO_BOOK_MAX_STRETCH=0`` restore the Oct 29 book.
 """
 from __future__ import annotations
 
@@ -465,6 +474,36 @@ def efficiency_break(frame: pd.DataFrame, regime: str, now: datetime) -> MomSign
     return out
 
 
+# ---- [O31d] the stretched entry ---------------------------------------------------------------------------------------
+
+def entry_stretch(bars: Optional[pd.DataFrame], now: datetime, direction: FnoDirection) -> Optional[float]:
+    """How far the last closed 5-minute close stands beyond today's VWAP, in the trade's direction, as a share of the
+    first 30 minutes' range, exactly the research's lab_s.stretch_at. None without the six opening bars from 09:15, a
+    range, or an earlier session in the frame: the check then does not apply."""
+    if bars is None or bars.empty:
+        return None
+    naive = now.replace(tzinfo=None)
+    frame = bars[~bars.index.duplicated(keep="last")].sort_index()
+    today = frame[frame.index.date == naive.date()]
+    if today.empty or not (frame.index.date < naive.date()).any():
+        return None
+    minutes = today.index.hour * 60 + today.index.minute
+    opening = today[minutes < 585]
+    if len(opening) != 6 or minutes[0] != 555:
+        return None
+    high, low = float(opening["high"].max()), float(opening["low"].min())
+    if high <= low:
+        return None
+    position = int(today.index.searchsorted(pd.Timestamp(naive) - pd.Timedelta(minutes=5), side="right"))
+    if position == 0:
+        return None
+    typical = (today["high"] + today["low"] + today["close"]) / 3
+    volume = today["volume"].astype(float)
+    vwap = ((typical * volume).cumsum() / volume.cumsum().replace(0, float("nan"))).fillna(typical.expanding().mean())
+    side = 1 if direction == FnoDirection.LONG else -1
+    return round(side * (float(today["close"].iloc[position - 1]) - float(vwap.iloc[position - 1])) / (high - low), 4)
+
+
 # ---- the book -------------------------------------------------------------------------------------------------------
 
 def _variants() -> tuple:
@@ -476,9 +515,10 @@ def book_signal(bars: pd.DataFrame, regime: str, now: datetime, *, shipped: MomS
                 side: Optional[str], gate: str = "DRIVE", adx_side: Optional[str] = None) -> MomSignal:
     """The first strategy (SHIPPED, OR20, EFF, TPB) with a signal on this bar; a copy carrying ``strategy``.
     gate DRIVE (UNION_DRIVE): the breakouts only on a HIGH opening drive ``side``. gate ADX (UNION_ADX): all four
-    only when ``adx_side`` is HIGH. ``shipped`` is the tick's shipped evaluation (never changed: it is shared).
-    Without a signal: the shipped evaluation's fields, and why (``drive_low:`` / ``drive_unknown:`` /
-    ``adx_low:`` / ``adx_unknown:`` when the gate kept strategies off)."""
+    only when ``adx_side`` is HIGH, and [O31d] the first signal is passed over when its entry is stretched: the tick
+    takes no entry at all, as in the research (``stretched:<strategy>``). ``shipped`` is the tick's shipped evaluation
+    (never changed: it is shared). Without a signal: the shipped evaluation's fields, and why (``drive_low:`` /
+    ``drive_unknown:`` / ``adx_low:`` / ``adx_unknown:`` when the gate kept strategies off)."""
     from fno_shadow import _variant_signal
     or20, tpb = _variants()
     for name in STRATEGIES:
@@ -495,6 +535,11 @@ def book_signal(bars: pd.DataFrame, regime: str, now: datetime, *, shipped: MomS
         else:
             sig = _variant_signal(bars, regime, now, tpb)
         if sig.direction is not None:
+            limit = float(settings.FNO_BOOK_MAX_STRETCH)
+            stretch = entry_stretch(bars, now, sig.direction) if gate == "ADX" and limit > 0 else None
+            if stretch is not None and stretch >= limit:
+                logger.info("fno_book_entry_stretched", strategy=name, direction=sig.direction.value, stretch=stretch)
+                return replace(sig, direction=None, strategy="", reject_reason=f"stretched:{name}")
             return replace(sig, strategy=name)
     reason = shipped.reject_reason or "no_signal"
     if gate == "ADX" and adx_side != "HIGH":
