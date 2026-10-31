@@ -27,9 +27,9 @@ preserved, including their three system-document slices and root ignore file.
 - `60c27eb`: corrected screen, exact three-proposal selection and reconciled
   evidence pushed BEFORE child replays. GAP_REPAIR g0 LONG, EMA_CROSS g1 SHORT,
   CLOCK_MOMO g3 SHORT. Selection uses2024+2025 only, no altered thresholds.
-- Final result/report commit is recorded in the following documentation
-  handoff and Git history. Source freezes remain unchanged. The result-schema
-  correction is post-run reporting only; original files remain intact.
+- Final results/report: **0f139ba**, pushed. This following documentation
+  handoff records that identity; its own SHA is in Git history. Source freezes
+  remain unchanged. Result-schema correction is reporting only; originals remain intact.
 
 ## Completed execution
 
