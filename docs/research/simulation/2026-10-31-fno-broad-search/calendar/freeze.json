@@ -3,8 +3,8 @@
  "parent_freeze": "a7c981bc1bc552e68142f72b6673d68c50dabfd41d67eb1f957bd33af39955f5",
  "sources": {
   "docs/research/simulation/2026-10-31-fno-broad-search/calendar/analyze_calendar.py": "75bef28219c9e19fd8edfb4e4b2a7f64d84701b687a5ec32edeeca1a223d1f7f",
-  "docs/research/simulation/2026-10-31-fno-broad-search/calendar/calendar_lab.py": "a96dd7a6ccab7458cd2a87981ddbba4225a3cc8495bf2c68d0f23693fc8d00e2",
-  "docs/research/simulation/2026-10-31-fno-broad-search/calendar/test_calendar.py": "a6edd506b1cafba214c80b83d090ad2ad2058fe837bb19baa7d10b8a94402b3e"
+  "docs/research/simulation/2026-10-31-fno-broad-search/calendar/calendar_lab.py": "6c581bc53ed7ef1f68a3ab51f940cb7ff9576837088940e59fdaf9e32eb16c89",
+  "docs/research/simulation/2026-10-31-fno-broad-search/calendar/test_calendar.py": "d0df29d616bd583beb2ed2421affd2ccf52e13a36f7d920397b8842f9fa74736"
  },
  "plan_sha256": "07856c3a8239776b30b25462ef1bb7ee7c9a6e051d0830feb426c7bb33e76a10",
  "dates": [

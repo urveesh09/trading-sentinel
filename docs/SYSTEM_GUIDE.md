@@ -1,3 +1,8 @@
+## October 31 — O31i-C freeze receipt consistency
+
+- Corrected harness source/tests are2cf17d9; commit the matching regenerated freeze receipt before scoring. The launch guard correctly refused an unstaged receipt, so zero corrected replays ran. Source/hash/committed-receipt checks remain mandatory; no research rule or application behavior change.
+
+
 ## October 31 — O31i-C harness construction correction (Dev research)
 
 - The first corrected-clock launch stopped BEFORE any replay: its cache tag assumed a book name field that this adapter does not have. No prices/results scored. Replaced it with an explicit calendar-contract cache tag, preserving every strategy field. Original freeze/failed launch retained in history/private receipts.
