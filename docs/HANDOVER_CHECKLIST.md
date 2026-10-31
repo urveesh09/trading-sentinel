@@ -1,3 +1,12 @@
+## October 31 — O31i screen reconciled; direction proposals frozen before child replays (Dev research)
+
+- Canonical screen is `fno-broad-search/calendar/screen-results.json` with separate corrected selection. All59 corrected2024 books resolve;2025/26 reuse118 original files with exact hashes/inactive-calendar proof. Original177-replay screen retained, including15 unresolved special-session arms; never ranked as valid. Controls match prior trade for trade and ordinary RAW records are unchanged by the repair.
+- No two-sided genome is positive in every year or passes the frozen bar. Unchanged2024+2025 selector proposes exactly GAP_REPAIR g0 LONG, EMA_CROSS g1 SHORT, CLOCK_MOMO g3 SHORT; commit their list BEFORE18 actual direction/shared-cash replays. No iterative retuning, qualification,2023 exam change or Production action.
+- Reconciliation so far:236 fresh replays,37,740 closed records plus15 original unresolved; max net difference<Rs0.00005, no clock/financial/memo errors in corrected evidence. All699 cached sessions freshly reconstructed from sealed raw candles and identical.127 focused tests pass.
+- Fifteen bounded option structures at two cost levels:222 immutable parent records,2,664 original rows independently rebound/repriced,3,996 same-direction credit/neutral rows; zero economics mismatches. No structure clears declared coverage/risk/cost/improvement bar; raw evidence remains ignored. These are matched expressions, not lifecycle/portfolio/margin proof.
+- Failure partitions are descriptive only: main56 calls −7,662 after extraRs200, +3,538 before it; EFF71 trades −13,956/+244; main TPB20 +31,070 after it. Daily trend agreement is not an all-year remedy. New public diagnostic/verifier code performs no parameter selection. Application/config/migrations/order authority unchanged; Production health200. Final child results/report remain.
+
+
 ## October 31 — O31i-E immutable parent economics sealed before expression pricing
 
 - All six reproduced raw MAIN/TPB controls match the prior independently verified study trade for trade: 222 closed records, zero unresolved. `expressions/parent-evidence.json` seals each source file and every complete trade record, including clocks/quantity/prices/stored risk fields. Commit before any spread/neutral expression is priced; mismatches refuse scoring.

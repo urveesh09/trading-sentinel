@@ -1,0 +1,1494 @@
+{
+  "schema": "o31i_ledger_reconciliation_v1",
+  "counts": {
+    "records": 37755,
+    "closed_records": 37740,
+    "unresolved_original": 15
+  },
+  "fresh_replay_files": 236,
+  "max_net_error_rs": 4.999709000497177e-05,
+  "financial_or_clock_errors": 0,
+  "corrected_control_parity": true,
+  "ordinary_raw_record_parity": true,
+  "reused_screen_files": 118,
+  "reused_file_hashes_match": true,
+  "calendar_changes": {
+    "EX|MAIN": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|MAIN": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|E|tpb_puts": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|EMA_CROSS|g0": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|EMA_CROSS|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|EMA_CROSS|g2": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|EMA_CROSS|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|KAMA_TURN|g0": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|KAMA_TURN|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|KAMA_TURN|g2": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|KAMA_TURN|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|DONCHIAN|g0": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|DONCHIAN|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|DONCHIAN|g2": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|DONCHIAN|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|BOLL_REENTRY|g0": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|BOLL_REENTRY|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|BOLL_REENTRY|g2": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|BOLL_REENTRY|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|CCI_REENTRY|g0": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|CCI_REENTRY|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|CCI_REENTRY|g2": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|CCI_REENTRY|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|RSI_DIVERGENCE|g0": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|RSI_DIVERGENCE|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|RSI_DIVERGENCE|g2": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|RSI_DIVERGENCE|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|REGRESSION_REVERT|g0": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|REGRESSION_REVERT|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|REGRESSION_REVERT|g2": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|REGRESSION_REVERT|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|PDL_RECLAIM|g0": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|PDL_RECLAIM|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|PDL_RECLAIM|g2": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|PDL_RECLAIM|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|GAP_REPAIR|g0": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|GAP_REPAIR|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|GAP_REPAIR|g2": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|GAP_REPAIR|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|RANGE_RELEASE|g0": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|RANGE_RELEASE|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|RANGE_RELEASE|g2": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|RANGE_RELEASE|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|OBV_BREAK|g0": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|OBV_BREAK|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|OBV_BREAK|g2": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|OBV_BREAK|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|CLOCK_MOMO|g0": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|CLOCK_MOMO|g1": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "RAW|CLOCK_MOMO|g2": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "RAW|CLOCK_MOMO|g3": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "NULL|00": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "NULL|01": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "NULL|02": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "NULL|03": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "NULL|04": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    },
+    "NULL|05": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "NULL|06": {
+      "original_unresolved": 1,
+      "corrected_unresolved": 0,
+      "records_changed": true
+    },
+    "NULL|07": {
+      "original_unresolved": 0,
+      "corrected_unresolved": 0,
+      "records_changed": false
+    }
+  },
+  "replay_file_sha256": {
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_6dda66fe703c0aaf.json": {
+      "sha256": "d401c3ef6f1bc48e3320d729c266ae696b307c4b37ba03c95768d2e6ca0e6b10",
+      "records": 25,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_f6acba609dc1c4f0.json": {
+      "sha256": "c9916223082db37ac84e341f47a4baf557151e775518c51c4e1ebd03e2e1cd42",
+      "records": 28,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_b54e7d89f68d9d37.json": {
+      "sha256": "168323cdb8c988a653a508481c8cbc8220797041f02e36703d304fc7039c3939",
+      "records": 19,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_d09b8daad10ce1d2.json": {
+      "sha256": "dcb2fb23eef4d9641395e457c972c255f6ae60caddfcf9762ecb8d6a10c193dd",
+      "records": 206,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_761f9a430aea5bab.json": {
+      "sha256": "d248a168f05096a93c6d40b9a16b3cf83ba4745ff6cde23475b5452916be429d",
+      "records": 94,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_25aa713d9857df6c.json": {
+      "sha256": "c8063a992fda5d451231c445cf0ac4488a5adf93f8c15c885fe794adc761babf",
+      "records": 220,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_2edc58e29e3a64d1.json": {
+      "sha256": "099a16cc014ffcd7dd8f609a955f722a0bbc913a693fa81ae55709510a9aa321",
+      "records": 97,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_064f9b36c3238145.json": {
+      "sha256": "25c26b6280f9b043fb35697ddd7aa885e3cd9a961cfdcc874ac478642f9f70db",
+      "records": 309,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_ff1ed82678f0a0fa.json": {
+      "sha256": "b9640bc14875cb5f0ec7b2edac6c77b76d0b0d1feb4ea7c66d46897c9bbbab43",
+      "records": 247,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_dc4396bacdcc4124.json": {
+      "sha256": "e566a7ce26a7e88a8bfb3c7f06e824c2ce8cebaff57f7a4f6ce979a6b14ebcd7",
+      "records": 341,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_13bba8252f7630ec.json": {
+      "sha256": "d11a7827915e67f23d4efa4e01517590b49af8e6a9721e0c094809dc23e42e85",
+      "records": 262,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_70940346263f22e9.json": {
+      "sha256": "9df5f5a11be769dad4a32ac893a63a5ad40754838ccfa0168429a1539acb5b6c",
+      "records": 285,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_114a60ad017ab0c3.json": {
+      "sha256": "4a2ea77047ed9046dcff455e1e8098241ab491e37cc0d3e180a6e90d67e1ffd1",
+      "records": 199,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_acfc8c120ed116d0.json": {
+      "sha256": "27cf31bc9f82bfd34e7b647d7081016838549502ae4b03c8faf9d371f1696399",
+      "records": 304,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_71981d7db773f979.json": {
+      "sha256": "de60c5ec74ccc1cc28c5f25327a3b8bad6d191ecb55e04feb13a2ff18d230bb5",
+      "records": 202,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_300102cca710df85.json": {
+      "sha256": "483d103e80d7be7acce514c7833909fc2a316ecd50b9875dd95629bb44d3ab1a",
+      "records": 223,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_8a231920fd83e4ec.json": {
+      "sha256": "c5680265ada8607fc9ba7c0849f9acd08f3ef2677296581c91f9124f641a453f",
+      "records": 194,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_25cd3cc3a131ae4b.json": {
+      "sha256": "7499b0f1b76e89b251b302bfa1aa72e96b86f0f40f6af0300119d25325eceee5",
+      "records": 247,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_4ca5baaa41e0b983.json": {
+      "sha256": "53bccc94c0d5aa98e1fc649827349ff2af14d055181b5d9661f20c8d38e0d1f4",
+      "records": 198,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_33738602a1c6f046.json": {
+      "sha256": "62631d340b5c04315c399a9d418729069021ece5c90ce46abbdd65e1b1d3b03f",
+      "records": 308,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_cb738d92724e691c.json": {
+      "sha256": "87cb890a9891b5a25cebea78b37d1ad8af5968cfc9fcbbaa54c4bf07519ec6b7",
+      "records": 261,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_35fe3f42b621735c.json": {
+      "sha256": "9de0364f47b6963024a3dcdc170e25f47b6255e6144e2362ae4fbfc8a075cb5e",
+      "records": 334,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_58dfc6fe692daec0.json": {
+      "sha256": "962b84cb9ccad5de1055c8ad36fef1fc935b8acef9a3f9817119003aedcffb72",
+      "records": 269,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_3c9e7c1957a3b896.json": {
+      "sha256": "22f5132fdbec75684550b238902cbae13f1ffe0bd4575847af0f5b0e8ff88228",
+      "records": 133,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_b5148fadac59ce2a.json": {
+      "sha256": "5284e5ee22fd874d64e2f34434adc193a44631cd5aab4ce659862b395f0813fd",
+      "records": 90,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_1c070ca4d2453b2e.json": {
+      "sha256": "3cc898c572e4744c619847bf78c414dcf0dc99677869358640965ca1df74f571",
+      "records": 140,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_af4fa6da471be90c.json": {
+      "sha256": "0fe23e22bbf8a4b7bd80ce424d3f7ca8760775ac52e2ea3ab92c2e81a705d067",
+      "records": 89,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_dec08aef9106dda8.json": {
+      "sha256": "30432033ed1cb08ee439f83f73349bc8eae9d18069ab8361a292757d464e122c",
+      "records": 129,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_5060dfe810f98bb6.json": {
+      "sha256": "649bca410ab149c7ccf8a1c4ea11c13bf93e59481255869210e2cc148942e36f",
+      "records": 112,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_bc1b75ab84c58b9c.json": {
+      "sha256": "e6538b527c09ff5593336abd358eaffb83e7bf76ff534e8640c4a077c96c9d1e",
+      "records": 136,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_53b122668a641de1.json": {
+      "sha256": "28207e796933e08c70b85fb023fc1a417aa13bd3b97a8c705dee4ea6108e692b",
+      "records": 115,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_13688878170fdf4a.json": {
+      "sha256": "352b51100e153c2c9687de0d55a2e69c2b9ec07c53f1149e02c157c03e56f782",
+      "records": 53,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_82be9690e5f36cbe.json": {
+      "sha256": "c4d3b5bed41a12f8da1da2fae09fcc44a8aea9fdfbac1b3a9b94a68c44eade36",
+      "records": 42,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_3413d36a2e8e182b.json": {
+      "sha256": "b19c78371549b3d857c767e7aa30a795d7f05e9a5cd3fb20fd2bf0ee91e02b74",
+      "records": 57,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_2c5799318c349638.json": {
+      "sha256": "a8e40b18a4204421072e69a7d4e85485ad705ce95af78bd742322f4fcefc1531",
+      "records": 43,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_7c4ffeb1c292a69a.json": {
+      "sha256": "8c1ccbfcbc9128a4aa8a4a8e0a83738baadfd13f6674ac628be04b1eedff7170",
+      "records": 49,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_46c7afe1e4421c0e.json": {
+      "sha256": "9acd82b1a6b2e582f13cd4efd27f6353d1321564e79331550fc87bb0bde61bca",
+      "records": 36,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_f203d030b0960f65.json": {
+      "sha256": "1c5eaf310189dcef8b1ac0faf0276665faeec5034feb3adc6c14c1e1c094daae",
+      "records": 56,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_30314945f0f17300.json": {
+      "sha256": "2896209a6cef12c1b2e60bbb9568cedc9dda212251f60d0031b0ccdbb02f6047",
+      "records": 37,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_060a3f9bb00f88ed.json": {
+      "sha256": "68bfd10d05754670d6fec897d74d63910ca89de6b903e2cd473be24b927d3dab",
+      "records": 178,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_6d43adbd91df7052.json": {
+      "sha256": "4d0248dd4d98bb9e07b7e781a36980c9ab0a937ea4c19eb2f2922fc18137bdd0",
+      "records": 87,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_01e14acbd49fdb6b.json": {
+      "sha256": "1b44ca3235227d63a673f9f49ddfd96f69610d82dbf7d0d788d67c28baf19c12",
+      "records": 203,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_2e1bf94b9a5544f8.json": {
+      "sha256": "2a44233da653db6ceed440e0d72b804652e3b25ce24443d0a241c5b205e42d19",
+      "records": 89,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_a8ad9668e30cea85.json": {
+      "sha256": "ce3d7e43fc81e2360b39dcf9ea57710dd73f751f6cf1a60d1609f04a3041af43",
+      "records": 259,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_ea3a2fcb49ecb1e9.json": {
+      "sha256": "fa374786d78f36881466a236f4cde0e1d04cd38c861806a60d465a860da131ca",
+      "records": 170,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_bd7cbc15490869cb.json": {
+      "sha256": "048e85a06514ccb5cae980e0efb8f9d37fe78f0d5483a8c94fca50a16a88bbc1",
+      "records": 284,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_c47a5bfe522a3584.json": {
+      "sha256": "52e7b1e6f3681ec7602dd6da9aef27f6ca66e7eba1bf3d25b50262698278d147",
+      "records": 172,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_c7fcde5e4edd24a9.json": {
+      "sha256": "12bdeecc5b6efeae5343a22a7f354602cbb24c3cb00478bb3252048304dcbbcc",
+      "records": 260,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_85ca478865d4fce7.json": {
+      "sha256": "ec88379a6d186d5d671c68f0c217016e7904443e5e0d5a7b809827bf571427a2",
+      "records": 237,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_a80cf04a3103ff68.json": {
+      "sha256": "16f79313cc52320a9bfc2c1c4aee01cccf90884440b365db7f3dab71ec4abb6b",
+      "records": 285,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_39a55a37cc1af0ed.json": {
+      "sha256": "ba38ab518ef086bafc8a7e1ffc0c56d04b189a39f6d8b783b99a0ed32e33c793",
+      "records": 243,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_4861b3fe858706b3.json": {
+      "sha256": "d222c02536e766b74a74dd42883f93690971897aebcca4ed552feb6b6455f5df",
+      "records": 208,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_72e97669ddcbbc0a.json": {
+      "sha256": "2596dea9429452f4edd9b5f1ea176f97c5f619d8d968c37e7d48b7b2a167a353",
+      "records": 222,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_6bc642e5fea419c6.json": {
+      "sha256": "aabe35d9b5f475a2eb401ba829ffce78889b86b237c6c4a1653b965e77d0fbe1",
+      "records": 191,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_e64f22166557b6e0.json": {
+      "sha256": "93a5ba8ffd81660f9400ec931974fde20d45d96d41eb1da5efc4c11e816e0473",
+      "records": 204,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_e62e370203c33ba9.json": {
+      "sha256": "0e98aebf51e0e533880d1612f79043d40048c5dceae42740bbcc3fb98dcd9899",
+      "records": 199,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_70a961a83b86cf83.json": {
+      "sha256": "459df4f5649e490cbd549d27c8a968e5159ee70ef990014dc5effac077ec876e",
+      "records": 209,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_a4da79a0c649aea7.json": {
+      "sha256": "606eeaae5470426c47118f131b08e9bb38254a58e39b7620014290213e62b16e",
+      "records": 200,
+      "unresolved": 1
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2024-01-01_2024-12-31_846be32fae122ab7.json": {
+      "sha256": "d4cc9748e0ddb1feb7717e4e103f33e73d984b4a5d18420315001067486e0ebe",
+      "records": 198,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_6dda66fe703c0aaf.json": {
+      "sha256": "f5f832804a1b116b5bfce468a62cbf3bcbbe8f3f9050598d3804c73ebcaa0a9d",
+      "records": 50,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_f6acba609dc1c4f0.json": {
+      "sha256": "f4106da0789dbfab5774f16d9c57d7e43c2072a81229c9cec19996d21df7afa7",
+      "records": 56,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_b54e7d89f68d9d37.json": {
+      "sha256": "5b27cf85ca024890cbffcadf6ee0bb27f20bf8536412277876dc7fc5772d09b0",
+      "records": 54,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_d09b8daad10ce1d2.json": {
+      "sha256": "850f83d4d2898d2722b1a718766faa4fa232892930f86bb40aab518785390338",
+      "records": 189,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_761f9a430aea5bab.json": {
+      "sha256": "65c938135930d6b4291f537567bf09dfaf9c8ebc9716bd8af0bf953ea8737b6f",
+      "records": 81,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_25aa713d9857df6c.json": {
+      "sha256": "40e7b8b6793579d32d197c63beccef12ae7ec8595e61cf8e199c50644b02fc52",
+      "records": 206,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_2edc58e29e3a64d1.json": {
+      "sha256": "d1d2b238b3e0e4a35c45dc37b55ac90997e5dcbe653e0d3f2486ce39006421a3",
+      "records": 82,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_064f9b36c3238145.json": {
+      "sha256": "55b6ae93065e87829ef0a9f8a59437c29937caffd590f10d3f10a857a97dec63",
+      "records": 289,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_ff1ed82678f0a0fa.json": {
+      "sha256": "b9bb372daf8e9a4e432a1807c2144dc2e1a6c40e3cb837b31997cd57b17a0c4c",
+      "records": 252,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_dc4396bacdcc4124.json": {
+      "sha256": "fc00286a26cfd776bb54ccf2306c0e44142c90ff629cca33559c34f77d263078",
+      "records": 309,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_13bba8252f7630ec.json": {
+      "sha256": "ceb45448d3f01ff50e6e923a1cd9c2c1396f48527af5e46eeea272fa5e06e7f1",
+      "records": 264,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_70940346263f22e9.json": {
+      "sha256": "4efb64865f57c5cad0cc5c8f28ea1828b4f2a540efc992c17998621de7ee1c2b",
+      "records": 253,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_114a60ad017ab0c3.json": {
+      "sha256": "dacd75fce7d7c9f0e1fec8447556821c5821efe5cda4dc32d3c0c78c48997cfe",
+      "records": 188,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_acfc8c120ed116d0.json": {
+      "sha256": "08018826c128ab50ed667354be490b30e2bccd72510324f6d34fcd401c332305",
+      "records": 275,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_71981d7db773f979.json": {
+      "sha256": "5471e541723aa2cf8c6897485c5cfb3b919a2daf1b22e7ddf41608a280949caa",
+      "records": 192,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_300102cca710df85.json": {
+      "sha256": "7dbc38b8717067530bee4c0eadda4fe9ac1e5352cc303bfe6524e5ab5268853b",
+      "records": 191,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_8a231920fd83e4ec.json": {
+      "sha256": "e19267e1231f9bfd636c18b8dea34916245591c3320191361e4d8360ac343321",
+      "records": 172,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_25cd3cc3a131ae4b.json": {
+      "sha256": "542879b24d90211b88aeb37071bc9e78fef7681b62a58ad07b4f86a184647b85",
+      "records": 208,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_4ca5baaa41e0b983.json": {
+      "sha256": "694d5a7c4b837ea5c451b9023bafcbba8aec3aa8e244aac6eb6b0eab11541a7a",
+      "records": 172,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_33738602a1c6f046.json": {
+      "sha256": "f9a962ebc50f006409624e349e62fda6748d6b3fc9f53b8744e44c3961ba32b1",
+      "records": 278,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_cb738d92724e691c.json": {
+      "sha256": "5117f7fc5d7fcaba0df86cf27bf913e67821c337665ef29cf9a5912d3fc07049",
+      "records": 236,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_35fe3f42b621735c.json": {
+      "sha256": "a553fb8385f0d6da4b225d40be2db7a884092b0245ccd98dde4cbbdb60fb8aac",
+      "records": 307,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_58dfc6fe692daec0.json": {
+      "sha256": "2e74ae20b91616162c1fa0aa3391863c908d8b944ac632467fb6d9ff24601524",
+      "records": 241,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_3c9e7c1957a3b896.json": {
+      "sha256": "e2401513cc5e23d21ea81b4373a8caf28f4b2c27a9973b2461903d8d3f63a811",
+      "records": 143,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_b5148fadac59ce2a.json": {
+      "sha256": "de8cae44ec315bd3a7612ad77c0075c7d2bf0e099d113fa50da41433e5598de3",
+      "records": 70,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_1c070ca4d2453b2e.json": {
+      "sha256": "3e986ae72a700bdc458a50bde4a7896486439c7ef4bba9e4bba719a8db9676fa",
+      "records": 154,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_af4fa6da471be90c.json": {
+      "sha256": "1fdfa0abb38dd7c7eef0e73fae621f75a23be9f526c406c6bc17baf59579322e",
+      "records": 71,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_dec08aef9106dda8.json": {
+      "sha256": "c4f068365281fa207b0d3dd442475c554df05e944cfe611da4d24abc8201f3bb",
+      "records": 117,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_5060dfe810f98bb6.json": {
+      "sha256": "375d5e1ec7c61ce8ca17463109b1261cc479946b931331d8809605e3c1651e6e",
+      "records": 95,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_bc1b75ab84c58b9c.json": {
+      "sha256": "efe7ca67e2bdbeb2ed231e8b0a41763e7d59bd0cf63d2041bdba3ef4c1bb55c3",
+      "records": 123,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_53b122668a641de1.json": {
+      "sha256": "4617a938dc1cf39dfd5ea6c19bfe2a84035c1a77e9efe550f1c6efc1d06c63e2",
+      "records": 95,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_13688878170fdf4a.json": {
+      "sha256": "26961e4f75ae4c06d91a15f82ce5f1607291d711fc732b830cd64f0f1aede986",
+      "records": 48,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_82be9690e5f36cbe.json": {
+      "sha256": "b47945469ac57d8b3242d9f6407d872981416c681ee522f3682ff1f73114def6",
+      "records": 37,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_3413d36a2e8e182b.json": {
+      "sha256": "edfd307452d02ea24d9c3526c4b3a6b6555015a2f2675a78cd9a7370c7412cbf",
+      "records": 51,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_2c5799318c349638.json": {
+      "sha256": "8dc0a650afacf7ea142bfcd0f677f1993d6b3563de485a54419f947feffcce29",
+      "records": 38,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_7c4ffeb1c292a69a.json": {
+      "sha256": "53c4075b5e502cecdbbd65d3fca55dfd6c8d99d62714e3c56c375d6583d53eff",
+      "records": 37,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_46c7afe1e4421c0e.json": {
+      "sha256": "fee3e114c8a64f190349d61275300eaf56b49663cf99d9205e737edc73091218",
+      "records": 29,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_f203d030b0960f65.json": {
+      "sha256": "d681c143048b12db55d664ec12185893a9202b214fe0c2cf896e81e08a08a255",
+      "records": 40,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_30314945f0f17300.json": {
+      "sha256": "1e3aac8da99e1dedf5c480df287d0538a73a5a1c54f341d849fff19375043eb3",
+      "records": 29,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_060a3f9bb00f88ed.json": {
+      "sha256": "48e23115e3805d95355bf42c958d0692a5ac0b4e96db18f186216a723325d8b7",
+      "records": 178,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_6d43adbd91df7052.json": {
+      "sha256": "6ebe4fac9d5a60b1baba1c98bc87d1d29064ca96cfb04a9bbbfef017d22934f0",
+      "records": 70,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_01e14acbd49fdb6b.json": {
+      "sha256": "cf7f9263f260bacb4a867cc915385ac8c5a5fce474b4c32f11c6ca3226255816",
+      "records": 187,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_2e1bf94b9a5544f8.json": {
+      "sha256": "328e1dc90d0691681f541ed096ff1b32ceb55a633ecd406890c17387386ae664",
+      "records": 71,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_a8ad9668e30cea85.json": {
+      "sha256": "d5eb03612c8fdd7d719be79909b2cf5d16e5ef63f4363a61ca456ed905f29016",
+      "records": 234,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_ea3a2fcb49ecb1e9.json": {
+      "sha256": "338e752f789037506f139c6fb867284bef28526bbfa15a55d97df1466fd31b4c",
+      "records": 162,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_bd7cbc15490869cb.json": {
+      "sha256": "796d7a1bfdfeae03e41b105da0d27b0c7ac7e6c0fa05e70626a2f1579454bcff",
+      "records": 250,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_c47a5bfe522a3584.json": {
+      "sha256": "aae11d51a0536e3b0668ff16cc4b94e5fa1582f14e8451dd9474d3d46beeb286",
+      "records": 164,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_c7fcde5e4edd24a9.json": {
+      "sha256": "5659b4174aeb0686a38cf055d6a5122ea2c783e25043b151b49f65a0e2dae808",
+      "records": 227,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_85ca478865d4fce7.json": {
+      "sha256": "b709ce945b7a7ed5ad3bf3110f01375e824a2f0b1ada7b5837f913b99a8b40c2",
+      "records": 212,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_a80cf04a3103ff68.json": {
+      "sha256": "b8de06e3fc40681fed377e493d9fda388b6c3e91150797fc1d63caf0f15e3463",
+      "records": 240,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_39a55a37cc1af0ed.json": {
+      "sha256": "53c6824f3edcbbcaee9332b9408161bcc52da89bdf0ec68cd1a0e035ecf0f3eb",
+      "records": 213,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_4861b3fe858706b3.json": {
+      "sha256": "9089c9f7a7e11f20b633ab41428689787396628f4f353e349868b6ffdc9012d4",
+      "records": 188,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_72e97669ddcbbc0a.json": {
+      "sha256": "263e1fee62906cefb704b8696cc2f14d8aadb483e8f7632642c6ce4faa46a231",
+      "records": 181,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_6bc642e5fea419c6.json": {
+      "sha256": "d128d0f7b62a910755fc895a0719dc9986f6271351140db33097d0b362a02eca",
+      "records": 168,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_e64f22166557b6e0.json": {
+      "sha256": "753afce55bfc3c97287809f7160ffd55766e9346dbedf699f769e507926e63b1",
+      "records": 183,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_e62e370203c33ba9.json": {
+      "sha256": "bc2f36d4239c700fa1166b7cc85ff325fe543cfd73bcc328e27ce837289510cf",
+      "records": 185,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_70a961a83b86cf83.json": {
+      "sha256": "5f45ffe0e4f48687b8e7663e38e71ec0dcbc709b312d58ed74b82b891012d43a",
+      "records": 183,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_a4da79a0c649aea7.json": {
+      "sha256": "402d417e53ee0e37efa7e5ba33cc791323db51fc433fd5a78a6edb843620a2c1",
+      "records": 190,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2025-01-01_2025-12-31_846be32fae122ab7.json": {
+      "sha256": "1d2761c33486f89f03554e3b3aab5f29808dc5ca0943bca2b0aa40c055fd6829",
+      "records": 195,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_6dda66fe703c0aaf.json": {
+      "sha256": "2371a9a62ea6aff3d4b8613965811eafb7470cafd241aae52b6b7248a7f04347",
+      "records": 33,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_f6acba609dc1c4f0.json": {
+      "sha256": "c96da2bf21dda2ac4ff6227a5553c40d7534a87197173e5c2f6d83d1cf541305",
+      "records": 36,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_b54e7d89f68d9d37.json": {
+      "sha256": "f053d465193f9afa3168321b785ba998cc8131bbd628527b9aea3585c47eb01f",
+      "records": 29,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_d09b8daad10ce1d2.json": {
+      "sha256": "ddd98a37ac18e13a481ad80e6006646dbdacefd5536eb0ee0a8df8fa5cbc31d8",
+      "records": 174,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_761f9a430aea5bab.json": {
+      "sha256": "b9c70aa2b41cf5309108bb4d3145f73de91411f78014bf4162651004db499624",
+      "records": 100,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_25aa713d9857df6c.json": {
+      "sha256": "4ca90e68c1d1f070f122f9416afb8a6abca4ce1e180cd12e417bf00552f31a7a",
+      "records": 189,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_2edc58e29e3a64d1.json": {
+      "sha256": "f2713cf9a0a966f4867c47a84111eef39139db825c3befcde923c03064a52479",
+      "records": 100,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_064f9b36c3238145.json": {
+      "sha256": "d1f50643bb51d525ece18dd2cd2e2807fbbd15049a34a320ff2d483e39eaf5a9",
+      "records": 224,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_ff1ed82678f0a0fa.json": {
+      "sha256": "8316b703d0303a4eca3a6702636c3973f6eaa21a60dd8f304b971e2b14712e7f",
+      "records": 212,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_dc4396bacdcc4124.json": {
+      "sha256": "620a819f851583c5f9a2914d1b4fc8f76c78b54cd5f8ccd349c8888e08d5aa1d",
+      "records": 243,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_13bba8252f7630ec.json": {
+      "sha256": "abd76c2be51738f3e8ada9aae8753a734433b39c602f689332f138a817150d96",
+      "records": 217,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_70940346263f22e9.json": {
+      "sha256": "7ca51ee09dde9ed3be97e4bdc35cba3481c8c10e9438bcfd840c190eb9d69112",
+      "records": 206,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_114a60ad017ab0c3.json": {
+      "sha256": "ae7f5bb1ea7c5c6c502732c431f5057ece2c326f71fdea8629f000a205d85b2a",
+      "records": 161,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_acfc8c120ed116d0.json": {
+      "sha256": "fddf91d92a69f7bf53168347081013471d600e4cce84221bb6fea5febc50213b",
+      "records": 225,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_71981d7db773f979.json": {
+      "sha256": "fdb5612e896ef1f8c22e01df4a15a7b68aa1ea67e8337199fe1e4f322a608a2e",
+      "records": 162,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_300102cca710df85.json": {
+      "sha256": "03d951c8376a84503a0ab3d1627182c830880d7597a32b99b72ab00cd5585d1e",
+      "records": 173,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_8a231920fd83e4ec.json": {
+      "sha256": "1dbbe9f557e30c990ca686d5d3d65a35faf848c12ed4b6e571714ec24d61fe88",
+      "records": 153,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_25cd3cc3a131ae4b.json": {
+      "sha256": "60c65c2bc2ba2392bc8154a51325c74491ea251e6885d65b7dd167a9be459fe4",
+      "records": 184,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_4ca5baaa41e0b983.json": {
+      "sha256": "dee8a24452ab9f236572b96fe0824df01fd411029422039c7b53d475819bb0f2",
+      "records": 156,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_33738602a1c6f046.json": {
+      "sha256": "19ec86095a1721a2a88cb75f101fec485a507ec2b5476546c86a05e22686039d",
+      "records": 219,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_cb738d92724e691c.json": {
+      "sha256": "5ac769da99cf61ace796819ec4ba1a1ebd44d7d685b6e73e36813a5b9f4c194b",
+      "records": 197,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_35fe3f42b621735c.json": {
+      "sha256": "973337bc7c4f7ecb1ee615786931bda93f7b99ede5d1cd4e11ebf9b4e2ae7b3c",
+      "records": 248,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_58dfc6fe692daec0.json": {
+      "sha256": "f36f16a2bd7c18c617a5599f53b4033e2885407be28436319844c86ff10ef7c0",
+      "records": 207,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_3c9e7c1957a3b896.json": {
+      "sha256": "b38aa4ddeb7f8bfd087049c11c5f03c80df8b04ff2515ca5fa644083d5221d32",
+      "records": 120,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_b5148fadac59ce2a.json": {
+      "sha256": "6638a9b61f8c777e16c55d7175888aa5e144d5e18bf53d0c1aa3371de32449df",
+      "records": 64,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_1c070ca4d2453b2e.json": {
+      "sha256": "204c9a6612b02db6728c85b734fc798fcfbab195efa6a2aff0e9f8149b337960",
+      "records": 127,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_af4fa6da471be90c.json": {
+      "sha256": "d96e057f930b66223c78899560c3d8b8bd4f2ae72334783e1fa7e1d554590ff0",
+      "records": 67,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_dec08aef9106dda8.json": {
+      "sha256": "7eed9aee0c026508479f55e276f8524f70ddeacfc1f9364c4e6cb911cb30af8e",
+      "records": 103,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_5060dfe810f98bb6.json": {
+      "sha256": "9f4d05d4f03fd0b47000622c2a4d4ab0061416000bec89be25c07fbc4abf713f",
+      "records": 69,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_bc1b75ab84c58b9c.json": {
+      "sha256": "73e8dd84e98eed67aec3247d2aee3e957547316193dc70c8b83b44b2d40a2575",
+      "records": 113,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_53b122668a641de1.json": {
+      "sha256": "e4f6d3f065880485d94dc67496c09456464b8fb2a0f84205bc94c29c00ee1f1a",
+      "records": 71,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_13688878170fdf4a.json": {
+      "sha256": "ee68bcc60e0f9a77c9d6db92edf73904c318ee2eca70f3e236217e87315af457",
+      "records": 34,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_82be9690e5f36cbe.json": {
+      "sha256": "dbdb5d170eabd09fc96fdc2b61ca5cfedf6dab363a42d3d77d9c97eb6ffaa988",
+      "records": 31,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_3413d36a2e8e182b.json": {
+      "sha256": "277cab2a99330a718328c2a0b1df92aaaf3db5dc6b60340159a8c8c238d5a7e2",
+      "records": 38,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_2c5799318c349638.json": {
+      "sha256": "cb33e51eebf81679433aa480a6c09b752aeb03c931e0f8867d085c6905304ff4",
+      "records": 32,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_7c4ffeb1c292a69a.json": {
+      "sha256": "4a6500120334bd404e9067cca8a17d02ea81b4a95cd99f526e26c6f31d327247",
+      "records": 22,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_46c7afe1e4421c0e.json": {
+      "sha256": "44e4beac1874838bbd5e50f68124cd5158f842076058fb62d62ae04372c2dac4",
+      "records": 20,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_f203d030b0960f65.json": {
+      "sha256": "259c3810ac9b7650141d200aaaf3475bf2d29bc4006d3d27d83264f86feaebf3",
+      "records": 23,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_30314945f0f17300.json": {
+      "sha256": "1af6a74573f955eecbaa71fc10c7c1835f12da831dec90b19a25b1bcc8301ad1",
+      "records": 21,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_060a3f9bb00f88ed.json": {
+      "sha256": "d8411af9330efcbaee60e3a07488f4cb614918fd85b2ae9e11810c8360d32d2f",
+      "records": 133,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_6d43adbd91df7052.json": {
+      "sha256": "048c63621940845690e6819cd30b48c096200aad3df5959c5c0e61d20cb98fa3",
+      "records": 45,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_01e14acbd49fdb6b.json": {
+      "sha256": "1f59247b5cdab344316cf5a97f13e15c603442640ac28c378b42797bfc3778c2",
+      "records": 142,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_2e1bf94b9a5544f8.json": {
+      "sha256": "187686aa12ba3207ed73ae6d2e752d9822d319cc16df4c6cc358973f6d53f9c2",
+      "records": 47,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_a8ad9668e30cea85.json": {
+      "sha256": "f512412d4893634ca52e1e0ef50d94ad00665a5b4d4ef3d9ff5939fab41fcff1",
+      "records": 186,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_ea3a2fcb49ecb1e9.json": {
+      "sha256": "7b4467dec4bd9be1b53e13160dc2cabf9045fee600a67167c0ed8e5b2c52b523",
+      "records": 128,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_bd7cbc15490869cb.json": {
+      "sha256": "4369778ed7fcc66e546823cc6c4ef4ae5731f4d640020c6b996e8dcbda8cbdd6",
+      "records": 206,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_c47a5bfe522a3584.json": {
+      "sha256": "698c066a672767704e07421795bb7981a23fbc1e9d435871b85b755551416ed8",
+      "records": 131,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_c7fcde5e4edd24a9.json": {
+      "sha256": "1b0a92bb424fc92853fb687542311ef50b42af85c93de5dfcd48137ec2e5ffed",
+      "records": 197,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_85ca478865d4fce7.json": {
+      "sha256": "a6eaede87863b7cceef981d8f68049c30e3ac18d84f4b98262031a86ae7f8bbb",
+      "records": 178,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_a80cf04a3103ff68.json": {
+      "sha256": "14fac36401d4c75ceb6c3da46767ce106db198fe4b6c26674ae08140f9a66160",
+      "records": 212,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_39a55a37cc1af0ed.json": {
+      "sha256": "661986ab602dd0390dcb30114f37c38f22a2adef08b0f6d89e1f28fb965efcd9",
+      "records": 185,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_4861b3fe858706b3.json": {
+      "sha256": "5981fab11109ab6aaaf274ae38ccaf60fb0390519d7cc3cb21f27999c9aaf45d",
+      "records": 137,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_72e97669ddcbbc0a.json": {
+      "sha256": "478156900f604b559096276f51c1dea92d65b83ee115fbcc54443786612f54c6",
+      "records": 150,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_6bc642e5fea419c6.json": {
+      "sha256": "e631bf9929722412245c897ea51505db4a1e13a64b57f5092ce139dc94d49ce6",
+      "records": 155,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_e64f22166557b6e0.json": {
+      "sha256": "0fa6275958b61b9d3b45a0bd7bf44a342336fe5c119f15cef0a02eadde56caaa",
+      "records": 146,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_e62e370203c33ba9.json": {
+      "sha256": "18dbc5af5e65199776d0da42c9007393eef7c03a4a1ecadb9f6526635b8e7a1e",
+      "records": 154,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_70a961a83b86cf83.json": {
+      "sha256": "7b5f5496b687a6cc11b3e0dd50d17c7ee62f02eca8387d0524bd2680ddd82b20",
+      "records": 147,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_a4da79a0c649aea7.json": {
+      "sha256": "0c9497e728aeca3061f4e966f97c2f77c8592b61620878a799bd16d73eff9de6",
+      "records": 160,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/_local/evals/year_2026-01-01_2026-10-28_846be32fae122ab7.json": {
+      "sha256": "f41f9897c4913cb4e87f349792d1b18acfce93b1e6bcd183c64d527197b04a24",
+      "records": 151,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_2aefdc33e6dc263a.json": {
+      "sha256": "da4a2ec00be7d01229d3a8b8b6741c53d400c721be0ab89124444e5b6b9c372a",
+      "records": 25,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_9e52b14c7472a52a.json": {
+      "sha256": "4bf5181d124386751e27dcb08974f4336ea318d9f8cdcd6dad36061756d9a778",
+      "records": 28,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_a4685f7507d4a5bc.json": {
+      "sha256": "f8159ced0b4bb4bb1b50e0437aa6d45a141a40681bca7de84288c88d2259280d",
+      "records": 19,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_c1a0ad532e545a73.json": {
+      "sha256": "34347c5a38f1ec63328a929d4823d0429337aec5ee83297ae2cf58879bbc97a2",
+      "records": 206,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_7cd4de0e9895b3f0.json": {
+      "sha256": "88a4cb1d224e8a5aa30c9351c185232198af482f5c5263bb9e0ea1e32f1ff03a",
+      "records": 94,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_80a50d55cb180f88.json": {
+      "sha256": "c74b328f7fa1493fab03a777584d03d930b26d800d7a28e73f62a8ae41869222",
+      "records": 220,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_83005c179eb14403.json": {
+      "sha256": "5e87f1272019d5cf9f1fce4c60596ce05d70765331fba30e71ed040c5b9bb81e",
+      "records": 97,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_b0bb61d0ad558026.json": {
+      "sha256": "9e36e78a956964e6fc7cb6ae087102f451096b50a9af1899a037b5b6a15d06ce",
+      "records": 309,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_c4e018b6ac9909f4.json": {
+      "sha256": "40a72241d524cb05c2885f150063a1d6edac2f5026fb620af49fa6cc5a985836",
+      "records": 247,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_88262229a253be3b.json": {
+      "sha256": "5a9b05cb892eb95cb09af29868e1ac8357806ced13ac6b07034cf1580a5264bf",
+      "records": 341,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_77ae1ade815eed14.json": {
+      "sha256": "0715013d18d186b8107cec738f5aabc978df01e2f15468897bcacdc147c759d4",
+      "records": 262,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_025ad72c9c38f8a0.json": {
+      "sha256": "4b6d563b0b78a52625858f7e0765c35c1dccabdbae7688a868831b4c1e99094c",
+      "records": 284,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_683f167ba4224e76.json": {
+      "sha256": "5aeec64cb81e4d0bee541c683fd26c3bdccd484dec761e417ea8c71f56682a60",
+      "records": 199,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_f3116dd55e7fb185.json": {
+      "sha256": "567f934b252829b917db608945b44edf73e3b5100d8bcbbbc5d24d112112c910",
+      "records": 303,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_9c403368eef4fddc.json": {
+      "sha256": "3f2a546c18c48abb8729c490cde448a85ee85d69115a827e2f8cbf07110be9b7",
+      "records": 202,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_d8e6f2e94135d54d.json": {
+      "sha256": "684d75126f41880b4808b1e495ab831f8d67b27f0e5e559b2efa4cdd949ebcb0",
+      "records": 222,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_b17217eac30bef7d.json": {
+      "sha256": "9afacf7891a7dacab57a9b4278bc6bb968ceb0e8ab5bace30d3bb60d3272e4db",
+      "records": 194,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_3007a9fcbd897db0.json": {
+      "sha256": "73cf9bea8a19b1535ff41caf8fcc725d22baebfaab0dd2cf9111071220ac18e9",
+      "records": 246,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_2eaf59873f1e5857.json": {
+      "sha256": "3511c88d656c93ec19e0d5b92b45635663a05987eb1872729adbc6d68a489e5d",
+      "records": 198,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_cd73644e6ae5ad62.json": {
+      "sha256": "f0f53e869724e711bbb588b6fb3797ef1bca59dd5cb86e78380e6c442815ad4a",
+      "records": 307,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_9c4f1a1b98bec866.json": {
+      "sha256": "eb5f2a836dc9a45b3018c4be1afa178258b2cc4308c65f05592a61a42a3e871e",
+      "records": 261,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_832a445be252f4dd.json": {
+      "sha256": "baf4de0c353eaa2b21e8eb3924206540d8e45601851966c92fdde6a42fb95911",
+      "records": 333,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_dab15d84a748bad5.json": {
+      "sha256": "5b7fdd6750c95f9beeae3f46963d712f49f1fa9e702ab60ca3e62fda85887364",
+      "records": 269,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_1a2e96e1299f2c72.json": {
+      "sha256": "7dbc89bc22b2c2f7600a8a00a9944a9d082c646020a08b78cce4804b4bf760dd",
+      "records": 133,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_710b0fb88d231338.json": {
+      "sha256": "fb50cce87a565deb61d94ba794fd87081edb784012a433e3c04bb454cc92739f",
+      "records": 90,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_b27851f96947a104.json": {
+      "sha256": "7bf6f5d55045703a1c05371cf52586d387a4e56e32975e14bd0c75e3dd104f23",
+      "records": 140,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_7c7f208292fc0c99.json": {
+      "sha256": "38e8c566ba57e130c4df4ab13004b7b4987831259f7c19f95591930f9f70010d",
+      "records": 89,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_890dda529f03077e.json": {
+      "sha256": "ee9d206e573c5d2d4a0cd3d78b988910fc6a82ca1c44f8cfb8c9b664ae27e8ed",
+      "records": 129,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_3002663f03fbca3d.json": {
+      "sha256": "0c06f9ccecb5c433eceb972947cdf8d129f5973016be3534e7ecfa4508023442",
+      "records": 112,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_58f6d3c1ba54f1fe.json": {
+      "sha256": "77f25ae0be28e09e28ec07206f19a555377feee83406dd4b42b524fdb793a8bc",
+      "records": 136,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_cc9e483a54ca4671.json": {
+      "sha256": "43b23912150bcf0057de063efc2489ee5ccc8d9a25eb1eeeb65ff508a03602c2",
+      "records": 115,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_02c669a36d2c08e8.json": {
+      "sha256": "908c7483d1f93ed969cbf86f172cf337c4e23c6ebf82396ba854e7daf24b0754",
+      "records": 52,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_2b618f63e43dc224.json": {
+      "sha256": "d278584f535a726b8334e1b53ad02825d23cb5ae63aabd1ca40e965d4094a736",
+      "records": 42,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_8fd5b78cbd228646.json": {
+      "sha256": "020685ca0459ab370031e79b918e3226c266c40cb3e414199856cab52f0bed19",
+      "records": 56,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_52f892f0bdcba0ad.json": {
+      "sha256": "8d56ee1c5c196f7851a11fe07a13e8e24ab6f980b68644e4be681cefa973840c",
+      "records": 43,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_565e8eff4b68139d.json": {
+      "sha256": "fb631b0d6ec8c9a6387a542b09cba2023483d2ad6d9fb03e5a0b1a9b315368d5",
+      "records": 49,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_842cee3ed65f7f53.json": {
+      "sha256": "e1c42b1b95be38c8148f9a11d755af7fbaef4422d6d598ea9ee5039d3e687a85",
+      "records": 36,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_01ce50dcbd64a7ce.json": {
+      "sha256": "6fb92974e9d311725b1413067e264300c553fd4f92aea845ae323a900e233a24",
+      "records": 56,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_1a64010df07b24ee.json": {
+      "sha256": "25c041713c39c0bf192aa80017aafa8b79115e3483801efa79e2b1b6e660fa30",
+      "records": 37,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_3d34206e42bdc535.json": {
+      "sha256": "b61ee85fb3f89a417399fc4c611dbd12997629cadae49fe2244e47c9e690ae59",
+      "records": 178,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_4a9cb7aea0305277.json": {
+      "sha256": "92cd0e809bcd7daccfe271c5e419d427b151ff9e8409ca4c9b493cad03382628",
+      "records": 87,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_078426537f945387.json": {
+      "sha256": "8430b246e7582bf64e009ebf37e94e5f5c4ac25bcff1a6166e749c8778aa1dec",
+      "records": 203,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_e9882b717e4cf920.json": {
+      "sha256": "4b2d1600d793e00c97e72315db129f30df753224c28e2d6b6259da442a045535",
+      "records": 89,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_72731476ad9f2773.json": {
+      "sha256": "4df4e84043159a4d2d964b39cbdc3d575625b63ae0dd10cd89f45adabc9f5a0d",
+      "records": 258,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_eff60b31f13b63ba.json": {
+      "sha256": "bf3635bc2baf77525b098b951d6bc98d4892685f55a5cdc8378b9161103595f0",
+      "records": 170,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_5c364c322fda40be.json": {
+      "sha256": "757e9aed9038d9805d5b1693d3b03f6c793c19f3881767bf8bddb5c33e6f68a2",
+      "records": 283,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_25bfc0fca29cd13d.json": {
+      "sha256": "e1af61f3b4e16c3587ba77154b2d0cf0d365628eba2ecf101ffd4d6f7e9c7751",
+      "records": 172,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_7f844a703f22dfbf.json": {
+      "sha256": "f0688c4f3cd843efcc51b0421346957362e3f24af7210c196799bbaf747a6083",
+      "records": 259,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_18f69a5989465679.json": {
+      "sha256": "d1ce55d4e28b28b94b1dea349108ab88cd4876f85af9f922e38c960232db2696",
+      "records": 237,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_28adbc8734828b98.json": {
+      "sha256": "be8d7a66c1dc525a5680bb8f95e73d348e2062107b34c6e814149a36cfdad7ca",
+      "records": 284,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_bc0de1073627edab.json": {
+      "sha256": "f26b2247fff82b65d356e918f0d7f909b7e07c0702fa4efa78dd63e3095b6bc5",
+      "records": 243,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_a48b741ebc33f05a.json": {
+      "sha256": "4848415438a52562dd61d2c21ed7f97dbc3f72338e3ca5fa0ce4c7f1f7592bc7",
+      "records": 208,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_c1a558253edfe1fa.json": {
+      "sha256": "458415f0f69d715d68883da0bedc74d0123c9a3596a98f00f0eb51f5d3b0c9bd",
+      "records": 221,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_3df58675beb8de93.json": {
+      "sha256": "0f66565f36dbc78338a8408f6db87ee88791cf9b335fc08a375baa425f2d6e69",
+      "records": 191,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_131a6248548274ce.json": {
+      "sha256": "be7c08ddb79488ff82df598c508f9e8904013cc94582d71a2f90be3cfb731ede",
+      "records": 204,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_56097aa5db2e37c7.json": {
+      "sha256": "9157f759e83a3685be00e7af55f6fd01a6ab42074379f27f28427e1c26f21b06",
+      "records": 199,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_0a9df31f36e5d1f4.json": {
+      "sha256": "1b889588c2c1978c90625c62b6ebc3e3c4c72fea266a1996a76db02f450a2152",
+      "records": 208,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_ab702555efc5b011.json": {
+      "sha256": "f8c726f00c9d9a402ef5474b1a9d757dc387f719bd9eb154bcb46cc647e5e111",
+      "records": 199,
+      "unresolved": 0
+    },
+    "docs/research/simulation/2026-10-31-fno-broad-search/calendar/_local/evals/year_2024-01-01_2024-12-31_b33da2913566ccea.json": {
+      "sha256": "9703fc6a23dc6a24d5bdf839c62ecccc460f89afe568e373099284033a5d2c8f",
+      "records": 198,
+      "unresolved": 0
+    }
+  }
+}

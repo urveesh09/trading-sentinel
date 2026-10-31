@@ -1,0 +1,2782 @@
+{
+  "schema": "o31i_spread_pairs_v1",
+  "results": {
+    "RAW|MAIN|LONG|50|DEBIT|200": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -4323.86,
+          "single_same_cohort_net": -3585.38,
+          "delta": -738.48,
+          "wins": 2,
+          "without_best_day": -4693.59,
+          "worst_trade": -690.46
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 12,
+          "net": -4323.86,
+          "single_same_cohort_net": -3585.38,
+          "delta": -738.48,
+          "wins": 2,
+          "without_best_day": -4693.59,
+          "worst_trade": -690.46
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -9096.62,
+          "single_same_cohort_net": -198.7,
+          "delta": -8897.92,
+          "wins": 5,
+          "without_best_day": -9747.19,
+          "worst_trade": -768.95
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 31,
+          "net": -9096.62,
+          "single_same_cohort_net": -198.7,
+          "delta": -8897.92,
+          "wins": 5,
+          "without_best_day": -9747.19,
+          "worst_trade": -768.95
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -4335.11,
+          "single_same_cohort_net": -3878.42,
+          "delta": -456.69,
+          "wins": 1,
+          "without_best_day": -4730.69,
+          "worst_trade": -641.42
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -4335.11,
+          "single_same_cohort_net": -3878.42,
+          "delta": -456.69,
+          "wins": 1,
+          "without_best_day": -4730.69,
+          "worst_trade": -641.42
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|50|DEBIT|400": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -6723.86,
+          "single_same_cohort_net": -5985.38,
+          "delta": -738.48,
+          "wins": 1,
+          "without_best_day": -6893.59,
+          "worst_trade": -890.46
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 12,
+          "net": -6723.86,
+          "single_same_cohort_net": -5985.38,
+          "delta": -738.48,
+          "wins": 1,
+          "without_best_day": -6893.59,
+          "worst_trade": -890.46
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -15296.62,
+          "single_same_cohort_net": -6398.7,
+          "delta": -8897.92,
+          "wins": 4,
+          "without_best_day": -15547.19,
+          "worst_trade": -968.95
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 31,
+          "net": -15296.62,
+          "single_same_cohort_net": -6398.7,
+          "delta": -8897.92,
+          "wins": 4,
+          "without_best_day": -15547.19,
+          "worst_trade": -968.95
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -6935.11,
+          "single_same_cohort_net": -6478.42,
+          "delta": -456.69,
+          "wins": 1,
+          "without_best_day": -7130.69,
+          "worst_trade": -841.42
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -6935.11,
+          "single_same_cohort_net": -6478.42,
+          "delta": -456.69,
+          "wins": 1,
+          "without_best_day": -7130.69,
+          "worst_trade": -841.42
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|50|INVERSE_CREDIT|200": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -4297.82,
+          "single_same_cohort_net": -3585.38,
+          "delta": -712.43,
+          "wins": 1,
+          "without_best_day": -4341.32,
+          "worst_trade": -1078.71
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 12,
+          "net": -4297.82,
+          "single_same_cohort_net": -3585.38,
+          "delta": -712.43,
+          "wins": 1,
+          "without_best_day": -4341.32,
+          "worst_trade": -1078.71
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -13396.45,
+          "single_same_cohort_net": -198.7,
+          "delta": -13197.75,
+          "wins": 1,
+          "without_best_day": -13396.45,
+          "worst_trade": -1193.21
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 31,
+          "net": -13396.45,
+          "single_same_cohort_net": -198.7,
+          "delta": -13197.75,
+          "wins": 1,
+          "without_best_day": -13396.45,
+          "worst_trade": -1193.21
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -6485.03,
+          "single_same_cohort_net": -3878.42,
+          "delta": -2606.61,
+          "wins": 0,
+          "without_best_day": -6485.03,
+          "worst_trade": -1286.7
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -6485.03,
+          "single_same_cohort_net": -3878.42,
+          "delta": -2606.61,
+          "wins": 0,
+          "without_best_day": -6485.03,
+          "worst_trade": -1286.7
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|50|INVERSE_CREDIT|400": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -6697.82,
+          "single_same_cohort_net": -5985.38,
+          "delta": -712.43,
+          "wins": 0,
+          "without_best_day": -6697.82,
+          "worst_trade": -1278.71
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 12,
+          "net": -6697.82,
+          "single_same_cohort_net": -5985.38,
+          "delta": -712.43,
+          "wins": 0,
+          "without_best_day": -6697.82,
+          "worst_trade": -1278.71
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -19596.45,
+          "single_same_cohort_net": -6398.7,
+          "delta": -13197.75,
+          "wins": 0,
+          "without_best_day": -19596.45,
+          "worst_trade": -1393.21
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 31,
+          "net": -19596.45,
+          "single_same_cohort_net": -6398.7,
+          "delta": -13197.75,
+          "wins": 0,
+          "without_best_day": -19596.45,
+          "worst_trade": -1393.21
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -9085.03,
+          "single_same_cohort_net": -6478.42,
+          "delta": -2606.61,
+          "wins": 0,
+          "without_best_day": -9085.03,
+          "worst_trade": -1486.7
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -9085.03,
+          "single_same_cohort_net": -6478.42,
+          "delta": -2606.61,
+          "wins": 0,
+          "without_best_day": -9085.03,
+          "worst_trade": -1486.7
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|100|DEBIT|200": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -4360.4,
+          "single_same_cohort_net": -3585.38,
+          "delta": -775.02,
+          "wins": 2,
+          "without_best_day": -5408.43,
+          "worst_trade": -955.02
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 12,
+          "net": -4360.4,
+          "single_same_cohort_net": -3585.38,
+          "delta": -775.02,
+          "wins": 2,
+          "without_best_day": -5408.43,
+          "worst_trade": -955.02
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -6703.05,
+          "single_same_cohort_net": -198.7,
+          "delta": -6504.35,
+          "wins": 9,
+          "without_best_day": -8802.97,
+          "worst_trade": -1009.12
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 31,
+          "net": -6703.05,
+          "single_same_cohort_net": -198.7,
+          "delta": -6504.35,
+          "wins": 9,
+          "without_best_day": -8802.97,
+          "worst_trade": -1009.12
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -3752.46,
+          "single_same_cohort_net": -3878.42,
+          "delta": 125.96,
+          "wins": 2,
+          "without_best_day": -4999.76,
+          "worst_trade": -910.4
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -3752.46,
+          "single_same_cohort_net": -3878.42,
+          "delta": 125.96,
+          "wins": 2,
+          "without_best_day": -4999.76,
+          "worst_trade": -910.4
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|100|DEBIT|400": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -6760.4,
+          "single_same_cohort_net": -5985.38,
+          "delta": -775.02,
+          "wins": 2,
+          "without_best_day": -7608.43,
+          "worst_trade": -1155.02
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 12,
+          "net": -6760.4,
+          "single_same_cohort_net": -5985.38,
+          "delta": -775.02,
+          "wins": 2,
+          "without_best_day": -7608.43,
+          "worst_trade": -1155.02
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -12903.05,
+          "single_same_cohort_net": -6398.7,
+          "delta": -6504.35,
+          "wins": 5,
+          "without_best_day": -14602.97,
+          "worst_trade": -1209.12
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 31,
+          "net": -12903.05,
+          "single_same_cohort_net": -6398.7,
+          "delta": -6504.35,
+          "wins": 5,
+          "without_best_day": -14602.97,
+          "worst_trade": -1209.12
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -6352.46,
+          "single_same_cohort_net": -6478.42,
+          "delta": 125.96,
+          "wins": 1,
+          "without_best_day": -7399.76,
+          "worst_trade": -1110.4
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -6352.46,
+          "single_same_cohort_net": -6478.42,
+          "delta": 125.96,
+          "wins": 1,
+          "without_best_day": -7399.76,
+          "worst_trade": -1110.4
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|100|INVERSE_CREDIT|200": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -4126.55,
+          "single_same_cohort_net": -3585.38,
+          "delta": -541.17,
+          "wins": 3,
+          "without_best_day": -4438.11,
+          "worst_trade": -1738.42
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 10,
+          "net": -3094.73,
+          "single_same_cohort_net": -3874.0,
+          "delta": 779.27,
+          "wins": 2,
+          "without_best_day": -3406.29,
+          "worst_trade": -1738.42
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -15458.59,
+          "single_same_cohort_net": -198.7,
+          "delta": -15259.9,
+          "wins": 8,
+          "without_best_day": -15683.57,
+          "worst_trade": -1870.1
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 22,
+          "net": -10289.77,
+          "single_same_cohort_net": -3109.45,
+          "delta": -7180.32,
+          "wins": 8,
+          "without_best_day": -10514.74,
+          "worst_trade": -1870.1
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -6883.17,
+          "single_same_cohort_net": -3878.42,
+          "delta": -3004.75,
+          "wins": 1,
+          "without_best_day": -6883.17,
+          "worst_trade": -2117.22
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -6883.17,
+          "single_same_cohort_net": -3878.42,
+          "delta": -3004.75,
+          "wins": 1,
+          "without_best_day": -6883.17,
+          "worst_trade": -2117.22
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|100|INVERSE_CREDIT|400": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -6526.55,
+          "single_same_cohort_net": -5985.38,
+          "delta": -541.17,
+          "wins": 2,
+          "without_best_day": -6638.11,
+          "worst_trade": -1938.42
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 7,
+          "net": -2849.25,
+          "single_same_cohort_net": -7126.57,
+          "delta": 4277.32,
+          "wins": 1,
+          "without_best_day": -2884.8,
+          "worst_trade": -876.85
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -21658.59,
+          "single_same_cohort_net": -6398.7,
+          "delta": -15259.9,
+          "wins": 3,
+          "without_best_day": -21683.57,
+          "worst_trade": -2070.1
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 20,
+          "net": -12720.06,
+          "single_same_cohort_net": -7687.75,
+          "delta": -5032.31,
+          "wins": 3,
+          "without_best_day": -12845.67,
+          "worst_trade": -2070.1
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -9483.17,
+          "single_same_cohort_net": -6478.42,
+          "delta": -3004.75,
+          "wins": 0,
+          "without_best_day": -9483.17,
+          "worst_trade": -2317.22
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -9483.17,
+          "single_same_cohort_net": -6478.42,
+          "delta": -3004.75,
+          "wins": 0,
+          "without_best_day": -9483.17,
+          "worst_trade": -2317.22
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|150|DEBIT|200": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -4087.37,
+          "single_same_cohort_net": -3585.38,
+          "delta": -501.99,
+          "wins": 3,
+          "without_best_day": -5777.52,
+          "worst_trade": -1164.94
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 12,
+          "net": -4087.37,
+          "single_same_cohort_net": -3585.38,
+          "delta": -501.99,
+          "wins": 3,
+          "without_best_day": -5777.52,
+          "worst_trade": -1164.94
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -4928.95,
+          "single_same_cohort_net": -198.7,
+          "delta": -4730.25,
+          "wins": 9,
+          "without_best_day": -8291.96,
+          "worst_trade": -1278.85
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 24,
+          "net": -4334.63,
+          "single_same_cohort_net": -5970.33,
+          "delta": 1635.71,
+          "wins": 7,
+          "without_best_day": -7697.64,
+          "worst_trade": -1261.55
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -3278.4,
+          "single_same_cohort_net": -3878.42,
+          "delta": 600.01,
+          "wins": 4,
+          "without_best_day": -5305.71,
+          "worst_trade": -1108.42
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 7,
+          "net": 952.88,
+          "single_same_cohort_net": 9181.09,
+          "delta": -8228.21,
+          "wins": 4,
+          "without_best_day": -1074.42,
+          "worst_trade": -765.05
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|150|DEBIT|400": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -6487.37,
+          "single_same_cohort_net": -5985.38,
+          "delta": -501.99,
+          "wins": 2,
+          "without_best_day": -7977.52,
+          "worst_trade": -1364.94
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 10,
+          "net": -4943.9,
+          "single_same_cohort_net": -3882.52,
+          "delta": -1061.37,
+          "wins": 2,
+          "without_best_day": -6434.05,
+          "worst_trade": -1364.94
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -11128.95,
+          "single_same_cohort_net": -6398.7,
+          "delta": -4730.25,
+          "wins": 9,
+          "without_best_day": -14091.96,
+          "worst_trade": -1478.85
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 23,
+          "net": -7874.97,
+          "single_same_cohort_net": -8003.29,
+          "delta": 128.32,
+          "wins": 7,
+          "without_best_day": -10837.98,
+          "worst_trade": -1461.55
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -5878.4,
+          "single_same_cohort_net": -6478.42,
+          "delta": 600.01,
+          "wins": 2,
+          "without_best_day": -7705.71,
+          "worst_trade": -1308.42
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 5,
+          "net": -148.81,
+          "single_same_cohort_net": 5576.17,
+          "delta": -5724.98,
+          "wins": 2,
+          "without_best_day": -1976.11,
+          "worst_trade": -965.05
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|150|INVERSE_CREDIT|200": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -4308.17,
+          "single_same_cohort_net": -3585.38,
+          "delta": -722.78,
+          "wins": 4,
+          "without_best_day": -4832.0,
+          "worst_trade": -2375.86
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 0,
+          "net": null,
+          "single_same_cohort_net": null,
+          "delta": null,
+          "wins": 0,
+          "without_best_day": null,
+          "worst_trade": null
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -16984.07,
+          "single_same_cohort_net": -198.7,
+          "delta": -16785.38,
+          "wins": 10,
+          "without_best_day": -17686.18,
+          "worst_trade": -2610.42
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 0,
+          "net": null,
+          "single_same_cohort_net": null,
+          "delta": null,
+          "wins": 0,
+          "without_best_day": null,
+          "worst_trade": null
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -7214.5,
+          "single_same_cohort_net": -3878.42,
+          "delta": -3336.08,
+          "wins": 3,
+          "without_best_day": -7610.49,
+          "worst_trade": -2889.58
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 1,
+          "net": -532.16,
+          "single_same_cohort_net": -434.12,
+          "delta": -98.04,
+          "wins": 0,
+          "without_best_day": -532.16,
+          "worst_trade": -532.16
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|LONG|150|INVERSE_CREDIT|400": {
+      "2024": {
+        "requested": 12,
+        "available": 12,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 12,
+          "net": -6708.17,
+          "single_same_cohort_net": -5985.38,
+          "delta": -722.78,
+          "wins": 2,
+          "without_best_day": -7032.0,
+          "worst_trade": -2575.86
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 0,
+          "net": null,
+          "single_same_cohort_net": null,
+          "delta": null,
+          "wins": 0,
+          "without_best_day": null,
+          "worst_trade": null
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 31,
+        "available": 31,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 31,
+          "net": -23184.07,
+          "single_same_cohort_net": -6398.7,
+          "delta": -16785.38,
+          "wins": 8,
+          "without_best_day": -23515.22,
+          "worst_trade": -2810.42
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 0,
+          "net": null,
+          "single_same_cohort_net": null,
+          "delta": null,
+          "wins": 0,
+          "without_best_day": null,
+          "worst_trade": null
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 13,
+        "available": 13,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 13,
+          "net": -9814.5,
+          "single_same_cohort_net": -6478.42,
+          "delta": -3336.08,
+          "wins": 1,
+          "without_best_day": -9814.5,
+          "worst_trade": -3089.58
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 0,
+          "net": null,
+          "single_same_cohort_net": null,
+          "delta": null,
+          "wins": 0,
+          "without_best_day": null,
+          "worst_trade": null
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|50|DEBIT|200": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -4873.9,
+          "single_same_cohort_net": 7828.49,
+          "delta": -12702.39,
+          "wins": 3,
+          "without_best_day": -5033.44,
+          "worst_trade": -677.78
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 16,
+          "net": -4873.9,
+          "single_same_cohort_net": 7828.49,
+          "delta": -12702.39,
+          "wins": 3,
+          "without_best_day": -5033.44,
+          "worst_trade": -677.78
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -8540.39,
+          "single_same_cohort_net": 10500.76,
+          "delta": -19041.15,
+          "wins": 3,
+          "without_best_day": -8755.12,
+          "worst_trade": -625.4
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 25,
+          "net": -8540.39,
+          "single_same_cohort_net": 10500.76,
+          "delta": -19041.15,
+          "wins": 3,
+          "without_best_day": -8755.12,
+          "worst_trade": -625.4
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -6774.61,
+          "single_same_cohort_net": 32503.57,
+          "delta": -39278.19,
+          "wins": 4,
+          "without_best_day": -6868.68,
+          "worst_trade": -745.25
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 23,
+          "net": -6774.61,
+          "single_same_cohort_net": 32503.57,
+          "delta": -39278.19,
+          "wins": 4,
+          "without_best_day": -6868.68,
+          "worst_trade": -745.25
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|50|DEBIT|400": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -8073.9,
+          "single_same_cohort_net": 4628.49,
+          "delta": -12702.39,
+          "wins": 0,
+          "without_best_day": -8073.9,
+          "worst_trade": -877.78
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 16,
+          "net": -8073.9,
+          "single_same_cohort_net": 4628.49,
+          "delta": -12702.39,
+          "wins": 0,
+          "without_best_day": -8073.9,
+          "worst_trade": -877.78
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -13540.39,
+          "single_same_cohort_net": 5500.76,
+          "delta": -19041.15,
+          "wins": 0,
+          "without_best_day": -13540.39,
+          "worst_trade": -825.4
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 25,
+          "net": -13540.39,
+          "single_same_cohort_net": 5500.76,
+          "delta": -19041.15,
+          "wins": 0,
+          "without_best_day": -13540.39,
+          "worst_trade": -825.4
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -11374.61,
+          "single_same_cohort_net": 27903.57,
+          "delta": -39278.19,
+          "wins": 0,
+          "without_best_day": -11374.61,
+          "worst_trade": -945.25
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 23,
+          "net": -11374.61,
+          "single_same_cohort_net": 27903.57,
+          "delta": -39278.19,
+          "wins": 0,
+          "without_best_day": -11374.61,
+          "worst_trade": -945.25
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|50|INVERSE_CREDIT|200": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -8166.95,
+          "single_same_cohort_net": 7828.49,
+          "delta": -15995.43,
+          "wins": 0,
+          "without_best_day": -8166.95,
+          "worst_trade": -945.55
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 16,
+          "net": -8166.95,
+          "single_same_cohort_net": 7828.49,
+          "delta": -15995.43,
+          "wins": 0,
+          "without_best_day": -8166.95,
+          "worst_trade": -945.55
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -12093.26,
+          "single_same_cohort_net": 10500.76,
+          "delta": -22594.02,
+          "wins": 0,
+          "without_best_day": -12093.26,
+          "worst_trade": -1065.68
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 25,
+          "net": -12093.26,
+          "single_same_cohort_net": 10500.76,
+          "delta": -22594.02,
+          "wins": 0,
+          "without_best_day": -12093.26,
+          "worst_trade": -1065.68
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -12925.6,
+          "single_same_cohort_net": 32503.57,
+          "delta": -45429.17,
+          "wins": 0,
+          "without_best_day": -12925.6,
+          "worst_trade": -995.09
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 23,
+          "net": -12925.6,
+          "single_same_cohort_net": 32503.57,
+          "delta": -45429.17,
+          "wins": 0,
+          "without_best_day": -12925.6,
+          "worst_trade": -995.09
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|50|INVERSE_CREDIT|400": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -11366.95,
+          "single_same_cohort_net": 4628.49,
+          "delta": -15995.43,
+          "wins": 0,
+          "without_best_day": -11366.95,
+          "worst_trade": -1145.55
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 16,
+          "net": -11366.95,
+          "single_same_cohort_net": 4628.49,
+          "delta": -15995.43,
+          "wins": 0,
+          "without_best_day": -11366.95,
+          "worst_trade": -1145.55
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -17093.26,
+          "single_same_cohort_net": 5500.76,
+          "delta": -22594.02,
+          "wins": 0,
+          "without_best_day": -17093.26,
+          "worst_trade": -1265.68
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 25,
+          "net": -17093.26,
+          "single_same_cohort_net": 5500.76,
+          "delta": -22594.02,
+          "wins": 0,
+          "without_best_day": -17093.26,
+          "worst_trade": -1265.68
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -17525.6,
+          "single_same_cohort_net": 27903.57,
+          "delta": -45429.17,
+          "wins": 0,
+          "without_best_day": -17525.6,
+          "worst_trade": -1195.09
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 23,
+          "net": -17525.6,
+          "single_same_cohort_net": 27903.57,
+          "delta": -45429.17,
+          "wins": 0,
+          "without_best_day": -17525.6,
+          "worst_trade": -1195.09
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|100|DEBIT|200": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -3278.99,
+          "single_same_cohort_net": 7828.49,
+          "delta": -11107.48,
+          "wins": 6,
+          "without_best_day": -3984.86,
+          "worst_trade": -909.72
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -1816.14,
+          "single_same_cohort_net": 12101.8,
+          "delta": -13917.94,
+          "wins": 5,
+          "without_best_day": -2522.01,
+          "worst_trade": -796.65
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -6599.75,
+          "single_same_cohort_net": 10500.76,
+          "delta": -17100.51,
+          "wins": 6,
+          "without_best_day": -8142.1,
+          "worst_trade": -1064.69
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 25,
+          "net": -6599.75,
+          "single_same_cohort_net": 10500.76,
+          "delta": -17100.51,
+          "wins": 6,
+          "without_best_day": -8142.1,
+          "worst_trade": -1064.69
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -3162.13,
+          "single_same_cohort_net": 32503.57,
+          "delta": -35665.71,
+          "wins": 8,
+          "without_best_day": -4073.21,
+          "worst_trade": -926.44
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 23,
+          "net": -3162.13,
+          "single_same_cohort_net": 32503.57,
+          "delta": -35665.71,
+          "wins": 8,
+          "without_best_day": -4073.21,
+          "worst_trade": -926.44
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|100|DEBIT|400": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -6478.99,
+          "single_same_cohort_net": 4628.49,
+          "delta": -11107.48,
+          "wins": 5,
+          "without_best_day": -6984.86,
+          "worst_trade": -1109.72
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 13,
+          "net": -4416.14,
+          "single_same_cohort_net": 9501.8,
+          "delta": -13917.94,
+          "wins": 4,
+          "without_best_day": -4922.01,
+          "worst_trade": -996.65
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -11599.75,
+          "single_same_cohort_net": 5500.76,
+          "delta": -17100.51,
+          "wins": 4,
+          "without_best_day": -12742.1,
+          "worst_trade": -1264.69
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 24,
+          "net": -11375.42,
+          "single_same_cohort_net": 4421.98,
+          "delta": -15797.39,
+          "wins": 4,
+          "without_best_day": -12517.77,
+          "worst_trade": -1264.69
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -7762.13,
+          "single_same_cohort_net": 27903.57,
+          "delta": -35665.71,
+          "wins": 6,
+          "without_best_day": -8473.21,
+          "worst_trade": -1126.44
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 23,
+          "net": -7762.13,
+          "single_same_cohort_net": 27903.57,
+          "delta": -35665.71,
+          "wins": 6,
+          "without_best_day": -8473.21,
+          "worst_trade": -1126.44
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|100|INVERSE_CREDIT|200": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -9501.42,
+          "single_same_cohort_net": 7828.49,
+          "delta": -17329.91,
+          "wins": 2,
+          "without_best_day": -9590.55,
+          "worst_trade": -1457.05
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 16,
+          "net": -9501.42,
+          "single_same_cohort_net": 7828.49,
+          "delta": -17329.91,
+          "wins": 2,
+          "without_best_day": -9590.55,
+          "worst_trade": -1457.05
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -13582.07,
+          "single_same_cohort_net": 10500.76,
+          "delta": -24082.83,
+          "wins": 3,
+          "without_best_day": -13959.32,
+          "worst_trade": -1856.41
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 25,
+          "net": -13582.07,
+          "single_same_cohort_net": 10500.76,
+          "delta": -24082.83,
+          "wins": 3,
+          "without_best_day": -13959.32,
+          "worst_trade": -1856.41
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -16211.08,
+          "single_same_cohort_net": 32503.57,
+          "delta": -48714.65,
+          "wins": 2,
+          "without_best_day": -16258.92,
+          "worst_trade": -1790.93
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 23,
+          "net": -16211.08,
+          "single_same_cohort_net": 32503.57,
+          "delta": -48714.65,
+          "wins": 2,
+          "without_best_day": -16258.92,
+          "worst_trade": -1790.93
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|100|INVERSE_CREDIT|400": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -12701.42,
+          "single_same_cohort_net": 4628.49,
+          "delta": -17329.91,
+          "wins": 0,
+          "without_best_day": -12701.42,
+          "worst_trade": -1657.05
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 16,
+          "net": -12701.42,
+          "single_same_cohort_net": 4628.49,
+          "delta": -17329.91,
+          "wins": 0,
+          "without_best_day": -12701.42,
+          "worst_trade": -1657.05
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -18582.07,
+          "single_same_cohort_net": 5500.76,
+          "delta": -24082.83,
+          "wins": 1,
+          "without_best_day": -18759.32,
+          "worst_trade": -2056.41
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 25,
+          "net": -18582.07,
+          "single_same_cohort_net": 5500.76,
+          "delta": -24082.83,
+          "wins": 1,
+          "without_best_day": -18759.32,
+          "worst_trade": -2056.41
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -20811.08,
+          "single_same_cohort_net": 27903.57,
+          "delta": -48714.65,
+          "wins": 0,
+          "without_best_day": -20811.08,
+          "worst_trade": -1990.93
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 23,
+          "net": -20811.08,
+          "single_same_cohort_net": 27903.57,
+          "delta": -48714.65,
+          "wins": 0,
+          "without_best_day": -20811.08,
+          "worst_trade": -1990.93
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|150|DEBIT|200": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -1255.61,
+          "single_same_cohort_net": 7828.49,
+          "delta": -9084.09,
+          "wins": 6,
+          "without_best_day": -2491.69,
+          "worst_trade": -1073.84
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 6,
+          "net": 298.45,
+          "single_same_cohort_net": 3274.74,
+          "delta": -2976.29,
+          "wins": 2,
+          "without_best_day": -910.79,
+          "worst_trade": -796.51
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -4712.77,
+          "single_same_cohort_net": 10500.76,
+          "delta": -15213.53,
+          "wins": 7,
+          "without_best_day": -7413.03,
+          "worst_trade": -1403.36
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 5,
+          "net": 232.12,
+          "single_same_cohort_net": 4428.38,
+          "delta": -4196.26,
+          "wins": 2,
+          "without_best_day": -718.36,
+          "worst_trade": -788.27
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": 33.45,
+          "single_same_cohort_net": 32503.57,
+          "delta": -32470.12,
+          "wins": 11,
+          "without_best_day": -1547.49,
+          "worst_trade": -1241.15
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 10,
+          "net": 653.06,
+          "single_same_cohort_net": 12702.3,
+          "delta": -12049.24,
+          "wins": 6,
+          "without_best_day": -307.74,
+          "worst_trade": -831.83
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|150|DEBIT|400": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -4455.61,
+          "single_same_cohort_net": 4628.49,
+          "delta": -9084.09,
+          "wins": 6,
+          "without_best_day": -5491.69,
+          "worst_trade": -1273.84
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 4,
+          "net": 555.76,
+          "single_same_cohort_net": 4382.95,
+          "delta": -3827.19,
+          "wins": 2,
+          "without_best_day": -453.48,
+          "worst_trade": -996.51
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -9712.77,
+          "single_same_cohort_net": 5500.76,
+          "delta": -15213.53,
+          "wins": 6,
+          "without_best_day": -12013.03,
+          "worst_trade": -1603.36
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 2,
+          "net": 71.26,
+          "single_same_cohort_net": 536.41,
+          "delta": -465.15,
+          "wins": 1,
+          "without_best_day": -257.64,
+          "worst_trade": -257.64
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -4566.55,
+          "single_same_cohort_net": 27903.57,
+          "delta": -32470.12,
+          "wins": 9,
+          "without_best_day": -5947.49,
+          "worst_trade": -1441.15
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 5,
+          "net": 172.77,
+          "single_same_cohort_net": 5437.62,
+          "delta": -5264.85,
+          "wins": 3,
+          "without_best_day": 11.98,
+          "worst_trade": -374.77
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|150|INVERSE_CREDIT|200": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -11277.73,
+          "single_same_cohort_net": 7828.49,
+          "delta": -19106.21,
+          "wins": 5,
+          "without_best_day": -11619.5,
+          "worst_trade": -1998.55
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 8,
+          "net": -4889.44,
+          "single_same_cohort_net": 2844.64,
+          "delta": -7734.08,
+          "wins": 4,
+          "without_best_day": -5231.22,
+          "worst_trade": -1998.55
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -15157.06,
+          "single_same_cohort_net": 10500.76,
+          "delta": -25657.82,
+          "wins": 7,
+          "without_best_day": -15884.14,
+          "worst_trade": -2608.51
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 8,
+          "net": -4169.78,
+          "single_same_cohort_net": 5461.13,
+          "delta": -9630.91,
+          "wins": 3,
+          "without_best_day": -4464.3,
+          "worst_trade": -2321.75
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -19062.54,
+          "single_same_cohort_net": 32503.57,
+          "delta": -51566.11,
+          "wins": 4,
+          "without_best_day": -19438.7,
+          "worst_trade": -2452.59
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 5,
+          "net": -4469.37,
+          "single_same_cohort_net": 7744.76,
+          "delta": -12214.12,
+          "wins": 1,
+          "without_best_day": -4845.53,
+          "worst_trade": -2270.63
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|MAIN|SHORT|150|INVERSE_CREDIT|400": {
+      "2024": {
+        "requested": 16,
+        "available": 16,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 16,
+          "net": -14477.73,
+          "single_same_cohort_net": 4628.49,
+          "delta": -19106.21,
+          "wins": 2,
+          "without_best_day": -14477.73,
+          "worst_trade": -2198.55
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 6,
+          "net": -2092.5,
+          "single_same_cohort_net": -12086.74,
+          "delta": 9994.23,
+          "wins": 2,
+          "without_best_day": -2092.5,
+          "worst_trade": -1760.01
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 25,
+        "available": 25,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 25,
+          "net": -20157.06,
+          "single_same_cohort_net": 5500.76,
+          "delta": -25657.82,
+          "wins": 5,
+          "without_best_day": -20684.14,
+          "worst_trade": -2808.51
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 7,
+          "net": -5864.3,
+          "single_same_cohort_net": 8322.93,
+          "delta": -14187.22,
+          "wins": 2,
+          "without_best_day": -5934.55,
+          "worst_trade": -2521.75
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 23,
+        "available": 23,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 23,
+          "net": -23662.54,
+          "single_same_cohort_net": 27903.57,
+          "delta": -51566.11,
+          "wins": 2,
+          "without_best_day": -23838.7,
+          "worst_trade": -2652.59
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 1,
+          "net": -694.45,
+          "single_same_cohort_net": -647.95,
+          "delta": -46.49,
+          "wins": 0,
+          "without_best_day": -694.45,
+          "worst_trade": -694.45
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|50|DEBIT|200": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -6545.66,
+          "single_same_cohort_net": 13198.89,
+          "delta": -19744.55,
+          "wins": 3,
+          "without_best_day": -6725.28,
+          "worst_trade": -592.5
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 19,
+          "net": -6545.66,
+          "single_same_cohort_net": 13198.89,
+          "delta": -19744.55,
+          "wins": 3,
+          "without_best_day": -6725.28,
+          "worst_trade": -592.5
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -14588.74,
+          "single_same_cohort_net": 27831.31,
+          "delta": -42420.05,
+          "wins": 10,
+          "without_best_day": -15070.37,
+          "worst_trade": -710.07
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 54,
+          "net": -14588.74,
+          "single_same_cohort_net": 27831.31,
+          "delta": -42420.05,
+          "wins": 10,
+          "without_best_day": -15070.37,
+          "worst_trade": -710.07
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -8798.64,
+          "single_same_cohort_net": 23559.5,
+          "delta": -32358.14,
+          "wins": 4,
+          "without_best_day": -9317.33,
+          "worst_trade": -735.06
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 29,
+          "net": -8798.64,
+          "single_same_cohort_net": 23559.5,
+          "delta": -32358.14,
+          "wins": 4,
+          "without_best_day": -9317.33,
+          "worst_trade": -735.06
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|50|DEBIT|400": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -10345.66,
+          "single_same_cohort_net": 9398.89,
+          "delta": -19744.55,
+          "wins": 0,
+          "without_best_day": -10345.66,
+          "worst_trade": -792.5
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 19,
+          "net": -10345.66,
+          "single_same_cohort_net": 9398.89,
+          "delta": -19744.55,
+          "wins": 0,
+          "without_best_day": -10345.66,
+          "worst_trade": -792.5
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -25388.74,
+          "single_same_cohort_net": 17031.31,
+          "delta": -42420.05,
+          "wins": 7,
+          "without_best_day": -25566.77,
+          "worst_trade": -910.07
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 54,
+          "net": -25388.74,
+          "single_same_cohort_net": 17031.31,
+          "delta": -42420.05,
+          "wins": 7,
+          "without_best_day": -25566.77,
+          "worst_trade": -910.07
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -14598.64,
+          "single_same_cohort_net": 17759.5,
+          "delta": -32358.14,
+          "wins": 4,
+          "without_best_day": -14855.76,
+          "worst_trade": -935.06
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 29,
+          "net": -14598.64,
+          "single_same_cohort_net": 17759.5,
+          "delta": -32358.14,
+          "wins": 4,
+          "without_best_day": -14855.76,
+          "worst_trade": -935.06
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|50|INVERSE_CREDIT|200": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -8773.56,
+          "single_same_cohort_net": 13198.89,
+          "delta": -21972.45,
+          "wins": 0,
+          "without_best_day": -8773.56,
+          "worst_trade": -1099.94
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 19,
+          "net": -8773.56,
+          "single_same_cohort_net": 13198.89,
+          "delta": -21972.45,
+          "wins": 0,
+          "without_best_day": -8773.56,
+          "worst_trade": -1099.94
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -28462.4,
+          "single_same_cohort_net": 27831.31,
+          "delta": -56293.72,
+          "wins": 1,
+          "without_best_day": -28466.82,
+          "worst_trade": -1389.15
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 54,
+          "net": -28462.4,
+          "single_same_cohort_net": 27831.31,
+          "delta": -56293.72,
+          "wins": 1,
+          "without_best_day": -28466.82,
+          "worst_trade": -1389.15
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -14339.06,
+          "single_same_cohort_net": 23559.5,
+          "delta": -37898.56,
+          "wins": 1,
+          "without_best_day": -14396.41,
+          "worst_trade": -1238.13
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 29,
+          "net": -14339.06,
+          "single_same_cohort_net": 23559.5,
+          "delta": -37898.56,
+          "wins": 1,
+          "without_best_day": -14396.41,
+          "worst_trade": -1238.13
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|50|INVERSE_CREDIT|400": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -12573.56,
+          "single_same_cohort_net": 9398.89,
+          "delta": -21972.45,
+          "wins": 0,
+          "without_best_day": -12573.56,
+          "worst_trade": -1299.94
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 19,
+          "net": -12573.56,
+          "single_same_cohort_net": 9398.89,
+          "delta": -21972.45,
+          "wins": 0,
+          "without_best_day": -12573.56,
+          "worst_trade": -1299.94
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -39262.4,
+          "single_same_cohort_net": 17031.31,
+          "delta": -56293.72,
+          "wins": 0,
+          "without_best_day": -39262.4,
+          "worst_trade": -1589.15
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 54,
+          "net": -39262.4,
+          "single_same_cohort_net": 17031.31,
+          "delta": -56293.72,
+          "wins": 0,
+          "without_best_day": -39262.4,
+          "worst_trade": -1589.15
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -20139.06,
+          "single_same_cohort_net": 17759.5,
+          "delta": -37898.56,
+          "wins": 0,
+          "without_best_day": -20139.06,
+          "worst_trade": -1438.13
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 29,
+          "net": -20139.06,
+          "single_same_cohort_net": 17759.5,
+          "delta": -37898.56,
+          "wins": 0,
+          "without_best_day": -20139.06,
+          "worst_trade": -1438.13
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|100|DEBIT|200": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -4648.96,
+          "single_same_cohort_net": 13198.89,
+          "delta": -17847.85,
+          "wins": 3,
+          "without_best_day": -5759.78,
+          "worst_trade": -796.15
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 19,
+          "net": -4648.96,
+          "single_same_cohort_net": 13198.89,
+          "delta": -17847.85,
+          "wins": 3,
+          "without_best_day": -5759.78,
+          "worst_trade": -796.15
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -7333.19,
+          "single_same_cohort_net": 27831.31,
+          "delta": -35164.5,
+          "wins": 22,
+          "without_best_day": -8958.83,
+          "worst_trade": -1128.5
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 52,
+          "net": -6837.31,
+          "single_same_cohort_net": 28593.36,
+          "delta": -35430.67,
+          "wins": 21,
+          "without_best_day": -8462.95,
+          "worst_trade": -1128.5
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -5506.53,
+          "single_same_cohort_net": 23559.5,
+          "delta": -29066.03,
+          "wins": 8,
+          "without_best_day": -7597.1,
+          "worst_trade": -1067.31
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 27,
+          "net": -5520.82,
+          "single_same_cohort_net": 18252.67,
+          "delta": -23773.49,
+          "wins": 7,
+          "without_best_day": -7611.38,
+          "worst_trade": -1067.31
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|100|DEBIT|400": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -8448.96,
+          "single_same_cohort_net": 9398.89,
+          "delta": -17847.85,
+          "wins": 3,
+          "without_best_day": -9359.78,
+          "worst_trade": -996.15
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 19,
+          "net": -8448.96,
+          "single_same_cohort_net": 9398.89,
+          "delta": -17847.85,
+          "wins": 3,
+          "without_best_day": -9359.78,
+          "worst_trade": -996.15
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -18133.19,
+          "single_same_cohort_net": 17031.31,
+          "delta": -35164.5,
+          "wins": 16,
+          "without_best_day": -19358.83,
+          "worst_trade": -1328.5
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 52,
+          "net": -17237.31,
+          "single_same_cohort_net": 18193.36,
+          "delta": -35430.67,
+          "wins": 16,
+          "without_best_day": -18462.95,
+          "worst_trade": -1328.5
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -11306.53,
+          "single_same_cohort_net": 17759.5,
+          "delta": -29066.03,
+          "wins": 7,
+          "without_best_day": -12997.1,
+          "worst_trade": -1267.31
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 25,
+          "net": -9683.67,
+          "single_same_cohort_net": 14429.03,
+          "delta": -24112.7,
+          "wins": 6,
+          "without_best_day": -11374.23,
+          "worst_trade": -1267.31
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|100|INVERSE_CREDIT|200": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -10384.24,
+          "single_same_cohort_net": 13198.89,
+          "delta": -23583.13,
+          "wins": 3,
+          "without_best_day": -10430.22,
+          "worst_trade": -1993.9
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 19,
+          "net": -10384.24,
+          "single_same_cohort_net": 13198.89,
+          "delta": -23583.13,
+          "wins": 3,
+          "without_best_day": -10430.22,
+          "worst_trade": -1993.9
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -34892.32,
+          "single_same_cohort_net": 27831.31,
+          "delta": -62723.63,
+          "wins": 7,
+          "without_best_day": -35329.16,
+          "worst_trade": -1977.34
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 54,
+          "net": -34892.32,
+          "single_same_cohort_net": 27831.31,
+          "delta": -62723.63,
+          "wins": 7,
+          "without_best_day": -35329.16,
+          "worst_trade": -1977.34
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -17106.98,
+          "single_same_cohort_net": 23559.5,
+          "delta": -40666.48,
+          "wins": 5,
+          "without_best_day": -17501.09,
+          "worst_trade": -2026.62
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 29,
+          "net": -17106.98,
+          "single_same_cohort_net": 23559.5,
+          "delta": -40666.48,
+          "wins": 5,
+          "without_best_day": -17501.09,
+          "worst_trade": -2026.62
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|100|INVERSE_CREDIT|400": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -14184.24,
+          "single_same_cohort_net": 9398.89,
+          "delta": -23583.13,
+          "wins": 0,
+          "without_best_day": -14184.24,
+          "worst_trade": -2193.9
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 19,
+          "net": -14184.24,
+          "single_same_cohort_net": 9398.89,
+          "delta": -23583.13,
+          "wins": 0,
+          "without_best_day": -14184.24,
+          "worst_trade": -2193.9
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -45692.32,
+          "single_same_cohort_net": 17031.31,
+          "delta": -62723.63,
+          "wins": 1,
+          "without_best_day": -45929.16,
+          "worst_trade": -2177.34
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 54,
+          "net": -45692.32,
+          "single_same_cohort_net": 17031.31,
+          "delta": -62723.63,
+          "wins": 1,
+          "without_best_day": -45929.16,
+          "worst_trade": -2177.34
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -22906.98,
+          "single_same_cohort_net": 17759.5,
+          "delta": -40666.48,
+          "wins": 2,
+          "without_best_day": -23101.09,
+          "worst_trade": -2226.62
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 29,
+          "net": -22906.98,
+          "single_same_cohort_net": 17759.5,
+          "delta": -40666.48,
+          "wins": 2,
+          "without_best_day": -23101.09,
+          "worst_trade": -2226.62
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|150|DEBIT|200": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -3013.23,
+          "single_same_cohort_net": 13198.89,
+          "delta": -16212.11,
+          "wins": 5,
+          "without_best_day": -5278.91,
+          "worst_trade": -1092.68
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 7,
+          "net": -4622.98,
+          "single_same_cohort_net": -6506.44,
+          "delta": 1883.46,
+          "wins": 0,
+          "without_best_day": -4622.98,
+          "worst_trade": -1092.68
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -989.18,
+          "single_same_cohort_net": 27831.31,
+          "delta": -28820.49,
+          "wins": 23,
+          "without_best_day": -4134.56,
+          "worst_trade": -1466.71
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 20,
+          "net": 5155.36,
+          "single_same_cohort_net": 17991.28,
+          "delta": -12835.92,
+          "wins": 9,
+          "without_best_day": 2671.59,
+          "worst_trade": -1069.77
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -2176.52,
+          "single_same_cohort_net": 23559.5,
+          "delta": -25736.02,
+          "wins": 10,
+          "without_best_day": -5892.97,
+          "worst_trade": -1335.22
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 11,
+          "net": 1026.75,
+          "single_same_cohort_net": 12765.36,
+          "delta": -11738.61,
+          "wins": 5,
+          "without_best_day": -973.7,
+          "worst_trade": -1335.22
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|150|DEBIT|400": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -6813.23,
+          "single_same_cohort_net": 9398.89,
+          "delta": -16212.11,
+          "wins": 3,
+          "without_best_day": -8878.91,
+          "worst_trade": -1292.68
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 6,
+          "net": -5453.6,
+          "single_same_cohort_net": -7276.74,
+          "delta": 1823.14,
+          "wins": 0,
+          "without_best_day": -5453.6,
+          "worst_trade": -1292.68
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -11789.18,
+          "single_same_cohort_net": 17031.31,
+          "delta": -28820.49,
+          "wins": 22,
+          "without_best_day": -14534.56,
+          "worst_trade": -1666.71
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 16,
+          "net": 2313.94,
+          "single_same_cohort_net": 15515.76,
+          "delta": -13201.83,
+          "wins": 8,
+          "without_best_day": 430.17,
+          "worst_trade": -1269.77
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -7976.52,
+          "single_same_cohort_net": 17759.5,
+          "delta": -25736.02,
+          "wins": 8,
+          "without_best_day": -11292.97,
+          "worst_trade": -1535.22
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 6,
+          "net": 136.16,
+          "single_same_cohort_net": 8342.0,
+          "delta": -8205.83,
+          "wins": 3,
+          "without_best_day": -1664.28,
+          "worst_trade": -1535.22
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|150|INVERSE_CREDIT|200": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -11736.34,
+          "single_same_cohort_net": 13198.89,
+          "delta": -24935.23,
+          "wins": 5,
+          "without_best_day": -11966.37,
+          "worst_trade": -3131.84
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 8,
+          "net": -8939.68,
+          "single_same_cohort_net": 19803.61,
+          "delta": -28743.29,
+          "wins": 0,
+          "without_best_day": -8939.68,
+          "worst_trade": -3131.84
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -40441.07,
+          "single_same_cohort_net": 27831.31,
+          "delta": -68272.39,
+          "wins": 14,
+          "without_best_day": -41228.22,
+          "worst_trade": -2797.91
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 27,
+          "net": -16400.92,
+          "single_same_cohort_net": 2275.38,
+          "delta": -18676.3,
+          "wins": 9,
+          "without_best_day": -17188.07,
+          "worst_trade": -2726.59
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -20018.92,
+          "single_same_cohort_net": 23559.5,
+          "delta": -43578.42,
+          "wins": 8,
+          "without_best_day": -20690.73,
+          "worst_trade": -2754.07
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 9,
+          "net": -6350.27,
+          "single_same_cohort_net": 6161.7,
+          "delta": -12511.96,
+          "wins": 2,
+          "without_best_day": -6350.27,
+          "worst_trade": -2721.95
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    },
+    "RAW|E|tpb_puts|SHORT|150|INVERSE_CREDIT|400": {
+      "2024": {
+        "requested": 19,
+        "available": 19,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 19,
+          "net": -15536.34,
+          "single_same_cohort_net": 9398.89,
+          "delta": -24935.23,
+          "wins": 3,
+          "without_best_day": -15566.37,
+          "worst_trade": -3331.84
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 7,
+          "net": -9768.82,
+          "single_same_cohort_net": 18805.22,
+          "delta": -28574.04,
+          "wins": 0,
+          "without_best_day": -9768.82,
+          "worst_trade": -3331.84
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2025": {
+        "requested": 54,
+        "available": 54,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 54,
+          "net": -51241.07,
+          "single_same_cohort_net": 17031.31,
+          "delta": -68272.39,
+          "wins": 7,
+          "without_best_day": -51828.22,
+          "worst_trade": -2997.91
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 22,
+          "net": -20718.5,
+          "single_same_cohort_net": 3219.09,
+          "delta": -23937.59,
+          "wins": 2,
+          "without_best_day": -20802.34,
+          "worst_trade": -2926.59
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      },
+      "2026": {
+        "requested": 29,
+        "available": 29,
+        "unavailable": {},
+        "all_priced_diagnostic": {
+          "trades": 29,
+          "net": -25818.92,
+          "single_same_cohort_net": 17759.5,
+          "delta": -43578.42,
+          "wins": 4,
+          "without_best_day": -26290.73,
+          "worst_trade": -2954.07
+        },
+        "entry_risk_compatible_subset": {
+          "trades": 6,
+          "net": -4614.87,
+          "single_same_cohort_net": 1290.15,
+          "delta": -5905.03,
+          "wins": 0,
+          "without_best_day": -4614.87,
+          "worst_trade": -1966.18
+        },
+        "coverage_pct": 100.0,
+        "money_if_no_available": "priced_subset_only"
+      }
+    }
+  },
+  "single_quote_fee_parity_trades": 222,
+  "exploratory_leads": [],
+  "scope": "MATCHED_EXPRESSION_DIAGNOSTIC_NOT_SPREAD_LIFECYCLE_OR_PORTFOLIO",
+  "qualified": false,
+  "can_place_orders": false
+}
