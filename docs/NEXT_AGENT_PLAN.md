@@ -1,3 +1,9 @@
+## October 31 — O31i-C harness construction correction (Dev research)
+
+- The first corrected-clock launch stopped BEFORE any replay: its cache tag assumed a book name field that this adapter does not have. No prices/results scored. Replaced it with an explicit calendar-contract cache tag, preserving every strategy field. Original freeze/failed launch retained in history/private receipts.
+- Ten focused checks now include construction of all59 books and distinct cache keys. Re-freeze changed harness/tests before replay; no calendar/strategy/selection rule changes. Production and application remain untouched. This supersedes the initial582ab63 harness; result reconciliation remains.
+
+
 ## October 31 — O31i-C: special-session calendar repair frozen before corrected scoring (Dev research)
 
 - Original broad2024 screen has15 unresolved arms on March2/May18 special split sessions. Preserved as unavailable for ranking; financial rankings not inspected to choose this repair. Official NSE notices set final close12:30. Separate nested `calendar/PLAN.md` fixes entry cutoff12:00/hard flat12:25 on ONLY those dates; no invented break/exit quotes, ordinary dates unchanged.

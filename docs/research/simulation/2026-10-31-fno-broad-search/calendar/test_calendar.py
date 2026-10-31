@@ -43,3 +43,12 @@ def test_keeps_already_stricter_clock():
         with C.scoped_clock(datetime.fromisoformat('2024-05-18T12:25')):
             assert (C.settings.FNO_ENTRY_END_MIN,C.settings.FNO_HARD_FLAT_MIN)==(700,730)
     finally:C.settings.FNO_ENTRY_END_MIN,C.settings.FNO_HARD_FLAT_MIN=before
+
+
+def test_all_screen_book_construction_and_cache_isolation():
+    original=C.B.books('screen');fixed=C.books('screen')
+    assert len(fixed)==59 and set(fixed)==set(original)
+    for name,book in fixed.items():
+        assert book['calendar_contract']=='O31iC-special2024-v1'
+        assert {k:v for k,v in book.items() if k!='calendar_contract'}==original[name]
+        assert C.B.Y.task_key(book,'year',C.B.C.WINDOW)!=C.B.Y.task_key(original[name],'year',C.B.C.WINDOW)

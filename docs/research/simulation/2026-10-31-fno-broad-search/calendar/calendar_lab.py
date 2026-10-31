@@ -55,7 +55,7 @@ def books(phase):
             B.HERE=HERE
             out=B.books('selected')
         finally:B.HERE=previous
-    return {n:{**b,'name':'O31iC|'+b['name']} for n,b in out.items()}
+    return {n:{**b,'calendar_contract':'O31iC-special2024-v1'} for n,b in out.items()}
 
 
 def freeze():
