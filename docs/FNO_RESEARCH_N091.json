@@ -545,5 +545,6 @@
   },
   "results": "docs/research/simulation/2026-11-01-fno-n091/results.json",
   "unchanged_runtime": true,
-  "qualification": "unqualified; all-seen risk screen only"
+  "qualification": "unqualified; all-seen risk screen only",
+  "results_commit": "72ccf6cb15ab8f8cc20ed63acf2f5c6c09e4ef10"
 }

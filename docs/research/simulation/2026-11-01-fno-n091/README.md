@@ -188,3 +188,5 @@ rule and coverage contract are fixed. No automatic live floor reset or lot rise.
 Reproduction/commands: VERIFICATION.md. Detailed machine evidence: results.json,
 audit-results.json, control-parity.json, price-audit-*.json and stress-results.json.
 Mechanism references and limits: SOURCES.md. OriginalPLAN and freeze preserved.
+
+Results and independent audit: `72ccf6c`, pushed. Full identities: IDENTITY.json.

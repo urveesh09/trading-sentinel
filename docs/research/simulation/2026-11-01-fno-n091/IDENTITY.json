@@ -1,0 +1,10 @@
+{
+  "schema": "n091_handoff_identity_v1",
+  "original_pre_score_source": "424567044c0d6a3995020835cb3b0a6d2ecaa8fa",
+  "exact_controls": "c5351a7541a214219ed82f50f6f6d02abb5d5358",
+  "post_score_artifact_correction": "c6bbcb969bed7389989e53e1ed3e77bb9bcd451b",
+  "results_and_independent_audit": "72ccf6cb15ab8f8cc20ed63acf2f5c6c09e4ef10",
+  "state": "Dev research, committed and pushed, not deployed",
+  "qualification": "all-seen loss-control screen only",
+  "production_checkout_unchanged": "c97cb8c3ba0eeb4ac8e9966135b07034d760b40d"
+}

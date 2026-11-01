@@ -32,6 +32,7 @@ def polish(text):
 
 
 def main():
+    identity = json.loads((HERE / "IDENTITY.json").read_text()) if (HERE / "IDENTITY.json").exists() else {}
     r = json.loads((HERE / "results.json").read_text())
     audit = json.loads((HERE / "audit-results.json").read_text())
     stress = json.loads((HERE / "stress-results.json").read_text())
@@ -249,6 +250,8 @@ Reproduction/commands: VERIFICATION.md. Detailed machine evidence: results.json,
 audit-results.json, control-parity.json, price-audit-*.json and stress-results.json.
 Mechanism references and limits: SOURCES.md. OriginalPLAN and freeze preserved.
 """
+    if identity:
+        text += "\nResults and independent audit: `" + identity["results_and_independent_audit"][:7] + "`, pushed. Full identities: IDENTITY.json.\n"
     (HERE / "README.md").write_text(polish(text), encoding="utf-8")
     root = f"""# N09.1: exposure control beside N08
 
@@ -300,6 +303,8 @@ audited; details are in the study's SOURCE_CORRECTION.md.
 Pre-score source4245670. Results commit identity is recorded in the successor
 handoff after commit. No application/env/migration/Production changes.
 """
+    if identity:
+        root = root.replace("Results commit identity is recorded in the successor\nhandoff after commit.", "Results and independent audit: " + identity["results_and_independent_audit"][:7] + ", pushed; see the study's IDENTITY.json.")
     (ROOT / "docs/FNO_RESEARCH_N091.md").write_text(polish(root), encoding="utf-8")
     checkpoint = {"schema": "n091_checkpoint_v1", "source_commit": source, "all_data_seen": True,
         "status": "research_only_not_deployed", "reference": "N08", "candidates": r["verdicts"],
@@ -309,6 +314,8 @@ handoff after commit. No application/env/migration/Production changes.
         "fresh": r["aggregates"], "continuous": {n: s['summary'] for n,s in r['continuous'].items()},
         "results": (HERE / "results.json").relative_to(ROOT).as_posix(),
         "unchanged_runtime": True, "qualification": "unqualified; all-seen risk screen only"}
+    if identity:
+        checkpoint["results_commit"] = identity["results_and_independent_audit"]
     (ROOT / "docs/FNO_RESEARCH_N091.json").write_text(json.dumps(checkpoint, indent=2) + "\n", encoding="utf-8")
     print("REPORT_WRITTEN", retained, reduced, carry['end'])
 

@@ -49,5 +49,4 @@ An independent audit caught overwritten fresh-year terminal snapshots. The
 post-score correction preserves original scores and exactly matches all 24
 affected trade/decision receipts on rerun. Full account state is independently
 audited; details are in the study's SOURCE_CORRECTION.md.
-Pre-score source 4245670. Results commit identity is recorded in the successor
-handoff after commit. No application/env/migration/Production changes.
+Pre-score source 4245670. Results and independent audit: 72ccf6c, pushed; see the study's IDENTITY.json. No application/env/migration/Production changes.

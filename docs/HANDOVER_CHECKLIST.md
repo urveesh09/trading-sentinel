@@ -1,3 +1,9 @@
+## November 1 — N09.1 final commit identity
+
+- Results/independent audit72ccf6c pushed; source4245670, controls c5351a7, explicit post-score snapshot correctionc6bbcb9. Canonical IDENTITY and FNO_RESEARCH_N091.md/json resolve every book/key.
+- Risk screen PASS/profit screen FAIL, all seen/unqualified/not deployed; N08 remains aggregate-profit reference.60 unique books+24 exact repair reruns/55 focused/all financial/floor/state/5596 price checks complete; original failures and old studies retained.
+- No app/env/migration/real money/lot authority/Production/order/message/restart/deploy/2022 changes. Original Productionc97cb8c/engine start/HTTP200 unchanged. Owner dirt preserved, workers finished. Next predeclared forward shadows/actual-cost receipts; final fixed-SHA post-run skill packet is consistency only.
+
 ## November 1 — N09.1 complete and independently reconciled
 
 - Canonical N091_CUSHION_VOL_CLOCK / primary CUSHION at FNO_RESEARCH_N091.md/json.94.0% N08 modeled annual profit retained,37.0% smaller worst day,13.13% worst annual closed fall. Risk screen PASS/profit screen FAIL; N08 remains profit reference.2023 loss/2025 higher fall/all-seen limits explicit.
