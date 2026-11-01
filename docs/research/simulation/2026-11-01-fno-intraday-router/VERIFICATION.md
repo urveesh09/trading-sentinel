@@ -1,4 +1,4 @@
-# N01 intraday switching — verification and handoff
+# N01 intraday switching â€” verification and handoff
 
 All work is offline Dev research. No application source, settings, migrations,
 order authority, capital switch, Production files/services or Telegram delivery
@@ -26,14 +26,16 @@ remain owned by their other authors and were not staged.
   original results retained. No STATIC training entry was stale, so all3,669
   labels and34 models are byte-identical to the original version. Reuse27 base
   economics by exact hashes; do not count these copies as fresh replays.
-- Final results/report commit is recorded in the following documentation
-  handoff and Git history. Canonical output is **freshness/results.json**;
+- Final results/report commit **6d1095d**, pushed. This following documentation
+  handoff records that identity. Canonical output is **freshness/results.json**;
   root results.json is the preserved original version. Source freezes remain
   unchanged; reporting/auditor code is separate from decision-policy source.
 
 ## Completed commands
 
 Interpreter: `python-engine/winvenv/Scripts/python.exe` (Python3.11.9).
+Post-run observed library/platform versions are in environment.json; no packages
+were installed or upgraded by this task. SciPy is absent and not required.
 Use ONLY `O30F_YEAR=2024` OR `O30C_YEAR=2025/2026` for each year process.
 No market-data API calls, download/login, Docker rebuild/restart or real orders.
 
