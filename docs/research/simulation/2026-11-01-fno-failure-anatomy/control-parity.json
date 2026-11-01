@@ -1,0 +1,110 @@
+{
+  "2024|NORMAL|BASE": {
+    "records": 33,
+    "exact_economics": true,
+    "old_sha256": "fdbe8224a50b71e0398a5fe1414fa74cae4276b1e19e34b638be5028a04025ad",
+    "fresh_sha256": "efbce840d978bf5f8250c62b43b0c2d77f51d1c5a24106ee6a4babd16501d17c"
+  },
+  "2024|NORMAL|STALL30": {
+    "records": 33,
+    "exact_economics": true,
+    "old_sha256": "e96b30f084f4dabe68260386716edde2886381fe5ca84b8988e9a7b0ddae6075",
+    "fresh_sha256": "246df094d72c50e4669e00902e4c67fcd96c01c69139f94552c0cf01476a0b53"
+  },
+  "2024|NORMAL|STRUCT30": {
+    "records": 33,
+    "exact_economics": true,
+    "old_sha256": "387cc229cbd998a42e2b79fea304059631fbdf6b6791a4bfcff4af21e5cea7bd",
+    "fresh_sha256": "78edd9e1059b96f480d5b128fbbe61bc32c4f8f337e5d63f2239572673b5b943"
+  },
+  "2024|ONE|BASE": {
+    "records": 34,
+    "exact_economics": true,
+    "old_sha256": "744fa1c9353f911548462e54aa393165795df49a6b5342898d6579d50ec6e319",
+    "fresh_sha256": "8f24be69ae41a07d039c34db94e1835702690fbb316ae10d12d58db814d94b8b"
+  },
+  "2024|ONE|STALL30": {
+    "records": 34,
+    "exact_economics": true,
+    "old_sha256": "f4b6cc98a96f06ad5f272379382b4c90a62bfcd8566dcb2d40b2787589b848ba",
+    "fresh_sha256": "0f8686a0b7dc1cf2b2294328197c58e3012d3bca41e4bc9b67203da78f493733"
+  },
+  "2024|ONE|STRUCT30": {
+    "records": 34,
+    "exact_economics": true,
+    "old_sha256": "e0b6853661c3ae8cdf6a2732e6961c1f558bb855ca441bc785dbdb48dbb6e3b2",
+    "fresh_sha256": "f5fc9a893f2ab4bf75b58a52bb7d8cd1a57505543153236db250601ff1e99f21"
+  },
+  "2025|NORMAL|BASE": {
+    "records": 80,
+    "exact_economics": true,
+    "old_sha256": "5ae7810f3001683af47445aa9da747a89a7cbacfa1243ef48ee6f9270a9004a4",
+    "fresh_sha256": "baa5f3eb058dcd93fd2f88e10863f0f5b50dad0e1312f48eacf5fd5b9a7c126d"
+  },
+  "2025|NORMAL|STALL30": {
+    "records": 80,
+    "exact_economics": true,
+    "old_sha256": "51fd8a11bbe8f0f05beff0b4955d4180a8e5f44b17d1a71d55868627ed8cc335",
+    "fresh_sha256": "eefabcef086cef0141793f56fd6586c73b32fa1e93fdc69d008426e52b0a2d17"
+  },
+  "2025|NORMAL|STRUCT30": {
+    "records": 80,
+    "exact_economics": true,
+    "old_sha256": "16b170d0989b84f49c0c3e4afaa9a98167c41d0c8641cc59889ff661cbcb46b6",
+    "fresh_sha256": "92e4a5189916279d6a7044f53cbd3301402c570a3fe45e0c526849fc79d231f0"
+  },
+  "2025|ONE|BASE": {
+    "records": 80,
+    "exact_economics": true,
+    "old_sha256": "521af408eb75703e39624776590a5acecf518e87b5dee20d12f55f52d5ba60a5",
+    "fresh_sha256": "cfcbf6e9dbc3ddfc07aafdae146cf21dd9400fa07290aa58a4c3d5328c612a66"
+  },
+  "2025|ONE|STALL30": {
+    "records": 80,
+    "exact_economics": true,
+    "old_sha256": "c492426b5e27e1076896778df32fa1eeaaa81d5be21851e5617233ac7788f3a3",
+    "fresh_sha256": "b83211eeabbd79081def401235ac801cabc330f99ca9cd5db778326a0a4145c7"
+  },
+  "2025|ONE|STRUCT30": {
+    "records": 80,
+    "exact_economics": true,
+    "old_sha256": "812d864952442e2e4126fd2f953a8afb9186bf41c8a80dbfe6dc52fa55c309a8",
+    "fresh_sha256": "683b4e9dcbe5da8632fbdec9a6d4a4f02aad8ef988d0d108d73fb9881b064b81"
+  },
+  "2026|NORMAL|BASE": {
+    "records": 56,
+    "exact_economics": true,
+    "old_sha256": "e0bf1754bbf9afe82df56e9c8c51b83b40fc604014456c0fbbf4cbc2fc892ff8",
+    "fresh_sha256": "ed2636a7d7f91aef338dc9cbe1199995f53ff9de0e052797d659f6df42b31347"
+  },
+  "2026|NORMAL|STALL30": {
+    "records": 56,
+    "exact_economics": true,
+    "old_sha256": "8dcfc890451f508d93e78b294e926602570f3c19302209db1ad9d14821abca62",
+    "fresh_sha256": "583615b4048527849cef65a6abd81412cbe843f9075380860e90422f3ec867d3"
+  },
+  "2026|NORMAL|STRUCT30": {
+    "records": 56,
+    "exact_economics": true,
+    "old_sha256": "6769ed73d521bae6894a7cd910c95523689c0460dca8caa35d8be984a7b8c297",
+    "fresh_sha256": "90f7b7ed3417d99750a006f0e6c84b61209ca6be96766a69864b207e6920e147"
+  },
+  "2026|ONE|BASE": {
+    "records": 56,
+    "exact_economics": true,
+    "old_sha256": "9b9aba62a795a6978584fb593befe90133754faca54894e053087aabec7a70b7",
+    "fresh_sha256": "3797d5468ff48112f2fcd817dfdf518d747f1e051febfc8c2337c8f42429ecc4"
+  },
+  "2026|ONE|STALL30": {
+    "records": 56,
+    "exact_economics": true,
+    "old_sha256": "f6e613b3eac2fed3b0ce73ff1f6d8e35104e86083f60321bb0a78dd7697f915a",
+    "fresh_sha256": "9f1561e94ae7849f27c737687ce1c13188cd375c06c9ff82d566e4404106662d"
+  },
+  "2026|ONE|STRUCT30": {
+    "records": 56,
+    "exact_economics": true,
+    "old_sha256": "9063f88db79fd52fdcbbc40170f627a1b4e726f5430d1a5199f9be0419b90ceb",
+    "fresh_sha256": "544f0878c04b56edf72e9c0f45446eed2c98019f960462c611a51710b1674402"
+  }
+}

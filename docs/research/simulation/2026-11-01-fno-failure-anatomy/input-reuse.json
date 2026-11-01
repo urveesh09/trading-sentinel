@@ -1,0 +1,11 @@
+{
+  "all_inherited_source_input_bindings_identical": true,
+  "reused_files": {
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/input-reuse.json": "12c0bb30275a4684f893e89ac44b08ed7d3c441f1e7c535fa106865450b06c01",
+    "docs/research/simulation/2026-11-01-fno-eff-improvement/input-crosschecks.json": "7003f5535f7ba7ff89503cd60c323a6155f50c2abe670375b920fef02714080d",
+    "docs/research/simulation/2026-11-01-fno-eff-improvement/coverage.json": "1c98de7331c946b92a900bfc92f5495bf36a08aaed68513c5b7246d0add1f229"
+  },
+  "reused_raw_cache_sessions": 699,
+  "fresh_raw_cache_checks_claimed": 0,
+  "known_limits": "Original gaps and56 negative-volume2025 bars retained; current modeled fees and normalized65-unit lots; no live-depth/IV attribution."
+}

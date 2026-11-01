@@ -1,3 +1,9 @@
+## November 1 — N07 static controls checked; repair scores still pending
+
+- Source3ec8503 pre-score; control-parity.json verifies18 exact NORMAL/ONE annual controls.109 focused tests passed, atlas291/no diff.
+- Read diagnosis/failure-explanation/resizing-attribution. N04 static policy differs from selector; all29 selected N04 entries traced to prior labels. Stress-cost assumptions affect early exit eligibility; benefit and opportunity cost both retained.
+- Next12 repair candidate+15 no-extra-stress diagnostic annuals and independent financial/path/statistical checks. Only two NORMAL stressed arms primary; no grid/size/deadline/Production/2023 change. Earlier checkpoint records/owner slices unchanged.
+
 ## November 1 — N07 diagnosis/source frozen; candidate scores pending
 
 - Read study PLAN/configuration/diagnosis under docs/research/simulation/2026-11-01-fno-failure-anatomy. N04 static failure and N06 switching are separate; no N04 selection2024. Positive-premium2024 cuts driven net-negative by synthetic stress; removing them has opportunity cost.
