@@ -1,3 +1,10 @@
+## November 2 — N10.1 pre-score slice
+
+- Plan/source/config/freeze under2026-11-02-fno-n101;974 sources/1004 frozen cached inputs and old receipts;80 declared annual executions; no candidate scored.
+-21 new focused tests plus49 existing N10 tests pass; atlas regenerated291/no diff. Two pre-freeze test failures corrected: reject zero quantity before division; use a valid funded floor in reserve-refusal fixture. No score or policy change resulted.
+- Productionc97cb8c engine running, original2026-11-01T01:41:39.3519856Z start unchanged; two workers maximum/6GB host memory free. Owner dirty doc slices retained.
+- No app/env/migration/live halt/lot/capital/order/message/restart/deploy/2022 change. Pending exact controls, finite comparison, independent audit/results/handoff.
+
 ## November 2 — N10: earned lot, account comeback, N09.1's cliff
 
 **N10 is better than N09.1 on the same seen years; whether it beats N08's profit depends on one rule that the plan didn't state.** Fresh Rs 2.5 lakh, four years: N08 +2,02,284, N09.1 +1,90,218, N10 strict +1,98,484, N10 with retry +2,33,275; worst day -9,720, -6,127, -6,127, -6,127. Round one (the second lot earned at +1R in place of the entry lot) failed: best at the frozen checks +2,14,484, the add hurts random entries every year. **N09.1's one-account Rs 3,84,310 sits on a cliff:** decided by Rs 18.45 on Jan 1, 2024; at extra cost 199 or 202 instead of 200 it ends near Rs 2.17 lakh. WATCH fixes it: when no lot can be funded the floor may drop by 5% of the best equity, only if the last 20 paper trades made money and 20 have closed since the last step, never under 75% of the best. N10 one account Rs 4.27-4.72 lakh at nine cost levels, never stuck; 256 orderings: worst 1,90,822 against N09.1's floor 2,15,291 and a restart's 1,30,136, below start 13 against 50. THIRD: one earned lot at +1R only on a two-lot trade, planned risk at most Rs 5,000. The frozen code retries while the trade stays above +1R and passes all ten checks; the plan said "first reaches", and read that way N10 fails check 1 by Rs 3,800. Overfitting estimate 0.381 on 89 books.
