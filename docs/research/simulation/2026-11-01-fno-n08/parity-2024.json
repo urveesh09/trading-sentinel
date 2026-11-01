@@ -1,0 +1,26 @@
+{
+  "NORMAL|BASE": {
+    "trades": 33,
+    "net": 56191.79,
+    "identical": true
+  },
+  "NORMAL|STALL30": {
+    "trades": 33,
+    "net": 51303.44,
+    "identical": true
+  },
+  "NORMAL|STRUCT30": {
+    "trades": 33,
+    "net": 57242.77,
+    "identical": true
+  },
+  "NORMAL|PREMIUM_STALL": {
+    "trades": 33,
+    "net": 57982.34,
+    "identical": true
+  },
+  "NOOP": {
+    "trades": 33,
+    "identical_to_n07": true
+  }
+}
