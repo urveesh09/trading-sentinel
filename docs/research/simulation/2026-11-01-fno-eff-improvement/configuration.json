@@ -1,0 +1,15 @@
+{
+  "schema":"n03_eff_v1",
+  "variants":["BASE","RETEST","HORIZON"],
+  "entry":{"retest_closed_bars":3,"zone_atr":0.25,"target_r":1.8,"stop":"original breakout stop; never widened"},
+  "exit":{"stalled_soft_minutes":30,"original_soft_minutes":60,"continuing_soft_minutes":90,"stalled_max_progress_r":0.5,"continuing_min_progress_r":1.0,"net_basis":"positive current bid less shipped fees and stress cost","continuation":"fresh completed bar, directional VWAP and improving close","hard_flat_unchanged":true},
+  "normal_contexts":["EFF_ONLY","MAIN","TPB_ONE","CORE_SELECT"],
+  "fixed_one_lot_contexts":["EFF_ONLY","MAIN"],
+  "additional_control":"TPB_FULL BASE normal",
+  "books_per_year":19,"years":["2024","2025","2026 to October28"],
+  "capital":"fresh250000/year; all current brakes and cash checks retained",
+  "cost":"modeled archived bid/ask + current shipped fees + (200+5*lots)*lots",
+  "selector":"N02 sealed daily CORE_SELECT choices unchanged, no retraining",
+  "2023":"deferred/uninspected/unscored",
+  "can_place_orders":false,"qualified":false,"all_years_seen":true
+}
