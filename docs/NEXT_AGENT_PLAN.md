@@ -1,3 +1,11 @@
+## November1 — N01 base parity and past-only models sealed before adaptive scoring
+
+- Source freeze **2b1e2b0**, pushed before27 base replays. All three years reproduce current main and old low-ADX Donchian trade for trade.27 books/5,200 closed records reconcile to <Rs0.00005 with zero unresolved/financial/clock/memo defects.161 focused tests pass; all699 cached sessions freshly reparsed from sealed raw and identical. No data API calls or Production changes.
+- `training-manifest.json` seals34 monthly models and the exact27 base files.3,669 independent counterfactual-expert labels; an independent statistics audit checks97 positive expert-cell choices, sample windows/counts/ranking, max score discrepancy<1.2e-13 and zero future/unclosed labels. Commit this manifest before18 actual router replays; no parameter changes after attribution.
+- Diagnostic correction to the motivating story:2025 breakout losses include −81,659 on archived two-way days AND −31,834 on archived directional days. Full-path labels are hindsight-only and never enter a model. The same causal RANGE-at-entry bucket earns +78,396 in2024 but loses −23,604 in2025. Current-state classification alone is not a profit forecast; actual adaptive-book tests still decide the result.
+- Three frozen variants remain RULE, RULE_EXIT and LEARN, with matched static/current controls, real shared cash and ordinary stops/deadlines. Candidate outcomes, usage, as-of/fallback and risk/statistical acceptance remain pending. No strategy/main/runtime/config/migration/order authority/2023 exam change. Atlas regenerated; stop research workers for rollback and retain all unrelated work.
+
+
 ## November1 — N01 intraday strategy switching frozen before replay (Dev research)
 
 - Owner requests strategy changes as the day evolves, rather than applying one breakout to every weak-day opportunity. Prior +52,663/−113,494 figures were standalone one-lot research under dailyADX<30, not Production losses. New study `docs/research/simulation/2026-11-01-fno-intraday-router/PLAN.md` updates causal state at each closed5min bar; explicitly compares current main, same-expert static mix and dynamic routing.
