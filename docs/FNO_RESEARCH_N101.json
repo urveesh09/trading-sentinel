@@ -12,7 +12,9 @@
     "deployed": false,
     "all_years_seen": true,
     "economic_superiority": false,
-    "frozen_trading_sources_unchanged": true
+    "frozen_trading_sources_unchanged": true,
+    "results_commit": "b3ef49419125a1fd4b5e8dc7887276cb94a35ce0",
+    "status": "Dev research committed and pushed; not deployed"
   },
   "results": {
     "schema": "n101_results_v1",

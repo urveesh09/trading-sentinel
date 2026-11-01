@@ -73,6 +73,6 @@ All2023–26 years seen;2026 endsOct28. BAR_LIFECYCLE/PARTIAL; normalized65-unit
 
 ## Noninterference / delivery
 
-Productionc97cb8c remained running at its original2026-11-01T01:41:39.3519856Z engine start; read-only API health200. At least about5.5GB host memory remained free during the two-worker replay. No edit/restart/build/deploy/env/migration/authority/live halt/lot/capital/order/Telegram/task registration, credential access, provider call or2022 access. Existing owner dirty doc slices and untracked work are preserved.
+Productionc97cb8c remained running at its original2026-11-01T01:41:39.3519856Z engine start; read-only API health200. At least about5.5GB host memory remained free during the two-worker replay. No edit/restart/build/deploy/env/migration/authority/live halt/lot/capital/order/Telegram/task registration, credential output/use for network access, provider call or2022 access. Existing owner dirty doc slices and untracked work are preserved.
 
 Runtime/source independence is checked with git diff7bbfb89 for python-engine,node-gateway,agent,scripts and by frozen source hashes. This directory is research, never imported by the application. All original N08/N09/N09.1/N10 source, reports and2022 exam remain unchanged. Final commit identity is recorded in IDENTITY.json and the active plan.

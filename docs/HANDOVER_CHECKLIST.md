@@ -1,3 +1,9 @@
+## November 2 — N10.1 final delivery identity
+
+- Results/audits b3ef494, source c567f8e, controls f4f92f2; all pushed. Canonical report FNO_RESEARCH_N101.md/json; study IDENTITY resolves book/results/source. Both economic-superiority screens fail.
+- 80 executions/100 focused tests and all independent checks complete. No runtime/env/migration/live money/size/halt/authority/Production/order/message/restart/deploy/2022 change. Original owner diff verified identical after removing Git hunk offsets; all application paths unchanged from 7bbfb89.
+- Remaining concrete work is below: cash-settlement WATCH peak, isolated predeclared forward recorder and honest costs/coverage, original 2022 exam plus separately frozen new-arm supplement. Final fixed-SHA private skill packet is post-run consistency only; no replay worker remains.
+
 ## November 2 — N10.1 completed and independently reconciled
 
 - Read FNO_RESEARCH_N101.md/json and the study README/VERIFICATION/IDENTITY. Both frozen economic-superiority screens FAIL. N10 retry remains a seen-data research reference. WATCH_FLAT 233,275 equals its annual net but is worse under some cost/account tests; PREMIUM_LOCK 201,588 is not promoted.

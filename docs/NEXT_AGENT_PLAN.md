@@ -1,3 +1,7 @@
+## November 2 — N10.1 successor entry point
+
+Results b3ef494; source c567f8e; controls f4f92f2. Everything is pushed Dev research, not deployed. Read FNO_RESEARCH_N101.md/json, then the study PLAN/README/VERIFICATION/IDENTITY and the concrete remaining-work list immediately below. No economic winner was found; do not promote a failed screen or run another same-year grid. Preserve the terminal-peak limitation and the exact-cost checker correction. Next useful work is predeclared keyed forward comparison/actual cost evidence and the separately frozen 2022 exam after owner acquisition. A final fixed-SHA skill packet is consistency checking only, not new preregistration or profitability proof.
+
 ## November 2 — N10.1 finished; next work is evidence, not another fitted winner
 
 Start `docs/FNO_RESEARCH_N101.md/json` and `docs/research/simulation/2026-11-02-fno-n101/README.md`, `VERIFICATION.md`, `IDENTITY.json`, `CHECKER_CORRECTION.md`. Frozen source c567f8e, exact controls f4f92f2. All 80 declared executions completed; 100 focused tests and full independent cash/quote/stop/admission/floor/state checks pass. WATCH_FLAT keeps N10's fresh annual 233,275 but loses some cost/account comparisons; PREMIUM_LOCK totals 201,588 and fails profit, doubled-cost, top-five exclusion and continuous-cost checks. No candidate is economically superior. No retuning/threshold change/extra arm was introduced after scores.

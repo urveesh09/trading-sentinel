@@ -1,3 +1,7 @@
+## November 2 — N10.1 final identity
+
+Results and independent audits b3ef494 pushed; source c567f8e and exact controls f4f92f2. Read FNO_RESEARCH_N101.md/json and the complete study README/VERIFICATION/IDENTITY. Both candidates fail economic superiority; N10 remains an unqualified research profit reference. All 80 executions, 100 focused checks and independent cash/prices/stops/floors/state verification completed. No application or Production change. Frozen 2022 data remains untouched; forward evidence and settlement-driven WATCH peak tracking remain the priorities.
+
 ## November 2 — N10.1 complete: two useful corrections, no economic winner
 
 Read [N10.1 report](FNO_RESEARCH_N101.md) and its full study at `docs/research/simulation/2026-11-02-fno-n101/`. Research only. WATCH_FLAT restricts N10 floor recovery to a flat account unable to fund a typical previously closed one-lot contract; PREMIUM_LOCK also replaces an underlying-lock risk proxy with actual cost-aware option stop funding for the third lot. Native entries/exits, deadlines, full-premium reserve and max three research lots are retained. No application switch or live behavior changed.
