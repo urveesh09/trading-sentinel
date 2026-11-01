@@ -1,3 +1,10 @@
+## November 1 — N06 candidate decision manifest committed before scoring
+
+- Source a5b2d7c; all12 annual static controls match exactly,109 focused checks pass.
+- decision-manifest.json binds699 daily choices per selector;4194 evidence models and1398 choices independently verified as prior-closed-label only. STRUCT_ANCHOR has no supported switch; retain that result.
+- Next: six candidate annual cash replays, independent18-book financial/price/entry/exit/trace/statistical reconciliation, concrete full outcome/remaining-work documentation. No parameter retuning or new lots.
+- Reused699 input checks labelled honestly. Production inventory is paper-only/actual-cost evidence unavailable; no Production restart/edit/order/message,2023 deferred. Original three checkpoint records unchanged.
+
 ## November 1 — N06 source/config/input freeze, candidate work not yet scored
 
 - Plan: docs/research/simulation/2026-11-01-fno-variant-selector/PLAN.md.92 research tests passed; atlas regenerated291/no diff; native exit checks still required.

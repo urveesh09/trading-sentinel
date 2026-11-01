@@ -1,0 +1,32 @@
+{
+  "schema": "n06_execution_inventory_v1",
+  "observed_at_utc": "2026-11-01T07:49:26.370379+00:00",
+  "access": "read-only mount; SQLite mode=ro; explicit read transaction; network none",
+  "tables": {
+    "fno_positions": {
+      "available": true,
+      "rows": 51,
+      "counts_by_source_status": [
+        {
+          "source": "FNO_PAPER",
+          "status": "CLOSED",
+          "count": 51
+        }
+      ]
+    },
+    "fno_live_execution_events": {
+      "available": false
+    },
+    "fno_live_test_runs": {
+      "available": false
+    }
+  },
+  "quote_archive": {
+    "days": 33,
+    "latest_day": "2026-10-30"
+  },
+  "exit_archive": {
+    "files": 3,
+    "latest_day": "2026-10-29"
+  }
+}

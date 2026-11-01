@@ -1,0 +1,140 @@
+{
+  "schema": "n06_decisions_v1",
+  "pre_candidate_commit": "a5b2d7c76ac6f37680d307594da7bcdb854e2185",
+  "decisions": {
+    "2024": {
+      "sha256": "1a6434d1a6e82cfedc0fc5a690a7b127d3210b3d98fd38f89d016c7582db62c5",
+      "sessions": 248,
+      "models_sha256": "c9d130f4e80cd5d481e66b435a807d84022a5c73dab470a1a380484d520336c8"
+    },
+    "2025": {
+      "sha256": "03823cd98c581418a08418359f5dad25b15e850e28797d0898342ab510322d97",
+      "sessions": 248,
+      "models_sha256": "fdc30b5795772212b07acb925be064cb1bb96fc0e5db9fb5614565397cf829f8"
+    },
+    "2026": {
+      "sha256": "15c2e19367168a31b40913de35771b7648f7c1a706e62d27e6cbbb791554a614",
+      "sessions": 203,
+      "models_sha256": "ad08990bbdd1abaedf8ce71e9c734ba57a8b7d3a953b89c4f1b8d4a7deed4305"
+    }
+  },
+  "reference_files": {
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_c7bbd068f11394f9.json": "fdbe8224a50b71e0398a5fe1414fa74cae4276b1e19e34b638be5028a04025ad",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_d1d38a917b1c9b89.json": "e96b30f084f4dabe68260386716edde2886381fe5ca84b8988e9a7b0ddae6075",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_672f55ea91d8a155.json": "387cc229cbd998a42e2b79fea304059631fbdf6b6791a4bfcff4af21e5cea7bd",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_8833825c3f6bcf5d.json": "bb3d8c69fafc68d383bd1f6a0129a535dae01e8ec6bb898cefef16a3474e308e",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_c7bbd068f11394f9.json": "5ae7810f3001683af47445aa9da747a89a7cbacfa1243ef48ee6f9270a9004a4",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_d1d38a917b1c9b89.json": "51fd8a11bbe8f0f05beff0b4955d4180a8e5f44b17d1a71d55868627ed8cc335",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_672f55ea91d8a155.json": "16b170d0989b84f49c0c3e4afaa9a98167c41d0c8641cc59889ff661cbcb46b6",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_8833825c3f6bcf5d.json": "007db381e8f93fbd12beedefbcfdebe3c38ef830b62209c34ec6519e221d3ffb",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_c7bbd068f11394f9.json": "e0bf1754bbf9afe82df56e9c8c51b83b40fc604014456c0fbbf4cbc2fc892ff8",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_d1d38a917b1c9b89.json": "8dcfc890451f508d93e78b294e926602570f3c19302209db1ad9d14821abca62",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_672f55ea91d8a155.json": "6769ed73d521bae6894a7cd910c95523689c0460dca8caa35d8be984a7b8c297",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_8833825c3f6bcf5d.json": "e4f02a88b19dd5c4f2696ff1bf71a84f40bfc8668cff7c9dab57a8a464c901cc"
+  },
+  "static_controls": {
+    "2024|BASE": {
+      "records": 33,
+      "exact": true,
+      "old_sha256": "fdbe8224a50b71e0398a5fe1414fa74cae4276b1e19e34b638be5028a04025ad",
+      "fresh_sha256": "484753a4eff1259ef4f63a3474a1c467ca1dfc91b8881bb3b86e652653d62169"
+    },
+    "2024|STALL30": {
+      "records": 33,
+      "exact": true,
+      "old_sha256": "e96b30f084f4dabe68260386716edde2886381fe5ca84b8988e9a7b0ddae6075",
+      "fresh_sha256": "9a8da132cca71864fc5fd299f50db410f8f09a836b1c480dc38ef48fdb23c411"
+    },
+    "2024|STRUCT30": {
+      "records": 33,
+      "exact": true,
+      "old_sha256": "387cc229cbd998a42e2b79fea304059631fbdf6b6791a4bfcff4af21e5cea7bd",
+      "fresh_sha256": "8e759b898302f89b896b0609b5a3dbb9509c0c510aaf2eb1f35dfdba1e656779"
+    },
+    "2024|MAIN": {
+      "records": 25,
+      "exact": true,
+      "old_sha256": "bb3d8c69fafc68d383bd1f6a0129a535dae01e8ec6bb898cefef16a3474e308e",
+      "fresh_sha256": "ee6f76b74fa349a1a4d141c0a18d0aa0487d8e245a43e47f3729eb23fe83aca2"
+    },
+    "2025|BASE": {
+      "records": 80,
+      "exact": true,
+      "old_sha256": "5ae7810f3001683af47445aa9da747a89a7cbacfa1243ef48ee6f9270a9004a4",
+      "fresh_sha256": "fb33421f9a40406801cede3fb8726ae89c2be901e6b0fae6b79e2e9d9730c3a9"
+    },
+    "2025|STALL30": {
+      "records": 80,
+      "exact": true,
+      "old_sha256": "51fd8a11bbe8f0f05beff0b4955d4180a8e5f44b17d1a71d55868627ed8cc335",
+      "fresh_sha256": "e0d71ad611c33b0678a6486284fb7be02cb8b29ff70d387340c335a1bff72573"
+    },
+    "2025|STRUCT30": {
+      "records": 80,
+      "exact": true,
+      "old_sha256": "16b170d0989b84f49c0c3e4afaa9a98167c41d0c8641cc59889ff661cbcb46b6",
+      "fresh_sha256": "cd4f743ae4000091c2b3f26432078605ae49719875ca386797d0a84982d19a2d"
+    },
+    "2025|MAIN": {
+      "records": 50,
+      "exact": true,
+      "old_sha256": "007db381e8f93fbd12beedefbcfdebe3c38ef830b62209c34ec6519e221d3ffb",
+      "fresh_sha256": "49b2c76cf6ac1807f6d80c0a99a70c05fe97d3230df31bb953aa78d580a2168b"
+    },
+    "2026|BASE": {
+      "records": 56,
+      "exact": true,
+      "old_sha256": "e0bf1754bbf9afe82df56e9c8c51b83b40fc604014456c0fbbf4cbc2fc892ff8",
+      "fresh_sha256": "a8500fb6057c6d94003858fef2a1de6e12b31d33f2b5468bf579952f254f5a45"
+    },
+    "2026|STALL30": {
+      "records": 56,
+      "exact": true,
+      "old_sha256": "8dcfc890451f508d93e78b294e926602570f3c19302209db1ad9d14821abca62",
+      "fresh_sha256": "b88fc45963dd10bad363ad06a82a52ed41b2ba753b56d0f17a0ff780197a3d0d"
+    },
+    "2026|STRUCT30": {
+      "records": 56,
+      "exact": true,
+      "old_sha256": "6769ed73d521bae6894a7cd910c95523689c0460dca8caa35d8be984a7b8c297",
+      "fresh_sha256": "d4a76a5d27908121e50790da2e646bf40c8818d6c30f62263139a1c0c466ea6f"
+    },
+    "2026|MAIN": {
+      "records": 33,
+      "exact": true,
+      "old_sha256": "e4f02a88b19dd5c4f2696ff1bf71a84f40bfc8668cff7c9dab57a8a464c901cc",
+      "fresh_sha256": "43721381b7f3c51026b8faebe235e6ccd3f9f5ef2b76d77ec272b684f0596b38"
+    }
+  },
+  "selection_counts": {
+    "2024": {
+      "MAIN_ANCHOR": {
+        "MAIN": 195,
+        "STRUCT30": 53
+      },
+      "STRUCT_ANCHOR": {
+        "STRUCT30": 248
+      }
+    },
+    "2025": {
+      "MAIN_ANCHOR": {
+        "MAIN": 174,
+        "STALL30": 74
+      },
+      "STRUCT_ANCHOR": {
+        "STRUCT30": 248
+      }
+    },
+    "2026": {
+      "MAIN_ANCHOR": {
+        "MAIN": 113,
+        "STALL30": 90
+      },
+      "STRUCT_ANCHOR": {
+        "STRUCT30": 203
+      }
+    }
+  },
+  "qualified": false,
+  "all_years_seen": true
+}

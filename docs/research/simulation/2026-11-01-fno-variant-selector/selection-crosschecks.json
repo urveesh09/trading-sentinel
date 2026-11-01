@@ -1,0 +1,36 @@
+{
+  "independent_profile_models": 4194,
+  "causal_daily_choices": 1398,
+  "counts": {
+    "2024|MAIN_ANCHOR": {
+      "MAIN": 195,
+      "STRUCT30": 53
+    },
+    "2024|STRUCT_ANCHOR": {
+      "STRUCT30": 248
+    },
+    "2025|MAIN_ANCHOR": {
+      "MAIN": 174,
+      "STALL30": 74
+    },
+    "2025|STRUCT_ANCHOR": {
+      "STRUCT30": 248
+    },
+    "2026|MAIN_ANCHOR": {
+      "MAIN": 113,
+      "STALL30": 90
+    },
+    "2026|STRUCT_ANCHOR": {
+      "STRUCT30": 203
+    }
+  },
+  "selection_errors": 0,
+  "file_sha256": {
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/models-2024.json": "c9d130f4e80cd5d481e66b435a807d84022a5c73dab470a1a380484d520336c8",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/decisions-2024.json": "1a6434d1a6e82cfedc0fc5a690a7b127d3210b3d98fd38f89d016c7582db62c5",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/models-2025.json": "fdc30b5795772212b07acb925be064cb1bb96fc0e5db9fb5614565397cf829f8",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/decisions-2025.json": "03823cd98c581418a08418359f5dad25b15e850e28797d0898342ab510322d97",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/models-2026.json": "ad08990bbdd1abaedf8ce71e9c734ba57a8b7d3a953b89c4f1b8d4a7deed4305",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/decisions-2026.json": "15c2e19367168a31b40913de35771b7648f7c1a706e62d27e6cbbb791554a614"
+  }
+}
