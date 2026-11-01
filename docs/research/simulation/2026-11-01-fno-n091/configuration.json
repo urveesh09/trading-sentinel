@@ -1,0 +1,3713 @@
+{
+  "schema": "n091_config_v1",
+  "as_of": "2026-11-01",
+  "capital": 250000.0,
+  "normalized_lot": 65,
+  "primary": [
+    "VOL_CLOCK",
+    "CUSHION"
+  ],
+  "all_data_seen": true,
+  "rearm": false,
+  "max_lots": 2,
+  "full_premium_floor": "85% of closed high water, never lower, cash-backed",
+  "bindings": {
+    "2023": {
+      "year": "2023",
+      "window": [
+        "2023-01-01",
+        "2023-12-31"
+      ],
+      "cache": "docs\\research\\simulation\\2026-11-01-fno-n08\\_local\\observations-2023",
+      "books": {
+        "controls": {
+          "N08": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N08|N08",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "DIAG": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 1,
+              "FNO_MAX_LOTS_PROVEN": 1,
+              "FNO_ADAPTIVE_RISK_ENABLED": false,
+              "FNO_DAILY_KILL_PCT": 9.0,
+              "FNO_WEEKLY_KILL_PCT": 9.0,
+              "FNO_MONTHLY_KILL_PCT": 9.0,
+              "FNO_MAX_DRAWDOWN_PCT": 0.999,
+              "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+              "FNO_TWO_STRIKE_LOSSES": 1000000
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N09|DIAG|N08_ONE_NOBRAKE",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "S_VOL": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N09|CASH|S_VOL",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 1440,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            }
+          }
+        },
+        "primary": {
+          "VOL_CLOCK": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|VOL_CLOCK",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "CUSHION": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|CUSHION",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          }
+        },
+        "costs": {
+          "N08|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|N08|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "N08|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|N08|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "VOL_CLOCK|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|VOL_CLOCK|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "VOL_CLOCK|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|VOL_CLOCK|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "CUSHION|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|CUSHION|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          },
+          "CUSHION|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|CUSHION|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          }
+        }
+      }
+    },
+    "2024": {
+      "year": "2024",
+      "window": [
+        "2024-01-01",
+        "2024-12-31"
+      ],
+      "cache": "docs\\research\\fno\\2026-10-30-day-router\\_local\\observations-2024",
+      "books": {
+        "controls": {
+          "N08": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N08|N08",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "DIAG": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 1,
+              "FNO_MAX_LOTS_PROVEN": 1,
+              "FNO_ADAPTIVE_RISK_ENABLED": false,
+              "FNO_DAILY_KILL_PCT": 9.0,
+              "FNO_WEEKLY_KILL_PCT": 9.0,
+              "FNO_MONTHLY_KILL_PCT": 9.0,
+              "FNO_MAX_DRAWDOWN_PCT": 0.999,
+              "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+              "FNO_TWO_STRIKE_LOSSES": 1000000
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N09|DIAG|N08_ONE_NOBRAKE",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "S_VOL": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N09|CASH|S_VOL",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 1440,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            }
+          }
+        },
+        "primary": {
+          "VOL_CLOCK": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|VOL_CLOCK",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "CUSHION": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|CUSHION",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          }
+        },
+        "costs": {
+          "N08|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|N08|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "N08|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|N08|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "VOL_CLOCK|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|VOL_CLOCK|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "VOL_CLOCK|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|VOL_CLOCK|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "CUSHION|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|CUSHION|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          },
+          "CUSHION|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|CUSHION|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          }
+        }
+      }
+    },
+    "2025": {
+      "year": "2025",
+      "window": [
+        "2025-01-01",
+        "2025-12-31"
+      ],
+      "cache": "docs\\research\\fno\\2026-10-30-nifty-2025-test\\_local\\observations-2025",
+      "books": {
+        "controls": {
+          "N08": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N08|N08",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "DIAG": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 1,
+              "FNO_MAX_LOTS_PROVEN": 1,
+              "FNO_ADAPTIVE_RISK_ENABLED": false,
+              "FNO_DAILY_KILL_PCT": 9.0,
+              "FNO_WEEKLY_KILL_PCT": 9.0,
+              "FNO_MONTHLY_KILL_PCT": 9.0,
+              "FNO_MAX_DRAWDOWN_PCT": 0.999,
+              "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+              "FNO_TWO_STRIKE_LOSSES": 1000000
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N09|DIAG|N08_ONE_NOBRAKE",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "S_VOL": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N09|CASH|S_VOL",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 1440,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            }
+          }
+        },
+        "primary": {
+          "VOL_CLOCK": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|VOL_CLOCK",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "CUSHION": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|CUSHION",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          }
+        },
+        "costs": {
+          "N08|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|N08|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "N08|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|N08|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "VOL_CLOCK|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|VOL_CLOCK|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "VOL_CLOCK|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|VOL_CLOCK|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "CUSHION|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|CUSHION|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          },
+          "CUSHION|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|CUSHION|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          }
+        }
+      }
+    },
+    "2026": {
+      "year": "2026",
+      "window": [
+        "2026-01-01",
+        "2026-10-28"
+      ],
+      "cache": "docs\\research\\fno\\2026-10-29-year-genome\\_local\\observations-year",
+      "books": {
+        "controls": {
+          "N08": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N08|N08",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "DIAG": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 1,
+              "FNO_MAX_LOTS_PROVEN": 1,
+              "FNO_ADAPTIVE_RISK_ENABLED": false,
+              "FNO_DAILY_KILL_PCT": 9.0,
+              "FNO_WEEKLY_KILL_PCT": 9.0,
+              "FNO_MONTHLY_KILL_PCT": 9.0,
+              "FNO_MAX_DRAWDOWN_PCT": 0.999,
+              "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+              "FNO_TWO_STRIKE_LOSSES": 1000000
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N09|DIAG|N08_ONE_NOBRAKE",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "S_VOL": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N09|CASH|S_VOL",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 1440,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            }
+          }
+        },
+        "primary": {
+          "VOL_CLOCK": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|VOL_CLOCK",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "CUSHION": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              200.0,
+              5.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|CUSHION",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          }
+        },
+        "costs": {
+          "N08|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|N08|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "N08|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|N08|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            }
+          },
+          "VOL_CLOCK|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|VOL_CLOCK|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "VOL_CLOCK|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|VOL_CLOCK|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "VOL_CLOCK"
+            }
+          },
+          "CUSHION|none": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              0.0,
+              0.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|CUSHION|none",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          },
+          "CUSHION|double": {
+            "members": [
+              {
+                "kind": "NAMED",
+                "name": "SHIPPED",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "OR20",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "EFF",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:HIGH",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              },
+              {
+                "kind": "NAMED",
+                "name": "TPB",
+                "gate": "adx_abs30:LOW",
+                "exit": "OWN",
+                "vwap_exit": "OFF"
+              }
+            ],
+            "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+            "cfg": {
+              "FNO_MAX_LOTS": 2,
+              "FNO_MAX_LOTS_PROVEN": 2
+            },
+            "cost": [
+              400.0,
+              10.0
+            ],
+            "n02_policy": "STATIC",
+            "n02_profile": "TPB_ONE",
+            "n02_contract": "v1",
+            "n03_variant": "RETEST",
+            "n03_context": "TPB_ONE",
+            "n03_sizing": "NORMAL",
+            "n03_contract": "v1",
+            "n04_mode": "BASE",
+            "n04_context": "BALANCED_RETEST",
+            "n04_contract": "v1",
+            "n05_mode": "BASE",
+            "n05_context": "BALANCED_RETEST",
+            "n05_contract": "v1",
+            "n07_mode": "PREMIUM_STALL",
+            "n07_contract": "v1",
+            "label": "N091|COST|CUSHION|double",
+            "n08": {
+              "contract": "v1",
+              "exits": {
+                "EFF": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                },
+                "OR20": {
+                  "FNO_TRAIL_ATR_MULT": 2.0
+                }
+              },
+              "low_two_lots_before": 720,
+              "low_last_minute": 840
+            },
+            "n09": {
+              "contract": "v1",
+              "vol_size": true
+            },
+            "n091": {
+              "contract": "v1",
+              "mode": "CUSHION"
+            }
+          }
+        }
+      }
+    }
+  },
+  "planned_annual_runs": 60,
+  "fidelity": "BAR_LIFECYCLE",
+  "market_coverage": "PARTIAL",
+  "limits": [
+    "modeled spreads/current fees/normalized lot",
+    "52 previously clipped requests unrepaired",
+    "no 2022 access",
+    "no broker fills"
+  ]
+}

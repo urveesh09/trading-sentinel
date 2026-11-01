@@ -1,3 +1,10 @@
+## November 1 — N09.1 source and finite hypotheses frozen
+
+- Plan/source/config at docs/research/simulation/2026-11-01-fno-n091; exactly VOL_CLOCK and CUSHION,60 declared annuals, all four years seen. No new state-router/confirmation/option search.
+- Pre-score verification43 focused passed; atlas291 unchanged;945 source/972 cached input and old receipt hashes. Original N08/N09 documents/results/source preserved. Synthetic regression prevents current-trade paper P&L deciding its own restart entry.
+- Remaining exact12 controls,8 primary/24 cost/16 continuity annuals; independent cash/cost/immutable admission/full-loss reserve/state/cause clocks and256 repeated-year proxies; record failures and opportunity costs.
+- Dev research only, no app/env/migration/live stop/cash/lot authority/Production/restart/deploy/order/message changes; no2022/Breeze access.
+
 ## November 1 — N09: no challenger beat N08; restart measured
 
 **No new entry, exit, option choice or added strategy beat N08.** One lot, brakes off, four years, N08 +1,17,877: one-bar confirmation +49,318, structure exit +1,17,814, delta 0.65 +82,083, delta 0.75 +53,331, N08 + noise-area -32,262. 48 of 50 older strategies lost on 2023, and none qualifies as a complement. N09A (N08 without the morning two-lot rule, composed by the frozen rule) +1,58,946 against +2,02,284: fails. N09B (N08's decisions, two lots only when yesterday's daily ATR % is at or above its 250-session median, restart when the last 20 paper trades made money) ends one account at Rs 4,10,542 against the required 4,14,803, and its fall is 15.24% against 15.08%: narrowly fails. **One account from Jan 2023:** N08 as it stands Rs 2,12,419; with that restart Rs 4,36,635, which passes its checks. Whole-year stress, one lot, 256 orderings: helps 55, hurts 11, largest cost Rs 83,578. Corrected overfitting estimate 0.487, about what random books score (0.51-0.55).
