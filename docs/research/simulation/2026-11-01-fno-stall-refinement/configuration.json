@@ -1,0 +1,13 @@
+{
+  "schema":"n05_refine_v1","modes":["BASE","STALL30","DELAY45","STRUCT30"],
+  "candidate_modes":["DELAY45","STRUCT30"],"entry":"exact N03 balanced retest + LOW-day TPB1lot",
+  "new_thresholds":"one predeclared45min review; one strict closed-bar structural crossing with no extra buffer",
+  "sizing":"normal2/3 and ONE diagnostics; ONLY LOW-day TPB1lot; no limit/risk increase",
+  "capital":"fresh250000/year; inherited cash/brakes/calendar/deadlines/exits",
+  "cost":"same modeled bid/ask/current fees + (200+5*lots)*lots",
+  "books_per_year":9,"fresh_annual_replays":27,
+  "user_risk_objective":"net>=both saved references each year; annual closed drawdown<=both each year; paired evidence versus STALL30",
+  "max_t":{"comparisons":2,"block_weeks":4,"resamples":4096,"seed":110501},
+  "2023":"deferred option exam; no inspection/scoring","all_years_seen":true,"qualified":false,"can_place_orders":false,
+  "larger_size_research":"conditional later plan only; no change or unbounded sizing here"
+}

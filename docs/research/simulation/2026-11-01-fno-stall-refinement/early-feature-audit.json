@@ -1,0 +1,122 @@
+{
+  "status": "PRE_SCORE_AVAILABILITY_NOT_NEW_ENTRY_DECISIONS",
+  "years": [
+    {
+      "year": "2024",
+      "status": "PRE_SCORE_AVAILABILITY_ONLY",
+      "review_locations": 3,
+      "checks": [
+        {
+          "admission_id": "N04/2024/0ae0cf3f0c08452e/9",
+          "review_time": "2024-01-12T12:40:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        },
+        {
+          "admission_id": "N04/2024/0ae0cf3f0c08452e/10",
+          "review_time": "2024-01-16T12:30:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        },
+        {
+          "admission_id": "N04/2024/0ae0cf3f0c08452e/29",
+          "review_time": "2024-11-06T11:40:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        }
+      ]
+    },
+    {
+      "year": "2025",
+      "status": "PRE_SCORE_AVAILABILITY_ONLY",
+      "review_locations": 4,
+      "checks": [
+        {
+          "admission_id": "N04/2025/0ae0cf3f0c08452e/6",
+          "review_time": "2025-01-07T11:00:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        },
+        {
+          "admission_id": "N04/2025/0ae0cf3f0c08452e/11",
+          "review_time": "2025-01-17T13:51:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        },
+        {
+          "admission_id": "N04/2025/0ae0cf3f0c08452e/18",
+          "review_time": "2025-02-01T14:31:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        },
+        {
+          "admission_id": "N04/2025/0ae0cf3f0c08452e/60",
+          "review_time": "2025-08-19T14:18:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        }
+      ]
+    },
+    {
+      "year": "2026",
+      "status": "PRE_SCORE_AVAILABILITY_ONLY",
+      "review_locations": 5,
+      "checks": [
+        {
+          "admission_id": "N04/2026/0ae0cf3f0c08452e/15",
+          "review_time": "2026-03-20T13:45:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        },
+        {
+          "admission_id": "N04/2026/0ae0cf3f0c08452e/21",
+          "review_time": "2026-03-27T13:15:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        },
+        {
+          "admission_id": "N04/2026/0ae0cf3f0c08452e/27",
+          "review_time": "2026-04-08T12:30:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        },
+        {
+          "admission_id": "N04/2026/0ae0cf3f0c08452e/51",
+          "review_time": "2026-10-09T12:30:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        },
+        {
+          "admission_id": "N04/2026/0ae0cf3f0c08452e/53",
+          "review_time": "2026-10-14T14:25:59+05:30",
+          "immutable_level_available": true,
+          "closed_context_available": true,
+          "fresh": true,
+          "positive_bid": true
+        }
+      ]
+    }
+  ]
+}
