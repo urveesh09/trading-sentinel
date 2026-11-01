@@ -1,0 +1,13 @@
+{
+  "schema":"n04_exit_ablation_v1","modes":["BASE","STALL_ONLY","CONTINUE_ONLY"],
+  "new_thresholds":false,"parameters":"exact N03 HORIZON constants; isolate branches only",
+  "normal_contexts":["MAIN","TPB_ONE","BALANCED_RETEST","CORE_SELECT"],
+  "one_lot_diagnostic_contexts":["MAIN","BALANCED_RETEST"],"books_per_year":18,"fresh_replays":54,
+  "balanced_reference":"BALANCED_RETEST_N03; source2de5448/results4a90fdc NORMAL|TPB_ONE|RETEST",
+  "entry_policies":"original EFF for MAIN/TPB_ONE/CORE_SELECT; unchanged N03 RETEST for BALANCED_RETEST",
+  "capital":"fresh250000/year; normal2/3-lot caps; low TPB1lot; ONE both caps1; all brakes retained",
+  "cost":"same modeled archive quotes/current fees/stress(200+5*lots)*lots",
+  "selector":"unchanged N02 sealed daily CORE_SELECT choices, no retraining",
+  "max_t":{"comparisons":8,"block_weeks":4,"samples":4096,"seed":110401},
+  "2023":"deferred/uninspected/unscored option exam","all_years_seen":true,"qualified":false,"can_place_orders":false
+}
