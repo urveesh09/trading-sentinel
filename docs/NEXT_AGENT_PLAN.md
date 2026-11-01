@@ -1,3 +1,7 @@
+## November 1 — N06 implementation slice: source frozen; scores pending
+
+Follow docs/research/simulation/2026-11-01-fno-variant-selector/PLAN.md and configuration.json. Problem: three saved variants trade off profit and drawdown; test causal selection before any conditional size work. Contracts: previous84 same-year sessions; prior exits only; fixed support/one-SE/best-day/DD/two-day guards; MAIN or STRUCT anchor; per-leg immutable policy; original entry priority/stale-bar/stop/hard-flat/cash/lot limits. Acceptance: exact12 annual static controls BEFORE candidate scores, committed daily model hashes, then6 annual candidates; strict all-reference yearly profit/no-extra-DD and paired tests.92 focused tests pass; atlas291 unchanged. Real-cost availability unavailable (only51 FNO_PAPER CLOSED, no live event/run tables); continue offline work without inventing costs. Rollout/rollback research only; do not edit/restart Production, fund/arm real test or score2023. Record every failure and results; no automatic qualification. All source and checkpoints preserved; unrelated dirty doc slices retained.
+
 ## November 1 — N05 final identity and three-way successor checkpoint
 
 - FIRST READ docs/FNO_RESEARCH_PROGRESS.md/json plus FNO_RESEARCH_REFERENCE.md/json and FNO_RESEARCH_CHALLENGERS.md/json. Keep original BALANCED_RETEST_N03, higher-total/lower-worst-fall BALANCED_RETEST_STALL_N04 and new all-year original-reference improvement STRUCTURAL_RETEST_N05. All unqualified/research-only/not deployed; no silent replacement or claim that a trade is known to win.

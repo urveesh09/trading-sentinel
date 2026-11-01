@@ -1,3 +1,10 @@
+## November 1 — N06 source/config/input freeze, candidate work not yet scored
+
+- Plan: docs/research/simulation/2026-11-01-fno-variant-selector/PLAN.md.92 research tests passed; atlas regenerated291/no diff; native exit checks still required.
+- Next: reproduce12 exact static annual controls, hash/commit699 past-only daily decisions, replay6 candidate annual books, independently reconcile prices/fees/clock/trace/selection/statistics and publish failures as well as gains.
+- Production read-only inventory:51 closed paper positions only; no live execution events/runs. Actual cost qualification unavailable.33 quote days throughOct30;3 exit files throughOct29. Services healthy/checkoutc97cb8c; no writes/restarts/deployment/orders/messages.
+- Keep THREE checkpoint records unchanged,2023 deferred, normal2/3 caps/LOW TPB1 and all cash/risk budgets intact. No claim of proven switching or known winning trades.
+
 ## November 1 — N05 final identity and three-way successor checkpoint
 
 - FIRST READ docs/FNO_RESEARCH_PROGRESS.md/json plus FNO_RESEARCH_REFERENCE.md/json and FNO_RESEARCH_CHALLENGERS.md/json. Keep original BALANCED_RETEST_N03, higher-total/lower-worst-fall BALANCED_RETEST_STALL_N04 and new all-year original-reference improvement STRUCTURAL_RETEST_N05. All unqualified/research-only/not deployed; no silent replacement or claim that a trade is known to win.
