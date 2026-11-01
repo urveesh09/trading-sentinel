@@ -1,0 +1,118 @@
+{
+  "schema": "n091_terminal_state_correction_v1",
+  "after_original_60_scores": true,
+  "problem": "Fresh annual state snapshots used only book digest and were overwritten by later years; original trade/admission receipts and unique continuous states retained.",
+  "original_source_sha256": "5f5c1aefa316c69235e3cefdc942fcd3283a6b9019c88d97001da8f7923291fc",
+  "corrected_source_sha256": "400ba635ada33fdddb2e1bf02abad1bf1ee5c500ee44db5d4f891511c9fb2077",
+  "unchanged_trading_function_asts": [
+    "plan",
+    "entry",
+    "full_reserve",
+    "open_reserve",
+    "candidates",
+    "books"
+  ],
+  "rules_sha256": "decc1110cdfac08c7eba13fdc789e7254c877e67970f6600f346aaad8bf62eb8",
+  "old_outputs_preserved": {
+    "year_2023-01-01_2023-12-31_12a1af3b128426b3": {
+      "receipt_sha256": "48a54c3fe28dc427871f75be49579590af85f0d27f94b291ec8ea900473b19c1",
+      "eval_sha256": "7ca72efa3b2c824d62b38cd5ebf0dc22d27ee3c4376681ffbc6b12bd89f7d4e6"
+    },
+    "year_2023-01-01_2023-12-31_57a9a63ea21c51f4": {
+      "receipt_sha256": "97547ecc97d886e368fbe9439f9aec90be78a0c27db2c9af480f3c93ac2be248",
+      "eval_sha256": "35abdbe133274919dac9a059cc70d58ba1238c2b77ca8c83deece74b8c170717"
+    },
+    "year_2023-01-01_2023-12-31_06b17d129971836d": {
+      "receipt_sha256": "ecb4751849c2edb5c0090b9c61fd69e43a1ce0d11dd3175e48528f4beda75d24",
+      "eval_sha256": "2ba6958f2067ce0166c3621f8a2511b9ccdc9e5df945dc949c73de5860ceb9e4"
+    },
+    "year_2023-01-01_2023-12-31_8e739210f4d70909": {
+      "receipt_sha256": "36bae837ec6c48a5b016170d3230190e43441c69697c2b5d695fcd0435c5398d",
+      "eval_sha256": "3bc72f1eb6dd79714c54380ddb543a558ef207c56038fdc7bee8438f53e8bf08"
+    },
+    "year_2023-01-01_2023-12-31_1851088af6f5bbb4": {
+      "receipt_sha256": "6203b7bdd28c9e2bbed6516df3703ac849abe716408a026f596cfaf420d8931f",
+      "eval_sha256": "9323e102f29d47730b69121686a5512ad6ca4e9d529b20146bf68146f0077638"
+    },
+    "year_2023-01-01_2023-12-31_23061c1824505826": {
+      "receipt_sha256": "4bf1585e38645c18df5bc3f64c6d7079e55318f9780499c91583e0062fae1171",
+      "eval_sha256": "8efae42b4376a3e780a8359ab9ca5c05c509709cc5ad247532b01db4ea09e5c1"
+    },
+    "year_2024-01-01_2024-12-31_12a1af3b128426b3": {
+      "receipt_sha256": "1cf9986c6f77bc30b999f21e41e456b1ca88b0463fc244fd8ef4b22a264d2a95",
+      "eval_sha256": "340350a402a8bd875a650c0f322061b495f944d78e34790f85614070946329a9"
+    },
+    "year_2024-01-01_2024-12-31_57a9a63ea21c51f4": {
+      "receipt_sha256": "0b680eca0ee090acb735ca01f5f30ba7a448ab618042fabaaabaa90493e8c7d1",
+      "eval_sha256": "fd2086c0cd6faf59fa99984d5752123637c4fd7dc0c21439ea986b51a5d79994"
+    },
+    "year_2024-01-01_2024-12-31_06b17d129971836d": {
+      "receipt_sha256": "d1a26428a96e01b2960e4b3d7d76c073f6f14f924156d919c9ac09f91c11825e",
+      "eval_sha256": "8b04afbc6926b1350992fe89792903ab49a2dca8899fcbfd804d72d4bf609d81"
+    },
+    "year_2024-01-01_2024-12-31_8e739210f4d70909": {
+      "receipt_sha256": "d42b67d964914a8a942e3650146b9cdc20e3c2906e499bdb6cf81fb48b10c6e6",
+      "eval_sha256": "61e93eadc3cc453fcd061e8f9069c3133c1ff480072728eb0504061571fe9c32"
+    },
+    "year_2024-01-01_2024-12-31_1851088af6f5bbb4": {
+      "receipt_sha256": "cdc700dc910025b68a849be059021915dbe398dee918bb5d5037e897f2ae826b",
+      "eval_sha256": "86ba7933f01a959ba2483f3522d53c04098b69d654926dbf5e2cfebac653dea9"
+    },
+    "year_2024-01-01_2024-12-31_23061c1824505826": {
+      "receipt_sha256": "a20c14eb3c505004db5178cbb4570dba9d237c811816cabf83f640b4fe2bce6c",
+      "eval_sha256": "807f134eab0cf086997d041b91755f84726f5c2d6b3199a19c7030fce9393ea3"
+    },
+    "year_2025-01-01_2025-12-31_12a1af3b128426b3": {
+      "receipt_sha256": "d9fe59007285228f44bd310c15b8087362456a001f1cb5395bb7275df5278624",
+      "eval_sha256": "08c065c40e73c54293732f6201aa801dbe52b0a30af18eebb2ec8613cd3d2639"
+    },
+    "year_2025-01-01_2025-12-31_57a9a63ea21c51f4": {
+      "receipt_sha256": "83c0d965deed87aefc9630af4b86ff666bf5681757f67f5c86b61f949db7b205",
+      "eval_sha256": "ad8b8f1a8909bc843d5060911ebf120f038af264efdad97bc21962e5c6426fba"
+    },
+    "year_2025-01-01_2025-12-31_06b17d129971836d": {
+      "receipt_sha256": "37ede7724246eb253302c985918ce8892764f835a6df7a895d15ed6eb4432132",
+      "eval_sha256": "a5dfe6eccdf268836889ad7f3d2e36eedb02d5cdf7dc5e01a7a1072aa4aa7135"
+    },
+    "year_2025-01-01_2025-12-31_8e739210f4d70909": {
+      "receipt_sha256": "b35a24c886ae2ea1c55849a9ada1bc689c33b0090c7add33ee93c692d6c63c82",
+      "eval_sha256": "a28480685e0bf28c661d351205bc3a448baad0b98a7e0e5284f6df8f7ebd32c6"
+    },
+    "year_2025-01-01_2025-12-31_1851088af6f5bbb4": {
+      "receipt_sha256": "104e5ba31226aea8d544cc90d99d4c5333235d78c015a6d3351ffcda81d41498",
+      "eval_sha256": "ddb5e90f9d6142c321126abcab81f204df6a4bd1c63e9862f34c28613a86af28"
+    },
+    "year_2025-01-01_2025-12-31_23061c1824505826": {
+      "receipt_sha256": "ee2aa659b03f9750a5b7eae500ff57bed9bd0ffa3b0eb5b7948eebcbf27dc554",
+      "eval_sha256": "bbd9c72549ff469a7f37b5fe0321b5f7a99d640677760e2769b7364dca68d995"
+    },
+    "year_2026-01-01_2026-10-28_12a1af3b128426b3": {
+      "receipt_sha256": "925a7ab6569b2924d7bf3997ab204d3e8f9884ba178795777acd1099226f0321",
+      "eval_sha256": "f3df228d63266ef4deaedade8afa8ac31f32e884f7ace8647779d3b479266d48"
+    },
+    "year_2026-01-01_2026-10-28_57a9a63ea21c51f4": {
+      "receipt_sha256": "d04faf0db800e0a1a7a61574d74ff3bdcef04d9b918b96cf5777cbf83e5b5ca0",
+      "eval_sha256": "fc4113b45775525947a30699e08d03dc525825daecf3d7978a6ec6151dfe247b"
+    },
+    "year_2026-01-01_2026-10-28_06b17d129971836d": {
+      "receipt_sha256": "4549bae36e1bc482192ba4e7423adc5ef3ae9b96d33d9872493fd953237f5cc1",
+      "eval_sha256": "04a62b7d98da2ad9f4ecbe2ed9826d13595ec846446850f1feda72b08e194bec"
+    },
+    "year_2026-01-01_2026-10-28_8e739210f4d70909": {
+      "receipt_sha256": "cd1d89a62dfbed047439d4497741b99bb490bcbecde1ccff5327756c0d780690",
+      "eval_sha256": "34783a5e33c6df9a39de6d7f1b4b92caeb02630bfa372b4692bbe1e261b28e23"
+    },
+    "year_2026-01-01_2026-10-28_1851088af6f5bbb4": {
+      "receipt_sha256": "79d6b5be00f318bef89198a78154ef919286cd4023a89d20173c83369528dd58",
+      "eval_sha256": "f5e33ff68739efa46a61e18fd0f93bd012620f0b5105abf9a779886546c2dc60"
+    },
+    "year_2026-01-01_2026-10-28_23061c1824505826": {
+      "receipt_sha256": "e2c40dfb14c978e6a39f664e0e9beea5c0a36ea9d7cae710314dcfa9e51c9c21",
+      "eval_sha256": "2cb4e2c759b37b742cf0111f4f992c11b2b1db765b577b39fa1c8a413b184e83"
+    }
+  },
+  "reruns": 24,
+  "new_result_namespace": "_local/repair-evals",
+  "acceptance": "Every repaired economic trade and admission/decision receipt equals the original; new full-window state identity required.",
+  "no_trading_parameter_or_acceptance_change": true
+}

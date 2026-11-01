@@ -44,6 +44,7 @@ def full():
     counts = Counter()
     ends = {}
     states = {}
+    carried_budget = {}
     report = {}
     for phase in ("controls", "primary", "costs", "carry"):
         if phase == "carry":
@@ -76,7 +77,7 @@ def full():
                     fees = calc_fno_costs(t["entry_premium"], t["exit_premium"], qty)
                     extra = (a + b * lots) * lots
                     assert abs(t["gross_pnl"] - gross) < .001
-                    assert abs(t["extra_cost"] - extra) < .001
+                    assert abs(t.get("extra_cost", 0.) - extra) < .001
                     assert abs(t["net_pnl"] - gross + fees + extra) < .001
                     assert qty * t["entry_premium"] <= equity + .001
                     matches = [r for r in accepted if r["at"] == t["entry_time"] and r["bar_ts"] == t["bar_ts"]]
@@ -107,10 +108,35 @@ def full():
                 if phase == "carry":
                     ends[name] = equity
                 if book.get("n091"):
-                    state = read(LOCAL / f"states/{key.rsplit('_', 1)[-1]}.json")
+                    state = read(LOCAL / (f"states/{key.rsplit('_', 1)[-1]}.json" if phase == "carry" else f"states/{key}.json"))
                     assert abs(state["start_equity"] - opening) < .001
                     assert abs(state["end_equity"] - equity) < .01
                     if book["n091"]["mode"] == "CUSHION":
+                        prior_budget = carried_budget.get(name) if phase == "carry" else None
+                        independently_floored = prior_budget["floor"] if prior_budget else 212500.
+                        independently_peaked = prior_budget["peak"] if prior_budget else 250000.
+                        for r in admissions:
+                            cash = opening
+                            for t in sorted(trades, key=lambda t: t["exit_time"]):
+                                if t["exit_time"] <= r["at"]:
+                                    cash += t["net_pnl"]
+                                    independently_peaked = max(independently_peaked, cash)
+                            exposed = [t for t in trades if t["entry_time"] < r["at"] < t["exit_time"]]
+                            reserved = sum(t["entry_premium"] * t["entry_qty"]
+                                + calc_fno_costs(t["entry_premium"], t["entry_premium"], t["entry_qty"])
+                                + (a + b * t["lots_at_exit"]) * t["lots_at_exit"] for t in exposed)
+                            independently_floored = max(independently_floored, min(.85 * independently_peaked, cash - reserved))
+                            assert abs(r["pool"] - cash) < .01, "admission cash differs from earlier closes"
+                            assert abs(r["open_reserve"] - reserved) < .01, "open exposure reserve differs"
+                            assert abs(r["peak"] - independently_peaked) < .01, "peak uses unearned money"
+                            assert abs(r["floor"] - independently_floored) < .01, "floor differs from independent cash/peak"
+                            counts["independent_floor_clock_reconstructions"] += 1
+                        independently_peaked = max(independently_peaked, max([opening, *[opening + sum(x["net_pnl"] for x in sorted(trades, key=lambda t: t["exit_time"])[:i + 1]) for i in range(len(trades))]]))
+                        independently_floored = max(independently_floored, .85 * independently_peaked)
+                        assert abs(state["budget"]["peak"] - independently_peaked) < .01
+                        assert abs(state["budget"]["floor"] - independently_floored) < .01
+                        if phase == "carry":
+                            carried_budget[name] = {"peak": independently_peaked, "floor": independently_floored}
                         floors = [r["floor"] for r in admissions]
                         assert floors == sorted(floors), "floor decreased within year"
                         assert state["budget"]["floor"] >= max(floors or [212500.]) - .001

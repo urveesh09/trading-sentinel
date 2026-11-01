@@ -31,6 +31,7 @@ Y.EVALS = LOCAL / "evals"
 X.LOCAL = LOCAL
 Z.B.O27F.deny_network()
 ACTIVE = None
+ACTIVE_FREEZE = "freeze-v2.json"
 
 
 def write(path, value):
@@ -150,11 +151,14 @@ def run_book(self, start, end):
         end_equity = result["start_equity"] + sum(t["net_pnl"] for t in result["trades"])
         if cfg["mode"] == "CUSHION":
             self._n091_budget = R.advance(self._n091_budget, end_equity, 0., self._n091_drawdown)
-        write(LOCAL / "states" / f"{Y.digest(self.book)}.json", {
+        terminal = {
             "budget": asdict(self._n091_budget), "end_equity": end_equity,
             "start_equity": result["start_equity"], "drawdown": self._n091_drawdown,
             "previous": cfg.get("state_from"), "window": [start, end],
-        })
+        }
+        write(LOCAL / "states" / f"{key}.json", terminal)
+        if self.book["label"].startswith("N091|CARRY|"):
+            write(LOCAL / "states" / f"{Y.digest(self.book)}.json", terminal)
     return result
 
 
@@ -202,9 +206,11 @@ def file_hash(path):
 
 
 def verify():
-    freeze = json.loads((HERE / "freeze.json").read_text())
-    committed = subprocess.check_output(["git", "show", "HEAD:" + (HERE / "freeze.json").relative_to(ROOT).as_posix()], cwd=ROOT)
+    freeze = json.loads((HERE / ACTIVE_FREEZE).read_text())
+    committed = subprocess.check_output(["git", "show", "HEAD:" + (HERE / ACTIVE_FREEZE).relative_to(ROOT).as_posix()], cwd=ROOT)
     assert json.loads(committed) == freeze, "freeze must be committed before replay"
+    assert file_hash(HERE / "SOURCE_CORRECTION.json") == freeze["correction_sha256"]
+    assert file_hash(HERE / "freeze.json") == freeze["original_freeze_sha256"]
     for name, expected in freeze["sources"].items():
         assert file_hash(ROOT / name) == expected, f"source changed: {name}"
     for item in freeze["inputs"]:

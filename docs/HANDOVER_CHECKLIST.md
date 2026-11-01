@@ -1,3 +1,9 @@
+## November 1 — N09.1 snapshot bug caught and corrected
+
+- First full audit FAILED: fresh independent year terminal state overwritten by same-policy later year. Original economic results/admission receipts and unique continuous states preserved.
+- Post-score SOURCE_CORRECTION plus freeze-v2, not retrospective preregistration. All actual trading ASTs/rules unchanged. Window-scoped state keys and carry-only alias; regression verifies two fresh windows retain their own cash.
+-55 focused passed (44research/11native), atlas291.24 mechanical reruns require exact old trades AND admissions; then re-run full independent audit before claiming completion. No runtime/Production/config/risk/lot/money changes.
+
 ## November 1 — N09.1 baseline parity complete
 
 - Pre-score source4245670;12 exact annual controls/675 trades;54 focused passed, atlas291 unchanged.
