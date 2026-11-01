@@ -90,7 +90,7 @@ N08, one lot, brakes off, 243 trades.
 
 - Every N09 code path on with nothing changed equals N08, trade for trade, on all four years (`n09_lab.py parity`).
 - The same stack reproduced stored N07 and EX|MAIN results exactly earlier the same day (`compare_four.py`, `compare-four.json`, which also holds the plain four strategies: -37,774 / -38,721 / -37,509 / -38,042 = -1,52,046; on ADX 25 days only, -49,065).
-- `test_n09.py` (15) and `test_n09_scoring.py` (9) pass. The scoring tests check the estimator on noise and on a real edge.
+- `test_n09.py` (15) and `test_n09_scoring.py` (8) pass. The scoring tests check the estimator on noise and on a real edge.
 - `audit_account.py` recomputes the accounts from raw trades.
 - Cut data: the four cut sessions hold one N08 trade, +Rs 1,059 on Jan 31, 2025. `repair-ceiling` wasn't run; today's allowance is used and it needs the owner's word.
 
