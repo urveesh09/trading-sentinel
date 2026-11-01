@@ -1,0 +1,385 @@
+{
+  "status": "POST_RUN_DESCRIPTIVE_NO_NEW_GATE",
+  "exact_economic_pairs": [
+    {
+      "year": "2024",
+      "base_admission_id": "N04/2024/089531254dbb391d/9",
+      "stall_admission_id": "N04/2024/0ae0cf3f0c08452e/9",
+      "economic_fingerprint": "a2bebf12adbfe866a506d7195c8d8ae51a88df320b939fc9c8148a8b17ceca00",
+      "immutable_terms": {
+        "initial_entry_time": "2024-01-12T12:10:59+05:30",
+        "initial_entry_premium": 158.85,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 21894.0,
+        "initial_target_underlying": 21803.7,
+        "tradingsymbol": "NIFTY24011821900PE",
+        "direction": "SHORT"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -217.73386848799854,
+        "progress_r": 0.22708333333336364,
+        "bid": 161.15,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2024-01-12T12:54:59+05:30",
+        "stall_exit_time": "2024-01-12T12:40:59+05:30",
+        "base_net": -2313.2019,
+        "stall_net": -217.7339,
+        "delta": 2095.468
+      }
+    },
+    {
+      "year": "2024",
+      "base_admission_id": "N04/2024/089531254dbb391d/10",
+      "stall_admission_id": "N04/2024/0ae0cf3f0c08452e/10",
+      "economic_fingerprint": "d855e081b7bc5bbccfaab996a580497db8bb4edc26e81dc28974d559a4a3d141",
+      "immutable_terms": {
+        "initial_entry_time": "2024-01-16T11:55:59+05:30",
+        "initial_entry_premium": 126.8,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 22123.0,
+        "initial_target_underlying": 22050.2,
+        "tradingsymbol": "NIFTY24011822150PE",
+        "direction": "SHORT"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 35.0,
+        "net_at_bid_after_cost": -201.36811996172887,
+        "progress_r": 0.44936708860748903,
+        "bid": 129.15,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2024-01-16T13:44:59+05:30",
+        "stall_exit_time": "2024-01-16T12:30:59+05:30",
+        "base_net": 6655.9375,
+        "stall_net": -201.3681,
+        "delta": -6857.3056
+      }
+    },
+    {
+      "year": "2024",
+      "base_admission_id": "N04/2024/089531254dbb391d/29",
+      "stall_admission_id": "N04/2024/0ae0cf3f0c08452e/29",
+      "economic_fingerprint": "2bf9a39b60fdcb4890194222847be7d305d3fa9e64ecebefd064e069faf4ab9a",
+      "immutable_terms": {
+        "initial_entry_time": "2024-11-06T11:10:59+05:30",
+        "initial_entry_premium": 64.85,
+        "initial_quantity": 195,
+        "initial_stop_underlying": 24381.15,
+        "initial_target_underlying": 24596.329999999998,
+        "tradingsymbol": "NIFTY24110724450CE",
+        "direction": "LONG"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -255.08019751920887,
+        "progress_r": 0.17477477477476602,
+        "bid": 67.25,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2024-11-06T12:23:59+05:30",
+        "stall_exit_time": "2024-11-06T11:40:59+05:30",
+        "base_net": -128.5736,
+        "stall_net": -255.0802,
+        "delta": -126.50659999999999
+      }
+    },
+    {
+      "year": "2025",
+      "base_admission_id": "N04/2025/089531254dbb391d/6",
+      "stall_admission_id": "N04/2025/0ae0cf3f0c08452e/6",
+      "economic_fingerprint": "a67c109ec2dc281dada565cf5ce05b51fe693f0401c50dfc980dd5bfbc6f3d6f",
+      "immutable_terms": {
+        "initial_entry_time": "2025-01-07T10:30:59+05:30",
+        "initial_entry_premium": 117.3,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 23750.227727068173,
+        "initial_target_underlying": 24064.730091277284,
+        "tradingsymbol": "NIFTY25010923800CE",
+        "direction": "LONG"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1606.23132124574,
+        "progress_r": -0.017021741371176607,
+        "bid": 108.8,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2025-01-07T11:30:59+05:30",
+        "stall_exit_time": "2025-01-07T11:00:59+05:30",
+        "base_net": -1755.4442,
+        "stall_net": -1606.2313,
+        "delta": 149.2129
+      }
+    },
+    {
+      "year": "2025",
+      "base_admission_id": "N04/2025/089531254dbb391d/11",
+      "stall_admission_id": "N04/2025/0ae0cf3f0c08452e/11",
+      "economic_fingerprint": "415d5e1706558c27ed519afbfd18a2f849ba249445a0cf9fcfc8db1d7ae6dfa2",
+      "immutable_terms": {
+        "initial_entry_time": "2025-01-17T13:21:59+05:30",
+        "initial_entry_premium": 234.8,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 23318.0,
+        "initial_target_underlying": 23144.679999999997,
+        "tradingsymbol": "NIFTY25012323300PE",
+        "direction": "SHORT"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1079.861318336581,
+        "progress_r": -0.09026297085996697,
+        "bid": 222.6,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2025-01-17T14:21:59+05:30",
+        "stall_exit_time": "2025-01-17T13:51:59+05:30",
+        "base_net": -1696.1754,
+        "stall_net": -1079.8613,
+        "delta": 616.3141
+      }
+    },
+    {
+      "year": "2025",
+      "base_admission_id": "N04/2025/089531254dbb391d/18",
+      "stall_admission_id": "N04/2025/0ae0cf3f0c08452e/18",
+      "economic_fingerprint": "b956e67dae9bb988dfa76d95129494ac996b914ee6ac82fd09096b8fbf30919f",
+      "immutable_terms": {
+        "initial_entry_time": "2025-02-01T14:00:59+05:30",
+        "initial_entry_premium": 145.6,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 23472.061709130434,
+        "initial_target_underlying": 23725.568923565213,
+        "tradingsymbol": "NIFTY25020623550CE",
+        "direction": "LONG"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 31.0,
+        "net_at_bid_after_cost": -148.77487257959854,
+        "progress_r": 0.25526277595853614,
+        "bid": 148.4,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2025-02-01T15:00:59+05:30",
+        "stall_exit_time": "2025-02-01T14:31:59+05:30",
+        "base_net": -1809.5793,
+        "stall_net": -148.7749,
+        "delta": 1660.8044
+      }
+    },
+    {
+      "year": "2026",
+      "base_admission_id": "N04/2026/089531254dbb391d/15",
+      "stall_admission_id": "N04/2026/0ae0cf3f0c08452e/15",
+      "economic_fingerprint": "2684f097f2aef7b5446f68a3e6d56cef9fdc71aa5aa5ab143484161511e21d39",
+      "immutable_terms": {
+        "initial_entry_time": "2026-03-20T12:51:59+05:30",
+        "initial_entry_premium": 286.0,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 23154.987157321644,
+        "initial_target_underlying": 23382.663116821037,
+        "tradingsymbol": "NIFTY26032423150CE",
+        "direction": "LONG"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 54.0,
+        "net_at_bid_after_cost": -387.09972039101854,
+        "progress_r": 0.05782237838303531,
+        "bid": 284.6,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2026-03-20T13:51:59+05:30",
+        "stall_exit_time": "2026-03-20T13:45:59+05:30",
+        "base_net": -906.1011,
+        "stall_net": -387.0997,
+        "delta": 519.0014
+      }
+    },
+    {
+      "year": "2026",
+      "base_admission_id": "N04/2026/089531254dbb391d/21",
+      "stall_admission_id": "N04/2026/0ae0cf3f0c08452e/21",
+      "economic_fingerprint": "fdc131c0d45d7f5bfc6d3e1daebb285b6bdb0e81d9da253a35e60e3ee6786e12",
+      "immutable_terms": {
+        "initial_entry_time": "2026-03-27T12:45:59+05:30",
+        "initial_entry_premium": 264.5,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 22913.776984394786,
+        "initial_target_underlying": 23066.72142808939,
+        "tradingsymbol": "NIFTY26033022900CE",
+        "direction": "LONG"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1058.4882148812408,
+        "progress_r": -0.2541133776868566,
+        "bid": 252.7,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2026-03-27T13:39:59+05:30",
+        "stall_exit_time": "2026-03-27T13:15:59+05:30",
+        "base_net": -2612.2486,
+        "stall_net": -1058.4882,
+        "delta": 1553.7604
+      }
+    },
+    {
+      "year": "2026",
+      "base_admission_id": "N04/2026/089531254dbb391d/27",
+      "stall_admission_id": "N04/2026/0ae0cf3f0c08452e/27",
+      "economic_fingerprint": "71812c14094e8adf8ca871a86ac090f88f6c3596050a7fef79bbeaddef01156f",
+      "immutable_terms": {
+        "initial_entry_time": "2026-04-08T12:00:59+05:30",
+        "initial_entry_premium": 266.3,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 24048.0,
+        "initial_target_underlying": 23869.920000000006,
+        "tradingsymbol": "NIFTY26041324050PE",
+        "direction": "SHORT"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -312.70113201041073,
+        "progress_r": 0.03392568659125195,
+        "bid": 266.0,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2026-04-08T13:00:59+05:30",
+        "stall_exit_time": "2026-04-08T12:30:59+05:30",
+        "base_net": -1600.4733,
+        "stall_net": -312.7011,
+        "delta": 1287.7722
+      }
+    },
+    {
+      "year": "2026",
+      "base_admission_id": "N04/2026/089531254dbb391d/51",
+      "stall_admission_id": "N04/2026/0ae0cf3f0c08452e/51",
+      "economic_fingerprint": "9b83da50b978d5824112988de23ea8ef4b09402f403bce767b4cd85075a75afa",
+      "immutable_terms": {
+        "initial_entry_time": "2026-10-09T12:00:59+05:30",
+        "initial_entry_premium": 195.55,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 22593.894076701246,
+        "initial_target_underlying": 22397.070661937752,
+        "tradingsymbol": "NIFTY26101322600PE",
+        "direction": "SHORT"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1468.16107069959,
+        "progress_r": -0.1540972690934046,
+        "bid": 188.3,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2026-10-09T12:57:59+05:30",
+        "stall_exit_time": "2026-10-09T12:30:59+05:30",
+        "base_net": -6541.3995,
+        "stall_net": -1468.1611,
+        "delta": 5073.2384
+      }
+    },
+    {
+      "year": "2026",
+      "base_admission_id": "N04/2026/089531254dbb391d/53",
+      "stall_admission_id": "N04/2026/0ae0cf3f0c08452e/53",
+      "economic_fingerprint": "e1f652f932baa5239e6550d5ea0ba4290c818face2aa92c9fefefa2572a043e6",
+      "immutable_terms": {
+        "initial_entry_time": "2026-10-14T13:55:59+05:30",
+        "initial_entry_premium": 148.65,
+        "initial_quantity": 195,
+        "initial_stop_underlying": 22606.293695734945,
+        "initial_target_underlying": 22826.6713476771,
+        "tradingsymbol": "NIFTY26101922650CE",
+        "direction": "LONG"
+      },
+      "known_when_stall_exit_chosen": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -4916.178574644597,
+        "progress_r": -0.3740812552567063,
+        "bid": 127.3,
+        "context": null,
+        "combined_would_choose": "STALL30",
+        "mode": "STALL_ONLY"
+      },
+      "later_paired_exit_label": {
+        "base_exit_time": "2026-10-14T14:55:59+05:30",
+        "stall_exit_time": "2026-10-14T14:25:59+05:30",
+        "base_net": -6599.6893,
+        "stall_net": -4916.1786,
+        "delta": 1683.5106999999998
+      }
+    }
+  ],
+  "unavailable_pairs": [
+    {
+      "year": "2025",
+      "admission_id": "N04/2025/0ae0cf3f0c08452e/60",
+      "reason": "no exact immutable economic admission pair"
+    }
+  ],
+  "summary": {
+    "2024": {
+      "pairs": 3,
+      "paired_delta": -4888.3442,
+      "helped": 1,
+      "hurt": 2
+    },
+    "2025": {
+      "pairs": 3,
+      "paired_delta": 2426.3314,
+      "helped": 3,
+      "hurt": 0
+    },
+    "2026": {
+      "pairs": 5,
+      "paired_delta": 10117.2831,
+      "helped": 5,
+      "hurt": 0
+    }
+  },
+  "limit": "Later base exit outcomes are labels only; not inputs available at the early decision. Resized/unmatched admissions remain unavailable, never paired by ticker/date."
+}

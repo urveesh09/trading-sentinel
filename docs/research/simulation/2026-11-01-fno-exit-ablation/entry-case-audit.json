@@ -1,0 +1,2049 @@
+{
+  "status": "POST_RUN_DESCRIPTIVE_NOT_ROUTING",
+  "records": [
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/2",
+      "source_bar": "2024-01-02 12:15:00",
+      "entry_time": "2024-01-02T12:21:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 22.688058092130994,
+        "efficiency4": 0.9535962877030146,
+        "body_fraction": 0.9139941690961869,
+        "rvol": 3.36260519575558,
+        "signed_distance_vwap_atr": -0.2862171023682948,
+        "stretch": -0.1319,
+        "stop_distance": 29.526116184264538,
+        "target_distance": 97.52700913167064,
+        "option_ask": 67.2,
+        "option_bid": 67.0,
+        "spread": 0.20000000000000284,
+        "premium_per_atr": 2.9619106107325814,
+        "days_to_expiry": 2,
+        "minutes_after_open": 186,
+        "immediate_roundtrip_cost_at_current_quote": 513.8619921502803
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1182.0763,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/5",
+      "source_bar": "2024-01-03 11:45:00",
+      "entry_time": "2024-01-03T11:51:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 18.632574818240343,
+        "efficiency4": 0.7494780793319492,
+        "body_fraction": 0.9329388560158901,
+        "rvol": 2.9413942011104255,
+        "signed_distance_vwap_atr": 1.2411162819007902,
+        "stretch": 0.3351,
+        "stop_distance": 43.365149636480055,
+        "target_distance": 60.9772693456689,
+        "option_ask": 33.0,
+        "option_bid": 32.9,
+        "spread": 0.10000000000000142,
+        "premium_per_atr": 1.7710917745890213,
+        "days_to_expiry": 1,
+        "minutes_after_open": 156,
+        "immediate_roundtrip_cost_at_current_quote": 490.34606818706015
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1658.0992,
+        "original_exit_reason": "premium_backstop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/8",
+      "source_bar": "2024-01-08 10:30:00",
+      "entry_time": "2024-01-08T10:36:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 24.945627351385525,
+        "efficiency4": 0.5129740518961632,
+        "body_fraction": 0.9749303621169522,
+        "rvol": 1.3979747289183617,
+        "signed_distance_vwap_atr": 1.5429260001622436,
+        "stretch": 0.4103,
+        "stop_distance": 43.84125470277286,
+        "target_distance": 95.85425846498765,
+        "option_ask": 90.6,
+        "option_bid": 90.4,
+        "spread": 0.19999999999998863,
+        "premium_per_atr": 3.6318990388096175,
+        "days_to_expiry": 3,
+        "minutes_after_open": 81,
+        "immediate_roundtrip_cost_at_current_quote": 521.0741797853985
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -3271.7815,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/9",
+      "source_bar": "2024-01-09 13:55:00",
+      "entry_time": "2024-01-09T14:00:59+05:30",
+      "year": "2024",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 14.70910951689788,
+        "efficiency4": 0.6330532212885637,
+        "body_fraction": 0.739382239382254,
+        "rvol": 1.3149251562272926,
+        "signed_distance_vwap_atr": -0.5737361309964322,
+        "stretch": -0.1383,
+        "stop_distance": 25.818219033793866,
+        "target_distance": 56.55279426083507,
+        "option_ask": 144.15,
+        "option_bid": 143.85,
+        "spread": 0.30000000000001137,
+        "premium_per_atr": 9.800049407097006,
+        "days_to_expiry": 2,
+        "minutes_after_open": 285,
+        "immediate_roundtrip_cost_at_current_quote": 550.5540281392015
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 9025.0213,
+        "original_exit_reason": "trail_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2024/2f06ea5daeb030b3/7",
+            "confirmation_bar": "2024-01-09 14:05:00",
+            "entry_time": "2024-01-09T14:10:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/10",
+      "source_bar": "2024-01-10 10:15:00",
+      "entry_time": "2024-01-10T10:21:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 33.47588211110223,
+        "efficiency4": 0.3708306082407052,
+        "body_fraction": 0.7543424317618364,
+        "rvol": 1.3230627730512763,
+        "signed_distance_vwap_atr": 1.2853898270041286,
+        "stretch": 0.359,
+        "stop_distance": 56.04999999999927,
+        "target_distance": 124.1300000000083,
+        "option_ask": 58.95,
+        "option_bid": 58.75,
+        "spread": 0.20000000000000284,
+        "premium_per_atr": 1.760969279445793,
+        "days_to_expiry": 1,
+        "minutes_after_open": 66,
+        "immediate_roundtrip_cost_at_current_quote": 511.31923368918035
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -2872.7755,
+        "original_exit_reason": "premium_backstop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/11",
+      "source_bar": "2024-01-12 12:00:00",
+      "entry_time": "2024-01-12T12:07:59+05:30",
+      "year": "2024",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 16.967558644924654,
+        "efficiency4": 0.9210526315791238,
+        "body_fraction": 0.7003676470587781,
+        "rvol": 1.7982484592928965,
+        "signed_distance_vwap_atr": -2.1888419332333133,
+        "stretch": -0.7261,
+        "stop_distance": 30.0,
+        "target_distance": 58.900000000001455,
+        "option_ask": 162.25,
+        "option_bid": 161.75,
+        "spread": 0.5,
+        "premium_per_atr": 9.562365652912142,
+        "days_to_expiry": 6,
+        "minutes_after_open": 172,
+        "immediate_roundtrip_cost_at_current_quote": 309.6413773908
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1396.3005,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2024/2f06ea5daeb030b3/9",
+            "confirmation_bar": "2024-01-12 12:05:00",
+            "entry_time": "2024-01-12T12:10:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/12",
+      "source_bar": "2024-01-15 13:45:00",
+      "entry_time": "2024-01-15T13:51:59+05:30",
+      "year": "2024",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 14.679432166453921,
+        "efficiency4": 0.5027322404371186,
+        "body_fraction": 0.7935483870967273,
+        "rvol": 1.2980825101685067,
+        "signed_distance_vwap_atr": -0.07970359521361493,
+        "stretch": -0.0188,
+        "stop_distance": 7.349999999998545,
+        "target_distance": 72.86999999999534,
+        "option_ask": 157.45,
+        "option_bid": 156.95,
+        "spread": 0.5,
+        "premium_per_atr": 10.725891724872819,
+        "days_to_expiry": 3,
+        "minutes_after_open": 276,
+        "immediate_roundtrip_cost_at_current_quote": 308.90166583847997
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -604.0837,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/13",
+      "source_bar": "2024-01-16 11:40:00",
+      "entry_time": "2024-01-16T11:48:59+05:30",
+      "year": "2024",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 17.64391332897381,
+        "efficiency4": 0.6423017107309649,
+        "body_fraction": 0.804245283018806,
+        "rvol": 1.5512487512487512,
+        "signed_distance_vwap_atr": 0.10424397401682102,
+        "stretch": 0.0423,
+        "stop_distance": 23.0,
+        "target_distance": 55.400000000001455,
+        "option_ask": 126.4,
+        "option_bid": 126.1,
+        "spread": 0.30000000000001137,
+        "premium_per_atr": 7.163943601583741,
+        "days_to_expiry": 2,
+        "minutes_after_open": 153,
+        "immediate_roundtrip_cost_at_current_quote": 545.0832447835015
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 6707.961,
+        "original_exit_reason": "trail_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2024/2f06ea5daeb030b3/10",
+            "confirmation_bar": "2024-01-16 11:50:00",
+            "entry_time": "2024-01-16T11:55:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/14",
+      "source_bar": "2024-01-17 10:35:00",
+      "entry_time": "2024-01-17T10:40:59+05:30",
+      "year": "2024",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 29.032308060016135,
+        "efficiency4": 0.9703557312252956,
+        "body_fraction": 0.922712933753922,
+        "rvol": 3.0471965020576133,
+        "signed_distance_vwap_atr": 1.8253413800969047,
+        "stretch": 0.4779,
+        "stop_distance": 48.099999999998545,
+        "target_distance": 89.37999999999738,
+        "option_ask": 103.3,
+        "option_bid": 103.0,
+        "spread": 0.29999999999999716,
+        "premium_per_atr": 3.5581049838151446,
+        "days_to_expiry": 1,
+        "minutes_after_open": 85,
+        "immediate_roundtrip_cost_at_current_quote": 537.9635210924196
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 6643.718,
+        "original_exit_reason": "trail_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/15",
+      "source_bar": "2024-01-19 11:35:00",
+      "entry_time": "2024-01-19T11:40:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 26.870484398417886,
+        "efficiency4": 0.8989898989898973,
+        "body_fraction": 0.5534883720930064,
+        "rvol": 1.5187863320572805,
+        "signed_distance_vwap_atr": -0.30089287058005343,
+        "stretch": -0.105,
+        "stop_distance": 41.74096879683566,
+        "target_distance": 108.73374383430564,
+        "option_ask": 168.75,
+        "option_bid": 168.25,
+        "spread": 0.5,
+        "premium_per_atr": 6.280124969013802,
+        "days_to_expiry": 6,
+        "minutes_after_open": 145,
+        "immediate_roundtrip_cost_at_current_quote": 310.64307011790004
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -404.7121,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/16",
+      "source_bar": "2024-01-19 13:15:00",
+      "entry_time": "2024-01-19T13:21:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 21.88662831427261,
+        "efficiency4": 1.0,
+        "body_fraction": 0.5936073059360336,
+        "rvol": 2.59667650256251,
+        "signed_distance_vwap_atr": 1.632705612611633,
+        "stretch": 0.4641,
+        "stop_distance": 33.823256628544186,
+        "target_distance": 88.74186193138303,
+        "option_ask": 158.55,
+        "option_bid": 158.05,
+        "spread": 0.5,
+        "premium_per_atr": 7.244149154605376,
+        "days_to_expiry": 6,
+        "minutes_after_open": 246,
+        "immediate_roundtrip_cost_at_current_quote": 580.94236613844
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -2579.0977,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/19",
+      "source_bar": "2024-11-04 12:00:00",
+      "entry_time": "2024-11-04T12:06:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 35.224588989264596,
+        "efficiency4": 0.7130600571973487,
+        "body_fraction": 0.8807901907356972,
+        "rvol": 5.684004810583283,
+        "signed_distance_vwap_atr": -1.5136930212752862,
+        "stretch": -0.2605,
+        "stop_distance": 61.94917797852759,
+        "target_distance": 135.3085203613482,
+        "option_ask": 171.8,
+        "option_bid": 171.3,
+        "spread": 0.5,
+        "premium_per_atr": 4.8772747938197245,
+        "days_to_expiry": 3,
+        "minutes_after_open": 171,
+        "immediate_roundtrip_cost_at_current_quote": 311.11309516677
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -2065.9865,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/20",
+      "source_bar": "2024-11-04 14:35:00",
+      "entry_time": "2024-11-04T14:40:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 29.94718509403813,
+        "efficiency4": 0.8378926038500458,
+        "body_fraction": 0.634005763688814,
+        "rvol": 1.5907094223588842,
+        "signed_distance_vwap_atr": -0.2769907562607782,
+        "stretch": -0.0405,
+        "stop_distance": 58.04999999999927,
+        "target_distance": 85.0299999999952,
+        "option_ask": 157.25,
+        "option_bid": 156.75,
+        "spread": 0.5,
+        "premium_per_atr": 5.250910878809282,
+        "days_to_expiry": 3,
+        "minutes_after_open": 325,
+        "immediate_roundtrip_cost_at_current_quote": 580.5416890476
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 2183.1406,
+        "original_exit_reason": "hard_flat_1510",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/21",
+      "source_bar": "2024-11-05 09:55:00",
+      "entry_time": "2024-11-05T10:00:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 37.15805347802292,
+        "efficiency4": 0.43478260869565216,
+        "body_fraction": 0.7236936292054449,
+        "rvol": 1.509270951020137,
+        "signed_distance_vwap_atr": 0.46484814593299517,
+        "stretch": 0.1634,
+        "stop_distance": 62.81610695604468,
+        "target_distance": 145.2689925208797,
+        "option_ask": 135.7,
+        "option_bid": 135.4,
+        "spread": 0.29999999999998295,
+        "premium_per_atr": 3.6519674013672314,
+        "days_to_expiry": 2,
+        "minutes_after_open": 45,
+        "immediate_roundtrip_cost_at_current_quote": 813.3244405731067
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1124.7253,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/22",
+      "source_bar": "2024-11-05 10:25:00",
+      "entry_time": "2024-11-05T10:34:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 37.31979409490868,
+        "efficiency4": 0.5027133695115898,
+        "body_fraction": 0.7608695652174063,
+        "rvol": 1.2101385204833481,
+        "signed_distance_vwap_atr": 1.1171426295938915,
+        "stretch": 0.3944,
+        "stop_distance": 21.339588189817732,
+        "target_distance": 187.65125874166915,
+        "option_ask": 147.8,
+        "option_bid": 147.5,
+        "spread": 0.30000000000001137,
+        "premium_per_atr": 3.9603648300986607,
+        "days_to_expiry": 2,
+        "minutes_after_open": 79,
+        "immediate_roundtrip_cost_at_current_quote": 294.43950306251077
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1004.8226,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/23",
+      "source_bar": "2024-11-06 10:25:00",
+      "entry_time": "2024-11-06T10:31:59+05:30",
+      "year": "2024",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 37.2485539498896,
+        "efficiency4": 1.0,
+        "body_fraction": 0.9120689655172665,
+        "rvol": 2.1028902282758293,
+        "signed_distance_vwap_atr": -0.08238328248980863,
+        "stretch": -0.0202,
+        "stop_distance": 89.19710789977762,
+        "target_distance": 119.39479421960641,
+        "option_ask": 245.05,
+        "option_bid": 244.45,
+        "spread": 0.6000000000000227,
+        "premium_per_atr": 6.5787788790315265,
+        "days_to_expiry": 1,
+        "minutes_after_open": 76,
+        "immediate_roundtrip_cost_at_current_quote": 328.88891883965147
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -3270.978,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/25",
+      "source_bar": "2024-11-06 12:20:00",
+      "entry_time": "2024-11-06T12:25:59+05:30",
+      "year": "2024",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 29.921035652190177,
+        "efficiency4": 1.0,
+        "body_fraction": 0.8146258503401205,
+        "rvol": 1.7615689305381124,
+        "signed_distance_vwap_atr": -1.7290163207351739,
+        "stretch": -0.3404,
+        "stop_distance": 49.842071304381534,
+        "target_distance": 117.71572834788822,
+        "option_ask": 231.95,
+        "option_bid": 231.35,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 7.752071241659096,
+        "days_to_expiry": 1,
+        "minutes_after_open": 190,
+        "immediate_roundtrip_cost_at_current_quote": 326.87012272810966
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -3311.128,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2024/d2655c51c938dd78/24",
+      "source_bar": "2024-11-06 10:50:00",
+      "entry_time": "2024-11-06T10:55:59+05:30",
+      "year": "2024",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 41.38421963637979,
+        "efficiency4": 0.3787878787878695,
+        "body_fraction": 0.6356680400235378,
+        "rvol": 1.5385390428211587,
+        "signed_distance_vwap_atr": 0.7760970367633397,
+        "stretch": 0.2113,
+        "stop_distance": 80.89999999999782,
+        "target_distance": 139.87999999999738,
+        "option_ask": 64.0,
+        "option_bid": 63.8,
+        "spread": 0.20000000000000284,
+        "premium_per_atr": 1.5464831900258733,
+        "days_to_expiry": 1,
+        "minutes_after_open": 100,
+        "immediate_roundtrip_cost_at_current_quote": 760.7135651207806
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 3443.1976,
+        "original_exit_reason": "trail_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2024/2f06ea5daeb030b3/15",
+            "confirmation_bar": "2024-11-06 11:05:00",
+            "entry_time": "2024-11-06T11:10:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/3",
+      "source_bar": "2025-01-03 13:55:00",
+      "entry_time": "2025-01-03T14:00:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 26.112427850370295,
+        "efficiency4": 0.7910447761194029,
+        "body_fraction": 0.8206144697720685,
+        "rvol": 1.4992577425134375,
+        "signed_distance_vwap_atr": 2.0153973089359107,
+        "stretch": 0.4743,
+        "stop_distance": 47.42485570074132,
+        "target_distance": 98.80474026133379,
+        "option_ask": 256.55,
+        "option_bid": 255.95,
+        "spread": 0.6000000000000227,
+        "premium_per_atr": 9.82482369966077,
+        "days_to_expiry": 6,
+        "minutes_after_open": 285,
+        "immediate_roundtrip_cost_at_current_quote": 330.6611444337515
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 272.678,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/4",
+      "source_bar": "2025-01-06 10:00:00",
+      "entry_time": "2025-01-06T10:06:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 38.19962641274786,
+        "efficiency4": 0.7569832402234508,
+        "body_fraction": 0.6791497975708155,
+        "rvol": 1.5626367070988267,
+        "signed_distance_vwap_atr": 0.3599925651371014,
+        "stretch": 0.0814,
+        "stop_distance": 82.80000000000291,
+        "target_distance": 128.3199999999997,
+        "option_ask": 135.2,
+        "option_bid": 134.9,
+        "spread": 0.29999999999998295,
+        "premium_per_atr": 3.5393016292662343,
+        "days_to_expiry": 3,
+        "minutes_after_open": 51,
+        "immediate_roundtrip_cost_at_current_quote": 547.7955204753378
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -4913.8946,
+        "original_exit_reason": "premium_backstop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2025/2f06ea5daeb030b3/3",
+            "confirmation_bar": "2025-01-06 10:05:00",
+            "entry_time": "2025-01-06T10:10:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/6",
+      "source_bar": "2025-01-07 09:45:00",
+      "entry_time": "2025-01-07T09:51:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 43.97567543326702,
+        "efficiency4": 0.6976149914821161,
+        "body_fraction": 0.851193261581675,
+        "rvol": 1.96764394206994,
+        "signed_distance_vwap_atr": 1.2065755459023177,
+        "stretch": 0.498,
+        "stop_distance": 87.45135086653318,
+        "target_distance": 158.81243155975972,
+        "option_ask": 244.95,
+        "option_bid": 244.35,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 5.570124792550623,
+        "days_to_expiry": 2,
+        "minutes_after_open": 36,
+        "immediate_roundtrip_cost_at_current_quote": 328.87350818230965
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -4266.7964,
+        "original_exit_reason": "premium_backstop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2025/2f06ea5daeb030b3/5",
+            "confirmation_bar": "2025-01-07 09:55:00",
+            "entry_time": "2025-01-07T10:00:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/7",
+      "source_bar": "2025-01-07 10:10:00",
+      "entry_time": "2025-01-07T10:15:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 49.086136465914514,
+        "efficiency4": 0.423785594639866,
+        "body_fraction": 0.9678770949720606,
+        "rvol": 1.3245220069292956,
+        "signed_distance_vwap_atr": 0.5078350973462881,
+        "stretch": 0.234,
+        "stop_distance": 107.37227293182514,
+        "target_distance": 167.51009127729412,
+        "option_ask": 99.65,
+        "option_bid": 99.45,
+        "spread": 0.20000000000000284,
+        "premium_per_atr": 2.030104774475317,
+        "days_to_expiry": 2,
+        "minutes_after_open": 60,
+        "immediate_roundtrip_cost_at_current_quote": 523.8635087639403
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -2749.0819,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2025/2f06ea5daeb030b3/6",
+            "confirmation_bar": "2025-01-07 10:25:00",
+            "entry_time": "2025-01-07T10:30:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/8",
+      "source_bar": "2025-01-08 10:20:00",
+      "entry_time": "2025-01-08T10:25:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 31.658551797544913,
+        "efficiency4": 0.6410256410256597,
+        "body_fraction": 0.854499579478583,
+        "rvol": 1.9559471365638768,
+        "signed_distance_vwap_atr": 1.27684245505498,
+        "stretch": 0.4257,
+        "stop_distance": 67.11710359509016,
+        "target_distance": 110.17078647116432,
+        "option_ask": 180.25,
+        "option_bid": 179.75,
+        "spread": 0.5,
+        "premium_per_atr": 5.693564290391142,
+        "days_to_expiry": 1,
+        "minutes_after_open": 70,
+        "immediate_roundtrip_cost_at_current_quote": 312.415295712
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 1273.7827,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/9",
+      "source_bar": "2025-01-08 13:20:00",
+      "entry_time": "2025-01-08T13:25:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 23.481797344204587,
+        "efficiency4": 0.8556701030928183,
+        "body_fraction": 0.9395973154362646,
+        "rvol": 2.012877985165865,
+        "signed_distance_vwap_atr": -1.2334127424433243,
+        "stretch": -0.305,
+        "stop_distance": 39.650000000001455,
+        "target_distance": 86.20999999999913,
+        "option_ask": 39.3,
+        "option_bid": 39.2,
+        "spread": 0.09999999999999432,
+        "premium_per_atr": 1.6736367929561156,
+        "days_to_expiry": 1,
+        "minutes_after_open": 250,
+        "immediate_roundtrip_cost_at_current_quote": 492.2878110118993
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 7500.3333,
+        "original_exit_reason": "trail_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/10",
+      "source_bar": "2025-01-08 13:40:00",
+      "entry_time": "2025-01-08T13:45:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 28.332195281857278,
+        "efficiency4": 0.7786885245901756,
+        "body_fraction": 0.9117460317460225,
+        "rvol": 2.1245183887915937,
+        "signed_distance_vwap_atr": 1.6596690822896158,
+        "stretch": 0.4952,
+        "stop_distance": 68.66439056371382,
+        "target_distance": 89.99590301468561,
+        "option_ask": 43.65,
+        "option_bid": 43.55,
+        "spread": 0.10000000000000142,
+        "premium_per_atr": 1.5406501178520249,
+        "days_to_expiry": 1,
+        "minutes_after_open": 270,
+        "immediate_roundtrip_cost_at_current_quote": 493.6285382004802
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -58.9649,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/12",
+      "source_bar": "2025-01-10 11:00:00",
+      "entry_time": "2025-01-10T11:06:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 36.3537528980977,
+        "efficiency4": 1.0,
+        "body_fraction": 0.9542682926829283,
+        "rvol": 2.330763582966226,
+        "signed_distance_vwap_atr": 1.997152045968766,
+        "stretch": 0.4826,
+        "stop_distance": 88.80750579619416,
+        "target_distance": 114.77351043315502,
+        "option_ask": 160.7,
+        "option_bid": 160.2,
+        "spread": 0.5,
+        "premium_per_atr": 4.420451457940371,
+        "days_to_expiry": 6,
+        "minutes_after_open": 111,
+        "immediate_roundtrip_cost_at_current_quote": 309.40251220203004
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1370.1116,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/13",
+      "source_bar": "2025-01-10 13:25:00",
+      "entry_time": "2025-01-10T13:30:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 32.155658831999304,
+        "efficiency4": 0.7290589451913353,
+        "body_fraction": 0.6251082251081999,
+        "rvol": 1.217087587318646,
+        "signed_distance_vwap_atr": 0.3362520179419498,
+        "stretch": 0.0719,
+        "stop_distance": 41.0,
+        "target_distance": 96.47999999999593,
+        "option_ask": 241.8,
+        "option_bid": 241.2,
+        "spread": 0.6000000000000227,
+        "premium_per_atr": 7.519671771096656,
+        "days_to_expiry": 6,
+        "minutes_after_open": 255,
+        "immediate_roundtrip_cost_at_current_quote": 328.38807247610146
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 2162.8185,
+        "original_exit_reason": "hard_flat_1510",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2025/2f06ea5daeb030b3/8",
+            "confirmation_bar": "2025-01-10 13:35:00",
+            "entry_time": "2025-01-10T13:42:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/14",
+      "source_bar": "2025-01-13 11:25:00",
+      "entry_time": "2025-01-13T11:30:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 36.3509487439674,
+        "efficiency4": 0.6909492273729525,
+        "body_fraction": 0.9012658227847733,
+        "rvol": 1.4317251201709098,
+        "signed_distance_vwap_atr": 0.5137433583906976,
+        "stretch": 0.2277,
+        "stop_distance": 59.5,
+        "target_distance": 95.62000000000262,
+        "option_ask": 200.8,
+        "option_bid": 200.2,
+        "spread": 0.6000000000000227,
+        "premium_per_atr": 5.523927350955968,
+        "days_to_expiry": 3,
+        "minutes_after_open": 135,
+        "immediate_roundtrip_cost_at_current_quote": 322.06970296670147
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -354.5073,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/15",
+      "source_bar": "2025-01-14 13:00:00",
+      "entry_time": "2025-01-14T13:06:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 20.543621676660965,
+        "efficiency4": 0.5522904062229822,
+        "body_fraction": 0.6581740976645638,
+        "rvol": 2.2745611736966205,
+        "signed_distance_vwap_atr": 1.5265741496825793,
+        "stretch": 0.4078,
+        "stop_distance": 33.63724335332154,
+        "target_distance": 81.4070380359808,
+        "option_ask": 154.5,
+        "option_bid": 154.0,
+        "spread": 0.5,
+        "premium_per_atr": 7.520582418801215,
+        "days_to_expiry": 2,
+        "minutes_after_open": 231,
+        "immediate_roundtrip_cost_at_current_quote": 579.6941028939
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -813.2447,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/16",
+      "source_bar": "2025-01-15 13:15:00",
+      "entry_time": "2025-01-15T13:21:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 18.817368273695692,
+        "efficiency4": 1.0,
+        "body_fraction": 0.9697841726618914,
+        "rvol": 1.3726708074534162,
+        "signed_distance_vwap_atr": 2.4779045761493776,
+        "stretch": 0.4337,
+        "stop_distance": 35.98473654739064,
+        "target_distance": 69.39252578530795,
+        "option_ask": 93.2,
+        "option_bid": 93.0,
+        "spread": 0.20000000000000284,
+        "premium_per_atr": 4.95287112652633,
+        "days_to_expiry": 1,
+        "minutes_after_open": 246,
+        "immediate_roundtrip_cost_at_current_quote": 521.8755339670804
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 256.6265,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/17",
+      "source_bar": "2025-01-17 11:30:00",
+      "entry_time": "2025-01-17T11:36:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 28.856702136189437,
+        "efficiency4": 0.8374291115312117,
+        "body_fraction": 0.5683003128258517,
+        "rvol": 1.299135334693481,
+        "signed_distance_vwap_atr": -0.6506654899686247,
+        "stretch": -0.1751,
+        "stop_distance": 44.713404272377375,
+        "target_distance": 116.88412769027855,
+        "option_ask": 201.35,
+        "option_bid": 200.75,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 6.977581812700809,
+        "days_to_expiry": 6,
+        "minutes_after_open": 141,
+        "immediate_roundtrip_cost_at_current_quote": 322.15446158206964
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 316.866,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2025/2f06ea5daeb030b3/10",
+            "confirmation_bar": "2025-01-17 11:40:00",
+            "entry_time": "2025-01-17T11:45:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/18",
+      "source_bar": "2025-01-17 13:10:00",
+      "entry_time": "2025-01-17T13:15:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 31.53542495443185,
+        "efficiency4": 1.0,
+        "body_fraction": 0.5688202247191244,
+        "rvol": 1.2431245425075812,
+        "signed_distance_vwap_atr": -0.3054974625898904,
+        "stretch": -0.0898,
+        "stop_distance": 55.150000000001455,
+        "target_distance": 96.18999999999505,
+        "option_ask": 257.25,
+        "option_bid": 256.65,
+        "spread": 0.6000000000000227,
+        "premium_per_atr": 8.157492736239384,
+        "days_to_expiry": 6,
+        "minutes_after_open": 240,
+        "immediate_roundtrip_cost_at_current_quote": 330.76901903513146
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1300.6528,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2025/2f06ea5daeb030b3/11",
+            "confirmation_bar": "2025-01-17 13:15:00",
+            "entry_time": "2025-01-17T13:21:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/20",
+      "source_bar": "2025-01-21 12:55:00",
+      "entry_time": "2025-01-21T13:00:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 46.508233588144435,
+        "efficiency4": 1.0,
+        "body_fraction": 0.6635416666666742,
+        "rvol": 4.974405850091408,
+        "signed_distance_vwap_atr": -0.5267612764732843,
+        "stretch": -0.3209,
+        "stop_distance": 91.71646717629119,
+        "target_distance": 168.72964091732138,
+        "option_ask": 152.75,
+        "option_bid": 152.25,
+        "spread": 0.5,
+        "premium_per_atr": 3.284364685889468,
+        "days_to_expiry": 2,
+        "minutes_after_open": 225,
+        "immediate_roundtrip_cost_at_current_quote": 579.154729887
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -5866.4812,
+        "original_exit_reason": "premium_backstop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/22",
+      "source_bar": "2025-01-22 11:10:00",
+      "entry_time": "2025-01-22T11:15:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 29.107241475213193,
+        "efficiency4": 1.0,
+        "body_fraction": 0.5657894736841368,
+        "rvol": 1.8486312399355878,
+        "signed_distance_vwap_atr": 0.9850224998932384,
+        "stretch": 0.4238,
+        "stop_distance": 59.0,
+        "target_distance": 95.0,
+        "option_ask": 115.25,
+        "option_bid": 114.95,
+        "spread": 0.29999999999999716,
+        "premium_per_atr": 3.959495787264597,
+        "days_to_expiry": 1,
+        "minutes_after_open": 120,
+        "immediate_roundtrip_cost_at_current_quote": 803.8700022950195
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 2514.495,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/23",
+      "source_bar": "2025-01-22 13:10:00",
+      "entry_time": "2025-01-22T13:15:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 23.644426578861218,
+        "efficiency4": 0.5691797845898819,
+        "body_fraction": 0.9084791386271515,
+        "rvol": 2.229178007621121,
+        "signed_distance_vwap_atr": -1.0291642350486108,
+        "stretch": -0.3597,
+        "stop_distance": 36.25,
+        "target_distance": 91.15000000000146,
+        "option_ask": 82.75,
+        "option_bid": 82.55,
+        "spread": 0.20000000000000284,
+        "premium_per_atr": 3.4997676819949115,
+        "days_to_expiry": 1,
+        "minutes_after_open": 240,
+        "immediate_roundtrip_cost_at_current_quote": 769.3820598745306
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -4545.1171,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/24",
+      "source_bar": "2025-01-22 14:05:00",
+      "entry_time": "2025-01-22T14:10:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 25.633730106786516,
+        "efficiency4": 0.6716417910447607,
+        "body_fraction": 0.6510359869138385,
+        "rvol": 1.3940756413647184,
+        "signed_distance_vwap_atr": -0.7515119041265995,
+        "stretch": -0.2848,
+        "stop_distance": 75.96746021357467,
+        "target_distance": 67.58142838443382,
+        "option_ask": 67.35,
+        "option_bid": 67.15,
+        "spread": 0.19999999999998863,
+        "premium_per_atr": 2.6273975624861996,
+        "days_to_expiry": 1,
+        "minutes_after_open": 295,
+        "immediate_roundtrip_cost_at_current_quote": 762.2623361834478
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 5504.6793,
+        "original_exit_reason": "hard_flat_1510",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/25",
+      "source_bar": "2025-01-24 10:35:00",
+      "entry_time": "2025-01-24T10:40:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 34.49308228478968,
+        "efficiency4": 0.7658413764162726,
+        "body_fraction": 0.8463747307968341,
+        "rvol": 1.9307004900547708,
+        "signed_distance_vwap_atr": 0.8982536932528906,
+        "stretch": 0.3248,
+        "stop_distance": 52.98616456957825,
+        "target_distance": 140.17509622524085,
+        "option_ask": 201.3,
+        "option_bid": 200.7,
+        "spread": 0.6000000000000227,
+        "premium_per_atr": 5.835952795925307,
+        "days_to_expiry": 6,
+        "minutes_after_open": 85,
+        "immediate_roundtrip_cost_at_current_quote": 607.093512506803
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -814.6941,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/26",
+      "source_bar": "2025-01-27 12:00:00",
+      "entry_time": "2025-01-27T12:06:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 33.76065919252795,
+        "efficiency4": 0.876844783715023,
+        "body_fraction": 0.7755834829442824,
+        "rvol": 1.5464680347277031,
+        "signed_distance_vwap_atr": 1.0891182900674554,
+        "stretch": 0.3328,
+        "stop_distance": 57.021318385057384,
+        "target_distance": 132.03837309310256,
+        "option_ask": 192.55,
+        "option_bid": 192.05,
+        "spread": 0.5,
+        "premium_per_atr": 5.703383897273427,
+        "days_to_expiry": 3,
+        "minutes_after_open": 171,
+        "immediate_roundtrip_cost_at_current_quote": 591.42161312964
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -5898.2107,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/28",
+      "source_bar": "2025-01-28 10:00:00",
+      "entry_time": "2025-01-28T10:06:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 33.967590796186904,
+        "efficiency4": 0.3769547325102934,
+        "body_fraction": 0.6572972972973288,
+        "rvol": 1.9360885770664327,
+        "signed_distance_vwap_atr": 0.3284204075880756,
+        "stretch": 0.1302,
+        "stop_distance": 47.20000000000073,
+        "target_distance": 123.59999999999854,
+        "option_ask": 200.85,
+        "option_bid": 200.25,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 5.912989272779004,
+        "days_to_expiry": 2,
+        "minutes_after_open": 51,
+        "immediate_roundtrip_cost_at_current_quote": 322.07740829536965
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 6259.5088,
+        "original_exit_reason": "trail_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/32",
+      "source_bar": "2025-02-01 13:40:00",
+      "entry_time": "2025-02-01T13:45:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 48.969145434782476,
+        "efficiency4": 0.9800124921923977,
+        "body_fraction": 0.8232445520581259,
+        "rvol": 4.01209372637944,
+        "signed_distance_vwap_atr": 0.10405573597581945,
+        "stretch": 0.0419,
+        "stop_distance": 102.93829086956612,
+        "target_distance": 171.28892356521828,
+        "option_ask": 145.45,
+        "option_bid": 145.15,
+        "spread": 0.29999999999998295,
+        "premium_per_atr": 2.9702376610535617,
+        "days_to_expiry": 5,
+        "minutes_after_open": 270,
+        "immediate_roundtrip_cost_at_current_quote": 550.9547052300378
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -2425.8472,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2025/2f06ea5daeb030b3/18",
+            "confirmation_bar": "2025-02-01 13:55:00",
+            "entry_time": "2025-02-01T14:00:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/33",
+      "source_bar": "2025-02-01 14:20:00",
+      "entry_time": "2025-02-01T14:25:59+05:30",
+      "year": "2025",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 40.740242431753906,
+        "efficiency4": 0.9695121951219505,
+        "body_fraction": 0.8674999999999272,
+        "rvol": 3.65673249551167,
+        "signed_distance_vwap_atr": 1.3991693932686806,
+        "stretch": 0.4684,
+        "stop_distance": 72.0,
+        "target_distance": 134.07999999999447,
+        "option_ask": 135.3,
+        "option_bid": 135.0,
+        "spread": 0.30000000000001137,
+        "premium_per_atr": 3.321040620380403,
+        "days_to_expiry": 5,
+        "minutes_after_open": 310,
+        "immediate_roundtrip_cost_at_current_quote": 547.8263417900215
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -4959.338,
+        "original_exit_reason": "premium_backstop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/39",
+      "source_bar": "2025-03-07 11:45:00",
+      "entry_time": "2025-03-07T11:51:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 29.719317603594288,
+        "efficiency4": 0.7205707491081997,
+        "body_fraction": 0.9197684036393362,
+        "rvol": 1.442715870718765,
+        "signed_distance_vwap_atr": 0.6424360486677154,
+        "stretch": 0.1992,
+        "stop_distance": 44.58863520719024,
+        "target_distance": 121.83954337293835,
+        "option_ask": 209.75,
+        "option_bid": 209.15,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 7.057699062869216,
+        "days_to_expiry": 6,
+        "minutes_after_open": 156,
+        "immediate_roundtrip_cost_at_current_quote": 323.44895679862964
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 7.4144,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/43",
+      "source_bar": "2025-08-12 10:25:00",
+      "entry_time": "2025-08-12T10:30:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 25.219296491336763,
+        "efficiency4": 0.8122905027932712,
+        "body_fraction": 0.8467583497053232,
+        "rvol": 1.4564590052622646,
+        "signed_distance_vwap_atr": 0.6975848509918012,
+        "stretch": 0.1713,
+        "stop_distance": 59.63859298267562,
+        "target_distance": 81.58946736881262,
+        "option_ask": 137.55,
+        "option_bid": 137.25,
+        "spread": 0.30000000000001137,
+        "premium_per_atr": 5.454156901135234,
+        "days_to_expiry": 2,
+        "minutes_after_open": 75,
+        "immediate_roundtrip_cost_at_current_quote": 814.1797320554822
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 1229.3882,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/45",
+      "source_bar": "2025-08-13 11:55:00",
+      "entry_time": "2025-08-13T12:00:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 19.801341422978695,
+        "efficiency4": 0.5245901639343675,
+        "body_fraction": 1.0,
+        "rvol": 1.7045181927229107,
+        "signed_distance_vwap_atr": 1.1265037734715007,
+        "stretch": 0.3657,
+        "stop_distance": 44.80268284595877,
+        "target_distance": 66.08482912272302,
+        "option_ask": 116.45,
+        "option_bid": 116.15,
+        "spread": 0.29999999999999716,
+        "premium_per_atr": 5.880914707367465,
+        "days_to_expiry": 1,
+        "minutes_after_open": 165,
+        "immediate_roundtrip_cost_at_current_quote": 804.4247859592595
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -6828.0845,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2025/d2655c51c938dd78/49",
+      "source_bar": "2025-08-19 13:30:00",
+      "entry_time": "2025-08-19T13:36:59+05:30",
+      "year": "2025",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 15.60679928531736,
+        "efficiency4": 0.5343511450382273,
+        "body_fraction": 0.6134453781512181,
+        "rvol": 1.9304618578100674,
+        "signed_distance_vwap_atr": -1.2484865693937865,
+        "stretch": -0.3389,
+        "stop_distance": 24.0,
+        "target_distance": 57.20000000000073,
+        "option_ask": 115.1,
+        "option_bid": 114.8,
+        "spread": 0.29999999999999716,
+        "premium_per_atr": 7.374990726528042,
+        "days_to_expiry": 2,
+        "minutes_after_open": 261,
+        "immediate_roundtrip_cost_at_current_quote": 289.4002181123298
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1307.9404,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2025/2f06ea5daeb030b3/31",
+            "confirmation_bar": "2025-08-19 13:35:00",
+            "entry_time": "2025-08-19T13:40:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/3",
+      "source_bar": "2026-03-20 11:50:00",
+      "entry_time": "2026-03-20T11:55:59+05:30",
+      "year": "2026",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 33.90468437509294,
+        "efficiency4": 0.9284768211920337,
+        "body_fraction": 0.7692307692307812,
+        "rvol": 2.1672067401166557,
+        "signed_distance_vwap_atr": 0.7370238421664739,
+        "stretch": 0.1516,
+        "stop_distance": 70.70936875018742,
+        "target_distance": 119.15686375033329,
+        "option_ask": 286.4,
+        "option_bid": 285.8,
+        "spread": 0.5999999999999659,
+        "premium_per_atr": 8.447210327384589,
+        "days_to_expiry": 4,
+        "minutes_after_open": 160,
+        "immediate_roundtrip_cost_at_current_quote": 335.26122564973775
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 3106.3666,
+        "original_exit_reason": "trail_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/4",
+      "source_bar": "2026-03-20 12:40:00",
+      "entry_time": "2026-03-20T12:45:59+05:30",
+      "year": "2026",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 37.106421339178894,
+        "efficiency4": 1.0,
+        "body_fraction": 0.6466165413533417,
+        "rvol": 2.0848754695978853,
+        "signed_distance_vwap_atr": -1.2123132765078841,
+        "stretch": -0.273,
+        "stop_distance": 79.01284267835581,
+        "target_distance": 128.78311682104322,
+        "option_ask": 286.8,
+        "option_bid": 286.2,
+        "spread": 0.6000000000000227,
+        "premium_per_atr": 7.729120450027921,
+        "days_to_expiry": 4,
+        "minutes_after_open": 210,
+        "immediate_roundtrip_cost_at_current_quote": 335.3228682791015
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -439.1231,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2026/2f06ea5daeb030b3/3",
+            "confirmation_bar": "2026-03-20 12:45:00",
+            "entry_time": "2026-03-20T12:51:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/7",
+      "source_bar": "2026-03-23 14:00:00",
+      "entry_time": "2026-03-23T14:06:59+05:30",
+      "year": "2026",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 36.71038866216148,
+        "efficiency4": 0.7238204833141588,
+        "body_fraction": 0.7046476761619114,
+        "rvol": 1.4094151212553494,
+        "signed_distance_vwap_atr": 0.898708026261609,
+        "stretch": 0.1842,
+        "stop_distance": 76.2207773243208,
+        "target_distance": 129.35739918378022,
+        "option_ask": 239.0,
+        "option_bid": 238.4,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 6.510418677379589,
+        "days_to_expiry": 1,
+        "minutes_after_open": 291,
+        "immediate_roundtrip_cost_at_current_quote": 327.9565740705796
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -3818.2408,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/6",
+      "source_bar": "2026-03-23 13:40:00",
+      "entry_time": "2026-03-23T13:45:59+05:30",
+      "year": "2026",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 35.031630224627804,
+        "efficiency4": 0.6934460887949213,
+        "body_fraction": 0.7037037037036892,
+        "rvol": 1.6446441583677434,
+        "signed_distance_vwap_atr": -0.8658364317161203,
+        "stretch": -0.1694,
+        "stop_distance": 75.26326044925736,
+        "target_distance": 120.91386880866048,
+        "option_ask": 235.85,
+        "option_bid": 235.25,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 6.732487140555441,
+        "days_to_expiry": 1,
+        "minutes_after_open": 270,
+        "immediate_roundtrip_cost_at_current_quote": 327.4711383643696
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -4333.513,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/8",
+      "source_bar": "2026-03-27 12:25:00",
+      "entry_time": "2026-03-27T12:30:59+05:30",
+      "year": "2026",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 30.511507802605767,
+        "efficiency4": 0.35224586288414306,
+        "body_fraction": 0.8329411764705369,
+        "rvol": 1.294687308190684,
+        "signed_distance_vwap_atr": -1.144041843948359,
+        "stretch": -0.2223,
+        "stop_distance": 45.22301560521373,
+        "target_distance": 125.64142808938414,
+        "option_ask": 259.9,
+        "option_bid": 259.3,
+        "spread": 0.5999999999999659,
+        "premium_per_atr": 8.518097554582464,
+        "days_to_expiry": 3,
+        "minutes_after_open": 195,
+        "immediate_roundtrip_cost_at_current_quote": 331.1774014546378
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1356.2051,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2026/2f06ea5daeb030b3/8",
+            "confirmation_bar": "2026-03-27 12:40:00",
+            "entry_time": "2026-03-27T12:45:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/10",
+      "source_bar": "2026-04-01 12:45:00",
+      "entry_time": "2026-04-01T12:51:59+05:30",
+      "year": "2026",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 35.11103513336408,
+        "efficiency4": 0.8518518518518519,
+        "body_fraction": 0.5796766743648235,
+        "rvol": 1.3326987148976677,
+        "signed_distance_vwap_atr": 1.6093297770238668,
+        "stretch": 0.3492,
+        "stop_distance": 45.0,
+        "target_distance": 89.40000000000146,
+        "option_ask": 301.75,
+        "option_bid": 300.95,
+        "spread": 0.8000000000000114,
+        "premium_per_atr": 8.594164166731263,
+        "days_to_expiry": 6,
+        "minutes_after_open": 216,
+        "immediate_roundtrip_cost_at_current_quote": 350.60179589409074
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -2416.876,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2026/2f06ea5daeb030b3/10",
+            "confirmation_bar": "2026-04-01 12:50:00",
+            "entry_time": "2026-04-01T12:55:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/12",
+      "source_bar": "2026-04-06 12:20:00",
+      "entry_time": "2026-04-06T12:25:59+05:30",
+      "year": "2026",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 42.638843323466546,
+        "efficiency4": 0.6475770925110057,
+        "body_fraction": 0.6594936708860575,
+        "rvol": 1.7305485425751663,
+        "signed_distance_vwap_atr": 1.5131177462005994,
+        "stretch": 0.3891,
+        "stop_distance": 68.5,
+        "target_distance": 105.09999999999854,
+        "option_ask": 179.3,
+        "option_bid": 178.8,
+        "spread": 0.5,
+        "premium_per_atr": 4.205085926928069,
+        "days_to_expiry": 1,
+        "minutes_after_open": 190,
+        "immediate_roundtrip_cost_at_current_quote": 312.26889446727
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 9201.675,
+        "original_exit_reason": "hard_flat_1510",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2026/2f06ea5daeb030b3/12",
+            "confirmation_bar": "2026-04-06 12:25:00",
+            "entry_time": "2026-04-06T12:30:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/14",
+      "source_bar": "2026-04-08 11:50:00",
+      "entry_time": "2026-04-08T11:55:59+05:30",
+      "year": "2026",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 36.32046098176681,
+        "efficiency4": 0.39797395079595627,
+        "body_fraction": 0.8223140495867372,
+        "rvol": 1.9391891891891893,
+        "signed_distance_vwap_atr": -1.3134335468747125,
+        "stretch": -0.4043,
+        "stop_distance": 66.79999999999927,
+        "target_distance": 92.79999999999927,
+        "option_ask": 267.25,
+        "option_bid": 266.65,
+        "spread": 0.6000000000000227,
+        "premium_per_atr": 7.358111454977454,
+        "days_to_expiry": 5,
+        "minutes_after_open": 160,
+        "immediate_roundtrip_cost_at_current_quote": 332.3100847691315
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1730.37,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2026/2f06ea5daeb030b3/14",
+            "confirmation_bar": "2026-04-08 11:55:00",
+            "entry_time": "2026-04-08T12:00:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/16",
+      "source_bar": "2026-04-10 11:45:00",
+      "entry_time": "2026-04-10T11:51:59+05:30",
+      "year": "2026",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 25.754645841180334,
+        "efficiency4": 0.475352112676032,
+        "body_fraction": 0.5962059620595971,
+        "rvol": 1.9914893617021276,
+        "signed_distance_vwap_atr": 0.4488105009074306,
+        "stretch": 0.1217,
+        "stop_distance": 23.200000000000728,
+        "target_distance": 116.23999999999796,
+        "option_ask": 210.9,
+        "option_bid": 210.3,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 8.188813828019406,
+        "days_to_expiry": 3,
+        "minutes_after_open": 156,
+        "immediate_roundtrip_cost_at_current_quote": 323.6261793580396
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1358.3852,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/18",
+      "source_bar": "2026-04-15 11:05:00",
+      "entry_time": "2026-04-15T11:10:59+05:30",
+      "year": "2026",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 32.14333997360008,
+        "efficiency4": 0.8823529411764706,
+        "body_fraction": 0.9411764705882353,
+        "rvol": 1.2870716959401094,
+        "signed_distance_vwap_atr": 1.0236785832548538,
+        "stretch": 0.2428,
+        "stop_distance": 69.78667994719945,
+        "target_distance": 110.216023904959,
+        "option_ask": 282.35,
+        "option_bid": 281.75,
+        "spread": 0.6000000000000227,
+        "premium_per_atr": 8.784090272880768,
+        "days_to_expiry": 6,
+        "minutes_after_open": 115,
+        "immediate_roundtrip_cost_at_current_quote": 334.63709402747145
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -2637.7057,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/19",
+      "source_bar": "2026-04-16 14:25:00",
+      "entry_time": "2026-04-16T14:30:59+05:30",
+      "year": "2026",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 27.503004564746167,
+        "efficiency4": 0.8735362997657761,
+        "body_fraction": 0.7832898172323909,
+        "rvol": 1.3832492054589642,
+        "signed_distance_vwap_atr": -2.064674187679109,
+        "stretch": -0.5742,
+        "stop_distance": 59.50600912949085,
+        "target_distance": 94.51081643308498,
+        "option_ask": 208.95,
+        "option_bid": 208.35,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 7.597351755081907,
+        "days_to_expiry": 5,
+        "minutes_after_open": 315,
+        "immediate_roundtrip_cost_at_current_quote": 323.32567153990965
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -725.5517,
+        "original_exit_reason": "hard_flat_1510",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/23",
+      "source_bar": "2026-09-30 10:30:00",
+      "entry_time": "2026-09-30T10:36:59+05:30",
+      "year": "2026",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 28.425075025853374,
+        "efficiency4": 0.8783783783784216,
+        "body_fraction": 0.8858603066439413,
+        "rvol": 1.2962385933674605,
+        "signed_distance_vwap_atr": 0.7336890694561622,
+        "stretch": 0.3117,
+        "stop_distance": 56.95015005170353,
+        "target_distance": 102.23027009307043,
+        "option_ask": 229.2,
+        "option_bid": 228.6,
+        "spread": 0.5999999999999943,
+        "premium_per_atr": 8.063303255718283,
+        "days_to_expiry": 6,
+        "minutes_after_open": 81,
+        "immediate_roundtrip_cost_at_current_quote": 326.44632965125965
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -452.9529,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/24",
+      "source_bar": "2026-10-01 12:05:00",
+      "entry_time": "2026-10-01T12:12:59+05:30",
+      "year": "2026",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 27.223285249934975,
+        "efficiency4": 0.47696879643388745,
+        "body_fraction": 0.6162464985994273,
+        "rvol": 2.4599659284497446,
+        "signed_distance_vwap_atr": 1.210307460616784,
+        "stretch": 0.4501,
+        "stop_distance": 64.74657049986854,
+        "target_distance": 87.70382689976395,
+        "option_ask": 189.65,
+        "option_bid": 189.15,
+        "spread": 0.5,
+        "premium_per_atr": 6.9664626535275715,
+        "days_to_expiry": 5,
+        "minutes_after_open": 177,
+        "immediate_roundtrip_cost_at_current_quote": 313.86389750195997
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 9316.8553,
+        "original_exit_reason": "trail_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/25",
+      "source_bar": "2026-10-01 14:30:00",
+      "entry_time": "2026-10-01T14:36:59+05:30",
+      "year": "2026",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 41.2137768882828,
+        "efficiency4": 0.4973262032085395,
+        "body_fraction": 0.7917888563049769,
+        "rvol": 4.80671680951548,
+        "signed_distance_vwap_atr": -0.7485710030998652,
+        "stretch": -0.4215,
+        "stop_distance": 94.92755377656431,
+        "target_distance": 135.86959679781648,
+        "option_ask": 117.95,
+        "option_bid": 117.65,
+        "spread": 0.29999999999999716,
+        "premium_per_atr": 2.8619070831514484,
+        "days_to_expiry": 5,
+        "minutes_after_open": 321,
+        "immediate_roundtrip_cost_at_current_quote": 805.1182655395594
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 654.5731,
+        "original_exit_reason": "hard_flat_1510",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/26",
+      "source_bar": "2026-10-05 10:00:00",
+      "entry_time": "2026-10-05T10:06:59+05:30",
+      "year": "2026",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 38.407178906169285,
+        "efficiency4": 0.4556213017751479,
+        "body_fraction": 0.842622950819696,
+        "rvol": 2.045283962972229,
+        "signed_distance_vwap_atr": 0.48863358398561074,
+        "stretch": 0.2109,
+        "stop_distance": 61.599999999998545,
+        "target_distance": 141.40000000000146,
+        "option_ask": 168.0,
+        "option_bid": 167.5,
+        "spread": 0.5,
+        "premium_per_atr": 4.374182243648581,
+        "days_to_expiry": 1,
+        "minutes_after_open": 51,
+        "immediate_roundtrip_cost_at_current_quote": 583.8549803757
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": 9562.6219,
+        "original_exit_reason": "trail_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2026/2f06ea5daeb030b3/20",
+            "confirmation_bar": "2026-10-05 10:10:00",
+            "entry_time": "2026-10-05T10:15:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/29",
+      "source_bar": "2026-10-09 11:50:00",
+      "entry_time": "2026-10-09T11:55:59+05:30",
+      "year": "2026",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 27.747038350622176,
+        "efficiency4": 0.7212389380531116,
+        "body_fraction": 0.6363636363635102,
+        "rvol": 1.945705024311183,
+        "signed_distance_vwap_atr": -1.26784323798348,
+        "stretch": -0.2189,
+        "stop_distance": 44.79407670124783,
+        "target_distance": 110.5893380622365,
+        "option_ask": 186.55,
+        "option_bid": 186.05,
+        "spread": 0.5,
+        "premium_per_atr": 6.723240067739228,
+        "days_to_expiry": 4,
+        "minutes_after_open": 160,
+        "immediate_roundtrip_cost_at_current_quote": 589.57233424884
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -4469.1076,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2026/2f06ea5daeb030b3/23",
+            "confirmation_bar": "2026-10-09 11:55:00",
+            "entry_time": "2026-10-09T12:00:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/31",
+      "source_bar": "2026-10-14 13:45:00",
+      "entry_time": "2026-10-14T13:51:59+05:30",
+      "year": "2026",
+      "direction": "LONG",
+      "known_at_original_entry": {
+        "atr": 33.853152132528066,
+        "efficiency4": 0.9277108433735423,
+        "body_fraction": 0.5930470347648086,
+        "rvol": 2.5233785822021115,
+        "signed_distance_vwap_atr": -1.0672900838342358,
+        "stretch": -0.3389,
+        "stop_distance": 75.70630426505522,
+        "target_distance": 113.87134767710086,
+        "option_ask": 143.3,
+        "option_bid": 143.0,
+        "spread": 0.30000000000001137,
+        "premium_per_atr": 4.232988391716383,
+        "days_to_expiry": 5,
+        "minutes_after_open": 276,
+        "immediate_roundtrip_cost_at_current_quote": 550.2920469644215
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -2736.5853,
+        "original_exit_reason": "time_stop",
+        "admitted_n03_retest_setup_lineage": [
+          {
+            "admission_id": "N03/2026/2f06ea5daeb030b3/25",
+            "confirmation_bar": "2026-10-14 13:50:00",
+            "entry_time": "2026-10-14T13:55:59+05:30"
+          }
+        ]
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    },
+    {
+      "original_admission_id": "N03/2026/d2655c51c938dd78/32",
+      "source_bar": "2026-10-15 11:15:00",
+      "entry_time": "2026-10-15T11:21:59+05:30",
+      "year": "2026",
+      "direction": "SHORT",
+      "known_at_original_entry": {
+        "atr": 31.290624652414323,
+        "efficiency4": 0.6118421052630807,
+        "body_fraction": 0.6506276150627409,
+        "rvol": 2.464657842861166,
+        "signed_distance_vwap_atr": -1.9002034912638421,
+        "stretch": -0.4471,
+        "stop_distance": 33.79999999999927,
+        "target_distance": 103.67999999999665,
+        "option_ask": 174.05,
+        "option_bid": 173.55,
+        "spread": 0.5,
+        "premium_per_atr": 5.562368982191944,
+        "days_to_expiry": 4,
+        "minutes_after_open": 126,
+        "immediate_roundtrip_cost_at_current_quote": 311.45983495692
+      },
+      "later_labels_never_earlier_inputs": {
+        "original_net": -1462.9941,
+        "original_exit_reason": "underlying_stop",
+        "admitted_n03_retest_setup_lineage": []
+      },
+      "lineage_limit": "Source-bar/direction links describe a later setup; they are NOT economic admission pairs and are never used to calculate paired P&L or route trades."
+    }
+  ],
+  "summary": {
+    "2024": {
+      "no_admitted_child_link": {
+        "original_cases": 14,
+        "original_net_descriptive_not_pair": -14523.4078
+      },
+      "linked_later_retest": {
+        "original_cases": 4,
+        "original_net_descriptive_not_pair": 17779.8794
+      }
+    },
+    "2025": {
+      "no_admitted_child_link": {
+        "original_cases": 19,
+        "original_net_descriptive_not_pair": -6689.8479000000025
+      },
+      "linked_later_retest": {
+        "original_cases": 8,
+        "original_net_descriptive_not_pair": -14484.5288
+      }
+    },
+    "2026": {
+      "no_admitted_child_link": {
+        "original_cases": 10,
+        "original_net_descriptive_not_pair": -1711.548400000001
+      },
+      "linked_later_retest": {
+        "original_cases": 8,
+        "original_net_descriptive_not_pair": 5616.029799999998
+      }
+    }
+  },
+  "source_bar_links_are_lineage_not_economic_pairs": true,
+  "fitted_or_applied_new_parameters": false
+}

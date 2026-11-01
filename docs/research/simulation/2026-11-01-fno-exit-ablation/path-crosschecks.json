@@ -1,0 +1,114 @@
+{
+  "years": [
+    {
+      "year": "2024",
+      "admissions_and_trace_bindings": 546,
+      "archive_prices": 1092,
+      "retests_verified": 36,
+      "exit_lifecycles": 160,
+      "management_observations": 6718,
+      "exit_actions": {
+        "STALL30": 46,
+        "BASE60": 114
+      },
+      "ever_extended": 14,
+      "choice_price_path_errors": 0,
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_5e37e11aee3136c0.json": "1a18c336503b7837b71a6d70848b70857ff66ae0002cd163d50001f8d4f384c5",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_d8bb2f570ea3ec95.json": "ea34528030c7f164120827723401c9128a753db70cadebd6deed280c5ed612d3",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_b0f1e567a10b76d1.json": "f7227774408bdaf64cb9d3f1fb214ffa5417ac92c2e07e64979a874357e32ba6",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_35c2a37a8b110cca.json": "ac3e03f1983c02638e43f79c7223066c7634060dc2cceefca15247bd9e66fcf6",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_0bbcb2f9df5a7070.json": "ef1f60578bdb43a760fb70b7a00e32b696d003b418ca13c5d4f0c07a8ef42da6",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_986cf702b6343156.json": "10d7ccc194ff648431c678d79e6e2e1cad494b2c97e8b107cbec9e291422395e",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_089531254dbb391d.json": "15bf8baf04bdd06c2b078a3b90e086629684c7bc73486d2e4f4a19ad45616baa",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_0ae0cf3f0c08452e.json": "31d6b2a569af6a5f983f61781068c2c9e664c2e35f0e487e2ffc93f26d9e78dc",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_7288aedf862cdc32.json": "6d6276f1ed223affb7b1dc80e995d621e73d9542df0648a5d3de08bfae74d049",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_0468414f894680e7.json": "5a43f710c6859dc043952461f8604f09d2d74338ee7052eb2e460a7be601c7eb",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_9f9426fc2670b64c.json": "3aa04d053c079c4d898aa5bd633d65a7b037a0ac3a72d05dab2f41189dcf5004",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_b0882b832de4051d.json": "bfa79d21ce5a2527ee3e0d7a8b21e732d77f611bf6210facb68d9ac85f2396c1",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_82d749dc3d5f039c.json": "b2a899fb5c71b120c4619f292db2f27964ea549051c646fb69fc40c9b5cd61b7",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_c29cbe6bebfed108.json": "3aa73e69adc3c1510fded88d24842c8f87b732d5efbb3cd1414dbeca95abb29e",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_d1bf3463c9b150b6.json": "ae98e341b0455e3d7818c2440806bf1b26c8c0f9bb3d63fba28c404383287aaf",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_7b125ec9a3fb9f23.json": "6da9dc2bdc0b887df5c5666de4082837a4e4d385a47ce94947558b6764a6eae8",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_b4d0b5f7f567003a.json": "a5e3d7b37c78a65378c506e4e81c151871ab52f7e9eb14ab4b56939f0fd641ed",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_27592960c0e566f0.json": "269a430e95f267568f10aa835da9b9dc30a1892adfe6b23ca95e19ff09b039d9"
+      }
+    },
+    {
+      "year": "2025",
+      "admissions_and_trace_bindings": 1239,
+      "archive_prices": 2478,
+      "retests_verified": 48,
+      "exit_lifecycles": 242,
+      "management_observations": 13099,
+      "exit_actions": {
+        "STALL30": 65,
+        "BASE60": 173,
+        "CONTINUE90": 4
+      },
+      "ever_extended": 30,
+      "choice_price_path_errors": 0,
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_5e37e11aee3136c0.json": "14887992ecbcd8771403c12f5a0e8f1cdb5d532b70e26a6ebcb7415c24a8cc10",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_d8bb2f570ea3ec95.json": "064884e090134bdc89a04aeb164ec426fbf9aad5bbf33b989c6ceb7e1dc21315",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_b0f1e567a10b76d1.json": "7b411fd6f44a6e79b7f03728352937e2a09cb36424e8f3e857b8a89b5763487d",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_35c2a37a8b110cca.json": "f494911b5618b3b295639a105e02b591272705148041628aa077a43942a3cd28",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_0bbcb2f9df5a7070.json": "d2192d5d956e437043bfe20580329d3d603697083e77db18465cd7a7663b82ea",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_986cf702b6343156.json": "f498f87a2a5260de242355f6b98436397b80eded50c44017bc334b6f133aec9e",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_089531254dbb391d.json": "6d5a0621f710feee904f8c706ae46529951efd2aa7e29d08a4f50ec2da65a6f8",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_0ae0cf3f0c08452e.json": "7a63a8cdfdd61ea4b1153120f4f07a12c2ee03cc873ca599c23dac3300989ae0",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_7288aedf862cdc32.json": "6098188ab6b59838134fae160b6d53f5191c620ec13c4ee9e296705f1514bbdc",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_0468414f894680e7.json": "e8fcb6d4693a1fca78185e93fa3f3468be5a43be0658ed0385240edcbb5e9ebe",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_9f9426fc2670b64c.json": "4857031d7db5275482268378e7269c1addd5da9e6314f8f617996b9fbdab0571",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_b0882b832de4051d.json": "95b3267607e4eafd99811938cf998546e5a74bd2a86ad1ef07f1dbf576cf118e",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_82d749dc3d5f039c.json": "8a316497ea0673ad6b3b00122b60f4bca695604dc22425fdd1dbe99a485ce451",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_c29cbe6bebfed108.json": "26d1f780a3704c2a1109d7cd705137d54e710641016ccae9ed2aa60fe020cfb7",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_d1bf3463c9b150b6.json": "7c39655f16b106ea354b1bba44180a6dce603f9f2278eedeb56a80ad62b362e8",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_7b125ec9a3fb9f23.json": "2366232246e37baa4492a548d92dbcf4f4c1e53c5a4573227a4d31e057412ab4",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_b4d0b5f7f567003a.json": "9ea58dd73485ef6b349649085a788be9581df8eca8b75230d9d047f71ff3b84b",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_27592960c0e566f0.json": "76cce7c20cfa7b314d89423e28b734f6990d5c6b7b8e57e3642c99a6e8799843"
+      }
+    },
+    {
+      "year": "2026",
+      "admissions_and_trace_bindings": 837,
+      "archive_prices": 1674,
+      "retests_verified": 54,
+      "exit_lifecycles": 189,
+      "management_observations": 9832,
+      "exit_actions": {
+        "BASE60": 138,
+        "STALL30": 51
+      },
+      "ever_extended": 10,
+      "choice_price_path_errors": 0,
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_5e37e11aee3136c0.json": "43b395b5e213157bbf3ce82c444191fcac489d63c6d6b83f946f5d20dcafde40",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_d8bb2f570ea3ec95.json": "f215f2834626e0a0944bf00a3936db05da1462191aeccc4d9a9ffe94e24c0f46",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_b0f1e567a10b76d1.json": "3b59b74eac9084ccdcbf85c231f1b6fe249252a65fe1c24a668b18d8df139f09",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_35c2a37a8b110cca.json": "2d3034ee715c2d9650a7f9d5ec216231fdf893bcd8b92b0c0ce27fa264b704a7",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_0bbcb2f9df5a7070.json": "61b88705dd96001e0ed1b39e3e46e7e9ca42c02ba994eed26175cac7c6a6ab05",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_986cf702b6343156.json": "0761820e70340c31b15c49713e62643bf279ecd70feee05c12bdcc33705bc89c",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_089531254dbb391d.json": "7fe0754505c07ed85c8b35cfa58575abfca207074621fef32b5f102d314bec82",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_0ae0cf3f0c08452e.json": "66218ffeb9b91d8bfc80aecb3733393496747bcba949c70783e4070a867954e6",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_7288aedf862cdc32.json": "ad09faba18cdcf9dea2dbc4090554f95cd2184c19c7e965b3723b8885f3b69f6",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_0468414f894680e7.json": "218080370d956b0655f9d36c63d7fcdd292e007b8a6a639b9699c37fc1c947c3",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_9f9426fc2670b64c.json": "b832d04f234db3e581488efabfcf92cf2f03f2cd362febd9623da8b9f327e142",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_b0882b832de4051d.json": "0077117ed1b38eb1119cacbc67f0a1568ad8496e7bac6d7ebddb2736dac7826b",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_82d749dc3d5f039c.json": "f44927b0a82c7b49b10e66cded02fc0877f45deb97f6fac946a473ac257c68ba",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_c29cbe6bebfed108.json": "c1f0de1710ba4746653c077182e73ff89fb18958a63173b1937ce3b4f517aafc",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_d1bf3463c9b150b6.json": "529e53ca27973ffafa0924147666d5d776f5c69d783c4f364935d4ad4052ba54",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_7b125ec9a3fb9f23.json": "5dc3335cb68f8a02904393234013052a7c11582226841d1e24bf386f1fbfae2d",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_b4d0b5f7f567003a.json": "c5a0b872f95483bce8d40a3f124153d4203dd1d56bd5ec6fc660cc8aa7266596",
+        "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_27592960c0e566f0.json": "f3c4f97df2ae9a8a8be81670449d1c724459a0be5e195d511a5a4d7a95a19b14"
+      }
+    }
+  ],
+  "choice_price_path_errors": 0,
+  "admissions_and_trace_bindings": 2622,
+  "archive_prices": 5244,
+  "retests_verified": 138,
+  "exit_lifecycles": 591,
+  "management_observations": 29649,
+  "ever_extended": 54
+}

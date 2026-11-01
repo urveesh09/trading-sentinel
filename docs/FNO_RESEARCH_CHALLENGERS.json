@@ -1,0 +1,158 @@
+{
+  "schema": "sentinel_research_challengers_v1",
+  "preferred_reference_unchanged": "BALANCED_RETEST_N03",
+  "challengers": [
+    {
+      "id": "BALANCED_RETEST_STALL_N04",
+      "book_key": "NORMAL|BALANCED_RETEST|STALL_ONLY",
+      "status": "RESEARCH_UNQUALIFIED_NOT_DEPLOYED",
+      "source_commit": "a70e4e70a5d1f012f62f84e9fdd3377c79b3f3f9",
+      "study": "docs/research/simulation/2026-11-01-fno-exit-ablation",
+      "results_sha256": "2ebd88c4c889e617a0f0403a708da887bd9f7087b295683e57777fe69714f785",
+      "freeze_sha256": "28728f9d7cde60b8a02132109b74722cdf8d77b0b0a80de8e9aef303044d9b4a",
+      "book": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N04|NORMAL|BALANCED_RETEST|STALL_ONLY",
+        "cfg": {},
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "STALL_ONLY",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1"
+      },
+      "years": {
+        "2024": {
+          "net": 51303,
+          "end": 301303,
+          "fall_pct": 0.0216,
+          "fall_rs": 5574,
+          "trades": 33,
+          "days": 27,
+          "avg_lots": 1.33,
+          "max_lots": 3,
+          "avg_outlay": 13224,
+          "max_outlay": 28041,
+          "worst_trade": -3629,
+          "worst_trade_pct": -0.0142,
+          "worst_day": -2505,
+          "worst_day_date": "2024-12-16",
+          "worst_day_pct": -0.0082,
+          "best_day": 12506,
+          "green_months": 5,
+          "red_months": 5,
+          "last_trade": "2024-12-16",
+          "wiped_out": false,
+          "net_exact": 51303.4433,
+          "evaluation": "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2024-01-01_2024-12-31_0ae0cf3f0c08452e.json",
+          "evaluation_sha256": "31d6b2a569af6a5f983f61781068c2c9e664c2e35f0e487e2ffc93f26d9e78dc"
+        },
+        "2025": {
+          "net": 54051,
+          "end": 304051,
+          "fall_pct": 0.0465,
+          "fall_rs": 13753,
+          "trades": 80,
+          "days": 50,
+          "avg_lots": 1.23,
+          "max_lots": 3,
+          "avg_outlay": 12578,
+          "max_outlay": 24580,
+          "worst_trade": -6910,
+          "worst_trade_pct": -0.0236,
+          "worst_day": -9482,
+          "worst_day_date": "2025-08-18",
+          "worst_day_pct": -0.0323,
+          "best_day": 20238,
+          "green_months": 8,
+          "red_months": 4,
+          "last_trade": "2025-12-03",
+          "wiped_out": false,
+          "net_exact": 54051.04769999998,
+          "evaluation": "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2025-01-01_2025-12-31_0ae0cf3f0c08452e.json",
+          "evaluation_sha256": "7a63a8cdfdd61ea4b1153120f4f07a12c2ee03cc873ca599c23dac3300989ae0"
+        },
+        "2026": {
+          "net": 77135,
+          "end": 327135,
+          "fall_pct": 0.0276,
+          "fall_rs": 8158,
+          "trades": 56,
+          "days": 36,
+          "avg_lots": 1.36,
+          "max_lots": 3,
+          "avg_outlay": 15981,
+          "max_outlay": 36533,
+          "worst_trade": -5032,
+          "worst_trade_pct": -0.0174,
+          "worst_day": -5032,
+          "worst_day_date": "2026-04-10",
+          "worst_day_pct": -0.0174,
+          "best_day": 18065,
+          "green_months": 9,
+          "red_months": 1,
+          "last_trade": "2026-10-23",
+          "wiped_out": false,
+          "net_exact": 77135.44170000002,
+          "evaluation": "docs/research/simulation/2026-11-01-fno-exit-ablation/_local/evals/year_2026-01-01_2026-10-28_0ae0cf3f0c08452e.json",
+          "evaluation_sha256": "66218ffeb9b91d8bfc80aecb3733393496747bcba949c70783e4070a867954e6"
+        }
+      },
+      "failed_acceptance": [
+        "not_worse_each_year",
+        "paired_weekly",
+        "max_t"
+      ],
+      "paired_t": 1.5,
+      "adjusted_p": 0.18208445203807663,
+      "interpretation": "Stronger seen-data total and minimum annual net, lower worst drawdown; gives up2024 profit and fails paired evidence. Retain alongside the original reference, never silently promote.",
+      "qualified": false,
+      "deployed": false,
+      "can_place_orders": false
+    }
+  ]
+}

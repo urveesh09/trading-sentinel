@@ -1,0 +1,34 @@
+{
+  "schema": "n04_reused_input_evidence_v1",
+  "checks": [
+    {
+      "year": "2024",
+      "all_inherited_source_data_calendar_daily_memo_decision_bindings_identical": true
+    },
+    {
+      "year": "2025",
+      "all_inherited_source_data_calendar_daily_memo_decision_bindings_identical": true
+    },
+    {
+      "year": "2026",
+      "all_inherited_source_data_calendar_daily_memo_decision_bindings_identical": true
+    }
+  ],
+  "reused_files": {
+    "input-crosschecks.json": {
+      "path": "docs/research/simulation/2026-11-01-fno-eff-improvement/input-crosschecks.json",
+      "sha256": "7003f5535f7ba7ff89503cd60c323a6155f50c2abe670375b920fef02714080d"
+    },
+    "coverage.json": {
+      "path": "docs/research/simulation/2026-11-01-fno-eff-improvement/coverage.json",
+      "sha256": "1c98de7331c946b92a900bfc92f5495bf36a08aaed68513c5b7246d0add1f229"
+    },
+    "path-crosschecks.json": {
+      "path": "docs/research/simulation/2026-11-01-fno-eff-improvement/path-crosschecks.json",
+      "sha256": "92672a5cd15f2879c72201ba8379f078b3bcfc744f01276ad947844dc28a8fce"
+    }
+  },
+  "reused_raw_cache_sessions": 699,
+  "fresh_raw_cache_checks_claimed": 0,
+  "limit": "Unchanged N03 data/cache/source and dated clocks proven by bound hashes. Old input checks are reused, not recounted as fresh; all new admissions/prices/exits independently audited."
+}
