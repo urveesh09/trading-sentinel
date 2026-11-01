@@ -1,12 +1,13 @@
 """Archive-price, admission-key, chosen-profile and management continuity audit."""
-import json,sys
+import json,statistics,sys
+from collections import defaultdict
 from datetime import date,datetime,timedelta
 from pathlib import Path
 HERE=Path(__file__).resolve().parents[1];sys.path.insert(0,str(HERE))
 import core_lab as X
 def run():
     X.B.O27F.deny_network();X.verify('candidate');X.Y.speedups();year=X.B.YEAR;data=X.Y.dataset('year');table=X.C.table('year')
-    frames={};packets={};count=prices=trace_count=0;profile_counts={};hashes={};choices=json.loads((X.LOCAL/f'decisions-{year}.json').read_text())
+    frames={};packets={};count=prices=trace_count=0;profile_counts={};hashes={};choices=json.loads((X.LOCAL/f'decisions-{year}.json').read_text());main_paths=defaultdict(list)
     for phase in ('reference','candidate'):
         keys=json.loads((X.LOCAL/f'keys-{phase}-{year}.json').read_text())
         for name,key in keys.items():
@@ -38,7 +39,18 @@ def run():
                 es=[q for q in a.options.values() if q.contract.tradingsymbol==t['tradingsymbol']];xs=[q for q in b.options.values() if q.contract.tradingsymbol==t['tradingsymbol']]
                 assert len(es)==len(xs)==1 and abs(es[0].ask-t['entry_premium'])<.001
                 assert abs((xs[0].bid if xs[0].bid>0 else xs[0].ltp)-t['exit_premium'])<.001
+                if phase=='reference' and name=='MAIN':
+                    sign=1 if t['direction']=='LONG' else -1;risk=abs(t['entry_underlying']-t['initial_stop_underlying']);assert risk>0
+                    path=[sign*(o.future.ltp-t['entry_underlying'])/risk for at,o in packets[day].items() if t['entry_time']<=at<=t['exit_time']]
+                    main_paths[t['entry_expert']].append({'direction':t['direction'],'net':t['net_pnl'],'gross':t['gross_pnl'],
+                        'holding_minutes':(exit-entry).total_seconds()/60,'exit_signed_underlying_r':sign*(b.future.ltp-t['entry_underlying'])/risk,
+                        'mfe_underlying_r':max(path),'mae_underlying_r':min(path),'stretch':t['stretch'],'exit_reason':t['exit_reason']})
                 prices+=2;count+=1;profile_counts[t['selected_profile']]=profile_counts.get(t['selected_profile'],0)+1
     X.verify('candidate');out={'year':year,'admissions_verified':count,'archive_prices_verified':prices,'accepted_trace_bindings':trace_count,'choice_gate_or_price_errors':0,'profile_admissions':profile_counts,'file_sha256':hashes}
+    out['descriptive_main_paths']={p:{'trades':len(rs),'net':sum(r['net'] for r in rs),'gross':sum(r['gross'] for r in rs),
+        'median_holding_minutes':statistics.median(r['holding_minutes'] for r in rs),'median_exit_signed_underlying_r':statistics.median(r['exit_signed_underlying_r'] for r in rs),
+        'median_mfe_underlying_r':statistics.median(r['mfe_underlying_r'] for r in rs),'median_mae_underlying_r':statistics.median(r['mae_underlying_r'] for r in rs),
+        'favorable_underlying_exit_but_net_loss':sum(r['exit_signed_underlying_r']>0 and r['net']<0 for r in rs),'median_entry_stretch':statistics.median(r['stretch'] for r in rs if r['stretch'] is not None)} for p,rs in main_paths.items()}
+    out['path_diagnostic_limit']='Post-entry paths explain these outcomes only; they are not advance labels, fitted gates or causal attribution of IV/decay.'
     X.write(X.LOCAL/f'execution-check-{year}.json',out);print('EXECUTIONS_VERIFIED',year,count,prices,flush=True)
 if __name__=='__main__':run()
