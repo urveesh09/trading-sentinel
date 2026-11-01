@@ -1,3 +1,9 @@
+## November 1 — N09.1 baseline parity complete
+
+- Pre-score source4245670;12 exact annual controls/675 trades;54 focused passed, atlas291 unchanged.
+- Corrected causal256-path fixed-one-lot stress diagnostic retained beside original N09 evidence. Automatic restart still has large downside; cash-backed floor has clear opportunity costs. No profitability/probability/deployment inference.
+- Primary/cost/continuity runs and independent60-book financial/admission/floor/price/clock audit still pending. All source/input freezes remain unchanged; no2022 or broker calls; Production untouched.
+
 ## November 1 — N09.1 source and finite hypotheses frozen
 
 - Plan/source/config at docs/research/simulation/2026-11-01-fno-n091; exactly VOL_CLOCK and CUSHION,60 declared annuals, all four years seen. No new state-router/confirmation/option search.
