@@ -2,7 +2,7 @@ import json,sys
 from pathlib import Path
 HERE=Path(__file__).resolve().parents[1];sys.path.insert(0,str(HERE))
 import anatomy_lab as L
-old=json.loads((L.PARENT/'freeze.json').read_text());new=json.loads((HERE/'freeze.json').read_text())
+old=json.loads((L.PARENT/'freeze.json').read_text());new=json.loads((HERE/L.ACTIVE_FREEZE).read_text())
 for y,b in old['bindings'].items():
     for k,v in b.items():
         if k=='sources':assert all(new['bindings'][y]['sources'][p]==h for p,h in v.items())

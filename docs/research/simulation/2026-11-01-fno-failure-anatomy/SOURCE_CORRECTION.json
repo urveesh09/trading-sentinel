@@ -1,0 +1,22 @@
+{
+  "schema": "n07_preflight_correction_v1",
+  "original_source": "3ec85032a77413c933f8ade1e36c97edf06c852d",
+  "original_freeze_sha256": "3bf43ab7dfd08f0e9d407d62c1908c929a8f04100bd45acb15c7b0d124048358",
+  "reason": "CLI __main__ imported build_controls, which reimported anatomy_lab and captured already-mutated parent LOCAL; FileNotFoundError before pool/candidate evaluation.",
+  "original_failure_log_sha256": "2ffb0d2305af993c309cac1c56b3b77d86b3f80cd33edc000d2aabf178eea07d",
+  "completed_static_evals": 18,
+  "candidate_evals_before_correction": 0,
+  "fix": "Verify already committed control receipt and old/fresh eval hashes directly; no self-import. Preserve v1 freeze; activate separately committed freeze-v2 before candidate replay.",
+  "unchanged_trading_function_ast_sha256": {
+    "entry": "4f46e1bb84f8b396bdf20f8e15917cc6198079172e97dc3038ada68b8c30a8f3",
+    "review": "1a18e97381ee499d30164da8200c685eaa52f4bd2c1934cca0bb0b7fd6fa073a",
+    "manage": "6d8ee5d2299620f56dac64562a40909e28ed4696626d26f24ed0f02751351b03",
+    "close": "4edc9f14b89b991720730ba2564081abe0f3e54814610465eec8981521aad438",
+    "books": "8804a2478213271bc3b1831a5e0709df8b53d86f0ece8e23981d54b46a30812c",
+    "reference_files": "075eb01c22a92482c54f5a7d473712624d0a5f81d0a24a8ae683f15813c9074a",
+    "bindings": "564d6303a93af767608693fce880751ed0789bf63b6b097725194aac8cb05dd6"
+  },
+  "configuration_sha256": "1ed3eca4bbf28eafcf77d81b770593f06657418ab917c6d14cf2c78c63256160",
+  "rules_sha256": "cf7c8081d861753e51d5813d0cffa0bddd74f9cc2c715bf0604365d67975e845",
+  "strategy_or_threshold_or_control_result_change": false
+}

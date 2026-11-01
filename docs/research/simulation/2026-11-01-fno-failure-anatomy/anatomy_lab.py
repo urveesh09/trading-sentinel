@@ -8,6 +8,7 @@ sys.path[:0]=[str(HERE),str(PARENT)]
 import refine_lab as P
 import anatomy_rules as R
 Y,B,C,X=P.Y,P.B,P.C,P.X;OLD=P.LOCAL;LOCAL=HERE/'_local';P.LOCAL=LOCAL;P.P.LOCAL=LOCAL;P.P.E.LOCAL=LOCAL;X.LOCAL=LOCAL;Y.EVALS=LOCAL/'evals'
+ACTIVE_FREEZE='freeze-v2.json'
 
 _entry=Y.BookReplay._entry
 def entry(self,book,*args):
@@ -82,25 +83,39 @@ def freeze():
     clean={k:v for k,v in os.environ.items() if k not in ('O30F_YEAR','O30C_YEAR')};out={}
     for y in ('2024','2025','2026'):
         env={**clean,**({'O30F_YEAR':y} if y=='2024' else {'O30C_YEAR':y})};out[y]=json.loads(subprocess.check_output([sys.executable,__file__,'bindings'],cwd=ROOT,env=env).decode().strip().splitlines()[-1])
-    assert not (HERE/'freeze.json').exists();X.write(HERE/'freeze.json',dict(schema='n07_anatomy_v1',bindings=out,books=books(),configuration=json.loads((HERE/'configuration.json').read_text()),qualified=False,can_place_orders=False,all_years_seen=True))
+    assert not (HERE/ACTIVE_FREEZE).exists();X.write(HERE/ACTIVE_FREEZE,dict(schema='n07_anatomy_v2_preflight_correction',original_freeze_sha256=B.P.sha(HERE/'freeze.json'),source_correction_sha256=B.P.sha(HERE/'SOURCE_CORRECTION.json'),bindings=out,books=books(),configuration=json.loads((HERE/'configuration.json').read_text()),qualified=False,can_place_orders=False,all_years_seen=True))
 
 
 def verify():
-    f=json.loads((HERE/'freeze.json').read_text());assert f['bindings'][B.YEAR]==X.native(bindings()),'source/input/reference changed'
-    assert json.loads(subprocess.check_output(['git','show','HEAD:'+(HERE/'freeze.json').relative_to(ROOT).as_posix()],cwd=ROOT))==f,'freeze uncommitted'
+    f=json.loads((HERE/ACTIVE_FREEZE).read_text());assert f['bindings'][B.YEAR]==X.native(bindings()),'source/input/reference changed'
+    assert B.P.sha(HERE/'freeze.json')==f['original_freeze_sha256'] and B.P.sha(HERE/'SOURCE_CORRECTION.json')==f['source_correction_sha256']
+    assert json.loads(subprocess.check_output(['git','show','HEAD:'+(HERE/ACTIVE_FREEZE).relative_to(ROOT).as_posix()],cwd=ROOT))==f,'freeze uncommitted'
+
+
+def verify_controls():
+    # Importing this module from its own __main__ loaded the patched replay graph
+    # twice. Read the already committed parity receipt and all bound bytes instead.
+    manifest=HERE/'control-parity.json';m=json.loads(manifest.read_text())
+    assert len(m)==18 and json.loads(subprocess.check_output(['git','show','HEAD:'+manifest.relative_to(ROOT).as_posix()],cwd=ROOT))==m
+    for y,files in reference_files().items():
+        keys=json.loads((LOCAL/f'keys-reference-{y}.json').read_text())
+        for name,old in files.items():
+            receipt=m[y+'|'+name];fresh=LOCAL/'evals'/f'{keys[name]}.json'
+            assert receipt['exact_economics'] and B.P.sha(old)==receipt['old_sha256'] and B.P.sha(fresh)==receipt['fresh_sha256']
+    return len(m)
 
 
 def run(jobs,phase):
     assert 1<=jobs<=3;B.O27F.deny_network();verify();C.table('year')
     if phase=='candidate':
-        import build_controls
-        assert len(build_controls.controls())==18,'all18 exact controls required before scoring'
+        assert verify_controls()==18,'all18 exact controls required before scoring'
     with ProcessPoolExecutor(max_workers=jobs,initializer=B.L._init) as pool:Y.Runner(pool,jobs).run(list(books(phase).values()),source='year',window=C.WINDOW)
     verify();X.write(LOCAL/f'keys-{phase}-{B.YEAR}.json',{n:Y.task_key(b,'year',C.WINDOW) for n,b in books(phase).items()});print('DONE',phase,B.YEAR,len(books(phase)),flush=True)
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['bindings','freeze','run']);p.add_argument('--phase',choices=['reference','candidate'],default='reference');p.add_argument('--jobs',type=int,default=3);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['bindings','freeze','run','check-controls']);p.add_argument('--phase',choices=['reference','candidate'],default='reference');p.add_argument('--jobs',type=int,default=3);a=p.parse_args()
     if a.action=='bindings':print(json.dumps(X.native(bindings())))
     elif a.action=='freeze':freeze()
+    elif a.action=='check-controls':print('PRE_CANDIDATE_CONTROLS_VERIFIED',verify_controls())
     else:run(a.jobs,a.phase)

@@ -1,3 +1,8 @@
+## November 1 — N07 preflight correction preserved before candidate results
+
+- SOURCE_CORRECTION.json: zero candidate evaluations before correction; original freeze/failure retained. __main__ duplicate import fixed by direct committed receipt/hash verification. All trading function ASTs/config/rules/18 controls unchanged.
+- Active freeze-v2.json,110 focused checks including real CLI; atlas291/no diff. Proceed with frozen two hypotheses/diagnostics; no strategy tuning/size/Production/2023 change.
+
 ## November 1 — N07 static controls checked; repair scores still pending
 
 - Source3ec8503 pre-score; control-parity.json verifies18 exact NORMAL/ONE annual controls.109 focused tests passed, atlas291/no diff.

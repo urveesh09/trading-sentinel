@@ -76,3 +76,10 @@ def test_matrix_inherits_original_caps_and_priority():
         else:assert not v['cfg']
         if n.startswith('NO_EXTRA_STRESS|'):assert v['cost']==[0.,0.]
         else:assert v['cost']==[200.,5.]
+
+
+def test_real_cli_control_preflight_does_not_double_import_replay_graph():
+    import subprocess
+    result=subprocess.run([sys.executable,str(L.HERE/'anatomy_lab.py'),'check-controls'],cwd=L.ROOT,capture_output=True,text=True,timeout=30)
+    assert result.returncode==0,result.stderr
+    assert 'PRE_CANDIDATE_CONTROLS_VERIFIED 18' in result.stdout
