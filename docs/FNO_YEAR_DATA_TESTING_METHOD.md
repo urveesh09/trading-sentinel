@@ -6,6 +6,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 - **The general research rules:** [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md).
 - **Testing size in rupees, not per lot:** section 15, with the worked study [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md).
 - **The 2024 exam's results (Oct 31):** [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md). Running an exam like it: section 14.
+- **N09, N08's challengers, the restart and the overfitting estimate (Nov 1):** [FNO_RESEARCH_N09.md](FNO_RESEARCH_N09.md).
 - **N08 and the NIFTY 2023 result (Nov 1):** [FNO_RESEARCH_N08.md](FNO_RESEARCH_N08.md).
 - **The weak-spots study and the fixed NIFTY 2023 exam (Oct 31):** [FNO_WEAK_SPOTS_2026-10-31.md](FNO_WEAK_SPOTS_2026-10-31.md).
 - **The final-strategy study (Oct 31):** [FNO_FINAL_STRATEGY_2026-10-31.md](FNO_FINAL_STRATEGY_2026-10-31.md). A worked example of testing changes on three seen years without fooling yourself: one change at a time, help in every year, held-out-year selection, and a plateau check (`docs/research/fno/2026-10-31-final-book/`).
@@ -257,6 +258,10 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 
 ## 12. Pitfalls and fixes
 
+- **A new member inherits the house exits (Nov 1, 2026).** A book member with its own exit rule still runs `FNO_PROFIT_LOCK_ENABLED` unless its policy turns it off. N09's noise-area book did, and half its trades left by the lock. Print exit reasons before believing a new member's result.
+- **Cost-stress books aren't strategies (Nov 1, 2026).** Leave them and exact duplicates out of any selection or overfitting estimate. `COST|none` won 12,201 of 12,870 splits and made an overfitting score of 0.487 read 0.031.
+- **Reshuffling single months breaks up bad stretches (Nov 1, 2026).** A restart fired in 2% of such paths. Test anything about bad stretches with whole years, as `2026-11-01-fno-n09/stress_years.py` does.
+- **With the brake on, a bad year's net shows where the floor stopped the book (Nov 1, 2026).** Differences of a few hundred rupees mean nothing there. Compare with brakes off too, and don't write a check that hangs on that figure alone.
 - **A new year's daily bars (Nov 1, 2026).** `2026-10-31-fno-complements/lab_gap.py` replaces `features.daily_bars` with a reader of a per-year file chosen when it is imported, so moving `features.DOWNLOAD` changes nothing and the ADX gate reads another year's bars. Set `lab_gap.DAILY` and point `F.daily_bars` at its reader, as `2026-11-01-fno-n08/n08_lab.py` does, and check every session has a trend reading before replaying.
 - **A wiring test that passes on saved files (Nov 1, 2026).** The runner reuses any saved result with the same key. A test aimed at a known year must use an empty results folder and fail if nothing was replayed. A shared folder gave a false pass and let the fault above through.
 

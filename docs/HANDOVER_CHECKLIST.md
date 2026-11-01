@@ -1,3 +1,12 @@
+## November 1 — N09: no challenger beat N08; restart measured
+
+**No new entry, exit, option choice or added strategy beat N08.** One lot, brakes off, four years, N08 +1,17,877: one-bar confirmation +49,318, structure exit +1,17,814, delta 0.65 +82,083, delta 0.75 +53,331, N08 + noise-area -32,262. 48 of 50 older strategies lost on 2023, and none qualifies as a complement. N09A (N08 without the morning two-lot rule, composed by the frozen rule) +1,58,946 against +2,02,284: fails. N09B (N08's decisions, two lots only when yesterday's daily ATR % is at or above its 250-session median, restart when the last 20 paper trades made money) ends one account at Rs 4,10,542 against the required 4,14,803, and its fall is 15.24% against 15.08%: narrowly fails. **One account from Jan 2023:** N08 as it stands Rs 2,12,419; with that restart Rs 4,36,635, which passes its checks. Whole-year stress, one lot, 256 orderings: helps 55, hurts 11, largest cost Rs 83,578. Corrected overfitting estimate 0.487, about what random books score (0.51-0.55).
+
+- **Verification:** every N09 code path with nothing on equals N08 trade for trade on all four years; the runs reproduce stored N07, N08 and EX|MAIN figures; `test_n09.py` 15 and `test_n09_scoring.py` 9 passed; `audit_account.py` recomputes the accounts from raw trades; atlas unchanged.
+- **Config and migration impact:** none. **State:** Dev, pushed, not deployed; Production c97cb8c, PR #126 open.
+- **Errors recorded (`docs/research/simulation/2026-11-01-fno-n09/SOURCE_CORRECTION.md`):** noise-area books first left the profit lock on; first overfitting score 0.031 counted cost-stress books; a broken commit before the freeze. First results are kept.
+- **Environment limits:** candle model, lot 65, assumed extra cost, nearest weekly only, the 52 cut requests unrepaired (one N08 trade touched). All four years are seen, and the supplement is post-hoc. Not a profitability claim.
+
 ## November 1 — N08 failed its frozen 2023 test
 
 N08 is N07 with EFF and OR20 trailing at 2 ATR, low-day TPB at up to two lots before 12:00 and none from 14:00, and nothing above two lots. It **failed its frozen test**: 2023 net -Rs 37,581 (N07 -37,719), not positive every year. Fresh Rs 2.5 lakh a year: 2023 -37,581, 2024 +76,294, 2025 +58,647, 2026 +1,04,924, four years +2,02,284 (N07 +1,49,421, N04 +1,44,294, N05 +1,31,739, N03 +1,22,633). Paired weekly t against N07: 2023 alone 0.01. N08 stays a seen-year lead.

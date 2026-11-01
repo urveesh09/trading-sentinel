@@ -1,0 +1,186 @@
+{
+ "schema": "n09_stress_v1",
+ "note": "added after the supplement's results; not a frozen rule",
+ "paths": 256,
+ "summary": {
+  "NONE": {
+   "median_end": 367877,
+   "worst_end": 211290,
+   "best_end": 505975,
+   "below_start": 67,
+   "lowest_equity_seen": 211290
+  },
+  "ANNUAL": {
+   "median_end": 367877,
+   "worst_end": 128867,
+   "best_end": 505975,
+   "below_start": 13,
+   "lowest_equity_seen": 128867
+  },
+  "SHADOW": {
+   "median_end": 367877,
+   "worst_end": 128558,
+   "best_end": 505975,
+   "below_start": 13,
+   "lowest_equity_seen": 128558
+  }
+ },
+ "restart_against_none": {
+  "ANNUAL": {
+   "helps": 55,
+   "hurts": 9,
+   "same": 192,
+   "largest_gain": 191981,
+   "largest_cost": -83269,
+   "mean_gap": 22588
+  },
+  "SHADOW": {
+   "helps": 55,
+   "hurts": 11,
+   "same": 190,
+   "largest_gain": 189591,
+   "largest_cost": -83578,
+   "mean_gap": 21438
+  }
+ },
+ "named": {
+  "2023 2024 2025 2026": {
+   "NONE": {
+    "end": 212136,
+    "low": 212136,
+    "restarts": 0
+   },
+   "ANNUAL": {
+    "end": 367387,
+    "low": 212136,
+    "restarts": 1
+   },
+   "SHADOW": {
+    "end": 363270,
+    "low": 212136,
+    "restarts": 1
+   }
+  },
+  "2023 2023 2024 2025": {
+   "NONE": {
+    "end": 212136,
+    "low": 212136,
+    "restarts": 0
+   },
+   "ANNUAL": {
+    "end": 270937,
+    "low": 179679,
+    "restarts": 2
+   },
+   "SHADOW": {
+    "end": 266458,
+    "low": 179318,
+    "restarts": 2
+   }
+  },
+  "2023 2023 2023 2024": {
+   "NONE": {
+    "end": 212136,
+    "low": 212136,
+    "restarts": 0
+   },
+   "ANNUAL": {
+    "end": 197496,
+    "low": 152275,
+    "restarts": 3
+   },
+   "SHADOW": {
+    "end": 193390,
+    "low": 152286,
+    "restarts": 3
+   }
+  },
+  "2023 2023 2023 2023": {
+   "NONE": {
+    "end": 212136,
+    "low": 212136,
+    "restarts": 0
+   },
+   "ANNUAL": {
+    "end": 128867,
+    "low": 128867,
+    "restarts": 3
+   },
+   "SHADOW": {
+    "end": 128558,
+    "low": 128558,
+    "restarts": 3
+   }
+  },
+  "2024 2023 2023 2025": {
+   "NONE": {
+    "end": 266508,
+    "low": 214916,
+    "restarts": 0
+   },
+   "ANNUAL": {
+    "end": 266508,
+    "low": 214916,
+    "restarts": 0
+   },
+   "SHADOW": {
+    "end": 266508,
+    "low": 214916,
+    "restarts": 0
+   }
+  },
+  "2025 2023 2023 2023": {
+   "NONE": {
+    "end": 211290,
+    "low": 211290,
+    "restarts": 0
+   },
+   "ANNUAL": {
+    "end": 211290,
+    "low": 211290,
+    "restarts": 0
+   },
+   "SHADOW": {
+    "end": 178472,
+    "low": 178472,
+    "restarts": 1
+   }
+  }
+ },
+ "two_lot_share": {
+  "2023": {
+   "sessions": 246,
+   "share_two_lots": 0.085
+  },
+  "2024": {
+   "sessions": 249,
+   "share_two_lots": 0.863
+  },
+  "2025": {
+   "sessions": 249,
+   "share_two_lots": 0.353
+  },
+  "2026": {
+   "sessions": 203,
+   "share_two_lots": 0.847
+  }
+ },
+ "s_vol_lots": {
+  "2023": {
+   "1": 65,
+   "2": 1
+  },
+  "2024": {
+   "2": 17,
+   "1": 12
+  },
+  "2025": {
+   "1": 67,
+   "2": 8
+  },
+  "2026": {
+   "1": 24,
+   "2": 27
+  }
+ }
+}
