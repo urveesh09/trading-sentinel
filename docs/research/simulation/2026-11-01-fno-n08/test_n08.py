@@ -94,6 +94,19 @@ def test_n08_is_exactly_what_it_says():
     assert set(got["n08"]) == {"contract", "exits", "low_two_lots_before", "low_last_minute"}
 
 
+def test_a_repointed_year_reads_its_own_daily_bars():
+    """The fault in the first opening: lab_gap chose its daily file at import, so the 2024 file answered for 2023."""
+    got = run_lab("d=N.F.daily_bars(); print(N.GAP.DAILY.name, str(d.index[0].date()), str(d.index[-1].date()), N.Y.EVALS.name)", year="TEST2025")
+    name, first, last, evals = got.split()
+    assert name == "daily-2025.json" and last >= "2025-12-31" and first < "2025-01-01" and evals == "evals"
+    assert "repoint-test" in run_lab("print(N.Y.EVALS)", year="TEST2025")
+
+
+def test_a_wiring_test_cannot_pass_on_saved_results():
+    text = (HERE / "exam_2023.py").read_text(encoding="utf-8")
+    assert "the wiring test must start empty" in text and "a result was not really replayed" in text
+
+
 def test_2023_is_refused_outside_the_exam():
     out = subprocess.run([sys.executable, "-B", str(HERE / "n08_lab.py"), "screen"], capture_output=True, text=True, timeout=240, env={**__import__("os").environ, "N08_YEAR": "2023", "PYTHONDONTWRITEBYTECODE": "1"})
     assert out.returncode != 0

@@ -45,9 +45,11 @@ def sha(path: Path) -> str:
 
 
 def require_freeze() -> None:
-    frozen = json.loads((HERE / "freeze.json").read_text(encoding="utf-8"))
-    rel = (HERE / "freeze.json").relative_to(N.ROOT).as_posix()
-    assert json.loads(subprocess.check_output(["git", "show", f"HEAD:{rel}"], cwd=N.ROOT)) == frozen, "freeze.json is not committed"
+    frozen = json.loads((HERE / "freeze-v2.json").read_text(encoding="utf-8"))
+    rel = (HERE / "freeze-v2.json").relative_to(N.ROOT).as_posix()
+    assert json.loads(subprocess.check_output(["git", "show", f"HEAD:{rel}"], cwd=N.ROOT)) == frozen, "freeze-v2.json is not committed"
+    first = json.loads((HERE / "freeze.json").read_text(encoding="utf-8"))
+    assert frozen["books"] == first["books"] and frozen["rule"] == first["rule"], "the correction may not change a book or a rule"
     changed = [k for k, v in frozen["sources"].items() if sha(N.ROOT / k) != v]
     assert not changed, f"files changed since the freeze: {changed}"
     books = N.exam_books()
@@ -81,6 +83,44 @@ def freeze() -> None:
                      "sources": {p: sha(N.ROOT / p) for p in (*SOURCES, *PARENTS)}, "books": {n: {"digest": Y.digest(b), "label": b.get("label") or b.get("o31")} for n, b in books.items()},
                      "n08": {k: books["N08"][k] for k in ("n08", "cfg", "n07_mode", "n02_profile", "cost")}, "rule": RULE, "qualified": False, "can_place_orders": False})
     print("frozen", len(books), "books", flush=True)
+
+
+def freeze2() -> None:
+    """The correction: same books, same rule, new source hashes. The original freeze.json stays."""
+    assert YEAR == "2023"
+    target = HERE / "freeze-v2.json"
+    assert not target.exists(), "frozen once"
+    first = json.loads((HERE / "freeze.json").read_text(encoding="utf-8"))
+    books = N.exam_books()
+    assert {n: b["digest"] for n, b in first["books"].items()} == {n: Y.digest(b) for n, b in books.items()}, "the correction may not change a book"
+    sources = {p: sha(N.ROOT / p) for p in (*SOURCES, *PARENTS)}
+    X.write(target, {**first, "schema": "n08_freeze_v2_source_correction", "status": "Same books and rule as freeze.json. Only the wiring that reads daily bars changed. See SOURCE_CORRECTION.md.",
+                     "original_freeze_sha256": sha(HERE / "freeze.json"), "source_correction_sha256": sha(HERE / "SOURCE_CORRECTION.md"), "sources": sources})
+    print("frozen v2", len(books), "books", flush=True)
+
+
+def write_daily() -> None:
+    """2023's own daily bars, from the sealed mirror, in the same file format every other year uses. Nothing is shown."""
+    assert YEAR == "2023"
+    target = POINT["daily"]
+    assert not target.exists(), "written once"
+    frame = N.GAP._original_daily()
+    assert frame.index[-1].isoformat()[:10] <= POINT["window"][1], "a daily bar after the year"
+    assert (frame.index < "2023-01-01").sum() >= 200, "too little history before the year"
+    Y.write_new(target, {"rows": [[str(i.date()), *map(float, row)] for i, row in frame.iterrows()]})
+    print("daily 2023:", len(frame), "bars", str(frame.index[0].date()), str(frame.index[-1].date()), flush=True)
+
+
+def check_inputs() -> dict:
+    """What the first opening lacked: proof that the gate reads this year's bars. It refuses to run otherwise."""
+    frame = F.daily_bars()
+    sessions = json.loads((POINT["dataset"] / "manifest.json").read_text(encoding="utf-8"))["sessions"]
+    table = Y.table("year")
+    assert frame.index[-1].isoformat()[:10] <= POINT["window"][1] and frame.index[-1].isoformat()[:10] >= sessions[-1], ("daily bars do not end with this year", frame.index[-1])
+    closed = [d for d in sessions if table[d]["side"].get("adx_abs30") is None]
+    assert not closed, ("sessions with no trend reading", closed[:5], len(closed))
+    return {"daily_bars": len(frame), "first": str(frame.index[0].date()), "last": str(frame.index[-1].date()), "bars_before_first_session": int((frame.index < sessions[0]).sum()),
+            "sessions": len(sessions), "gate_high": sum(table[d]["side"]["adx_abs30"] == "HIGH" for d in sessions), "gate_low": sum(table[d]["side"]["adx_abs30"] == "LOW" for d in sessions)}
 
 
 def mirror() -> None:
@@ -204,6 +244,8 @@ def bind() -> None:
 
 def run(jobs: int) -> None:
     N.B.O27F.deny_network()
+    inputs = check_inputs()
+    print("inputs:", inputs, flush=True)
     if YEAR == "2023":
         require_freeze()
         binding = json.loads(subprocess.check_output(["git", "show", "HEAD:" + (HERE / "data-binding-2023.json").relative_to(N.ROOT).as_posix()], cwd=N.ROOT))
@@ -211,19 +253,25 @@ def run(jobs: int) -> None:
         books = N.exam_books()
     else:
         books = {**N.references(), "NOOP": N.noop_book()}
+        already = {f.name for f in Y.EVALS.glob("*.json")} if Y.EVALS.is_dir() else set()
+        assert not already, "the wiring test must start empty, or it proves nothing"
     N.run_books(books, jobs)
     if YEAR == "2023":
-        X.write(N.LOCAL / "keys-exam-2023.json", {n: Y.task_key(b, "year", C.WINDOW) for n, b in books.items()})
+        X.write(N.LOCAL / "keys-exam-2023-v2.json", {n: Y.task_key(b, "year", C.WINDOW) for n, b in books.items()})
+        X.write(HERE / "exam-inputs-2023.json", inputs)
     else:
         result = N.parity()
+        result["inputs"] = inputs
+        result["replayed_here_seconds"] = {f.stem[-8:]: json.loads(f.read_text(encoding="utf-8"))["seconds"] for f in Y.EVALS.glob("*.json")}
+        assert all(v > 1 for v in result["replayed_here_seconds"].values()), "a result was not really replayed"
         X.write(HERE / "parity-repoint-test.json", result)
-        print("REPOINT PARITY", result, flush=True)
+        print("REPOINT PARITY", {k: v for k, v in result.items() if k.startswith("NORMAL")}, flush=True)
     print("DONE exam", YEAR, len(books), flush=True)
 
 
 if __name__ == "__main__":
     cli = argparse.ArgumentParser()
-    cli.add_argument("action", choices=("freeze", "mirror", "export", "warm", "bind", "run"))
+    cli.add_argument("action", choices=("freeze", "freeze2", "daily", "mirror", "export", "warm", "bind", "run"))
     cli.add_argument("--jobs", type=int, default=5)
     a = cli.parse_args()
-    {"freeze": freeze, "mirror": mirror, "export": export, "warm": lambda: warm(a.jobs), "bind": bind, "run": lambda: run(a.jobs)}[a.action]()
+    {"freeze": freeze, "freeze2": freeze2, "daily": write_daily, "mirror": mirror, "export": export, "warm": lambda: warm(a.jobs), "bind": bind, "run": lambda: run(a.jobs)}[a.action]()

@@ -49,12 +49,15 @@ TIME_STOP_DEFAULT = float(settings.FNO_TIME_STOP_MIN)
 NATIVE_CLOCK = {"SHIPPED": TIME_STOP_DEFAULT, "OR20": 75.0, "EFF": 60.0, "TPB": 120.0}
 FNO_STUDIES = ROOT / "docs/research/fno"
 POINTS = {
+    # evals-2023 is new because the first opening's files stay in evals: that run read the wrong daily bars (SOURCE_CORRECTION.md).
     "2023": {"year": "2023", "dataset": LOCAL / "dataset-nifty-2023", "mirror": LOCAL / "mirror-2023.sqlite", "window": ("2023-01-01", "2023-12-31"),
-             "cache": LOCAL / "observations-2023", "local": LOCAL / "y2023"},
-    # The wiring test: the same repointing, aimed at sealed 2025 data whose results are already known.
+             "cache": LOCAL / "observations-2023", "local": LOCAL / "y2023", "evals": LOCAL / "evals-2023", "daily": LOCAL / "daily-2023.json"},
+    # The wiring test: the same repointing, aimed at sealed 2025 data whose results are already known. Its evals folder starts
+    # empty, so it can only pass by really replaying.
     "TEST2025": {"year": "2025", "dataset": FNO_STUDIES / "2026-10-30-nifty-2025-test/_local/dataset-nifty-2025",
                  "mirror": FNO_STUDIES / "2026-10-30-nifty-2025-test/_local/mirror.sqlite", "window": ("2025-01-01", "2025-12-31"),
-                 "cache": LOCAL / "repoint-test/observations", "local": LOCAL / "repoint-test"},
+                 "cache": LOCAL / "repoint-test/observations", "local": LOCAL / "repoint-test", "evals": LOCAL / "repoint-test/evals",
+                 "daily": HERE.parent / "2026-10-31-fno-complements/_local/daily-2025.json"},
 }
 
 if YEAR in POINTS:
@@ -62,11 +65,17 @@ if YEAR in POINTS:
     Y.YEAR = point["dataset"]
     Y.CACHES["year"] = point["cache"]
     Y.LOCAL = point["local"]
-    Y.EVALS = LOCAL / "evals"
+    Y.EVALS = point["evals"]
+    X.LOCAL = point["local"]
     F.DOWNLOAD = point["mirror"]
     F.DATASET = point["dataset"]
     C.WINDOW = point["window"]
     B.YEAR = point["year"]
+    # lab_gap replaces F.daily_bars with a reader of its own per-year file, and that file is chosen when it is imported, so moving
+    # F.DOWNLOAD alone leaves the 2024 file in charge. The trend gate reads these bars. Point the same reader at this year's file.
+    GAP = sys.modules["lab_gap"]
+    GAP.DAILY = point["daily"]
+    F.daily_bars = GAP.daily_bars
 
     def _base_table(source: str) -> dict:
         assert source == "year", source
@@ -420,11 +429,11 @@ def parity() -> dict:
         key = Y.task_key(book, "year", C.WINDOW)
         assert stored[name] == key, (name, stored[name], key)
         old = json.loads((A.HERE / "_local" / "evals" / f"{key}.json").read_text())["trades"]
-        new = json.loads((LOCAL / "evals" / f"{key}.json").read_text())["trades"]
+        new = json.loads((Y.EVALS / f"{key}.json").read_text())["trades"]
         assert old == new, (name, "trades differ")
         out[name] = {"trades": len(new), "net": round(sum(t["net_pnl"] for t in new), 2), "identical": True}
-    n07 = json.loads((LOCAL / "evals" / f"{Y.task_key(references()['NORMAL|PREMIUM_STALL'], 'year', C.WINDOW)}.json").read_text())["trades"]
-    noop = json.loads((LOCAL / "evals" / f"{Y.task_key(noop_book(), 'year', C.WINDOW)}.json").read_text())["trades"]
+    n07 = json.loads((Y.EVALS / f"{Y.task_key(references()['NORMAL|PREMIUM_STALL'], 'year', C.WINDOW)}.json").read_text())["trades"]
+    noop = json.loads((Y.EVALS / f"{Y.task_key(noop_book(), 'year', C.WINDOW)}.json").read_text())["trades"]
     strip = lambda t: {k: v for k, v in t.items() if k != "admission_id"}
     assert [strip(t) for t in n07] == [strip(t) for t in noop], "the N08 code paths changed N07 with nothing switched on"
     out["NOOP"] = {"trades": len(noop), "identical_to_n07": True}

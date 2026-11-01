@@ -1,0 +1,136 @@
+{
+  "schema": "n08_freeze_v2_source_correction",
+  "status": "Same books and rule as freeze.json. Only the wiring that reads daily bars changed. See SOURCE_CORRECTION.md.",
+  "sources": {
+    "docs/research/simulation/2026-11-01-fno-n08/n08_lab.py": "3f480e49e709c073d654677dbc395c5ad219ace1b5e518289d82fdeb58eeb434",
+    "docs/research/simulation/2026-11-01-fno-n08/n08_rules.py": "8466365bc03178a41e55678149facd4a026de5fec95f2a53dfeb2c209ba0d1e0",
+    "docs/research/simulation/2026-11-01-fno-n08/exam_2023.py": "cccdba0aa979da314548e794476a522c10b339959c96db706c8810f19b5847fe",
+    "docs/research/simulation/2026-11-01-fno-n08/test_n08.py": "99f037bdff35a9e1e5fe57841beb04b47ef68dbe35f682dbe39f3e82848b4836",
+    "docs/research/simulation/2026-11-01-fno-n08/PLAN.md": "cbc803fa003ed97e0e0d81090ecb850c6ec8a092a693f1ee3c3287d0991f89fe",
+    "docs/research/simulation/2026-11-01-fno-n08/analyze_screen.py": "093d3f72497d64c21a0d57dc077342cd8149ec7961a2b24d8a8009516f3f69f3",
+    "docs/research/simulation/2026-11-01-fno-n08/heldout_check.py": "cf1525639b0cb85b2dd38e5d243c088d50f3235a4deccf1d5aa561a44b75fcc0",
+    "docs/research/simulation/2026-11-01-fno-failure-anatomy/anatomy_lab.py": "b7cf8202fa87f91d4504637716bc1edad0f2481cd77387f4494a517f673b9240",
+    "docs/research/simulation/2026-11-01-fno-failure-anatomy/anatomy_rules.py": "cf7c8081d861753e51d5813d0cffa0bddd74f9cc2c715bf0604365d67975e845",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/refine_lab.py": "9dcb29e8d2034e6585246dc1df3d7ba337d876bc069ca886593d487d07dc7503",
+    "docs/research/simulation/2026-11-01-fno-exit-ablation/exit_lab.py": "594ce540aa083bf28b6d20c9aa17a67f0e986b930a16bb0681c70c94158052a8",
+    "docs/research/simulation/2026-11-01-fno-eff-improvement/eff_lab.py": "ecb110d9bd715ac21cd3990a39e13898ade7e5dc26ec671a0a76e6f3a5eed299",
+    "docs/research/simulation/2026-11-01-fno-core-selector/core_lab.py": "6ede7b8632c5df6b57878fee064e803f9d9ad628e209d2fefee75e251fe00654",
+    "docs/research/fno/2026-10-31-weak-spots/freeze-2023.json": "85d8e4d57543ffeae4b12027846cd288ea3687e6c2eddff54b4910fd8a6affe1",
+    "python-engine/fno_policy_replay.py": "d167016914bc19f8f76422cbb2d49b00ab0c226dcb67e3029640e23c792191ac",
+    "python-engine/fno_exit_rules.py": "05e9a2910bc7fdc8a76f822b385df8687c55e58b03b9e0cf2d5b025588bb8467",
+    "python-engine/fno_entry_plan.py": "deebaf3d34e42fb61d212743a660ef9217c5e40f501ff6ac3828d33585c7f684"
+  },
+  "books": {
+    "N03": {
+      "digest": "a536b698f66001c5",
+      "label": "N07|NORMAL|BASE"
+    },
+    "N04": {
+      "digest": "b83f5364f6daa915",
+      "label": "N07|NORMAL|STALL30"
+    },
+    "N05": {
+      "digest": "ead9d599ad619727",
+      "label": "N07|NORMAL|STRUCT30"
+    },
+    "N07": {
+      "digest": "d7464dfc8ca19f8d",
+      "label": "N07|NORMAL|PREMIUM_STALL"
+    },
+    "N08": {
+      "digest": "4349f0d64e23f53a",
+      "label": "N08|N08"
+    },
+    "PART|WIDE_TRAIL": {
+      "digest": "1d7eee0800f9712d",
+      "label": "N08|TRAIL_EFF_OR20|2.0"
+    },
+    "PART|EARLY_TWO": {
+      "digest": "6845b23d4f9ac01b",
+      "label": "N08|LOW_TWO_BEFORE|12:00"
+    },
+    "PART|LATE_STOP": {
+      "digest": "a5d2ad315eb2cece",
+      "label": "N08|LOW_LAST|14:00"
+    },
+    "PART|CAP2": {
+      "digest": "e154983de286033c",
+      "label": "N08|COMBO|C"
+    },
+    "PART|NO_LOW_TPB": {
+      "digest": "6475c8d3242f383b",
+      "label": "N08|NO_LOW_TPB"
+    },
+    "ONE|N07": {
+      "digest": "c594bc9eb5d6265c",
+      "label": "N08|ONE|N07"
+    },
+    "ONE|WL": {
+      "digest": "7c93dded371e40af",
+      "label": "N08|ONE|WL"
+    },
+    "EXAM|EX|MAIN": {
+      "digest": "6dda66fe703c0aaf",
+      "label": "EX|MAIN"
+    },
+    "EXAM|EX|D|only_puts_from_25": {
+      "digest": "015167d3275b8528",
+      "label": "EX|D|only_puts_from_25"
+    },
+    "EXAM|EX|D|puts_from_25": {
+      "digest": "d291de530a9238ce",
+      "label": "EX|D|puts_from_25"
+    },
+    "EXAM|EX|D|tpb_puts_closed": {
+      "digest": "e87aa36124abfee4",
+      "label": "EX|D|tpb_puts_closed"
+    },
+    "EXAM|EX|C|puts_only": {
+      "digest": "a9dd5001339bf24f",
+      "label": "EX|C|puts_only"
+    },
+    "EXAM|EX|C|no_eff": {
+      "digest": "7a11fcd4fd9a1403",
+      "label": "EX|C|no_eff"
+    }
+  },
+  "n08": {
+    "n08": {
+      "contract": "v1",
+      "exits": {
+        "EFF": {
+          "FNO_TRAIL_ATR_MULT": 2.0
+        },
+        "OR20": {
+          "FNO_TRAIL_ATR_MULT": 2.0
+        }
+      },
+      "low_two_lots_before": 720,
+      "low_last_minute": 840
+    },
+    "cfg": {
+      "FNO_MAX_LOTS": 2,
+      "FNO_MAX_LOTS_PROVEN": 2
+    },
+    "n07_mode": "PREMIUM_STALL",
+    "n02_profile": "TPB_ONE",
+    "cost": [
+      200.0,
+      5.0
+    ]
+  },
+  "rule": {
+    "once": "NIFTY 2023 is opened once, by this commit's books. Nothing is tuned on it. The data is sealed and fingerprinted before any replay.",
+    "measure": "Fresh Rs 2.5 lakh each year, today's brakes, lot 65, modeled candle quotes, current fees and the extra (200 + 5 x lots) x lots in the money path. 2026 runs to Oct 28.",
+    "n08_passes_2023": "N08's 2023 net is above zero and at or above N07's, and its largest closed fall on 2023 is no larger than N07's.",
+    "n08_passes_four_years": "N08 is positive in every year, and its four-year total is above each of N03, N04, N05 and N07.",
+    "verdict": "N08 is the lead research candidate only if it passes both. Otherwise it stays a seen-year lead and the result is reported as it is.",
+    "o31e_exam": "The EXAM| books are scored by the rule in docs/research/fno/2026-10-31-weak-spots/freeze-2023.json, unchanged.",
+    "parts": "PART| and ONE| books only explain the result. They can't become N08 after 2023 is open.",
+    "no_change": "Nothing changes in the system on this. The owner decides. Real money needs shadow evidence and real fills first."
+  },
+  "qualified": false,
+  "can_place_orders": false,
+  "original_freeze_sha256": "0ab2bb44f6ccedb2e69a41d82cedf4731061cb459fbfd1aa3bcbee2e56343e66",
+  "source_correction_sha256": "a9fd514244d7c9d6cf3f9488134577fc268755ffb387a4f3ad03af3bd94ad2bc"
+}
