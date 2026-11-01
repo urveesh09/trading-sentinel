@@ -1,0 +1,66 @@
+{
+  "schema": "n02_decisions_v1",
+  "freeze_sha256": "ab2de177d53b3a472b1c84cc9be705a8abb1d4406416c9092c3aac3107d4eccc",
+  "reference_files": {
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_718fe0952affb94c.json": "662e461b67f640672b36741a05a4dafee24a6941d6e57dc990b43cb434820cca",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_6030023d0e735b40.json": "59f7982ec1602373a5c909e84a643ea5302767a90857e7829d25575d44ec34a6",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_9ca41f1f354dbc8b.json": "6b0556730067371291ad01b289419efdcca4d5c4c3813ec1b638d88a4f711809",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_568071f64c19657e.json": "657673a208d274a4dec1b0d12bcdc918250586078062c2053cab6cd91f5f3c5f",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_718fe0952affb94c.json": "1304643449272f93b312743461db62430c245391a764da9aa42fb00e175af577",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_6030023d0e735b40.json": "b1f1c826f7f897c5f9a93ba1889c9e9e872d4b2ffd9fa074121a4afc6d9e1da8",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_9ca41f1f354dbc8b.json": "7773b0b88c5092a76ed450844f030b00f872bb4890bd3b9c472a318bf03cc82a",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_568071f64c19657e.json": "75de3a6aa640f870c00c71c6ea88e253db8a877ca411e2e2815e4c151af2692b",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_718fe0952affb94c.json": "3ba4024a5fc6106d247495e2c902fa7985fcab7d765f0cd1aafe5ff121bcecf7",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_6030023d0e735b40.json": "957db83f8b69412be2b3e9a8f09a9a360227b93ddc8ce50ab51eeab1a63dab92",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_9ca41f1f354dbc8b.json": "256d35c981f9be8859cd03b683a6787b7eb2ff21cc98182872c6920b1e4666bd",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_568071f64c19657e.json": "840af59b5f15a65981c32f48193f42a3766e1eeb52e6e324832146e2a8044fcd"
+  },
+  "decisions": {
+    "2024": {
+      "path": "docs/research/simulation/2026-11-01-fno-core-selector/_local/decisions-2024.json",
+      "sha256": "4b166fe1e907c13708ff00ab6f28e3a0ec4cd18e8bfd29fe433a565f1c207b77",
+      "days": 248,
+      "usage": {
+        "CORE_ADD": {
+          "MAIN": 248
+        },
+        "CORE_SELECT": {
+          "MAIN": 248
+        }
+      }
+    },
+    "2025": {
+      "path": "docs/research/simulation/2026-11-01-fno-core-selector/_local/decisions-2025.json",
+      "sha256": "db7908c425a60fd3fea3b63cc5bab917cec510d9e80dc6b0c495c96318829c6e",
+      "days": 248,
+      "usage": {
+        "CORE_ADD": {
+          "MAIN": 209,
+          "TPB_ONE": 39
+        },
+        "CORE_SELECT": {
+          "MAIN": 141,
+          "NO_EFF": 68,
+          "TPB_ONE": 39
+        }
+      }
+    },
+    "2026": {
+      "path": "docs/research/simulation/2026-11-01-fno-core-selector/_local/decisions-2026.json",
+      "sha256": "fa8d3c32cb4b22c9c0abcc332bccadfcd7f6c7f6e4253d32f9dc1344cb96dab0",
+      "days": 203,
+      "usage": {
+        "CORE_ADD": {
+          "MAIN": 152,
+          "TPB_ONE": 51
+        },
+        "CORE_SELECT": {
+          "MAIN": 152,
+          "TPB_ONE": 51
+        }
+      }
+    }
+  },
+  "qualified": false,
+  "all_years_seen": true
+}

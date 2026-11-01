@@ -1,3 +1,11 @@
+## November 1 — N02 references reproduced; daily choices sealed
+
+- Source/config/data contract **cb222ba**, pushed before scoring. All12 reference replays finished (2024/2025/2026:74/80/64s, three workers). MAIN, NO_EFF and TPB_FULL reproduce all nine earlier whole-book controls trade-for-trade/economics after member-name normalization.569 reference closes reconcile with immutable admission terms, costs, deadlines, cash/risk and bounded admission traces; zero errors.
+- Independent audit reproduces699 daily models,1,398 relative scores and1,398 policy choices; maximum arithmetic difference2.28e-13, zero future/unclosed labels or mismatches. Raw/cache comparisons freshly match248+248+203=699 frozen sessions.12 new selector tests and49 existing book/replay/weak-spot tests pass. No package installation or runtime edits.
+- Before candidate scoring, decision-manifest.json now seals all12 reference file hashes and all699 daily decisions for both policies.2024 both stay MAIN all248 days;2025 CORE_ADD uses MAIN209/TPB_ONE39, CORE_SELECT MAIN141/NO_EFF68/TPB_ONE39;2026 both MAIN152/TPB_ONE51. These are choices, not profitable outcomes. Six actual shared-cash candidate replays remain, then exact archive-price/trace/profile audits and unchanged acceptance tests.
+- Only offline Dev research.2023 unchanged/deferred; no order, money, messaging, application/config/migration or Production edit/restart. Sampled read-only Production health HTTP200, checkout c97cb8c unchanged. Preserve other authors' work. Stop research workers for rollback.
+
+
 ## November 1 — N02 incumbent-aware selector frozen before testing
 
 - Owner asks why N01 missed MAIN and to improve/test on2024–2026;2023 explicitly deferred, unchanged and unscored. New plan `docs/research/simulation/2026-11-01-fno-core-selector/PLAN.md` corrects the expert universe/objective: MAIN is a whole-policy incumbent, not individual experts stripped of its eligibility/priority. N01 learner2026 took60 LOW-day TPB trades and0 of MAIN's33 exact signal/entry opportunities.
