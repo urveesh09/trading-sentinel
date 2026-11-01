@@ -1,0 +1,233 @@
+{
+  "status": "POST_RUN_DESCRIPTIVE_ONLY_NOT_A_STRATEGY_TEST",
+  "records": 803,
+  "used_in_routing": false,
+  "partitions": {
+    "dte": {
+      "1": {
+        "2024": {
+          "trades": 75,
+          "net": 27901.08,
+          "wins": 19,
+          "median_entry_premium": 108.5
+        },
+        "2025": {
+          "trades": 72,
+          "net": -41582.27,
+          "wins": 16,
+          "median_entry_premium": 100.125
+        },
+        "2026": {
+          "trades": 52,
+          "net": -11169.25,
+          "wins": 16,
+          "median_entry_premium": 108.475
+        }
+      },
+      "2": {
+        "2024": {
+          "trades": 83,
+          "net": -16538.46,
+          "wins": 13,
+          "median_entry_premium": 130.85
+        },
+        "2025": {
+          "trades": 47,
+          "net": -24780.32,
+          "wins": 9,
+          "median_entry_premium": 123.85
+        },
+        "2026": {
+          "trades": 2,
+          "net": -7074.97,
+          "wins": 0,
+          "median_entry_premium": 228.22500000000002
+        }
+      },
+      "3": {
+        "2024": {
+          "trades": 74,
+          "net": -16385.85,
+          "wins": 25,
+          "median_entry_premium": 160.65
+        },
+        "2025": {
+          "trades": 42,
+          "net": -10601.61,
+          "wins": 13,
+          "median_entry_premium": 152.025
+        },
+        "2026": {
+          "trades": 2,
+          "net": -4882.21,
+          "wins": 0,
+          "median_entry_premium": 154.65
+        }
+      },
+      "4": {
+        "2024": {
+          "trades": 0,
+          "net": 0,
+          "wins": 0,
+          "median_entry_premium": null
+        },
+        "2025": {
+          "trades": 24,
+          "net": -10172.95,
+          "wins": 6,
+          "median_entry_premium": 119.825
+        },
+        "2026": {
+          "trades": 57,
+          "net": -15600.42,
+          "wins": 14,
+          "median_entry_premium": 160.9
+        }
+      },
+      "5": {
+        "2024": {
+          "trades": 4,
+          "net": -6430.05,
+          "wins": 0,
+          "median_entry_premium": 173.225
+        },
+        "2025": {
+          "trades": 28,
+          "net": -11454.57,
+          "wins": 7,
+          "median_entry_premium": 131.675
+        },
+        "2026": {
+          "trades": 54,
+          "net": 10386.99,
+          "wins": 19,
+          "median_entry_premium": 167.65
+        }
+      },
+      "6": {
+        "2024": {
+          "trades": 67,
+          "net": 64116.27,
+          "wins": 28,
+          "median_entry_premium": 176.0
+        },
+        "2025": {
+          "trades": 62,
+          "net": -14901.82,
+          "wins": 20,
+          "median_entry_premium": 162.725
+        },
+        "2026": {
+          "trades": 58,
+          "net": -5371.2,
+          "wins": 16,
+          "median_entry_premium": 193.575
+        }
+      }
+    },
+    "clock": {
+      "11_TO13": {
+        "2024": {
+          "trades": 142,
+          "net": 28605.05,
+          "wins": 39,
+          "median_entry_premium": 143.175
+        },
+        "2025": {
+          "trades": 127,
+          "net": -38594.19,
+          "wins": 31,
+          "median_entry_premium": 131.85
+        },
+        "2026": {
+          "trades": 100,
+          "net": 2108.92,
+          "wins": 30,
+          "median_entry_premium": 153.85
+        }
+      },
+      "BEFORE11": {
+        "2024": {
+          "trades": 122,
+          "net": 51523.31,
+          "wins": 38,
+          "median_entry_premium": 139.975
+        },
+        "2025": {
+          "trades": 116,
+          "net": -52622.87,
+          "wins": 32,
+          "median_entry_premium": 122.475
+        },
+        "2026": {
+          "trades": 95,
+          "net": -50630.61,
+          "wins": 23,
+          "median_entry_premium": 163.3
+        }
+      },
+      "FROM13": {
+        "2024": {
+          "trades": 39,
+          "net": -27465.38,
+          "wins": 8,
+          "median_entry_premium": 137.3
+        },
+        "2025": {
+          "trades": 32,
+          "net": -22276.48,
+          "wins": 8,
+          "median_entry_premium": 148.375
+        },
+        "2026": {
+          "trades": 30,
+          "net": 14810.63,
+          "wins": 12,
+          "median_entry_premium": 154.52499999999998
+        }
+      }
+    },
+    "direction": {
+      "LONG": {
+        "2024": {
+          "trades": 160,
+          "net": 9189.17,
+          "wins": 43,
+          "median_entry_premium": 112.05000000000001
+        },
+        "2025": {
+          "trades": 144,
+          "net": -66892.87,
+          "wins": 33,
+          "median_entry_premium": 103.65
+        },
+        "2026": {
+          "trades": 107,
+          "net": -7836.12,
+          "wins": 30,
+          "median_entry_premium": 134.6
+        }
+      },
+      "SHORT": {
+        "2024": {
+          "trades": 143,
+          "net": 43473.81,
+          "wins": 42,
+          "median_entry_premium": 178.0
+        },
+        "2025": {
+          "trades": 131,
+          "net": -46600.67,
+          "wins": 38,
+          "median_entry_premium": 161.9
+        },
+        "2026": {
+          "trades": 118,
+          "net": -25874.93,
+          "wins": 35,
+          "median_entry_premium": 181.625
+        }
+      }
+    }
+  }
+}
