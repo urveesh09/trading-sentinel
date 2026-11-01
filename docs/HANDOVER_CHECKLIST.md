@@ -1,3 +1,9 @@
+## November 2 — N10.1 baseline checkpoint
+
+- Source c567f8e frozen before scoring;16 exact controls/856 economic records pass. Control child commands2023/24/25/26 exit0 at95.81/80.09/87.00/73.47seconds.
+-94 distinct focused tests pass; no full-suite claim; atlas291 unchanged. Source/inputs remain bound; no app/env/authority/live stop/money/lot/Production/restart/order/message/deploy/2022 change.
+- Remaining16 candidate annuals/48 carry slices, full independent audit and frozen verdict. N10 risk-proxy diagnosis is not extra realized loss; preserve its original results and2022 exam. Owner dirty slices retained.
+
 ## November 2 — N10.1 pre-score slice
 
 - Plan/source/config/freeze under2026-11-02-fno-n101;974 sources/1004 frozen cached inputs and old receipts;80 declared annual executions; no candidate scored.

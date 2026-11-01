@@ -1,3 +1,7 @@
+## November 2 — N10.1 controls reproduced, option-risk distinction verified
+
+All16 annual N08/N09.1/N10 strict/retry controls exactly reproduce856 saved economic lifecycles. Source/config freeze c567f8e precedes scores. N10 third-lot risk is a proxy: all15 child premium-stop losses plus fees/stress exceed their declared child-risk numbers;12 original combined backstop exposures exceed5000. These are planned-risk diagnostics, not additional realized losses or an application-order bug. N10.1 tests actual premium-stop funding and genuine flat-book recovery; no runtime change or new candidate result yet.
+
 ## November 2 — N10.1 bounded research frozen, runtime unchanged
 
 Two candidate corrections only: WATCH_FLAT releases the floor only while flat and unable to fund a typical previously closed one-lot contract; PREMIUM_LOCK adds a third lot only when a real option-premium stop can cover its cost-aware stop loss. An underlying trail alone cannot establish zero option risk. Retry is explicit, one attempt per observed minute, one add maximum, original deadlines and full-premium reserve retained. No live feature/settings/stop/lot/capital/authority/Production change. All 2023–26 data already seen; 2022 untouched. Plan and immutable freeze: docs/research/simulation/2026-11-02-fno-n101/.

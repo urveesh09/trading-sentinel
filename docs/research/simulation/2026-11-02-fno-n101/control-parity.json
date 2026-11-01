@@ -1,0 +1,117 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "year": "2023",
+      "book": "N08",
+      "trades": 56,
+      "net": -37581.159100000004,
+      "exact": true
+    },
+    {
+      "year": "2023",
+      "book": "CUSHION",
+      "trades": 61,
+      "net": -32684.053499999995,
+      "exact": true
+    },
+    {
+      "year": "2023",
+      "book": "N10",
+      "trades": 61,
+      "net": -32898.2991,
+      "exact": true
+    },
+    {
+      "year": "2023",
+      "book": "STRICT",
+      "trades": 61,
+      "net": -32898.2991,
+      "exact": true
+    },
+    {
+      "year": "2024",
+      "book": "N08",
+      "trades": 29,
+      "net": 76294.19570000003,
+      "exact": true
+    },
+    {
+      "year": "2024",
+      "book": "CUSHION",
+      "trades": 29,
+      "net": 76294.19570000003,
+      "exact": true
+    },
+    {
+      "year": "2024",
+      "book": "N10",
+      "trades": 29,
+      "net": 88804.945,
+      "exact": true
+    },
+    {
+      "year": "2024",
+      "book": "STRICT",
+      "trades": 29,
+      "net": 79334.1628,
+      "exact": true
+    },
+    {
+      "year": "2025",
+      "book": "N08",
+      "trades": 75,
+      "net": 58646.52789999998,
+      "exact": true
+    },
+    {
+      "year": "2025",
+      "book": "CUSHION",
+      "trades": 74,
+      "net": 46737.8117,
+      "exact": true
+    },
+    {
+      "year": "2025",
+      "book": "N10",
+      "trades": 74,
+      "net": 51582.513099999975,
+      "exact": true
+    },
+    {
+      "year": "2025",
+      "book": "STRICT",
+      "trades": 74,
+      "net": 46737.8117,
+      "exact": true
+    },
+    {
+      "year": "2026",
+      "book": "N08",
+      "trades": 51,
+      "net": 104924.37920000001,
+      "exact": true
+    },
+    {
+      "year": "2026",
+      "book": "CUSHION",
+      "trades": 51,
+      "net": 99870.27600000001,
+      "exact": true
+    },
+    {
+      "year": "2026",
+      "book": "N10",
+      "trades": 51,
+      "net": 125786.0568,
+      "exact": true
+    },
+    {
+      "year": "2026",
+      "book": "STRICT",
+      "trades": 51,
+      "net": 105310.7387,
+      "exact": true
+    }
+  ]
+}

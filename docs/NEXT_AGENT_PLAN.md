@@ -1,3 +1,7 @@
+## November 2 — N10.1 controls passed; execute the unchanged two hypotheses
+
+Source c567f8e/immutable freeze:16 exact controls and856 old economic trades verified.94 focused checks passed (21new+49N10+24native cost/planner/exit/replay); atlas291/no diff. Independent audit source is separate from trading. Finish16 candidate annuals and48 chronological carry slices, then verify raw modeled prices, fees, stops, floor evidence, cash and state. Fixed superiority benchmark is retry N10; failed screens remain failed. No new parameters/arms/2022/Production action.
+
 ## November 2 — Execute the frozen N10.1 comparison, then stop tuning
 
 Read docs/research/simulation/2026-11-02-fno-n101/PLAN.md. Exactly two hypotheses/80 annual executions/max two workers:16 exact controls,16 new annual cost experiments,48 continuous slices at199/200/202/400 extra base cost. Source/config and1004 cached inputs/old receipts frozen BEFORE scoring;974 sources. Require exact N08/N09.1/N10 strict/retry economic parity first, then independent fee/quote/clock/admission/cash/floor/stop/state audit. Economic superiority must beat retry N10 across the fixed net/risk/cost/account checks; mechanical correctness is a separate verdict. No fallback to an easier benchmark or retuning. All years seen; no2022 access. No runtime deployment or real-money change.
