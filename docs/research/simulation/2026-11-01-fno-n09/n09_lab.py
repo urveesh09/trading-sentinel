@@ -497,9 +497,7 @@ SOURCES = ("n09_rules.py", "n09_lab.py", "PLAN.md", "analyze_panel.py", "test_n0
 
 def sha(path: Path) -> str:
     """Line endings don't count: git may rewrite them on this machine."""
-    return hashlib.sha256(path.read_bytes().replace(b"
-", b"
-")).hexdigest()
+    return hashlib.sha256(path.read_bytes().replace(bytes([13, 10]), bytes([10]))).hexdigest()
 
 
 def committed(path: Path) -> bytes:
