@@ -1,0 +1,14 @@
+{
+  "schema":"n02_v1",
+  "scope":"incumbent-aware whole-policy selection, actual normal shared-cash books",
+  "reference_profiles":["MAIN","NO_EFF","TPB_FULL","TPB_ONE"],
+  "candidates":{"CORE_ADD":["MAIN","TPB_ONE"],"CORE_SELECT":["MAIN","TPB_ONE","NO_EFF"]},
+  "selector":{"asof":"daily before session; exits strictly earlier","past_sessions":84,"min_weeks":8,"min_paired_days":10,"min_challenger_trades":12,"min_main_trades":6,"score":"mean paired weekly improvement minus one standard error","without_best_improvement_day_positive":true,"reference_drawdown_limit":"max(1.5*MAIN,.05)","consecutive_decision_days":2,"fallback":"MAIN immediately"},
+  "low_day_additions":"TPB puts only; TPB_ONE caps only additions at one lot; MAIN retains original sizing",
+  "risk":"existing cash/brakes/expiry/crisis/deadlines; no resets across profile changes; normal exits always managed",
+  "capital":"freshRs250000/year, normalized lot65, normal risk sizing, no notional borrowing",
+  "cost":"current shipped fees/adverse modeled quotes plus(200+5*lots)*lots in actual cash path",
+  "years":["2024","2025","2026 through October28"],
+  "2023":"deferred at owner request; no data/exam scoring or freeze changes",
+  "qualified":false,"can_place_orders":false
+}

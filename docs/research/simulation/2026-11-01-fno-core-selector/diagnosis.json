@@ -1,0 +1,701 @@
+{
+  "schema": "n02_incumbent_diagnosis_v1",
+  "status": "DESCRIPTIVE_SEEN_DATA_NOT_NEW_BACKTEST",
+  "years": {
+    "2024": {
+      "main": {
+        "trades": 25,
+        "net": 16371.2836,
+        "wins": 9,
+        "average_lots": 1.6,
+        "extra_cost": 8370.0,
+        "gross": 26773.5,
+        "exit_reasons": {
+          "trail_stop": 7,
+          "time_stop": 6,
+          "underlying_stop": 9,
+          "premium_backstop": 2,
+          "hard_flat_1510": 1
+        }
+      },
+      "members": {
+        "SHIPPED": {
+          "all": {
+            "trades": 3,
+            "net": 5717.0619,
+            "wins": 2,
+            "average_lots": 1.3333333333333333,
+            "extra_cost": 830.0,
+            "gross": 6821.75,
+            "exit_reasons": {
+              "underlying_stop": 1,
+              "time_stop": 1,
+              "trail_stop": 1
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 0,
+              "net": 0,
+              "wins": 0,
+              "average_lots": null,
+              "extra_cost": 0,
+              "gross": 0,
+              "exit_reasons": {}
+            },
+            "SHORT": {
+              "trades": 3,
+              "net": 5717.0619,
+              "wins": 2,
+              "average_lots": 1.3333333333333333,
+              "extra_cost": 830.0,
+              "gross": 6821.75,
+              "exit_reasons": {
+                "underlying_stop": 1,
+                "time_stop": 1,
+                "trail_stop": 1
+              }
+            }
+          }
+        },
+        "OR20": {
+          "all": {
+            "trades": 0,
+            "net": 0,
+            "wins": 0,
+            "average_lots": null,
+            "extra_cost": 0,
+            "gross": 0,
+            "exit_reasons": {}
+          },
+          "directions": {
+            "LONG": {
+              "trades": 0,
+              "net": 0,
+              "wins": 0,
+              "average_lots": null,
+              "extra_cost": 0,
+              "gross": 0,
+              "exit_reasons": {}
+            },
+            "SHORT": {
+              "trades": 0,
+              "net": 0,
+              "wins": 0,
+              "average_lots": null,
+              "extra_cost": 0,
+              "gross": 0,
+              "exit_reasons": {}
+            }
+          }
+        },
+        "EFF": {
+          "all": {
+            "trades": 18,
+            "net": 3256.4716,
+            "wins": 5,
+            "average_lots": 1.7222222222222223,
+            "extra_cost": 6505.0,
+            "gross": 11212.5,
+            "exit_reasons": {
+              "time_stop": 4,
+              "premium_backstop": 2,
+              "underlying_stop": 7,
+              "trail_stop": 4,
+              "hard_flat_1510": 1
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 11,
+              "net": -10537.7385,
+              "wins": 2,
+              "average_lots": 1.9090909090909092,
+              "extra_cost": 4425.0,
+              "gross": -5261.75,
+              "exit_reasons": {
+                "time_stop": 3,
+                "premium_backstop": 2,
+                "underlying_stop": 4,
+                "hard_flat_1510": 1,
+                "trail_stop": 1
+              }
+            },
+            "SHORT": {
+              "trades": 7,
+              "net": 13794.2101,
+              "wins": 3,
+              "average_lots": 1.4285714285714286,
+              "extra_cost": 2080.0,
+              "gross": 16474.25,
+              "exit_reasons": {
+                "trail_stop": 3,
+                "underlying_stop": 3,
+                "time_stop": 1
+              }
+            }
+          }
+        },
+        "TPB": {
+          "all": {
+            "trades": 4,
+            "net": 7397.7501,
+            "wins": 2,
+            "average_lots": 1.25,
+            "extra_cost": 1035.0,
+            "gross": 8739.25,
+            "exit_reasons": {
+              "trail_stop": 2,
+              "underlying_stop": 1,
+              "time_stop": 1
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 1,
+              "net": 7841.5824,
+              "wins": 1,
+              "average_lots": 2.0,
+              "extra_cost": 420.0,
+              "gross": 8346.0,
+              "exit_reasons": {
+                "trail_stop": 1
+              }
+            },
+            "SHORT": {
+              "trades": 3,
+              "net": -443.8323,
+              "wins": 1,
+              "average_lots": 1.0,
+              "extra_cost": 615.0,
+              "gross": 393.25,
+              "exit_reasons": {
+                "underlying_stop": 1,
+                "trail_stop": 1,
+                "time_stop": 1
+              }
+            }
+          }
+        }
+      },
+      "funnel_evaluations_not_unique_trades": {
+        "accepted": 25,
+        "already_holding_this_contract": 7,
+        "chain_unavailable:calendar_expiry_not_archived": 49,
+        "engine:book:no_member": 48901,
+        "engine:o30s2:stretched": 176,
+        "kill_switches_clear": 30,
+        "pool_below_min_viable": 2,
+        "reentry_not_confirmed": 15,
+        "reward_risk_below_min": 8
+      },
+      "one_lot_diagnostic_after_extra200": {
+        "SHIPPED": {
+          "trades": 3,
+          "net": 7528.0604
+        },
+        "OR20": {
+          "trades": 0,
+          "net": 0
+        },
+        "EFF": {
+          "trades": 19,
+          "net": -6216.643
+        },
+        "TPB": {
+          "trades": 6,
+          "net": 2931.6847
+        }
+      },
+      "earlier_selector": {
+        "trades": 167,
+        "exact_signal_entry_matches": 1,
+        "match_limit": "same opportunity/entry clock only; no paired P&L unless prices/quantities/exit also match",
+        "macro_usage": {
+          "HIGH": {
+            "trades": 20,
+            "net": -19540.3234
+          },
+          "LOW": {
+            "trades": 147,
+            "net": 13505.8687
+          }
+        }
+      }
+    },
+    "2025": {
+      "main": {
+        "trades": 50,
+        "net": 5709.8349,
+        "wins": 24,
+        "average_lots": 1.76,
+        "extra_cost": 18490.0,
+        "gross": 28353.0,
+        "exit_reasons": {
+          "underlying_stop": 10,
+          "time_stop": 17,
+          "premium_backstop": 5,
+          "trail_stop": 5,
+          "profit_lock": 5,
+          "hard_flat_1510": 8
+        }
+      },
+      "members": {
+        "SHIPPED": {
+          "all": {
+            "trades": 7,
+            "net": 2208.7394,
+            "wins": 4,
+            "average_lots": 1.8571428571428572,
+            "extra_cost": 2745.0,
+            "gross": 5518.5,
+            "exit_reasons": {
+              "profit_lock": 3,
+              "trail_stop": 1,
+              "underlying_stop": 3
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 4,
+              "net": -1807.3643,
+              "wins": 2,
+              "average_lots": 2.5,
+              "extra_cost": 2130.0,
+              "gross": 640.25,
+              "exit_reasons": {
+                "profit_lock": 2,
+                "underlying_stop": 2
+              }
+            },
+            "SHORT": {
+              "trades": 3,
+              "net": 4016.1037,
+              "wins": 2,
+              "average_lots": 1.0,
+              "extra_cost": 615.0,
+              "gross": 4878.25,
+              "exit_reasons": {
+                "profit_lock": 1,
+                "trail_stop": 1,
+                "underlying_stop": 1
+              }
+            }
+          }
+        },
+        "OR20": {
+          "all": {
+            "trades": 8,
+            "net": 3261.5401,
+            "wins": 3,
+            "average_lots": 1.5,
+            "extra_cost": 2500.0,
+            "gross": 6431.75,
+            "exit_reasons": {
+              "underlying_stop": 2,
+              "time_stop": 1,
+              "trail_stop": 2,
+              "profit_lock": 2,
+              "premium_backstop": 1
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 5,
+              "net": -7203.3471,
+              "wins": 2,
+              "average_lots": 1.8,
+              "extra_cost": 1885.0,
+              "gross": -4930.25,
+              "exit_reasons": {
+                "trail_stop": 1,
+                "profit_lock": 2,
+                "premium_backstop": 1,
+                "underlying_stop": 1
+              }
+            },
+            "SHORT": {
+              "trades": 3,
+              "net": 10464.8872,
+              "wins": 1,
+              "average_lots": 1.0,
+              "extra_cost": 615.0,
+              "gross": 11362.0,
+              "exit_reasons": {
+                "underlying_stop": 1,
+                "time_stop": 1,
+                "trail_stop": 1
+              }
+            }
+          }
+        },
+        "EFF": {
+          "all": {
+            "trades": 27,
+            "net": -21174.3767,
+            "wins": 11,
+            "average_lots": 1.7777777777777777,
+            "extra_cost": 10100.0,
+            "gross": -8797.75,
+            "exit_reasons": {
+              "time_stop": 15,
+              "premium_backstop": 4,
+              "trail_stop": 2,
+              "hard_flat_1510": 2,
+              "underlying_stop": 4
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 14,
+              "net": -14020.3539,
+              "wins": 4,
+              "average_lots": 1.9285714285714286,
+              "extra_cost": 5685.0,
+              "gross": -7179.25,
+              "exit_reasons": {
+                "premium_backstop": 3,
+                "time_stop": 6,
+                "trail_stop": 2,
+                "underlying_stop": 2,
+                "hard_flat_1510": 1
+              }
+            },
+            "SHORT": {
+              "trades": 13,
+              "net": -7154.0228,
+              "wins": 7,
+              "average_lots": 1.6153846153846154,
+              "extra_cost": 4415.0,
+              "gross": -1618.5,
+              "exit_reasons": {
+                "time_stop": 9,
+                "premium_backstop": 1,
+                "hard_flat_1510": 1,
+                "underlying_stop": 2
+              }
+            }
+          }
+        },
+        "TPB": {
+          "all": {
+            "trades": 8,
+            "net": 21413.9321,
+            "wins": 6,
+            "average_lots": 1.875,
+            "extra_cost": 3145.0,
+            "gross": 25200.5,
+            "exit_reasons": {
+              "hard_flat_1510": 6,
+              "underlying_stop": 1,
+              "time_stop": 1
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 7,
+              "net": 15346.4061,
+              "wins": 5,
+              "average_lots": 2.0,
+              "extra_cost": 2940.0,
+              "gross": 18837.0,
+              "exit_reasons": {
+                "hard_flat_1510": 5,
+                "underlying_stop": 1,
+                "time_stop": 1
+              }
+            },
+            "SHORT": {
+              "trades": 1,
+              "net": 6067.526,
+              "wins": 1,
+              "average_lots": 1.0,
+              "extra_cost": 205.0,
+              "gross": 6363.5,
+              "exit_reasons": {
+                "hard_flat_1510": 1
+              }
+            }
+          }
+        }
+      },
+      "funnel_evaluations_not_unique_trades": {
+        "accepted": 50,
+        "already_holding_this_contract": 6,
+        "chain_unavailable:calendar_expiry_not_archived": 51,
+        "concurrency": 10,
+        "engine:book:no_member": 49006,
+        "engine:o30s2:stretched": 306,
+        "kill_switches_clear": 25,
+        "open_premium_cap": 2,
+        "pool_below_min_viable": 3,
+        "reentry_not_confirmed": 12,
+        "reward_risk_below_min": 7,
+        "trades_per_day": 8
+      },
+      "one_lot_diagnostic_after_extra200": {
+        "SHIPPED": {
+          "trades": 7,
+          "net": 3277.7159
+        },
+        "OR20": {
+          "trades": 9,
+          "net": 7026.6696
+        },
+        "EFF": {
+          "trades": 32,
+          "net": -13652.8508
+        },
+        "TPB": {
+          "trades": 8,
+          "net": 13650.5291
+        }
+      },
+      "earlier_selector": {
+        "trades": 75,
+        "exact_signal_entry_matches": 0,
+        "match_limit": "same opportunity/entry clock only; no paired P&L unless prices/quantities/exit also match",
+        "macro_usage": {
+          "HIGH": {
+            "trades": 0,
+            "net": 0
+          },
+          "LOW": {
+            "trades": 75,
+            "net": -37957.347
+          }
+        }
+      }
+    },
+    "2026": {
+      "main": {
+        "trades": 33,
+        "net": 30540.2141,
+        "wins": 15,
+        "average_lots": 1.2727272727272727,
+        "extra_cost": 8710.0,
+        "gross": 42146.0,
+        "exit_reasons": {
+          "underlying_stop": 8,
+          "trail_stop": 7,
+          "time_stop": 11,
+          "profit_lock": 1,
+          "hard_flat_1510": 6
+        }
+      },
+      "members": {
+        "SHIPPED": {
+          "all": {
+            "trades": 5,
+            "net": 3098.0375,
+            "wins": 3,
+            "average_lots": 1.2,
+            "extra_cost": 1240.0,
+            "gross": 4738.5,
+            "exit_reasons": {
+              "underlying_stop": 1,
+              "profit_lock": 1,
+              "time_stop": 2,
+              "trail_stop": 1
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 1,
+              "net": 479.5546,
+              "wins": 1,
+              "average_lots": 1.0,
+              "extra_cost": 205.0,
+              "gross": 767.0,
+              "exit_reasons": {
+                "time_stop": 1
+              }
+            },
+            "SHORT": {
+              "trades": 4,
+              "net": 2618.4829,
+              "wins": 2,
+              "average_lots": 1.25,
+              "extra_cost": 1035.0,
+              "gross": 3971.5,
+              "exit_reasons": {
+                "underlying_stop": 1,
+                "profit_lock": 1,
+                "time_stop": 1,
+                "trail_stop": 1
+              }
+            }
+          }
+        },
+        "OR20": {
+          "all": {
+            "trades": 5,
+            "net": 10639.0119,
+            "wins": 3,
+            "average_lots": 1.2,
+            "extra_cost": 1240.0,
+            "gross": 12324.0,
+            "exit_reasons": {
+              "underlying_stop": 2,
+              "time_stop": 1,
+              "trail_stop": 2
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 0,
+              "net": 0,
+              "wins": 0,
+              "average_lots": null,
+              "extra_cost": 0,
+              "gross": 0,
+              "exit_reasons": {}
+            },
+            "SHORT": {
+              "trades": 5,
+              "net": 10639.0119,
+              "wins": 3,
+              "average_lots": 1.2,
+              "extra_cost": 1240.0,
+              "gross": 12324.0,
+              "exit_reasons": {
+                "underlying_stop": 2,
+                "time_stop": 1,
+                "trail_stop": 2
+              }
+            }
+          }
+        },
+        "EFF": {
+          "all": {
+            "trades": 18,
+            "net": 3904.4814,
+            "wins": 5,
+            "average_lots": 1.2777777777777777,
+            "extra_cost": 4775.0,
+            "gross": 10273.25,
+            "exit_reasons": {
+              "trail_stop": 3,
+              "time_stop": 7,
+              "underlying_stop": 5,
+              "hard_flat_1510": 3
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 9,
+              "net": -5969.8469,
+              "wins": 2,
+              "average_lots": 1.3333333333333333,
+              "extra_cost": 2500.0,
+              "gross": -2687.75,
+              "exit_reasons": {
+                "time_stop": 3,
+                "underlying_stop": 3,
+                "hard_flat_1510": 3
+              }
+            },
+            "SHORT": {
+              "trades": 9,
+              "net": 9874.3283,
+              "wins": 3,
+              "average_lots": 1.2222222222222223,
+              "extra_cost": 2275.0,
+              "gross": 12961.0,
+              "exit_reasons": {
+                "trail_stop": 3,
+                "time_stop": 4,
+                "underlying_stop": 2
+              }
+            }
+          }
+        },
+        "TPB": {
+          "all": {
+            "trades": 5,
+            "net": 12898.6833,
+            "wins": 4,
+            "average_lots": 1.4,
+            "extra_cost": 1455.0,
+            "gross": 14810.25,
+            "exit_reasons": {
+              "trail_stop": 1,
+              "hard_flat_1510": 3,
+              "time_stop": 1
+            }
+          },
+          "directions": {
+            "LONG": {
+              "trades": 3,
+              "net": -730.9081,
+              "wins": 2,
+              "average_lots": 1.6666666666666667,
+              "extra_cost": 1045.0,
+              "gross": 565.5,
+              "exit_reasons": {
+                "hard_flat_1510": 2,
+                "time_stop": 1
+              }
+            },
+            "SHORT": {
+              "trades": 2,
+              "net": 13629.5914,
+              "wins": 2,
+              "average_lots": 1.0,
+              "extra_cost": 410.0,
+              "gross": 14244.75,
+              "exit_reasons": {
+                "trail_stop": 1,
+                "hard_flat_1510": 1
+              }
+            }
+          }
+        }
+      },
+      "funnel_evaluations_not_unique_trades": {
+        "accepted": 33,
+        "already_holding_this_contract": 10,
+        "chain_unavailable:calendar_expiry_not_archived": 88,
+        "engine:book:no_member": 40094,
+        "engine:o30s2:stretched": 239,
+        "open_premium_cap": 13,
+        "pool_below_min_viable": 29,
+        "reward_risk_below_min": 8,
+        "trades_per_day": 12
+      },
+      "one_lot_diagnostic_after_extra200": {
+        "SHIPPED": {
+          "trades": 5,
+          "net": 959.1921
+        },
+        "OR20": {
+          "trades": 5,
+          "net": 7265.1428
+        },
+        "EFF": {
+          "trades": 20,
+          "net": 5913.5227
+        },
+        "TPB": {
+          "trades": 6,
+          "net": 14487.2995
+        }
+      },
+      "earlier_selector": {
+        "trades": 60,
+        "exact_signal_entry_matches": 0,
+        "match_limit": "same opportunity/entry clock only; no paired P&L unless prices/quantities/exit also match",
+        "macro_usage": {
+          "HIGH": {
+            "trades": 0,
+            "net": 0
+          },
+          "LOW": {
+            "trades": 60,
+            "net": 5090.0278
+          }
+        }
+      }
+    }
+  }
+}
