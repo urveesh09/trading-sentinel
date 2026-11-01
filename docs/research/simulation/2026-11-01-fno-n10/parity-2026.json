@@ -1,0 +1,16 @@
+{
+  "year": "2026",
+  "N08": {
+    "trades": 51,
+    "net": 104924.38
+  },
+  "CUSHION": {
+    "trades": 51,
+    "net": 99870.28
+  },
+  "ONE": {
+    "trades": 50,
+    "net": 63993.83
+  },
+  "identical": true
+}
