@@ -1,0 +1,40 @@
+{
+  "schema": "n091_old_code_counterexample_v1",
+  "synthetic_only": true,
+  "paper_nets": [
+    -40000.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    100000.0
+  ],
+  "old": {
+    "end": 310000,
+    "low": 210000,
+    "restarts": 1
+  },
+  "corrected": {
+    "end": 210000.0,
+    "low": 210000.0,
+    "trades": 1,
+    "restarts": 0,
+    "floor_min": 212500.0,
+    "peak": 250000.0
+  },
+  "explanation": "20th result is a winner. Old stress uses it to restart and books that winner. At its entry only 19 losing/nonpositive paper results exist."
+}

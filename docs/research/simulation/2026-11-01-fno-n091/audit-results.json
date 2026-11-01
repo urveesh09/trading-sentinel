@@ -1,0 +1,325 @@
+{
+  "status": "INDEPENDENT_CASH_ADMISSION_CHECKS_PASSED",
+  "counts": {
+    "financial_lifecycles": 2798,
+    "annual_books": 60,
+    "immutable_budget_admission_bindings": 1571,
+    "persisted_cash_state_checks": 32,
+    "budget_decisions": 1904,
+    "funded_full_premium_admissions": 846,
+    "independent_floor_clock_reconstructions": 1179
+  },
+  "books": {
+    "controls|2023|N08": {
+      "start": 250000.0,
+      "end": 212418.84090000004,
+      "trades": 56
+    },
+    "controls|2023|DIAG": {
+      "start": 250000.0,
+      "end": 212624.8486,
+      "trades": 85
+    },
+    "controls|2023|S_VOL": {
+      "start": 250000.0,
+      "end": 212025.9529,
+      "trades": 66
+    },
+    "controls|2024|N08": {
+      "start": 250000.0,
+      "end": 326294.1957000001,
+      "trades": 29
+    },
+    "controls|2024|DIAG": {
+      "start": 250000.0,
+      "end": 295220.62980000005,
+      "trades": 29
+    },
+    "controls|2024|S_VOL": {
+      "start": 250000.0,
+      "end": 320316.74570000015,
+      "trades": 29
+    },
+    "controls|2025|N08": {
+      "start": 250000.0,
+      "end": 308646.5279,
+      "trades": 75
+    },
+    "controls|2025|DIAG": {
+      "start": 250000.0,
+      "end": 296037.26140000013,
+      "trades": 79
+    },
+    "controls|2025|S_VOL": {
+      "start": 250000.0,
+      "end": 300442.48670000007,
+      "trades": 75
+    },
+    "controls|2026|N08": {
+      "start": 250000.0,
+      "end": 354924.37919999973,
+      "trades": 51
+    },
+    "controls|2026|DIAG": {
+      "start": 250000.0,
+      "end": 313993.8322999997,
+      "trades": 50
+    },
+    "controls|2026|S_VOL": {
+      "start": 250000.0,
+      "end": 358643.19429999974,
+      "trades": 51
+    },
+    "primary|2023|VOL_CLOCK": {
+      "start": 250000.0,
+      "end": 212025.9529,
+      "trades": 66
+    },
+    "primary|2023|CUSHION": {
+      "start": 250000.0,
+      "end": 217315.9465,
+      "trades": 61
+    },
+    "primary|2024|VOL_CLOCK": {
+      "start": 250000.0,
+      "end": 326294.1957000001,
+      "trades": 29
+    },
+    "primary|2024|CUSHION": {
+      "start": 250000.0,
+      "end": 326294.1957000001,
+      "trades": 29
+    },
+    "primary|2025|VOL_CLOCK": {
+      "start": 250000.0,
+      "end": 302319.96770000004,
+      "trades": 75
+    },
+    "primary|2025|CUSHION": {
+      "start": 250000.0,
+      "end": 296737.8117,
+      "trades": 74
+    },
+    "primary|2026|VOL_CLOCK": {
+      "start": 250000.0,
+      "end": 354924.37919999973,
+      "trades": 51
+    },
+    "primary|2026|CUSHION": {
+      "start": 250000.0,
+      "end": 349870.2759999997,
+      "trades": 51
+    },
+    "costs|2023|N08|none": {
+      "start": 250000.0,
+      "end": 220535.49200000011,
+      "trades": 74
+    },
+    "costs|2023|N08|double": {
+      "start": 250000.0,
+      "end": 212010.67080000008,
+      "trades": 45
+    },
+    "costs|2023|VOL_CLOCK|none": {
+      "start": 250000.0,
+      "end": 227453.67850000004,
+      "trades": 74
+    },
+    "costs|2023|VOL_CLOCK|double": {
+      "start": 250000.0,
+      "end": 212265.78060000003,
+      "trades": 53
+    },
+    "costs|2023|CUSHION|none": {
+      "start": 250000.0,
+      "end": 227453.67850000004,
+      "trades": 74
+    },
+    "costs|2023|CUSHION|double": {
+      "start": 250000.0,
+      "end": 217618.65650000004,
+      "trades": 49
+    },
+    "costs|2024|N08|none": {
+      "start": 250000.0,
+      "end": 334819.1957000001,
+      "trades": 29
+    },
+    "costs|2024|N08|double": {
+      "start": 250000.0,
+      "end": 317769.1957000001,
+      "trades": 29
+    },
+    "costs|2024|VOL_CLOCK|none": {
+      "start": 250000.0,
+      "end": 334819.1957000001,
+      "trades": 29
+    },
+    "costs|2024|VOL_CLOCK|double": {
+      "start": 250000.0,
+      "end": 317769.1957000001,
+      "trades": 29
+    },
+    "costs|2024|CUSHION|none": {
+      "start": 250000.0,
+      "end": 334819.1957000001,
+      "trades": 29
+    },
+    "costs|2024|CUSHION|double": {
+      "start": 250000.0,
+      "end": 317769.1957000001,
+      "trades": 29
+    },
+    "costs|2025|N08|none": {
+      "start": 250000.0,
+      "end": 326005.2559000001,
+      "trades": 77
+    },
+    "costs|2025|N08|double": {
+      "start": 250000.0,
+      "end": 289795.67520000006,
+      "trades": 75
+    },
+    "costs|2025|VOL_CLOCK|none": {
+      "start": 250000.0,
+      "end": 316024.9043000001,
+      "trades": 77
+    },
+    "costs|2025|VOL_CLOCK|double": {
+      "start": 250000.0,
+      "end": 285654.96770000004,
+      "trades": 75
+    },
+    "costs|2025|CUSHION|none": {
+      "start": 250000.0,
+      "end": 312506.8797000001,
+      "trades": 75
+    },
+    "costs|2025|CUSHION|double": {
+      "start": 250000.0,
+      "end": 277503.87700000004,
+      "trades": 72
+    },
+    "costs|2026|N08|none": {
+      "start": 250000.0,
+      "end": 371621.44569999975,
+      "trades": 51
+    },
+    "costs|2026|N08|double": {
+      "start": 250000.0,
+      "end": 344111.8842999998,
+      "trades": 50
+    },
+    "costs|2026|VOL_CLOCK|none": {
+      "start": 250000.0,
+      "end": 371621.44569999975,
+      "trades": 51
+    },
+    "costs|2026|VOL_CLOCK|double": {
+      "start": 250000.0,
+      "end": 344111.8842999998,
+      "trades": 50
+    },
+    "costs|2026|CUSHION|none": {
+      "start": 250000.0,
+      "end": 371621.44569999975,
+      "trades": 51
+    },
+    "costs|2026|CUSHION|double": {
+      "start": 250000.0,
+      "end": 339272.7810999998,
+      "trades": 50
+    },
+    "carry|2023|N08": {
+      "start": 250000.0,
+      "end": 212418.84090000004,
+      "trades": 56
+    },
+    "carry|2023|S_VOL": {
+      "start": 250000.0,
+      "end": 212025.9529,
+      "trades": 66
+    },
+    "carry|2023|VOL_CLOCK": {
+      "start": 250000.0,
+      "end": 212025.9529,
+      "trades": 66
+    },
+    "carry|2023|CUSHION": {
+      "start": 250000.0,
+      "end": 217315.9465,
+      "trades": 61
+    },
+    "carry|2024|N08": {
+      "start": 212418.84090000004,
+      "end": 212418.84090000004,
+      "trades": 0
+    },
+    "carry|2024|S_VOL": {
+      "start": 212025.9529,
+      "end": 212025.9529,
+      "trades": 0
+    },
+    "carry|2024|VOL_CLOCK": {
+      "start": 212025.9529,
+      "end": 212025.9529,
+      "trades": 0
+    },
+    "carry|2024|CUSHION": {
+      "start": 217315.9465,
+      "end": 241039.228,
+      "trades": 17
+    },
+    "carry|2025|N08": {
+      "start": 212418.84090000004,
+      "end": 212418.84090000004,
+      "trades": 0
+    },
+    "carry|2025|S_VOL": {
+      "start": 212025.9529,
+      "end": 212025.9529,
+      "trades": 0
+    },
+    "carry|2025|VOL_CLOCK": {
+      "start": 212025.9529,
+      "end": 212025.9529,
+      "trades": 0
+    },
+    "carry|2025|CUSHION": {
+      "start": 241039.228,
+      "end": 290809.11610000004,
+      "trades": 73
+    },
+    "carry|2026|N08": {
+      "start": 212418.84090000004,
+      "end": 212418.84090000004,
+      "trades": 0
+    },
+    "carry|2026|S_VOL": {
+      "start": 212025.9529,
+      "end": 212025.9529,
+      "trades": 0
+    },
+    "carry|2026|VOL_CLOCK": {
+      "start": 212025.9529,
+      "end": 212025.9529,
+      "trades": 0
+    },
+    "carry|2026|CUSHION": {
+      "start": 290809.11610000004,
+      "end": 384309.95749999984,
+      "trades": 51
+    }
+  },
+  "continuous_ends": {
+    "N08": 212418.84090000004,
+    "S_VOL": 212025.9529,
+    "VOL_CLOCK": 212025.9529,
+    "CUSHION": 384309.95749999984
+  },
+  "limits": [
+    "candle execution/fees assumptions",
+    "no fresh broker fills",
+    "no proof of profitable strategy"
+  ]
+}

@@ -1,3 +1,10 @@
+## November 1 — N09.1 complete and independently reconciled
+
+- Canonical N091_CUSHION_VOL_CLOCK / primary CUSHION at FNO_RESEARCH_N091.md/json.94.0% N08 modeled annual profit retained,37.0% smaller worst day,13.13% worst annual closed fall. Risk screen PASS/profit screen FAIL; N08 remains profit reference.2023 loss/2025 higher fall/all-seen limits explicit.
+-60 unique annuals+24 exact snapshot-repair executions;12 exact controls/675 old lifecycles;55 focused passed;2798 financial/1571 immutable budget admissions/1904 budget decisions/846 funded full-loss/1179 floor-clock/32 state checks;5596 model prices. Atlas291 unchanged.
+- Original source4245670, controlsc5351a7, post-score state correctionc6bbcb9; original failure/freeze/results retained, unchanged trading ASTs and24 exact economic plus full decision-receipt matches. Checker-only two-decimal opening precision documented separately.
+- Productionc97cb8c/engine start unchanged/HTTP200. No application/env/migration/authority/money/lot/restart/deploy/order/message/2022 changes. Owner dirty files/doc slices retained. Remaining prospective keyed shadows/real-cost receipts/untouched-history contract; no automatic live restart or capital increase. At15000 the funded floor leaves2250, so this is not the small live trial's policy.
+
 ## November 1 — N09.1 snapshot bug caught and corrected
 
 - First full audit FAILED: fresh independent year terminal state overwritten by same-policy later year. Original economic results/admission receipts and unique continuous states preserved.

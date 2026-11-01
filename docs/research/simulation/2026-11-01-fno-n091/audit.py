@@ -109,7 +109,9 @@ def full():
                     ends[name] = equity
                 if book.get("n091"):
                     state = read(LOCAL / (f"states/{key.rsplit('_', 1)[-1]}.json" if phase == "carry" else f"states/{key}.json"))
-                    assert abs(state["start_equity"] - opening) < .001
+                    # Native replay publishes opening equity rounded to two decimals;
+                    # raw historical closes retain four. Compare within one paise.
+                    assert abs(state["start_equity"] - opening) < .01, (phase, year, name, state["start_equity"], opening)
                     assert abs(state["end_equity"] - equity) < .01
                     if book["n091"]["mode"] == "CUSHION":
                         prior_budget = carried_budget.get(name) if phase == "carry" else None
