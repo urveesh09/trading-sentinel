@@ -1,3 +1,10 @@
+## November1 — N01-F stale-state input repair frozen independently
+
+- Gap audit before reviewing adaptive P&L found the parent latest-closed-bar lookup can retain a pre-gap state until a post-gap bar closes. Nested `fno-intraday-router/freshness/PLAN.md` corrects only this contract: closed-bar END age>=5min means UNAVAILABLE, with empty switch-exit history. Ordinary stop/trail/hard-flat still run first. No strategy, score, cost or acceptance threshold tuning.
+- Five focused tests pass (4:59/5:00 age boundary, long-break resumption, no-bar/fresh cases, no fabricated switch exit). Parent source/model freezes and45 original replay outcomes remain intact. New source freeze precedes correction scores; rebuild34 monthly models from unchanged STATIC economics, relabel only stale-state inputs, commit hashes before18 corrected candidate replays.
+- Reuse27 base books by exact hashes and input-independence proof: STATIC routing does not use state to choose/manage its trades, while their model-label view is independently corrected. Do not count those27 as fresh scores again. Final reports compare both versions and use corrected candidate evidence. Same risk/deadlines/cash, all699 sealed sessions, unchanged2023 exam; no application/config/migration/Production/order change. Atlas regenerated, owner work preserved.
+
+
 ## November1 — N01 base parity and past-only models sealed before adaptive scoring
 
 - Source freeze **2b1e2b0**, pushed before27 base replays. All three years reproduce current main and old low-ADX Donchian trade for trade.27 books/5,200 closed records reconcile to <Rs0.00005 with zero unresolved/financial/clock/memo defects.161 focused tests pass; all699 cached sessions freshly reparsed from sealed raw and identical. No data API calls or Production changes.
