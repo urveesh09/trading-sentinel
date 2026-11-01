@@ -1,3 +1,9 @@
+## November 1 — N06 final handoff identity
+
+- Results/report4525278 pushed; sourcea5b2d7c/model5c74b47 pre-score. Read FNO_RESEARCH_SELECTOR_N06 md/json and study README/VERIFICATION. All18 annual experiments/109 focused checks plus independent cash/price/exit/causality/statistics checks complete. ZERO passing selectors, no size/cap/Production change.
+- Preserve N03/N04/N05 checkpoints. Past-only mechanics are not profitable-switching proof; next predeclared fresh keyed shadows/quote paths/actual authorized execution costs. Current real-fill-cost evidence unavailable.2023 deferred, sizing conditional later.
+- Productionc97cb8c remains healthy/API200/start unchanged; no restarts/deployment/env/order/message/money changes. Owner dirt retained. Final fixed-SHA helper packet follows without another source commit; consistency packaging is not qualification.
+
 ## November 1 — N06 complete; no profitable switch or larger-size qualification
 
 - READ separate FNO_RESEARCH_SELECTOR_N06 md/json and study README/VERIFICATION. Sourcea5b2d7c, models5c74b47 committed before scores. All18 annual experiments complete (12 exact controls+6 candidates);109 focused checks and independent financial/price/trace/retest/exit/selection/statistical reconciliations pass.911 closes/1822 prices/1398 choices; prior699 input checks reused, not re-counted.

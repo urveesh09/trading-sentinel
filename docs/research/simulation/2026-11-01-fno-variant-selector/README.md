@@ -3,6 +3,8 @@
 This finishes the saved-variant selection slice. It is offline Dev research,
 not a change to Production or evidence that profitable switching is proven.
 All 2024–26 years were already seen; the 2023 option exam remains deferred.
+Results/report committed and pushed in4525278; pre-score sourcea5b2d7c,
+daily decision manifest5c74b47. Production unchanged.
 
 ## What the selector knows
 

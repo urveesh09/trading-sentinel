@@ -8,6 +8,10 @@ read-only at checkoutc97cb8c3ba0eeb4ac8e9966135b07034d760b40d.
 
 ## Pre-score checkpoints
 
+Results/report **4525278348f1e87240a9f77442f482d4c1363303**, committed and pushed.
+The following documentation-only handoff records this identity; final fixed-SHA
+post-run helper packet is local and must not be confused with pre-score freezes.
+
 - Source/config/input/reference freeze **a5b2d7c76ac6f37680d307594da7bcdb854e2185**,
   committed/pushed before any N06 annual scoring. `PLAN.md` and configuration
   frozen with source. All prior three checkpoint records remain byte-identical.
