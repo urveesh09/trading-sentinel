@@ -1,3 +1,9 @@
+## November 1 — N03 reporting-only size assertion corrected before outcome review
+
+- During static verification, the frozen analyze_eff.py was found to incorrectly assert every LOW-day TPB trade has65 shares. The PLAN explicitly allows TPB_FULL normal sizing and caps only TPB_ONE LOW trades. Separate reporting/reconcile.py preserves the frozen analysis and changes only that assertion: all LOW trades must be puts; only selected TPB_ONE must be one lot. No strategy/parameter/book/input/acceptance/freeze change and no new outcomes reviewed before this correction.
+- Source2de5448 remains byte-identical and all57 declared replays continue under its guard. Canonical final reconciliation uses the separate corrected reporter; the original assertion is retained for audit. This does not relax any strategy/risk rule or remove a failed result.30 new tests pass; affected regressions/replays and independent archive checks remain in progress. Dev only,2023 and Production untouched.
+
+
 ## November 1 — N03 EFF strategy improvement frozen before scores
 
 - Owner authorizes underlying strategy work after N02. Selector design defect is fixed in research, not proven qualified. New contract docs/research/simulation/2026-11-01-fno-eff-improvement/PLAN.md targets EFF2025 losses with two separate hypotheses: RETEST waits up to three closed bars for breakout-level retest/resumption; HORIZON trims stagnant net-losing trades from30min and conditionally extends net-positive continued moves60→90min. Original stops/trail/entry and hard-flat deadlines/cash/brakes remain active; no combined third arm or threshold grid.
