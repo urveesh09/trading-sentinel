@@ -1,0 +1,3811 @@
+{
+  "status": "POST_RUN_DESCRIPTIVE_NOT_ROUTING",
+  "limit": "Exact-entry exit pairs require identical immutable economic admission terms; unmatched or resized trades are not paired. Contribution deltas account for full actual paths, not a separately tradable causal decomposition.",
+  "books": {
+    "NORMAL|EFF_ONLY|RETEST": {
+      "2024": {
+        "baseline_net": 8084.6384000000035,
+        "candidate_net": 30691.4706,
+        "whole_book_delta": 22606.832199999997,
+        "eff_delta": 22606.832199999997,
+        "other_members_delta": 0.0,
+        "baseline_entries": 20,
+        "candidate_entries": 7,
+        "same_economic_admissions": 0,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-02T12:21:59+05:30",
+            "bar": "2024-01-02 12:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1182.0763
+          },
+          {
+            "entry_time": "2024-01-03T10:25:59+05:30",
+            "bar": "2024-01-03 10:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1456.9225
+          },
+          {
+            "entry_time": "2024-01-03T11:51:59+05:30",
+            "bar": "2024-01-03 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1658.0992
+          },
+          {
+            "entry_time": "2024-01-08T10:36:59+05:30",
+            "bar": "2024-01-08 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3271.7815
+          },
+          {
+            "entry_time": "2024-01-09T14:00:59+05:30",
+            "bar": "2024-01-09 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9025.0213
+          },
+          {
+            "entry_time": "2024-01-10T10:21:59+05:30",
+            "bar": "2024-01-10 10:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2872.7755
+          },
+          {
+            "entry_time": "2024-01-12T12:07:59+05:30",
+            "bar": "2024-01-12 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1396.3005
+          },
+          {
+            "entry_time": "2024-01-15T13:51:59+05:30",
+            "bar": "2024-01-15 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -604.0837
+          },
+          {
+            "entry_time": "2024-01-16T11:48:59+05:30",
+            "bar": "2024-01-16 11:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6707.961
+          },
+          {
+            "entry_time": "2024-01-17T10:40:59+05:30",
+            "bar": "2024-01-17 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6643.718
+          },
+          {
+            "entry_time": "2024-01-19T11:40:59+05:30",
+            "bar": "2024-01-19 11:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -404.7121
+          },
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-11-04T09:54:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 8037.0028
+          },
+          {
+            "entry_time": "2024-11-04T12:06:59+05:30",
+            "bar": "2024-11-04 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2065.9865
+          },
+          {
+            "entry_time": "2024-11-04T14:40:59+05:30",
+            "bar": "2024-11-04 14:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2183.1406
+          },
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "bar": "2024-11-05 09:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -755.5502
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1972.4453
+          },
+          {
+            "entry_time": "2024-11-06T10:31:59+05:30",
+            "bar": "2024-11-06 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3270.978
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          },
+          {
+            "entry_time": "2024-11-06T10:55:59+05:30",
+            "bar": "2024-11-06 10:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2289.7317
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2025": {
+        "baseline_net": -12444.0612,
+        "candidate_net": -15283.448100000001,
+        "whole_book_delta": -2839.3869000000013,
+        "eff_delta": -2839.3869000000013,
+        "other_members_delta": 0.0,
+        "baseline_entries": 34,
+        "candidate_entries": 11,
+        "same_economic_admissions": 0,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2025-01-03T14:00:59+05:30",
+            "bar": "2025-01-03 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 272.678
+          },
+          {
+            "entry_time": "2025-01-06T10:06:59+05:30",
+            "bar": "2025-01-06 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4913.8946
+          },
+          {
+            "entry_time": "2025-01-06T10:36:59+05:30",
+            "bar": "2025-01-06 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 13195.8045
+          },
+          {
+            "entry_time": "2025-01-07T09:51:59+05:30",
+            "bar": "2025-01-07 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4266.7964
+          },
+          {
+            "entry_time": "2025-01-07T10:15:59+05:30",
+            "bar": "2025-01-07 10:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2749.0819
+          },
+          {
+            "entry_time": "2025-01-08T10:25:59+05:30",
+            "bar": "2025-01-08 10:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1273.7827
+          },
+          {
+            "entry_time": "2025-01-08T13:25:59+05:30",
+            "bar": "2025-01-08 13:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 7500.3333
+          },
+          {
+            "entry_time": "2025-01-08T13:45:59+05:30",
+            "bar": "2025-01-08 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -58.9649
+          },
+          {
+            "entry_time": "2025-01-10T09:51:59+05:30",
+            "bar": "2025-01-10 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2537.8962
+          },
+          {
+            "entry_time": "2025-01-10T11:06:59+05:30",
+            "bar": "2025-01-10 11:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1370.1116
+          },
+          {
+            "entry_time": "2025-01-13T11:30:59+05:30",
+            "bar": "2025-01-13 11:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -354.5073
+          },
+          {
+            "entry_time": "2025-01-14T13:06:59+05:30",
+            "bar": "2025-01-14 13:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -813.2447
+          },
+          {
+            "entry_time": "2025-01-15T13:21:59+05:30",
+            "bar": "2025-01-15 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 256.6265
+          },
+          {
+            "entry_time": "2025-01-17T11:36:59+05:30",
+            "bar": "2025-01-17 11:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 316.866
+          },
+          {
+            "entry_time": "2025-01-17T13:15:59+05:30",
+            "bar": "2025-01-17 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1300.6528
+          },
+          {
+            "entry_time": "2025-01-21T13:00:59+05:30",
+            "bar": "2025-01-21 12:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -5866.4812
+          },
+          {
+            "entry_time": "2025-01-22T11:15:59+05:30",
+            "bar": "2025-01-22 11:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 816.6983
+          },
+          {
+            "entry_time": "2025-01-22T13:15:59+05:30",
+            "bar": "2025-01-22 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1536.5057
+          },
+          {
+            "entry_time": "2025-01-22T14:10:59+05:30",
+            "bar": "2025-01-22 14:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3664.0528
+          },
+          {
+            "entry_time": "2025-01-24T10:40:59+05:30",
+            "bar": "2025-01-24 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -425.947
+          },
+          {
+            "entry_time": "2025-01-27T12:06:59+05:30",
+            "bar": "2025-01-27 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2967.7053
+          },
+          {
+            "entry_time": "2025-01-27T12:45:59+05:30",
+            "bar": "2025-01-27 12:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -419.7213
+          },
+          {
+            "entry_time": "2025-01-28T10:06:59+05:30",
+            "bar": "2025-01-28 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6259.5088
+          },
+          {
+            "entry_time": "2025-02-01T13:45:59+05:30",
+            "bar": "2025-02-01 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2425.8472
+          },
+          {
+            "entry_time": "2025-02-01T14:25:59+05:30",
+            "bar": "2025-02-01 14:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4959.338
+          },
+          {
+            "entry_time": "2025-03-05T11:36:59+05:30",
+            "bar": "2025-03-05 11:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 964.029
+          },
+          {
+            "entry_time": "2025-03-05T13:45:59+05:30",
+            "bar": "2025-03-05 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1649.6219
+          },
+          {
+            "entry_time": "2025-03-07T11:51:59+05:30",
+            "bar": "2025-03-07 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 7.4144
+          },
+          {
+            "entry_time": "2025-08-12T09:51:59+05:30",
+            "bar": "2025-08-12 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2629.9946
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "bar": "2025-08-12 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 388.3294
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "bar": "2025-08-13 11:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2297.4948
+          },
+          {
+            "entry_time": "2025-08-18T12:00:59+05:30",
+            "bar": "2025-08-18 11:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -285.0937
+          },
+          {
+            "entry_time": "2025-08-18T12:10:59+05:30",
+            "bar": "2025-08-18 12:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2223.3434
+          },
+          {
+            "entry_time": "2025-08-19T13:36:59+05:30",
+            "bar": "2025-08-19 13:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1307.9404
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2026": {
+        "baseline_net": -12113.714800000002,
+        "candidate_net": 5263.807699999999,
+        "whole_book_delta": 17377.5225,
+        "eff_delta": 17377.5225,
+        "other_members_delta": 0.0,
+        "baseline_entries": 18,
+        "candidate_entries": 9,
+        "same_economic_admissions": 0,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-03-16T12:51:59+05:30",
+            "bar": "2026-03-16 12:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1158.8363
+          },
+          {
+            "entry_time": "2026-03-20T11:55:59+05:30",
+            "bar": "2026-03-20 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3106.3666
+          },
+          {
+            "entry_time": "2026-03-20T12:45:59+05:30",
+            "bar": "2026-03-20 12:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -439.1231
+          },
+          {
+            "entry_time": "2026-03-23T14:06:59+05:30",
+            "bar": "2026-03-23 14:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3818.2408
+          },
+          {
+            "entry_time": "2026-03-23T13:45:59+05:30",
+            "bar": "2026-03-23 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4333.513
+          },
+          {
+            "entry_time": "2026-03-27T12:30:59+05:30",
+            "bar": "2026-03-27 12:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1356.2051
+          },
+          {
+            "entry_time": "2026-04-06T11:15:59+05:30",
+            "bar": "2026-04-06 11:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4720.0908
+          },
+          {
+            "entry_time": "2026-04-06T12:25:59+05:30",
+            "bar": "2026-04-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9201.675
+          },
+          {
+            "entry_time": "2026-04-08T11:55:59+05:30",
+            "bar": "2026-04-08 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1730.37
+          },
+          {
+            "entry_time": "2026-04-10T11:51:59+05:30",
+            "bar": "2026-04-10 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1358.3852
+          },
+          {
+            "entry_time": "2026-04-15T11:10:59+05:30",
+            "bar": "2026-04-15 11:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2637.7057
+          },
+          {
+            "entry_time": "2026-04-16T14:30:59+05:30",
+            "bar": "2026-04-16 14:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -725.5517
+          },
+          {
+            "entry_time": "2026-09-28T14:21:59+05:30",
+            "bar": "2026-09-28 14:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -0.7595
+          },
+          {
+            "entry_time": "2026-09-30T10:36:59+05:30",
+            "bar": "2026-09-30 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -452.9529
+          },
+          {
+            "entry_time": "2026-10-05T10:06:59+05:30",
+            "bar": "2026-10-05 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 4762.7109
+          },
+          {
+            "entry_time": "2026-10-09T11:55:59+05:30",
+            "bar": "2026-10-09 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2253.1538
+          },
+          {
+            "entry_time": "2026-10-14T13:51:59+05:30",
+            "bar": "2026-10-14 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2736.5853
+          },
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "bar": "2026-10-15 11:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1462.9941
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      }
+    },
+    "NORMAL|EFF_ONLY|HORIZON": {
+      "2024": {
+        "baseline_net": 8084.6384000000035,
+        "candidate_net": -8548.8611,
+        "whole_book_delta": -16633.499500000005,
+        "eff_delta": -16633.499500000005,
+        "other_members_delta": 0.0,
+        "baseline_entries": 20,
+        "candidate_entries": 14,
+        "same_economic_admissions": 14,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-11-04T09:54:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 8037.0028
+          },
+          {
+            "entry_time": "2024-11-04T14:40:59+05:30",
+            "bar": "2024-11-04 14:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2183.1406
+          },
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "bar": "2024-11-05 09:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -755.5502
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1972.4453
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -15031.5773,
+        "exact_entry_pairs_eff_exit_delta": -15031.5773
+      },
+      "2025": {
+        "baseline_net": -12444.0612,
+        "candidate_net": -7455.872699999998,
+        "whole_book_delta": 4988.188500000002,
+        "eff_delta": 4988.188500000002,
+        "other_members_delta": 0.0,
+        "baseline_entries": 34,
+        "candidate_entries": 35,
+        "same_economic_admissions": 29,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-10T11:06:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-01-22T11:15:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-01-22T13:15:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-02-01T13:45:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-02-01T14:25:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 2439.3061000000002,
+        "exact_entry_pairs_eff_exit_delta": 2439.3061000000002
+      },
+      "2026": {
+        "baseline_net": -12113.714800000002,
+        "candidate_net": -13946.607500000002,
+        "whole_book_delta": -1832.8927000000003,
+        "eff_delta": -1832.8927000000003,
+        "other_members_delta": 0.0,
+        "baseline_entries": 18,
+        "candidate_entries": 17,
+        "same_economic_admissions": 15,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2026-10-14T13:51:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-06T12:25:59+05:30",
+            "bar": "2026-04-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9201.675
+          },
+          {
+            "entry_time": "2026-04-16T14:30:59+05:30",
+            "bar": "2026-04-16 14:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -725.5517
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 7629.320100000001,
+        "exact_entry_pairs_eff_exit_delta": 7629.320100000001
+      }
+    },
+    "NORMAL|MAIN|RETEST": {
+      "2024": {
+        "baseline_net": 16371.283600000002,
+        "candidate_net": 37258.4962,
+        "whole_book_delta": 20887.2126,
+        "eff_delta": 20620.5466,
+        "other_members_delta": 266.66599999999926,
+        "baseline_entries": 25,
+        "candidate_entries": 15,
+        "same_economic_admissions": 5,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-02T12:21:59+05:30",
+            "bar": "2024-01-02 12:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1182.0763
+          },
+          {
+            "entry_time": "2024-01-03T11:51:59+05:30",
+            "bar": "2024-01-03 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1658.0992
+          },
+          {
+            "entry_time": "2024-01-08T10:36:59+05:30",
+            "bar": "2024-01-08 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3271.7815
+          },
+          {
+            "entry_time": "2024-01-09T14:00:59+05:30",
+            "bar": "2024-01-09 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9025.0213
+          },
+          {
+            "entry_time": "2024-01-10T10:21:59+05:30",
+            "bar": "2024-01-10 10:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2872.7755
+          },
+          {
+            "entry_time": "2024-01-12T12:07:59+05:30",
+            "bar": "2024-01-12 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1396.3005
+          },
+          {
+            "entry_time": "2024-01-15T13:51:59+05:30",
+            "bar": "2024-01-15 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -604.0837
+          },
+          {
+            "entry_time": "2024-01-16T11:48:59+05:30",
+            "bar": "2024-01-16 11:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6707.961
+          },
+          {
+            "entry_time": "2024-01-17T10:40:59+05:30",
+            "bar": "2024-01-17 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6643.718
+          },
+          {
+            "entry_time": "2024-01-19T11:40:59+05:30",
+            "bar": "2024-01-19 11:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -404.7121
+          },
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-11-04T09:54:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "SHIPPED",
+            "baseline_net_descriptive": 9227.4622
+          },
+          {
+            "entry_time": "2024-11-04T12:06:59+05:30",
+            "bar": "2024-11-04 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2065.9865
+          },
+          {
+            "entry_time": "2024-11-04T14:40:59+05:30",
+            "bar": "2024-11-04 14:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2183.1406
+          },
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "bar": "2024-11-05 09:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1124.7253
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T10:31:59+05:30",
+            "bar": "2024-11-06 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3270.978
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          },
+          {
+            "entry_time": "2024-11-06T10:55:59+05:30",
+            "bar": "2024-11-06 10:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3443.1976
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2025": {
+        "baseline_net": 5709.834899999998,
+        "candidate_net": 14899.188200000002,
+        "whole_book_delta": 9189.353300000004,
+        "eff_delta": 10350.556600000004,
+        "other_members_delta": -1161.203300000001,
+        "baseline_entries": 50,
+        "candidate_entries": 32,
+        "same_economic_admissions": 17,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-29T11:36:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-05T09:45:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-05T09:52:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-13T12:25:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T09:45:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T10:03:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2025-01-03T14:00:59+05:30",
+            "bar": "2025-01-03 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 272.678
+          },
+          {
+            "entry_time": "2025-01-06T10:06:59+05:30",
+            "bar": "2025-01-06 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4913.8946
+          },
+          {
+            "entry_time": "2025-01-07T09:51:59+05:30",
+            "bar": "2025-01-07 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4266.7964
+          },
+          {
+            "entry_time": "2025-01-07T10:15:59+05:30",
+            "bar": "2025-01-07 10:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2749.0819
+          },
+          {
+            "entry_time": "2025-01-08T10:25:59+05:30",
+            "bar": "2025-01-08 10:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1273.7827
+          },
+          {
+            "entry_time": "2025-01-08T13:25:59+05:30",
+            "bar": "2025-01-08 13:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 7500.3333
+          },
+          {
+            "entry_time": "2025-01-08T13:45:59+05:30",
+            "bar": "2025-01-08 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -58.9649
+          },
+          {
+            "entry_time": "2025-01-10T11:06:59+05:30",
+            "bar": "2025-01-10 11:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1370.1116
+          },
+          {
+            "entry_time": "2025-01-10T13:30:59+05:30",
+            "bar": "2025-01-10 13:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2162.8185
+          },
+          {
+            "entry_time": "2025-01-13T11:30:59+05:30",
+            "bar": "2025-01-13 11:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -354.5073
+          },
+          {
+            "entry_time": "2025-01-14T13:06:59+05:30",
+            "bar": "2025-01-14 13:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -813.2447
+          },
+          {
+            "entry_time": "2025-01-15T13:21:59+05:30",
+            "bar": "2025-01-15 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 256.6265
+          },
+          {
+            "entry_time": "2025-01-17T11:36:59+05:30",
+            "bar": "2025-01-17 11:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 316.866
+          },
+          {
+            "entry_time": "2025-01-17T13:15:59+05:30",
+            "bar": "2025-01-17 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1300.6528
+          },
+          {
+            "entry_time": "2025-01-21T13:00:59+05:30",
+            "bar": "2025-01-21 12:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -5866.4812
+          },
+          {
+            "entry_time": "2025-01-22T11:15:59+05:30",
+            "bar": "2025-01-22 11:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2514.495
+          },
+          {
+            "entry_time": "2025-01-22T13:15:59+05:30",
+            "bar": "2025-01-22 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4545.1171
+          },
+          {
+            "entry_time": "2025-01-22T14:10:59+05:30",
+            "bar": "2025-01-22 14:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 5504.6793
+          },
+          {
+            "entry_time": "2025-01-24T10:40:59+05:30",
+            "bar": "2025-01-24 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -814.6941
+          },
+          {
+            "entry_time": "2025-01-27T12:06:59+05:30",
+            "bar": "2025-01-27 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -5898.2107
+          },
+          {
+            "entry_time": "2025-01-28T10:06:59+05:30",
+            "bar": "2025-01-28 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6259.5088
+          },
+          {
+            "entry_time": "2025-02-01T13:45:59+05:30",
+            "bar": "2025-02-01 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2425.8472
+          },
+          {
+            "entry_time": "2025-02-01T14:25:59+05:30",
+            "bar": "2025-02-01 14:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4959.338
+          },
+          {
+            "entry_time": "2025-03-07T11:51:59+05:30",
+            "bar": "2025-03-07 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 7.4144
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "bar": "2025-08-12 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1229.3882
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "bar": "2025-08-13 11:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -6828.0845
+          },
+          {
+            "entry_time": "2025-08-19T13:36:59+05:30",
+            "bar": "2025-08-19 13:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1307.9404
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2026": {
+        "baseline_net": 30540.2141,
+        "candidate_net": 25065.875599999996,
+        "whole_book_delta": -5474.338500000005,
+        "eff_delta": -8373.114899999997,
+        "other_members_delta": 2898.7763999999916,
+        "baseline_entries": 33,
+        "candidate_entries": 26,
+        "same_economic_admissions": 13,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2026-09-28T10:25:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-09-28T09:55:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-03-20T11:55:59+05:30",
+            "bar": "2026-03-20 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3106.3666
+          },
+          {
+            "entry_time": "2026-03-20T12:45:59+05:30",
+            "bar": "2026-03-20 12:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -439.1231
+          },
+          {
+            "entry_time": "2026-03-23T14:06:59+05:30",
+            "bar": "2026-03-23 14:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3818.2408
+          },
+          {
+            "entry_time": "2026-03-23T13:45:59+05:30",
+            "bar": "2026-03-23 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4333.513
+          },
+          {
+            "entry_time": "2026-03-27T12:30:59+05:30",
+            "bar": "2026-03-27 12:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1356.2051
+          },
+          {
+            "entry_time": "2026-04-01T12:51:59+05:30",
+            "bar": "2026-04-01 12:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2416.876
+          },
+          {
+            "entry_time": "2026-04-06T12:25:59+05:30",
+            "bar": "2026-04-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9201.675
+          },
+          {
+            "entry_time": "2026-04-08T11:55:59+05:30",
+            "bar": "2026-04-08 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1730.37
+          },
+          {
+            "entry_time": "2026-04-10T11:51:59+05:30",
+            "bar": "2026-04-10 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1358.3852
+          },
+          {
+            "entry_time": "2026-04-15T11:10:59+05:30",
+            "bar": "2026-04-15 11:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2637.7057
+          },
+          {
+            "entry_time": "2026-04-16T14:30:59+05:30",
+            "bar": "2026-04-16 14:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -725.5517
+          },
+          {
+            "entry_time": "2026-09-30T10:36:59+05:30",
+            "bar": "2026-09-30 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -452.9529
+          },
+          {
+            "entry_time": "2026-10-01T12:12:59+05:30",
+            "bar": "2026-10-01 12:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9316.8553
+          },
+          {
+            "entry_time": "2026-10-01T14:36:59+05:30",
+            "bar": "2026-10-01 14:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 654.5731
+          },
+          {
+            "entry_time": "2026-10-05T10:06:59+05:30",
+            "bar": "2026-10-05 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9562.6219
+          },
+          {
+            "entry_time": "2026-10-09T11:55:59+05:30",
+            "bar": "2026-10-09 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4469.1076
+          },
+          {
+            "entry_time": "2026-10-14T13:51:59+05:30",
+            "bar": "2026-10-14 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2736.5853
+          },
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "bar": "2026-10-15 11:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1462.9941
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      }
+    },
+    "NORMAL|MAIN|HORIZON": {
+      "2024": {
+        "baseline_net": 16371.283600000002,
+        "candidate_net": 5889.716800000001,
+        "whole_book_delta": -10481.5668,
+        "eff_delta": -10560.955299999998,
+        "other_members_delta": 79.3884999999973,
+        "baseline_entries": 25,
+        "candidate_entries": 22,
+        "same_economic_admissions": 20,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "bar": "2024-01-20 11:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -79.3885
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -17055.6827,
+        "exact_entry_pairs_eff_exit_delta": -17055.6827
+      },
+      "2025": {
+        "baseline_net": 5709.834899999998,
+        "candidate_net": 279.2469999999986,
+        "whole_book_delta": -5430.5878999999995,
+        "eff_delta": -1852.8509999999987,
+        "other_members_delta": -3577.7369,
+        "baseline_entries": 50,
+        "candidate_entries": 50,
+        "same_economic_admissions": 40,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-29T11:36:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-01-29T13:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:15:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T09:51:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T12:40:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T09:45:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T10:03:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": -3707.6164,
+        "exact_entry_pairs_eff_exit_delta": -3707.6164
+      },
+      "2026": {
+        "baseline_net": 30540.2141,
+        "candidate_net": 47191.0836,
+        "whole_book_delta": 16650.869499999997,
+        "eff_delta": 17741.339600000007,
+        "other_members_delta": -1090.4701000000096,
+        "baseline_entries": 33,
+        "candidate_entries": 34,
+        "same_economic_admissions": 26,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2026-09-28T10:25:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-09-28T09:55:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-01T12:12:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-09T12:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-14T13:51:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-08T12:45:59+05:30",
+            "bar": "2026-04-08 12:40:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": 2115.3721
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 10655.7468,
+        "exact_entry_pairs_eff_exit_delta": 10655.7468
+      }
+    },
+    "NORMAL|TPB_ONE|RETEST": {
+      "2024": {
+        "baseline_net": 28539.514499999997,
+        "candidate_net": 56191.787500000006,
+        "whole_book_delta": 27652.27300000001,
+        "eff_delta": 25628.269200000002,
+        "other_members_delta": 2024.0038000000059,
+        "baseline_entries": 44,
+        "candidate_entries": 33,
+        "same_economic_admissions": 24,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-02T12:21:59+05:30",
+            "bar": "2024-01-02 12:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1182.0763
+          },
+          {
+            "entry_time": "2024-01-03T11:51:59+05:30",
+            "bar": "2024-01-03 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1658.0992
+          },
+          {
+            "entry_time": "2024-01-08T10:36:59+05:30",
+            "bar": "2024-01-08 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3271.7815
+          },
+          {
+            "entry_time": "2024-01-09T14:00:59+05:30",
+            "bar": "2024-01-09 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9025.0213
+          },
+          {
+            "entry_time": "2024-01-10T10:21:59+05:30",
+            "bar": "2024-01-10 10:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2872.7755
+          },
+          {
+            "entry_time": "2024-01-12T12:07:59+05:30",
+            "bar": "2024-01-12 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1396.3005
+          },
+          {
+            "entry_time": "2024-01-15T13:51:59+05:30",
+            "bar": "2024-01-15 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -604.0837
+          },
+          {
+            "entry_time": "2024-01-16T11:48:59+05:30",
+            "bar": "2024-01-16 11:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6707.961
+          },
+          {
+            "entry_time": "2024-01-17T10:40:59+05:30",
+            "bar": "2024-01-17 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6643.718
+          },
+          {
+            "entry_time": "2024-01-19T11:40:59+05:30",
+            "bar": "2024-01-19 11:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -404.7121
+          },
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-11-04T09:52:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "SHIPPED",
+            "baseline_net_descriptive": 10320.5932
+          },
+          {
+            "entry_time": "2024-11-04T12:06:59+05:30",
+            "bar": "2024-11-04 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4094.773
+          },
+          {
+            "entry_time": "2024-11-04T14:40:59+05:30",
+            "bar": "2024-11-04 14:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2183.1406
+          },
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "bar": "2024-11-05 09:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1124.7253
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T10:31:59+05:30",
+            "bar": "2024-11-06 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3270.978
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          },
+          {
+            "entry_time": "2024-11-06T10:55:59+05:30",
+            "bar": "2024-11-06 10:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3443.1976
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2025": {
+        "baseline_net": 36173.432,
+        "candidate_net": 50090.168000000005,
+        "whole_book_delta": 13916.736000000004,
+        "eff_delta": 10350.556600000004,
+        "other_members_delta": 3566.1793999999936,
+        "baseline_entries": 98,
+        "candidate_entries": 80,
+        "same_economic_admissions": 65,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-29T11:36:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-13T12:25:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T09:45:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T10:03:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2025-01-03T14:00:59+05:30",
+            "bar": "2025-01-03 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 272.678
+          },
+          {
+            "entry_time": "2025-01-06T10:06:59+05:30",
+            "bar": "2025-01-06 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4913.8946
+          },
+          {
+            "entry_time": "2025-01-07T09:51:59+05:30",
+            "bar": "2025-01-07 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4266.7964
+          },
+          {
+            "entry_time": "2025-01-07T10:15:59+05:30",
+            "bar": "2025-01-07 10:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2749.0819
+          },
+          {
+            "entry_time": "2025-01-08T10:25:59+05:30",
+            "bar": "2025-01-08 10:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1273.7827
+          },
+          {
+            "entry_time": "2025-01-08T13:25:59+05:30",
+            "bar": "2025-01-08 13:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 7500.3333
+          },
+          {
+            "entry_time": "2025-01-08T13:45:59+05:30",
+            "bar": "2025-01-08 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -58.9649
+          },
+          {
+            "entry_time": "2025-01-10T11:06:59+05:30",
+            "bar": "2025-01-10 11:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1370.1116
+          },
+          {
+            "entry_time": "2025-01-10T13:30:59+05:30",
+            "bar": "2025-01-10 13:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2162.8185
+          },
+          {
+            "entry_time": "2025-01-13T11:30:59+05:30",
+            "bar": "2025-01-13 11:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -354.5073
+          },
+          {
+            "entry_time": "2025-01-14T13:06:59+05:30",
+            "bar": "2025-01-14 13:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -813.2447
+          },
+          {
+            "entry_time": "2025-01-15T13:21:59+05:30",
+            "bar": "2025-01-15 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 256.6265
+          },
+          {
+            "entry_time": "2025-01-17T11:36:59+05:30",
+            "bar": "2025-01-17 11:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 316.866
+          },
+          {
+            "entry_time": "2025-01-17T13:15:59+05:30",
+            "bar": "2025-01-17 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1300.6528
+          },
+          {
+            "entry_time": "2025-01-21T13:00:59+05:30",
+            "bar": "2025-01-21 12:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -5866.4812
+          },
+          {
+            "entry_time": "2025-01-22T11:15:59+05:30",
+            "bar": "2025-01-22 11:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2514.495
+          },
+          {
+            "entry_time": "2025-01-22T13:15:59+05:30",
+            "bar": "2025-01-22 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4545.1171
+          },
+          {
+            "entry_time": "2025-01-22T14:10:59+05:30",
+            "bar": "2025-01-22 14:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 5504.6793
+          },
+          {
+            "entry_time": "2025-01-24T10:40:59+05:30",
+            "bar": "2025-01-24 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -814.6941
+          },
+          {
+            "entry_time": "2025-01-27T12:06:59+05:30",
+            "bar": "2025-01-27 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -5898.2107
+          },
+          {
+            "entry_time": "2025-01-28T10:06:59+05:30",
+            "bar": "2025-01-28 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6259.5088
+          },
+          {
+            "entry_time": "2025-02-01T13:45:59+05:30",
+            "bar": "2025-02-01 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2425.8472
+          },
+          {
+            "entry_time": "2025-02-01T14:25:59+05:30",
+            "bar": "2025-02-01 14:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4959.338
+          },
+          {
+            "entry_time": "2025-03-07T11:51:59+05:30",
+            "bar": "2025-03-07 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 7.4144
+          },
+          {
+            "entry_time": "2025-05-30T13:54:59+05:30",
+            "bar": "2025-05-30 13:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -1294.2121
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "bar": "2025-08-12 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1229.3882
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "bar": "2025-08-13 11:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -6828.0845
+          },
+          {
+            "entry_time": "2025-08-19T13:36:59+05:30",
+            "bar": "2025-08-19 13:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1307.9404
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2026": {
+        "baseline_net": 71442.57600000002,
+        "candidate_net": 54152.56499999999,
+        "whole_book_delta": -17290.011000000028,
+        "eff_delta": -17349.796600000005,
+        "other_members_delta": 59.78559999997378,
+        "baseline_entries": 63,
+        "candidate_entries": 56,
+        "same_economic_admissions": 40,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2026-04-10T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-09-28T10:25:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-08T10:36:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-09T12:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 65,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-03-20T11:55:59+05:30",
+            "bar": "2026-03-20 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3106.3666
+          },
+          {
+            "entry_time": "2026-03-20T12:45:59+05:30",
+            "bar": "2026-03-20 12:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -439.1231
+          },
+          {
+            "entry_time": "2026-03-23T14:06:59+05:30",
+            "bar": "2026-03-23 14:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3818.2408
+          },
+          {
+            "entry_time": "2026-03-23T13:45:59+05:30",
+            "bar": "2026-03-23 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4333.513
+          },
+          {
+            "entry_time": "2026-03-25T14:10:59+05:30",
+            "bar": "2026-03-25 14:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3601.9141
+          },
+          {
+            "entry_time": "2026-03-27T12:30:59+05:30",
+            "bar": "2026-03-27 12:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1356.2051
+          },
+          {
+            "entry_time": "2026-04-01T12:51:59+05:30",
+            "bar": "2026-04-01 12:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2416.876
+          },
+          {
+            "entry_time": "2026-04-06T12:25:59+05:30",
+            "bar": "2026-04-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9201.675
+          },
+          {
+            "entry_time": "2026-04-08T11:55:59+05:30",
+            "bar": "2026-04-08 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1730.37
+          },
+          {
+            "entry_time": "2026-04-10T11:51:59+05:30",
+            "bar": "2026-04-10 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2679.5703
+          },
+          {
+            "entry_time": "2026-04-15T11:10:59+05:30",
+            "bar": "2026-04-15 11:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2637.7057
+          },
+          {
+            "entry_time": "2026-04-16T14:30:59+05:30",
+            "bar": "2026-04-16 14:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -725.5517
+          },
+          {
+            "entry_time": "2026-09-30T10:36:59+05:30",
+            "bar": "2026-09-30 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -868.7058
+          },
+          {
+            "entry_time": "2026-10-01T12:12:59+05:30",
+            "bar": "2026-10-01 12:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 18670.9107
+          },
+          {
+            "entry_time": "2026-10-01T14:36:59+05:30",
+            "bar": "2026-10-01 14:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 654.5731
+          },
+          {
+            "entry_time": "2026-10-05T10:06:59+05:30",
+            "bar": "2026-10-05 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 14352.5328
+          },
+          {
+            "entry_time": "2026-10-09T11:55:59+05:30",
+            "bar": "2026-10-09 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -6695.0614
+          },
+          {
+            "entry_time": "2026-10-14T13:51:59+05:30",
+            "bar": "2026-10-14 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4096.278
+          },
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "bar": "2026-10-15 11:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2888.7883
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      }
+    },
+    "NORMAL|TPB_ONE|HORIZON": {
+      "2024": {
+        "baseline_net": 28539.514499999997,
+        "candidate_net": 17653.106900000006,
+        "whole_book_delta": -10886.407599999991,
+        "eff_delta": -9872.665099999997,
+        "other_members_delta": -1013.7424999999967,
+        "baseline_entries": 44,
+        "candidate_entries": 41,
+        "same_economic_admissions": 39,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "bar": "2024-01-20 11:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -79.3885
+          },
+          {
+            "entry_time": "2024-11-04T09:52:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "SHIPPED",
+            "baseline_net_descriptive": 10320.5932
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -15381.9032,
+        "exact_entry_pairs_eff_exit_delta": -15381.9032
+      },
+      "2025": {
+        "baseline_net": 36173.432,
+        "candidate_net": 32129.097499999993,
+        "whole_book_delta": -4044.334500000008,
+        "eff_delta": -3707.6163999999953,
+        "other_members_delta": -336.7181000000128,
+        "baseline_entries": 98,
+        "candidate_entries": 98,
+        "same_economic_admissions": 95,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-29T11:36:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-01-29T13:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2025-05-30T13:54:59+05:30",
+            "bar": "2025-05-30 13:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -1294.2121
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -3707.6164,
+        "exact_entry_pairs_eff_exit_delta": -3707.6164
+      },
+      "2026": {
+        "baseline_net": 71442.57600000002,
+        "candidate_net": 76763.01400000002,
+        "whole_book_delta": 5320.438000000009,
+        "eff_delta": 7435.810099999999,
+        "other_members_delta": -2115.372099999986,
+        "baseline_entries": 63,
+        "candidate_entries": 63,
+        "same_economic_admissions": 61,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-08T12:45:59+05:30",
+            "bar": "2026-04-08 12:40:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": 2115.3721
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 11392.079999999998,
+        "exact_entry_pairs_eff_exit_delta": 11392.079999999998
+      }
+    },
+    "NORMAL|CORE_SELECT|RETEST": {
+      "2024": {
+        "baseline_net": 16371.283600000002,
+        "candidate_net": 37258.4962,
+        "whole_book_delta": 20887.2126,
+        "eff_delta": 20620.5466,
+        "other_members_delta": 266.66599999999926,
+        "baseline_entries": 25,
+        "candidate_entries": 15,
+        "same_economic_admissions": 5,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-02T12:21:59+05:30",
+            "bar": "2024-01-02 12:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1182.0763
+          },
+          {
+            "entry_time": "2024-01-03T11:51:59+05:30",
+            "bar": "2024-01-03 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1658.0992
+          },
+          {
+            "entry_time": "2024-01-08T10:36:59+05:30",
+            "bar": "2024-01-08 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3271.7815
+          },
+          {
+            "entry_time": "2024-01-09T14:00:59+05:30",
+            "bar": "2024-01-09 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9025.0213
+          },
+          {
+            "entry_time": "2024-01-10T10:21:59+05:30",
+            "bar": "2024-01-10 10:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2872.7755
+          },
+          {
+            "entry_time": "2024-01-12T12:07:59+05:30",
+            "bar": "2024-01-12 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1396.3005
+          },
+          {
+            "entry_time": "2024-01-15T13:51:59+05:30",
+            "bar": "2024-01-15 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -604.0837
+          },
+          {
+            "entry_time": "2024-01-16T11:48:59+05:30",
+            "bar": "2024-01-16 11:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6707.961
+          },
+          {
+            "entry_time": "2024-01-17T10:40:59+05:30",
+            "bar": "2024-01-17 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6643.718
+          },
+          {
+            "entry_time": "2024-01-19T11:40:59+05:30",
+            "bar": "2024-01-19 11:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -404.7121
+          },
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-11-04T09:54:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "SHIPPED",
+            "baseline_net_descriptive": 9227.4622
+          },
+          {
+            "entry_time": "2024-11-04T12:06:59+05:30",
+            "bar": "2024-11-04 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2065.9865
+          },
+          {
+            "entry_time": "2024-11-04T14:40:59+05:30",
+            "bar": "2024-11-04 14:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2183.1406
+          },
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "bar": "2024-11-05 09:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1124.7253
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T10:31:59+05:30",
+            "bar": "2024-11-06 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3270.978
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          },
+          {
+            "entry_time": "2024-11-06T10:55:59+05:30",
+            "bar": "2024-11-06 10:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3443.1976
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2025": {
+        "baseline_net": 14500.828799999997,
+        "candidate_net": 24194.006699999998,
+        "whole_book_delta": 9693.1779,
+        "eff_delta": 4782.365100000001,
+        "other_members_delta": 4910.8128,
+        "baseline_entries": 55,
+        "candidate_entries": 39,
+        "same_economic_admissions": 23,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-29T11:36:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-04T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-04T12:22:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-04T14:09:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-13T12:25:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T09:45:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T10:03:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2025-01-03T14:00:59+05:30",
+            "bar": "2025-01-03 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 272.678
+          },
+          {
+            "entry_time": "2025-01-06T10:06:59+05:30",
+            "bar": "2025-01-06 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4913.8946
+          },
+          {
+            "entry_time": "2025-01-07T09:51:59+05:30",
+            "bar": "2025-01-07 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4266.7964
+          },
+          {
+            "entry_time": "2025-01-07T10:15:59+05:30",
+            "bar": "2025-01-07 10:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2749.0819
+          },
+          {
+            "entry_time": "2025-01-08T10:25:59+05:30",
+            "bar": "2025-01-08 10:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1273.7827
+          },
+          {
+            "entry_time": "2025-01-08T13:25:59+05:30",
+            "bar": "2025-01-08 13:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 7500.3333
+          },
+          {
+            "entry_time": "2025-01-08T13:45:59+05:30",
+            "bar": "2025-01-08 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -58.9649
+          },
+          {
+            "entry_time": "2025-01-10T11:06:59+05:30",
+            "bar": "2025-01-10 11:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1370.1116
+          },
+          {
+            "entry_time": "2025-01-10T13:30:59+05:30",
+            "bar": "2025-01-10 13:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2162.8185
+          },
+          {
+            "entry_time": "2025-01-13T11:30:59+05:30",
+            "bar": "2025-01-13 11:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -354.5073
+          },
+          {
+            "entry_time": "2025-01-14T13:06:59+05:30",
+            "bar": "2025-01-14 13:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -813.2447
+          },
+          {
+            "entry_time": "2025-01-15T13:21:59+05:30",
+            "bar": "2025-01-15 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 256.6265
+          },
+          {
+            "entry_time": "2025-01-17T11:36:59+05:30",
+            "bar": "2025-01-17 11:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 316.866
+          },
+          {
+            "entry_time": "2025-01-17T13:15:59+05:30",
+            "bar": "2025-01-17 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1300.6528
+          },
+          {
+            "entry_time": "2025-01-21T13:00:59+05:30",
+            "bar": "2025-01-21 12:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -5866.4812
+          },
+          {
+            "entry_time": "2025-01-22T11:15:59+05:30",
+            "bar": "2025-01-22 11:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2514.495
+          },
+          {
+            "entry_time": "2025-01-22T13:15:59+05:30",
+            "bar": "2025-01-22 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4545.1171
+          },
+          {
+            "entry_time": "2025-01-22T14:10:59+05:30",
+            "bar": "2025-01-22 14:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 5504.6793
+          },
+          {
+            "entry_time": "2025-01-24T10:40:59+05:30",
+            "bar": "2025-01-24 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -814.6941
+          },
+          {
+            "entry_time": "2025-01-27T12:06:59+05:30",
+            "bar": "2025-01-27 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -5898.2107
+          },
+          {
+            "entry_time": "2025-01-28T10:06:59+05:30",
+            "bar": "2025-01-28 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6259.5088
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "bar": "2025-08-12 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1229.3882
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "bar": "2025-08-13 11:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -6828.0845
+          },
+          {
+            "entry_time": "2025-08-19T13:36:59+05:30",
+            "bar": "2025-08-19 13:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1307.9404
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2026": {
+        "baseline_net": 50391.159999999996,
+        "candidate_net": 39435.842599999996,
+        "whole_book_delta": -10955.3174,
+        "eff_delta": -12829.1918,
+        "other_members_delta": 1873.8744000000006,
+        "baseline_entries": 37,
+        "candidate_entries": 30,
+        "same_economic_admissions": 18,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2026-10-09T12:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-03-20T11:55:59+05:30",
+            "bar": "2026-03-20 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3106.3666
+          },
+          {
+            "entry_time": "2026-03-20T12:45:59+05:30",
+            "bar": "2026-03-20 12:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -439.1231
+          },
+          {
+            "entry_time": "2026-03-23T14:06:59+05:30",
+            "bar": "2026-03-23 14:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3818.2408
+          },
+          {
+            "entry_time": "2026-03-23T13:45:59+05:30",
+            "bar": "2026-03-23 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4333.513
+          },
+          {
+            "entry_time": "2026-03-27T12:30:59+05:30",
+            "bar": "2026-03-27 12:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1356.2051
+          },
+          {
+            "entry_time": "2026-04-01T12:51:59+05:30",
+            "bar": "2026-04-01 12:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2416.876
+          },
+          {
+            "entry_time": "2026-04-06T12:25:59+05:30",
+            "bar": "2026-04-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9201.675
+          },
+          {
+            "entry_time": "2026-04-08T11:55:59+05:30",
+            "bar": "2026-04-08 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1730.37
+          },
+          {
+            "entry_time": "2026-04-10T11:51:59+05:30",
+            "bar": "2026-04-10 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1358.3852
+          },
+          {
+            "entry_time": "2026-04-15T11:10:59+05:30",
+            "bar": "2026-04-15 11:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2637.7057
+          },
+          {
+            "entry_time": "2026-04-16T14:30:59+05:30",
+            "bar": "2026-04-16 14:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -725.5517
+          },
+          {
+            "entry_time": "2026-09-30T10:36:59+05:30",
+            "bar": "2026-09-30 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -452.9529
+          },
+          {
+            "entry_time": "2026-10-01T12:12:59+05:30",
+            "bar": "2026-10-01 12:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 18670.9107
+          },
+          {
+            "entry_time": "2026-10-01T14:36:59+05:30",
+            "bar": "2026-10-01 14:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 654.5731
+          },
+          {
+            "entry_time": "2026-10-05T10:06:59+05:30",
+            "bar": "2026-10-05 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9562.6219
+          },
+          {
+            "entry_time": "2026-10-09T11:55:59+05:30",
+            "bar": "2026-10-09 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4469.1076
+          },
+          {
+            "entry_time": "2026-10-14T13:51:59+05:30",
+            "bar": "2026-10-14 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4096.278
+          },
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "bar": "2026-10-15 11:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2888.7883
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      }
+    },
+    "NORMAL|CORE_SELECT|HORIZON": {
+      "2024": {
+        "baseline_net": 16371.283600000002,
+        "candidate_net": 5889.716800000001,
+        "whole_book_delta": -10481.5668,
+        "eff_delta": -10560.955299999998,
+        "other_members_delta": 79.3884999999973,
+        "baseline_entries": 25,
+        "candidate_entries": 22,
+        "same_economic_admissions": 20,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "bar": "2024-01-20 11:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -79.3885
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -17055.6827,
+        "exact_entry_pairs_eff_exit_delta": -17055.6827
+      },
+      "2025": {
+        "baseline_net": 14500.828799999997,
+        "candidate_net": 898.4664999999984,
+        "whole_book_delta": -13602.362299999999,
+        "eff_delta": -5573.442099999997,
+        "other_members_delta": -8028.9202000000005,
+        "baseline_entries": 55,
+        "candidate_entries": 55,
+        "same_economic_admissions": 43,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-29T11:36:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-01-29T13:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-04T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-04T12:22:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-04T14:09:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-05T09:45:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-05T09:52:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:15:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T09:51:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": -7428.2074999999995,
+        "exact_entry_pairs_eff_exit_delta": -7428.2074999999995
+      },
+      "2026": {
+        "baseline_net": 50391.159999999996,
+        "candidate_net": 59448.558999999994,
+        "whole_book_delta": 9057.398999999998,
+        "eff_delta": 11172.771100000004,
+        "other_members_delta": -2115.372100000008,
+        "baseline_entries": 37,
+        "candidate_entries": 38,
+        "same_economic_admissions": 36,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-08T12:45:59+05:30",
+            "bar": "2026-04-08 12:40:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": 2115.3721
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 10091.3328,
+        "exact_entry_pairs_eff_exit_delta": 10091.3328
+      }
+    },
+    "ONE|EFF_ONLY|RETEST": {
+      "2024": {
+        "baseline_net": 1582.5652999999995,
+        "candidate_net": 11826.909099999999,
+        "whole_book_delta": 10244.343799999999,
+        "eff_delta": 10244.343799999999,
+        "other_members_delta": 0.0,
+        "baseline_entries": 20,
+        "candidate_entries": 6,
+        "same_economic_admissions": 0,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-02T12:21:59+05:30",
+            "bar": "2024-01-02 12:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -609.6381
+          },
+          {
+            "entry_time": "2024-01-03T10:25:59+05:30",
+            "bar": "2024-01-03 10:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1456.9225
+          },
+          {
+            "entry_time": "2024-01-03T11:51:59+05:30",
+            "bar": "2024-01-03 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -847.6496
+          },
+          {
+            "entry_time": "2024-01-08T10:36:59+05:30",
+            "bar": "2024-01-08 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1654.4907
+          },
+          {
+            "entry_time": "2024-01-09T14:00:59+05:30",
+            "bar": "2024-01-09 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 4493.9107
+          },
+          {
+            "entry_time": "2024-01-10T10:21:59+05:30",
+            "bar": "2024-01-10 10:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1454.9877
+          },
+          {
+            "entry_time": "2024-01-12T12:07:59+05:30",
+            "bar": "2024-01-12 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1396.3005
+          },
+          {
+            "entry_time": "2024-01-15T13:51:59+05:30",
+            "bar": "2024-01-15 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -604.0837
+          },
+          {
+            "entry_time": "2024-01-16T11:48:59+05:30",
+            "bar": "2024-01-16 11:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3335.3805
+          },
+          {
+            "entry_time": "2024-01-17T10:40:59+05:30",
+            "bar": "2024-01-17 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3303.259
+          },
+          {
+            "entry_time": "2024-01-19T11:40:59+05:30",
+            "bar": "2024-01-19 11:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -404.7121
+          },
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1308.1488
+          },
+          {
+            "entry_time": "2024-11-04T09:54:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 8037.0028
+          },
+          {
+            "entry_time": "2024-11-04T12:06:59+05:30",
+            "bar": "2024-11-04 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2065.9865
+          },
+          {
+            "entry_time": "2024-11-04T14:40:59+05:30",
+            "bar": "2024-11-04 14:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1072.9703
+          },
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "bar": "2024-11-05 09:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -396.3751
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T10:31:59+05:30",
+            "bar": "2024-11-06 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3270.978
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          },
+          {
+            "entry_time": "2024-11-06T10:55:59+05:30",
+            "bar": "2024-11-06 10:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1126.2659
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2025": {
+        "baseline_net": -6651.3583,
+        "candidate_net": -11277.402200000002,
+        "whole_book_delta": -4626.043900000002,
+        "eff_delta": -4626.043900000002,
+        "other_members_delta": 0.0,
+        "baseline_entries": 34,
+        "candidate_entries": 11,
+        "same_economic_admissions": 0,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2025-01-03T14:00:59+05:30",
+            "bar": "2025-01-03 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 272.678
+          },
+          {
+            "entry_time": "2025-01-06T10:06:59+05:30",
+            "bar": "2025-01-06 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2475.5473
+          },
+          {
+            "entry_time": "2025-01-06T10:36:59+05:30",
+            "bar": "2025-01-06 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 13195.8045
+          },
+          {
+            "entry_time": "2025-01-07T09:51:59+05:30",
+            "bar": "2025-01-07 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4266.7964
+          },
+          {
+            "entry_time": "2025-01-07T10:15:59+05:30",
+            "bar": "2025-01-07 10:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1393.1409
+          },
+          {
+            "entry_time": "2025-01-08T10:25:59+05:30",
+            "bar": "2025-01-08 10:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1273.7827
+          },
+          {
+            "entry_time": "2025-01-08T13:25:59+05:30",
+            "bar": "2025-01-08 13:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3731.5667
+          },
+          {
+            "entry_time": "2025-01-08T13:45:59+05:30",
+            "bar": "2025-01-08 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -48.0824
+          },
+          {
+            "entry_time": "2025-01-10T09:51:59+05:30",
+            "bar": "2025-01-10 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2537.8962
+          },
+          {
+            "entry_time": "2025-01-10T11:06:59+05:30",
+            "bar": "2025-01-10 11:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1370.1116
+          },
+          {
+            "entry_time": "2025-01-13T11:30:59+05:30",
+            "bar": "2025-01-13 11:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -354.5073
+          },
+          {
+            "entry_time": "2025-01-14T13:06:59+05:30",
+            "bar": "2025-01-14 13:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -425.2224
+          },
+          {
+            "entry_time": "2025-01-15T13:21:59+05:30",
+            "bar": "2025-01-15 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 109.7133
+          },
+          {
+            "entry_time": "2025-01-17T11:36:59+05:30",
+            "bar": "2025-01-17 11:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 316.866
+          },
+          {
+            "entry_time": "2025-01-17T13:15:59+05:30",
+            "bar": "2025-01-17 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1300.6528
+          },
+          {
+            "entry_time": "2025-01-21T13:00:59+05:30",
+            "bar": "2025-01-21 12:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2951.8406
+          },
+          {
+            "entry_time": "2025-01-22T11:15:59+05:30",
+            "bar": "2025-01-22 11:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 816.6983
+          },
+          {
+            "entry_time": "2025-01-22T13:15:59+05:30",
+            "bar": "2025-01-22 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1536.5057
+          },
+          {
+            "entry_time": "2025-01-22T14:10:59+05:30",
+            "bar": "2025-01-22 14:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1813.4264
+          },
+          {
+            "entry_time": "2025-01-24T10:40:59+05:30",
+            "bar": "2025-01-24 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -425.947
+          },
+          {
+            "entry_time": "2025-01-27T12:06:59+05:30",
+            "bar": "2025-01-27 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2967.7053
+          },
+          {
+            "entry_time": "2025-01-27T12:45:59+05:30",
+            "bar": "2025-01-27 12:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -419.7213
+          },
+          {
+            "entry_time": "2025-01-28T10:06:59+05:30",
+            "bar": "2025-01-28 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6259.5088
+          },
+          {
+            "entry_time": "2025-02-01T13:45:59+05:30",
+            "bar": "2025-02-01 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1231.5236
+          },
+          {
+            "entry_time": "2025-02-01T14:25:59+05:30",
+            "bar": "2025-02-01 14:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2498.269
+          },
+          {
+            "entry_time": "2025-03-05T11:36:59+05:30",
+            "bar": "2025-03-05 11:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 463.4145
+          },
+          {
+            "entry_time": "2025-03-05T13:45:59+05:30",
+            "bar": "2025-03-05 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1649.6219
+          },
+          {
+            "entry_time": "2025-03-07T11:51:59+05:30",
+            "bar": "2025-03-07 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 7.4144
+          },
+          {
+            "entry_time": "2025-08-12T09:51:59+05:30",
+            "bar": "2025-08-12 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1333.5973
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "bar": "2025-08-12 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 388.3294
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "bar": "2025-08-13 11:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2297.4948
+          },
+          {
+            "entry_time": "2025-08-18T12:00:59+05:30",
+            "bar": "2025-08-18 11:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -285.0937
+          },
+          {
+            "entry_time": "2025-08-18T12:10:59+05:30",
+            "bar": "2025-08-18 12:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2223.3434
+          },
+          {
+            "entry_time": "2025-08-19T13:36:59+05:30",
+            "bar": "2025-08-19 13:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1307.9404
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2026": {
+        "baseline_net": -10764.022200000001,
+        "candidate_net": 2667.8689,
+        "whole_book_delta": 13431.8911,
+        "eff_delta": 13431.8911,
+        "other_members_delta": 0.0,
+        "baseline_entries": 18,
+        "candidate_entries": 9,
+        "same_economic_admissions": 0,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-03-16T12:51:59+05:30",
+            "bar": "2026-03-16 12:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1158.8363
+          },
+          {
+            "entry_time": "2026-03-20T11:55:59+05:30",
+            "bar": "2026-03-20 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3106.3666
+          },
+          {
+            "entry_time": "2026-03-20T12:45:59+05:30",
+            "bar": "2026-03-20 12:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -439.1231
+          },
+          {
+            "entry_time": "2026-03-23T14:06:59+05:30",
+            "bar": "2026-03-23 14:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3818.2408
+          },
+          {
+            "entry_time": "2026-03-23T13:45:59+05:30",
+            "bar": "2026-03-23 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4333.513
+          },
+          {
+            "entry_time": "2026-03-27T12:30:59+05:30",
+            "bar": "2026-03-27 12:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1356.2051
+          },
+          {
+            "entry_time": "2026-04-06T11:15:59+05:30",
+            "bar": "2026-04-06 11:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4720.0908
+          },
+          {
+            "entry_time": "2026-04-06T12:25:59+05:30",
+            "bar": "2026-04-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9201.675
+          },
+          {
+            "entry_time": "2026-04-08T11:55:59+05:30",
+            "bar": "2026-04-08 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1730.37
+          },
+          {
+            "entry_time": "2026-04-10T11:51:59+05:30",
+            "bar": "2026-04-10 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1358.3852
+          },
+          {
+            "entry_time": "2026-04-15T11:10:59+05:30",
+            "bar": "2026-04-15 11:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2637.7057
+          },
+          {
+            "entry_time": "2026-04-16T14:30:59+05:30",
+            "bar": "2026-04-16 14:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -725.5517
+          },
+          {
+            "entry_time": "2026-09-28T14:21:59+05:30",
+            "bar": "2026-09-28 14:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -0.7595
+          },
+          {
+            "entry_time": "2026-09-30T10:36:59+05:30",
+            "bar": "2026-09-30 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -452.9529
+          },
+          {
+            "entry_time": "2026-10-05T10:06:59+05:30",
+            "bar": "2026-10-05 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 4762.7109
+          },
+          {
+            "entry_time": "2026-10-09T11:55:59+05:30",
+            "bar": "2026-10-09 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2253.1538
+          },
+          {
+            "entry_time": "2026-10-14T13:51:59+05:30",
+            "bar": "2026-10-14 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1386.8927
+          },
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "bar": "2026-10-15 11:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1462.9941
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      }
+    },
+    "ONE|EFF_ONLY|HORIZON": {
+      "2024": {
+        "baseline_net": 1582.5652999999995,
+        "candidate_net": -8312.3388,
+        "whole_book_delta": -9894.9041,
+        "eff_delta": -9894.9041,
+        "other_members_delta": 0.0,
+        "baseline_entries": 20,
+        "candidate_entries": 14,
+        "same_economic_admissions": 14,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1308.1488
+          },
+          {
+            "entry_time": "2024-11-04T09:54:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 8037.0028
+          },
+          {
+            "entry_time": "2024-11-04T14:40:59+05:30",
+            "bar": "2024-11-04 14:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1072.9703
+          },
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "bar": "2024-11-05 09:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -396.3751
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -6805.405500000001,
+        "exact_entry_pairs_eff_exit_delta": -6805.405500000001
+      },
+      "2025": {
+        "baseline_net": -6651.3583,
+        "candidate_net": -4159.670800000003,
+        "whole_book_delta": 2491.6874999999973,
+        "eff_delta": 2491.6874999999973,
+        "other_members_delta": 0.0,
+        "baseline_entries": 34,
+        "candidate_entries": 35,
+        "same_economic_admissions": 34,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 3850.3410999999996,
+        "exact_entry_pairs_eff_exit_delta": 3850.3410999999996
+      },
+      "2026": {
+        "baseline_net": -10764.022200000001,
+        "candidate_net": -13946.607500000002,
+        "whole_book_delta": -3182.5853000000006,
+        "eff_delta": -3182.5853000000006,
+        "other_members_delta": 0.0,
+        "baseline_entries": 18,
+        "candidate_entries": 17,
+        "same_economic_admissions": 16,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-06T12:25:59+05:30",
+            "bar": "2026-04-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9201.675
+          },
+          {
+            "entry_time": "2026-04-16T14:30:59+05:30",
+            "bar": "2026-04-16 14:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -725.5517
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 7441.182100000001,
+        "exact_entry_pairs_eff_exit_delta": 7441.182100000001
+      }
+    },
+    "ONE|MAIN|RETEST": {
+      "2024": {
+        "baseline_net": 5973.904300000006,
+        "candidate_net": 22241.6542,
+        "whole_book_delta": 16267.749899999995,
+        "eff_delta": 16824.424099999997,
+        "other_members_delta": -556.6742000000031,
+        "baseline_entries": 25,
+        "candidate_entries": 15,
+        "same_economic_admissions": 7,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-02T12:21:59+05:30",
+            "bar": "2024-01-02 12:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -609.6381
+          },
+          {
+            "entry_time": "2024-01-03T11:51:59+05:30",
+            "bar": "2024-01-03 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -847.6496
+          },
+          {
+            "entry_time": "2024-01-08T10:36:59+05:30",
+            "bar": "2024-01-08 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1654.4907
+          },
+          {
+            "entry_time": "2024-01-09T14:00:59+05:30",
+            "bar": "2024-01-09 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 4493.9107
+          },
+          {
+            "entry_time": "2024-01-10T10:21:59+05:30",
+            "bar": "2024-01-10 10:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1454.9877
+          },
+          {
+            "entry_time": "2024-01-12T12:07:59+05:30",
+            "bar": "2024-01-12 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1396.3005
+          },
+          {
+            "entry_time": "2024-01-15T13:51:59+05:30",
+            "bar": "2024-01-15 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -604.0837
+          },
+          {
+            "entry_time": "2024-01-16T11:48:59+05:30",
+            "bar": "2024-01-16 11:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3335.3805
+          },
+          {
+            "entry_time": "2024-01-17T10:40:59+05:30",
+            "bar": "2024-01-17 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3303.259
+          },
+          {
+            "entry_time": "2024-01-19T11:40:59+05:30",
+            "bar": "2024-01-19 11:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -404.7121
+          },
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1308.1488
+          },
+          {
+            "entry_time": "2024-11-04T12:06:59+05:30",
+            "bar": "2024-11-04 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2065.9865
+          },
+          {
+            "entry_time": "2024-11-04T14:40:59+05:30",
+            "bar": "2024-11-04 14:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1072.9703
+          },
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "bar": "2024-11-05 09:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -396.3751
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T10:31:59+05:30",
+            "bar": "2024-11-06 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3270.978
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          },
+          {
+            "entry_time": "2024-11-06T10:55:59+05:30",
+            "bar": "2024-11-06 10:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1126.2659
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2025": {
+        "baseline_net": 14810.227999999992,
+        "candidate_net": 17017.1404,
+        "whole_book_delta": 2206.9124000000083,
+        "eff_delta": 2880.710799999999,
+        "other_members_delta": -673.7983999999888,
+        "baseline_entries": 50,
+        "candidate_entries": 32,
+        "same_economic_admissions": 23,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2025-01-03T14:00:59+05:30",
+            "bar": "2025-01-03 13:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 272.678
+          },
+          {
+            "entry_time": "2025-01-06T10:06:59+05:30",
+            "bar": "2025-01-06 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2475.5473
+          },
+          {
+            "entry_time": "2025-01-07T09:51:59+05:30",
+            "bar": "2025-01-07 09:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4266.7964
+          },
+          {
+            "entry_time": "2025-01-07T10:15:59+05:30",
+            "bar": "2025-01-07 10:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1393.1409
+          },
+          {
+            "entry_time": "2025-01-08T10:25:59+05:30",
+            "bar": "2025-01-08 10:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1273.7827
+          },
+          {
+            "entry_time": "2025-01-08T13:25:59+05:30",
+            "bar": "2025-01-08 13:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3731.5667
+          },
+          {
+            "entry_time": "2025-01-08T13:45:59+05:30",
+            "bar": "2025-01-08 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -48.0824
+          },
+          {
+            "entry_time": "2025-01-10T11:06:59+05:30",
+            "bar": "2025-01-10 11:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1370.1116
+          },
+          {
+            "entry_time": "2025-01-10T13:30:59+05:30",
+            "bar": "2025-01-10 13:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 2162.8185
+          },
+          {
+            "entry_time": "2025-01-13T11:30:59+05:30",
+            "bar": "2025-01-13 11:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -354.5073
+          },
+          {
+            "entry_time": "2025-01-14T13:06:59+05:30",
+            "bar": "2025-01-14 13:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -425.2224
+          },
+          {
+            "entry_time": "2025-01-15T13:21:59+05:30",
+            "bar": "2025-01-15 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 109.7133
+          },
+          {
+            "entry_time": "2025-01-17T11:36:59+05:30",
+            "bar": "2025-01-17 11:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 316.866
+          },
+          {
+            "entry_time": "2025-01-17T13:15:59+05:30",
+            "bar": "2025-01-17 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1300.6528
+          },
+          {
+            "entry_time": "2025-01-21T13:00:59+05:30",
+            "bar": "2025-01-21 12:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2951.8406
+          },
+          {
+            "entry_time": "2025-01-22T11:15:59+05:30",
+            "bar": "2025-01-22 11:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 816.6983
+          },
+          {
+            "entry_time": "2025-01-22T13:15:59+05:30",
+            "bar": "2025-01-22 13:10:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1536.5057
+          },
+          {
+            "entry_time": "2025-01-22T14:10:59+05:30",
+            "bar": "2025-01-22 14:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 1813.4264
+          },
+          {
+            "entry_time": "2025-01-24T10:40:59+05:30",
+            "bar": "2025-01-24 10:35:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -425.947
+          },
+          {
+            "entry_time": "2025-01-27T12:06:59+05:30",
+            "bar": "2025-01-27 12:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2967.7053
+          },
+          {
+            "entry_time": "2025-01-28T10:06:59+05:30",
+            "bar": "2025-01-28 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 6259.5088
+          },
+          {
+            "entry_time": "2025-02-01T13:45:59+05:30",
+            "bar": "2025-02-01 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1231.5236
+          },
+          {
+            "entry_time": "2025-02-01T14:25:59+05:30",
+            "bar": "2025-02-01 14:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2498.269
+          },
+          {
+            "entry_time": "2025-03-07T11:51:59+05:30",
+            "bar": "2025-03-07 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 7.4144
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "bar": "2025-08-12 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 388.3294
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "bar": "2025-08-13 11:55:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2297.4948
+          },
+          {
+            "entry_time": "2025-08-19T13:36:59+05:30",
+            "bar": "2025-08-19 13:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1307.9404
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      },
+      "2026": {
+        "baseline_net": 24671.3263,
+        "candidate_net": 25566.147000000004,
+        "whole_book_delta": 894.8207000000039,
+        "eff_delta": -1244.7386999999972,
+        "other_members_delta": 2139.559400000002,
+        "baseline_entries": 33,
+        "candidate_entries": 26,
+        "same_economic_admissions": 15,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-03-20T11:55:59+05:30",
+            "bar": "2026-03-20 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 3106.3666
+          },
+          {
+            "entry_time": "2026-03-20T12:45:59+05:30",
+            "bar": "2026-03-20 12:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -439.1231
+          },
+          {
+            "entry_time": "2026-03-23T14:06:59+05:30",
+            "bar": "2026-03-23 14:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3818.2408
+          },
+          {
+            "entry_time": "2026-03-23T13:45:59+05:30",
+            "bar": "2026-03-23 13:40:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -4333.513
+          },
+          {
+            "entry_time": "2026-03-27T12:30:59+05:30",
+            "bar": "2026-03-27 12:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1356.2051
+          },
+          {
+            "entry_time": "2026-04-01T12:51:59+05:30",
+            "bar": "2026-04-01 12:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2416.876
+          },
+          {
+            "entry_time": "2026-04-06T12:25:59+05:30",
+            "bar": "2026-04-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9201.675
+          },
+          {
+            "entry_time": "2026-04-08T11:55:59+05:30",
+            "bar": "2026-04-08 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1730.37
+          },
+          {
+            "entry_time": "2026-04-10T11:51:59+05:30",
+            "bar": "2026-04-10 11:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1358.3852
+          },
+          {
+            "entry_time": "2026-04-15T11:10:59+05:30",
+            "bar": "2026-04-15 11:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2637.7057
+          },
+          {
+            "entry_time": "2026-04-16T14:30:59+05:30",
+            "bar": "2026-04-16 14:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -725.5517
+          },
+          {
+            "entry_time": "2026-09-30T10:36:59+05:30",
+            "bar": "2026-09-30 10:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -452.9529
+          },
+          {
+            "entry_time": "2026-10-01T12:12:59+05:30",
+            "bar": "2026-10-01 12:05:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 9316.8553
+          },
+          {
+            "entry_time": "2026-10-01T14:36:59+05:30",
+            "bar": "2026-10-01 14:30:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 196.7244
+          },
+          {
+            "entry_time": "2026-10-05T10:06:59+05:30",
+            "bar": "2026-10-05 10:00:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": 4762.7109
+          },
+          {
+            "entry_time": "2026-10-09T11:55:59+05:30",
+            "bar": "2026-10-09 11:50:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2253.1538
+          },
+          {
+            "entry_time": "2026-10-14T13:51:59+05:30",
+            "bar": "2026-10-14 13:45:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1386.8927
+          },
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "bar": "2026-10-15 11:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1462.9941
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0
+      }
+    },
+    "ONE|MAIN|HORIZON": {
+      "2024": {
+        "baseline_net": 5973.904300000006,
+        "candidate_net": 3894.493400000001,
+        "whole_book_delta": -2079.4109000000044,
+        "eff_delta": -2158.7994,
+        "other_members_delta": 79.38849999999547,
+        "baseline_entries": 25,
+        "candidate_entries": 22,
+        "same_economic_admissions": 21,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1308.1488
+          },
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "bar": "2024-01-20 11:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -79.3885
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -7071.3937000000005,
+        "exact_entry_pairs_eff_exit_delta": -7071.3937000000005
+      },
+      "2025": {
+        "baseline_net": 14810.227999999992,
+        "candidate_net": 8958.487200000001,
+        "whole_book_delta": -5851.7407999999905,
+        "eff_delta": -5851.7408,
+        "other_members_delta": 1.0913936421275139e-11,
+        "baseline_entries": 50,
+        "candidate_entries": 50,
+        "same_economic_admissions": 50,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": -5851.7408,
+        "exact_entry_pairs_eff_exit_delta": -5851.7408
+      },
+      "2026": {
+        "baseline_net": 24671.3263,
+        "candidate_net": 32145.771,
+        "whole_book_delta": 7474.4447,
+        "eff_delta": 9589.816800000004,
+        "other_members_delta": -2115.372100000004,
+        "baseline_entries": 33,
+        "candidate_entries": 34,
+        "same_economic_admissions": 32,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-08T12:45:59+05:30",
+            "bar": "2026-04-08 12:40:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": 2115.3721
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 8508.378499999999,
+        "exact_entry_pairs_eff_exit_delta": 8508.378499999999
+      }
+    }
+  }
+}
