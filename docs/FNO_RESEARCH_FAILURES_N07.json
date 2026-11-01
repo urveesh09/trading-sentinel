@@ -1,6 +1,7 @@
 {
   "schema": "n07_failure_checkpoint_v1",
   "candidate_id": "PREMIUM_AWARE_RETEST_N07",
+  "results_commit": "bb50e6fe373697a1a2d79cd15f6e2ca4d9e3d1ed",
   "canonical_book_name": "NORMAL|PREMIUM_STALL",
   "canonical_book": {
     "members": [

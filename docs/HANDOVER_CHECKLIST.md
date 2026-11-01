@@ -1,3 +1,9 @@
+## November 1 — N07 final handoff identity
+
+- Results/reportbb50e6f pushed; source3ec8503/correctione67fd64 activev2 pre-score. READ FNO_RESEARCH_FAILURES_N07 md/json. Premium-aware N07 improves N05 each year but sacrifices2025 N04 profit/DD; ZERO strict primary passes, no live/size qualification. Both new arms redundant on observed paths; zero-extra-stress equals N04. Preserve prior four identities.
+-110 focused checks,45 annual books/18 exact controls,2545 closes/5090 prices/345 independently checked exit lifecycles complete; final research99passed. Preflight-only failure/v1 retained transparently.
+- Next prospective shadow/actual cost receipts; event/green-to-red retention separate future frozen work.2023 deferred, no app/Production/env/risk/lot/order/message/deploy/restart/money change. Owner slices retained; all workers finished; fixed-SHA helper packet consistency only.
+
 ## November 1 — N07 failure anatomy/repairs complete
 
 - READ FNO_RESEARCH_FAILURES_N07 md/json and study README/VERIFICATION. New premium-aware research lead57,982/52,023/77,135, annual closed falls2.16/4.77/2.76%; improves N05 each year but sacrifices2025 N04 net2028/extra0.12percentage-pointfall. ZERO strict primary passes; no size/deploy qualification. Preserve all four prior checkpoint records.

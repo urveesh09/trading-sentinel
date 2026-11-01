@@ -1,5 +1,8 @@
 # N07 — failure-anatomy successor checkpoint
 
+Results/report committed and pushed inbb50e6f; original source3ec8503,
+preflight-only correctione67fd64/active freeze-v2 before candidate scores.
+
 Read [the complete report](research/simulation/2026-11-01-fno-failure-anatomy/README.md) and [exact identity record](FNO_RESEARCH_FAILURES_N07.json).
 
 PREMIUM_AWARE_RETEST_N07 (NORMAL|PREMIUM_STALL) modeled net57,982/52,023/77,135, annual closed falls2.16/4.77/2.76%. Improves N05 net/no-extra-closed-DD each year, including fixed-one-lot diagnostic; gives up2025 N04 net2028 and worsens4.65%to4.77%. Both hypotheses identical on these observed paths, not independent confirmations. No-extra-stress diagnostic matches N04 exactly.

@@ -1,5 +1,9 @@
 # N07 verification and successor handoff
 
+Results/report committed/pushed inbb50e6fe373697a1a2d79cd15f6e2ca4d9e3d1ed.
+The following documentation-only handoff records identity; final fixed-SHA
+post-run skill packet is consistency verification, not pre-score registration.
+
 Dev `C:/Users/Urveesh/Desktop/trading-sentinel`, branch
 `codex/production-correction-hedge-p0`; interpreter
 `python-engine/winvenv/Scripts/python.exe`, Python3.11.9; date2026-11-01 IST.
@@ -40,6 +44,7 @@ All from Dev with `$py='.\python-engine\winvenv\Scripts\python.exe'` and
    correction the new file passes29 (additional real-CLI control regression).
    Therefore99 distinct research checks. Native`test_fno_exit_rules.py` plus
    `test_fno_policy_replay.py`:11 passed. **110 total; no full-suite claim.**
+   Final consolidated research rerun after the correction:99passed in3.17s.
 3. `& $py scripts/build_system_code_atlas.py`:291 modules, no atlas diff.
 4. `& $py $study/anatomy_lab.py freeze`: original v1 and later explicitly named
    v2 freezes retained; write-once. Do not delete/re-freeze existing evidence.

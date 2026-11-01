@@ -1,5 +1,8 @@
 # N07 — why N04 loses, what switching knew, and whether repairs pay
 
+Results/report committed and pushed inbb50e6f. Original source3ec8503,
+preflight-only correctione67fd64 and active freeze-v2 preceded candidate scores.
+
 **The failure investigation and two fixed repair tests are complete. Registered
 primary passing candidates: none. These are repeatedly seen-data research
 results; no configuration is qualified for deployment or larger size.**
