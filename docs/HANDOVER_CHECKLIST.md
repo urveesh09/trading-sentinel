@@ -1,3 +1,12 @@
+## November 1 — N08 failed its frozen 2023 test
+
+N08 is N07 with EFF and OR20 trailing at 2 ATR, low-day TPB at up to two lots before 12:00 and none from 14:00, and nothing above two lots. It **failed its frozen test**: 2023 net -Rs 37,581 (N07 -37,719), not positive every year. Fresh Rs 2.5 lakh a year: 2023 -37,581, 2024 +76,294, 2025 +58,647, 2026 +1,04,924, four years +2,02,284 (N07 +1,49,421, N04 +1,44,294, N05 +1,31,739, N03 +1,22,633). Paired weekly t against N07: 2023 alone 0.01. N08 stays a seen-year lead.
+
+- **Verification:** N03, N04, N05 and N07 trade-for-trade parity on 2024-26; N08 code paths with nothing on equal N07; 2023 route on sealed 2025 data from an empty folder equals stored results; `test_n08.py` 42 passed; `data-binding-2023.json` committed before replay; the corrected run has trend readings on all 245 sessions.
+- **Config and migration impact:** none. **State:** Dev, pushed, not deployed; Production c97cb8c, PR #126 open.
+- **Error recorded:** the first 2023 run read 2024's daily bars and is kept as invalid; the books and rule did not change.
+- **Environment limits:** candle model, lot 65, assumed extra cost, the 52 cut requests unrepaired on 2024-26. Not a profitability claim.
+
 ## November 1 — N07 final handoff identity
 
 - Results/reportbb50e6f pushed; source3ec8503/correctione67fd64 activev2 pre-score. READ FNO_RESEARCH_FAILURES_N07 md/json. Premium-aware N07 improves N05 each year but sacrifices2025 N04 profit/DD; ZERO strict primary passes, no live/size qualification. Both new arms redundant on observed paths; zero-extra-stress equals N04. Preserve prior four identities.

@@ -11,7 +11,7 @@ ROOT = next(p for p in HERE.parents if (p / "python-engine").is_dir())
 WEAK = ROOT / "docs/research/fno/2026-10-31-weak-spots"
 YEARS = ("2023", "2024", "2025", "2026")
 DEV = ("2024", "2025", "2026")
-keys23 = json.loads((HERE / "_local" / "keys-exam-2023.json").read_text())
+keys23 = json.loads((HERE / "_local" / "keys-exam-2023-v2.json").read_text())
 refs = {y: {**json.loads((A / "_local" / f"keys-reference-{y}.json").read_text()), **json.loads((A / "_local" / f"keys-candidate-{y}.json").read_text())} for y in DEV}
 dev_keys = {y: {"N03": refs[y]["NORMAL|BASE"], "N04": refs[y]["NORMAL|STALL30"], "N05": refs[y]["NORMAL|STRUCT30"], "N07": refs[y]["NORMAL|PREMIUM_STALL"]} for y in DEV}
 for y in DEV:
@@ -33,8 +33,12 @@ def stats(trades: list) -> dict:
             "avg_loss": round(sum(losses) / max(1, len(losses))), "worst_trade": round(min(losses, default=0)), "worst_day": round(min(days.values(), default=0)), "best_day": round(max(days.values(), default=0))}
 
 
+def stored23(key: str) -> list:
+    return json.loads((HERE / "_local" / "evals-2023" / f"{key}.json").read_text(encoding="utf-8"))["trades"]
+
+
 names = ("N03", "N04", "N05", "N07", "N08", "PART|WIDE_TRAIL", "PART|EARLY_TWO", "PART|LATE_STOP", "PART|CAP2", "PART|NO_LOW_TPB", "ONE|N07", "ONE|WL")
-trades = {n: {"2023": stored(keys23[n]), **{y: stored(dev_keys[y][n]) for y in DEV}} for n in names}
+trades = {n: {"2023": stored23(keys23[n]), **{y: stored(dev_keys[y][n]) for y in DEV}} for n in names}
 table = {n: {y: stats(trades[n][y]) for y in YEARS} for n in names}
 print(f"{'book':18}{'2023':>9}{'fall%':>7}{'n':>4}{'win':>4}{'avgW':>7}{'avgL':>7}{'wrstT':>7}{'wrstD':>8} |{'2024':>8}{'2025':>8}{'2026':>9}{'4 years':>9}{'3 years':>9}")
 for n in names:
@@ -56,7 +60,7 @@ exam = {}
 weak = json.loads((WEAK / "results.json").read_text())
 three = {"EX|MAIN": 52621}
 for name in ("EX|MAIN", "EX|D|only_puts_from_25", "EX|D|puts_from_25", "EX|D|tpb_puts_closed", "EX|C|puts_only", "EX|C|no_eff"):
-    ts = stored(keys23["EXAM|" + name])
+    ts = stored23(keys23["EXAM|" + name])
     short = name.split("|", 1)[1]
     change = weak["changes"].get(short.replace("|", "|")) if short in weak["changes"] else None
     exam[name] = {**stats(ts), "three_year_net": change["total"] if change else three.get(name)}
@@ -92,7 +96,7 @@ for t in trades["N07"]["2023"]:
 print("N07 by month of 2023:", {k: round(v) for k, v in sorted(months.items())})
 early = [t for t in trades["N08"]["2023"] if t.get("origin") == "TPB_LOW" and t["entry_time"][11:16] < "12:00"]
 print("N08 morning low-day trades on 2023:", len(early), "wins", sum(t["net_pnl"] > 0 for t in early), "net", round(sum(t["net_pnl"] for t in early)))
-funnel = json.loads((HERE / "_local" / "evals" / f"{keys23['N08']}.json").read_text())
+funnel = json.loads((HERE / "_local" / "evals-2023" / f"{keys23['N08']}.json").read_text())
 print("N08 2023 halted days:", funnel.get("drawdown_halt_days"), " notes:", {k: v for k, v in funnel["notes"].items() if "regime" not in k and "grid" not in k})
 (HERE / "results.json").write_text(json.dumps({"schema": "n08_results_v1", "table": table, "four_year_total": total, "n08_passes_2023": passes_2023, "n08_passes_four_years": passes_four,
                                                 "o31e_exam": exam, "o31e_verdict": exam_verdict, "qualified": False, "can_place_orders": False}, indent=1), encoding="utf-8")

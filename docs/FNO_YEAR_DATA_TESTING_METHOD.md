@@ -6,6 +6,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 - **The general research rules:** [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md).
 - **Testing size in rupees, not per lot:** section 15, with the worked study [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md).
 - **The 2024 exam's results (Oct 31):** [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md). Running an exam like it: section 14.
+- **N08 and the NIFTY 2023 result (Nov 1):** [FNO_RESEARCH_N08.md](FNO_RESEARCH_N08.md).
 - **The weak-spots study and the fixed NIFTY 2023 exam (Oct 31):** [FNO_WEAK_SPOTS_2026-10-31.md](FNO_WEAK_SPOTS_2026-10-31.md).
 - **The final-strategy study (Oct 31):** [FNO_FINAL_STRATEGY_2026-10-31.md](FNO_FINAL_STRATEGY_2026-10-31.md). A worked example of testing changes on three seen years without fooling yourself: one change at a time, help in every year, held-out-year selection, and a plateau check (`docs/research/fno/2026-10-31-final-book/`).
 
@@ -36,6 +37,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 | --- | --- | --- | --- |
 | Jan 1 – Oct 28, 2026 | 203 | `docs/research/fno/2026-10-29-year-genome/_local/dataset-nifty` | `yeardata.py export` (O29f) |
 | 2025 | 248 (Oct 21 Muhurat dropped) | `docs/research/fno/2026-10-30-nifty-2025-test/_local/dataset-nifty-2025` | `lab_t.py mirror` + `export` (O30) |
+| 2023 | 245 (Nov 12 Muhurat dropped; Mar 1 has no options) | `docs/research/simulation/2026-11-01-fno-n08/_local/dataset-nifty-2023` | `N08_YEAR=2023 exam_2023.py mirror`, `export`, `warm`, `daily`, `bind`; fingerprint `2026-11-01-fno-n08/data-binding-2023.json` |
 | 2024 | 248 (Nov 1 Muhurat dropped) | `docs/research/fno/2026-10-30-day-router/_local/dataset-nifty-2024` | `O30F_YEAR=2024 lab_f.py mirror24` + `export24`; fingerprint `2026-10-30-day-router/data-binding-2024.json` |
 
 - **The source** is ICICI Breeze 1-minute history, in `C:\Users\Urveesh\sentinel-operations\breeze-history-20261029\data\breeze-history.sqlite`.
@@ -53,7 +55,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
   - **Regime:** the swing regime label is the live one where Production logged it (Jul 14 – Oct 28, 2026), else UNKNOWN.
 - **Known caveat:** candles came out about **₹100–200 per trade per lot better** than the recorded quotes on the overlap. Compare books per lot, and remember that books with many trades are flattered more.
 - **Known data quirks:**
-  - Jan 31, 2025 and Jan 30, 2026 have no index bars before about 11:53 (a Breeze gap).
+  - Jan 31, 2025 and Jan 30, 2026 have no index bars before about 11:53. This is not ICICI's gap: those requests held a weekend session too, passed the 1,000-candle ceiling, and Breeze dropped the oldest rows. The `breeze-history-download` skill's `repair-ceiling` target restores them on the owner's word.
   - Dec 31 of a year has no weekly expiry inside that year's data, so no options.
   - Diwali Muhurat days (Oct 21, 2025 and Nov 1, 2024) are not sessions.
   - Mar 2 and May 18, 2024 are half-days: futures exist only 09:15–09:59 and 11:30–12:30, so nothing can trade in the break or after 12:30. A leg still open at the last bar is stored `UNRESOLVED` with no rupee result, and `check_book` counts it. Jan 20, 2024 is a full Saturday session.
@@ -247,12 +249,16 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 | NIFTY 2025 | **Seen** since O30 (Oct 30): the clean test, then the case study and the router |
 | SENSEX Jan – Oct 2026 | Partly downloaded (2,384 of 4,057 option requests on Oct 31); the paper book runs SENSEX, but no strategy was chosen on it. The day sides are NIFTY's, so it is not independent for day rules. |
 | **NIFTY 2024** | **Seen since Oct 31, 2026.** The one-time exam is used up: sheet 1 `2026-10-30-day-router/freeze-2024.json` (`2a57ede`), sheet 2 `2026-10-30-earning-power/freeze-2024.json` (`ff08fca`), sheet 3 `2026-10-30-risk-spectrum/freeze-2024.json` (`bc5a93a`), scored once each. Nothing may now be called unseen-tested on it. |
-| NIFTY 2023 | **Unseen.** Not downloaded, availability not probed. Its exam is already fixed: `2026-10-31-weak-spots/freeze-2023.json`. Score it once, with the steps in section 14. |
+| NIFTY 2023 | **Seen, used up Nov 1, 2026.** Scored by `2026-11-01-fno-n08` and the O31e exam. Opened twice: the first run had a wiring fault and is kept as invalid (`SOURCE_CORRECTION.md`). |
+| NIFTY 2022 and earlier | Unseen. Not downloaded; ICICI serves Dec 2022, earlier months not probed. The only possible further exam on history. |
 | **Forward sessions from Oct 29, 2026** | **Unseen** for strategy work. Forward panels A–D (O27c, O27g, O28b, O29b) run Oct 28 – Nov 27 (Oct 28 itself was used by O29b and the year data). |
 
 ---
 
 ## 12. Pitfalls and fixes
+
+- **A new year's daily bars (Nov 1, 2026).** `2026-10-31-fno-complements/lab_gap.py` replaces `features.daily_bars` with a reader of a per-year file chosen when it is imported, so moving `features.DOWNLOAD` changes nothing and the ADX gate reads another year's bars. Set `lab_gap.DAILY` and point `F.daily_bars` at its reader, as `2026-11-01-fno-n08/n08_lab.py` does, and check every session has a trend reading before replaying.
+- **A wiring test that passes on saved files (Nov 1, 2026).** The runner reuses any saved result with the same key. A test aimed at a known year must use an empty results folder and fail if nothing was replayed. A shared folder gave a false pass and let the fault above through.
 
 | Symptom | Cause and fix |
 | --- | --- |
