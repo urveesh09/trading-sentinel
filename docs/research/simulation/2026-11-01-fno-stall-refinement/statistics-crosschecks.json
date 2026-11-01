@@ -1,0 +1,11 @@
+{
+  "annual_paths": 27,
+  "weekly_vectors": 9,
+  "normal_candidate_tests": 2,
+  "strict_profit_and_drawdown_against_both": true,
+  "resamples": 4096,
+  "block_weeks": 4,
+  "seed": 110501,
+  "max_cash_residual": 2.6921043172478676e-10,
+  "financial_or_acceptance_or_statistical_errors": 0
+}

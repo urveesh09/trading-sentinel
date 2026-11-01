@@ -1,0 +1,24 @@
+{
+  "checks": [
+    {
+      "year": "2024",
+      "all_inherited_bindings_identical": true
+    },
+    {
+      "year": "2025",
+      "all_inherited_bindings_identical": true
+    },
+    {
+      "year": "2026",
+      "all_inherited_bindings_identical": true
+    }
+  ],
+  "reused_files": {
+    "docs/research/simulation/2026-11-01-fno-exit-ablation/input-reuse.json": "f02ab2b1a39ed852348eb85f8560f0e15fb522162b5443035180ee3212e63404",
+    "docs/research/simulation/2026-11-01-fno-eff-improvement/input-crosschecks.json": "7003f5535f7ba7ff89503cd60c323a6155f50c2abe670375b920fef02714080d",
+    "docs/research/simulation/2026-11-01-fno-eff-improvement/coverage.json": "1c98de7331c946b92a900bfc92f5495bf36a08aaed68513c5b7246d0add1f229"
+  },
+  "reused_raw_cache_sessions": 699,
+  "fresh_raw_cache_checks_claimed": 0,
+  "limit": "Prior source/data/coverage checks reused by exact inherited hashes; new trades, structure and exits independently checked."
+}

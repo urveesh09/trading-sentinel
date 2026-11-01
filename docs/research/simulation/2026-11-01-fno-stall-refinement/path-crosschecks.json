@@ -1,0 +1,91 @@
+{
+  "years": [
+    {
+      "year": "2024",
+      "admissions_and_trace_bindings": 293,
+      "archive_prices": 586,
+      "retests_verified": 48,
+      "exit_lifecycles": 36,
+      "management_observations": 1752,
+      "structural_reviews": 33,
+      "exit_actions": {
+        "BASE60": 28,
+        "STALL30": 6,
+        "STRUCT30": 2
+      },
+      "choice_price_path_errors": 0,
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_c7bbd068f11394f9.json": "fdbe8224a50b71e0398a5fe1414fa74cae4276b1e19e34b638be5028a04025ad",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_d1d38a917b1c9b89.json": "e96b30f084f4dabe68260386716edde2886381fe5ca84b8988e9a7b0ddae6075",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_cbfb09f45387db45.json": "d1ec7a5478be8d6a0e434653a2a9bd3adea14665bbf3061da951c94be2b439ff",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_672f55ea91d8a155.json": "387cc229cbd998a42e2b79fea304059631fbdf6b6791a4bfcff4af21e5cea7bd",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_28905e98739aaa65.json": "744fa1c9353f911548462e54aa393165795df49a6b5342898d6579d50ec6e319",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_7eaf900341d43460.json": "f4b6cc98a96f06ad5f272379382b4c90a62bfcd8566dcb2d40b2787589b848ba",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_af2f9e2ec0e6feed.json": "14d0cd1da7e267db728e46c816575a8dc22b298007929cda224780c6ab47a2b0",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_a629f29c2e899feb.json": "e0b6853661c3ae8cdf6a2732e6961c1f558bb855ca441bc785dbdb48dbb6e3b2",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_8833825c3f6bcf5d.json": "bb3d8c69fafc68d383bd1f6a0129a535dae01e8ec6bb898cefef16a3474e308e"
+      }
+    },
+    {
+      "year": "2025",
+      "admissions_and_trace_bindings": 690,
+      "archive_prices": 1380,
+      "retests_verified": 64,
+      "exit_lifecycles": 48,
+      "management_observations": 2068,
+      "structural_reviews": 204,
+      "exit_actions": {
+        "BASE60": 30,
+        "STALL30": 8,
+        "DELAY45": 8,
+        "STRUCT30": 2
+      },
+      "choice_price_path_errors": 0,
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_c7bbd068f11394f9.json": "5ae7810f3001683af47445aa9da747a89a7cbacfa1243ef48ee6f9270a9004a4",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_d1d38a917b1c9b89.json": "51fd8a11bbe8f0f05beff0b4955d4180a8e5f44b17d1a71d55868627ed8cc335",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_cbfb09f45387db45.json": "f6434d9a14811d8e916db608a245acac7d89340906a57478538deb844656d67e",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_672f55ea91d8a155.json": "16b170d0989b84f49c0c3e4afaa9a98167c41d0c8641cc59889ff661cbcb46b6",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_28905e98739aaa65.json": "521af408eb75703e39624776590a5acecf518e87b5dee20d12f55f52d5ba60a5",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_7eaf900341d43460.json": "c492426b5e27e1076896778df32fa1eeaaa81d5be21851e5617233ac7788f3a3",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_af2f9e2ec0e6feed.json": "cddae06a35f9d03e2d7f3bb82ffb4b7b53ced48cc075863d14892a9142e41c46",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_a629f29c2e899feb.json": "812d864952442e2e4126fd2f953a8afb9186bf41c8a80dbfe6dc52fa55c309a8",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_8833825c3f6bcf5d.json": "007db381e8f93fbd12beedefbcfdebe3c38ef830b62209c34ec6519e221d3ffb"
+      }
+    },
+    {
+      "year": "2026",
+      "admissions_and_trace_bindings": 481,
+      "archive_prices": 962,
+      "retests_verified": 72,
+      "exit_lifecycles": 54,
+      "management_observations": 3048,
+      "structural_reviews": 56,
+      "exit_actions": {
+        "STALL30": 10,
+        "BASE60": 26,
+        "DELAY45": 10,
+        "STRUCT30": 8
+      },
+      "choice_price_path_errors": 0,
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_c7bbd068f11394f9.json": "e0bf1754bbf9afe82df56e9c8c51b83b40fc604014456c0fbbf4cbc2fc892ff8",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_d1d38a917b1c9b89.json": "8dcfc890451f508d93e78b294e926602570f3c19302209db1ad9d14821abca62",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_cbfb09f45387db45.json": "0e6e11688eee666a8b215cae417d06f415eabe122d9b8033afa31fdac1c06d74",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_672f55ea91d8a155.json": "6769ed73d521bae6894a7cd910c95523689c0460dca8caa35d8be984a7b8c297",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_28905e98739aaa65.json": "9b9aba62a795a6978584fb593befe90133754faca54894e053087aabec7a70b7",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_7eaf900341d43460.json": "f6e613b3eac2fed3b0ce73ff1f6d8e35104e86083f60321bb0a78dd7697f915a",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_af2f9e2ec0e6feed.json": "b7f20cc70edce450b1f335550f838f93049e1ccc1e8824c3739e1411c9fdc127",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_a629f29c2e899feb.json": "9063f88db79fd52fdcbbc40170f627a1b4e726f5430d1a5199f9be0419b90ceb",
+        "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_8833825c3f6bcf5d.json": "e4f02a88b19dd5c4f2696ff1bf71a84f40bfc8668cff7c9dab57a8a464c901cc"
+      }
+    }
+  ],
+  "choice_price_path_errors": 0,
+  "admissions_and_trace_bindings": 1464,
+  "archive_prices": 2928,
+  "retests_verified": 184,
+  "exit_lifecycles": 138,
+  "management_observations": 6868,
+  "structural_reviews": 293
+}
