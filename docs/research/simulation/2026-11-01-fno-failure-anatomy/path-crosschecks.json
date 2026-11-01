@@ -1,0 +1,100 @@
+{
+  "years": [
+    {
+      "year": "2024",
+      "counts": {
+        "admissions_and_trace_bindings": 500,
+        "archive_prices": 1000,
+        "retest_paths": 90,
+        "exit_lifecycles": 90,
+        "management_observations": 4690,
+        "structure_reviews": 58
+      },
+      "path_or_price_or_admission_errors": 0,
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_a536b698f66001c5.json": "efbce840d978bf5f8250c62b43b0c2d77f51d1c5a24106ee6a4babd16501d17c",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_b83f5364f6daa915.json": "246df094d72c50e4669e00902e4c67fcd96c01c69139f94552c0cf01476a0b53",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_ead9d599ad619727.json": "78edd9e1059b96f480d5b128fbbe61bc32c4f8f337e5d63f2239572673b5b943",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_996e89eba32a6f4d.json": "8f24be69ae41a07d039c34db94e1835702690fbb316ae10d12d58db814d94b8b",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_91d5cc5cfcf7ed82.json": "0f8686a0b7dc1cf2b2294328197c58e3012d3bca41e4bc9b67203da78f493733",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_72b738a6a813a9b2.json": "f5fc9a893f2ab4bf75b58a52bb7d8cd1a57505543153236db250601ff1e99f21",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_d7464dfc8ca19f8d.json": "5a34c89c2b22ac1e23fab76fcd07721918bafbd26c5668a1a1d38bf65af59213",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_2a5e667d2dca313a.json": "f2184ba8734fb87f098450f3e20ce9a259fc78213ee707e92c6c12a277eecb40",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_d672c6abc5d338cc.json": "54793d4fbca76bb0f1eb2a2eaa87f790b0b63a123c13d879a7ca6b733808689b",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_05a4198aa7563b9d.json": "db457b76a13ee46f21b9f229cb382035b255527a69f7f4540c09f305c5f4d55d",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_f89373c8e8c8065d.json": "58e5ca37fc0ba30ba99c63d0ce91e24a750a3b8e0ddae2d2de9384baa67e96f9",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_c2047909276cce96.json": "54fd9e774c977fd38b2c158535f92c8fd9a62cd61f9f4a1f4df36cc02bf19b5b",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_14fa8ac2607b6450.json": "df264d6e158655b6624938fca3fa451161f01c0321ac24add4802d83cfcb6c7b",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_f22d5e8b717cada0.json": "4a000d6b20d02ceda0c9191765ee1f1e313912d95f47f787abcd2a30b1216094",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_0d778d115d8cf3cf.json": "186a0f0f7226a0ed74e82396433a1f52bce64f1b7b62bb9567187571f6f2ba50"
+      }
+    },
+    {
+      "year": "2025",
+      "counts": {
+        "admissions_and_trace_bindings": 1205,
+        "archive_prices": 2410,
+        "retest_paths": 120,
+        "exit_lifecycles": 120,
+        "management_observations": 5059,
+        "structure_reviews": 322
+      },
+      "path_or_price_or_admission_errors": 0,
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_a536b698f66001c5.json": "baa5f3eb058dcd93fd2f88e10863f0f5b50dad0e1312f48eacf5fd5b9a7c126d",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_b83f5364f6daa915.json": "eefabcef086cef0141793f56fd6586c73b32fa1e93fdc69d008426e52b0a2d17",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_ead9d599ad619727.json": "92e4a5189916279d6a7044f53cbd3301402c570a3fe45e0c526849fc79d231f0",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_996e89eba32a6f4d.json": "cfcbf6e9dbc3ddfc07aafdae146cf21dd9400fa07290aa58a4c3d5328c612a66",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_91d5cc5cfcf7ed82.json": "b83211eeabbd79081def401235ac801cabc330f99ca9cd5db778326a0a4145c7",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_72b738a6a813a9b2.json": "683b4e9dcbe5da8632fbdec9a6d4a4f02aad8ef988d0d108d73fb9881b064b81",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_d7464dfc8ca19f8d.json": "d2de45a90d9748613c2cd18a81a573dbd60dc5992f44e0a8bab3de9ff2a40a7d",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_2a5e667d2dca313a.json": "c0025d9240415c6d759a82186c92b042a11cf8ff12f9ddb3488937382c462efe",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_d672c6abc5d338cc.json": "3d9d2edc06bdbb2fe89bfd01fe8643afe962f02b26e1a40935066c16de6f8f4b",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_05a4198aa7563b9d.json": "48d236be553ead11ddb28cc34888bab53663fc5f34334a612c48352c46777b15",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_f89373c8e8c8065d.json": "3b1c4723b8de20bc6f7c3f33444494b5e80e0214ce8ecb8048f4cb362e7f46e0",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_c2047909276cce96.json": "806c3a69bcae1a6ed2055969c7afd0fd72ef2fce2f6573a88544389f88f63521",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_14fa8ac2607b6450.json": "194ef5f0fb951e499541d5f3d6eb5ef3ab132fb46d81fc1b91e3389a0f126a2e",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_f22d5e8b717cada0.json": "af297c28228a3146db90b8e19560cacea4cd33af6702c74e77808c460d3c8bd4",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_0d778d115d8cf3cf.json": "8cf0e910b348b51e602f7e37b8771ec0ebb8fabe3f45a0e0a141f69b392f876b"
+      }
+    },
+    {
+      "year": "2026",
+      "counts": {
+        "admissions_and_trace_bindings": 840,
+        "archive_prices": 1680,
+        "retest_paths": 135,
+        "exit_lifecycles": 135,
+        "management_observations": 7464,
+        "structure_reviews": 98
+      },
+      "path_or_price_or_admission_errors": 0,
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_a536b698f66001c5.json": "ed2636a7d7f91aef338dc9cbe1199995f53ff9de0e052797d659f6df42b31347",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_b83f5364f6daa915.json": "583615b4048527849cef65a6abd81412cbe843f9075380860e90422f3ec867d3",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_ead9d599ad619727.json": "90f7b7ed3417d99750a006f0e6c84b61209ca6be96766a69864b207e6920e147",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_996e89eba32a6f4d.json": "3797d5468ff48112f2fcd817dfdf518d747f1e051febfc8c2337c8f42429ecc4",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_91d5cc5cfcf7ed82.json": "9f1561e94ae7849f27c737687ce1c13188cd375c06c9ff82d566e4404106662d",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_72b738a6a813a9b2.json": "544f0878c04b56edf72e9c0f45446eed2c98019f960462c611a51710b1674402",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_d7464dfc8ca19f8d.json": "4e92cd3c32376cc9a19fcd00a3ec94193c43ffcc14dd044efd8a66bc0b747b52",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_2a5e667d2dca313a.json": "fc03df499e3f20cfc70fbfb84b15b49b49a264b7666f104654d2935d6be2d739",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_d672c6abc5d338cc.json": "9123ba6ebf7a07e54e75130af8f550676f8777fc30cf84a2fd901ffd786c968f",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_05a4198aa7563b9d.json": "414cbed875ad64a6077050c8734bb522d52bcfb0db932a198a86f9b9dfe23ed0",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_f89373c8e8c8065d.json": "20c3c085e831ef2319027927f8ba8f9a8b9bdfed560be19f58464a88618dc875",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_c2047909276cce96.json": "1947c485e39ba495fd359a2fe159cee8a06b83fbdc893b95c54745b4eade17b6",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_14fa8ac2607b6450.json": "8f265ed90d0c3b53d8c84e63c40e14b34cb55c9c2827f84bc3bc2d2ae2c71a9a",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_f22d5e8b717cada0.json": "e2fa73da12dec4ac6aaa1a02c4d18c850f0739f3cd008f84ee68e68c3cee3cde",
+        "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_0d778d115d8cf3cf.json": "915c1ab6b2d1d45cd2af84ef232805ad292db93564bfa766747af2ccfc0382aa"
+      }
+    }
+  ],
+  "counts": {
+    "retest_paths": 345,
+    "archive_prices": 5090,
+    "structure_reviews": 478,
+    "admissions_and_trace_bindings": 2545,
+    "management_observations": 17213,
+    "exit_lifecycles": 345
+  },
+  "path_or_price_or_admission_errors": 0
+}

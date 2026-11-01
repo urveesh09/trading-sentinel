@@ -1,0 +1,10 @@
+{
+  "annual_cash_paths": 45,
+  "weekly_vectors": 15,
+  "primary_comparisons": 2,
+  "block_weeks": 4,
+  "resamples": 4096,
+  "seed": 110701,
+  "max_cash_residual": 2.6193447411060333e-10,
+  "financial_or_acceptance_or_statistical_errors": 0
+}

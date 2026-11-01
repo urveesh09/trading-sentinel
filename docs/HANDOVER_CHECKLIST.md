@@ -1,3 +1,10 @@
+## November 1 — N07 failure anatomy/repairs complete
+
+- READ FNO_RESEARCH_FAILURES_N07 md/json and study README/VERIFICATION. New premium-aware research lead57,982/52,023/77,135, annual closed falls2.16/4.77/2.76%; improves N05 each year but sacrifices2025 N04 net2028/extra0.12percentage-pointfall. ZERO strict primary passes; no size/deploy qualification. Preserve all four prior checkpoint records.
+- 45 annual books/18 exact controls/110 focused tests;2545 closes/5090 prices/345 retests+first exits/17213 observations/478 structure reviews and independent cash/stat checks pass. Both candidate arms identical observed paths, not independent successes; no-extra-stress matches N04.699 input checks reused, not freshly counted. Original preflight failure/v1 freeze retained; source3ec8503/correctione67fd64/activev2 precede candidate scores, trading AST/rules unchanged.
+- Next predeclared prospective N04/N05/N07 shadows and real authorized cost/cash evidence. Event/profit-giveback research separate future hypotheses, no hindsight date/peak rules.2023 deferred, risk/caps unchanged.
+- Productionc97cb8c healthy/HTTP200/start unchanged, atlas291/no diff, no app/env/migration/deploy/restart/order/Telegram/money changes; owner slices retained. All workers complete; final fixed-SHA post-run packet is consistency only.
+
 ## November 1 — N07 preflight correction preserved before candidate results
 
 - SOURCE_CORRECTION.json: zero candidate evaluations before correction; original freeze/failure retained. __main__ duplicate import fixed by direct committed receipt/hash verification. All trading function ASTs/config/rules/18 controls unchanged.

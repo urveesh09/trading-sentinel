@@ -1,0 +1,1287 @@
+{
+  "year": "2024",
+  "records": [
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/1",
+      "known_at_entry": {
+        "entry_time": "2024-01-01T12:36:59+05:30",
+        "expert": "TPB",
+        "direction": "LONG",
+        "origin": "MAIN",
+        "entry_premium": 68.75,
+        "quantity": 130,
+        "underlying": 21868.35,
+        "initial_stop": 21847.681098440247,
+        "initial_target": 21934.956704679258,
+        "closed_context": {
+          "bar": "2024-01-01 12:30:00",
+          "close": 21869.5,
+          "open": 21860.0,
+          "high": 21869.6,
+          "low": 21855.0,
+          "previous_close": 21862.35,
+          "atr": 14.545934373168489,
+          "rvol": 0.24338624338624337,
+          "vwap": 21851.981745376044,
+          "prior4high": 21895.0,
+          "prior4low": 21858.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-01 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.20000000000000284
+      },
+      "later_labels": {
+        "net": 7841.5824,
+        "exit_reason": "trail_stop",
+        "exit_time": "2024-01-01T15:01:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/2",
+      "known_at_entry": {
+        "entry_time": "2024-01-02T12:51:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 185.0,
+        "quantity": 65,
+        "underlying": 21745.45,
+        "initial_stop": 21770.90954698768,
+        "initial_target": 21647.471359036957,
+        "closed_context": {
+          "bar": "2024-01-02 12:45:00",
+          "close": 21740.05,
+          "open": 21751.05,
+          "high": 21756.0,
+          "low": 21739.0,
+          "previous_close": 21751.35,
+          "atr": 20.573031325120095,
+          "rvol": 0.7061999303378613,
+          "vwap": 21757.83072442676,
+          "prior4high": 21763.75,
+          "prior4low": 21734.05,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-02 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": -1944.7579,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2024-01-02T14:10:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/3",
+      "known_at_entry": {
+        "entry_time": "2024-01-03T10:25:59+05:30",
+        "expert": "SHIPPED",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 155.7,
+        "quantity": 130,
+        "underlying": 21655.9,
+        "initial_stop": 21681.72188529671,
+        "initial_target": 21582.260606465927,
+        "closed_context": {
+          "bar": "2024-01-03 10:20:00",
+          "close": 21646.2,
+          "open": 21663.6,
+          "high": 21663.6,
+          "low": 21635.2,
+          "previous_close": 21663.85,
+          "atr": 23.681256864473017,
+          "rvol": 3.3958523245214223,
+          "vwap": 21679.740297951135,
+          "prior4high": 21696.1,
+          "prior4low": 21657.15,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-03 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": -3629.197,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2024-01-03T10:36:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/4",
+      "known_at_entry": {
+        "entry_time": "2024-01-03T14:19:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 170.7,
+        "quantity": 65,
+        "underlying": 21642.0,
+        "initial_stop": 21684.110296905423,
+        "initial_target": 21582.46910928373,
+        "closed_context": {
+          "bar": "2024-01-03 14:10:00",
+          "close": 21658.7,
+          "open": 21672.4,
+          "high": 21673.45,
+          "low": 21658.7,
+          "previous_close": 21672.4,
+          "atr": 16.940197936948742,
+          "rvol": 0.35267823884377564,
+          "vwap": 21667.767757521317,
+          "prior4high": 21674.75,
+          "prior4low": 21649.05,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-03 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": 2293.7946,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2024-01-03T15:10:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/5",
+      "known_at_entry": {
+        "entry_time": "2024-01-05T12:15:59+05:30",
+        "expert": "SHIPPED",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 160.55,
+        "quantity": 65,
+        "underlying": 21769.7,
+        "initial_stop": 21790.203899955275,
+        "initial_target": 21728.3129800805,
+        "closed_context": {
+          "bar": "2024-01-05 12:10:00",
+          "close": 21768.1,
+          "open": 21773.3,
+          "high": 21779.85,
+          "low": 21766.85,
+          "previous_close": 21773.0,
+          "atr": 14.735933303517998,
+          "rvol": 2.371518527488496,
+          "vwap": 21781.085194523857,
+          "prior4high": 21773.0,
+          "prior4low": 21740.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-05 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": 118.7967,
+        "exit_reason": "time_stop",
+        "exit_time": "2024-01-05T13:00:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/6",
+      "known_at_entry": {
+        "entry_time": "2024-01-05T13:36:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 169.75,
+        "quantity": 65,
+        "underlying": 21753.5,
+        "initial_stop": 21776.232292461846,
+        "initial_target": 21693.903122614473,
+        "closed_context": {
+          "bar": "2024-01-05 13:30:00",
+          "close": 21755.65,
+          "open": 21764.95,
+          "high": 21770.2,
+          "low": 21750.3,
+          "previous_close": 21764.95,
+          "atr": 13.721528307895142,
+          "rvol": 0.6750448833034112,
+          "vwap": 21779.96772520624,
+          "prior4high": 21778.0,
+          "prior4low": 21762.15,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-05 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": 1580.3141,
+        "exit_reason": "trail_stop",
+        "exit_time": "2024-01-05T14:33:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/7",
+      "known_at_entry": {
+        "entry_time": "2024-01-09T14:10:59+05:30",
+        "expert": "EFF",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 152.55,
+        "quantity": 130,
+        "underlying": 21742.9,
+        "initial_stop": 21780.268219033795,
+        "initial_target": 21647.91720573917,
+        "closed_context": {
+          "bar": "2024-01-09 14:05:00",
+          "close": 21733.0,
+          "open": 21761.1,
+          "high": 21767.1,
+          "low": 21730.65,
+          "previous_close": 21759.35,
+          "atr": 16.297905654876025,
+          "rvol": 1.2786998616874135,
+          "vwap": 21742.55515873016,
+          "prior4high": 21780.6,
+          "prior4low": 21745.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-09 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": 7932.5294,
+        "exit_reason": "trail_stop",
+        "exit_time": "2024-01-09T14:32:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/8",
+      "known_at_entry": {
+        "entry_time": "2024-01-10T14:10:59+05:30",
+        "expert": "EFF",
+        "direction": "LONG",
+        "origin": "MAIN",
+        "entry_premium": 36.25,
+        "quantity": 130,
+        "underlying": 21590.0,
+        "initial_stop": 21549.44478943737,
+        "initial_target": 21652.21937901274,
+        "closed_context": {
+          "bar": "2024-01-10 14:05:00",
+          "close": 21586.15,
+          "open": 21573.8,
+          "high": 21589.45,
+          "low": 21568.55,
+          "previous_close": 21573.8,
+          "atr": 21.534006594603028,
+          "rvol": 0.7994299287410925,
+          "vwap": 21577.132909277818,
+          "prior4high": 21608.85,
+          "prior4low": 21552.3,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-10 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.10000000000000142
+      },
+      "later_labels": {
+        "net": 5678.2811,
+        "exit_reason": "trail_stop",
+        "exit_time": "2024-01-10T15:06:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/9",
+      "known_at_entry": {
+        "entry_time": "2024-01-12T12:10:59+05:30",
+        "expert": "EFF",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 158.85,
+        "quantity": 130,
+        "underlying": 21870.0,
+        "initial_stop": 21894.0,
+        "initial_target": 21803.7,
+        "closed_context": {
+          "bar": "2024-01-12 12:05:00",
+          "close": 21861.75,
+          "open": 21862.25,
+          "high": 21870.0,
+          "low": 21852.0,
+          "previous_close": 21862.25,
+          "atr": 17.041304456001466,
+          "rvol": 0.8833684210526316,
+          "vwap": 21825.616873178,
+          "prior4high": 21894.0,
+          "prior4low": 21856.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-12 09:15:00"
+        },
+        "vwap_side": "BEHIND_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": -217.7339,
+        "exit_reason": "time_stop",
+        "exit_time": "2024-01-12T12:40:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/10",
+      "known_at_entry": {
+        "entry_time": "2024-01-16T11:55:59+05:30",
+        "expert": "EFF",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 126.8,
+        "quantity": 130,
+        "underlying": 22099.3,
+        "initial_stop": 22123.0,
+        "initial_target": 22050.2,
+        "closed_context": {
+          "bar": "2024-01-16 11:50:00",
+          "close": 22097.0,
+          "open": 22103.0,
+          "high": 22105.1,
+          "low": 22086.65,
+          "previous_close": 22103.0,
+          "atr": 18.10980281937002,
+          "rvol": 0.3267655523577596,
+          "vwap": 22096.844141004578,
+          "prior4high": 22122.0,
+          "prior4low": 22082.45,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-16 09:15:00"
+        },
+        "vwap_side": "BEHIND_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.29999999999999716
+      },
+      "later_labels": {
+        "net": -201.3681,
+        "exit_reason": "time_stop",
+        "exit_time": "2024-01-16T12:30:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/11",
+      "known_at_entry": {
+        "entry_time": "2024-01-20T11:51:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 162.6,
+        "quantity": 130,
+        "underlying": 21684.55,
+        "initial_stop": 21712.629364405046,
+        "initial_target": 21612.911906784866,
+        "closed_context": {
+          "bar": "2024-01-20 11:45:00",
+          "close": 21687.7,
+          "open": 21699.4,
+          "high": 21699.4,
+          "low": 21687.05,
+          "previous_close": 21699.4,
+          "atr": 16.619576270029675,
+          "rvol": 0.38135818908122504,
+          "vwap": 21706.715880142852,
+          "prior4high": 21699.4,
+          "prior4low": 21688.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-20 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": -121.5769,
+        "exit_reason": "time_stop",
+        "exit_time": "2024-01-20T13:57:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/12",
+      "known_at_entry": {
+        "entry_time": "2024-01-30T12:10:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 249.0,
+        "quantity": 65,
+        "underlying": 21818.8,
+        "initial_stop": 21845.90740191264,
+        "initial_target": 21687.677794262083,
+        "closed_context": {
+          "bar": "2024-01-30 12:05:00",
+          "close": 21806.35,
+          "open": 21824.8,
+          "high": 21825.0,
+          "low": 21805.0,
+          "previous_close": 21825.5,
+          "atr": 26.37160127509242,
+          "rvol": 0.9235722758854431,
+          "vwap": 21850.59733300761,
+          "prior4high": 21849.85,
+          "prior4low": 21813.2,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-30 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5999999999999943
+      },
+      "later_labels": {
+        "net": 9599.6474,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2024-01-30T15:10:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/13",
+      "known_at_entry": {
+        "entry_time": "2024-02-07T14:36:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 140.5,
+        "quantity": 65,
+        "underlying": 22000.4,
+        "initial_stop": 22027.540875975537,
+        "initial_target": 21873.57737207339,
+        "closed_context": {
+          "bar": "2024-02-07 14:30:00",
+          "close": 21989.05,
+          "open": 22010.0,
+          "high": 22019.0,
+          "low": 21985.0,
+          "previous_close": 22010.8,
+          "atr": 25.660583983691133,
+          "rvol": 0.4575033952014486,
+          "vwap": 21997.889143097313,
+          "prior4high": 22038.7,
+          "prior4low": 21996.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-02-07 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.30000000000001137
+      },
+      "later_labels": {
+        "net": 378.1435,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2024-02-07T15:10:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/14",
+      "known_at_entry": {
+        "entry_time": "2024-02-07T14:40:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 128.7,
+        "quantity": 65,
+        "underlying": 21966.95,
+        "initial_stop": 22016.486170548713,
+        "initial_target": 21853.141488353864,
+        "closed_context": {
+          "bar": "2024-02-07 14:35:00",
+          "close": 21975.65,
+          "open": 21992.65,
+          "high": 22007.4,
+          "low": 21959.85,
+          "previous_close": 21989.05,
+          "atr": 27.224113699141974,
+          "rvol": 0.5940779446984542,
+          "vwap": 21997.60026144993,
+          "prior4high": 22038.7,
+          "prior4low": 21985.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-02-07 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.29999999999998295
+      },
+      "later_labels": {
+        "net": -1086.2169,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2024-02-07T15:10:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/15",
+      "known_at_entry": {
+        "entry_time": "2024-02-12T11:40:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 210.45,
+        "quantity": 65,
+        "underlying": 21778.25,
+        "initial_stop": 21817.268554979284,
+        "initial_target": 21660.194335062148,
+        "closed_context": {
+          "bar": "2024-02-12 11:35:00",
+          "close": 21778.0,
+          "open": 21786.0,
+          "high": 21786.8,
+          "low": 21765.0,
+          "previous_close": 21786.0,
+          "atr": 26.179036652856333,
+          "rvol": 0.3208279430789133,
+          "vwap": 21804.81050793432,
+          "prior4high": 21809.0,
+          "prior4low": 21771.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-02-12 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5999999999999943
+      },
+      "later_labels": {
+        "net": 798.7836,
+        "exit_reason": "time_stop",
+        "exit_time": "2024-02-12T14:13:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/16",
+      "known_at_entry": {
+        "entry_time": "2024-03-15T13:21:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 238.75,
+        "quantity": 65,
+        "underlying": 22062.15,
+        "initial_stop": 22088.768713880094,
+        "initial_target": 21959.69385835972,
+        "closed_context": {
+          "bar": "2024-03-15 13:15:00",
+          "close": 22056.5,
+          "open": 22075.0,
+          "high": 22078.0,
+          "low": 22055.0,
+          "previous_close": 22077.55,
+          "atr": 21.512475920062467,
+          "rvol": 1.1118963486454652,
+          "vwap": 22083.24713246312,
+          "prior4high": 22083.6,
+          "prior4low": 22051.15,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-03-15 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5999999999999943
+      },
+      "later_labels": {
+        "net": -1518.3774,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2024-03-15T13:35:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/17",
+      "known_at_entry": {
+        "entry_time": "2024-04-26T11:55:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 219.3,
+        "quantity": 65,
+        "underlying": 22628.15,
+        "initial_stop": 22664.87662120602,
+        "initial_target": 22557.570136381935,
+        "closed_context": {
+          "bar": "2024-04-26 11:50:00",
+          "close": 22638.05,
+          "open": 22649.95,
+          "high": 22650.0,
+          "low": 22635.0,
+          "previous_close": 22649.95,
+          "atr": 17.884414137347733,
+          "rvol": 0.4571328793434608,
+          "vwap": 22658.935797480524,
+          "prior4high": 22655.45,
+          "prior4low": 22636.35,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-04-26 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.6000000000000227
+      },
+      "later_labels": {
+        "net": 910.9513,
+        "exit_reason": "trail_stop",
+        "exit_time": "2024-04-26T14:15:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/18",
+      "known_at_entry": {
+        "entry_time": "2024-05-29T13:00:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 104.4,
+        "quantity": 65,
+        "underlying": 22784.9,
+        "initial_stop": 22816.228030408034,
+        "initial_target": 22663.915908775907,
+        "closed_context": {
+          "bar": "2024-05-29 12:55:00",
+          "close": 22778.15,
+          "open": 22800.7,
+          "high": 22807.15,
+          "low": 22769.9,
+          "previous_close": 22800.15,
+          "atr": 25.385353605354084,
+          "rvol": 0.7649352890422778,
+          "vwap": 22790.215346166617,
+          "prior4high": 22852.0,
+          "prior4low": 22766.1,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-05-29 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.30000000000001137
+      },
+      "later_labels": {
+        "net": -1423.0668,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2024-05-29T13:18:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/19",
+      "known_at_entry": {
+        "entry_time": "2024-07-10T12:15:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 138.95,
+        "quantity": 65,
+        "underlying": 24308.9,
+        "initial_stop": 24344.66880566563,
+        "initial_target": 24196.99358300311,
+        "closed_context": {
+          "bar": "2024-07-10 12:10:00",
+          "close": 24307.75,
+          "open": 24320.85,
+          "high": 24321.0,
+          "low": 24291.9,
+          "previous_close": 24321.0,
+          "atr": 24.612537110420178,
+          "rvol": 1.3468631085959606,
+          "vwap": 24327.62254329474,
+          "prior4high": 24336.0,
+          "prior4low": 24276.2,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-07-10 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.29999999999998295
+      },
+      "later_labels": {
+        "net": -406.6072,
+        "exit_reason": "time_stop",
+        "exit_time": "2024-07-10T14:19:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/20",
+      "known_at_entry": {
+        "entry_time": "2024-07-10T13:49:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 104.6,
+        "quantity": 65,
+        "underlying": 24289.0,
+        "initial_stop": 24332.522946818193,
+        "initial_target": 24227.83115954541,
+        "closed_context": {
+          "bar": "2024-07-10 13:40:00",
+          "close": 24306.35,
+          "open": 24308.1,
+          "high": 24310.0,
+          "low": 24302.7,
+          "previous_close": 24308.1,
+          "atr": 17.448631212130934,
+          "rvol": 1.0031956735496559,
+          "vwap": 24326.565847942293,
+          "prior4high": 24320.1,
+          "prior4low": 24302.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-07-10 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.29999999999999716
+      },
+      "later_labels": {
+        "net": -2042.6555,
+        "exit_reason": "premium_backstop",
+        "exit_time": "2024-07-10T14:35:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/21",
+      "known_at_entry": {
+        "entry_time": "2024-07-23T11:55:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 241.55,
+        "quantity": 65,
+        "underlying": 24430.85,
+        "initial_stop": 24496.21878215489,
+        "initial_target": 24265.743653535326,
+        "closed_context": {
+          "bar": "2024-07-23 11:50:00",
+          "close": 24438.6,
+          "open": 24474.7,
+          "high": 24478.0,
+          "low": 24423.25,
+          "previous_close": 24471.1,
+          "atr": 38.412521436594034,
+          "rvol": 1.3827951688439735,
+          "vwap": 24481.50569485544,
+          "prior4high": 24490.0,
+          "prior4low": 24441.05,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-07-23 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.6000000000000227
+      },
+      "later_labels": {
+        "net": 4180.4749,
+        "exit_reason": "trail_stop",
+        "exit_time": "2024-07-23T12:34:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/22",
+      "known_at_entry": {
+        "entry_time": "2024-08-05T14:10:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 257.3,
+        "quantity": 65,
+        "underlying": 24123.25,
+        "initial_stop": 24183.78932550665,
+        "initial_target": 23928.832023480056,
+        "closed_context": {
+          "bar": "2024-08-05 14:05:00",
+          "close": 24120.05,
+          "open": 24138.25,
+          "high": 24146.85,
+          "low": 24118.25,
+          "previous_close": 24136.8,
+          "atr": 42.492883671098305,
+          "rvol": 2.387594271671892,
+          "vwap": 24162.077580229376,
+          "prior4high": 24177.0,
+          "prior4low": 24104.85,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-08-05 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.6000000000000227
+      },
+      "later_labels": {
+        "net": 441.2378,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2024-08-05T15:10:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/23",
+      "known_at_entry": {
+        "entry_time": "2024-08-19T12:06:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 152.85,
+        "quantity": 65,
+        "underlying": 24605.0,
+        "initial_stop": 24635.475618404147,
+        "initial_target": 24489.573144787562,
+        "closed_context": {
+          "bar": "2024-08-19 12:00:00",
+          "close": 24599.0,
+          "open": 24609.75,
+          "high": 24610.0,
+          "low": 24578.0,
+          "previous_close": 24609.75,
+          "atr": 24.317078936096966,
+          "rvol": 0.5887688303493966,
+          "vwap": 24600.57112746475,
+          "prior4high": 24615.0,
+          "prior4low": 24580.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-08-19 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": -434.6994,
+        "exit_reason": "time_stop",
+        "exit_time": "2024-08-19T14:06:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/24",
+      "known_at_entry": {
+        "entry_time": "2024-08-19T14:15:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 154.1,
+        "quantity": 65,
+        "underlying": 24597.7,
+        "initial_stop": 24617.702934157405,
+        "initial_target": 24493.491197527786,
+        "closed_context": {
+          "bar": "2024-08-19 14:10:00",
+          "close": 24586.65,
+          "open": 24599.6,
+          "high": 24599.6,
+          "low": 24582.05,
+          "previous_close": 24599.6,
+          "atr": 20.70195610493707,
+          "rvol": 0.1658455545371219,
+          "vwap": 24598.848078217954,
+          "prior4high": 24605.95,
+          "prior4low": 24568.65,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-08-19 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": -1356.1194,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2024-08-19T14:48:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/25",
+      "known_at_entry": {
+        "entry_time": "2024-10-21T13:30:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 180.1,
+        "quantity": 65,
+        "underlying": 24796.1,
+        "initial_stop": 24832.349559556787,
+        "initial_target": 24651.351321329636,
+        "closed_context": {
+          "bar": "2024-10-21 13:25:00",
+          "close": 24787.1,
+          "open": 24818.05,
+          "high": 24820.55,
+          "low": 24781.85,
+          "previous_close": 24819.2,
+          "atr": 30.16637303785853,
+          "rvol": 1.2564417177914111,
+          "vwap": 24842.38377092068,
+          "prior4high": 24846.5,
+          "prior4low": 24736.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-10-21 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": -1856.4213,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2024-10-21T13:52:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/26",
+      "known_at_entry": {
+        "entry_time": "2024-10-29T11:36:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 131.55,
+        "quantity": 65,
+        "underlying": 24217.0,
+        "initial_stop": 24251.804567049672,
+        "initial_target": 24075.586298850987,
+        "closed_context": {
+          "bar": "2024-10-29 11:30:00",
+          "close": 24207.75,
+          "open": 24215.35,
+          "high": 24217.45,
+          "low": 24202.0,
+          "previous_close": 24215.35,
+          "atr": 29.369711366447483,
+          "rvol": 0.9791158536585366,
+          "vwap": 24241.541642882206,
+          "prior4high": 24228.7,
+          "prior4low": 24196.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-10-29 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.30000000000001137
+      },
+      "later_labels": {
+        "net": -1592.6825,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2024-10-29T11:40:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/27",
+      "known_at_entry": {
+        "entry_time": "2024-11-04T09:51:59+05:30",
+        "expert": "SHIPPED",
+        "direction": "SHORT",
+        "origin": "MAIN",
+        "entry_premium": 331.3,
+        "quantity": 65,
+        "underlying": 24141.2,
+        "initial_stop": 24182.835636730866,
+        "initial_target": 24043.29585388444,
+        "closed_context": {
+          "bar": "2024-11-04 09:45:00",
+          "close": 24133.0,
+          "open": 24177.05,
+          "high": 24179.95,
+          "low": 24127.65,
+          "previous_close": 24179.4,
+          "atr": 33.22375782057843,
+          "rvol": 3.628020024668069,
+          "vwap": 24229.495167453362,
+          "prior4high": 24242.95,
+          "prior4low": 24175.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-11-04 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.8000000000000114
+      },
+      "later_labels": {
+        "net": 10092.9908,
+        "exit_reason": "trail_stop",
+        "exit_time": "2024-11-04T11:20:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/28",
+      "known_at_entry": {
+        "entry_time": "2024-11-05T13:06:59+05:30",
+        "expert": "EFF",
+        "direction": "LONG",
+        "origin": "MAIN",
+        "entry_premium": 143.8,
+        "quantity": 195,
+        "underlying": 24043.1,
+        "initial_stop": 24001.18622664163,
+        "initial_target": 24178.604792045066,
+        "closed_context": {
+          "bar": "2024-11-05 13:00:00",
+          "close": 24064.55,
+          "open": 24050.05,
+          "high": 24074.5,
+          "low": 24042.4,
+          "previous_close": 24052.0,
+          "atr": 30.54435314656446,
+          "rvol": 0.7416925121843154,
+          "vwap": 24080.176620887854,
+          "prior4high": 24080.0,
+          "prior4low": 24031.1,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-11-05 09:15:00"
+        },
+        "vwap_side": "BEHIND_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.30000000000001137
+      },
+      "later_labels": {
+        "net": 9030.9818,
+        "exit_reason": "trail_stop",
+        "exit_time": "2024-11-05T13:39:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/29",
+      "known_at_entry": {
+        "entry_time": "2024-11-06T11:10:59+05:30",
+        "expert": "EFF",
+        "direction": "LONG",
+        "origin": "MAIN",
+        "entry_premium": 64.85,
+        "quantity": 195,
+        "underlying": 24464.4,
+        "initial_stop": 24381.15,
+        "initial_target": 24596.329999999998,
+        "closed_context": {
+          "bar": "2024-11-06 11:05:00",
+          "close": 24458.0,
+          "open": 24450.05,
+          "high": 24460.0,
+          "low": 24450.0,
+          "previous_close": 24450.05,
+          "atr": 37.25159640711604,
+          "rvol": 0.25938516109961574,
+          "vwap": 24428.796550629504,
+          "prior4high": 24484.95,
+          "prior4low": 24393.95,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-11-06 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.19999999999998863
+      },
+      "later_labels": {
+        "net": -255.0802,
+        "exit_reason": "time_stop",
+        "exit_time": "2024-11-06T11:40:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/30",
+      "known_at_entry": {
+        "entry_time": "2024-11-12T11:45:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 184.25,
+        "quantity": 65,
+        "underlying": 24199.1,
+        "initial_stop": 24250.33350405664,
+        "initial_target": 24054.79948783008,
+        "closed_context": {
+          "bar": "2024-11-12 11:40:00",
+          "close": 24201.45,
+          "open": 24210.3,
+          "high": 24221.0,
+          "low": 24191.15,
+          "previous_close": 24210.2,
+          "atr": 32.589002704426164,
+          "rvol": 0.3432067295437165,
+          "vwap": 24241.5701611283,
+          "prior4high": 24237.65,
+          "prior4low": 24201.15,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-11-12 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5
+      },
+      "later_labels": {
+        "net": 12506.3022,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2024-11-12T15:10:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/31",
+      "known_at_entry": {
+        "entry_time": "2024-11-26T11:51:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 132.35,
+        "quantity": 65,
+        "underlying": 24222.0,
+        "initial_stop": 24264.474308125777,
+        "initial_target": 24102.577075622674,
+        "closed_context": {
+          "bar": "2024-11-26 11:45:00",
+          "close": 24224.0,
+          "open": 24234.0,
+          "high": 24238.0,
+          "low": 24224.0,
+          "previous_close": 24230.75,
+          "atr": 26.982872083850115,
+          "rvol": 0.657359204921912,
+          "vwap": 24239.19439820911,
+          "prior4high": 24245.0,
+          "prior4low": 24195.65,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-11-26 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.29999999999998295
+      },
+      "later_labels": {
+        "net": 55.0236,
+        "exit_reason": "time_stop",
+        "exit_time": "2024-11-26T13:55:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/32",
+      "known_at_entry": {
+        "entry_time": "2024-11-26T14:30:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 135.25,
+        "quantity": 65,
+        "underlying": 24207.1,
+        "initial_stop": 24237.64183992152,
+        "initial_target": 24082.07448023544,
+        "closed_context": {
+          "bar": "2024-11-26 14:25:00",
+          "close": 24198.75,
+          "open": 24219.4,
+          "high": 24229.9,
+          "low": 24197.9,
+          "previous_close": 24219.4,
+          "atr": 25.92789328101334,
+          "rvol": 0.504908433319938,
+          "vwap": 24217.637972861397,
+          "prior4high": 24224.0,
+          "prior4low": 24184.85,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-11-26 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.30000000000001137
+      },
+      "later_labels": {
+        "net": -1544.5963,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2024-11-26T14:38:59+05:30"
+      }
+    },
+    {
+      "admission_id": "N05/2024/d1d38a917b1c9b89/33",
+      "known_at_entry": {
+        "entry_time": "2024-12-16T13:25:59+05:30",
+        "expert": "TPB",
+        "direction": "SHORT",
+        "origin": "TPB_LOW",
+        "entry_premium": 243.65,
+        "quantity": 65,
+        "underlying": 24716.5,
+        "initial_stop": 24757.921899143374,
+        "initial_target": 24616.23430256988,
+        "closed_context": {
+          "bar": "2024-12-16 13:20:00",
+          "close": 24722.5,
+          "open": 24748.0,
+          "high": 24755.0,
+          "low": 24720.0,
+          "previous_close": 24747.8,
+          "atr": 23.614599428915678,
+          "rvol": 2.059150169000483,
+          "vwap": 24742.12019764039,
+          "prior4high": 24748.0,
+          "prior4low": 24707.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-12-16 09:15:00"
+        },
+        "vwap_side": "WITH_VWAP",
+        "last_bar_side": "WITH_LAST_CLOSE_CHANGE",
+        "spread": 0.5999999999999943
+      },
+      "later_labels": {
+        "net": -2505.2352,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2024-12-16T14:09:59+05:30"
+      }
+    }
+  ],
+  "descriptive_groups": {
+    "vwap_side|WITH_VWAP": {
+      "trades": 30,
+      "wins": 15,
+      "losses": 15,
+      "net": 42691.5635,
+      "win_net": 64408.85340000001,
+      "loss_net": -21717.2899
+    },
+    "last_bar_side|WITH_LAST_CLOSE_CHANGE": {
+      "trades": 33,
+      "wins": 16,
+      "losses": 17,
+      "net": 51303.4433,
+      "win_net": 73439.83520000002,
+      "loss_net": -22136.391900000002
+    },
+    "vwap_side|BEHIND_VWAP": {
+      "trades": 3,
+      "wins": 1,
+      "losses": 2,
+      "net": 8611.879799999999,
+      "win_net": 9030.9818,
+      "loss_net": -419.102
+    }
+  },
+  "entry_clock_errors": 0,
+  "limit": "All N04 admissions, including wins; groups are retrospective seen-data diagnostics, not a selected gate or proof that excluding a bucket preserves future profit."
+}
