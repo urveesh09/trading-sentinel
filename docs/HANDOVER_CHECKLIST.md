@@ -1,3 +1,10 @@
+## November 1 — N07 diagnosis/source frozen; candidate scores pending
+
+- Read study PLAN/configuration/diagnosis under docs/research/simulation/2026-11-01-fno-failure-anatomy. N04 static failure and N06 switching are separate; no N04 selection2024. Positive-premium2024 cuts driven net-negative by synthetic stress; removing them has opportunity cost.
+- Two fixed exit hypotheses, no grid/size increase.98 research tests pass; atlas291/no diff.18 exact annual controls required before12 candidate+15 cost diagnostics (45total); only two NORMAL-stressed primary candidates.
+- Next independent entry/exit/fee/cash/trace/selection/statistic audit, complete results/report and successor docs; all seen data, no qualification. Preserve N03/N04/N05/N06 checkpoint records and unrelated owner slices.
+- Productionc97cb8c healthy/start unchanged; no app/env/migration/order/message/cash/cap/restart/deploy change,2023 deferred. Rollback stops research workers only.
+
 ## November 1 — N06 final handoff identity
 
 - Results/report4525278 pushed; sourcea5b2d7c/model5c74b47 pre-score. Read FNO_RESEARCH_SELECTOR_N06 md/json and study README/VERIFICATION. All18 annual experiments/109 focused checks plus independent cash/price/exit/causality/statistics checks complete. ZERO passing selectors, no size/cap/Production change.

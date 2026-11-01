@@ -1,0 +1,3854 @@
+{
+  "schema": "n07_loss_anatomy_v1",
+  "status": "DESCRIPTIVE_SEEN_DATA_NOT_CAUSAL_RETURN_PROOF",
+  "summaries": {
+    "2024|BASE": {
+      "trades": 33,
+      "losses": 16,
+      "wins": 17,
+      "net": 56191.7875,
+      "loss_net": -23903.9852,
+      "win_net": 80095.7727,
+      "groups": {
+        "entry_expert": {
+          "TPB": {
+            "trades": 24,
+            "wins": 11,
+            "losses": 13,
+            "net": 22753.242699999995,
+            "loss_net": -17833.0127,
+            "win_net": 40586.255399999995,
+            "gross": 29961.75,
+            "costs": 7208.507300000005
+          },
+          "SHIPPED": {
+            "trades": 3,
+            "wins": 2,
+            "losses": 1,
+            "net": 6582.590499999999,
+            "loss_net": -3629.197,
+            "win_net": 10211.7875,
+            "gross": 7692.75,
+            "costs": 1110.1595000000002
+          },
+          "EFF": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 26855.9543,
+            "loss_net": -2441.7755,
+            "win_net": 29297.7298,
+            "gross": 30410.25,
+            "costs": 3554.2956999999997
+          }
+        },
+        "direction": {
+          "LONG": {
+            "trades": 4,
+            "wins": 3,
+            "losses": 1,
+            "net": 22422.2717,
+            "loss_net": -128.5736,
+            "win_net": 22550.8453,
+            "gross": 24917.749999999996,
+            "costs": 2495.478299999997
+          },
+          "SHORT": {
+            "trades": 29,
+            "wins": 14,
+            "losses": 15,
+            "net": 33769.5158,
+            "loss_net": -23775.4116,
+            "win_net": 57544.9274,
+            "gross": 43147.0,
+            "costs": 9377.48420000001
+          }
+        },
+        "origin": {
+          "MAIN": {
+            "trades": 14,
+            "wins": 9,
+            "losses": 5,
+            "net": 43087.901099999995,
+            "loss_net": -8137.3073,
+            "win_net": 51225.2084,
+            "gross": 49617.75,
+            "costs": 6529.8489
+          },
+          "TPB_LOW": {
+            "trades": 19,
+            "wins": 8,
+            "losses": 11,
+            "net": 13103.886400000003,
+            "loss_net": -15766.677899999999,
+            "win_net": 28870.564300000002,
+            "gross": 18447.000000000007,
+            "costs": 5343.113600000004
+          }
+        },
+        "exit_reason": {
+          "trail_stop": {
+            "trades": 9,
+            "wins": 9,
+            "losses": 0,
+            "net": 53904.043300000005,
+            "loss_net": 0.0,
+            "win_net": 53904.043300000005,
+            "gross": 57918.25,
+            "costs": 4014.2066999999925
+          },
+          "underlying_stop": {
+            "trades": 10,
+            "wins": 0,
+            "losses": 10,
+            "net": -19683.6557,
+            "loss_net": -19683.6557,
+            "win_net": 0.0,
+            "gross": -16454.749999999996,
+            "costs": 3228.9057000000007
+          },
+          "hard_flat_1510": {
+            "trades": 6,
+            "wins": 5,
+            "losses": 1,
+            "net": 24132.908600000002,
+            "loss_net": -1086.2169,
+            "win_net": 25219.125500000002,
+            "gross": 25870.000000000004,
+            "costs": 1737.0914000000043
+          },
+          "time_stop": {
+            "trades": 7,
+            "wins": 3,
+            "losses": 4,
+            "net": -118.85320000000006,
+            "loss_net": -1091.4570999999999,
+            "win_net": 972.6039,
+            "gross": 2509.0000000000073,
+            "costs": 2627.8532000000073
+          },
+          "premium_backstop": {
+            "trades": 1,
+            "wins": 0,
+            "losses": 1,
+            "net": -2042.6555,
+            "loss_net": -2042.6555,
+            "win_net": 0.0,
+            "gross": -1777.7499999999995,
+            "costs": 264.90550000000053
+          }
+        }
+      }
+    },
+    "2024|STALL30": {
+      "trades": 33,
+      "losses": 17,
+      "wins": 16,
+      "net": 51303.4433,
+      "loss_net": -22136.3919,
+      "win_net": 73439.8352,
+      "groups": {
+        "entry_expert": {
+          "TPB": {
+            "trades": 24,
+            "wins": 11,
+            "losses": 13,
+            "net": 22753.242699999995,
+            "loss_net": -17833.0127,
+            "win_net": 40586.255399999995,
+            "gross": 29961.75,
+            "costs": 7208.507300000005
+          },
+          "SHIPPED": {
+            "trades": 3,
+            "wins": 2,
+            "losses": 1,
+            "net": 6582.590499999999,
+            "loss_net": -3629.197,
+            "win_net": 10211.7875,
+            "gross": 7692.75,
+            "costs": 1110.1595000000002
+          },
+          "EFF": {
+            "trades": 6,
+            "wins": 3,
+            "losses": 3,
+            "net": 21967.6101,
+            "loss_net": -674.1822,
+            "win_net": 22641.7923,
+            "gross": 25512.5,
+            "costs": 3544.8899
+          }
+        },
+        "direction": {
+          "LONG": {
+            "trades": 4,
+            "wins": 3,
+            "losses": 1,
+            "net": 22295.7651,
+            "loss_net": -255.0802,
+            "win_net": 22550.8453,
+            "gross": 24790.999999999993,
+            "costs": 2495.234899999996
+          },
+          "SHORT": {
+            "trades": 29,
+            "wins": 13,
+            "losses": 16,
+            "net": 29007.678200000002,
+            "loss_net": -21881.311700000002,
+            "win_net": 50888.98989999999,
+            "gross": 38376.00000000001,
+            "costs": 9368.321800000012
+          }
+        },
+        "origin": {
+          "MAIN": {
+            "trades": 14,
+            "wins": 8,
+            "losses": 6,
+            "net": 38199.5569,
+            "loss_net": -6369.714000000001,
+            "win_net": 44569.2709,
+            "gross": 44720.0,
+            "costs": 6520.4431
+          },
+          "TPB_LOW": {
+            "trades": 19,
+            "wins": 8,
+            "losses": 11,
+            "net": 13103.886400000003,
+            "loss_net": -15766.677899999999,
+            "win_net": 28870.564300000002,
+            "gross": 18447.000000000007,
+            "costs": 5343.113600000004
+          }
+        },
+        "exit_reason": {
+          "trail_stop": {
+            "trades": 8,
+            "wins": 8,
+            "losses": 0,
+            "net": 47248.105800000005,
+            "loss_net": 0.0,
+            "win_net": 47248.105800000005,
+            "gross": 50742.25,
+            "costs": 3494.1441999999925
+          },
+          "underlying_stop": {
+            "trades": 9,
+            "wins": 0,
+            "losses": 9,
+            "net": -17370.4538,
+            "loss_net": -17370.4538,
+            "win_net": 0.0,
+            "gross": -14654.249999999998,
+            "costs": 2716.2038
+          },
+          "hard_flat_1510": {
+            "trades": 6,
+            "wins": 5,
+            "losses": 1,
+            "net": 24132.908600000002,
+            "loss_net": -1086.2169,
+            "win_net": 25219.125500000002,
+            "gross": 25870.000000000004,
+            "costs": 1737.0914000000043
+          },
+          "time_stop": {
+            "trades": 9,
+            "wins": 3,
+            "losses": 6,
+            "net": -664.4618,
+            "loss_net": -1637.0657,
+            "win_net": 972.6039,
+            "gross": 2986.750000000008,
+            "costs": 3651.211800000009
+          },
+          "premium_backstop": {
+            "trades": 1,
+            "wins": 0,
+            "losses": 1,
+            "net": -2042.6555,
+            "loss_net": -2042.6555,
+            "win_net": 0.0,
+            "gross": -1777.7499999999995,
+            "costs": 264.90550000000053
+          }
+        }
+      }
+    },
+    "2024|STRUCT30": {
+      "trades": 33,
+      "losses": 16,
+      "wins": 17,
+      "net": 57242.7653,
+      "loss_net": -22853.0074,
+      "win_net": 80095.7727,
+      "groups": {
+        "entry_expert": {
+          "TPB": {
+            "trades": 24,
+            "wins": 11,
+            "losses": 13,
+            "net": 22753.242699999995,
+            "loss_net": -17833.0127,
+            "win_net": 40586.255399999995,
+            "gross": 29961.75,
+            "costs": 7208.507300000005
+          },
+          "SHIPPED": {
+            "trades": 3,
+            "wins": 2,
+            "losses": 1,
+            "net": 6582.590499999999,
+            "loss_net": -3629.197,
+            "win_net": 10211.7875,
+            "gross": 7692.75,
+            "costs": 1110.1595000000002
+          },
+          "EFF": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 27906.9321,
+            "loss_net": -1390.7976999999998,
+            "win_net": 29297.7298,
+            "gross": 31463.25,
+            "costs": 3556.317899999998
+          }
+        },
+        "direction": {
+          "LONG": {
+            "trades": 4,
+            "wins": 3,
+            "losses": 1,
+            "net": 22422.2717,
+            "loss_net": -128.5736,
+            "win_net": 22550.8453,
+            "gross": 24917.749999999996,
+            "costs": 2495.478299999997
+          },
+          "SHORT": {
+            "trades": 29,
+            "wins": 14,
+            "losses": 15,
+            "net": 34820.4936,
+            "loss_net": -22724.4338,
+            "win_net": 57544.9274,
+            "gross": 44200.0,
+            "costs": 9379.50640000001
+          }
+        },
+        "origin": {
+          "MAIN": {
+            "trades": 14,
+            "wins": 9,
+            "losses": 5,
+            "net": 44138.8789,
+            "loss_net": -7086.3295,
+            "win_net": 51225.2084,
+            "gross": 50670.75,
+            "costs": 6531.871099999999
+          },
+          "TPB_LOW": {
+            "trades": 19,
+            "wins": 8,
+            "losses": 11,
+            "net": 13103.886400000003,
+            "loss_net": -15766.677899999999,
+            "win_net": 28870.564300000002,
+            "gross": 18447.000000000007,
+            "costs": 5343.113600000004
+          }
+        },
+        "exit_reason": {
+          "trail_stop": {
+            "trades": 9,
+            "wins": 9,
+            "losses": 0,
+            "net": 53904.043300000005,
+            "loss_net": 0.0,
+            "win_net": 53904.043300000005,
+            "gross": 57918.25,
+            "costs": 4014.2066999999925
+          },
+          "underlying_stop": {
+            "trades": 9,
+            "wins": 0,
+            "losses": 9,
+            "net": -17370.4538,
+            "loss_net": -17370.4538,
+            "win_net": 0.0,
+            "gross": -14654.249999999998,
+            "costs": 2716.2038
+          },
+          "hard_flat_1510": {
+            "trades": 6,
+            "wins": 5,
+            "losses": 1,
+            "net": 24132.908600000002,
+            "loss_net": -1086.2169,
+            "win_net": 25219.125500000002,
+            "gross": 25870.000000000004,
+            "costs": 1737.0914000000043
+          },
+          "time_stop": {
+            "trades": 8,
+            "wins": 3,
+            "losses": 5,
+            "net": -1381.0772999999997,
+            "loss_net": -2353.6812,
+            "win_net": 972.6039,
+            "gross": 1761.500000000007,
+            "costs": 3142.5773000000067
+          },
+          "premium_backstop": {
+            "trades": 1,
+            "wins": 0,
+            "losses": 1,
+            "net": -2042.6555,
+            "loss_net": -2042.6555,
+            "win_net": 0.0,
+            "gross": -1777.7499999999995,
+            "costs": 264.90550000000053
+          }
+        }
+      }
+    },
+    "2025|BASE": {
+      "trades": 80,
+      "losses": 41,
+      "wins": 39,
+      "net": 50090.168,
+      "loss_net": -76411.7551,
+      "win_net": 126501.9231,
+      "groups": {
+        "entry_expert": {
+          "OR20": {
+            "trades": 9,
+            "wins": 3,
+            "losses": 6,
+            "net": 3296.2205000000026,
+            "loss_net": -13029.7722,
+            "win_net": 16325.9927,
+            "gross": 6997.249999999998,
+            "costs": 3701.0294999999983
+          },
+          "EFF": {
+            "trades": 8,
+            "wins": 2,
+            "losses": 6,
+            "net": -10823.8201,
+            "loss_net": -15885.9217,
+            "win_net": 5062.1016,
+            "gross": -7897.499999999998,
+            "costs": 2926.3201000000017
+          },
+          "SHIPPED": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 3160.32,
+            "loss_net": -5770.1146,
+            "win_net": 8930.4346,
+            "gross": 5749.250000000002,
+            "costs": 2588.930000000002
+          },
+          "TPB": {
+            "trades": 57,
+            "wins": 30,
+            "losses": 27,
+            "net": 54457.4476,
+            "loss_net": -41725.9466,
+            "win_net": 96183.39420000001,
+            "gross": 71636.5,
+            "costs": 17179.05239999999
+          }
+        },
+        "direction": {
+          "SHORT": {
+            "trades": 64,
+            "wins": 30,
+            "losses": 34,
+            "net": 41080.4396,
+            "loss_net": -54992.041000000005,
+            "win_net": 96072.48060000001,
+            "gross": 59143.49999999999,
+            "costs": 18063.060399999988
+          },
+          "LONG": {
+            "trades": 16,
+            "wins": 9,
+            "losses": 7,
+            "net": 9009.7284,
+            "loss_net": -21419.714099999997,
+            "win_net": 30429.4425,
+            "gross": 17342.0,
+            "costs": 8332.271600000004
+          }
+        },
+        "origin": {
+          "MAIN": {
+            "trades": 28,
+            "wins": 14,
+            "losses": 14,
+            "net": 23255.7721,
+            "loss_net": -34685.8085,
+            "win_net": 57941.580599999994,
+            "gross": 35064.24999999999,
+            "costs": 11808.477900000004
+          },
+          "TPB_LOW": {
+            "trades": 52,
+            "wins": 25,
+            "losses": 27,
+            "net": 26834.395900000003,
+            "loss_net": -41725.9466,
+            "win_net": 68560.3425,
+            "gross": 41421.24999999999,
+            "costs": 14586.854099999986
+          }
+        },
+        "exit_reason": {
+          "underlying_stop": {
+            "trades": 22,
+            "wins": 0,
+            "losses": 22,
+            "net": -43980.7937,
+            "loss_net": -43980.7937,
+            "win_net": 0.0,
+            "gross": -37414.0,
+            "costs": 6566.793699999996
+          },
+          "time_stop": {
+            "trades": 14,
+            "wins": 2,
+            "losses": 12,
+            "net": -13086.357100000001,
+            "loss_net": -13426.865300000001,
+            "win_net": 340.5082,
+            "gross": -8713.250000000004,
+            "costs": 4373.107099999996
+          },
+          "premium_backstop": {
+            "trades": 4,
+            "wins": 0,
+            "losses": 4,
+            "net": -17672.7973,
+            "loss_net": -17672.7973,
+            "win_net": 0.0,
+            "gross": -15892.499999999998,
+            "costs": 1780.2973000000022
+          },
+          "trail_stop": {
+            "trades": 11,
+            "wins": 11,
+            "losses": 0,
+            "net": 52135.73560000001,
+            "loss_net": 0.0,
+            "win_net": 52135.73560000001,
+            "gross": 55315.0,
+            "costs": 3179.2643999999964
+          },
+          "profit_lock": {
+            "trades": 5,
+            "wins": 4,
+            "losses": 1,
+            "net": 4980.0415,
+            "loss_net": -142.64,
+            "win_net": 5122.6815,
+            "gross": 7481.500000000002,
+            "costs": 2501.4585000000015
+          },
+          "hard_flat_1510": {
+            "trades": 24,
+            "wins": 22,
+            "losses": 2,
+            "net": 67714.33899999999,
+            "loss_net": -1188.6588000000002,
+            "win_net": 68902.9978,
+            "gross": 75708.75,
+            "costs": 7994.411000000001
+          }
+        }
+      }
+    },
+    "2025|STALL30": {
+      "trades": 80,
+      "losses": 41,
+      "wins": 39,
+      "net": 54051.0477,
+      "loss_net": -72450.8754,
+      "win_net": 126501.9231,
+      "groups": {
+        "entry_expert": {
+          "OR20": {
+            "trades": 9,
+            "wins": 3,
+            "losses": 6,
+            "net": 3296.2205000000026,
+            "loss_net": -13029.7722,
+            "win_net": 16325.9927,
+            "gross": 6997.249999999998,
+            "costs": 3701.0294999999983
+          },
+          "EFF": {
+            "trades": 8,
+            "wins": 2,
+            "losses": 6,
+            "net": -6862.940400000001,
+            "loss_net": -11925.042000000001,
+            "win_net": 5062.1016,
+            "gross": -3695.2499999999977,
+            "costs": 3167.6904000000022
+          },
+          "SHIPPED": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 3160.32,
+            "loss_net": -5770.1146,
+            "win_net": 8930.4346,
+            "gross": 5749.250000000002,
+            "costs": 2588.930000000002
+          },
+          "TPB": {
+            "trades": 57,
+            "wins": 30,
+            "losses": 27,
+            "net": 54457.4476,
+            "loss_net": -41725.9466,
+            "win_net": 96183.39420000001,
+            "gross": 71636.5,
+            "costs": 17179.05239999999
+          }
+        },
+        "direction": {
+          "SHORT": {
+            "trades": 64,
+            "wins": 30,
+            "losses": 34,
+            "net": 43231.301999999996,
+            "loss_net": -52841.17860000001,
+            "win_net": 96072.48060000001,
+            "gross": 61532.24999999999,
+            "costs": 18300.94799999999
+          },
+          "LONG": {
+            "trades": 16,
+            "wins": 9,
+            "losses": 7,
+            "net": 10819.7457,
+            "loss_net": -19609.696799999998,
+            "win_net": 30429.4425,
+            "gross": 19155.5,
+            "costs": 8335.754300000002
+          }
+        },
+        "origin": {
+          "MAIN": {
+            "trades": 28,
+            "wins": 14,
+            "losses": 14,
+            "net": 27216.651799999992,
+            "loss_net": -30724.928799999998,
+            "win_net": 57941.580599999994,
+            "gross": 39266.49999999999,
+            "costs": 12049.8482
+          },
+          "TPB_LOW": {
+            "trades": 52,
+            "wins": 25,
+            "losses": 27,
+            "net": 26834.395900000003,
+            "loss_net": -41725.9466,
+            "win_net": 68560.3425,
+            "gross": 41421.24999999999,
+            "costs": 14586.854099999986
+          }
+        },
+        "exit_reason": {
+          "underlying_stop": {
+            "trades": 21,
+            "wins": 0,
+            "losses": 21,
+            "net": -42435.4964,
+            "loss_net": -42435.4964,
+            "win_net": 0.0,
+            "gross": -36136.75000000001,
+            "costs": 6298.746399999996
+          },
+          "time_stop": {
+            "trades": 15,
+            "wins": 2,
+            "losses": 13,
+            "net": -10670.7747,
+            "loss_net": -11011.2829,
+            "win_net": 340.5082,
+            "gross": -5788.250000000006,
+            "costs": 4882.524699999996
+          },
+          "premium_backstop": {
+            "trades": 4,
+            "wins": 0,
+            "losses": 4,
+            "net": -17672.7973,
+            "loss_net": -17672.7973,
+            "win_net": 0.0,
+            "gross": -15892.499999999998,
+            "costs": 1780.2973000000022
+          },
+          "trail_stop": {
+            "trades": 11,
+            "wins": 11,
+            "losses": 0,
+            "net": 52135.73560000001,
+            "loss_net": 0.0,
+            "win_net": 52135.73560000001,
+            "gross": 55315.0,
+            "costs": 3179.2643999999964
+          },
+          "profit_lock": {
+            "trades": 5,
+            "wins": 4,
+            "losses": 1,
+            "net": 4980.0415,
+            "loss_net": -142.64,
+            "win_net": 5122.6815,
+            "gross": 7481.500000000002,
+            "costs": 2501.4585000000015
+          },
+          "hard_flat_1510": {
+            "trades": 24,
+            "wins": 22,
+            "losses": 2,
+            "net": 67714.33899999999,
+            "loss_net": -1188.6588000000002,
+            "win_net": 68902.9978,
+            "gross": 75708.75,
+            "costs": 7994.411000000001
+          }
+        }
+      }
+    },
+    "2025|STRUCT30": {
+      "trades": 80,
+      "losses": 41,
+      "wins": 39,
+      "net": 50725.9447,
+      "loss_net": -75775.97839999999,
+      "win_net": 126501.9231,
+      "groups": {
+        "entry_expert": {
+          "OR20": {
+            "trades": 9,
+            "wins": 3,
+            "losses": 6,
+            "net": 3296.2205000000026,
+            "loss_net": -13029.7722,
+            "win_net": 16325.9927,
+            "gross": 6997.249999999998,
+            "costs": 3701.0294999999983
+          },
+          "EFF": {
+            "trades": 8,
+            "wins": 2,
+            "losses": 6,
+            "net": -10188.0434,
+            "loss_net": -15250.145,
+            "win_net": 5062.1016,
+            "gross": -7260.499999999997,
+            "costs": 2927.5434000000027
+          },
+          "SHIPPED": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 3160.32,
+            "loss_net": -5770.1146,
+            "win_net": 8930.4346,
+            "gross": 5749.250000000002,
+            "costs": 2588.930000000002
+          },
+          "TPB": {
+            "trades": 57,
+            "wins": 30,
+            "losses": 27,
+            "net": 54457.4476,
+            "loss_net": -41725.9466,
+            "win_net": 96183.39420000001,
+            "gross": 71636.5,
+            "costs": 17179.05239999999
+          }
+        },
+        "direction": {
+          "SHORT": {
+            "trades": 64,
+            "wins": 30,
+            "losses": 34,
+            "net": 41716.2163,
+            "loss_net": -54356.26430000001,
+            "win_net": 96072.48060000001,
+            "gross": 59780.49999999999,
+            "costs": 18064.283699999993
+          },
+          "LONG": {
+            "trades": 16,
+            "wins": 9,
+            "losses": 7,
+            "net": 9009.7284,
+            "loss_net": -21419.714099999997,
+            "win_net": 30429.4425,
+            "gross": 17342.0,
+            "costs": 8332.271600000004
+          }
+        },
+        "origin": {
+          "MAIN": {
+            "trades": 28,
+            "wins": 14,
+            "losses": 14,
+            "net": 23891.548799999997,
+            "loss_net": -34050.031800000004,
+            "win_net": 57941.580599999994,
+            "gross": 35701.24999999999,
+            "costs": 11809.701200000003
+          },
+          "TPB_LOW": {
+            "trades": 52,
+            "wins": 25,
+            "losses": 27,
+            "net": 26834.395900000003,
+            "loss_net": -41725.9466,
+            "win_net": 68560.3425,
+            "gross": 41421.24999999999,
+            "costs": 14586.854099999986
+          }
+        },
+        "exit_reason": {
+          "underlying_stop": {
+            "trades": 21,
+            "wins": 0,
+            "losses": 21,
+            "net": -42435.4964,
+            "loss_net": -42435.4964,
+            "win_net": 0.0,
+            "gross": -36136.75000000001,
+            "costs": 6298.746399999996
+          },
+          "time_stop": {
+            "trades": 15,
+            "wins": 2,
+            "losses": 13,
+            "net": -13995.877700000001,
+            "loss_net": -14336.385900000001,
+            "win_net": 340.5082,
+            "gross": -9353.500000000004,
+            "costs": 4642.3776999999955
+          },
+          "premium_backstop": {
+            "trades": 4,
+            "wins": 0,
+            "losses": 4,
+            "net": -17672.7973,
+            "loss_net": -17672.7973,
+            "win_net": 0.0,
+            "gross": -15892.499999999998,
+            "costs": 1780.2973000000022
+          },
+          "trail_stop": {
+            "trades": 11,
+            "wins": 11,
+            "losses": 0,
+            "net": 52135.73560000001,
+            "loss_net": 0.0,
+            "win_net": 52135.73560000001,
+            "gross": 55315.0,
+            "costs": 3179.2643999999964
+          },
+          "profit_lock": {
+            "trades": 5,
+            "wins": 4,
+            "losses": 1,
+            "net": 4980.0415,
+            "loss_net": -142.64,
+            "win_net": 5122.6815,
+            "gross": 7481.500000000002,
+            "costs": 2501.4585000000015
+          },
+          "hard_flat_1510": {
+            "trades": 24,
+            "wins": 22,
+            "losses": 2,
+            "net": 67714.33899999999,
+            "loss_net": -1188.6588000000002,
+            "win_net": 68902.9978,
+            "gross": 75708.75,
+            "costs": 7994.411000000001
+          }
+        }
+      }
+    },
+    "2026|BASE": {
+      "trades": 56,
+      "losses": 28,
+      "wins": 28,
+      "net": 54152.565,
+      "loss_net": -56951.5654,
+      "win_net": 111104.1304,
+      "groups": {
+        "entry_expert": {
+          "TPB": {
+            "trades": 35,
+            "wins": 17,
+            "losses": 18,
+            "net": 37405.08699999999,
+            "loss_net": -25125.5304,
+            "win_net": 62530.61740000001,
+            "gross": 47973.25,
+            "costs": 10568.163000000002
+          },
+          "SHIPPED": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 6456.299,
+            "loss_net": -2963.3247,
+            "win_net": 9419.6237,
+            "gross": 9109.75,
+            "costs": 2653.450999999999
+          },
+          "EFF": {
+            "trades": 9,
+            "wins": 3,
+            "losses": 6,
+            "net": -2447.8134999999993,
+            "loss_net": -20959.665200000003,
+            "win_net": 18511.8517,
+            "gross": 1381.2499999999955,
+            "costs": 3829.0634999999957
+          },
+          "OR20": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 12738.9925,
+            "loss_net": -7903.045099999999,
+            "win_net": 20642.0376,
+            "gross": 15460.250000000004,
+            "costs": 2721.2575000000043
+          }
+        },
+        "direction": {
+          "SHORT": {
+            "trades": 46,
+            "wins": 23,
+            "losses": 23,
+            "net": 55545.16519999999,
+            "loss_net": -40773.322700000004,
+            "win_net": 96318.48790000002,
+            "gross": 71256.25,
+            "costs": 15711.084800000004
+          },
+          "LONG": {
+            "trades": 10,
+            "wins": 5,
+            "losses": 5,
+            "net": -1392.6001999999999,
+            "loss_net": -16178.2427,
+            "win_net": 14785.642500000002,
+            "gross": 2668.25,
+            "costs": 4060.8502
+          }
+        },
+        "origin": {
+          "TPB_LOW": {
+            "trades": 29,
+            "wins": 12,
+            "losses": 17,
+            "net": 23414.4982,
+            "loss_net": -21765.0801,
+            "win_net": 45179.5783,
+            "gross": 31538.0,
+            "costs": 8123.501800000002
+          },
+          "MAIN": {
+            "trades": 27,
+            "wins": 16,
+            "losses": 11,
+            "net": 30738.0668,
+            "loss_net": -35186.4853,
+            "win_net": 65924.5521,
+            "gross": 42386.50000000001,
+            "costs": 11648.4332
+          }
+        },
+        "exit_reason": {
+          "underlying_stop": {
+            "trades": 15,
+            "wins": 0,
+            "losses": 15,
+            "net": -39117.9977,
+            "loss_net": -39117.9977,
+            "win_net": 0.0,
+            "gross": -34466.25,
+            "costs": 4651.7477
+          },
+          "trail_stop": {
+            "trades": 9,
+            "wins": 9,
+            "losses": 0,
+            "net": 55812.6057,
+            "loss_net": 0.0,
+            "win_net": 55812.6057,
+            "gross": 59205.25,
+            "costs": 3392.6443000000027
+          },
+          "hard_flat_1510": {
+            "trades": 19,
+            "wins": 14,
+            "losses": 5,
+            "net": 40396.270000000004,
+            "loss_net": -4003.2623999999996,
+            "win_net": 44399.532400000004,
+            "gross": 46296.25,
+            "costs": 5899.980000000001
+          },
+          "time_stop": {
+            "trades": 12,
+            "wins": 4,
+            "losses": 8,
+            "net": -4120.707200000001,
+            "loss_net": -13830.3053,
+            "win_net": 9709.5981,
+            "gross": 1410.4999999999982,
+            "costs": 5531.207199999999
+          },
+          "profit_lock": {
+            "trades": 1,
+            "wins": 1,
+            "losses": 0,
+            "net": 1182.3942,
+            "loss_net": 0.0,
+            "win_net": 1182.3942,
+            "gross": 1478.75,
+            "costs": 296.35580000000004
+          }
+        }
+      }
+    },
+    "2026|STALL30": {
+      "trades": 56,
+      "losses": 28,
+      "wins": 28,
+      "net": 77135.4417,
+      "loss_net": -48505.9075,
+      "win_net": 125641.3492,
+      "groups": {
+        "entry_expert": {
+          "TPB": {
+            "trades": 35,
+            "wins": 17,
+            "losses": 18,
+            "net": 37886.0338,
+            "loss_net": -26797.1556,
+            "win_net": 64683.18940000001,
+            "gross": 48951.5,
+            "costs": 11065.466200000004
+          },
+          "SHIPPED": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 6456.299,
+            "loss_net": -2963.3247,
+            "win_net": 9419.6237,
+            "gross": 9109.75,
+            "costs": 2653.450999999999
+          },
+          "EFF": {
+            "trades": 9,
+            "wins": 3,
+            "losses": 6,
+            "net": 7669.469599999999,
+            "loss_net": -10842.3821,
+            "win_net": 18511.8517,
+            "gross": 11517.999999999995,
+            "costs": 3848.530399999995
+          },
+          "OR20": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 25123.639300000003,
+            "loss_net": -7903.045099999999,
+            "win_net": 33026.6844,
+            "gross": 28369.250000000007,
+            "costs": 3245.610700000006
+          }
+        },
+        "direction": {
+          "SHORT": {
+            "trades": 46,
+            "wins": 23,
+            "losses": 23,
+            "net": 74346.0975,
+            "loss_net": -34412.3121,
+            "win_net": 108758.4096,
+            "gross": 90593.75,
+            "costs": 16247.652500000004
+          },
+          "LONG": {
+            "trades": 10,
+            "wins": 5,
+            "losses": 5,
+            "net": 2789.3442000000005,
+            "loss_net": -14093.595399999998,
+            "win_net": 16882.9396,
+            "gross": 7354.749999999998,
+            "costs": 4565.4057999999995
+          }
+        },
+        "origin": {
+          "TPB_LOW": {
+            "trades": 29,
+            "wins": 12,
+            "losses": 17,
+            "net": 23414.4982,
+            "loss_net": -21765.0801,
+            "win_net": 45179.5783,
+            "gross": 31538.0,
+            "costs": 8123.501800000002
+          },
+          "MAIN": {
+            "trades": 27,
+            "wins": 16,
+            "losses": 11,
+            "net": 53720.94350000001,
+            "loss_net": -26740.827400000002,
+            "win_net": 80461.7709,
+            "gross": 66410.50000000001,
+            "costs": 12689.556499999999
+          }
+        },
+        "exit_reason": {
+          "underlying_stop": {
+            "trades": 13,
+            "wins": 0,
+            "losses": 13,
+            "net": -29964.3496,
+            "loss_net": -29964.3496,
+            "win_net": 0.0,
+            "gross": -26117.0,
+            "costs": 3847.349600000002
+          },
+          "trail_stop": {
+            "trades": 9,
+            "wins": 9,
+            "losses": 0,
+            "net": 68197.2525,
+            "loss_net": 0.0,
+            "win_net": 68197.2525,
+            "gross": 72114.25,
+            "costs": 3916.997500000004
+          },
+          "hard_flat_1510": {
+            "trades": 19,
+            "wins": 14,
+            "losses": 5,
+            "net": 42548.842000000004,
+            "loss_net": -4003.2623999999996,
+            "win_net": 46552.104400000004,
+            "gross": 48701.25,
+            "costs": 6152.408000000001
+          },
+          "time_stop": {
+            "trades": 14,
+            "wins": 4,
+            "losses": 10,
+            "net": -4828.697400000002,
+            "loss_net": -14538.2955,
+            "win_net": 9709.5981,
+            "gross": 1771.2499999999945,
+            "costs": 6599.947399999996
+          },
+          "profit_lock": {
+            "trades": 1,
+            "wins": 1,
+            "losses": 0,
+            "net": 1182.3942,
+            "loss_net": 0.0,
+            "win_net": 1182.3942,
+            "gross": 1478.75,
+            "costs": 296.35580000000004
+          }
+        }
+      }
+    },
+    "2026|STRUCT30": {
+      "trades": 56,
+      "losses": 28,
+      "wins": 28,
+      "net": 61496.4344,
+      "loss_net": -49607.696,
+      "win_net": 111104.1304,
+      "groups": {
+        "entry_expert": {
+          "TPB": {
+            "trades": 35,
+            "wins": 17,
+            "losses": 18,
+            "net": 37405.08699999999,
+            "loss_net": -25125.5304,
+            "win_net": 62530.61740000001,
+            "gross": 47973.25,
+            "costs": 10568.163000000002
+          },
+          "SHIPPED": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 6456.299,
+            "loss_net": -2963.3247,
+            "win_net": 9419.6237,
+            "gross": 9109.75,
+            "costs": 2653.450999999999
+          },
+          "EFF": {
+            "trades": 9,
+            "wins": 3,
+            "losses": 6,
+            "net": 4896.0558999999985,
+            "loss_net": -13615.7958,
+            "win_net": 18511.8517,
+            "gross": 8739.24999999999,
+            "costs": 3843.1940999999915
+          },
+          "OR20": {
+            "trades": 6,
+            "wins": 4,
+            "losses": 2,
+            "net": 12738.9925,
+            "loss_net": -7903.045099999999,
+            "win_net": 20642.0376,
+            "gross": 15460.250000000004,
+            "costs": 2721.2575000000043
+          }
+        },
+        "direction": {
+          "SHORT": {
+            "trades": 46,
+            "wins": 23,
+            "losses": 23,
+            "net": 59651.763499999994,
+            "loss_net": -36666.7244,
+            "win_net": 96318.48790000002,
+            "gross": 75370.75,
+            "costs": 15718.9865
+          },
+          "LONG": {
+            "trades": 10,
+            "wins": 5,
+            "losses": 5,
+            "net": 1844.6708999999992,
+            "loss_net": -12940.9716,
+            "win_net": 14785.642500000002,
+            "gross": 5911.749999999998,
+            "costs": 4067.079099999998
+          }
+        },
+        "origin": {
+          "TPB_LOW": {
+            "trades": 29,
+            "wins": 12,
+            "losses": 17,
+            "net": 23414.4982,
+            "loss_net": -21765.0801,
+            "win_net": 45179.5783,
+            "gross": 31538.0,
+            "costs": 8123.501800000002
+          },
+          "MAIN": {
+            "trades": 27,
+            "wins": 16,
+            "losses": 11,
+            "net": 38081.936200000004,
+            "loss_net": -27842.6159,
+            "win_net": 65924.5521,
+            "gross": 49744.500000000015,
+            "costs": 11662.563799999996
+          }
+        },
+        "exit_reason": {
+          "underlying_stop": {
+            "trades": 13,
+            "wins": 0,
+            "losses": 13,
+            "net": -29964.3496,
+            "loss_net": -29964.3496,
+            "win_net": 0.0,
+            "gross": -26117.0,
+            "costs": 3847.349600000002
+          },
+          "trail_stop": {
+            "trades": 9,
+            "wins": 9,
+            "losses": 0,
+            "net": 55812.6057,
+            "loss_net": 0.0,
+            "win_net": 55812.6057,
+            "gross": 59205.25,
+            "costs": 3392.6443000000027
+          },
+          "hard_flat_1510": {
+            "trades": 19,
+            "wins": 14,
+            "losses": 5,
+            "net": 40396.270000000004,
+            "loss_net": -4003.2623999999996,
+            "win_net": 44399.532400000004,
+            "gross": 46296.25,
+            "costs": 5899.980000000001
+          },
+          "time_stop": {
+            "trades": 14,
+            "wins": 4,
+            "losses": 10,
+            "net": -5930.4859000000015,
+            "loss_net": -15640.083999999999,
+            "win_net": 9709.5981,
+            "gross": 419.2499999999918,
+            "costs": 6349.735899999993
+          },
+          "profit_lock": {
+            "trades": 1,
+            "wins": 1,
+            "losses": 0,
+            "net": 1182.3942,
+            "loss_net": 0.0,
+            "win_net": 1182.3942,
+            "gross": 1478.75,
+            "costs": 296.35580000000004
+          }
+        }
+      }
+    }
+  },
+  "exact_pair_effects": {
+    "2024|STALL30_vs_BASE": {
+      "paired_delta": -4888.3442,
+      "unpaired_candidate_net": 0.0,
+      "unpaired_base_net": 0.0,
+      "total_delta": -4888.3442,
+      "common": 33,
+      "candidate_only": 0,
+      "base_only": 0
+    },
+    "2024|STRUCT30_vs_STALL30": {
+      "paired_delta": 5939.322,
+      "unpaired_candidate_net": 0.0,
+      "unpaired_base_net": 0.0,
+      "total_delta": 5939.322,
+      "common": 33,
+      "candidate_only": 0,
+      "base_only": 0
+    },
+    "2025|STALL30_vs_BASE": {
+      "paired_delta": 2426.3314,
+      "unpaired_candidate_net": -10.749,
+      "unpaired_base_net": -1545.2973,
+      "total_delta": 3960.879700000005,
+      "common": 79,
+      "candidate_only": 1,
+      "base_only": 1
+    },
+    "2025|STRUCT30_vs_STALL30": {
+      "paired_delta": -2426.3314,
+      "unpaired_candidate_net": -909.5206,
+      "unpaired_base_net": -10.749,
+      "total_delta": -3325.103000000003,
+      "common": 79,
+      "candidate_only": 1,
+      "base_only": 1
+    },
+    "2026|STALL30_vs_BASE": {
+      "paired_delta": 10117.2831,
+      "unpaired_candidate_net": 29883.7179,
+      "unpaired_base_net": 17018.1243,
+      "total_delta": 22982.876699999993,
+      "common": 51,
+      "candidate_only": 5,
+      "base_only": 5
+    },
+    "2026|STRUCT30_vs_STALL30": {
+      "paired_delta": -2773.4137,
+      "unpaired_candidate_net": 17018.1243,
+      "unpaired_base_net": 29883.7179,
+      "total_delta": -15639.007299999997,
+      "common": 51,
+      "candidate_only": 5,
+      "base_only": 5
+    }
+  },
+  "changed_exit_pairs": [
+    {
+      "year": "2024",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2024-01-12T12:10:59+05:30",
+        "tradingsymbol": "NIFTY24011821900PE",
+        "direction": "SHORT",
+        "entry_premium": 158.85,
+        "entry_underlying": 21870.0,
+        "entry_qty": 130,
+        "initial_stop_underlying": 21894.0,
+        "initial_target_underlying": 21803.7,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2024/d1d38a917b1c9b89/9",
+      "base_admission": "N05/2024/c7bbd068f11394f9/9",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -217.73386848799854,
+        "progress_r": 0.22708333333336364,
+        "bid": 161.15,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 21872.3,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -217.7339,
+        "base_net": -2313.2019,
+        "delta": 2095.468,
+        "candidate_exit": "2024-01-12T12:40:59+05:30",
+        "base_exit": "2024-01-12T12:54:59+05:30"
+      }
+    },
+    {
+      "year": "2024",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2024-01-16T11:55:59+05:30",
+        "tradingsymbol": "NIFTY24011822150PE",
+        "direction": "SHORT",
+        "entry_premium": 126.8,
+        "entry_underlying": 22099.3,
+        "entry_qty": 130,
+        "initial_stop_underlying": 22123.0,
+        "initial_target_underlying": 22050.2,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2024/d1d38a917b1c9b89/10",
+      "base_admission": "N05/2024/c7bbd068f11394f9/10",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 35.0,
+        "net_at_bid_after_cost": -201.36811996172887,
+        "progress_r": 0.44936708860748903,
+        "bid": 129.15,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22105.6,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -201.3681,
+        "base_net": 6655.9375,
+        "delta": -6857.3056,
+        "candidate_exit": "2024-01-16T12:30:59+05:30",
+        "base_exit": "2024-01-16T13:44:59+05:30"
+      }
+    },
+    {
+      "year": "2024",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2024-11-06T11:10:59+05:30",
+        "tradingsymbol": "NIFTY24110724450CE",
+        "direction": "LONG",
+        "entry_premium": 64.85,
+        "entry_underlying": 24464.4,
+        "entry_qty": 195,
+        "initial_stop_underlying": 24381.15,
+        "initial_target_underlying": 24596.329999999998,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2024/d1d38a917b1c9b89/29",
+      "base_admission": "N05/2024/c7bbd068f11394f9/29",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -255.08019751920887,
+        "progress_r": 0.17477477477476602,
+        "bid": 67.25,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 24440.0,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -255.0802,
+        "base_net": -128.5736,
+        "delta": -126.50659999999999,
+        "candidate_exit": "2024-11-06T11:40:59+05:30",
+        "base_exit": "2024-11-06T12:23:59+05:30"
+      }
+    },
+    {
+      "year": "2024",
+      "candidate": "STRUCT30",
+      "base": "STALL30",
+      "immutable_terms": {
+        "entry_time": "2024-01-12T12:10:59+05:30",
+        "tradingsymbol": "NIFTY24011821900PE",
+        "direction": "SHORT",
+        "entry_premium": 158.85,
+        "entry_underlying": 21870.0,
+        "entry_qty": 130,
+        "initial_stop_underlying": 21894.0,
+        "initial_target_underlying": 21803.7,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2024/672f55ea91d8a155/9",
+      "base_admission": "N05/2024/d1d38a917b1c9b89/9",
+      "known_at_candidate_exit": {
+        "action": "STRUCT30",
+        "age_minutes": 40.0,
+        "net_at_bid_after_cost": -1262.22413307213,
+        "progress_r": -0.497916666666697,
+        "bid": 153.1,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 21872.3,
+        "structure": {
+          "bar": "2024-01-12 12:45:00",
+          "close": 21876.35,
+          "open": 21869.1,
+          "high": 21879.85,
+          "low": 21867.6,
+          "previous_close": 21869.1,
+          "atr": 14.406818637279995,
+          "rvol": 0.5910837130349326,
+          "vwap": 21828.026038532527,
+          "prior4high": 21883.5,
+          "prior4low": 21860.95,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-12 09:15:00"
+        }
+      },
+      "known_at_base_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -217.73386848799854,
+        "progress_r": 0.22708333333336364,
+        "bid": 161.15,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 21872.3,
+        "structure": null
+      },
+      "later_labels": {
+        "candidate_net": -1262.2241,
+        "base_net": -217.7339,
+        "delta": -1044.4902,
+        "candidate_exit": "2024-01-12T12:50:59+05:30",
+        "base_exit": "2024-01-12T12:40:59+05:30"
+      }
+    },
+    {
+      "year": "2024",
+      "candidate": "STRUCT30",
+      "base": "STALL30",
+      "immutable_terms": {
+        "entry_time": "2024-01-16T11:55:59+05:30",
+        "tradingsymbol": "NIFTY24011822150PE",
+        "direction": "SHORT",
+        "entry_premium": 126.8,
+        "entry_underlying": 22099.3,
+        "entry_qty": 130,
+        "initial_stop_underlying": 22123.0,
+        "initial_target_underlying": 22050.2,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2024/672f55ea91d8a155/10",
+      "base_admission": "N05/2024/d1d38a917b1c9b89/10",
+      "known_at_candidate_exit": {
+        "action": "BASE60",
+        "age_minutes": 109.0,
+        "net_at_bid_after_cost": 6655.93753013408,
+        "progress_r": 3.77004219409265,
+        "bid": 182.0,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": false,
+        "original_retest_level": 22105.6,
+        "structure": null
+      },
+      "known_at_base_exit": {
+        "action": "STALL30",
+        "age_minutes": 35.0,
+        "net_at_bid_after_cost": -201.36811996172887,
+        "progress_r": 0.44936708860748903,
+        "bid": 129.15,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22105.6,
+        "structure": null
+      },
+      "later_labels": {
+        "candidate_net": 6655.9375,
+        "base_net": -201.3681,
+        "delta": 6857.3056,
+        "candidate_exit": "2024-01-16T13:44:59+05:30",
+        "base_exit": "2024-01-16T12:30:59+05:30"
+      }
+    },
+    {
+      "year": "2024",
+      "candidate": "STRUCT30",
+      "base": "STALL30",
+      "immutable_terms": {
+        "entry_time": "2024-11-06T11:10:59+05:30",
+        "tradingsymbol": "NIFTY24110724450CE",
+        "direction": "LONG",
+        "entry_premium": 64.85,
+        "entry_underlying": 24464.4,
+        "entry_qty": 195,
+        "initial_stop_underlying": 24381.15,
+        "initial_target_underlying": 24596.329999999998,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2024/672f55ea91d8a155/29",
+      "base_admission": "N05/2024/d1d38a917b1c9b89/29",
+      "known_at_candidate_exit": {
+        "action": "BASE60",
+        "age_minutes": 73.0,
+        "net_at_bid_after_cost": -128.57361267827275,
+        "progress_r": 0.49909909909909034,
+        "bid": 67.9,
+        "context": {
+          "bar": "2024-11-06 12:15:00",
+          "close": 24529.85,
+          "open": 24535.6,
+          "high": 24548.85,
+          "low": 24515.0,
+          "previous_close": 24540.0,
+          "atr": 29.926499933127992,
+          "rvol": 1.4829931972789117,
+          "vwap": 24452.313309758127,
+          "prior4high": 24572.25,
+          "prior4low": 24533.8,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-11-06 09:15:00"
+        },
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": false,
+        "original_retest_level": 24440.0,
+        "structure": null
+      },
+      "known_at_base_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -255.08019751920887,
+        "progress_r": 0.17477477477476602,
+        "bid": 67.25,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 24440.0,
+        "structure": null
+      },
+      "later_labels": {
+        "candidate_net": -128.5736,
+        "base_net": -255.0802,
+        "delta": 126.50659999999999,
+        "candidate_exit": "2024-11-06T12:23:59+05:30",
+        "base_exit": "2024-11-06T11:40:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2025-01-07T10:30:59+05:30",
+        "tradingsymbol": "NIFTY25010923800CE",
+        "direction": "LONG",
+        "entry_premium": 117.3,
+        "entry_underlying": 23850.1,
+        "entry_qty": 130,
+        "initial_stop_underlying": 23750.227727068173,
+        "initial_target_underlying": 24064.730091277284,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2025/d1d38a917b1c9b89/6",
+      "base_admission": "N05/2025/c7bbd068f11394f9/6",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1606.23132124574,
+        "progress_r": -0.017021741371176607,
+        "bid": 108.8,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23808.5,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -1606.2313,
+        "base_net": -1755.4442,
+        "delta": 149.2129,
+        "candidate_exit": "2025-01-07T11:00:59+05:30",
+        "base_exit": "2025-01-07T11:30:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2025-01-17T13:21:59+05:30",
+        "tradingsymbol": "NIFTY25012323300PE",
+        "direction": "SHORT",
+        "entry_premium": 234.8,
+        "entry_underlying": 23247.65,
+        "entry_qty": 65,
+        "initial_stop_underlying": 23318.0,
+        "initial_target_underlying": 23144.679999999997,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2025/d1d38a917b1c9b89/11",
+      "base_admission": "N05/2025/c7bbd068f11394f9/11",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1079.861318336581,
+        "progress_r": -0.09026297085996697,
+        "bid": 222.6,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23271.25,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -1079.8613,
+        "base_net": -1696.1754,
+        "delta": 616.3141,
+        "candidate_exit": "2025-01-17T13:51:59+05:30",
+        "base_exit": "2025-01-17T14:21:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2025-02-01T14:00:59+05:30",
+        "tradingsymbol": "NIFTY25020623550CE",
+        "direction": "LONG",
+        "entry_premium": 145.6,
+        "entry_underlying": 23570.0,
+        "entry_qty": 130,
+        "initial_stop_underlying": 23472.061709130434,
+        "initial_target_underlying": 23725.568923565213,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2025/d1d38a917b1c9b89/18",
+      "base_admission": "N05/2025/c7bbd068f11394f9/18",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 31.0,
+        "net_at_bid_after_cost": -148.77487257959854,
+        "progress_r": 0.25526277595853614,
+        "bid": 148.4,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23547.3,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -148.7749,
+        "base_net": -1809.5793,
+        "delta": 1660.8044,
+        "candidate_exit": "2025-02-01T14:31:59+05:30",
+        "base_exit": "2025-02-01T15:00:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "candidate": "STRUCT30",
+      "base": "STALL30",
+      "immutable_terms": {
+        "entry_time": "2025-01-07T10:30:59+05:30",
+        "tradingsymbol": "NIFTY25010923800CE",
+        "direction": "LONG",
+        "entry_premium": 117.3,
+        "entry_underlying": 23850.1,
+        "entry_qty": 130,
+        "initial_stop_underlying": 23750.227727068173,
+        "initial_target_underlying": 24064.730091277284,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2025/672f55ea91d8a155/6",
+      "base_admission": "N05/2025/d1d38a917b1c9b89/6",
+      "known_at_candidate_exit": {
+        "action": "BASE60",
+        "age_minutes": 60.0,
+        "net_at_bid_after_cost": -1755.444216186329,
+        "progress_r": 0.016521101919126032,
+        "bid": 107.65,
+        "context": {
+          "bar": "2025-01-07 11:25:00",
+          "close": 23851.4,
+          "open": 23840.1,
+          "high": 23860.0,
+          "low": 23837.6,
+          "previous_close": 23845.05,
+          "atr": 36.80540097698069,
+          "rvol": 0.3130620332266423,
+          "vwap": 23827.144806282315,
+          "prior4high": 23853.4,
+          "prior4low": 23815.65,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2025-01-07 09:15:00"
+        },
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": false,
+        "original_retest_level": 23808.5,
+        "structure": null
+      },
+      "known_at_base_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1606.23132124574,
+        "progress_r": -0.017021741371176607,
+        "bid": 108.8,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23808.5,
+        "structure": null
+      },
+      "later_labels": {
+        "candidate_net": -1755.4442,
+        "base_net": -1606.2313,
+        "delta": -149.2129,
+        "candidate_exit": "2025-01-07T11:30:59+05:30",
+        "base_exit": "2025-01-07T11:00:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "candidate": "STRUCT30",
+      "base": "STALL30",
+      "immutable_terms": {
+        "entry_time": "2025-01-17T13:21:59+05:30",
+        "tradingsymbol": "NIFTY25012323300PE",
+        "direction": "SHORT",
+        "entry_premium": 234.8,
+        "entry_underlying": 23247.65,
+        "entry_qty": 65,
+        "initial_stop_underlying": 23318.0,
+        "initial_target_underlying": 23144.679999999997,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2025/672f55ea91d8a155/11",
+      "base_admission": "N05/2025/d1d38a917b1c9b89/11",
+      "known_at_candidate_exit": {
+        "action": "BASE60",
+        "age_minutes": 60.0,
+        "net_at_bid_after_cost": -1696.175449612931,
+        "progress_r": -0.04690831556502261,
+        "bid": 213.1,
+        "context": {
+          "bar": "2025-01-17 14:15:00",
+          "close": 23255.1,
+          "open": 23255.0,
+          "high": 23261.45,
+          "low": 23248.3,
+          "previous_close": 23252.0,
+          "atr": 25.862461143258383,
+          "rvol": 0.3348868175765646,
+          "vwap": 23253.34633983863,
+          "prior4high": 23270.0,
+          "prior4low": 23227.5,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2025-01-17 09:15:00"
+        },
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": false,
+        "original_retest_level": 23271.25,
+        "structure": null
+      },
+      "known_at_base_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1079.861318336581,
+        "progress_r": -0.09026297085996697,
+        "bid": 222.6,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23271.25,
+        "structure": null
+      },
+      "later_labels": {
+        "candidate_net": -1696.1754,
+        "base_net": -1079.8613,
+        "delta": -616.3141,
+        "candidate_exit": "2025-01-17T14:21:59+05:30",
+        "base_exit": "2025-01-17T13:51:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "candidate": "STRUCT30",
+      "base": "STALL30",
+      "immutable_terms": {
+        "entry_time": "2025-02-01T14:00:59+05:30",
+        "tradingsymbol": "NIFTY25020623550CE",
+        "direction": "LONG",
+        "entry_premium": 145.6,
+        "entry_underlying": 23570.0,
+        "entry_qty": 130,
+        "initial_stop_underlying": 23472.061709130434,
+        "initial_target_underlying": 23725.568923565213,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2025/672f55ea91d8a155/18",
+      "base_admission": "N05/2025/d1d38a917b1c9b89/18",
+      "known_at_candidate_exit": {
+        "action": "BASE60",
+        "age_minutes": 60.0,
+        "net_at_bid_after_cost": -1809.57926844008,
+        "progress_r": 0.16285765106155348,
+        "bid": 135.6,
+        "context": {
+          "bar": "2025-02-01 14:55:00",
+          "close": 23580.0,
+          "open": 23580.0,
+          "high": 23585.0,
+          "low": 23564.25,
+          "previous_close": 23577.5,
+          "atr": 36.01197044368281,
+          "rvol": 1.203818760418245,
+          "vwap": 23567.391398969605,
+          "prior4high": 23588.25,
+          "prior4low": 23544.25,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2025-02-01 09:15:00"
+        },
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": false,
+        "original_retest_level": 23547.3,
+        "structure": null
+      },
+      "known_at_base_exit": {
+        "action": "STALL30",
+        "age_minutes": 31.0,
+        "net_at_bid_after_cost": -148.77487257959854,
+        "progress_r": 0.25526277595853614,
+        "bid": 148.4,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23547.3,
+        "structure": null
+      },
+      "later_labels": {
+        "candidate_net": -1809.5793,
+        "base_net": -148.7749,
+        "delta": -1660.8044,
+        "candidate_exit": "2025-02-01T15:00:59+05:30",
+        "base_exit": "2025-02-01T14:31:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2026-03-20T12:51:59+05:30",
+        "tradingsymbol": "NIFTY26032423150CE",
+        "direction": "LONG",
+        "entry_premium": 286.0,
+        "entry_underlying": 23238.0,
+        "entry_qty": 65,
+        "initial_stop_underlying": 23154.987157321644,
+        "initial_target_underlying": 23382.663116821037,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2026/d1d38a917b1c9b89/15",
+      "base_admission": "N05/2026/c7bbd068f11394f9/15",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 54.0,
+        "net_at_bid_after_cost": -387.09972039101854,
+        "progress_r": 0.05782237838303531,
+        "bid": 284.6,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23214.8,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -387.0997,
+        "base_net": -906.1011,
+        "delta": 519.0014,
+        "candidate_exit": "2026-03-20T13:45:59+05:30",
+        "base_exit": "2026-03-20T13:51:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2026-03-27T12:45:59+05:30",
+        "tradingsymbol": "NIFTY26033022900CE",
+        "direction": "LONG",
+        "entry_premium": 264.5,
+        "entry_underlying": 22961.0,
+        "entry_qty": 65,
+        "initial_stop_underlying": 22913.776984394786,
+        "initial_target_underlying": 23066.72142808939,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2026/d1d38a917b1c9b89/21",
+      "base_admission": "N05/2026/c7bbd068f11394f9/21",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1058.4882148812408,
+        "progress_r": -0.2541133776868566,
+        "bid": 252.7,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22959.0,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -1058.4882,
+        "base_net": -2612.2486,
+        "delta": 1553.7604,
+        "candidate_exit": "2026-03-27T13:15:59+05:30",
+        "base_exit": "2026-03-27T13:39:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2026-04-08T12:00:59+05:30",
+        "tradingsymbol": "NIFTY26041324050PE",
+        "direction": "SHORT",
+        "entry_premium": 266.3,
+        "entry_underlying": 23986.1,
+        "entry_qty": 65,
+        "initial_stop_underlying": 24048.0,
+        "initial_target_underlying": 23869.920000000006,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2026/d1d38a917b1c9b89/27",
+      "base_admission": "N05/2026/c7bbd068f11394f9/27",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -312.70113201041073,
+        "progress_r": 0.03392568659125195,
+        "bid": 266.0,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 24000.0,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -312.7011,
+        "base_net": -1600.4733,
+        "delta": 1287.7722,
+        "candidate_exit": "2026-04-08T12:30:59+05:30",
+        "base_exit": "2026-04-08T13:00:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2026-10-09T12:00:59+05:30",
+        "tradingsymbol": "NIFTY26101322600PE",
+        "direction": "SHORT",
+        "entry_premium": 195.55,
+        "entry_underlying": 22529.0,
+        "entry_qty": 130,
+        "initial_stop_underlying": 22593.894076701246,
+        "initial_target_underlying": 22397.070661937752,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2026/d1d38a917b1c9b89/51",
+      "base_admission": "N05/2026/c7bbd068f11394f9/51",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1468.16107069959,
+        "progress_r": -0.1540972690934046,
+        "bid": 188.3,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22544.0,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -1468.1611,
+        "base_net": -6541.3995,
+        "delta": 5073.2384,
+        "candidate_exit": "2026-10-09T12:30:59+05:30",
+        "base_exit": "2026-10-09T12:57:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "candidate": "STALL30",
+      "base": "BASE",
+      "immutable_terms": {
+        "entry_time": "2026-10-14T13:55:59+05:30",
+        "tradingsymbol": "NIFTY26101922650CE",
+        "direction": "LONG",
+        "entry_premium": 148.65,
+        "entry_underlying": 22690.5,
+        "entry_qty": 195,
+        "initial_stop_underlying": 22606.293695734945,
+        "initial_target_underlying": 22826.6713476771,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2026/d1d38a917b1c9b89/53",
+      "base_admission": "N05/2026/c7bbd068f11394f9/53",
+      "known_at_candidate_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -4916.178574644597,
+        "progress_r": -0.3740812552567063,
+        "bid": 127.3,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22656.8,
+        "structure": null
+      },
+      "known_at_base_exit": null,
+      "later_labels": {
+        "candidate_net": -4916.1786,
+        "base_net": -6599.6893,
+        "delta": 1683.5106999999998,
+        "candidate_exit": "2026-10-14T14:25:59+05:30",
+        "base_exit": "2026-10-14T14:55:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "candidate": "STRUCT30",
+      "base": "STALL30",
+      "immutable_terms": {
+        "entry_time": "2026-03-20T12:51:59+05:30",
+        "tradingsymbol": "NIFTY26032423150CE",
+        "direction": "LONG",
+        "entry_premium": 286.0,
+        "entry_underlying": 23238.0,
+        "entry_qty": 65,
+        "initial_stop_underlying": 23154.987157321644,
+        "initial_target_underlying": 23382.663116821037,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2026/672f55ea91d8a155/15",
+      "base_admission": "N05/2026/d1d38a917b1c9b89/15",
+      "known_at_candidate_exit": {
+        "action": "BASE60",
+        "age_minutes": 60.0,
+        "net_at_bid_after_cost": -906.1010940974186,
+        "progress_r": -0.13973741442567233,
+        "bid": 276.6,
+        "context": {
+          "bar": "2026-03-20 13:45:00",
+          "close": 23230.1,
+          "open": 23253.0,
+          "high": 23261.0,
+          "low": 23230.0,
+          "previous_close": 23253.0,
+          "atr": 35.83322330516134,
+          "rvol": 1.408221653365457,
+          "vwap": 23272.16102418359,
+          "prior4high": 23309.0,
+          "prior4low": 23253.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2026-03-20 09:15:00"
+        },
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": false,
+        "original_retest_level": 23214.8,
+        "structure": null
+      },
+      "known_at_base_exit": {
+        "action": "STALL30",
+        "age_minutes": 54.0,
+        "net_at_bid_after_cost": -387.09972039101854,
+        "progress_r": 0.05782237838303531,
+        "bid": 284.6,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23214.8,
+        "structure": null
+      },
+      "later_labels": {
+        "candidate_net": -906.1011,
+        "base_net": -387.0997,
+        "delta": -519.0014,
+        "candidate_exit": "2026-03-20T13:51:59+05:30",
+        "base_exit": "2026-03-20T13:45:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "candidate": "STRUCT30",
+      "base": "STALL30",
+      "immutable_terms": {
+        "entry_time": "2026-04-08T12:00:59+05:30",
+        "tradingsymbol": "NIFTY26041324050PE",
+        "direction": "SHORT",
+        "entry_premium": 266.3,
+        "entry_underlying": 23986.1,
+        "entry_qty": 65,
+        "initial_stop_underlying": 24048.0,
+        "initial_target_underlying": 23869.920000000006,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2026/672f55ea91d8a155/27",
+      "base_admission": "N05/2026/d1d38a917b1c9b89/27",
+      "known_at_candidate_exit": {
+        "action": "STRUCT30",
+        "age_minutes": 50.0,
+        "net_at_bid_after_cost": -1062.0093652990265,
+        "progress_r": -0.31502423263327206,
+        "bid": 254.45,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 24000.0,
+        "structure": {
+          "bar": "2026-04-08 12:45:00",
+          "close": 24004.4,
+          "open": 23989.6,
+          "high": 24007.0,
+          "low": 23980.0,
+          "previous_close": 23995.0,
+          "atr": 31.02134076400196,
+          "rvol": 0.33685064935064934,
+          "vwap": 23946.97782955085,
+          "prior4high": 24015.0,
+          "prior4low": 23948.4,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2026-04-08 09:15:00"
+        }
+      },
+      "known_at_base_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -312.70113201041073,
+        "progress_r": 0.03392568659125195,
+        "bid": 266.0,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 24000.0,
+        "structure": null
+      },
+      "later_labels": {
+        "candidate_net": -1062.0094,
+        "base_net": -312.7011,
+        "delta": -749.3082999999999,
+        "candidate_exit": "2026-04-08T12:50:59+05:30",
+        "base_exit": "2026-04-08T12:30:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "candidate": "STRUCT30",
+      "base": "STALL30",
+      "immutable_terms": {
+        "entry_time": "2026-10-09T12:00:59+05:30",
+        "tradingsymbol": "NIFTY26101322600PE",
+        "direction": "SHORT",
+        "entry_premium": 195.55,
+        "entry_underlying": 22529.0,
+        "entry_qty": 130,
+        "initial_stop_underlying": 22593.894076701246,
+        "initial_target_underlying": 22397.070661937752,
+        "entry_expert": "EFF"
+      },
+      "candidate_admission": "N05/2026/672f55ea91d8a155/51",
+      "base_admission": "N05/2026/d1d38a917b1c9b89/51",
+      "known_at_candidate_exit": {
+        "action": "STRUCT30",
+        "age_minutes": 40.0,
+        "net_at_bid_after_cost": -2973.2650544481526,
+        "progress_r": -0.2681292482225464,
+        "bid": 176.7,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22544.0,
+        "structure": {
+          "bar": "2026-10-09 12:35:00",
+          "close": 22555.0,
+          "open": 22543.0,
+          "high": 22560.0,
+          "low": 22543.0,
+          "previous_close": 22543.0,
+          "atr": 26.502342666825662,
+          "rvol": 0.29936170212765956,
+          "vwap": 22507.196425243135,
+          "prior4high": 22553.2,
+          "prior4low": 22525.7,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2026-10-09 09:15:00"
+        }
+      },
+      "known_at_base_exit": {
+        "action": "STALL30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1468.16107069959,
+        "progress_r": -0.1540972690934046,
+        "bid": 188.3,
+        "context": null,
+        "review_mode": "STALL30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22544.0,
+        "structure": null
+      },
+      "later_labels": {
+        "candidate_net": -2973.2651,
+        "base_net": -1468.1611,
+        "delta": -1505.104,
+        "candidate_exit": "2026-10-09T12:40:59+05:30",
+        "base_exit": "2026-10-09T12:30:59+05:30"
+      }
+    }
+  ],
+  "selected_n04_trades": [
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/40",
+      "entry_time": "2025-05-16T11:55:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 2,
+          "asof": "2025-05-16",
+          "window_start": "2025-01-10",
+          "window_end": "2025-05-15",
+          "latest_label_exit": "2025-05-13T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 404.5173035522149,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 29,
+          "trades": 30,
+          "anchor_trades": 29,
+          "paired_net": 26893.940100000003,
+          "without_best_day": 15375.326800000003,
+          "drawdown": 0.040451877432053446,
+          "anchor_drawdown": 0.041026320478251464
+        },
+        "alternative_scores": {
+          "BASE": 309.0627013846607,
+          "STALL30": 404.5173035522149,
+          "STRUCT30": 309.0627013846607
+        },
+        "cutoff": "2025-05-13T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -2950.1155,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2025-05-16T12:45:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/52",
+      "entry_time": "2025-08-26T11:45:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 5,
+          "asof": "2025-08-26",
+          "window_start": "2025-04-28",
+          "window_end": "2025-08-25",
+          "latest_label_exit": "2025-08-19T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 284.0259512278509,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 18,
+          "trades": 29,
+          "anchor_trades": 11,
+          "paired_net": 20070.213900000002,
+          "without_best_day": 8551.600600000002,
+          "drawdown": 0.04193167087737252,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 196.93257366653313,
+          "STALL30": 284.0259512278509,
+          "STRUCT30": 234.07609400073068
+        },
+        "cutoff": "2025-08-19T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -623.1296,
+        "exit_reason": "time_stop",
+        "exit_time": "2025-08-26T13:45:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/53",
+      "entry_time": "2025-08-26T11:55:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 5,
+          "asof": "2025-08-26",
+          "window_start": "2025-04-28",
+          "window_end": "2025-08-25",
+          "latest_label_exit": "2025-08-19T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 284.0259512278509,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 18,
+          "trades": 29,
+          "anchor_trades": 11,
+          "paired_net": 20070.213900000002,
+          "without_best_day": 8551.600600000002,
+          "drawdown": 0.04193167087737252,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 196.93257366653313,
+          "STALL30": 284.0259512278509,
+          "STRUCT30": 234.07609400073068
+        },
+        "cutoff": "2025-08-19T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -690.2544,
+        "exit_reason": "time_stop",
+        "exit_time": "2025-08-26T13:55:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/54",
+      "entry_time": "2025-10-13T12:06:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 11,
+          "asof": "2025-10-13",
+          "window_start": "2025-06-12",
+          "window_end": "2025-10-10",
+          "latest_label_exit": "2025-09-26T14:38:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 603.0053368908016,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 16,
+          "trades": 30,
+          "anchor_trades": 11,
+          "paired_net": 28810.625400000004,
+          "without_best_day": 20459.116,
+          "drawdown": 0.049544733740190854,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 513.7845486919373,
+          "STALL30": 603.0053368908016,
+          "STRUCT30": 551.6298719560829
+        },
+        "cutoff": "2025-09-26T14:38:59+05:30"
+      },
+      "later_labels": {
+        "net": -1515.1405,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2025-10-13T12:59:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/55",
+      "entry_time": "2025-10-24T11:55:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 18,
+          "asof": "2025-10-24",
+          "window_start": "2025-06-23",
+          "window_end": "2025-10-23",
+          "latest_label_exit": "2025-10-13T12:59:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 485.5627496480463,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 16,
+          "trades": 29,
+          "anchor_trades": 11,
+          "paired_net": 26930.5446,
+          "without_best_day": 18579.0352,
+          "drawdown": 0.04960995727872259,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 396.9092278267632,
+          "STALL30": 485.5627496480463,
+          "STRUCT30": 434.509011075421
+        },
+        "cutoff": "2025-10-13T12:59:59+05:30"
+      },
+      "later_labels": {
+        "net": 3491.2583,
+        "exit_reason": "trail_stop",
+        "exit_time": "2025-10-24T14:12:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/56",
+      "entry_time": "2025-10-24T12:55:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 18,
+          "asof": "2025-10-24",
+          "window_start": "2025-06-23",
+          "window_end": "2025-10-23",
+          "latest_label_exit": "2025-10-13T12:59:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 485.5627496480463,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 16,
+          "trades": 29,
+          "anchor_trades": 11,
+          "paired_net": 26930.5446,
+          "without_best_day": 18579.0352,
+          "drawdown": 0.04960995727872259,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 396.9092278267632,
+          "STALL30": 485.5627496480463,
+          "STRUCT30": 434.509011075421
+        },
+        "cutoff": "2025-10-13T12:59:59+05:30"
+      },
+      "later_labels": {
+        "net": 1519.3844,
+        "exit_reason": "trail_stop",
+        "exit_time": "2025-10-24T14:12:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/58",
+      "entry_time": "2025-10-30T11:58:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 22,
+          "asof": "2025-10-30",
+          "window_start": "2025-06-27",
+          "window_end": "2025-10-29",
+          "latest_label_exit": "2025-10-24T14:12:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 707.4712353704216,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 17,
+          "trades": 31,
+          "anchor_trades": 11,
+          "paired_net": 31941.1873,
+          "without_best_day": 23589.677900000002,
+          "drawdown": 0.04960995727872259,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 622.6874472109168,
+          "STALL30": 707.4712353704216,
+          "STRUCT30": 658.6233376982503
+        },
+        "cutoff": "2025-10-24T14:12:59+05:30"
+      },
+      "later_labels": {
+        "net": -760.5475,
+        "exit_reason": "time_stop",
+        "exit_time": "2025-10-30T13:58:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/57",
+      "entry_time": "2025-10-30T11:36:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 22,
+          "asof": "2025-10-30",
+          "window_start": "2025-06-27",
+          "window_end": "2025-10-29",
+          "latest_label_exit": "2025-10-24T14:12:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 707.4712353704216,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 17,
+          "trades": 31,
+          "anchor_trades": 11,
+          "paired_net": 31941.1873,
+          "without_best_day": 23589.677900000002,
+          "drawdown": 0.04960995727872259,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 622.6874472109168,
+          "STALL30": 707.4712353704216,
+          "STRUCT30": 658.6233376982503
+        },
+        "cutoff": "2025-10-24T14:12:59+05:30"
+      },
+      "later_labels": {
+        "net": 2544.1721,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2025-10-30T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/59",
+      "entry_time": "2025-10-30T14:36:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 22,
+          "asof": "2025-10-30",
+          "window_start": "2025-06-27",
+          "window_end": "2025-10-29",
+          "latest_label_exit": "2025-10-24T14:12:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 707.4712353704216,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 17,
+          "trades": 31,
+          "anchor_trades": 11,
+          "paired_net": 31941.1873,
+          "without_best_day": 23589.677900000002,
+          "drawdown": 0.04960995727872259,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 622.6874472109168,
+          "STALL30": 707.4712353704216,
+          "STRUCT30": 658.6233376982503
+        },
+        "cutoff": "2025-10-24T14:12:59+05:30"
+      },
+      "later_labels": {
+        "net": 999.0106,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2025-10-30T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/60",
+      "entry_time": "2025-11-06T13:10:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 26,
+          "asof": "2025-11-06",
+          "window_start": "2025-07-03",
+          "window_end": "2025-11-04",
+          "latest_label_exit": "2025-10-30T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 633.6643713200823,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 17,
+          "trades": 32,
+          "anchor_trades": 11,
+          "paired_net": 30364.237200000003,
+          "without_best_day": 22012.7278,
+          "drawdown": 0.05040261052620927,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 549.2270462059156,
+          "STALL30": 633.6643713200823,
+          "STRUCT30": 585.0275994338589
+        },
+        "cutoff": "2025-10-30T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": 3010.2721,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2025-11-06T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/61",
+      "entry_time": "2025-11-06T13:45:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 26,
+          "asof": "2025-11-06",
+          "window_start": "2025-07-03",
+          "window_end": "2025-11-04",
+          "latest_label_exit": "2025-10-30T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 633.6643713200823,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 17,
+          "trades": 32,
+          "anchor_trades": 11,
+          "paired_net": 30364.237200000003,
+          "without_best_day": 22012.7278,
+          "drawdown": 0.05040261052620927,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 549.2270462059156,
+          "STALL30": 633.6643713200823,
+          "STRUCT30": 585.0275994338589
+        },
+        "cutoff": "2025-10-30T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": 1578.8886,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2025-11-06T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/62",
+      "entry_time": "2025-12-03T12:00:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 45,
+          "asof": "2025-12-03",
+          "window_start": "2025-07-30",
+          "window_end": "2025-12-02",
+          "latest_label_exit": "2025-11-06T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 1009.7691650555398,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 16,
+          "trades": 31,
+          "anchor_trades": 11,
+          "paired_net": 37234.1975,
+          "without_best_day": 28882.6881,
+          "drawdown": 0.04998478576477233,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 923.5761830036328,
+          "STALL30": 1009.7691650555398,
+          "STRUCT30": 960.1136729356224
+        },
+        "cutoff": "2025-11-06T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -1050.76,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2025-12-03T12:11:59+05:30"
+      }
+    },
+    {
+      "year": "2025",
+      "admission_id": "N06/2025/c3dfc25bd6be88db/63",
+      "entry_time": "2025-12-03T12:40:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 45,
+          "asof": "2025-12-03",
+          "window_start": "2025-07-30",
+          "window_end": "2025-12-02",
+          "latest_label_exit": "2025-11-06T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 1009.7691650555398,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 16,
+          "trades": 31,
+          "anchor_trades": 11,
+          "paired_net": 37234.1975,
+          "without_best_day": 28882.6881,
+          "drawdown": 0.04998478576477233,
+          "anchor_drawdown": 0.07647201329214645
+        },
+        "alternative_scores": {
+          "BASE": 923.5761830036328,
+          "STALL30": 1009.7691650555398,
+          "STRUCT30": 960.1136729356224
+        },
+        "cutoff": "2025-11-06T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -1803.3659,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2025-12-03T14:24:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/8",
+      "entry_time": "2026-03-27T12:45:59+05:30",
+      "expert": "EFF",
+      "direction": "LONG",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 3,
+          "asof": "2026-03-27",
+          "window_start": "2026-01-01",
+          "window_end": "2026-03-25",
+          "latest_label_exit": "2026-03-25T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 649.8726536354156,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 11,
+          "trades": 20,
+          "anchor_trades": 7,
+          "paired_net": 26784.9873,
+          "without_best_day": 16493.6741,
+          "drawdown": 0.019884798646351367,
+          "anchor_drawdown": 0.03117660184262458
+        },
+        "alternative_scores": {
+          "BASE": 598.1396276294204,
+          "STALL30": 649.8726536354156,
+          "STRUCT30": 598.1396276294204
+        },
+        "cutoff": "2026-03-25T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -1058.4882,
+        "exit_reason": "time_stop",
+        "exit_time": "2026-03-27T13:15:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/9",
+      "entry_time": "2026-03-27T13:30:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 3,
+          "asof": "2026-03-27",
+          "window_start": "2026-01-01",
+          "window_end": "2026-03-25",
+          "latest_label_exit": "2026-03-25T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 649.8726536354156,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 11,
+          "trades": 20,
+          "anchor_trades": 7,
+          "paired_net": 26784.9873,
+          "without_best_day": 16493.6741,
+          "drawdown": 0.019884798646351367,
+          "anchor_drawdown": 0.03117660184262458
+        },
+        "alternative_scores": {
+          "BASE": 598.1396276294204,
+          "STALL30": 649.8726536354156,
+          "STRUCT30": 598.1396276294204
+        },
+        "cutoff": "2026-03-25T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": 3241.241,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2026-03-27T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/10",
+      "entry_time": "2026-04-01T12:55:59+05:30",
+      "expert": "EFF",
+      "direction": "LONG",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 5,
+          "asof": "2026-04-01",
+          "window_start": "2026-01-01",
+          "window_end": "2026-03-30",
+          "latest_label_exit": "2026-03-27T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 602.7136310682658,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 12,
+          "trades": 22,
+          "anchor_trades": 9,
+          "paired_net": 27082.7042,
+          "without_best_day": 16791.391,
+          "drawdown": 0.019884798646351367,
+          "anchor_drawdown": 0.03636344475483772
+        },
+        "alternative_scores": {
+          "BASE": 534.4456441738103,
+          "STALL30": 602.7136310682658,
+          "STRUCT30": 555.1746022230413
+        },
+        "cutoff": "2026-03-27T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -2699.7534,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2026-04-01T13:22:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/11",
+      "entry_time": "2026-04-06T11:15:59+05:30",
+      "expert": "OR20",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 7,
+          "asof": "2026-04-06",
+          "window_start": "2026-01-01",
+          "window_end": "2026-04-02",
+          "latest_label_exit": "2026-04-01T13:22:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 580.0993177409039,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 13,
+          "trades": 23,
+          "anchor_trades": 10,
+          "paired_net": 26799.826800000003,
+          "without_best_day": 16508.513600000002,
+          "drawdown": 0.019884798646351367,
+          "anchor_drawdown": 0.03636344475483772
+        },
+        "alternative_scores": {
+          "BASE": 511.86415415968145,
+          "STALL30": 580.0993177409039,
+          "STRUCT30": 532.6242142018937
+        },
+        "cutoff": "2026-04-01T13:22:59+05:30"
+      },
+      "later_labels": {
+        "net": -3873.4698,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2026-04-06T11:38:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/12",
+      "entry_time": "2026-04-06T12:30:59+05:30",
+      "expert": "EFF",
+      "direction": "LONG",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 7,
+          "asof": "2026-04-06",
+          "window_start": "2026-01-01",
+          "window_end": "2026-04-02",
+          "latest_label_exit": "2026-04-01T13:22:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 580.0993177409039,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 13,
+          "trades": 23,
+          "anchor_trades": 10,
+          "paired_net": 26799.826800000003,
+          "without_best_day": 16508.513600000002,
+          "drawdown": 0.019884798646351367,
+          "anchor_drawdown": 0.03636344475483772
+        },
+        "alternative_scores": {
+          "BASE": 511.86415415968145,
+          "STALL30": 580.0993177409039,
+          "STRUCT30": 532.6242142018937
+        },
+        "cutoff": "2026-04-01T13:22:59+05:30"
+      },
+      "later_labels": {
+        "net": 8922.0491,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2026-04-06T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/13",
+      "entry_time": "2026-04-08T10:45:59+05:30",
+      "expert": "SHIPPED",
+      "direction": "LONG",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 9,
+          "asof": "2026-04-08",
+          "window_start": "2026-01-01",
+          "window_end": "2026-04-07",
+          "latest_label_exit": "2026-04-06T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 517.3830489774996,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 14,
+          "trades": 25,
+          "anchor_trades": 12,
+          "paired_net": 26520.200900000003,
+          "without_best_day": 16228.887700000003,
+          "drawdown": 0.02328566686201617,
+          "anchor_drawdown": 0.04802482814034116
+        },
+        "alternative_scores": {
+          "BASE": 454.1541799149891,
+          "STALL30": 517.3830489774996,
+          "STRUCT30": 473.4515180214696
+        },
+        "cutoff": "2026-04-06T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": 479.5546,
+        "exit_reason": "time_stop",
+        "exit_time": "2026-04-08T11:31:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/14",
+      "entry_time": "2026-04-08T12:00:59+05:30",
+      "expert": "EFF",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 9,
+          "asof": "2026-04-08",
+          "window_start": "2026-01-01",
+          "window_end": "2026-04-07",
+          "latest_label_exit": "2026-04-06T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 517.3830489774996,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 14,
+          "trades": 25,
+          "anchor_trades": 12,
+          "paired_net": 26520.200900000003,
+          "without_best_day": 16228.887700000003,
+          "drawdown": 0.02328566686201617,
+          "anchor_drawdown": 0.04802482814034116
+        },
+        "alternative_scores": {
+          "BASE": 454.1541799149891,
+          "STALL30": 517.3830489774996,
+          "STRUCT30": 473.4515180214696
+        },
+        "cutoff": "2026-04-06T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -312.7011,
+        "exit_reason": "time_stop",
+        "exit_time": "2026-04-08T12:30:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/15",
+      "entry_time": "2026-04-08T12:45:59+05:30",
+      "expert": "TPB",
+      "direction": "LONG",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 9,
+          "asof": "2026-04-08",
+          "window_start": "2026-01-01",
+          "window_end": "2026-04-07",
+          "latest_label_exit": "2026-04-06T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 517.3830489774996,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 14,
+          "trades": 25,
+          "anchor_trades": 12,
+          "paired_net": 26520.200900000003,
+          "without_best_day": 16228.887700000003,
+          "drawdown": 0.02328566686201617,
+          "anchor_drawdown": 0.04802482814034116
+        },
+        "alternative_scores": {
+          "BASE": 454.1541799149891,
+          "STALL30": 517.3830489774996,
+          "STRUCT30": 473.4515180214696
+        },
+        "cutoff": "2026-04-06T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": 2115.3721,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2026-04-08T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/16",
+      "entry_time": "2026-04-10T12:00:59+05:30",
+      "expert": "TPB",
+      "direction": "LONG",
+      "quantity": 130,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 11,
+          "asof": "2026-04-10",
+          "window_start": "2026-01-01",
+          "window_end": "2026-04-09",
+          "latest_label_exit": "2026-04-08T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 760.5964084856375,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 15,
+          "trades": 28,
+          "anchor_trades": 15,
+          "paired_net": 30090.441800000004,
+          "without_best_day": 19799.128600000004,
+          "drawdown": 0.02328566686201617,
+          "anchor_drawdown": 0.04802482814034116
+        },
+        "alternative_scores": {
+          "BASE": 463.78597881807787,
+          "STALL30": 760.5964084856375,
+          "STRUCT30": 522.310043329556
+        },
+        "cutoff": "2026-04-08T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -3360.4503,
+        "exit_reason": "time_stop",
+        "exit_time": "2026-04-10T14:15:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/17",
+      "entry_time": "2026-05-21T12:00:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 38,
+          "asof": "2026-05-21",
+          "window_start": "2026-01-14",
+          "window_end": "2026-05-20",
+          "latest_label_exit": "2026-04-16T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 750.6332098822094,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 18,
+          "trades": 29,
+          "anchor_trades": 19,
+          "paired_net": 33140.459200000005,
+          "without_best_day": 22849.146000000004,
+          "drawdown": 0.02328566686201617,
+          "anchor_drawdown": 0.04802482814034116
+        },
+        "alternative_scores": {
+          "BASE": 609.2252742228875,
+          "STALL30": 750.6332098822094,
+          "STRUCT30": 653.8640383859889
+        },
+        "cutoff": "2026-04-16T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": 560.9338,
+        "exit_reason": "time_stop",
+        "exit_time": "2026-05-21T14:42:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/18",
+      "entry_time": "2026-06-01T11:30:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 44,
+          "asof": "2026-06-01",
+          "window_start": "2026-01-23",
+          "window_end": "2026-05-29",
+          "latest_label_exit": "2026-05-21T14:42:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 873.5206068183139,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 18,
+          "trades": 29,
+          "anchor_trades": 19,
+          "paired_net": 35707.1037,
+          "without_best_day": 25415.7905,
+          "drawdown": 0.0231213839405851,
+          "anchor_drawdown": 0.04802482814034116
+        },
+        "alternative_scores": {
+          "BASE": 729.7931649209015,
+          "STALL30": 873.5206068183139,
+          "STRUCT30": 776.1829788428017
+        },
+        "cutoff": "2026-05-21T14:42:59+05:30"
+      },
+      "later_labels": {
+        "net": 6265.3648,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2026-06-01T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/19",
+      "entry_time": "2026-06-01T11:36:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 44,
+          "asof": "2026-06-01",
+          "window_start": "2026-01-23",
+          "window_end": "2026-05-29",
+          "latest_label_exit": "2026-05-21T14:42:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 873.5206068183139,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 18,
+          "trades": 29,
+          "anchor_trades": 19,
+          "paired_net": 35707.1037,
+          "without_best_day": 25415.7905,
+          "drawdown": 0.0231213839405851,
+          "anchor_drawdown": 0.04802482814034116
+        },
+        "alternative_scores": {
+          "BASE": 729.7931649209015,
+          "STALL30": 873.5206068183139,
+          "STRUCT30": 776.1829788428017
+        },
+        "cutoff": "2026-05-21T14:42:59+05:30"
+      },
+      "later_labels": {
+        "net": 5016.9032,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2026-06-01T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/20",
+      "entry_time": "2026-06-12T12:10:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 53,
+          "asof": "2026-06-12",
+          "window_start": "2026-02-05",
+          "window_end": "2026-06-11",
+          "latest_label_exit": "2026-06-01T15:10:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 1083.9318809743397,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 18,
+          "trades": 30,
+          "anchor_trades": 19,
+          "paired_net": 41666.984800000006,
+          "without_best_day": 30384.716800000006,
+          "drawdown": 0.023562510750456202,
+          "anchor_drawdown": 0.04802482814034116
+        },
+        "alternative_scores": {
+          "BASE": 931.4994578620142,
+          "STALL30": 1083.9318809743397,
+          "STRUCT30": 985.9599239982651
+        },
+        "cutoff": "2026-06-01T15:10:59+05:30"
+      },
+      "later_labels": {
+        "net": -2538.2501,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2026-06-12T13:28:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/21",
+      "entry_time": "2026-06-19T11:55:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 58,
+          "asof": "2026-06-19",
+          "window_start": "2026-02-12",
+          "window_end": "2026-06-18",
+          "latest_label_exit": "2026-06-12T13:28:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 1215.4613928144386,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 17,
+          "trades": 26,
+          "anchor_trades": 19,
+          "paired_net": 44165.885800000004,
+          "without_best_day": 32883.61780000001,
+          "drawdown": 0.02314460538656991,
+          "anchor_drawdown": 0.04802482814034116
+        },
+        "alternative_scores": {
+          "BASE": 1061.6594671632124,
+          "STALL30": 1215.4613928144386,
+          "STRUCT30": 1116.906767485455
+        },
+        "cutoff": "2026-06-12T13:28:59+05:30"
+      },
+      "later_labels": {
+        "net": -1199.3867,
+        "exit_reason": "underlying_stop",
+        "exit_time": "2026-06-19T12:02:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/22",
+      "entry_time": "2026-07-22T11:51:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 80,
+          "asof": "2026-07-22",
+          "window_start": "2026-03-17",
+          "window_end": "2026-07-21",
+          "latest_label_exit": "2026-06-19T12:02:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 373.30021799500855,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 14,
+          "trades": 21,
+          "anchor_trades": 18,
+          "paired_net": 27431.071600000003,
+          "without_best_day": 16148.803600000003,
+          "drawdown": 0.02423406173779384,
+          "anchor_drawdown": 0.04752179575045732
+        },
+        "alternative_scores": {
+          "BASE": 230.78712796919274,
+          "STALL30": 373.30021799500855,
+          "STRUCT30": 278.4559667135393
+        },
+        "cutoff": "2026-06-19T12:02:59+05:30"
+      },
+      "later_labels": {
+        "net": 1381.5893,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2026-07-22T15:10:59+05:30"
+      }
+    },
+    {
+      "year": "2026",
+      "admission_id": "N06/2026/c3dfc25bd6be88db/23",
+      "entry_time": "2026-07-22T11:55:59+05:30",
+      "expert": "TPB",
+      "direction": "SHORT",
+      "quantity": 65,
+      "known_before_day": {
+        "decision": {
+          "variant": "STALL30",
+          "best_evidence": "STALL30",
+          "consecutive_days": 80,
+          "asof": "2026-07-22",
+          "window_start": "2026-03-17",
+          "window_end": "2026-07-21",
+          "latest_label_exit": "2026-06-19T12:02:59+05:30"
+        },
+        "stall_evidence": {
+          "score": 373.30021799500855,
+          "eligible": true,
+          "checks": {
+            "weeks": true,
+            "paired_days": true,
+            "challenger_trades": true,
+            "anchor_trades": true,
+            "score": true,
+            "without_best": true,
+            "drawdown": true
+          },
+          "paired_days": 14,
+          "trades": 21,
+          "anchor_trades": 18,
+          "paired_net": 27431.071600000003,
+          "without_best_day": 16148.803600000003,
+          "drawdown": 0.02423406173779384,
+          "anchor_drawdown": 0.04752179575045732
+        },
+        "alternative_scores": {
+          "BASE": 230.78712796919274,
+          "STALL30": 373.30021799500855,
+          "STRUCT30": 278.4559667135393
+        },
+        "cutoff": "2026-06-19T12:02:59+05:30"
+      },
+      "later_labels": {
+        "net": 839.7354,
+        "exit_reason": "hard_flat_1510",
+        "exit_time": "2026-07-22T15:10:59+05:30"
+      }
+    }
+  ],
+  "input_eval_hashes": {
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_c7bbd068f11394f9.json": "fdbe8224a50b71e0398a5fe1414fa74cae4276b1e19e34b638be5028a04025ad",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_d1d38a917b1c9b89.json": "e96b30f084f4dabe68260386716edde2886381fe5ca84b8988e9a7b0ddae6075",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_672f55ea91d8a155.json": "387cc229cbd998a42e2b79fea304059631fbdf6b6791a4bfcff4af21e5cea7bd",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2024-01-01_2024-12-31_8833825c3f6bcf5d.json": "bb3d8c69fafc68d383bd1f6a0129a535dae01e8ec6bb898cefef16a3474e308e",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/decisions-2024.json": "1a6434d1a6e82cfedc0fc5a690a7b127d3210b3d98fd38f89d016c7582db62c5",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/models-2024.json": "c9d130f4e80cd5d481e66b435a807d84022a5c73dab470a1a380484d520336c8",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/keys-candidate-2024.json": "3755f7a14a83cca79045c48cbf9ef176b48ecc3f16f16683096935fdbef42f56",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/evals/year_2024-01-01_2024-12-31_c3dfc25bd6be88db.json": "aaef67f8b3e6920b8d5b71b84ef344b33db04c96dbaaf3d5ade041b4b2f30f93",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_c7bbd068f11394f9.json": "5ae7810f3001683af47445aa9da747a89a7cbacfa1243ef48ee6f9270a9004a4",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_d1d38a917b1c9b89.json": "51fd8a11bbe8f0f05beff0b4955d4180a8e5f44b17d1a71d55868627ed8cc335",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_672f55ea91d8a155.json": "16b170d0989b84f49c0c3e4afaa9a98167c41d0c8641cc59889ff661cbcb46b6",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2025-01-01_2025-12-31_8833825c3f6bcf5d.json": "007db381e8f93fbd12beedefbcfdebe3c38ef830b62209c34ec6519e221d3ffb",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/decisions-2025.json": "03823cd98c581418a08418359f5dad25b15e850e28797d0898342ab510322d97",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/models-2025.json": "fdc30b5795772212b07acb925be064cb1bb96fc0e5db9fb5614565397cf829f8",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/keys-candidate-2025.json": "76de659b876fe223fc3718358b9f89567d25f45138eb2e4eb54dd80cde03a6cc",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/evals/year_2025-01-01_2025-12-31_c3dfc25bd6be88db.json": "ea53ab9a0e02a922cfb399caeb63e6561b494f220391f6a34e8ac9c607613b4d",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_c7bbd068f11394f9.json": "e0bf1754bbf9afe82df56e9c8c51b83b40fc604014456c0fbbf4cbc2fc892ff8",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_d1d38a917b1c9b89.json": "8dcfc890451f508d93e78b294e926602570f3c19302209db1ad9d14821abca62",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_672f55ea91d8a155.json": "6769ed73d521bae6894a7cd910c95523689c0460dca8caa35d8be984a7b8c297",
+    "docs/research/simulation/2026-11-01-fno-stall-refinement/_local/evals/year_2026-01-01_2026-10-28_8833825c3f6bcf5d.json": "e4f02a88b19dd5c4f2696ff1bf71a84f40bfc8668cff7c9dab57a8a464c901cc",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/decisions-2026.json": "15c2e19367168a31b40913de35771b7648f7c1a706e62d27e6cbbb791554a614",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/models-2026.json": "ad08990bbdd1abaedf8ce71e9c734ba57a8b7d3a953b89c4f1b8d4a7deed4305",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/keys-candidate-2026.json": "79d0b9fe982cb600f69ef0889033a47ec19c0b96a2b2188ac5b4c7757dc4cdf7",
+    "docs/research/simulation/2026-11-01-fno-variant-selector/_local/evals/year_2026-01-01_2026-10-28_c3dfc25bd6be88db.json": "cd41d98495b9e3d27ef37878d0e114a55e549092391cd465d79525004397500d"
+  },
+  "constraints": "No future labels in earlier decision context; all member/direction losses retained; no candidate strategy scored here; selected N04 trades differ from fixed N04 counterfactual book."
+}
