@@ -1,3 +1,11 @@
+## November 1 — N02 final result identity and next experiment
+
+- Results/report commit **4aceb02**, pushed; source cb222ba and daily decisions8e2d795 preceded their respective scores. Read docs/research/simulation/2026-11-01-fno-core-selector/README.md and VERIFICATION.md; root results.json is canonical.65 focused tests,18 fresh annual books,806 exact admission/trace lifecycles,1,612 archive prices and699 fresh raw/cache sessions verified. No candidate passes the frozen best-day/paired-evidence acceptance, despite higher net and preserved2026 MAIN opportunities.
+- CORE_SELECT nets +16,371/+14,501/+50,391 versus MAIN +16,371/+5,710/+30,540 (fresh250k/year, modeled costs). Only9,305 of2026 uplift is added-trade net;10,546 is changed main-origin sizing/cash. Static TPB_ONE is stronger on all three seen years (+28,540/+36,173/+71,443) and remains a named unqualified comparison, not an activated replacement.
+- Next frozen study: MAIN explicit incumbent, static TPB_ONE/TPB_FULL and unchanged adaptive controls, matched fixed-one-lot attribution; audit causal option-payoff feature availability before at most two new hypotheses. Any EFF stop/exit change requires its own later freeze. No threshold relaxation, profitability claim or live promotion.2023 stays deferred/unscored until the owner later requests it; all2024–2026 data already seen.
+- No application/config/migration/real-order/partner-message/money/Production changes. Production checkout c97cb8c and sampled HTTP200 unchanged, unrelated dirt retained. Replay workers completed. A post-run consistency packet is generated after this handoff at its fixed SHA; it is not preregistration or execution/profit proof. No Production rollback required.
+
+
 ## November 1 — N02 completed: main retained, switching improves replay but fails promotion
 
 - Canonical report: docs/research/simulation/2026-11-01-fno-core-selector/README.md; results.json and VERIFICATION.md hold all scores/contracts/commands. Source cb222ba and699 daily-choice hashes8e2d795 were pushed BEFORE their respective scores. No decision-source/configuration/acceptance tuning after results.
