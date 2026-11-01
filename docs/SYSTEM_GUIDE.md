@@ -1,3 +1,11 @@
+## November 2 — N10.1 complete: two useful corrections, no economic winner
+
+Read [N10.1 report](FNO_RESEARCH_N101.md) and its full study at `docs/research/simulation/2026-11-02-fno-n101/`. Research only. WATCH_FLAT restricts N10 floor recovery to a flat account unable to fund a typical previously closed one-lot contract; PREMIUM_LOCK also replaces an underlying-lock risk proxy with actual cost-aware option stop funding for the third lot. Native entries/exits, deadlines, full-premium reserve and max three research lots are retained. No application switch or live behavior changed.
+
+Fresh Rs 250k per year, 2023–26 seen data: N10 retry / WATCH_FLAT net 233,275 each; PREMIUM_LOCK 201,588. Worst day 6,127 each. PREMIUM_LOCK's added lots earn more themselves, but original-position earnings and admission feedback lose more. WATCH_FLAT also loses in doubled-cost and some continuous-account comparisons. BOTH fail the frozen superiority screen; keep N10 as the unqualified research profit reference, not a proven live winner. 2023 remains negative. No live capital/size/halt change follows.
+
+80 annual executions, 100 focused tests, 16 exact controls/856 old economic trades; independent 4,125 lifecycles, 8,608 modeled prices, 3,914 native admissions, 71 price-funded additions/stops, 6,066 cash identities and 76 state snapshots checked. Source c567f8e / controls f4f92f2. Original trading/input freeze unchanged. WATCH peak audit verifies every historical release; 18 terminal decision-peak fields lag final winning closes and must not be called exact terminal high-water marks. No release was based on a lagged peak here. Final state integration still needs settlement-driven tracking. Production/real-money settings unchanged; 2022 untouched.
+
 ## November 2 — N10.1 controls reproduced, option-risk distinction verified
 
 All16 annual N08/N09.1/N10 strict/retry controls exactly reproduce856 saved economic lifecycles. Source/config freeze c567f8e precedes scores. N10 third-lot risk is a proxy: all15 child premium-stop losses plus fees/stress exceed their declared child-risk numbers;12 original combined backstop exposures exceed5000. These are planned-risk diagnostics, not additional realized losses or an application-order bug. N10.1 tests actual premium-stop funding and genuine flat-book recovery; no runtime change or new candidate result yet.

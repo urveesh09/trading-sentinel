@@ -1,0 +1,31 @@
+{
+  "year": "2025",
+  "passed": true,
+  "checks": {
+    "books": 8,
+    "money": 589,
+    "modeled_prices": 1186,
+    "native_admissions": 514,
+    "funded_adds": 2,
+    "watch_attempts": 40,
+    "watch_releases": 0,
+    "states": 7,
+    "cash_identities": 575,
+    "premium_stop_lifecycles": 2
+  },
+  "cash_event_drawdown_pct": {
+    "year_2025-01-01_2025-12-31_4349f0d64e23f53a": 4.703183226948269,
+    "year_2025-01-01_2025-12-31_57a9a63ea21c51f4": 4.852178356715845,
+    "year_2025-01-01_2025-12-31_be7bedc8af342a15": 4.968236843555694,
+    "year_2025-01-01_2025-12-31_27fbd74ec4ed22c4": 4.852178356715845,
+    "year_2025-01-01_2025-12-31_f878fc364a73889a": 4.968236843555694,
+    "year_2025-01-01_2025-12-31_b37d0d0b0016c6e7": 7.19972583571131,
+    "year_2025-01-01_2025-12-31_f645faa0cd172d18": 4.924571404618353,
+    "year_2025-01-01_2025-12-31_c7b46e573a252253": 7.181182979618024
+  },
+  "limits": [
+    "archived modeled bid/ask, not depth or broker fills",
+    "planned stops can gap; full premium still reserved",
+    "all four years seen"
+  ]
+}

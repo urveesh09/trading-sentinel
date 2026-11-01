@@ -1,3 +1,12 @@
+## November 2 — N10.1 completed and independently reconciled
+
+- Read FNO_RESEARCH_N101.md/json and the study README/VERIFICATION/IDENTITY. Both frozen economic-superiority screens FAIL. N10 retry remains a seen-data research reference. WATCH_FLAT 233,275 equals its annual net but is worse under some cost/account tests; PREMIUM_LOCK 201,588 is not promoted.
+- Exactly 80 executions: 16 exact controls/856 old trades, 16 candidate annual/cost, 48 continuous year slices. All 12 replay children exit 0; max two workers. 100 focused tests; atlas regenerated 291/no diff; no full-suite claim.
+- Independent 4,125 financial lifecycles, 8,608 modeled quote prices, 3,914 admissions, 71 funded additions/observed stop lifecycles, 6,066 cash identities and 76 terminal snapshots. WATCH peak checks include carried history: 35 release checks, no wrong peak/bound breach. 18 terminal peak lags explicitly retained, not silently normalized.
+- First carry audit failures are CHECKER_CORRECTION: exact 203.975 stress was wrongly reconstructed from a rounded 203.97 display. Corrected checker, not cost/policy/results or cash tolerance. Original failure/source retained. Frozen c567f8e trading/config/input bytes unchanged; controls f4f92f2.
+- Production c97cb8c still running at original 2026-11-01T01:41:39.3519856Z start; API 200. No app/env/migration/halt/authority/capital/lot/order/message/restart/deploy/task registration/2022 access. Owner dirt preserved; all replay workers finished.
+- Remaining: settlement-driven WATCH peak before integration, predeclared keyed forward shadows/real cost evidence, separately frozen 2022 examination after owner acquisition. No further same-year tuning in this round. Final results identity and fixed-SHA evidence packet follow.
+
 ## November 2 — N10.1 baseline checkpoint
 
 - Source c567f8e frozen before scoring;16 exact controls/856 economic records pass. Control child commands2023/24/25/26 exit0 at95.81/80.09/87.00/73.47seconds.

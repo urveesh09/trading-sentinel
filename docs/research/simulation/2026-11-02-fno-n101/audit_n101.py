@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import bisect
+import argparse
 import json
 import math
 from datetime import datetime
@@ -31,6 +32,10 @@ def net(buy, sell, qty, extra):
     return (sell-buy)*qty-fees(buy,sell,qty)-extra
 
 
+def exact_extra(cost, lots):
+    return (cost[0]+cost[1]*lots)*lots
+
+
 def near(a, b, context, tolerance=.011):
     assert math.isfinite(a) and math.isfinite(b) and abs(a-b) <= tolerance, (context, a, b)
 
@@ -39,7 +44,7 @@ def stamp(value):
     return datetime.fromisoformat(value)
 
 
-def main():
+def main(phases=("controls","annual","carry")):
     L.verify()
     L.Z.B.L._init()
     data = L.Y.dataset("year")
@@ -60,7 +65,6 @@ def main():
 
     paper = list(L.paper_rows())
     paper_times = [r[0] for r in paper]
-    phases = ("controls","annual","carry")
     for phase in phases:
         keys = json.loads((LOCAL / f"keys-{phase}-{YEAR}.json").read_text())
         for name, key in keys.items():
@@ -72,10 +76,13 @@ def main():
                 assert t["status"]=="CLOSED" and t["net_pnl"] is not None
                 assert t["entry_qty"] in (65,130)
                 assert stamp(t["entry_time"]) < stamp(t["exit_time"])
+                assert t["entry_time"][:10]==t["exit_time"][:10],"unexpected overnight lifecycle"
                 assert stamp(t["entry_time"]).hour*60+stamp(t["entry_time"]).minute < 14*60+45
                 children = t.get("n10_children") or []
                 assert len(children)<=1
-                parent = net(t["entry_premium"],t["exit_premium"],t["entry_qty"],float(t.get("extra_cost") or 0))
+                parent_extra=exact_extra(cost,t["entry_qty"]//65)
+                near(float(t.get("extra_cost") or 0),parent_extra,"rounded stress display",.011)
+                parent = net(t["entry_premium"],t["exit_premium"],t["entry_qty"],parent_extra)
                 cash_children = 0
                 for c in children:
                     assert c["exit_at"] is not None
@@ -120,7 +127,7 @@ def main():
             cash=opening
             high=cash
             maxdd=0
-            for at, amount in sorted(flows):
+            for at, amount in sorted(flows, key=lambda f:f[0]):
                 cash+=amount
                 high=max(high,cash)
                 maxdd=max(maxdd,(high-cash)/high)
@@ -132,6 +139,10 @@ def main():
                 near(a["pool"],expected_cash,("admission cash",name,a["at"]),.04)
                 counts["cash_identities"]+=1
                 if a["accepted"]:
+                    context=a["native_gate_context"]
+                    assert context["is_trading_day"] and not context["is_expiry_day"]
+                    assert not context["active_kill_switches"] and context["bid"]>0 and context["ask"]>0
+                    assert context["now_min"]<14*60+45
                     lot=a["final_lots"]
                     reserve=full(a["ask"],65*lot,lot,cost)
                     near(reserve,a["full_reserves"][str(lot)],"entry full reserve",.001)
@@ -200,10 +211,13 @@ def main():
                     assert watch["slices"][:len(oldwatch["slices"])]==oldwatch["slices"]
                     assert watch["best"]>=oldwatch["best"]-1e-8
             counts["books"]+=1
-    L.X.write(HERE/f"audit-{YEAR}.json",{"year":YEAR,"passed":True,"checks":counts,"cash_event_drawdown_pct":cash_drawdowns,
+    tag="" if len(phases)==3 else "-"+"-".join(phases)
+    L.X.write(HERE/f"audit{tag}-{YEAR}.json",{"year":YEAR,"passed":True,"checks":counts,"cash_event_drawdown_pct":cash_drawdowns,
              "limits":["archived modeled bid/ask, not depth or broker fills","planned stops can gap; full premium still reserved","all four years seen"]})
     print(json.dumps({"year":YEAR,"passed":True,"checks":counts}),flush=True)
 
 
 if __name__=="__main__":
-    main()
+    cli=argparse.ArgumentParser()
+    cli.add_argument("--phases",nargs="+",choices=("controls","annual","carry"),default=("controls","annual","carry"))
+    main(tuple(cli.parse_args().phases))

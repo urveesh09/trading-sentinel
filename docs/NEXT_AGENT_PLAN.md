@@ -1,3 +1,17 @@
+## November 2 — N10.1 finished; next work is evidence, not another fitted winner
+
+Start `docs/FNO_RESEARCH_N101.md/json` and `docs/research/simulation/2026-11-02-fno-n101/README.md`, `VERIFICATION.md`, `IDENTITY.json`, `CHECKER_CORRECTION.md`. Frozen source c567f8e, exact controls f4f92f2. All 80 declared executions completed; 100 focused tests and full independent cash/quote/stop/admission/floor/state checks pass. WATCH_FLAT keeps N10's fresh annual 233,275 but loses some cost/account comparisons; PREMIUM_LOCK totals 201,588 and fails profit, doubled-cost, top-five exclusion and continuous-cost checks. No candidate is economically superior. No retuning/threshold change/extra arm was introduced after scores.
+
+Remaining concrete work:
+
+1. Retain N10 retry as an UNQUALIFIED research profit reference, alongside strict N10/N08/N09.1 controls. Its retry is still selected on seen data. Keep both N10.1 failures, opportunity costs and cost-sensitive account outcomes; no live promotion or size increase.
+2. Before any operational WATCH integration, track true closed-cash peaks on each settlement with immutable timestamps and carry/restart tests. The research tracker updates during planning and lags the final close in 18 terminal windows; every observed release still used the correct peak and respected 75%. Preserve original traces; any policy-affecting correction needs its own frozen comparison. This is not a Production feature to hot-patch.
+3. Separately freeze a broker-disabled forward recorder for N08/N10/WATCH_FLAT: keyed signals/admissions/rejections, quote ages/paths, cash/fees/stops/floor transitions and explicit coverage. Fix review dates/minimum evidence before recording; unavailable evidence remains unavailable. No scheduled task was registered here. Actual cost/latency evidence comes only from authorized activity.
+4. Owner will obtain 2022 later. Keep N10's original EXAM_2022 unchanged; bind the strict driver added at 7bbfb89 as well as its earlier trading freeze. New N10.1 arms require a separate supplement frozen before any 2022 examination. No acquisition/access occurred in this task.
+5. Any future add-on idea should preserve the profitable base exit and measure its own option risk/fees/cash honestly. The tested tighter parent stop raised child contribution but sacrificed more base profit. Do not use paper underlying gains as secured cash, or add a new parameter grid to the same four years.
+
+No app/env/migration/real-money/live-halt/lot/capital/Production/restart/deploy/order/message change. Small Rs 15k trial is outside this Rs 250k reserve policy. All prior studies and owner dirty slices retained. Final identity and fixed-SHA skill consistency packet follow in handoff.
+
 ## November 2 — N10.1 controls passed; execute the unchanged two hypotheses
 
 Source c567f8e/immutable freeze:16 exact controls and856 old economic trades verified.94 focused checks passed (21new+49N10+24native cost/planner/exit/replay); atlas291/no diff. Independent audit source is separate from trading. Finish16 candidate annuals and48 chronological carry slices, then verify raw modeled prices, fees, stops, floor evidence, cash and state. Fixed superiority benchmark is retry N10; failed screens remain failed. No new parameters/arms/2022/Production action.

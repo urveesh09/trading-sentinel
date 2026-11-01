@@ -1,0 +1,154 @@
+{
+  "windows": 72,
+  "release_checks_including_carried_history": 35,
+  "release_tracker_lags": [],
+  "release_deepest_floor_violations": [],
+  "terminal_tracker_lags": [
+    {
+      "phase": "controls",
+      "year": "2026",
+      "book": "N10",
+      "decision_observed_best": 374451.7748559882,
+      "actual_closed_cash_peak": 375786.05679999985,
+      "difference": 1334.281944011629
+    },
+    {
+      "phase": "controls",
+      "year": "2026",
+      "book": "STRICT",
+      "decision_observed_best": 353976.456755105,
+      "actual_closed_cash_peak": 355310.73869999975,
+      "difference": 1334.2819448947557
+    },
+    {
+      "phase": "annual",
+      "year": "2026",
+      "book": "WATCH_FLAT|200",
+      "decision_observed_best": 374451.7748559882,
+      "actual_closed_cash_peak": 375786.05679999985,
+      "difference": 1334.281944011629
+    },
+    {
+      "phase": "annual",
+      "year": "2026",
+      "book": "WATCH_FLAT|400",
+      "decision_observed_best": 343285.90003985877,
+      "actual_closed_cash_peak": 344415.18209999974,
+      "difference": 1129.2820601409767
+    },
+    {
+      "phase": "annual",
+      "year": "2026",
+      "book": "PREMIUM_LOCK|200",
+      "decision_observed_best": 348785.53140880185,
+      "actual_closed_cash_peak": 350119.8134999998,
+      "difference": 1334.2820911979652
+    },
+    {
+      "phase": "annual",
+      "year": "2026",
+      "book": "PREMIUM_LOCK|400",
+      "decision_observed_best": 294810.6279691061,
+      "actual_closed_cash_peak": 295939.90979999996,
+      "difference": 1129.2818308938877
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "N10|199",
+      "decision_observed_best": 426362.1357022516,
+      "actual_closed_cash_peak": 427697.44250000024,
+      "difference": 1335.3067977486644
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "N10|200",
+      "decision_observed_best": 426106.1357022516,
+      "actual_closed_cash_peak": 427440.41750000004,
+      "difference": 1334.2817977484665
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "N10|202",
+      "decision_observed_best": 425778.9657898207,
+      "actual_closed_cash_peak": 427111.1976000002,
+      "difference": 1332.2318101794808
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "N10|400",
+      "decision_observed_best": 409032.07707037375,
+      "actual_closed_cash_peak": 410161.35899999994,
+      "difference": 1129.2819296261878
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "WATCH_FLAT|199",
+      "decision_observed_best": 426376.8796855457,
+      "actual_closed_cash_peak": 427712.18650000024,
+      "difference": 1335.3068144545541
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "WATCH_FLAT|200",
+      "decision_observed_best": 426117.70468554564,
+      "actual_closed_cash_peak": 427451.9865,
+      "difference": 1334.2818144543562
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "WATCH_FLAT|202",
+      "decision_observed_best": 424540.0971935749,
+      "actual_closed_cash_peak": 425872.3290000002,
+      "difference": 1332.2318064253195
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "WATCH_FLAT|400",
+      "decision_observed_best": 399290.2258575614,
+      "actual_closed_cash_peak": 400419.50779999996,
+      "difference": 1129.281942438567
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "PREMIUM_LOCK|199",
+      "decision_observed_best": 427878.70654802176,
+      "actual_closed_cash_peak": 429214.0134000001,
+      "difference": 1335.3068519783556
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "PREMIUM_LOCK|200",
+      "decision_observed_best": 400140.3942774087,
+      "actual_closed_cash_peak": 401474.67629999993,
+      "difference": 1334.2820225912146
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "PREMIUM_LOCK|202",
+      "decision_observed_best": 427060.1603480216,
+      "actual_closed_cash_peak": 428392.3922000003,
+      "difference": 1332.2318519786932
+    },
+    {
+      "phase": "carry",
+      "year": "2026",
+      "book": "PREMIUM_LOCK|400",
+      "decision_observed_best": 359916.9670381194,
+      "actual_closed_cash_peak": 361046.24889999995,
+      "difference": 1129.2818618805613
+    }
+  ],
+  "passed_decision_bound": true,
+  "basis": "Closed cash after all settlements at each observation; terminal tracker may miss a last close because it updates only during planning. No price/fee or P&L is changed."
+}
