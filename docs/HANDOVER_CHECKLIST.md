@@ -1,3 +1,10 @@
+## November1 — N01-F models sealed; original outcomes retained before corrected replay
+
+- All45 parent replays complete with zero financial/memo/clock issues;8,040 closed records reconcile. No parent adaptive policy passes. Parent results remain in `fno-intraday-router/results.json`; no rule changes are being chosen from those returns.
+- Corrected freshness source **c3cd451** was frozen before correction scoring. All34 models rebuilt and independently audited. None of the3,669 STATIC training entries used a stale bar, so derived labels AND model files are byte-identical to the original version. Label/cash/quantity/price changes=0;97 positive expert-cell scores independently verified. Record this fact rather than claiming an improved model.
+- Commit corrected model manifest before18 new candidate replays, preserving all27 base books by exact hashes. Those reruns check whether the freshness guard changes any actual admission or state exit; new book identities/caches keep both versions. Total fresh research replay count will be63, not90.166 focused tests pass (161 original regression plus5 freshness boundaries); all699 raw/cache packets agree. No application/config/migration/Production/order/2023-exam change. Final corrected results and decision/price audit remain.
+
+
 ## November1 — N01-F stale-state input repair frozen independently
 
 - Gap audit before reviewing adaptive P&L found the parent latest-closed-bar lookup can retain a pre-gap state until a post-gap bar closes. Nested `fno-intraday-router/freshness/PLAN.md` corrects only this contract: closed-bar END age>=5min means UNAVAILABLE, with empty switch-exit history. Ordinary stop/trail/hard-flat still run first. No strategy, score, cost or acceptance threshold tuning.
