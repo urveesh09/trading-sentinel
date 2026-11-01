@@ -1,0 +1,389 @@
+{
+  "comparisons": {
+    "2024|MAIN_ANCHOR": {
+      "anchor": "MAIN",
+      "selected_days": {
+        "MAIN": 195,
+        "STRUCT30": 53
+      },
+      "admitted_variants": {
+        "MAIN": 25,
+        "STRUCT30": 2
+      },
+      "modeled_net_by_admitted_variant": {
+        "BASE": 0.0,
+        "STALL30": 0.0,
+        "STRUCT30": -607.4261000000001,
+        "MAIN": 14342.4971
+      },
+      "support": {
+        "BASE": {
+          "max_paired_days": 16,
+          "eligible_dates": 54,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 168,
+            "challenger_trades": 180,
+            "anchor_trades": 122,
+            "score": 133,
+            "without_best": 121,
+            "drawdown": 113
+          }
+        },
+        "STALL30": {
+          "max_paired_days": 16,
+          "eligible_dates": 0,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 168,
+            "challenger_trades": 180,
+            "anchor_trades": 122,
+            "score": 211,
+            "without_best": 131,
+            "drawdown": 113
+          }
+        },
+        "STRUCT30": {
+          "max_paired_days": 16,
+          "eligible_dates": 54,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 168,
+            "challenger_trades": 180,
+            "anchor_trades": 122,
+            "score": 133,
+            "without_best": 121,
+            "drawdown": 113
+          }
+        }
+      },
+      "matched_economic_admissions": 24,
+      "candidate_only_admissions": 3,
+      "anchor_only_admissions": 1,
+      "paired_exit_delta": 0.0,
+      "unpaired_candidate_net": -4702.1991,
+      "unpaired_anchor_net": -2065.9865,
+      "total_delta": -2636.2126000000007
+    },
+    "2024|STRUCT_ANCHOR": {
+      "anchor": "STRUCT30",
+      "selected_days": {
+        "STRUCT30": 248
+      },
+      "admitted_variants": {
+        "STRUCT30": 33
+      },
+      "modeled_net_by_admitted_variant": {
+        "BASE": 0.0,
+        "STALL30": 0.0,
+        "STRUCT30": 57242.7653,
+        "MAIN": 0.0
+      },
+      "support": {
+        "BASE": {
+          "max_paired_days": 1,
+          "eligible_dates": 0,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 248,
+            "challenger_trades": 180,
+            "anchor_trades": 42,
+            "score": 248,
+            "without_best": 248,
+            "drawdown": 7
+          }
+        },
+        "STALL30": {
+          "max_paired_days": 2,
+          "eligible_dates": 0,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 248,
+            "challenger_trades": 180,
+            "anchor_trades": 42,
+            "score": 248,
+            "without_best": 248,
+            "drawdown": 16
+          }
+        },
+        "MAIN": {
+          "max_paired_days": 16,
+          "eligible_dates": 0,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 168,
+            "challenger_trades": 170,
+            "anchor_trades": 42,
+            "score": 241,
+            "without_best": 214,
+            "drawdown": 133
+          }
+        }
+      },
+      "matched_economic_admissions": 33,
+      "candidate_only_admissions": 0,
+      "anchor_only_admissions": 0,
+      "paired_exit_delta": 0.0,
+      "unpaired_candidate_net": 0.0,
+      "unpaired_anchor_net": 0.0,
+      "total_delta": 0.0
+    },
+    "2025|MAIN_ANCHOR": {
+      "anchor": "MAIN",
+      "selected_days": {
+        "MAIN": 174,
+        "STALL30": 74
+      },
+      "admitted_variants": {
+        "MAIN": 50,
+        "STALL30": 13
+      },
+      "modeled_net_by_admitted_variant": {
+        "BASE": 0.0,
+        "STALL30": 3749.6727,
+        "STRUCT30": 0.0,
+        "MAIN": 59.30259999999805
+      },
+      "support": {
+        "BASE": {
+          "max_paired_days": 31,
+          "eligible_dates": 74,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 21,
+            "challenger_trades": 15,
+            "anchor_trades": 40,
+            "score": 162,
+            "without_best": 138,
+            "drawdown": 107
+          }
+        },
+        "STALL30": {
+          "max_paired_days": 31,
+          "eligible_dates": 78,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 21,
+            "challenger_trades": 15,
+            "anchor_trades": 40,
+            "score": 155,
+            "without_best": 116,
+            "drawdown": 106
+          }
+        },
+        "STRUCT30": {
+          "max_paired_days": 31,
+          "eligible_dates": 74,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 21,
+            "challenger_trades": 15,
+            "anchor_trades": 40,
+            "score": 162,
+            "without_best": 138,
+            "drawdown": 107
+          }
+        }
+      },
+      "matched_economic_admissions": 44,
+      "candidate_only_admissions": 19,
+      "anchor_only_admissions": 6,
+      "paired_exit_delta": 0.0,
+      "unpaired_candidate_net": 6992.8508999999995,
+      "unpaired_anchor_net": 8893.7105,
+      "total_delta": -1900.8596000000002
+    },
+    "2025|STRUCT_ANCHOR": {
+      "anchor": "STRUCT30",
+      "selected_days": {
+        "STRUCT30": 248
+      },
+      "admitted_variants": {
+        "STRUCT30": 80
+      },
+      "modeled_net_by_admitted_variant": {
+        "BASE": 0.0,
+        "STALL30": 0.0,
+        "STRUCT30": 50725.9447,
+        "MAIN": 0.0
+      },
+      "support": {
+        "BASE": {
+          "max_paired_days": 1,
+          "eligible_dates": 0,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 248,
+            "challenger_trades": 15,
+            "anchor_trades": 5,
+            "score": 248,
+            "without_best": 248,
+            "drawdown": 84
+          }
+        },
+        "STALL30": {
+          "max_paired_days": 3,
+          "eligible_dates": 0,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 248,
+            "challenger_trades": 15,
+            "anchor_trades": 5,
+            "score": 123,
+            "without_best": 164
+          }
+        },
+        "MAIN": {
+          "max_paired_days": 31,
+          "eligible_dates": 0,
+          "failed_guard_dates": {
+            "weeks": 35,
+            "paired_days": 21,
+            "challenger_trades": 152,
+            "anchor_trades": 5,
+            "score": 245,
+            "without_best": 248,
+            "drawdown": 137
+          }
+        }
+      },
+      "matched_economic_admissions": 80,
+      "candidate_only_admissions": 0,
+      "anchor_only_admissions": 0,
+      "paired_exit_delta": 0.0,
+      "unpaired_candidate_net": 0.0,
+      "unpaired_anchor_net": 0.0,
+      "total_delta": 0.0
+    },
+    "2026|MAIN_ANCHOR": {
+      "anchor": "MAIN",
+      "selected_days": {
+        "MAIN": 113,
+        "STALL30": 90
+      },
+      "admitted_variants": {
+        "MAIN": 21,
+        "STALL30": 16
+      },
+      "modeled_net_by_admitted_variant": {
+        "BASE": 0.0,
+        "STALL30": 13780.2437,
+        "STRUCT30": 0.0,
+        "MAIN": 41511.191699999996
+      },
+      "support": {
+        "BASE": {
+          "max_paired_days": 19,
+          "eligible_dates": 91,
+          "failed_guard_dates": {
+            "weeks": 32,
+            "paired_days": 93,
+            "challenger_trades": 65,
+            "anchor_trades": 93,
+            "score": 96,
+            "without_best": 90,
+            "drawdown": 96
+          }
+        },
+        "STALL30": {
+          "max_paired_days": 19,
+          "eligible_dates": 91,
+          "failed_guard_dates": {
+            "weeks": 32,
+            "paired_days": 93,
+            "challenger_trades": 65,
+            "anchor_trades": 93,
+            "score": 95,
+            "without_best": 90,
+            "drawdown": 88
+          }
+        },
+        "STRUCT30": {
+          "max_paired_days": 19,
+          "eligible_dates": 91,
+          "failed_guard_dates": {
+            "weeks": 32,
+            "paired_days": 93,
+            "challenger_trades": 65,
+            "anchor_trades": 93,
+            "score": 96,
+            "without_best": 90,
+            "drawdown": 88
+          }
+        }
+      },
+      "matched_economic_admissions": 18,
+      "candidate_only_admissions": 19,
+      "anchor_only_admissions": 15,
+      "paired_exit_delta": 0.0,
+      "unpaired_candidate_net": 32301.1687,
+      "unpaired_anchor_net": 7549.947399999999,
+      "total_delta": 24751.221300000005
+    },
+    "2026|STRUCT_ANCHOR": {
+      "anchor": "STRUCT30",
+      "selected_days": {
+        "STRUCT30": 203
+      },
+      "admitted_variants": {
+        "STRUCT30": 56
+      },
+      "modeled_net_by_admitted_variant": {
+        "BASE": 0.0,
+        "STALL30": 0.0,
+        "STRUCT30": 61496.4344,
+        "MAIN": 0.0
+      },
+      "support": {
+        "BASE": {
+          "max_paired_days": 2,
+          "eligible_dates": 0,
+          "failed_guard_dates": {
+            "weeks": 32,
+            "paired_days": 203,
+            "challenger_trades": 65,
+            "anchor_trades": 29,
+            "score": 203,
+            "without_best": 203,
+            "drawdown": 91
+          }
+        },
+        "STALL30": {
+          "max_paired_days": 4,
+          "eligible_dates": 0,
+          "failed_guard_dates": {
+            "weeks": 32,
+            "paired_days": 203,
+            "challenger_trades": 65,
+            "anchor_trades": 29,
+            "score": 122,
+            "without_best": 189,
+            "drawdown": 9
+          }
+        },
+        "MAIN": {
+          "max_paired_days": 19,
+          "eligible_dates": 1,
+          "failed_guard_dates": {
+            "weeks": 32,
+            "paired_days": 93,
+            "challenger_trades": 114,
+            "anchor_trades": 29,
+            "score": 196,
+            "without_best": 196,
+            "drawdown": 103
+          }
+        }
+      },
+      "matched_economic_admissions": 56,
+      "candidate_only_admissions": 0,
+      "anchor_only_admissions": 0,
+      "paired_exit_delta": 0.0,
+      "unpaired_candidate_net": 0.0,
+      "unpaired_anchor_net": 0.0,
+      "total_delta": 0.0
+    }
+  },
+  "unpaired_terms": "Changed original-vs-retest/LOW-day/cash/priority opportunities; not pure paired exit improvement.",
+  "attribution_errors": 0
+}

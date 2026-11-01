@@ -1,0 +1,12 @@
+{
+  "annual_cash_paths": 18,
+  "weekly_vectors": 6,
+  "primary_comparisons": 2,
+  "resamples": 4096,
+  "block_weeks": 4,
+  "seed": 110601,
+  "max_cash_residual": 1.7462298274040222e-10,
+  "financial_or_acceptance_or_statistical_errors": 0,
+  "frozen_periods": "2024/25 Jan-Jun and Jul-Dec;2026 Jan-May and Jun-Oct28 inherited in frozen analysis source",
+  "corrected_checker_assumption": "Initial independent check assumed Jan-Jun/Jul-Dec for2026; assertion retained in CHECKER_CORRECTION.md. No score/strategy/freeze changed."
+}

@@ -31,7 +31,9 @@ def run():
             drawdown_not_worse_all_references_each_year=all(x[y]['fall']<=min(exact[v][y]['fall'] for v in ('BASE','STALL30','STRUCT30')) for y in A.YEARS))
         halves=[]
         for y in A.YEARS:
-            for low,high in ((1,6),(7,12)):
+            # Frozen source inherits equal Jan-May / Jun-Oct partial-2026 blocks.
+            # Jan-Jun / Jul-Dec is a separate diagnostic, not the registered rule.
+            for low,high in (((1,5),(6,10)) if y=='2026' else ((1,6),(7,12))):
                 halves.append(math.fsum(t['net_pnl'] for t in objs[y][name]['trades'] if low<=int(t['exit_time'][5:7])<=high))
         assert np.allclose(halves,c['halves'],atol=1e-8,rtol=0);flags['five_halves']=sum(v>0 for v in halves)>=5
         diff=np.array(weekly[name])-np.array(weekly['STALL30']);sd=diff.std(ddof=1);t=float(diff.mean()/(sd/math.sqrt(len(diff)))) if sd else 0.
@@ -43,7 +45,9 @@ def run():
     for (name,c),t in zip(r['candidates'].items(),ts):
         p=(1+int(np.sum(maximum>=t)))/4097
         assert c['adjusted_p']==p and c['checks']['max_t']==(p<=.05) and c['passes']==all(c['checks'].values())
-    out=dict(annual_cash_paths=18,weekly_vectors=6,primary_comparisons=2,resamples=4096,block_weeks=4,seed=110601,max_cash_residual=maxerror,financial_or_acceptance_or_statistical_errors=0)
+    out=dict(annual_cash_paths=18,weekly_vectors=6,primary_comparisons=2,resamples=4096,block_weeks=4,seed=110601,max_cash_residual=maxerror,financial_or_acceptance_or_statistical_errors=0,
+             frozen_periods='2024/25 Jan-Jun and Jul-Dec;2026 Jan-May and Jun-Oct28 inherited in frozen analysis source',
+             corrected_checker_assumption='Initial independent check assumed Jan-Jun/Jul-Dec for2026; assertion retained in CHECKER_CORRECTION.md. No score/strategy/freeze changed.')
     L.X.write(HERE/'statistics-crosschecks.json',out);print('STATISTICS_VERIFIED',out,flush=True)
 
 

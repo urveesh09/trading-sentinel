@@ -1,3 +1,11 @@
+## November 1 — N06 complete; no profitable switch or larger-size qualification
+
+- READ separate FNO_RESEARCH_SELECTOR_N06 md/json and study README/VERIFICATION. Sourcea5b2d7c, models5c74b47 committed before scores. All18 annual experiments complete (12 exact controls+6 candidates);109 focused checks and independent financial/price/trace/retest/exit/selection/statistical reconciliations pass.911 closes/1822 prices/1398 choices; prior699 input checks reused, not re-counted.
+- MAIN_ANCHOR13,735/3,809/55,291, worst annual closed fall8.55%; STRUCT_ANCHOR unchanged structural reference57,243/50,726/61,496,5.00%. ZERO acceptance passes. Keep all three old checkpoint identities; no ref/benchmark/sample/cap substitution.
+- Checker-only2026 calendar-block assumption corrected with failure retained in CHECKER_CORRECTION.md; actual source/scores unchanged. Real execution costs remain unavailable from paper-only inventory.
+- Remaining: predeclared fresh keyed shadow outcomes and quote-path coverage for every saved policy; separately authorized actual fill/charge/cash reconciliation.2023 deferred, no sizing/real order/deploy authority.
+- Dev research/docs pushed; Productionc97cb8c healthy/HTTP200/engine start unchanged, no edits/restarts/env/cash/lot/order/Telegram/migration changes. Atlas291/no diff, unrelated owner slices retained. Fixed-SHA post-run packet after identity handoff checks consistency only.
+
 ## November 1 — N06 candidate decision manifest committed before scoring
 
 - Source a5b2d7c; all12 annual static controls match exactly,109 focused checks pass.

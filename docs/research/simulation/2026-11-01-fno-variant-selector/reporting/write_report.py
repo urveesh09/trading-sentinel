@@ -12,7 +12,7 @@ def run():
     for name in ('MAIN','BASE','STALL30','STRUCT30','MAIN_ANCHOR','STRUCT_ANCHOR'):
         b=r['books'][name];lines.append('| '+name+' | '+' | '.join(f"Rs{b['years'][y]['net']:+,}" for y in ('2024','2025','2026'))+f" | {max(b['exact_years'][y]['fall'] for y in ('2024','2025','2026')):.2%} |")
     counts=['| Year / selector | Daily selections (includes no-entry days) |','|---|---|']
-    for label,c in s['counts'].items():counts.append('| '+label+' | '+', '.join(f'{v}: {n}' for v,n in c.items())+' |')
+    for label,c in s['counts'].items():counts.append('| '+label.replace('|',' / ')+' | '+', '.join(f'{v}: {n}' for v,n in c.items())+' |')
     tests=['| Candidate | Failed predeclared checks | t vs STALL30 | Adjusted p |','|---|---|---:|---:|']
     for name,c in r['candidates'].items():tests.append('| '+name+' | '+', '.join(k for k,v in c['checks'].items() if not v)+f" | {c['paired_t_stall']:.2f} | {c['adjusted_p']:.4f} |")
     text='''# N06 — test past-only selection before increasing exposure
@@ -69,6 +69,10 @@ positive net after removing best trade/day;>=12 annual/60 total closes;5/6
 profitable half-years;t>=2 versus STALL30 and four-week-block two-arm max-T
 p<=.05 (4096 draws,seed110601). Full monetary paths and exact drawdowns underlie
 checks, rather than rounded displayed amounts.
+The inherited frozen2026 blocks are Jan-May and Jun-Oct28, not calendar
+half-years;2024/25 use Jan-Jun/Jul-Dec. CHECKER_CORRECTION.md preserves the
+initial independent check's calendar-period assumption and its correction.
+Neither replay scores nor the primary acceptance verdict changed.
 
 '''+ '\n'.join(tests)+'''
 
@@ -77,6 +81,29 @@ Even a pass on this repeatedly inspected history would not qualify deployment.
 Chronological causality and guardrails are software properties; predictive
 profitability requires fresh evidence. All failures and original static variants
 are retained; do not choose a different benchmark or lower support after scoring.
+
+## What this adds to the earlier learning
+
+MAIN_ANCHOR produces aboutRs2636 LESS than MAIN in2024,Rs1901 LESS in2025,
+andRs24751 MORE in2026; its worst annual closed fall increases to8.55%.
+Positive past relative results did not reliably identify the next profitable
+opportunity. It also gives up much of the fixed balanced variants' profit while
+waiting for enough supporting labels. This does not establish that all possible
+regime models fail; it rejects this particular frozen rolling-profit selector.
+
+Selector-attribution.json separates matched economics from changed opportunities.
+MAIN_ANCHOR's deltas versus MAIN arise from unpaired admissions/cash/priority
+paths; matched economic admissions have zero paired exit delta in each year.
+Therefore the2026 gain cannot be described as a pure smarter-exit effect.
+
+For STRUCT_ANCHOR, BASE differs on at most1/1/2 days within a rolling window
+in2024/25/26; STALL30 differs on at most2/4/4 days. The ten-paired-day guard
+cannot justify either, and other guards also fail. MAIN qualifies for only one
+isolated2026 date and fails two-day persistence. The resulting selector is
+exactly the fixed STRUCT30 book; zero switches is not an adaptive improvement.
+Do not lower these evidence requirements after seeing this outcome or promise
+that a higher lot allocation would repair it. Preserve the earlier structural
+loss-reduction lead separately from this failed selector test.
 
 ## Execution-evidence availability
 
@@ -93,7 +120,9 @@ exported. No Production edits/restarts/deployments or money/settings changes.
 ## Verification and limits
 
 See VERIFICATION.md, selection-crosschecks.json, path-crosschecks.json,
-statistics-crosschecks.json and input-reuse.json. '''+str(r['correctness']['closed_records'])+''' closed
+statistics-crosschecks.json, selector-attribution.json and input-reuse.json.
+109 focused checks passed:92 research,6 adverse-history/read-only and11 native
+exit/replay checks. '''+str(r['correctness']['closed_records'])+''' closed
 financial/admission identities reconcile. Independent audits verify '''+str(s['causal_daily_choices'])+''' daily
 choices, '''+str(s['independent_profile_models'])+''' candidate evidence models and '''+str(paths['counts']['archive_prices'])+''' archived entry/exit
 prices; '''+str(stats['annual_cash_paths'])+''' cash paths, six weekly vectors and both resampling tests agree.
