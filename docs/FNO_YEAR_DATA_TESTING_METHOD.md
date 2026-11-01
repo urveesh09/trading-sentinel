@@ -6,6 +6,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 - **The general research rules:** [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md).
 - **Testing size in rupees, not per lot:** section 15, with the worked study [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md).
 - **The 2024 exam's results (Oct 31):** [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md). Running an exam like it: section 14.
+- **N10, the earned lot, the account comeback and the cliff in a funded floor (Nov 2):** [FNO_RESEARCH_N10.md](FNO_RESEARCH_N10.md).
 - **N09, N08's challengers, the restart and the overfitting estimate (Nov 1):** [FNO_RESEARCH_N09.md](FNO_RESEARCH_N09.md).
 - **N08 and the NIFTY 2023 result (Nov 1):** [FNO_RESEARCH_N08.md](FNO_RESEARCH_N08.md).
 - **The weak-spots study and the fixed NIFTY 2023 exam (Oct 31):** [FNO_WEAK_SPOTS_2026-10-31.md](FNO_WEAK_SPOTS_2026-10-31.md).
@@ -258,6 +259,10 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 
 ## 12. Pitfalls and fixes
 
+- **One account's ending can be a coin flip (Nov 2, 2026).** N09.1's Rs 3,84,310 turned on Rs 18.45 on one trade; at extra costs of 199 and 202 instead of 200 the same book ends near Rs 2.17 lakh. Before believing any account result, rerun it at small cost shifts: `2026-11-01-fno-n10/cliff_map.py`. Tests at 10% missed it.
+- **Check the code against the plan's wording (Nov 2, 2026).** N10's plan said "first reaches"; its code retried, and that was the difference between passing and failing. A freeze of both doesn't make them agree. Count how often a rule's alternative path actually fires, and audit it before the verdict.
+- **Rough sums from saved trades only choose what to test (Nov 2, 2026).** Adding at +1R looked like +94,512 and came out far below the entry-time lot in exact replay: the rough sum left out the added lot's own stop, time-stop exits and the first leg.
+- **A book that matches another in fresh years is a duplicate in the overfitting estimate (Nov 2, 2026).** An account rule that doesn't fire there changes nothing there. Remove exact duplicates first: `2026-11-01-fno-n10/after_verdict.py`.
 - **A new member inherits the house exits (Nov 1, 2026).** A book member with its own exit rule still runs `FNO_PROFIT_LOCK_ENABLED` unless its policy turns it off. N09's noise-area book did, and half its trades left by the lock. Print exit reasons before believing a new member's result.
 - **Cost-stress books aren't strategies (Nov 1, 2026).** Leave them and exact duplicates out of any selection or overfitting estimate. `COST|none` won 12,201 of 12,870 splits and made an overfitting score of 0.487 read 0.031.
 - **Reshuffling single months breaks up bad stretches (Nov 1, 2026).** A restart fired in 2% of such paths. Test anything about bad stretches with whole years, as `2026-11-01-fno-n09/stress_years.py` does.
