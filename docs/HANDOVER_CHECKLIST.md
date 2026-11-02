@@ -1,3 +1,13 @@
+## November 2 night — Rollout receipt (Production 39b8d81, PR #127)
+
+- PR #127 merged 18:21 UTC (23:51 IST) as 39b8d81 on the owner's explicit order: 16 commits, N11T, E01, E01.1 as expiry-v4, the paper fresh start.
+- **Deploy:** Production fast-forwarded. `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC` set, python-engine, node-gateway and agent built one at a time and recreated, nginx restarted. `.env` untouched.
+- **Verification:** `scripts/verify_deployment.py` passed, receipt in `sentinel-operations/release-receipts/`. Local and public `/api/health` 200. All services healthy.
+- **Engine, read-only, 23:55 IST:** `FNO_BOOK=N11`, book start 2026-11-03, paper equity Rs 2,50,000, stance 1.0 base, no strikes, shared risk view available. Tolerance on, Rs 6,250, k 1.75. Real-money switch off. expiry-v4, shadow-v8, `expiry-e011-v2`, C's stop 25%, `CL` equals the old C. The 90 old ledger rows (-33,843.73) are all kept. `fno_n11_second_lot` is created at the first F&O tick.
+- **Not done:** the runbook's full stop-everything data backup. This release changes no stored data, and earlier deploys ran the same way.
+- **One error in the log:** `penny_edge_exit_failed err='date'` from the startup catch-up. An older bug, in code this release didn't touch: see the plan. Fixed in Dev in the commit carrying this section, not deployed.
+- [ ] Nov 3, read-only: first F&O tick sends the risk alert (full size, equity Rs 2,50,000) and creates `fno_n11_second_lot`. From 12:59, expiry rows say expiry-v4 and shadow-v8. `CL` and `CE011R` copy each C ticket.
+
 ## November 2 night — One release: N11T, expiry-v4, paper fresh start
 
 - Read `docs/EXPIRY_RESEARCH_E011.md` and `docs/FNO_RESEARCH_N11T.md`, then `python-engine/fno_book_start.py`.

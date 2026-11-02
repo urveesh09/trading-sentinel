@@ -887,10 +887,17 @@ async def _kite_daily_bars_after(
         return []
     if df is None or df.empty:
         return []
+    # [Nov 2] kite_client.get_historical indexes its frame by date. Reading a "date" column raised KeyError and stopped
+    # the whole exit job the first time a holding reached its hold limit (AVONMORE). The fetch also starts on the entry
+    # day, while the simulator's contract is bars from the day after it.
+    frame = df if "date" in df.columns else df.reset_index()
     bars: List[dict] = []
-    for _, row in df.iterrows():
+    for _, row in frame.iterrows():
+        day = str(row["date"])[:10]
+        if day <= entry_yyyymmdd:
+            continue
         bars.append({
-            "date":   str(row["date"])[:10],
+            "date":   day,
             "open":   float(row["open"]),
             "high":   float(row["high"]),
             "low":    float(row["low"]),

@@ -86,11 +86,11 @@ async def _seed_edge_position(
 
 
 def _fake_kite_with_daily_bars(open_, high, low, close):
-    """A async-stub kite whose get_historical returns the given OHLC row."""
+    """A async-stub kite whose get_historical returns the given OHLC row, dated today and indexed by date like the real client."""
     kite = MagicMock()
     df = pd.DataFrame(
         {
-            "date":   [datetime(2026, 7, 1)],
+            "date":   [pd.Timestamp(datetime.now(timezone.utc).date())],
             "open":   [open_],
             "high":   [high],
             "low":    [low],
@@ -98,6 +98,7 @@ def _fake_kite_with_daily_bars(open_, high, low, close):
             "volume": [10000],
         }
     )
+    df.set_index("date", inplace=True)
 
     async def _get_historical(ticker, from_date, to_date):
         return df
@@ -487,3 +488,25 @@ async def test_open_position_model_accepts_all_edge_sources():
             regime_at_entry="",
         )
         assert op.source == src
+
+
+def _frame_as_the_real_client_returns_it(days):
+    frame = pd.DataFrame({"date": pd.to_datetime(days), "open": 10.0, "high": 11.0, "low": 9.0, "close": 10.5, "volume": 100})
+    frame.set_index("date", inplace=True)
+    return frame
+
+
+@pytest.mark.asyncio
+async def test_exit_bars_read_the_real_clients_date_index_and_start_after_the_entry_day():
+    """Nov 2: get_historical indexes by date, so the exit job raised KeyError at AVONMORE's hold limit."""
+    from penny_edge_orchestrator import _kite_daily_bars_after
+    kite = MagicMock()
+
+    async def _get_historical(ticker, from_date, to_date):
+        assert from_date == "2026-10-30"
+        return _frame_as_the_real_client_returns_it(["2026-10-30", "2026-11-02", "2026-11-03"])
+
+    kite.get_historical = _get_historical
+    bars = await _kite_daily_bars_after(kite, "AVONMORE", "2026-10-30T04:00:10.129689+00:00")
+    assert [b["date"] for b in bars] == ["2026-11-02", "2026-11-03"]
+    assert bars[0] == {"date": "2026-11-02", "open": 10.0, "high": 11.0, "low": 9.0, "close": 10.5, "volume": 100.0}
