@@ -1,3 +1,9 @@
+## November 2 — Handover-only slice; E01.1 continuation explicitly deferred
+
+Problem: preserve separate regular-F&O and expiry inheritance at the owner-requested stopping point. Files/contracts: [F&O inheritance](FNO_SUCCESSOR_HANDOVER_2026-11-02.md) and [expiry inheritance](EXPIRY_SUCCESSOR_HANDOVER_2026-11-02.md) plus these navigation prefixes; no strategy or runtime contract changes. Acceptance: local Markdown links resolve, diff whitespace passes, original owner dirt preserved, actual E01 receipt and four CSV coverage identities rechecked. All passed. No new strategy score or application suite run.
+
+Remaining: successor reads both handovers and revalidates current runtime/account evidence. E01.1 has only an untested fee-aware banking hypothesis; create/freeze its own bounded plan before code/scores if resumed. Four September paths support conditional exits, not an exact full native replay. Preserve untracked E02 preparation and old immutable E01 source/results. N11T and E01 are Dev only; paper reset and deployment remain separate decisions. Rollout/rollback: documentation-only same-branch commit/push, no service action; revert owned document slice if needed. Atlas unchanged because no source/declaration changed.
+
 ## November 2 — E01 evidence-packaging path correction
 
 Native feature9dd4881 and identity7747344 are pushed, Dev only. The first final packet failed before copying study files because of relative-versus-absolute path handling; failed evidence retained. Packaging now resolves the repo source path before making it study-relative. No strategy/parameter/result/application change. Run the fresh fixed-HEAD packet and consult its actual VERIFIED.json; tests are not profit proof. Forward20-entry review and Production noninterference remain unchanged.

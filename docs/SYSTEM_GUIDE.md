@@ -1,3 +1,7 @@
+## November 2 — Separate successor handovers; research stopped for documentation
+
+Read [F&O inheritance](FNO_SUCCESSOR_HANDOVER_2026-11-02.md) and [expiry inheritance](EXPIRY_SUCCESSOR_HANDOVER_2026-11-02.md). These bind reviewed source7711521, N11 paper deployment versus Dev-only N11T/E01, results and evidence limits. E01.1 is NOT implemented/frozen/scored; the four September ten-second CSVs hold fixed opening-ATM options, not the full native entry/depth/underlying path. E02 selected minute-data export is uncommitted preparation only, now deferred; no minute strategy was scored. This slice changes Markdown/navigation only, no application/config/schema/atlas change. Production Git d52642f and running engine start03:29:35Z were read-only rechecked; no edit/restart/order/download/deployment.
+
 ## November 2 — E01 evidence-packaging path correction
 
 Native feature9dd4881 and identity7747344 are pushed, Dev only. The first final packet failed before copying study files because of relative-versus-absolute path handling; failed evidence retained. Packaging now resolves the repo source path before making it study-relative. No strategy/parameter/result/application change. Run the fresh fixed-HEAD packet and consult its actual VERIFIED.json; tests are not profit proof. Forward20-entry review and Production noninterference remain unchanged.

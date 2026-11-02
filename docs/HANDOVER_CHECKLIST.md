@@ -1,3 +1,10 @@
+## November 2 — F&O and expiry inheritance ready
+
+- Read [F&O inheritance](FNO_SUCCESSOR_HANDOVER_2026-11-02.md) and [expiry inheritance](EXPIRY_SUCCESSOR_HANDOVER_2026-11-02.md) separately; source snapshot7711521. Find this documentation commit with git log against either handover path.
+- Verification: local links and git diff --check pass; original owner dirty slices unchanged; E01 final packet reports EVIDENCE_CHECKS_PASSED/zero errors/898 files; four September CSVs each4500 rows and3347 missing source seconds in total, not gap-free ticks.
+- State: E01/N11T pushed in Dev, not in Production d52642f; E01.1 unimplemented/unscored; E02 export-only work uncommitted and deferred. No source/config/schema changes, atlas regeneration, application-suite run or new profit claim in this slice.
+- Production checked read-only: engine running, same start2026-11-02T03:29:35.254673416Z. No edit/restart/deploy/order/download. Next work follows the owner-selected handover queue; preserve all existing dirt and frozen evidence.
+
 ## November 2 — E01 evidence-packaging path correction
 
 Native feature9dd4881 and identity7747344 are pushed, Dev only. The first final packet failed before copying study files because of relative-versus-absolute path handling; failed evidence retained. Packaging now resolves the repo source path before making it study-relative. No strategy/parameter/result/application change. Run the fresh fixed-HEAD packet and consult its actual VERIFIED.json; tests are not profit proof. Forward20-entry review and Production noninterference remain unchanged.
