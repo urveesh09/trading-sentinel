@@ -600,14 +600,22 @@ class SingleLegReplay:
             raise FnoReplayError("no archived sessions in the requested window")
         first = IST.localize(datetime.combine(date.fromisoformat(days[0]), time(0, 0)))
         closes = self.data.paper_closes()
-        prior = [(at, pnl, kind) for at, pnl, kind in closes if at < first]
+        # [F11] A replay starts where the live book's money stood. On or after the book's fresh start, that's the fresh
+        # book; a window that crosses the start resets there, as the live book did.
+        from fno_book_start import book_start
+        fresh = book_start("FNO_PAPER")
+        prior = [(at, pnl, kind) for at, pnl, kind in closes if at < first and (fresh is None or first < fresh or at >= fresh)]
         exogenous = [(at, pnl, kind) for at, pnl, kind in closes if at >= first and kind == "DEFINED_RISK"]
         from fno_adaptive_risk import Close
         book = Book(equity=float(settings.FNO_PAPER_BANKROLL) + sum(pnl for _, pnl, _ in prior), closes=list(prior),
                     completed=[Close(at, pnl, kind == "SINGLE_LEG") for at, pnl, kind in prior])
         start_equity = book.equity
+        reset_due = fresh is not None and first < fresh
         exclusions: Counter = Counter()
         for day in days:
+            if reset_due and date.fromisoformat(day) >= fresh.date():
+                book.equity, book.closes, book.completed, reset_due = float(settings.FNO_PAPER_BANKROLL), [], [], False
+                self.notes["paper_book_fresh_start_crossed"] += 1
             observations, excluded = self.data.observations(day)
             exclusions.update(excluded)
             if not observations:

@@ -526,6 +526,16 @@ class Settings(BaseSettings):
     def _strip_internal_api_secret(cls, v: str) -> str:
         return v.strip()
 
+    # [F11] A date that can't be read must stop the deploy, not surface later as a broken money reader mid-session.
+    @field_validator("FNO_PAPER_BOOK_START")
+    @classmethod
+    def _valid_paper_book_start(cls, v: str) -> str:
+        from datetime import date
+        v = (v or "").strip()
+        if v:
+            date.fromisoformat(v)
+        return v
+
     # RS Module
     RS_PERIODS:               int   = 20
     RS_MIN_THRESHOLD:         float = 5.0
@@ -924,7 +934,8 @@ class Settings(BaseSettings):
     EXPIRY_PAPER_UNDERLYINGS:        str   = "NIFTY,SENSEX"
     # E01 is a separate, paired paper shadow; disabling it only blocks new entries.
     EXPIRY_E01_SHADOW_ENABLED:       bool  = True
-    # E01.1's two paired paper shadows. Off blocks new copies only; open legs keep their exits.
+    # The shadows on the main ticket since expiry-v4, E01.1: CL (C's old rule) and CE011R (no sale at 3x).
+    # Off blocks new copies only; open legs keep their exits, and it doesn't change the main C.
     EXPIRY_E011_SHADOW_ENABLED:      bool  = True
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
@@ -987,6 +998,10 @@ class Settings(BaseSettings):
     # while the account is this small. Sizing realism here, promotion safety
     # there.
     FNO_PAPER_BANKROLL:        float = 250000.0
+    # [F11 2026-11-02, the owner's order] N11's paper book starts afresh at FNO_PAPER_BANKROLL on this IST date: equity,
+    # its peak, the size stance and the loss brakes count from here. Nothing is deleted. Empty = the whole history
+    # counts again (engine restart). fno_book_start.py.
+    FNO_PAPER_BOOK_START:      str   = "2026-11-03"
     FNO_LIVE_BANKROLL:         float = 0.0        # not armed (spec §0)
     FNO_LIVE_TRADING:          bool  = False      # master switch
     FNO_DISABLE_PAPER:         bool  = False

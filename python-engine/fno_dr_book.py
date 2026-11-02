@@ -751,8 +751,10 @@ async def _settle_structure_atomically(
             if current is None or current["status"] == "CLOSED":
                 await db.rollback()
                 return False
+            from fno_book_start import since_sql       # [F11] the same figure as division_equity
+            since, since_args = since_sql(source)
             before_row = await (await db.execute(
-                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source=?", (source,)
+                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source=?" + since, (source, *since_args)
             )).fetchone()
             before = float(allocation_for_source(source)) + float(before_row[0] or 0.0)
             after = before + cash_net

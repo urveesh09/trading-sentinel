@@ -183,7 +183,9 @@ async def resolve_exit_intent(
                 costs = calc_fno_costs_from_snapshot(
                     float(current["entry_premium"]), px, filled, cost_snapshot)
                 pnl = gross - costs
-                cur = await db.execute("SELECT COALESCE(SUM(pnl),0) FROM bankroll_ledger WHERE source=?", (source,))
+                from fno_book_start import since_sql   # [F11] the same figure as division_equity
+                since, since_args = since_sql(source)
+                cur = await db.execute("SELECT COALESCE(SUM(pnl),0) FROM bankroll_ledger WHERE source=?" + since, (source, *since_args))
                 prior = float((await cur.fetchone())[0])
                 bankroll_before = allocation_for_source(source) + prior
                 cur = await db.execute("""INSERT INTO bankroll_ledger

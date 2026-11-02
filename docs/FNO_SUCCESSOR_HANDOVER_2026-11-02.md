@@ -1,5 +1,7 @@
 # F&O successor handover — November 2, 2026
 
+> **Update, November 2 night.** On the owner's order N11T is deployed on paper, and the paper book has a fresh Rs 2,50,000 from Nov 3 (`FNO_PAPER_BOOK_START`, `python-engine/fno_book_start.py`). Every old trade is kept. Where this document says N11T is Dev-only or the book is at 0.25x, read that as history.
+
 This is the inheritance document for **regular F&O, through N11/N11T**. The
 separate [expiry handover](EXPIRY_SUCCESSOR_HANDOVER_2026-11-02.md) covers
 expiry-v3, E01, the new September data and unfinished E01.1 work. Do not treat

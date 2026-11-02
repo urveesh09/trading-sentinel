@@ -8,7 +8,8 @@ Plain-language report: [docs/EXPIRY_RESEARCH_E011.md](../../../EXPIRY_RESEARCH_E
 |---|---|
 | f457d9b | Freeze: plan, arms, September panel, tests, hashes. No September ticket's later price read. |
 | 7818c62 | Score: `score.py` once, `results.json`, `OUTCOME.md`. |
-| next | Engine: `CE011`, `CE011R`, `verify_native.py`. This deliberately changes `python-engine/expiry_paper.py`, so `freeze.py verify` no longer matches the working tree. To reproduce the score, check out f457d9b. |
+| 3c23adf | Engine: `CE011`, `CE011R`, `verify_native.py`. This deliberately changes `python-engine/expiry_paper.py`, so `freeze.py verify` no longer matches the working tree. To reproduce the score, check out f457d9b. |
+| next | The owner's order: E01.1 becomes the main C (expiry-v4), the old C runs on as `CL`, `CE011` is gone. `verify_main.py` proves the swap against 3c23adf. `verify_native.py`, `arms.py` and the lab read `POLICIES["C"]` and `CE011` as they were: use 3c23adf or f457d9b to run them. |
 
 ## Files
 
@@ -17,6 +18,7 @@ Plain-language report: [docs/EXPIRY_RESEARCH_E011.md](../../../EXPIRY_RESEARCH_E
 | `e011_lab.py` | The fast replay. Calls the engine's own functions. |
 | `parity.py`, `parity.json` | The lab against E01's stored native results: 72 legs, ordinary and adverse, zero mismatches. |
 | `verify_native.py`, `native-parity-*.json` | The engine against the lab and E01's stored results, through the real tick and store. |
+| `verify_main.py`, `native-parity-NATIVE_V4.json` | The swap: new C = old CE011, new CL = old C, all else unchanged, 290 legs, zero mismatches. |
 | `genome.py`, `view_ga.py` | The genome search and its leave-one-session-out folds. |
 | `one_gene.py`, `second_look.py` | One change at a time from E01, by session. Their output is kept under `_local/`. |
 | `arms.py` | The frozen arms. |

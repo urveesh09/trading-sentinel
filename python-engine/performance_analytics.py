@@ -13,6 +13,7 @@ from typing import Any, Iterable
 import aiosqlite
 
 from config import settings
+from fno_book_start import book_start, since_sql
 from performance import _division_registry
 
 
@@ -156,9 +157,14 @@ async def _ledger_observation(
 
     identity = "COALESCE(ticker,'')" if "ticker" in columns else "''"
     origin = "origin_ref" if "origin_ref" in columns else "NULL"
+    # [F11] The F&O paper book's figures count from its fresh start, and the page says so.
+    since, since_args = since_sql(source)
+    started = book_start(source)
+    if started:
+        warnings.append(f"this book counts from {started.date()}; earlier trades stay in the records")
     rows = await (await db.execute(
-        f"SELECT event_type, pnl, {identity}, {origin} FROM bankroll_ledger WHERE source=? "
-        "ORDER BY timestamp, rowid", (source,),
+        f"SELECT event_type, pnl, {identity}, {origin} FROM bankroll_ledger WHERE source=?{since} "
+        "ORDER BY timestamp, rowid", (source, *since_args),
     )).fetchall()
     if any(row[1] is None for row in rows):
         warnings.append("ledger contains NULL P&L; cash metrics unavailable")
@@ -193,6 +199,14 @@ async def _ledger_observation(
         # partial exits included.
         **_drawdown(trade_cash, allocation),
     }, warnings)
+
+
+def _closed_in_book(source: str, column: str) -> tuple[str, tuple]:
+    """[F11] Closed rows of the current book, so they keep reconciling with its ledger rows. A row with no close time is kept."""
+    started = book_start(source)
+    if started is None:
+        return "", ()
+    return f" AND ({column} IS NULL OR julianday({column}) >= julianday(?))", (started.isoformat(),)
 
 
 async def _query_position_table(
@@ -231,10 +245,11 @@ async def _query_position_table(
         }
         if not required.issubset(columns):
             return None, f"{table} missing required accounting columns"
+        since, since_args = _closed_in_book(source, "exit_time")
         closed = await (await db.execute(
             "SELECT pnl, r_multiple, costs, gross_pnl FROM fno_positions "
-            "WHERE source=? AND status!='OPEN' ORDER BY exit_time, rowid",
-            (source,),
+            f"WHERE source=? AND status!='OPEN'{since} ORDER BY exit_time, rowid",
+            (source, *since_args),
         )).fetchall()
         open_row = await (await db.execute(
             "SELECT COALESCE(SUM(entry_premium * qty), 0.0), "
@@ -250,10 +265,11 @@ async def _query_position_table(
         }
         if not required.issubset(columns):
             return None, f"{table} missing required accounting columns"
+        since, since_args = _closed_in_book(source, "closed_at")
         closed = await (await db.execute(
             "SELECT pnl, NULL, costs, gross_pnl FROM fno_dr_positions "
-            "WHERE source=? AND status!='OPEN' ORDER BY closed_at, rowid",
-            (source,),
+            f"WHERE source=? AND status!='OPEN'{since} ORDER BY closed_at, rowid",
+            (source, *since_args),
         )).fetchall()
         open_row = await (await db.execute(
             "SELECT COALESCE(SUM(ABS(net_premium_rs)), 0.0), "

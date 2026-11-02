@@ -61,3 +61,7 @@ A pass is a result on one more history, with modelled fills. It doesn't make E01
 ## What this exam can't say
 
 NIFTY only unless SENSEX is also downloaded. Expiry weekdays, lot sizes and the closing session changed across these years, so each year is reported apart. Regular F&O research has already read the non-expiry days of these years, so the market regime is known even though these option paths aren't.
+
+## Added after this was written: the owner made E01.1 the main ticket
+
+On the night of November 2 the owner made E01.1 the main C on paper (expiry-v4), before this exam ran. The arms and tests above don't change. In this exam, "C" still means the main book's old ticket, which now runs as shadow `CL`. Test 1's "E01.1 is dropped" now means the result goes to the owner, since going back is their decision.

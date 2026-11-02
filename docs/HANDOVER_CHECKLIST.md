@@ -1,3 +1,12 @@
+## November 2 night — One release: N11T, expiry-v4, paper fresh start
+
+- Read `docs/EXPIRY_RESEARCH_E011.md` and `docs/FNO_RESEARCH_N11T.md`, then `python-engine/fno_book_start.py`.
+- Owner's explicit order to merge and deploy as one. The real-money switch wasn't touched. No `.env` change.
+- Verification: whole engine suite 6,052 passed, 4 skipped, in two halves one after the other (3,171 and 2,881, `pytest_exit=0` each). `test_fno_book_start.py` 15 passed. `test_expiry_e011.py` rewritten for v4. Native replay `verify_main.py`: 16 cases, 290 legs, zero mismatches against the pre-swap engine. Atlas regenerated, 293 modules.
+- `verify_native.py` and the study's `arms.py` describe the engine before the swap: use commit 3c23adf for the former and f457d9b for the score.
+- Tests prove the code matches the rule. They don't show the rule makes money.
+- [ ] Nov 3, read-only: `expiry_paper_days.state` says expiry-v4 and shadow-v8; `CL` and `CE011R` copy each C ticket; the F&O risk alert says full size with equity Rs 2,50,000.
+
 ## November 2 — E01.1 in Dev
 
 - Read `docs/EXPIRY_RESEARCH_E011.md`, then the study's `README.md`, `PLAN.md`, `OUTCOME.md` and `EXAM_YEAR.md`.

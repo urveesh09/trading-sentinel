@@ -939,9 +939,11 @@ async def settle_position_close(
                     "bankroll_ledger table missing; "
                     "call init_ledger() before settle_position_close()"
                 )
+            from fno_book_start import since_sql       # [F11] the same figure as division_equity
+            since, since_args = since_sql(source)
             cur = await db.execute(
-                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source=?",
-                (source,),
+                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source=?" + since,
+                (source, *since_args),
             )
             row = await cur.fetchone()
             from performance import allocation_for_source

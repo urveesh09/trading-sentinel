@@ -1,3 +1,25 @@
+## November 2 night — One release: N11T second lot, E01.1 as the main expiry ticket, a fresh Rs 2,50,000 for the paper book
+
+Owner's order: "Deploy right now, the tolerance and this also make it go in as main expiry strategy and current one as shadow also, give N011 fresh 250000 push all and merge all as one and deploy in one go". All paper. The real-money switch stays the owner's and off.
+
+**Problem.** (1) N11's paper book sat 13.54% under its peak at 0.25x, about Rs 3,656 above the 15% halt, so N11 and its second lot could hardly trade. (2) The owner wants E01.1's exits on the main expiry ticket, with the current rule kept as a shadow.
+
+**Files and contracts.**
+- Fresh start: new `python-engine/fno_book_start.py`, setting `FNO_PAPER_BOOK_START` (default `2026-11-03`, validated at boot). FNO_PAPER only. Read by `performance` (equity, `fno_bankroll`, division table), `fno_adaptive_risk.read_book_closes` (stance), `fno_shared_risk._read_cash_ledger` (equity, day/week/month/drawdown/streak brakes), `fno_risk.kill_switch_status`, the three settlement writers' `bankroll_before`, `performance_analytics` (with a visible note) and `fno_policy_replay`. Old rows are still validated: a hole or bad row before the start still fails closed. The go-live bar and promotion report still read the whole life. No row is changed or deleted.
+- Expiry: `RULES_VERSION` expiry-v4, `SHADOW_VERSION` v8, `E011_VERSION` v2, `RULE_SINCE["C"]=4`. C's entry, size and ceiling are unchanged; only its exits move to E01.1. `CL` = expiry-v3's C, an exact copy of the saved ticket. `C_V3_POLICY` keeps C500, CH, CI, CX and CE01 on their old exits. CE011 is gone: its rule is C's, and it never ran in Production. CE011R stays. Telegram lines for C name the stop and say COST_BACK; the stored event action stays BANK_HALF. A and B unchanged.
+- No table is altered. New table `fno_n11_second_lot` (N11T). No `.env` change.
+
+**Acceptance.** Native replay, real tick and store, eight sessions, ordinary and adverse: new C = old CE011, new CL = old C, every other play and quote count unchanged, 290 legs, zero mismatches (`verify_main.py`, `native-parity-NATIVE_V4.json`). Book +12,918.15, adverse +12,729.64, worst -954.88, without the best -2,176.31, the study's figures. Whole engine suite 6,052 passed, 4 skipped.
+
+**Rollout and rollback.** Merged as one PR and deployed; the receipt section above this one, once written, has the release SHA. Back to the old money: `FNO_PAPER_BOOK_START=` (empty) and an engine restart, and every old figure returns. Second lot off: `FNO_N11_TOLERANCE_ENABLED=false`. Shadows off: `EXPIRY_E011_SHADOW_ENABLED=false`. Back to C's old exits needs a code revert and deploy.
+
+**Remaining.**
+1. Watch Nov 3, a NIFTY expiry: expiry-v4 rows from 12:59, the risk alert saying full size, `fno_n11_second_lot` if one qualifies.
+2. The next download's shape is still the owner's: `EXAM_YEAR.md`.
+3. `EXAM_YEAR.md`'s arms stand as written. Its test 1 now decides whether C goes back to an older rule, and that decision is the owner's.
+4. Forward count: at least 20 new paired tickets, five per index: CL, CE01 and CE011R against C.
+5. The deploy took no full data backup (the runbook's stop-everything capture). It changes no stored data.
+
 ## November 2 — E01.1 built in Dev: CE011 and CE011R paper shadows; next exam frozen
 
 Owner's order: improve E01 on the 12 sessions, genome allowed, no minute-data adaptation. This supersedes the handover-only stopping point below, and E02 stays deferred.

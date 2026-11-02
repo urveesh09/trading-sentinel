@@ -1,0 +1,103 @@
+{
+ "passed": true,
+ "cases": [
+  {
+   "day": "2026-10-06",
+   "underlying": "NIFTY",
+   "adverse": false,
+   "legs_compared": 23
+  },
+  {
+   "day": "2026-10-08",
+   "underlying": "SENSEX",
+   "adverse": false,
+   "legs_compared": 23
+  },
+  {
+   "day": "2026-10-13",
+   "underlying": "NIFTY",
+   "adverse": false,
+   "legs_compared": 21
+  },
+  {
+   "day": "2026-10-15",
+   "underlying": "SENSEX",
+   "adverse": false,
+   "legs_compared": 15
+  },
+  {
+   "day": "2026-10-19",
+   "underlying": "NIFTY",
+   "adverse": false,
+   "legs_compared": 23
+  },
+  {
+   "day": "2026-10-22",
+   "underlying": "SENSEX",
+   "adverse": false,
+   "legs_compared": 4
+  },
+  {
+   "day": "2026-10-27",
+   "underlying": "NIFTY",
+   "adverse": false,
+   "legs_compared": 21
+  },
+  {
+   "day": "2026-10-29",
+   "underlying": "SENSEX",
+   "adverse": false,
+   "legs_compared": 15
+  },
+  {
+   "day": "2026-10-06",
+   "underlying": "NIFTY",
+   "adverse": true,
+   "legs_compared": 23
+  },
+  {
+   "day": "2026-10-08",
+   "underlying": "SENSEX",
+   "adverse": true,
+   "legs_compared": 23
+  },
+  {
+   "day": "2026-10-13",
+   "underlying": "NIFTY",
+   "adverse": true,
+   "legs_compared": 21
+  },
+  {
+   "day": "2026-10-15",
+   "underlying": "SENSEX",
+   "adverse": true,
+   "legs_compared": 15
+  },
+  {
+   "day": "2026-10-19",
+   "underlying": "NIFTY",
+   "adverse": true,
+   "legs_compared": 23
+  },
+  {
+   "day": "2026-10-22",
+   "underlying": "SENSEX",
+   "adverse": true,
+   "legs_compared": 4
+  },
+  {
+   "day": "2026-10-27",
+   "underlying": "NIFTY",
+   "adverse": true,
+   "legs_compared": 21
+  },
+  {
+   "day": "2026-10-29",
+   "underlying": "SENSEX",
+   "adverse": true,
+   "legs_compared": 15
+  }
+ ],
+ "mismatches": 0,
+ "compared_with": "the engine before the swap, commit 3c23adf (NATIVE_E011): new C = old CE011, new CL = old C, all others unchanged"
+}

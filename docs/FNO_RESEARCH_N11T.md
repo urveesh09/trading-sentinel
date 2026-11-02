@@ -1,6 +1,6 @@
 # N11T: a second lot inside a Rs 6,250 limit
 
-**November 2, 2026. Built and tested in Dev. Not deployed.** N11 itself runs in Production on paper without this. The real-money test isn't affected either way.
+**November 2, 2026. Deployed on paper that night on the owner's order, with a fresh Rs 2,50,000 for the paper book.** The real-money test isn't affected either way.
 
 **The owner allowed a tolerance on the Rs 5,000 per-trade plan, and left the conditions and the amount to me. I chose Rs 6,250, not the Rs 7,500 I first tested.** It adds Rs 19,380 to N11 over four years. Its worst day and worst trade on these years are no larger than N11's, and it plans to lose Rs 1,250 less per raised trade than the Rs 7,500 version, which earned less.
 
@@ -77,7 +77,7 @@ Of the 11, **nine are the tolerance's own second lots** (+21,267). **Two came fr
 
 ## 5. In the engine
 
-Built in Dev behind `FNO_N11_TOLERANCE_ENABLED`, on by default, as the owner asked for it on paper. Nothing changes in Production until the owner says so.
+Behind `FNO_N11_TOLERANCE_ENABLED`, on by default, as the owner asked for it on paper. Deployed the night of Nov 2.
 
 - **Same decisions as the tested book.** `parity_final.py` asks the engine's own `fno_n11.second_lot` the same question at every planned entry: 696 decisions over four years and all nine backstops, zero mismatches. The replay's yearly results equal the frozen panel's to the paisa.
 - **Paper and NIFTY only.** The real-money test reads only the contract from the paper entry, buys one lot and sets its own 25% stop. SENSEX was never tested, so it stays at N11's size.
@@ -97,7 +97,7 @@ Read on Nov 2, about 14:15 IST:
 - **The floor is close.** Equity is about Rs 3,656 above the 15% floor of Rs 2,12,500. Under it, paper entries stop and paper can't trade back. The real-money test only buys what paper just bought, so it would stop too.
 - **N11's first live day:** three signals, each at one lot because of the stance, all stopped, -4,298 before the assumed extra cost, two-strike halt at 12:32, no errors. None qualified for a second lot at 0.25x. At full size the first (Rs 161.90) would have, adding about -2,474 for a loss of about 4,995 on that trade.
 
-**A fresh start for N11's paper book is the owner's call,** because the 15% halt is theirs. It isn't built.
+**The owner ordered the fresh start the same night.** `FNO_PAPER_BOOK_START` (`python-engine/fno_book_start.py`) starts the book's money, peak, stance and brakes at Rs 2,50,000 from Nov 3, with every old trade kept. So the figures above describe the book before it.
 
 ## 7. What the first study taught me
 

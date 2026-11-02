@@ -64,9 +64,12 @@ async def read_book_closes(db_path: str, source: str) -> list[Close]:
     """Completed trades of both paper books for one source (read-only).
 
     The only I/O in this module; kept here so the single-leg tick and the
-    capped-loss book read identical evidence.
+    capped-loss book read identical evidence. [F11] The F&O paper book's stance
+    reads its current book only (fno_book_start): its peak, profit factor and
+    strikes start afresh with its money.
     """
     import aiosqlite
+    from fno_book_start import in_book
     closes: list[Close] = []
     async with aiosqlite.connect(db_path) as db:
         async with db.execute("SELECT name FROM sqlite_master WHERE type='table'") as cursor:
@@ -89,7 +92,9 @@ async def read_book_closes(db_path: str, source: str) -> list[Close]:
             async with db.execute(sql, (source,)) as cursor:
                 for stamp, pnl in await cursor.fetchall():
                     at = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
-                    closes.append(Close(at if at.tzinfo else IST.localize(at), float(pnl), single_leg))
+                    at = at if at.tzinfo else IST.localize(at)
+                    if in_book(source, at):
+                        closes.append(Close(at, float(pnl), single_leg))
     return closes
 
 

@@ -1,6 +1,6 @@
 # E01.1: a stop 5 points tighter, the cost back at 3x, and a floor under the winner
 
-November 2, 2026. Built and tested in Dev, pushed on `codex/production-correction-hedge-p0`. Not merged, not deployed. Paper only: main A, B and C don't change, and no real order is involved.
+November 2, 2026. **That night the owner made E01.1 the main expiry ticket on paper (expiry-v4), and the old C runs on as shadow `CL`.** This is the owner's choice before any forward result, not a result of the frozen tests: nothing here has run on a new expiry yet. A and B are unchanged, and no real order is involved.
 
 **E01.1 earned more and lost less than E01 on every set it was tested on.** It keeps C's exact ticket and changes only what happens after buying it. It is still a lottery: it loses on most days and needs an occasional big winner, and it loses without one. The eight October sessions were seen before the rules were chosen, and September could only test a small part of it. So this is a better rule on what we have, not proof it will make money.
 
@@ -120,14 +120,14 @@ The frozen rule picks E01.1, because selling nothing lost to it on September. Bo
 
 ## In the engine
 
-`CE011` (E01.1) and `CE011R` (sell nothing) are paper shadows, version `expiry-e011-v1`, in shadow-v7, on by default.
+**Main since expiry-v4:** `C` runs E01.1. **Shadows on the same ticket, shadow-v8, version `expiry-e011-v2`:** `CL` is the old C and `CE011R` sells nothing at 3x. `CE01` stays. The earlier shadow name `CE011` is gone: its rule is now C's, and it never ran in Production.
 
-- **Same decisions as the tested rules.** The real tick and store, all eight sessions, ordinary and worse fills: 28 shadow legs equal the frozen lab's, field by field and event by event.
-- **Nothing that exists moved.** Every A, B, C and CE01 leg equals E01's stored result, with the same number of quote requests.
-- **They copy only a saved C ticket,** and pairing needs the parent's ID and the same terms, as CE01 does. A failed shadow save never costs C its ticket.
-- **The evening summary** shows them beside C, and the day's box width as a reading only.
-- **Off:** `EXPIRY_E011_SHADOW_ENABLED=false` and an engine restart. It blocks new copies, and open legs keep their exits. No table and no `.env` change.
-- **A deploy would also carry the N11T second lot,** which is on the same branch and still waiting for the owner.
+- **The swap did only what it says.** The real tick and store, all eight sessions, ordinary and worse fills: the new C equals the old `CE011`, the new `CL` equals the old C, and every other play and quote count is unchanged. 290 legs, zero mismatches: `native-parity-NATIVE_V4.json`.
+- **The shadows copy only a saved C ticket,** and pairing needs the parent's ID and the same terms. A failed shadow save never costs C its ticket.
+- **The evening summary** prints C's rule, the shadows beside it, and the day's box width as a reading only. C's record splits at v4.
+- **Shadows off:** `EXPIRY_E011_SHADOW_ENABLED=false` and an engine restart. It blocks new copies, and open legs keep their exits. Going back to C's old exits needs a code revert and a deploy. No table and no `.env` change.
+
+Before the swap, `CE011` and `CE011R` were shadows with 28 legs equal to the frozen lab's, field by field.
 
 Tests: the whole engine suite, 6,034 passed and 4 skipped. Tests prove the code does what the rule says, not that the rule makes money.
 

@@ -1,3 +1,11 @@
+## November 2 night — Paper book fresh start, expiry-v4, N11T (one release)
+
+**F&O paper money starts afresh.** `FNO_PAPER_BOOK_START` (default `2026-11-03`, IST midnight, `fno_book_start.py`) makes FNO_PAPER's equity, peak, size stance, day/week/month/drawdown/streak brakes, `bankroll_before/after`, division table and analytics page count only from that date, so the book opens at Rs 2,50,000, full size, no halts. Every old trade stays in the ledger and position tables, and is still validated: a hole or malformed row before the start still fails closed. The go-live bar and promotion report still read the whole life. FNO_LIVE and all other divisions are untouched. The stand-aside's and second lot's paper record (`fno_n11_paper`) is a market reading, not money, and stays continuous. Empty value and an engine restart restores the whole history.
+
+**Expiry C is E01.1 (expiry-v4).** Same entry, size and Rs 2,500 ceiling. A 25% premium stop, at 3x the fewest lots that take the ticket's cost back (`cost_recovery_lots`), a 60% floor from 3x. **Shadows on the same saved ticket (shadow-v8):** `CL` = expiry-v3's C (no premium stop, half at 3x, floor from 5x), `CE011R` = today's C with no sale at 3x, `CE01` = old C + 30% stop. C500, CH and CI keep the old exits through `C_V3_POLICY`. `CE011` no longer exists. Tallies and paired lines split C's record at v4. It is paper only and never reaches an order. It's still a lottery, and `docs/EXPIRY_RESEARCH_E011.md` has the limits.
+
+**N11T second lot is live on paper.** `FNO_N11_TOLERANCE_ENABLED`, Rs 6,250 at k 1.75, `docs/FNO_RESEARCH_N11T.md`. The real-money test reads only the contract from the paper entry.
+
 ## November 2 — Expiry shadow-v7: CE011 and CE011R, Dev only until deployed
 
 Two new paper shadows on C's exact saved ticket, version `expiry-e011-v1`, flag `EXPIRY_E011_SHADOW_ENABLED`, default on. **CE011 (E01.1):** 25% premium stop, at 3x sells the fewest whole lots that take the ticket's premium and buy charges back with an order fee reserved for every lot left (`cost_recovery_lots`), 60% trail from 3x instead of C's 5x. **CE011R:** the same stop and floor, nothing sold at 3x. Both keep C's failed-break exit, flat time and Rs 2,500 ceiling. A one-lot ticket can't bank; a ticket too small to recover cost in fewer lots sells half.

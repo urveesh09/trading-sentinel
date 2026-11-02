@@ -20,10 +20,10 @@ def saved_c(tmp_path,monkeypatch):
         yield conn,state,main,contract,at
 
 
-def test_e01_policy_is_fixed_and_main_c_is_unchanged():
+def test_e01_policy_is_fixed_on_the_old_c():
     assert xp.E01_PREMIUM_STOP==.30 and xp.POLICIES[xp.E01_PLAY].hard_stop==.30
-    assert xp.POLICIES["C"].hard_stop is None
-    assert replace(xp.POLICIES[xp.E01_PLAY],hard_stop=None)==xp.POLICIES["C"]
+    assert xp.C_V3_POLICY.hard_stop is None
+    assert replace(xp.POLICIES[xp.E01_PLAY],hard_stop=None)==xp.C_V3_POLICY
     assert xp.STRUCTURE_BACK[xp.E01_PLAY]==xp.STRUCTURE_BACK["C"]
     assert xp.PAIRED_WITH[xp.E01_PLAY]=="C" and xp.E01_PLAY not in xp.MAIN_PLAYS
 
@@ -33,7 +33,7 @@ def test_copy_binds_exact_saved_entry_and_cannot_duplicate(saved_c):
     shadow=xp.copy_e01_entry(conn,state,main,contract,at)
     for name in ("day","underlying","exchange","symbol","token","lot_size","lots","entry_ts","entry_price","max_loss","fee_snapshot"):
         assert shadow[name]==main[name]
-    assert shadow["stop"]==7 and main["stop"]==0
+    assert shadow["stop"]==7 and main["stop"]==7.5
     events=json.loads(conn.execute("select events from expiry_paper_positions where id=?",(shadow["id"],)).fetchone()[0])
     assert events[0]["paired_primary_id"]==main["id"] and events[0]["e01_version"]==xp.E01_VERSION
     assert xp.copy_e01_entry(conn,state,main,contract,at) is None
@@ -68,7 +68,7 @@ def test_disable_blocks_new_entries_and_never_changes_main(saved_c,monkeypatch):
     conn,state,main,contract,at=saved_c
     monkeypatch.setattr(xp.settings,"EXPIRY_E01_SHADOW_ENABLED",False)
     assert xp.copy_e01_entry(conn,state,main,contract,at) is None
-    assert main["stop"]==0 and state["trades"]["C"]==1
+    assert main["stop"]==7.5 and state["trades"]["C"]==1
 
 
 def test_old_day_is_not_enrolled_by_loading_new_code(saved_c):
@@ -103,7 +103,7 @@ def test_open_shadow_still_exits_with_toggle_off_and_a_gap_is_not_breakeven(save
     second=xp._try_exit(shadow,_quote([(9,65)],"bids",end),1,shadow["exit_pending"],end)
     assert second["price"]==9 and shadow["status"]=="CLOSED"
     assert shadow["net_pnl"]<0 and shadow["net_pnl"]>=-shadow["max_loss"]
-    assert main["status"]=="OPEN" and main["stop"]==0
+    assert main["status"]=="OPEN" and main["stop"]==7.5
 
 
 def test_missing_exit_depth_latches_without_inventing_a_fill(saved_c):

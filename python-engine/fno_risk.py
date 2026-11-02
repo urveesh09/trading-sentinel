@@ -154,8 +154,12 @@ async def kill_switch_status(
     losses -> pause one day. Weekly+monthly exist because options bleed
     slowly enough to walk under a daily limit every day for a month.
     Fails CLOSED on DB errors: an unreadable ledger means no entries.
+    [F11] The F&O paper book's brakes count from its fresh start (fno_book_start).
     """
     import aiosqlite
+    from fno_book_start import book_start
+    started = book_start(source)
+    first_day = started.date() if started else None
     active: List[str] = []
     iso_year, iso_week, _ = today_ist.isocalendar()
     week_start = date.fromisocalendar(iso_year, iso_week, 1)
@@ -208,7 +212,8 @@ async def kill_switch_status(
                         realized.append((date.fromisoformat(exit_date), float(pnl or 0)))
 
             def _pnl_since(day: date) -> float:
-                return sum(pnl for event_day, pnl in realized if event_day >= day)
+                floor = max(day, first_day) if first_day else day
+                return sum(pnl for event_day, pnl in realized if event_day >= floor)
 
             day_pnl = _pnl_since(today_ist)
             week_pnl = _pnl_since(week_start)
@@ -221,11 +226,12 @@ async def kill_switch_status(
                 active.append(f"monthly_loss_halt pnl={month_pnl:.0f}")
 
             # Consecutive losses: trailing streak over closed positions.
+            since = " AND exit_date>=?" if first_day else ""
             async with db.execute(
                 "SELECT pnl, exit_date FROM fno_positions "
-                "WHERE source=? AND status='CLOSED' "
+                f"WHERE source=? AND status='CLOSED'{since} "
                 "ORDER BY exit_time DESC LIMIT ?",
-                (source, settings.FNO_MAX_CONSECUTIVE_LOSSES),
+                (source, *([first_day.isoformat()] if first_day else []), settings.FNO_MAX_CONSECUTIVE_LOSSES),
             ) as c:
                 rows = await c.fetchall()
             if len(rows) >= settings.FNO_MAX_CONSECUTIVE_LOSSES and all(
