@@ -88,7 +88,18 @@ Built in Dev behind `FNO_N11_TOLERANCE_ENABLED`, on by default, as the owner ask
 
 **Off:** `FNO_N11_TOLERANCE_ENABLED=false` and an engine restart. It adds one table and no other migration.
 
-## 6. What the first study taught me
+## 6. Production today can't use this
+
+Read on Nov 2, about 14:15 IST:
+
+- **The paper book is far below where research starts.** Both paper books' closes total -33,844 since July, nearly all before N11. Equity is about Rs 2,16,156, 13.54% below its peak, so the stance is 0.25x. Research starts each year from a fresh Rs 2.5 lakh at full size.
+- **At 0.25x this rule can hardly fire.** The limit becomes Rs 1,562.50. A second lot then needs an option at or under about Rs 48, or a stop within about 9 points at delta 0.5. N11's own two lots and its earned lot are just as rare.
+- **The floor is close.** Equity is about Rs 3,656 above the 15% floor of Rs 2,12,500. Under it, paper entries stop and paper can't trade back. The real-money test only buys what paper just bought, so it would stop too.
+- **N11's first live day:** three signals, each at one lot because of the stance, all stopped, -4,298 before the assumed extra cost, two-strike halt at 12:32, no errors. None qualified for a second lot at 0.25x. At full size the first (Rs 161.90) would have, adding about -2,474 for a loss of about 4,995 on that trade.
+
+**A fresh start for N11's paper book is the owner's call,** because the 15% halt is theirs. It isn't built.
+
+## 7. What the first study taught me
 
 Four versions failed before the first Rs 7,500 book, and each changed the design:
 
@@ -99,7 +110,7 @@ Four versions failed before the first Rs 7,500 book, and each changed the design
 
 **Something you should know about the limit:** the Rs 5,000 isn't a hard cap today. The live rules already allow up to Rs 7,500 on the 25% measure when the book is proven and near its peak. N11 has 23 such entries. So this tolerance extends something that exists, to a second set of conditions.
 
-## 7. Errors disclosed
+## 8. Errors disclosed
 
 - **My first plan's code didn't match its words, in two ways.** The words said fees and assumed cost count inside the limit, but on 5 of 16 raised trades the code let them sit on top. A separate book followed the words, with the same result to the rupee. The words also said every second lot needs the stop check, but the tested code only asks it when two lots at 25% don't already fit. The final plan and the engine say what was tested, with fees inside.
 - **The final audit first counted the two stance trades as the tolerance's.** They reached two lots by the existing rule, with a 25% stop. It now separates them, using the parity run's record of which trades the tolerance raised.
