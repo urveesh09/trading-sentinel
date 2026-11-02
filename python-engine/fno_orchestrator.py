@@ -1030,7 +1030,7 @@ async def _try_entry_for_leg(
         )
 
     # [N11] The stand-aside, and how large this trade may be before the budget is asked. Earned lots aren't trades or positions.
-    n11_ceiling, n11_open_children, n11_children_today = None, 0, 0
+    n11_ceiling, n11_open_children, n11_children_today, n11_gate = None, 0, 0, None
     if (sig.strategy or "").startswith(fno_n11.PREFIX):
         n11_gate = await fno_n11.gate(db_path, kite, now_ist)
         if n11_gate["stand"]:
@@ -1098,7 +1098,7 @@ async def _try_entry_for_leg(
         reentry_levels = await fpos.stopped_entry_levels_today(
             db_path, source, underlying, today_iso, REENTRY_STOP_REASONS,
             float(settings.FNO_REENTRY_MARGIN_R))
-    plan = plan_single_leg_entry(sig, snap, regime, now_ist, EntryState(
+    entry_state = EntryState(
         pool=pool, open_premium=open_prem, open_positions=len(open_rows) - n11_open_children,
         trades_today=n_today - n11_children_today, lot_ceiling=n11_ceiling,
         active_kill_switches=tuple(switches),
@@ -1107,7 +1107,8 @@ async def _try_entry_for_leg(
             p.direction for p in open_rows if (p.underlying or "NIFTY").upper() != underlying),
         is_trading_day=is_trading_day, is_expiry_day=instruments.is_expiry_day(now_ist.date()),
         risk_multiplier=stance.multiplier, reentry_levels=reentry_levels,
-    ))
+    )
+    plan = plan_single_leg_entry(sig, snap, regime, now_ist, entry_state)
     if not plan.accepted:
         await _log(False, plan.reject_reason, **plan.log_fields)
         if plan.reject_reason == "already_holding_this_contract":
@@ -1134,6 +1135,14 @@ async def _try_entry_for_leg(
     contract_fields = {key: value for key, value in plan.log_fields.items()
                        if key not in ("lots", "max_loss_rupees", "passed_gates", "active_kill_switches")}
     gate_audit_fields = {"passed_gates": plan.log_fields["passed_gates"], "active_kill_switches": switches}
+
+    # [N11T] The tolerance: a second lot on the paper NIFTY trade N11 already takes at one lot. Paper only, and the research was on NIFTY only.
+    n11_second, n11_stop_points = None, abs(float(snap.forward) - float(sig.stop_underlying))
+    if n11_ceiling is not None and source == FnoSource.FNO_PAPER.value and underlying == "NIFTY":
+        n11_second = fno_n11.second_lot(plan, entry_state, stop_points=n11_stop_points, ceiling=n11_ceiling,
+                                        is_vol_up=n11_gate["vol_up"], is_paper_positive=n11_gate["paper_positive"])
+        if n11_second is not None:
+            lots, ml = n11_second.plan.lots, n11_second.plan.max_loss_rupees
 
     # Database/limiter waits must not turn an earlier valid evaluation into
     # authority to enter after cutoff or with a now-stale quote. Replay callers
@@ -1173,6 +1182,19 @@ async def _try_entry_for_leg(
             entry_day_ist=now_ist.date() if shared_policy is not None else None,
             policy=shared_policy,
         )
+        if not admission.allowed and n11_second is not None:
+            # [N11T] A second lot never costs the trade its first: a refused reservation leaves no row, so ask again for N11's one lot.
+            logger.info("fno_n11_second_lot_refused symbol=%s reason=%s", contract.tradingsymbol, admission.reason)
+            n11_second, lots, ml = None, plan.lots, plan.max_loss_rupees
+            qty = lots * lot_size
+            worst_case_cash = ml + calc_fno_costs(ask, 0.0, qty, exchange=options_exchange_for(underlying))
+            admission = await reserve_shared_fno_risk(
+                db_path, source=source, pool_rs=shared_pool_rs,
+                reservation_key=reservation_key, book="SINGLE_LEG",
+                worst_case_cash_rs=worst_case_cash,
+                entry_day_ist=now_ist.date() if shared_policy is not None else None,
+                policy=shared_policy,
+            )
         if not admission.allowed:
             await _log(False, admission.reason, **contract_fields, lots=lots,
                        max_loss_rupees=ml, **gate_audit_fields)
@@ -1246,6 +1268,9 @@ async def _try_entry_for_leg(
     fill = float(result["fill_price"])
 
     premium_stop = round((1.0 - settings.FNO_STOP_PREMIUM_PCT) * fill, 2)
+    native_premium_stop = premium_stop
+    if n11_second is not None:
+        premium_stop = fno_n11.second_lot_stop(fill, qty, lots, n11_second.limit, native_premium_stop)
     inserter = fpos.insert_position_with_risk_reservation if reservation_key else fpos.insert_position
     try:
         position_id = await _insert_entry_position(inserter, db_path, reservation_key, dict(
@@ -1296,6 +1321,15 @@ async def _try_entry_for_leg(
             tradingsymbol=contract.tradingsymbol, exchange=instruments.segment,
             qty=qty, fill=fill, tick=settings.FNO_TICK_SIZE,
         )
+    if n11_second is not None:
+        # The filled position is what counts: its evidence row must never turn it into a failed entry.
+        try:
+            await fno_n11.record_second_lot(
+                db_path, position_id, now=now_ist, symbol=contract.tradingsymbol, strategy=sig.strategy, fill=fill, native_stop=native_premium_stop,
+                premium_stop=premium_stop, limit=n11_second.limit, reason=n11_second.reason, delta=delta_val, stop_points=n11_stop_points,
+                multiplier=stance.multiplier, paper_sum=n11_gate["paper_sum"])
+        except Exception as exc:
+            logger.error("fno_n11_second_lot_record_failed err=%s", str(exc), exc_info=True)
     await _log(
         True, "", **contract_fields, lots=lots, max_loss_rupees=ml,
         **gate_audit_fields,
@@ -1307,11 +1341,14 @@ async def _try_entry_for_leg(
         delta_val, iv, sig.stop_underlying, sig.target_underlying,
         premium_stop, ml,
     )
-    return {
+    entry_record = {
         "symbol": contract.tradingsymbol, "direction": sig.direction.value,
         "lots": lots, "fill": fill, "delta": round(delta_val, 2),
         "iv": round(iv, 3), "source": source, "strategy": sig.strategy or None,
     }
+    if n11_second is not None:
+        entry_record["second_lot_limit"] = n11_second.limit
+    return entry_record
 
 
 def post_admission_entry_reject(now_ist: datetime, quote, snap) -> Optional[str]:
@@ -2019,9 +2056,10 @@ def format_fno_telegram(summary: dict) -> str:
         real = "💰 REAL MONEY " if not is_paper_source(e["source"]) else ""
         paper = f" (paper bought @ {e['paper_fill']:.2f})" if e.get("paper_fill") is not None else ""
         strategy = f" strategy={e['strategy']}" if e.get("strategy") else ""      # [O29c] which of the book's four
+        second = f" second lot, plan up to Rs {e['second_lot_limit']:,.0f}" if e.get("second_lot_limit") else ""   # [N11T]
         out.append(
             f"{real}ENTRY [{e['source']}]{tag} `{e['symbol']}` {e['direction']} "
-            f"lots={e['lots']} @ {e['fill']:.2f} delta={e['delta']} iv={e['iv']}{strategy}{paper}"
+            f"lots={e['lots']} @ {e['fill']:.2f} delta={e['delta']} iv={e['iv']}{strategy}{second}{paper}"
         )
     for x in summary.get("exits", []):
         real = "💰 REAL MONEY " if not is_paper_source(x["source"]) else ""

@@ -10,7 +10,10 @@ fno_book holds N11's signals and exits. This module holds what sits around them:
   - the honest earned lot: one more lot on a two-lot trade at or past +1R and before 14:45, at the first look where what
     the held lots are expected to lose at their current stop, plus the new lot's whole 25% backstop, fits Rs 5,000. The
     held lots' stops are never touched. It is its own position (``N11_ADD``), leaving at the held lots' entry level, at
-    its own backstop, or with them. Paper book only: the real-money test never adds.
+    its own backstop, or with them. Paper book only: the real-money test never adds;
+  - [N11T] the tolerance: a second lot on a NIFTY paper trade N11 already takes at one lot, when both readings are good, with
+    the whole trade inside Rs 6,250 (``second_lot``, ``second_lot_stop``). It admits no new trade. Paper only: the real-money
+    test reads only the contract from the paper entry. docs/FNO_RESEARCH_N11T.md.
 
 Every number was seen in research: this is the owner's decision, not a proof. The real-money test is a separate switch
 that this module never touches. Back to the Oct 31 book: FNO_BOOK=UNION_ADX. Rules here are pure where they can be and
@@ -20,6 +23,7 @@ from __future__ import annotations
 
 import asyncio
 import math
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta
 from statistics import median
 from time import monotonic
@@ -106,6 +110,23 @@ CREATE TABLE IF NOT EXISTS fno_n11_gate (
   recorded_at TEXT NOT NULL,
   shadow_reported_at TEXT
 )"""
+_SECOND_DDL = """
+CREATE TABLE IF NOT EXISTS fno_n11_second_lot (
+  position_id INTEGER PRIMARY KEY,
+  session_date TEXT NOT NULL,
+  tradingsymbol TEXT,
+  strategy TEXT,
+  fill REAL,
+  native_stop REAL,
+  premium_stop REAL,
+  limit_rupees REAL,
+  reason TEXT,
+  delta REAL,
+  stop_points REAL,
+  multiplier REAL,
+  paper_sum REAL,
+  recorded_at TEXT NOT NULL
+)"""
 
 
 def _num(value: object) -> bool:
@@ -181,6 +202,86 @@ def budget(pool: float, multiplier: float) -> float:
                float(settings.FNO_N11_ADD_MAX_RUPEES) * min(1.0, scale))
 
 
+# ---- the tolerance: a second lot ---------------------------------------------------------------------------------------------
+
+BACKSTOP_FITS = "BACKSTOP_FITS"
+STOP_FITS = "STOP_FITS"
+SECOND_LOTS = 2
+
+
+@dataclass(frozen=True)
+class SecondLot:
+    plan: Any        # the same plan at two lots
+    limit: float     # what the whole trade may plan to lose
+    reason: str
+
+
+def paper_positive(nets: Sequence[float], need: int = 20) -> bool:
+    """The last ``need`` closed paper trades together made money. With too little history nothing is known: no second lot."""
+    return len(nets) >= need and sum(nets[-need:]) > 0
+
+
+def tolerance_limit(multiplier: float) -> float:
+    """The most a raised trade may plan to lose: scaled down in a drawdown, never up."""
+    return float(settings.FNO_N11_TOLERANCE_RUPEES) * min(1.0, max(0.0, float(multiplier)))
+
+
+def backstop_points(limit: float, ask: float, qty: int, extra: float, fees: Callable) -> Optional[float]:
+    """How many premium points this size can fall from entry and still lose no more than the limit, fees and declared stress included."""
+    if not all(_num(v) for v in (limit, ask, extra)) or qty <= 0 or ask <= 0:
+        return None
+    room = limit - fees(ask, ask, qty) - extra
+    return room / qty if room > 0 else None
+
+
+def stop_price(ask: float, points: float, tick: float = 0.05) -> float:
+    """The tightened backstop, rounded up to the option's tick so the planned loss never exceeds the limit."""
+    return round(math.ceil((ask - points) / tick - 1e-9) * tick, 2)
+
+
+def second_lot_reason(ask: float, delta: float, stop_points: float, lot_size: int, pool: float, multiplier: float, fees: Callable) -> Optional[str]:
+    """Why a one-lot trade may take a second, or None. Two lots at the normal backstop fit the budget (the limit, or what the stance already allows);
+    or the trade's own stop, valued at the factor x delta, fits the premium points the limit allows, so the stop acts before the tightened backstop."""
+    stop_pct = float(settings.FNO_STOP_PREMIUM_PCT)
+    if not all(_num(v) and v > 0 for v in (ask, pool, stop_pct)) or lot_size <= 0:
+        return None
+    m = max(float(multiplier), 1e-9)
+    limit = tolerance_limit(m)
+    allowed = max(limit, min(pool * float(settings.FNO_MAX_RISK_PCT) * m, float(settings.FNO_MAX_LOSS_PER_TRADE) * m))
+    if int(allowed // (ask * lot_size * stop_pct)) >= SECOND_LOTS:
+        return BACKSTOP_FITS
+    if not _num(delta) or not _num(stop_points) or stop_points <= 0:
+        return None
+    points = backstop_points(limit, ask, SECOND_LOTS * lot_size, extra_cost(SECOND_LOTS), fees)
+    expected = float(settings.FNO_N11_TOLERANCE_STOP_FACTOR) * abs(delta) * stop_points
+    return STOP_FITS if points is not None and expected <= points else None
+
+
+def second_lot(first: Any, state: Any, *, stop_points: float, ceiling: int, is_vol_up: bool, is_paper_positive: bool, fees: Callable = calc_fno_costs) -> Optional[SecondLot]:
+    """The same trade at two lots, or None and N11's one lot stands. It reads no result and admits no new trade. ``ceiling`` is N11's own, so a realised
+    loss today or the low-day clock already answers no. The open-premium and structural caps still have the last word."""
+    from fno_models import Leg
+    from fno_risk import validate_position
+    if not settings.FNO_N11_TOLERANCE_ENABLED or not first.accepted or first.lots != 1 or ceiling < SECOND_LOTS or not is_vol_up or not is_paper_positive:
+        return None
+    ask, lot_size = float(first.quote.ask), int(first.lot_size)
+    multiplier = float(state.risk_multiplier)
+    reason = second_lot_reason(ask, first.delta, stop_points, lot_size, float(state.pool), multiplier, fees)
+    if reason is None or state.open_premium + SECOND_LOTS * ask * lot_size > float(settings.FNO_MAX_OPEN_PREMIUM_PCT) * state.pool:
+        return None
+    ok, _reject, worst = validate_position([Leg(opt_type=first.opt_type, strike=first.quote.contract.strike, quantity=SECOND_LOTS, premium=ask)], lot_size)
+    if not ok:
+        return None
+    plan = replace(first, lots=SECOND_LOTS, max_loss_rupees=worst, log_fields={**first.log_fields, "lots": SECOND_LOTS, "max_loss_rupees": worst})
+    return SecondLot(plan=plan, limit=tolerance_limit(max(multiplier, 1e-9)), reason=reason)
+
+
+def second_lot_stop(fill: float, qty: int, lots: int, limit: float, native_stop: float, fees: Callable = calc_fno_costs) -> float:
+    """The backstop that keeps the whole trade inside the limit, fees and declared stress included. Never lower than the normal backstop."""
+    points = backstop_points(limit, fill, qty, extra_cost(lots), fees)
+    return native_stop if points is None else max(native_stop, stop_price(fill, points))
+
+
 def adverse_distance(direction: str, future: float, level: float) -> float:
     return max(0.0, (1 if direction == "LONG" else -1) * (future - level))
 
@@ -213,6 +314,7 @@ async def init_db(db_path: str) -> None:
     async with aiosqlite.connect(db_path) as db:
         await db.execute(_DDL)
         await db.execute(_GATE_DDL)
+        await db.execute(_SECOND_DDL)
         await db.executemany(
             "INSERT OR IGNORE INTO fno_n11_paper(underlying,bar_ts,strategy,status,exit_time,net,source) "
             "VALUES('NIFTY', ?, 'N08_RESEARCH', 'CLOSED', ?, ?, ?)",
@@ -259,6 +361,32 @@ async def parent_open(db_path: str, source: str, bar_ts: Optional[str]) -> bool:
     async with aiosqlite.connect(db_path) as db:
         row = await (await db.execute("SELECT status FROM fno_positions WHERE id=? AND source=?", (parent, source))).fetchone()
     return row is None or row[0] != "CLOSED"
+
+
+async def record_second_lot(db_path: str, position_id: int, *, now: datetime, symbol: str, strategy: Optional[str], fill: float, native_stop: float, premium_stop: float,
+                            limit: float, reason: str, delta: float, stop_points: float, multiplier: float, paper_sum: float) -> None:
+    """The evidence the forward test needs: which trades took a second lot and why. Nothing reads this to trade."""
+    await init_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "INSERT OR IGNORE INTO fno_n11_second_lot(position_id,session_date,tradingsymbol,strategy,fill,native_stop,premium_stop,limit_rupees,reason,delta,stop_points,multiplier,paper_sum,recorded_at) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (position_id, now.date().isoformat(), symbol, strategy, fill, native_stop, premium_stop, limit, reason, delta, stop_points, multiplier, paper_sum, now.isoformat()))
+        await db.commit()
+
+
+async def second_lots_today(db_path: str, day: str, fees: Callable = calc_fno_costs) -> dict:
+    """Today's second lots and about what they made: half of each closed raised trade, with the fees the second lot added. 'About', because a tightened backstop can
+    also change the first lot's exit, and a second lot's premium can change a later trade."""
+    await init_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        db.row_factory = aiosqlite.Row
+        rows = await (await db.execute(
+            "SELECT p.entry_premium, p.exit_premium, p.lot_size, p.status FROM fno_n11_second_lot s JOIN fno_positions p ON p.id=s.position_id WHERE s.session_date=?", (day,))).fetchall()
+    closed = [r for r in rows if r["status"] == "CLOSED" and r["exit_premium"] is not None]
+    own = sum((r["exit_premium"] - r["entry_premium"]) * r["lot_size"]
+              - (fees(r["entry_premium"], r["exit_premium"], SECOND_LOTS * r["lot_size"]) - fees(r["entry_premium"], r["exit_premium"], r["lot_size"])) for r in closed)
+    return {"count": len(rows), "closed": len(closed), "own": own}
 
 
 async def _has_child(db_path: str, source: str, parent_id: int) -> bool:
@@ -331,7 +459,7 @@ async def gate(db_path: str, kite, now: datetime) -> dict:
     nets = await paper_nets(db_path, now)
     need = int(settings.FNO_N11_STAND_NEED)
     return {"atr_pct": atr_pct, "usual": usual, "vol_up": vol_up(atr_pct, usual), "above_line": above, "paper_sum": sum(nets[-need:]) if nets else 0.0,
-            "paper_count": len(nets), "stand": stand_aside(above, nets, need)}
+            "paper_count": len(nets), "stand": stand_aside(above, nets, need), "paper_positive": paper_positive(nets, need)}
 
 
 # ---- the paper record: every N11 signal on NIFTY at one lot, brakes off -------------------------------------------------------
@@ -558,9 +686,17 @@ async def send_shadow_report_once(db_path: str, now: datetime) -> bool:
         await db.commit()
     table = shadow_table(rows)
     waited = sum(int(r["stood_aside"]) for r in rows)
+    # A failed read of the second lots mustn't cost the day's report: it has already been marked sent above.
+    try:
+        second = await second_lots_today(db_path, day)
+        tolerance = (f"Second lots today: {second['count']}, about Rs {second['own']:+,.0f} of that, so plain N11 about Rs {float(real[0]) - second['own']:+,.0f}. "
+                     if second["count"] else "No second lots today. ")
+    except Exception as exc:
+        logger.error("fno_n11_second_lot_report_failed", err=str(exc), exc_info=True)
+        tolerance = ""
     from operator_alert import notify_operator
     await notify_operator(
-        f"📊 N11 paper today: Rs {float(real[0]):+,.0f} on {int(real[1])} positions, before the research's assumed extra cost. "
+        f"📊 N11 paper today: Rs {float(real[0]):+,.0f} on {int(real[1])} positions, before the research's assumed extra cost. {tolerance}"
         f"Shadows, the same {table['trades']} paper signals with that cost included: one lot Rs {table['one_lot']:+,.0f}, N08's sizes Rs {table['N08']:+,.0f}, "
         f"size by volatility (N09 to N10.1) Rs {table['size_by_volatility']:+,.0f}. {waited} signal(s) stood aside. "
         "Their reserves, floors and earned lots aren't modelled in this line.", event="fno_n11_shadow_report")

@@ -1,0 +1,40 @@
+{
+ "year": "2026",
+ "passed": true,
+ "checks": {
+  "money": 51,
+  "prices": 102,
+  "raised_trades_conditions_hold": 3,
+  "tolerance_second_lots_planned_inside_the_limit": 2,
+  "two_lots_by_the_stance_not_the_tolerance": 1
+ },
+ "raised": [
+  {
+   "at": "2026-02-27T11:30:59+05:30",
+   "ask": 230.35,
+   "by": "tolerance",
+   "stop": 186.45,
+   "planned": 6234.24,
+   "exit": "time_stop",
+   "net": -454
+  },
+  {
+   "at": "2026-03-19T12:25:59+05:30",
+   "ask": 288.05,
+   "by": "tolerance",
+   "stop": 244.25,
+   "planned": 6239.05,
+   "exit": "trail_stop",
+   "net": 20814
+  },
+  {
+   "at": "2026-04-08T10:45:59+05:30",
+   "ask": 219.15,
+   "by": "stance",
+   "planned_at_25pct": 7643.44,
+   "exit": "time_stop",
+   "net": 996
+  }
+ ],
+ "note": "Modelled quotes, not market depth. A stop can gap: planned loss isn't a promise."
+}

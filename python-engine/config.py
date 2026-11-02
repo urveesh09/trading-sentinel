@@ -1070,6 +1070,13 @@ class Settings(BaseSettings):
     FNO_N11_ADD_MAX_RUPEES:    float = 5000.0     # the earned lot's written charge: held lots at their stop + its whole backstop
     FNO_N11_LOW_TWO_LOTS_BEFORE_MIN: int = 12*60  # a low-day pullback may take two lots only before 12:00
     FNO_N11_LOW_LAST_MIN:      int   = 14*60      # and none from 14:00
+    # [N11T 2026-11-02] The owner allows a tolerance on the per-trade plan and left the amount to the agent. A NIFTY paper
+    # trade N11 already takes at one lot may take a second, when volatility is at or above usual and the last 20 paper trades
+    # made money, with the whole trade inside this limit. It admits no new trade. Research: docs/FNO_RESEARCH_N11T.md, on seen
+    # years, and its placebo failed: a modest, plausible gain, not a proven one. Off: FNO_N11_TOLERANCE_ENABLED=false.
+    FNO_N11_TOLERANCE_ENABLED: bool  = True
+    FNO_N11_TOLERANCE_RUPEES:  float = 6250.0     # planned loss for both lots, fees and declared stress included
+    FNO_N11_TOLERANCE_STOP_FACTOR: float = 1.75   # the trade's own stop, valued at this x delta, must fit that limit's backstop
     FNO_BOOK_ADX_MIN:          float = 30.0
     FNO_BOOK_MAX_STRETCH:      float = 0.5        # share of the first 30 minutes' range beyond VWAP; 0 = no check
 

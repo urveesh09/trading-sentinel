@@ -1,0 +1,11 @@
+{
+ "year": "2023",
+ "passed": true,
+ "checks": {
+  "money": 28,
+  "prices": 56,
+  "tolerance_second_lots_planned_inside_the_limit": 0
+ },
+ "raised": [],
+ "note": "Modelled quotes, not market depth. A stop can gap: planned loss isn't a promise."
+}
