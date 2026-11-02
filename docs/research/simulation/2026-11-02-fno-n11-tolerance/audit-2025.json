@@ -1,0 +1,18 @@
+{
+ "year": "2025",
+ "passed": true,
+ "checks": {
+  "money": 73,
+  "prices": 146,
+  "raised_trades_conditions_hold": 9
+ },
+ "plan_wording_planned_loss_over_7500": [
+  {
+   "at": "2025-01-01T10:06:59+05:30",
+   "ask": 227.3,
+   "stop": 170.48,
+   "planned": 7909.67
+  }
+ ],
+ "note": "planned_over lists raised trades whose planned loss passes Rs 7,500 once fees and stress are counted: the frozen code's gap from PLAN.md's wording, handled by n11t_strict.py. Modelled quotes, not market depth."
+}
