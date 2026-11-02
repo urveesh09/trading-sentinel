@@ -6,6 +6,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 - **The general research rules:** [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md).
 - **Testing size in rupees, not per lot:** section 15, with the worked study [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md).
 - **The 2024 exam's results (Oct 31):** [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md). Running an exam like it: section 14.
+- **N11, the stand-aside, the honest earned lot, and how to attack your own winner (Nov 2):** [FNO_RESEARCH_N11.md](FNO_RESEARCH_N11.md).
 - **N10, the earned lot, the account comeback and the cliff in a funded floor (Nov 2):** [FNO_RESEARCH_N10.md](FNO_RESEARCH_N10.md).
 - **N09, N08's challengers, the restart and the overfitting estimate (Nov 1):** [FNO_RESEARCH_N09.md](FNO_RESEARCH_N09.md).
 - **N08 and the NIFTY 2023 result (Nov 1):** [FNO_RESEARCH_N08.md](FNO_RESEARCH_N08.md).
@@ -259,6 +260,10 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 
 ## 12. Pitfalls and fixes
 
+- **Hide each year in turn before believing a part (Nov 2, 2026).** N11's stand-aside added +21,894 over four years and wouldn't have been chosen with 2023 hidden; its earned lot was chosen every time and earned on every hidden year. A four-year sum can't tell these apart. Saved-replay arithmetic: `2026-11-02-fno-n11/after_verdict.py`.
+- **The stress test can flatter a rule shaped on the same year (Nov 2, 2026).** Reordering whole years reuses them. A rule shaped on 2023 looks strong on 2023 repeated four times. Say so beside the number.
+- **A plateau inflates the overfitting estimate (Nov 2, 2026).** In a family with close totals, whatever does best on one half must do worse on the other, so the estimate rises even when nothing is wrong: N11's family scored 0.893, and 0.893 again with the weeks shuffled jointly. Run that shuffle before reading a family score. It doesn't excuse a failed check, and it does mean history can't choose among them.
+- **Keep a study's script names apart (Nov 2, 2026).** Importing a chain of labs puts each study's folder on the path, so `import stress` found N09.1's. Import your own module before the lab chain, or give it a study-specific name.
 - **One account's ending can be a coin flip (Nov 2, 2026).** N09.1's Rs 3,84,310 turned on Rs 18.45 on one trade; at extra costs of 199 and 202 instead of 200 the same book ends near Rs 2.17 lakh. Before believing any account result, rerun it at small cost shifts: `2026-11-01-fno-n10/cliff_map.py`. Tests at 10% missed it.
 - **Check the code against the plan's wording (Nov 2, 2026).** N10's plan said "first reaches"; its code retried, and that was the difference between passing and failing. A freeze of both doesn't make them agree. Count how often a rule's alternative path actually fires, and audit it before the verdict.
 - **Rough sums from saved trades only choose what to test (Nov 2, 2026).** Adding at +1R looked like +94,512 and came out far below the entry-time lot in exact replay: the rough sum left out the added lot's own stop, time-stop exits and the first leg.

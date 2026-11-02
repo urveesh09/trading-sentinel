@@ -1,0 +1,40 @@
+{
+ "n11_family": {
+  "pbo": 0.8930846930846931,
+  "combinations": 12870,
+  "median_out_of_sample_percentile": 0.2569444444444444,
+  "books": 71,
+  "weeks": 201,
+  "most_chosen": {
+   "screen2|STAND_EV": 1979,
+   "screen4|N40": 1698,
+   "screen4|R0.85": 1254,
+   "screen4|N25": 1014,
+   "screen3|N08_STAND": 635,
+   "screen|TR15_NOISE": 564
+  },
+  "books_after_removing_duplicates": 71,
+  "rank_by_total": 6,
+  "total": 255365
+ },
+ "everything_since_n08": {
+  "pbo": 0.312975912975913,
+  "combinations": 12870,
+  "median_out_of_sample_percentile": 0.59375,
+  "books": 159,
+  "weeks": 201,
+  "most_chosen": {
+   "screen2|STAND_EV": 1901,
+   "screen4|N40": 1585,
+   "screen4|R0.85": 1208,
+   "screen4|N25": 893,
+   "screen3|N08_STAND": 602,
+   "panel|R0.85": 534
+  },
+  "books_after_removing_duplicates": 159,
+  "rank_by_total": 6,
+  "total": 255365
+ },
+ "check_17_family_at_most_0_5": false,
+ "reading": "On pure noise this estimator averages 0.51 to 0.55 with a standard deviation of about 0.18. All data seen, and each screen was designed after reading the last, so a low score isn't independent evidence."
+}

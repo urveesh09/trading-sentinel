@@ -1,0 +1,17 @@
+{
+ "year": "2026",
+ "passed": true,
+ "checks": {
+  "money": 103,
+  "prices": 234,
+  "no_entry_while_standing_aside": 103,
+  "one_lot_on_low_volatility": 6,
+  "morning_rule": 30,
+  "two_lot_parent": 14,
+  "planned_within_5000": 14,
+  "no_missed_stop": 14,
+  "one_lot_after_a_loss": 9,
+  "held_lots_identical": 49
+ },
+ "note": "Modelled quotes from candles, not market depth. An audit of the replay's arithmetic and clocks, not of future profit."
+}
