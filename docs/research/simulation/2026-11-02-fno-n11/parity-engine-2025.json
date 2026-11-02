@@ -1,0 +1,15 @@
+{
+ "year": "2025",
+ "research_replay_net": 53094.68,
+ "research_trades": 74,
+ "mismatch_count": 0,
+ "ticks_compared": 49600,
+ "signals_research": 573,
+ "signals_engine": 573,
+ "same_signal": 573,
+ "mismatches": [],
+ "ceiling_compared": 305,
+ "ceiling_mismatches": [],
+ "stood_aside_ticks": 14,
+ "stood_aside_engine_fired": 14
+}

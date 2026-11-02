@@ -1,0 +1,484 @@
+{
+ "schema": "n11t_final_results_v1",
+ "all_data_seen": true,
+ "tolerance_second_lots": {
+  "count": 9,
+  "wins": 7,
+  "own_total": 21267,
+  "top_three": 18633
+ },
+ "two_lots_by_the_stance_as_a_knock_on": [
+  [
+   "2025-01-29T11:36",
+   165.15,
+   444
+  ],
+  [
+   "2026-04-08T10:45",
+   219.15,
+   517
+  ]
+ ],
+ "placebo_tolerance_only": {
+  "eligible": 84,
+  "picked": 9,
+  "actual": 21267,
+  "median": 5246,
+  "p95": 23577,
+  "share_at_or_above_actual": 0.0723
+ },
+ "final": {
+  "years": {
+   "2023": -11537,
+   "2024": 95040,
+   "2025": 63479,
+   "2026": 127763
+  },
+  "sum": 274745,
+  "worst_day": -5641,
+  "worst_trade": -4559,
+  "fall": 6.89,
+  "without_top5": 143996,
+  "trades": 181,
+  "two_lot_entries": 50
+ },
+ "n11": {
+  "sum": 255365,
+  "fall": 6.89,
+  "double": 199622,
+  "without_top5": 125490,
+  "years": {
+   "2023": -11537,
+   "2024": 93256,
+   "2025": 53095,
+   "2026": 120551
+  }
+ },
+ "double": {
+  "years": {
+   "2023": -17697,
+   "2024": 75809,
+   "2025": 41491,
+   "2026": 109910
+  },
+  "sum": 209513,
+  "worst_day": -6266,
+  "worst_trade": -4979,
+  "fall": 9.22,
+  "without_top5": 88163,
+  "trades": 182,
+  "two_lot_entries": 46
+ },
+ "neighbours": {
+  "K1.5": {
+   "years": {
+    "2023": -11537,
+    "2024": 95040,
+    "2025": 58504,
+    "2026": 126741
+   },
+   "sum": 268749,
+   "worst_day": -5863,
+   "worst_trade": -5863,
+   "fall": 6.89,
+   "without_top5": 138000,
+   "trades": 181,
+   "two_lot_entries": 53
+  },
+  "K2.0": {
+   "years": {
+    "2023": -11537,
+    "2024": 95040,
+    "2025": 59686,
+    "2026": 120551
+   },
+   "sum": 263741,
+   "worst_day": -5641,
+   "worst_trade": -4559,
+   "fall": 6.89,
+   "without_top5": 133865,
+   "trades": 181,
+   "two_lot_entries": 45
+  },
+  "L5500": {
+   "years": {
+    "2023": -11537,
+    "2024": 94204,
+    "2025": 54444,
+    "2026": 120551
+   },
+   "sum": 257663,
+   "worst_day": -5641,
+   "worst_trade": -4559,
+   "fall": 6.89,
+   "without_top5": 127788,
+   "trades": 181,
+   "two_lot_entries": 43
+  },
+  "L7000": {
+   "years": {
+    "2023": -11537,
+    "2024": 95040,
+    "2025": 64608,
+    "2026": 126741
+   },
+   "sum": 274853,
+   "worst_day": -5863,
+   "worst_trade": -5863,
+   "fall": 6.89,
+   "without_top5": 144105,
+   "trades": 181,
+   "two_lot_entries": 54
+  }
+ },
+ "controls": {
+  "NO_READING": {
+   "years": {
+    "2023": -16408,
+    "2024": 93172,
+    "2025": 62494,
+    "2026": 127763
+   },
+   "sum": 267022,
+   "worst_day": -5641,
+   "worst_trade": -4559,
+   "fall": 8.84,
+   "without_top5": 136273,
+   "trades": 181,
+   "two_lot_entries": 56
+  },
+  "REVERSED": {
+   "years": {
+    "2023": -16408,
+    "2024": 93558,
+    "2025": 52111,
+    "2026": 120551
+   },
+   "sum": 249812,
+   "worst_day": -5641,
+   "worst_trade": -4559,
+   "fall": 8.84,
+   "without_top5": 119937,
+   "trades": 181,
+   "two_lot_entries": 45
+  }
+ },
+ "accounts": {
+  "195": {
+   "end": 523206,
+   "fall": 6.84,
+   "lowest": 233053
+  },
+  "198": {
+   "end": 522827,
+   "fall": 6.87,
+   "lowest": 232966
+  },
+  "199": {
+   "end": 522562,
+   "fall": 6.88,
+   "lowest": 232937
+  },
+  "200": {
+   "end": 522297,
+   "fall": 6.89,
+   "lowest": 232908
+  },
+  "201": {
+   "end": 522032,
+   "fall": 6.9,
+   "lowest": 232879
+  },
+  "202": {
+   "end": 521767,
+   "fall": 6.92,
+   "lowest": 232850
+  },
+  "205": {
+   "end": 520972,
+   "fall": 6.95,
+   "lowest": 232763
+  },
+  "180": {
+   "end": 518927,
+   "fall": 7.39,
+   "lowest": 231673
+  },
+  "220": {
+   "end": 515890,
+   "fall": 7.12,
+   "lowest": 232313
+  },
+  "400": {
+   "end": 450334,
+   "fall": 9.22,
+   "lowest": 226953
+  }
+ },
+ "n11_account": {
+  "195": 519193,
+  "198": 518827,
+  "199": 518566,
+  "200": 518305,
+  "201": 518044,
+  "202": 517783,
+  "205": 517000,
+  "180": 515071,
+  "220": 512864,
+  "400": 445026
+ },
+ "near_cost_spread_pct": 0.43,
+ "checks": {
+  "1_sum_above_n11": true,
+  "2_worst_day_no_larger_than_6_127": true,
+  "3_fall_no_larger_than_n11": true,
+  "4_worst_trade_no_larger_than_6_250": true,
+  "5_every_year_at_or_above_n11_within_500": true,
+  "6_double_cost_above_n11": true,
+  "7_without_top_five_above_n11": true,
+  "8_neighbours": true,
+  "9_account_every_cost": true,
+  "10_audit": true,
+  "11_engine_parity": true
+ },
+ "meets_the_bar_on_the_seen_years": true,
+ "second_lots": {
+  "count": 11,
+  "wins": 9,
+  "own_by_year": {
+   "2023": 0,
+   "2024": 1784,
+   "2025": 9710,
+   "2026": 10734
+  },
+  "own_total": 22228,
+  "knock_on_by_year": {
+   "2023": 0,
+   "2024": 0,
+   "2025": 674,
+   "2026": -3522
+  },
+  "top_three": 18633,
+  "worst": -2060,
+  "list": [
+   [
+    "2024-02-12T11:40",
+    4,
+    "S",
+    210.45,
+    "time_stop",
+    799,
+    1635
+   ],
+   [
+    "2024-04-26T11:55",
+    4,
+    "S",
+    219.3,
+    "trail_stop",
+    911,
+    1859
+   ],
+   [
+    "2025-01-01T10:06",
+    1,
+    "S",
+    227.3,
+    "underlying_st",
+    -2097,
+    -4157
+   ],
+   [
+    "2025-01-10T09:52",
+    0,
+    "S",
+    242.5,
+    "profit_lock",
+    911,
+    1858
+   ],
+   [
+    "2025-01-10T13:42",
+    2,
+    "S",
+    242.25,
+    "hard_flat_151",
+    2134,
+    4304
+   ],
+   [
+    "2025-01-17T11:45",
+    2,
+    "L",
+    198.4,
+    "trail_stop",
+    2929,
+    5894
+   ],
+   [
+    "2025-01-21T12:10",
+    0,
+    "S",
+    184.05,
+    "trail_stop",
+    5205,
+    10446
+   ],
+   [
+    "2025-01-29T11:36",
+    0,
+    "L",
+    165.15,
+    "profit_lock",
+    407,
+    851
+   ],
+   [
+    "2026-02-27T11:30",
+    4,
+    "S",
+    230.35,
+    "time_stop",
+    -246,
+    -454
+   ],
+   [
+    "2026-03-19T12:25",
+    3,
+    "S",
+    288.05,
+    "trail_stop",
+    10388,
+    20814
+   ],
+   [
+    "2026-04-08T10:45",
+    0,
+    "L",
+    219.15,
+    "time_stop",
+    480,
+    996
+   ]
+  ]
+ },
+ "placebo": {
+  "eligible": 84,
+  "picked": 11,
+  "actual": 22228,
+  "median": 6699,
+  "p95": 26414,
+  "share_at_or_above_actual": 0.09665
+ },
+ "hidden_year": {
+  "2023": {
+   "sum_on_the_other_three": 22228,
+   "would_be_chosen": true,
+   "on_the_hidden_year": 0
+  },
+  "2024": {
+   "sum_on_the_other_three": 20444,
+   "would_be_chosen": true,
+   "on_the_hidden_year": 1784
+  },
+  "2025": {
+   "sum_on_the_other_three": 12518,
+   "would_be_chosen": true,
+   "on_the_hidden_year": 9710
+  },
+  "2026": {
+   "sum_on_the_other_three": 11494,
+   "would_be_chosen": true,
+   "on_the_hidden_year": 10734
+  }
+ },
+ "overfit": {
+  "books": 55,
+  "pbo": 0.615,
+  "median_out_of_sample_percentile": 0.286,
+  "weeks_shuffled_jointly": {
+   "median": 0.421,
+   "low": 0.322,
+   "high": 0.53
+  },
+  "rank_by_total": 4,
+  "identified_as": "screen5|S6250_K1.75",
+  "reading": "On pure noise this estimator averages 0.51 to 0.55 with a standard deviation of about 0.18. All data seen."
+ },
+ "parity": {
+  "2023": {
+   "decisions_compared": 138,
+   "research_raised": 0,
+   "engine_raised": 0,
+   "by_reason": {},
+   "stops_compared": 0,
+   "stops_tightened": 0,
+   "raised_but_not_entered": 0,
+   "mismatch_count": 0
+  },
+  "2024": {
+   "decisions_compared": 85,
+   "research_raised": 2,
+   "engine_raised": 2,
+   "by_reason": {
+    "STOP_FITS": 2
+   },
+   "stops_compared": 2,
+   "stops_tightened": 2,
+   "raised_but_not_entered": 0,
+   "mismatch_count": 0
+  },
+  "2025": {
+   "decisions_compared": 308,
+   "research_raised": 5,
+   "engine_raised": 5,
+   "by_reason": {
+    "STOP_FITS": 4,
+    "BACKSTOP_FITS": 1
+   },
+   "stops_compared": 5,
+   "stops_tightened": 5,
+   "raised_but_not_entered": 0,
+   "mismatch_count": 0
+  },
+  "2026": {
+   "decisions_compared": 165,
+   "research_raised": 2,
+   "engine_raised": 2,
+   "by_reason": {
+    "STOP_FITS": 2
+   },
+   "stops_compared": 2,
+   "stops_tightened": 2,
+   "raised_but_not_entered": 0,
+   "mismatch_count": 0
+  }
+ },
+ "audit": {
+  "2023": {
+   "money": 28,
+   "prices": 56,
+   "tolerance_second_lots_planned_inside_the_limit": 0
+  },
+  "2024": {
+   "money": 29,
+   "prices": 58,
+   "raised_trades_conditions_hold": 2,
+   "tolerance_second_lots_planned_inside_the_limit": 2
+  },
+  "2025": {
+   "money": 73,
+   "prices": 146,
+   "raised_trades_conditions_hold": 6,
+   "tolerance_second_lots_planned_inside_the_limit": 5,
+   "two_lots_by_the_stance_not_the_tolerance": 1
+  },
+  "2026": {
+   "money": 51,
+   "prices": 102,
+   "raised_trades_conditions_hold": 3,
+   "tolerance_second_lots_planned_inside_the_limit": 2,
+   "two_lots_by_the_stance_not_the_tolerance": 1
+  }
+ }
+}

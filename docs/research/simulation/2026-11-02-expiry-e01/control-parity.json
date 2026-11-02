@@ -1,0 +1,70 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "day": "2026-10-06",
+      "underlying": "NIFTY",
+      "positions": 5,
+      "exact_money_events": true,
+      "legacy_schema_defaults": 5,
+      "mismatches": []
+    },
+    {
+      "day": "2026-10-08",
+      "underlying": "SENSEX",
+      "positions": 12,
+      "exact_money_events": true,
+      "legacy_schema_defaults": 0,
+      "mismatches": []
+    },
+    {
+      "day": "2026-10-13",
+      "underlying": "NIFTY",
+      "positions": 14,
+      "exact_money_events": true,
+      "legacy_schema_defaults": 0,
+      "mismatches": []
+    },
+    {
+      "day": "2026-10-15",
+      "underlying": "SENSEX",
+      "positions": 11,
+      "exact_money_events": true,
+      "legacy_schema_defaults": 0,
+      "mismatches": []
+    },
+    {
+      "day": "2026-10-19",
+      "underlying": "NIFTY",
+      "positions": 19,
+      "exact_money_events": true,
+      "legacy_schema_defaults": 0,
+      "mismatches": []
+    },
+    {
+      "day": "2026-10-22",
+      "underlying": "SENSEX",
+      "positions": 4,
+      "exact_money_events": true,
+      "legacy_schema_defaults": 0,
+      "mismatches": []
+    },
+    {
+      "day": "2026-10-27",
+      "underlying": "NIFTY",
+      "positions": 18,
+      "exact_money_events": true,
+      "legacy_schema_defaults": 0,
+      "mismatches": []
+    },
+    {
+      "day": "2026-10-29",
+      "underlying": "SENSEX",
+      "positions": 12,
+      "exact_money_events": true,
+      "legacy_schema_defaults": 0,
+      "mismatches": []
+    }
+  ],
+  "note": "Oct6 raw index clocks unavailable, observed values used; five later DEFAULT0 bank_pending columns normalized only in comparison. No money, quote or event normalized."
+}

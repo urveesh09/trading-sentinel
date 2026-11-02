@@ -23,7 +23,9 @@ B  Auction strangle: at 15:13:30-15:15 buy the strikes either side of spot and
    all charges; else held into the auction and sold from 15:38.
 C  Lottery ticket: on A's signal, the nearest strike priced 0.004%-0.03% of
    spot in that direction; sold on A's failed break (expiry-v2), else held
-   into the auction; bank half at 3x, trail after 5x; sold from 15:38.
+   into the auction; sold from 15:38. Since expiry-v4 (E01.1): a 25% premium
+   stop, at 3x just enough lots sold to take the ticket's whole cost back, and
+   a 60% floor from 3x. A gap can still fill below a stop or floor.
 
 "Sold from 15:38" sells a leg that still has a bid. A leg in the money stays
 bid to 15:40 (Oct 6 and 8: BH's calls sold at 15:38); a worthless leg loses its
@@ -72,6 +74,21 @@ plays (``SHADOW_VERSION``) run on the same quotes and are listed only in the
 summary, each beside its paired difference from the primary whose entry it
 shares.
 
+CE01 (expiry-e01-v1) copies only C's successfully saved entry and uses C's old
+exits (see CL) plus a predeclared 30% premium stop. It is a paper shadow. New
+days bind its enrollment; disabling EXPIRY_E01_SHADOW_ENABLED blocks new copies
+while open CE01 positions keep their exits. The entry event retains the
+primary's position ID and the paired summary checks that identity as well as
+economics.
+
+CL and CE011R (expiry-e011-v2) copy the same saved entry the same way, under
+EXPIRY_E011_SHADOW_ENABLED. CL is expiry-v3's C: no premium stop, half sold at
+3x, a 60% floor only from 5x, so the promotion is scored on a paired entry
+(CL - C positive means the old rule would have done better). CE011R is the main
+C selling nothing at 3x, to measure one open question on new expiries: when a
+ticket reaches 3x, is it better to take the cost out or to let all of it run?
+docs/EXPIRY_RESEARCH_E011.md has the evidence and its limits.
+
 Telegram lines go to an outbox in the same transaction as the tick and are
 marked sent when a 2xx acknowledgement arrives (``flush_notices``); flushes
 of one store are serialised, so delivery is at-least-once without concurrent
@@ -110,7 +127,13 @@ IST = ZoneInfo("Asia/Kolkata")
 # +Rs 722.46 forward); the 20% target was frozen after seeing Oct 8, so v3 is
 # scored on later expiries and v2's B keeps running as shadow BL. A and C are
 # unchanged from v2.
-RULES_VERSION = "expiry-v3"
+# expiry-v4 (owner order, 2026-11-02): C takes E01.1's exits, a paper-only choice
+# of the owner's after the 12-session study, not a forward result. C's entry, size
+# and ceiling are unchanged. Eight seen sessions: book +12,918 against v3's +6,548;
+# seven September tickets, frozen before they were read and exits only: -64 against
+# -7,850. Still a lottery: it loses without Oct 13. v3's C keeps running as shadow
+# CL on the same ticket. A and B are unchanged from v3.
+RULES_VERSION = "expiry-v4"
 EXECUTION_VERSION = "expiry-exec-v2"    # clock/data/fill contract; v1 judged freshness at request start
 
 INDEX_QUOTE_KEYS = {"NIFTY": "NSE:NIFTY 50", "SENSEX": "BSE:SENSEX"}
@@ -199,20 +222,32 @@ EXERCISE_STT_PCT = 0.0015           # STT on the settlement value of an exercise
 # Considered and not added: AE, A entering only once the break clears the box
 # by a second buffer. On the five seen expiries it finished Rs 167.32 below A
 # (it skipped Oct 19's two losers but entered later on Oct 8 and 15).
-SHADOW_VERSION = "expiry-shadow-v5"
+# v6 adds CE01 for prospective comparison after the eight-session E01 study.
+# v7 added E01.1's CE011 and CE011R after the 12-session study, in Dev only.
+# v8 goes with expiry-v4: CE011's rule is now C's, so CE011 never ran in Production,
+# and CL is expiry-v3's C on the same ticket. C500, CH, CI and CE01 keep their old
+# exits, frozen: they don't follow C's new rule.
+SHADOW_VERSION = "expiry-shadow-v8"
+E01_VERSION = "expiry-e01-v1"
+E01_PLAY, E01_PREMIUM_STOP = "CE01", 0.30
+E011_VERSION = "expiry-e011-v2"
+CL_PLAY, E011R_PLAY, E011_PREMIUM_STOP = "CL", "CE011R", 0.25
+E011_PLAYS = (CL_PLAY, E011R_PLAY)
+E011_TRAILS = ((2.0, 0.60), (4.0, 0.60))    # C's own 60% keep, starting where its bank fires
 MAIN_PLAYS = ("A", "B", "C")
-SHADOW_PLAYS = ("BH", "C500", "D", "AL", "BR", "CH", "BL", "CI")
+SHADOW_PLAYS = ("BH", "C500", "D", "AL", "BR", "CH", "BL", "CI", E01_PLAY, *E011_PLAYS)
 RETIRED_PLAYS = ("CX", "BP")                # no new entries; their history still prints
 # Each shadow and the primary whose entry it shares: their difference is paired.
-PAIRED_WITH = {"AL": "A", "BH": "B", "BL": "B", "BR": "B", "CH": "C", "CI": "C", "BP": "B", "CX": "C"}
+PAIRED_WITH = {"AL": "A", "BH": "B", "BL": "B", "BR": "B", "CH": "C", "CI": "C", "BP": "B", "CX": "C", E01_PLAY: "C",
+               CL_PLAY: "C", E011R_PLAY: "C"}
 # The version each main play's current rule began with. Tallies and paired
 # lines split a play's record there (Oct 19 audit X-3: "C 4/5" merged v1's
 # held ticket with v2's failed-break sale).
-RULE_SINCE = {"A": 1, "B": 3, "C": 2}
+RULE_SINCE = {"A": 1, "B": 3, "C": 4}
 # Plays that close on a failed break, with how far back inside the box (as a
 # share of its width) the index must be: A's test, or CI's box edge.
 STRUCTURE_BACK = {"A": FAIL_BACK_WIDTH, "AL": FAIL_BACK_WIDTH, "C": FAIL_BACK_WIDTH, "CX": FAIL_BACK_WIDTH,
-                  "CI": 0.0}
+                  "CI": 0.0, E01_PLAY: FAIL_BACK_WIDTH, CL_PLAY: FAIL_BACK_WIDTH, E011R_PLAY: FAIL_BACK_WIDTH}
 STRUCTURE_PLAYS = tuple(STRUCTURE_BACK)
 PAIR_PLAYS = ("B", "BP")                    # a strangle sold as one trade at PAIR_TARGET
 AL_LOCK_GAIN = 0.5                  # fraction of the peak gain a banked one-lot AL keeps
@@ -271,26 +306,32 @@ class ExitPolicy:
     time_stop: Optional[tuple[int, float]]      # (seconds, peak gain still not reached) closes the leg
     flat_at: time
     lock_gain: Optional[float] = None           # once banked, a one-lot position keeps this share of its peak gain
+    bank_mode: str = "half"                     # half, or recover: just enough lots to take the ticket's cost back
 
 
+# C's exits through expiry-v3. CL keeps them, and the older shadows built on them stay frozen.
+C_V3_POLICY = ExitPolicy(hard_stop=None, bank_at=2.0, bank_stop=None, trails=((4.0, 0.60),),
+                         late=None, time_stop=None, flat_at=FINAL_FLAT)
 POLICIES = {
     "A": ExitPolicy(hard_stop=0.30, bank_at=0.40, bank_stop=1.05, trails=((1.0, 0.70), (2.0, 0.80)),
                     late=(time(15, 0), 0.85), time_stop=(480, 0.15), flat_at=A_FLAT),
     "BL": ExitPolicy(hard_stop=None, bank_at=1.0, bank_stop=None, trails=((1.0, 0.65),),
                      late=(time(15, 30), 0.80), time_stop=None, flat_at=FINAL_FLAT),   # B's legs, v1-v2
-    "C": ExitPolicy(hard_stop=None, bank_at=2.0, bank_stop=None, trails=((4.0, 0.60),),
-                    late=None, time_stop=None, flat_at=FINAL_FLAT),
+    "C": replace(C_V3_POLICY, hard_stop=E011_PREMIUM_STOP, bank_mode="recover", trails=E011_TRAILS),   # expiry-v4, E01.1
     "BH": ExitPolicy(hard_stop=None, bank_at=None, bank_stop=None, trails=(),
                      late=None, time_stop=None, flat_at=FINAL_FLAT),
 }
 POLICIES["B"] = POLICIES["BH"]                  # expiry-v3: its exit is the pair's (see _pair_target)
-POLICIES["C500"] = POLICIES["C"]
+POLICIES["C500"] = C_V3_POLICY
 POLICIES["AL"] = replace(POLICIES["A"], lock_gain=AL_LOCK_GAIN)
 POLICIES["BP"] = POLICIES["BH"]                 # retired: B's rule since expiry-v3
-POLICIES["CX"] = POLICIES["C"]                  # plus A's failed break (STRUCTURE_PLAYS)
+POLICIES["CX"] = C_V3_POLICY                    # plus A's failed break (STRUCTURE_PLAYS)
 POLICIES["BR"] = replace(POLICIES["BL"], hard_stop=BR_LEG_STOP)
-POLICIES["CH"] = POLICIES["C"]                  # without the failed break: expiry-v1's C
-POLICIES["CI"] = POLICIES["C"]                  # plus a failed break at the box edge (STRUCTURE_BACK)
+POLICIES["CH"] = C_V3_POLICY                    # without the failed break: expiry-v1's C
+POLICIES["CI"] = C_V3_POLICY                    # plus a failed break at the box edge (STRUCTURE_BACK)
+POLICIES[CL_PLAY] = C_V3_POLICY                 # expiry-v3's C, on the main ticket
+POLICIES[E01_PLAY] = replace(C_V3_POLICY, hard_stop=E01_PREMIUM_STOP)
+POLICIES[E011R_PLAY] = replace(POLICIES["C"], bank_at=None, bank_mode="half")
 
 _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS expiry_paper_positions (
@@ -652,10 +693,109 @@ def fill_model(clock: time) -> str:
 
 def new_day_state() -> dict:
     return {"rules": RULES_VERSION, "shadow": SHADOW_VERSION, "execution": EXECUTION_VERSION,
+            "e01": {"version": E01_VERSION, "enabled": bool(settings.EXPIRY_E01_SHADOW_ENABLED)},
+            "e011": {"version": E011_VERSION, "enabled": bool(settings.EXPIRY_E011_SHADOW_ENABLED)},
             "context": CONTEXT_VERSION, "box": None, "box_samples": [], "box_status": "BUILDING",
             "pending": None, "armed": {"UP": True, "DOWN": True}, "signals": [],
             "trades": {play: 0 for play in MAIN_PLAYS + SHADOW_PLAYS}, "last_spot": None,
             "summary_queued": False}
+
+
+def e01_entry_enabled(state: dict) -> bool:
+    """A new-day, opted-in cohort only. The flag never gates management of an open leg."""
+    contract = state.get("e01")
+    return (bool(settings.EXPIRY_E01_SHADOW_ENABLED) and isinstance(contract, dict)
+            and contract.get("version") == E01_VERSION and contract.get("enabled") is True
+            and state.get("trades", {}).get(E01_PLAY, 0) == 0)
+
+
+def e011_entry_enabled(state: dict, play: str) -> bool:
+    """The same bound as E01: a new-day cohort, and at most one copy of each play."""
+    contract = state.get("e011")
+    return (bool(settings.EXPIRY_E011_SHADOW_ENABLED) and isinstance(contract, dict)
+            and contract.get("version") == E011_VERSION and contract.get("enabled") is True
+            and state.get("trades", {}).get(play, 0) == 0)
+
+
+def _parent_id(events: str, version_key: str, version: str) -> Optional[int]:
+    try:
+        first = json.loads(events)[0]
+        parent = first.get("paired_primary_id")
+        if (first.get("action") == "BUY" and first.get(version_key) == version
+                and isinstance(parent, int) and not isinstance(parent, bool) and parent > 0):
+            return parent
+    except (ValueError, TypeError, AttributeError, IndexError, KeyError):
+        pass
+    return None
+
+
+def _e01_parent_id(events: str) -> Optional[int]:
+    """Malformed/version-mismatched links never qualify as paired admissions."""
+    return _parent_id(events, "e01_version", E01_VERSION)
+
+
+def _e011_parent_id(events: str) -> Optional[int]:
+    return _parent_id(events, "e011_version", E011_VERSION)
+
+
+def copy_e01_entry(conn, state: dict, primary: dict, contract, now: datetime) -> Optional[dict]:
+    """Copy only this successfully saved C ticket; no later repricing or independent entry."""
+    if not e01_entry_enabled(state):
+        return None
+    return _copy_ticket(conn, state, primary, contract, now, E01_PLAY, {"e01_version": E01_VERSION})
+
+
+def copy_e011_entries(conn, state: dict, primary: dict, contract, now: datetime) -> list[dict]:
+    """CL and CE011R on this saved C ticket. Each is checked and saved on its own."""
+    copies = []
+    for play in E011_PLAYS:
+        if e011_entry_enabled(state, play):
+            shadow = _copy_ticket(conn, state, primary, contract, now, play, {"e011_version": E011_VERSION})
+            if shadow is not None:
+                copies.append(shadow)
+    return copies
+
+
+def _copy_ticket(conn, state: dict, primary: dict, contract, now: datetime, play: str, version: dict) -> Optional[dict]:
+    """The exact-copy check and save, shared by every shadow that owns C's ticket."""
+    if (primary.get("play") != "C" or not isinstance(primary.get("id"), int)
+            or isinstance(primary.get("id"), bool) or primary["id"] <= 0
+            or primary.get("entry_ts") != now.isoformat()
+            or primary.get("symbol") != contract.tradingsymbol
+            or primary.get("token") != contract.token or primary.get("lot_size") != contract.lot_size
+            or primary.get("strike") != contract.strike
+            or primary.get("opt_type") != contract.instrument_type or primary.get("side") != "LONG"
+            or primary.get("execution") != EXECUTION_VERSION):
+        _bump(state, "refusals", f"{play}:TWIN_MISMATCH")
+        return None
+    saved = False
+    try:
+        conn.execute("SAVEPOINT expiry_e01_entry")
+        saved = True
+        stored = conn.execute("SELECT * FROM expiry_paper_positions WHERE id=?", (primary["id"],)).fetchone()
+        fields = ("play", "day", "underlying", "exchange", "symbol", "token", "lot_size", "lots",
+                  "entry_ts", "entry_price", "max_loss", "fee_snapshot", "strike", "opt_type", "side", "execution")
+        if (stored is None or stored["status"] != "OPEN" or stored["lots_open"] != stored["lots"]
+                or any(stored[name] != primary.get(name) for name in fields)):
+            conn.execute("ROLLBACK TO SAVEPOINT expiry_e01_entry")
+            conn.execute("RELEASE SAVEPOINT expiry_e01_entry")
+            _bump(state, "refusals", f"{play}:TWIN_MISMATCH")
+            return None
+        shadow = _new_position(primary["day"], primary["underlying"], play, primary["exchange"],
+                               contract, primary["entry_price"], primary["lots"], now, _position_schedule(primary))
+        shadow["_events"][0].update(paired_primary_id=primary["id"], **version)
+        _save_position(conn, shadow)
+        conn.execute("RELEASE SAVEPOINT expiry_e01_entry")
+    except sqlite3.Error as exc:
+        # An optional shadow insertion must not discard its already-saved main ticket.
+        if saved:
+            conn.execute("ROLLBACK TO SAVEPOINT expiry_e01_entry")
+            conn.execute("RELEASE SAVEPOINT expiry_e01_entry")
+        _bump(state, "refusals", f"{play}:SAVE_FAILED")
+        logger.warning("expiry %s shadow entry failed: %s", play, type(exc).__name__)
+        return None
+    state["trades"][play] = 1
+    return shadow
 
 
 def update_box(state: dict, now: time, spot: Optional[float], fut: Optional[float]) -> None:
@@ -741,6 +881,25 @@ def _bank_floor(pos: dict, policy: ExitPolicy) -> float:
     return floor
 
 
+def cost_recovery_lots(pos: dict, bid: float) -> int:
+    """The fewest whole lots whose sale at ``bid`` takes the ticket's whole cost back, leaving at least one to run.
+
+    The cost is the premium paid and the buy's charges. The sale pays its own charges and reserves one order fee for
+    every lot still open, since each could later sell in its own order. When no smaller sale covers that, or the
+    ticket has too few lots, it is half, the same as a half bank (a one-lot ticket can't bank).
+    """
+    schedule = _position_schedule(pos)
+    lots, lot_size = pos["lots_open"], pos["lot_size"]
+    paid_qty = pos["lots"] * lot_size
+    paid = pos["entry_price"] * paid_qty + buy_charges(pos["entry_price"], paid_qty, schedule)
+    fee = order_fee(schedule)
+    for take in range(1, lots):
+        qty = take * lot_size
+        if bid * qty - sell_charges(bid, qty, schedule) - (lots - take) * fee >= paid:
+            return take
+    return lots // 2
+
+
 def manage_position(pos: dict, policy: ExitPolicy, bid: float, now: datetime,
                     structure_broken: bool = False) -> Optional[tuple[int, str]]:
     """Update peak/stop in ``pos`` and return the planned (lots to sell, reason) or None.
@@ -782,7 +941,7 @@ def manage_position(pos: dict, policy: ExitPolicy, bid: float, now: datetime,
     if policy.bank_at is None or bid < entry * (1.0 + policy.bank_at):
         return None
     if not pos["banked"]:
-        pos["banked"], pos["bank_pending"] = 1, lots // 2
+        pos["banked"], pos["bank_pending"] = 1, cost_recovery_lots(pos, bid) if policy.bank_mode == "recover" else lots // 2
         pos["stop"] = round(max(pos["stop"], _bank_floor(pos, policy)), 2)
     pending = min(pos.get("bank_pending", 0), lots)
     return (pending, "BANK_HALF") if pending else None
@@ -1256,6 +1415,9 @@ def _load_state(conn, day: str, underlying: str) -> dict:
     if row is None:
         return new_day_state()
     state = json.loads(row["state"])
+    # Historical/mid-session days are not silently enrolled in a new experiment.
+    state.setdefault("e01", {"version": None, "enabled": False})
+    state.setdefault("e011", {"version": None, "enabled": False})
     rules = state.setdefault("rules", "expiry-v1")
     if RULES_VERSION not in rules:                      # a day begun under older rules
         state["rules"] = f"{rules}+{RULES_VERSION} from mid-day"
@@ -1403,6 +1565,8 @@ def _sell_text(pos: dict, event: dict, legs: tuple = ()) -> str:
     (Oct 19 audit X-4: B's call line said +Rs 800.35 while its put rode to zero)."""
     auction = ", auction window" if event["fill_model"] == "AUCTION_WINDOW" else ""
     reason = event["action"]
+    if reason == "BANK_HALF" and pos["play"] in POLICIES and POLICIES[pos["play"]].bank_mode == "recover":
+        reason = "COST_BACK at 3x"                      # the event keeps its one bank action; the line says what it did
     if event.get("line") is not None:                   # how close the failed-break test was (X-5)
         reason += f" at index {event['index']:,.2f}, line {event['line']:,.2f}"
     text = (f"SELL {event['lots']} lot {pos['symbol']} @ {event['price']:.2f} ({reason}{auction}): "
@@ -1571,7 +1735,12 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
                 pos = open_position(play, contract, prices[0], lots)
                 plan = "sold if the break fails, else held into the auction" if play in STRUCTURE_PLAYS \
                     else "held into the auction"
+                if play == "C":
+                    plan = f"planned stop {pos['stop']:.2f}, cost back at 3x, a 60% floor from 3x, {plan}"
                 notify(pos, _buy_text(pos, f"lottery {direction}, {plan}"))
+                if play == "C":
+                    copy_e01_entry(conn, state, pos, contract, now)
+                    copy_e011_entries(conn, state, pos, contract, now)
             else:
                 _bump(state, "refusals", f"{play}:DEPTH_OR_BUDGET")
 
@@ -1711,10 +1880,19 @@ def paired_lines(conn, day: str, underlying: str) -> list[str]:
     entries: dict[tuple[str, str, str], dict] = {}
     for row in conn.execute(
             "SELECT day, play, entry_ts, symbol, side, lots, entry_price, status, "
-            "net_pnl + COALESCE(assumed_pnl, 0) FROM expiry_paper_positions WHERE underlying=? AND day <= ?",
+            "net_pnl + COALESCE(assumed_pnl, 0), id, events, token, lot_size, exchange, "
+            "max_loss, fee_snapshot, execution, strike, opt_type "
+            "FROM expiry_paper_positions WHERE underlying=? AND day <= ?",
             (underlying, day)):
-        d, play, entry_ts, symbol, side, lots, price, status, value = tuple(row)
-        entry = entries.setdefault((d, play, entry_ts), {"legs": [], "whole": 0.0, "open": False})
+        d, play, entry_ts, symbol, side, lots, price, status, value, ident, events, *terms = tuple(row)
+        entry = entries.setdefault((d, play, entry_ts), {"legs": [], "whole": 0.0, "open": False,
+                                                       "ids": set(), "parents": set(), "terms": []})
+        entry["terms"].append(tuple(terms))
+        entry["ids"].add(ident)
+        if play == E01_PLAY:
+            entry["parents"].add(_e01_parent_id(events))
+        elif play in E011_PLAYS:
+            entry["parents"].add(_e011_parent_id(events))
         entry["legs"].append((symbol, side, lots, round(price, 4)))
         entry["whole"] += value
         entry["open"] |= status == "OPEN"
@@ -1725,7 +1903,9 @@ def paired_lines(conn, day: str, underlying: str) -> list[str]:
             if play != shadow:
                 continue
             twin = entries.get((d, primary, entry_ts))
-            if twin is None or sorted(twin["legs"]) != sorted(entry["legs"]):
+            if (twin is None or sorted(twin["legs"]) != sorted(entry["legs"])
+                    or (shadow in (E01_PLAY, *E011_PLAYS) and (entry["parents"] != twin["ids"]
+                                                               or entry["terms"] != twin["terms"]))):
                 unmatched += 1
             elif entry["open"] or twin["open"]:
                 waiting += 1
@@ -1798,6 +1978,16 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
                             if k.startswith(f"{play}:"))
             if not rows and play in RETIRED_PLAYS:
                 continue
+            if (not rows and play == E01_PLAY
+                    and not ((state.get("e01") or {}).get("version") == E01_VERSION
+                             and (state.get("e01") or {}).get("enabled") is True)):
+                lines.append(f"  {play}: not enrolled for this expiry")
+                continue
+            if (not rows and play in E011_PLAYS
+                    and not ((state.get("e011") or {}).get("version") == E011_VERSION
+                             and (state.get("e011") or {}).get("enabled") is True)):
+                lines.append(f"  {play}: not enrolled for this expiry")
+                continue
             if not rows:
                 lines.append(f"  {play}: no trade" + (f" (refused: {why})" if why else ""))
                 continue
@@ -1826,10 +2016,21 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
                 lines.append(f"    entry {clock(entry_ts)}: {_path_text(mark, clock)}, finished Rs {finished:+,.2f}")
         return total_filled, total_assumed, total_fees
 
+    if RULES_VERSION in state.get("rules", ""):
+        lines.append("  C's rule (expiry-v4, E01.1): a 25% premium stop, just enough lots sold at 3x to take the ticket's "
+                     "cost back, a 60% floor from 3x; gaps or missing bids can lose more, up to the full funded ticket.")
     day_filled, day_assumed, day_fees = section(MAIN_PLAYS)
     lines.append(f"  day: filled net Rs {day_filled:+,.2f} + assumed Rs {day_assumed:+,.2f} = whole modeled "
                  f"Rs {day_filled + day_assumed:+,.2f} (fees Rs {day_fees:,.2f})")
     lines.append(f"  shadow plays ({state.get('shadow', SHADOW_VERSION)}, frozen, no Telegram trades):")
+    if (state.get("e01") or {}).get("version") == E01_VERSION:
+        lines.append("  E01 lottery shadow: C's same ticket, C's old exits and a planned 30% premium stop; "
+                     "gaps or missing bids can lose more, up to the full funded ticket.")
+    if (state.get("e011") or {}).get("version") == E011_VERSION:
+        box = state.get("box") or {}
+        width = f"; box {(box['hi'] - box['lo']) / box['hi'] * 1e4:.0f} bp, reading only" if box.get("hi") else ""
+        lines.append(f"  On C's same ticket: CL is C's rule through expiry-v3 (no premium stop, half sold at 3x, a 60% floor "
+                     f"from 5x); CE011R is today's C selling nothing at 3x{width}.")
     section(SHADOW_PLAYS + RETIRED_PLAYS)
     lines += paired_lines(conn, day, underlying)
     totals = conn.execute(

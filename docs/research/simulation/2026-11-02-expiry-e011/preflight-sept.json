@@ -1,0 +1,196 @@
+{
+ "hashes": {
+  "NIFTY-2026-09-08-ATM-CE-PE-10second.csv": "2ee0f14f944bcbd03eafdf721221f38078838811db96af2f43e6efff3fa8ceb6",
+  "NIFTY-2026-09-15-ATM-CE-PE-10second.csv": "d1dd6d5e8bd4c7aedb3b07eeb28017e19691c47ca76ac0684aece77b309e3a2e",
+  "NIFTY-2026-09-22-ATM-CE-PE-10second.csv": "78b8b8d57046f44951d7b299ef77d8935c5ea0e5d78cfd92e5177537f4e75ce9",
+  "NIFTY-2026-09-29-ATM-CE-PE-10second.csv": "b0d3add39ce10768cfc7cb745f7690f48ed0b2b54b58255ad0ec487181990faa"
+ },
+ "spreads": {
+  "buckets": [
+   "2.0",
+   "5.0",
+   "10.0",
+   "25.0",
+   "50.0",
+   "100.0",
+   "inf"
+  ],
+  "p75": [
+   0.05,
+   0.05,
+   0.05,
+   0.1,
+   0.1,
+   0.2,
+   1.05
+  ],
+  "n": [
+   3636,
+   962,
+   599,
+   805,
+   693,
+   945,
+   4940
+  ]
+ },
+ "checks": {
+  "2026-09-08": {
+   "rows": 4500,
+   "ce": 2250,
+   "pe": 2250,
+   "unique_ce": 2250,
+   "unique_pe": 2250,
+   "first": "2026-09-08 09:15:00",
+   "last": "2026-09-08 15:29:50",
+   "strikes": [
+    "23750"
+   ],
+   "bad_ohlc": 0,
+   "missing_seconds": 356,
+   "invalid_volume": 0
+  },
+  "2026-09-15": {
+   "rows": 4500,
+   "ce": 2250,
+   "pe": 2250,
+   "unique_ce": 2250,
+   "unique_pe": 2250,
+   "first": "2026-09-15 09:15:00",
+   "last": "2026-09-15 15:29:50",
+   "strikes": [
+    "23600"
+   ],
+   "bad_ohlc": 0,
+   "missing_seconds": 1564,
+   "invalid_volume": 0
+  },
+  "2026-09-22": {
+   "rows": 4500,
+   "ce": 2250,
+   "pe": 2250,
+   "unique_ce": 2250,
+   "unique_pe": 2250,
+   "first": "2026-09-22 09:15:00",
+   "last": "2026-09-22 15:29:50",
+   "strikes": [
+    "23450"
+   ],
+   "bad_ohlc": 0,
+   "missing_seconds": 601,
+   "invalid_volume": 0
+  },
+  "2026-09-29": {
+   "rows": 4500,
+   "ce": 2250,
+   "pe": 2250,
+   "unique_ce": 2250,
+   "unique_pe": 2250,
+   "first": "2026-09-29 09:15:00",
+   "last": "2026-09-29 15:29:50",
+   "strikes": [
+    "22750"
+   ],
+   "bad_ohlc": 0,
+   "missing_seconds": 826,
+   "invalid_volume": 0
+  }
+ },
+ "days": {
+  "2026-09-08": {
+   "strike": 23750.0,
+   "proxy_minus_index_mean": 15.63,
+   "proxy_abs_dev": 2.19,
+   "minutes_compared": 136,
+   "box_bp": 5.2,
+   "box_status": "READY",
+   "signals": [
+    {
+     "at": "13:32:30",
+     "dir": "DOWN",
+     "ticket_available": false
+    },
+    {
+     "at": "13:39:30",
+     "dir": "DOWN",
+     "ticket_available": false
+    },
+    {
+     "at": "14:26:00",
+     "dir": "DOWN",
+     "ticket_available": false
+    },
+    {
+     "at": "14:52:30",
+     "dir": "DOWN",
+     "ticket_available": false
+    },
+    {
+     "at": "14:57:00",
+     "dir": "DOWN",
+     "ticket_available": false
+    }
+   ]
+  },
+  "2026-09-15": {
+   "strike": 23600.0,
+   "proxy_minus_index_mean": 5.4,
+   "proxy_abs_dev": 3.37,
+   "minutes_compared": 136,
+   "box_bp": 13.9,
+   "box_status": "READY",
+   "signals": [
+    {
+     "at": "13:31:10",
+     "dir": "DOWN",
+     "ticket_available": false
+    }
+   ]
+  },
+  "2026-09-22": {
+   "strike": 23450.0,
+   "proxy_minus_index_mean": -3.81,
+   "proxy_abs_dev": 3.61,
+   "minutes_compared": 136,
+   "box_bp": 7.4,
+   "box_status": "READY",
+   "signals": [
+    {
+     "at": "13:42:40",
+     "dir": "UP",
+     "ticket_available": false
+    },
+    {
+     "at": "13:51:20",
+     "dir": "DOWN",
+     "ticket_available": false
+    },
+    {
+     "at": "14:15:00",
+     "dir": "UP",
+     "ticket_available": false
+    }
+   ]
+  },
+  "2026-09-29": {
+   "strike": 22750.0,
+   "proxy_minus_index_mean": 6.25,
+   "proxy_abs_dev": 2.89,
+   "minutes_compared": 136,
+   "box_bp": 21.0,
+   "box_status": "READY",
+   "signals": [
+    {
+     "at": "13:36:50",
+     "dir": "DOWN",
+     "ticket_available": false
+    },
+    {
+     "at": "14:04:00",
+     "dir": "DOWN",
+     "ticket_available": false
+    }
+   ]
+  }
+ }
+}

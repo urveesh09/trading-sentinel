@@ -526,6 +526,16 @@ class Settings(BaseSettings):
     def _strip_internal_api_secret(cls, v: str) -> str:
         return v.strip()
 
+    # [F11] A date that can't be read must stop the deploy, not surface later as a broken money reader mid-session.
+    @field_validator("FNO_PAPER_BOOK_START")
+    @classmethod
+    def _valid_paper_book_start(cls, v: str) -> str:
+        from datetime import date
+        v = (v or "").strip()
+        if v:
+            date.fromisoformat(v)
+        return v
+
     # RS Module
     RS_PERIODS:               int   = 20
     RS_MIN_THRESHOLD:         float = 5.0
@@ -922,6 +932,11 @@ class Settings(BaseSettings):
     EXPIRY_PAPER_ENABLED:            bool  = True
     EXPIRY_PAPER_BUDGET:             float = 2500.0
     EXPIRY_PAPER_UNDERLYINGS:        str   = "NIFTY,SENSEX"
+    # E01 is a separate, paired paper shadow; disabling it only blocks new entries.
+    EXPIRY_E01_SHADOW_ENABLED:       bool  = True
+    # The shadows on the main ticket since expiry-v4, E01.1: CL (C's old rule) and CE011R (no sale at 3x).
+    # Off blocks new copies only; open legs keep their exits, and it doesn't change the main C.
+    EXPIRY_E011_SHADOW_ENABLED:      bool  = True
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3
@@ -983,6 +998,10 @@ class Settings(BaseSettings):
     # while the account is this small. Sizing realism here, promotion safety
     # there.
     FNO_PAPER_BANKROLL:        float = 250000.0
+    # [F11 2026-11-02, the owner's order] N11's paper book starts afresh at FNO_PAPER_BANKROLL on this IST date: equity,
+    # its peak, the size stance and the loss brakes count from here. Nothing is deleted. Empty = the whole history
+    # counts again (engine restart). fno_book_start.py.
+    FNO_PAPER_BOOK_START:      str   = "2026-11-03"
     FNO_LIVE_BANKROLL:         float = 0.0        # not armed (spec §0)
     FNO_LIVE_TRADING:          bool  = False      # master switch
     FNO_DISABLE_PAPER:         bool  = False
@@ -1070,6 +1089,13 @@ class Settings(BaseSettings):
     FNO_N11_ADD_MAX_RUPEES:    float = 5000.0     # the earned lot's written charge: held lots at their stop + its whole backstop
     FNO_N11_LOW_TWO_LOTS_BEFORE_MIN: int = 12*60  # a low-day pullback may take two lots only before 12:00
     FNO_N11_LOW_LAST_MIN:      int   = 14*60      # and none from 14:00
+    # [N11T 2026-11-02] The owner allows a tolerance on the per-trade plan and left the amount to the agent. A NIFTY paper
+    # trade N11 already takes at one lot may take a second, when volatility is at or above usual and the last 20 paper trades
+    # made money, with the whole trade inside this limit. It admits no new trade. Research: docs/FNO_RESEARCH_N11T.md, on seen
+    # years, and its placebo failed: a modest, plausible gain, not a proven one. Off: FNO_N11_TOLERANCE_ENABLED=false.
+    FNO_N11_TOLERANCE_ENABLED: bool  = True
+    FNO_N11_TOLERANCE_RUPEES:  float = 6250.0     # planned loss for both lots, fees and declared stress included
+    FNO_N11_TOLERANCE_STOP_FACTOR: float = 1.75   # the trade's own stop, valued at this x delta, must fit that limit's backstop
     FNO_BOOK_ADX_MIN:          float = 30.0
     FNO_BOOK_MAX_STRETCH:      float = 0.5        # share of the first 30 minutes' range beyond VWAP; 0 = no check
 

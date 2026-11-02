@@ -1,0 +1,13 @@
+{
+ "year": "2026",
+ "research_replay_net": 120551.27,
+ "research_trades": 50,
+ "mismatch_count": 0,
+ "ticks_compared": 40600,
+ "signals_research": 409,
+ "signals_engine": 409,
+ "same_signal": 409,
+ "mismatches": [],
+ "ceiling_compared": 168,
+ "ceiling_mismatches": []
+}

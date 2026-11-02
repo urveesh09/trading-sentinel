@@ -1,0 +1,67 @@
+{
+ "year": "2025",
+ "passed": true,
+ "checks": {
+  "money": 73,
+  "prices": 146,
+  "raised_trades_conditions_hold": 6,
+  "tolerance_second_lots_planned_inside_the_limit": 5,
+  "two_lots_by_the_stance_not_the_tolerance": 1
+ },
+ "raised": [
+  {
+   "at": "2025-01-01T10:06:59+05:30",
+   "ask": 227.3,
+   "by": "tolerance",
+   "stop": 183.4,
+   "planned": 6233.3,
+   "exit": "underlying_stop",
+   "net": -4157
+  },
+  {
+   "at": "2025-01-10T09:52:59+05:30",
+   "ask": 242.5,
+   "by": "tolerance",
+   "stop": 198.6,
+   "planned": 6237.98,
+   "exit": "profit_lock",
+   "net": 1858
+  },
+  {
+   "at": "2025-01-10T13:42:59+05:30",
+   "ask": 242.25,
+   "by": "tolerance",
+   "stop": 198.35,
+   "planned": 6237.9,
+   "exit": "hard_flat_1510",
+   "net": 4304
+  },
+  {
+   "at": "2025-01-17T11:45:59+05:30",
+   "ask": 198.4,
+   "by": "tolerance",
+   "stop": 154.4,
+   "planned": 6237.36,
+   "exit": "trail_stop",
+   "net": 5894
+  },
+  {
+   "at": "2025-01-21T12:10:59+05:30",
+   "ask": 184.05,
+   "by": "tolerance",
+   "stop": 140.05,
+   "planned": 6232.94,
+   "exit": "trail_stop",
+   "net": 10446
+  },
+  {
+   "at": "2025-01-29T11:36:59+05:30",
+   "ask": 165.15,
+   "by": "stance",
+   "planned_at_25pct": 5875.17,
+   "exit": "profit_lock",
+   "net": 851
+  }
+ ],
+ "note": "Modelled quotes, not market depth. A stop can gap: planned loss isn't a promise."
+}

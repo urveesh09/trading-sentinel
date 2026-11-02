@@ -1,3 +1,81 @@
+## November 2 night — One release: N11T, expiry-v4, paper fresh start
+
+- Read `docs/EXPIRY_RESEARCH_E011.md` and `docs/FNO_RESEARCH_N11T.md`, then `python-engine/fno_book_start.py`.
+- Owner's explicit order to merge and deploy as one. The real-money switch wasn't touched. No `.env` change.
+- Verification: whole engine suite 6,052 passed, 4 skipped, in two halves one after the other (3,171 and 2,881, `pytest_exit=0` each). `test_fno_book_start.py` 15 passed. `test_expiry_e011.py` rewritten for v4. Native replay `verify_main.py`: 16 cases, 290 legs, zero mismatches against the pre-swap engine. Atlas regenerated, 293 modules.
+- `verify_native.py` and the study's `arms.py` describe the engine before the swap: use commit 3c23adf for the former and f457d9b for the score.
+- Tests prove the code matches the rule. They don't show the rule makes money.
+- [ ] Nov 3, read-only: `expiry_paper_days.state` says expiry-v4 and shadow-v8; `CL` and `CE011R` copy each C ticket; the F&O risk alert says full size with equity Rs 2,50,000.
+
+## November 2 — E01.1 in Dev
+
+- Read `docs/EXPIRY_RESEARCH_E011.md`, then the study's `README.md`, `PLAN.md`, `OUTCOME.md` and `EXAM_YEAR.md`.
+- Commits: freeze f457d9b, score 7818c62, engine in the commit carrying this section (`git log -1 -- python-engine/tests/test_expiry_e011.py`). Pushed on `codex/production-correction-hedge-p0`. Not merged, not deployed. Production d52642f, checked read-only.
+- Verification: whole engine suite 6,034 passed, 4 skipped, in two halves run one after the other (3,265 and 2,769, `pytest_exit=0` each). Affected expiry, isolation and cost tests 136 passed. Study tests 11 passed. Lab parity 72 legs, zero mismatches. Native parity 16 cases, 28 shadow legs, zero mismatches, `native-parity-NATIVE_E011.json`. Atlas regenerated, 292 modules.
+- `freeze.py verify` deliberately no longer matches the working tree, because the engine changed after the score. To reproduce the score, check out f457d9b.
+- Config: `EXPIRY_E011_SHADOW_ENABLED`, default true. No `.env` change or migration. A deploy would also carry N11T and CE01.
+- Tests prove the code matches the rule. They don't show the rule makes money. September is seven call tickets on two days, one of them most of the gain, and the eight October sessions were seen.
+- A bug of mine worth remembering: `_new_position` reads a position's first stop from `POLICIES` by play name, so a research candidate under an unknown name silently has no stop. The first genome ran that way. `_local/ga-no-stop-bug/` keeps it; `parity.py` and `test_e011.py` now pin it.
+
+## November 2 — F&O and expiry inheritance ready
+
+- Read [F&O inheritance](FNO_SUCCESSOR_HANDOVER_2026-11-02.md) and [expiry inheritance](EXPIRY_SUCCESSOR_HANDOVER_2026-11-02.md) separately; source snapshot7711521. Find this documentation commit with git log against either handover path.
+- Verification: local links and git diff --check pass; original owner dirty slices unchanged; E01 final packet reports EVIDENCE_CHECKS_PASSED/zero errors/898 files; four September CSVs each4500 rows and3347 missing source seconds in total, not gap-free ticks.
+- State: E01/N11T pushed in Dev, not in Production d52642f; E01.1 unimplemented/unscored; E02 export-only work uncommitted and deferred. No source/config/schema changes, atlas regeneration, application-suite run or new profit claim in this slice.
+- Production checked read-only: engine running, same start2026-11-02T03:29:35.254673416Z. No edit/restart/deploy/order/download. Next work follows the owner-selected handover queue; preserve all existing dirt and frozen evidence.
+
+## November 2 — E01 evidence-packaging path correction
+
+Native feature9dd4881 and identity7747344 are pushed, Dev only. The first final packet failed before copying study files because of relative-versus-absolute path handling; failed evidence retained. Packaging now resolves the repo source path before making it study-relative. No strategy/parameter/result/application change. Run the fresh fixed-HEAD packet and consult its actual VERIFIED.json; tests are not profit proof. Forward20-entry review and Production noninterference remain unchanged.
+
+## November 2 — E01 final source identity
+
+E01 native feature9dd4881, research freeze cbbdebb, results c6537c6: all pushed on the same branch, not merged/deployed. Read `docs/EXPIRY_RESEARCH_E01.md/json` and E01 README/VERIFICATION/IDENTITY. Final fixed-SHA skill consistency packet is generated after this handoff under study `_local/evidence-report-final/`; consult its actual VERIFIED.json, not a retrospective preregistration claim. Source guard remains strict; all696 original source bytes and30 inputs retained. Productiond52642f/start03:29:35Z unchanged. Remaining20 fresh paired entries (at least5 per index), coverage and settlement evidence; no further eight-date tuning.
+
+## November 2 — E01 expiry handover
+
+- Read `EXPIRY_RESEARCH_E01.md/json` and E01 README/VERIFICATION/IDENTITY. CE01 is a separate new-day paper shadow, fixed30% premium stop on C's exact saved entry. Parent ID plus quantity/contract/fee/risk identity required. Main expiry-v3 A/B/C and N11 unchanged; no extra quote call or per-trade shadow delivery.
+- Toggle default true; false gates new copies only. Existing CE01 exits remain managed. No migration/.env change. No old-day enrollment; optional insertion failure preserves main C. No Production edit/restart/deploy/order/capital/2022/download.
+- Historical8/95-leg parity;80 frozen research cases;48 successive native engineering comparisons; final audit128 cases/506 legs/974 depth-price checks/426 budgets passed.95 affected tests plus28 final binding/summary tests,11 research tests. Atlas292 regenerated.
+- E01 modeled net11,095.17 versus6,548.10, worst-1,000.15 versus-1,427, P&L drawdown2,100.73 versus4,520.04. Both adverse/raw-clock checks and neighbours support30; PAIR30 rejected. Ex-best STILL-2,685.57, SENSEX negative, auction/settlement assumptions retained. Not profitability proof.
+- Active source cbbdebb and results c6537c6; all696 original sources archived. App integration source/commit recorded separately; no silent re-freeze. Final fixed-SHA private skill packet follows commit handoff, consistency only. Owner dirty slices preserved. Productiond52642f and unchanged engine start03:29:35Z.
+- Remaining:20 fresh paired entries, at least5 per index, and coverage/actual depth/settlement provenance before review. No automatic promotion or more tuning eight seen dates. All four annual regular-FNO exports lack same-day expiry options;1-minute candles alone cannot recreate native timing/depth.
+
+## November 2 — E01 round1 complete, native integration next
+
+- Source cbbdebb;80 cases (8 controls+48 ordinary variants+24 adverse),72 new runs156.92s. CSTOP30 is the only accepted primary; both neighbours support it. PAIR30 fails and stays rejected. No post-score threshold/source change.
+- Current-v3 comparison: net6,548.10 to11,095.17; worst-1,427 to-1,000.15; P&L drawdown4,520.04 to2,100.73. Without best still-2,685.57. Only8 seen sessions; auction/settlement limits retained.
+- Independent290 primary legs,560 depth/price checks,240 full-premium admissions;63 native+11 research tests passed. Historical8/95-leg source parity intact. Original696 source hashes archived before integration.
+- Next implement/test CE01 paper-only with exact16-case native parity, old-state/toggle/open-exit/quote-call safety. No Production/N11/real-order/money/size change or new download/2022 access.
+
+## November 2 — E01 expiry pre-score checkpoint
+
+- Dev base6d6caf7, same branch; Productiond52642f read-only, engine start2026-11-02T03:29:35.254673416Z unchanged. Export used ro source volume,network-none,read-only root,0.5CPU/256MiB,writing only Dev.
+- Eight sessions/95 historical position legs: money/events parity, one legitimate DEFAULT0 column adaptation; Oct6 raw index clocks unavailable. All native current-v3 controls complete.63 existing expiry tests and11 new pass; atlas292 unchanged.
+- Active freeze-round1-v2:696 source/config entries and30 evidence inputs; explicit budget/NFO/BFO fee settings bound. First uncommitted draft and failed adapter attempts retained; no candidate score before freeze. All four sealed yearly regular-F&O exports have zero zero-day option rows.
+- Pending finite exit comparison, independent audits, optional separately frozen round2 and paper-only integration if accepted. No app/env/migration/order/message/Production/restart/deploy/2022 change; owner dirty slices retained.
+
+## November 2 — N11T second lot built in Dev
+
+**Production's paper book can't use the second lot as it stands (read Nov 2, about 14:15 IST, Production d52642f).** Both paper books' closes total -33,844 since July, nearly all before N11, so equity is about Rs 2,16,156: 13.54% below its Rs 2,50,000 peak, stance 0.25x, and about Rs 3,656 above the 15% floor of Rs 2,12,500. At 0.25x the limit is Rs 1,562.50, so a second lot needs an option at or under about Rs 48, or a stop within about 9 points at delta 0.5. N11's own two lots and its earned lot are just as rare. Research's figures start each year from a fresh Rs 2.5 lakh at full size, so this isn't the test those figures describe. Under the floor, paper entries stop and paper can't trade back; the real-money test, which only buys what paper just bought, would stop too. A fresh start for N11's paper book is the owner's call, because the 15% halt is theirs. Not built. **N11's first live day:** three signals, each at one lot because of the stance, all stopped, -4,298 before the assumed extra cost; two-strike halt at 12:32; no errors; the paper record took all three. None qualified for a second lot at 0.25x. At full size the first (Rs 161.90) would have, adding about -2,474.
+
+**N11T's second lot is built in Dev, on the owner's word, and isn't deployed; Production stays d52642f without it.** The owner allowed it on paper and left the amount to the agent: **Rs 6,250 at k 1.75**, not the first study's Rs 7,500 (frozen at ec1202d, `PLAN_FINAL.md`). A NIFTY paper trade N11 takes at one lot may take a second when N11 allows two lots, the last 20 paper trades made money, and either two lots at 25% fit the budget or 1.75 x delta x the stop fits the limit's points. The backstop keeps the whole trade inside the limit, fees and stress included. +2,74,745 against N11's +2,55,365, worst day -5,641, worst trade -4,559, fall 6.89%, all 11 checks pass. Limits: all years seen, chosen after reading the map, the top three trades earn +18,633 of +22,228, six of 11 in January 2025, 0.615 on 55 books. The random test's 9.7% pass can't count as evidence: the amount was chosen knowing which trades it leaves out. **Engine parity:** `parity_final.py` compares `fno_n11.second_lot` at all 696 planned entries over four years and all nine backstops: zero mismatches, yearly nets equal to the frozen panel's. The live path hasn't met a real signal.
+
+- **Verification:** the full engine suite in two capped halves, 5,973 passed and 4 skipped, including `tests/test_fno_n11_second_lot.py` (31). `test_scheduler_closures_invoke.py::test_a_tick_that_waited_for_the_fast_exit_skips_when_another_tick_ran_meanwhile` failed once with both halves running at once and passed alone three times and in the rerun: it counts ticks by timing, and this change doesn't touch the scheduler. `test_n11t_final.py` 4 passed; `audit_final.py` passed on all four years; `score_final.py` wrote `results-final.json`.
+- **Config and migration impact:** new `FNO_N11_TOLERANCE_ENABLED` (true), `FNO_N11_TOLERANCE_RUPEES` (6250), `FNO_N11_TOLERANCE_STOP_FACTOR` (1.75); new table `fno_n11_second_lot`. No `.env` change. **State:** Dev and pushed. Not merged, not deployed.
+- **Real money:** `fno_live_test` reads only the contract from the paper entry, buys one lot, sets its own 25% stop. Indirectly, a second lot uses paper's open-premium room, so a later paper entry can be refused and the real test wouldn't mirror it.
+- **Errors recorded:** the first plan's words differed from its code on fees and on when the stop check applies; the first audit counted two stance trades as the tolerance's. All in the report, section 8.
+- **Environment limits:** seen years, candle model, assumed extra cost, no SENSEX or expiry-day test. Not a profitability claim.
+
+## November 2 — N11 deployed, N11T researched
+
+**N11 is live on paper in Production at d52642f, deployed Nov 2 at 08:59 IST, on the owner's instruction (PR #126).** Real money off. `verify_deployment.py` passed for all three services; receipt in `sentinel-operations/release-receipts/`. The first day read ADX 32.8 and volatility 1.22 of usual, sent its notes, and logged no errors through 11:21 IST with no signal yet. **Engine parity:** `2026-11-02-fno-n11/parity_engine.py` replays all four years with the engine's live `n11_signal` and lot ceiling beside research's: 188,455 ticks, all 1,505 signal ticks and 696 ceilings identical, zero mismatches. 460 stand-aside ticks differ by design: the engine refuses one step later, in `_try_entry_for_leg`. The engine's earned lot and paper record are pinned by unit tests, not by this replay. **The runbook's after-hours data backup wasn't taken,** for time: the migration only adds two tables. **N11T (research, not deployed):** the owner allows up to Rs 7,500 under conditions the agent chooses. A second lot on a trade N11 already takes at one lot, when volatility is at or above usual, the last 20 paper trades made money, no loss is realised today, and 1.75 x delta x the stop fits; the backstop keeps the whole trade inside Rs 7,500. +2,72,123 against N11's +2,55,365, worst day -5,863, fall 6.89%, all 10 checks pass. Frozen at 0e684b6. The placebo failed: random picks beat it 23.8% of the time, against a 10% limit; three trades supply all of its gain; 0.619 on its 53 books.
+
+- **Verification:** N11T: `test_n11t.py` 13 passed; `audit_n11t.py` passed on all four years: money, prices against raw quotes, and each raised trade's conditions by its own code. N11 engine: `tests/test_fno_n11.py` and the full engine suite passed before merge.
+- **Config and migration impact:** N11T none. N11: `FNO_BOOK` default N11, new `FNO_N11_*` settings, tables `fno_n11_paper` and `fno_n11_gate`. No `.env` change. **State:** Production d52642f; Dev ahead by documents and research only.
+- **Errors recorded:** N11T's frozen code let fees and stress sit on top of Rs 7,500 on 5 of 16 raised trades, against its plan; `n11t_strict.py` follows the plan with the same result to the rupee. The screens before it had faults of my own design, disclosed in the report.
+- **Environment limits:** seen years, candle model, assumed extra cost, no SENSEX or expiry-day test of N11. If the owner turns on the real-money test, it follows N11's entries at one lot with no earned lot. Not a profitability claim.
+
 ## November 2 — N11 in the engine: paper main book
 
 **N11 is the paper F&O main book (`FNO_BOOK=N11`), the owner's call, Nov 2.** `fno_book.n11_signal`: a trending day (yesterday's ADX at or above 30) runs SHIPPED, OR20, EFF with its retest, TPB; a sideways day only the put pullback, none from 14:00; the stretched-entry check stays. EFF and OR20 trail at 2 ATR; EFF's soft clock drops to 30 minutes on a stalled, losing option. `fno_n11`: two lots only at or above usual volatility, one lot after a realised loss today, the stand-aside (below 0.9 of usual volatility AND the last 20 one-lot paper trades sum to zero or less), the honest earned lot (`N11_ADD`, paper book only, its own position, never moves the held lots' stops), and the `fno_n11_paper` record of every NIFTY signal at one lot, seeded with research's last 22 results through Oct 23, 2026. **Shadows:** a daily line sets the same paper signals at N08's sizes and at size by volatility (N09 to N10.1), with their reserves, floors and earned lots not modelled; `fno_shadow`'s variants and the forward panels keep running. A full forward replay of N08 to N10.1 isn't built. The real-money test is its own switch, off today, and if it is turned on it follows N11's entries at one lot with no earned lot.

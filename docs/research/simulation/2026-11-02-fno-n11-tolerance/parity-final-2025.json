@@ -1,0 +1,28 @@
+{
+ "year": "2025",
+ "research_replay_net": 63478.57,
+ "frozen_panel_net": 63478.57,
+ "trades": 73,
+ "decisions_compared": 308,
+ "research_raised": 5,
+ "engine_raised": 5,
+ "by_reason": {
+  "STOP_FITS": 4,
+  "BACKSTOP_FITS": 1
+ },
+ "decision_mismatches": [],
+ "limit_mismatches": [],
+ "stops_compared": 5,
+ "stops_tightened": 5,
+ "stop_mismatches": [],
+ "planned_over_limit": [],
+ "raised_but_not_entered": 0,
+ "raised_at": [
+  "2025-01-01T10:06:59+05:30",
+  "2025-01-10T09:52:59+05:30",
+  "2025-01-10T13:42:59+05:30",
+  "2025-01-17T11:45:59+05:30",
+  "2025-01-21T12:10:59+05:30"
+ ],
+ "mismatch_count": 0
+}

@@ -1,0 +1,103 @@
+{
+ "passed": true,
+ "cases": [
+  {
+   "day": "2026-10-06",
+   "underlying": "NIFTY",
+   "adverse": false,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-08",
+   "underlying": "SENSEX",
+   "adverse": false,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-13",
+   "underlying": "NIFTY",
+   "adverse": false,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-15",
+   "underlying": "SENSEX",
+   "adverse": false,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-19",
+   "underlying": "NIFTY",
+   "adverse": false,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-22",
+   "underlying": "SENSEX",
+   "adverse": false,
+   "shadow_legs": 0
+  },
+  {
+   "day": "2026-10-27",
+   "underlying": "NIFTY",
+   "adverse": false,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-29",
+   "underlying": "SENSEX",
+   "adverse": false,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-06",
+   "underlying": "NIFTY",
+   "adverse": true,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-08",
+   "underlying": "SENSEX",
+   "adverse": true,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-13",
+   "underlying": "NIFTY",
+   "adverse": true,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-15",
+   "underlying": "SENSEX",
+   "adverse": true,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-19",
+   "underlying": "NIFTY",
+   "adverse": true,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-22",
+   "underlying": "SENSEX",
+   "adverse": true,
+   "shadow_legs": 0
+  },
+  {
+   "day": "2026-10-27",
+   "underlying": "NIFTY",
+   "adverse": true,
+   "shadow_legs": 2
+  },
+  {
+   "day": "2026-10-29",
+   "underlying": "SENSEX",
+   "adverse": true,
+   "shadow_legs": 2
+  }
+ ],
+ "mismatches": 0,
+ "compared_with": "E01 NATIVE_E01_FINAL and the frozen lab"
+}

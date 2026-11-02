@@ -1,0 +1,19 @@
+{
+ "year": "2023",
+ "research_replay_net": -11536.98,
+ "frozen_panel_net": -11536.98,
+ "trades": 28,
+ "decisions_compared": 138,
+ "research_raised": 0,
+ "engine_raised": 0,
+ "by_reason": {},
+ "decision_mismatches": [],
+ "limit_mismatches": [],
+ "stops_compared": 0,
+ "stops_tightened": 0,
+ "stop_mismatches": [],
+ "planned_over_limit": [],
+ "raised_but_not_entered": 0,
+ "raised_at": [],
+ "mismatch_count": 0
+}

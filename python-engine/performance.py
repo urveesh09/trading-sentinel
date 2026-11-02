@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import pytz
 import structlog
 from config import settings
+from fno_book_start import book_start, since_sql
 
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
@@ -193,14 +194,16 @@ async def division_equity(db_path: str, source: str) -> float:
     """Canonical equity for one division: allocation + its own realised P&L.
 
     This is the number that must be used BOTH for position sizing AND for the
-    ledger's bankroll_before/after. Fails open to the allocation."""
+    ledger's bankroll_before/after. Fails open to the allocation.
+    [F11] The F&O paper book counts from its fresh start (fno_book_start)."""
     import aiosqlite
     allocated = allocation_for_source(source)
+    since, since_args = since_sql(source)
     try:
         async with aiosqlite.connect(db_path) as db:
             async with db.execute(
-                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source = ?",
-                (source,),
+                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source = ?" + since,
+                (source, *since_args),
             ) as cur:
                 row = await cur.fetchone()
                 if row and row[0] is not None:
@@ -273,11 +276,12 @@ async def fno_bankroll(db_path: str, source: str = "FNO_PAPER") -> float:
         settings.FNO_PAPER_BANKROLL if source == "FNO_PAPER"
         else allocation_for_source("FNO_LIVE")
     )
+    since, since_args = since_sql(source)
     try:
         async with aiosqlite.connect(db_path) as db:
             async with db.execute(
-                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source = ?",
-                (source,),
+                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source = ?" + since,
+                (source, *since_args),
             ) as cur:
                 row = await cur.fetchone()
                 if row and row[0] is not None:
@@ -892,12 +896,16 @@ async def division_breakdown(db_path: str) -> dict:
     # One pass over the ledger: realised P&L and closed-trade count per source.
     pnl_by_source: dict = {}
     trades_by_source: dict = {}
+    # [F11] The F&O paper division's balance is its current book's, the same figure sizing reads.
+    fresh = book_start("FNO_PAPER")
+    where, where_args = ("WHERE source != 'FNO_PAPER' OR julianday(timestamp) >= julianday(?) ",
+                         (fresh.isoformat(),)) if fresh else ("", ())
     try:
         async with aiosqlite.connect(db_path) as db:
             async with db.execute(
                 "SELECT source, COALESCE(SUM(pnl), 0.0), "
                 "SUM(CASE WHEN event_type = 'TRADE_CLOSED' THEN 1 ELSE 0 END) "
-                "FROM bankroll_ledger GROUP BY source"
+                f"FROM bankroll_ledger {where}GROUP BY source", where_args
             ) as cur:
                 async for row in cur:
                     pnl_by_source[row[0]] = float(row[1] or 0.0)

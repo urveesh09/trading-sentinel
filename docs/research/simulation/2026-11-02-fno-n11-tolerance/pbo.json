@@ -1,0 +1,17 @@
+{
+ "books": 53,
+ "pbo": 0.619,
+ "median_out_of_sample_percentile": 0.278,
+ "weeks_shuffled_jointly": {
+  "median": 0.422,
+  "low": 0.325,
+  "high": 0.574
+ },
+ "totals": {
+  "lowest": 206300,
+  "median": 258076,
+  "highest": 278787
+ },
+ "n11t_rank_by_total": 6,
+ "reading": "On pure noise this estimator averages 0.51 to 0.55 with a standard deviation of about 0.18. A family with close totals pushes it up, which the shuffle shows. All data seen."
+}

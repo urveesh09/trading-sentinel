@@ -6,6 +6,7 @@ This is the method behind the Oct 29–30, 2026 studies (O29f–O30m), written s
 - **The general research rules:** [RESEARCH_TESTING_METHOD.md](RESEARCH_TESTING_METHOD.md).
 - **Testing size in rupees, not per lot:** section 15, with the worked study [FNO_EARNING_POWER_2026-10-30.md](FNO_EARNING_POWER_2026-10-30.md).
 - **The 2024 exam's results (Oct 31):** [FNO_2024_EXAM_2026-10-31.md](FNO_2024_EXAM_2026-10-31.md). Running an exam like it: section 14.
+- **N11T, a risk tolerance built to Rs 6,250, and how a bigger budget has side effects (Nov 2):** [FNO_RESEARCH_N11T.md](FNO_RESEARCH_N11T.md).
 - **N11, the stand-aside, the honest earned lot, and how to attack your own winner (Nov 2):** [FNO_RESEARCH_N11.md](FNO_RESEARCH_N11.md).
 - **N10, the earned lot, the account comeback and the cliff in a funded floor (Nov 2):** [FNO_RESEARCH_N10.md](FNO_RESEARCH_N10.md).
 - **N09, N08's challengers, the restart and the overfitting estimate (Nov 1):** [FNO_RESEARCH_N09.md](FNO_RESEARCH_N09.md).
@@ -260,6 +261,10 @@ Follow `docs/research/fno/study_template/lab_x.py`.
 
 ## 12. Pitfalls and fixes
 
+- **A placebo can pass because you picked the setting after seeing the trades (Nov 2, 2026).** N11T's random test failed at 23.8% at Rs 7,500 and passed at 9.7% at Rs 6,250, and the only difference was a few trades whose results I already knew. A check run after the choice can't vouch for the choice.
+- **Separate what a rule did from what it set off (Nov 2, 2026).** Two of N11T's 11 raised trades reached two lots by the existing stance, because earlier gains made the book proven sooner. Comparing lots against a base book counts them as the rule's own. Record which trades the rule itself raised, as `2026-11-02-fno-n11-tolerance/parity_final.py` does.
+- **A bigger budget changes more than size (Nov 2, 2026).** N11T's larger budget also admitted new one-lot trades on options up to Rs 420 and lowered what the proven stance allowed. Decompose every sizing change into the raised trades' own money, the lowered trades, and trades lost and added, before reading its total: `2026-11-02-fno-n11-tolerance/decompose.py`.
+- **Replay the live code beside the research code (Nov 2, 2026).** `2026-11-02-fno-n11/parity_engine.py` asks the engine's own function the same question at every tick. Unit tests pin rules; only this shows they are wired to the same answers.
 - **Hide each year in turn before believing a part (Nov 2, 2026).** N11's stand-aside added +21,894 over four years and wouldn't have been chosen with 2023 hidden; its earned lot was chosen every time and earned on every hidden year. A four-year sum can't tell these apart. Saved-replay arithmetic: `2026-11-02-fno-n11/after_verdict.py`.
 - **The stress test can flatter a rule shaped on the same year (Nov 2, 2026).** Reordering whole years reuses them. A rule shaped on 2023 looks strong on 2023 repeated four times. Say so beside the number.
 - **A plateau inflates the overfitting estimate (Nov 2, 2026).** In a family with close totals, whatever does best on one half must do worse on the other, so the estimate rises even when nothing is wrong: N11's family scored 0.893, and 0.893 again with the weeks shuffled jointly. Run that shuffle before reading a family score. It doesn't excuse a failed check, and it does mean history can't choose among them.

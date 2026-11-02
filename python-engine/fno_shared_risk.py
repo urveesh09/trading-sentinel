@@ -502,6 +502,9 @@ class _CashLedger:
     negative_manual_cash_rs: float
     positive_manual_cash_rs: float
     legacy_unlinked_events: int      # no origin, or generation 0 (pre-exact lineage)
+    # [F11] Every trade event, also those before the book's fresh start. The figures above are the current book's;
+    # settlement integrity is still checked against all of it.
+    all_trade_events: tuple = ()
 
 
 def _observation_instant(observed_at: Optional[datetime]) -> Optional[datetime]:
@@ -514,12 +517,17 @@ def _observation_instant(observed_at: Optional[datetime]) -> Optional[datetime]:
 async def _read_cash_ledger(
     db: aiosqlite.Connection, source: str, observed_at: datetime,
 ):
-    """Validated canonical cash for ``source``; a reason string on failure."""
+    """Validated canonical cash for ``source``; a reason string on failure.
+
+    [F11] Every row is validated, but the figures and brakes count only the book's current money (fno_book_start).
+    """
+    from fno_book_start import in_book
     rows = await (await db.execute(
         "SELECT id,timestamp,event_type,pnl,origin_ref,settlement_generation "
         "FROM bankroll_ledger WHERE source=?", (source,)
     )).fetchall()
     trade: list[_CashEvent] = []
+    every: list[_CashEvent] = []
     seen: set = set()
     trade_total = negative_manual = positive_manual = 0.0
     legacy = 0
@@ -544,33 +552,37 @@ async def _read_cash_ledger(
             return "invalid_cash_event"
         if at.astimezone(timezone.utc) > observed_at:
             return "future_cash_event"
+        current = in_book(source, at)
         if event_type in _MANUAL_CASH_TYPES:
-            if pnl < 0:
+            if current and pnl < 0:
                 negative_manual += pnl
-            else:
+            elif current:
                 positive_manual += pnl
             continue
-        if origin is not None and type(generation) is int and generation >= 1:
+        exact = origin is not None and type(generation) is int and generation >= 1
+        if exact:
             # Exact settlements are unique per origin/generation (the ledger
             # index only covers generation > 0; generation 0 is legacy).
             key = (origin, generation)
             if key in seen:
                 return "duplicate_cash_event"
             seen.add(key)
-        else:
-            legacy += 1
-        trade_total += pnl
-        trade.append(_CashEvent(int(event_id), at, event_type, pnl, origin,
-                                generation if type(generation) is int else None))
+        event = _CashEvent(int(event_id), at, event_type, pnl, origin,
+                           generation if type(generation) is int else None)
+        every.append(event)
+        if current:
+            legacy += 0 if exact else 1
+            trade_total += pnl
+            trade.append(event)
     if not all(math.isfinite(x) for x in (trade_total, negative_manual, positive_manual)):
         return "nonfinite_realised_pnl"
-    return _CashLedger(tuple(trade), trade_total, negative_manual, positive_manual, legacy)
+    return _CashLedger(tuple(trade), trade_total, negative_manual, positive_manual, legacy, tuple(every))
 
 
 async def _settlement_cash_gap(db: aiosqlite.Connection, source: str, ledger: _CashLedger):
     """(reason, legacy_count): settled rows must carry their exact cash."""
     by_origin: dict[str, list] = {}
-    for event in ledger.trade_events:
+    for event in ledger.all_trade_events:
         if event.origin_ref is not None and event.generation is not None and event.generation >= 1:
             by_origin.setdefault(event.origin_ref, []).append(event.generation)
     legacy = 0

@@ -1,0 +1,24 @@
+{
+ "year": "2026",
+ "research_replay_net": 127762.74,
+ "frozen_panel_net": 127762.74,
+ "trades": 51,
+ "decisions_compared": 165,
+ "research_raised": 2,
+ "engine_raised": 2,
+ "by_reason": {
+  "STOP_FITS": 2
+ },
+ "decision_mismatches": [],
+ "limit_mismatches": [],
+ "stops_compared": 2,
+ "stops_tightened": 2,
+ "stop_mismatches": [],
+ "planned_over_limit": [],
+ "raised_but_not_entered": 0,
+ "raised_at": [
+  "2026-02-27T11:30:59+05:30",
+  "2026-03-19T12:25:59+05:30"
+ ],
+ "mismatch_count": 0
+}
