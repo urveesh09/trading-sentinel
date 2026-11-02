@@ -1,6 +1,6 @@
-## November 2 night — Deployed as Production 39b8d81; EDGE exit fix Dev only
+## November 3 — Deployed as Production c227c23, with the EDGE exit fix
 
-The section below this one is live in Production (PR #127). In Dev only, until the next deploy: `penny_edge_orchestrator._kite_daily_bars_after` reads the real client's date index and passes the simulator bars from the day after entry, as its contract says.
+The section below this one is live in Production (PR #127, 39b8d81). Also live (PR #128): `penny_edge_orchestrator._kite_daily_bars_after` reads the real client's date index and passes the simulator bars from the day after entry, as its contract says.
 
 ## November 2 night — Paper book fresh start, expiry-v4, N11T (one release)
 

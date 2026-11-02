@@ -1,3 +1,12 @@
+## November 3 — Rollout receipt (Production c227c23, PR #128)
+
+- The owner's go-ahead ("ship that too"). PR #128 merged 18:31 UTC Nov 2 (00:01 IST) as c227c23: the EDGE exit fix and docs only.
+- **Deploy:** Production fast-forwarded, release stamped, python-engine, node-gateway and agent built one at a time and recreated, nginx restarted. `.env` untouched. No full data backup, as before.
+- **Verification:** `scripts/verify_deployment.py` passed, receipt in `sentinel-operations/release-receipts/`. Local and public `/api/health` 200. No error lines in the engine log since start. EDGE, scheduler closure and fresh-start tests 132 passed, 1 skipped; whole suite not rerun for this one function.
+- **Engine, read-only, 00:04 IST:** the fix is in the image. Paper equity Rs 2,50,000, stance 1.0 base, tolerance on, real-money switch off, expiry-v4. EDGE paper's AVONMORE and OPTIFIN still open.
+- The restart's catch-up skipped (`before_1515_IST`), so this exit path first runs for real at the 15:15 job today.
+- [ ] Nov 3 after 15:15, read-only: `penny_edge_force_exit` for AVONMORE, no `penny_edge_exit_failed`, and a sensible exit price and reason in `positions`.
+
 ## November 2 night — Rollout receipt (Production 39b8d81, PR #127)
 
 - PR #127 merged 18:21 UTC (23:51 IST) as 39b8d81 on the owner's explicit order: 16 commits, N11T, E01, E01.1 as expiry-v4, the paper fresh start.
@@ -5,7 +14,7 @@
 - **Verification:** `scripts/verify_deployment.py` passed, receipt in `sentinel-operations/release-receipts/`. Local and public `/api/health` 200. All services healthy.
 - **Engine, read-only, 23:55 IST:** `FNO_BOOK=N11`, book start 2026-11-03, paper equity Rs 2,50,000, stance 1.0 base, no strikes, shared risk view available. Tolerance on, Rs 6,250, k 1.75. Real-money switch off. expiry-v4, shadow-v8, `expiry-e011-v2`, C's stop 25%, `CL` equals the old C. The 90 old ledger rows (-33,843.73) are all kept. `fno_n11_second_lot` is created at the first F&O tick.
 - **Not done:** the runbook's full stop-everything data backup. This release changes no stored data, and earlier deploys ran the same way.
-- **One error in the log:** `penny_edge_exit_failed err='date'` from the startup catch-up. An older bug, in code this release didn't touch: see the plan. Fixed in Dev in the commit carrying this section, not deployed.
+- **One error in the log:** `penny_edge_exit_failed err='date'` from the startup catch-up. An older bug, in code this release didn't touch: see the plan. Fixed and deployed in c227c23, the section above.
 - [ ] Nov 3, read-only: first F&O tick sends the risk alert (full size, equity Rs 2,50,000) and creates `fno_n11_second_lot`. From 12:59, expiry rows say expiry-v4 and shadow-v8. `CL` and `CE011R` copy each C ticket.
 
 ## November 2 night — One release: N11T, expiry-v4, paper fresh start

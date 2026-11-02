@@ -1,10 +1,10 @@
-## November 2 night — EDGE exit job crash found at the deploy; fixed in Dev
+## November 2 night — EDGE exit job crash found at the deploy; fixed and deployed (Production c227c23)
 
 **Problem.** `_kite_daily_bars_after` read a `date` column, but `kite_client.get_historical` indexes its frame by date. The exit job raised KeyError the first time a holding reached its hold limit (AVONMORE, entered Oct 30), and that stops the job for every holding after it in the loop. It also fetched from the entry day, while `simulate_position`'s contract is bars from the day after. Older than this release; the test stub had a `date` column, so nothing caught it.
 
 **Files.** `python-engine/penny_edge_orchestrator.py`, `tests/test_penny_edge_deferred_fixes.py` (the stub now has the real client's shape, and a new test reproduces the crash). **Acceptance.** EDGE tests 88 passed, 1 skipped. Whole suite not rerun for this one function.
 
-**Rollout.** Pushed in Dev, not merged, not deployed. Production stays 39b8d81 until the owner's next deploy. Until then EDGE paper's AVONMORE stays open past its limit, the 15:15 job logs this error, and a hold-limit exit can't run. The job's crash is caught, so nothing else stops. No real money: the live EDGE channel is halted.
+**Rollout.** Deployed on the owner's go-ahead: Production c227c23, PR #128, 00:03 IST Nov 3. The restart's catch-up skipped because it's before 15:15, so AVONMORE's first real run of this path is the 15:15 job on Nov 3. No real money: the live EDGE channel is halted. Note for later: the job's age check counts calendar days and the simulator's hold counts trading bars, so a weekend holding exits as `eod_data_ended` before its third bar. Left as it is.
 
 ## November 2 night — One release: N11T second lot, E01.1 as the main expiry ticket, a fresh Rs 2,50,000 for the paper book
 
@@ -23,7 +23,7 @@ Owner's order: "Deploy right now, the tolerance and this also make it go in as m
 
 **Remaining.**
 1. Watch Nov 3, a NIFTY expiry: expiry-v4 rows from 12:59, the risk alert saying full size, `fno_n11_second_lot` if one qualifies.
-2. The next download's shape is still the owner's: `EXAM_YEAR.md`.
+2. The next download's shape: the owner answered "Yes yes" on Nov 3, read as approving `EXAM_YEAR.md`'s shape. The download agent needs that table; it goes through the download skill as usual.
 3. `EXAM_YEAR.md`'s arms stand as written. Its test 1 now decides whether C goes back to an older rule, and that decision is the owner's.
 4. Forward count: at least 20 new paired tickets, five per index: CL, CE01 and CE011R against C.
 5. The deploy took no full data backup (the runbook's stop-everything capture). It changes no stored data.
