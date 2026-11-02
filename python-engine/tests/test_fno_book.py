@@ -560,7 +560,7 @@ def test_the_stretch_check_can_be_turned_off_and_leaves_the_drive_book_alone(com
 
 def test_the_trend_gate_book_is_the_default_and_drive_or_shipped_stay_available(monkeypatch):
     from config import Settings
-    assert Settings.model_fields["FNO_BOOK"].default == "UNION_ADX"
+    assert Settings.model_fields["FNO_BOOK"].default == "N11"    # [N11] the owner's call, Nov 2; UNION_ADX stays available
     assert Settings.model_fields["FNO_BOOK_ADX_MIN"].default == 30.0
     assert Settings.model_fields["FNO_BOOK_MAX_STRETCH"].default == 0.5
     assert Settings.model_fields["FNO_MAX_LOTS"].default == 2 and Settings.model_fields["FNO_MAX_LOTS_PROVEN"].default == 3

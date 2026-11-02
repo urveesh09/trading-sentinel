@@ -1062,7 +1062,14 @@ class Settings(BaseSettings):
     # [O31d 2026-10-31] The owner's call after the 2024 exam: the most consistent book found becomes the main one. Same
     # four strategies, exits, lots and brakes, on a stricter trend (ADX 30), passing over an entry already stretched
     # beyond VWAP (fno_book.entry_stretch). Back to the Oct 29 book: FNO_BOOK_ADX_MIN=25, FNO_BOOK_MAX_STRETCH=0.
-    FNO_BOOK:                  str   = "UNION_ADX"
+    # [N11 2026-11-02] N11 is the main book, the owner's call on paper: fno_book.n11_signal and fno_n11. docs/FNO_RESEARCH_N11.md.
+    # Back to the Oct 31 book: FNO_BOOK=UNION_ADX. The real-money test is its own switch, FNO_LIVE_TEST_ENABLED.
+    FNO_BOOK:                  str   = "N11"
+    FNO_N11_STAND_RATIO:       float = 0.9        # real entries wait below this share of usual volatility, with a losing paper record
+    FNO_N11_STAND_NEED:        int   = 20         # the paper trades that record reads
+    FNO_N11_ADD_MAX_RUPEES:    float = 5000.0     # the earned lot's written charge: held lots at their stop + its whole backstop
+    FNO_N11_LOW_TWO_LOTS_BEFORE_MIN: int = 12*60  # a low-day pullback may take two lots only before 12:00
+    FNO_N11_LOW_LAST_MIN:      int   = 14*60      # and none from 14:00
     FNO_BOOK_ADX_MIN:          float = 30.0
     FNO_BOOK_MAX_STRETCH:      float = 0.5        # share of the first 30 minutes' range beyond VWAP; 0 = no check
 

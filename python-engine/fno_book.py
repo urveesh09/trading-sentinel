@@ -58,9 +58,18 @@ price at entry, never the book's own results. Lots, exits and brakes are unchang
 (docs/FNO_FINAL_STRATEGY_2026-10-31.md): +16,371 / +5,710 / +30,540 on Rs 2.5 lakh in 2024 / 2025 / 2026, worst fall
 7.5%. All three years are seen and it failed a plateau test fixed in advance, narrowly: this is the owner's decision,
 not a proof. ``FNO_BOOK_ADX_MIN=25`` and ``FNO_BOOK_MAX_STRETCH=0`` restore the Oct 29 book.
+
+[N11 2026-11-02] N11, the default, on the owner's call: "take N011 as the main strategy the rest you can put as shadows ...
+deploy it in production". On a trending day (yesterday's ADX at or above FNO_BOOK_ADX_MIN) the same four strategies, with EFF
+waiting for a retest of its break and EFF and OR20 trailing at 2 ATR. On a sideways day, only the trend pullback, puts only,
+none from 14:00. EFF's soft clock drops to 30 minutes on a stalled, losing option. Sizing, the stand-aside and the earned lot
+are in fno_n11. Positions carry their own labels (N11_EFF ...), so an older position keeps its old exits. Research:
+docs/FNO_RESEARCH_N11.md; seen years only, one honest check failed, and it was never tested on SENSEX or on expiry days.
 """
 from __future__ import annotations
 
+import copy
+import math
 import statistics
 import weakref
 from collections import OrderedDict
@@ -80,7 +89,8 @@ logger = structlog.get_logger()
 
 BOOK = "UNION_DRIVE"
 ADX_BOOK = "UNION_ADX"
-BOOKS = (BOOK, ADX_BOOK)
+N11_BOOK = "N11"
+BOOKS = (BOOK, ADX_BOOK, N11_BOOK)
 ADX_LEN = 14
 ADX_HISTORY_CALENDAR_DAYS = 420   # about 285 daily bars: Wilder's smoothing has long forgotten its first value
 ADX_MIN_BARS = 60
@@ -102,6 +112,16 @@ EXIT_OVERRIDES = {
     "EFF": {"FNO_TIME_STOP_MIN": 60.0, "FNO_TRAIL_ATR_MULT": 1.5, "FNO_PROFIT_LOCK_ENABLED": False},
     "TPB": {"FNO_PROFIT_LOCK_ENABLED": False, "FNO_TIME_STOP_MIN": 120.0, "FNO_TRAIL_ATR_MULT": 2.0},
 }
+# [N11] The same exits, with EFF and OR20 trailing at 2 ATR. An earned lot has no trail, clock or lock: it leaves at the held
+# lots' entry level, at its own backstop, or with them (fno_n11).
+EXIT_OVERRIDES.update({
+    "N11_SHIPPED": {},
+    "N11_OR20": {**EXIT_OVERRIDES["OR20"], "FNO_TRAIL_ATR_MULT": 2.0},
+    "N11_EFF": {**EXIT_OVERRIDES["EFF"], "FNO_TRAIL_ATR_MULT": 2.0},
+    "N11_TPB": dict(EXIT_OVERRIDES["TPB"]),
+    "N11_TPB_LOW": dict(EXIT_OVERRIDES["TPB"]),
+    "N11_ADD": {"FNO_PROFIT_LOCK_ENABLED": False, "FNO_TIME_STOP_MIN": 1e6, "FNO_TRAIL_ATR_MULT": 1000.0},
+})
 # The O28/O29b research values (NIFTY front future, 09:45), from docs/research/fno/2026-10-28-chop-study.
 SEED = {"2026-09-02": 0.23665659617320556, "2026-09-03": 0.6990521327014098, "2026-09-04": 0.2139037433154997,
         "2026-09-07": 0.5934065934065934, "2026-09-08": 0.591351351351336, "2026-09-09": 0.46632124352333365,
@@ -365,6 +385,7 @@ async def adx_today(db_path: str, kite, now: datetime) -> tuple:
     if first:
         from operator_alert import notify_operator
         verdict = ("trending market - the F&O book trades today" if side == "HIGH" else
+                   "sideways market - only the put pullback trades today" if mode() == N11_BOOK else
                    "sideways market - the F&O book sits today out (no new trades)")
         await notify_operator(
             f"📈 F&O trend gate {day:%d %b}: NIFTY ADX(14) {value:.1f} (yesterday's daily candle; trades at "
@@ -547,3 +568,117 @@ def book_signal(bars: pd.DataFrame, regime: str, now: datetime, *, shipped: MomS
     elif gate != "ADX" and side != "HIGH":
         reason = f"drive_{(side or 'unknown').lower()}:{'breakout_skipped' if shipped.direction else reason}"
     return replace(shipped, direction=None, strategy="", reject_reason=reason)
+
+
+# ---- [N11] EFF's retest, and the book's signals ----------------------------------------------------------------------------
+
+def retest_context(frame: Optional[pd.DataFrame], now: datetime) -> Optional[dict]:
+    """The last closed bar's readings for EFF's retest, as in research (eff_lab.context). None when it can't be read."""
+    if frame is None or frame.empty:
+        return None
+    naive = now.replace(tzinfo=None)
+    features = _features(frame)
+    closed = features.iloc[:features.index.searchsorted(naive - timedelta(minutes=5), side="right")]
+    today = closed[closed.index.date == now.date()]
+    if len(today) < 5:
+        return None
+    last, previous, stamp = today.iloc[-1], today.iloc[-2], today.index[-1]
+    start = stamp
+    for t in reversed(today.index[:-1]):
+        if (start - t).total_seconds() != 300:
+            break
+        start = t
+    vwap = float(last.vwap)
+    if not math.isfinite(vwap):
+        vwap = float(((today.high + today.low + today.close) / 3).mean())
+    values = {"bar": stamp.strftime("%Y-%m-%d %H:%M:%S"), "close": float(last.close), "open": float(last.open), "high": float(last.high), "low": float(last.low),
+              "previous_close": float(previous.close), "atr": float(last.atr), "rvol": float(last.rvol) if math.isfinite(last.rvol) else 0.0, "vwap": vwap,
+              "prior4high": float(today.iloc[-5:-1].high.max()), "prior4low": float(today.iloc[-5:-1].low.min()),
+              "fresh": timedelta(0) <= naive - (stamp.to_pydatetime() + timedelta(minutes=5)) < timedelta(minutes=5),
+              "consecutive_from": start.strftime("%Y-%m-%d %H:%M:%S")}
+    keys = ("close", "open", "high", "low", "previous_close", "atr", "vwap", "prior4high", "prior4low")
+    return values if all(math.isfinite(values[k]) for k in keys) and values["atr"] > 0 else None
+
+
+class EffRetest:
+    """EFF waits for a retest of the level it broke, up to 15 minutes: research eff_rules.RetestState, unchanged. Kept in memory: a restart loses a waiting
+    retest, which only means one possible entry isn't taken."""
+
+    def __init__(self) -> None:
+        self.pending = None
+        self.cache_key = None
+        self.cached = (None, {})
+
+    def step(self, original: MomSignal, ctx: Optional[dict], regime: str) -> tuple:
+        if not ctx or not ctx["fresh"] or regime == "REGIME_3_CRISIS":
+            self.pending = None
+            self.cache_key = None
+            return None, {"reason": "unavailable_or_crisis"}
+        key = (ctx["bar"], regime)
+        if key == self.cache_key:
+            return copy.copy(self.cached[0]), copy.deepcopy(self.cached[1])
+        now, p, answer, info = datetime.fromisoformat(ctx["bar"]), self.pending, None, {"reason": "waiting"}
+        if p:
+            age = (now - datetime.fromisoformat(p["bar"])).total_seconds() / 60
+            sign, zone = p["sign"], 0.25 * p["atr"]
+            valid = now.date().isoformat() == p["bar"][:10] and 0 < age <= 15 and age % 5 == 0 and ctx["consecutive_from"] <= p["bar"]
+            valid = valid and sign * (ctx["close"] - p["level"]) >= -zone and (ctx["low"] > p["signal"].stop_underlying if sign == 1 else ctx["high"] < p["signal"].stop_underlying)
+            if not valid:
+                self.pending = None
+            elif (ctx["low"] <= p["level"] + zone and ctx["high"] >= p["level"] - zone and sign * (ctx["close"] - p["level"]) > 0
+                  and sign * (ctx["close"] - ctx["open"]) > 0 and sign * (ctx["close"] - ctx["previous_close"]) > 0):
+                answer = copy.copy(p["signal"])
+                answer.bar_ts, answer.close, answer.atr, answer.rvol = ctx["bar"], ctx["close"], ctx["atr"], ctx["rvol"]
+                answer.target_underlying = ctx["close"] + sign * 1.8 * (sign * (ctx["close"] - answer.stop_underlying))
+                info = {"reason": "retest_confirmed", "source_bar": p["bar"], "confirmation_bar": ctx["bar"], "broken_level": p["level"], "zone_atr": p["atr"], "original_stop": answer.stop_underlying}
+                self.pending = None
+        if answer is None and original.direction is not None:
+            sign = 1 if original.direction.value == "LONG" else -1
+            if self.pending is None or self.pending["sign"] != sign:
+                self.pending = {"signal": copy.copy(original), "bar": ctx["bar"], "sign": sign, "level": ctx["prior4high"] if sign == 1 else ctx["prior4low"], "atr": original.atr}
+                info = {"reason": "armed", "source_bar": ctx["bar"]}
+        self.cache_key = key
+        self.cached = (copy.copy(answer), copy.deepcopy(info))
+        return answer, info
+
+
+_RETEST: dict = {}
+
+
+def eff_retest(bars: pd.DataFrame, regime: str, now: datetime, underlying: str) -> MomSignal:
+    original = efficiency_break(bars, regime, now)
+    answer, info = _RETEST.setdefault(underlying, EffRetest()).step(original, retest_context(bars, now), regime)
+    return answer if answer is not None else MomSignal(bar_ts=original.bar_ts, reject_reason=f"n11:{info['reason']}")
+
+
+def n11_signal(bars: pd.DataFrame, regime: str, now: datetime, *, shipped: MomSignal, adx_side: Optional[str], underlying: str = "NIFTY") -> MomSignal:
+    """The first strategy with a signal on this bar, its entry checked as in research. A trending day: SHIPPED, OR20, EFF with its retest, TPB. A sideways day: only
+    the pullback, puts only, none from 14:00. A stretched first signal, or a refused low-day one, takes no entry on this tick. Unknown ADX: no entry."""
+    from fno_shadow import _variant_signal
+    reason = shipped.reject_reason or "no_signal"
+    if adx_side not in ("HIGH", "LOW"):
+        return replace(shipped, direction=None, strategy="", reject_reason=f"adx_unknown:{'book_skipped' if shipped.direction else reason}")
+    or20, tpb = _variants()
+    limit = float(settings.FNO_BOOK_MAX_STRETCH)
+    for name in (("SHIPPED", "OR20", "EFF", "TPB") if adx_side == "HIGH" else ("TPB_LOW",)):
+        if name == "SHIPPED":
+            sig = shipped
+        elif name == "OR20":
+            sig = _variant_signal(bars, regime, now, or20)
+        elif name == "EFF":
+            sig = eff_retest(bars, regime, now, underlying)
+        else:
+            sig = _variant_signal(bars, regime, now, tpb)
+        if sig.direction is None:
+            continue
+        stretch = entry_stretch(bars, now, sig.direction) if limit > 0 else None
+        if stretch is not None and stretch >= limit:
+            logger.info("fno_book_entry_stretched", strategy=name, direction=sig.direction.value, stretch=stretch)
+            return replace(sig, direction=None, strategy="", reject_reason=f"stretched:{name}")
+        if name == "TPB_LOW":
+            if sig.direction != FnoDirection.SHORT:
+                return replace(sig, direction=None, strategy="", reject_reason="n11:low_direction")
+            if now.hour * 60 + now.minute >= int(settings.FNO_N11_LOW_LAST_MIN):
+                return replace(sig, direction=None, strategy="", reject_reason="n11:low_too_late")
+        return replace(sig, strategy=f"N11_{name}")
+    return replace(shipped, direction=None, strategy="", reject_reason=f"n11_{adx_side.lower()}:{reason}")

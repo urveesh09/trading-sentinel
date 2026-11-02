@@ -73,8 +73,15 @@ async def read_book_closes(db_path: str, source: str) -> list[Close]:
             tables = {row[0] for row in await cursor.fetchall()}
         queries = []
         if "fno_positions" in tables:
+            async with db.execute("PRAGMA table_info(fno_positions)") as cursor:
+                has_strategy = any(row[1] == "strategy" for row in await cursor.fetchall())
+            # [N11] An earned lot's cash counts, but it isn't a trade of its own: its loss is no strike.
             queries.append(("SELECT exit_time, pnl FROM fno_positions WHERE source=? AND status='CLOSED' "
-                            "AND exit_time IS NOT NULL AND pnl IS NOT NULL", True))
+                            "AND exit_time IS NOT NULL AND pnl IS NOT NULL"
+                            + (" AND COALESCE(strategy,'') != 'N11_ADD'" if has_strategy else ""), True))
+            if has_strategy:
+                queries.append(("SELECT exit_time, pnl FROM fno_positions WHERE source=? AND status='CLOSED' "
+                                "AND exit_time IS NOT NULL AND pnl IS NOT NULL AND strategy = 'N11_ADD'", False))
         if "fno_dr_positions" in tables:
             queries.append(("SELECT closed_at, pnl FROM fno_dr_positions WHERE source=? AND status='CLOSED' "
                             "AND closed_at IS NOT NULL AND pnl IS NOT NULL", False))
