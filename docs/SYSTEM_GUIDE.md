@@ -1,3 +1,9 @@
+## November 2 — Expiry shadow-v7: CE011 and CE011R, Dev only until deployed
+
+Two new paper shadows on C's exact saved ticket, version `expiry-e011-v1`, flag `EXPIRY_E011_SHADOW_ENABLED`, default on. **CE011 (E01.1):** 25% premium stop, at 3x sells the fewest whole lots that take the ticket's premium and buy charges back with an order fee reserved for every lot left (`cost_recovery_lots`), 60% trail from 3x instead of C's 5x. **CE011R:** the same stop and floor, nothing sold at 3x. Both keep C's failed-break exit, flat time and Rs 2,500 ceiling. A one-lot ticket can't bank; a ticket too small to recover cost in fewer lots sells half.
+
+Enrolment binds to the new day state, as E01's does: an older or already-started day is not enrolled, and the flag blocks new copies while open legs keep their exits. Pairing needs the durable parent ID and identical terms. The day summary shows both beside C and prints the box width as a reading no rule uses. Main A, B, C and CE01 are unchanged. No schema migration, `.env` change or extra quote request. Paper only: nothing here reaches `fno_live_test` or an order. Evidence and limits: `docs/EXPIRY_RESEARCH_E011.md`.
+
 ## November 2 — Separate successor handovers; research stopped for documentation
 
 Read [F&O inheritance](FNO_SUCCESSOR_HANDOVER_2026-11-02.md) and [expiry inheritance](EXPIRY_SUCCESSOR_HANDOVER_2026-11-02.md). These bind reviewed source7711521, N11 paper deployment versus Dev-only N11T/E01, results and evidence limits. E01.1 is NOT implemented/frozen/scored; the four September ten-second CSVs hold fixed opening-ATM options, not the full native entry/depth/underlying path. E02 selected minute-data export is uncommitted preparation only, now deferred; no minute strategy was scored. This slice changes Markdown/navigation only, no application/config/schema/atlas change. Production Git d52642f and running engine start03:29:35Z were read-only rechecked; no edit/restart/order/download/deployment.

@@ -1,3 +1,23 @@
+## November 2 — E01.1 built in Dev: CE011 and CE011R paper shadows; next exam frozen
+
+Owner's order: improve E01 on the 12 sessions, genome allowed, no minute-data adaptation. This supersedes the handover-only stopping point below, and E02 stays deferred.
+
+**Problem.** E01 still let a ticket reach 3x to 4.9x and fall to its stop, because C's floor starts at 5x. **Files:** `python-engine/expiry_paper.py`, `config.py`, `tests/test_expiry_e011.py`, two version strings in `tests/test_expiry_paper.py`, study `docs/research/simulation/2026-11-02-expiry-e011/`, report `docs/EXPIRY_RESEARCH_E011.md`. **Contract:** main A, B, C and CE01 unchanged; `ExitPolicy.bank_mode` defaults to half; CE011 and CE011R copy only a saved C ticket; no schema or `.env` change; no extra quote request.
+
+**The rule.** CE011 (E01.1): 25% stop, at 3x sell just enough lots to recover the ticket's cost, 60% floor from 3x. CE011R: the same, but no sale at 3x. Freeze f457d9b before September was read, score 7818c62, engine in the following commit.
+
+**Acceptance, all passed.** Lab parity 72 legs, zero mismatches. T1 E01's profit route, ordinary and adverse, all eight and raw-clock seven. T2 neighbours. T3 entries 10, 20, 30 seconds late. T4 every break as a ticket. T5 September's seven tickets. Native parity 16 cases, 28 shadow legs, zero mismatches, every existing leg and quote count unchanged.
+
+**Result.** Eight sessions: E01 +11,095, E01.1 +12,918, worst session -1,000 to -955, without the best -2,686 to -2,176. Every break, 18 tickets: -150 to +4,022. September's seven: -2,503 to -64. It is still a lottery: up and down sessions unchanged at 3 and 4, and it loses without Oct 13.
+
+**Rollout and rollback.** Pushed on this branch. Not merged, not deployed. On by default after a normal deploy. Off: `EXPIRY_E011_SHADOW_ENABLED=false` and an engine restart; open legs keep their exits. A deploy would also carry N11T, which still waits for the owner.
+
+**Remaining.**
+1. The owner decides the shape of the next download. September's shape had no ticket at any of its 11 breaks. `EXAM_YEAR.md` gives the shape that would run the book, about 180 requests per expiry.
+2. Run `EXAM_YEAR.md` once, with no change to its rules. Its arms are frozen, including a 20% stop, a wide-box skip and cheaper tickets, none of which replaces anything unless that exam says so.
+3. Forward count stays as in E01: at least 20 new paired tickets, at least five per index, read for each of CE01, CE011 and CE011R against C.
+4. Do not search these 12 sessions further for a higher number.
+
 ## November 2 — Handover-only slice; E01.1 continuation explicitly deferred
 
 Problem: preserve separate regular-F&O and expiry inheritance at the owner-requested stopping point. Files/contracts: [F&O inheritance](FNO_SUCCESSOR_HANDOVER_2026-11-02.md) and [expiry inheritance](EXPIRY_SUCCESSOR_HANDOVER_2026-11-02.md) plus these navigation prefixes; no strategy or runtime contract changes. Acceptance: local Markdown links resolve, diff whitespace passes, original owner dirt preserved, actual E01 receipt and four CSV coverage identities rechecked. All passed. No new strategy score or application suite run.

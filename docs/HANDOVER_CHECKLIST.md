@@ -1,3 +1,13 @@
+## November 2 — E01.1 in Dev
+
+- Read `docs/EXPIRY_RESEARCH_E011.md`, then the study's `README.md`, `PLAN.md`, `OUTCOME.md` and `EXAM_YEAR.md`.
+- Commits: freeze f457d9b, score 7818c62, engine in the commit carrying this section (`git log -1 -- python-engine/tests/test_expiry_e011.py`). Pushed on `codex/production-correction-hedge-p0`. Not merged, not deployed. Production d52642f, checked read-only.
+- Verification: whole engine suite 6,034 passed, 4 skipped, in two halves run one after the other (3,265 and 2,769, `pytest_exit=0` each). Affected expiry, isolation and cost tests 136 passed. Study tests 11 passed. Lab parity 72 legs, zero mismatches. Native parity 16 cases, 28 shadow legs, zero mismatches, `native-parity-NATIVE_E011.json`. Atlas regenerated, 292 modules.
+- `freeze.py verify` deliberately no longer matches the working tree, because the engine changed after the score. To reproduce the score, check out f457d9b.
+- Config: `EXPIRY_E011_SHADOW_ENABLED`, default true. No `.env` change or migration. A deploy would also carry N11T and CE01.
+- Tests prove the code matches the rule. They don't show the rule makes money. September is seven call tickets on two days, one of them most of the gain, and the eight October sessions were seen.
+- A bug of mine worth remembering: `_new_position` reads a position's first stop from `POLICIES` by play name, so a research candidate under an unknown name silently has no stop. The first genome ran that way. `_local/ga-no-stop-bug/` keeps it; `parity.py` and `test_e011.py` now pin it.
+
 ## November 2 — F&O and expiry inheritance ready
 
 - Read [F&O inheritance](FNO_SUCCESSOR_HANDOVER_2026-11-02.md) and [expiry inheritance](EXPIRY_SUCCESSOR_HANDOVER_2026-11-02.md) separately; source snapshot7711521. Find this documentation commit with git log against either handover path.

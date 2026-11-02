@@ -1,5 +1,7 @@
 # Expiry successor handover — November 2, 2026
 
+> **Update, November 2 evening.** The owner resumed this work. E01.1 is now built, frozen, scored and in Dev: [report](EXPIRY_RESEARCH_E011.md), [study](research/simulation/2026-11-02-expiry-e011/README.md). Section 1's "no E01.1 exists" and section 8's "untested" no longer hold. Section 7's warning proved exact: none of September's 11 breaks has a ticket in the files.
+
 This document inherits **expiry-v3, completed E01, deferred E02 preparation and
 the unfinished E01.1 request using September ten-second data**. Regular F&O
 N11/N11T is covered in the [separate handover](FNO_SUCCESSOR_HANDOVER_2026-11-02.md).
