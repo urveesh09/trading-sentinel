@@ -1,0 +1,16 @@
+{
+  "year": "2025",
+  "passed": true,
+  "checks": {
+    "money": 148,
+    "prices": 298,
+    "add_first_reach": 0,
+    "no_missed_stop": 1,
+    "two_lot_parent": 1,
+    "planned_within_5000": 1,
+    "reserve_at_entry": 148,
+    "reached_earlier_then_refused": 1,
+    "slices_rechecked": 2
+  },
+  "note": "Modelled quotes from candles, not market depth. An audit of the replay's arithmetic and clocks, not of future profit."
+}

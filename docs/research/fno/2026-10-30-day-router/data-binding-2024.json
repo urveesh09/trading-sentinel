@@ -1,0 +1,65 @@
+{
+ "schema": "o31_nifty_2024_data_binding_v1",
+ "recorded_before_any_2024_replay": true,
+ "repo_head_when_sealed": "50b8327d7542264716c791b67ee1a0dab39d29d1",
+ "source_database_sha256": "d93c1f412e175ff8d9bdd8095761e4d5c4b1806a481fa5749bb59aeeb14f7cb5",
+ "mirror": {
+  "rule": "NIFTY rows before 2025-01-01, without 2024-11-01 (index/future/option)",
+  "rows_by_kind": {
+   "daily": 988,
+   "future": 173795,
+   "index": 102579,
+   "option": 2362304
+  },
+  "sha256": "5adfb9ec86bd99a292b176cf42cd8157ae79579c15acd820c4b9189c41e8e8a4"
+ },
+ "dataset_breeze_sqlite_sha256": "bed246b055c96b2b58034b9538a01ebe742dfd1b7bf016be23c696fc31086daf",
+ "dataset_manifest_sha256": "d0cc8743c06cf46dfe862a4c8d8ba5523e9d5ef53ce83ab70001f3f5c4a94be9",
+ "sessions": 248,
+ "first_last_session": [
+  "2024-01-01",
+  "2024-12-31"
+ ],
+ "option_expiries": 53,
+ "future_expiries": [
+  "2023-12-28",
+  "2024-01-25",
+  "2024-02-29",
+  "2024-03-28",
+  "2024-04-25",
+  "2024-05-30",
+  "2024-06-27",
+  "2024-07-25",
+  "2024-08-29",
+  "2024-09-26",
+  "2024-10-31",
+  "2024-11-28",
+  "2024-12-26",
+  "2025-01-30"
+ ],
+ "checks": {
+  "rows": 2637777,
+  "rows_after_2024": 0,
+  "rows_on_muhurat_2024_11_01": 0,
+  "negative_volume": 0,
+  "nonpositive_close": 0,
+  "incoherent_ohlc": 0,
+  "earliest_row": "2023-12-01 09:15:00",
+  "latest_row": "2024-12-31 15:30:00",
+  "first_future_row_of_the_jan_2024_contract": "2023-12-07 09:15:00",
+  "sessions_without_front_future": [],
+  "non_expiry_sessions_without_options": [],
+  "expiry_sessions_without_same_day_options": 52
+ },
+ "decisions_made_before_any_replay": {
+  "half_days_2024_03_02_and_2024_05_18": "They stay, as the frozen export defines sessions. Futures exist only 09:15-09:59 and 11:30-12:30, so the replay has no observation in the break or after 12:30: nothing is manufactured and nothing trades there. A leg still open at the last observation is stored UNRESOLVED with no rupee result. Every trade on these two days is listed in the results, with the verdict re-stated without them if it would differ. The frozen procedure is not changed.",
+  "saturday_2024_01_20": "A full regular session (NSE MSD60340); kept.",
+  "muhurat_2024_11_01": "Excluded by the frozen mirror rule; no future or option rows exist for it.",
+  "banknifty_daily_2024_04_19": "Open and low are invalid in the source, confirmed on re-fetch. Preserved, not filled. No scored book reads NIFTY BANK: replays read only yeardata.regime (logged live labels, else UNKNOWN), and features.daily_bars reads NIFTY only. It enters only rebuild_regimes, a manifest description that the exam never reads, and that reads only the close, which is valid.",
+  "stray_bars": "Futures bars at 09:14 (Jan 9, Jan 11) are outside the frozen export window and dropped. Bars at 15:31-15:32 (Aug 26, Oct 22) stay, as the frozen export window keeps them; they fall after the last entry and exit times.",
+  "lot_size": "65, as frozen, so a per-lot row is today's contract; the real 2024 lot was different.",
+  "expiry_days": "No same-day options exist on the 52 expiry sessions, by design and as in 2025 (53) and 2026 (43): the live single-leg book makes no entries then, so the downloads skip them (DOWNLOAD_GUIDE). 196 sessions can take an entry."
+ },
+ "qualification": "NOT_ASSESSED",
+ "can_place_orders": false
+}

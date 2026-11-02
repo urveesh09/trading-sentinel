@@ -1,0 +1,715 @@
+{
+  "status": "POST_RUN_DESCRIPTIVE_NO_ENTRY_CONFIDENCE_MODEL",
+  "records": [
+    {
+      "year": "2024",
+      "mode": "STRUCT30",
+      "base_admission_id": "N05/2024/c7bbd068f11394f9/9",
+      "candidate_admission_id": "N05/2024/672f55ea91d8a155/9",
+      "economic_fingerprint": "a2bebf12adbfe866a506d7195c8d8ae51a88df320b939fc9c8148a8b17ceca00",
+      "immutable_terms": {
+        "initial_entry_time": "2024-01-12T12:10:59+05:30",
+        "initial_entry_premium": 158.85,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 21894.0,
+        "initial_target_underlying": 21803.7,
+        "tradingsymbol": "NIFTY24011821900PE",
+        "direction": "SHORT"
+      },
+      "known_at_review": {
+        "action": "STRUCT30",
+        "age_minutes": 40.0,
+        "net_at_bid_after_cost": -1262.22413307213,
+        "progress_r": -0.497916666666697,
+        "bid": 153.1,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 21872.3,
+        "structure": {
+          "bar": "2024-01-12 12:45:00",
+          "close": 21876.35,
+          "open": 21869.1,
+          "high": 21879.85,
+          "low": 21867.6,
+          "previous_close": 21869.1,
+          "atr": 14.406818637279995,
+          "rvol": 0.5910837130349326,
+          "vwap": 21828.026038532527,
+          "prior4high": 21883.5,
+          "prior4low": 21860.95,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2024-01-12 09:15:00"
+        }
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2024-01-12T12:54:59+05:30",
+        "candidate_exit_time": "2024-01-12T12:50:59+05:30",
+        "base_net": -2313.2019,
+        "candidate_net": -1262.2241,
+        "delta": 1050.9778000000001
+      }
+    },
+    {
+      "year": "2025",
+      "mode": "DELAY45",
+      "base_admission_id": "N05/2025/c7bbd068f11394f9/6",
+      "candidate_admission_id": "N05/2025/cbfb09f45387db45/6",
+      "economic_fingerprint": "a67c109ec2dc281dada565cf5ce05b51fe693f0401c50dfc980dd5bfbc6f3d6f",
+      "immutable_terms": {
+        "initial_entry_time": "2025-01-07T10:30:59+05:30",
+        "initial_entry_premium": 117.3,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 23750.227727068173,
+        "initial_target_underlying": 24064.730091277284,
+        "tradingsymbol": "NIFTY25010923800CE",
+        "direction": "LONG"
+      },
+      "known_at_review": {
+        "action": "DELAY45",
+        "age_minutes": 45.0,
+        "net_at_bid_after_cost": -2313.3706929207106,
+        "progress_r": -0.12115474740680282,
+        "bid": 103.35,
+        "context": null,
+        "review_mode": "DELAY45",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23808.5,
+        "structure": null
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2025-01-07T11:30:59+05:30",
+        "candidate_exit_time": "2025-01-07T11:15:59+05:30",
+        "base_net": -1755.4442,
+        "candidate_net": -2313.3707,
+        "delta": -557.9265
+      }
+    },
+    {
+      "year": "2025",
+      "mode": "DELAY45",
+      "base_admission_id": "N05/2025/c7bbd068f11394f9/11",
+      "candidate_admission_id": "N05/2025/cbfb09f45387db45/11",
+      "economic_fingerprint": "415d5e1706558c27ed519afbfd18a2f849ba249445a0cf9fcfc8db1d7ae6dfa2",
+      "immutable_terms": {
+        "initial_entry_time": "2025-01-17T13:21:59+05:30",
+        "initial_entry_premium": 234.8,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 23318.0,
+        "initial_target_underlying": 23144.679999999997,
+        "tradingsymbol": "NIFTY25012323300PE",
+        "direction": "SHORT"
+      },
+      "known_at_review": {
+        "action": "DELAY45",
+        "age_minutes": 45.0,
+        "net_at_bid_after_cost": -943.6234577386515,
+        "progress_r": 0.17626154939590208,
+        "bid": 224.7,
+        "context": null,
+        "review_mode": "DELAY45",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23271.25,
+        "structure": null
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2025-01-17T14:21:59+05:30",
+        "candidate_exit_time": "2025-01-17T14:06:59+05:30",
+        "base_net": -1696.1754,
+        "candidate_net": -943.6235,
+        "delta": 752.5519
+      }
+    },
+    {
+      "year": "2025",
+      "mode": "DELAY45",
+      "base_admission_id": "N05/2025/c7bbd068f11394f9/18",
+      "candidate_admission_id": "N05/2025/cbfb09f45387db45/18",
+      "economic_fingerprint": "b956e67dae9bb988dfa76d95129494ac996b914ee6ac82fd09096b8fbf30919f",
+      "immutable_terms": {
+        "initial_entry_time": "2025-02-01T14:00:59+05:30",
+        "initial_entry_premium": 145.6,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 23472.061709130434,
+        "initial_target_underlying": 23725.568923565213,
+        "tradingsymbol": "NIFTY25020623550CE",
+        "direction": "LONG"
+      },
+      "known_at_review": {
+        "action": "DELAY45",
+        "age_minutes": 45.0,
+        "net_at_bid_after_cost": -2445.355951230421,
+        "progress_r": -0.029610482011205048,
+        "bid": 130.7,
+        "context": null,
+        "review_mode": "DELAY45",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23547.3,
+        "structure": null
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2025-02-01T15:00:59+05:30",
+        "candidate_exit_time": "2025-02-01T14:45:59+05:30",
+        "base_net": -1809.5793,
+        "candidate_net": -2445.356,
+        "delta": -635.7767000000001
+      }
+    },
+    {
+      "year": "2025",
+      "mode": "DELAY45",
+      "base_admission_id": "N05/2025/c7bbd068f11394f9/60",
+      "candidate_admission_id": "N05/2025/cbfb09f45387db45/60",
+      "economic_fingerprint": "a392a98f07b472c7c2e16dfea66388464e58700cd760bef7cf20991d6e3bb48d",
+      "immutable_terms": {
+        "initial_entry_time": "2025-08-19T13:40:59+05:30",
+        "initial_entry_premium": 118.75,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 25045.0,
+        "initial_target_underlying": 24961.839999999997,
+        "tradingsymbol": "NIFTY25082125050PE",
+        "direction": "SHORT"
+      },
+      "known_at_review": {
+        "action": "DELAY45",
+        "age_minutes": 45.0,
+        "net_at_bid_after_cost": -656.5074272853851,
+        "progress_r": -0.36333333333338186,
+        "bid": 112.8,
+        "context": null,
+        "review_mode": "DELAY45",
+        "parent_stall_eligible": true,
+        "original_retest_level": 25028.0,
+        "structure": null
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2025-08-19T14:35:59+05:30",
+        "candidate_exit_time": "2025-08-19T14:25:59+05:30",
+        "base_net": -1545.2973,
+        "candidate_net": -656.5074,
+        "delta": 888.7899
+      }
+    },
+    {
+      "year": "2025",
+      "mode": "STRUCT30",
+      "base_admission_id": "N05/2025/c7bbd068f11394f9/60",
+      "candidate_admission_id": "N05/2025/672f55ea91d8a155/60",
+      "economic_fingerprint": "a392a98f07b472c7c2e16dfea66388464e58700cd760bef7cf20991d6e3bb48d",
+      "immutable_terms": {
+        "initial_entry_time": "2025-08-19T13:40:59+05:30",
+        "initial_entry_premium": 118.75,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 25045.0,
+        "initial_target_underlying": 24961.839999999997,
+        "tradingsymbol": "NIFTY25082125050PE",
+        "direction": "SHORT"
+      },
+      "known_at_review": {
+        "action": "STRUCT30",
+        "age_minutes": 50.0,
+        "net_at_bid_after_cost": -909.5205969672546,
+        "progress_r": -0.3966666666667152,
+        "bid": 108.9,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 25028.0,
+        "structure": {
+          "bar": "2025-08-19 14:25:00",
+          "close": 25032.0,
+          "open": 25020.0,
+          "high": 25038.8,
+          "low": 25020.0,
+          "previous_close": 25020.0,
+          "atr": 17.59885500792746,
+          "rvol": 1.501432664756447,
+          "vwap": 24998.49422130108,
+          "prior4high": 25025.3,
+          "prior4low": 24982.0,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2025-08-19 09:15:00"
+        }
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2025-08-19T14:35:59+05:30",
+        "candidate_exit_time": "2025-08-19T14:30:59+05:30",
+        "base_net": -1545.2973,
+        "candidate_net": -909.5206,
+        "delta": 635.7767
+      }
+    },
+    {
+      "year": "2026",
+      "mode": "DELAY45",
+      "base_admission_id": "N05/2026/c7bbd068f11394f9/15",
+      "candidate_admission_id": "N05/2026/cbfb09f45387db45/15",
+      "economic_fingerprint": "2684f097f2aef7b5446f68a3e6d56cef9fdc71aa5aa5ab143484161511e21d39",
+      "immutable_terms": {
+        "initial_entry_time": "2026-03-20T12:51:59+05:30",
+        "initial_entry_premium": 286.0,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 23154.987157321644,
+        "initial_target_underlying": 23382.663116821037,
+        "tradingsymbol": "NIFTY26032423150CE",
+        "direction": "LONG"
+      },
+      "known_at_review": {
+        "action": "DELAY45",
+        "age_minutes": 54.0,
+        "net_at_bid_after_cost": -387.09972039101854,
+        "progress_r": 0.05782237838303531,
+        "bid": 284.6,
+        "context": null,
+        "review_mode": "DELAY45",
+        "parent_stall_eligible": true,
+        "original_retest_level": 23214.8,
+        "structure": null
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2026-03-20T13:51:59+05:30",
+        "candidate_exit_time": "2026-03-20T13:45:59+05:30",
+        "base_net": -906.1011,
+        "candidate_net": -387.0997,
+        "delta": 519.0014
+      }
+    },
+    {
+      "year": "2026",
+      "mode": "DELAY45",
+      "base_admission_id": "N05/2026/c7bbd068f11394f9/21",
+      "candidate_admission_id": "N05/2026/cbfb09f45387db45/21",
+      "economic_fingerprint": "fdc131c0d45d7f5bfc6d3e1daebb285b6bdb0e81d9da253a35e60e3ee6786e12",
+      "immutable_terms": {
+        "initial_entry_time": "2026-03-27T12:45:59+05:30",
+        "initial_entry_premium": 264.5,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 22913.776984394786,
+        "initial_target_underlying": 23066.72142808939,
+        "tradingsymbol": "NIFTY26033022900CE",
+        "direction": "LONG"
+      },
+      "known_at_review": {
+        "action": "DELAY45",
+        "age_minutes": 45.0,
+        "net_at_bid_after_cost": -1655.3397946436,
+        "progress_r": -0.5463437620267263,
+        "bid": 243.5,
+        "context": null,
+        "review_mode": "DELAY45",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22959.0,
+        "structure": null
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2026-03-27T13:39:59+05:30",
+        "candidate_exit_time": "2026-03-27T13:30:59+05:30",
+        "base_net": -2612.2486,
+        "candidate_net": -1655.3398,
+        "delta": 956.9087999999999
+      }
+    },
+    {
+      "year": "2026",
+      "mode": "DELAY45",
+      "base_admission_id": "N05/2026/c7bbd068f11394f9/27",
+      "candidate_admission_id": "N05/2026/cbfb09f45387db45/27",
+      "economic_fingerprint": "71812c14094e8adf8ca871a86ac090f88f6c3596050a7fef79bbeaddef01156f",
+      "immutable_terms": {
+        "initial_entry_time": "2026-04-08T12:00:59+05:30",
+        "initial_entry_premium": 266.3,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 24048.0,
+        "initial_target_underlying": 23869.920000000006,
+        "tradingsymbol": "NIFTY26041324050PE",
+        "direction": "SHORT"
+      },
+      "known_at_review": {
+        "action": "DELAY45",
+        "age_minutes": 45.0,
+        "net_at_bid_after_cost": -280.26354615376073,
+        "progress_r": -0.0,
+        "bid": 266.5,
+        "context": null,
+        "review_mode": "DELAY45",
+        "parent_stall_eligible": true,
+        "original_retest_level": 24000.0,
+        "structure": null
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2026-04-08T13:00:59+05:30",
+        "candidate_exit_time": "2026-04-08T12:45:59+05:30",
+        "base_net": -1600.4733,
+        "candidate_net": -280.2635,
+        "delta": 1320.2098
+      }
+    },
+    {
+      "year": "2026",
+      "mode": "DELAY45",
+      "base_admission_id": "N05/2026/c7bbd068f11394f9/51",
+      "candidate_admission_id": "N05/2026/cbfb09f45387db45/51",
+      "economic_fingerprint": "9b83da50b978d5824112988de23ea8ef4b09402f403bce767b4cd85075a75afa",
+      "immutable_terms": {
+        "initial_entry_time": "2026-10-09T12:00:59+05:30",
+        "initial_entry_premium": 195.55,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 22593.894076701246,
+        "initial_target_underlying": 22397.070661937752,
+        "tradingsymbol": "NIFTY26101322600PE",
+        "direction": "SHORT"
+      },
+      "known_at_review": {
+        "action": "DELAY45",
+        "age_minutes": 45.0,
+        "net_at_bid_after_cost": -3764.742149350412,
+        "progress_r": -0.40065289964285195,
+        "bid": 170.6,
+        "context": null,
+        "review_mode": "DELAY45",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22544.0,
+        "structure": null
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2026-10-09T12:57:59+05:30",
+        "candidate_exit_time": "2026-10-09T12:45:59+05:30",
+        "base_net": -6541.3995,
+        "candidate_net": -3764.7421,
+        "delta": 2776.6574000000005
+      }
+    },
+    {
+      "year": "2026",
+      "mode": "DELAY45",
+      "base_admission_id": "N05/2026/c7bbd068f11394f9/53",
+      "candidate_admission_id": "N05/2026/cbfb09f45387db45/53",
+      "economic_fingerprint": "e1f652f932baa5239e6550d5ea0ba4290c818face2aa92c9fefefa2572a043e6",
+      "immutable_terms": {
+        "initial_entry_time": "2026-10-14T13:55:59+05:30",
+        "initial_entry_premium": 148.65,
+        "initial_quantity": 195,
+        "initial_stop_underlying": 22606.293695734945,
+        "initial_target_underlying": 22826.6713476771,
+        "tradingsymbol": "NIFTY26101922650CE",
+        "direction": "LONG"
+      },
+      "known_at_review": {
+        "action": "DELAY45",
+        "age_minutes": 45.0,
+        "net_at_bid_after_cost": -4556.12137163578,
+        "progress_r": -0.24819994396399067,
+        "bid": 129.15,
+        "context": null,
+        "review_mode": "DELAY45",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22656.8,
+        "structure": null
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2026-10-14T14:55:59+05:30",
+        "candidate_exit_time": "2026-10-14T14:40:59+05:30",
+        "base_net": -6599.6893,
+        "candidate_net": -4556.1214,
+        "delta": 2043.5679
+      }
+    },
+    {
+      "year": "2026",
+      "mode": "STRUCT30",
+      "base_admission_id": "N05/2026/c7bbd068f11394f9/21",
+      "candidate_admission_id": "N05/2026/672f55ea91d8a155/21",
+      "economic_fingerprint": "fdc131c0d45d7f5bfc6d3e1daebb285b6bdb0e81d9da253a35e60e3ee6786e12",
+      "immutable_terms": {
+        "initial_entry_time": "2026-03-27T12:45:59+05:30",
+        "initial_entry_premium": 264.5,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 22913.776984394786,
+        "initial_target_underlying": 23066.72142808939,
+        "tradingsymbol": "NIFTY26033022900CE",
+        "direction": "LONG"
+      },
+      "known_at_review": {
+        "action": "STRUCT30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -1058.4882148812408,
+        "progress_r": -0.2541133776868566,
+        "bid": 252.7,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22959.0,
+        "structure": {
+          "bar": "2026-03-27 13:10:00",
+          "close": 22950.0,
+          "open": 22933.1,
+          "high": 22950.0,
+          "low": 22916.5,
+          "previous_close": 22933.1,
+          "atr": 28.695957142914295,
+          "rvol": 2.0741460705359622,
+          "vwap": 23001.801657676133,
+          "prior4high": 22977.6,
+          "prior4low": 22925.6,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2026-03-27 09:15:00"
+        }
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2026-03-27T13:39:59+05:30",
+        "candidate_exit_time": "2026-03-27T13:15:59+05:30",
+        "base_net": -2612.2486,
+        "candidate_net": -1058.4882,
+        "delta": 1553.7604
+      }
+    },
+    {
+      "year": "2026",
+      "mode": "STRUCT30",
+      "base_admission_id": "N05/2026/c7bbd068f11394f9/27",
+      "candidate_admission_id": "N05/2026/672f55ea91d8a155/27",
+      "economic_fingerprint": "71812c14094e8adf8ca871a86ac090f88f6c3596050a7fef79bbeaddef01156f",
+      "immutable_terms": {
+        "initial_entry_time": "2026-04-08T12:00:59+05:30",
+        "initial_entry_premium": 266.3,
+        "initial_quantity": 65,
+        "initial_stop_underlying": 24048.0,
+        "initial_target_underlying": 23869.920000000006,
+        "tradingsymbol": "NIFTY26041324050PE",
+        "direction": "SHORT"
+      },
+      "known_at_review": {
+        "action": "STRUCT30",
+        "age_minutes": 50.0,
+        "net_at_bid_after_cost": -1062.0093652990265,
+        "progress_r": -0.31502423263327206,
+        "bid": 254.45,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 24000.0,
+        "structure": {
+          "bar": "2026-04-08 12:45:00",
+          "close": 24004.4,
+          "open": 23989.6,
+          "high": 24007.0,
+          "low": 23980.0,
+          "previous_close": 23995.0,
+          "atr": 31.02134076400196,
+          "rvol": 0.33685064935064934,
+          "vwap": 23946.97782955085,
+          "prior4high": 24015.0,
+          "prior4low": 23948.4,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2026-04-08 09:15:00"
+        }
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2026-04-08T13:00:59+05:30",
+        "candidate_exit_time": "2026-04-08T12:50:59+05:30",
+        "base_net": -1600.4733,
+        "candidate_net": -1062.0094,
+        "delta": 538.4639000000002
+      }
+    },
+    {
+      "year": "2026",
+      "mode": "STRUCT30",
+      "base_admission_id": "N05/2026/c7bbd068f11394f9/51",
+      "candidate_admission_id": "N05/2026/672f55ea91d8a155/51",
+      "economic_fingerprint": "9b83da50b978d5824112988de23ea8ef4b09402f403bce767b4cd85075a75afa",
+      "immutable_terms": {
+        "initial_entry_time": "2026-10-09T12:00:59+05:30",
+        "initial_entry_premium": 195.55,
+        "initial_quantity": 130,
+        "initial_stop_underlying": 22593.894076701246,
+        "initial_target_underlying": 22397.070661937752,
+        "tradingsymbol": "NIFTY26101322600PE",
+        "direction": "SHORT"
+      },
+      "known_at_review": {
+        "action": "STRUCT30",
+        "age_minutes": 40.0,
+        "net_at_bid_after_cost": -2973.2650544481526,
+        "progress_r": -0.2681292482225464,
+        "bid": 176.7,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22544.0,
+        "structure": {
+          "bar": "2026-10-09 12:35:00",
+          "close": 22555.0,
+          "open": 22543.0,
+          "high": 22560.0,
+          "low": 22543.0,
+          "previous_close": 22543.0,
+          "atr": 26.502342666825662,
+          "rvol": 0.29936170212765956,
+          "vwap": 22507.196425243135,
+          "prior4high": 22553.2,
+          "prior4low": 22525.7,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2026-10-09 09:15:00"
+        }
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2026-10-09T12:57:59+05:30",
+        "candidate_exit_time": "2026-10-09T12:40:59+05:30",
+        "base_net": -6541.3995,
+        "candidate_net": -2973.2651,
+        "delta": 3568.1344000000004
+      }
+    },
+    {
+      "year": "2026",
+      "mode": "STRUCT30",
+      "base_admission_id": "N05/2026/c7bbd068f11394f9/53",
+      "candidate_admission_id": "N05/2026/672f55ea91d8a155/53",
+      "economic_fingerprint": "e1f652f932baa5239e6550d5ea0ba4290c818face2aa92c9fefefa2572a043e6",
+      "immutable_terms": {
+        "initial_entry_time": "2026-10-14T13:55:59+05:30",
+        "initial_entry_premium": 148.65,
+        "initial_quantity": 195,
+        "initial_stop_underlying": 22606.293695734945,
+        "initial_target_underlying": 22826.6713476771,
+        "tradingsymbol": "NIFTY26101922650CE",
+        "direction": "LONG"
+      },
+      "known_at_review": {
+        "action": "STRUCT30",
+        "age_minutes": 30.0,
+        "net_at_bid_after_cost": -4916.178574644597,
+        "progress_r": -0.3740812552567063,
+        "bid": 127.3,
+        "context": null,
+        "review_mode": "STRUCT30",
+        "parent_stall_eligible": true,
+        "original_retest_level": 22656.8,
+        "structure": {
+          "bar": "2026-10-14 14:20:00",
+          "close": 22652.0,
+          "open": 22640.5,
+          "high": 22656.0,
+          "low": 22635.0,
+          "previous_close": 22640.0,
+          "atr": 30.71569799815715,
+          "rvol": 0.3025629887054735,
+          "vwap": 22707.513213029517,
+          "prior4high": 22694.0,
+          "prior4low": 22633.2,
+          "fresh": true,
+          "valid_volume": true,
+          "consecutive_from": "2026-10-14 09:15:00"
+        }
+      },
+      "later_outcome_labels": {
+        "base_exit_time": "2026-10-14T14:55:59+05:30",
+        "candidate_exit_time": "2026-10-14T14:25:59+05:30",
+        "base_net": -6599.6893,
+        "candidate_net": -4916.1786,
+        "delta": 1683.5106999999998
+      }
+    }
+  ],
+  "unavailable_pairs": [
+    {
+      "year": "2026",
+      "mode": "DELAY45",
+      "admission_id": "N05/2026/cbfb09f45387db45/19",
+      "reason": "no exact immutable economic pair"
+    },
+    {
+      "year": "2026",
+      "mode": "DELAY45",
+      "admission_id": "N05/2026/cbfb09f45387db45/28",
+      "reason": "no exact immutable economic pair"
+    },
+    {
+      "year": "2026",
+      "mode": "DELAY45",
+      "admission_id": "N05/2026/cbfb09f45387db45/29",
+      "reason": "no exact immutable economic pair"
+    }
+  ],
+  "admission_coverage": {
+    "2024|DELAY45": {
+      "baseline_entries": 33,
+      "candidate_entries": 33,
+      "identical_economic_admissions": 33,
+      "unchanged_non_eff_lifecycles": 27
+    },
+    "2024|STRUCT30": {
+      "baseline_entries": 33,
+      "candidate_entries": 33,
+      "identical_economic_admissions": 33,
+      "unchanged_non_eff_lifecycles": 27
+    },
+    "2025|DELAY45": {
+      "baseline_entries": 80,
+      "candidate_entries": 80,
+      "identical_economic_admissions": 80,
+      "unchanged_non_eff_lifecycles": 72
+    },
+    "2025|STRUCT30": {
+      "baseline_entries": 80,
+      "candidate_entries": 80,
+      "identical_economic_admissions": 80,
+      "unchanged_non_eff_lifecycles": 72
+    },
+    "2026|DELAY45": {
+      "baseline_entries": 56,
+      "candidate_entries": 56,
+      "identical_economic_admissions": 53,
+      "unchanged_non_eff_lifecycles": 44
+    },
+    "2026|STRUCT30": {
+      "baseline_entries": 56,
+      "candidate_entries": 56,
+      "identical_economic_admissions": 56,
+      "unchanged_non_eff_lifecycles": 47
+    }
+  },
+  "summary": {
+    "DELAY45": {
+      "2024": {
+        "changed_eff_exit_pairs": 0,
+        "paired_exit_delta": 0,
+        "candidate_loss_exits": 0
+      },
+      "2025": {
+        "changed_eff_exit_pairs": 4,
+        "paired_exit_delta": 447.6385999999999,
+        "candidate_loss_exits": 4
+      },
+      "2026": {
+        "changed_eff_exit_pairs": 5,
+        "paired_exit_delta": 7616.345300000001,
+        "candidate_loss_exits": 5
+      }
+    },
+    "STRUCT30": {
+      "2024": {
+        "changed_eff_exit_pairs": 1,
+        "paired_exit_delta": 1050.9778000000001,
+        "candidate_loss_exits": 1
+      },
+      "2025": {
+        "changed_eff_exit_pairs": 1,
+        "paired_exit_delta": 635.7767,
+        "candidate_loss_exits": 1
+      },
+      "2026": {
+        "changed_eff_exit_pairs": 4,
+        "paired_exit_delta": 7343.8694000000005,
+        "candidate_loss_exits": 4
+      }
+    }
+  },
+  "limit": "All paired initial economics match. Later original outcomes are labels, never early inputs. Relative loss reduction is not proof a trade will profit or authority to increase its size."
+}

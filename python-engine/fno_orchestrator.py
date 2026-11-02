@@ -38,6 +38,7 @@ import structlog
 import fno_book
 import fno_broker_backstop
 import fno_live_test
+import fno_n11
 import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_exit_paths
@@ -551,12 +552,21 @@ async def _manage_open_positions(
         breach_key = (source, p.id)
         # [O29c] Each position is managed with its own strategy's exits (fno_book; none for the shipped break).
         exit_params = {**live_single_leg_exit_params(settings), **fno_book.exit_overrides(p.strategy)}
+        if p.strategy == "N11_EFF" and position_fut:
+            # [N11] EFF's soft clock: 30 minutes on a stalled, losing option, otherwise its usual 60.
+            _risk = abs(p.entry_underlying - p.stop_underlying)
+            exit_params["FNO_TIME_STOP_MIN"] = fno_n11.eff_clock(
+                (now_ist - datetime.fromisoformat(p.entry_time)).total_seconds() / 60.0, p.trail_active, bid, p.entry_premium, p.qty, p.lots,
+                (1 if p.direction == "LONG" else -1) * (position_fut - p.entry_underlying) / _risk if _risk > 0 else 0.0,
+                exchange=options_exchange_for((p.underlying or "NIFTY").upper()))
         decision = evaluate_single_leg_exit(
             p, now_ist=now_ist, fut_price=position_fut, exit_px_basis=exit_px_basis,
             hard_flat=hard_flat, params=exit_params,
             lock_breach_since=_LOCK_BREACH_SINCE.get(breach_key),
         )
         exit_reason = decision.exit_reason
+        if not exit_reason and p.strategy == fno_n11.ADD and not await fno_n11.parent_open(db_path, source, p.bar_ts):
+            exit_reason = "n11_with_first"   # [N11] An earned lot leaves with the lots it was earned on.
         if not exit_reason and source == FnoSource.FNO_LIVE.value and \
                 str(p.bar_ts or "").startswith(fno_live_test.PREFLIGHT_BAR):
             exit_reason = "preflight_flatten"     # [O25b] fno_live_preflight's filled test buy
@@ -1019,6 +1029,17 @@ async def _try_entry_for_leg(
             **extra,
         )
 
+    # [N11] The stand-aside, and how large this trade may be before the budget is asked. Earned lots aren't trades or positions.
+    n11_ceiling, n11_open_children, n11_children_today = None, 0, 0
+    if (sig.strategy or "").startswith(fno_n11.PREFIX):
+        n11_gate = await fno_n11.gate(db_path, kite, now_ist)
+        if n11_gate["stand"]:
+            await _log(False, "n11:stand_aside")
+            return None
+        n11_ceiling = fno_n11.lot_ceiling(sig.strategy, _now_min(now_ist), n11_gate["vol_up"],
+                                          await fno_n11.realised_today(db_path, source, today_iso))
+        n11_open_children, n11_children_today = await fno_n11.child_counts(db_path, source, today_iso)
+
     # One vehicle per directional idea (FNO_VEHICLE_BY_IV): when premium is
     # rich the capped-loss book expresses it as a debit spread, so the naked
     # leg stands aside -- unless a structure is already open (one at a time),
@@ -1078,7 +1099,8 @@ async def _try_entry_for_leg(
             db_path, source, underlying, today_iso, REENTRY_STOP_REASONS,
             float(settings.FNO_REENTRY_MARGIN_R))
     plan = plan_single_leg_entry(sig, snap, regime, now_ist, EntryState(
-        pool=pool, open_premium=open_prem, open_positions=len(open_rows), trades_today=n_today,
+        pool=pool, open_premium=open_prem, open_positions=len(open_rows) - n11_open_children,
+        trades_today=n_today - n11_children_today, lot_ceiling=n11_ceiling,
         active_kill_switches=tuple(switches),
         held_symbols=frozenset(p.tradingsymbol for p in open_rows),
         correlated_open_directions=frozenset(
@@ -1168,9 +1190,9 @@ async def _try_entry_for_leg(
             entry_day_ist=now_ist.date() if shared_policy is not None else None,
             policy=shared_policy,
             occupancy=EntryOccupancy(
-                entry_day=now_ist.date(), max_open=int(settings.FNO_MAX_CONCURRENT),
+                entry_day=now_ist.date(), max_open=int(settings.FNO_MAX_CONCURRENT) + n11_open_children,
                 tradingsymbol=contract.tradingsymbol, planned_premium_rs=ask * qty,
-                max_trades_per_day=int(settings.FNO_MAX_TRADES_PER_DAY),
+                max_trades_per_day=int(settings.FNO_MAX_TRADES_PER_DAY) + n11_children_today,
                 max_open_premium_rs=float(settings.FNO_MAX_OPEN_PREMIUM_PCT) * pool,
                 no_pyramid=True,
             ),
@@ -1417,6 +1439,14 @@ async def _manage_single_leg_books(
         summary["stage_durations_sec"]["exit_management"] = round(
             monotonic() - stage_started, 3
         )
+    # [N11] The paper record, the earned lot and the shadow line. After the exits, and it can't stop one.
+    if fno_book.mode() == fno_book.N11_BOOK and not settings.FNO_DISABLE_PAPER:
+        try:
+            summary.setdefault("entries", []).extend(await fno_n11.tick(
+                kite, db_path, executor=paper_exec, now=now_ist, fut_prices=fut_prices, pool_rs=_fno_pool_paper(),
+                equity_reader=lambda: _fno_equity(db_path, FnoSource.FNO_PAPER.value), read_quote=_management_quote))
+        except Exception as exc:
+            logger.error("fno_n11_tick_failed err=%s", str(exc), exc_info=True)
 
     return fut_price, now_ist
 
@@ -1730,7 +1760,11 @@ async def _single_leg_entries(
         try:
             # [O29d] Each underlying's own drive; SENSEX's strategies read NIFTY's volume (rvol_bars), as above.
             _drive, side = await fno_book.drive_today(db_path, bars, evaluation_now_ist, underlying=name)
-            if fno_book.mode() == fno_book.ADX_BOOK:
+            if fno_book.mode() == fno_book.N11_BOOK:
+                _adx, adx_side = await fno_book.adx_today(db_path, kite, evaluation_now_ist)
+                sig = fno_book.n11_signal(fno_book.with_participation(bars, rvol_bars), regime, evaluation_now_ist,
+                                          shipped=sig, adx_side=adx_side, underlying=name)
+            elif fno_book.mode() == fno_book.ADX_BOOK:
                 # [O29h] All four only on a trending market: yesterday's NIFTY daily ADX(14), for every underlying.
                 _adx, adx_side = await fno_book.adx_today(db_path, kite, evaluation_now_ist)
                 sig = fno_book.book_signal(fno_book.with_participation(bars, rvol_bars), regime, evaluation_now_ist,
@@ -1780,6 +1814,13 @@ async def _single_leg_entries(
         return "chain_unavailable", bars
 
     stage_started = monotonic()
+    # [N11] Every NIFTY signal goes on the paper record first, whatever the book then does with it.
+    if (sig.strategy or "").startswith(fno_n11.PREFIX) and name == "NIFTY":
+        try:
+            await fno_n11.record_paper_signal(db_path, kite, sig, snap, regime, now_ist, is_trading_day=is_trading_day,
+                                              is_expiry_day=book.is_expiry_day(now_ist.date()), pool=_fno_pool_paper())
+        except Exception as exc:
+            logger.error("fno_n11_paper_signal_failed err=%s", str(exc), exc_info=True)
     if not settings.FNO_DISABLE_PAPER:
         paper_equity = await _fno_equity(db_path, FnoSource.FNO_PAPER.value)
         if await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts, underlying=name):

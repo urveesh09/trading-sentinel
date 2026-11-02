@@ -1,0 +1,528 @@
+{
+ "years": {
+  "2025": {
+   "quality_sensitive_splits": {
+    "h_small_range": {
+     "False": {
+      "days": 41,
+      "active": 41,
+      "losing_days": 23,
+      "winning_days": 18,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.561,
+      "net": 16307,
+      "loss_days_net": -61599,
+      "win_days_net": 77906,
+      "median_loss": -2967,
+      "median_win": 2360
+     },
+     "True": {
+      "days": 12,
+      "active": 12,
+      "losing_days": 10,
+      "winning_days": 2,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.833,
+      "net": -19265,
+      "loss_days_net": -21634,
+      "win_days_net": 2369,
+      "median_loss": -1707,
+      "median_win": 1184
+     }
+    },
+    "h_reversing_day": {
+     "False": {
+      "days": 27,
+      "active": 27,
+      "losing_days": 14,
+      "winning_days": 13,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.519,
+      "net": 26715,
+      "loss_days_net": -37191,
+      "win_days_net": 63905,
+      "median_loss": -2785,
+      "median_win": 2402
+     },
+     "True": {
+      "days": 26,
+      "active": 26,
+      "losing_days": 19,
+      "winning_days": 7,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.731,
+      "net": -29672,
+      "loss_days_net": -46042,
+      "win_days_net": 16370,
+      "median_loss": -1880,
+      "median_win": 1132
+     }
+    },
+    "open_drive": {
+     "HIGH": {
+      "days": 28,
+      "active": 28,
+      "losing_days": 16,
+      "winning_days": 12,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.571,
+      "net": 9774,
+      "loss_days_net": -49748,
+      "win_days_net": 59522,
+      "median_loss": -3236,
+      "median_win": 1946
+     },
+     "LOW": {
+      "days": 25,
+      "active": 25,
+      "losing_days": 17,
+      "winning_days": 8,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.68,
+      "net": -12732,
+      "loss_days_net": -33484,
+      "win_days_net": 20753,
+      "median_loss": -1605,
+      "median_win": 1888
+     }
+    },
+    "prev_range_rel": {
+     "HIGH": {
+      "days": 20,
+      "active": 20,
+      "losing_days": 16,
+      "winning_days": 4,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.8,
+      "net": -27276,
+      "loss_days_net": -38940,
+      "win_days_net": 11664,
+      "median_loss": -2206,
+      "median_win": 1748
+     },
+     "LOW": {
+      "days": 17,
+      "active": 17,
+      "losing_days": 8,
+      "winning_days": 9,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.471,
+      "net": 10050,
+      "loss_days_net": -21568,
+      "win_days_net": 31618,
+      "median_loss": -2806,
+      "median_win": 1374
+     },
+     "None": {
+      "days": 16,
+      "active": 16,
+      "losing_days": 9,
+      "winning_days": 7,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.562,
+      "net": 14269,
+      "loss_days_net": -22724,
+      "win_days_net": 36993,
+      "median_loss": -2133,
+      "median_win": 4520
+     }
+    }
+   },
+   "half_entry_stretch": {
+    "H1": {
+     "NEAR": {
+      "trades": 53,
+      "losses": 29,
+      "net": 30889
+     },
+     "STRETCHED": {
+      "trades": 49,
+      "losses": 29,
+      "net": -27539
+     }
+    },
+    "H2": {
+     "NEAR": {
+      "trades": 22,
+      "losses": 11,
+      "net": 2255
+     },
+     "STRETCHED": {
+      "trades": 14,
+      "losses": 11,
+      "net": -5334
+     }
+    }
+   },
+   "half_prev_range": {
+    "H1": {
+     "HIGH": {
+      "days": 14,
+      "active": 14,
+      "losing_days": 12,
+      "winning_days": 2,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.857,
+      "net": -26196,
+      "loss_days_net": -29692,
+      "win_days_net": 3495,
+      "median_loss": -2104,
+      "median_win": 1748
+     },
+     "LOW": {
+      "days": 10,
+      "active": 10,
+      "losing_days": 5,
+      "winning_days": 5,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.5,
+      "net": 15277,
+      "loss_days_net": -12284,
+      "win_days_net": 27562,
+      "median_loss": -2523,
+      "median_win": 3228
+     },
+     "None": {
+      "days": 16,
+      "active": 16,
+      "losing_days": 9,
+      "winning_days": 7,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.562,
+      "net": 14269,
+      "loss_days_net": -22724,
+      "win_days_net": 36993,
+      "median_loss": -2133,
+      "median_win": 4520
+     }
+    },
+    "H2": {
+     "HIGH": {
+      "days": 6,
+      "active": 6,
+      "losing_days": 4,
+      "winning_days": 2,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.667,
+      "net": -1080,
+      "loss_days_net": -9248,
+      "win_days_net": 8168,
+      "median_loss": -2397,
+      "median_win": 4084
+     },
+     "LOW": {
+      "days": 8,
+      "active": 8,
+      "losing_days": 3,
+      "winning_days": 5,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.375,
+      "net": -1999,
+      "loss_days_net": -9284,
+      "win_days_net": 7285,
+      "median_loss": -3088,
+      "median_win": 1132
+     }
+    }
+   },
+   "loss_trade_direction_or_stops": {
+    "underlying_stop": 42,
+    "premium_backstop": 8,
+    "time_stop": 28,
+    "total_losing": 80
+   }
+  },
+  "2026": {
+   "quality_sensitive_splits": {
+    "h_small_range": {
+     "False": {
+      "days": 33,
+      "active": 33,
+      "losing_days": 14,
+      "winning_days": 19,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.424,
+      "net": 107409,
+      "loss_days_net": -30248,
+      "win_days_net": 137657,
+      "median_loss": -2227,
+      "median_win": 3728
+     },
+     "True": {
+      "days": 12,
+      "active": 12,
+      "losing_days": 9,
+      "winning_days": 3,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.75,
+      "net": -22468,
+      "loss_days_net": -24046,
+      "win_days_net": 1579,
+      "median_loss": -2494,
+      "median_win": 652
+     }
+    },
+    "h_reversing_day": {
+     "False": {
+      "days": 23,
+      "active": 23,
+      "losing_days": 8,
+      "winning_days": 15,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.348,
+      "net": 107441,
+      "loss_days_net": -20238,
+      "win_days_net": 127679,
+      "median_loss": -2620,
+      "median_win": 3728
+     },
+     "True": {
+      "days": 22,
+      "active": 22,
+      "losing_days": 15,
+      "winning_days": 7,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.682,
+      "net": -22499,
+      "loss_days_net": -34056,
+      "win_days_net": 11556,
+      "median_loss": -2212,
+      "median_win": 652
+     }
+    },
+    "open_drive": {
+     "HIGH": {
+      "days": 24,
+      "active": 24,
+      "losing_days": 9,
+      "winning_days": 15,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.375,
+      "net": 28545,
+      "loss_days_net": -24002,
+      "win_days_net": 52546,
+      "median_loss": -2662,
+      "median_win": 3426
+     },
+     "LOW": {
+      "days": 21,
+      "active": 21,
+      "losing_days": 14,
+      "winning_days": 7,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.667,
+      "net": 56397,
+      "loss_days_net": -30292,
+      "win_days_net": 86689,
+      "median_loss": -2227,
+      "median_win": 5133
+     }
+    },
+    "prev_range_rel": {
+     "HIGH": {
+      "days": 21,
+      "active": 21,
+      "losing_days": 13,
+      "winning_days": 8,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.619,
+      "net": 5783,
+      "loss_days_net": -28042,
+      "win_days_net": 33825,
+      "median_loss": -2212,
+      "median_win": 3714
+     },
+     "LOW": {
+      "days": 22,
+      "active": 22,
+      "losing_days": 9,
+      "winning_days": 13,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.409,
+      "net": 75626,
+      "loss_days_net": -26196,
+      "win_days_net": 101823,
+      "median_loss": -3346,
+      "median_win": 3598
+     },
+     "None": {
+      "days": 2,
+      "active": 2,
+      "losing_days": 1,
+      "winning_days": 1,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.5,
+      "net": 3532,
+      "loss_days_net": -56,
+      "win_days_net": 3588,
+      "median_loss": -56,
+      "median_win": 3588
+     }
+    }
+   },
+   "half_entry_stretch": {
+    "H1": {
+     "NEAR": {
+      "trades": 29,
+      "losses": 16,
+      "net": 41656
+     },
+     "STRETCHED": {
+      "trades": 31,
+      "losses": 19,
+      "net": 21341
+     }
+    },
+    "H2": {
+     "NEAR": {
+      "trades": 22,
+      "losses": 10,
+      "net": 18129
+     },
+     "STRETCHED": {
+      "trades": 24,
+      "losses": 14,
+      "net": -214
+     }
+    }
+   },
+   "half_prev_range": {
+    "H1": {
+     "HIGH": {
+      "days": 9,
+      "active": 9,
+      "losing_days": 5,
+      "winning_days": 4,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.556,
+      "net": 13917,
+      "loss_days_net": -7831,
+      "win_days_net": 21748,
+      "median_loss": -1510,
+      "median_win": 4360
+     },
+     "LOW": {
+      "days": 14,
+      "active": 14,
+      "losing_days": 7,
+      "winning_days": 7,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.5,
+      "net": 49578,
+      "loss_days_net": -24202,
+      "win_days_net": 73779,
+      "median_loss": -3419,
+      "median_win": 1738
+     },
+     "None": {
+      "days": 3,
+      "active": 3,
+      "losing_days": 2,
+      "winning_days": 1,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.667,
+      "net": -497,
+      "loss_days_net": -4085,
+      "win_days_net": 3588,
+      "median_loss": -2043,
+      "median_win": 3588
+     }
+    },
+    "H2": {
+     "HIGH": {
+      "days": 12,
+      "active": 12,
+      "losing_days": 8,
+      "winning_days": 4,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.667,
+      "net": -8134,
+      "loss_days_net": -20211,
+      "win_days_net": 12077,
+      "median_loss": -2368,
+      "median_win": 3054
+     },
+     "LOW": {
+      "days": 8,
+      "active": 8,
+      "losing_days": 2,
+      "winning_days": 6,
+      "flat_active_days": 0,
+      "no_trade_days": 0,
+      "loss_rate_active": 0.25,
+      "net": 26049,
+      "loss_days_net": -1995,
+      "win_days_net": 28043,
+      "median_loss": -997,
+      "median_win": 3663
+     }
+    }
+   },
+   "loss_trade_direction_or_stops": {
+    "underlying_stop": 28,
+    "premium_backstop": 3,
+    "time_stop": 26,
+    "total_losing": 59
+   }
+  }
+ },
+ "matched_family_overlap_HINDSIGHT_ONLY": {
+  "FADE": {
+   "variants": 16,
+   "same_variants_positive_on_live_loss_days_both_years": 5,
+   "same_variants_positive_full_book_both_years": 0
+  },
+  "VWAP_REVERT": {
+   "variants": 16,
+   "same_variants_positive_on_live_loss_days_both_years": 5,
+   "same_variants_positive_full_book_both_years": 0
+  },
+  "RSI2": {
+   "variants": 8,
+   "same_variants_positive_on_live_loss_days_both_years": 1,
+   "same_variants_positive_full_book_both_years": 0
+  },
+  "PDL_FADE": {
+   "variants": 8,
+   "same_variants_positive_on_live_loss_days_both_years": 0,
+   "same_variants_positive_full_book_both_years": 0
+  },
+  "TPB": {
+   "variants": 6,
+   "same_variants_positive_on_live_loss_days_both_years": 0,
+   "same_variants_positive_full_book_both_years": 6
+  }
+ },
+ "checks": {
+  "completed_bar_future_perturbation": "passed",
+  "no_trade_flat_loss_win_partition": "passed"
+ },
+ "diagnosis_sha256": "4c52d15d0a4fce4e09186fa6be774098f6c1c11365899a4753be0b80ac4a3057"
+}

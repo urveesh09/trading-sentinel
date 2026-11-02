@@ -1,0 +1,201 @@
+{
+  "years": [
+    {
+      "year": "2024",
+      "admissions_verified": 172,
+      "archive_prices_verified": 344,
+      "accepted_trace_bindings": 172,
+      "choice_gate_or_price_errors": 0,
+      "profile_admissions": {
+        "MAIN": 75,
+        "NO_EFF": 9,
+        "TPB_FULL": 44,
+        "TPB_ONE": 44
+      },
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_718fe0952affb94c.json": "662e461b67f640672b36741a05a4dafee24a6941d6e57dc990b43cb434820cca",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_6030023d0e735b40.json": "59f7982ec1602373a5c909e84a643ea5302767a90857e7829d25575d44ec34a6",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_9ca41f1f354dbc8b.json": "6b0556730067371291ad01b289419efdcca4d5c4c3813ec1b638d88a4f711809",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_568071f64c19657e.json": "657673a208d274a4dec1b0d12bcdc918250586078062c2053cab6cd91f5f3c5f",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_563c22a9ec44441e.json": "8570ee7c170cd7899b4cb27d67da3b646ab526abdcd8d56dbe743ea78e0b921b",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_1dea07883c9080f0.json": "a5d91b0e8f4833308c8297cd4aa6ab52a71a2f239cb1f003c424bf99cd62fb73"
+      },
+      "descriptive_main_paths": {
+        "TPB": {
+          "trades": 4,
+          "net": 7397.7501,
+          "gross": 8739.25,
+          "median_holding_minutes": 102.5,
+          "median_exit_signed_underlying_r": 1.063264760543103,
+          "median_mfe_underlying_r": 2.5123733859775994,
+          "median_mae_underlying_r": -0.3895347737390291,
+          "favorable_underlying_exit_but_net_loss": 1,
+          "median_entry_stretch": 0.3624
+        },
+        "EFF": {
+          "trades": 18,
+          "net": 3256.471599999999,
+          "gross": 11212.5,
+          "median_holding_minutes": 46.0,
+          "median_exit_signed_underlying_r": -0.6825885820632327,
+          "median_mfe_underlying_r": 0.3050197878854581,
+          "median_mae_underlying_r": -0.7905646606179405,
+          "favorable_underlying_exit_but_net_loss": 1,
+          "median_entry_stretch": 0.011749999999999998
+        },
+        "SHIPPED": {
+          "trades": 3,
+          "net": 5717.0619,
+          "gross": 6821.75,
+          "median_holding_minutes": 45.0,
+          "median_exit_signed_underlying_r": 0.4657650505918824,
+          "median_mfe_underlying_r": 0.7169367794451866,
+          "median_mae_underlying_r": -0.9851784316185425,
+          "favorable_underlying_exit_but_net_loss": 0,
+          "median_entry_stretch": 0.4714
+        }
+      },
+      "path_diagnostic_limit": "Post-entry paths explain these outcomes only; they are not advance labels, fitted gates or causal attribution of IV/decay."
+    },
+    {
+      "year": "2025",
+      "admissions_verified": 383,
+      "archive_prices_verified": 766,
+      "accepted_trace_bindings": 383,
+      "choice_gate_or_price_errors": 0,
+      "profile_admissions": {
+        "MAIN": 141,
+        "NO_EFF": 30,
+        "TPB_FULL": 98,
+        "TPB_ONE": 114
+      },
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_718fe0952affb94c.json": "1304643449272f93b312743461db62430c245391a764da9aa42fb00e175af577",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_6030023d0e735b40.json": "b1f1c826f7f897c5f9a93ba1889c9e9e872d4b2ffd9fa074121a4afc6d9e1da8",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_9ca41f1f354dbc8b.json": "7773b0b88c5092a76ed450844f030b00f872bb4890bd3b9c472a318bf03cc82a",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_568071f64c19657e.json": "75de3a6aa640f870c00c71c6ea88e253db8a877ca411e2e2815e4c151af2692b",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_563c22a9ec44441e.json": "23e47f1a1fdad5e464f564ad510d61c5537a73f1171947a7b897af2ff13d222b",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_1dea07883c9080f0.json": "3fb908040994cf6335a79aaa3ecc6bbc6b338e6876382c80be673324917d7f4d"
+      },
+      "descriptive_main_paths": {
+        "OR20": {
+          "trades": 8,
+          "net": 3261.540100000001,
+          "gross": 6431.75,
+          "median_holding_minutes": 64.5,
+          "median_exit_signed_underlying_r": 0.2259053020226339,
+          "median_mfe_underlying_r": 1.0940749850418734,
+          "median_mae_underlying_r": -0.6689703402944837,
+          "favorable_underlying_exit_but_net_loss": 2,
+          "median_entry_stretch": 0.35425
+        },
+        "EFF": {
+          "trades": 27,
+          "net": -21174.376700000004,
+          "gross": -8797.75,
+          "median_holding_minutes": 60.0,
+          "median_exit_signed_underlying_r": 0.19327731092436976,
+          "median_mfe_underlying_r": 0.728921124206637,
+          "median_mae_underlying_r": -0.39985440717372567,
+          "favorable_underlying_exit_but_net_loss": 5,
+          "median_entry_stretch": 0.2277
+        },
+        "SHIPPED": {
+          "trades": 7,
+          "net": 2208.739400000001,
+          "gross": 5518.5,
+          "median_holding_minutes": 22.0,
+          "median_exit_signed_underlying_r": 0.03799709543422883,
+          "median_mfe_underlying_r": 0.9119302904208488,
+          "median_mae_underlying_r": -0.3992896383385051,
+          "favorable_underlying_exit_but_net_loss": 0,
+          "median_entry_stretch": 0.3714
+        },
+        "TPB": {
+          "trades": 8,
+          "net": 21413.932099999998,
+          "gross": 25200.5,
+          "median_holding_minutes": 97.5,
+          "median_exit_signed_underlying_r": 0.47265460699798784,
+          "median_mfe_underlying_r": 1.1092932920658556,
+          "median_mae_underlying_r": -0.36858678808765444,
+          "favorable_underlying_exit_but_net_loss": 0,
+          "median_entry_stretch": 0.2264
+        }
+      },
+      "path_diagnostic_limit": "Post-entry paths explain these outcomes only; they are not advance labels, fitted gates or causal attribution of IV/decay."
+    },
+    {
+      "year": "2026",
+      "admissions_verified": 251,
+      "archive_prices_verified": 502,
+      "accepted_trace_bindings": 251,
+      "choice_gate_or_price_errors": 0,
+      "profile_admissions": {
+        "MAIN": 83,
+        "NO_EFF": 17,
+        "TPB_FULL": 64,
+        "TPB_ONE": 87
+      },
+      "file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_718fe0952affb94c.json": "3ba4024a5fc6106d247495e2c902fa7985fcab7d765f0cd1aafe5ff121bcecf7",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_6030023d0e735b40.json": "957db83f8b69412be2b3e9a8f09a9a360227b93ddc8ce50ab51eeab1a63dab92",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_9ca41f1f354dbc8b.json": "256d35c981f9be8859cd03b683a6787b7eb2ff21cc98182872c6920b1e4666bd",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_568071f64c19657e.json": "840af59b5f15a65981c32f48193f42a3766e1eeb52e6e324832146e2a8044fcd",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_563c22a9ec44441e.json": "834fb3a10df4bb4a3ccf0f27bfe717bfc39f9c66a1a3b20d1bd790353ce806ce",
+        "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_1dea07883c9080f0.json": "97f82a42564742f43f0af1f67205238143a35bba32bdf5d2309af20049726257"
+      },
+      "descriptive_main_paths": {
+        "SHIPPED": {
+          "trades": 5,
+          "net": 3098.0375000000004,
+          "gross": 4738.5,
+          "median_holding_minutes": 45.0,
+          "median_exit_signed_underlying_r": 0.35354031028341915,
+          "median_mfe_underlying_r": 0.7467866155699083,
+          "median_mae_underlying_r": -0.35691628532762404,
+          "favorable_underlying_exit_but_net_loss": 1,
+          "median_entry_stretch": 0.3397
+        },
+        "TPB": {
+          "trades": 5,
+          "net": 12898.683299999999,
+          "gross": 14810.25,
+          "median_holding_minutes": 145.0,
+          "median_exit_signed_underlying_r": 1.8610871918483611,
+          "median_mfe_underlying_r": 2.4490752468188144,
+          "median_mae_underlying_r": -0.5566933184159488,
+          "favorable_underlying_exit_but_net_loss": 0,
+          "median_entry_stretch": 0.3652
+        },
+        "EFF": {
+          "trades": 18,
+          "net": 3904.481399999997,
+          "gross": 10273.25,
+          "median_holding_minutes": 54.0,
+          "median_exit_signed_underlying_r": -0.36815141636603915,
+          "median_mfe_underlying_r": 0.6962107954830088,
+          "median_mae_underlying_r": -0.692334881582765,
+          "favorable_underlying_exit_but_net_loss": 2,
+          "median_entry_stretch": -0.023849999999999996
+        },
+        "OR20": {
+          "trades": 5,
+          "net": 10639.011900000001,
+          "gross": 12324.0,
+          "median_holding_minutes": 70.0,
+          "median_exit_signed_underlying_r": 0.4719055449111685,
+          "median_mfe_underlying_r": 1.0132089640739814,
+          "median_mae_underlying_r": -0.4326712146441641,
+          "favorable_underlying_exit_but_net_loss": 0,
+          "median_entry_stretch": 0.3505
+        }
+      },
+      "path_diagnostic_limit": "Post-entry paths explain these outcomes only; they are not advance labels, fitted gates or causal attribution of IV/decay."
+    }
+  ],
+  "admissions_verified": 806,
+  "archive_prices_verified": 1612,
+  "accepted_trace_bindings": 806,
+  "choice_gate_or_price_errors": 0
+}

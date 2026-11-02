@@ -1,0 +1,26 @@
+{
+ "books": 65,
+ "held_out": {
+  "2024": {
+   "pick": "COMBO|WELC",
+   "pick_net": 76294,
+   "n07_net": 57982,
+   "books_beating_n07_in_both_seen_years": 9,
+   "of_which_beat_n07_in_the_held_year": 9
+  },
+  "2025": {
+   "pick": "COMBO|WEL",
+   "pick_net": 61729,
+   "n07_net": 52023,
+   "books_beating_n07_in_both_seen_years": 18,
+   "of_which_beat_n07_in_the_held_year": 9
+  },
+  "2026": {
+   "pick": "COMBO|WELC",
+   "pick_net": 104924,
+   "n07_net": 77135,
+   "books_beating_n07_in_both_seen_years": 13,
+   "of_which_beat_n07_in_the_held_year": 9
+  }
+ }
+}

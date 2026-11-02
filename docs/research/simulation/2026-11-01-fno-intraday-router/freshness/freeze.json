@@ -1,0 +1,13 @@
+{
+  "schema": "n01f_freshness_v1",
+  "parent_freeze_sha256": "3d431660d4acfb25cda0791b775430577b45044bc9c14a7ff005f88117bad2b0",
+  "sources": {
+    "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/analyze_fresh.py": "d3833ddc6d09d62c8f7f32f719166e94b4bf2ece0a0c82bb27efe6d4cad9e432",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/fresh_lab.py": "e288f3b6ad7b0aef332b7ff9fb9e5e2766b3451d6f22bcd2209e4d84d8400bad",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/test_freshness.py": "27d38949e318699b235b82194f3e2444b6a909ff5dc1564105587aa50441d1f6"
+  },
+  "plan_sha256": "2c6bbaa89e11864972e983812e5e2820680e8d77052bc60d976ae32689627e0e",
+  "rule": "Only state freshness repair; all parent strategy/training/acceptance parameters unchanged",
+  "qualified": false,
+  "can_place_orders": false
+}

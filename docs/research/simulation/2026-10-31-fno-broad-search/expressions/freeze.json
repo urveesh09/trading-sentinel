@@ -1,0 +1,105 @@
+{
+ "schema": "o31i_expression_v1",
+ "parent_freeze": "a7c981bc1bc552e68142f72b6673d68c50dabfd41d67eb1f957bd33af39955f5",
+ "sources": {
+  "docs/research/simulation/2026-10-31-fno-broad-search/expressions/expression_lab.py": "8413110c4928dd5b982eb82f559e19e75b63d3d5698a75097e445c917e6b2c67",
+  "docs/research/simulation/2026-10-31-fno-broad-search/expressions/test_expression.py": "bcf5061c307ea4f7b346bbea6c9ad6c7101cb2a904da813ce294755d68eca441",
+  "docs/research/simulation/2026-10-31-fno-broad-search/expressions/PLAN.md": "4a8fbd0d30a470d45b7e586924091a64defe34f87d9d45655a26e7f19b14ff78",
+  "docs/research/simulation/2026-10-31-fno-broad-search/spread_pairs.py": "29ac488c0114bcc4f8845e05bfe085dacca11c97165ff6a1c6398bdf840d3e06"
+ },
+ "specs": [
+  {
+   "kind": "SAME_DIRECTION_CREDIT",
+   "width": 50,
+   "offset": null
+  },
+  {
+   "kind": "SAME_DIRECTION_CREDIT",
+   "width": 100,
+   "offset": null
+  },
+  {
+   "kind": "SAME_DIRECTION_CREDIT",
+   "width": 150,
+   "offset": null
+  },
+  {
+   "kind": "NEUTRAL_IRON",
+   "width": 50,
+   "offset": 0
+  },
+  {
+   "kind": "NEUTRAL_IRON",
+   "width": 50,
+   "offset": 50
+  },
+  {
+   "kind": "NEUTRAL_IRON",
+   "width": 50,
+   "offset": 100
+  },
+  {
+   "kind": "NEUTRAL_IRON",
+   "width": 100,
+   "offset": 0
+  },
+  {
+   "kind": "NEUTRAL_IRON",
+   "width": 100,
+   "offset": 50
+  },
+  {
+   "kind": "NEUTRAL_IRON",
+   "width": 100,
+   "offset": 100
+  }
+ ],
+ "extra_costs": [
+  200.0,
+  400.0
+ ],
+ "data": {
+  "2024": {
+   "dataset": "docs\\research\\fno\\2026-10-30-day-router\\_local\\dataset-nifty-2024",
+   "manifest": "d0cc8743c06cf46dfe862a4c8d8ba5523e9d5ef53ce83ab70001f3f5c4a94be9",
+   "data": {
+    "breeze.sqlite": "bed246b055c96b2b58034b9538a01ebe742dfd1b7bf016be23c696fc31086daf"
+   },
+   "daily": "04f014be175ea3fac6f9220b20298e579db9ed0a14244e095ddf22d23b67960c",
+   "settings": {
+    "current_arm": "OR30|LOCK_LIVE|T45|TR1.0",
+    "fno_settings_sha256": "94e6f4140e3d839cfd1e3bf29df8108a7b7748e5100217d4bb9403ae97a19294",
+    "fno_settings_count": 127
+   }
+  },
+  "2025": {
+   "dataset": "docs\\research\\fno\\2026-10-30-nifty-2025-test\\_local\\dataset-nifty-2025",
+   "manifest": "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+   "data": {
+    "breeze.sqlite": "405398f825ea619482bfd50660abb588d33476d49b4b43e0b8c406767dbd0cab"
+   },
+   "daily": "f81631abc65f2db8772c614bd8e66638f11b7427ee23862328c7ab7c7d658158",
+   "settings": {
+    "current_arm": "OR30|LOCK_LIVE|T45|TR1.0",
+    "fno_settings_sha256": "94e6f4140e3d839cfd1e3bf29df8108a7b7748e5100217d4bb9403ae97a19294",
+    "fno_settings_count": 127
+   }
+  },
+  "2026": {
+   "dataset": "docs\\research\\fno\\2026-10-29-year-genome\\_local\\dataset-nifty",
+   "manifest": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555",
+   "data": {
+    "breeze.sqlite": "8fb3a2b6c4f98056a0c8737a241689a72a6207c2c830648714c3c5d738bab627"
+   },
+   "daily": "6d1a293b6281e8beec3d860a431277eabbcdf0adfc05b6d83d26188eb63e3e84",
+   "settings": {
+    "current_arm": "OR30|LOCK_LIVE|T45|TR1.0",
+    "fno_settings_sha256": "94e6f4140e3d839cfd1e3bf29df8108a7b7748e5100217d4bb9403ae97a19294",
+    "fno_settings_count": 127
+   }
+  }
+ },
+ "mode": "MATCHED_DIAGNOSTIC_NOT_LIFECYCLE",
+ "qualified": false,
+ "can_place_orders": false
+}

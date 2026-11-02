@@ -1,0 +1,91 @@
+{
+ "schema": "o31i_selection_v1",
+ "rule": "2024+2025 only; BOTH/LONG/SHORT proposals; positive and>=12 trades EACH fitting year; rank minimum annual net/trade; at most6 and1/family; ties lexicographic",
+ "selected": [
+  {
+   "name": "GAP_REPAIR|g0|LONG",
+   "parent": "GAP_REPAIR|g0",
+   "member": {
+    "kind": "NEW",
+    "family": "GAP_REPAIR",
+    "gate": "adx_abs30:LOW",
+    "stop_atr": 1.0,
+    "target_r": 2.0,
+    "exit": "LIVE",
+    "vwap_exit": "OFF",
+    "n": 10
+   },
+   "direction": "LONG",
+   "fit_score": 17.24855294117647,
+   "fitting": {
+    "2024": {
+     "net": 7378.3919,
+     "trades": 27
+    },
+    "2025": {
+     "net": 293.2254,
+     "trades": 17
+    }
+   }
+  },
+  {
+   "name": "EMA_CROSS|g1|SHORT",
+   "parent": "EMA_CROSS|g1",
+   "member": {
+    "kind": "NEW",
+    "family": "EMA_CROSS",
+    "gate": "adx_abs30:LOW",
+    "stop_atr": 1.5,
+    "target_r": 2.0,
+    "exit": "LIVE",
+    "vwap_exit": "OFF",
+    "n": 20
+   },
+   "direction": "SHORT",
+   "fit_score": 16.17228372093023,
+   "fitting": {
+    "2024": {
+     "net": 3430.4876,
+     "trades": 50
+    },
+    "2025": {
+     "net": 695.4082,
+     "trades": 43
+    }
+   }
+  },
+  {
+   "name": "CLOCK_MOMO|g3|SHORT",
+   "parent": "CLOCK_MOMO|g3",
+   "member": {
+    "kind": "NEW",
+    "family": "CLOCK_MOMO",
+    "gate": "adx_abs30:LOW",
+    "stop_atr": 1.0,
+    "target_r": 3.0,
+    "exit": "RUN",
+    "vwap_exit": "OFF",
+    "n": 20
+   },
+   "direction": "SHORT",
+   "fit_score": 13.912265454545455,
+   "fitting": {
+    "2024": {
+     "net": 1530.3492,
+     "trades": 110
+    },
+    "2025": {
+     "net": 2076.3492,
+     "trades": 101
+    }
+   }
+  }
+ ],
+ "parent_freeze_sha256": "a7c981bc1bc552e68142f72b6673d68c50dabfd41d67eb1f957bd33af39955f5",
+ "fitting_years": [
+  "2024",
+  "2025"
+ ],
+ "all_years_seen": true,
+ "note": "direction subsets only propose candidates; actual direction/shared-cash replays required"
+}

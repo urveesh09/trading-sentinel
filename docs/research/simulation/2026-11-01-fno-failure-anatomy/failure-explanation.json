@@ -1,0 +1,642 @@
+{
+  "all_trade_diagnostics": {
+    "2024|STALL30": {
+      "member_net": {
+        "SHIPPED": 6582.590499999999,
+        "OR20": 0.0,
+        "EFF": 21967.6101,
+        "TPB": 22753.2427
+      },
+      "losing_trades": 17,
+      "gross_positive_net_losses": 4,
+      "gross_positive_loss_net": -795.7591,
+      "worst_closed_drawdown": {
+        "peak_at": "2024-01-01T15:01:59+05:30",
+        "trough_at": "2024-01-03T10:36:59+05:30",
+        "fall_rs": 5573.954900000012,
+        "fall_pct": 0.02161775012438805,
+        "peak_equity": 257841.5824
+      }
+    },
+    "2024|STRUCT30": {
+      "member_net": {
+        "SHIPPED": 6582.590499999999,
+        "OR20": 0.0,
+        "EFF": 27906.9321,
+        "TPB": 22753.2427
+      },
+      "losing_trades": 16,
+      "gross_positive_net_losses": 2,
+      "gross_positive_loss_net": -250.1505,
+      "worst_closed_drawdown": {
+        "peak_at": "2024-01-01T15:01:59+05:30",
+        "trough_at": "2024-01-03T10:36:59+05:30",
+        "fall_rs": 5573.954900000012,
+        "fall_pct": 0.02161775012438805,
+        "peak_equity": 257841.5824
+      }
+    },
+    "2025|STALL30": {
+      "member_net": {
+        "SHIPPED": 3160.3199999999997,
+        "OR20": 3296.2205000000004,
+        "EFF": -6862.9404,
+        "TPB": 54457.4476
+      },
+      "losing_trades": 41,
+      "gross_positive_net_losses": 4,
+      "gross_positive_loss_net": -571.0461,
+      "worst_closed_drawdown": {
+        "peak_at": "2025-08-12T10:13:59+05:30",
+        "trough_at": "2025-09-19T14:42:59+05:30",
+        "fall_rs": 13752.568600000057,
+        "fall_pct": 0.046530339705023724,
+        "peak_equity": 295561.3195000001
+      }
+    },
+    "2025|STRUCT30": {
+      "member_net": {
+        "SHIPPED": 3160.3199999999997,
+        "OR20": 3296.2205000000004,
+        "EFF": -10188.0434,
+        "TPB": 54457.4476
+      },
+      "losing_trades": 41,
+      "gross_positive_net_losses": 2,
+      "gross_positive_loss_net": -411.5222,
+      "worst_closed_drawdown": {
+        "peak_at": "2025-08-12T10:13:59+05:30",
+        "trough_at": "2025-09-19T14:42:59+05:30",
+        "fall_rs": 14651.340200000035,
+        "fall_pct": 0.049981547050950724,
+        "peak_equity": 293134.9881000001
+      }
+    },
+    "2026|STALL30": {
+      "member_net": {
+        "SHIPPED": 6456.299,
+        "OR20": 25123.639300000003,
+        "EFF": 7669.469599999999,
+        "TPB": 37886.0338
+      },
+      "losing_trades": 28,
+      "gross_positive_net_losses": 3,
+      "gross_positive_loss_net": -677.9438,
+      "worst_closed_drawdown": {
+        "peak_at": "2026-06-01T15:10:59+05:30",
+        "trough_at": "2026-09-07T15:10:59+05:30",
+        "fall_rs": 8157.88400000002,
+        "fall_pct": 0.02757150493668976,
+        "peak_equity": 295880.9835999999
+      }
+    },
+    "2026|STRUCT30": {
+      "member_net": {
+        "SHIPPED": 6456.299,
+        "OR20": 12738.9925,
+        "EFF": 4896.055899999999,
+        "TPB": 37405.087
+      },
+      "losing_trades": 28,
+      "gross_positive_net_losses": 3,
+      "gross_positive_loss_net": -677.9438,
+      "worst_closed_drawdown": {
+        "peak_at": "2026-06-01T15:10:59+05:30",
+        "trough_at": "2026-09-07T15:10:59+05:30",
+        "fall_rs": 8157.88400000002,
+        "fall_pct": 0.027730266614566554,
+        "peak_equity": 294187.00199999986
+      }
+    }
+  },
+  "early_cut_cost_decomposition": [
+    {
+      "year": "2024",
+      "entry_time": "2024-01-12T12:10:59+05:30",
+      "gross": 299.0000000000015,
+      "estimated_fees": 96.73386848800001,
+      "synthetic_stress": 420,
+      "net_before_stress": 202.26613151200146,
+      "net_after_stress": -217.73386848799854,
+      "later_paired_effect": 2095.468,
+      "not_known_then": true
+    },
+    {
+      "year": "2024",
+      "entry_time": "2024-01-16T11:55:59+05:30",
+      "gross": 305.50000000000114,
+      "estimated_fees": 86.86811996173,
+      "synthetic_stress": 420,
+      "net_before_stress": 218.63188003827113,
+      "net_after_stress": -201.36811996172887,
+      "later_paired_effect": -6857.3056,
+      "not_known_then": true
+    },
+    {
+      "year": "2024",
+      "entry_time": "2024-11-06T11:10:59+05:30",
+      "gross": 468.00000000000114,
+      "estimated_fees": 78.08019751921002,
+      "synthetic_stress": 645,
+      "net_before_stress": 389.91980248079113,
+      "net_after_stress": -255.08019751920887,
+      "later_paired_effect": -126.50659999999999,
+      "not_known_then": true
+    },
+    {
+      "year": "2025",
+      "entry_time": "2025-01-07T10:30:59+05:30",
+      "gross": -1105.0,
+      "estimated_fees": 81.23132124574,
+      "synthetic_stress": 420,
+      "net_before_stress": -1186.23132124574,
+      "net_after_stress": -1606.23132124574,
+      "later_paired_effect": 149.2129,
+      "not_known_then": true
+    },
+    {
+      "year": "2025",
+      "entry_time": "2025-01-17T13:21:59+05:30",
+      "gross": -793.0000000000011,
+      "estimated_fees": 81.86131833657998,
+      "synthetic_stress": 205,
+      "net_before_stress": -874.8613183365811,
+      "net_after_stress": -1079.861318336581,
+      "later_paired_effect": 616.3141,
+      "not_known_then": true
+    },
+    {
+      "year": "2025",
+      "entry_time": "2025-02-01T14:00:59+05:30",
+      "gross": 364.0000000000015,
+      "estimated_fees": 92.7748725796,
+      "synthetic_stress": 420,
+      "net_before_stress": 271.22512742040146,
+      "net_after_stress": -148.77487257959854,
+      "later_paired_effect": 1660.8044,
+      "not_known_then": true
+    },
+    {
+      "year": "2026",
+      "entry_time": "2026-03-20T12:51:59+05:30",
+      "gross": -90.99999999999852,
+      "estimated_fees": 91.09972039102001,
+      "synthetic_stress": 205,
+      "net_before_stress": -182.09972039101854,
+      "net_after_stress": -387.09972039101854,
+      "later_paired_effect": 519.0014,
+      "not_known_then": true
+    },
+    {
+      "year": "2026",
+      "entry_time": "2026-03-27T12:45:59+05:30",
+      "gross": -767.0000000000007,
+      "estimated_fees": 86.48821488124001,
+      "synthetic_stress": 205,
+      "net_before_stress": -853.4882148812407,
+      "net_after_stress": -1058.4882148812408,
+      "later_paired_effect": 1553.7604,
+      "not_known_then": true
+    },
+    {
+      "year": "2026",
+      "entry_time": "2026-04-08T12:00:59+05:30",
+      "gross": -19.50000000000074,
+      "estimated_fees": 88.20113201040999,
+      "synthetic_stress": 205,
+      "net_before_stress": -107.70113201041073,
+      "net_after_stress": -312.70113201041073,
+      "later_paired_effect": 1287.7722,
+      "not_known_then": true
+    },
+    {
+      "year": "2026",
+      "entry_time": "2026-10-09T12:00:59+05:30",
+      "gross": -942.5,
+      "estimated_fees": 105.66107069959003,
+      "synthetic_stress": 420,
+      "net_before_stress": -1048.16107069959,
+      "net_after_stress": -1468.16107069959,
+      "later_paired_effect": 5073.2384,
+      "not_known_then": true
+    },
+    {
+      "year": "2026",
+      "entry_time": "2026-10-14T13:55:59+05:30",
+      "gross": -4163.250000000002,
+      "estimated_fees": 107.928574644595,
+      "synthetic_stress": 645,
+      "net_before_stress": -4271.178574644597,
+      "net_after_stress": -4916.178574644597,
+      "later_paired_effect": 1683.5106999999998,
+      "not_known_then": true
+    }
+  ],
+  "selected_n04_switches": {
+    "2024": {
+      "trades": 0,
+      "wins": 0,
+      "losses": 0,
+      "net": 0.0,
+      "loss_net": 0.0,
+      "by_member": {
+        "SHIPPED": {
+          "trades": 0,
+          "net": 0.0
+        },
+        "OR20": {
+          "trades": 0,
+          "net": 0.0
+        },
+        "EFF": {
+          "trades": 0,
+          "net": 0.0
+        },
+        "TPB": {
+          "trades": 0,
+          "net": 0.0
+        }
+      },
+      "worst_cases": []
+    },
+    "2025": {
+      "trades": 13,
+      "wins": 6,
+      "losses": 7,
+      "net": 3749.6727,
+      "loss_net": -9393.3134,
+      "by_member": {
+        "SHIPPED": {
+          "trades": 0,
+          "net": 0.0
+        },
+        "OR20": {
+          "trades": 0,
+          "net": 0.0
+        },
+        "EFF": {
+          "trades": 0,
+          "net": 0.0
+        },
+        "TPB": {
+          "trades": 13,
+          "net": 3749.6727
+        }
+      },
+      "worst_cases": [
+        {
+          "year": "2025",
+          "admission_id": "N06/2025/c3dfc25bd6be88db/40",
+          "entry_time": "2025-05-16T11:55:59+05:30",
+          "expert": "TPB",
+          "direction": "SHORT",
+          "quantity": 65,
+          "known_before_day": {
+            "decision": {
+              "variant": "STALL30",
+              "best_evidence": "STALL30",
+              "consecutive_days": 2,
+              "asof": "2025-05-16",
+              "window_start": "2025-01-10",
+              "window_end": "2025-05-15",
+              "latest_label_exit": "2025-05-13T15:10:59+05:30"
+            },
+            "stall_evidence": {
+              "score": 404.5173035522149,
+              "eligible": true,
+              "checks": {
+                "weeks": true,
+                "paired_days": true,
+                "challenger_trades": true,
+                "anchor_trades": true,
+                "score": true,
+                "without_best": true,
+                "drawdown": true
+              },
+              "paired_days": 29,
+              "trades": 30,
+              "anchor_trades": 29,
+              "paired_net": 26893.940100000003,
+              "without_best_day": 15375.326800000003,
+              "drawdown": 0.040451877432053446,
+              "anchor_drawdown": 0.041026320478251464
+            },
+            "alternative_scores": {
+              "BASE": 309.0627013846607,
+              "STALL30": 404.5173035522149,
+              "STRUCT30": 309.0627013846607
+            },
+            "cutoff": "2025-05-13T15:10:59+05:30"
+          },
+          "later_labels": {
+            "net": -2950.1155,
+            "exit_reason": "underlying_stop",
+            "exit_time": "2025-05-16T12:45:59+05:30"
+          }
+        },
+        {
+          "year": "2025",
+          "admission_id": "N06/2025/c3dfc25bd6be88db/63",
+          "entry_time": "2025-12-03T12:40:59+05:30",
+          "expert": "TPB",
+          "direction": "SHORT",
+          "quantity": 65,
+          "known_before_day": {
+            "decision": {
+              "variant": "STALL30",
+              "best_evidence": "STALL30",
+              "consecutive_days": 45,
+              "asof": "2025-12-03",
+              "window_start": "2025-07-30",
+              "window_end": "2025-12-02",
+              "latest_label_exit": "2025-11-06T15:10:59+05:30"
+            },
+            "stall_evidence": {
+              "score": 1009.7691650555398,
+              "eligible": true,
+              "checks": {
+                "weeks": true,
+                "paired_days": true,
+                "challenger_trades": true,
+                "anchor_trades": true,
+                "score": true,
+                "without_best": true,
+                "drawdown": true
+              },
+              "paired_days": 16,
+              "trades": 31,
+              "anchor_trades": 11,
+              "paired_net": 37234.1975,
+              "without_best_day": 28882.6881,
+              "drawdown": 0.04998478576477233,
+              "anchor_drawdown": 0.07647201329214645
+            },
+            "alternative_scores": {
+              "BASE": 923.5761830036328,
+              "STALL30": 1009.7691650555398,
+              "STRUCT30": 960.1136729356224
+            },
+            "cutoff": "2025-11-06T15:10:59+05:30"
+          },
+          "later_labels": {
+            "net": -1803.3659,
+            "exit_reason": "underlying_stop",
+            "exit_time": "2025-12-03T14:24:59+05:30"
+          }
+        },
+        {
+          "year": "2025",
+          "admission_id": "N06/2025/c3dfc25bd6be88db/54",
+          "entry_time": "2025-10-13T12:06:59+05:30",
+          "expert": "TPB",
+          "direction": "SHORT",
+          "quantity": 65,
+          "known_before_day": {
+            "decision": {
+              "variant": "STALL30",
+              "best_evidence": "STALL30",
+              "consecutive_days": 11,
+              "asof": "2025-10-13",
+              "window_start": "2025-06-12",
+              "window_end": "2025-10-10",
+              "latest_label_exit": "2025-09-26T14:38:59+05:30"
+            },
+            "stall_evidence": {
+              "score": 603.0053368908016,
+              "eligible": true,
+              "checks": {
+                "weeks": true,
+                "paired_days": true,
+                "challenger_trades": true,
+                "anchor_trades": true,
+                "score": true,
+                "without_best": true,
+                "drawdown": true
+              },
+              "paired_days": 16,
+              "trades": 30,
+              "anchor_trades": 11,
+              "paired_net": 28810.625400000004,
+              "without_best_day": 20459.116,
+              "drawdown": 0.049544733740190854,
+              "anchor_drawdown": 0.07647201329214645
+            },
+            "alternative_scores": {
+              "BASE": 513.7845486919373,
+              "STALL30": 603.0053368908016,
+              "STRUCT30": 551.6298719560829
+            },
+            "cutoff": "2025-09-26T14:38:59+05:30"
+          },
+          "later_labels": {
+            "net": -1515.1405,
+            "exit_reason": "underlying_stop",
+            "exit_time": "2025-10-13T12:59:59+05:30"
+          }
+        }
+      ]
+    },
+    "2026": {
+      "trades": 16,
+      "wins": 9,
+      "losses": 7,
+      "net": 13780.2437,
+      "loss_net": -15042.4996,
+      "by_member": {
+        "SHIPPED": {
+          "trades": 1,
+          "net": 479.5546
+        },
+        "OR20": {
+          "trades": 1,
+          "net": -3873.4698
+        },
+        "EFF": {
+          "trades": 4,
+          "net": 4851.106400000001
+        },
+        "TPB": {
+          "trades": 10,
+          "net": 12323.0525
+        }
+      },
+      "worst_cases": [
+        {
+          "year": "2026",
+          "admission_id": "N06/2026/c3dfc25bd6be88db/11",
+          "entry_time": "2026-04-06T11:15:59+05:30",
+          "expert": "OR20",
+          "direction": "SHORT",
+          "quantity": 65,
+          "known_before_day": {
+            "decision": {
+              "variant": "STALL30",
+              "best_evidence": "STALL30",
+              "consecutive_days": 7,
+              "asof": "2026-04-06",
+              "window_start": "2026-01-01",
+              "window_end": "2026-04-02",
+              "latest_label_exit": "2026-04-01T13:22:59+05:30"
+            },
+            "stall_evidence": {
+              "score": 580.0993177409039,
+              "eligible": true,
+              "checks": {
+                "weeks": true,
+                "paired_days": true,
+                "challenger_trades": true,
+                "anchor_trades": true,
+                "score": true,
+                "without_best": true,
+                "drawdown": true
+              },
+              "paired_days": 13,
+              "trades": 23,
+              "anchor_trades": 10,
+              "paired_net": 26799.826800000003,
+              "without_best_day": 16508.513600000002,
+              "drawdown": 0.019884798646351367,
+              "anchor_drawdown": 0.03636344475483772
+            },
+            "alternative_scores": {
+              "BASE": 511.86415415968145,
+              "STALL30": 580.0993177409039,
+              "STRUCT30": 532.6242142018937
+            },
+            "cutoff": "2026-04-01T13:22:59+05:30"
+          },
+          "later_labels": {
+            "net": -3873.4698,
+            "exit_reason": "underlying_stop",
+            "exit_time": "2026-04-06T11:38:59+05:30"
+          }
+        },
+        {
+          "year": "2026",
+          "admission_id": "N06/2026/c3dfc25bd6be88db/16",
+          "entry_time": "2026-04-10T12:00:59+05:30",
+          "expert": "TPB",
+          "direction": "LONG",
+          "quantity": 130,
+          "known_before_day": {
+            "decision": {
+              "variant": "STALL30",
+              "best_evidence": "STALL30",
+              "consecutive_days": 11,
+              "asof": "2026-04-10",
+              "window_start": "2026-01-01",
+              "window_end": "2026-04-09",
+              "latest_label_exit": "2026-04-08T15:10:59+05:30"
+            },
+            "stall_evidence": {
+              "score": 760.5964084856375,
+              "eligible": true,
+              "checks": {
+                "weeks": true,
+                "paired_days": true,
+                "challenger_trades": true,
+                "anchor_trades": true,
+                "score": true,
+                "without_best": true,
+                "drawdown": true
+              },
+              "paired_days": 15,
+              "trades": 28,
+              "anchor_trades": 15,
+              "paired_net": 30090.441800000004,
+              "without_best_day": 19799.128600000004,
+              "drawdown": 0.02328566686201617,
+              "anchor_drawdown": 0.04802482814034116
+            },
+            "alternative_scores": {
+              "BASE": 463.78597881807787,
+              "STALL30": 760.5964084856375,
+              "STRUCT30": 522.310043329556
+            },
+            "cutoff": "2026-04-08T15:10:59+05:30"
+          },
+          "later_labels": {
+            "net": -3360.4503,
+            "exit_reason": "time_stop",
+            "exit_time": "2026-04-10T14:15:59+05:30"
+          }
+        },
+        {
+          "year": "2026",
+          "admission_id": "N06/2026/c3dfc25bd6be88db/10",
+          "entry_time": "2026-04-01T12:55:59+05:30",
+          "expert": "EFF",
+          "direction": "LONG",
+          "quantity": 65,
+          "known_before_day": {
+            "decision": {
+              "variant": "STALL30",
+              "best_evidence": "STALL30",
+              "consecutive_days": 5,
+              "asof": "2026-04-01",
+              "window_start": "2026-01-01",
+              "window_end": "2026-03-30",
+              "latest_label_exit": "2026-03-27T15:10:59+05:30"
+            },
+            "stall_evidence": {
+              "score": 602.7136310682658,
+              "eligible": true,
+              "checks": {
+                "weeks": true,
+                "paired_days": true,
+                "challenger_trades": true,
+                "anchor_trades": true,
+                "score": true,
+                "without_best": true,
+                "drawdown": true
+              },
+              "paired_days": 12,
+              "trades": 22,
+              "anchor_trades": 9,
+              "paired_net": 27082.7042,
+              "without_best_day": 16791.391,
+              "drawdown": 0.019884798646351367,
+              "anchor_drawdown": 0.03636344475483772
+            },
+            "alternative_scores": {
+              "BASE": 534.4456441738103,
+              "STALL30": 602.7136310682658,
+              "STRUCT30": 555.1746022230413
+            },
+            "cutoff": "2026-03-27T15:10:59+05:30"
+          },
+          "later_labels": {
+            "net": -2699.7534,
+            "exit_reason": "underlying_stop",
+            "exit_time": "2026-04-01T13:22:59+05:30"
+          }
+        }
+      ]
+    }
+  },
+  "path_loss_anatomy": [
+    {
+      "year": "2024",
+      "losing_count": 17,
+      "previously_net_positive_losers": 11,
+      "never_observed_net_positive_losers": 6,
+      "note": "Observed held snapshots only; later profitable counterfactuals are labels, no ability to sell at an unobserved perfect peak."
+    },
+    {
+      "year": "2025",
+      "losing_count": 41,
+      "previously_net_positive_losers": 25,
+      "never_observed_net_positive_losers": 16,
+      "note": "Observed held snapshots only; later profitable counterfactuals are labels, no ability to sell at an unobserved perfect peak."
+    },
+    {
+      "year": "2026",
+      "losing_count": 28,
+      "previously_net_positive_losers": 15,
+      "never_observed_net_positive_losers": 13,
+      "note": "Observed held snapshots only; later profitable counterfactuals are labels, no ability to sell at an unobserved perfect peak."
+    }
+  ],
+  "attribution": "Same admitted entry economic pairs only; reference-book switch receipts and later labels are separate; positive past score is not proof next trade wins.",
+  "diagnostic_errors": 0
+}

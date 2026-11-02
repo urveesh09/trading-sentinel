@@ -1,0 +1,32 @@
+{
+  "primary|VOL_CLOCK": {
+    "key": "year_2023-01-01_2023-12-31_12a1af3b128426b3",
+    "trades": 66,
+    "exact_economic_parity": true
+  },
+  "primary|CUSHION": {
+    "key": "year_2023-01-01_2023-12-31_57a9a63ea21c51f4",
+    "trades": 61,
+    "exact_economic_parity": true
+  },
+  "costs|VOL_CLOCK|none": {
+    "key": "year_2023-01-01_2023-12-31_06b17d129971836d",
+    "trades": 74,
+    "exact_economic_parity": true
+  },
+  "costs|VOL_CLOCK|double": {
+    "key": "year_2023-01-01_2023-12-31_8e739210f4d70909",
+    "trades": 53,
+    "exact_economic_parity": true
+  },
+  "costs|CUSHION|none": {
+    "key": "year_2023-01-01_2023-12-31_1851088af6f5bbb4",
+    "trades": 74,
+    "exact_economic_parity": true
+  },
+  "costs|CUSHION|double": {
+    "key": "year_2023-01-01_2023-12-31_23061c1824505826",
+    "trades": 49,
+    "exact_economic_parity": true
+  }
+}

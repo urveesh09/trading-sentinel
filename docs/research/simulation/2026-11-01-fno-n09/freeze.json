@@ -1,0 +1,825 @@
+{
+  "schema": "n09_freeze_v1",
+  "sources": {
+    "n09_rules.py": "26e6817d9651989275778f3db87fd64e9deff725be5a168514b449468242cd33",
+    "n09_lab.py": "54640c460b2e8058094f5fd5a378e98b386179210dfcabd5c393fde973b72e78",
+    "PLAN.md": "745672dea87bd3279b8b98625c4b7e0b65d9ebe8d1c67c0dd15d3047e6a023ee",
+    "analyze_panel.py": "22747d34709b907604885dd79f2d34480237811618b9c8bfc223ee31edd3fd73",
+    "test_n09.py": "419bb04b55b73696708e35b803a9426923b9cdbac09e67e244086b4d9363a46d"
+  },
+  "one_books": {
+    "ONE|CONFIRM": {
+      "members": [
+        {
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "OR20",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "EFF",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:LOW",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+      "cfg": {
+        "FNO_MAX_LOTS": 1,
+        "FNO_MAX_LOTS_PROVEN": 1,
+        "FNO_ADAPTIVE_RISK_ENABLED": false,
+        "FNO_DAILY_KILL_PCT": 9.0,
+        "FNO_WEEKLY_KILL_PCT": 9.0,
+        "FNO_MONTHLY_KILL_PCT": 9.0,
+        "FNO_MAX_DRAWDOWN_PCT": 0.999,
+        "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+        "FNO_TWO_STRIKE_LOSSES": 1000000
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n02_contract": "v1",
+      "n03_variant": "RETEST",
+      "n03_context": "TPB_ONE",
+      "n03_sizing": "NORMAL",
+      "n03_contract": "v1",
+      "n04_mode": "BASE",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n05_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n07_contract": "v1",
+      "label": "N09|ONE|CONFIRM",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_two_lots_before": 720,
+        "low_last_minute": 840
+      },
+      "n09": {
+        "contract": "v1",
+        "confirm": true
+      }
+    },
+    "ONE|STRUCTURE": {
+      "members": [
+        {
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "OR20",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "EFF",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:LOW",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+      "cfg": {
+        "FNO_MAX_LOTS": 1,
+        "FNO_MAX_LOTS_PROVEN": 1,
+        "FNO_ADAPTIVE_RISK_ENABLED": false,
+        "FNO_DAILY_KILL_PCT": 9.0,
+        "FNO_WEEKLY_KILL_PCT": 9.0,
+        "FNO_MONTHLY_KILL_PCT": 9.0,
+        "FNO_MAX_DRAWDOWN_PCT": 0.999,
+        "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+        "FNO_TWO_STRIKE_LOSSES": 1000000
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n02_contract": "v1",
+      "n03_variant": "RETEST",
+      "n03_context": "TPB_ONE",
+      "n03_sizing": "NORMAL",
+      "n03_contract": "v1",
+      "n04_mode": "BASE",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n05_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n07_contract": "v1",
+      "label": "N09|ONE|STRUCTURE",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_two_lots_before": 720,
+        "low_last_minute": 840
+      },
+      "n09": {
+        "contract": "v1",
+        "structure": true
+      }
+    },
+    "ONE|NOISE_TEXTBOOK": {
+      "members": [
+        {
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "OR20",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "EFF",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:LOW",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "NOISE",
+          "gate": "ALWAYS",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+      "cfg": {
+        "FNO_MAX_LOTS": 1,
+        "FNO_MAX_LOTS_PROVEN": 1,
+        "FNO_ADAPTIVE_RISK_ENABLED": false,
+        "FNO_DAILY_KILL_PCT": 9.0,
+        "FNO_WEEKLY_KILL_PCT": 9.0,
+        "FNO_MONTHLY_KILL_PCT": 9.0,
+        "FNO_MAX_DRAWDOWN_PCT": 0.999,
+        "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+        "FNO_TWO_STRIKE_LOSSES": 1000000
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n02_contract": "v1",
+      "n03_variant": "RETEST",
+      "n03_context": "TPB_ONE",
+      "n03_sizing": "NORMAL",
+      "n03_contract": "v1",
+      "n04_mode": "BASE",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n05_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n07_contract": "v1",
+      "label": "N09|ONE|NOISE_TEXTBOOK",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_two_lots_before": 720,
+        "low_last_minute": 840,
+        "order": [
+          5
+        ]
+      },
+      "n09": {
+        "contract": "v1",
+        "no_stretch": true
+      }
+    },
+    "ONE|NOISE_HOUSE": {
+      "members": [
+        {
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "OR20",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "EFF",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:LOW",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "NOISE",
+          "gate": "ALWAYS",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+      "cfg": {
+        "FNO_MAX_LOTS": 1,
+        "FNO_MAX_LOTS_PROVEN": 1,
+        "FNO_ADAPTIVE_RISK_ENABLED": false,
+        "FNO_DAILY_KILL_PCT": 9.0,
+        "FNO_WEEKLY_KILL_PCT": 9.0,
+        "FNO_MONTHLY_KILL_PCT": 9.0,
+        "FNO_MAX_DRAWDOWN_PCT": 0.999,
+        "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+        "FNO_TWO_STRIKE_LOSSES": 1000000
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n02_contract": "v1",
+      "n03_variant": "RETEST",
+      "n03_context": "TPB_ONE",
+      "n03_sizing": "NORMAL",
+      "n03_contract": "v1",
+      "n04_mode": "BASE",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n05_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n07_contract": "v1",
+      "label": "N09|ONE|NOISE_HOUSE",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_two_lots_before": 720,
+        "low_last_minute": 840,
+        "order": [
+          5
+        ]
+      },
+      "n09": {
+        "contract": "v1"
+      }
+    },
+    "ONE|N08+NOISE": {
+      "members": [
+        {
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "OR20",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "EFF",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:LOW",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "NOISE",
+          "gate": "ALWAYS",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+      "cfg": {
+        "FNO_MAX_LOTS": 1,
+        "FNO_MAX_LOTS_PROVEN": 1,
+        "FNO_ADAPTIVE_RISK_ENABLED": false,
+        "FNO_DAILY_KILL_PCT": 9.0,
+        "FNO_WEEKLY_KILL_PCT": 9.0,
+        "FNO_MONTHLY_KILL_PCT": 9.0,
+        "FNO_MAX_DRAWDOWN_PCT": 0.999,
+        "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+        "FNO_TWO_STRIKE_LOSSES": 1000000
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n02_contract": "v1",
+      "n03_variant": "RETEST",
+      "n03_context": "TPB_ONE",
+      "n03_sizing": "NORMAL",
+      "n03_contract": "v1",
+      "n04_mode": "BASE",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n05_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n07_contract": "v1",
+      "label": "N09|ONE|N08+NOISE",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_two_lots_before": 720,
+        "low_last_minute": 840,
+        "order": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "n09": {
+        "contract": "v1"
+      }
+    },
+    "ONE|D65": {
+      "members": [
+        {
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "OR20",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "EFF",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:LOW",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+      "cfg": {
+        "FNO_MAX_LOTS": 1,
+        "FNO_MAX_LOTS_PROVEN": 1,
+        "FNO_ADAPTIVE_RISK_ENABLED": false,
+        "FNO_DAILY_KILL_PCT": 9.0,
+        "FNO_WEEKLY_KILL_PCT": 9.0,
+        "FNO_MONTHLY_KILL_PCT": 9.0,
+        "FNO_MAX_DRAWDOWN_PCT": 0.999,
+        "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+        "FNO_TWO_STRIKE_LOSSES": 1000000,
+        "FNO_TARGET_DELTA": 0.65
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n02_contract": "v1",
+      "n03_variant": "RETEST",
+      "n03_context": "TPB_ONE",
+      "n03_sizing": "NORMAL",
+      "n03_contract": "v1",
+      "n04_mode": "BASE",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n05_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n07_contract": "v1",
+      "label": "N09|ONE|D65",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_two_lots_before": 720,
+        "low_last_minute": 840
+      },
+      "n09": {
+        "contract": "v1"
+      }
+    },
+    "ONE|D75": {
+      "members": [
+        {
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "OR20",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "EFF",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:LOW",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+      "cfg": {
+        "FNO_MAX_LOTS": 1,
+        "FNO_MAX_LOTS_PROVEN": 1,
+        "FNO_ADAPTIVE_RISK_ENABLED": false,
+        "FNO_DAILY_KILL_PCT": 9.0,
+        "FNO_WEEKLY_KILL_PCT": 9.0,
+        "FNO_MONTHLY_KILL_PCT": 9.0,
+        "FNO_MAX_DRAWDOWN_PCT": 0.999,
+        "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+        "FNO_TWO_STRIKE_LOSSES": 1000000,
+        "FNO_TARGET_DELTA": 0.75
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n02_contract": "v1",
+      "n03_variant": "RETEST",
+      "n03_context": "TPB_ONE",
+      "n03_sizing": "NORMAL",
+      "n03_contract": "v1",
+      "n04_mode": "BASE",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n05_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n07_contract": "v1",
+      "label": "N09|ONE|D75",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_two_lots_before": 720,
+        "low_last_minute": 840
+      },
+      "n09": {
+        "contract": "v1"
+      }
+    }
+  },
+  "cash_books": {
+    "CASH|NO_E": {
+      "members": [
+        {
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "OR20",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "EFF",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:LOW",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+      "cfg": {
+        "FNO_MAX_LOTS": 2,
+        "FNO_MAX_LOTS_PROVEN": 2
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n02_contract": "v1",
+      "n03_variant": "RETEST",
+      "n03_context": "TPB_ONE",
+      "n03_sizing": "NORMAL",
+      "n03_contract": "v1",
+      "n04_mode": "BASE",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n05_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n07_contract": "v1",
+      "label": "N09|CASH|NO_E",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_two_lots_before": 0,
+        "low_last_minute": 840
+      },
+      "n09": {
+        "contract": "v1"
+      }
+    },
+    "CASH|S_VOL": {
+      "members": [
+        {
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "OR20",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "EFF",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:HIGH",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        },
+        {
+          "kind": "NAMED",
+          "name": "TPB",
+          "gate": "adx_abs30:LOW",
+          "exit": "OWN",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+      "cfg": {
+        "FNO_MAX_LOTS": 2,
+        "FNO_MAX_LOTS_PROVEN": 2
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n02_contract": "v1",
+      "n03_variant": "RETEST",
+      "n03_context": "TPB_ONE",
+      "n03_sizing": "NORMAL",
+      "n03_contract": "v1",
+      "n04_mode": "BASE",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n05_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n07_contract": "v1",
+      "label": "N09|CASH|S_VOL",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_two_lots_before": 1440,
+        "low_last_minute": 840
+      },
+      "n09": {
+        "contract": "v1",
+        "vol_size": true
+      }
+    }
+  },
+  "note": "Written before any challenger is scored. All four years are seen, so this is discipline, not an exam."
+}

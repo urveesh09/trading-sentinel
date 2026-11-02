@@ -1,0 +1,13 @@
+{
+  "parent_records": 222,
+  "original_rows_bound_and_repriced": 2664,
+  "extension_bound_rows": 3996,
+  "financial_identity_failures": 0,
+  "parent_economics_mismatches": 0,
+  "raw_bound_hashes": {
+    "spread-pairs-bound.json": "3104532ba414dcd7443148d28fa996106d7f18f907a070a1500b0d46f6a58603",
+    "expression-bound-rows.json": "9a2cf96bee5bf0093de44b74478e66e98555b7fd793de8a069db8def7421d016"
+  },
+  "stored_stop_limitation": "closing/trailing stop only, not immutable initial risk evidence",
+  "diagnostic_not_lifecycle": true
+}

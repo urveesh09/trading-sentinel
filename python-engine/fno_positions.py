@@ -1093,8 +1093,9 @@ async def stopped_entry_levels_today(db_path: str, source: str, underlying: str,
             return {}
         marks = ",".join("?" for _ in reasons)
         async with db.execute(
+            # [N11] An earned lot's own stop isn't an idea proved wrong: only the trade itself sets a re-entry level.
             "SELECT direction, entry_underlying, stop_underlying FROM fno_positions WHERE source=? AND status='CLOSED' "
-            "AND exit_date=? AND UPPER(COALESCE(underlying,'NIFTY'))=? "
+            "AND exit_date=? AND UPPER(COALESCE(underlying,'NIFTY'))=? AND COALESCE(strategy,'') != 'N11_ADD' "
             f"AND exit_reason IN ({marks}) ORDER BY exit_time",
             (source, today_iso, underlying.upper(), *reasons),
         ) as cur:

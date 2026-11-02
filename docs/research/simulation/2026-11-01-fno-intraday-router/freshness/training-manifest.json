@@ -1,0 +1,98 @@
+{
+  "schema": "n01f_training_v1",
+  "source_freeze_sha256": "c6105c2cbdd6ee94be72ac2281559353a76e3ccd8bbe9f41f6383d522e58189e",
+  "models": {
+    "2024": {
+      "path": "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/models-2024.json",
+      "sha256": "7e26ef34908ec9605813489985d2a20c0fe9a66d24ac2a73b3233fc5f9e194fb",
+      "monthly_models": 12,
+      "latest_training_exits": {
+        "2024-01-01": null,
+        "2024-02-01": "2024-01-31T15:10:59+05:30",
+        "2024-03-01": "2024-02-28T14:09:59+05:30",
+        "2024-04-01": "2024-03-27T15:10:59+05:30",
+        "2024-05-01": "2024-04-30T14:44:59+05:30",
+        "2024-06-01": "2024-05-29T14:15:59+05:30",
+        "2024-07-01": "2024-06-28T15:10:59+05:30",
+        "2024-08-01": "2024-07-31T15:10:59+05:30",
+        "2024-09-01": "2024-08-30T15:10:59+05:30",
+        "2024-10-01": "2024-09-30T14:55:59+05:30",
+        "2024-11-01": "2024-10-30T15:10:59+05:30",
+        "2024-12-01": "2024-11-29T15:10:59+05:30"
+      }
+    },
+    "2025": {
+      "path": "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/models-2025.json",
+      "sha256": "0da252c98096341783e206e9594df5557aa3e109397b063316547a725d3a7586",
+      "monthly_models": 12,
+      "latest_training_exits": {
+        "2025-01-01": "2024-12-31T15:10:59+05:30",
+        "2025-02-01": "2025-01-31T14:05:59+05:30",
+        "2025-03-01": "2025-02-28T14:42:59+05:30",
+        "2025-04-01": "2025-03-28T14:42:59+05:30",
+        "2025-05-01": "2025-04-29T15:10:59+05:30",
+        "2025-06-01": "2025-05-30T15:10:59+05:30",
+        "2025-07-01": "2025-06-30T15:10:59+05:30",
+        "2025-08-01": "2025-07-30T13:32:59+05:30",
+        "2025-09-01": "2025-08-29T15:10:59+05:30",
+        "2025-10-01": "2025-09-29T14:45:59+05:30",
+        "2025-11-01": "2025-10-31T15:10:59+05:30",
+        "2025-12-01": "2025-11-27T12:44:59+05:30"
+      }
+    },
+    "2026": {
+      "path": "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/models-2026.json",
+      "sha256": "4fb8477b735bc4d75e7777c049a71b1f47b16e62c29a6a831143d02c0c691882",
+      "monthly_models": 10,
+      "latest_training_exits": {
+        "2026-01-01": "2025-12-29T15:10:59+05:30",
+        "2026-02-01": "2026-01-30T14:43:59+05:30",
+        "2026-03-01": "2026-02-27T15:10:59+05:30",
+        "2026-04-01": "2026-03-27T15:10:59+05:30",
+        "2026-05-01": "2026-04-30T15:07:59+05:30",
+        "2026-06-01": "2026-05-29T14:32:59+05:30",
+        "2026-07-01": "2026-06-29T15:10:59+05:30",
+        "2026-08-01": "2026-07-31T15:10:59+05:30",
+        "2026-09-01": "2026-08-31T14:45:59+05:30",
+        "2026-10-01": "2026-09-30T14:22:59+05:30"
+      }
+    }
+  },
+  "library_sha256": {
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2024-01-01_2024-12-31_d0f30b2118a28ffd.json": "768c3d7df0b3367b0326a6cbf47012960ca7d9dfc9a3a75e444f64f56aa82247",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2024-01-01_2024-12-31_3342b5f833c3021d.json": "4795959b7792c004cdab8e4cd5a83799fc9d2dcc0a8ee5f3930593de9c8b15e1",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2024-01-01_2024-12-31_c6c052514a185e07.json": "a1b3a152dc0566fd8080751c14b099772200098806a7acb1715d0ee055c8ca3b",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2024-01-01_2024-12-31_559776eead1ec45a.json": "e0404c551cdd403319f216a070fd6609a06ec0ae1350ce37377b5a813a459fd0",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2024-01-01_2024-12-31_167d03f7d330cb77.json": "1422fa46a7643c86be483662ae896600b5181b5b55d34de3b7c6c621dda3eadb",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2024-01-01_2024-12-31_b1347f12ebac1186.json": "7472ff18f7d12391f91503d2d8faa1209d9ebff0039525ec8eac9184c8047677",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2024-01-01_2024-12-31_409545daf261494e.json": "3386f9040277b2c8052abe4b05f0e31163f283d8662e9aa36c546a7687075b15",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2024-01-01_2024-12-31_337a5b4f1341c1d8.json": "01b320a24458b7d8e532ad6d2bacfd07e2fff1de82c4bdf57b790e538c5a8b1b",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2024-01-01_2024-12-31_516f22a00dd686b6.json": "f17db5d67661dace01dd33a8434557ab264d2bf7b02ec5c51ff4d834a4de8c1c",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2025-01-01_2025-12-31_d0f30b2118a28ffd.json": "69f86cfa1e8409756c3831008069937721100f06f4bc640ac85e98e7c3bc1bd6",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2025-01-01_2025-12-31_3342b5f833c3021d.json": "abd173864536b64d9539a628022522cefe4df7b871b46e7e57207609072b4c50",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2025-01-01_2025-12-31_c6c052514a185e07.json": "71b8ea8e2d2cc88eaed5c184e8ed6950706497a640ee5224e1b9bd41a65ac03c",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2025-01-01_2025-12-31_559776eead1ec45a.json": "f4550177e05bf85f1f70e3226037c1d898c79504c4385e9111fed726bb54b3db",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2025-01-01_2025-12-31_167d03f7d330cb77.json": "6f3c1c031a88b8b825f3346ce7df2e7e0240227c0781cb72f12e8d6d2d58793a",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2025-01-01_2025-12-31_b1347f12ebac1186.json": "99ba3ade84d8dc9f7d486c1d9c17bd1e2d467e6e3382ffc49aefee98f4d257e4",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2025-01-01_2025-12-31_409545daf261494e.json": "42f487a383775ec10582ad5a3ae952ec273d653cf94d600027df45c61917afa5",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2025-01-01_2025-12-31_337a5b4f1341c1d8.json": "0d2c9605e75ac33f43c937ff9eeb5380f582cefff35246a14df42043daed536b",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2025-01-01_2025-12-31_516f22a00dd686b6.json": "80a8e6e201c807614e764ba7cef65a9315c1b7eeac227412b6288b69c042c2da",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2026-01-01_2026-10-28_d0f30b2118a28ffd.json": "2534b73e5de6ffb84f9066312371b5f2448ab2a9a36be803d465bb3f8d1b6801",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2026-01-01_2026-10-28_3342b5f833c3021d.json": "548c22da96129c4968004c4eab61dab27f38924a455b705755c18b497260ff97",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2026-01-01_2026-10-28_c6c052514a185e07.json": "029400e5625162f25eef4bb9da1e214b299ca17fe9e9875f5a4da36049927144",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2026-01-01_2026-10-28_559776eead1ec45a.json": "f0aef40c1f8120e29f6f52b67b33cf79a762b7a34e2303908cdd18ba56d604a4",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2026-01-01_2026-10-28_167d03f7d330cb77.json": "dbeb0289bae68ad7ef5abd945f1d9def5b61a3285b7f8db37f9e115d14be1fa8",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2026-01-01_2026-10-28_b1347f12ebac1186.json": "e475a333d2c87a5786325b1983083e9210634e586da24b062d672c343d1cfdd4",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2026-01-01_2026-10-28_409545daf261494e.json": "04fdb17fed6128f07759a1bd36b040a315d187627854155d7ccff7b577f753e3",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2026-01-01_2026-10-28_337a5b4f1341c1d8.json": "db78ed3ac2fff1a4aea04a97608457e8810d952b818c4e64acf59959d9b8938a",
+    "docs/research/simulation/2026-11-01-fno-intraday-router/_local/evals/year_2026-01-01_2026-10-28_516f22a00dd686b6.json": "de78852951d27f75f7b1a285bdfac0c19cc5defaa75b0ceac9550f8997a72675"
+  },
+  "reused_base_books": 27,
+  "economic_labels_unchanged": true,
+  "stale_labels_reclassified": {
+    "2024": 0,
+    "2025": 0,
+    "2026": 0
+  },
+  "all_years_seen": true
+}

@@ -1,0 +1,14 @@
+{
+  "schema":"n06_variant_v1", "variants":["MAIN","BASE","STALL30","STRUCT30"],
+  "candidates":{"MAIN_ANCHOR":"MAIN","STRUCT_ANCHOR":"STRUCT30"},
+  "labels":"strictly earlier closed whole-book N05 net; last84 archived sessions in same year; reset Jan1",
+  "eligibility":"8weeks,10nonzero paired days,12challenger/6anchor closes; mean weekly delta minus1SE>0; gain excluding best day>0; trailing closed DD<=anchor; two consecutive decisions",
+  "selection":"daily fixed at entry; open leg exit policy immutable; missing decision refuses new entry; pending retest reset on day/variant transition",
+  "capital":250000,"annual_reset":true,"sizing":"existing2/3caps; ONLY LOW TPB1lot",
+  "cost":"inherited candle bid/ask/current fees + (200+5*lots)*lots",
+  "acceptance":"net >= all3 balanced references each year; closed DD <= all3 each year; net without best trade/day positive; >=12closes/year60total;5/6profitable half-years;t>=2 vsSTALL30;adjusted p<=.05",
+  "max_t":{"comparisons":2,"block_weeks":4,"resamples":4096,"seed":110601},
+  "fresh_annual_controls":12,"candidate_annual_replays":6,
+  "fidelity":"BAR_LIFECYCLE","coverage":"PARTIAL","all_years_seen":true,"qualified":false,"can_place_orders":false,
+  "2023":"deferred; no option exam inspection or scoring","size_research":"not unlocked; unchanged risk/cash budgets"
+}

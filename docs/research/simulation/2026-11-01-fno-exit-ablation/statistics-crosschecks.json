@@ -1,0 +1,11 @@
+{
+  "annual_paths": 54,
+  "weekly_vectors": 18,
+  "candidate_relative_tests": 8,
+  "block_weeks": 4,
+  "resamples": 4096,
+  "seed": 110401,
+  "max_cash_reconciliation_residual": 2.6921043172478676e-10,
+  "rounded_decision_differences": [],
+  "score_p_or_cash_errors": 0
+}

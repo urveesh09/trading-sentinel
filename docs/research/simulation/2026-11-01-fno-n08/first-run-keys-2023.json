@@ -1,0 +1,20 @@
+{
+  "N03": "year_2023-01-01_2023-12-31_a536b698f66001c5",
+  "N04": "year_2023-01-01_2023-12-31_b83f5364f6daa915",
+  "N05": "year_2023-01-01_2023-12-31_ead9d599ad619727",
+  "N07": "year_2023-01-01_2023-12-31_d7464dfc8ca19f8d",
+  "N08": "year_2023-01-01_2023-12-31_4349f0d64e23f53a",
+  "PART|WIDE_TRAIL": "year_2023-01-01_2023-12-31_1d7eee0800f9712d",
+  "PART|EARLY_TWO": "year_2023-01-01_2023-12-31_6845b23d4f9ac01b",
+  "PART|LATE_STOP": "year_2023-01-01_2023-12-31_a5d2ad315eb2cece",
+  "PART|CAP2": "year_2023-01-01_2023-12-31_e154983de286033c",
+  "PART|NO_LOW_TPB": "year_2023-01-01_2023-12-31_6475c8d3242f383b",
+  "ONE|N07": "year_2023-01-01_2023-12-31_c594bc9eb5d6265c",
+  "ONE|WL": "year_2023-01-01_2023-12-31_7c93dded371e40af",
+  "EXAM|EX|MAIN": "year_2023-01-01_2023-12-31_6dda66fe703c0aaf",
+  "EXAM|EX|D|only_puts_from_25": "year_2023-01-01_2023-12-31_015167d3275b8528",
+  "EXAM|EX|D|puts_from_25": "year_2023-01-01_2023-12-31_d291de530a9238ce",
+  "EXAM|EX|D|tpb_puts_closed": "year_2023-01-01_2023-12-31_e87aa36124abfee4",
+  "EXAM|EX|C|puts_only": "year_2023-01-01_2023-12-31_a9dd5001339bf24f",
+  "EXAM|EX|C|no_eff": "year_2023-01-01_2023-12-31_7a11fcd4fd9a1403"
+}

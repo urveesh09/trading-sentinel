@@ -1,0 +1,229 @@
+{
+ "note": "All data seen. Descriptive, from saved replays.",
+ "placebos": {
+  "skipped": 54,
+  "gain_one_lot": 24396,
+  "by_year": {
+   "2023": {
+    "skipped": 52,
+    "one_lot_net_skipped": -28756,
+    "one_lot_net_kept": -8619
+   },
+   "2024": {
+    "skipped": 0,
+    "one_lot_net_skipped": 0,
+    "one_lot_net_kept": 45221
+   },
+   "2025": {
+    "skipped": 2,
+    "one_lot_net_skipped": 4360,
+    "one_lot_net_kept": 41678
+   },
+   "2026": {
+    "skipped": 0,
+    "one_lot_net_skipped": 0,
+    "one_lot_net_kept": 63994
+   }
+  },
+  "same_count_at_random": {
+   "median": 1774,
+   "p95": 15317,
+   "share_at_or_above_actual": 0.00265
+  },
+  "state_rotated_through_time": {
+   "shifts": 242,
+   "median": -28847,
+   "max": 34965,
+   "share_at_or_above_actual": 0.0744
+  },
+  "check_13_rotated_p_at_most_0_10": true
+ },
+ "persistence": {
+  "all_four_years": {
+   "pairs": 204,
+   "correlation": 0.512,
+   "next_20_mean_after_a_losing_20": -592,
+   "next_20_mean_after_a_winning_20": 17543,
+   "share_of_losing_windows": 0.382
+  },
+  "without_2023": {
+   "pairs": 119,
+   "correlation": 0.107,
+   "next_20_mean_after_a_losing_20": 8917,
+   "next_20_mean_after_a_winning_20": 16711,
+   "share_of_losing_windows": 0.067
+  },
+  "note": "Overlapping windows, so these correlations overstate how much independent evidence there is. Read the sign and the size, not a significance."
+ },
+ "trading_smaller": {
+  "n11_sum": 255365,
+  "n11_fall": 6.89,
+  "n10_retry_sum": 233275,
+  "n10_retry_fall": 13.21,
+  "scale": 0.522,
+  "n10_retry_scaled_sum": 121704,
+  "n11_beats_trading_smaller": true,
+  "without_2023": {
+   "n11": 266902,
+   "n10_retry": 266174
+  }
+ },
+ "parts_by_year": {
+  "net": {
+   "N11": {
+    "2023": -11537,
+    "2024": 93256,
+    "2025": 53095,
+    "2026": 120551
+   },
+   "NO_STAND": {
+    "2023": -37790,
+    "2024": 93256,
+    "2025": 57454,
+    "2026": 120551
+   },
+   "NO_LOSS": {
+    "2023": -11537,
+    "2024": 93256,
+    "2025": 51859,
+    "2026": 120551
+   },
+   "NO_ADD": {
+    "2023": -11952,
+    "2024": 76294,
+    "2025": 48600,
+    "2026": 104924
+   },
+   "NO_VOL": {
+    "2023": -17379,
+    "2024": 93256,
+    "2025": 63294,
+    "2026": 120551
+   }
+  },
+  "what_each_part_adds": {
+   "STAND": {
+    "2023": 26253,
+    "2024": 0,
+    "2025": -4359,
+    "2026": 0
+   },
+   "LOSS": {
+    "2023": 0,
+    "2024": 0,
+    "2025": 1236,
+    "2026": 0
+   },
+   "ADD": {
+    "2023": 415,
+    "2024": 16962,
+    "2025": 4495,
+    "2026": 15627
+   },
+   "VOL": {
+    "2023": 5842,
+    "2024": 0,
+    "2025": -10199,
+    "2026": 0
+   }
+  }
+ },
+ "others": {
+  "books": 50,
+  "by_year": {
+   "2023": {
+    "helped": 32,
+    "hurt": 13,
+    "same": 5,
+    "median_gain": 3229,
+    "mean_per_skipped_trade": -74,
+    "mean_per_kept_trade": -12,
+    "skipped": 2938
+   },
+   "2024": {
+    "helped": 14,
+    "hurt": 29,
+    "same": 7,
+    "median_gain": -708,
+    "mean_per_skipped_trade": 128,
+    "mean_per_kept_trade": -42,
+    "skipped": 477
+   },
+   "2025": {
+    "helped": 35,
+    "hurt": 14,
+    "same": 1,
+    "median_gain": 6413,
+    "mean_per_skipped_trade": -121,
+    "mean_per_kept_trade": -187,
+    "skipped": 3211
+   },
+   "2026": {
+    "helped": 13,
+    "hurt": 26,
+    "same": 11,
+    "median_gain": -144,
+    "mean_per_skipped_trade": 957,
+    "mean_per_kept_trade": -23,
+    "skipped": 127
+   }
+  },
+  "four_years": {
+   "helped": 37,
+   "hurt": 13,
+   "median_gain": 7176
+  },
+  "without_2023": {
+   "helped": 31,
+   "hurt": 19,
+   "median_gain": 4199
+  },
+  "reading": "Most of these books lose, so standing aside saves money on them whatever the state means. The mean per skipped trade against the mean per kept trade is the fair reading: is the state marking worse trades?"
+ },
+ "random_entries": {
+  "ADD": {
+   "2023": {
+    "helped": 1,
+    "hurt": 9,
+    "median_change": -11522
+   },
+   "2024": {
+    "helped": 3,
+    "hurt": 7,
+    "median_change": -3957
+   },
+   "2025": {
+    "helped": 1,
+    "hurt": 9,
+    "median_change": -8467
+   },
+   "2026": {
+    "helped": 3,
+    "hurt": 7,
+    "median_change": -5246
+   }
+  },
+  "STAND": {
+   "2023": {
+    "helped": 10,
+    "hurt": 0,
+    "median_change": 44371
+   },
+   "2024": {
+    "helped": 0,
+    "hurt": 0,
+    "median_change": 0
+   },
+   "2025": {
+    "helped": 6,
+    "hurt": 2,
+    "median_change": 310
+   },
+   "2026": {
+    "helped": 0,
+    "hurt": 0,
+    "median_change": 0
+   }
+  }
+ }
+}

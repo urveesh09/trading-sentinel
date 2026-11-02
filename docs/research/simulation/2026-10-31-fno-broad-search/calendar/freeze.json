@@ -1,0 +1,20 @@
+{
+ "schema": "o31ic_calendar_v1",
+ "parent_freeze": "a7c981bc1bc552e68142f72b6673d68c50dabfd41d67eb1f957bd33af39955f5",
+ "sources": {
+  "docs/research/simulation/2026-10-31-fno-broad-search/calendar/analyze_calendar.py": "75bef28219c9e19fd8edfb4e4b2a7f64d84701b687a5ec32edeeca1a223d1f7f",
+  "docs/research/simulation/2026-10-31-fno-broad-search/calendar/calendar_lab.py": "6c581bc53ed7ef1f68a3ab51f940cb7ff9576837088940e59fdaf9e32eb16c89",
+  "docs/research/simulation/2026-10-31-fno-broad-search/calendar/test_calendar.py": "d0df29d616bd583beb2ed2421affd2ccf52e13a36f7d920397b8842f9fa74736"
+ },
+ "plan_sha256": "07856c3a8239776b30b25462ef1bb7ee7c9a6e051d0830feb426c7bb33e76a10",
+ "dates": [
+  "2024-03-02",
+  "2024-05-18"
+ ],
+ "entry_end": 720,
+ "hard_flat": 745,
+ "reuse": "2025/2026 original screen only; override inactive by exact ISO date; all reused files hash-sealed",
+ "rule": "unchanged parent selection and acceptance",
+ "can_place_orders": false,
+ "qualified": false
+}

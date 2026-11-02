@@ -1,0 +1,555 @@
+{
+ "schema": "o31e_report_v1",
+ "one_lot_after_200": {
+  "main": {
+   "net": 43170,
+   "years": {
+    "2024": 4243,
+    "2025": 10302,
+    "2026": 28625
+   },
+   "trades": 120,
+   "win_pct": 44,
+   "months_up": 5,
+   "months_down": 5,
+   "worst_month": -3720,
+   "three_months_up": 9,
+   "three_months_down": 8,
+   "weeks_up": 11,
+   "weeks_down": 10,
+   "weeks_flat": 127,
+   "weeks": 148,
+   "weekly_t": 1.61,
+   "fall": 13142,
+   "worst_day": -7385,
+   "without_each_years_best_day": 13797,
+   "best_days": {
+    "2024": {
+     "day": "2024-11-04",
+     "net": 8249
+    },
+    "2025": {
+     "day": "2025-01-06",
+     "net": 10730
+    },
+    "2026": {
+     "day": "2026-03-19",
+     "net": 10393
+    }
+   }
+  },
+  "puts_only_from_25": {
+   "net": 108800,
+   "years": {
+    "2024": 22371,
+    "2025": 26090,
+    "2026": 60338
+   },
+   "trades": 142,
+   "win_pct": 48,
+   "months_up": 11,
+   "months_down": 7,
+   "worst_month": -9580,
+   "three_months_up": 17,
+   "three_months_down": 7,
+   "weeks_up": 24,
+   "weeks_down": 20,
+   "weeks_flat": 104,
+   "weeks": 148,
+   "weekly_t": 2.03,
+   "fall": 19250,
+   "worst_day": -6950,
+   "without_each_years_best_day": 48689,
+   "best_days": {
+    "2024": {
+     "day": "2024-10-04",
+     "net": 14671
+    },
+    "2025": {
+     "day": "2025-04-01",
+     "net": 19231
+    },
+    "2026": {
+     "day": "2026-02-01",
+     "net": 26209
+    }
+   }
+  },
+  "puts_from_25_calls_from_30": {
+   "net": 101604,
+   "years": {
+    "2024": 18786,
+    "2025": 25892,
+    "2026": 56927
+   },
+   "trades": 198,
+   "win_pct": 45,
+   "months_up": 12,
+   "months_down": 6,
+   "worst_month": -10790,
+   "three_months_up": 19,
+   "three_months_down": 5,
+   "weeks_up": 24,
+   "weeks_down": 21,
+   "weeks_flat": 103,
+   "weeks": 148,
+   "weekly_t": 1.89,
+   "fall": 21693,
+   "worst_day": -7385,
+   "without_each_years_best_day": 41493,
+   "best_days": {
+    "2024": {
+     "day": "2024-10-04",
+     "net": 14671
+    },
+    "2025": {
+     "day": "2025-04-01",
+     "net": 19231
+    },
+    "2026": {
+     "day": "2026-02-01",
+     "net": 26209
+    }
+   }
+  },
+  "main_plus_tpb_puts_on_closed_days": {
+   "net": 107699,
+   "years": {
+    "2024": 18535,
+    "2025": 36979,
+    "2026": 52185
+   },
+   "trades": 222,
+   "win_pct": 45,
+   "months_up": 20,
+   "months_down": 12,
+   "worst_month": -6762,
+   "three_months_up": 26,
+   "three_months_down": 6,
+   "weeks_up": 39,
+   "weeks_down": 37,
+   "weeks_flat": 72,
+   "weeks": 148,
+   "weekly_t": 2.48,
+   "fall": 16492,
+   "worst_day": -7385,
+   "without_each_years_best_day": 72367,
+   "best_days": {
+    "2024": {
+     "day": "2024-11-12",
+     "net": 12511
+    },
+    "2025": {
+     "day": "2025-05-13",
+     "net": 11529
+    },
+    "2026": {
+     "day": "2026-06-01",
+     "net": 11292
+    }
+   }
+  },
+  "main_without_eff": {
+   "net": 59098,
+   "years": {
+    "2024": 10460,
+    "2025": 23955,
+    "2026": 24684
+   },
+   "trades": 50,
+   "win_pct": 60,
+   "months_up": 7,
+   "months_down": 2,
+   "worst_month": -2957,
+   "three_months_up": 14,
+   "three_months_down": 3,
+   "weeks_up": 11,
+   "weeks_down": 5,
+   "weeks_flat": 132,
+   "weeks": 148,
+   "weekly_t": 2.33,
+   "fall": 7441,
+   "worst_day": -4887,
+   "without_each_years_best_day": 26272,
+   "best_days": {
+    "2024": {
+     "day": "2024-11-04",
+     "net": 9232
+    },
+    "2025": {
+     "day": "2025-01-06",
+     "net": 13201
+    },
+    "2026": {
+     "day": "2026-03-19",
+     "net": 10393
+    }
+   }
+  },
+  "main_puts_only": {
+   "net": 52805,
+   "years": {
+    "2024": 7828,
+    "2025": 10501,
+    "2026": 34475
+   },
+   "trades": 65,
+   "win_pct": 49,
+   "months_up": 5,
+   "months_down": 4,
+   "worst_month": -9580,
+   "three_months_up": 9,
+   "three_months_down": 8,
+   "weeks_up": 10,
+   "weeks_down": 10,
+   "weeks_flat": 128,
+   "weeks": 148,
+   "weekly_t": 1.79,
+   "fall": 12604,
+   "worst_day": -6572,
+   "without_each_years_best_day": 19978,
+   "best_days": {
+    "2024": {
+     "day": "2024-11-04",
+     "net": 9232
+    },
+    "2025": {
+     "day": "2025-01-06",
+     "net": 13201
+    },
+    "2026": {
+     "day": "2026-03-19",
+     "net": 10393
+    }
+   }
+  }
+ },
+ "one_lot_on_monday_terms": {
+  "main": {
+   "from_12500": {
+    "5_sessions": {
+     "no_trade": 0.87,
+     "up": 0.063,
+     "down": 0.067,
+     "worst_end": 6973,
+     "below_floor": 0.001,
+     "refused_for_cash": 0.112
+    },
+    "20_sessions": {
+     "no_trade": 0.762,
+     "up": 0.104,
+     "down": 0.134,
+     "worst_end": 6125,
+     "below_floor": 0.008,
+     "refused_for_cash": 0.173
+    },
+    "60_sessions": {
+     "no_trade": 0.519,
+     "up": 0.201,
+     "down": 0.28,
+     "worst_end": 6125,
+     "below_floor": 0.017,
+     "refused_for_cash": 0.312
+    }
+   },
+   "from_15000": {
+    "5_sessions": {
+     "no_trade": 0.852,
+     "up": 0.073,
+     "down": 0.076,
+     "worst_end": 7255,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.071
+    },
+    "20_sessions": {
+     "no_trade": 0.735,
+     "up": 0.123,
+     "down": 0.142,
+     "worst_end": 7255,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.14
+    },
+    "60_sessions": {
+     "no_trade": 0.504,
+     "up": 0.224,
+     "down": 0.272,
+     "worst_end": 6784,
+     "below_floor": 0.002,
+     "refused_for_cash": 0.28
+    }
+   }
+  },
+  "puts_only_from_25": {
+   "from_12500": {
+    "5_sessions": {
+     "no_trade": 0.806,
+     "up": 0.087,
+     "down": 0.106,
+     "worst_end": 6922,
+     "below_floor": 0.001,
+     "refused_for_cash": 0.207
+    },
+    "20_sessions": {
+     "no_trade": 0.685,
+     "up": 0.128,
+     "down": 0.187,
+     "worst_end": 5097,
+     "below_floor": 0.011,
+     "refused_for_cash": 0.368
+    },
+    "60_sessions": {
+     "no_trade": 0.527,
+     "up": 0.098,
+     "down": 0.375,
+     "worst_end": 5097,
+     "below_floor": 0.019,
+     "refused_for_cash": 0.506
+    }
+   },
+   "from_15000": {
+    "5_sessions": {
+     "no_trade": 0.763,
+     "up": 0.109,
+     "down": 0.128,
+     "worst_end": 9142,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.138
+    },
+    "20_sessions": {
+     "no_trade": 0.575,
+     "up": 0.182,
+     "down": 0.243,
+     "worst_end": 8477,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.291
+    },
+    "60_sessions": {
+     "no_trade": 0.37,
+     "up": 0.218,
+     "down": 0.412,
+     "worst_end": 5585,
+     "below_floor": 0.011,
+     "refused_for_cash": 0.437
+    }
+   }
+  },
+  "puts_from_25_calls_from_30": {
+   "from_12500": {
+    "5_sessions": {
+     "no_trade": 0.782,
+     "up": 0.095,
+     "down": 0.124,
+     "worst_end": 5051,
+     "below_floor": 0.006,
+     "refused_for_cash": 0.214
+    },
+    "20_sessions": {
+     "no_trade": 0.648,
+     "up": 0.178,
+     "down": 0.174,
+     "worst_end": 5051,
+     "below_floor": 0.017,
+     "refused_for_cash": 0.371
+    },
+    "60_sessions": {
+     "no_trade": 0.404,
+     "up": 0.356,
+     "down": 0.239,
+     "worst_end": 5051,
+     "below_floor": 0.044,
+     "refused_for_cash": 0.51
+    }
+   },
+   "from_15000": {
+    "5_sessions": {
+     "no_trade": 0.748,
+     "up": 0.115,
+     "down": 0.137,
+     "worst_end": 5333,
+     "below_floor": 0.001,
+     "refused_for_cash": 0.144
+    },
+    "20_sessions": {
+     "no_trade": 0.57,
+     "up": 0.227,
+     "down": 0.202,
+     "worst_end": 5272,
+     "below_floor": 0.003,
+     "refused_for_cash": 0.285
+    },
+    "60_sessions": {
+     "no_trade": 0.364,
+     "up": 0.421,
+     "down": 0.215,
+     "worst_end": 5272,
+     "below_floor": 0.021,
+     "refused_for_cash": 0.429
+    }
+   }
+  },
+  "main_plus_tpb_puts_on_closed_days": {
+   "from_12500": {
+    "5_sessions": {
+     "no_trade": 0.601,
+     "up": 0.179,
+     "down": 0.22,
+     "worst_end": 6973,
+     "below_floor": 0.001,
+     "refused_for_cash": 0.281
+    },
+    "20_sessions": {
+     "no_trade": 0.238,
+     "up": 0.413,
+     "down": 0.349,
+     "worst_end": 6125,
+     "below_floor": 0.017,
+     "refused_for_cash": 0.654
+    },
+    "60_sessions": {
+     "no_trade": 0.029,
+     "up": 0.421,
+     "down": 0.55,
+     "worst_end": 6125,
+     "below_floor": 0.048,
+     "refused_for_cash": 0.887
+    }
+   },
+   "from_15000": {
+    "5_sessions": {
+     "no_trade": 0.54,
+     "up": 0.233,
+     "down": 0.227,
+     "worst_end": 7255,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.175
+    },
+    "20_sessions": {
+     "no_trade": 0.179,
+     "up": 0.502,
+     "down": 0.319,
+     "worst_end": 6637,
+     "below_floor": 0.003,
+     "refused_for_cash": 0.402
+    },
+    "60_sessions": {
+     "no_trade": 0.0,
+     "up": 0.579,
+     "down": 0.421,
+     "worst_end": 6594,
+     "below_floor": 0.025,
+     "refused_for_cash": 0.676
+    }
+   }
+  },
+  "main_without_eff": {
+   "from_12500": {
+    "5_sessions": {
+     "no_trade": 0.924,
+     "up": 0.044,
+     "down": 0.032,
+     "worst_end": 8732,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.077
+    },
+    "20_sessions": {
+     "no_trade": 0.807,
+     "up": 0.103,
+     "down": 0.09,
+     "worst_end": 8732,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.115
+    },
+    "60_sessions": {
+     "no_trade": 0.602,
+     "up": 0.192,
+     "down": 0.207,
+     "worst_end": 8732,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.234
+    }
+   },
+   "from_15000": {
+    "5_sessions": {
+     "no_trade": 0.904,
+     "up": 0.057,
+     "down": 0.039,
+     "worst_end": 12237,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.055
+    },
+    "20_sessions": {
+     "no_trade": 0.782,
+     "up": 0.121,
+     "down": 0.097,
+     "worst_end": 10543,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.104
+    },
+    "60_sessions": {
+     "no_trade": 0.588,
+     "up": 0.222,
+     "down": 0.19,
+     "worst_end": 10543,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.226
+    }
+   }
+  },
+  "main_puts_only": {
+   "from_12500": {
+    "5_sessions": {
+     "no_trade": 0.905,
+     "up": 0.049,
+     "down": 0.045,
+     "worst_end": 7080,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.099
+    },
+    "20_sessions": {
+     "no_trade": 0.844,
+     "up": 0.078,
+     "down": 0.078,
+     "worst_end": 7080,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.185
+    },
+    "60_sessions": {
+     "no_trade": 0.718,
+     "up": 0.096,
+     "down": 0.186,
+     "worst_end": 7080,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.412
+    }
+   },
+   "from_15000": {
+    "5_sessions": {
+     "no_trade": 0.882,
+     "up": 0.063,
+     "down": 0.055,
+     "worst_end": 11124,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.064
+    },
+    "20_sessions": {
+     "no_trade": 0.785,
+     "up": 0.081,
+     "down": 0.134,
+     "worst_end": 11124,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.136
+    },
+    "60_sessions": {
+     "no_trade": 0.586,
+     "up": 0.1,
+     "down": 0.314,
+     "worst_end": 10847,
+     "below_floor": 0.0,
+     "refused_for_cash": 0.289
+    }
+   }
+  }
+ },
+ "qualification": "NOT_ASSESSED",
+ "can_place_orders": false
+}

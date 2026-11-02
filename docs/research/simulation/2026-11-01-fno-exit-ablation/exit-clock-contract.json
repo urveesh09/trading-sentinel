@@ -1,0 +1,138 @@
+{
+  "effective_parameters": {
+    "FNO_TIME_STOP_MIN_R": 0.5,
+    "FNO_TIME_STOP_RESPECTS_PREMIUM": false,
+    "FNO_HARD_FLAT_MIN": 910
+  },
+  "exit_rules_source_sha256": "05e9a2910bc7fdc8a76f822b385df8687c55e58b03b9e0cf2d5b025588bb8467",
+  "extension_requires_progress_r": 1.0,
+  "original_clock_is_soft_stagnation_check_not_maximum_hold": true,
+  "extension_redundant_under_current_progress_threshold": true,
+  "base_continue_annual_pairs": 18,
+  "matched_closed_lifecycles": 877,
+  "exact_parity": {
+    "2024|NORMAL|MAIN|BASE": {
+      "closed_records": 25,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2024|NORMAL|TPB_ONE|BASE": {
+      "closed_records": 44,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2024|NORMAL|BALANCED_RETEST|BASE": {
+      "closed_records": 33,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2024|NORMAL|CORE_SELECT|BASE": {
+      "closed_records": 25,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2024|ONE|MAIN|BASE": {
+      "closed_records": 25,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2024|ONE|BALANCED_RETEST|BASE": {
+      "closed_records": 34,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2025|NORMAL|MAIN|BASE": {
+      "closed_records": 50,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2025|NORMAL|TPB_ONE|BASE": {
+      "closed_records": 98,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2025|NORMAL|BALANCED_RETEST|BASE": {
+      "closed_records": 80,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2025|NORMAL|CORE_SELECT|BASE": {
+      "closed_records": 55,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2025|ONE|MAIN|BASE": {
+      "closed_records": 50,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2025|ONE|BALANCED_RETEST|BASE": {
+      "closed_records": 80,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2026|NORMAL|MAIN|BASE": {
+      "closed_records": 33,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2026|NORMAL|TPB_ONE|BASE": {
+      "closed_records": 63,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2026|NORMAL|BALANCED_RETEST|BASE": {
+      "closed_records": 56,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2026|NORMAL|CORE_SELECT|BASE": {
+      "closed_records": 37,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2026|ONE|MAIN|BASE": {
+      "closed_records": 33,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    },
+    "2026|ONE|BALANCED_RETEST|BASE": {
+      "closed_records": 56,
+      "exact_entry_exit_quantity_price_fee_economics": true
+    }
+  },
+  "n03_combined_vs_n04_stall_parity": {
+    "2024|NORMAL|MAIN": {
+      "closed_records": 22,
+      "exact_economic_parity": true
+    },
+    "2024|NORMAL|TPB_ONE": {
+      "closed_records": 41,
+      "exact_economic_parity": true
+    },
+    "2024|NORMAL|CORE_SELECT": {
+      "closed_records": 22,
+      "exact_economic_parity": true
+    },
+    "2024|ONE|MAIN": {
+      "closed_records": 22,
+      "exact_economic_parity": true
+    },
+    "2025|NORMAL|MAIN": {
+      "closed_records": 50,
+      "exact_economic_parity": true
+    },
+    "2025|NORMAL|TPB_ONE": {
+      "closed_records": 98,
+      "exact_economic_parity": true
+    },
+    "2025|NORMAL|CORE_SELECT": {
+      "closed_records": 55,
+      "exact_economic_parity": true
+    },
+    "2025|ONE|MAIN": {
+      "closed_records": 50,
+      "exact_economic_parity": true
+    },
+    "2026|NORMAL|MAIN": {
+      "closed_records": 34,
+      "exact_economic_parity": true
+    },
+    "2026|NORMAL|TPB_ONE": {
+      "closed_records": 63,
+      "exact_economic_parity": true
+    },
+    "2026|NORMAL|CORE_SELECT": {
+      "closed_records": 38,
+      "exact_economic_parity": true
+    },
+    "2026|ONE|MAIN": {
+      "closed_records": 34,
+      "exact_economic_parity": true
+    }
+  },
+  "reason": "Original time-stop only closes untrailed positions below MIN_R progress. CONTINUE_ONLY requires>=1R, already exempt when MIN_R<=1. Changing60 to90 does not improve these decisions; neither value is a maximum holding cap. Stops/trail/hard-flat remain active."
+}

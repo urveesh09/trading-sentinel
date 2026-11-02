@@ -1,0 +1,104 @@
+{
+  "schema": "n07_failure_checkpoint_v1",
+  "candidate_id": "PREMIUM_AWARE_RETEST_N07",
+  "results_commit": "bb50e6fe373697a1a2d79cd15f6e2ca4d9e3d1ed",
+  "canonical_book_name": "NORMAL|PREMIUM_STALL",
+  "canonical_book": {
+    "members": [
+      {
+        "kind": "NAMED",
+        "name": "SHIPPED",
+        "gate": "adx_abs30:HIGH",
+        "exit": "OWN",
+        "vwap_exit": "OFF"
+      },
+      {
+        "kind": "NAMED",
+        "name": "OR20",
+        "gate": "adx_abs30:HIGH",
+        "exit": "OWN",
+        "vwap_exit": "OFF"
+      },
+      {
+        "kind": "NAMED",
+        "name": "EFF",
+        "gate": "adx_abs30:HIGH",
+        "exit": "OWN",
+        "vwap_exit": "OFF"
+      },
+      {
+        "kind": "NAMED",
+        "name": "TPB",
+        "gate": "adx_abs30:HIGH",
+        "exit": "OWN",
+        "vwap_exit": "OFF"
+      },
+      {
+        "kind": "NAMED",
+        "name": "TPB",
+        "gate": "adx_abs30:LOW",
+        "exit": "OWN",
+        "vwap_exit": "OFF"
+      }
+    ],
+    "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+    "cfg": {},
+    "cost": [
+      200.0,
+      5.0
+    ],
+    "n02_policy": "STATIC",
+    "n02_profile": "TPB_ONE",
+    "n02_contract": "v1",
+    "n03_variant": "RETEST",
+    "n03_context": "TPB_ONE",
+    "n03_sizing": "NORMAL",
+    "n03_contract": "v1",
+    "n04_mode": "BASE",
+    "n04_context": "BALANCED_RETEST",
+    "n04_contract": "v1",
+    "n05_mode": "BASE",
+    "n05_context": "BALANCED_RETEST",
+    "n05_contract": "v1",
+    "n07_mode": "PREMIUM_STALL",
+    "n07_contract": "v1",
+    "label": "N07|NORMAL|PREMIUM_STALL"
+  },
+  "book_digest": "d7464dfc8ca19f8d",
+  "evaluations": {
+    "2024": {
+      "path": "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2024-01-01_2024-12-31_d7464dfc8ca19f8d.json",
+      "sha256": "5a34c89c2b22ac1e23fab76fcd07721918bafbd26c5668a1a1d38bf65af59213"
+    },
+    "2025": {
+      "path": "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2025-01-01_2025-12-31_d7464dfc8ca19f8d.json",
+      "sha256": "d2de45a90d9748613c2cd18a81a573dbd60dc5992f44e0a8bab3de9ff2a40a7d"
+    },
+    "2026": {
+      "path": "docs/research/simulation/2026-11-01-fno-failure-anatomy/_local/evals/year_2026-01-01_2026-10-28_d7464dfc8ca19f8d.json",
+      "sha256": "4e92cd3c32376cc9a19fcd00a3ec94193c43ffcc14dd044efd8a66bc0b747b52"
+    }
+  },
+  "primary_passes": false,
+  "secondary_seen_data_improvement_over_n05_each_year": true,
+  "retains_n04_2026_economics": true,
+  "status": "UNQUALIFIED_SEEN_DATA_LEAD_WITH_N04_2025_TRADEOFF",
+  "study": "docs/research/simulation/2026-11-01-fno-failure-anatomy",
+  "source_v1": "3ec85032a77413c933f8ade1e36c97edf06c852d",
+  "preflight_correction": "e67fd64deaba907451de50a3370bf717fb967fa8",
+  "active_freeze_sha256": "f313661e277d3221eee5087b4dcb6a8881148e5e0739e675ca98cd4664186951",
+  "original_freeze_sha256": "3bf43ab7dfd08f0e9d407d62c1908c929a8f04100bd45acb15c7b0d124048358",
+  "results_sha256": "0cbeeb841c39607aa62df80c56da482cbe823423ba348982878f7de74aad6843",
+  "passing": [],
+  "qualified": false,
+  "all_years_seen": true,
+  "production_changed": false,
+  "can_place_orders": false,
+  "preserve": [
+    "BALANCED_RETEST_N03",
+    "BALANCED_RETEST_STALL_N04",
+    "STRUCTURAL_RETEST_N05",
+    "N06_SELECTOR"
+  ],
+  "next": "Prospective keyed shadow and actual execution-cost evidence;2023 deferred;no automatic sizing/deployment"
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "n101_identity_v1",
+  "base_commit": "7bbfb89f7ad083e2887dc4223bfcb475fcbf1286",
+  "source_commit": "c567f8e7783790bc1ab2f3893a96c020364de76b",
+  "controls_commit": "f4f92f2f24b775fa03b2adf9ab60ecce48b1170d",
+  "production_commit": "c97cb8c3ba0eeb4ac8e9966135b07034d760b40d",
+  "deployed": false,
+  "all_years_seen": true,
+  "economic_superiority": false,
+  "frozen_trading_sources_unchanged": true,
+  "results_commit": "b3ef49419125a1fd4b5e8dc7887276cb94a35ce0",
+  "status": "Dev research committed and pushed; not deployed"
+}

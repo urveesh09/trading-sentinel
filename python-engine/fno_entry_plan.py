@@ -50,6 +50,9 @@ class EntryState:
     # where the last idea was wrong. The other direction is never blocked.
     # Empty when FNO_REENTRY_REQUIRES_CONFIRMATION is off.
     reentry_levels: Optional[Mapping[str, float]] = None
+    # [N11 2026-11-02] The most this trade may take before the risk budget is asked (size by volatility, one lot after a
+    # loss, the low-day clock). None: only the settings' ceiling. It lowers size and never raises it.
+    lot_ceiling: Optional[int] = None
 
 
 # [O21-BS] A resting broker SL that executed is a stop too.
@@ -162,6 +165,8 @@ def plan_single_leg_entry(sig: MomSignal, snap: ChainSnapshot, regime: str, now_
     # is the entry brakes' job).
     multiplier = max(0.0, float(state.risk_multiplier))
     lot_ceiling = settings.FNO_MAX_LOTS_PROVEN if multiplier > 1.0 else settings.FNO_MAX_LOTS
+    if state.lot_ceiling is not None:
+        lot_ceiling = min(lot_ceiling, int(state.lot_ceiling))
 
     def _lots(scale: float, ceiling: int) -> int:
         return lots_for_pool(state.pool, ask, lot_size, settings.FNO_STOP_PREMIUM_PCT,

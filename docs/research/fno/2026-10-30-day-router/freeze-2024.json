@@ -1,0 +1,549 @@
+{
+ "schema": "o30f_nifty_2024_v1",
+ "books": {
+  "REF|LIVE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "REF|LIVE+tpb_all_days": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "N|TPB|OWN": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "B|UNION": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "UNION_DRIVE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "open_drive:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "ROBUST_CORE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 1.5,
+      "tp_side": 0.9,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.25,
+      "tp_from": 630,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 2.5,
+      "tp_side": 0.9,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.5,
+      "tp_from": 690,
+      "rvol": 0.8,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 2.0,
+      "target_r": 3.0,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  "ALONE|N|TPB|OWN": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "ALONE|N|TPB|RUN": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "RUN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "ALONE|L|TPB_O27F": {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 1.5,
+      "tp_side": 0.75,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.5,
+      "tp_from": 690,
+      "rvol": 0.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "RUN",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  "ALONE|N|TPB|OWN|vwap": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "ON"
+    }
+   ]
+  },
+  "ALONE|N|TPB|LATE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "LATE",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "ALONE|N|TPB|LOOSE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "LOOSE",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "ALONE|L|TREND_PULLBACK|4": {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 1.5,
+      "tp_side": 0.9,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.25,
+      "tp_from": 630,
+      "rvol": 0.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  "ALONE|N|SHIPPED|OWN": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "ALONE|N|SHIPPED|LIVE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "ALWAYS",
+     "exit": "LIVE",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "ALONE|L|TREND_PULLBACK|5": {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "TREND_PULLBACK",
+      "tp_trend": 2.5,
+      "tp_side": 0.9,
+      "tp_anchor": "VWAP",
+      "tp_touch": 0.5,
+      "tp_from": 690,
+      "rvol": 0.8,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "PM",
+      "stop_atr": 2.0,
+      "target_r": 3.0,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  "ALONE|L|PDL_BREAK|0": {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "PDL_BREAK",
+      "pd_buffer": 0.0,
+      "pd_first": false,
+      "rvol": 1.0,
+      "htf": "OFF",
+      "xidx": "OFF",
+      "window": "ALL",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "LIVE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  "ALONE|N|TPB|LIVE": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "ALWAYS",
+     "exit": "LIVE",
+     "vwap_exit": "OFF"
+    }
+   ]
+  },
+  "ALONE|N|SHIPPED|OWN|vwap": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "ALWAYS",
+     "exit": "OWN",
+     "vwap_exit": "ON"
+    }
+   ]
+  },
+  "ALONE|L|PDL_BREAK|7": {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "ALWAYS",
+     "genome": {
+      "family": "PDL_BREAK",
+      "pd_buffer": 0.0,
+      "pd_first": false,
+      "rvol": 1.2,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.0,
+      "target_r": 2.4,
+      "exit": "LATE",
+      "vwap_exit": "OFF",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    }
+   ]
+  },
+  "ROUTER|CV_2025_to_2026|P2_trend_dir": {
+   "members": [
+    {
+     "kind": "LAB",
+     "gate": "adx_abs25:HIGH&dmi_dir:UP&dir=against",
+     "genome": {
+      "family": "MOMO_BURST",
+      "mb_bars": 2,
+      "mb_move": 1.0,
+      "rvol": 1.0,
+      "htf": "WITH",
+      "xidx": "OFF",
+      "window": "AM",
+      "stop_atr": 1.5,
+      "target_r": 3.0,
+      "exit": "LOOSE",
+      "vwap_exit": "ON",
+      "delta": 0.55,
+      "expiry": "NEAR"
+     }
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "adx_abs25:LOW&dmi_dir:UP",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs25:LOW&dmi_dir:DOWN",
+     "exit": "OWN",
+     "vwap_exit": "ON"
+    }
+   ],
+   "router": "o30m"
+  },
+  "ROUTER|CV_2026_to_2025|P2_trend_dir": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "adx_abs25:HIGH&dmi_dir:DOWN&dir=with",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NEW",
+     "family": "NOISE_BAND",
+     "gate": "adx_abs25:LOW&dmi_dir:UP&dir=against",
+     "stop_atr": 1.5,
+     "target_r": 3.0,
+     "exit": "RUN",
+     "vwap_exit": "ON",
+     "k": 1.0,
+     "check": "5m"
+    },
+    {
+     "kind": "NEW",
+     "family": "VWAP_REVERT",
+     "gate": "adx_abs25:LOW&dmi_dir:DOWN&dir=against",
+     "vwap_exit": "OFF",
+     "k": 2.0,
+     "stop": 1.0,
+     "target_r": 2.4,
+     "exit": "LATE"
+    }
+   ],
+   "router": "o30m"
+  },
+  "ROUTER|FINAL|P2_trend_dir": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs25:LOW&dmi_dir:DOWN&dir=with",
+     "exit": "OWN",
+     "vwap_exit": "ON"
+    }
+   ],
+   "router": "o30m"
+  }
+ },
+ "rule": {
+  "once": "NIFTY 2024 is scored once with these books unchanged; nothing is tuned on it",
+  "candidate": "REF|LIVE+tpb_all_days (O30c) is confirmed if, per lot on 2024, it beats REF|LIVE over the year and is not worse in either half (Jan-Jun, Jul-Dec)",
+  "robust_core": "ROBUST_CORE is a candidate if it nets > 0 on 2024 and beats REF|LIVE there",
+  "persistence": "'positive in both years' carries to a third if at least 9 of the 14 ALONE books are positive on 2024 and their median beats the median of the other 100 library strategies on 2024",
+  "routers": "the O30m routers are reported for information; they failed the cross-year check",
+  "no_change": "nothing in the system changes on this result; the owner decides"
+ },
+ "robust_core": [
+  "N|TPB|OWN",
+  "L|TREND_PULLBACK|4",
+  "N|SHIPPED|OWN",
+  "L|TREND_PULLBACK|5"
+ ],
+ "positive_both": [
+  "N|TPB|OWN",
+  "N|TPB|RUN",
+  "L|TPB_O27F",
+  "N|TPB|OWN|vwap",
+  "N|TPB|LATE",
+  "N|TPB|LOOSE",
+  "L|TREND_PULLBACK|4",
+  "N|SHIPPED|OWN",
+  "N|SHIPPED|LIVE",
+  "L|TREND_PULLBACK|5",
+  "L|PDL_BREAK|0",
+  "N|TPB|LIVE",
+  "N|SHIPPED|OWN|vwap",
+  "L|PDL_BREAK|7"
+ ],
+ "sources": {
+  "docs/research/fno/2026-10-30-day-router/lab_f.py": "f5ed7327a4c4c2b1b77c61bc0890137eb43ea40b4518edf517beda5f3b453725",
+  "docs/research/fno/2026-10-30-day-router/lab_m.py": "4d5bb3713efa85e9f4c083730afd8ec738de5a1e3617cd6aff977457d0c2664a",
+  "docs/research/fno/2026-10-30-case-study/lab_c.py": "e7ee22fb11384d29614a8a5ba089fb9f3c587cd5c079c9161a784401ed930a18"
+ },
+ "qualification": "NOT_ASSESSED",
+ "can_place_orders": false
+}

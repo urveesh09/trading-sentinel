@@ -1,0 +1,393 @@
+{
+ "n09": {
+  "2023": {
+   "net": -38667,
+   "r": -42.17,
+   "trades": 59,
+   "wins": 11,
+   "fall_pct": 15.52,
+   "worst_trade": -3016,
+   "worst_day": -5509,
+   "best_trade": 7252,
+   "last": "2023-11-13",
+   "without_best_5": -54980
+  },
+  "2024": {
+   "net": 65214,
+   "r": 33.43,
+   "trades": 29,
+   "wins": 15,
+   "fall_pct": 2.16,
+   "worst_trade": -3629,
+   "worst_day": -2505,
+   "best_trade": 16278,
+   "last": "2024-12-16",
+   "without_best_5": 8804
+  },
+  "2025": {
+   "net": 46823,
+   "r": 34.37,
+   "trades": 75,
+   "wins": 37,
+   "fall_pct": 4.39,
+   "worst_trade": -5107,
+   "worst_day": -9720,
+   "best_trade": 12009,
+   "last": "2025-12-03",
+   "without_best_5": 2696
+  },
+  "2026": {
+   "net": 85576,
+   "r": 38.01,
+   "trades": 50,
+   "wins": 26,
+   "fall_pct": 2.38,
+   "worst_trade": -4030,
+   "worst_day": -4030,
+   "best_trade": 22120,
+   "last": "2026-10-23",
+   "without_best_5": 18090
+  }
+ },
+ "n08": {
+  "2023": {
+   "net": -37581,
+   "r": -36.17,
+   "trades": 56,
+   "wins": 11,
+   "fall_pct": 15.08,
+   "worst_trade": -3016,
+   "worst_day": -5509,
+   "best_trade": 7252,
+   "last": "2023-10-03",
+   "without_best_5": -53895
+  },
+  "2024": {
+   "net": 76294,
+   "r": 33.47,
+   "trades": 29,
+   "wins": 15,
+   "fall_pct": 2.16,
+   "worst_trade": -3629,
+   "worst_day": -3148,
+   "best_trade": 25050,
+   "last": "2024-12-16",
+   "without_best_5": 7341
+  },
+  "2025": {
+   "net": 58647,
+   "r": 34.51,
+   "trades": 75,
+   "wins": 37,
+   "fall_pct": 4.7,
+   "worst_trade": -5107,
+   "worst_day": -9720,
+   "best_trade": 20628,
+   "last": "2025-12-03",
+   "without_best_5": 3235
+  },
+  "2026": {
+   "net": 104924,
+   "r": 36.21,
+   "trades": 51,
+   "wins": 26,
+   "fall_pct": 2.69,
+   "worst_trade": -4030,
+   "worst_day": -4030,
+   "best_trade": 22120,
+   "last": "2026-10-23",
+   "without_best_5": 29361
+  }
+ },
+ "n09_one": {
+  "2023": {
+   "net": -37375,
+   "r": -49.41,
+   "trades": 85,
+   "wins": 20,
+   "fall_pct": 17.22,
+   "worst_trade": -2398,
+   "worst_day": -4258,
+   "best_trade": 7252,
+   "last": "2023-12-27",
+   "without_best_5": -59995
+  },
+  "2024": {
+   "net": 45221,
+   "r": 33.28,
+   "trades": 29,
+   "wins": 15,
+   "fall_pct": 1.63,
+   "worst_trade": -2850,
+   "worst_day": -2505,
+   "best_trade": 12506,
+   "last": "2024-12-16",
+   "without_best_5": 721
+  },
+  "2025": {
+   "net": 46037,
+   "r": 31.78,
+   "trades": 79,
+   "wins": 38,
+   "fall_pct": 4.63,
+   "worst_trade": -4521,
+   "worst_day": -5342,
+   "best_trade": 12009,
+   "last": "2025-12-03",
+   "without_best_5": 6147
+  },
+  "2026": {
+   "net": 63994,
+   "r": 37.86,
+   "trades": 50,
+   "wins": 26,
+   "fall_pct": 2.38,
+   "worst_trade": -3873,
+   "worst_day": -2977,
+   "best_trade": 11041,
+   "last": "2026-10-23",
+   "without_best_5": 16622
+  }
+ },
+ "n08_one": {
+  "2023": {
+   "net": -37375,
+   "r": -49.41,
+   "trades": 85,
+   "wins": 20,
+   "fall_pct": 17.22,
+   "worst_trade": -2398,
+   "worst_day": -4258,
+   "best_trade": 7252,
+   "last": "2023-12-27",
+   "without_best_5": -59995
+  },
+  "2024": {
+   "net": 45221,
+   "r": 33.28,
+   "trades": 29,
+   "wins": 15,
+   "fall_pct": 1.63,
+   "worst_trade": -2850,
+   "worst_day": -2505,
+   "best_trade": 12506,
+   "last": "2024-12-16",
+   "without_best_5": 721
+  },
+  "2025": {
+   "net": 46037,
+   "r": 31.78,
+   "trades": 79,
+   "wins": 38,
+   "fall_pct": 4.63,
+   "worst_trade": -4521,
+   "worst_day": -5342,
+   "best_trade": 12009,
+   "last": "2025-12-03",
+   "without_best_5": 6147
+  },
+  "2026": {
+   "net": 63994,
+   "r": 37.86,
+   "trades": 50,
+   "wins": 26,
+   "fall_pct": 2.38,
+   "worst_trade": -3873,
+   "worst_day": -2977,
+   "best_trade": 11041,
+   "last": "2026-10-23",
+   "without_best_5": 16622
+  }
+ },
+ "costs": {
+  "COST|N09|none": {
+   "2023": -25064,
+   "2024": 73094,
+   "2025": 64683,
+   "2026": 95089
+  },
+  "COST|N08|none": {
+   "2023": -29465,
+   "2024": 84819,
+   "2025": 76005,
+   "2026": 121621
+  },
+  "COST|N09|double": {
+   "2023": -38237,
+   "2024": 57334,
+   "2025": 29624,
+   "2026": 70809
+  },
+  "COST|N08|double": {
+   "2023": -37989,
+   "2024": 67769,
+   "2025": 39796,
+   "2026": 94112
+  }
+ },
+ "accounts": {
+  "N08": {
+   "net": -37581,
+   "r": -36.17,
+   "trades": 56,
+   "wins": 11,
+   "fall_pct": 15.08,
+   "worst_trade": -3016,
+   "worst_day": -5509,
+   "best_trade": 7252,
+   "last": "2023-10-03",
+   "without_best_5": -53895,
+   "end_equity": 212419,
+   "by_year": {
+    "2023": -37581,
+    "2024": 0,
+    "2025": 0,
+    "2026": 0
+   },
+   "trades_by_year": {
+    "2023": 56,
+    "2024": 0,
+    "2025": 0,
+    "2026": 0
+   }
+  },
+  "N09": {
+   "net": -38667,
+   "r": -42.17,
+   "trades": 59,
+   "wins": 11,
+   "fall_pct": 15.52,
+   "worst_trade": -3016,
+   "worst_day": -5509,
+   "best_trade": 7252,
+   "last": "2023-11-13",
+   "without_best_5": -54980,
+   "end_equity": 211333,
+   "by_year": {
+    "2023": -38667,
+    "2024": 0,
+    "2025": 0,
+    "2026": 0
+   },
+   "trades_by_year": {
+    "2023": 59,
+    "2024": 0,
+    "2025": 0,
+    "2026": 0
+   }
+  },
+  "N08|ANNUAL": {
+   "net": 191234,
+   "r": 65.51,
+   "trades": 212,
+   "wins": 89,
+   "fall_pct": 15.08,
+   "worst_trade": -5498,
+   "worst_day": -9720,
+   "best_trade": 22120,
+   "last": "2026-10-23",
+   "without_best_5": 91755,
+   "end_equity": 441234,
+   "by_year": {
+    "2023": -37581,
+    "2024": 38043,
+    "2025": 61023,
+    "2026": 129749
+   },
+   "trades_by_year": {
+    "2023": 56,
+    "2024": 27,
+    "2025": 75,
+    "2026": 54
+   }
+  },
+  "N08|SHADOW": {
+   "net": 186635,
+   "r": 57.86,
+   "trades": 205,
+   "wins": 84,
+   "fall_pct": 15.08,
+   "worst_trade": -5498,
+   "worst_day": -9720,
+   "best_trade": 22120,
+   "last": "2026-10-23",
+   "without_best_5": 87156,
+   "end_equity": 436635,
+   "by_year": {
+    "2023": -37581,
+    "2024": 29978,
+    "2025": 64488,
+    "2026": 129749
+   },
+   "trades_by_year": {
+    "2023": 56,
+    "2024": 20,
+    "2025": 75,
+    "2026": 54
+   }
+  },
+  "N09|ANNUAL": {
+   "net": 143989,
+   "r": 61.4,
+   "trades": 213,
+   "wins": 89,
+   "fall_pct": 15.52,
+   "worst_trade": -5498,
+   "worst_day": -9720,
+   "best_trade": 22120,
+   "last": "2026-10-23",
+   "without_best_5": 61437,
+   "end_equity": 393989,
+   "by_year": {
+    "2023": -38667,
+    "2024": 37951,
+    "2025": 46823,
+    "2026": 97882
+   },
+   "trades_by_year": {
+    "2023": 59,
+    "2024": 27,
+    "2025": 75,
+    "2026": 52
+   }
+  },
+  "N09|SHADOW": {
+   "net": 138692,
+   "r": 53.16,
+   "trades": 206,
+   "wins": 84,
+   "fall_pct": 15.52,
+   "worst_trade": -5498,
+   "worst_day": -9720,
+   "best_trade": 22120,
+   "last": "2026-10-23",
+   "without_best_5": 56140,
+   "end_equity": 388692,
+   "by_year": {
+    "2023": -38667,
+    "2024": 29886,
+    "2025": 49591,
+    "2026": 97882
+   },
+   "trades_by_year": {
+    "2023": 59,
+    "2024": 20,
+    "2025": 75,
+    "2026": 52
+   }
+  }
+ },
+ "checks": {
+  "1_one_lot": false,
+  "2_total_85pct": false,
+  "3_2023": false,
+  "4_worst_trade_and_day": true,
+  "5_account": true,
+  "6_double_cost": true,
+  "7_pbo": true,
+  "8_without_best_five": true
+ },
+ "lead": false,
+ "qualified": false,
+ "can_place_orders": false
+}

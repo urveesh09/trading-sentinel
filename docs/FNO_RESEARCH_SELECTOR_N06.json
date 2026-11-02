@@ -1,0 +1,20 @@
+{
+  "schema": "n06_selector_checkpoint_v1",
+  "status": "UNQUALIFIED_SEEN_DATA_RESEARCH",
+  "study": "docs/research/simulation/2026-11-01-fno-variant-selector",
+  "source_commit": "a5b2d7c76ac6f37680d307594da7bcdb854e2185",
+  "results_commit": "4525278348f1e87240a9f77442f482d4c1363303",
+  "decision_manifest_sha256": "1b1d706b06fadb065ddce718c749c9bb5938afc485d62d124000c01935d78467",
+  "freeze_sha256": "7d07108328fbb5b46b32d967aca6eb52954d16259c426b1fd09697cedd3d1355",
+  "results_sha256": "e8b8e9557d10b94a7d26c9c20f14b5b5f9a3f98ec50fac6ed673c70bbecc148c",
+  "passing": [],
+  "qualified": false,
+  "production_changed": false,
+  "can_place_orders": false,
+  "preserve": [
+    "BALANCED_RETEST_N03",
+    "BALANCED_RETEST_STALL_N04",
+    "STRUCTURAL_RETEST_N05"
+  ],
+  "next": "Fresh keyed execution/shadow evidence; no additional sizing or2023 exam without separate decision"
+}

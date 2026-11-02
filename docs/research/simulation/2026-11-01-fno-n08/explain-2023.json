@@ -1,0 +1,530 @@
+{
+ "years": {
+  "2023": {
+   "index_change_pct": 19.4,
+   "median_atr_pct": 0.82,
+   "median_range_pct": 0.71,
+   "n07_nobrake": {
+    "trades": 94,
+    "win_pct": 23,
+    "gross_positive_pct": 29,
+    "net": -60167,
+    "fall_pct": 28.61,
+    "median_premium": 100.4,
+    "median_stop_points": 25.5,
+    "median_cost_share_of_R_pct": 16,
+    "avg_win": 2071,
+    "avg_loss": -1468
+   },
+   "n08_nobrake": {
+    "net": -58321,
+    "fall_pct": 27.83,
+    "trades": 85,
+    "win_pct": 24
+   },
+   "all_nobrake": {
+    "N03": -57144,
+    "N04": -61283,
+    "N05": -60709,
+    "N07": -60167,
+    "N08": -58321
+   },
+   "random_one_lot_after_200": {
+    "median": -67534,
+    "best": -6203,
+    "worst": -176816,
+    "positive": 0,
+    "books": 20
+   }
+  },
+  "2024": {
+   "index_change_pct": 9.0,
+   "median_atr_pct": 1.05,
+   "median_range_pct": 0.85,
+   "n07_nobrake": {
+    "trades": 34,
+    "win_pct": 50,
+    "gross_positive_pct": 56,
+    "net": 52153,
+    "fall_pct": 2.16,
+    "median_premium": 157.3,
+    "median_stop_points": 36.0,
+    "median_cost_share_of_R_pct": 10,
+    "avg_win": 4534,
+    "avg_loss": -1466
+   },
+   "n08_nobrake": {
+    "net": 76294,
+    "fall_pct": 2.16,
+    "trades": 29,
+    "win_pct": 52
+   },
+   "all_nobrake": {
+    "N03": 50362,
+    "N04": 45516,
+    "N05": 51413,
+    "N07": 52153,
+    "N08": 76294
+   },
+   "random_one_lot_after_200": {
+    "median": -57820,
+    "best": 7176,
+    "worst": -161509,
+    "positive": 1,
+    "books": 20
+   }
+  },
+  "2025": {
+   "index_change_pct": 10.1,
+   "median_atr_pct": 0.93,
+   "median_range_pct": 0.8,
+   "n07_nobrake": {
+    "trades": 87,
+    "win_pct": 47,
+    "gross_positive_pct": 51,
+    "net": 43303,
+    "fall_pct": 6.2,
+    "median_premium": 164.8,
+    "median_stop_points": 34.3,
+    "median_cost_share_of_R_pct": 10,
+    "avg_win": 3011,
+    "avg_loss": -1743
+   },
+   "n08_nobrake": {
+    "net": 55082,
+    "fall_pct": 5.66,
+    "trades": 79,
+    "win_pct": 48
+   },
+   "all_nobrake": {
+    "N03": 40111,
+    "N04": 45906,
+    "N05": 41383,
+    "N07": 43303,
+    "N08": 55082
+   },
+   "random_one_lot_after_200": {
+    "median": -81353,
+    "best": -3777,
+    "worst": -187677,
+    "positive": 0,
+    "books": 20
+   }
+  },
+  "2026": {
+   "index_change_pct": -13.2,
+   "median_atr_pct": 1.23,
+   "median_range_pct": 1.06,
+   "n07_nobrake": {
+    "trades": 56,
+    "win_pct": 50,
+    "gross_positive_pct": 55,
+    "net": 59899,
+    "fall_pct": 2.76,
+    "median_premium": 184.7,
+    "median_stop_points": 42.4,
+    "median_cost_share_of_R_pct": 9,
+    "avg_win": 3655,
+    "avg_loss": -1515
+   },
+   "n08_nobrake": {
+    "net": 93863,
+    "fall_pct": 2.69,
+    "trades": 51,
+    "win_pct": 51
+   },
+   "all_nobrake": {
+    "N03": 52935,
+    "N04": 59899,
+    "N05": 57934,
+    "N07": 59899,
+    "N08": 93863
+   },
+   "random_one_lot_after_200": {
+    "median": -40059,
+    "best": 7485,
+    "worst": -129201,
+    "positive": 2,
+    "books": 20
+   }
+  }
+ },
+ "atr_bands_n07": {
+  "0-0.7%": {
+   "2023": {
+    "sessions": 13,
+    "trades": 2,
+    "wins": 0,
+    "net": -4099
+   },
+   "2024": {
+    "sessions": 0,
+    "trades": 0,
+    "wins": 0,
+    "net": 0
+   },
+   "2025": {
+    "sessions": 12,
+    "trades": 7,
+    "wins": 5,
+    "net": 13104
+   },
+   "2026": {
+    "sessions": 7,
+    "trades": 0,
+    "wins": 0,
+    "net": 0
+   }
+  },
+  "0.7-0.85%": {
+   "2023": {
+    "sessions": 130,
+    "trades": 47,
+    "wins": 11,
+    "net": -33439
+   },
+   "2024": {
+    "sessions": 27,
+    "trades": 6,
+    "wins": 3,
+    "net": -2104
+   },
+   "2025": {
+    "sessions": 105,
+    "trades": 25,
+    "wins": 13,
+    "net": 15295
+   },
+   "2026": {
+    "sessions": 7,
+    "trades": 1,
+    "wins": 0,
+    "net": -2006
+   }
+  },
+  "0.85-1.0%": {
+   "2023": {
+    "sessions": 35,
+    "trades": 17,
+    "wins": 4,
+    "net": -7534
+   },
+   "2024": {
+    "sessions": 58,
+    "trades": 9,
+    "wins": 6,
+    "net": 30159
+   },
+   "2025": {
+    "sessions": 11,
+    "trades": 7,
+    "wins": 5,
+    "net": 4349
+   },
+   "2026": {
+    "sessions": 38,
+    "trades": 8,
+    "wins": 4,
+    "net": 3059
+   }
+  },
+  "1.0-1.25%": {
+   "2023": {
+    "sessions": 57,
+    "trades": 19,
+    "wins": 4,
+    "net": -16767
+   },
+   "2024": {
+    "sessions": 128,
+    "trades": 15,
+    "wins": 6,
+    "net": 13172
+   },
+   "2025": {
+    "sessions": 92,
+    "trades": 40,
+    "wins": 15,
+    "net": 11253
+   },
+   "2026": {
+    "sessions": 55,
+    "trades": 12,
+    "wins": 3,
+    "net": 5620
+   }
+  },
+  "1.25-9%": {
+   "2023": {
+    "sessions": 11,
+    "trades": 9,
+    "wins": 3,
+    "net": 1673
+   },
+   "2024": {
+    "sessions": 36,
+    "trades": 4,
+    "wins": 2,
+    "net": 10925
+   },
+   "2025": {
+    "sessions": 29,
+    "trades": 8,
+    "wins": 3,
+    "net": -698
+   },
+   "2026": {
+    "sessions": 96,
+    "trades": 35,
+    "wins": 21,
+    "net": 53225
+   }
+  }
+ },
+ "atr_bands_n08": {
+  "0-0.7%": {
+   "2023": {
+    "trades": 2,
+    "wins": 0,
+    "net": -4099
+   },
+   "2024": {
+    "trades": 0,
+    "wins": 0,
+    "net": 0
+   },
+   "2025": {
+    "trades": 6,
+    "wins": 5,
+    "net": 14443
+   },
+   "2026": {
+    "trades": 0,
+    "wins": 0,
+    "net": 0
+   }
+  },
+  "0.7-0.85%": {
+   "2023": {
+    "trades": 46,
+    "wins": 11,
+    "net": -36431
+   },
+   "2024": {
+    "trades": 6,
+    "wins": 3,
+    "net": -2104
+   },
+   "2025": {
+    "trades": 22,
+    "wins": 11,
+    "net": 14749
+   },
+   "2026": {
+    "trades": 1,
+    "wins": 0,
+    "net": -2006
+   }
+  },
+  "0.85-1.0%": {
+   "2023": {
+    "trades": 15,
+    "wins": 3,
+    "net": -9258
+   },
+   "2024": {
+    "trades": 8,
+    "wins": 5,
+    "net": 29348
+   },
+   "2025": {
+    "trades": 7,
+    "wins": 5,
+    "net": 4349
+   },
+   "2026": {
+    "trades": 7,
+    "wins": 4,
+    "net": 11617
+   }
+  },
+  "1.0-1.25%": {
+   "2023": {
+    "trades": 16,
+    "wins": 3,
+    "net": -17373
+   },
+   "2024": {
+    "trades": 12,
+    "wins": 5,
+    "net": 23944
+   },
+   "2025": {
+    "trades": 36,
+    "wins": 14,
+    "net": 22239
+   },
+   "2026": {
+    "trades": 9,
+    "wins": 2,
+    "net": 7444
+   }
+  },
+  "1.25-9%": {
+   "2023": {
+    "trades": 6,
+    "wins": 3,
+    "net": 8840
+   },
+   "2024": {
+    "trades": 3,
+    "wins": 2,
+    "net": 25106
+   },
+   "2025": {
+    "trades": 8,
+    "wins": 3,
+    "net": -698
+   },
+   "2026": {
+    "trades": 34,
+    "wins": 20,
+    "net": 76808
+   }
+  }
+ },
+ "one_account": {
+  "N03": {
+   "by_year": {
+    "2023": {
+     "trades": 41,
+     "net": -37802
+    },
+    "2024": {
+     "trades": 0,
+     "net": 0
+    },
+    "2025": {
+     "trades": 0,
+     "net": 0
+    },
+    "2026": {
+     "trades": 0,
+     "net": 0
+    }
+   },
+   "end": 212198,
+   "last_trade": "2023-07-07"
+  },
+  "N04": {
+   "by_year": {
+    "2023": {
+     "trades": 50,
+     "net": -38195
+    },
+    "2024": {
+     "trades": 0,
+     "net": 0
+    },
+    "2025": {
+     "trades": 0,
+     "net": 0
+    },
+    "2026": {
+     "trades": 0,
+     "net": 0
+    }
+   },
+   "end": 211805,
+   "last_trade": "2023-07-25"
+  },
+  "N05": {
+   "by_year": {
+    "2023": {
+     "trades": 40,
+     "net": -37726
+    },
+    "2024": {
+     "trades": 0,
+     "net": 0
+    },
+    "2025": {
+     "trades": 0,
+     "net": 0
+    },
+    "2026": {
+     "trades": 0,
+     "net": 0
+    }
+   },
+   "end": 212274,
+   "last_trade": "2023-07-07"
+  },
+  "N07": {
+   "by_year": {
+    "2023": {
+     "trades": 44,
+     "net": -37719
+    },
+    "2024": {
+     "trades": 0,
+     "net": 0
+    },
+    "2025": {
+     "trades": 0,
+     "net": 0
+    },
+    "2026": {
+     "trades": 0,
+     "net": 0
+    }
+   },
+   "end": 212281,
+   "last_trade": "2023-07-12"
+  },
+  "N08": {
+   "by_year": {
+    "2023": {
+     "trades": 56,
+     "net": -37581
+    },
+    "2024": {
+     "trades": 0,
+     "net": 0
+    },
+    "2025": {
+     "trades": 0,
+     "net": 0
+    },
+    "2026": {
+     "trades": 0,
+     "net": 0
+    }
+   },
+   "end": 212419,
+   "last_trade": "2023-10-03"
+  }
+ },
+ "one_lot_2023_start": {
+  "N07 at one lot from 12500": {
+   "below_7000_on": "2023-02-06",
+   "after_trades": 8,
+   "end_cash": 6160
+  },
+  "N07 at one lot from 15000": {
+   "below_7000_on": "2023-02-13",
+   "after_trades": 10,
+   "end_cash": 6278
+  },
+  "N08's one-lot parts from 12500": {
+   "below_7000_on": "2023-02-06",
+   "after_trades": 7,
+   "end_cash": 6026
+  },
+  "N08's one-lot parts from 15000": {
+   "below_7000_on": "2023-02-06",
+   "after_trades": 8,
+   "end_cash": 6976
+  }
+ }
+}

@@ -1,0 +1,115 @@
+{
+  "records": [
+    {
+      "year": "2025",
+      "opportunity": {
+        "entry_time": "2025-08-19T13:40:59+05:30",
+        "tradingsymbol": "NIFTY25082125050PE",
+        "direction": "SHORT",
+        "entry_premium": 118.75,
+        "entry_underlying": 25015.0,
+        "initial_stop_underlying": 25045.0,
+        "initial_target_underlying": 24961.839999999997,
+        "bar_ts": "2025-08-19 13:35:00",
+        "entry_expert": "EFF"
+      },
+      "struct_admission": "N05/2025/672f55ea91d8a155/60",
+      "stall_admission": "N05/2025/d1d38a917b1c9b89/60",
+      "struct_qty": 65,
+      "stall_qty": 130,
+      "struct_net": -909.5206,
+      "stall_net": -10.749,
+      "actual_cash_contribution_delta": 898.7715999999999,
+      "same_exit": false
+    },
+    {
+      "year": "2026",
+      "opportunity": {
+        "entry_time": "2026-04-08T12:45:59+05:30",
+        "tradingsymbol": "NIFTY26041323950CE",
+        "direction": "LONG",
+        "entry_premium": 212.9,
+        "entry_underlying": 23986.1,
+        "initial_stop_underlying": 23948.003987996613,
+        "initial_target_underlying": 24135.988036010163,
+        "bar_ts": "2026-04-08 12:40:00",
+        "entry_expert": "TPB"
+      },
+      "struct_admission": "N05/2026/672f55ea91d8a155/28",
+      "stall_admission": "N05/2026/d1d38a917b1c9b89/28",
+      "struct_qty": 65,
+      "stall_qty": 130,
+      "struct_net": 2115.3721,
+      "stall_net": 4267.9441,
+      "actual_cash_contribution_delta": 2152.5719999999997,
+      "same_exit": true
+    },
+    {
+      "year": "2026",
+      "opportunity": {
+        "entry_time": "2026-10-08T10:36:59+05:30",
+        "tradingsymbol": "NIFTY26101322550PE",
+        "direction": "SHORT",
+        "entry_premium": 187.35,
+        "entry_underlying": 22506.0,
+        "initial_stop_underlying": 22549.532074238534,
+        "initial_target_underlying": 22425.122266370636,
+        "bar_ts": "2026-10-08 10:30:00",
+        "entry_expert": "OR20"
+      },
+      "struct_admission": "N05/2026/672f55ea91d8a155/50",
+      "stall_admission": "N05/2026/d1d38a917b1c9b89/50",
+      "struct_qty": 130,
+      "stall_qty": 195,
+      "struct_net": 6760.5381,
+      "stall_net": 10149.4071,
+      "actual_cash_contribution_delta": 3388.8690000000006,
+      "same_exit": true
+    },
+    {
+      "year": "2026",
+      "opportunity": {
+        "entry_time": "2026-04-10T12:00:59+05:30",
+        "tradingsymbol": "NIFTY26041324000CE",
+        "direction": "LONG",
+        "entry_premium": 146.75,
+        "entry_underlying": 24035.0,
+        "initial_stop_underlying": 23998.534679996228,
+        "initial_target_underlying": 24152.395960011316,
+        "bar_ts": "2026-04-10 11:55:00",
+        "entry_expert": "TPB"
+      },
+      "struct_admission": "N05/2026/672f55ea91d8a155/29",
+      "stall_admission": "N05/2026/d1d38a917b1c9b89/29",
+      "struct_qty": 130,
+      "stall_qty": 195,
+      "struct_net": -3360.4503,
+      "stall_net": -5032.0755,
+      "actual_cash_contribution_delta": -1671.6252,
+      "same_exit": true
+    },
+    {
+      "year": "2026",
+      "opportunity": {
+        "entry_time": "2026-10-21T10:40:59+05:30",
+        "tradingsymbol": "NIFTY26102723050PE",
+        "direction": "SHORT",
+        "entry_premium": 198.3,
+        "entry_underlying": 22993.0,
+        "initial_stop_underlying": 23046.158146928992,
+        "initial_target_underlying": 22874.915335527814,
+        "bar_ts": "2026-10-21 10:35:00",
+        "entry_expert": "OR20"
+      },
+      "struct_admission": "N05/2026/672f55ea91d8a155/54",
+      "stall_admission": "N05/2026/d1d38a917b1c9b89/54",
+      "struct_qty": 65,
+      "stall_qty": 130,
+      "struct_net": 9013.8528,
+      "stall_net": 18064.9055,
+      "actual_cash_contribution_delta": 9051.0527,
+      "same_exit": true
+    }
+  ],
+  "note": "Actual separate-book quantities/cash contributions; not identical-entry economics, not hypothetical scaled P&L or leverage recommendation. Prior loss history/cash/risk gates differ."
+}

@@ -1,0 +1,25 @@
+{
+  "years": {
+    "2024": {
+      "year": "2024",
+      "sessions_checked": 248,
+      "raw_observations_identical_to_cache": true,
+      "all_frozen_bindings_match": true
+    },
+    "2025": {
+      "year": "2025",
+      "sessions_checked": 248,
+      "raw_observations_identical_to_cache": true,
+      "all_frozen_bindings_match": true
+    },
+    "2026": {
+      "year": "2026",
+      "sessions_checked": 203,
+      "raw_observations_identical_to_cache": true,
+      "all_frozen_bindings_match": true
+    }
+  },
+  "total_sessions_checked": 699,
+  "new_api_calls": 0,
+  "datasets_edited": false
+}

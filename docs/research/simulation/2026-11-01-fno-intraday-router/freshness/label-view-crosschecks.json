@@ -1,0 +1,23 @@
+{
+  "2024": {
+    "records": 1283,
+    "cells_changed": 0,
+    "economic_fields_changed": 0,
+    "original_sha256": "925a52b8ef057cd872f4bf2721372c498784e160e962b4286fe031a93a330aab",
+    "corrected_sha256": "925a52b8ef057cd872f4bf2721372c498784e160e962b4286fe031a93a330aab"
+  },
+  "2025": {
+    "records": 1287,
+    "cells_changed": 0,
+    "economic_fields_changed": 0,
+    "original_sha256": "e455cc74890ecc9058abf4d18db214e0e27f55159177b7bba062b18b108e404e",
+    "corrected_sha256": "e455cc74890ecc9058abf4d18db214e0e27f55159177b7bba062b18b108e404e"
+  },
+  "2026": {
+    "records": 1099,
+    "cells_changed": 0,
+    "economic_fields_changed": 0,
+    "original_sha256": "81fb48580b4d06fe3224b4318f1fb0422af8b5aa043584384f991561faf9fb0a",
+    "corrected_sha256": "81fb48580b4d06fe3224b4318f1fb0422af8b5aa043584384f991561faf9fb0a"
+  }
+}

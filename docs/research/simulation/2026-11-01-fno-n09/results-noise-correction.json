@@ -1,0 +1,268 @@
+{
+ "books": {
+  "ONE|NOISE_TEXTBOOK": {
+   "gates": {
+    "g1_2023": false,
+    "g2_net_and_r": false,
+    "g3_years": false,
+    "g4_worst_day": false,
+    "g5_not_five_days": false,
+    "g6_t": false
+   },
+   "passes": false,
+   "t": -2.81,
+   "gain": -346108,
+   "gain_without_best_5_days": -478343,
+   "worst_day": -12464,
+   "by_year": {
+    "2023": {
+     "net": -100124,
+     "r": -26.47,
+     "trades": 237,
+     "wins": 52,
+     "fall_pct": 42.98,
+     "worst_trade": -3427,
+     "worst_day": -8612,
+     "best_trade": 10271,
+     "last": "2023-12-27",
+     "without_best_5": -139260
+    },
+    "2024": {
+     "net": 53838,
+     "r": 0.77,
+     "trades": 232,
+     "wins": 68,
+     "fall_pct": 11.79,
+     "worst_trade": -5881,
+     "worst_day": -7905,
+     "best_trade": 18187,
+     "last": "2024-12-31",
+     "without_best_5": -20533
+    },
+    "2025": {
+     "net": -101913,
+     "r": -11.81,
+     "trades": 206,
+     "wins": 51,
+     "fall_pct": 45.67,
+     "worst_trade": -4918,
+     "worst_day": -12464,
+     "best_trade": 16465,
+     "last": "2025-12-29",
+     "without_best_5": -160838
+    },
+    "2026": {
+     "net": -80033,
+     "r": -7.21,
+     "trades": 178,
+     "wins": 45,
+     "fall_pct": 42.07,
+     "worst_trade": -4885,
+     "worst_day": -8098,
+     "best_trade": 10528,
+     "last": "2026-10-26",
+     "without_best_5": -123486
+    }
+   },
+   "net_total": -228232,
+   "r_total": -44.72,
+   "pairing": {
+    "kept": 16,
+    "kept_change": -6957,
+    "missed_winners": 91,
+    "missed_winners_rs": 268854,
+    "avoided_losers": 136,
+    "avoided_losers_rs": -174102,
+    "new_winners": 210,
+    "new_winners_rs": 756293,
+    "new_losers": 627,
+    "new_losers_rs": -1000691
+   },
+   "extra_cost": 174865,
+   "before_extra_cost": -53366,
+   "exits": {
+    "n09_noise_trail": 389,
+    "hard_flat_1510": 245,
+    "premium_backstop": 217,
+    "underlying_stop": 2
+   }
+  },
+  "ONE|NOISE_HOUSE": {
+   "gates": {
+    "g1_2023": false,
+    "g2_net_and_r": false,
+    "g3_years": false,
+    "g4_worst_day": false,
+    "g5_not_five_days": false,
+    "g6_t": false
+   },
+   "passes": false,
+   "t": -2.38,
+   "gain": -221085,
+   "gain_without_best_5_days": -322196,
+   "worst_day": -9798,
+   "by_year": {
+    "2023": {
+     "net": -56135,
+     "r": -16.54,
+     "trades": 147,
+     "wins": 33,
+     "fall_pct": 29.38,
+     "worst_trade": -3425,
+     "worst_day": -5363,
+     "best_trade": 7251,
+     "last": "2023-12-27",
+     "without_best_5": -86513
+    },
+    "2024": {
+     "net": 1598,
+     "r": 0.07,
+     "trades": 108,
+     "wins": 29,
+     "fall_pct": 13.29,
+     "worst_trade": -5881,
+     "worst_day": -7779,
+     "best_trade": 14251,
+     "last": "2024-12-31",
+     "without_best_5": -58217
+    },
+    "2025": {
+     "net": -28106,
+     "r": -2.76,
+     "trades": 148,
+     "wins": 44,
+     "fall_pct": 14.87,
+     "worst_trade": -6289,
+     "worst_day": -9798,
+     "best_trade": 16465,
+     "last": "2025-12-26",
+     "without_best_5": -85275
+    },
+    "2026": {
+     "net": -20566,
+     "r": -2.36,
+     "trades": 131,
+     "wins": 39,
+     "fall_pct": 29.91,
+     "worst_trade": -5053,
+     "worst_day": -9617,
+     "best_trade": 14771,
+     "last": "2026-10-21",
+     "without_best_5": -73777
+    }
+   },
+   "net_total": -103209,
+   "r_total": -21.59,
+   "pairing": {
+    "kept": 16,
+    "kept_change": -7730,
+    "missed_winners": 94,
+    "missed_winners_rs": 282422,
+    "avoided_losers": 133,
+    "avoided_losers_rs": -170537,
+    "new_winners": 141,
+    "new_winners_rs": 501699,
+    "new_losers": 377,
+    "new_losers_rs": -603169
+   },
+   "extra_cost": 109470,
+   "before_extra_cost": 6261,
+   "exits": {
+    "n09_noise_trail": 264,
+    "hard_flat_1510": 151,
+    "premium_backstop": 118,
+    "underlying_stop": 1
+   }
+  },
+  "ONE|N08+NOISE": {
+   "gates": {
+    "g1_2023": false,
+    "g2_net_and_r": false,
+    "g3_years": false,
+    "g4_worst_day": false,
+    "g5_not_five_days": false,
+    "g6_t": false
+   },
+   "passes": false,
+   "t": -1.75,
+   "gain": -150139,
+   "gain_without_best_5_days": -255199,
+   "worst_day": -9617,
+   "by_year": {
+    "2023": {
+     "net": -78378,
+     "r": -51.04,
+     "trades": 193,
+     "wins": 42,
+     "fall_pct": 36.8,
+     "worst_trade": -3425,
+     "worst_day": -5870,
+     "best_trade": 7252,
+     "last": "2023-12-27",
+     "without_best_5": -111024
+    },
+    "2024": {
+     "net": 63489,
+     "r": 36.77,
+     "trades": 130,
+     "wins": 44,
+     "fall_pct": 10.82,
+     "worst_trade": -5881,
+     "worst_day": -7779,
+     "best_trade": 14251,
+     "last": "2024-12-31",
+     "without_best_5": 517
+    },
+    "2025": {
+     "net": 2675,
+     "r": 25.27,
+     "trades": 183,
+     "wins": 65,
+     "fall_pct": 13.67,
+     "worst_trade": -6289,
+     "worst_day": -9615,
+     "best_trade": 16465,
+     "last": "2025-12-26",
+     "without_best_5": -57473
+    },
+    "2026": {
+     "net": -20048,
+     "r": 3.24,
+     "trades": 151,
+     "wins": 47,
+     "fall_pct": 30.71,
+     "worst_trade": -5053,
+     "worst_day": -9617,
+     "best_trade": 11136,
+     "last": "2026-10-23",
+     "without_best_5": -70714
+    }
+   },
+   "net_total": -32262,
+   "r_total": 14.24,
+   "pairing": {
+    "kept": 153,
+    "kept_change": -1588,
+    "missed_winners": 39,
+    "missed_winners_rs": 109954,
+    "avoided_losers": 51,
+    "avoided_losers_rs": -65300,
+    "new_winners": 138,
+    "new_winners_rs": 484301,
+    "new_losers": 366,
+    "new_losers_rs": -588198
+   },
+   "extra_cost": 134685,
+   "before_extra_cost": 102423,
+   "exits": {
+    "n09_noise_trail": 248,
+    "hard_flat_1510": 172,
+    "premium_backstop": 114,
+    "underlying_stop": 50,
+    "time_stop": 45,
+    "trail_stop": 20
+   }
+  }
+ },
+ "joins": false
+}

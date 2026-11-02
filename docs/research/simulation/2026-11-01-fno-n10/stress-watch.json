@@ -1,0 +1,62 @@
+{
+ "NONE": {
+  "worst_end": 211290,
+  "median_end": 367877,
+  "best_end": 505975,
+  "below_start": 67
+ },
+ "CUSHION": {
+  "worst_end": 215291,
+  "median_end": 342954,
+  "best_end": 505975,
+  "below_start": 50
+ },
+ "WATCH": {
+  "worst_end": 190822,
+  "median_end": 362226,
+  "best_end": 505975,
+  "below_start": 13
+ },
+ "WATCH_vs_NONE": {
+  "helps": 80,
+  "hurts": 98,
+  "same": 78,
+  "largest_gain": 175229,
+  "largest_cost": -41257
+ },
+ "WATCH_vs_CUSHION": {
+  "helps": 113,
+  "hurts": 25,
+  "same": 118,
+  "largest_gain": 169338,
+  "largest_cost": -30320
+ },
+ "lowest_equity_with_watch": 190648,
+ "most_slices": 4,
+ "named": {
+  "2023,2024,2025,2026": {
+   "NONE": 212136,
+   "CUSHION": 345363,
+   "WATCH": 363534,
+   "slices": 1
+  },
+  "2023 twice,2024,2025": {
+   "NONE": 212136,
+   "CUSHION": 216788,
+   "WATCH": 286883,
+   "slices": 2
+  },
+  "2023 three times,2024": {
+   "NONE": 212136,
+   "CUSHION": 218842,
+   "WATCH": 216310,
+   "slices": 2
+  },
+  "2023 four times": {
+   "NONE": 212136,
+   "CUSHION": 216393,
+   "WATCH": 191836,
+   "slices": 2
+  }
+ }
+}

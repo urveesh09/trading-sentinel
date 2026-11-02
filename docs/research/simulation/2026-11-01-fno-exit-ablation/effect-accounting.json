@@ -1,0 +1,1047 @@
+{
+  "status": "POST_RUN_DESCRIPTIVE_NOT_ROUTING",
+  "limit": "Exact-entry exit pairs require identical immutable economic admission terms; unmatched or resized trades are not paired. Contribution deltas account for full actual paths, not a separately tradable causal decomposition.",
+  "books": {
+    "NORMAL|MAIN|STALL_ONLY": {
+      "2024": {
+        "baseline_net": 16371.283600000002,
+        "candidate_net": 5889.716800000001,
+        "whole_book_delta": -10481.5668,
+        "eff_delta": -10560.955299999998,
+        "other_members_delta": 79.3884999999973,
+        "baseline_entries": 25,
+        "candidate_entries": 22,
+        "same_economic_admissions": 20,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "bar": "2024-01-20 11:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -79.3885
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -17055.6827,
+        "exact_entry_pairs_eff_exit_delta": -17055.6827
+      },
+      "2025": {
+        "baseline_net": 5709.834899999998,
+        "candidate_net": 279.2469999999986,
+        "whole_book_delta": -5430.5878999999995,
+        "eff_delta": -1852.8509999999987,
+        "other_members_delta": -3577.7369,
+        "baseline_entries": 50,
+        "candidate_entries": 50,
+        "same_economic_admissions": 40,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-29T11:36:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-01-29T13:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:15:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T09:51:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T12:40:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T09:45:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-18T10:03:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": -3707.6164,
+        "exact_entry_pairs_eff_exit_delta": -3707.6164
+      },
+      "2026": {
+        "baseline_net": 30540.2141,
+        "candidate_net": 47191.0836,
+        "whole_book_delta": 16650.869499999997,
+        "eff_delta": 17741.339600000007,
+        "other_members_delta": -1090.4701000000096,
+        "baseline_entries": 33,
+        "candidate_entries": 34,
+        "same_economic_admissions": 26,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2026-09-28T10:25:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-09-28T09:55:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-01T12:12:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-09T12:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-14T13:51:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-08T12:45:59+05:30",
+            "bar": "2026-04-08 12:40:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": 2115.3721
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 10655.7468,
+        "exact_entry_pairs_eff_exit_delta": 10655.7468
+      }
+    },
+    "NORMAL|MAIN|CONTINUE_ONLY": {
+      "2024": {
+        "baseline_net": 16371.283600000002,
+        "candidate_net": 16371.283600000002,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 25,
+        "candidate_entries": 25,
+        "same_economic_admissions": 25,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2025": {
+        "baseline_net": 5709.834899999998,
+        "candidate_net": 5709.834899999998,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 50,
+        "candidate_entries": 50,
+        "same_economic_admissions": 50,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2026": {
+        "baseline_net": 30540.2141,
+        "candidate_net": 30540.2141,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 33,
+        "candidate_entries": 33,
+        "same_economic_admissions": 33,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      }
+    },
+    "NORMAL|TPB_ONE|STALL_ONLY": {
+      "2024": {
+        "baseline_net": 28539.514499999997,
+        "candidate_net": 17653.106900000006,
+        "whole_book_delta": -10886.407599999991,
+        "eff_delta": -9872.665099999997,
+        "other_members_delta": -1013.7424999999967,
+        "baseline_entries": 44,
+        "candidate_entries": 41,
+        "same_economic_admissions": 39,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "bar": "2024-01-20 11:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -79.3885
+          },
+          {
+            "entry_time": "2024-11-04T09:52:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "SHIPPED",
+            "baseline_net_descriptive": 10320.5932
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -15381.9032,
+        "exact_entry_pairs_eff_exit_delta": -15381.9032
+      },
+      "2025": {
+        "baseline_net": 36173.432,
+        "candidate_net": 32129.097499999993,
+        "whole_book_delta": -4044.334500000008,
+        "eff_delta": -3707.6163999999953,
+        "other_members_delta": -336.7181000000128,
+        "baseline_entries": 98,
+        "candidate_entries": 98,
+        "same_economic_admissions": 95,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-29T11:36:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-01-29T13:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2025-05-30T13:54:59+05:30",
+            "bar": "2025-05-30 13:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -1294.2121
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -3707.6164,
+        "exact_entry_pairs_eff_exit_delta": -3707.6164
+      },
+      "2026": {
+        "baseline_net": 71442.57600000002,
+        "candidate_net": 76763.01400000002,
+        "whole_book_delta": 5320.438000000009,
+        "eff_delta": 7435.810099999999,
+        "other_members_delta": -2115.372099999986,
+        "baseline_entries": 63,
+        "candidate_entries": 63,
+        "same_economic_admissions": 61,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2026-10-15T11:21:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-08T12:45:59+05:30",
+            "bar": "2026-04-08 12:40:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": 2115.3721
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 11392.079999999998,
+        "exact_entry_pairs_eff_exit_delta": 11392.079999999998
+      }
+    },
+    "NORMAL|TPB_ONE|CONTINUE_ONLY": {
+      "2024": {
+        "baseline_net": 28539.514499999997,
+        "candidate_net": 28539.514499999997,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 44,
+        "candidate_entries": 44,
+        "same_economic_admissions": 44,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2025": {
+        "baseline_net": 36173.432,
+        "candidate_net": 36173.432,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 98,
+        "candidate_entries": 98,
+        "same_economic_admissions": 98,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2026": {
+        "baseline_net": 71442.57600000002,
+        "candidate_net": 71442.57600000002,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 63,
+        "candidate_entries": 63,
+        "same_economic_admissions": 63,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      }
+    },
+    "NORMAL|BALANCED_RETEST|STALL_ONLY": {
+      "2024": {
+        "baseline_net": 56191.787500000006,
+        "candidate_net": 51303.4433,
+        "whole_book_delta": -4888.344200000007,
+        "eff_delta": -4888.3442,
+        "other_members_delta": -7.275957614183426e-12,
+        "baseline_entries": 33,
+        "candidate_entries": 33,
+        "same_economic_admissions": 33,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": -4888.3442,
+        "exact_entry_pairs_eff_exit_delta": -4888.3442
+      },
+      "2025": {
+        "baseline_net": 50090.168000000005,
+        "candidate_net": 54051.04769999998,
+        "whole_book_delta": 3960.879699999976,
+        "eff_delta": 3960.8796999999995,
+        "other_members_delta": -2.1827872842550278e-11,
+        "baseline_entries": 80,
+        "candidate_entries": 80,
+        "same_economic_admissions": 79,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-08-19T13:40:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 2426.3314,
+        "exact_entry_pairs_eff_exit_delta": 2426.3314
+      },
+      "2026": {
+        "baseline_net": 54152.56499999999,
+        "candidate_net": 77135.44170000002,
+        "whole_book_delta": 22982.876700000037,
+        "eff_delta": 10117.283099999999,
+        "other_members_delta": 12865.593600000044,
+        "baseline_entries": 56,
+        "candidate_entries": 56,
+        "same_economic_admissions": 51,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2026-04-08T12:45:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-04-10T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-08T10:36:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 130,
+            "candidate_qty": 195,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2026-10-21T10:40:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 65,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-03-25T09:48:59+05:30",
+            "bar": "2026-03-25 09:40:00",
+            "expert": "OR20",
+            "baseline_net_descriptive": 2488.8116
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 10117.2831,
+        "exact_entry_pairs_eff_exit_delta": 10117.2831
+      }
+    },
+    "NORMAL|BALANCED_RETEST|CONTINUE_ONLY": {
+      "2024": {
+        "baseline_net": 56191.787500000006,
+        "candidate_net": 56191.787500000006,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 33,
+        "candidate_entries": 33,
+        "same_economic_admissions": 33,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2025": {
+        "baseline_net": 50090.168000000005,
+        "candidate_net": 50090.168000000005,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 80,
+        "candidate_entries": 80,
+        "same_economic_admissions": 80,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2026": {
+        "baseline_net": 54152.56499999999,
+        "candidate_net": 54152.56499999999,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 56,
+        "candidate_entries": 56,
+        "same_economic_admissions": 56,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      }
+    },
+    "NORMAL|CORE_SELECT|STALL_ONLY": {
+      "2024": {
+        "baseline_net": 16371.283600000002,
+        "candidate_net": 5889.716800000001,
+        "whole_book_delta": -10481.5668,
+        "eff_delta": -10560.955299999998,
+        "other_members_delta": 79.3884999999973,
+        "baseline_entries": 25,
+        "candidate_entries": 22,
+        "same_economic_admissions": 20,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2024-11-05T10:00:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -2579.0977
+          },
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "bar": "2024-01-20 11:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -79.3885
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -17055.6827,
+        "exact_entry_pairs_eff_exit_delta": -17055.6827
+      },
+      "2025": {
+        "baseline_net": 14500.828799999997,
+        "candidate_net": 898.4664999999984,
+        "whole_book_delta": -13602.362299999999,
+        "eff_delta": -5573.442099999997,
+        "other_members_delta": -8028.9202000000005,
+        "baseline_entries": 55,
+        "candidate_entries": 55,
+        "same_economic_admissions": 43,
+        "changed_economic_admissions": [
+          {
+            "entry_time": "2025-01-29T11:36:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-01-29T13:10:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-04T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-04T12:22:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-04T14:09:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-05T09:45:59+05:30",
+            "expert": "OR20",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-03-05T09:52:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:00:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-11T12:15:59+05:30",
+            "expert": "TPB",
+            "baseline_qty": 130,
+            "candidate_qty": 65,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T09:51:59+05:30",
+            "expert": "SHIPPED",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-12T10:30:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          },
+          {
+            "entry_time": "2025-08-13T12:00:59+05:30",
+            "expert": "EFF",
+            "baseline_qty": 195,
+            "candidate_qty": 130,
+            "different_terms": [
+              "initial_quantity"
+            ]
+          }
+        ],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": -7428.2074999999995,
+        "exact_entry_pairs_eff_exit_delta": -7428.2074999999995
+      },
+      "2026": {
+        "baseline_net": 50391.159999999996,
+        "candidate_net": 59448.558999999994,
+        "whole_book_delta": 9057.398999999998,
+        "eff_delta": 11172.771100000004,
+        "other_members_delta": -2115.372100000008,
+        "baseline_entries": 37,
+        "candidate_entries": 38,
+        "same_economic_admissions": 36,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-08T12:45:59+05:30",
+            "bar": "2026-04-08 12:40:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": 2115.3721
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 10091.3328,
+        "exact_entry_pairs_eff_exit_delta": 10091.3328
+      }
+    },
+    "NORMAL|CORE_SELECT|CONTINUE_ONLY": {
+      "2024": {
+        "baseline_net": 16371.283600000002,
+        "candidate_net": 16371.283600000002,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 25,
+        "candidate_entries": 25,
+        "same_economic_admissions": 25,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2025": {
+        "baseline_net": 14500.828799999997,
+        "candidate_net": 14500.828799999997,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 55,
+        "candidate_entries": 55,
+        "same_economic_admissions": 55,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2026": {
+        "baseline_net": 50391.159999999996,
+        "candidate_net": 50391.159999999996,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 37,
+        "candidate_entries": 37,
+        "same_economic_admissions": 37,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      }
+    },
+    "ONE|MAIN|STALL_ONLY": {
+      "2024": {
+        "baseline_net": 5973.904300000006,
+        "candidate_net": 3894.493400000001,
+        "whole_book_delta": -2079.4109000000044,
+        "eff_delta": -2158.7994,
+        "other_members_delta": 79.38849999999547,
+        "baseline_entries": 25,
+        "candidate_entries": 22,
+        "same_economic_admissions": 21,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-01-19T13:21:59+05:30",
+            "bar": "2024-01-19 13:15:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1308.1488
+          },
+          {
+            "entry_time": "2024-01-20T11:51:59+05:30",
+            "bar": "2024-01-20 11:45:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": -79.3885
+          },
+          {
+            "entry_time": "2024-11-05T10:34:59+05:30",
+            "bar": "2024-11-05 10:25:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -1004.8226
+          },
+          {
+            "entry_time": "2024-11-06T12:25:59+05:30",
+            "bar": "2024-11-06 12:20:00",
+            "expert": "EFF",
+            "baseline_net_descriptive": -3311.128
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -7071.3937000000005,
+        "exact_entry_pairs_eff_exit_delta": -7071.3937000000005
+      },
+      "2025": {
+        "baseline_net": 14810.227999999992,
+        "candidate_net": 8958.487200000001,
+        "whole_book_delta": -5851.7407999999905,
+        "eff_delta": -5851.7408,
+        "other_members_delta": 1.0913936421275139e-11,
+        "baseline_entries": 50,
+        "candidate_entries": 50,
+        "same_economic_admissions": 50,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": -5851.7408,
+        "exact_entry_pairs_eff_exit_delta": -5851.7408
+      },
+      "2026": {
+        "baseline_net": 24671.3263,
+        "candidate_net": 32145.771,
+        "whole_book_delta": 7474.4447,
+        "eff_delta": 9589.816800000004,
+        "other_members_delta": -2115.372100000004,
+        "baseline_entries": 33,
+        "candidate_entries": 34,
+        "same_economic_admissions": 32,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-04-08T12:45:59+05:30",
+            "bar": "2026-04-08 12:40:00",
+            "expert": "TPB",
+            "baseline_net_descriptive": 2115.3721
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 8508.378499999999,
+        "exact_entry_pairs_eff_exit_delta": 8508.378499999999
+      }
+    },
+    "ONE|MAIN|CONTINUE_ONLY": {
+      "2024": {
+        "baseline_net": 5973.904300000006,
+        "candidate_net": 5973.904300000006,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 25,
+        "candidate_entries": 25,
+        "same_economic_admissions": 25,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2025": {
+        "baseline_net": 14810.227999999992,
+        "candidate_net": 14810.227999999992,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 50,
+        "candidate_entries": 50,
+        "same_economic_admissions": 50,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2026": {
+        "baseline_net": 24671.3263,
+        "candidate_net": 24671.3263,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 33,
+        "candidate_entries": 33,
+        "same_economic_admissions": 33,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      }
+    },
+    "ONE|BALANCED_RETEST|STALL_ONLY": {
+      "2024": {
+        "baseline_net": 36438.671599999994,
+        "candidate_net": 32922.4529,
+        "whole_book_delta": -3516.2186999999976,
+        "eff_delta": -2423.087699999998,
+        "other_members_delta": -1093.1310000000012,
+        "baseline_entries": 34,
+        "candidate_entries": 34,
+        "same_economic_admissions": 33,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2024-11-04T09:52:59+05:30",
+            "bar": "2024-11-04 09:45:00",
+            "expert": "SHIPPED",
+            "baseline_net_descriptive": 10320.5932
+          }
+        ],
+        "exact_entry_pairs_exit_delta": -2423.0877,
+        "exact_entry_pairs_eff_exit_delta": -2423.0877
+      },
+      "2025": {
+        "baseline_net": 45486.9228,
+        "candidate_net": 48529.5683,
+        "whole_book_delta": 3042.6454999999987,
+        "eff_delta": 3042.6455000000014,
+        "other_members_delta": 0.0,
+        "baseline_entries": 80,
+        "candidate_entries": 80,
+        "same_economic_admissions": 80,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 3042.6455,
+        "exact_entry_pairs_eff_exit_delta": 3042.6455
+      },
+      "2026": {
+        "baseline_net": 51469.456799999985,
+        "candidate_net": 57872.5053,
+        "whole_book_delta": 6403.048500000012,
+        "eff_delta": 6458.323399999999,
+        "other_members_delta": -55.27489999998943,
+        "baseline_entries": 56,
+        "candidate_entries": 56,
+        "same_economic_admissions": 55,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [
+          {
+            "entry_time": "2026-03-25T09:48:59+05:30",
+            "bar": "2026-03-25 09:40:00",
+            "expert": "OR20",
+            "baseline_net_descriptive": 2488.8116
+          }
+        ],
+        "exact_entry_pairs_exit_delta": 6458.323399999999,
+        "exact_entry_pairs_eff_exit_delta": 6458.323399999999
+      }
+    },
+    "ONE|BALANCED_RETEST|CONTINUE_ONLY": {
+      "2024": {
+        "baseline_net": 36438.671599999994,
+        "candidate_net": 36438.671599999994,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 34,
+        "candidate_entries": 34,
+        "same_economic_admissions": 34,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2025": {
+        "baseline_net": 45486.9228,
+        "candidate_net": 45486.9228,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 80,
+        "candidate_entries": 80,
+        "same_economic_admissions": 80,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      },
+      "2026": {
+        "baseline_net": 51469.456799999985,
+        "candidate_net": 51469.456799999985,
+        "whole_book_delta": 0.0,
+        "eff_delta": 0.0,
+        "other_members_delta": 0.0,
+        "baseline_entries": 56,
+        "candidate_entries": 56,
+        "same_economic_admissions": 56,
+        "changed_economic_admissions": [],
+        "unmatched_baseline_entries": [],
+        "exact_entry_pairs_exit_delta": 0.0,
+        "exact_entry_pairs_eff_exit_delta": 0.0
+      }
+    }
+  }
+}

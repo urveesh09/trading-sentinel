@@ -1,0 +1,17 @@
+{
+ "schema":"n07_anatomy_v1",
+ "hypotheses":{"PREMIUM_STALL":"N04 eligibility AND actual positive bid<=immutable entry premium","STRUCT_OR_PREMIUM":"N04 eligibility AND (bid<=entry premium OR N05 fresh completed-bar structural failure)"},
+ "common_eligibility":"age>=30 and<60;untrailed;current positive bid net after fees/stress<=0;underlying progress<.5R",
+ "boundary":"original entry premium, no buffer; equality eligible; no grid",
+ "controls":["BASE","STALL30","STRUCT30"],"sizing":["NORMAL","ONE"],
+ "primary":"NORMAL only; compare BOTH N04/N05; ONE diagnostic only",
+ "capital":"fresh250000/year;unchanged cash/brakes/risk/2-3lot caps;ONLY LOW TPB1;normalized65unitlot",
+ "cost":"same modeled candle quotes/current fees plus(200+5*lots)*lots",
+ "acceptance":"net strictly higher than BOTH N04/N05 each year;annual closed DD no larger than EITHER;positive without best trade/day;>=12annual60total closes;>=5/6positive periods;t>=2vsN04;two-arm maxT p<=.05",
+ "periods":{"2024":[["2024-01-01","2024-06-30"],["2024-07-01","2024-12-31"]],"2025":[["2025-01-01","2025-06-30"],["2025-07-01","2025-12-31"]],"2026":[["2026-01-01","2026-05-31"],["2026-06-01","2026-10-28"]]},
+ "max_t":{"comparisons":2,"block_weeks":4,"resamples":4096,"seed":110701},
+ "annual_control_replays":18,"annual_candidate_replays":12,"additional_cost_diagnostic_replays":15,
+ "cost_diagnostic":"NO_EXTRA_STRESS: all5 policies NORMAL caps/current fees/candle quotes with only synthetic extra stress set[0,0];not selected or primary;do not call actual cost",
+ "all_years_seen":true,"qualified":false,"can_place_orders":false,"fidelity":"BAR_LIFECYCLE","coverage":"PARTIAL",
+ "2023":"deferred;no exam inspection/scoring","production":"read-only identity/health only;untouched"
+}

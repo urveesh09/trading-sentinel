@@ -1,0 +1,17 @@
+{
+  "schema":"n01_v1",
+  "scope":"NIFTY intraday state-to-expert switching with actual option/cash replay",
+  "years":["2024","2025","2026 through October28"],
+  "information":"all years previously seen; no fresh holdout; unchanged2023 exam",
+  "experts":["DONCHIAN_g2_all_triggers","TPB","SHIPPED","OR20","EFF","BOLL_REENTRY_g2_all_triggers"],
+  "state":{"trend_adx":25,"range_adx":20,"trend_efficiency":0.45,"range_efficiency":0.25,"low_adx_efficiency":0.35,"trend_vwap_atr":0.25,"bars":12,"minimum_bars":6,"confirmation_bars":2,"shock_prior_atr":3},
+  "candidate_policies":["RULE","RULE_EXIT","LEARN"],
+  "exit_ablation":{"minimum_hold_minutes":15,"contrary_confirmed_bars":3,"normal_management_first":true,"actual_priced_bid_only":true},
+  "learner":{"monthly_asof":true,"prior_sessions":252,"warmup_fallback_sessions":90,"cell_min_trades":12,"expert_min_trades":30,"shrinkage":12,"standard_error_penalty":0.5,"positive_scores_only":true},
+  "raw":"one normalized lot65, inherited risk/expiry/cash/clock constraints, diagnostic brakes off, extraRs200 per trade andRs300 sensitivity",
+  "exact":"freshRs250000 each year, current risk/sizing/brakes, shipped fees plus(200+5*lots)*lots in cash path",
+  "calendar":"March2/May18 2024 entry end12:00, hard flat12:25; ordinary clocks unchanged",
+  "authority":"offline Dev research; no Production changes, broker orders, real-money activation or messaging",
+  "qualified":false,
+  "can_place_orders":false
+}

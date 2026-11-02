@@ -1,0 +1,14 @@
+{
+ "schema": "n09_composition_v1",
+ "confirm": false,
+ "structure": false,
+ "delta": null,
+ "noise": false,
+ "noise_alone_2023": -60573,
+ "sizing": "NO_E",
+ "sizing_checks": {
+  "2023_at_or_above_n08": false,
+  "total_at_or_above_no_e": true,
+  "fall_within_1pp_of_n08": true
+ }
+}

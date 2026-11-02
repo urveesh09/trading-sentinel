@@ -1,0 +1,9 @@
+{
+  "daily_bars": 494,
+  "first": "2022-01-03",
+  "last": "2023-12-29",
+  "bars_before_first_session": 248,
+  "sessions": 245,
+  "gate_high": 65,
+  "gate_low": 180
+}

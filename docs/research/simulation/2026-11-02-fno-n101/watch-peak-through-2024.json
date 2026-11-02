@@ -1,0 +1,58 @@
+{
+  "windows": 48,
+  "release_checks_including_carried_history": 9,
+  "release_tracker_lags": [],
+  "release_deepest_floor_violations": [],
+  "terminal_tracker_lags": [
+    {
+      "phase": "controls",
+      "year": "2026",
+      "book": "N10",
+      "decision_observed_best": 374451.7748559882,
+      "actual_closed_cash_peak": 375786.05679999985,
+      "difference": 1334.281944011629
+    },
+    {
+      "phase": "controls",
+      "year": "2026",
+      "book": "STRICT",
+      "decision_observed_best": 353976.456755105,
+      "actual_closed_cash_peak": 355310.73869999975,
+      "difference": 1334.2819448947557
+    },
+    {
+      "phase": "annual",
+      "year": "2026",
+      "book": "WATCH_FLAT|200",
+      "decision_observed_best": 374451.7748559882,
+      "actual_closed_cash_peak": 375786.05679999985,
+      "difference": 1334.281944011629
+    },
+    {
+      "phase": "annual",
+      "year": "2026",
+      "book": "WATCH_FLAT|400",
+      "decision_observed_best": 343285.90003985877,
+      "actual_closed_cash_peak": 344415.18209999974,
+      "difference": 1129.2820601409767
+    },
+    {
+      "phase": "annual",
+      "year": "2026",
+      "book": "PREMIUM_LOCK|200",
+      "decision_observed_best": 348785.53140880185,
+      "actual_closed_cash_peak": 350119.8134999998,
+      "difference": 1334.2820911979652
+    },
+    {
+      "phase": "annual",
+      "year": "2026",
+      "book": "PREMIUM_LOCK|400",
+      "decision_observed_best": 294810.6279691061,
+      "actual_closed_cash_peak": 295939.90979999996,
+      "difference": 1129.2818308938877
+    }
+  ],
+  "passed_decision_bound": true,
+  "basis": "Closed cash after all settlements at each observation; terminal tracker may miss a last close because it updates only during planning. No price/fee or P&L is changed."
+}

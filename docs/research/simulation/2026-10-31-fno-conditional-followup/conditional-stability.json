@@ -1,0 +1,76 @@
+{
+  "status": "EXPLORATORY_SUBSETS_NOT_REPLAYS_OR_FRESH_HOLDOUTS",
+  "families": {
+    "INTRADAY_DMI": {
+      "conditions_described": 22,
+      "adequate_sample_each_year": [
+        "daily_dmi_with|AGAINST",
+        "daily_dmi_with|WITH",
+        "daily_ema_with|AGAINST",
+        "daily_ema_with|WITH",
+        "daily_adx|20_TO30",
+        "daily_adx|LT20",
+        "rv10|LT15PCT",
+        "opening_range_daily_atr|LT_HALF_ATR",
+        "stretch|QUARTER_TO_HALF",
+        "rvol|GE1_5",
+        "rvol|LT1_5",
+        "efficiency6|GE_HALF",
+        "efficiency6|LT_HALF",
+        "with_gap|WITH",
+        "minute|BEFORE11",
+        "direction|LONG",
+        "direction|SHORT"
+      ],
+      "positive_each_year": [],
+      "two_year_selection": {
+        "2024": {
+          "pick_from_other_two": null,
+          "eligible_conditions": 0,
+          "held_year_subset": null,
+          "note": "No fit means no proposed condition; never relabel no fit as a profitable test"
+        },
+        "2025": {
+          "pick_from_other_two": null,
+          "eligible_conditions": 0,
+          "held_year_subset": null,
+          "note": "No fit means no proposed condition; never relabel no fit as a profitable test"
+        },
+        "2026": {
+          "pick_from_other_two": null,
+          "eligible_conditions": 0,
+          "held_year_subset": null,
+          "note": "No fit means no proposed condition; never relabel no fit as a profitable test"
+        }
+      }
+    },
+    "SHOCK_RECOVERY": {
+      "conditions_described": 22,
+      "adequate_sample_each_year": [
+        "efficiency6|LT_HALF",
+        "minute|FROM11"
+      ],
+      "positive_each_year": [],
+      "two_year_selection": {
+        "2024": {
+          "pick_from_other_two": null,
+          "eligible_conditions": 0,
+          "held_year_subset": null,
+          "note": "No fit means no proposed condition; never relabel no fit as a profitable test"
+        },
+        "2025": {
+          "pick_from_other_two": null,
+          "eligible_conditions": 0,
+          "held_year_subset": null,
+          "note": "No fit means no proposed condition; never relabel no fit as a profitable test"
+        },
+        "2026": {
+          "pick_from_other_two": null,
+          "eligible_conditions": 0,
+          "held_year_subset": null,
+          "note": "No fit means no proposed condition; never relabel no fit as a profitable test"
+        }
+      }
+    }
+  }
+}

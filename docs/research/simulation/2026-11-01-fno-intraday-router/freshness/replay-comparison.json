@@ -1,0 +1,13 @@
+{
+  "original_fresh_replays": 45,
+  "corrected_fresh_replays": 18,
+  "total_fresh_replays": 63,
+  "reused_base_books": 27,
+  "unchanged_base_file_hashes": true,
+  "corrected_candidate_records_compared": 2840,
+  "candidate_books_with_changed_economics": 0,
+  "performance_and_acceptance_unchanged": true,
+  "total_closed_record_reconciliations": 10880,
+  "corrected_closed_records_including_reused_base": 8040,
+  "all_corrected_unresolved": 0
+}

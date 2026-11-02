@@ -1,0 +1,42 @@
+{
+  "NORMAL|BASE": {
+    "trades": 80,
+    "net": 50090.17,
+    "identical": true
+  },
+  "NORMAL|STALL30": {
+    "trades": 80,
+    "net": 54051.05,
+    "identical": true
+  },
+  "NORMAL|STRUCT30": {
+    "trades": 80,
+    "net": 50725.94,
+    "identical": true
+  },
+  "NORMAL|PREMIUM_STALL": {
+    "trades": 80,
+    "net": 52023.45,
+    "identical": true
+  },
+  "NOOP": {
+    "trades": 80,
+    "identical_to_n07": true
+  },
+  "inputs": {
+    "daily_bars": 310,
+    "first": "2024-10-03",
+    "last": "2025-12-31",
+    "bars_before_first_session": 61,
+    "sessions": 248,
+    "gate_high": 34,
+    "gate_low": 214
+  },
+  "replayed_here_seconds": {
+    "f66001c5": 53.8,
+    "6189f113": 53.3,
+    "f6daa915": 53.7,
+    "8ca19f8d": 53.5,
+    "ad619727": 53.7
+  }
+}

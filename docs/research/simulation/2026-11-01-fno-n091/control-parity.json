@@ -1,0 +1,86 @@
+{
+  "2023|N08": {
+    "exact": true,
+    "trades": 56,
+    "net": -37581.159100000004,
+    "old_sha256": "14a0f792e15a4180cf73ca8657cf26feb10c8ceb0a3e214e344ab6444247bb4b",
+    "new_sha256": "3a06df190adabbc19c61f68175b7e0f3b9f716b18a2b163ecf3f85320ad5c929"
+  },
+  "2023|DIAG": {
+    "exact": true,
+    "trades": 85,
+    "net": -37375.151399999995,
+    "old_sha256": "57acc9ac982a9b5e41984f8454251b8a1b4c130bb6008152245bfef3bb6d1214",
+    "new_sha256": "6d5029e63fcca11b9189d8e484fbbeeba76fcf9a13177f8141d0ef82d31f18d3"
+  },
+  "2023|S_VOL": {
+    "exact": true,
+    "trades": 66,
+    "net": -37974.047099999996,
+    "old_sha256": "9f4396e3642ef78f085348239a91c6dd2bd173dac35e9f2a737bfd7c808ccd03",
+    "new_sha256": "b43bf068111901769c486173a34c6ad0ca19a060cd7c8f68fa055831b079d9e6"
+  },
+  "2024|N08": {
+    "exact": true,
+    "trades": 29,
+    "net": 76294.19570000003,
+    "old_sha256": "0ce1539868b052f6c39f93671eaadd5a2a6334f05d3126fbd5deb6cedbcc1cea",
+    "new_sha256": "4b6db10642f77aa60172d9713fb5d57170862e156cf51c9ba0294317fa75361e"
+  },
+  "2024|DIAG": {
+    "exact": true,
+    "trades": 29,
+    "net": 45220.629799999995,
+    "old_sha256": "2a75acf86b8bb104f4a154685b77a3ffeaad9ec518aa54342d39a3593fa5e627",
+    "new_sha256": "75bf621b708ebfb5510ad8d9fa518f41e7dc48622b7275fae92863563023c6ad"
+  },
+  "2024|S_VOL": {
+    "exact": true,
+    "trades": 29,
+    "net": 70316.74570000001,
+    "old_sha256": "9349a91775df3f3faba4823aa6112ce281e6221fe11dfe772c051177e757e714",
+    "new_sha256": "a93fd3ef7fef85b5ecea676b7db7770b2ac7fab05f6a16da438aa457c3045372"
+  },
+  "2025|N08": {
+    "exact": true,
+    "trades": 75,
+    "net": 58646.52789999998,
+    "old_sha256": "ffdc3a1dd78eab9d3f280c87cc0094786958bef4467b4e4b6d81875010881d8e",
+    "new_sha256": "d4f742e94b7f4278bd8e4bbcbe17008543b8ec2b58141b4f6f0da4bd1621fec3"
+  },
+  "2025|DIAG": {
+    "exact": true,
+    "trades": 79,
+    "net": 46037.261399999996,
+    "old_sha256": "ee2829d3c3825bff3d6cdfc759f2a41b3a5c2baad01939d8f6ff98eb84a2d32a",
+    "new_sha256": "ec6f34ade51007e152dc9264b67ed8955ca7922e37321924f40e4d58cfc3b198"
+  },
+  "2025|S_VOL": {
+    "exact": true,
+    "trades": 75,
+    "net": 50442.48669999999,
+    "old_sha256": "3b9a5dfa1a24b57126d8ba62cf3efc4b51572783bc2e284da8982b3d64863513",
+    "new_sha256": "3e34317822272be8f6dba19adf1c3cbc9cbbf6ed60114506ae5b1e450d7ebfda"
+  },
+  "2026|N08": {
+    "exact": true,
+    "trades": 51,
+    "net": 104924.37920000001,
+    "old_sha256": "bce4f8152f63f2e091164c8375a9764113c54c07fc0fe43161469ba1d614b587",
+    "new_sha256": "0415176c7e8c30fa280740700acb6bd06e5080b030194dabcd86c60c077d72d7"
+  },
+  "2026|DIAG": {
+    "exact": true,
+    "trades": 50,
+    "net": 63993.832299999995,
+    "old_sha256": "15524fcf288c9c863bfd40962249a5c2702dd2797c3a2241d0d19605b16914ec",
+    "new_sha256": "01d7df919d46e32aada5ea1d0644be86829b5e2c9b1bed7ed03ff6d366275ba4"
+  },
+  "2026|S_VOL": {
+    "exact": true,
+    "trades": 51,
+    "net": 108643.1943,
+    "old_sha256": "8050640169635e0a023acf7b5279b42f33b0fb34f8125f0b1d676ee3acb55d57",
+    "new_sha256": "b9657514aee020d6e50d311db14a92881662d47b0f0b6ba0d8169da6ac4292ed"
+  }
+}

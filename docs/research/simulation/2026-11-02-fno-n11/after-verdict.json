@@ -1,0 +1,189 @@
+{
+ "note": "Added after the verdict. All data seen.",
+ "hidden_year": {
+  "STAND": {
+   "2023": {
+    "sum_on_the_other_three": -4359,
+    "would_be_chosen": false,
+    "on_the_hidden_year": 26253,
+    "result_if_followed": 0
+   },
+   "2024": {
+    "sum_on_the_other_three": 21894,
+    "would_be_chosen": true,
+    "on_the_hidden_year": 0,
+    "result_if_followed": 0
+   },
+   "2025": {
+    "sum_on_the_other_three": 26253,
+    "would_be_chosen": true,
+    "on_the_hidden_year": -4359,
+    "result_if_followed": -4359
+   },
+   "2026": {
+    "sum_on_the_other_three": 21894,
+    "would_be_chosen": true,
+    "on_the_hidden_year": 0,
+    "result_if_followed": 0
+   },
+   "four_years_if_followed": -4359,
+   "four_years_as_built": 21894
+  },
+  "LOSS": {
+   "2023": {
+    "sum_on_the_other_three": 1236,
+    "would_be_chosen": true,
+    "on_the_hidden_year": 0,
+    "result_if_followed": 0
+   },
+   "2024": {
+    "sum_on_the_other_three": 1236,
+    "would_be_chosen": true,
+    "on_the_hidden_year": 0,
+    "result_if_followed": 0
+   },
+   "2025": {
+    "sum_on_the_other_three": 0,
+    "would_be_chosen": false,
+    "on_the_hidden_year": 1236,
+    "result_if_followed": 0
+   },
+   "2026": {
+    "sum_on_the_other_three": 1236,
+    "would_be_chosen": true,
+    "on_the_hidden_year": 0,
+    "result_if_followed": 0
+   },
+   "four_years_if_followed": 0,
+   "four_years_as_built": 1236
+  },
+  "ADD": {
+   "2023": {
+    "sum_on_the_other_three": 37084,
+    "would_be_chosen": true,
+    "on_the_hidden_year": 415,
+    "result_if_followed": 415
+   },
+   "2024": {
+    "sum_on_the_other_three": 20537,
+    "would_be_chosen": true,
+    "on_the_hidden_year": 16962,
+    "result_if_followed": 16962
+   },
+   "2025": {
+    "sum_on_the_other_three": 33004,
+    "would_be_chosen": true,
+    "on_the_hidden_year": 4495,
+    "result_if_followed": 4495
+   },
+   "2026": {
+    "sum_on_the_other_three": 21872,
+    "would_be_chosen": true,
+    "on_the_hidden_year": 15627,
+    "result_if_followed": 15627
+   },
+   "four_years_if_followed": 37499,
+   "four_years_as_built": 37499
+  },
+  "VOL": {
+   "2023": {
+    "sum_on_the_other_three": -10199,
+    "would_be_chosen": false,
+    "on_the_hidden_year": 5842,
+    "result_if_followed": 0
+   },
+   "2024": {
+    "sum_on_the_other_three": -4357,
+    "would_be_chosen": false,
+    "on_the_hidden_year": 0,
+    "result_if_followed": 0
+   },
+   "2025": {
+    "sum_on_the_other_three": 5842,
+    "would_be_chosen": true,
+    "on_the_hidden_year": -10199,
+    "result_if_followed": -10199
+   },
+   "2026": {
+    "sum_on_the_other_three": -4357,
+    "would_be_chosen": false,
+    "on_the_hidden_year": 0,
+    "result_if_followed": 0
+   },
+   "four_years_if_followed": -10199,
+   "four_years_as_built": -4357
+  }
+ },
+ "plateau": {
+  "actual": 0.9,
+  "weeks_shuffled_jointly": {
+   "draws": 20,
+   "median": 0.893,
+   "low": 0.815,
+   "high": 0.946
+  },
+  "family_totals": {
+   "lowest": 193149,
+   "median": 246686,
+   "highest": 259723
+  },
+  "reading": "If the shuffled score stays near the actual one, time order isn't what produces it: in a family with close totals, whatever does best on one half must do worse on the other. The check still failed as written."
+ },
+ "head_to_head": {
+  "N10 retry": {
+   "splits": 12870,
+   "share_where_n11_wins_the_other_half": 0.897,
+   "blocks_better": 7,
+   "blocks_worse": 4,
+   "blocks_same": 5,
+   "block_differences": [
+    0,
+    6579,
+    12624,
+    -1294,
+    6551,
+    0,
+    0,
+    1353,
+    2764,
+    3108,
+    -4360,
+    0,
+    -2236,
+    -3414,
+    0,
+    415
+   ]
+  },
+  "N08": {
+   "splits": 12870,
+   "share_where_n11_wins_the_other_half": 0.974,
+   "blocks_better": 8,
+   "blocks_worse": 5,
+   "blocks_same": 3,
+   "block_differences": [
+    3208,
+    8443,
+    15153,
+    -1248,
+    8705,
+    0,
+    0,
+    8747,
+    7608,
+    -2474,
+    -4576,
+    -6110,
+    -4073,
+    3523,
+    0,
+    16177
+   ]
+  }
+ },
+ "n11_rank_in_its_family": {
+  "name_after_removing_duplicates": "screen5|HONEST",
+  "rank": 6,
+  "of": 68
+ }
+}

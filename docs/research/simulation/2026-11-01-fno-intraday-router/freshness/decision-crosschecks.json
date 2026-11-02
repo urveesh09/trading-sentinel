@@ -1,0 +1,272 @@
+{
+  "years": {
+    "2024": {
+      "year": "2024",
+      "decisions_verified": 1362,
+      "exact_archive_quote_checks": 2724,
+      "switch_exits_verified": 12,
+      "state_or_choice_or_price_errors": 0,
+      "actual_intraday_mix": {
+        "EX|RULE": {
+          "days_with_multiple_experts": 25,
+          "first_chronological_example": [
+            {
+              "entry": "2024-01-16T11:51:59+05:30",
+              "exit": "2024-01-16T12:09:59+05:30",
+              "state": "RANGE",
+              "expert": "BOLL_REENTRY",
+              "net": -2222.6533,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2024-01-16T13:36:59+05:30",
+              "exit": "2024-01-16T13:46:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -4193.6565,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2024-01-16T13:25:59+05:30",
+              "exit": "2024-01-16T14:12:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -2745.3375,
+              "exit_reason": "underlying_stop"
+            }
+          ],
+          "example_date": "2024-01-16"
+        },
+        "EX|RULE_EXIT": {
+          "days_with_multiple_experts": 25,
+          "first_chronological_example": [
+            {
+              "entry": "2024-01-16T11:51:59+05:30",
+              "exit": "2024-01-16T12:09:59+05:30",
+              "state": "RANGE",
+              "expert": "BOLL_REENTRY",
+              "net": -2222.6533,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2024-01-16T13:36:59+05:30",
+              "exit": "2024-01-16T13:46:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -4193.6565,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2024-01-16T13:25:59+05:30",
+              "exit": "2024-01-16T14:12:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -2745.3375,
+              "exit_reason": "underlying_stop"
+            }
+          ],
+          "example_date": "2024-01-16"
+        },
+        "EX|LEARN": {
+          "days_with_multiple_experts": 18,
+          "first_chronological_example": [
+            {
+              "entry": "2024-01-16T11:51:59+05:30",
+              "exit": "2024-01-16T12:09:59+05:30",
+              "state": "RANGE",
+              "expert": "BOLL_REENTRY",
+              "net": -2222.6533,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2024-01-16T13:36:59+05:30",
+              "exit": "2024-01-16T13:46:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -4193.6565,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2024-01-16T13:25:59+05:30",
+              "exit": "2024-01-16T14:12:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -2745.3375,
+              "exit_reason": "underlying_stop"
+            }
+          ],
+          "example_date": "2024-01-16"
+        }
+      },
+      "candidate_file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2024-01-01_2024-12-31_9802c97d81d70438.json": "7fdefdd275d35105c7e316dee6ec49c0e1fd06524b3b65fd5cf73d864533aa4a",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2024-01-01_2024-12-31_a3b0699c7cd71ed5.json": "930d8fe2f14b7055c4bcfd1170d666ef1aba072e5106e5fc9fba8f3f5b5dc2a3",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2024-01-01_2024-12-31_1a844badae3cf64c.json": "cdeb77a0176dd6eb03bddee049a7d07ab0762bbe44f7fc996a0aa1d3b54b91e3",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2024-01-01_2024-12-31_d51cf7ea67080ce8.json": "97116e42080789e4d6afd660efb30a6b5a3fbd9947311627b7acec7d848b1577",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2024-01-01_2024-12-31_c28b2d925c261043.json": "a2c636c2dd03b69ae43017d1107600e450decb59c0d1a68a996d61dce9289696",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2024-01-01_2024-12-31_d07def084f1c5441.json": "7f0d46663364f00f9c2184a13c2e59e8ee008b3d7bdff2837bc92df2882cb228"
+      }
+    },
+    "2025": {
+      "year": "2025",
+      "decisions_verified": 776,
+      "exact_archive_quote_checks": 1552,
+      "switch_exits_verified": 10,
+      "state_or_choice_or_price_errors": 0,
+      "actual_intraday_mix": {
+        "EX|RULE": {
+          "days_with_multiple_experts": 3,
+          "first_chronological_example": [
+            {
+              "entry": "2025-01-08T10:30:59+05:30",
+              "exit": "2025-01-08T10:41:59+05:30",
+              "state": "RANGE",
+              "expert": "BOLL_REENTRY",
+              "net": -1447.8792,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2025-01-08T12:36:59+05:30",
+              "exit": "2025-01-08T13:20:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -2204.4125,
+              "exit_reason": "underlying_stop"
+            }
+          ],
+          "example_date": "2025-01-08"
+        },
+        "EX|RULE_EXIT": {
+          "days_with_multiple_experts": 3,
+          "first_chronological_example": [
+            {
+              "entry": "2025-01-08T10:30:59+05:30",
+              "exit": "2025-01-08T10:41:59+05:30",
+              "state": "RANGE",
+              "expert": "BOLL_REENTRY",
+              "net": -1447.8792,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2025-01-08T12:36:59+05:30",
+              "exit": "2025-01-08T13:20:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -2204.4125,
+              "exit_reason": "underlying_stop"
+            }
+          ],
+          "example_date": "2025-01-08"
+        },
+        "EX|LEARN": {
+          "days_with_multiple_experts": 10,
+          "first_chronological_example": [
+            {
+              "entry": "2025-02-03T11:40:59+05:30",
+              "exit": "2025-02-03T12:06:59+05:30",
+              "state": "RANGE",
+              "expert": "DONCHIAN",
+              "net": -2216.6249,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2025-02-03T11:36:59+05:30",
+              "exit": "2025-02-03T13:51:59+05:30",
+              "state": "RANGE",
+              "expert": "BOLL_REENTRY",
+              "net": -727.4577,
+              "exit_reason": "time_stop"
+            },
+            {
+              "entry": "2025-02-03T13:06:59+05:30",
+              "exit": "2025-02-03T13:51:59+05:30",
+              "state": "RANGE",
+              "expert": "DONCHIAN",
+              "net": -2287.374,
+              "exit_reason": "underlying_stop"
+            }
+          ],
+          "example_date": "2025-02-03"
+        }
+      },
+      "candidate_file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2025-01-01_2025-12-31_9802c97d81d70438.json": "e5d2fed67c62b36ac2afdad266d3503a490c793b050e73f5f875f938b15fbda8",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2025-01-01_2025-12-31_a3b0699c7cd71ed5.json": "2f6317aa418e50aa13667d22d24e30e316d7cc7a16c75e1a61740aecfbcb1991",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2025-01-01_2025-12-31_1a844badae3cf64c.json": "e8f54722a71bb6386cda5b514cb56082cbe38d9b7a4a17f3b079bd4116a56143",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2025-01-01_2025-12-31_d51cf7ea67080ce8.json": "03d42df18346bade192d91b1ae93254d0fd9c3c290723a57df190c8c0ee1e18d",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2025-01-01_2025-12-31_c28b2d925c261043.json": "3c9604ddf8a4a5dd4d8814a046406c10d73376168c4b9a41c483564bd26178c8",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2025-01-01_2025-12-31_d07def084f1c5441.json": "753c4fcc42b08b34727d06ad7332c3f3335c1a24e25c019fe3a8cbd6bd39f99f"
+      }
+    },
+    "2026": {
+      "year": "2026",
+      "decisions_verified": 702,
+      "exact_archive_quote_checks": 1404,
+      "switch_exits_verified": 7,
+      "state_or_choice_or_price_errors": 0,
+      "actual_intraday_mix": {
+        "EX|RULE": {
+          "days_with_multiple_experts": 5,
+          "first_chronological_example": [
+            {
+              "entry": "2026-01-14T11:06:59+05:30",
+              "exit": "2026-01-14T11:49:59+05:30",
+              "state": "RANGE",
+              "expert": "BOLL_REENTRY",
+              "net": -2966.8423,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2026-01-14T13:55:59+05:30",
+              "exit": "2026-01-14T14:43:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -1790.8603,
+              "exit_reason": "underlying_stop"
+            }
+          ],
+          "example_date": "2026-01-14"
+        },
+        "EX|RULE_EXIT": {
+          "days_with_multiple_experts": 5,
+          "first_chronological_example": [
+            {
+              "entry": "2026-01-14T11:06:59+05:30",
+              "exit": "2026-01-14T11:49:59+05:30",
+              "state": "RANGE",
+              "expert": "BOLL_REENTRY",
+              "net": -2966.8423,
+              "exit_reason": "underlying_stop"
+            },
+            {
+              "entry": "2026-01-14T13:55:59+05:30",
+              "exit": "2026-01-14T14:43:59+05:30",
+              "state": "TREND_DOWN",
+              "expert": "DONCHIAN",
+              "net": -1790.8603,
+              "exit_reason": "underlying_stop"
+            }
+          ],
+          "example_date": "2026-01-14"
+        },
+        "EX|LEARN": {
+          "days_with_multiple_experts": 0,
+          "first_chronological_example": null,
+          "example_date": null
+        }
+      },
+      "candidate_file_sha256": {
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2026-01-01_2026-10-28_9802c97d81d70438.json": "c15b245c71b47fe9b588f797e4b459bd4cf9733b7cd76c92a5501c1758338ec9",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2026-01-01_2026-10-28_a3b0699c7cd71ed5.json": "6f7bbe8bf238887f1dd52acf1354462d105c1264f62831205656bc48397316d8",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2026-01-01_2026-10-28_1a844badae3cf64c.json": "b019b6205c44f37c63f1ff5cf727315f60e7ccc0c5a6d0d8923ebb3f58bd8666",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2026-01-01_2026-10-28_d51cf7ea67080ce8.json": "c0ac22a00055d04dd0f64f414b3271ec8e9eff0ee15f5614a5578586daa520ef",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2026-01-01_2026-10-28_c28b2d925c261043.json": "e3127b730311c2930f9f2b4c9d513727803e6e854cc36b4c1b2abb6b530db2cd",
+        "docs/research/simulation/2026-11-01-fno-intraday-router/freshness/_local/evals/year_2026-01-01_2026-10-28_d07def084f1c5441.json": "c716e7676045650b0887d0c191f7cb9bfe29f9f7366eed0a2f9dde0e35474372"
+      }
+    }
+  },
+  "total_decisions_checked": 2840,
+  "total_exact_archive_price_checks": 5680,
+  "total_state_exits_checked": 29,
+  "errors": 0
+}

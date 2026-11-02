@@ -1,0 +1,80 @@
+{
+ "note": "Proxy at one lot, no earned lots. The native 15% stop stops for good below Rs 2,12,500. Not a forecast.",
+ "n10_table": {
+  "NONE": {
+   "worst_end": 211290,
+   "median_end": 367877,
+   "below_start": 67
+  },
+  "CUSHION": {
+   "worst_end": 215291,
+   "median_end": 342954,
+   "below_start": 50
+  },
+  "WATCH": {
+   "worst_end": 190822,
+   "median_end": 362226,
+   "below_start": 13
+  }
+ },
+ "N11_stand_aside": {
+  "worst_end": 243462,
+  "median_end": 392273,
+  "best_end": 505975,
+  "below_start": 1,
+  "stopped_for_good": 0,
+  "worst_fall_pct": 5.77,
+  "lowest_equity": 235826
+ },
+ "plain_15pct_stop": {
+  "worst_end": 211290,
+  "median_end": 367877,
+  "below_start": 67,
+  "stopped_for_good": 67
+ },
+ "against_plain_stop": {
+  "helps": 175,
+  "hurts": 65,
+  "same": 16,
+  "largest_gain": 221227,
+  "largest_cost": -17438
+ },
+ "named": {
+  "2023,2024,2025,2026": {
+   "plain": 212136,
+   "N11": 392273,
+   "N11_waited": 54,
+   "N11_taken": 189,
+   "N11_fall": 5.73,
+   "stopped": false
+  },
+  "2023 twice,2024,2025": {
+   "plain": 212136,
+   "N11": 328973,
+   "N11_waited": 118,
+   "N11_taken": 160,
+   "N11_fall": 5.73,
+   "stopped": false
+  },
+  "2023 three times,2024": {
+   "plain": 212136,
+   "N11": 287989,
+   "N11_waited": 180,
+   "N11_taken": 104,
+   "N11_fall": 5.73,
+   "stopped": false
+  },
+  "2023 four times": {
+   "plain": 212136,
+   "N11": 243462,
+   "N11_waited": 244,
+   "N11_taken": 96,
+   "N11_fall": 5.73,
+   "stopped": false
+  }
+ },
+ "check_11": {
+  "median_at_or_above_watch": true,
+  "below_start_no_more_than_watch": true
+ }
+}

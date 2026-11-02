@@ -1,0 +1,19 @@
+{
+  "daily_models": 699,
+  "relative_scores": 1398,
+  "daily_policy_choices": 1398,
+  "future_or_unclosed_labels_used": 0,
+  "independent_arithmetic_max_error": 2.2737367544323206e-13,
+  "mismatches": 0,
+  "decision_days": {
+    "CORE_ADD": {
+      "MAIN": 609,
+      "TPB_ONE": 90
+    },
+    "CORE_SELECT": {
+      "MAIN": 541,
+      "NO_EFF": 68,
+      "TPB_ONE": 90
+    }
+  }
+}

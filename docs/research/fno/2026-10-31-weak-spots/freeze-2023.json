@@ -1,0 +1,260 @@
+{
+ "schema": "o31e_nifty_2023_exam_v1",
+ "status": "Fixed before any NIFTY 2023 data exists here. Breeze has not been asked whether it serves 2023.",
+ "books": {
+  "EX|MAIN": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ],
+   "o31": "EX|MAIN",
+   "cfg": {},
+   "skip": 0.5,
+   "cost": [
+    200.0,
+    5.0
+   ]
+  },
+  "EX|D|only_puts_from_25": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ],
+   "o31": "EX|D|only_puts_from_25",
+   "cfg": {},
+   "skip": 0.5,
+   "cost": [
+    200.0,
+    5.0
+   ],
+   "only_dir": "SHORT",
+   "o31e": 1
+  },
+  "EX|D|puts_from_25": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs25:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ],
+   "o31": "EX|D|puts_from_25",
+   "cfg": {},
+   "skip": 0.5,
+   "cost": [
+    200.0,
+    5.0
+   ],
+   "calls_min_adx": 30,
+   "o31e": 1
+  },
+  "EX|D|tpb_puts_closed": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs30:LOW",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ],
+   "o31": "EX|D|tpb_puts_closed",
+   "cfg": {},
+   "skip": 0.5,
+   "cost": [
+    200.0,
+    5.0
+   ],
+   "calls_min_adx": 30,
+   "o31e": 1
+  },
+  "EX|C|puts_only": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "EFF",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ],
+   "o31": "EX|C|puts_only",
+   "cfg": {},
+   "skip": 0.5,
+   "cost": [
+    200.0,
+    5.0
+   ],
+   "only_dir": "SHORT",
+   "o31e": 1
+  },
+  "EX|C|no_eff": {
+   "members": [
+    {
+     "kind": "NAMED",
+     "name": "SHIPPED",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "OR20",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    },
+    {
+     "kind": "NAMED",
+     "name": "TPB",
+     "gate": "adx_abs30:HIGH",
+     "exit": "OWN",
+     "vwap_exit": "OFF"
+    }
+   ],
+   "o31": "EX|C|no_eff",
+   "cfg": {},
+   "skip": 0.5,
+   "cost": [
+    200.0,
+    5.0
+   ],
+   "o31e": 1
+  }
+ },
+ "why_2023": "NIFTY rose about 20% that year: a long calm rise, the hardest kind of year for a book that buys only puts, and one these three years do not hold.",
+ "rule": {
+  "once": "NIFTY 2023 is scored once with these books unchanged, nothing is tuned on it, and the data is sealed and fingerprinted before any replay",
+  "measure": "from Rs 2.5 lakh at today's limits, with the O30r extra cost in the money path; lot 65",
+  "main_holds": "EX|MAIN holds if net > 0 and its largest fall is <= 15% of the running peak",
+  "candidate_holds": "A candidate holds if its net is above EX|MAIN's on 2023 and its largest fall is <= 15% of the running peak",
+  "recommendation": "If EX|D|only_puts_from_25 or EX|D|tpb_puts_closed holds, the higher three-year net of those that hold is recommended as the main book. If neither does, the main book stays",
+  "no_change": "Nothing changes on this by itself; the owner decides"
+ },
+ "qualification": "NOT_ASSESSED",
+ "can_place_orders": false
+}

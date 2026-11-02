@@ -1,0 +1,59 @@
+{
+ "fresh": {
+  "2023": {
+   "net": -32898.3,
+   "worst_day": -3342.84,
+   "worst_trade": -2398.41,
+   "fall_pct": 13.21,
+   "trades": 61
+  },
+  "2024": {
+   "net": 79334.16,
+   "worst_day": -3148.16,
+   "worst_trade": -3629.2,
+   "fall_pct": 2.13,
+   "trades": 29
+  },
+  "2025": {
+   "net": 46737.81,
+   "worst_day": -6126.99,
+   "worst_trade": -4558.67,
+   "fall_pct": 4.85,
+   "trades": 74
+  },
+  "2026": {
+   "net": 105310.74,
+   "worst_day": -4029.58,
+   "worst_trade": -4029.58,
+   "fall_pct": 2.69,
+   "trades": 51
+  }
+ },
+ "whole": {
+  "net": 198484.41,
+  "worst_day": -6126.99,
+  "worst_trade": -4558.67,
+  "fall_pct": 13.21,
+  "trades": 215
+ },
+ "account": 418151,
+ "double": 161990,
+ "without_top_five": 95194,
+ "earned": {
+  "lots_earned": 7,
+  "trades_with_an_earned_lot": 7,
+  "of_trades": 215,
+  "earned_net": 7043.26,
+  "earned_wins": 4,
+  "by_exit": {
+   "n10_level": [
+    1,
+    -1437.17
+   ],
+   "with_first": [
+    6,
+    8480.43
+   ]
+  }
+ }
+}

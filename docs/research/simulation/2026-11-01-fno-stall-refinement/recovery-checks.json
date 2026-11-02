@@ -1,0 +1,39 @@
+{
+  "status": "DESCRIPTIVE_CASE_VERIFICATION_NOT_FITTING",
+  "checks": [
+    {
+      "economic_fingerprint": "d855e081b7bc5bbccfaab996a580497db8bb4edc26e81dc28974d559a4a3d141",
+      "new_admission_id": "N05/2024/672f55ea91d8a155/10",
+      "old_review_time": "2024-01-16T12:30:59+05:30",
+      "known_then": {
+        "closed_bar": "2024-01-16 12:25:00",
+        "close": 22082.4,
+        "original_retest_level": 22105.6,
+        "fresh": true
+      },
+      "later_labels": {
+        "struct_net": 6655.9375,
+        "old_early_net": -201.3681,
+        "original_net": 6655.9375
+      }
+    },
+    {
+      "economic_fingerprint": "2bf9a39b60fdcb4890194222847be7d305d3fa9e64ecebefd064e069faf4ab9a",
+      "new_admission_id": "N05/2024/672f55ea91d8a155/29",
+      "old_review_time": "2024-11-06T11:40:59+05:30",
+      "known_then": {
+        "closed_bar": "2024-11-06 11:35:00",
+        "close": 24484.45,
+        "original_retest_level": 24440.0,
+        "fresh": true
+      },
+      "later_labels": {
+        "struct_net": -128.5736,
+        "old_early_net": -255.0802,
+        "original_net": -128.5736
+      }
+    }
+  ],
+  "both_level_still_intact_at_old_review": true,
+  "same_original_exit_economics_retained": true
+}

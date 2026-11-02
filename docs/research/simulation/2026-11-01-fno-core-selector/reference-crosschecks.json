@@ -1,0 +1,79 @@
+{
+  "errors": {},
+  "fresh_replays": 12,
+  "closed_records": 569,
+  "max_net_error_rs": 4.9649388529360294e-05,
+  "file_sha256": {
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_718fe0952affb94c.json": "662e461b67f640672b36741a05a4dafee24a6941d6e57dc990b43cb434820cca",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2024-01-01_2024-12-31_718fe0952affb94c.json": "cc84b4f95ca86a298b583d369350a956d2b97536ce1339913f776f19bdadf77a",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_6030023d0e735b40.json": "59f7982ec1602373a5c909e84a643ea5302767a90857e7829d25575d44ec34a6",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2024-01-01_2024-12-31_6030023d0e735b40.json": "a8997db3bee7a5f3ab1ff63aaa922c1af83f178bf49602df0f2cb7ce58bf36e9",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_9ca41f1f354dbc8b.json": "6b0556730067371291ad01b289419efdcca4d5c4c3813ec1b638d88a4f711809",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2024-01-01_2024-12-31_9ca41f1f354dbc8b.json": "d0e6f8d7ba826990b905b4fdb0a5bcc855e6713fc8833dd51552beff0bed4e3f",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2024-01-01_2024-12-31_568071f64c19657e.json": "657673a208d274a4dec1b0d12bcdc918250586078062c2053cab6cd91f5f3c5f",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2024-01-01_2024-12-31_568071f64c19657e.json": "3da1c0422b081137fc47ba3f5581e2edf138998f5804468708275d4a92bc46fd",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_718fe0952affb94c.json": "1304643449272f93b312743461db62430c245391a764da9aa42fb00e175af577",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2025-01-01_2025-12-31_718fe0952affb94c.json": "d4e84c175815cc3c1f8d6e2e3c7f49296f7215b80534bdbafe380733ee6b247f",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_6030023d0e735b40.json": "b1f1c826f7f897c5f9a93ba1889c9e9e872d4b2ffd9fa074121a4afc6d9e1da8",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2025-01-01_2025-12-31_6030023d0e735b40.json": "583b8c38f7872e299dacdc6add485761c90279835666feecab9e60cc2f474a2d",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_9ca41f1f354dbc8b.json": "7773b0b88c5092a76ed450844f030b00f872bb4890bd3b9c472a318bf03cc82a",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2025-01-01_2025-12-31_9ca41f1f354dbc8b.json": "1062df975c31d8ef79e08ca2c6c5154b1d39147df2fa05a0b1524ae00ba6c2b5",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2025-01-01_2025-12-31_568071f64c19657e.json": "75de3a6aa640f870c00c71c6ea88e253db8a877ca411e2e2815e4c151af2692b",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2025-01-01_2025-12-31_568071f64c19657e.json": "e77e10cdcf1569ba83498529a5a6f9f958b3e433871e3935e7bd7466f9bc06a7",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_718fe0952affb94c.json": "3ba4024a5fc6106d247495e2c902fa7985fcab7d765f0cd1aafe5ff121bcecf7",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2026-01-01_2026-10-28_718fe0952affb94c.json": "6f878064ed51027ac49b8c8333e24385222eefae103d49742824bf1e7a2da3a2",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_6030023d0e735b40.json": "957db83f8b69412be2b3e9a8f09a9a360227b93ddc8ce50ab51eeab1a63dab92",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2026-01-01_2026-10-28_6030023d0e735b40.json": "5591b42be56d720b9b081281ac3d7d7141590b97cd398eff556218e426c4e63e",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_9ca41f1f354dbc8b.json": "256d35c981f9be8859cd03b683a6787b7eb2ff21cc98182872c6920b1e4666bd",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2026-01-01_2026-10-28_9ca41f1f354dbc8b.json": "d33ea4a144a36feec807e8576e1485b9afc1299d3036034691645fa2ca5a3e86",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/evals/year_2026-01-01_2026-10-28_568071f64c19657e.json": "840af59b5f15a65981c32f48193f42a3766e1eeb52e6e324832146e2a8044fcd",
+    "docs/research/simulation/2026-11-01-fno-core-selector/_local/traces/year_2026-01-01_2026-10-28_568071f64c19657e.json": "552eee40a7c1a5f45ebc640e324544bd41a7635fedbb12c0d1b28bbe4d352e04"
+  },
+  "legacy_parity": {
+    "2024|MAIN": {
+      "records": 25,
+      "old_file_sha256": "0eda52ec434429cf338c9e60135c144de6764f90c668da661ce4e2dc083bef7f",
+      "economic_parity": true
+    },
+    "2024|NO_EFF": {
+      "records": 9,
+      "old_file_sha256": "b0321ef068c5b83aa8cf1af7057ca73c6b89722ca43011440f1cfebeee8d3a47",
+      "economic_parity": true
+    },
+    "2024|TPB_FULL": {
+      "records": 44,
+      "old_file_sha256": "e48020dde8457848b25c216f5f60b7fa831a75dbfd0fc711fcce101338822c4f",
+      "economic_parity": true
+    },
+    "2025|MAIN": {
+      "records": 50,
+      "old_file_sha256": "45f0fc545104efe76e9a175fbd04ec135ab675c2a504d565616819fab4bd9916",
+      "economic_parity": true
+    },
+    "2025|NO_EFF": {
+      "records": 24,
+      "old_file_sha256": "547db60f81754cdad649b0d2b102890d81d76dbcafa5a820fd59ce458bc38f52",
+      "economic_parity": true
+    },
+    "2025|TPB_FULL": {
+      "records": 98,
+      "old_file_sha256": "fea4af70bda7f29455b2e9792ee1d15995b60c4edc2f577004ce8cf6d815be9e",
+      "economic_parity": true
+    },
+    "2026|MAIN": {
+      "records": 33,
+      "old_file_sha256": "3d3a30ece93ff8a862c83e4246a6b551d3b60a495d138b187756239d148263b4",
+      "economic_parity": true
+    },
+    "2026|NO_EFF": {
+      "records": 17,
+      "old_file_sha256": "35582fa002983cb8be3f5cbe3518f6e895c72683dc723d0213c92a848713c6a1",
+      "economic_parity": true
+    },
+    "2026|TPB_FULL": {
+      "records": 64,
+      "old_file_sha256": "ef6cdee33bfc902eb07af45eed6b7023d3becc46c18c9f9b0bfd70094b030f32",
+      "economic_parity": true
+    }
+  }
+}

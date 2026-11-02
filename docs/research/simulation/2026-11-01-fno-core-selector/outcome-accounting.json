@@ -1,0 +1,119 @@
+{
+  "status": "POST_RUN_DESCRIPTIVE_NOT_ROUTING",
+  "years": {
+    "CORE_ADD": {
+      "2024": {
+        "main_baseline_net": 16371.283600000002,
+        "actual_main_origin_net": 16371.283600000002,
+        "actual_low_addition_net": 0,
+        "low_additions": 0,
+        "main_origin_net_difference": 0.0,
+        "total_difference": 0.0,
+        "profile_admissions": {
+          "MAIN": {
+            "trades": 25,
+            "net": 16371.283600000002
+          }
+        },
+        "limit": "Accounting decomposition of two complete paths, not isolated causal alpha. MAIN-origin difference includes changed sizing/brakes/omissions. Do not add displaced baseline trades back."
+      },
+      "2025": {
+        "main_baseline_net": 5709.834899999998,
+        "actual_main_origin_net": 5709.834899999998,
+        "actual_low_addition_net": 3002.5294999999996,
+        "low_additions": 8,
+        "main_origin_net_difference": 0.0,
+        "total_difference": 3002.5295000000006,
+        "profile_admissions": {
+          "MAIN": {
+            "trades": 50,
+            "net": 5709.834899999998
+          },
+          "TPB_ONE": {
+            "trades": 8,
+            "net": 3002.5294999999996
+          }
+        },
+        "limit": "Accounting decomposition of two complete paths, not isolated causal alpha. MAIN-origin difference includes changed sizing/brakes/omissions. Do not add displaced baseline trades back."
+      },
+      "2026": {
+        "main_baseline_net": 30540.2141,
+        "actual_main_origin_net": 41086.2083,
+        "actual_low_addition_net": 9304.951699999998,
+        "low_additions": 4,
+        "main_origin_net_difference": 10545.994199999997,
+        "total_difference": 19850.945899999995,
+        "profile_admissions": {
+          "MAIN": {
+            "trades": 25,
+            "net": 40673.5798
+          },
+          "TPB_ONE": {
+            "trades": 12,
+            "net": 9717.5802
+          }
+        },
+        "limit": "Accounting decomposition of two complete paths, not isolated causal alpha. MAIN-origin difference includes changed sizing/brakes/omissions. Do not add displaced baseline trades back."
+      }
+    },
+    "CORE_SELECT": {
+      "2024": {
+        "main_baseline_net": 16371.283600000002,
+        "actual_main_origin_net": 16371.283600000002,
+        "actual_low_addition_net": 0,
+        "low_additions": 0,
+        "main_origin_net_difference": 0.0,
+        "total_difference": 0.0,
+        "profile_admissions": {
+          "MAIN": {
+            "trades": 25,
+            "net": 16371.283600000002
+          }
+        },
+        "limit": "Accounting decomposition of two complete paths, not isolated causal alpha. MAIN-origin difference includes changed sizing/brakes/omissions. Do not add displaced baseline trades back."
+      },
+      "2025": {
+        "main_baseline_net": 5709.834899999998,
+        "actual_main_origin_net": 11498.299299999999,
+        "actual_low_addition_net": 3002.5294999999996,
+        "low_additions": 8,
+        "main_origin_net_difference": 5788.464400000001,
+        "total_difference": 8790.993900000001,
+        "profile_admissions": {
+          "MAIN": {
+            "trades": 41,
+            "net": 14618.909699999993
+          },
+          "NO_EFF": {
+            "trades": 6,
+            "net": -3120.6104000000005
+          },
+          "TPB_ONE": {
+            "trades": 8,
+            "net": 3002.5294999999996
+          }
+        },
+        "limit": "Accounting decomposition of two complete paths, not isolated causal alpha. MAIN-origin difference includes changed sizing/brakes/omissions. Do not add displaced baseline trades back."
+      },
+      "2026": {
+        "main_baseline_net": 30540.2141,
+        "actual_main_origin_net": 41086.2083,
+        "actual_low_addition_net": 9304.951699999998,
+        "low_additions": 4,
+        "main_origin_net_difference": 10545.994199999997,
+        "total_difference": 19850.945899999995,
+        "profile_admissions": {
+          "MAIN": {
+            "trades": 25,
+            "net": 40673.5798
+          },
+          "TPB_ONE": {
+            "trades": 12,
+            "net": 9717.5802
+          }
+        },
+        "limit": "Accounting decomposition of two complete paths, not isolated causal alpha. MAIN-origin difference includes changed sizing/brakes/omissions. Do not add displaced baseline trades back."
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "monthly_models": 34,
+  "positive_expert_cells_checked": 97,
+  "counterfactual_labels": 3669,
+  "future_or_unclosed_labels_used": 0,
+  "independent_score_max_error": 1.1368683772161603e-13,
+  "sample_and_ranking_mismatches": 0
+}
