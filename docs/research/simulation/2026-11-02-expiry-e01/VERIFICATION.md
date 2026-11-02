@@ -49,6 +49,14 @@ the integrated application. Final fixed-SHA skill packaging verifies the old
 full hash tree plus actual data, then binds the final integrated checkout. It
 is post-run consistency, not new preregistration or proof of financial truth.
 
+The first final-packaging attempt at handoff 7747344 exited 1 before copying
+study files: it passed a relative Git filename to `relative_to` with an absolute
+base. The exporter/strategy/candidate inputs and scores were unaffected. The
+failed packet is preserved as `_local/evidence-report-failed-path/`; the tool
+now resolves the repository path before making it study-relative. Its actual
+successful receipt must be read from the fresh final packet, not assumed from
+the presence of an initialized folder.
+
 Production was checked read-only: d52642f5cbc973646a1bd9f8a1e207014d2985ee;
 engine running with unchanged start 2026-11-02T03:29:35.254673416Z. No restart,
 deployment, `.env`, capital, real-order, N11 or Production write. The source

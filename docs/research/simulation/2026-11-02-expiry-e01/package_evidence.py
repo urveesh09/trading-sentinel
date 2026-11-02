@@ -3,7 +3,6 @@ import hashlib
 import importlib.util
 import json
 import shutil
-import subprocess
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -47,7 +46,7 @@ def main(expected):
 
     tracked = H.git(ROOT, "ls-files", HERE.relative_to(ROOT).as_posix()).splitlines()
     for name in tracked:
-        copy(ROOT / name, Path("study") / Path(name).relative_to(HERE))
+        copy(ROOT / name, Path("study") / (ROOT / name).relative_to(HERE))
     copy(HERE / "configuration.json", "configuration.json")
     copy(ROOT / "docs/EXPIRY_RESEARCH_E01.md", "ANALYSIS.md")
     for name in freeze["inputs"]:
