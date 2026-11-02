@@ -1,0 +1,93 @@
+{
+  "base_commit": "6d6caf7fd805d4d44c774786168526088abb212f",
+  "sessions": [
+    [
+      "2026-10-06",
+      "NIFTY"
+    ],
+    [
+      "2026-10-08",
+      "SENSEX"
+    ],
+    [
+      "2026-10-13",
+      "NIFTY"
+    ],
+    [
+      "2026-10-15",
+      "SENSEX"
+    ],
+    [
+      "2026-10-19",
+      "NIFTY"
+    ],
+    [
+      "2026-10-22",
+      "SENSEX"
+    ],
+    [
+      "2026-10-27",
+      "NIFTY"
+    ],
+    [
+      "2026-10-29",
+      "SENSEX"
+    ]
+  ],
+  "primary": [
+    "PAIR_30",
+    "CSTOP_30"
+  ],
+  "neighbours": [
+    "PAIR_20",
+    "PAIR_40",
+    "CSTOP_20",
+    "CSTOP_40"
+  ],
+  "adverse": [
+    "BASE",
+    "PAIR_30",
+    "CSTOP_30"
+  ],
+  "ordinary_new_cases": 48,
+  "adverse_new_cases": 24,
+  "capital": "independent2500 per A/B/C per expiry; not shared/restarted finite account",
+  "max_workers": 1,
+  "all_sessions_seen": true,
+  "fidelity": "QUOTE_LIFECYCLE/PARTIAL; legacyOct6 index clock reconstructed; auction fills unverified",
+  "2022_access": false,
+  "runtime": {
+    "budget": 2500.0,
+    "fees": {
+      "NFO": {
+        "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01",
+        "effective_date": "2026-04-01",
+        "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+        "rates": {
+          "brokerage_flat_per_order": 20.0,
+          "stt_sell_pct": 0.0015,
+          "exchange_pct": 0.0003553,
+          "sebi_pct": 1e-06,
+          "stamp_duty_buy_pct": 3e-05,
+          "ipft_pct": 1e-09,
+          "gst_pct": 0.18
+        }
+      },
+      "BFO": {
+        "schedule_version": "ZERODHA_BSE_OPTIONS_VERIFIED_2026-10-06",
+        "effective_date": null,
+        "market": "BSE_EQUITY_OPTIONS_PREMIUM",
+        "rates": {
+          "brokerage_flat_per_order": 20.0,
+          "stt_sell_pct": 0.0015,
+          "exchange_pct": 0.000325,
+          "sebi_pct": 1e-06,
+          "stamp_duty_buy_pct": 3e-05,
+          "ipft_pct": 1e-09,
+          "gst_pct": 0.18
+        },
+        "verified_as_of": "2026-10-06"
+      }
+    }
+  }
+}
