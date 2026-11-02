@@ -1,3 +1,7 @@
+## November 2 — E01 final source identity
+
+E01 native feature9dd4881, research freeze cbbdebb, results c6537c6: all pushed on the same branch, not merged/deployed. Read `docs/EXPIRY_RESEARCH_E01.md/json` and E01 README/VERIFICATION/IDENTITY. Final fixed-SHA skill consistency packet is generated after this handoff under study `_local/evidence-report-final/`; consult its actual VERIFIED.json, not a retrospective preregistration claim. Source guard remains strict; all696 original source bytes and30 inputs retained. Productiond52642f/start03:29:35Z unchanged. Remaining20 fresh paired entries (at least5 per index), coverage and settlement evidence; no further eight-date tuning.
+
 ## November 2 — E01 complete; next useful work is forward expiry evidence
 
 Start `docs/EXPIRY_RESEARCH_E01.md/json`, then the E01 study README, VERIFICATION and IDENTITY. Native CE01 paper shadow is implemented and verified on the same branch; main expiry-v3 and N11 remain unchanged. Current-v3 versus E01 modeled net6,548.10/11,095.17, worst-1,427/-1,000.15, P&L drawdown4,520.04/2,100.73. PAIR30 fails. Do not swap in the higher-scoring20% neighbour or run another genome grid on eight seen dates. Ex-best and SENSEX still lose; qualification is incomplete.

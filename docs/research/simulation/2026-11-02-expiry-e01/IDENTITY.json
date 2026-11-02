@@ -9,7 +9,7 @@
     "python-engine/tests/test_expiry_e01.py": "1a71f0902ff9f9b6f90f9856b932f99c8d9ac1ee5f929d367fec8ea2320557af",
     "python-engine/tests/test_expiry_paper.py": "5a9abf9eaaf18dfc94cee3aee577154022444123d245bd2962941fa84056d859"
   },
-  "stage": "Native integration verified; actual feature commit recorded by immediate handoff commit.",
+  "stage": "Native integration committed and pushed in Dev; not merged or deployed.",
   "production": "d52642f5cbc973646a1bd9f8a1e207014d2985ee",
   "production_engine_started_at": "2026-11-02T03:29:35.254673416Z",
   "deployed": false,
@@ -23,5 +23,7 @@
   "focused_tests_before_final_binding": 95,
   "final_binding_tests": 28,
   "private_packet": "_local/evidence-report-final",
-  "private_packet_stage": "Post-run fixed-SHA consistency after handoff commit; not preregistration."
+  "private_packet_stage": "Run package_evidence.py against this final handoff HEAD; actual result is recorded in private VERIFIED.json.",
+  "integration_commit": "9dd488144da2601b4e87992184a159f1205f72c0",
+  "commit_identity_note": "This identity is recorded in the immediate child handoff commit; the final evidence packet records that exact Git HEAD."
 }

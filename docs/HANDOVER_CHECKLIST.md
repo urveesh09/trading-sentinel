@@ -1,3 +1,7 @@
+## November 2 — E01 final source identity
+
+E01 native feature9dd4881, research freeze cbbdebb, results c6537c6: all pushed on the same branch, not merged/deployed. Read `docs/EXPIRY_RESEARCH_E01.md/json` and E01 README/VERIFICATION/IDENTITY. Final fixed-SHA skill consistency packet is generated after this handoff under study `_local/evidence-report-final/`; consult its actual VERIFIED.json, not a retrospective preregistration claim. Source guard remains strict; all696 original source bytes and30 inputs retained. Productiond52642f/start03:29:35Z unchanged. Remaining20 fresh paired entries (at least5 per index), coverage and settlement evidence; no further eight-date tuning.
+
 ## November 2 — E01 expiry handover
 
 - Read `EXPIRY_RESEARCH_E01.md/json` and E01 README/VERIFICATION/IDENTITY. CE01 is a separate new-day paper shadow, fixed30% premium stop on C's exact saved entry. Parent ID plus quantity/contract/fee/risk identity required. Main expiry-v3 A/B/C and N11 unchanged; no extra quote call or per-trade shadow delivery.

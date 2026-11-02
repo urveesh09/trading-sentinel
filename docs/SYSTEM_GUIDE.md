@@ -1,3 +1,7 @@
+## November 2 — E01 final source identity
+
+E01 native feature9dd4881, research freeze cbbdebb, results c6537c6: all pushed on the same branch, not merged/deployed. Read `docs/EXPIRY_RESEARCH_E01.md/json` and E01 README/VERIFICATION/IDENTITY. Final fixed-SHA skill consistency packet is generated after this handoff under study `_local/evidence-report-final/`; consult its actual VERIFIED.json, not a retrospective preregistration claim. Source guard remains strict; all696 original source bytes and30 inputs retained. Productiond52642f/start03:29:35Z unchanged. Remaining20 fresh paired entries (at least5 per index), coverage and settlement evidence; no further eight-date tuning.
+
 ## November 2 — E01 native expiry shadow completed in Dev
 
 Read `docs/EXPIRY_RESEARCH_E01.md/json` and `docs/research/simulation/2026-11-02-expiry-e01/README.md`. CE01 (`expiry-e01-v1`, shadow-v6) copies ONLY a successfully saved fresh C lottery entry and adds the predeclared 30% premium stop. Contract/time/price/quantity/fees/full-premium ceiling match; durable parent identity AND economic terms are required for paired results. Main expiry-v3 A/B/C, N11 and real-order authority are unchanged. No extra provider call or per-trade shadow Telegram. Old/mid-session days are not enrolled; new day state binds version and enrollment. `EXPIRY_E01_SHADOW_ENABLED` defaults true. False blocks new copies while existing CE01 positions keep all exits. No schema migration or .env change. Rollback disables entries, not open-leg management.

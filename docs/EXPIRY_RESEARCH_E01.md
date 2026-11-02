@@ -1,6 +1,6 @@
 # E01: improve the expiry lottery's exits, then measure new expiry days
 
-November 2, 2026. Dev research and a separate paper shadow; not deployed.
+November 2, 2026. Native code **9dd4881**, pushed on `codex/production-correction-hedge-p0`. Dev research and a separate paper shadow; not deployed.
 
 E01 improved both profit and losses on the eight archived expiry sessions. It
 keeps the lottery's entry and upside rules, but adds a planned 30% premium stop.
