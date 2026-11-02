@@ -1,0 +1,16 @@
+{
+  "year": "2026",
+  "identical": true,
+  "N08": {
+    "trades": 51,
+    "net": 104924.38
+  },
+  "VOL_CLOCK": {
+    "trades": 51,
+    "net": 104924.38
+  },
+  "N10": {
+    "trades": 51,
+    "net": 125786.06
+  }
+}

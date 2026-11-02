@@ -1,0 +1,4036 @@
+{
+  "schema": "n11_freeze_v1",
+  "sources": {
+    "n11_rules.py": "2101d4cf5461e29bb811c6f711f0466e577766680f51fe1936e4c61503c088b8",
+    "n11_lab.py": "d4f9e35f97dcfe2d6f329beab817cfc9668d00e08c3a4a1076c42d87144c7612",
+    "PLAN.md": "ffc56c6749a9f15373cdd2d8a5243a05a3b654ce07bcbdc86ee7b6588a536284",
+    "driver.py": "5e7ee1e6073ff8e7ec3d2cdb9bfc071b8ffe7ce2ee88c06b021da08bd80ca5a3",
+    "test_n11.py": "0c26a34cb944bcbe7bd572820265dca2f3ed509a78f1cf8da7957b9725e98482",
+    "EXAM_2022_N11.md": "b7af15d9308f3d3760995cca6ce5ad8b3471a26d8015db7b00b7ae66b9cac556"
+  },
+  "books": {
+    "controls": {
+      "N08": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|CTRL|N08",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "VOL_CLOCK": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|CTRL|VOL_CLOCK",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "N10": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|CTRL|N10",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "CUSHION"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0,
+          "watch": {
+            "need": 20,
+            "slice": 0.05,
+            "deepest": 0.75
+          }
+        },
+        "n101": {
+          "contract": "v1",
+          "mode": "WATCH_FLAT"
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      }
+    },
+    "panel": {
+      "N11": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|N11",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 20,
+          "stand_ratio": 0.9,
+          "add": "HONEST"
+        }
+      },
+      "R0.85": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|R0.85",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 20,
+          "stand_ratio": 0.85,
+          "add": "HONEST"
+        }
+      },
+      "R0.95": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|R0.95",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 20,
+          "stand_ratio": 0.95,
+          "add": "HONEST"
+        }
+      },
+      "N15": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|N15",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 15,
+          "stand_ratio": 0.9,
+          "add": "HONEST"
+        }
+      },
+      "N25": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|N25",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 25,
+          "stand_ratio": 0.9,
+          "add": "HONEST"
+        }
+      },
+      "X0.75": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|X0.75",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              0.75,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 20,
+          "stand_ratio": 0.9,
+          "add": "HONEST"
+        }
+      },
+      "X1.25": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|X1.25",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.25,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 20,
+          "stand_ratio": 0.9,
+          "add": "HONEST"
+        }
+      },
+      "NO_STAND": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|NO_STAND",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "add": "HONEST"
+        }
+      },
+      "NO_LOSS": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|NO_LOSS",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9,
+          "add": "HONEST"
+        }
+      },
+      "NO_ADD": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|NO_ADD",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "NO_VOL": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|NO_VOL",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": false
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 20,
+          "stand_ratio": 0.9,
+          "add": "HONEST"
+        }
+      },
+      "DOUBLE": {
+        "members": [
+          {
+            "kind": "NAMED",
+            "name": "SHIPPED",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "OR20",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "EFF",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:HIGH",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          },
+          {
+            "kind": "NAMED",
+            "name": "TPB",
+            "gate": "adx_abs30:LOW",
+            "exit": "OWN",
+            "vwap_exit": "OFF"
+          }
+        ],
+        "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 2,
+          "FNO_MAX_LOTS_PROVEN": 2
+        },
+        "cost": [
+          400.0,
+          10.0
+        ],
+        "n02_policy": "STATIC",
+        "n02_profile": "TPB_ONE",
+        "n02_contract": "v1",
+        "n03_variant": "RETEST",
+        "n03_context": "TPB_ONE",
+        "n03_sizing": "NORMAL",
+        "n03_contract": "v1",
+        "n04_mode": "BASE",
+        "n04_context": "BALANCED_RETEST",
+        "n04_contract": "v1",
+        "n05_mode": "BASE",
+        "n05_context": "BALANCED_RETEST",
+        "n05_contract": "v1",
+        "n07_mode": "PREMIUM_STALL",
+        "n07_contract": "v1",
+        "label": "N11|DOUBLE",
+        "n08": {
+          "contract": "v1",
+          "exits": {
+            "EFF": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            },
+            "OR20": {
+              "FNO_TRAIL_ATR_MULT": 2.0
+            }
+          },
+          "low_two_lots_before": 720,
+          "low_last_minute": 840
+        },
+        "n09": {
+          "contract": "v1",
+          "vol_size": true
+        },
+        "n091": {
+          "contract": "v1",
+          "mode": "VOL_CLOCK"
+        },
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 3,
+          "parent_min": 2,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "loss_one": true,
+          "stand": 20,
+          "stand_ratio": 0.9,
+          "add": "HONEST"
+        }
+      }
+    },
+    "random": {
+      "RANDOM|00|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 13,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.5,
+              "target_r": 1.5,
+              "exit": "LIVE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|00|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|00|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 13,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.5,
+              "target_r": 1.5,
+              "exit": "LIVE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|00|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|00|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 13,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.5,
+              "target_r": 1.5,
+              "exit": "LIVE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|00|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "RANDOM|01|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 6,
+              "rvol": 1.2,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.5,
+              "target_r": 3.0,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 4,
+              "rvol": 1.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LIVE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 1,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 2.0,
+              "target_r": 1.5,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|01|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|01|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 6,
+              "rvol": 1.2,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.5,
+              "target_r": 3.0,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 4,
+              "rvol": 1.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LIVE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 1,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 2.0,
+              "target_r": 1.5,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|01|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|01|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 6,
+              "rvol": 1.2,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.5,
+              "target_r": 3.0,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 4,
+              "rvol": 1.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LIVE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 1,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 2.0,
+              "target_r": 1.5,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|01|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "RANDOM|02|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 11,
+              "rvol": 0.8,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LATE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 1,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 2.0,
+              "target_r": 2.4,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|02|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|02|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 11,
+              "rvol": 0.8,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LATE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 1,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 2.0,
+              "target_r": 2.4,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|02|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|02|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 11,
+              "rvol": 0.8,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LATE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 1,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 2.0,
+              "target_r": 2.4,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|02|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "RANDOM|03|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 9,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 4,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 1.5,
+              "exit": "RUN",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 6,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LIVE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|03|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|03|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 9,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 4,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 1.5,
+              "exit": "RUN",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 6,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LIVE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|03|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|03|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 9,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 4,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 1.5,
+              "exit": "RUN",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 6,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LIVE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|03|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "RANDOM|04|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 11,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 2.0,
+              "target_r": 2.4,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|04|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|04|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 11,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 2.0,
+              "target_r": 2.4,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|04|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|04|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 11,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 2.0,
+              "target_r": 2.4,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|04|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "RANDOM|05|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 4,
+              "rvol": 1.2,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.5,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 4,
+              "rvol": 1.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.5,
+              "target_r": 3.0,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|05|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|05|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 4,
+              "rvol": 1.2,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.5,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 4,
+              "rvol": 1.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.5,
+              "target_r": 3.0,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|05|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|05|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 4,
+              "rvol": 1.2,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.5,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 4,
+              "rvol": 1.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.5,
+              "target_r": 3.0,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|05|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "RANDOM|06|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 0,
+              "rvol": 1.2,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 15,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|06|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|06|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 0,
+              "rvol": 1.2,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 15,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|06|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|06|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 0,
+              "rvol": 1.2,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LOOSE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 15,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|06|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "RANDOM|07|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 12,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LIVE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|07|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|07|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 12,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LIVE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|07|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|07|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 12,
+              "rvol": 0.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LIVE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|07|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "RANDOM|08|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 14,
+              "rvol": 0.8,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 7,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 8,
+              "rvol": 1.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.0,
+              "target_r": 1.5,
+              "exit": "RUN",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 0,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.5,
+              "target_r": 1.8,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|08|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|08|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 14,
+              "rvol": 0.8,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 7,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 8,
+              "rvol": 1.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.0,
+              "target_r": 1.5,
+              "exit": "RUN",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 0,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.5,
+              "target_r": 1.8,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|08|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|08|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 14,
+              "rvol": 0.8,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 2.4,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 7,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 8,
+              "rvol": 1.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.0,
+              "target_r": 1.5,
+              "exit": "RUN",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 0,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.5,
+              "target_r": 1.8,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|08|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      },
+      "RANDOM|09|BASE": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 11,
+              "rvol": 1.2,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LIVE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 2,
+              "rvol": 0.8,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 3.0,
+              "exit": "LATE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 15,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 12,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 2.0,
+              "target_r": 1.5,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|09|BASE",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1"
+        }
+      },
+      "RANDOM|09|ADD": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 11,
+              "rvol": 1.2,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LIVE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 2,
+              "rvol": 0.8,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 3.0,
+              "exit": "LATE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 15,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 12,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 2.0,
+              "target_r": 1.5,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|09|ADD",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "add": "HONEST"
+        }
+      },
+      "RANDOM|09|STAND": {
+        "members": [
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.02,
+              "nr_seed": 11,
+              "rvol": 1.2,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "ALL",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LIVE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.08,
+              "nr_seed": 2,
+              "rvol": 0.8,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "AM",
+              "stop_atr": 1.0,
+              "target_r": 3.0,
+              "exit": "LATE",
+              "vwap_exit": "OFF",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 15,
+              "rvol": 1.0,
+              "htf": "WITH",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 1.0,
+              "target_r": 1.8,
+              "exit": "LOOSE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          },
+          {
+            "kind": "LAB",
+            "gate": "ALWAYS",
+            "genome": {
+              "family": "NULL_RANDOM",
+              "nr_p": 0.04,
+              "nr_seed": 12,
+              "rvol": 0.0,
+              "htf": "OFF",
+              "xidx": "OFF",
+              "window": "PM",
+              "stop_atr": 2.0,
+              "target_r": 1.5,
+              "exit": "LATE",
+              "vwap_exit": "ON",
+              "delta": 0.55,
+              "expiry": "NEAR"
+            }
+          }
+        ],
+        "o31": "N11|RANDOM|09|STAND",
+        "cfg": {
+          "FNO_MAX_LOTS": 1,
+          "FNO_MAX_LOTS_PROVEN": 1,
+          "FNO_ADAPTIVE_RISK_ENABLED": false,
+          "FNO_DAILY_KILL_PCT": 9.0,
+          "FNO_WEEKLY_KILL_PCT": 9.0,
+          "FNO_MONTHLY_KILL_PCT": 9.0,
+          "FNO_MAX_DRAWDOWN_PCT": 0.999,
+          "FNO_MAX_CONSECUTIVE_LOSSES": 1000000,
+          "FNO_TWO_STRIKE_LOSSES": 1000000,
+          "FNO_MAX_TRADES_PER_DAY": 6
+        },
+        "skip": 0.5,
+        "cost": [
+          200.0,
+          5.0
+        ],
+        "n10": {
+          "contract": "v1",
+          "entry": "NATIVE",
+          "steps": [],
+          "eligibility": "RISK",
+          "vol": false,
+          "max_total": 2,
+          "parent_min": 1,
+          "flat_risk": 5000.0
+        },
+        "n11": {
+          "contract": "v1",
+          "stand": 20,
+          "stand_ratio": 0.9
+        }
+      }
+    }
+  },
+  "core": {
+    "loss_one": true,
+    "stand": 20,
+    "stand_ratio": 0.9,
+    "add": "HONEST"
+  },
+  "note": "Written after five development screens on the four seen years, and before any frozen phase runs. Discipline, not an exam."
+}
