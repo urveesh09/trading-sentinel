@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "checks": {
+    "continuous_fills": 480,
+    "price_depth_checks": 560,
+    "positions": 290,
+    "auction_fills_unverified": 80,
+    "entry_budget_checks": 240,
+    "cases": 80,
+    "pair_loss_exits": 13
+  },
+  "limits": [
+    "audit of paper-native replay, not broker fills",
+    "auction fills and sampled-index settlement remain unverified/assumed"
+  ]
+}

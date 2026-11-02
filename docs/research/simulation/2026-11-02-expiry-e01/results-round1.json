@@ -1,0 +1,547 @@
+{
+  "all_seen": true,
+  "new_primary": [
+    "PAIR_30",
+    "CSTOP_30"
+  ],
+  "evaluations": {
+    "BASE": {
+      "ordinary": {
+        "all8": {
+          "sessions": 8,
+          "net": 6548.1,
+          "worst_day": -1427.0,
+          "drawdown_rupees": 4520.04,
+          "without_best": -7232.64,
+          "by_underlying": {
+            "NIFTY": 9986.91,
+            "SENSEX": -3438.8100000000004
+          },
+          "filled_event_net": 13791.1,
+          "assumed_net": -7243.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 6
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 7833.7,
+          "worst_day": -1427.0,
+          "drawdown_rupees": 4520.04,
+          "without_best": -5947.04,
+          "by_underlying": {
+            "SENSEX": -3438.8100000000004,
+            "NIFTY": 11272.51
+          },
+          "filled_event_net": 13958.7,
+          "assumed_net": -6125.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 5
+        }
+      },
+      "adverse": {
+        "all8": {
+          "sessions": 8,
+          "net": 6361.82,
+          "worst_day": -1441.98,
+          "drawdown_rupees": 4619.79,
+          "without_best": -7422.07,
+          "by_underlying": {
+            "NIFTY": 9840.6,
+            "SENSEX": -3478.7799999999997
+          },
+          "filled_event_net": 13626.57,
+          "assumed_net": -7264.75,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 6
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 7722.12,
+          "worst_day": -1441.98,
+          "drawdown_rupees": 4619.79,
+          "without_best": -6061.77,
+          "by_underlying": {
+            "SENSEX": -3478.7799999999997,
+            "NIFTY": 11200.9
+          },
+          "filled_event_net": 13865.62,
+          "assumed_net": -6143.5,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 5
+        }
+      }
+    },
+    "PAIR_30": {
+      "ordinary": {
+        "all8": {
+          "sessions": 8,
+          "net": 5758.39,
+          "worst_day": -2960.1,
+          "drawdown_rupees": 4739.64,
+          "without_best": -9259.68,
+          "by_underlying": {
+            "NIFTY": 10730.3,
+            "SENSEX": -4971.91
+          },
+          "filled_event_net": 10037.39,
+          "assumed_net": -4279.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 6
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 7537.93,
+          "worst_day": -2960.1,
+          "drawdown_rupees": 4520.04,
+          "without_best": -7480.14,
+          "by_underlying": {
+            "SENSEX": -4971.91,
+            "NIFTY": 12509.84
+          },
+          "filled_event_net": 11816.93,
+          "assumed_net": -4279.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 5
+        }
+      },
+      "adverse": {
+        "all8": {
+          "sessions": 8,
+          "net": 5562.37,
+          "worst_day": -2975.09,
+          "drawdown_rupees": 4832.57,
+          "without_best": -9452.36,
+          "by_underlying": {
+            "NIFTY": 10574.26,
+            "SENSEX": -5011.89
+          },
+          "filled_event_net": 9853.37,
+          "assumed_net": -4291.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 6
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 7419.85,
+          "worst_day": -2975.09,
+          "drawdown_rupees": 4619.79,
+          "without_best": -7594.88,
+          "by_underlying": {
+            "SENSEX": -5011.89,
+            "NIFTY": 12431.74
+          },
+          "filled_event_net": 11710.85,
+          "assumed_net": -4291.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 5
+        }
+      }
+    },
+    "CSTOP_30": {
+      "ordinary": {
+        "all8": {
+          "sessions": 8,
+          "net": 11095.17,
+          "worst_day": -1000.15,
+          "drawdown_rupees": 2100.73,
+          "without_best": -2685.57,
+          "by_underlying": {
+            "NIFTY": 11634.740000000002,
+            "SENSEX": -539.5699999999999
+          },
+          "filled_event_net": 14059.17,
+          "assumed_net": -2964.0,
+          "unresolved": 0,
+          "positive_sessions": 3,
+          "negative_sessions": 4
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 12095.32,
+          "worst_day": -954.88,
+          "drawdown_rupees": 2100.73,
+          "without_best": -1685.42,
+          "by_underlying": {
+            "SENSEX": -539.5699999999999,
+            "NIFTY": 12634.890000000001
+          },
+          "filled_event_net": 13941.32,
+          "assumed_net": -1846.0,
+          "unresolved": 0,
+          "positive_sessions": 3,
+          "negative_sessions": 3
+        }
+      },
+      "adverse": {
+        "all8": {
+          "sessions": 8,
+          "net": 10994.22,
+          "worst_day": -1022.95,
+          "drawdown_rupees": 2146.07,
+          "without_best": -2789.67,
+          "by_underlying": {
+            "NIFTY": 11585.739999999998,
+            "SENSEX": -591.52
+          },
+          "filled_event_net": 13967.97,
+          "assumed_net": -2973.75,
+          "unresolved": 0,
+          "positive_sessions": 3,
+          "negative_sessions": 4
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 12017.17,
+          "worst_day": -970.87,
+          "drawdown_rupees": 2146.07,
+          "without_best": -1766.72,
+          "by_underlying": {
+            "SENSEX": -591.52,
+            "NIFTY": 12608.689999999999
+          },
+          "filled_event_net": 13869.67,
+          "assumed_net": -1852.5,
+          "unresolved": 0,
+          "positive_sessions": 3,
+          "negative_sessions": 3
+        }
+      }
+    },
+    "PAIR_20": {
+      "ordinary": {
+        "all8": {
+          "sessions": 8,
+          "net": 5543.08,
+          "worst_day": -2789.42,
+          "drawdown_rupees": 5415.31,
+          "without_best": -9757.2,
+          "by_underlying": {
+            "NIFTY": 10344.310000000001,
+            "SENSEX": -4801.2300000000005
+          },
+          "filled_event_net": 9822.08,
+          "assumed_net": -4279.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 6
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 7095.55,
+          "worst_day": -2789.42,
+          "drawdown_rupees": 5415.31,
+          "without_best": -8204.73,
+          "by_underlying": {
+            "SENSEX": -4801.2300000000005,
+            "NIFTY": 11896.78
+          },
+          "filled_event_net": 11374.55,
+          "assumed_net": -4279.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 5
+        }
+      }
+    },
+    "PAIR_40": {
+      "ordinary": {
+        "all8": {
+          "sessions": 8,
+          "net": 5318.96,
+          "worst_day": -3123.8,
+          "drawdown_rupees": 5033.09,
+          "without_best": -9553.13,
+          "by_underlying": {
+            "NIFTY": 10454.57,
+            "SENSEX": -5135.610000000001
+          },
+          "filled_event_net": 9597.96,
+          "assumed_net": -4279.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 6
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 7228.25,
+          "worst_day": -3123.8,
+          "drawdown_rupees": 4520.04,
+          "without_best": -7643.84,
+          "by_underlying": {
+            "SENSEX": -5135.610000000001,
+            "NIFTY": 12363.86
+          },
+          "filled_event_net": 11507.25,
+          "assumed_net": -4279.0,
+          "unresolved": 0,
+          "positive_sessions": 1,
+          "negative_sessions": 5
+        }
+      }
+    },
+    "CSTOP_20": {
+      "ordinary": {
+        "all8": {
+          "sessions": 8,
+          "net": 12055.57,
+          "worst_day": -954.88,
+          "drawdown_rupees": 1617.42,
+          "without_best": -1725.17,
+          "by_underlying": {
+            "NIFTY": 12247.8,
+            "SENSEX": -192.23000000000002
+          },
+          "filled_event_net": 15019.57,
+          "assumed_net": -2964.0,
+          "unresolved": 0,
+          "positive_sessions": 3,
+          "negative_sessions": 4
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 12925.97,
+          "worst_day": -954.88,
+          "drawdown_rupees": 1617.42,
+          "without_best": -854.77,
+          "by_underlying": {
+            "SENSEX": -192.23000000000002,
+            "NIFTY": 13118.2
+          },
+          "filled_event_net": 14771.97,
+          "assumed_net": -1846.0,
+          "unresolved": 0,
+          "positive_sessions": 3,
+          "negative_sessions": 3
+        }
+      }
+    },
+    "CSTOP_40": {
+      "ordinary": {
+        "all8": {
+          "sessions": 8,
+          "net": 9752.23,
+          "worst_day": -1312.52,
+          "drawdown_rupees": 2768.95,
+          "without_best": -4028.51,
+          "by_underlying": {
+            "NIFTY": 10732.97,
+            "SENSEX": -980.74
+          },
+          "filled_event_net": 12716.23,
+          "assumed_net": -2964.0,
+          "unresolved": 0,
+          "positive_sessions": 2,
+          "negative_sessions": 5
+        },
+        "raw_clock7": {
+          "sessions": 7,
+          "net": 10985.93,
+          "worst_day": -1312.52,
+          "drawdown_rupees": 2768.95,
+          "without_best": -2794.81,
+          "by_underlying": {
+            "SENSEX": -980.74,
+            "NIFTY": 11966.67
+          },
+          "filled_event_net": 12831.93,
+          "assumed_net": -1846.0,
+          "unresolved": 0,
+          "positive_sessions": 2,
+          "negative_sessions": 4
+        }
+      }
+    }
+  },
+  "checks": {
+    "PAIR_30": {
+      "routes": {
+        "ordinary|all8": {
+          "profit": {
+            "no_unresolved": true,
+            "without_best_no_worse": false,
+            "underlyings_no_worse": false,
+            "higher_net": false,
+            "worst_day_no_worse": false,
+            "drawdown_no_worse": false
+          },
+          "loss": {
+            "no_unresolved": true,
+            "without_best_no_worse": false,
+            "underlyings_no_worse": false,
+            "net_retained": false,
+            "worst_day_smaller": false,
+            "drawdown_smaller": false
+          },
+          "profit_pass": false,
+          "loss_pass": false
+        },
+        "ordinary|raw_clock7": {
+          "profit": {
+            "no_unresolved": true,
+            "without_best_no_worse": false,
+            "underlyings_no_worse": false,
+            "higher_net": false,
+            "worst_day_no_worse": false,
+            "drawdown_no_worse": true
+          },
+          "loss": {
+            "no_unresolved": true,
+            "without_best_no_worse": false,
+            "underlyings_no_worse": false,
+            "net_retained": true,
+            "worst_day_smaller": false,
+            "drawdown_smaller": false
+          },
+          "profit_pass": false,
+          "loss_pass": false
+        },
+        "adverse|all8": {
+          "profit": {
+            "no_unresolved": true,
+            "without_best_no_worse": false,
+            "underlyings_no_worse": false,
+            "higher_net": false,
+            "worst_day_no_worse": false,
+            "drawdown_no_worse": false
+          },
+          "loss": {
+            "no_unresolved": true,
+            "without_best_no_worse": false,
+            "underlyings_no_worse": false,
+            "net_retained": false,
+            "worst_day_smaller": false,
+            "drawdown_smaller": false
+          },
+          "profit_pass": false,
+          "loss_pass": false
+        },
+        "adverse|raw_clock7": {
+          "profit": {
+            "no_unresolved": true,
+            "without_best_no_worse": false,
+            "underlyings_no_worse": false,
+            "higher_net": false,
+            "worst_day_no_worse": false,
+            "drawdown_no_worse": true
+          },
+          "loss": {
+            "no_unresolved": true,
+            "without_best_no_worse": false,
+            "underlyings_no_worse": false,
+            "net_retained": true,
+            "worst_day_smaller": false,
+            "drawdown_smaller": false
+          },
+          "profit_pass": false,
+          "loss_pass": false
+        }
+      },
+      "profit_route": false,
+      "loss_route": false,
+      "plateau": {
+        "PAIR_20": false,
+        "PAIR_40": false
+      },
+      "accepted_screen": false
+    },
+    "CSTOP_30": {
+      "routes": {
+        "ordinary|all8": {
+          "profit": {
+            "no_unresolved": true,
+            "without_best_no_worse": true,
+            "underlyings_no_worse": true,
+            "higher_net": true,
+            "worst_day_no_worse": true,
+            "drawdown_no_worse": true
+          },
+          "loss": {
+            "no_unresolved": true,
+            "without_best_no_worse": true,
+            "underlyings_no_worse": true,
+            "net_retained": true,
+            "worst_day_smaller": true,
+            "drawdown_smaller": true
+          },
+          "profit_pass": true,
+          "loss_pass": true
+        },
+        "ordinary|raw_clock7": {
+          "profit": {
+            "no_unresolved": true,
+            "without_best_no_worse": true,
+            "underlyings_no_worse": true,
+            "higher_net": true,
+            "worst_day_no_worse": true,
+            "drawdown_no_worse": true
+          },
+          "loss": {
+            "no_unresolved": true,
+            "without_best_no_worse": true,
+            "underlyings_no_worse": true,
+            "net_retained": true,
+            "worst_day_smaller": true,
+            "drawdown_smaller": true
+          },
+          "profit_pass": true,
+          "loss_pass": true
+        },
+        "adverse|all8": {
+          "profit": {
+            "no_unresolved": true,
+            "without_best_no_worse": true,
+            "underlyings_no_worse": true,
+            "higher_net": true,
+            "worst_day_no_worse": true,
+            "drawdown_no_worse": true
+          },
+          "loss": {
+            "no_unresolved": true,
+            "without_best_no_worse": true,
+            "underlyings_no_worse": true,
+            "net_retained": true,
+            "worst_day_smaller": true,
+            "drawdown_smaller": true
+          },
+          "profit_pass": true,
+          "loss_pass": true
+        },
+        "adverse|raw_clock7": {
+          "profit": {
+            "no_unresolved": true,
+            "without_best_no_worse": true,
+            "underlyings_no_worse": true,
+            "higher_net": true,
+            "worst_day_no_worse": true,
+            "drawdown_no_worse": true
+          },
+          "loss": {
+            "no_unresolved": true,
+            "without_best_no_worse": true,
+            "underlyings_no_worse": true,
+            "net_retained": true,
+            "worst_day_smaller": true,
+            "drawdown_smaller": true
+          },
+          "profit_pass": true,
+          "loss_pass": true
+        }
+      },
+      "profit_route": true,
+      "loss_route": true,
+      "plateau": {
+        "CSTOP_20": true,
+        "CSTOP_40": true
+      },
+      "accepted_screen": true
+    }
+  }
+}

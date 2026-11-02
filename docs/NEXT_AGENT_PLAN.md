@@ -1,3 +1,11 @@
+## November 2 — Implement the selected E01 paper shadow with exact native parity
+
+Read `2026-11-02-expiry-e01/ROUND1_OUTCOME.md`. First source cbbdebb; all80 frozen cases and independent audits complete. CSTOP30 passes; PAIR30 fails. Do not choose20% just because it scored more. Do not run round2 to inflate eight known dates. Only missing evidence is genuinely new expiry days and actual execution-quality/coverage, not another same-sample genome grid.
+
+Implementation plan: `expiry_paper.py`, `config.py`, focused expiry tests. Add separately versioned CE01 copied ONLY when a fresh C entry succeeds at the same clock/contract/price/size. Same C failed-break/bank/trail/flat logic plus frozen30% premium stop; full premium remains the loss ceiling. Default-enabled paper shadow, no per-trade messages or extra provider calls; no main A/B/C change. Freeze enrollment in new day state so an old/mid-session state cannot fabricate an E01 history. Toggle only blocks new entries: manage already-open CE01 legs even off. Existing pending/partial/settlement handling retained. Exact-entry paired summary via PAIRED_WITH, not ticker/day guessing. No DB schema migration or broker authority.
+
+Acceptance:16 native ordinary/adverse session replays must match frozen CSTOP30 C money/events via CE01 name translation; every main A/B/C outcome and quote-call count must match original baseline. Test disable/re-enable without catch-up, existing-open exits, old JSON state, full-premium budgets and partial fills. Run expiry/isolation/config coverage, regenerate atlas, update guide/plan/checklist. Research source is frozen/archived at cbbdebb; source changes for integration are explicit, not retrospective re-freezing. Rollback disables new CE01 entries without orphaning existing legs. Push the same branch; Production untouched.
+
 ## November 2 — Execute the bounded E01 expiry comparison
 
 E01 source/config/effective-settings/inputs frozen before candidate scoring in `2026-11-02-expiry-e01/freeze-round1-v2.json`; preserve the old draft and PREFLIGHT_CORRECTIONS. Eight historical sessions/95 position legs match native money/events; all current-v3 controls completed.74 focused tests pass (63 existing expiry,11 new); atlas292/no diff. Counterfactual benchmark is current expiry-v3, not mixed historical outcomes.

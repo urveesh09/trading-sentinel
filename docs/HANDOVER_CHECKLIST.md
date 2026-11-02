@@ -1,3 +1,10 @@
+## November 2 — E01 round1 complete, native integration next
+
+- Source cbbdebb;80 cases (8 controls+48 ordinary variants+24 adverse),72 new runs156.92s. CSTOP30 is the only accepted primary; both neighbours support it. PAIR30 fails and stays rejected. No post-score threshold/source change.
+- Current-v3 comparison: net6,548.10 to11,095.17; worst-1,427 to-1,000.15; P&L drawdown4,520.04 to2,100.73. Without best still-2,685.57. Only8 seen sessions; auction/settlement limits retained.
+- Independent290 primary legs,560 depth/price checks,240 full-premium admissions;63 native+11 research tests passed. Historical8/95-leg source parity intact. Original696 source hashes archived before integration.
+- Next implement/test CE01 paper-only with exact16-case native parity, old-state/toggle/open-exit/quote-call safety. No Production/N11/real-order/money/size change or new download/2022 access.
+
 ## November 2 — E01 expiry pre-score checkpoint
 
 - Dev base6d6caf7, same branch; Productiond52642f read-only, engine start2026-11-02T03:29:35.254673416Z unchanged. Export used ro source volume,network-none,read-only root,0.5CPU/256MiB,writing only Dev.

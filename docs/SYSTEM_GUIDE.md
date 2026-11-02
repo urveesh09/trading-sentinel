@@ -1,3 +1,9 @@
+## November 2 — E01 research result: retain the lottery backstop, not the pair stop
+
+Source cbbdebb, eight seen expiry sessions. CSTOP30 raises current-v3 modeled net6,548.10 to11,095.17, worst day-1,427.00 to-1,000.15, cumulative P&L drawdown4,520.04 to2,100.73. Passes both frozen routes in ordinary/adverse prices and all8/raw-clock7 cohorts;20%/40% neighbours support,30% retained as predeclared. Without the best session it STILL loses2,685.57; SENSEX total remains negative. This is a small-sample loss-shaping result, not profitability proof. PAIR30 and its neighbours fail; no pair-stop promotion.
+
+All80 cases and independent290-leg/560-price-depth/240-entry-budget checks pass. Paper-filled net and assumed residuals stay separate; auction fills remain unverified. Historical8/95-leg parity preserved. No candidate parameter changed after scores. Next slice implements CE01 as a separate paper shadow only, using C's exact ticket plus30% stop, same quotes/full-premium ceiling/pending exits. Main A/B/C and N11 unchanged. Original696 research source hashes archived before the planned application integration; do not silently re-freeze the old lab afterwards.
+
 ## November 2 — Expiry E01 research started, main rules unchanged
 
 E01 studies the separate expiry paper module, not N11 or real orders. Read `docs/research/simulation/2026-11-02-expiry-e01/PLAN.md` and `ROUND1.md`. Only eight recorded expiry sessions through Oct29 exist; the four sealed multi-year F&O exports contain ZERO same-day-expiry option bars. Do not use next-week contracts as zero-day evidence. A consistent SQLite backup was exported from a read-only Production volume; all raw packets stay private in Dev.
