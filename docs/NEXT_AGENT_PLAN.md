@@ -1,3 +1,11 @@
+## November 2 night — EDGE exit job crash found at the deploy; fixed in Dev
+
+**Problem.** `_kite_daily_bars_after` read a `date` column, but `kite_client.get_historical` indexes its frame by date. The exit job raised KeyError the first time a holding reached its hold limit (AVONMORE, entered Oct 30), and that stops the job for every holding after it in the loop. It also fetched from the entry day, while `simulate_position`'s contract is bars from the day after. Older than this release; the test stub had a `date` column, so nothing caught it.
+
+**Files.** `python-engine/penny_edge_orchestrator.py`, `tests/test_penny_edge_deferred_fixes.py` (the stub now has the real client's shape, and a new test reproduces the crash). **Acceptance.** EDGE tests 88 passed, 1 skipped. Whole suite not rerun for this one function.
+
+**Rollout.** Pushed in Dev, not merged, not deployed. Production stays 39b8d81 until the owner's next deploy. Until then EDGE paper's AVONMORE stays open past its limit, the 15:15 job logs this error, and a hold-limit exit can't run. The job's crash is caught, so nothing else stops. No real money: the live EDGE channel is halted.
+
 ## November 2 night — One release: N11T second lot, E01.1 as the main expiry ticket, a fresh Rs 2,50,000 for the paper book
 
 Owner's order: "Deploy right now, the tolerance and this also make it go in as main expiry strategy and current one as shadow also, give N011 fresh 250000 push all and merge all as one and deploy in one go". All paper. The real-money switch stays the owner's and off.
