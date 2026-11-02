@@ -1,12 +1,12 @@
 {
   "passed": true,
   "checks": {
-    "continuous_fills": 480,
-    "price_depth_checks": 560,
-    "positions": 290,
-    "auction_fills_unverified": 80,
-    "entry_budget_checks": 240,
-    "cases": 80,
+    "continuous_fills": 852,
+    "price_depth_checks": 974,
+    "positions": 506,
+    "auction_fills_unverified": 122,
+    "entry_budget_checks": 426,
+    "cases": 128,
     "pair_loss_exits": 13
   },
   "limits": [

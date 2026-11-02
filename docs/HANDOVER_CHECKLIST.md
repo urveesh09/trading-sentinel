@@ -1,3 +1,12 @@
+## November 2 — E01 expiry handover
+
+- Read `EXPIRY_RESEARCH_E01.md/json` and E01 README/VERIFICATION/IDENTITY. CE01 is a separate new-day paper shadow, fixed30% premium stop on C's exact saved entry. Parent ID plus quantity/contract/fee/risk identity required. Main expiry-v3 A/B/C and N11 unchanged; no extra quote call or per-trade shadow delivery.
+- Toggle default true; false gates new copies only. Existing CE01 exits remain managed. No migration/.env change. No old-day enrollment; optional insertion failure preserves main C. No Production edit/restart/deploy/order/capital/2022/download.
+- Historical8/95-leg parity;80 frozen research cases;48 successive native engineering comparisons; final audit128 cases/506 legs/974 depth-price checks/426 budgets passed.95 affected tests plus28 final binding/summary tests,11 research tests. Atlas292 regenerated.
+- E01 modeled net11,095.17 versus6,548.10, worst-1,000.15 versus-1,427, P&L drawdown2,100.73 versus4,520.04. Both adverse/raw-clock checks and neighbours support30; PAIR30 rejected. Ex-best STILL-2,685.57, SENSEX negative, auction/settlement assumptions retained. Not profitability proof.
+- Active source cbbdebb and results c6537c6; all696 original sources archived. App integration source/commit recorded separately; no silent re-freeze. Final fixed-SHA private skill packet follows commit handoff, consistency only. Owner dirty slices preserved. Productiond52642f and unchanged engine start03:29:35Z.
+- Remaining:20 fresh paired entries, at least5 per index, and coverage/actual depth/settlement provenance before review. No automatic promotion or more tuning eight seen dates. All four annual regular-FNO exports lack same-day expiry options;1-minute candles alone cannot recreate native timing/depth.
+
 ## November 2 — E01 round1 complete, native integration next
 
 - Source cbbdebb;80 cases (8 controls+48 ordinary variants+24 adverse),72 new runs156.92s. CSTOP30 is the only accepted primary; both neighbours support it. PAIR30 fails and stays rejected. No post-score threshold/source change.

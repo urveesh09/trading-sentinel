@@ -1,0 +1,27 @@
+{
+  "study": "expiry-e01",
+  "research_source": "cbbdebbb8c9f2faf0dd2f56b0cbe62f37ff28ccf",
+  "research_results": "c6537c602897b1ae4f29601bdbcf1b308b20002d",
+  "branch": "codex/production-correction-hedge-p0",
+  "integration_source_sha256": {
+    "python-engine/config.py": "6e105b438caaad188f01e1d71fbf11ed19b8b583c8cee1eac7362898c1cb9dd4",
+    "python-engine/expiry_paper.py": "0f60b0920d9aa5455922f1c8ad02915a7ce5a1884b89426301dca00545cbb3be",
+    "python-engine/tests/test_expiry_e01.py": "1a71f0902ff9f9b6f90f9856b932f99c8d9ac1ee5f929d367fec8ea2320557af",
+    "python-engine/tests/test_expiry_paper.py": "5a9abf9eaaf18dfc94cee3aee577154022444123d245bd2962941fa84056d859"
+  },
+  "stage": "Native integration verified; actual feature commit recorded by immediate handoff commit.",
+  "production": "d52642f5cbc973646a1bd9f8a1e207014d2985ee",
+  "production_engine_started_at": "2026-11-02T03:29:35.254673416Z",
+  "deployed": false,
+  "production_changed": false,
+  "real_order_authority_changed": false,
+  "new_downloads": false,
+  "historical_controls": 8,
+  "historical_position_legs": 95,
+  "research_cases": 80,
+  "integration_executions": 48,
+  "focused_tests_before_final_binding": 95,
+  "final_binding_tests": 28,
+  "private_packet": "_local/evidence-report-final",
+  "private_packet_stage": "Post-run fixed-SHA consistency after handoff commit; not preregistration."
+}

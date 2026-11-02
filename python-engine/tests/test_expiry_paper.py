@@ -612,7 +612,7 @@ async def test_shadow_plays_run_beside_the_main_book_without_telegram_trades(tmp
     trades = [m for k, m, _ in _notices(db) if ":summary" not in k]
     assert trades and all(any(f"NIFTY {p}:" in m for p in xp.MAIN_PLAYS) for m in trades)
     summary = _summary(db)
-    assert "shadow plays (expiry-shadow-v5" in summary and f"sold NIFTY26OCT{atm + out:.0f}CE" in summary
+    assert "shadow plays (expiry-shadow-v6" in summary and f"sold NIFTY26OCT{atm + out:.0f}CE" in summary
 
 
 @pytest.mark.asyncio
@@ -931,7 +931,7 @@ async def test_c_sells_the_lottery_when_the_break_fails_and_ch_holds_it_v2(tmp_p
     for held in (ch, c500):                                                     # expiry-v1's C, held
         assert "FAILED_BREAK" not in [e["action"] for e in json.loads(held["events"])]
     assert _whole([c]) > _whole([ch])                          # premium recovered, not held to the close
-    assert state["rules"] == "expiry-v3" and state["shadow"] == "expiry-shadow-v5"
+    assert state["rules"] == "expiry-v3" and state["shadow"] == "expiry-shadow-v6"
     trades = [m for k, m, _ in _notices(db) if ":summary" not in k]
     assert any(" C: BUY" in m and "sold if the break fails, else held into the auction" in m for m in trades)
     spot = _failed_break_day(sold)

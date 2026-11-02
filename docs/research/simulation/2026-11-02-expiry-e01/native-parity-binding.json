@@ -1,0 +1,151 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "day": "2026-10-06",
+      "underlying": "NIFTY",
+      "adverse": false,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-08",
+      "underlying": "SENSEX",
+      "adverse": false,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-13",
+      "underlying": "NIFTY",
+      "adverse": false,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-15",
+      "underlying": "SENSEX",
+      "adverse": false,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-19",
+      "underlying": "NIFTY",
+      "adverse": false,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-22",
+      "underlying": "SENSEX",
+      "adverse": false,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 0
+    },
+    {
+      "day": "2026-10-27",
+      "underlying": "NIFTY",
+      "adverse": false,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-29",
+      "underlying": "SENSEX",
+      "adverse": false,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-06",
+      "underlying": "NIFTY",
+      "adverse": true,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-08",
+      "underlying": "SENSEX",
+      "adverse": true,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-13",
+      "underlying": "NIFTY",
+      "adverse": true,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-15",
+      "underlying": "SENSEX",
+      "adverse": true,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-19",
+      "underlying": "NIFTY",
+      "adverse": true,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-22",
+      "underlying": "SENSEX",
+      "adverse": true,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 0
+    },
+    {
+      "day": "2026-10-27",
+      "underlying": "NIFTY",
+      "adverse": true,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    },
+    {
+      "day": "2026-10-29",
+      "underlying": "SENSEX",
+      "adverse": true,
+      "main_unchanged": true,
+      "e01_exact": true,
+      "provider_calls_unchanged": true,
+      "shadow_entries": 1
+    }
+  ],
+  "original_source": "cbbdebb",
+  "new_model_selection": false
+}

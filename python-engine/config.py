@@ -922,6 +922,8 @@ class Settings(BaseSettings):
     EXPIRY_PAPER_ENABLED:            bool  = True
     EXPIRY_PAPER_BUDGET:             float = 2500.0
     EXPIRY_PAPER_UNDERLYINGS:        str   = "NIFTY,SENSEX"
+    # E01 is a separate, paired paper shadow; disabling it only blocks new entries.
+    EXPIRY_E01_SHADOW_ENABLED:       bool  = True
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3

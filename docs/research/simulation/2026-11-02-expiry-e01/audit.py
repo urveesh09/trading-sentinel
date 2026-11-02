@@ -53,7 +53,7 @@ def main():
         if key not in source:source[key]={t["ts"]:t for t in R.load_session(*key)[0]}
         ticks=source[key];grouped=defaultdict(list)
         for p in c["positions"]:
-            if p["play"] not in ("A","B","C"):continue
+            if p["play"] not in ("A","B","C","CE01"):continue
             schedule=json.loads(p["fee_snapshot"])
             assert schedule==config["runtime"]["fees"][p["exchange"]],"fee snapshot changed"
             qty=p["lots"]*p["lot_size"];cost=gross=0.;left=p["lots"];assumed=0.

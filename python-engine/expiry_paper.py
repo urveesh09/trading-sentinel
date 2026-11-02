@@ -72,6 +72,13 @@ plays (``SHADOW_VERSION``) run on the same quotes and are listed only in the
 summary, each beside its paired difference from the primary whose entry it
 shares.
 
+CE01 (expiry-e01-v1) copies only C's successfully saved entry and adds the
+predeclared 30% premium stop; C's other exits and full-premium ceiling remain.
+It is a separate paper shadow, not a replacement main play. New days bind
+its enrollment; disabling EXPIRY_E01_SHADOW_ENABLED blocks new copies while
+open CE01 positions keep their exits. The entry event retains the primary's
+position ID and the paired summary checks that identity as well as economics.
+
 Telegram lines go to an outbox in the same transaction as the tick and are
 marked sent when a 2xx acknowledgement arrives (``flush_notices``); flushes
 of one store are serialised, so delivery is at-least-once without concurrent
@@ -199,12 +206,15 @@ EXERCISE_STT_PCT = 0.0015           # STT on the settlement value of an exercise
 # Considered and not added: AE, A entering only once the break clears the box
 # by a second buffer. On the five seen expiries it finished Rs 167.32 below A
 # (it skipped Oct 19's two losers but entered later on Oct 8 and 15).
-SHADOW_VERSION = "expiry-shadow-v5"
+# v6 adds CE01 for prospective comparison after the eight-session E01 study.
+SHADOW_VERSION = "expiry-shadow-v6"
+E01_VERSION = "expiry-e01-v1"
+E01_PLAY, E01_PREMIUM_STOP = "CE01", 0.30
 MAIN_PLAYS = ("A", "B", "C")
-SHADOW_PLAYS = ("BH", "C500", "D", "AL", "BR", "CH", "BL", "CI")
+SHADOW_PLAYS = ("BH", "C500", "D", "AL", "BR", "CH", "BL", "CI", E01_PLAY)
 RETIRED_PLAYS = ("CX", "BP")                # no new entries; their history still prints
 # Each shadow and the primary whose entry it shares: their difference is paired.
-PAIRED_WITH = {"AL": "A", "BH": "B", "BL": "B", "BR": "B", "CH": "C", "CI": "C", "BP": "B", "CX": "C"}
+PAIRED_WITH = {"AL": "A", "BH": "B", "BL": "B", "BR": "B", "CH": "C", "CI": "C", "BP": "B", "CX": "C", E01_PLAY: "C"}
 # The version each main play's current rule began with. Tallies and paired
 # lines split a play's record there (Oct 19 audit X-3: "C 4/5" merged v1's
 # held ticket with v2's failed-break sale).
@@ -212,7 +222,7 @@ RULE_SINCE = {"A": 1, "B": 3, "C": 2}
 # Plays that close on a failed break, with how far back inside the box (as a
 # share of its width) the index must be: A's test, or CI's box edge.
 STRUCTURE_BACK = {"A": FAIL_BACK_WIDTH, "AL": FAIL_BACK_WIDTH, "C": FAIL_BACK_WIDTH, "CX": FAIL_BACK_WIDTH,
-                  "CI": 0.0}
+                  "CI": 0.0, E01_PLAY: FAIL_BACK_WIDTH}
 STRUCTURE_PLAYS = tuple(STRUCTURE_BACK)
 PAIR_PLAYS = ("B", "BP")                    # a strangle sold as one trade at PAIR_TARGET
 AL_LOCK_GAIN = 0.5                  # fraction of the peak gain a banked one-lot AL keeps
@@ -291,6 +301,7 @@ POLICIES["CX"] = POLICIES["C"]                  # plus A's failed break (STRUCTU
 POLICIES["BR"] = replace(POLICIES["BL"], hard_stop=BR_LEG_STOP)
 POLICIES["CH"] = POLICIES["C"]                  # without the failed break: expiry-v1's C
 POLICIES["CI"] = POLICIES["C"]                  # plus a failed break at the box edge (STRUCTURE_BACK)
+POLICIES[E01_PLAY] = replace(POLICIES["C"], hard_stop=E01_PREMIUM_STOP)
 
 _SCHEMA = (
     """CREATE TABLE IF NOT EXISTS expiry_paper_positions (
@@ -652,10 +663,76 @@ def fill_model(clock: time) -> str:
 
 def new_day_state() -> dict:
     return {"rules": RULES_VERSION, "shadow": SHADOW_VERSION, "execution": EXECUTION_VERSION,
+            "e01": {"version": E01_VERSION, "enabled": bool(settings.EXPIRY_E01_SHADOW_ENABLED)},
             "context": CONTEXT_VERSION, "box": None, "box_samples": [], "box_status": "BUILDING",
             "pending": None, "armed": {"UP": True, "DOWN": True}, "signals": [],
             "trades": {play: 0 for play in MAIN_PLAYS + SHADOW_PLAYS}, "last_spot": None,
             "summary_queued": False}
+
+
+def e01_entry_enabled(state: dict) -> bool:
+    """A new-day, opted-in cohort only. The flag never gates management of an open leg."""
+    contract = state.get("e01")
+    return (bool(settings.EXPIRY_E01_SHADOW_ENABLED) and isinstance(contract, dict)
+            and contract.get("version") == E01_VERSION and contract.get("enabled") is True
+            and state.get("trades", {}).get(E01_PLAY, 0) == 0)
+
+
+def _e01_parent_id(events: str) -> Optional[int]:
+    """Malformed/version-mismatched links never qualify as paired admissions."""
+    try:
+        first = json.loads(events)[0]
+        parent = first.get("paired_primary_id")
+        if (first.get("action") == "BUY" and first.get("e01_version") == E01_VERSION
+                and isinstance(parent, int) and not isinstance(parent, bool) and parent > 0):
+            return parent
+    except (ValueError, TypeError, AttributeError, IndexError, KeyError):
+        pass
+    return None
+
+
+def copy_e01_entry(conn, state: dict, primary: dict, contract, now: datetime) -> Optional[dict]:
+    """Copy only this successfully saved C ticket; no later repricing or independent entry."""
+    if not e01_entry_enabled(state):
+        return None
+    if (primary.get("play") != "C" or not isinstance(primary.get("id"), int)
+            or isinstance(primary.get("id"), bool) or primary["id"] <= 0
+            or primary.get("entry_ts") != now.isoformat()
+            or primary.get("symbol") != contract.tradingsymbol
+            or primary.get("token") != contract.token or primary.get("lot_size") != contract.lot_size
+            or primary.get("strike") != contract.strike
+            or primary.get("opt_type") != contract.instrument_type or primary.get("side") != "LONG"
+            or primary.get("execution") != EXECUTION_VERSION):
+        _bump(state, "refusals", f"{E01_PLAY}:TWIN_MISMATCH")
+        return None
+    saved = False
+    try:
+        conn.execute("SAVEPOINT expiry_e01_entry")
+        saved = True
+        stored = conn.execute("SELECT * FROM expiry_paper_positions WHERE id=?", (primary["id"],)).fetchone()
+        fields = ("play", "day", "underlying", "exchange", "symbol", "token", "lot_size", "lots",
+                  "entry_ts", "entry_price", "max_loss", "fee_snapshot", "strike", "opt_type", "side", "execution")
+        if (stored is None or stored["status"] != "OPEN" or stored["lots_open"] != stored["lots"]
+                or any(stored[name] != primary.get(name) for name in fields)):
+            conn.execute("ROLLBACK TO SAVEPOINT expiry_e01_entry")
+            conn.execute("RELEASE SAVEPOINT expiry_e01_entry")
+            _bump(state, "refusals", f"{E01_PLAY}:TWIN_MISMATCH")
+            return None
+        shadow = _new_position(primary["day"], primary["underlying"], E01_PLAY, primary["exchange"],
+                               contract, primary["entry_price"], primary["lots"], now, _position_schedule(primary))
+        shadow["_events"][0].update(e01_version=E01_VERSION, paired_primary_id=primary["id"])
+        _save_position(conn, shadow)
+        conn.execute("RELEASE SAVEPOINT expiry_e01_entry")
+    except sqlite3.Error as exc:
+        # An optional shadow insertion must not discard its already-saved main ticket.
+        if saved:
+            conn.execute("ROLLBACK TO SAVEPOINT expiry_e01_entry")
+            conn.execute("RELEASE SAVEPOINT expiry_e01_entry")
+        _bump(state, "refusals", f"{E01_PLAY}:SAVE_FAILED")
+        logger.warning("expiry E01 shadow entry failed: %s", type(exc).__name__)
+        return None
+    state["trades"][E01_PLAY] = 1
+    return shadow
 
 
 def update_box(state: dict, now: time, spot: Optional[float], fut: Optional[float]) -> None:
@@ -1256,6 +1333,8 @@ def _load_state(conn, day: str, underlying: str) -> dict:
     if row is None:
         return new_day_state()
     state = json.loads(row["state"])
+    # Historical/mid-session days are not silently enrolled in a new experiment.
+    state.setdefault("e01", {"version": None, "enabled": False})
     rules = state.setdefault("rules", "expiry-v1")
     if RULES_VERSION not in rules:                      # a day begun under older rules
         state["rules"] = f"{rules}+{RULES_VERSION} from mid-day"
@@ -1572,6 +1651,8 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
                 plan = "sold if the break fails, else held into the auction" if play in STRUCTURE_PLAYS \
                     else "held into the auction"
                 notify(pos, _buy_text(pos, f"lottery {direction}, {plan}"))
+                if play == "C":
+                    copy_e01_entry(conn, state, pos, contract, now)
             else:
                 _bump(state, "refusals", f"{play}:DEPTH_OR_BUDGET")
 
@@ -1711,10 +1792,17 @@ def paired_lines(conn, day: str, underlying: str) -> list[str]:
     entries: dict[tuple[str, str, str], dict] = {}
     for row in conn.execute(
             "SELECT day, play, entry_ts, symbol, side, lots, entry_price, status, "
-            "net_pnl + COALESCE(assumed_pnl, 0) FROM expiry_paper_positions WHERE underlying=? AND day <= ?",
+            "net_pnl + COALESCE(assumed_pnl, 0), id, events, token, lot_size, exchange, "
+            "max_loss, fee_snapshot, execution, strike, opt_type "
+            "FROM expiry_paper_positions WHERE underlying=? AND day <= ?",
             (underlying, day)):
-        d, play, entry_ts, symbol, side, lots, price, status, value = tuple(row)
-        entry = entries.setdefault((d, play, entry_ts), {"legs": [], "whole": 0.0, "open": False})
+        d, play, entry_ts, symbol, side, lots, price, status, value, ident, events, *terms = tuple(row)
+        entry = entries.setdefault((d, play, entry_ts), {"legs": [], "whole": 0.0, "open": False,
+                                                       "ids": set(), "parents": set(), "terms": []})
+        entry["terms"].append(tuple(terms))
+        entry["ids"].add(ident)
+        if play == E01_PLAY:
+            entry["parents"].add(_e01_parent_id(events))
         entry["legs"].append((symbol, side, lots, round(price, 4)))
         entry["whole"] += value
         entry["open"] |= status == "OPEN"
@@ -1725,7 +1813,9 @@ def paired_lines(conn, day: str, underlying: str) -> list[str]:
             if play != shadow:
                 continue
             twin = entries.get((d, primary, entry_ts))
-            if twin is None or sorted(twin["legs"]) != sorted(entry["legs"]):
+            if (twin is None or sorted(twin["legs"]) != sorted(entry["legs"])
+                    or (shadow == E01_PLAY and (entry["parents"] != twin["ids"]
+                                               or entry["terms"] != twin["terms"]))):
                 unmatched += 1
             elif entry["open"] or twin["open"]:
                 waiting += 1
@@ -1798,6 +1888,11 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
                             if k.startswith(f"{play}:"))
             if not rows and play in RETIRED_PLAYS:
                 continue
+            if (not rows and play == E01_PLAY
+                    and not ((state.get("e01") or {}).get("version") == E01_VERSION
+                             and (state.get("e01") or {}).get("enabled") is True)):
+                lines.append(f"  {play}: not enrolled for this expiry")
+                continue
             if not rows:
                 lines.append(f"  {play}: no trade" + (f" (refused: {why})" if why else ""))
                 continue
@@ -1830,6 +1925,9 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
     lines.append(f"  day: filled net Rs {day_filled:+,.2f} + assumed Rs {day_assumed:+,.2f} = whole modeled "
                  f"Rs {day_filled + day_assumed:+,.2f} (fees Rs {day_fees:,.2f})")
     lines.append(f"  shadow plays ({state.get('shadow', SHADOW_VERSION)}, frozen, no Telegram trades):")
+    if (state.get("e01") or {}).get("version") == E01_VERSION:
+        lines.append("  E01 lottery shadow: C's same ticket with a planned 30% premium stop; "
+                     "gaps or missing bids can lose more, up to the full funded ticket.")
     section(SHADOW_PLAYS + RETIRED_PLAYS)
     lines += paired_lines(conn, day, underlying)
     totals = conn.execute(

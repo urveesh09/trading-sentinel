@@ -1,3 +1,17 @@
+## November 2 — E01 complete; next useful work is forward expiry evidence
+
+Start `docs/EXPIRY_RESEARCH_E01.md/json`, then the E01 study README, VERIFICATION and IDENTITY. Native CE01 paper shadow is implemented and verified on the same branch; main expiry-v3 and N11 remain unchanged. Current-v3 versus E01 modeled net6,548.10/11,095.17, worst-1,427/-1,000.15, P&L drawdown4,520.04/2,100.73. PAIR30 fails. Do not swap in the higher-scoring20% neighbour or run another genome grid on eight seen dates. Ex-best and SENSEX still lose; qualification is incomplete.
+
+Remaining concrete work:
+
+1. Promotion only by normal separately authorized GitHub workflow; no Production editing or restart here. New day enrollment only. Flag `EXPIRY_E01_SHADOW_ENABLED=false` prevents new CE01 copies without orphaning open exits. No migration or env requirement. Preserve main A/B/C/N11 and historic rows.
+2. Freeze is now20 fresh exact C/CE01 entries, at least5 per index; review when met, not after a favourable week. Engineering/coverage checks immediately. Verify primary IDs AND entry economics, quote ages/depth, skipped admissions, partial/pending exits, fees and settlement provenance. Unknown/unmatched evidence remains unavailable, not zero.
+3. Apply unchanged profit/loss-control routes to aggregate and each index; report drawdown basis, worst day, ex-best, rebound opportunity cost, adverse fills and unresolved exposure. No automatic main promotion, new size, real-money authority or retrospective threshold changes. Eight seen sessions are not proof.
+4. Highest-value missing data: genuine same-day expiry quote/depth paths and official settlement/fill evidence. Existing four annual regular-FNO exports contain zero expiry-day option rows. Future 1-minute downloads cannot reproduce10-second/25-second native execution alone. No2022/ICICI/download target or repair was performed/authorized by this slice.
+5. Reproduce frozen research at cbbdebb or from all696 archived source hashes and30 original inputs. The integrated app intentionally differs; never weaken the old strict guard or silently re-freeze it. Final skill packet is post-run consistency at fixed final SHA, not new preregistration or profitability evidence. Private raw dependencies stay in Dev `_local`.
+
+Completed checks:95 affected tests plus28 post-binding tests,11 research tests,8/95-leg historical controls,48 engineering parity executions and128-case independent audit. Atlas292. Exact identity/status in E01 IDENTITY.json; Dev pushed, not deployed. Preserve unrelated owner work and earlier N11/N10 plans below.
+
 ## November 2 — Implement the selected E01 paper shadow with exact native parity
 
 Read `2026-11-02-expiry-e01/ROUND1_OUTCOME.md`. First source cbbdebb; all80 frozen cases and independent audits complete. CSTOP30 passes; PAIR30 fails. Do not choose20% just because it scored more. Do not run round2 to inflate eight known dates. Only missing evidence is genuinely new expiry days and actual execution-quality/coverage, not another same-sample genome grid.
