@@ -74,3 +74,5 @@ SENSEX evidence cannot support this full-chain selection; no API/quota expansion
 No `.env` or existing schema migration; new E031 paper DB only on future enable.
 Rollback flag-off still closes saved exposure. New paired forward tickets and
 execution evidence precede a separately authorized GitHub promotion decision.
+
+Source implementation **65cccb7**, pushed/remote verified. Paper flag remains false, Production unchanged. Stock helper `evidence/REPORT.md` verifies four partial shadow modules. Use `verify_evidence.py` for pinned source verification after later doc commits; it does not alter the original guard/request/report. Push/verification packet: `completion-receipt.json`.

@@ -1,0 +1,19 @@
+{
+  "datasets": {
+    "2024": {
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e02\\_local\\2024.sqlite",
+      "sha256": "ac38844416ccdebb1223f01e44fead2d94bc668253d5364d0eb524e792250009",
+      "verified_sha256": "ac38844416ccdebb1223f01e44fead2d94bc668253d5364d0eb524e792250009",
+      "exists": true
+    },
+    "2025": {
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e02\\_local\\2025.sqlite",
+      "sha256": "32cc03107ecc20625bf1bfad7c5f48358f98bddb12e3c00664d32246a98dfae1",
+      "verified_sha256": "32cc03107ecc20625bf1bfad7c5f48358f98bddb12e3c00664d32246a98dfae1",
+      "exists": true
+    }
+  },
+  "api_calls": 0,
+  "year2023_read": false,
+  "caveat": "Raw selected-year snapshots remain in ignored Dev folders; manifest full-file hashes verified, not just manifest bytes"
+}

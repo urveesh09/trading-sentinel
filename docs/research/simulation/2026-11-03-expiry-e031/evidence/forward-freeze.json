@@ -1,0 +1,38 @@
+{
+  "candidate": "expiry-e031-v1",
+  "finalist_commit": "0c7f4149cdb07f533587a557dfe8640f67e3e888",
+  "source_sha256": {
+    "python-engine/expiry_e02.py": "2fb14a544e50478fa0e5289865630d1eb1df49652475bdbfd9453a23a7e198e1",
+    "python-engine/expiry_paper.py": "b2931a15084d981786ddc186b006f9db5a861eabf91dcaa6e6c0b9de0e0676dd",
+    "python-engine/config.py": "6ca68da2266d3ee13f981875356a8a664ce11b26df588e7dfddb9d1cb7e530bd",
+    "python-engine/scheduler_setup.py": "ad1b0be60122e395ee5ecd958471e2ccb74ea754458376190f16b6e0c5c6726d",
+    "python-engine/tests/test_expiry_e02.py": "d05de3b301426158569cc6004fa297fd1240145910d60e26bd710f2225ff21a6",
+    "python-engine/tests/test_expiry_e03.py": "6187ce8b0d72bd8c97f4255776e162636d6dcc0e0df913fe0ae4db975ee29519",
+    "python-engine/tests/test_expiry_e031.py": "54b1e9a27399d425594a6136d3a00492ac42475001b93c6656e8d6fd5c1f5810",
+    "docs/research/simulation/2026-11-03-expiry-e031/PLAN.md": "09a1280f4e6aafc76c5c01009c30d588e303d339cef4db89fdc2dcc05d241b7c",
+    "docs/research/simulation/2026-11-03-expiry-e031/IMPLEMENTATION_PLAN.md": "bc561ff9bc12f991410ed5f1b3e30130be2b3a2bb0577a1e97753b616abdfebf",
+    "docs/research/simulation/2026-11-03-expiry-e031/lab.py": "8602a773461a1ad09f88e84fa8403563e01d856d2a428435e7a5730b618224b6",
+    "docs/research/simulation/2026-11-03-expiry-e031/study.py": "5ef20437aecf7e974045b868079190d5c15af7854b542bcbf56b0ed086d1fc10",
+    "docs/research/simulation/2026-11-03-expiry-e031/lock_finalists.py": "bd0e2f1a9855e15d93ae927d6e9489ed5db55e675a625c7c5447e29c071fe7e0",
+    "docs/research/simulation/2026-11-03-expiry-e031/robustness.py": "a194a1f9b4a333a3980e3154c0175b1d101aa8e07a2410dc938a46b4251dc904",
+    "docs/research/simulation/2026-11-03-expiry-e031/native_parity.py": "3285dd58d7c9dfe18c0901f67c7afe0bb2b141ed55fb1aeb79c12360434b8ffd",
+    "docs/research/simulation/2026-11-03-expiry-e031/friction_audit.py": "ce54a5a99b03efacf270c1c5c9c3ba06722c0ef5d384b19054c95b28ac6384bc",
+    "docs/research/simulation/2026-11-03-expiry-e031/candidate.json": "a1538ada45f8a218584dd09a62845ac99f09c203670c0d6af6f9b4f418491108",
+    "docs/research/simulation/2026-11-03-expiry-e031/test_lab.py": "f98a8e88ba8918e733b5a8d722980f30b9288afefa8ff46459a57fd6804ef646"
+  },
+  "datasets": {
+    "2024": {
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e02\\_local\\2024.sqlite",
+      "sha256": "ac38844416ccdebb1223f01e44fead2d94bc668253d5364d0eb524e792250009"
+    },
+    "2025": {
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e02\\_local\\2025.sqlite",
+      "sha256": "32cc03107ecc20625bf1bfad7c5f48358f98bddb12e3c00664d32246a98dfae1"
+    }
+  },
+  "year2023_read": false,
+  "api_calls": 0,
+  "financial_qualification": false,
+  "production_unchanged": true,
+  "flags_enabled": false
+}

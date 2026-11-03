@@ -1,0 +1,19 @@
+{
+  "source_commit": "65cccb72d3902488c2ad51980c5e655b25bc2a6d",
+  "finalist_freeze": "0c7f4149cdb07f533587a557dfe8640f67e3e888",
+  "source_pushed": true,
+  "remote_branch": "codex/production-correction-hedge-p0",
+  "remote_verified_sha": "65cccb72d3902488c2ad51980c5e655b25bc2a6d",
+  "final_docs_commit": "The Git commit containing this receipt; remote will be checked after its push",
+  "production_unchanged": true,
+  "deployed": false,
+  "enabled": false,
+  "qualification": false,
+  "api_calls": 0,
+  "year2023_read": false,
+  "post_commit_checks": "checkpoint.py verify and verify_evidence.py; original source/data/money preserved",
+  "source_files_pinned_checked": 854,
+  "engine_passed": 6118,
+  "engine_skipped": 4,
+  "focused_passed": 43
+}

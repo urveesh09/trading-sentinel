@@ -152,3 +152,5 @@ across regimes, would support another review; that count alone does not prove an
 edge. E03.1 is not a replacement for C, and no switch is turned on by this study.
 
 Full record: [study and continuation](research/simulation/2026-11-03-expiry-e031/README.md).
+
+Source implementation **65cccb7**, pushed and remote-verified on `codex/production-correction-hedge-p0`. No deployment or flag enable. Evidence packaging follows in a documentation commit. [Stock helper report](research/simulation/2026-11-03-expiry-e031/evidence/REPORT.md); [pinned verification](research/simulation/2026-11-03-expiry-e031/pinned-audit.json). After a later doc commit changes HEAD, run `verify_evidence.py` to verify the same evidence against its pinned source; the original guard is never relaxed.

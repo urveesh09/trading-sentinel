@@ -1,0 +1,137 @@
+{
+  "position_replays": 391,
+  "exit_slices": 407,
+  "mismatches": 0,
+  "financial": {
+    "E03|2024|ordinary": {
+      "orders": 42,
+      "end_cash": 33567.1,
+      "sampled_marked_drawdown": 1179.56,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "E03|2024|adverse": {
+      "orders": 42,
+      "end_cash": 33131.78,
+      "sampled_marked_drawdown": 1103.68,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "E03|2024|catastrophe": {
+      "orders": 16,
+      "end_cash": 22348.62,
+      "sampled_marked_drawdown": 2751.93,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "E03|2025|ordinary": {
+      "orders": 42,
+      "end_cash": 28389.25,
+      "sampled_marked_drawdown": 1499.46,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "E03|2025|adverse": {
+      "orders": 42,
+      "end_cash": 27983.05,
+      "sampled_marked_drawdown": 1596.91,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "E03|2025|catastrophe": {
+      "orders": 18,
+      "end_cash": 24378.53,
+      "sampled_marked_drawdown": 1209.99,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "E03|continuous|ordinary": {
+      "orders": 84,
+      "end_cash": 36956.35,
+      "sampled_marked_drawdown": 1929.68,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "E03|continuous|adverse": {
+      "orders": 84,
+      "end_cash": 36114.83,
+      "sampled_marked_drawdown": 2178.45,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "E03|continuous|catastrophe": {
+      "orders": 28,
+      "end_cash": 21846.45,
+      "sampled_marked_drawdown": 3417.51,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "DEFENSIVE|2024|ordinary": {
+      "orders": 42,
+      "end_cash": 33897.97,
+      "sampled_marked_drawdown": 1084.18,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "DEFENSIVE|2024|adverse": {
+      "orders": 42,
+      "end_cash": 33271.27,
+      "sampled_marked_drawdown": 1103.68,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "DEFENSIVE|2024|catastrophe": {
+      "orders": 16,
+      "end_cash": 22416.73,
+      "sampled_marked_drawdown": 2683.82,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "DEFENSIVE|2025|ordinary": {
+      "orders": 42,
+      "end_cash": 28528.74,
+      "sampled_marked_drawdown": 1434.58,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "DEFENSIVE|2025|adverse": {
+      "orders": 42,
+      "end_cash": 28226.33,
+      "sampled_marked_drawdown": 1353.63,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "DEFENSIVE|2025|catastrophe": {
+      "orders": 18,
+      "end_cash": 24326.63,
+      "sampled_marked_drawdown": 1209.99,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "DEFENSIVE|continuous|ordinary": {
+      "orders": 84,
+      "end_cash": 37426.71,
+      "sampled_marked_drawdown": 1838.85,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "DEFENSIVE|continuous|adverse": {
+      "orders": 84,
+      "end_cash": 36497.6,
+      "sampled_marked_drawdown": 1935.17,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    },
+    "DEFENSIVE|continuous|catastrophe": {
+      "orders": 30,
+      "end_cash": 21765.92,
+      "sampled_marked_drawdown": 3278.11,
+      "marked_basis": "Observed complete-bar model bids with charges; missing liquid marks omitted, no intrabar/depth NAV claim"
+    }
+  },
+  "network_attempts": 0,
+  "classification": "Native exits and accounting parity; historical entry fills remain the declared BAR_LIFECYCLE proxy",
+  "unchanged_native_functions": [
+    "path_for",
+    "signal",
+    "policy",
+    "logged_quote",
+    "sell_base",
+    "_lots",
+    "plan",
+    "_new_state",
+    "_store",
+    "_save_position",
+    "_sample",
+    "has_open_book",
+    "held_contracts"
+  ],
+  "extended_native_functions": [
+    "policy_for",
+    "action",
+    "run_tick"
+  ]
+}

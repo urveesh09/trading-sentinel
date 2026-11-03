@@ -1,0 +1,96 @@
+{
+  "start_commit": "0a6d46ecfcb759469b7f03269d2d2e7edcb94871",
+  "finalist_commit": "0c7f414",
+  "implementation_commit": "Recorded by the Git commit containing this file; final documentation receipt follows",
+  "commands": [
+    {
+      "command": "study.py baseline",
+      "exit_code": 0,
+      "result": "99 position/day/event histories and summaries exact"
+    },
+    {
+      "command": "study.py sweep",
+      "exit_code": 0,
+      "result": "55 mechanisms; all recorded"
+    },
+    {
+      "command": "study.py genome",
+      "exit_code": 0,
+      "result": "149 new unique combinations, two seeds"
+    },
+    {
+      "command": "lock_finalists.py",
+      "exit_code": 0,
+      "result": "two finalists frozen before stress, no subsequent tuning"
+    },
+    {
+      "command": "robustness.py",
+      "exit_code": 0,
+      "result": "Continuous FOLLOW rejected; severe DEFENSIVE losses retained"
+    },
+    {
+      "command": "friction_audit.py",
+      "exit_code": 0,
+      "result": "Original mislabeled sensitivity preserved; stronger 1%+tick recalculated"
+    },
+    {
+      "command": "native_parity.py",
+      "exit_code": 0,
+      "result": "391 native position replays / 407 sale slices, zero mismatches; network denied, zero attempts"
+    },
+    {
+      "command": "recorded_proxy.py",
+      "exit_code": 0,
+      "result": "Five already-seen 2026 recordings, one identical ticket; not fresh forward qualification"
+    },
+    {
+      "command": "python-engine/winvenv/Scripts/python.exe -m pytest python-engine/tests/test_expiry_e02.py python-engine/tests/test_expiry_e03.py python-engine/tests/test_expiry_e031.py docs/research/simulation/2026-11-03-expiry-e031/test_lab.py -q",
+      "exit_code": 0,
+      "result": "43 passed"
+    },
+    {
+      "command": [
+        "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\python-engine\\winvenv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "python-engine/tests",
+        "-q"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 696.8,
+      "log": "_local/full-engine-suite.log",
+      "passed": 6118,
+      "skipped": 4,
+      "warnings": 53,
+      "pytest_seconds": 694.61,
+      "log_sha256": "478225028f0c0bcffd248282a9e8ceba22b73490b06a6d34a64b29137c223f52",
+      "retained_noise": "Existing deprecations/AsyncMock warning; deliberate Penny broken-writer fixture emits shutdown logging error, exit remains 0"
+    },
+    {
+      "command": "python scripts/build_system_code_atlas.py",
+      "exit_code": 0,
+      "result": "295 modules"
+    }
+  ],
+  "environment": {
+    "python": "3.11.9 Windows venv",
+    "numpy": "1.26.4",
+    "sqlite": "3.45.1",
+    "matplotlib": "not installed; no dependency added"
+  },
+  "scope": "Dev isolated paper code/research; no deployment, .env change, existing-store migration, orders, messages or downloads",
+  "qualification": false,
+  "production": {
+    "head": "06bed07e05a32bc4394aff7ba70990faa745a8ec",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "owner_original_bytes_preserved": true,
+  "limitations": [
+    "All results selected on seen 2024/2025, many prior trials",
+    "Current lot/fees, minute/volume execution proxy",
+    "Severe continuous E03.1 -3234.08; no no-loss promise",
+    "No financial qualification from passing tests",
+    "391 are replay histories including repeated paths, not independent market trades",
+    "No 2026/SENSEX full chain or 2023 access"
+  ]
+}

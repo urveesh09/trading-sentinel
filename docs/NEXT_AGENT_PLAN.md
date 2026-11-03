@@ -1,3 +1,7 @@
+## November 3 — E03.1 source pushed; disabled / not deployed
+
+Implementation **65cccb7**, pushed and remote-verified on the same Dev branch; finalists frozen at 0c7f414. Report: `docs/EXPIRY_RESEARCH_E031.md`; plan/contracts: `docs/research/simulation/2026-11-03-expiry-e031/PLAN.md`. Small defensive fitted improvement, severe losses retained; no qualification. 6,118 engine tests passed / 4 skipped, 43 focused checks passed. Stock evidence helper verifies four partial shadow modules; pinned checkout verifies 854 source files and identical receipts/money. Later doc commits change HEAD, so use study `verify_evidence.py`; original guard/request/report are preserved. All 17 forward source/config hashes, owner original bytes and Production 06bed07 verified unchanged. No .env edit, existing-store migration, activation, orders or deployment. Remaining: new paired forward paper and execution evidence, then separate GitHub promotion review. No C/N11/primary-rule changes; 2023 protected.
+
 ## November 3 — E03.1 defensive paper candidate complete (Dev; off, not deployed)
 
 Report: `docs/EXPIRY_RESEARCH_E031.md`; contracts/remaining:
