@@ -1,3 +1,16 @@
+## November 3 — E02 reserved exam failed; authorized iterations continue
+
+Freeze `f2b95cd` was scored once on 2024 and both candidates failed. CORE
+-Rs 3,083.58 ordinary / -Rs 3,191.26 adverse; RUNNER -Rs 3,079.55 / -Rs 3,096.31.
+No passing verdict or runtime promotion. The original exam is immutable.
+Continuation: `docs/research/simulation/2026-11-03-expiry-e02/round03/PLAN.md`.
+2024 is now seen development alongside 2025; 2023 remains protected. One-lot
+sizing reduces 2025 losses/drawdown but does not repair 2024's negative entries.
+Unbraked 2024 controls lose more, so raising the risk allowance is rejected.
+A new joint seen-year genome round retains original cash/day limits, a one-lot
+cap and all trial/failure records. Any positive result will still require new
+forward evidence. No Production/N11/config/schema/deployment changes.
+
 ## November 3 — E02 final candidate freeze (Dev research; 2024 exam next)
 
 Plan: `docs/research/simulation/2026-11-03-expiry-e02/PLAN.md`; implementation
