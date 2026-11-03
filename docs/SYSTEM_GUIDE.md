@@ -1,3 +1,7 @@
+## November 3 — executable-tail forecasts find no economic admissions; monetary objective frozen
+
+First model round labels 18,787 overlapping causal cases across 105 already-seen expiries, training one year before scoring the other and quarterly using only prior quarters. Full-premium probability hurdle admits no trades; that is no profit, not a successful safe trader. New frozen objective forecasts actual adverse net returns (same features/calendars/limits) so genuine stop economics are tested without tuning a probability threshold. Twelve research checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; RETURNS.md. No engine/config/schema/Production/download; original labels/results/exams preserved. Next: score and independent audit.
+
 ## November 3 — modest-risk gains fail risk-scaled test; anticipation model frozen
 
 Sizing freeze 83fdf76 reproduces E03.1; 25% extra reserve adds only about 9% ordinary profit and worsens severe loss. RUNNER25/SCALE25 not accepted. Before any target labels or fit, freeze two causal forecasts (executable 2x/5x before stop/time) using fixed price/volume/OI/futures features, day-weighted regularized models, cross-year and past-only quarterly books. Ten focused checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; PRECURSORS.md and STATUS.md. No engine/config/schema/Production/download; 2023/future exam protected. Next: score, audit and report.

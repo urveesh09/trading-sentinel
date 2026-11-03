@@ -1,0 +1,62 @@
+{
+  "rows": 18787,
+  "features": [
+    "spot3",
+    "spot10",
+    "future3",
+    "basis3",
+    "efficiency10",
+    "option_momentum3",
+    "option_acceleration",
+    "relative_volume",
+    "oi_fraction5",
+    "moneyness20",
+    "minutes_left",
+    "fees_fraction",
+    "synthetic_basis",
+    "noise_ratio",
+    "log_premium",
+    "direction"
+  ],
+  "days": 105,
+  "statuses": {
+    "2024|2|STRUCTURE": 939,
+    "2024|5|STRUCTURE": 943,
+    "2024|2|TIME": 2434,
+    "2024|5|TIME": 3102,
+    "2024|2|STOP": 4862,
+    "2024|5|STOP": 4978,
+    "2024|2|TARGET": 969,
+    "2024|5|TARGET": 181,
+    "2024|2|NO_ENTRY": 152,
+    "2024|5|NO_ENTRY": 152,
+    "2025|2|TIME": 2305,
+    "2025|5|TIME": 3285,
+    "2025|2|STRUCTURE": 1063,
+    "2025|5|STRUCTURE": 1068,
+    "2025|2|STOP": 4606,
+    "2025|5|STOP": 4745,
+    "2025|2|NO_ENTRY": 187,
+    "2025|5|NO_ENTRY": 187,
+    "2025|2|TARGET": 1270,
+    "2025|5|TARGET": 138,
+    "2025|5|UNRESOLVED": 8
+  },
+  "private_case_sha256": "718ad7239d60167095bb0f05be508f4aed27160500460860ff4b10480d41311c",
+  "private_meta_sha256": "fd6f24b7371153e15cfeb12df23daade681eaa6ae23ca06d6ac87c73e02ef061",
+  "by_year": {
+    "2024": {
+      "rows": 9356,
+      "days": 52,
+      "double_hits": 969,
+      "hero_hits": 181
+    },
+    "2025": {
+      "rows": 9431,
+      "days": 53,
+      "double_hits": 1270,
+      "hero_hits": 138
+    }
+  },
+  "caveat": "Overlapping evaluator examples, never independent or summed portfolio PnL"
+}
