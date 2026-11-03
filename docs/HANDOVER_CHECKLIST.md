@@ -1,3 +1,7 @@
+## November 3 — full ticket eligibility hybrid frozen before scoring
+
+Protected credit-only loses in 2024; no promotion. Freeze the hybrid retaining the original affordable ticket check and multi-lot E03.1 runners, plus unbraked controls to distinguish payoff from inherited cash brakes. Twelve mechanical checks pass. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; HYBRID.md and STATUS.md. Next: score, causal/accounting audits and final report. No native/config/schema/Production/download or actual risk change; owner and previous evidence preserved.
+
 ## November 3 — capital ledgers fail to add ordinary fills; directional credit frozen
 
 Ledger freeze f34ceb9 reproduces 99 baseline histories; both cash-reuse arms equal ordinary/adverse E03.1 at 41 tickets, NET worsens severe. Next frozen round changes payoff on the same trend cue: protected opposite-side 50-point credit vertical, eight-minute or thesis/15:14 hold. Includes both leg fees/capacity, own-cash model, explicit margin/atomic execution limits and conservative paid-long residual accounting. Nine checks pass. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; CREDIT.md. No engine/config/schema/Production/download; old evidence/2023/future exam preserved. Next: credit score and audits.
