@@ -1,0 +1,40 @@
+{
+  "head": "f94dab37cc35ea7a9805e89f54c565b57ce00fac",
+  "written_before_scoring": true,
+  "seen": [
+    [
+      "NIFTY",
+      "2026-10-06"
+    ]
+  ],
+  "files": {
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-auction\\auction.py": "51272025a580167b7791c8887c0e4f1a397c53dd7307b488296f28f3408b614e",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-auction\\PLAN.md": "aa80986eea08ebae4621585bdc9b2776ec0cdde34175e4842466b043e72a74b1",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-02-expiry-e01\\_local\\export\\expiry.sqlite": "5f7e7323bcb08c1273e5cafceca6465b315486cd09a299157c789609d6ba00e0",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e03\\_local\\native-extra.sqlite": "d292b0e34691fae3d2f99ec4eba666a31ce97c76d7d066e13631f1c493ce26f0",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\nifty\\NIFTY-2026-08-04-ATM-10second.csv": "9c8a36c4286a7b898f34164d2da052e39479ab74e2bd59f611fa31e7807c352a",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\nifty\\NIFTY-2026-08-11-ATM-10second.csv": "f64ffe1d9aa59fae7d4aedcf904550fa19385eeed50937a1c1025a3424e1346c",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\nifty\\NIFTY-2026-08-18-ATM-10second.csv": "90b65dfcced0c20e05bfacd3afa821326f0e491e1b8dbb5bd87e2e3f2bb1035e",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\nifty\\NIFTY-2026-08-25-ATM-10second.csv": "c5fcd0ee378342e9e3ee31c780b1a2d32f66f1ec147aa04a739ec8e2ad4a5fa0",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\nifty\\NIFTY-2026-09-01-ATM-10second.csv": "7e2e773ec583f88d9d4a08a2eebc0d4b2c56a774b5b38af2b3117ffd32caf368",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\nifty\\NIFTY-2026-09-08-ATM-10second.csv": "9901c075c532484938b588f3338fbe56dbc5e30cbf0adacfa42079c7145b39e4",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\nifty\\NIFTY-2026-09-15-ATM-10second.csv": "6428c1db2ca7b4925b351beb7ce8d2aa14851202e5607c056406c02577d1553e",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\nifty\\NIFTY-2026-09-22-ATM-10second.csv": "156afe3011304b6766a5d781614ec97ee8da8867a89b806a1702e857d48fbaac",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\nifty\\NIFTY-2026-09-29-ATM-10second.csv": "9d19d7d523577a6804a57ba9e2e1b1fafe50fc7323f2d8388f140e390a595fc7",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-08-06-ATM-10second-PARTIAL.csv": "b62b90935e3eabfe0753aed4e2c7445b13b47471404e781084306caea30bab5e",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-08-13-ATM-10second.csv": "42b3807a99622b140e282b28368295e9f399b221d425aafcdc72bb0c98d9113a",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-08-20-ATM-10second.csv": "e80480a266648ef76abd50aaccb55af368d196a3b86adccf411837e3f4d51ea8",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-08-27-ATM-10second.csv": "82a9d042c2a8c80f32f30de9923b74741af69a280d8a8279e73eab8bf8bbfd14",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-09-03-ATM-10second.csv": "7f5df1b348d9a38db45aaa551bf6b6ac30efa110d69744f827ac71dce2c4651c",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-09-10-ATM-10second.csv": "e7bdeb8c1c94da495f31987945d8ceeaeeb6f6182c8e68677a2abdc5209390a4",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-09-17-ATM-10second.csv": "e5788eaa1f90a693122c3e7eed9d3027c1d619f07e33ae7cdf37192851f78366",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-09-24-ATM-10second-PARTIAL.csv": "2ef0ce7d02b0ecedae13aab18cf09215c0a85cae7dedb8f3179c01357106243a",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-09-24-ATM-10second.csv": "0d7f8946d2282e513a6c96a762e108d84c90877bcd451e0ccaa05bc152193de8",
+    "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-10second-20261103\\sensex\\SENSEX-2026-10-01-ATM-10second.csv": "79a6c81a70934edba7c62f953364fafd82e50bc0a7896c05d88bcb8376b1e162"
+  },
+  "breeze_db_bytes": 3481354240,
+  "breeze_db_sha256": "3acb4a223babbd3713a3334ef28f50f2637985511de1f008e0a3c959edfbca69",
+  "t_star": "15:22:00",
+  "theta": 0.0004,
+  "limit": 1.08
+}
