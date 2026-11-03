@@ -1,3 +1,7 @@
+## November 3 — standalone return models fail risk/causal tests; selective allocation frozen
+
+HERO_RETURN trained on 2024 earns 3,642 / 3,483 in 2025 but drawdown exceeds 3,500; backwards-year and causal tests lose. DOUBLE_RETURN loses. Keep all failures. New SMART_RUNNER25 consults only the existing past-quarter forecast to allocate a second lot on unchanged E03.1 entries; no retraining/threshold change. Clock-matched extra-lot control included, same 25% reserve ceiling and original risk-scaled acceptance. Fifteen research checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; SMART.md. No engine/config/schema/Production/download; protected exam unchanged. Next: final score and audits.
+
 ## November 3 — executable-tail forecasts find no economic admissions; monetary objective frozen
 
 First model round labels 18,787 overlapping causal cases across 105 already-seen expiries, training one year before scoring the other and quarterly using only prior quarters. Full-premium probability hurdle admits no trades; that is no profit, not a successful safe trader. New frozen objective forecasts actual adverse net returns (same features/calendars/limits) so genuine stop economics are tested without tuning a probability threshold. Twelve research checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; RETURNS.md. No engine/config/schema/Production/download; original labels/results/exams preserved. Next: score and independent audit.
