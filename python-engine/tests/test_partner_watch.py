@@ -671,6 +671,9 @@ async def test_a_buy_gets_its_plan_then_no_stop_then_a_lowered_and_a_removed_sto
     async with aiosqlite.connect(db) as conn:
         looks = await (await conn.execute("SELECT bid, ask, ltp, fut FROM partner_watch_looks")).fetchall()
     assert len(looks) >= 3 and looks[0] == (75.0, 75.1, 75.05, 22534.7)                # shadow looks recorded
+    async with aiosqlite.connect(db) as conn:
+        clocks = await (await conn.execute("SELECT quote_at, fut_quote_at FROM partner_watch_looks")).fetchall()
+    assert all(fut_at is not None for _q, fut_at in clocks)                # [N05-P3] the future's own clock too
     # Each message keeps when the broker event happened, when it was seen and when Telegram acknowledged it.
     plan_row = next(r for r in await _messages(db) if r[1] == "PLAN")
     assert plan_row[2:5] == (1, 1, "acknowledged") and plan_row[5] == D(11, 29, 17).isoformat()
@@ -985,6 +988,20 @@ async def test_a_plan_that_failed_is_started_again(watch, kite, monkeypatch):
     assert watch == []                                     # the first plan failed
     await pw.watch_tick(D(11, 0, 10), market=market)
     assert [m["kind"] for m in watch] == ["watch_plan"] and len(calls) == 2
+
+
+@pytest.mark.asyncio
+async def test_a_buy_after_the_close_warning_time_gets_its_plan_before_the_close_note(watch, kite):
+    """[N05-C2] Nov 2, 15:30: the CLOSE note for a new buy went out 0.7 s before its PLAN."""
+    await _login()
+    market = _market(D(15, 30))
+    await pw.watch_tick(D(15, 29, 55), market=market)
+    kite["orders"] = [_o("101", "BUY", D(15, 30, 0), average_price=75.05)]
+    for at in (D(15, 30, 5), D(15, 30, 10), D(15, 30, 15)):
+        await pw.watch_tick(at, market=market)
+    kinds = [m["kind"] for m in watch if m["kind"] in ("watch_plan", "watch_close")]
+    assert kinds == ["watch_plan", "watch_close"]
+    assert [m for m in watch if m["kind"] == "watch_close"][0]["text"].startswith("⏳ 9 minutes to the 15:40 close")
 
 
 @pytest.mark.asyncio

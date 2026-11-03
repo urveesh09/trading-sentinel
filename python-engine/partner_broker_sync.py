@@ -875,6 +875,10 @@ async def init_partner_broker_db(db_path: str) -> None:
         for column, declaration in _ORDER_HISTORY_COLS:
             if column not in present:
                 await db.execute(f"ALTER TABLE partner_orders ADD COLUMN {column} {declaration}")
+        # [N05-A1] When the day's positions were last read (a failed read leaves the last good one).
+        days = {row[1] for row in await (await db.execute("PRAGMA table_info(partner_broker_days)")).fetchall()}
+        if "positions_read_at" not in days:
+            await db.execute("ALTER TABLE partner_broker_days ADD COLUMN positions_read_at TEXT")
         await db.commit()
 
 
@@ -1022,11 +1026,11 @@ async def broker_days(db_path: str, first_day: str, last_day: str) -> dict:
     await init_partner_broker_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         rows = await (await db.execute(
-            "SELECT session_date, synced_at, complete, option_orders, other_orders, stops_known "
+            "SELECT session_date, synced_at, complete, option_orders, other_orders, stops_known, positions_read_at "
             "FROM partner_broker_days WHERE session_date>=? AND session_date<=?", (first_day, last_day))).fetchall()
     return {day: {"synced_at": synced_at, "complete": bool(complete), "option_orders": n, "other_orders": other,
-                  "stops_known": bool(stops_known)}
-            for day, synced_at, complete, n, other, stops_known in rows}
+                  "stops_known": bool(stops_known), "positions_read_at": positions_at}
+            for day, synced_at, complete, n, other, stops_known, positions_at in rows}
 
 
 async def _day_cards(db_path: str, first_day: str, last_day: str) -> list:
@@ -1107,14 +1111,24 @@ async def _sync_fills(now: datetime, db_path: str) -> tuple[dict, list]:
             day_reports = [r for r in reports if r["session_date"] == day]
             other = counts["other_orders"] if day == today else 0
             complete = _complete(day, now)
+            # [N05-B1] An earlier day read again (a morning book still holding yesterday's orders, its trades
+            # already gone) can only add to what was stored: Oct 27's row was rewritten at 07:35 on Oct 28 as 0
+            # option orders, with its 55 still stored. Today's row is replaced as the day's fills grow.
+            past = int(day < today)
             await db.execute(
                 "INSERT INTO partner_broker_days(session_date,synced_at,complete,option_orders,other_orders,account,"
                 "stops_known) VALUES(?,?,?,?,?,?,?) ON CONFLICT(session_date) DO UPDATE SET "
                 "synced_at=excluded.synced_at, complete=MAX(partner_broker_days.complete, excluded.complete), "
-                "option_orders=excluded.option_orders, other_orders=excluded.other_orders, "
-                "account=excluded.account, stops_known=excluded.stops_known",
+                "option_orders=CASE WHEN ? THEN MAX(partner_broker_days.option_orders, excluded.option_orders) "
+                "ELSE excluded.option_orders END, "
+                "other_orders=CASE WHEN ? THEN MAX(partner_broker_days.other_orders, excluded.other_orders) "
+                "ELSE excluded.other_orders END, "
+                "account=CASE WHEN ? THEN COALESCE(partner_broker_days.account, excluded.account) "
+                "ELSE excluded.account END, "
+                "stops_known=CASE WHEN ? THEN MAX(partner_broker_days.stops_known, excluded.stops_known) "
+                "ELSE excluded.stops_known END",
                 (day, now.isoformat(), int(complete), len(day_reports), other,
-                 _session.account if _session else None, int(stops_known)))
+                 _session.account if _session else None, int(stops_known), past, past, past, past))
             result_days[day] = {"option_orders": len(day_reports), "complete": complete, "stops_known": stops_known}
         await db.commit()
     logger.info("partner_zerodha_synced days=%s option_orders=%d other=%d unfilled=%d on_card=%d",
@@ -1170,10 +1184,18 @@ async def _read_details(db_path: str, orders: list, now: datetime) -> dict:
                 positions = option_positions(await _read("/portfolio/positions"))
                 await store_positions(db_path, day, positions, now)
                 out["positions"] = len(positions)
+                async with aiosqlite.connect(db_path) as db:
+                    await db.execute("UPDATE partner_broker_days SET positions_read_at=? WHERE session_date=?",
+                                     (now.isoformat(), day))
+                    await db.commit()
             except BrokerError as exc:
                 if exc.code in ("TokenException", "not_connected"):
                     raise
                 logger.warning("partner_zerodha_positions_unavailable code=%s", exc.code)
+                async with aiosqlite.connect(db_path) as db:      # [N05-A1] tried and not read (a good read stays)
+                    await db.execute("UPDATE partner_broker_days SET positions_read_at=COALESCE(positions_read_at, "
+                                     "'FAILED') WHERE session_date=?", (day,))
+                    await db.commit()
             try:
                 account = account_row(await _read("/user/margins/equity"))
                 if account is not None:

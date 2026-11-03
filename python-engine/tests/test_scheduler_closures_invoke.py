@@ -175,6 +175,27 @@ async def test_fno_ticks_run_to_1539_only_while_something_is_still_open(monkeypa
         assert tick.await_count == runs, (when, single, dr)
 
 
+def _fno_lock_of(job):
+    """The asyncio.Lock the registered F&O jobs share, found in the job's closure (it may be wrapped)."""
+    import asyncio
+    seen, todo = set(), [job]
+    while todo:
+        fn = todo.pop()
+        if id(fn) in seen:
+            continue
+        seen.add(id(fn))
+        for cell in getattr(fn, "__closure__", None) or ():
+            value = cell.cell_contents
+            if isinstance(value, asyncio.Lock):
+                return value
+            if callable(value):
+                todo.append(value)
+        wrapped = getattr(fn, "__wrapped__", None)
+        if wrapped is not None:
+            todo.append(wrapped)
+    raise AssertionError("no F&O lock in the job's closure")
+
+
 def _fno_clock(monkeypatch, hour=10, minute=0):
     from datetime import datetime
     from unittest.mock import AsyncMock, MagicMock
@@ -232,7 +253,16 @@ async def test_a_tick_that_waited_for_the_fast_exit_skips_when_another_tick_ran_
     fast = asyncio.create_task(jobs["_run_fno_fast_exit_safe"]())
     await asyncio.wait_for(inside.wait(), timeout=10)
     ticks = [asyncio.create_task(jobs["_run_fno_tick_safe"]()) for _ in range(2)]
-    await asyncio.sleep(0.05)
+    # [N05] Wait until both ticks are queued on the F&O lock. A fixed 50 ms sleep failed about half the runs on a
+    # busy Windows machine (failing at HEAD too): a tick still in its telemetry write reached the lock after the
+    # fast exit had released it, ran, and the second then ran as well.
+    lock = _fno_lock_of(jobs["_run_fno_tick_safe"])
+
+    async def both_waiting():
+        while len(getattr(lock, "_waiters", None) or ()) < 2:
+            await asyncio.sleep(0.01)
+
+    await asyncio.wait_for(both_waiting(), timeout=10)
     assert tick.await_count == 0                                    # both wait for the fast exit
     release.set()
     await asyncio.gather(fast, *ticks)

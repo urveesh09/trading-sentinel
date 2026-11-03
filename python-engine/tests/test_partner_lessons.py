@@ -24,8 +24,9 @@ def test_the_costliest_mistake_is_the_lesson_and_its_trade_is_told_once():
     assert lesson["code"] == "QUICK_REENTRY_AFTER_LOSS"
     assert lesson["impact_rs"] == _net(100.0, 80.0, 150, "NFO")
     assert [a["code"] for a in lesson["also"]] == ["OFF_CARD", "SIZE_UP_AFTER_LOSS"]
-    # The SENSEX trade's mistakes follow, costliest first; the NIFTY trade is not repeated.
-    assert [m["code"] for m in review["more_lessons"]] == ["ENTRY_ABOVE_LIMIT", "HELD_PAST_STOP"]
+    # The SENSEX trade's mistakes follow, costliest first; the NIFTY trade is not repeated. [N05-K3] Holding past the
+    # stop cost more than the ₹353 paid over the limit (the chase is measured by its own cost, not the whole trade).
+    assert [m["code"] for m in review["more_lessons"]] == ["HELD_PAST_STOP", "ENTRY_ABOVE_LIMIT"]
     assert all(e["option"] == "SENSEX 74200 PE" for m in review["more_lessons"] for e in m["examples"])
     total = round(_net(540.0, 430.0, 20) + _net(100.0, 80.0, 150, "NFO"), 2)
     assert review["headline"]["text"] == (f"2 trades · {rs(total)} after charges · following the cards exactly: ₹0 · "

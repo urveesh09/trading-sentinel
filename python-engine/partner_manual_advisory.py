@@ -1363,11 +1363,16 @@ def _buyer_update_text(payload: dict, event_type: str, *, underlying: str, obser
 
 async def queue_management_updates(
     db_path: str, *, underlying: str, observed_underlying: float, observed_at: datetime,
+    now: Optional[datetime] = None,
 ) -> list[dict]:
     """Record one material, condition-based follow-up per published idea.
 
     It observes only the public underlying level and the published card.  It
     neither reads nor infers a partner order, position, fill, or P&L.
+
+    [N05-P2] ``observed_at`` is the bar's close (the event); ``created_at`` is when the update was queued
+    (``now``, the detection), so event, detection, dispatch and acknowledgement each keep their own clock.
+    Before, created_at repeated the bar time (Nov 2: an 11:40:00 created_at for an update queued 11:40:50).
     """
     if observed_at.tzinfo is None or not _finite_positive(observed_underlying):
         return []
@@ -1426,12 +1431,13 @@ async def queue_management_updates(
             + " If you took the idea, reassess the paired structure with current executable quotes; this is not order or position monitoring."
         )
         stamp = _iso(observed_at)
+        queued_at = _iso(max(now or datetime.now(IST), observed_at))
         async with aiosqlite.connect(db_path) as db:
             await db.execute("BEGIN IMMEDIATE")
             cur = await db.execute(
                 "INSERT OR IGNORE INTO partner_advisory_updates(update_id,advisory_id,event_type,observed_at,observed_underlying,rendered_update,status,created_at,updated_at) "
                 "VALUES(?,?,?,?,? ,?,'QUEUED',?,?)",
-                (update_id, advisory_id, event_type, stamp, observed_underlying, wording, stamp, stamp),
+                (update_id, advisory_id, event_type, stamp, observed_underlying, wording, queued_at, queued_at),
             )
             if event_type == "INVALIDATION":
                 # Same transaction: the idea is never live with its stop recorded.

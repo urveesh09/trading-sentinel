@@ -402,7 +402,7 @@ async def test_manual_tick_classifies_no_direction_without_chain_and_updates_act
     }
     async def scan(_kite, spec, _regime, _now): return scans[spec.name]
     observed = []
-    async def management(_db, *, underlying, observed_underlying, observed_at):
+    async def management(_db, *, underlying, observed_underlying, observed_at, now=None):
         observed.append((underlying, observed_underlying, observed_at)); return []
     monkeypatch.setattr(po, "observe_underlying", scan)
     monkeypatch.setattr(__import__("partner_manual_advisory"), "queue_management_updates", management)
@@ -466,7 +466,7 @@ async def test_chain_failure_still_processes_active_public_invalidation(wired, m
     async def public_but_chain_failed(_kite, spec, *_args, **_kwargs):
         return scan if spec.name == "NIFTY" else UnderlyingScan(name="SENSEX", error="fixture_unavailable")
     queued, dispatched = [], []
-    async def manage(_db, *, underlying, observed_underlying, observed_at):
+    async def manage(_db, *, underlying, observed_underlying, observed_at, now=None):
         queued.append((underlying, observed_underlying, observed_at))
         return [{"update_id": "invalidation-fixture"}]
     async def dispatch(_db, update, *, now):

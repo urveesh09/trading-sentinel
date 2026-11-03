@@ -1,3 +1,40 @@
+## November 3 — N05 partner correctness: bar-aligned cards, SENSEX participation, honest money and clocks, frozen protection score (actual behavior, Dev, pushed, not deployed, commit `this commit`)
+
+Owner (Nov 3): fix everything left from the two Nov 2 audits except the outage, correctness first, Dev only.
+
+- **Cards and exits on the bar-close grid (N05-T1).** `partner_manual_advisory_tick` runs at minute */5,
+  second 8 and 38 (was */2 at :50): the 13 cards Sep-Nov went out 53-136 s after their bar (median 112).
+  Its provider calls are in the normal lane, behind the management lane trading reads use. 24 runs/h (was 30).
+- **SENSEX participation as the shipped book (N05-S1).** `fno_signal_scan.observe_underlying` reads
+  `spec.rvol_source` (NIFTY futures volume for SENSEX), as `fno_orchestrator` does; the partner scan alone used
+  SENSEX's own ~8-contract bars. Without the source frame the signal keeps its levels (cards stay managed) and
+  never fires (`rvol_source_unavailable`). **Research (`docs/research/partner/2026-11-03-sensex-signal-source/`):**
+  index bars instead of the future's were tested and are not supported (signals only the index adds: −42 index
+  points at 30 min, n 26); the SENSEX future's price stays the signal source.
+- **Coach money (N05-K3).** ENTRY_ABOVE_LIMIT is measured by what paying over the limit cost (₹5.1 x 20 = ₹102 on
+  Nov 2), not the whole trade (−₹1,943); the card's skip rule stays the advice; the day's lesson goes to the
+  costliest real mistake.
+- **Clocks (N05-P2/P3).** A card update's `created_at` is when it was queued (detection), `observed_at` the bar
+  close; the watch's looks store the future's `fut_quote_at`/`fut_trade_at`; each plan logs `fut_source`
+  QUOTE|BAR.
+- **Trigger wording (N05-W1).** Cards and CARD plans say "exit on a 5-min close under/over ..." (it is
+  watched on a completed 5-minute close, not a touch).
+- **Wrap (N05-R1).** A card whose premium SL print came before its index stop is told "🛑 SL ₹272.6 hit by 11:38
+  (5-min prints)" and its option path ends at the SL ("→ SL ₹272.6 by 11:38 (−14%)").
+- **Sync rows (N05-B1).** An earlier day read again never lowers its stored counts or forgets its stop/account
+  facts (Oct 27 had been rewritten as 0 orders).
+- **CLOSE after PLAN (N05-C2).** A buy after the warning time gets its PLAN first (held ≤ 60 s).
+- **Positions read (N05-A1).** `partner_broker_days.positions_read_at` (time, or FAILED); the review says when
+  open positions were not read after the close (Nov 2: the 15:50 read failed).
+- **Profit protection frozen (N05-PP).** `partner_protect_score` (SPEC v1-13b21f18f0f1, frozen Nov 3, decides from
+  Nov 4): B (Oct 24) and B2 (arm at P + W, stop P, trail best − W), message overlay, 20 s reaction; SUPPORTED
+  needs ≥20 fired, a positive total, still positive without the best, helped ≥ hurt. B reproduces the research
+  (8 of 166, +₹5,462.86). B2 was not scored on any earlier day. No message is sent.
+- **Test reliability.** `test_a_tick_that_waited_for_the_fast_exit...` waits for both ticks on the F&O lock
+  (a 50 ms sleep failed ~half the runs on Windows, at HEAD too).
+- **Not changed:** the outage (owner); recommendation qualification and account-risk policy (NOT CHECKED cards
+  with reward < risk; plan losses up to 17% of cash) are the owner's policy calls.
+
 ## November 3 — N04 partner fixes: one plan for a carded buy, day giveback, the login survives a restart, card strike at its own expiry (actual behavior, Dev, pushed, PR open, not deployed, commit `d395433`)
 
 Follows N03 (Production 06bed07). Source: the two Nov 2 partner audits and the Nov 3 check.

@@ -941,6 +941,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
             await queue_management_updates(
                 settings.DB_PATH, underlying=spec.name,
                 observed_underlying=observed_underlying, observed_at=observed_at,
+                now=stage_now(),            # [N05-P2] when it was detected, apart from the bar's close
             )
             metrics["management_observed"] += 1
             # Dispatch urgent lifecycle facts before optional entry I/O and
@@ -2160,7 +2161,18 @@ async def _buyer_card_outcome(name: str, day_iso: str, card: dict) -> dict:
             series = await fno_oi_store.strike_ltp_series(
                 settings.DB_PATH, name, day_iso, str(view["expiry"]), float(view["strike"]),
                 str(view["opt_type"]), from_ts=start)
-            premium = premium_path(float(view["ask"]), series, stopped_at=stopped_at, exit_by=exit_by)
+            # [N05-R1] The card's own exit is its premium SL order when a 5-minute print reached it before the
+            # index stop (Nov 2: the 75800 CE crossed 272.60 in the 11:38 minute; the wrap said "stopped 11:40 ·
+            # ₹281.25 at 11:37 (−11%)", where the card's SL meant −14%). A target reached first stays the outcome.
+            sl, sl_exit = view.get("sl_premium"), None
+            if sl and card.get("event") != "TARGET_ZONE":
+                hit = next((ts for ts, ltp in series if ltp is not None and ltp <= float(sl) and str(ts) <= exit_by),
+                           None)
+                if hit is not None and (stopped_at is None or str(hit) < stopped_at):
+                    stopped_at, sl_exit = str(hit), float(sl)
+                    outcome = f"🛑 SL ₹{float(sl):g} hit by {str(hit)[11:16]} (5-min prints)"
+            premium = premium_path(float(view["ask"]), series, stopped_at=stopped_at, exit_by=exit_by,
+                                   sl_exit=sl_exit)
         except (ValueError, TypeError, aiosqlite.Error) as exc:
             logger.warning("partner_buyer_premium_path_failed underlying=%s err=%s", name, type(exc).__name__)
     return {"time": card.get("time", ""), "option": option, "outcome": outcome, "premium": premium}

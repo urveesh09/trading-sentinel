@@ -1591,9 +1591,15 @@ def register_partner_scheduler_jobs(scheduler):
         id="partner_scan_tick",
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )
+    # [N05-T1] Cards and their exit/target updates come from completed 5-minute bars, so the tick runs on the
+    # bar-close grid (8 s after each close, as fno_bar_close_tick does at 3 s, and again at 38 s for a candle
+    # that came late or a send that failed). Before, every 2 minutes at :50: the 13 cards delivered Sep-Nov
+    # went out 53-136 s after their bar (median 112), and Nov 2's "EXIT now" 50 s after it. Its provider calls
+    # are in the normal lane: trading reads (management lane) are admitted ahead of them, so the quarter-hour
+    # bursts the old offset avoided cannot be delayed by it. 24 runs an hour (was 30).
     scheduler.add_job(
         _run_partner_manual_advisory_tick_safe, "cron",
-        minute="*/2", second=50,
+        minute="*/5", second="8,38",
         id="partner_manual_advisory_tick",
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )

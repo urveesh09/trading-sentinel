@@ -1,3 +1,19 @@
+## November 3 — N05 partner correctness (commit `this commit`, Dev, pushed, not deployed)
+
+- [x] N05-T1 card tick on the bar-close grid (:08 and :38 after each 5-minute close).
+- [x] N05-S1 SENSEX participation from NIFTY futures in the partner scan; index-bar source tested, not adopted.
+- [x] N05-K3 chased entry measured by its own cost.
+- [x] N05-P2/P3 update enqueue clock; future clocks in looks; plan fut_source.
+- [x] N05-W1 "exit on a 5-min close" wording.
+- [x] N05-R1 wrap ends a card at its premium SL when that came first.
+- [x] N05-B1 past-day sync rows never shrink.
+- [x] N05-C2 PLAN before CLOSE for a late buy.
+- [x] N05-A1 positions read recorded; the review says when not read after the close.
+- [x] N05-PP `partner_protect_score` frozen (v1-13b21f18f0f1), from Nov 4.
+- [x] Flaky F&O scheduler test made deterministic.
+- [x] Tests: full suite 6,368 passed, 4 skipped, 0 failed (757 s); N03-N05 file 20 passed
+- [ ] Deployed (owner: not now) and verified.
+
 ## November 3 — N04 partner fixes (commit `d395433`, Dev, pushed, PR open, not deployed)
 
 - [x] N04-A a carded buy in the window takes the card's stop/target; other buys told they are not the card's.

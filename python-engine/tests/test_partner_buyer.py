@@ -101,7 +101,7 @@ def test_buyer_card_is_short_and_actionable():
     assert lines[1] == "🟢 BUY NIFTY 22550 CE (13 Oct) @ ₹97.35"
     assert lines[2].startswith(f"Buy up to ₹{pb._px(view['buy_limit'])} · skip after 10:04 or if NIFTY drops under ≈22,46")
     assert lines[3] == (f"🛑 SL order at ₹{pb._px(view['sl_premium'])} right after buying "
-                        "(or exit if NIFTY ≈22,417 breaks)")
+                        "(or exit on a 5-min close under NIFTY ≈22,417)")
     assert lines[4] == (f"🎯 Target: NIFTY ≈22,570 (option ≈₹{pb._est(view['target_premium_low'])}"
                         f"–{pb._est(view['target_premium'])})")
     assert view["target_premium_low"] == pytest.approx(view["target_premium"] * 0.85, abs=0.05)
@@ -126,7 +126,7 @@ def test_without_parity_levels_stay_on_the_future_and_say_so():
     assert view["invalidation_index"] == pytest.approx(22475.43)
     card = pb.render_buyer_card(ADVICE_LABEL_UNCHECKED, view, underlying="NIFTY", direction="LONG",
                                 management_deadline=candidate.management_deadline)
-    assert "NIFTY fut drops under 22,522" in card and "exit if NIFTY fut 22,475 breaks" in card
+    assert "NIFTY fut drops under 22,522" in card and "exit on a 5-min close under NIFTY fut 22,475" in card
 
 
 def test_implausible_parity_is_refused():
@@ -273,10 +273,18 @@ async def test_management_updates_use_buyer_wording(store, monkeypatch):
         await db.execute("UPDATE partner_advisory_ideas SET status='DELIVERED_ACKNOWLEDGED' WHERE advisory_id=?",
                          (stored["advisory_id"],))
         await db.commit()
+    bar = NOW.replace(hour=13, minute=50, second=0)
     queued = await queue_management_updates(store, underlying="NIFTY", observed_underlying=22470.0,
-                                            observed_at=NOW.replace(hour=13, minute=50, second=0))
+                                            observed_at=bar, now=bar.replace(second=50))
     assert [q["event_type"] for q in queued] == ["INVALIDATION"]
     assert queued[0]["rendered_update"].startswith("🛑 EXIT NIFTY 22550 CE now")
+    # [N05-P2] The bar's close is the event; the update was queued at its detection, 50 s later (Nov 2: both
+    # columns read the bar time).
+    async with aiosqlite.connect(store) as db:
+        observed, created = await (await db.execute(
+            "SELECT observed_at, created_at FROM partner_advisory_updates WHERE update_id=?",
+            (queued[0]["update_id"],))).fetchone()
+    assert (datetime.fromisoformat(observed), datetime.fromisoformat(created)) == (bar, bar.replace(second=50))
     # [O13-B1] The stop closed the idea: no square-off reminder follows it.
     reminders = await run_intraday_session_lifecycle(store, now=NOW.replace(hour=15, minute=10, second=5))
     assert reminders == []

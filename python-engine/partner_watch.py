@@ -434,7 +434,10 @@ _ADDED_COLS = {
                                # [O24g] poll (the 5 s tick) | stream (a tick the order stream woke)
                                ("detected_by", "TEXT")),
     "partner_watch_looks": (("bid_qty", "INTEGER"), ("ask_qty", "INTEGER"), ("quote_at", "TEXT"),
-                            ("trade_at", "TEXT"), ("received_at", "TEXT")),
+                            ("trade_at", "TEXT"), ("received_at", "TEXT"),
+                            # [N05-P3] the future's own clocks: its LTP can be minutes old on a fresh quote
+                            # (Nov 2, SENSEX: the same price in 65% of consecutive looks)
+                            ("fut_quote_at", "TEXT"), ("fut_trade_at", "TEXT")),
     # [O26d] a Dev table made by O26b, before the opening order's fills and the evidence were stored apart
     "partner_watch_trips": (("prior_exit", "TEXT"), ("cash", "REAL"), ("opening_order", "TEXT"),
                             ("opening_qty", "INTEGER"), ("opening_value", "REAL"), ("opening_final", "INTEGER"),
@@ -1044,8 +1047,9 @@ def build_plan(*, entry: float, qty: int, exchange: str, opt_type: str, strike: 
         own, basis = option_forward(plan.fut, now=now.astimezone(IST), expiry=expiry, fut_expiry=fut_expiry,
                                     forward=forward)
         fwd = own(plan.fut)
-        logger.info("partner_watch_plan_forward basis=%s fut=%.2f forward=%.2f strike=%.0f", basis, plan.fut, fwd,
-                    strike)
+        # [N05-P3] Where the future's level came from: a current quote, or (none current) the last closed bar.
+        logger.info("partner_watch_plan_forward basis=%s fut=%.2f fut_source=%s forward=%.2f strike=%.0f", basis,
+                    plan.fut, "QUOTE" if fut_price else "BAR", fwd, strike)
         plan.iv = om.implied_vol(price_now, fwd, strike, years, RISK_FREE_RATE, is_call) if years > 0 else None
         if plan.iv:
             plan.delta = round(om.delta(fwd, strike, years, plan.iv, RISK_FREE_RATE, is_call), 3)
@@ -1533,7 +1537,9 @@ def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tup
                      f"where this trade is wrong.{_sell_now(position, quote, plan.cash)}")
     elif on_card:
         level = _card_level(card, "stop_level")
-        lines.append(f"🛑 The card's stop {_px(plan.stop)}" + (f" (or exit if {level} breaks)" if level else "")
+        past = "under" if position.tradingsymbol.endswith("CE") else "over"
+        lines.append(f"🛑 The card's stop {_px(plan.stop)}" + (f" (or exit on a 5-min close {past} {level})" if level
+                                                                else "")
                      + f". If it sells there: about −{_amt(plan.loss)} with charges{share}.")
     elif plan.stop_basis == "INDEX":
         lines.append(f"🛑 Plan stop {_px(plan.stop)} ({future} {plan.stop_index:,.0f}). If it sells there: about "
@@ -3251,6 +3257,12 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     if now.hour * 60 + now.minute >= CLOSE_WARN_MIN:
         for holding in holdings:
             episode = _episode(day, holding)
+            trip = getattr(holding, "trip", None)
+            # [N05-C2] A buy made after the warning time gets its PLAN first: Nov 2, 15:30, the CLOSE note went
+            # out 0.7 s before the PLAN for the same buy. Held until its plan is stored, at most 60 s.
+            if (trip is not None and not trip.carried and trip.key not in _state.planned
+                    and now - trip.first_at < timedelta(seconds=60)):
+                continue
             if episode not in _state.close_checked:
                 _state.close_checked.add(episode)
                 out.append((f"close:{episode}", "CLOSE", holding, {"episode": episode}, None, episode))
@@ -4242,6 +4254,13 @@ def _costs(entry: float, exit_: float, qty: int, exchange: str) -> float:
     return round_trip_costs(entry, exit_, qty, exchange)
 
 
+def _clock_text(value) -> Optional[str]:
+    """A quote clock as stored text (ISO for a datetime, the text as given, None when absent)."""
+    if value is None:
+        return None
+    return value.isoformat() if isinstance(value, datetime) else str(value)
+
+
 async def _record_looks(db_path: str, day: str, holdings: list, now: datetime, market: Market) -> None:
     contracts = {h.position_key or h.hkey: contract_of(h.exchange, h.tradingsymbol) for h in holdings}
     wanted = [c for c in contracts.values() if c is not None]
@@ -4261,13 +4280,15 @@ async def _record_looks(db_path: str, day: str, holdings: list, now: datetime, m
                 continue
             quote = quotes[contract.tradingsymbol]
             future = futures.get(contract.tradingsymbol)
-            fut = (quotes.get(future.tradingsymbol) or {}).get("ltp") if future is not None else None
+            fut_quote = (quotes.get(future.tradingsymbol) or {}) if future is not None else {}
+            fut = fut_quote.get("ltp")
             await db.execute(
                 "INSERT OR IGNORE INTO partner_watch_looks(position_key,at,session_date,bid,ask,ltp,fut,bid_qty,ask_qty,"
-                "quote_at,trade_at,received_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+                "quote_at,trade_at,received_at,fut_quote_at,fut_trade_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (key, now.isoformat(), day, quote.get("bid"), quote.get("ask"), quote.get("ltp"), fut,
                  quote.get("bid_qty"), quote.get("ask_qty"), quote.get("quote_at"), quote.get("trade_at"),
-                 quote.get("received_at")))
+                 quote.get("received_at"), _clock_text(fut_quote.get("quote_at")),
+                 _clock_text(fut_quote.get("trade_at"))))
         await db.commit()
 
 

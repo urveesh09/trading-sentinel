@@ -133,7 +133,7 @@ def test_a_buy_inside_the_card_window_takes_the_cards_stop_and_target():
     lines = text.splitlines()
     assert lines[0] == "🟢 You bought SENSEX 75800 CE · 1 lot (20) at ₹329.3 on the 10:36 card"
     assert lines[1] == "⚠️ You paid ₹329.3; the card said buy up to ₹324.2."
-    assert lines[2].startswith("🛑 The card's stop ₹272.6 (or exit if SENSEX ≈75,284 breaks). If it sells there:")
+    assert lines[2].startswith("🛑 The card's stop ₹272.6 (or exit on a 5-min close under SENSEX ≈75,284). If it sells there:")
     assert "🎯 The card's target: option ≈₹360–423 (SENSEX ≈75,654)." in lines        # as the card says it
     assert "450.35" not in text and "270.2" not in text                       # one set of levels, the card's
 
@@ -303,3 +303,96 @@ def test_the_card_strike_is_at_the_money_of_its_own_expiry():
     assert chain_atms(snap, book) == [22550.0]
     snap.parity_forward = 22535.0 * 1.05
     assert chain_atms(snap, book) == [22550.0]
+
+
+# ---------------------------------------------------------------------------
+# N05-R1: the wrap's card result is the card's own exit
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_the_wrap_ends_a_card_at_its_premium_sl_when_that_came_first(monkeypatch):
+    """Nov 2: the 75800 CE crossed the card's SL 272.60 before its 11:40 index stop; the wrap said "stopped 11:40 ·
+    option ₹317.45 → ₹281.25 at 11:37, just before the stop (−11%)"."""
+    import fno_oi_store
+    import partner_orchestrator as po
+    day = "2026-11-02"
+    card = {"time": "10:36", "event": "INVALIDATION", "event_time": "11:40", "event_at": f"{day}T11:40:00+05:30",
+            "signal_at": f"{day}T10:36:51+05:30", "exit_by": f"{day}T15:15:00+05:30",
+            "buyer_view": {"strike": 75800.0, "opt_type": "CE", "ask": 317.45, "sl_premium": 272.6,
+                           "expiry": "2026-11-05"}}
+
+    async def series(*_a, **_k):
+        return [(f"{day} 10:37:00", 318.9), (f"{day} 11:37:00", 281.25), (f"{day} 11:38:00", 270.0),
+                (f"{day} 11:42:00", 267.5), (f"{day} 12:16:00", 333.7)]
+
+    monkeypatch.setattr(fno_oi_store, "strike_ltp_series", series)
+    out = await po._buyer_card_outcome("SENSEX", day, card)
+    assert out["outcome"] == "🛑 SL ₹272.6 hit by 11:38 (5-min prints)"
+    assert out["premium"].startswith("option ₹317.45 → SL ₹272.6 by 11:38 (-14%)")
+    assert "after exit (not held) peak ₹333.7" in out["premium"]
+
+    async def held_above(*_a, **_k):                       # the SL never reached: the index stop is the exit
+        return [(f"{day} 10:37:00", 318.9), (f"{day} 11:37:00", 281.25), (f"{day} 12:16:00", 333.7)]
+
+    monkeypatch.setattr(fno_oi_store, "strike_ltp_series", held_above)
+    out = await po._buyer_card_outcome("SENSEX", day, card)
+    assert out["outcome"] == "🛑 stopped 11:40" and "just before the stop" in out["premium"]
+
+
+# ---------------------------------------------------------------------------
+# N05-PP: profit protection frozen and scored forward only
+# ---------------------------------------------------------------------------
+
+def test_the_protection_rules_fire_as_frozen():
+    import partner_protect_score as pps
+    t = [datetime(2026, 11, 4, 10, 0, s) for s in range(0, 60, 15)] + [datetime(2026, 11, 4, 10, 1, s)
+                                                                        for s in range(0, 60, 15)]
+    # P 100, S 85 (P - S 15), W 10: B arms at 115, B2 at 110.
+    path = list(zip(t, [101, 108, 111, 113, 109, 104, 99, 98]))
+    # B2 arms at the 111 bid (stop 101), trails to 103 after 113, and the 99 bid (index 6) is under it.
+    assert pps.fired_at("B2", 100.0, 85.0, 10.0, path) == 6
+    assert pps.fired_at("B", 100.0, 85.0, 10.0, path) is None         # 115 never reached
+    assert pps.arm_level("B", 100.0, 85.0, 10.0) == 115.0 and pps.arm_level("B2", 100.0, 85.0, 10.0) == 110.0
+
+
+def test_the_protection_spec_is_pinned():
+    """Changing a rule is a new version, frozen again before the days it decides on."""
+    import partner_protect_score as pps
+    assert pps.SPEC["frozen_from"] == "2026-11-04" and pps.SPEC_ID == "v1-" + __import__("hashlib").sha256(
+        json.dumps(pps.SPEC, sort_keys=True).encode()).hexdigest()[:12]
+    assert pps.SPEC_ID == PROTECT_SPEC_ID
+
+
+PROTECT_SPEC_ID = "v1-13b21f18f0f1"      # the frozen version (Nov 3); a change to SPEC fails here
+
+
+def test_the_protection_score_counts_only_days_from_its_freeze(tmp_path):
+    import sqlite3
+
+    import partner_protect_score as pps
+    db = str(tmp_path / "w.db")
+    with sqlite3.connect(db) as c:
+        c.executescript("""
+        CREATE TABLE partner_watch_trips(session_date, position_key, tradingsymbol, exchange, first_at, closed_at,
+          bought, entry, realised, orders, carried);
+        CREATE TABLE partner_watch_plan_versions(position_key, version, session_date, plan_json);
+        CREATE TABLE partner_watch_looks(position_key, at, session_date, bid);
+        CREATE TABLE partner_orders(session_date, tradingsymbol, transaction_type, status, filled_quantity,
+          updated_at, placed_at);""")
+        for day in ("2026-11-03", "2026-11-04"):
+            key = f"k{day}"
+            c.execute("INSERT INTO partner_watch_trips VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                      (day, key, "NIFTY26N1023300CE", "NFO", f"{day}T10:00:00+05:30", f"{day}T10:30:00+05:30", 65,
+                       100.0, -500.0, 2, 0))
+            c.execute("INSERT INTO partner_watch_plan_versions VALUES(?,?,?,?)",
+                      (key, 1, day, json.dumps({"entry": 100.0, "stop": 85.0, "swing": 10.0})))
+            for i, bid in enumerate([105, 112, 104, 101, 99, 97]):
+                c.execute("INSERT INTO partner_watch_looks VALUES(?,?,?,?)",
+                          (key, f"{day}T10:0{i}:00+05:30", day, bid))
+            c.execute("INSERT INTO partner_orders VALUES(?,?,?,?,?,?,?)",
+                      (day, "NIFTY26N1023300CE", "SELL", "COMPLETE", 65, f"{day}T10:30:00+05:30", None))
+    out = pps.score(db)
+    assert out["first_day"] == "2026-11-04" and out["spec_id"] == pps.SPEC_ID
+    b2 = out["rules"]["B2"]
+    assert b2["trips"] == 1 and b2["fired"] == 1 and b2["verdict"] == "TOO_FEW" and list(b2["days"]) == ["2026-11-04"]
+    assert out["rules"]["B"]["fired"] == 0                       # 115 never reached

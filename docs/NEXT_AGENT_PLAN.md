@@ -1,3 +1,23 @@
+## November 3 — N05 partner correctness (done, Dev, pushed, not deployed, commit `this commit`)
+
+- Problem: the remaining audit items except the outage (owner, Nov 3: correctness first, Dev only).
+- Files: `python-engine/scheduler_setup.py`, `fno_signal_scan.py`, `partner_coach.py`, `partner_manual_advisory.py`,
+  `partner_orchestrator.py`, `partner_watch.py`, `partner_buyer.py`, `partner_broker_sync.py`, `partner_lessons.py`,
+  new `partner_protect_score.py`; tests `tests/test_nov03_partner_fixes.py`, `test_partner_watch.py`,
+  `test_partner_coach.py`, `test_partner_lessons.py`, `test_partner_buyer.py`, `test_partner_broker_sync.py`,
+  `test_partner_orchestrator.py`, `test_fno_signal_scan.py`, `test_scheduler_closures_invoke.py`,
+  `main_surface_golden.json`; research `docs/research/partner/2026-11-03-sensex-signal-source/`.
+- Contracts: additive columns `partner_watch_looks.fut_quote_at/fut_trade_at`, `partner_broker_days.positions_read_at`
+  (ALTER in place); the card tick's schedule; no setting change.
+- Acceptance (first session after deploy): card `quote_time` within ~10-40 s of its bar close; partner SENSEX
+  scans log no own-volume RVOL (cards only with NIFTY participation); update rows with `created_at` after
+  `observed_at`; `partner_watch_plan_forward ... fut_source=`; wrap card lines use the SL when it came first.
+- Rollout: with N04 (PR #130), after the close; the partner logs in once more. Rollback: revert.
+- Remaining:
+  - [ ] Owner: the outage (off-host dead-man alert).
+  - [ ] Owner policy: whether a NOT CHECKED card with reward < risk is sent; any account-risk limit on plans.
+  - [ ] Score `partner_protect_score` from Nov 4 (`python -m partner_protect_score`); no message before SUPPORTED.
+
 ## November 3 — N04 partner fixes (done, Dev, pushed, PR open, not deployed, commit `d395433`)
 
 - Problem: the Nov 2 audits' remaining high items after N03: two plans for one buy; no day-giveback alert
