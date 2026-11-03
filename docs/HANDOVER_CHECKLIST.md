@@ -1,3 +1,19 @@
+## November 3 — E02 iterative development authorized (Dev research, active)
+
+Owner authorized multiple improvement/search iterations after E01.1's negative
+larger-history exam. Plan/contracts/acceptance: `docs/research/simulation/2026-11-03-expiry-e02/PLAN.md`.
+2025 and already-seen 2026 are development. The 52-session 2024 expiry-option
+archive is reserved for one final committed exam; its broader market regime
+was seen by F&O research. 2023 stays protected. No new history calls.
+Baseline: 106 archived E01.1 position/event records reproduce exactly. New
+long-option replay: Rs 25,000 own cash, Rs 2,500/day original premium/fee reserve,
+maximum two tickets, pre-submission limits and drawdown brakes. Round 01 logged
+290 unique seeded genomes on 2025; development leaders are positive, with no
+out-of-sample claim. Next: failure diagnosis, more rounds, neighbours and
+selection-decay checks, at most two frozen finalists, then one 2024 exam.
+Tests cover causal clocks, native fees, reserves, orders and missing evidence.
+No runtime/config/schema/capital/N11/Production or deployment change.
+
 ## November 3 — E01.1 research commit and archive verification receipt
 
 Scores/report pushed as `22a19f4`; pre-score freeze `99d3de3`, documentation
