@@ -1,3 +1,7 @@
+## November 3 — capital/payoff research complete; no E03.2 accepted
+
+Six frozen alternatives fail improvement: cash reuse adds no normal tickets; protected credit loses, both hybrids underperform E03.1 in each year; no-brake/coarse controls do not rescue it. Report: docs/EXPIRY_RESEARCH_CAPITAL_PAYOFF.md. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; STATUS.md. 49 focused checks; 108 primary/control plus 60 diagnostic histories exact; 1,037 native long and 991 primary/control credit checks; 54 uncached prefixes. Audit draft failure retained/fixed; scores unchanged; atlas regenerated unchanged. No native/config/schema/flags/actual capital/Production/download; owner and older evidence preserved. Remaining packaging: commit source/report, sealed receipts, pinned verification and verified push.
+
 ## November 3 — prefix-audit cache defect retained and corrected
 
 Original audit completed financial replay but failed on temporary prefix cache id reuse (exit 1). Original audit/source and error retained; v2 bypasses the old id-keyed memoizer only for temporary prefixes and compares uncached/cached full signals. Strategy scores and native source unchanged. Sixty fixed payoff diagnostic runs complete; no candidate selected. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; freeze-audit-v2.json. Next: corrected independent audit, report and sealed receipts. No native/config/schema/Production/download or owner changes.

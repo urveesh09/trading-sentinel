@@ -1,0 +1,111 @@
+{
+  "negative_tickets": 20,
+  "final_exit_counts": {
+    "STOP": 9,
+    "TRAIL": 2,
+    "TIME": 8,
+    "STRUCTURE": 1
+  },
+  "losses": [
+    {
+      "day": "2024-01-11",
+      "net": -477.75,
+      "reason": "STOP"
+    },
+    {
+      "day": "2024-02-29",
+      "net": -471.0,
+      "reason": "TRAIL"
+    },
+    {
+      "day": "2024-04-04",
+      "net": -386.61,
+      "reason": "STOP"
+    },
+    {
+      "day": "2024-04-25",
+      "net": -305.04,
+      "reason": "STOP"
+    },
+    {
+      "day": "2024-05-23",
+      "net": -360.69,
+      "reason": "STOP"
+    },
+    {
+      "day": "2024-06-20",
+      "net": -68.36,
+      "reason": "TIME"
+    },
+    {
+      "day": "2024-07-18",
+      "net": -182.71,
+      "reason": "STOP"
+    },
+    {
+      "day": "2024-08-08",
+      "net": -250.38,
+      "reason": "TIME"
+    },
+    {
+      "day": "2024-08-14",
+      "net": -276.93,
+      "reason": "TIME"
+    },
+    {
+      "day": "2024-09-05",
+      "net": -61.8,
+      "reason": "TIME"
+    },
+    {
+      "day": "2024-09-12",
+      "net": -324.55,
+      "reason": "STOP"
+    },
+    {
+      "day": "2024-10-31",
+      "net": -322.26,
+      "reason": "STRUCTURE"
+    },
+    {
+      "day": "2025-01-02",
+      "net": -204.72,
+      "reason": "TRAIL"
+    },
+    {
+      "day": "2025-02-06",
+      "net": -324.96,
+      "reason": "TIME"
+    },
+    {
+      "day": "2025-03-06",
+      "net": -478.01,
+      "reason": "STOP"
+    },
+    {
+      "day": "2025-05-22",
+      "net": -162.96,
+      "reason": "TIME"
+    },
+    {
+      "day": "2025-06-12",
+      "net": -182.52,
+      "reason": "TIME"
+    },
+    {
+      "day": "2025-08-28",
+      "net": -182.11,
+      "reason": "STOP"
+    },
+    {
+      "day": "2025-11-11",
+      "net": -491.08,
+      "reason": "STOP"
+    },
+    {
+      "day": "2025-12-09",
+      "net": -140.43,
+      "reason": "TIME"
+    }
+  ]
+}
