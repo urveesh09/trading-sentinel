@@ -1,3 +1,13 @@
+## November 3 — closing-auction and seller study done: no candidate (commit `AUCTION_COMMIT`, Dev, pushed)
+
+- Problem: owner asked for a different, micro-level angle after two failed E03.2 searches.
+- Done: auction drift frozen test failed (H2, trade); auction strangle overpriced (B/BH re-valued);
+  defined-risk seller: one arm passed, rejected on its entry-time knife edge. Report
+  `docs/EXPIRY_RESEARCH_AUCTION.md`.
+- Next, owner decisions only: the frozen E03-family exam on the approved download; forward paper for
+  E03/E03.1; D keeps measuring the seller side. Paper-book reports should value settled legs from
+  `assumed_pnl` (a summary that sums `net_pnl` shows settled legs at their charges only).
+
 ## November 3 — E03.2 evidence packaged and reverified (Dev only)
 
 Research 9950a6c pushed; evidence/docs a397ce3 verified. Stock receipt replay matches 854 pinned source files and original money. Post-packaging explicit-file verification again passes 55 checks; README avoids recursive collection of frozen source copies/pinned checkout. No source strategy, result, freeze or original helper guard changed. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; completed STATUS.md. E03.1 unchanged/off; no winning E03.2, deployment or download. Final docs push follows immediately.

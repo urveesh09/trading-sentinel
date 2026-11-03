@@ -1,3 +1,19 @@
+## November 3 — closing-auction and seller study: nothing tradeable (Dev research, commit `AUCTION_COMMIT`, pushed, no runtime change)
+
+Report: `docs/EXPIRY_RESEARCH_AUCTION.md`; record: `docs/research/simulation/2026-11-03-expiry-auction/`.
+- Auction (since Aug 3, 2026 options settle at the closing auction; Kite's index frozen 15:15-15:29):
+  27 era expiry days (9 Production 10-s books, 18 Breeze 10-s export). Frozen test (`b7c90bd`, v2
+  `bd2a31d` after a crash that printed nothing): direction at 15:22 86% as frozen, but the Breeze index is
+  an indicative auction value from 15:20 on 8 days; read at 15:15 it is 60%. No remaining move after 15:22
+  (H2 fail); Production trade +2,657 / 5 trades, -2,077 without the best (fail).
+- Production plays re-valued with settled legs (`assumed_pnl`; `net_pnl` of a settled leg is only its
+  charges): B -3,007 / 5 days, BH -6,313 / 4 (all negative), C -1,341, A +4,709, D -1,007 (Oct 6-29).
+- Seller (`176e7b5`): iron butterfly, 12 arms on 2024/2025. All 13:00 arms lose; 14:00 / 4-strike cover /
+  2x stop passes (+20,049 / +16,723, 9 Production days +7,473) but 2025 is positive only at exactly 14:00
+  (neighbourhood `seller_diag.py`): rejected.
+- No engine, config, `.env`, schema, Production, N11/N11T, A/B/C/D or E-variant change; atlas unchanged; no
+  download; 2023 not opened.
+
 ## November 3 — E03.2 evidence packaged and reverified (Dev only)
 
 Research 9950a6c pushed; evidence/docs a397ce3 verified. Stock receipt replay matches 854 pinned source files and original money. Post-packaging explicit-file verification again passes 55 checks; README avoids recursive collection of frozen source copies/pinned checkout. No source strategy, result, freeze or original helper guard changed. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; completed STATUS.md. E03.1 unchanged/off; no winning E03.2, deployment or download. Final docs push follows immediately.

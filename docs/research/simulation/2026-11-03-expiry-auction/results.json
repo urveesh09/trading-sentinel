@@ -1,0 +1,1525 @@
+{
+  "freeze_head": "b7c90bdfe2b3d4e34b62311fdfc66cedc21564eb",
+  "h": {
+    "label": "26 unseen closing-auction expiry days",
+    "days": 18,
+    "signalled": 14,
+    "unavailable": 0,
+    "h1_agree": 0.857,
+    "r_mean": 4.42,
+    "r_median": -1.98,
+    "r_positive": 0.5,
+    "d_mean_abs": 236.43,
+    "h1_pass": true,
+    "h2_pass": false
+  },
+  "h_by_index": {
+    "NIFTY": {
+      "label": "NIFTY",
+      "days": 9,
+      "signalled": 9,
+      "unavailable": 0,
+      "h1_agree": 0.889,
+      "r_mean": 16.51,
+      "r_median": 2.5,
+      "r_positive": 0.556,
+      "d_mean_abs": 99.7,
+      "h1_pass": false,
+      "h2_pass": false
+    },
+    "SENSEX": {
+      "label": "SENSEX",
+      "days": 9,
+      "signalled": 5,
+      "unavailable": 0,
+      "h1_agree": 0.8,
+      "r_mean": -17.34,
+      "r_median": -61.14,
+      "r_positive": 0.4,
+      "d_mean_abs": 482.55,
+      "h1_pass": false,
+      "h2_pass": false
+    }
+  },
+  "h_by_source": {
+    "production": {
+      "label": "production",
+      "days": 8,
+      "signalled": 5,
+      "unavailable": 0,
+      "h1_agree": 0.8,
+      "r_mean": 49.61,
+      "r_median": 2.5,
+      "r_positive": 0.6,
+      "d_mean_abs": 40.23,
+      "h1_pass": false,
+      "h2_pass": true
+    },
+    "export": {
+      "label": "export",
+      "days": 10,
+      "signalled": 9,
+      "unavailable": 0,
+      "h1_agree": 0.889,
+      "r_mean": -20.68,
+      "r_median": -6.45,
+      "r_positive": 0.444,
+      "d_mean_abs": 345.44,
+      "h1_pass": false,
+      "h2_pass": false
+    }
+  },
+  "seen_day": {
+    "NIFTY 2026-10-06": {
+      "source": "production",
+      "s0": 22717.7,
+      "settle": 22776.1,
+      "move": 58.4,
+      "frozen": true,
+      "path": {
+        "15:16": {
+          "y": 22717.7,
+          "fut_drift": -5.88,
+          "d": 0.0,
+          "r": 0.0
+        },
+        "15:18": {
+          "y": 22719.7,
+          "fut_drift": 3.22,
+          "d": 2.0,
+          "r": 56.4
+        },
+        "15:20": {
+          "y": 22737.85,
+          "fut_drift": 4.12,
+          "d": 20.15,
+          "r": 38.25
+        },
+        "15:22": {
+          "y": 22749.62,
+          "fut_drift": 14.12,
+          "d": 31.92,
+          "r": 26.47
+        },
+        "15:25": {
+          "y": 22744.85,
+          "fut_drift": 19.12,
+          "d": 27.15,
+          "r": 31.25
+        },
+        "15:27": {
+          "y": 22760.27,
+          "fut_drift": 5.22,
+          "d": 42.57,
+          "r": 15.83
+        },
+        "15:29": {
+          "y": 22772.3,
+          "fut_drift": 4.12,
+          "d": 54.6,
+          "r": 3.8
+        }
+      },
+      "signal": true
+    }
+  },
+  "days": {
+    "NIFTY 2026-08-04": {
+      "source": "export",
+      "file": "NIFTY-2026-08-04-ATM-10second.csv",
+      "s0": 24463.45,
+      "settle": 24614.9,
+      "move": 151.45,
+      "frozen": false,
+      "daily_close": 24614.9,
+      "settle_matches_daily": true,
+      "path": {
+        "15:16": {
+          "y": 24500.2,
+          "fut_drift": 4.45,
+          "d": 36.75,
+          "r": 114.7
+        },
+        "15:18": {
+          "y": 24490.55,
+          "fut_drift": -8.85,
+          "d": 27.1,
+          "r": 124.35
+        },
+        "15:20": {
+          "y": 24491.0,
+          "fut_drift": -7.45,
+          "d": 27.55,
+          "r": 123.9
+        },
+        "15:22": {
+          "y": 24505.0,
+          "fut_drift": 6.35,
+          "d": 41.55,
+          "r": 109.9
+        },
+        "15:25": {
+          "y": 24527.5,
+          "fut_drift": -6.15,
+          "d": 64.05,
+          "r": 87.4
+        },
+        "15:27": {
+          "y": 24561.15,
+          "fut_drift": 9.45,
+          "d": 97.7,
+          "r": 53.75
+        },
+        "15:29": {
+          "y": 24614.25,
+          "fut_drift": 4.45,
+          "d": 150.8,
+          "r": 0.65
+        }
+      },
+      "signal": true
+    },
+    "NIFTY 2026-08-11": {
+      "unavailable": "index minutes missing"
+    },
+    "NIFTY 2026-08-18": {
+      "source": "export",
+      "file": "NIFTY-2026-08-18-ATM-10second.csv",
+      "s0": 24099.85,
+      "settle": 24154.9,
+      "move": 55.05,
+      "frozen": false,
+      "daily_close": 24154.9,
+      "settle_matches_daily": true,
+      "path": {
+        "15:16": {
+          "y": 24196.15,
+          "fut_drift": 94.0,
+          "d": 96.3,
+          "r": -41.25
+        },
+        "15:18": {
+          "y": 24197.2,
+          "fut_drift": 99.9,
+          "d": 97.35,
+          "r": -42.3
+        },
+        "15:20": {
+          "y": 24212.55,
+          "fut_drift": 94.0,
+          "d": 112.7,
+          "r": -57.65
+        },
+        "15:22": {
+          "y": 24200.6,
+          "fut_drift": 87.9,
+          "d": 100.75,
+          "r": -45.7
+        },
+        "15:25": {
+          "y": 24178.2,
+          "fut_drift": 86.0,
+          "d": 78.35,
+          "r": -23.3
+        },
+        "15:27": {
+          "y": 24154.0,
+          "fut_drift": 90.0,
+          "d": 54.15,
+          "r": 0.9
+        },
+        "15:29": {
+          "y": 24153.8,
+          "fut_drift": 93.0,
+          "d": 53.95,
+          "r": 1.1
+        }
+      },
+      "signal": true
+    },
+    "NIFTY 2026-08-25": {
+      "unavailable": "index minutes missing"
+    },
+    "NIFTY 2026-09-01": {
+      "source": "export",
+      "file": "NIFTY-2026-09-01-ATM-10second.csv",
+      "s0": 24125.7,
+      "settle": 24055.8,
+      "move": -69.9,
+      "frozen": false,
+      "daily_close": 24055.8,
+      "settle_matches_daily": true,
+      "path": {
+        "15:16": {
+          "y": 23990.8,
+          "fut_drift": -160.05,
+          "d": -134.9,
+          "r": -65.0
+        },
+        "15:18": {
+          "y": 24001.55,
+          "fut_drift": -157.85,
+          "d": -124.15,
+          "r": -54.25
+        },
+        "15:20": {
+          "y": 23997.35,
+          "fut_drift": -156.55,
+          "d": -128.35,
+          "r": -58.45
+        },
+        "15:22": {
+          "y": 24072.6,
+          "fut_drift": -148.55,
+          "d": -53.1,
+          "r": 16.8
+        },
+        "15:25": {
+          "y": 24075.95,
+          "fut_drift": -155.45,
+          "d": -49.75,
+          "r": 20.15
+        },
+        "15:27": {
+          "y": 24072.2,
+          "fut_drift": -147.55,
+          "d": -53.5,
+          "r": 16.4
+        },
+        "15:29": {
+          "y": 24048.3,
+          "fut_drift": -136.55,
+          "d": -77.4,
+          "r": -7.5
+        }
+      },
+      "signal": true
+    },
+    "NIFTY 2026-09-08": {
+      "unavailable": "index minutes missing"
+    },
+    "NIFTY 2026-09-15": {
+      "source": "export",
+      "file": "NIFTY-2026-09-15-ATM-10second.csv",
+      "s0": 22880.2,
+      "settle": 23118.6,
+      "move": 238.4,
+      "frozen": false,
+      "daily_close": 23118.6,
+      "settle_matches_daily": true,
+      "path": {
+        "15:16": {
+          "y": 23192.75,
+          "fut_drift": 297.7,
+          "d": 312.55,
+          "r": -74.15
+        },
+        "15:18": {
+          "y": 23194.2,
+          "fut_drift": 295.0,
+          "d": 314.0,
+          "r": -75.6
+        },
+        "15:20": {
+          "y": 23219.8,
+          "fut_drift": 311.5,
+          "d": 339.6,
+          "r": -101.2
+        },
+        "15:22": {
+          "y": 23125.05,
+          "fut_drift": 293.5,
+          "d": 244.85,
+          "r": -6.45
+        },
+        "15:25": {
+          "y": 23143.7,
+          "fut_drift": 292.5,
+          "d": 263.5,
+          "r": -25.1
+        },
+        "15:27": {
+          "y": 23132.4,
+          "fut_drift": 306.5,
+          "d": 252.2,
+          "r": -13.8
+        },
+        "15:29": {
+          "y": 23118.1,
+          "fut_drift": 306.5,
+          "d": 237.9,
+          "r": 0.5
+        }
+      },
+      "signal": true
+    },
+    "NIFTY 2026-09-22": {
+      "unavailable": "index minutes missing"
+    },
+    "NIFTY 2026-09-29": {
+      "source": "export",
+      "file": "NIFTY-2026-09-29-ATM-10second.csv",
+      "s0": 22288.35,
+      "settle": 22716.2,
+      "move": 427.85,
+      "frozen": false,
+      "daily_close": 22716.2,
+      "settle_matches_daily": true,
+      "path": {
+        "15:16": {
+          "y": 22682.75,
+          "fut_drift": 399.5,
+          "d": 394.4,
+          "r": 33.45
+        },
+        "15:18": {
+          "y": 22695.65,
+          "fut_drift": 421.2,
+          "d": 407.3,
+          "r": 20.55
+        },
+        "15:20": {
+          "y": 22676.1,
+          "fut_drift": 417.2,
+          "d": 387.75,
+          "r": 40.1
+        },
+        "15:22": {
+          "y": 22618.6,
+          "fut_drift": 402.1,
+          "d": 330.25,
+          "r": 97.6
+        },
+        "15:25": {
+          "y": 22646.95,
+          "fut_drift": 411.1,
+          "d": 358.6,
+          "r": 69.25
+        },
+        "15:27": {
+          "y": 22679.35,
+          "fut_drift": 426.2,
+          "d": 391.0,
+          "r": 36.85
+        },
+        "15:29": {
+          "y": 22712.65,
+          "fut_drift": 426.1,
+          "d": 424.3,
+          "r": 3.55
+        }
+      },
+      "signal": true
+    },
+    "NIFTY 2026-10-06": {
+      "source": "production",
+      "s0": 22717.7,
+      "settle": 22776.1,
+      "move": 58.4,
+      "frozen": true,
+      "path": {
+        "15:16": {
+          "y": 22717.7,
+          "fut_drift": -5.88,
+          "d": 0.0,
+          "r": 0.0
+        },
+        "15:18": {
+          "y": 22719.7,
+          "fut_drift": 3.22,
+          "d": 2.0,
+          "r": 56.4
+        },
+        "15:20": {
+          "y": 22737.85,
+          "fut_drift": 4.12,
+          "d": 20.15,
+          "r": 38.25
+        },
+        "15:22": {
+          "y": 22749.62,
+          "fut_drift": 14.12,
+          "d": 31.92,
+          "r": 26.47
+        },
+        "15:25": {
+          "y": 22744.85,
+          "fut_drift": 19.12,
+          "d": 27.15,
+          "r": 31.25
+        },
+        "15:27": {
+          "y": 22760.27,
+          "fut_drift": 5.22,
+          "d": 42.57,
+          "r": 15.83
+        },
+        "15:29": {
+          "y": 22772.3,
+          "fut_drift": 4.12,
+          "d": 54.6,
+          "r": 3.8
+        }
+      },
+      "signal": true
+    },
+    "NIFTY 2026-10-13": {
+      "source": "production",
+      "s0": 22702.05,
+      "settle": 22721.95,
+      "move": 19.9,
+      "frozen": false,
+      "path": {
+        "15:16": {
+          "y": 22714.73,
+          "fut_drift": 11.6,
+          "d": 12.68,
+          "r": 7.22
+        },
+        "15:18": {
+          "y": 22706.17,
+          "fut_drift": 11.6,
+          "d": 4.12,
+          "r": 15.78
+        },
+        "15:20": {
+          "y": 22704.58,
+          "fut_drift": 10.7,
+          "d": 2.53,
+          "r": 17.38
+        },
+        "15:22": {
+          "y": 22719.45,
+          "fut_drift": 24.1,
+          "d": 17.4,
+          "r": 2.5
+        },
+        "15:25": {
+          "y": 22716.22,
+          "fut_drift": 26.6,
+          "d": 14.17,
+          "r": 5.73
+        },
+        "15:27": {
+          "y": 22721.1,
+          "fut_drift": 31.7,
+          "d": 19.05,
+          "r": 0.85
+        },
+        "15:29": {
+          "y": 22722.0,
+          "fut_drift": 36.6,
+          "d": 19.95,
+          "r": -0.05
+        }
+      },
+      "signal": true
+    },
+    "NIFTY 2026-10-19": {
+      "source": "production",
+      "s0": 22873.55,
+      "settle": 22888.95,
+      "move": 15.4,
+      "frozen": true,
+      "path": {
+        "15:16": {
+          "y": 22879.0,
+          "fut_drift": -4.7,
+          "d": 5.45,
+          "r": 9.95
+        },
+        "15:18": {
+          "y": 22872.47,
+          "fut_drift": 6.7,
+          "d": -1.08,
+          "r": -16.48
+        },
+        "15:20": {
+          "y": 22886.12,
+          "fut_drift": 12.3,
+          "d": 12.58,
+          "r": 2.83
+        },
+        "15:22": {
+          "y": 22934.53,
+          "fut_drift": 12.3,
+          "d": 60.98,
+          "r": -45.58
+        },
+        "15:25": {
+          "y": 22944.7,
+          "fut_drift": 15.3,
+          "d": 71.15,
+          "r": -55.75
+        },
+        "15:27": {
+          "y": 22908.35,
+          "fut_drift": 14.2,
+          "d": 34.8,
+          "r": -19.4
+        },
+        "15:29": {
+          "y": 22886.45,
+          "fut_drift": 7.3,
+          "d": 12.9,
+          "r": 2.5
+        }
+      },
+      "signal": true
+    },
+    "NIFTY 2026-10-27": {
+      "source": "production",
+      "s0": 22760.75,
+      "settle": 22749.75,
+      "move": -11.0,
+      "frozen": false,
+      "path": {
+        "15:16": {
+          "y": 22782.33,
+          "fut_drift": -2.55,
+          "d": 21.58,
+          "r": -32.58
+        },
+        "15:18": {
+          "y": 22787.78,
+          "fut_drift": 3.55,
+          "d": 27.03,
+          "r": -38.03
+        },
+        "15:20": {
+          "y": 22792.8,
+          "fut_drift": 8.95,
+          "d": 32.05,
+          "r": -43.05
+        },
+        "15:22": {
+          "y": 22782.97,
+          "fut_drift": -2.55,
+          "d": 22.22,
+          "r": -33.22
+        },
+        "15:25": {
+          "y": 22774.33,
+          "fut_drift": -10.45,
+          "d": 13.58,
+          "r": -24.58
+        },
+        "15:27": {
+          "y": 22763.18,
+          "fut_drift": -16.55,
+          "d": 2.43,
+          "r": -13.43
+        },
+        "15:29": {
+          "y": 22749.8,
+          "fut_drift": -34.85,
+          "d": -10.95,
+          "r": 0.05
+        }
+      },
+      "signal": true
+    },
+    "NIFTY 2026-11-03": {
+      "source": "production",
+      "s0": 23731.85,
+      "settle": 23810.85,
+      "move": 79.0,
+      "frozen": true,
+      "path": {
+        "15:16": {
+          "y": 23735.67,
+          "fut_drift": -9.8,
+          "d": 3.83,
+          "r": 75.17
+        },
+        "15:18": {
+          "y": 23734.47,
+          "fut_drift": -12.8,
+          "d": 2.62,
+          "r": 76.38
+        },
+        "15:20": {
+          "y": 23737.92,
+          "fut_drift": -12.8,
+          "d": 6.08,
+          "r": 72.92
+        },
+        "15:22": {
+          "y": 23758.08,
+          "fut_drift": 3.2,
+          "d": 26.23,
+          "r": 52.77
+        },
+        "15:25": {
+          "y": 23775.5,
+          "fut_drift": 8.2,
+          "d": 43.65,
+          "r": 35.35
+        },
+        "15:27": {
+          "y": 23787.8,
+          "fut_drift": 12.3,
+          "d": 55.95,
+          "r": 23.05
+        },
+        "15:29": {
+          "y": 23805.35,
+          "fut_drift": 15.8,
+          "d": 73.5,
+          "r": 5.5
+        }
+      },
+      "signal": true
+    },
+    "SENSEX 2026-08-06": {
+      "source": "export",
+      "file": "SENSEX-2026-08-06-ATM-10second-PARTIAL.csv",
+      "s0": 78785.62,
+      "settle": 78954.76,
+      "move": 169.14,
+      "frozen": true,
+      "daily_close": null,
+      "settle_matches_daily": null,
+      "path": {
+        "15:16": {
+          "y": 78895.85,
+          "fut_drift": 16.49,
+          "d": 110.23,
+          "r": 58.91
+        },
+        "15:18": {
+          "y": 79030.45,
+          "fut_drift": 16.49,
+          "d": 244.83,
+          "r": -75.69
+        },
+        "15:20": {
+          "y": 79000.9,
+          "fut_drift": 65.49,
+          "d": 215.28,
+          "r": -46.14
+        },
+        "15:22": {
+          "y": 79015.9,
+          "fut_drift": -7.41,
+          "d": 230.28,
+          "r": -61.14
+        },
+        "15:25": {
+          "y": 79233.15,
+          "fut_drift": 94.39,
+          "d": 447.53,
+          "r": -278.39
+        },
+        "15:27": {
+          "y": 79064.3,
+          "fut_drift": 94.94,
+          "d": 278.68,
+          "r": -109.54
+        },
+        "15:29": {
+          "y": 78871.15,
+          "fut_drift": 13.49,
+          "d": 85.53,
+          "r": 83.61
+        }
+      },
+      "signal": true
+    },
+    "SENSEX 2026-08-13": {
+      "unavailable": "index minutes missing"
+    },
+    "SENSEX 2026-08-20": {
+      "source": "export",
+      "file": "SENSEX-2026-08-20-ATM-10second.csv",
+      "s0": 77432.88,
+      "settle": 77537.72,
+      "move": 104.84,
+      "frozen": false,
+      "daily_close": null,
+      "settle_matches_daily": null,
+      "path": {
+        "15:16": {
+          "y": 77499.7,
+          "fut_drift": 34.75,
+          "d": 66.82,
+          "r": 38.02
+        },
+        "15:18": {
+          "y": 77520.1,
+          "fut_drift": 34.75,
+          "d": 87.22,
+          "r": 17.62
+        },
+        "15:20": {
+          "y": 77516.05,
+          "fut_drift": 85.65,
+          "d": 83.17,
+          "r": 21.67
+        },
+        "15:22": {
+          "y": 77483.45,
+          "fut_drift": 38.8,
+          "d": 50.57,
+          "r": 54.27
+        },
+        "15:25": {
+          "y": 77462.05,
+          "fut_drift": 64.55,
+          "d": 29.17,
+          "r": 75.67
+        },
+        "15:27": {
+          "y": 77501.1,
+          "fut_drift": 57.8,
+          "d": 68.22,
+          "r": 36.62
+        },
+        "15:29": {
+          "y": 77526.45,
+          "fut_drift": 57.8,
+          "d": 93.57,
+          "r": 11.27
+        }
+      },
+      "signal": true
+    },
+    "SENSEX 2026-08-27": {
+      "unavailable": "index minutes missing"
+    },
+    "SENSEX 2026-09-03": {
+      "source": "export",
+      "file": "SENSEX-2026-09-03-ATM-10second.csv",
+      "s0": 74373.29,
+      "settle": 76152.86,
+      "move": 1779.57,
+      "frozen": false,
+      "daily_close": null,
+      "settle_matches_daily": null,
+      "path": {
+        "15:16": {
+          "y": 76634.55,
+          "fut_drift": 2212.47,
+          "d": 2261.26,
+          "r": -481.69
+        },
+        "15:18": {
+          "y": 76633.95,
+          "fut_drift": 2143.77,
+          "d": 2260.66,
+          "r": -481.09
+        },
+        "15:20": {
+          "y": 76567.15,
+          "fut_drift": 2143.77,
+          "d": 2193.86,
+          "r": -414.29
+        },
+        "15:22": {
+          "y": 76379.05,
+          "fut_drift": 2195.32,
+          "d": 2005.76,
+          "r": -226.19
+        },
+        "15:25": {
+          "y": 76328.4,
+          "fut_drift": 2195.32,
+          "d": 1955.11,
+          "r": -175.54
+        },
+        "15:27": {
+          "y": 76150.85,
+          "fut_drift": 2195.32,
+          "d": 1777.56,
+          "r": 2.01
+        },
+        "15:29": {
+          "y": 76153.9,
+          "fut_drift": 2074.47,
+          "d": 1780.61,
+          "r": -1.04
+        }
+      },
+      "signal": true
+    },
+    "SENSEX 2026-09-10": {
+      "unavailable": "index minutes missing"
+    },
+    "SENSEX 2026-09-17": {
+      "source": "export",
+      "file": "SENSEX-2026-09-17-ATM-10second.csv",
+      "s0": 74387.97,
+      "settle": 74314.59,
+      "move": -73.38,
+      "frozen": false,
+      "daily_close": null,
+      "settle_matches_daily": null,
+      "path": {
+        "15:16": {
+          "y": 74399.85,
+          "fut_drift": -2.78,
+          "d": 11.88,
+          "r": -85.26
+        },
+        "15:18": {
+          "y": 74424.2,
+          "fut_drift": 87.12,
+          "d": 36.23,
+          "r": -109.61
+        },
+        "15:20": {
+          "y": 74435.0,
+          "fut_drift": 58.52,
+          "d": 47.03,
+          "r": -120.41
+        },
+        "15:22": {
+          "y": 74439.8,
+          "fut_drift": 108.92,
+          "d": 51.83,
+          "r": -125.21
+        },
+        "15:25": {
+          "y": 74511.4,
+          "fut_drift": 108.22,
+          "d": 123.43,
+          "r": -196.81
+        },
+        "15:27": {
+          "y": 74506.6,
+          "fut_drift": 108.22,
+          "d": 118.63,
+          "r": -192.01
+        },
+        "15:29": {
+          "y": 74314.7,
+          "fut_drift": 108.22,
+          "d": -73.27,
+          "r": 0.11
+        }
+      },
+      "signal": true
+    },
+    "SENSEX 2026-09-24": {
+      "unavailable": "index minutes missing"
+    },
+    "SENSEX 2026-10-01": {
+      "source": "export",
+      "file": "SENSEX-2026-10-01-ATM-10second.csv",
+      "s0": 71945.22,
+      "settle": 71909.7,
+      "move": -35.52,
+      "frozen": false,
+      "daily_close": null,
+      "settle_matches_daily": null,
+      "path": {
+        "15:16": {
+          "y": 71916.1,
+          "fut_drift": 57.36,
+          "d": -29.12,
+          "r": 6.4
+        },
+        "15:18": {
+          "y": 71960.65,
+          "fut_drift": 49.51,
+          "d": 15.43,
+          "r": -50.95
+        },
+        "15:20": {
+          "y": 71985.75,
+          "fut_drift": 58.31,
+          "d": 40.53,
+          "r": -76.05
+        },
+        "15:22": {
+          "y": 71967.7,
+          "fut_drift": 69.01,
+          "d": 22.48,
+          "r": -58.0
+        },
+        "15:25": {
+          "y": 71980.4,
+          "fut_drift": 84.26,
+          "d": 35.18,
+          "r": -70.7
+        },
+        "15:27": {
+          "y": 71781.35,
+          "fut_drift": 14.36,
+          "d": -163.87,
+          "r": -128.35
+        },
+        "15:29": {
+          "y": 71909.15,
+          "fut_drift": 54.26,
+          "d": -36.07,
+          "r": -0.55
+        }
+      },
+      "signal": false
+    },
+    "SENSEX 2026-10-08": {
+      "source": "production",
+      "s0": 71461.62,
+      "settle": 71593.24,
+      "move": 131.62,
+      "frozen": true,
+      "path": {
+        "15:16": {
+          "y": 71430.03,
+          "fut_drift": -69.81,
+          "d": -31.59,
+          "r": -163.21
+        },
+        "15:18": {
+          "y": 71425.72,
+          "fut_drift": -28.41,
+          "d": -35.9,
+          "r": -167.52
+        },
+        "15:20": {
+          "y": 71438.95,
+          "fut_drift": -28.41,
+          "d": -22.67,
+          "r": -154.29
+        },
+        "15:22": {
+          "y": 71442.43,
+          "fut_drift": -17.11,
+          "d": -19.19,
+          "r": -150.82
+        },
+        "15:25": {
+          "y": 71436.45,
+          "fut_drift": -45.66,
+          "d": -25.17,
+          "r": -156.79
+        },
+        "15:27": {
+          "y": 71541.57,
+          "fut_drift": -60.66,
+          "d": 79.96,
+          "r": 51.67
+        },
+        "15:29": {
+          "y": 71570.3,
+          "fut_drift": -67.91,
+          "d": 108.68,
+          "r": 22.94
+        }
+      },
+      "signal": false
+    },
+    "SENSEX 2026-10-15": {
+      "source": "production",
+      "s0": 73969.73,
+      "settle": 74315.61,
+      "move": 345.88,
+      "frozen": false,
+      "path": {
+        "15:16": {
+          "y": 73959.35,
+          "fut_drift": null,
+          "d": -10.38,
+          "r": -356.26
+        },
+        "15:18": {
+          "y": 73952.85,
+          "fut_drift": null,
+          "d": -16.88,
+          "r": -362.76
+        },
+        "15:20": {
+          "y": 73989.6,
+          "fut_drift": null,
+          "d": 19.87,
+          "r": 326.01
+        },
+        "15:22": {
+          "y": 74044.03,
+          "fut_drift": null,
+          "d": 74.3,
+          "r": 271.58
+        },
+        "15:25": {
+          "y": 74161.4,
+          "fut_drift": null,
+          "d": 191.67,
+          "r": 154.21
+        },
+        "15:27": {
+          "y": 74159.7,
+          "fut_drift": null,
+          "d": 189.97,
+          "r": 155.91
+        },
+        "15:29": {
+          "y": 74315.32,
+          "fut_drift": null,
+          "d": 345.6,
+          "r": 0.29
+        }
+      },
+      "signal": true
+    },
+    "SENSEX 2026-10-22": {
+      "source": "production",
+      "s0": 73292.13,
+      "settle": 73249.39,
+      "move": -42.74,
+      "frozen": true,
+      "path": {
+        "15:16": {
+          "y": 73315.5,
+          "fut_drift": 25.93,
+          "d": 23.37,
+          "r": -66.11
+        },
+        "15:18": {
+          "y": 73326.25,
+          "fut_drift": 29.07,
+          "d": 34.12,
+          "r": -76.86
+        },
+        "15:20": {
+          "y": 73324.85,
+          "fut_drift": 29.07,
+          "d": 32.72,
+          "r": -75.46
+        },
+        "15:22": {
+          "y": 73289.65,
+          "fut_drift": 10.47,
+          "d": -2.48,
+          "r": 40.26
+        },
+        "15:25": {
+          "y": 73264.4,
+          "fut_drift": 29.72,
+          "d": -27.73,
+          "r": 15.01
+        },
+        "15:27": {
+          "y": 73245.38,
+          "fut_drift": 5.82,
+          "d": -46.76,
+          "r": -4.01
+        },
+        "15:29": {
+          "y": 73249.57,
+          "fut_drift": 5.82,
+          "d": -42.56,
+          "r": 0.18
+        }
+      },
+      "signal": false
+    },
+    "SENSEX 2026-10-29": {
+      "source": "production",
+      "s0": 74092.48,
+      "settle": 74151.04,
+      "move": 58.56,
+      "frozen": true,
+      "path": {
+        "15:16": {
+          "y": 74099.4,
+          "fut_drift": 28.31,
+          "d": 6.92,
+          "r": 51.64
+        },
+        "15:18": {
+          "y": 74117.42,
+          "fut_drift": 32.31,
+          "d": 24.94,
+          "r": 33.62
+        },
+        "15:20": {
+          "y": 74123.07,
+          "fut_drift": 33.31,
+          "d": 30.6,
+          "r": 27.96
+        },
+        "15:22": {
+          "y": 74111.65,
+          "fut_drift": 47.51,
+          "d": 19.17,
+          "r": 39.39
+        },
+        "15:25": {
+          "y": 74124.62,
+          "fut_drift": 23.96,
+          "d": 32.15,
+          "r": 26.41
+        },
+        "15:27": {
+          "y": 74229.55,
+          "fut_drift": 123.11,
+          "d": 137.07,
+          "r": -78.51
+        },
+        "15:29": {
+          "y": 74158.25,
+          "fut_drift": 100.76,
+          "d": 65.77,
+          "r": -7.21
+        }
+      },
+      "signal": false
+    }
+  },
+  "trades": {
+    "NIFTY 2026-10-06": {
+      "drift": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 22700.0,
+        "d": 31.92,
+        "y": 22749.62,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 44.45,
+        "limit": 56.38,
+        "exit": 75.9,
+        "exit_at": "15:31:00",
+        "intrinsic": 76.1,
+        "how": "SOLD",
+        "net": 1986.27,
+        "premium": 2889.25
+      },
+      "opposite": {
+        "result": "refused",
+        "strike": 22750.0,
+        "opt": "PE",
+        "d": 31.92,
+        "limit": 16.04,
+        "next_ask": 19.3
+      },
+      "drift_hold": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 22700.0,
+        "d": 31.92,
+        "y": 22749.62,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 44.45,
+        "limit": 56.38,
+        "exit": null,
+        "exit_at": null,
+        "intrinsic": 76.1,
+        "how": "SETTLED",
+        "net": 2024.93,
+        "premium": 2889.25
+      }
+    },
+    "NIFTY 2026-10-13": {
+      "drift": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 22700.0,
+        "d": 17.4,
+        "y": 22719.45,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 26.4,
+        "limit": 29.75,
+        "exit": 21.9,
+        "exit_at": "15:31:00",
+        "intrinsic": 21.95,
+        "how": "SOLD",
+        "net": -343.21,
+        "premium": 1716.0
+      },
+      "opposite": {
+        "result": "traded",
+        "side": "PE",
+        "strike": 22750.0,
+        "d": 17.4,
+        "y": 22719.45,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 35.45,
+        "limit": 38.56,
+        "exit": 28.05,
+        "exit_at": "15:31:00",
+        "intrinsic": 28.05,
+        "how": "SOLD",
+        "net": -532.74,
+        "premium": 2304.25
+      },
+      "drift_hold": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 22700.0,
+        "d": 17.4,
+        "y": 22719.45,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 26.4,
+        "limit": 29.75,
+        "exit": null,
+        "exit_at": null,
+        "intrinsic": 21.95,
+        "how": "SETTLED",
+        "net": -315.76,
+        "premium": 1716.0
+      }
+    },
+    "NIFTY 2026-10-19": {
+      "drift": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 22900.0,
+        "d": 60.98,
+        "y": 22934.53,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 31.65,
+        "limit": 41.58,
+        "exit": 0.05,
+        "exit_at": "15:31:00",
+        "intrinsic": 0.0,
+        "how": "SOLD",
+        "net": -2102.13,
+        "premium": 2057.25
+      },
+      "opposite": {
+        "result": "refused",
+        "strike": 22950.0,
+        "opt": "PE",
+        "d": 60.98,
+        "limit": 25.87,
+        "next_ask": 29.3
+      },
+      "drift_hold": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 22900.0,
+        "d": 60.98,
+        "y": 22934.53,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 31.65,
+        "limit": 41.58,
+        "exit": null,
+        "exit_at": null,
+        "intrinsic": 0.0,
+        "how": "SETTLED",
+        "net": -2081.78,
+        "premium": 2057.25
+      }
+    },
+    "NIFTY 2026-10-27": {
+      "drift": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 22750.0,
+        "d": 22.22,
+        "y": 22782.97,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 37.9,
+        "limit": 41.2,
+        "exit": null,
+        "exit_at": null,
+        "intrinsic": 0.0,
+        "how": "SETTLED",
+        "net": -2488.21,
+        "premium": 2463.5
+      },
+      "opposite": {
+        "result": "traded",
+        "side": "PE",
+        "strike": 22800.0,
+        "d": 22.22,
+        "y": 22782.97,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 23.9,
+        "limit": 27.65,
+        "exit": 50.1,
+        "exit_at": "15:31:00",
+        "intrinsic": 50.25,
+        "how": "SOLD",
+        "net": 1648.85,
+        "premium": 1553.5
+      },
+      "drift_hold": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 22750.0,
+        "d": 22.22,
+        "y": 22782.97,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 37.9,
+        "limit": 41.2,
+        "exit": null,
+        "exit_at": null,
+        "intrinsic": 0.0,
+        "how": "SETTLED",
+        "net": -2488.21,
+        "premium": 2463.5
+      }
+    },
+    "NIFTY 2026-11-03": {
+      "drift": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 23750.0,
+        "d": 21.15,
+        "y": 23753.0,
+        "decision": "15:22:01",
+        "entry_at": "15:22:10",
+        "entry": 15.9,
+        "limit": 19.22,
+        "exit": 60.7,
+        "exit_at": "15:31:00",
+        "intrinsic": 60.85,
+        "how": "SOLD",
+        "net": 2856.76,
+        "premium": 1033.5
+      },
+      "opposite": {
+        "result": "traded",
+        "side": "PE",
+        "strike": 23800.0,
+        "d": 21.15,
+        "y": 23753.0,
+        "decision": "15:22:01",
+        "entry_at": "15:22:10",
+        "entry": 50.85,
+        "limit": 52.76,
+        "exit": null,
+        "exit_at": null,
+        "intrinsic": 0.0,
+        "how": "SETTLED",
+        "net": -3330.34,
+        "premium": 3305.25
+      },
+      "drift_hold": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 23750.0,
+        "d": 21.15,
+        "y": 23753.0,
+        "decision": "15:22:01",
+        "entry_at": "15:22:10",
+        "entry": 15.9,
+        "limit": 19.22,
+        "exit": null,
+        "exit_at": null,
+        "intrinsic": 60.85,
+        "how": "SETTLED",
+        "net": 2891.75,
+        "premium": 1033.5
+      }
+    },
+    "SENSEX 2026-10-08": {
+      "drift": {
+        "result": "no_signal",
+        "d": -19.19
+      },
+      "opposite": {
+        "result": "no_signal",
+        "d": -19.19
+      },
+      "drift_hold": {
+        "result": "no_signal",
+        "d": -19.19
+      }
+    },
+    "SENSEX 2026-10-15": {
+      "drift": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 74000.0,
+        "d": 74.3,
+        "y": 74044.03,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 75.45,
+        "limit": 88.13,
+        "exit": 315.1,
+        "exit_at": "15:31:00",
+        "intrinsic": 315.61,
+        "how": "SOLD",
+        "net": 4733.3,
+        "premium": 1509.0
+      },
+      "opposite": {
+        "result": "traded",
+        "side": "PE",
+        "strike": 74100.0,
+        "d": 74.3,
+        "y": 74044.03,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 93.0,
+        "limit": 97.52,
+        "exit": null,
+        "exit_at": null,
+        "intrinsic": 0.0,
+        "how": "SETTLED",
+        "net": -1884.37,
+        "premium": 1860.0
+      },
+      "drift_hold": {
+        "result": "traded",
+        "side": "CE",
+        "strike": 74000.0,
+        "d": 74.3,
+        "y": 74044.03,
+        "decision": "15:22:00",
+        "entry_at": "15:22:10",
+        "entry": 75.45,
+        "limit": 88.13,
+        "exit": null,
+        "exit_at": null,
+        "intrinsic": 315.61,
+        "how": "SETTLED",
+        "net": 4769.51,
+        "premium": 1509.0
+      }
+    },
+    "SENSEX 2026-10-22": {
+      "drift": {
+        "result": "no_signal",
+        "d": -2.48
+      },
+      "opposite": {
+        "result": "no_signal",
+        "d": -2.48
+      },
+      "drift_hold": {
+        "result": "no_signal",
+        "d": -2.48
+      }
+    },
+    "SENSEX 2026-10-29": {
+      "drift": {
+        "result": "no_signal",
+        "d": 19.17
+      },
+      "opposite": {
+        "result": "no_signal",
+        "d": 19.17
+      },
+      "drift_hold": {
+        "result": "no_signal",
+        "d": 19.17
+      }
+    }
+  },
+  "trade": {
+    "days": 8,
+    "traded": 5,
+    "total": 2656.51,
+    "mean": 531.3,
+    "without_best": -2076.79,
+    "wins": 2,
+    "opposite_total": -4098.6,
+    "hold_total": 2775.51,
+    "pass": false
+  }
+}
