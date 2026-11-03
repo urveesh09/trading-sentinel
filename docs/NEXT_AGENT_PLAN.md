@@ -1,6 +1,31 @@
+## November 3 — E03.1 defensive paper candidate complete (Dev; off, not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E031.md`; contracts/remaining:
+`docs/research/simulation/2026-11-03-expiry-e031/PLAN.md` and `IMPLEMENTATION_PLAN.md`.
+- New `expiry-e031-v1` / E031 variant: E03 entry/runner/reserves unchanged,
+  initial stop 35%, pre-runner trigger floor 1.1x after a 50% peak gain. Own
+  `.expiry-e031.db`, `EXPIRY_E031_SHADOW_ENABLED=false`; policy saved per ticket.
+- SMALL fitted gain: continuous ordinary +12,426.71 vs E03 +11,956.35; adverse
+  +11,497.60 vs +11,114.83. Six ordinary incremental days, ex-largest +288.71.
+  Worst ordinary day -478.01 vs -568.26. SEVERE LOSES 3,234.08; not qualified.
+  2024/2025 seen, 2023 protected. 55 sweeps + 149 new genome combinations;
+  FOLLOW and adaptive selectors rejected; no further tuning after 0c7f414 freeze.
+- Verification: 99 original E03 histories exact; 391 native position replays /
+  407 sale slices zero mismatches; 43 focused checks; full engine 6,118 passed,
+  4 skipped, 53 warnings, 694.61 seconds, exit 0. Existing warnings and Penny
+  fixture shutdown logging error retained. Atlas regenerated (295 modules).
+  Commands/results: study `verification.json`. Tests establish mechanics only.
+- Dev only, implementation commit/push receipt follows. No .env edit or existing
+  store migration; separate E031 DB only on future enable/tests. No broker,
+  message, primary ledger, Production, N11/N11T, A/B/C or E02/E03 rule changes.
+  Existing owner work preserved; Production 06bed07 unchanged. Stop floors can gap.
+- Remaining: separately authorized GitHub rollout and new paired forward paper
+  tickets/execution evidence, at least 20 closed before review, both book and
+  matched-ticket comparisons. No automatic promotion or C replacement.
+
 ## November 3 — E03.1 finalists frozen before execution stress (Dev only)
 
-99 E03 position/event histories reproduce exactly across both seen years and all three fill scenarios. Six causal mechanism tests pass. Mechanism sweep and 149 new genome combinations retained; two finalists frozen in inalists-freeze.json. The defensive rule tightens stop to 35% and adds a 1.1x trigger floor after a 50% gain; the trend extension finalist has larger but less uniform fitted gains. No qualification, new download, native code/config/schema change or deployment. Next: frozen robustness, selection-decay and uncertainty checks; accept failures. Commands: study.py baseline/sweep/genome, pytest test_lab.py (6 passed), atlas (295 modules). Plan: docs/research/simulation/2026-11-03-expiry-e031/PLAN.md.
+99 E03 position/event histories reproduce exactly across both seen years and all three fill scenarios. Six causal mechanism tests pass. Mechanism sweep and 149 new genome combinations retained; two finalists frozen in `finalists-freeze.json`. The defensive rule tightens stop to 35% and adds a 1.1x trigger floor after a 50% gain; the trend extension finalist has larger but less uniform fitted gains. No qualification, new download, native code/config/schema change or deployment. Next: frozen robustness, selection-decay and uncertainty checks; accept failures. Commands: study.py baseline/sweep/genome, pytest test_lab.py (6 passed), atlas (295 modules). Plan: docs/research/simulation/2026-11-03-expiry-e031/PLAN.md.
 
 ## November 3 — E03.1 investigation (Dev research, active)
 

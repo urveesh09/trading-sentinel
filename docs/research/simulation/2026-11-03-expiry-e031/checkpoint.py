@@ -38,9 +38,17 @@ def verify():
         if path=='python-engine/expiry_e02.py':continue
         assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==want,path
     for v in frozen['datasets'].values():assert hashlib.sha256(Path(v['path']).read_bytes()).hexdigest()==v['sha256']
+    forward=HERE/'forward-freeze.json'
+    if forward.exists():
+        for path,want in json.loads(forward.read_text())['source_sha256'].items():
+            assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==want,path
+        assert 'EXPIRY_E031_SHADOW_ENABLED:      bool  = False' in (ROOT/'python-engine/config.py').read_text(encoding='utf-8')
+        assert (ROOT/'docs/EXPIRY_RESEARCH_E031.md').exists()
+        assert (HERE/'README.md').exists()
     for name in frozen['owner_originals']:
         tracked=run('show','HEAD:docs/'+name).decode('utf-8')
         assert 'E03.1' in tracked and '2026-11-03-expiry-e031/PLAN.md' in tracked
+        assert not any(c<32 and c not in (9,10,13) for c in own_prefix(name))
     print('POST_COMMIT_CONSISTENCY_PASSED; owner bytes/baseline/data/Production preserved; HEAD',run('rev-parse','HEAD').decode().strip())
 
 if __name__=='__main__':

@@ -562,7 +562,7 @@ Related tests: `python-engine/tests/test_exit_quality.py`
 
 E02 R3 and E03 research shadows: trend pullbacks, disabled by default. Joint-fitted on already-seen 2024/2025, NOT qualified by an untouched test. Reads the existing expiry quote archive only: no provider, broker, order or notification client. Separate cash/state DB, never the operational ledger. Live bars are sampled from ten-second observations, a distinct forward data basis from historical exchange minute OHLC. Gaps refuse signals. E03 (docs/EXPIRY_RESEARCH_E03.md) takes E02's signal, strike rule and stops and changes only what a winner does: up to three lots inside the same Rs 1,250, strikes within four steps, and at E02's 2x sale all but half the lots are sold; the rest run on a floor a
 
-Top-level declarations: `Reading` (line 35), `Variant` (line 44), `policy_for` (line 60), `path_for` (line 67), `signal` (line 70), `policy` (line 102), `action` (line 106), `logged_quote` (line 128), `sell_base` (line 144), `_lots` (line 156), `plan` (line 169), `_new_state` (line 190), `_store` (line 195), `_save_position` (line 199), `_sample` (line 205), `has_open_book` (line 225), `held_contracts` (line 233), `run_tick` (line 248)
+Top-level declarations: `Reading` (line 39), `Variant` (line 48), `policy_for` (line 68), `path_for` (line 76), `signal` (line 79), `policy` (line 111), `action` (line 115), `logged_quote` (line 139), `sell_base` (line 155), `_lots` (line 167), `plan` (line 180), `_new_state` (line 201), `_store` (line 206), `_save_position` (line 210), `_sample` (line 216), `has_open_book` (line 236), `held_contracts` (line 244), `run_tick` (line 259)
 
 Engine dependencies: `fno_underlyings`
 
@@ -2648,7 +2648,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1353)
+Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1354)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `fno_proving_week`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `partner_watch`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 

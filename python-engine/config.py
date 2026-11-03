@@ -941,6 +941,8 @@ class Settings(BaseSettings):
     EXPIRY_E02_SHADOW_ENABLED:       bool  = False
     # E03: E02's entry with a free runner after the 2x sale. Research-only, its own cash/DB, no real orders.
     EXPIRY_E03_SHADOW_ENABLED:       bool  = False
+    # E03.1 defensive experiment; fitted, unqualified, independently funded paper only.
+    EXPIRY_E031_SHADOW_ENABLED:      bool  = False
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3

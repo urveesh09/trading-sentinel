@@ -11,6 +11,10 @@ changes only what a winner does: up to three lots inside the same Rs 1,250, stri
 within four steps, and at E02's 2x sale all but half the lots are sold; the rest
 run on a floor at the ticket's cost, keep half the peak and are sold at 10x. Each
 variant has its own cash, state DB and flag; E02's own behaviour is unchanged.
+
+E03.1 (docs/EXPIRY_RESEARCH_E031.md) is a disabled defensive experiment: E03
+with a 35% initial stop and a 1.1x trigger floor after a 50% peak gain. The
+small fitted improvement is not financial qualification; stops can gap.
 """
 from __future__ import annotations
 
@@ -50,17 +54,22 @@ class Variant:
     max_distance:float=400.
     split:bool=False
     name:str='e02'
+    initial_stop:float=.4
+    lock_arm:float=0.
+    lock_floor:float=1.
 
 
 E02=Variant(VERSION,'E02R3','.expiry-e02.db')
 E03=Variant('expiry-e03-v1','E03','.expiry-e03.db',max_lots=3,max_distance=200.,split=True,name='e03')
-VARIANTS=(E02,E03)
+E031=Variant('expiry-e031-v1','E031','.expiry-e031.db',max_lots=3,max_distance=200.,split=True,name='e031',initial_stop=.35,lock_arm=.5,lock_floor=1.1)
+VARIANTS=(E02,E03,E031)
 
 
 def policy_for(variant):
     """Frozen on each position at entry, so a later code change never alters an open ticket's exits."""
-    frozen=dict(stop=.4,arm=.4,keep=.6,target=1.,hold=480)
+    frozen=dict(stop=variant.initial_stop,arm=.4,keep=.6,target=1.,hold=480)
     if variant.split:frozen.update(split=True,runner_floor=1.,runner_keep=.5,hero_target=9.)
+    if variant.lock_arm:frozen.update(lock_arm=variant.lock_arm,lock_floor=variant.lock_floor)
     return frozen
 
 
@@ -113,6 +122,8 @@ def action(pos,bid,spot,now):
         if bid>=pos['entry_price']*(1+frozen['hero_target']):return pos['lots_open'],'HERO_TARGET'
         return None
     broken=spot is not None and pos['direction']*(spot-pos['underlying_stop'])<0
+    if frozen.get('lock_arm') and max(pos['peak'],bid)>=pos['entry_price']*(1+frozen['lock_arm']):
+        pos['stop']=max(pos['stop'],round(pos['entry_price']*frozen['lock_floor'],2))
     exits=EP.ExitPolicy(hard_stop=frozen['stop'],bank_at=None,bank_stop=None,trails=((frozen['arm'],frozen['keep']),),late=None,time_stop=None,flat_at=time(15,28))
     native=EP.manage_position(pos,exits,bid,now,structure_broken=broken)
     if native:
@@ -326,7 +337,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                                 risk=EP.worst_case_loss(price,lots,LOT,schedule) if lots else math.inf
                                 if lots and price<=pending['limit'] and risk<=min(1250.,day['budget']-day['spent'],state['cash']):
                                     p=EP._new_position(now.date().isoformat(),'NIFTY',variant.play,'NFO',con,price,lots,now,schedule)
-                                    p.update(stop=round(price*.6,2),direction=pending['direction'],underlying_stop=pending['underlying_stop'],e02_version=variant.version,data_basis='SAMPLED_10S_FORWARD',e02_policy=policy_for(variant))
+                                    p.update(stop=round(price*(1-variant.initial_stop),2),direction=pending['direction'],underlying_stop=pending['underlying_stop'],e02_version=variant.version,data_basis='SAMPLED_10S_FORWARD',e02_policy=policy_for(variant))
                                     _save_position(dst,p);state['position']=p;day['spent']=round(day['spent']+risk,2);day['trades']+=1;state['pending']=None
                 if not enabled:state['pending']=None
                 if state['day']['spent']>state['day']['budget']+.01:raise ValueError('E02 daily reserve exceeded')

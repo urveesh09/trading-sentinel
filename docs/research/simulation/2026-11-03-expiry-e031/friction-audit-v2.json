@@ -1,0 +1,147 @@
+{
+  "correction": "Original retained; max(1%,tick) stress mislabeled as PLUS. This implements 1%+0.05 each side, then tick rounds.",
+  "basis": "Fixed same original entries/exits/quantities; additional costs; no re-selection or dynamic brake rerun",
+  "results": {
+    "E03": {
+      "2024|ordinary": {
+        "net": 7836.51,
+        "without_best": 2083.9,
+        "worst": -591.01
+      },
+      "2024|adverse": {
+        "net": 7410.93,
+        "without_best": 1752.43,
+        "worst": -529.73
+      },
+      "2024|catastrophe": {
+        "net": -2856.02,
+        "without_best": -2856.02,
+        "worst": -652.32
+      },
+      "2025|ordinary": {
+        "net": 2697.55,
+        "without_best": 1560.17,
+        "worst": -608.91
+      },
+      "2025|adverse": {
+        "net": 2291.35,
+        "without_best": 1218.9,
+        "worst": -599.25
+      },
+      "2025|catastrophe": {
+        "net": -910.51,
+        "without_best": -1451.11,
+        "worst": -672.88
+      },
+      "continuous|ordinary": {
+        "net": 10534.06,
+        "without_best": 4781.45,
+        "worst": -608.91
+      },
+      "continuous|adverse": {
+        "net": 9702.28,
+        "without_best": 4043.78,
+        "worst": -599.25
+      },
+      "continuous|catastrophe": {
+        "net": -3488.09,
+        "without_best": -3653.9,
+        "worst": -652.32
+      }
+    },
+    "DEFENSIVE": {
+      "2024|ordinary": {
+        "net": 8167.39,
+        "without_best": 2414.78,
+        "worst": -510.23
+      },
+      "2024|adverse": {
+        "net": 7550.42,
+        "without_best": 1891.92,
+        "worst": -529.73
+      },
+      "2024|catastrophe": {
+        "net": -2787.91,
+        "without_best": -2787.91,
+        "worst": -652.32
+      },
+      "2025|ordinary": {
+        "net": 2827.3,
+        "without_best": 1689.92,
+        "worst": -537.55
+      },
+      "2025|adverse": {
+        "net": 2521.65,
+        "without_best": 1449.2,
+        "worst": -599.25
+      },
+      "2025|catastrophe": {
+        "net": -962.41,
+        "without_best": -1503.01,
+        "worst": -672.88
+      },
+      "continuous|ordinary": {
+        "net": 10994.69,
+        "without_best": 5242.08,
+        "worst": -537.55
+      },
+      "continuous|adverse": {
+        "net": 10072.07,
+        "without_best": 4413.57,
+        "worst": -599.25
+      },
+      "continuous|catastrophe": {
+        "net": -3659.56,
+        "without_best": -4200.16,
+        "worst": -672.88
+      }
+    },
+    "FOLLOW": {
+      "2024|ordinary": {
+        "net": 8112.25,
+        "without_best": 2359.64,
+        "worst": -510.23
+      },
+      "2024|adverse": {
+        "net": 7495.27,
+        "without_best": 1836.77,
+        "worst": -529.73
+      },
+      "2024|catastrophe": {
+        "net": -3076.6,
+        "without_best": -3076.6,
+        "worst": -652.32
+      },
+      "2025|ordinary": {
+        "net": 4141.03,
+        "without_best": 2157.03,
+        "worst": -516.98
+      },
+      "2025|adverse": {
+        "net": 3614.79,
+        "without_best": 1705.45,
+        "worst": -542.97
+      },
+      "2025|catastrophe": {
+        "net": -440.16,
+        "without_best": -1513.26,
+        "worst": -672.88
+      },
+      "continuous|ordinary": {
+        "net": 9874.14,
+        "without_best": 4121.53,
+        "worst": -516.98
+      },
+      "continuous|adverse": {
+        "net": 8815.33,
+        "without_best": 3156.83,
+        "worst": -542.97
+      },
+      "continuous|catastrophe": {
+        "net": -3955.82,
+        "without_best": -4290.53,
+        "worst": -672.88
+      }
+    }
+  }
+}
