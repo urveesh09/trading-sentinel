@@ -1,7 +1,7 @@
 """The closing-auction drift on expiry days (PLAN.md). Read-only on every source; no provider call.
 
     python auction.py smoke    October 6 only (the day that suggested the hypothesis), printed, nothing written
-    python auction.py freeze   writes freeze.json once (hashes of this script, the plan and every source)
+    python auction.py freeze   writes freeze-v2.json once (hashes of this script, the plan and every source)
     python auction.py score    refuses unless the freeze is committed and every hash matches -> results.json
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ LIMIT = 1.08
 FRESH_PROD, FRESH_EXPORT = 20, 30
 GRID = ["15:16", "15:18", "15:20", "15:22", "15:25", "15:27", "15:29"]
 SYM = re.compile(r"^(NIFTY|SENSEX)\d{2}([1-9OND]\d{2}|[A-Z]{3})(\d+)(CE|PE)$")
-FREEZE, OUT = HERE / "freeze.json", HERE / "results.json"
+FREEZE, OUT = HERE / "freeze-v2.json", HERE / "results.json"   # freeze.json (b7c90bd) superseded: see FREEZE_NOTE.md
 
 
 def secs(hhmmss):
@@ -126,13 +126,16 @@ def prod_day(u, day, snaps):
     if not s0s or not after:
         return dict(unavailable="no 15:20 or 15:31 snapshot")
     s0, f = s0s["spot"], after[0]["spot"]
+    if s0 is None or f is None:
+        return dict(unavailable="no recorded index at 15:20 or from 15:31")
     frozen = len({s["spot"] for s in snaps if secs("15:16:00") <= s["t"] < secs("15:29:00")}) == 1
-    basis = st.median(s["fut"] - s["spot"] for s in snaps if secs("15:00:00") <= s["t"] < secs("15:15:00") and s["fut"] and s["spot"])
+    pre = [s["fut"] - s["spot"] for s in snaps if secs("15:00:00") <= s["t"] < secs("15:15:00") and s["fut"] and s["spot"]]
+    basis = st.median(pre) if pre else None
     path = {}
     for g in GRID:
         s = at(snaps, secs(g + ":00"))
         y = prod_synthetic(s, s0) if s and secs(g + ":00") - s["t"] <= FRESH_PROD else None
-        path[g] = dict(y=y, fut_drift=round(s["fut"] - basis - s0, 2) if s and s["fut"] else None)
+        path[g] = dict(y=y, fut_drift=round(s["fut"] - basis - s0, 2) if s and s["fut"] and basis is not None else None)
     return dict(source="production", s0=s0, settle=f, move=round(f - s0, 2), frozen=frozen, path=path)
 
 
