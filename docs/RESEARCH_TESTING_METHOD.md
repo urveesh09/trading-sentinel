@@ -132,6 +132,15 @@ planner, gates, exit ladder, costs and brakes; never fork them for research.
 
 ## Window ledger (what has already been seen)
 
+**Later expiry continuation, November 3, 2026:** [E02](EXPIRY_RESEARCH_E02.md).
+Freeze `f2b95cd` used the 52 NIFTY 2024 expiry-option sessions once: both
+finalists failed. The owner authorized further iterations, so 2024 and 2025
+then became joint development for R3. All subsequent positive R3 scores are
+in-sample; none may be called an untouched 2024 pass. The 2023 expiry exam stays
+protected. A disabled Dev paper incubator (`3deaad0`) awaits new forward
+evidence; it does not promote itself or qualify SENSEX. Genome trials, negative
+chronological selections, failed exams and source bindings are retained.
+
 **Expiry update, November 3, 2026:**
 [E01.1 year study](research/simulation/2026-11-03-expiry-year/README.md), freeze
 `99d3de3`. January–June 2026 NIFTY/SENSEX opening-ATM expiry bars were development;

@@ -1,0 +1,10 @@
+{
+  "command": "python-engine/winvenv/Scripts/python.exe -m pytest python-engine/tests -q",
+  "exit": 0,
+  "seconds": 703.45,
+  "passed": 6102,
+  "skipped": 4,
+  "warnings": 53,
+  "pytest_seconds": 701.35,
+  "note": "Engine tests were collected before three additional E02 assertions were appended; the current 39-test focused run includes all 21 native E02 plus 18 research checks."
+}

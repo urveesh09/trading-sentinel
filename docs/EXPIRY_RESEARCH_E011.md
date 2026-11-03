@@ -1,5 +1,12 @@
 # E01.1: a stop 5 points tighter, the cost back at 3x, and a floor under the winner
 
+**Later November 3 continuation:** [E02 research and Dev paper incubator](EXPIRY_RESEARCH_E02.md).
+The first E02 candidates failed their frozen 2024 exam. Further authorized
+iterations produced a positive joint-fit R3 with smaller observed losses, but
+both years are now seen and severe execution loses money. R3 is disabled by
+default and not deployed. The main C described here stays E01.1; no claim that
+the fitted E02 qualified as a profitable replacement.
+
 **November 3 larger-history update:** [new-history exam](research/simulation/2026-11-03-expiry-year/README.md).
 E01.1 still improves on E01, but the 53-session NIFTY 2025 recorded-chain minute
 C proxy loses Rs 20,638 (E01 loses Rs 29,338); these are normalized model results,

@@ -1,0 +1,12 @@
+{
+  "sealed_at": "2026-11-03T14:13:29.743619+05:30",
+  "files_sha256": {
+    "inputs/candidate.json": "4b28485f6cf1acf18ebbd3c36c5dd443a23aaaacabc108fcd022ba027ffe610d",
+    "inputs/forward-freeze.json": "3c1c36763c64ae9bb4504df3f3e8ffbf6927aa4c320f9b78b75f6d3f2c592f78",
+    "inputs/initial-final-freeze.json": "4758bd5263acaeddd24d05f0a058d48a91ba5615566870074b168481765cd606",
+    "inputs/dataset.json": "80c5c7a4e39abb19c85a1d2c70af993653b9d24ee14bd1e0e40987b3e1b8fbc3",
+    "inputs/engine-suite-result.json": "551553dae85575d556941cce8188cb901363ebf70889052d9a14c82a44f06217",
+    "inputs/hash-tree-verification.json": "f396968d38a2ac3c9bb0c717dc39451070c5880d81f485175fc66e0fa89561d7",
+    "inputs/configuration.json": "24d2bb80585ab462d7e27dbd96a212f3036563e259851d0fb42df7ac2a16986b"
+  }
+}

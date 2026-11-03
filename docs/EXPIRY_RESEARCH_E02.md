@@ -188,8 +188,10 @@ The pure paper signal matches the research rule on **39,375 completed bars**,
 zero mismatches. R3 native money/exit/controller audit checks **102 position
 records**, zero mismatches. The original 106-position baseline parity remains
 on record. Focused research/native checks: **39 passed**. The earlier combined
-expiry/scheduler run: **172 passed**. Full-engine-suite result and exact command
-status are recorded in the completion receipt, not inferred from these counts.
+expiry/scheduler run: **172 passed**. Full engine test-directory run: **6,102 passed, 4 skipped**,
+in 701.35 seconds; the latest focused run also covers three
+new assertions added after full-suite collection. Exact commands/status are
+recorded in the completion receipt.
 Tests establish mechanics, not trading profitability.
 
 Source/candidate bindings are in
@@ -204,3 +206,17 @@ differences must be measured. SENSEX needs its own full-chain study. Neither
 positive in-sample results nor passing code tests authorize real orders.
 Any future deployment flows through GitHub; flag-off is the entry rollback,
 while open legs keep their exits. There is no cash refill or hidden reset.
+
+Native implementation commit: **`3deaad0`**. The original failed exam is
+**`f2b95cd`**; its failure/continuation receipt is `8011209`, and the first
+implementation/round receipt is `76c6b0b`. All are Dev-branch changes. The final
+verification/documentation receipt records push status separately.
+
+The [skill-format evidence report](research/simulation/2026-11-03-expiry-e02/round03/evidence/REPORT.md)
+shows the positive joint fit, both negative original exams and unavailable
+forward qualification separately. The stock helper also binds Git HEAD, so
+after committing the report use the pinned archive verifier
+`round03/verify_evidence.py`; the unmodified helper checks the exact `3deaad0`
+source bytes, including preserved Windows newline variants. Proof:
+[pinned-audit.json](research/simulation/2026-11-03-expiry-e02/round03/pinned-audit.json).
+No original freeze, report or guard is relaxed to obtain that verification.

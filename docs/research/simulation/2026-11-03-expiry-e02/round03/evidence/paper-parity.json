@@ -1,0 +1,188 @@
+{
+  "completed_bar_signals_checked": 39375,
+  "signal_mismatches": 0,
+  "existing_expiry_ast_unchanged_except_quote_plumbing": true,
+  "sensitivity": {
+    "2024": {
+      "ordinary": {
+        "trade_close_peak": {
+          "net": 2942.16,
+          "without_best": 1629.21,
+          "worst": -571.61,
+          "drawdown": 1493.57,
+          "trades": 21,
+          "profit_factor": 1.9452,
+          "wins": 7,
+          "loss_days": 11,
+          "losing_streak": 3,
+          "quarters": [
+            1472.85,
+            291.24,
+            1197.59,
+            -19.52
+          ],
+          "first_half": 1764.09,
+          "second_half": 1178.07,
+          "unresolved": 0,
+          "fees": 1035.84
+        },
+        "warmup_1311": {
+          "net": 1675.14,
+          "without_best": 362.19,
+          "worst": -571.61,
+          "drawdown": 1493.57,
+          "trades": 20,
+          "profit_factor": 1.4981,
+          "wins": 6,
+          "loss_days": 12,
+          "losing_streak": 3,
+          "quarters": [
+            1472.85,
+            291.24,
+            -69.43,
+            -19.52
+          ],
+          "first_half": 1764.09,
+          "second_half": -88.95,
+          "unresolved": 0,
+          "fees": 983.36
+        }
+      },
+      "adverse": {
+        "trade_close_peak": {
+          "net": 2643.17,
+          "without_best": 1372.42,
+          "worst": -591.11,
+          "drawdown": 1396.37,
+          "trades": 21,
+          "profit_factor": 1.8473,
+          "wins": 7,
+          "loss_days": 11,
+          "losing_streak": 3,
+          "quarters": [
+            1388.44,
+            294.25,
+            1018.96,
+            -58.48
+          ],
+          "first_half": 1682.69,
+          "second_half": 960.48,
+          "unresolved": 0,
+          "fees": 1035.83
+        },
+        "warmup_1311": {
+          "net": 1421.61,
+          "without_best": 150.86,
+          "worst": -591.11,
+          "drawdown": 1396.37,
+          "trades": 20,
+          "profit_factor": 1.4186,
+          "wins": 6,
+          "loss_days": 12,
+          "losing_streak": 3,
+          "quarters": [
+            1388.44,
+            294.25,
+            -202.6,
+            -58.48
+          ],
+          "first_half": 1682.69,
+          "second_half": -261.08,
+          "unresolved": 0,
+          "fees": 983.39
+        }
+      }
+    },
+    "2025": {
+      "ordinary": {
+        "trade_close_peak": {
+          "net": 3386.58,
+          "without_best": 2184.26,
+          "worst": -550.44,
+          "drawdown": 568.81,
+          "trades": 21,
+          "profit_factor": 2.9005,
+          "wins": 11,
+          "loss_days": 7,
+          "losing_streak": 2,
+          "quarters": [
+            -568.81,
+            875.15,
+            2255.22,
+            825.02
+          ],
+          "first_half": 306.34,
+          "second_half": 3080.24,
+          "unresolved": 0,
+          "fees": 1043.17
+        },
+        "warmup_1311": {
+          "net": 3423.39,
+          "without_best": 2221.07,
+          "worst": -550.44,
+          "drawdown": 568.81,
+          "trades": 19,
+          "profit_factor": 3.1399,
+          "wins": 10,
+          "loss_days": 6,
+          "losing_streak": 2,
+          "quarters": [
+            -568.81,
+            875.15,
+            2292.03,
+            825.02
+          ],
+          "first_half": 306.34,
+          "second_half": 3117.05,
+          "unresolved": 0,
+          "fees": 944.61
+        }
+      },
+      "adverse": {
+        "trade_close_peak": {
+          "net": 3025.85,
+          "without_best": 1888.47,
+          "worst": -537.55,
+          "drawdown": 643.52,
+          "trades": 21,
+          "profit_factor": 2.6017,
+          "wins": 11,
+          "loss_days": 7,
+          "losing_streak": 2,
+          "quarters": [
+            -643.52,
+            742.01,
+            2245.3,
+            682.06
+          ],
+          "first_half": 98.49,
+          "second_half": 2927.36,
+          "unresolved": 0,
+          "fees": 1043.15
+        },
+        "warmup_1311": {
+          "net": 3117.87,
+          "without_best": 1980.49,
+          "worst": -537.55,
+          "drawdown": 643.52,
+          "trades": 19,
+          "profit_factor": 2.8547,
+          "wins": 10,
+          "loss_days": 6,
+          "losing_streak": 2,
+          "quarters": [
+            -643.52,
+            742.01,
+            2337.32,
+            682.06
+          ],
+          "first_half": 98.49,
+          "second_half": 3019.38,
+          "unresolved": 0,
+          "fees": 944.63
+        }
+      }
+    }
+  },
+  "forward_basis": "SAMPLED_10S_FORWARD with actual depth, fresh next observations, >=12 complete bars and per-trade realized peak; not historical execution parity"
+}

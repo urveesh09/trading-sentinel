@@ -1,3 +1,28 @@
+## November 3 — E02 completion receipt (source 3deaad0 pushed; not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E02.md`; detailed commands/results and limitations:
+`docs/research/simulation/2026-11-03-expiry-e02/verification.json`.
+- Native Dev paper incubator: `3deaad0`, pushed and remote-verified. Flag remains
+  false, no main-rule promotion, real orders, messages, cash reset or deployment.
+- Original `f2b95cd` clean 2024 exam FAILED. Later R3 is a joint fit on seen
+  2024/2025: +Rs 6,328.74 ordinary / +Rs 5,669.02 adverse, 42 tickets, worst
+  adverse day -Rs 591.11. Severe high/low execution LOSES Rs 3,219.14. Future
+  profitability and SENSEX remain unqualified; all failed/search results retained.
+- Verification: engine test directory 6,102 passed, 4 skipped (701.35 s); current
+  focused 39 passed, covering three assertions added after full collection.
+  172 expiry/scheduler checks passed; 39,375 pure bar signals and 102 native
+  position records match. Warnings/shutdown noise are recorded, not suppressed.
+- Pinned unmodified evidence helper verifies 852 source files, identical money
+  and receipts. It binds Git HEAD too; use round03/verify_evidence.py after doc
+  commits. No guard/request/original report is relaxed. Atlas:295 modules.
+- Existing owner work preserved; N11/N11T, primary A/B/C and their money/policies
+  unchanged except one held-research-token addition to the existing batch.
+  Production `06bed07` untouched. No .env edit; new separate E02 DB is created
+  only by future enable/tests, no migration of existing state.
+- Remaining: independently observed forward paper evidence, data-basis/fill
+  assessment, then a separate promotion decision; SENSEX full-chain research.
+  Keep 2023 protected. No new download calls/quotas authorized or used here.
+
 ## November 3 — E02 R3 paper incubator built (Dev, disabled, not deployed)
 
 Report: `docs/EXPIRY_RESEARCH_E02.md`; contracts/acceptance:

@@ -1,0 +1,161 @@
+{
+  "starting_head": "39caa62",
+  "branch": "codex/production-correction-hedge-p0",
+  "implementation_commits": {
+    "initial_replay": "76c6b0b",
+    "untouched_freeze": "f2b95cd",
+    "failed_exam_and_continuation": "8011209",
+    "native_disabled_shadow": "3deaad0"
+  },
+  "qualification": {
+    "original_untouched_exam": "FAILED for CORE and RUNNER",
+    "r3": "RESEARCH_ONLY_JOINT_FIT",
+    "forward": "UNAVAILABLE; disabled and not deployed",
+    "sensex": "UNQUALIFIED; no appropriate full-chain entry evidence"
+  },
+  "genome_evaluations": 2746,
+  "scope": "NIFTY recorded-chain minute models; native sampled-10-second paper observer is separate forward basis",
+  "commands": [
+    {
+      "command": "baseline.py",
+      "exit": 0,
+      "full_positions_compared": 106,
+      "mismatches": 0
+    },
+    {
+      "command": "search.py genome --round 01 --population 32 --generations 4",
+      "exit": 0,
+      "trials": 290
+    },
+    {
+      "command": "audit.py initial native-controller check",
+      "exit": 1,
+      "reason": "STRUCTURE versus native FAILED_BREAK annotation; all price/clock/lot fields matched; retained correction artifact"
+    },
+    {
+      "command": "audit.py normalized annotation",
+      "exit": 0
+    },
+    {
+      "command": "search.py genome --round 02 --population 48 --generations 5",
+      "exit": 0,
+      "trials": 476
+    },
+    {
+      "command": "fresh chronological fits wf1/wf2",
+      "exit": 0,
+      "trials": [
+        181,
+        175
+      ],
+      "later_quarter_results": "NEGATIVE; retained"
+    },
+    {
+      "command": "search.py freeze; commit f2b95cd; search.py verify; search.py exam",
+      "exit": 0,
+      "financial_verdict": "BOTH FAIL"
+    },
+    {
+      "command": "round03/iterate.py",
+      "exit": 0,
+      "finding": "One-lot sizing reduces losses but does not repair original 2024 entries; unbraked controls lose more"
+    },
+    {
+      "command": "round03/genome.py phase 1 and phase 2",
+      "exit": 0,
+      "trials": [
+        663,
+        961
+      ],
+      "selection_status": "JOINT IN-SAMPLE"
+    },
+    {
+      "command": "round03/final_audit.py",
+      "exit": 0,
+      "native_positions": 102,
+      "mismatches": 0,
+      "positive_coarse_neighbours": 22,
+      "neighbours": 27
+    },
+    {
+      "command": "round03/paper_parity.py",
+      "exit": 0,
+      "completed_bar_signals": 39375,
+      "mismatches": 0,
+      "existing_expiry_AST": "unchanged outside held-quote plumbing"
+    },
+    {
+      "command": "pytest test_expiry_e02.py initial archive-stream fixture",
+      "exit": 1,
+      "reason": "Constant intraminute fixture correctly failed stretch/ATR gate; fixture corrected to its intended high/low observations; no rule threshold changed"
+    },
+    {
+      "command": "pytest test_expiry_e02.py and research test_e02.py -q (latest)",
+      "exit": 0,
+      "passed": 39
+    },
+    {
+      "command": "pytest expiry_paper/e01/e011/e02/scheduler_closures -q",
+      "exit": 0,
+      "passed": 172,
+      "warnings": 1
+    },
+    {
+      "command": "python-engine/winvenv/Scripts/python.exe -m pytest python-engine/tests -q",
+      "exit": 0,
+      "seconds": 703.45,
+      "passed": 6102,
+      "skipped": 4,
+      "warnings": 53,
+      "pytest_seconds": 701.35,
+      "note": "Engine tests were collected before three additional E02 assertions were appended; the current 39-test focused run includes all 21 native E02 plus 18 research checks."
+    },
+    {
+      "command": "python scripts/build_system_code_atlas.py",
+      "exit": 0,
+      "modules": 295
+    },
+    {
+      "command": "simulation_evidence.py report; verify",
+      "exit": 0,
+      "verdict": "EVIDENCE_CHECKS_PASSED; not profit qualification"
+    },
+    {
+      "command": "round03/verify_evidence.py initial pinned restoration",
+      "exit": 1,
+      "reason": "A Windows file had mixed newline bytes absent from normalized Git blob; exact hash-matching, newline-equivalent bytes preserved locally"
+    },
+    {
+      "command": "round03/verify_evidence.py exact pinned restoration",
+      "exit": 0,
+      "source_files": 852,
+      "receipt_or_money_mismatches": 0,
+      "helper_changed": false
+    },
+    {
+      "command": "git push origin HEAD:codex/production-correction-hedge-p0; git ls-remote",
+      "exit": 0,
+      "verified_implementation_commit": "3deaad0"
+    }
+  ],
+  "environment_notes": [
+    "Windows system Python defaults to cp1252; report read corrected to explicit UTF8 and restored from committed original before finalizing",
+    "Full test exit is zero; 53 deprecation/async warnings and the deliberate penny DB-outage fixture emitted shutdown logging noise; no warning was suppressed",
+    "Full suite collected before three new E02 assertions were appended; latest focused 39 includes all current native/research E02 checks",
+    "Raw history snapshots and pinned verification checkout remain local/ignored; reports alone do not recreate missing source data"
+  ],
+  "production_head_unchanged": "06bed07e05a32bc4394aff7ba70990faa745a8ec",
+  "production_tracked_diff": false,
+  "owner_initial_document_text_preserved": true,
+  "api_calls": 0,
+  "year2023_prices_read": false,
+  "real_orders": 0,
+  "messages_sent": 0,
+  "deployment_performed": false,
+  "configuration_impact": "Dev-only EXPIRY_E02_SHADOW_ENABLED default False; no .env edit or capital reset",
+  "schema_impact": "New independent .expiry-e02.db tables e02_state/e02_positions only on future enable or tests; original tables unchanged",
+  "push_status_at_receipt": "Implementation 3deaad0 pushed and remote-verified on codex/production-correction-hedge-p0; completion evidence/documentation follows in its own commit. No deployment.",
+  "risk_limits": "One lot65/ticket; <=1250 original reserve/ticket, <=2500/day, no recycled allowance/refills/leverage; planned stops can lose full reserve on a gap",
+  "remaining": "Fresh forward paper evidence, data-basis/actual-fill validation, SENSEX full-chain study; no main promotion from joint fit",
+  "implementation_remote_sha": "3deaad0"
+}

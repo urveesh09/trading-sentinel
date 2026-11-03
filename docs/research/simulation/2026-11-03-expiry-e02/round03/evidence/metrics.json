@@ -1,0 +1,323 @@
+{
+  "marked": {
+    "ordinary": {
+      "sampled_marked_drawdown": 1751.17,
+      "sampled_low_equity": 24464.28,
+      "observable_minute_marks": 39375,
+      "unmarkable_minutes": 0,
+      "basis": "Modelled close bid less whole-lot sale fees; sampled marks, not intrabar/depth/broker NAV"
+    },
+    "adverse": {
+      "sampled_marked_drawdown": 1734.54,
+      "sampled_low_equity": 24441.53,
+      "observable_minute_marks": 39375,
+      "unmarkable_minutes": 0,
+      "basis": "Modelled close bid less whole-lot sale fees; sampled marks, not intrabar/depth/broker NAV"
+    }
+  },
+  "trade_statistics": {
+    "ordinary": {
+      "trades": 42,
+      "wins": 21,
+      "losses": 21,
+      "trade_profit_factor": 2.1121256372272503,
+      "worst_trade": -571.61,
+      "net": 6328.74,
+      "without_best_trade": 5015.79,
+      "fees": 2079.01
+    },
+    "adverse": {
+      "trades": 42,
+      "wins": 20,
+      "losses": 22,
+      "trade_profit_factor": 1.9694046108544208,
+      "worst_trade": -591.11,
+      "net": 5669.02,
+      "without_best_trade": 4398.27,
+      "fees": 2078.98
+    },
+    "catastrophe": {
+      "trades": 15,
+      "wins": 3,
+      "losses": 12,
+      "trade_profit_factor": 0.10264372686320859,
+      "worst_trade": -632.82,
+      "net": -3219.14,
+      "without_best_trade": -3407.68,
+      "fees": 726.39
+    }
+  },
+  "fit_status": "Both years seen; no independent qualification",
+  "lot_sensitivity": {
+    "25": {
+      "2024": {
+        "ordinary": {
+          "net": -128.41,
+          "without_best": -604.35,
+          "worst": -277.88,
+          "drawdown": 723.08,
+          "trades": 23,
+          "profit_factor": 0.9342,
+          "wins": 7,
+          "loss_days": 12,
+          "losing_streak": 3,
+          "quarters": [
+            302.41,
+            -593.49,
+            228.26,
+            -65.59
+          ],
+          "first_half": -291.08,
+          "second_half": 162.67,
+          "unresolved": 0,
+          "fees": 1104.66
+        },
+        "adverse": {
+          "net": -0.46,
+          "without_best": -460.17,
+          "worst": -286.64,
+          "drawdown": 624.19,
+          "trades": 22,
+          "profit_factor": 0.9997,
+          "wins": 7,
+          "loss_days": 11,
+          "losing_streak": 3,
+          "quarters": [
+            264.94,
+            -344.35,
+            159.54,
+            -80.59
+          ],
+          "first_half": -79.41,
+          "second_half": 78.95,
+          "unresolved": 0,
+          "fees": 1056.71
+        }
+      },
+      "2025": {
+        "ordinary": {
+          "net": 692.54,
+          "without_best": 288.2,
+          "worst": -269.8,
+          "drawdown": 334.97,
+          "trades": 21,
+          "profit_factor": 1.7546,
+          "wins": 11,
+          "loss_days": 7,
+          "losing_streak": 2,
+          "quarters": [
+            -334.97,
+            220.41,
+            693.1,
+            114.0
+          ],
+          "first_half": -114.56,
+          "second_half": 807.1,
+          "unresolved": 0,
+          "fees": 1011.21
+        },
+        "adverse": {
+          "net": 553.82,
+          "without_best": 161.52,
+          "worst": -264.83,
+          "drawdown": 363.7,
+          "trades": 21,
+          "profit_factor": 1.5775,
+          "wins": 11,
+          "loss_days": 7,
+          "losing_streak": 2,
+          "quarters": [
+            -363.7,
+            169.2,
+            689.31,
+            59.01
+          ],
+          "first_half": -194.5,
+          "second_half": 748.32,
+          "unresolved": 0,
+          "fees": 1011.18
+        }
+      }
+    },
+    "50": {
+      "2024": {
+        "ordinary": {
+          "net": 828.7,
+          "without_best": -170.37,
+          "worst": -508.57,
+          "drawdown": 1181.59,
+          "trades": 23,
+          "profit_factor": 1.2517,
+          "wins": 7,
+          "loss_days": 12,
+          "losing_streak": 3,
+          "quarters": [
+            793.62,
+            -762.21,
+            834.07,
+            -36.78
+          ],
+          "first_half": 31.41,
+          "second_half": 797.29,
+          "unresolved": 0,
+          "fees": 1123.8
+        },
+        "adverse": {
+          "net": 1037.45,
+          "without_best": 70.84,
+          "worst": -526.06,
+          "drawdown": 1106.81,
+          "trades": 22,
+          "profit_factor": 1.3658,
+          "wins": 7,
+          "loss_days": 11,
+          "losing_streak": 3,
+          "quarters": [
+            718.69,
+            -311.14,
+            696.67,
+            -66.77
+          ],
+          "first_half": 407.55,
+          "second_half": 629.9,
+          "unresolved": 0,
+          "fees": 1075.05
+        }
+      },
+      "2025": {
+        "ordinary": {
+          "net": 2376.29,
+          "without_best": 1473.21,
+          "worst": -445.2,
+          "drawdown": 481.12,
+          "trades": 21,
+          "profit_factor": 2.63,
+          "wins": 11,
+          "loss_days": 7,
+          "losing_streak": 2,
+          "quarters": [
+            -481.12,
+            629.62,
+            1669.42,
+            558.37
+          ],
+          "first_half": 148.5,
+          "second_half": 2227.79,
+          "unresolved": 0,
+          "fees": 1031.21
+        },
+        "adverse": {
+          "net": 2098.85,
+          "without_best": 1245.73,
+          "worst": -435.27,
+          "drawdown": 538.58,
+          "trades": 21,
+          "profit_factor": 2.3626,
+          "wins": 11,
+          "loss_days": 7,
+          "losing_streak": 2,
+          "quarters": [
+            -538.58,
+            527.21,
+            1661.8,
+            448.42
+          ],
+          "first_half": -11.37,
+          "second_half": 2110.22,
+          "unresolved": 0,
+          "fees": 1031.15
+        }
+      }
+    },
+    "75": {
+      "2024": {
+        "ordinary": {
+          "net": 265.63,
+          "without_best": -1256.57,
+          "worst": -652.28,
+          "drawdown": 2766.68,
+          "trades": 20,
+          "profit_factor": 1.062,
+          "wins": 5,
+          "loss_days": 13,
+          "losing_streak": 6,
+          "quarters": [
+            1728.48,
+            -1554.56,
+            99.69,
+            -7.98
+          ],
+          "first_half": 173.92,
+          "second_half": 91.71,
+          "unresolved": 0,
+          "fees": 983.12
+        },
+        "adverse": {
+          "net": 542.78,
+          "without_best": -930.74,
+          "worst": -674.78,
+          "drawdown": 2171.04,
+          "trades": 19,
+          "profit_factor": 1.1419,
+          "wins": 5,
+          "loss_days": 12,
+          "losing_streak": 5,
+          "quarters": [
+            1631.1,
+            -1000.13,
+            -35.24,
+            -52.95
+          ],
+          "first_half": 630.97,
+          "second_half": -88.19,
+          "unresolved": 0,
+          "fees": 934.72
+        }
+      },
+      "2025": {
+        "ordinary": {
+          "net": 3053.78,
+          "without_best": 1651.97,
+          "worst": -367.7,
+          "drawdown": 802.03,
+          "trades": 21,
+          "profit_factor": 2.9586,
+          "wins": 9,
+          "loss_days": 8,
+          "losing_streak": 2,
+          "quarters": [
+            -802.03,
+            113.87,
+            2597.03,
+            1144.91
+          ],
+          "first_half": -688.16,
+          "second_half": 3741.94,
+          "unresolved": 0,
+          "fees": 1041.22
+        },
+        "adverse": {
+          "net": 2720.09,
+          "without_best": 1393.2,
+          "worst": -390.18,
+          "drawdown": 876.99,
+          "trades": 20,
+          "profit_factor": 2.5089,
+          "wins": 9,
+          "loss_days": 8,
+          "losing_streak": 2,
+          "quarters": [
+            -876.99,
+            5.23,
+            2634.31,
+            957.54
+          ],
+          "first_half": -871.76,
+          "second_half": 3591.85,
+          "unresolved": 0,
+          "fees": 992.41
+        }
+      }
+    }
+  }
+}
