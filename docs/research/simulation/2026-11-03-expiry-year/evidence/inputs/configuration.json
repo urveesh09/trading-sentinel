@@ -1,0 +1,22 @@
+{
+  "as_of": "2026-11-03",
+  "scope": "NIFTY and SENSEX opening-ATM conditional exit panel; full-entry book unavailable",
+  "model": "CAUSAL_NEXT_BAR_CONDITIONAL_PANEL_v1",
+  "current_normalized_lot_sizes": {"NIFTY": 65, "SENSEX": 20},
+  "historical_money_claim": false,
+  "costs": "Current per-exchange native fee schedule, fixed at each entry; not reconstructed historical fees",
+  "budget_per_independent_ticket": 2500,
+  "ticket_cap_lots": 10,
+  "signal": "Inherited three-observation median of put-call parity; future equals proxy, no independent confirmation",
+  "admissions": "Frozen panel.py BREAK 3x band and MOMENTUM 2x band; paired exits only; no failed-break in panel",
+  "ordinary": "Decide at completed ten-second close; pending market order fills following bar open +/- inherited NIFTY p75 half spread, reported at execution-bar completion",
+  "adverse": "Same decisions; pending orders use following bar high for buy, low for sell, twice the inherited spread",
+  "sensex_spreads": "NIFTY calibrated table transferred provisionally; unverified BFO spread, adverse doubles it",
+  "participation": "20% of completed decision bar volume for sizing; at most 20% of next execution bar for fills; whole lots; actual depth unknown",
+  "terminal": "Flatten decision from 15:29:30; no synthetic final sale; remainder unresolved with separate full-premium loss bound",
+  "coverage": "Primary requires every paired ten-second grid point 12:58:50-15:29:50 and no invalid OHLC/volume. Missing individual seconds remain flagged, never filled",
+  "source_reads": "Authoritative CSV file list only; immutable selected copies, no database writes or API calls",
+  "windows": {"development": "2026-01-01 through 2026-06-30", "validation": "2026-07-01 through latest acquired 2026-10-01 except seen NIFTY Sep 8,15,22,29", "test2025": "all available 2025", "seen": "NIFTY Sep 8,15,22,29, diagnostic only"},
+  "results": "Independent possibly overlapping pockets. Panel totals and cumulative session-summed drawdown are not portfolio profit or realizable account drawdown",
+  "deployment": "none; runtime E01.1 remains unchanged"
+}

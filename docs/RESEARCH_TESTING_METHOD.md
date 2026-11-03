@@ -132,6 +132,19 @@ planner, gates, exit ladder, costs and brakes; never fork them for research.
 
 ## Window ledger (what has already been seen)
 
+**Expiry update, November 3, 2026:**
+[E01.1 year study](research/simulation/2026-11-03-expiry-year/README.md), freeze
+`99d3de3`. January–June 2026 NIFTY/SENSEX opening-ATM expiry bars were development;
+later acquired 2026 sessions through October 1 (excluding four already-seen
+September NIFTY dates) and available 2025 ten-second expiry bars were scored
+once. All 53 NIFTY 2025 expiry sessions were also scored as a separate recorded-
+chain minute C proxy. These windows are now seen for expiry strategy selection,
+including both rejected new exit candidates. No pre-2025 price was read: the
+NIFTY 2023 freeze remains protected. Missing/gapped dates are unavailable, not
+fresh validation opportunities to fill after choosing a rule. New acquisitions
+on previously inspected market days are conditional evidence, not automatically
+independent untouched market regimes. No rule was promoted from these results.
+
 | Module | Development (seen) | Scored untouched (now seen) | Still untouched |
 | --- | --- | --- | --- |
 | Penny MIS | Sep 24–30, 2026; Sep 7–Oct 1 for round 3 design | Sep 7–23 + Oct 1, 2026 | Kite minute Jan–Jul 2026 (reserved for `penny-noise-t3`), forward data from Oct 5, 2026 |

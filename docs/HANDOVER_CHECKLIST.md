@@ -1,3 +1,13 @@
+## November 3 — E01.1 new-history completion
+
+- [x] Freeze `99d3de3` before validation/2025 results; report: `docs/research/simulation/2026-11-03-expiry-year/README.md`.
+- [x] 96 eligible new ten-second dates, 220 conditional pockets; 53-session NIFTY 2025 minute C proxy separate.
+- [x] Unavailable dates retained; seen-window ledger updated; 2023 untouched.
+- [x] 139 tests pass; 42 archived legs exact; 4,032 comparison records and 7,967 execution events audited; skill evidence checks pass.
+- [x] Both novel exit changes rejected under frozen rules; primary C remains E01.1 with a 25% stop.
+- [x] Owner working changes preserved; Production `06bed07`, runtime/config/schema/capital/N11 unchanged; no deployment.
+- [ ] Future evidence: full afternoon chain and forward paired comparison; no automatic promotion or download authorization.
+
 ## November 3 — E01.1 freeze commit receipt (`99d3de3`, Dev only)
 
 Frozen plan: `docs/research/simulation/2026-11-03-expiry-year/PLAN.md`.

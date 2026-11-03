@@ -1,3 +1,18 @@
+## November 3 — E01.1 larger-history result (completed Dev research; trading rule unchanged)
+
+Report: `docs/research/simulation/2026-11-03-expiry-year/README.md`; committed
+pre-score freeze `99d3de3`. The 96 eligible new ten-second expiry dates support
+220 conditional paired pockets, not the entry book: E01.1 -Rs 19,557.58 versus
+E01 -Rs 40,664.52 ordinary. Separate NIFTY 2025 recorded-chain minute C proxy,
+53 tickets: E01.1 -Rs 20,638.14 versus E01 -Rs 29,337.92. Current normalized
+lots/fees, modelled fills and incomplete native chain/clocks remain explicit.
+Both novel exits failed untouched validation; neither is promoted. The frozen
+20% stop passes the aggregate relative screen but worsens stressed SENSEX;
+C stays at 25%. All 139 expiry/research tests passed; 4,032 comparison records
+and 7,967 execution events audited without money/price/budget mismatches.
+Skill evidence checks passed. No runtime/config/schema/capital/N11/Production
+or deployment change.
+
 ## November 3 — E01.1 freeze commit receipt (`99d3de3`, Dev only)
 
 Frozen plan: `docs/research/simulation/2026-11-03-expiry-year/PLAN.md`.

@@ -1,3 +1,24 @@
+## November 3 — E01.1 new-history study complete; no supported replacement
+
+- Outcome: `docs/research/simulation/2026-11-03-expiry-year/README.md` and `analysis.json`.
+- Freeze `99d3de3` preceded validation and 2025 scores. There are 96 new eligible
+  ten-second dates and 220 conditional pockets; the 53-session NIFTY 2025 minute
+  C proxy is separate. Ten export dates are unavailable; four prior-seen dates
+  are excluded. No pre-2025 prices were read.
+- E01.1 reduces losses versus E01 but the larger evidence does not establish
+  profitability. IDLE8 and LOCK40 fail; no runtime promotion. The 20% stop and
+  cheaper band require full-chain forward evidence, not another threshold search.
+- Verification: 139 tests passed in 197.42 s; 42 archived legs exact; 4,032
+  comparison records and 7,967 execution events reconcile; skill report/verify
+  passed; atlas regenerated without a diff.
+- Remaining evidence: afternoon chain, dated contracts/lots/fees and closing
+  tail. Opened 2025/2026 windows are now seen. Keep 2023 protected. Downloads
+  require fresh dated authorization through expiry-download. Forward bar stays
+  at least 20 new paired tickets, five per index.
+- Rollout/rollback: isolated research commits; no strategy/settings/schema/N11
+  or Production changes and no deployment. Panel sums are not account profit;
+  relative loss reduction is not qualification.
+
 ## November 3 — E01.1 freeze commit receipt (`99d3de3`, Dev only)
 
 Frozen plan: `docs/research/simulation/2026-11-03-expiry-year/PLAN.md`.

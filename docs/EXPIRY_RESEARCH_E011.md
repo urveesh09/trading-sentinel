@@ -1,5 +1,16 @@
 # E01.1: a stop 5 points tighter, the cost back at 3x, and a floor under the winner
 
+**November 3 larger-history update:** [new-history exam](research/simulation/2026-11-03-expiry-year/README.md).
+E01.1 still improves on E01, but the 53-session NIFTY 2025 recorded-chain minute
+C proxy loses Rs 20,638 (E01 loses Rs 29,338); these are normalized model results,
+not native historical fills. On 220 new paired ten-second conditional pockets,
+E01.1 is -Rs 19,558 versus E01 -Rs 40,665. Those pockets can overlap and are not
+the book. Two new exit mechanisms failed committed, untouched tests; neither
+is promoted. The pre-registered 20% stop passes the aggregate relative screen
+but worsens stressed SENSEX, and is not a justified primary swap. Current paper
+C stays at 25%. No runtime, N11, Production, capital or deployment change.
+The earlier small-sample results and limitations below remain on record.
+
 November 2, 2026. **That night the owner made E01.1 the main expiry ticket on paper (expiry-v4), and the old C runs on as shadow `CL`.** This is the owner's choice before any forward result, not a result of the frozen tests: nothing here has run on a new expiry yet. A and B are unchanged, and no real order is involved.
 
 **E01.1 earned more and lost less than E01 on every set it was tested on.** It keeps C's exact ticket and changes only what happens after buying it. It is still a lottery: it loses on most days and needs an occasional big winner, and it loses without one. The eight October sessions were seen before the rules were chosen, and September could only test a small part of it. So this is a better rule on what we have, not proof it will make money.
