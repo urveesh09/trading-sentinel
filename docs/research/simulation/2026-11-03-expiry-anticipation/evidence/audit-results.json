@@ -1,0 +1,1330 @@
+{
+  "financials": {
+    "size-results.json": {
+      "E031|continuous|ordinary": {
+        "native_position_replays": 41,
+        "native_exit_slices": 43,
+        "end_cash": 37426.71,
+        "sampled_marked_drawdown": 1838.85,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 6,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|continuous|adverse": {
+        "native_position_replays": 41,
+        "native_exit_slices": 43,
+        "end_cash": 36497.6,
+        "sampled_marked_drawdown": 1935.17,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 6,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|continuous|catastrophe": {
+        "native_position_replays": 15,
+        "native_exit_slices": 15,
+        "end_cash": 21765.92,
+        "sampled_marked_drawdown": 3278.11,
+        "exit_reasons": {
+          "STOP": 8,
+          "TIME": 7
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2024|ordinary": {
+        "native_position_replays": 20,
+        "native_exit_slices": 22,
+        "end_cash": 33897.97,
+        "sampled_marked_drawdown": 1084.18,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 4,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2024|adverse": {
+        "native_position_replays": 20,
+        "native_exit_slices": 22,
+        "end_cash": 33271.27,
+        "sampled_marked_drawdown": 1103.68,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 4,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2024|catastrophe": {
+        "native_position_replays": 8,
+        "native_exit_slices": 8,
+        "end_cash": 22416.73,
+        "sampled_marked_drawdown": 2683.82,
+        "exit_reasons": {
+          "STOP": 5,
+          "TIME": 3
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2025|ordinary": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28528.74,
+        "sampled_marked_drawdown": 1434.58,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2025|adverse": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28226.33,
+        "sampled_marked_drawdown": 1353.63,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2025|catastrophe": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SCALE25|continuous|ordinary": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 38458.11,
+        "sampled_marked_drawdown": 2113.87,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SCALE25|continuous|adverse": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 37415.18,
+        "sampled_marked_drawdown": 2156.47,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SCALE25|continuous|catastrophe": {
+        "native_position_replays": 11,
+        "native_exit_slices": 11,
+        "end_cash": 20869.33,
+        "sampled_marked_drawdown": 4133.92,
+        "exit_reasons": {
+          "STOP": 5,
+          "TIME": 4,
+          "TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SCALE25|2024|ordinary": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 34263.01,
+        "sampled_marked_drawdown": 2044.63,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SCALE25|2024|adverse": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 33483.66,
+        "sampled_marked_drawdown": 2080.34,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SCALE25|2024|catastrophe": {
+        "native_position_replays": 10,
+        "native_exit_slices": 10,
+        "end_cash": 21083.0,
+        "sampled_marked_drawdown": 3917.0,
+        "exit_reasons": {
+          "STOP": 4,
+          "TIME": 4,
+          "TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SCALE25|2025|ordinary": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 29195.1,
+        "sampled_marked_drawdown": 1723.27,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SCALE25|2025|adverse": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 28931.52,
+        "sampled_marked_drawdown": 1538.52,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SCALE25|2025|catastrophe": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "RUNNER25|continuous|ordinary": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 38548.73,
+        "sampled_marked_drawdown": 2044.63,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "RUNNER25|continuous|adverse": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 37437.73,
+        "sampled_marked_drawdown": 2086.15,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "RUNNER25|continuous|catastrophe": {
+        "native_position_replays": 11,
+        "native_exit_slices": 11,
+        "end_cash": 20869.33,
+        "sampled_marked_drawdown": 4133.92,
+        "exit_reasons": {
+          "STOP": 5,
+          "TIME": 4,
+          "TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "RUNNER25|2024|ordinary": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 34274.87,
+        "sampled_marked_drawdown": 2044.63,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "RUNNER25|2024|adverse": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 33524.74,
+        "sampled_marked_drawdown": 2080.34,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "RUNNER25|2024|catastrophe": {
+        "native_position_replays": 10,
+        "native_exit_slices": 10,
+        "end_cash": 21083.0,
+        "sampled_marked_drawdown": 3917.0,
+        "exit_reasons": {
+          "STOP": 4,
+          "TIME": 4,
+          "TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "RUNNER25|2025|ordinary": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 29273.86,
+        "sampled_marked_drawdown": 1434.58,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "RUNNER25|2025|adverse": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 28912.99,
+        "sampled_marked_drawdown": 1353.63,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "RUNNER25|2025|catastrophe": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "smart-results.json": {
+      "E031|continuous|ordinary": {
+        "native_position_replays": 41,
+        "native_exit_slices": 43,
+        "end_cash": 37426.71,
+        "sampled_marked_drawdown": 1838.85,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 6,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|continuous|adverse": {
+        "native_position_replays": 41,
+        "native_exit_slices": 43,
+        "end_cash": 36497.6,
+        "sampled_marked_drawdown": 1935.17,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 6,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|continuous|catastrophe": {
+        "native_position_replays": 15,
+        "native_exit_slices": 15,
+        "end_cash": 21765.92,
+        "sampled_marked_drawdown": 3278.11,
+        "exit_reasons": {
+          "STOP": 8,
+          "TIME": 7
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2024|ordinary": {
+        "native_position_replays": 20,
+        "native_exit_slices": 22,
+        "end_cash": 33897.97,
+        "sampled_marked_drawdown": 1084.18,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 4,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2024|adverse": {
+        "native_position_replays": 20,
+        "native_exit_slices": 22,
+        "end_cash": 33271.27,
+        "sampled_marked_drawdown": 1103.68,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 4,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2024|catastrophe": {
+        "native_position_replays": 8,
+        "native_exit_slices": 8,
+        "end_cash": 22416.73,
+        "sampled_marked_drawdown": 2683.82,
+        "exit_reasons": {
+          "STOP": 5,
+          "TIME": 3
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2025|ordinary": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28528.74,
+        "sampled_marked_drawdown": 1434.58,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2025|adverse": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28226.33,
+        "sampled_marked_drawdown": 1353.63,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "E031|2025|catastrophe": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "CLOCK_RUNNER25|continuous|ordinary": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 38548.73,
+        "sampled_marked_drawdown": 2044.63,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "CLOCK_RUNNER25|continuous|adverse": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 37437.73,
+        "sampled_marked_drawdown": 2086.15,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "CLOCK_RUNNER25|continuous|catastrophe": {
+        "native_position_replays": 15,
+        "native_exit_slices": 15,
+        "end_cash": 21792.1,
+        "sampled_marked_drawdown": 3860.32,
+        "exit_reasons": {
+          "STOP": 7,
+          "TIME": 7,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "CLOCK_RUNNER25|2024|ordinary": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 34274.87,
+        "sampled_marked_drawdown": 2044.63,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "CLOCK_RUNNER25|2024|adverse": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 33524.74,
+        "sampled_marked_drawdown": 2080.34,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "CLOCK_RUNNER25|2024|catastrophe": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 21699.85,
+        "sampled_marked_drawdown": 3300.15,
+        "exit_reasons": {
+          "STOP": 5,
+          "TIME": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "CLOCK_RUNNER25|2025|ordinary": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 29273.86,
+        "sampled_marked_drawdown": 1434.58,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "CLOCK_RUNNER25|2025|adverse": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 28912.99,
+        "sampled_marked_drawdown": 1353.63,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "CLOCK_RUNNER25|2025|catastrophe": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SMART_RUNNER25|continuous|ordinary": {
+        "native_position_replays": 41,
+        "native_exit_slices": 43,
+        "end_cash": 37517.55,
+        "sampled_marked_drawdown": 2116.19,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 6,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SMART_RUNNER25|continuous|adverse": {
+        "native_position_replays": 41,
+        "native_exit_slices": 43,
+        "end_cash": 36539.69,
+        "sampled_marked_drawdown": 2232.02,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 6,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SMART_RUNNER25|continuous|catastrophe": {
+        "native_position_replays": 15,
+        "native_exit_slices": 15,
+        "end_cash": 21901.33,
+        "sampled_marked_drawdown": 3320.16,
+        "exit_reasons": {
+          "STOP": 8,
+          "TIME": 7
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SMART_RUNNER25|2024|ordinary": {
+        "native_position_replays": 20,
+        "native_exit_slices": 22,
+        "end_cash": 33620.63,
+        "sampled_marked_drawdown": 1219.5,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 4,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SMART_RUNNER25|2024|adverse": {
+        "native_position_replays": 20,
+        "native_exit_slices": 22,
+        "end_cash": 32974.42,
+        "sampled_marked_drawdown": 1377.3,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 4,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SMART_RUNNER25|2024|catastrophe": {
+        "native_position_replays": 8,
+        "native_exit_slices": 8,
+        "end_cash": 22416.73,
+        "sampled_marked_drawdown": 2683.82,
+        "exit_reasons": {
+          "STOP": 5,
+          "TIME": 3
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SMART_RUNNER25|2025|ordinary": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28896.92,
+        "sampled_marked_drawdown": 1434.58,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SMART_RUNNER25|2025|adverse": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28565.27,
+        "sampled_marked_drawdown": 1353.63,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "SMART_RUNNER25|2025|catastrophe": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "forecast-results.json": {
+      "2|train2024|test2025|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2024|test2025|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2024|test2025|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2025|test2024|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2025|test2024|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2025|test2024|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|causal|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|causal|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|causal|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2024|test2025|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2024|test2025|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2024|test2025|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2025|test2024|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2025|test2024|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2025|test2024|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|causal|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|causal|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|causal|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "return-results.json": {
+      "2|train2024|test2025|ordinary": {
+        "native_position_replays": 10,
+        "native_exit_slices": 10,
+        "end_cash": 22280.52,
+        "sampled_marked_drawdown": 3327.43,
+        "exit_reasons": {
+          "STRUCTURE": 2,
+          "TARGET": 1,
+          "STOP": 6,
+          "TIME": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2024|test2025|adverse": {
+        "native_position_replays": 7,
+        "native_exit_slices": 7,
+        "end_cash": 21553.94,
+        "sampled_marked_drawdown": 3446.06,
+        "exit_reasons": {
+          "STRUCTURE": 1,
+          "STOP": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2024|test2025|catastrophe": {
+        "native_position_replays": 8,
+        "native_exit_slices": 8,
+        "end_cash": 22152.45,
+        "sampled_marked_drawdown": 2847.55,
+        "exit_reasons": {
+          "STRUCTURE": 3,
+          "STOP": 3,
+          "TIME": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2025|test2024|ordinary": {
+        "native_position_replays": 8,
+        "native_exit_slices": 8,
+        "end_cash": 21870.28,
+        "sampled_marked_drawdown": 3129.72,
+        "exit_reasons": {
+          "STRUCTURE": 1,
+          "TIME": 2,
+          "STOP": 5
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2025|test2024|adverse": {
+        "native_position_replays": 8,
+        "native_exit_slices": 8,
+        "end_cash": 21646.23,
+        "sampled_marked_drawdown": 3353.77,
+        "exit_reasons": {
+          "STRUCTURE": 1,
+          "TIME": 2,
+          "STOP": 5
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2025|test2024|catastrophe": {
+        "native_position_replays": 4,
+        "native_exit_slices": 4,
+        "end_cash": 23204.52,
+        "sampled_marked_drawdown": 1795.48,
+        "exit_reasons": {
+          "TIME": 1,
+          "STOP": 3
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|causal|ordinary": {
+        "native_position_replays": 25,
+        "native_exit_slices": 25,
+        "end_cash": 21886.85,
+        "sampled_marked_drawdown": 3113.15,
+        "exit_reasons": {
+          "STOP": 14,
+          "STRUCTURE": 5,
+          "TIME": 2,
+          "TARGET": 4
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|causal|adverse": {
+        "native_position_replays": 22,
+        "native_exit_slices": 22,
+        "end_cash": 21585.36,
+        "sampled_marked_drawdown": 3414.64,
+        "exit_reasons": {
+          "STOP": 12,
+          "STRUCTURE": 5,
+          "TIME": 2,
+          "TARGET": 3
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|causal|catastrophe": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 21577.95,
+        "sampled_marked_drawdown": 3422.05,
+        "exit_reasons": {
+          "STOP": 4,
+          "STRUCTURE": 4,
+          "TIME": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2024|test2025|ordinary": {
+        "native_position_replays": 29,
+        "native_exit_slices": 29,
+        "end_cash": 28641.91,
+        "sampled_marked_drawdown": 3938.14,
+        "exit_reasons": {
+          "STRUCTURE": 7,
+          "TIME": 10,
+          "STOP": 12
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2024|test2025|adverse": {
+        "native_position_replays": 29,
+        "native_exit_slices": 29,
+        "end_cash": 28483.42,
+        "sampled_marked_drawdown": 4027.51,
+        "exit_reasons": {
+          "STRUCTURE": 7,
+          "TIME": 11,
+          "STOP": 11
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2024|test2025|catastrophe": {
+        "native_position_replays": 19,
+        "native_exit_slices": 19,
+        "end_cash": 23856.9,
+        "sampled_marked_drawdown": 3722.64,
+        "exit_reasons": {
+          "STRUCTURE": 3,
+          "TIME": 5,
+          "STOP": 11
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2025|test2024|ordinary": {
+        "native_position_replays": 26,
+        "native_exit_slices": 26,
+        "end_cash": 22624.68,
+        "sampled_marked_drawdown": 4163.84,
+        "exit_reasons": {
+          "TIME": 12,
+          "STOP": 4,
+          "STRUCTURE": 10
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2025|test2024|adverse": {
+        "native_position_replays": 25,
+        "native_exit_slices": 25,
+        "end_cash": 22352.48,
+        "sampled_marked_drawdown": 4085.27,
+        "exit_reasons": {
+          "TIME": 12,
+          "STOP": 5,
+          "STRUCTURE": 8
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2025|test2024|catastrophe": {
+        "native_position_replays": 23,
+        "native_exit_slices": 23,
+        "end_cash": 21920.56,
+        "sampled_marked_drawdown": 4051.55,
+        "exit_reasons": {
+          "TIME": 11,
+          "STOP": 3,
+          "STRUCTURE": 9
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|causal|ordinary": {
+        "native_position_replays": 27,
+        "native_exit_slices": 27,
+        "end_cash": 21947.47,
+        "sampled_marked_drawdown": 6825.21,
+        "exit_reasons": {
+          "STRUCTURE": 8,
+          "TIME": 11,
+          "STOP": 8
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|causal|adverse": {
+        "native_position_replays": 18,
+        "native_exit_slices": 18,
+        "end_cash": 21938.81,
+        "sampled_marked_drawdown": 6798.38,
+        "exit_reasons": {
+          "STRUCTURE": 6,
+          "TIME": 5,
+          "STOP": 7
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|causal|catastrophe": {
+        "native_position_replays": 20,
+        "native_exit_slices": 20,
+        "end_cash": 21524.03,
+        "sampled_marked_drawdown": 3475.97,
+        "exit_reasons": {
+          "STRUCTURE": 10,
+          "STOP": 6,
+          "TIME": 3,
+          "TARGET": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "forest-results.json": {
+      "2|train2024|test2025|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2024|test2025|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2024|test2025|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2025|test2024|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2025|test2024|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|train2025|test2024|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|causal|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|causal|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "2|causal|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2024|test2025|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2024|test2025|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2024|test2025|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2025|test2024|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2025|test2024|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|train2025|test2024|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|causal|ordinary": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|causal|adverse": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      },
+      "5|causal|catastrophe": {
+        "native_position_replays": 0,
+        "native_exit_slices": 0,
+        "end_cash": 25000.0,
+        "sampled_marked_drawdown": 0.0,
+        "exit_reasons": {},
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    }
+  },
+  "feature_labels": {
+    "examples": 18787,
+    "executable_labels_recomputed": 37574,
+    "actual_prefix_rebuilds": 210,
+    "statuses": {
+      "2|STRUCTURE": 2002,
+      "5|STRUCTURE": 2011,
+      "2|TIME": 4739,
+      "5|TIME": 6387,
+      "2|STOP": 9468,
+      "5|STOP": 9723,
+      "2|TARGET": 2239,
+      "5|TARGET": 319,
+      "2|NO_ENTRY": 339,
+      "5|NO_ENTRY": 339,
+      "5|UNRESOLVED": 8
+    },
+    "mismatches": 0
+  },
+  "full_book_histories": 108,
+  "native_position_replays": 1490,
+  "native_exit_slices": 1562,
+  "native_money_action_mismatches": 0,
+  "network_attempts": [],
+  "qualification": false,
+  "caveat": "Repeated scenario/control histories are not independent market trades; labels overlap and eight unresolved training outcomes remain conservative non-hits"
+}

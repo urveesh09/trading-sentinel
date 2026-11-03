@@ -941,6 +941,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
             await queue_management_updates(
                 settings.DB_PATH, underlying=spec.name,
                 observed_underlying=observed_underlying, observed_at=observed_at,
+                now=stage_now(),            # [N05-P2] when it was detected, apart from the bar's close
             )
             metrics["management_observed"] += 1
             # Dispatch urgent lifecycle facts before optional entry I/O and
@@ -1448,6 +1449,12 @@ def _pulse_blocked(state: dict, now: datetime) -> bool:
     return attempt_ago is not None and attempt_ago < timedelta(minutes=PULSE_RETRY_MIN)
 
 
+def _partner_walls(snap):
+    """[N04-D] OI walls around the chain's own forward (its put-call parity), not the monthly future: the
+    walls are told beside the index level, and a weekly's strikes price off its own expiry."""
+    return fno_analytics.oi_walls(snap, reference=getattr(snap, "parity_forward", None))
+
+
 async def _buyer_flow_pulse(spec, snap, pcr: Optional[float], iv: Optional[float],
                             now: datetime, day_iso: str, metrics: dict) -> None:
     """[O12-PB 2026-10-12] One short OI-flow message per index instead of
@@ -1492,7 +1499,7 @@ async def _buyer_flow_pulse(spec, snap, pcr: Optional[float], iv: Optional[float
         buildup = fno_analytics.classify_buildup(
             snap.forward - open_row["fut_ltp"], (snap.fut_quote.oi or 0) - open_row["fut_oi"])
         votes += _BUILDUP_VOTES.get(buildup, 0)
-    support, resistance = fno_analytics.oi_walls(snap)
+    support, resistance = _partner_walls(snap)
     if support is not None and resistance is not None:
         prev = _last_walls_reported.get(name)
         if prev is None:
@@ -1674,7 +1681,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                 )
 
             # --- OI wall migration --------------------------------------
-            support, resistance = fno_analytics.oi_walls(snap)
+            support, resistance = _partner_walls(snap)
             prev_walls = _last_walls_reported.get(spec.name)
             if support is not None and resistance is not None:
                 if prev_walls is None:
@@ -1938,7 +1945,7 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
                 pcr = fno_analytics.compute_pcr(snap)
                 max_pain = fno_analytics.compute_max_pain(snap)
                 iv = fno_analytics.atm_iv(snap, now)
-                support, resistance = fno_analytics.oi_walls(snap)
+                support, resistance = _partner_walls(snap)
                 skew = fno_analytics.atm_iv_skew(snap, now)
                 await fno_oi_store.persist_snapshot(
                     settings.DB_PATH, spec.name, snap, pcr, max_pain, iv,
@@ -2154,7 +2161,18 @@ async def _buyer_card_outcome(name: str, day_iso: str, card: dict) -> dict:
             series = await fno_oi_store.strike_ltp_series(
                 settings.DB_PATH, name, day_iso, str(view["expiry"]), float(view["strike"]),
                 str(view["opt_type"]), from_ts=start)
-            premium = premium_path(float(view["ask"]), series, stopped_at=stopped_at, exit_by=exit_by)
+            # [N05-R1] The card's own exit is its premium SL order when a 5-minute print reached it before the
+            # index stop (Nov 2: the 75800 CE crossed 272.60 in the 11:38 minute; the wrap said "stopped 11:40 ·
+            # ₹281.25 at 11:37 (−11%)", where the card's SL meant −14%). A target reached first stays the outcome.
+            sl, sl_exit = view.get("sl_premium"), None
+            if sl and card.get("event") != "TARGET_ZONE":
+                hit = next((ts for ts, ltp in series if ltp is not None and ltp <= float(sl) and str(ts) <= exit_by),
+                           None)
+                if hit is not None and (stopped_at is None or str(hit) < stopped_at):
+                    stopped_at, sl_exit = str(hit), float(sl)
+                    outcome = f"🛑 SL ₹{float(sl):g} hit by {str(hit)[11:16]} (5-min prints)"
+            premium = premium_path(float(view["ask"]), series, stopped_at=stopped_at, exit_by=exit_by,
+                                   sl_exit=sl_exit)
         except (ValueError, TypeError, aiosqlite.Error) as exc:
             logger.warning("partner_buyer_premium_path_failed underlying=%s err=%s", name, type(exc).__name__)
     return {"time": card.get("time", ""), "option": option, "outcome": outcome, "premium": premium}

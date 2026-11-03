@@ -148,7 +148,29 @@ async def observe_underlying(
             "nearest_strictly_future_option_expiry": next_option_expiry.isoformat() if next_option_expiry else None,
         } if isinstance(master_digest, str) and len(master_digest) == 64 else None)
         out.research_bars = bars.copy() if bars is not None else None
-        out.sig = evaluate_fno_mom(bars, regime, now_ist)
+        # [N05-S1] Participation as the shipped paper book measures it (fno_orchestrator, spec.rvol_source):
+        # SENSEX futures trade too thinly for an RVOL baseline (Nov 2: a median of 8 contracts per 5-minute
+        # bar), so SENSEX reads NIFTY futures' volume; every price stays SENSEX's own. Before, the partner
+        # scan alone measured SENSEX's RVOL on its own thin volume. Without the source frame the signal still
+        # carries its levels (published cards keep being managed) but never fires an entry.
+        rvol_bars, rvol_missing = None, False
+        if spec.rvol_source:
+            try:
+                source_book = get_instruments_for(spec.rvol_source)
+                source_fut = source_book.front_future(today) if source_book.ready(today) else None
+                if source_fut is None:
+                    rvol_missing = True
+                else:
+                    rvol_bars = await kite.get_intraday_by_token(source_fut.token, frm, to, interval="5minute")
+                    rvol_missing = rvol_bars is None or getattr(rvol_bars, "empty", False)
+            except Exception as exc:
+                logger.warning("fno_signal_rvol_source_failed underlying=%s source=%s err=%s", spec.name,
+                               spec.rvol_source, type(exc).__name__)
+                rvol_bars, rvol_missing = None, True
+        out.sig = evaluate_fno_mom(bars, regime, now_ist, rvol_bars=None if rvol_missing else rvol_bars)
+        if rvol_missing and out.sig is not None and out.sig.direction is not None:
+            out.sig.direction = None
+            out.sig.reject_reason = "rvol_source_unavailable"
 
         return out
     except Exception as exc:

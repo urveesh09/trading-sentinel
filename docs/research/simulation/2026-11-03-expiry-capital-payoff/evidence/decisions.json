@@ -1,0 +1,115 @@
+{
+  "primary": {
+    "NET_RISK_LEDGER": {
+      "checks": {
+        "positive_each_year": true,
+        "beats_each_year": false,
+        "beats_continuous": false,
+        "positive_ex_best_each_year": true,
+        "positive_increment_ex_largest": false,
+        "severe_drawdown_within_research_limit": true,
+        "ordinary_drawdown_within_research_limit": true,
+        "no_unresolved": true
+      },
+      "increment": 0.0,
+      "increment_ex_largest": 0.0,
+      "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+      "native_candidate": false,
+      "margin_execution_qualified": false,
+      "credit_margin_required": false
+    },
+    "PROFIT_REENTRY": {
+      "checks": {
+        "positive_each_year": true,
+        "beats_each_year": false,
+        "beats_continuous": false,
+        "positive_ex_best_each_year": true,
+        "positive_increment_ex_largest": false,
+        "severe_drawdown_within_research_limit": true,
+        "ordinary_drawdown_within_research_limit": true,
+        "no_unresolved": true
+      },
+      "increment": 0.0,
+      "increment_ex_largest": 0.0,
+      "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+      "native_candidate": false,
+      "margin_execution_qualified": false,
+      "credit_margin_required": false
+    },
+    "CREDIT_8M": {
+      "checks": {
+        "positive_each_year": false,
+        "beats_each_year": false,
+        "beats_continuous": false,
+        "positive_ex_best_each_year": false,
+        "positive_increment_ex_largest": false,
+        "severe_drawdown_within_research_limit": true,
+        "ordinary_drawdown_within_research_limit": true,
+        "no_unresolved": true
+      },
+      "increment": -14181.4,
+      "increment_ex_largest": -14659.41,
+      "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+      "native_candidate": false,
+      "margin_execution_qualified": false,
+      "credit_margin_required": true
+    },
+    "CREDIT_TREND": {
+      "checks": {
+        "positive_each_year": false,
+        "beats_each_year": false,
+        "beats_continuous": false,
+        "positive_ex_best_each_year": false,
+        "positive_increment_ex_largest": false,
+        "severe_drawdown_within_research_limit": true,
+        "ordinary_drawdown_within_research_limit": true,
+        "no_unresolved": true
+      },
+      "increment": -14575.03,
+      "increment_ex_largest": -15053.04,
+      "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+      "native_candidate": false,
+      "margin_execution_qualified": false,
+      "credit_margin_required": true
+    },
+    "HYBRID_8M": {
+      "checks": {
+        "positive_each_year": true,
+        "beats_each_year": false,
+        "beats_continuous": false,
+        "positive_ex_best_each_year": false,
+        "positive_increment_ex_largest": false,
+        "severe_drawdown_within_research_limit": true,
+        "ordinary_drawdown_within_research_limit": true,
+        "no_unresolved": true
+      },
+      "increment": -5321.11,
+      "increment_ex_largest": -5923.52,
+      "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+      "native_candidate": false,
+      "margin_execution_qualified": false,
+      "credit_margin_required": true
+    },
+    "HYBRID_TREND": {
+      "checks": {
+        "positive_each_year": true,
+        "beats_each_year": false,
+        "beats_continuous": false,
+        "positive_ex_best_each_year": false,
+        "positive_increment_ex_largest": false,
+        "severe_drawdown_within_research_limit": true,
+        "ordinary_drawdown_within_research_limit": true,
+        "no_unresolved": true
+      },
+      "increment": -4031.87,
+      "increment_ex_largest": -4643.23,
+      "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+      "native_candidate": false,
+      "margin_execution_qualified": false,
+      "credit_margin_required": true
+    }
+  },
+  "selected_candidate": null,
+  "qualification": false,
+  "protected_exam_read": false
+}

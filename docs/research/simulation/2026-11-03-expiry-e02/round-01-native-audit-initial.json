@@ -1,0 +1,7 @@
+{
+  "exit": 1,
+  "day": "2025-01-02",
+  "rule": "d6a91215101d",
+  "finding": "Same clock, two lots and 12.25 sale; engine calls the supplied structure predicate FAILED_BREAK, research labels its ATR-based underlying stop STRUCTURE.",
+  "correction": "Normalize only the reason annotation in the audit. No prices, money, decisions or strategy thresholds changed."
+}

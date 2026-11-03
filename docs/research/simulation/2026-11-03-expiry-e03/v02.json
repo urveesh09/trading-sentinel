@@ -1,0 +1,8 @@
+{
+  "E02_2LOT": {"max_lots": 2},
+  "E03S_F1_K50_T9": {"max_lots": 2, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0},
+  "E03S_F1_K60_T9": {"max_lots": 2, "split": true, "runner_floor": 1.0, "runner_keep": 0.6, "hero_target": 9.0},
+  "E03S_F15_K50_T9": {"max_lots": 2, "split": true, "runner_floor": 1.5, "runner_keep": 0.5, "hero_target": 9.0},
+  "E03S_F2_K50_T9": {"max_lots": 2, "split": true, "runner_floor": 2.0, "runner_keep": 0.5, "hero_target": 9.0},
+  "E03S_F1_K50_T4": {"max_lots": 2, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 4.0}
+}

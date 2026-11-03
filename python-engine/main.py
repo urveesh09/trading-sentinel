@@ -2438,6 +2438,12 @@ async def lifespan(app: FastAPI):
             background_tasks.spawn(post_login_initialization(), name="post_login_initialization")
     except Exception as e:
         logger.warning("kite_token_restore_startup_failed error=%s", str(e))
+    # [N04-C] The partner's read-only login too, so a restart does not switch their trade watch off.
+    try:
+        import partner_broker_sync
+        partner_broker_sync.restore_session()
+    except Exception as e:
+        logger.warning("partner_session_restore_startup_failed err=%s", type(e).__name__)
 
     scheduler.start()
     # [STARTUP-ATTESTATION 2026-08-13] Write proof immediately after

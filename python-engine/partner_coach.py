@@ -506,11 +506,20 @@ def _chased(card: dict, trade: dict, first_px: float, first_qty: Optional[int]) 
         else:
             why += "."
     why += _worked(actual)
-    better = f"Skip it, as the card says above the limit: {_instead(0.0, actual)}."
     wait = _limit_print_after(card, first_at)
-    if wait:
-        better += (f" Or wait with a limit order at {_px(limit)}: the option traded at {_px(wait[1])} at "
-                   f"{_hhmm(wait[0])}, before the skip-after time.")
+    tail = (f" Or wait with a limit order at {_px(limit)}: the option traded at {_px(wait[1])} at "
+            f"{_hhmm(wait[0])}, before the skip-after time." if wait else "")
+    if actual is not None and first_qty:
+        # [N05-K3] What paying over the limit cost is the price paid over it on those units, not the whole trade:
+        # Nov 2, ₹5.1 over on 20 was ₹102 of a −₹1,943 trade (the rest came from the add and the exit). The card's
+        # rule (skip above the limit) stays the advice; the flag is measured by its own cost.
+        cost = round(over * first_qty, 2)
+        at_limit = round(actual + cost, 2)
+        better = (f"Skip it, as the card says above the limit. Paying {_px(over)} over it on {first_qty} cost "
+                  f"{_amt(cost)}: at the limit, {_instead(at_limit, actual)}." + tail)
+        return _flag("ENTRY_ABOVE_LIMIT", reason, _gap(actual, at_limit), why=why, better=better,
+                     better_pnl=at_limit, actual_pnl=actual)
+    better = f"Skip it, as the card says above the limit: {_instead(0.0, actual)}." + tail
     return _flag("ENTRY_ABOVE_LIMIT", reason, _gap(actual, 0.0), why=why, better=better, better_pnl=0.0,
                  actual_pnl=actual)
 

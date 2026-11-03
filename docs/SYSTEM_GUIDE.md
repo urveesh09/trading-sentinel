@@ -1,4 +1,454 @@
-## November 3 — Partner fixes from the two Nov 2 audits (actual behavior, Dev, pushed, PR open, not deployed, commit `b9b0d2c`)
+## November 3 — expiry-v5: E03.2 is the main expiry paper ticket, NIFTY and SENSEX (commit `71857c0`, Dev, pushed, release PR #130 open and clean; NOT deployed: the merge was blocked by the permission system, awaiting the owner)
+
+Owner order (Nov 3, 22:50 IST): make E03.2 the main expiry strategy, run it on SENSEX this Thursday on paper, deploy now.
+- `settings.EXPIRY_MAIN_STRATEGY="E032"` (default) and `EXPIRY_E032_SHADOW_ENABLED=True` (default). A new expiry day
+  records `state["main"]="E032"`: A/B/C send no Telegram trades (`notify`), the day summary starts with
+  `expiry_e02.summary_lines` ("MAIN E03.2 (expiry-v5)") and lists A+B+C as shadows, and `owner_rule_lines`
+  counts E03.2's day result (`expiry_e02.day_results`) on E032 days and A+B+C before. `"ABC"` restores expiry-v4.
+- `expiry_e02`: `UNDERLYINGS` (NIFTY lot 65 NFO Rs 5-20; SENSEX lot 20 BFO Rs 16.25-65, four 100-point strikes),
+  `Variant.underlyings` (E032: NIFTY and SENSEX; the others NIFTY only, unchanged), `run_tick` follows the index
+  with ticks today and returns `notices` (entry/exit texts); the scheduler queues the main variant's notices
+  with `expiry_paper.queue_notices`. SENSEX has no E03 history: a forward paper test.
+- Tests: `tests/test_expiry_main_e032.py` (5) and the E032 default; `conftest` pins `EXPIRY_MAIN_STRATEGY="ABC"` for
+  the A/B/C tests. Full suite 6,415 passed, 4 skipped, 1 failed (13 min 31 s): tests/test_kite_client.py::TestRateLimiter::test_management_priority_is_bounded_and_normal_work_is_fair, a timing test of an untouched module, passes alone 3 of 3 and passed in the round-8 full run. Atlas regenerated. No `.env`, schema migration or real-money change.
+
+## November 3 — E03.2: put tickets at twice the reserve (Dev commit `e102cfb`, pushed, disabled, not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E032_PUTS.md`; record: `docs/research/simulation/2026-11-03-expiry-round8/`
+(plan frozen `f55034b` before scoring).
+- Finding: E03.1's calls 23 tickets +1,800, puts 18 tickets +10,627; puts positive in all 8 quarters; same in
+  E02/E03; random entries show no gap (signal-specific, like the F&O study's calls/puts). Ex-hero
+  permutation p = 0.125. Week/day alignment, delta strikes and the IV-slope mechanism failed.
+- `expiry_e02.E032` (`expiry-e032-v1`, play `E032`, `<DB_PATH>.expiry-e032.db`, Rs 25,000): E03.1 with a put
+  ticket at Rs 2,500 / 6 lots (`ticket_scale`), day reserve Rs 5,000 (`day_scale`), buy limit 8%
+  (`Variant.chase`), every leg sold from 15:14 (`Variant.flat`, frozen per ticket, `flat_time`). E02, E03 and
+  E03.1 defaults unchanged. `EXPIRY_E032_SHADOW_ENABLED=false`; scheduler runs it like E03.1.
+- In-sample 2024-2025 continuous: +21,518 ordinary / +20,001 adverse / -2,438 severe, worst day -647,
+  drawdown 754 (E03.1 +12,427 / +11,498 / -3,234, -478, 1,374).
+- Verification: parity 78 positions + 78 sizing checks, 0 mismatches; focused 43 passed; full suite
+  6,411 passed, 4 skipped, 0 failed (742 s, exit 0). Atlas regenerated (295 modules). No `.env`, schema or Production change.
+
+## November 3 — capital/payoff study pushed; sealed evidence complete
+
+Source/report de0b72b pushed and remote verified. Six primary alternatives rejected; no E03.2 candidate. 49 tests, 108 primary/control plus 60 diagnostic exact histories; native/cash audit and 54 uncached prefixes pass. Thirty-four stock receipts and pinned 854-source verification pass. Report docs/EXPIRY_RESEARCH_CAPITAL_PAYOFF.md; plan docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; completed STATUS.md and completion-receipt.json. No native/config/schema/flag/actual capital/Production/download or 2023/fresh-exam change. Owner bytes and old evidence preserved. This final evidence/docs commit is post-verified/pushed after creation; original sealed guard stays pinned to source de0b72b.
+
+## November 3 — capital/payoff research complete; no E03.2 accepted
+
+Six frozen alternatives fail improvement: cash reuse adds no normal tickets; protected credit loses, both hybrids underperform E03.1 in each year; no-brake/coarse controls do not rescue it. Report: docs/EXPIRY_RESEARCH_CAPITAL_PAYOFF.md. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; STATUS.md. 49 focused checks; 108 primary/control plus 60 diagnostic histories exact; 1,037 native long and 991 primary/control credit checks; 54 uncached prefixes. Audit draft failure retained/fixed; scores unchanged; atlas regenerated unchanged. No native/config/schema/flags/actual capital/Production/download; owner and older evidence preserved. Remaining packaging: commit source/report, sealed receipts, pinned verification and verified push.
+
+## November 3 — prefix-audit cache defect retained and corrected
+
+Original audit completed financial replay but failed on temporary prefix cache id reuse (exit 1). Original audit/source and error retained; v2 bypasses the old id-keyed memoizer only for temporary prefixes and compares uncached/cached full signals. Strategy scores and native source unchanged. Sixty fixed payoff diagnostic runs complete; no candidate selected. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; freeze-audit-v2.json. Next: corrected independent audit, report and sealed receipts. No native/config/schema/Production/download or owner changes.
+
+## November 3 — payoff comparisons fail; independent audit frozen
+
+Hybrid8 earns 7,105.60 and hybridtrend 8,394.84 ordinary versus E03.1 12,426.71; no improvement candidate. Freeze fixed reversed-direction/coarse/friction controls and independent native/cash/prefix audit. A pre-commit audit draft counted tickets across days; corrected to within-day ordinal before any diagnostic/audit score; draft retained. Twelve checks pass. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; DIAGNOSTICS.md. No native/config/schema/Production/download; old evidence and owner edits preserved. Next: audit and final report.
+
+## November 3 — full ticket eligibility hybrid frozen before scoring
+
+Protected credit-only loses in 2024; no promotion. Freeze the hybrid retaining the original affordable ticket check and multi-lot E03.1 runners, plus unbraked controls to distinguish payoff from inherited cash brakes. Twelve mechanical checks pass. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; HYBRID.md and STATUS.md. Next: score, causal/accounting audits and final report. No native/config/schema/Production/download or actual risk change; owner and previous evidence preserved.
+
+## November 3 — capital ledgers fail to add ordinary fills; directional credit frozen
+
+Ledger freeze f34ceb9 reproduces 99 baseline histories; both cash-reuse arms equal ordinary/adverse E03.1 at 41 tickets, NET worsens severe. Next frozen round changes payoff on the same trend cue: protected opposite-side 50-point credit vertical, eight-minute or thesis/15:14 hold. Includes both leg fees/capacity, own-cash model, explicit margin/atomic execution limits and conservative paid-long residual accounting. Nine checks pass. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; CREDIT.md. No engine/config/schema/Production/download; old evidence/2023/future exam preserved. Next: credit score and audits.
+
+## November 3 — capital reuse / directional payoff study (Dev research)
+
+Owner broadens research risk authority; no live risk or deployment follows. Test returned-cash turnover versus a funded daily loss ledger, and profit-only repeated original E03.1 entries. Separate protected directional-credit payoff round follows. Plan: `docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md`. Baseline first; 2024/2025 remain seen, 2023/future exam protected. No native/config/schema/Production/provider/download change. Earlier work/owner bytes preserved.
+
+## November 3 — two-sided expiry book and E03.1 risk dial (Dev research, commit `b34e259`, pushed, no runtime change)
+
+Report: `docs/EXPIRY_RESEARCH_AUCTION.md` (round 2); record: `docs/research/simulation/2026-11-03-expiry-auction/`.
+- Two-sided (`TWOSIDED_PLAN.md`, frozen `140baeb`): the iron-butterfly seller only on quiet afternoons
+  (no E03.1 signal since 13:00, or 30-min efficiency < 0.3), 20-arm plateau: 2 / 0 of 20 arms positive in
+  both years. Failed; adding the central arm to E03.1 lifts the drawdown from 1,374 to 11,749.
+- Risk dial (`RISK_PLAN.md`, frozen `06fb77f`): E03.1 at 1-4x on the same Rs 25,000 with scaled brakes,
+  exact replays plus a skeptical bootstrap. Recommended 1x: no larger size meets loss-year <= 30%,
+  skeptical p95 drawdown <= 5,000, severe >= -6,250. 2x: +23,371 / severe -7,175; 1.5x is a lot-rounding
+  cliff (+13,634). Next size step, after the frozen exam and 20 forward tickets, is 2x if the same
+  calculation on fresh data passes.
+- No engine, config, `.env`, schema, Production, N11/N11T, A/B/C/D or E-variant change; atlas unchanged.
+
+## November 3 — anticipation research/evidence remote-verified; trigger disclosure clarified
+
+Source 22f8845 and evidence 23e94d9 pushed/remote verified. Report clarifies that target labels count filled exits after a 2x/5x bid trigger, while final prices may differ; all cash/return models use actual later fills and fees. No strategy, label, score, freeze or original sealed receipt changed. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; completed STATUS.md. 53 tests, 111 histories, 1,580 repeated native positions, 37,574 labels and 210 prefixes verified; 38 receipts/854 pinned sources. No native config/schema/flag/actual risk/Production or download change; final docs push follows.
+
+## November 3 — expiry anticipation research pushed; no risk or strategy promotion
+
+Research **22f8845** pushed and remote-verified. Five frozen rounds/nine hypotheses: extra second-lot reserve adds 9% model profit at worse downside; fixed precursor/return/forest models and forecast-gated sizing fail acceptance. 53 focused checks, 111 histories / 1,580 repeated native positions / 1,654 sale slices, 37,574 labels and 210 prefixes exact. 38 stock receipts, pinned 854-source-file verification; evaluator PnL null. Report docs/EXPIRY_RESEARCH_ANTICIPATION.md; plan docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; completed STATUS.md and completion-receipt.json. No qualification, native config/schema/flags, actual risk, API download or Production change. E03.1 remains off; 2023/future exam and owner work preserved. This evidence/docs commit is verified and pushed after creation.
+
+## November 3 — expiry anticipation study complete: no accepted candidate (Dev research)
+
+Five frozen rounds/nine primary hypotheses reject extra-risk and predictor-based replacements. A 25% reserve allowance adds about 9% ordinary profit, but severe loss rises from 3,234 to 4,131; forecasts and nonlinear combinations do not supply consistent after-cost heroes. Report docs/EXPIRY_RESEARCH_ANTICIPATION.md; plan docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; STATUS.md. All 111 saved histories / 1,580 repeated native positions / 1,654 sale slices match; 37,574 labels and 210 prefix rebuilds exact; 53 focused checks pass; atlas identical. No engine/config/schema/flag/Production/download or actual risk change; 2023/future exam preserved. Remaining packaging: source commit, sealed/pinned receipts and verified push.
+
+## November 3 — forecast-gated risk allocation fails; nonlinear factor check frozen
+
+SMART_RUNNER25 adds only 90.84 ordinary / 42.09 adverse over two seen years, worsens drawdown and underperforms 2024. No native candidate. One final fixed nonlinear check tests interactions missed by linear models: shallow 64-tree day-bootstrap forests, 6-day leaf support, training-only splits, fixed shrinkage and 2x/5x monetary targets; no grid or best-seed selection. Sixteen focused checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; FOREST.md. No engine/config/schema/Production/download; 2023/future exam unchanged. Next: forest score, final audits/report/push.
+
+## November 3 — standalone return models fail risk/causal tests; selective allocation frozen
+
+HERO_RETURN trained on 2024 earns 3,642 / 3,483 in 2025 but drawdown exceeds 3,500; backwards-year and causal tests lose. DOUBLE_RETURN loses. Keep all failures. New SMART_RUNNER25 consults only the existing past-quarter forecast to allocate a second lot on unchanged E03.1 entries; no retraining/threshold change. Clock-matched extra-lot control included, same 25% reserve ceiling and original risk-scaled acceptance. Fifteen research checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; SMART.md. No engine/config/schema/Production/download; protected exam unchanged. Next: final score and audits.
+
+## November 3 — executable-tail forecasts find no economic admissions; monetary objective frozen
+
+First model round labels 18,787 overlapping causal cases across 105 already-seen expiries, training one year before scoring the other and quarterly using only prior quarters. Full-premium probability hurdle admits no trades; that is no profit, not a successful safe trader. New frozen objective forecasts actual adverse net returns (same features/calendars/limits) so genuine stop economics are tested without tuning a probability threshold. Twelve research checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; RETURNS.md. No engine/config/schema/Production/download; original labels/results/exams preserved. Next: score and independent audit.
+
+## November 3 — modest-risk gains fail risk-scaled test; anticipation model frozen
+
+Sizing freeze 83fdf76 reproduces E03.1; 25% extra reserve adds only about 9% ordinary profit and worsens severe loss. RUNNER25/SCALE25 not accepted. Before any target labels or fit, freeze two causal forecasts (executable 2x/5x before stop/time) using fixed price/volume/OI/futures features, day-weighted regularized models, cross-year and past-only quarterly books. Ten focused checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; PRECURSORS.md and STATUS.md. No engine/config/schema/Production/download; 2023/future exam protected. Next: score, audit and report.
+
+## November 3 — expiry anticipation / modest-risk study (Dev research)
+
+Owner authorizes a little more research risk, not extreme risk or deployment. Fixed 25% extra reserve tests a second-lot runner against an equal-budget sizing control; a separate frozen study will test pre-move price/volume/OI/futures features. Plan: `docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md`. 2024/2025 seen, 2023/future exam protected. Baseline first, preserve failures. No engine/flag/schema/Production/download or live capital change.
+
+## November 3 — closing-auction and seller study: nothing tradeable (Dev research, commit `dd1daa9`, pushed, no runtime change)
+
+Report: `docs/EXPIRY_RESEARCH_AUCTION.md`; record: `docs/research/simulation/2026-11-03-expiry-auction/`.
+- Auction (since Aug 3, 2026 options settle at the closing auction; Kite's index frozen 15:15-15:29):
+  27 era expiry days (9 Production 10-s books, 18 Breeze 10-s export). Frozen test (`b7c90bd`, v2
+  `bd2a31d` after a crash that printed nothing): direction at 15:22 86% as frozen, but the Breeze index is
+  an indicative auction value from 15:20 on 8 days; read at 15:15 it is 60%. No remaining move after 15:22
+  (H2 fail); Production trade +2,657 / 5 trades, -2,077 without the best (fail).
+- Production plays re-valued with settled legs (`assumed_pnl`; `net_pnl` of a settled leg is only its
+  charges): B -3,007 / 5 days, BH -6,313 / 4 (all negative), C -1,341, A +4,709, D -1,007 (Oct 6-29).
+- Seller (`176e7b5`): iron butterfly, 12 arms on 2024/2025. All 13:00 arms lose; 14:00 / 4-strike cover /
+  2x stop passes (+20,049 / +16,723, 9 Production days +7,473) but 2025 is positive only at exactly 14:00
+  (neighbourhood `seller_diag.py`): rejected.
+- No engine, config, `.env`, schema, Production, N11/N11T, A/B/C/D or E-variant change; atlas unchanged; no
+  download; 2023 not opened.
+
+## November 3 — E03.2 evidence packaged and reverified (Dev only)
+
+Research 9950a6c pushed; evidence/docs a397ce3 verified. Stock receipt replay matches 854 pinned source files and original money. Post-packaging explicit-file verification again passes 55 checks; README avoids recursive collection of frozen source copies/pinned checkout. No source strategy, result, freeze or original helper guard changed. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; completed STATUS.md. E03.1 unchanged/off; no winning E03.2, deployment or download. Final docs push follows immediately.
+
+## November 3 — E03.2 second investigation pushed; no winning replacement
+
+Research **9950a6c**, pushed and remote-verified; evidence/docs receipt follows in this commit. Six new primary mechanisms rejected. Fast quote-pressure prediction loses after spread/fees (30s midpoint +3.09 vs net -49.28, 298 overlapping events/four seen days; not portfolio profit). 55 focused checks, 63 exact book histories / 1,287 repeated records; unchanged atlas/runtime. Stock helper checks 24 receipts with invalid butterfly orphan claims and null evaluator PnL; pinned verification matches 854 source files. Report docs/EXPIRY_RESEARCH_E032_STRUCTURE.md; frozen plan docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; STATUS.md and completion-receipt.json record final work. No qualification, enable, download, migration or deployment. E03.1, original owner bytes, 2023, future exam and Production 06bed07 unchanged. Future independent execution/data work is separate.
+
+## November 3 — E03.2 second investigation complete: no replacement (Dev research)
+
+Six distinct frozen mechanisms failed E03.1 comparison: patient entry, option-price leadership, failed auction, valuation, vertical and butterfly payoffs. Recorded quote pressure also fails after actual costs: mean 30-second midpoint +3.09, spread/depth 3.73, fees 48.64, net markout -49.28 across 298 overlapping events/four seen days; EVALUATOR, not portfolio profit. Report docs/EXPIRY_RESEARCH_E032_STRUCTURE.md; frozen plan docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md, active completion STATUS.md. All 63 full histories/1,287 repeated records reconcile; 55 focused checks pass; atlas regenerated identical. Butterfly orphan continuation rejected, all failures retained. No engine/config/schema/Production/flags/download; 2023 and future exam protected, E03.1 unchanged. Remaining packaging: commit identity, sealed/pinned receipts and verified push.
+
+## November 3 — E03.2 payoff combinations rejected; quote-level test frozen
+
+Verticals earn less and lose in 2025; butterflies lose with an unresolved pack. Six primary mechanisms now rejected. A fixed 30/120-second displayed-imbalance evaluator is frozen on the five already-seen 2026 NIFTY recordings before return scoring; actual next-quote ask/bid depth and native fees, unavailable exits retained. EVALUATOR only, not portfolio profit. Eighteen research checks pass. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; MICRO.md. No engine/config/schema/Production change or download; atlas unchanged. Remaining: evaluator, forensic reconciliation and final report.
+
+## November 3 — E03.2 structural entries rejected; payoff tests frozen (Dev research)
+
+Reclaim loses; VALUE_CHECK earns 6,293 ordinary / 5,643 adverse versus E03.1 12,427 / 11,498. Round 3 tests equal-budget debit verticals and butterflies with all leg costs, explicit simultaneous-pack assumption and own-cash gross-long checks. Fourteen focused research tests pass. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; payoff contract ROUND3.md. No engine/config/schema or Production change; atlas unchanged; 2023 protected. Remaining: payoff scores, microstructure data audit, report.
+
+## November 3 — E03.2 round one rejected; new structural tests frozen (Dev research)
+
+PATIENT earns less at normal/adverse fills, despite improving the severe model; OPTION_LED loses and halts. E03.1 baseline reproduces all daily events. Round two freezes failed-auction reclaim and fee-aware valuation hypotheses in ROUND2.md before scoring. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md. Ten focused research tests pass. No engine/config/schema/Production change; atlas unchanged; 2023/future exam protected. Remaining: structural score, audits and report.
+
+## November 3 — E03.2 information/execution investigation (Dev only)
+
+Owner reopens research beyond the failed first E03.2 search. Plan: `docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md`. Distinct option-price leadership and patient-entry mechanisms, frozen before scoring; 2024/2025 remain seen, 2023 and the future exam protected. No engine, flag, Production, download or capital change. Baseline/parity first; accept failures.
+
+## November 3 — E03.2 search: no rule beats E03.1 (Dev research, commit `c5d8a74`, pushed, no runtime change)
+
+Report: `docs/EXPIRY_RESEARCH_E032.md`; record and plan: `docs/research/simulation/2026-11-03-expiry-e032/`.
+- Frozen tests on never-scored slices of the 2024/2025 NIFTY expiry chains: mornings 09:30-13:00
+  (freeze `68db264`) lose in both years (E03 -3,221 / -3,505, worse than random entries); 15:00-15:15
+  (freeze `2494709`) gives 3 tickets in 2024, none in 2025. E02's edge lives only in 13:00-15:00.
+- In-sample, all rejected: house-money roll (144), earned ticket (6), near-the-money instrument (24),
+  two-/three-lot strike preference (8), leave-one-year-out genome (677: picks lose to E03.1 on the
+  unseen year; 85% / 99.7% of settings positive there). Reversed signal loses.
+- Learning kept, not shipped: a 7-8% buy limit (E03/E03.1 use 10%) leaves ordinary and adverse
+  unchanged and cuts E03.1's severe-fill loss from -3,234 to -2,486; record it for whichever variant
+  is promoted. The whole book keeps its per-rupee result to 4x (Rs 1,00,000, model only).
+- No engine, config, `.env`, schema, Production, N11/N11T, A/B/C, E02, E03 or E03.1 change; atlas
+  unchanged (no `python-engine` source touched). No download; NIFTY 2023 not opened. Verification:
+  `e032_lab.py` reproduces E03 and E03.1 day by day at all three fill levels; both freezes verify.
+- Remaining (owner): the approved E01.1 exam download also tests the E03 family; its rules are frozen in
+  `EXAM_E03_FAMILY.md` before the data exists; forward paper for E03/E03.1; size only after.
+
+## November 3 — E03.1 source pushed; disabled / not deployed
+
+Implementation **65cccb7**, pushed and remote-verified on the same Dev branch; finalists frozen at 0c7f414. Report: `docs/EXPIRY_RESEARCH_E031.md`; plan/contracts: `docs/research/simulation/2026-11-03-expiry-e031/PLAN.md`. Small defensive fitted improvement, severe losses retained; no qualification. 6,118 engine tests passed / 4 skipped, 43 focused checks passed. Stock evidence helper verifies four partial shadow modules; pinned checkout verifies 854 source files and identical receipts/money. Later doc commits change HEAD, so use study `verify_evidence.py`; original guard/request/report are preserved. All 17 forward source/config hashes, owner original bytes and Production 06bed07 verified unchanged. No .env edit, existing-store migration, activation, orders or deployment. Remaining: new paired forward paper and execution evidence, then separate GitHub promotion review. No C/N11/primary-rule changes; 2023 protected.
+
+## November 3 — E03.1 defensive paper candidate complete (Dev; off, not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E031.md`; contracts/remaining:
+`docs/research/simulation/2026-11-03-expiry-e031/PLAN.md` and `IMPLEMENTATION_PLAN.md`.
+- New `expiry-e031-v1` / E031 variant: E03 entry/runner/reserves unchanged,
+  initial stop 35%, pre-runner trigger floor 1.1x after a 50% peak gain. Own
+  `.expiry-e031.db`, `EXPIRY_E031_SHADOW_ENABLED=false`; policy saved per ticket.
+- SMALL fitted gain: continuous ordinary +12,426.71 vs E03 +11,956.35; adverse
+  +11,497.60 vs +11,114.83. Six ordinary incremental days, ex-largest +288.71.
+  Worst ordinary day -478.01 vs -568.26. SEVERE LOSES 3,234.08; not qualified.
+  2024/2025 seen, 2023 protected. 55 sweeps + 149 new genome combinations;
+  FOLLOW and adaptive selectors rejected; no further tuning after 0c7f414 freeze.
+- Verification: 99 original E03 histories exact; 391 native position replays /
+  407 sale slices zero mismatches; 43 focused checks; full engine 6,118 passed,
+  4 skipped, 53 warnings, 694.61 seconds, exit 0. Existing warnings and Penny
+  fixture shutdown logging error retained. Atlas regenerated (295 modules).
+  Commands/results: study `verification.json`. Tests establish mechanics only.
+- Dev only, implementation commit/push receipt follows. No .env edit or existing
+  store migration; separate E031 DB only on future enable/tests. No broker,
+  message, primary ledger, Production, N11/N11T, A/B/C or E02/E03 rule changes.
+  Existing owner work preserved; Production 06bed07 unchanged. Stop floors can gap.
+- Remaining: separately authorized GitHub rollout and new paired forward paper
+  tickets/execution evidence, at least 20 closed before review, both book and
+  matched-ticket comparisons. No automatic promotion or C replacement.
+
+## November 3 — E03.1 finalists frozen before execution stress (Dev only)
+
+99 E03 position/event histories reproduce exactly across both seen years and all three fill scenarios. Six causal mechanism tests pass. Mechanism sweep and 149 new genome combinations retained; two finalists frozen in `finalists-freeze.json`. The defensive rule tightens stop to 35% and adds a 1.1x trigger floor after a 50% gain; the trend extension finalist has larger but less uniform fitted gains. No qualification, new download, native code/config/schema change or deployment. Next: frozen robustness, selection-decay and uncertainty checks; accept failures. Commands: study.py baseline/sweep/genome, pytest test_lab.py (6 passed), atlas (295 modules). Plan: docs/research/simulation/2026-11-03-expiry-e031/PLAN.md.
+
+## November 3 — E03.1 investigation (Dev research, active)
+
+Owner authorizes bounded iterations beyond E03. Plan/contracts/acceptance: `docs/research/simulation/2026-11-03-expiry-e031/PLAN.md`. 2024/2025 are seen development; 2023 remains protected. Baseline parity first, loss diagnosis, entry/exit mechanism sweeps, bounded combinations and finalist stress. No extra risk, activation, Production/N11/A/B/C changes or downloads. A failed investigation finishes as learning rather than a forced promotion.
+
+## November 3 — E03: E02's entry with a free runner (Dev commit `d85a690`, pushed, not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E03.md`; record:
+`docs/research/simulation/2026-11-03-expiry-e03/README.md`.
+- Owner order: beyond E02, catch the zero-to-hero move with bounded risk; test E01.1
+  on the new data. Hero-entry ideas (holding E02's ticket, a kicker, the open-interest
+  "gamma blast", one bigger ticket, volatility filters) all lost or failed ex-best on
+  seen 2024/2025 and are rejected; cheap OTM tickets held lose in both years.
+- E03 (`expiry-e03-v1`, play `E03`): E02 R3's signal, band, reach, stops, idle clock,
+  cash and brakes unchanged; up to 3 lots inside the same Rs 1,250; strikes <= 200
+  points; at E02's 2x sale all but half the lots sell (`TARGET_BASE`, latches nothing);
+  the runner's floor is cost, keeps 50% of peak, `HERO_TARGET` at 10x, flat 15:28, no
+  idle or index stop. In-sample 2024+2025: +11,956 ordinary / +11,115 adverse
+  (E02 on the same four-strike pick +6,901 / +6,260), severe fills -3,273, worst day
+  -568 (= E02); the extra is mostly one 11.5x runner (2024-03-28).
+- E02's lab allowed strikes up to 400 points, beyond the download's guaranteed four
+  steps (look-ahead on one losing 2024 trade); E03 caps at 200; E02's code unchanged.
+- E01.1 on NIFTY 2024 (frozen before 2024 was opened): -9,012 ordinary over 46
+  tickets; with 2025 about -29,650 over 99 NIFTY expiries. Nov 3, its first Production
+  day as C: -700.92 (25% stop).
+- Code: `expiry_e02.py` `Variant` (E02 unchanged, E03 new), `policy_for`, `sell_base`,
+  `_lots`; own DB `<DB_PATH>.expiry-e03.db`, cash Rs 25,000;
+  `EXPIRY_E03_SHADOW_ENABLED=false`; scheduler runs each variant after the primary
+  tick; both open legs stay in the existing quote batch. No order, message, ledger,
+  schema or `.env` change.
+- Verification: `tests/test_expiry_e02.py` + `test_expiry_e03.py` 29 passed; lab-paper
+  exit parity 82 positions, 0 mismatches; full engine suite 6,110 passed, 4 skipped, 0 failed (661.8 s; run before a one-line status-version fix, after which the 29 E02/E03 tests pass). Atlas
+  regenerated. Tests show mechanics, not profit.
+
+## November 3 — E02 completion receipt (source 3deaad0 pushed; not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E02.md`; detailed commands/results and limitations:
+`docs/research/simulation/2026-11-03-expiry-e02/verification.json`.
+- Native Dev paper incubator: `3deaad0`, pushed and remote-verified. Flag remains
+  false, no main-rule promotion, real orders, messages, cash reset or deployment.
+- Original `f2b95cd` clean 2024 exam FAILED. Later R3 is a joint fit on seen
+  2024/2025: +Rs 6,328.74 ordinary / +Rs 5,669.02 adverse, 42 tickets, worst
+  adverse day -Rs 591.11. Severe high/low execution LOSES Rs 3,219.14. Future
+  profitability and SENSEX remain unqualified; all failed/search results retained.
+- Verification: engine test directory 6,102 passed, 4 skipped (701.35 s); current
+  focused 39 passed, covering three assertions added after full collection.
+  172 expiry/scheduler checks passed; 39,375 pure bar signals and 102 native
+  position records match. Warnings/shutdown noise are recorded, not suppressed.
+- Pinned unmodified evidence helper verifies 852 source files, identical money
+  and receipts. It binds Git HEAD too; use round03/verify_evidence.py after doc
+  commits. No guard/request/original report is relaxed. Atlas:295 modules.
+- Existing owner work preserved; N11/N11T, primary A/B/C and their money/policies
+  unchanged except one held-research-token addition to the existing batch.
+  Production `06bed07` untouched. No .env edit; new separate E02 DB is created
+  only by future enable/tests, no migration of existing state.
+- Remaining: independently observed forward paper evidence, data-basis/fill
+  assessment, then a separate promotion decision; SENSEX full-chain research.
+  Keep 2023 protected. No new download calls/quotas authorized or used here.
+
+## November 3 — E02 R3 paper incubator built (Dev, disabled, not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E02.md`; contracts/acceptance:
+`docs/research/simulation/2026-11-03-expiry-e02/round03/IMPLEMENTATION_PLAN.md`.
+The original f2b95cd untouched exam FAILED. Authorized later joint fitting
+(R3, both years seen) found a one-lot strong-trend pullback: +Rs 6,328.74 ordinary,
++Rs 5,669.02 adverse across 2024/2025, worst day -Rs 591 adverse, realized drawdown
+about Rs 1,500, sampled marked drawdown about Rs 1,750. Severe high/low execution
+LOSES Rs 3,219; no qualification or guaranteed-profit claim. 2,746 genome
+candidate evaluations plus retained neighbour/stress checks; 22/27 final coarse
+neighbours remain positive. Source/candidate hashes in round03/forward-freeze.json.
+New expiry_e02.py reads existing tick evidence, no provider/order/message client;
+separate cash/state DB. EXPIRY_E02_SHADOW_ENABLED defaults false; off still
+manages open legs. At most one held token joins the existing quote batch (no
+extra request). NIFTY lot65 only; SENSEX unqualified. Native money/policies of
+A/B/C unchanged (AST proof); no N11 or Production changes. 39 focused checks
+pass, 172 expiry/scheduler tests pass, pure signals match 39,375 bars. Full
+engine suite is RUNNING; its result is not assumed here. Atlas:295 modules.
+Next: finish verification/report receipts, push Dev; collect new forward paper
+evidence only through a separate GitHub promotion/enable decision.
+
+## November 3 — E02 reserved exam failed; authorized iterations continue
+
+Freeze `f2b95cd` was scored once on 2024 and both candidates failed. CORE
+-Rs 3,083.58 ordinary / -Rs 3,191.26 adverse; RUNNER -Rs 3,079.55 / -Rs 3,096.31.
+No passing verdict or runtime promotion. The original exam is immutable.
+Continuation: `docs/research/simulation/2026-11-03-expiry-e02/round03/PLAN.md`.
+2024 is now seen development alongside 2025; 2023 remains protected. One-lot
+sizing reduces 2025 losses/drawdown but does not repair 2024's negative entries.
+Unbraked 2024 controls lose more, so raising the risk allowance is rejected.
+A new joint seen-year genome round retains original cash/day limits, a one-lot
+cap and all trial/failure records. Any positive result will still require new
+forward evidence. No Production/N11/config/schema/deployment changes.
+
+## November 3 — E02 final candidate freeze (Dev research; 2024 exam next)
+
+Plan: `docs/research/simulation/2026-11-03-expiry-e02/PLAN.md`; implementation
+receipt `76c6b0b`. Source/data/fees and the two finalists are bound in
+`freeze-final.json` before any 2024 strategy score. 2023 stays protected.
+Round 01/02 and two chronological fits recorded 1,122 rule evaluations (including
+cross-round duplicates). CORE and RUNNER use the same causal 10-minute breakout
+entry, 20% premium stop and 15-minute hold; take 2x versus seek 3x with a floor.
+2025 development CORE +Rs 18,882 ordinary / +Rs 17,003 adverse, RUNNER +Rs 22,178 /
++Rs 20,265. Both have 22/23 positive coarse neighbours. Native-money/controller
+and fixed-entry friction checks pass; 18 research tests pass. Broader 2025
+chronological genome fits LOST on later quarters: retained as selection-decay
+warnings, not hidden by the fitted finalists. No automatic adaptive trader.
+Next: committed freeze, one 2024 exam, accept its verdict, then only a supported
+Dev paper candidate. No strategy/config/schema/N11/Production/deployment change.
+
+## November 3 — E02 iterative development authorized (Dev research, active)
+
+Owner authorized multiple improvement/search iterations after E01.1's negative
+larger-history exam. Plan/contracts/acceptance: `docs/research/simulation/2026-11-03-expiry-e02/PLAN.md`.
+2025 and already-seen 2026 are development. The 52-session 2024 expiry-option
+archive is reserved for one final committed exam; its broader market regime
+was seen by F&O research. 2023 stays protected. No new history calls.
+Baseline: 106 archived E01.1 position/event records reproduce exactly. New
+long-option replay: Rs 25,000 own cash, Rs 2,500/day original premium/fee reserve,
+maximum two tickets, pre-submission limits and drawdown brakes. Round 01 logged
+290 unique seeded genomes on 2025; development leaders are positive, with no
+out-of-sample claim. Next: failure diagnosis, more rounds, neighbours and
+selection-decay checks, at most two frozen finalists, then one 2024 exam.
+Tests cover causal clocks, native fees, reserves, orders and missing evidence.
+No runtime/config/schema/capital/N11/Production or deployment change.
+
+## November 3 — E01.1 research commit and archive verification receipt
+
+Scores/report pushed as `22a19f4`; pre-score freeze `99d3de3`, documentation
+receipt `4caa79c`. Report and continuation: `docs/research/simulation/2026-11-03-expiry-year/README.md`.
+Both proposed new exits failed; the paper rule stays unchanged. The final audit
+checks 139 passing expiry/research tests and 4,032 comparison records. The stock
+helper's moving-checkout check flags the new report commit itself (HEAD changed,
+all 850 policy source hashes unchanged). `verify_archive.py` verifies the same
+receipt/money with the unmodified helper at pinned `4caa79c`; proof in
+`pinned-audit.json`. Original report/failure retained, no guard relaxed. This
+receipt changes no strategy, configuration, schema, N11, Production or capital;
+no deployment. Owner working changes remain unstaged and preserved.
+
+## November 3 — E01.1 larger-history result (completed Dev research; trading rule unchanged)
+
+Report: `docs/research/simulation/2026-11-03-expiry-year/README.md`; committed
+pre-score freeze `99d3de3`. The 96 eligible new ten-second expiry dates support
+220 conditional paired pockets, not the entry book: E01.1 -Rs 19,557.58 versus
+E01 -Rs 40,664.52 ordinary. Separate NIFTY 2025 recorded-chain minute C proxy,
+53 tickets: E01.1 -Rs 20,638.14 versus E01 -Rs 29,337.92. Current normalized
+lots/fees, modelled fills and incomplete native chain/clocks remain explicit.
+Both novel exits failed untouched validation; neither is promoted. The frozen
+20% stop passes the aggregate relative screen but worsens stressed SENSEX;
+C stays at 25%. All 139 expiry/research tests passed; 4,032 comparison records
+and 7,967 execution events audited without money/price/budget mismatches.
+Skill evidence checks passed. No runtime/config/schema/capital/N11/Production
+or deployment change.
+
+## November 3 — E01.1 freeze commit receipt (`99d3de3`, Dev only)
+
+Frozen plan: `docs/research/simulation/2026-11-03-expiry-year/PLAN.md`.
+Source, inputs and two candidates are committed before validation. 12 tests
+passed; 42 archived legs match. Atlas regenerated with no diff. No runtime,
+configuration, schema, Production or deployment change. Existing owner working
+changes remain unstaged. Next: score the frozen validation and 2025 windows once.
+
+## November 3 — E01.1 new-history study, frozen before validation (Dev research only)
+
+`docs/research/simulation/2026-11-03-expiry-year/PLAN.md` owns this study. New
+opening-ATM evidence supports paired exits, not the full expiry book. 100/110
+dates have complete paired afternoon grids; ten remain unavailable. Jan-Jun
+2026 development is seen; other new outcomes stay sealed until the committed
+freeze. Two bounded candidates: inherited eight-minute idle exit and half-gain
+floor from +40%. A separate NIFTY 2025 recorded-chain minute C proxy is explicit
+about coarse confirmations, current normalized lots/fees and early flat time.
+Inherited economics/events: 42 legs, zero mismatches. Research tests: 12 passed.
+No runtime/config/schema changes, N11 edits, API calls or deployment. Production
+06bed07 already includes expiry-v4 on paper; it is read-only in this task.
+
+## November 3 — N05 partner correctness: bar-aligned cards, SENSEX participation, honest money and clocks, frozen protection score (actual behavior, Dev, pushed, not deployed, commit `60336db`)
+
+Owner (Nov 3): fix everything left from the two Nov 2 audits except the outage, correctness first, Dev only.
+
+- **Cards and exits on the bar-close grid (N05-T1).** `partner_manual_advisory_tick` runs at minute */5,
+  second 8 and 38 (was */2 at :50): the 13 cards Sep-Nov went out 53-136 s after their bar (median 112).
+  Its provider calls are in the normal lane, behind the management lane trading reads use. 24 runs/h (was 30).
+- **SENSEX participation as the shipped book (N05-S1).** `fno_signal_scan.observe_underlying` reads
+  `spec.rvol_source` (NIFTY futures volume for SENSEX), as `fno_orchestrator` does; the partner scan alone used
+  SENSEX's own ~8-contract bars. Without the source frame the signal keeps its levels (cards stay managed) and
+  never fires (`rvol_source_unavailable`). **Research (`docs/research/partner/2026-11-03-sensex-signal-source/`):**
+  index bars instead of the future's were tested and are not supported (signals only the index adds: −42 index
+  points at 30 min, n 26); the SENSEX future's price stays the signal source.
+- **Coach money (N05-K3).** ENTRY_ABOVE_LIMIT is measured by what paying over the limit cost (₹5.1 x 20 = ₹102 on
+  Nov 2), not the whole trade (−₹1,943); the card's skip rule stays the advice; the day's lesson goes to the
+  costliest real mistake.
+- **Clocks (N05-P2/P3).** A card update's `created_at` is when it was queued (detection), `observed_at` the bar
+  close; the watch's looks store the future's `fut_quote_at`/`fut_trade_at`; each plan logs `fut_source`
+  QUOTE|BAR.
+- **Trigger wording (N05-W1).** Cards and CARD plans say "exit on a 5-min close under/over ..." (it is
+  watched on a completed 5-minute close, not a touch).
+- **Wrap (N05-R1).** A card whose premium SL print came before its index stop is told "🛑 SL ₹272.6 hit by 11:38
+  (5-min prints)" and its option path ends at the SL ("→ SL ₹272.6 by 11:38 (−14%)").
+- **Sync rows (N05-B1).** An earlier day read again never lowers its stored counts or forgets its stop/account
+  facts (Oct 27 had been rewritten as 0 orders).
+- **CLOSE after PLAN (N05-C2).** A buy after the warning time gets its PLAN first (held ≤ 60 s).
+- **Positions read (N05-A1).** `partner_broker_days.positions_read_at` (time, or FAILED); the review says when
+  open positions were not read after the close (Nov 2: the 15:50 read failed).
+- **Profit protection frozen (N05-PP).** `partner_protect_score` (SPEC v1-13b21f18f0f1, frozen Nov 3, decides from
+  Nov 4): B (Oct 24) and B2 (arm at P + W, stop P, trail best − W), message overlay, 20 s reaction; SUPPORTED
+  needs ≥20 fired, a positive total, still positive without the best, helped ≥ hurt. B reproduces the research
+  (8 of 166, +₹5,462.86). B2 was not scored on any earlier day. No message is sent.
+- **Test reliability.** `test_a_tick_that_waited_for_the_fast_exit...` waits for both ticks on the F&O lock
+  (a 50 ms sleep failed ~half the runs on Windows, at HEAD too).
+- **Not changed:** the outage (owner); recommendation qualification and account-risk policy (NOT CHECKED cards
+  with reward < risk; plan losses up to 17% of cash) are the owner's policy calls.
+
+## November 3 — N04 partner fixes: one plan for a carded buy, day giveback, the login survives a restart, card strike at its own expiry (actual behavior, Dev, pushed, PR open, not deployed, commit `d395433`)
+
+Follows N03 (Production 06bed07). Source: the two Nov 2 partner audits and the Nov 3 check.
+
+- **One plan for a carded buy (N04-A).** `partner_watch.card_for` reads the latest card delivered today for
+  the option before its first buy, with any exit/target message delivered before it; `card_relation`:
+  ON_CARD (inside the card's buy window + 60 s, card open, price above its stop), AFTER_CLOSE,
+  AFTER_WINDOW, UNDER_STOP. ON_CARD: the plan adopts the card's stop and target (`adopt_card`,
+  `stop_basis` CARD) and the PLAN says "on the 10:36 card", "The card's stop ₹272.6 (or exit if SENSEX
+  ≈75,284 breaks)", "The card's target: option ≈₹360–423 (SENSEX ≈75,654)", and "You paid ₹329.3; the card
+  said buy up to ₹324.2" when above the limit. Otherwise the plan is the watch's own and says "Not the
+  10:36 card's trade: its buy window ended 10:46" (or "that card closed at 11:40 (stop level hit)", or
+  "bought at or under its stop"). Nov 2: card 272.60 / ≈360-423 and plan 270.20 / 450.35 on one buy.
+- **Day giveback (N04-B).** `day_so_far` keeps the day's best (running result after each closed trade) and
+  `giveback` = DAY_STEPs (10%) of the cash given back from it while the day is still up; a DAY message
+  ("📉 Today so far: +₹8,457 after charges, ₹4,464 under today's best (+₹12,921 at 12:20): 15% of your
+  ₹28,529 cash given back.") goes once a step (key `day:<day>:gb:<best time>:<step>`, a new best restarts
+  the steps), on a quiet day too. Under zero the loss steps tell it, as before. Nov 2 would have had three
+  (12:32, 12:54, 13:19) instead of none. WATCH_ON and the quiet answer say so.
+- **The login survives a restart (N04-C).** `partner_broker_sync` stores the session like the owner's token
+  (`partner_kite_session.json` beside the DB, atomic write, 0600 where possible) and `main` restores it at
+  startup (`restore_session`) only while unexpired and for PARTNER_KITE_USER_ID; `disconnect` (logout, a
+  dead token, expiry) deletes it. A restart inside the session then says "🔌 The trade watch restarted and is
+  on again; your login was kept. Changes you made while it was off are not told one by one: check your stops
+  in Zerodha." (once). Reads stay on the read-only allowlist.
+- **OI walls (N04-D).** `fno_analytics.oi_walls(snap, reference=...)`; the partner's pulses, alerts and brief
+  (`partner_orchestrator._partner_walls`) find walls around the chain's parity forward, not the monthly
+  future (Nov 2: "support 23,300 held" with NIFTY ≈23,259). The owner's other callers are unchanged.
+- **Every buy order costed (N04-G).** `_result_for` and `revised` charge each buy order of the trade plus the
+  sale (Nov 2 ADDED: ₹23.60 short).
+- **Card strike at its own expiry (N04-H).** `partner_manual_advisory.chain_atms`: the card's long leg is at
+  the parity forward's strike when the parity is sane (within 2% of the future), the future's only when the
+  chain has no legs there. Nov 2: "ATM" 75800 CE came from the monthly future 75,787 with the index ≈75,410,
+  about four strikes out of the money for a call (a put would have been four strikes in it). Cards now cost
+  more per lot on SENSEX (an at-the-money premium) and carry a higher delta.
+- **Research: arm B profit protection scored** (`docs/research/partner/2026-11-03-arm-b-score/`): frozen Oct 24,
+  166 trips Oct 27 - Nov 2: fires on 8 (20 s reaction), 5 better and 3 worse, +₹5,463 overall, negative on
+  two of five days, would not have armed on the 10:36 trade. Under the 20-trade bar: not enabled, not tuned.
+- **Not changed:** card timing (needs a check of the quarter-hour Kite bursts the off-grid schedule avoids);
+  SENSEX signal source (needs the index's bars from the archive; the same bars feed the paper book); an
+  off-host dead-man alert (owner infrastructure); coach counterfactual wording ("FOMO" is the owner's design).
+
+## November 3 — Partner fixes from the two Nov 2 audits (actual behavior, deployed as Production 06bed07, PR #129, commit `b9b0d2c`)
 
 Source: Production `docs/2026-11-02-partner-system-deep-audit.md`, a second auditor's review of it, and a
 check against the code and the Nov 2 evidence (`docs/audit-evidence/2026-11-02-partner/`).

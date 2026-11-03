@@ -1,0 +1,22 @@
+{
+  "head": "db05ff6bb37bf6da48e61e9499eede6dd4240ea5",
+  "files": {
+    "RETURNS.md": "bce410de18ea584e6bf72a1c5174a40bc8e770013db4b3a5f677c440d2e1c6d0",
+    "return_lab.py": "57d0cdf395f44d20caeed9d606845e8570c31c166581701199419e0e289cb788",
+    "return_day.py": "22d954a6a8cd12b72453beab759373dd4de39190b421ad63d7d5f4cabf9da1e0",
+    "return_study.py": "c335b225310632d5c678c8e6d203bc021378fdd8e333bee831b645830ccce7c5",
+    "test_return.py": "17021f64ae6bf122a95cc91089d7a2873c47a987f552124edc9fd8b5c1c45a38"
+  },
+  "parents": {
+    "freeze-forecast.json": "aa63ac36ac54c2538f96357db6129d250d6b92df8239152d369822851f83dbfd",
+    "forecast-results.json": "4730d90dba20f20a13d2c8dc74a56b35bd5fafe5660414320066f14f3accd787",
+    "dataset-summary.json": "105a20cc2df5a65a448e02ddb5327ba2b2ad4ea9b15a69af8dc47eb7c1196247"
+  },
+  "targets": [
+    2,
+    5
+  ],
+  "regularization": 1.0,
+  "classification": "SEEN_DEVELOPMENT_NEW_MONETARY_OBJECTIVE",
+  "api_calls": 0
+}

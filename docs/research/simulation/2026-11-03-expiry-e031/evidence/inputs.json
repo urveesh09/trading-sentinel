@@ -1,0 +1,30 @@
+{
+  "sealed_at": "2026-11-03T16:12:16.534121+05:30",
+  "files_sha256": {
+    "configuration.json": "07d8fcac512a6db3b680d10540a08ff438fe8a796909edecb242b0c3ece3475a",
+    "data-proof.json": "a0b528b30c2ebd9c1df9be63cbfc116b947826b7208cc3610cace700dd817176",
+    "source/bootstrap.py": "3983b8f1182e0efd63918aeeff0ba9d0ec8a5cc3d9a42a557a5d09757ca11c26",
+    "source/build_lab.py": "0c296c7f2f1a2f60897766c31fcb4b5e10cc9d18a2869806cf946ea2dc5342a6",
+    "source/checkpoint.py": "d9e78cd3f597333305af5514c4c100be171a4685e69a8c428211808402b13801",
+    "source/complete_docs.py": "16d13d53fcba1f48c8e0d6a6e15c434680d5da6f0104b1ed26495ec272be834d",
+    "source/finalize.py": "2da89b5178d28d58280566de295318599709e9e3b57e0f29cad5a1d341b65322",
+    "source/friction_audit.py": "ce54a5a99b03efacf270c1c5c9c3ba06722c0ef5d384b19054c95b28ac6384bc",
+    "source/lab.py": "8602a773461a1ad09f88e84fa8403563e01d856d2a428435e7a5730b618224b6",
+    "source/lock_finalists.py": "bd0e2f1a9855e15d93ae927d6e9489ed5db55e675a625c7c5447e29c071fe7e0",
+    "source/native_parity.py": "3285dd58d7c9dfe18c0901f67c7afe0bb2b141ed55fb1aeb79c12360434b8ffd",
+    "source/prepare_evidence.py": "b37c538554cd6a35f70f1e0fe58bdc8bdfa2fe8a1890a80628dba97b96e84ccb",
+    "source/recorded_proxy.py": "3652688ca21c5e58d123d55ddce7d3d22bac7c01fbc18e5f80086b35b6e201dd",
+    "source/robustness.py": "a194a1f9b4a333a3980e3154c0175b1d101aa8e07a2410dc938a46b4251dc904",
+    "source/run_engine_tests.py": "f9215e87ee9d239c54a6d4fc0907c44fa6678acf613492d603a1a53687f94528",
+    "source/study.py": "5ef20437aecf7e974045b868079190d5c15af7854b542bcbf56b0ed086d1fc10",
+    "source/test_lab.py": "f98a8e88ba8918e733b5a8d722980f30b9288afefa8ff46459a57fd6804ef646",
+    "source/verify_evidence.py": "6f0360ff359a80e969773d3d07232de48034db2580143d8c312e80ad01754afb",
+    "PLAN.md": "09a1280f4e6aafc76c5c01009c30d588e303d339cef4db89fdc2dcc05d241b7c",
+    "IMPLEMENTATION_PLAN.md": "bc561ff9bc12f991410ed5f1b3e30130be2b3a2bb0577a1e97753b616abdfebf",
+    "initial-freeze.json": "93cb072cae4728abaceadc2b97434b067b68abb79e70b99b30b61b5c4e329fa8",
+    "finalists-freeze.json": "270269f585c39a6e39c85c765d5d6cf04accaa2e0c0c9a5e6dbc63f6c00cd0e1",
+    "forward-freeze.json": "92b0bfaa30f6e63ca0d007b96c8e3fd5e4044c0a1aecc6630e2804e59eaaae87",
+    "candidate.json": "a1538ada45f8a218584dd09a62845ac99f09c203670c0d6af6f9b4f418491108",
+    "recorded-proxy-freeze.json": "fdd99491f4007fe7a7e1aa1c2c2ee435b045cec0310d5e0d1e74329e7c4c735d"
+  }
+}

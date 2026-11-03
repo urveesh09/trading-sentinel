@@ -285,14 +285,16 @@ def render_buyer_card(label: str, view: dict, *, underlying: str, direction: str
         lines[-1] += (f" or if {underlying} {side} ≈{level}" if basis == "INDEX"
                       else f" or if {underlying} fut {side} {level}")
     index_stop = level_label(underlying, view["invalidation_index"], basis)
+    # [N05-W1] Said as it is watched: the index stop is confirmed on a completed 5-minute close past it, not on
+    # a touch ("exit if ... breaks" read as any print through it).
+    past = f"a 5-min close {'under' if long_view else 'over'} {index_stop}"
     if view.get("sl_premium") is not None:
         # The premium stop is the protection: the index stop is only confirmed
         # on a 5-minute close (Oct 7: ₹158 premium stop at 14:02, the index
         # stop seen at 14:30 with the put at ₹117).
-        lines.append(f"🛑 SL order at ₹{_px(view['sl_premium'])} right after buying "
-                     f"(or exit if {index_stop} breaks)")
+        lines.append(f"🛑 SL order at ₹{_px(view['sl_premium'])} right after buying (or exit on {past})")
     else:
-        lines.append(f"🛑 SL: exit if {index_stop} breaks")
+        lines.append(f"🛑 SL: exit on {past}")
     target_line = f"🎯 Target: {level_label(underlying, view['target_index'], basis)}"
     low, high = view.get("target_premium_low"), view.get("target_premium")
     if low is not None and high is not None:
@@ -441,7 +443,7 @@ def _sample_age_sec(sample_ts: str, at: str) -> Optional[float]:
 
 
 def premium_path(paid: float, series: list, stopped_at: Optional[str] = None,
-                 exit_by: Optional[str] = None) -> str:
+                 exit_by: Optional[str] = None, sl_exit: Optional[float] = None) -> str:
     """'option ₹97 → peak ₹141, close ₹109' from 5-minute snapshot LTPs.
 
     [O13-B1] ``stopped_at`` ('YYYY-MM-DD HH:MM:SS', same clock as the
@@ -458,6 +460,9 @@ def premium_path(paid: float, series: list, stopped_at: Optional[str] = None,
     [O15] ``exit_by`` (the card's square-off deadline, same clock) ends a
     path with no stop: prints after it are not the card's result (Oct 15:
     the last print, 15:27, came after the 15:15 exit).
+
+    [N05-R1] ``sl_exit``: the card's premium SL order sold at ``stopped_at`` (its 5-minute print at or under
+    the SL): the held path ends at the SL price, as the card's own exit.
     """
     if not paid or paid <= 0 or not series:
         return ""
@@ -475,7 +480,9 @@ def premium_path(paid: float, series: list, stopped_at: Optional[str] = None,
             return ""
         ts, ltp = held[-1]
         age = _sample_age_sec(ts, stopped_at)
-        if age is not None and age <= STOP_SAMPLE_MAX_AGE_SEC:
+        if sl_exit is not None:
+            text = f"option ₹{_px(paid)} → SL ₹{_px(sl_exit)} by {str(stopped_at)[11:16]} ({pct(sl_exit)})"
+        elif age is not None and age <= STOP_SAMPLE_MAX_AGE_SEC:
             text = f"option ₹{_px(paid)} → ₹{_px(ltp)} at {str(ts)[11:16]}, just before the stop ({pct(ltp)})"
         else:
             text = (f"option ₹{_px(paid)} → last seen ₹{_px(ltp)} at {str(ts)[11:16]} ({pct(ltp)}); "

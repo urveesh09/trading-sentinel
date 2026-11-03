@@ -131,8 +131,11 @@ def test_a_chased_entry_shows_the_extra_risk_and_the_better_action():
     # Risk to the stop: (540 - 464.7) x 20 = 1,506 against (522.35 - 464.7) x 20 = 1,153 -> 31% more.
     assert chase["why"] == ("The stop stays at ₹464.7, so a stop-out loses ₹1,506 instead of ₹1,153 on 20 qty "
                             "(31% more), while the first target ₹567.2 is ₹27.2 away instead of ₹44.85.")
-    assert chase["better"] == f"Skip it, as the card says above the limit: ₹0 instead of {rs(actual)}."
-    assert (chase["better_pnl"], chase["actual_pnl"], chase["impact_rs"]) == (0.0, actual, actual)
+    # [N05-K3] The flag is measured by what paying over the limit cost (₹17.65 x 20 = ₹353), not the whole trade.
+    at_limit = round(actual + 353.0, 2)
+    assert chase["better"] == (f"Skip it, as the card says above the limit. Paying ₹17.65 over it on 20 cost ₹353: "
+                               f"at the limit, {pc._instead(at_limit, actual)}.")
+    assert (chase["better_pnl"], chase["actual_pnl"], chase["impact_rs"]) == (at_limit, actual, -353.0)
     assert chase["advice"].startswith("Above the buy-up-to price, skip.")
     # Chasing above the limit was a skip on the card: plan ₹0.
     assert item["plan"]["pnl"] == 0.0 and "price above the limit" in item["plan"]["note"]
@@ -146,9 +149,9 @@ def test_waiting_is_offered_when_the_price_came_back_and_a_lucky_chase_is_still_
     actual = _net(540.0, 560.0, 20)
     assert actual > 0
     chase = item["flags"][0]
-    assert chase["better"] == (f"Skip it, as the card says above the limit: ₹0 instead of {rs(actual)}. Or wait with "
-                               f"a limit order at ₹522.35: the option traded at ₹518 at 12:15, before the "
-                               f"skip-after time.")
+    assert chase["better"] == (f"Skip it, as the card says above the limit. Paying ₹17.65 over it on 20 cost ₹353: "
+                               f"at the limit, {pc._instead(round(actual + 353.0, 2), actual)}. Or wait with a limit "
+                               f"order at ₹522.35: the option traded at ₹518 at 12:15, before the skip-after time.")
     assert chase["why"].endswith(f"It made {rs(actual)} this time; the rule is about the risk taken, not about "
                                  f"this result.")
 

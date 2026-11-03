@@ -1,0 +1,760 @@
+{
+  "histories": 60,
+  "runs": {
+    "REVERSE|True|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 19,
+      "filled_orders": 76,
+      "exit_reasons": {
+        "TIME": 10,
+        "STRUCTURE": 6,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 1725.07,
+      "missing_nav_marks": 0,
+      "end_cash": 24034.07
+    },
+    "REVERSE|True|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 14,
+      "filled_orders": 56,
+      "exit_reasons": {
+        "TIME": 8,
+        "STRUCTURE": 4,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1604.5,
+      "missing_nav_marks": 0,
+      "end_cash": 23640.43
+    },
+    "REVERSE|True|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 19,
+      "filled_orders": 76,
+      "exit_reasons": {
+        "TIME": 10,
+        "STRUCTURE": 6,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 1725.07,
+      "missing_nav_marks": 0,
+      "end_cash": 24034.07
+    },
+    "REVERSE|True|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 14,
+      "filled_orders": 56,
+      "exit_reasons": {
+        "TIME": 8,
+        "STRUCTURE": 4,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1604.5,
+      "missing_nav_marks": 0,
+      "end_cash": 23640.43
+    },
+    "REVERSE|True|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 11,
+      "filled_orders": 44,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 1,
+        "TIME": 7,
+        "STRUCTURE": 3
+      },
+      "sampled_marked_drawdown": 1693.53,
+      "missing_nav_marks": 0,
+      "end_cash": 23396.9
+    },
+    "REVERSE|True|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 8,
+      "filled_orders": 32,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 1,
+        "TIME": 6,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1537.98,
+      "missing_nav_marks": 0,
+      "end_cash": 23516.74
+    },
+    "REVERSE|False|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 42,
+      "filled_orders": 168,
+      "exit_reasons": {
+        "TIME": 22,
+        "STRUCTURE": 14,
+        "TAKE_HALF_CREDIT": 6
+      },
+      "sampled_marked_drawdown": 6055.92,
+      "missing_nav_marks": 0,
+      "end_cash": 19699.95
+    },
+    "REVERSE|False|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 41,
+      "filled_orders": 164,
+      "exit_reasons": {
+        "TIME": 22,
+        "STRUCTURE": 14,
+        "TAKE_HALF_CREDIT": 5
+      },
+      "sampled_marked_drawdown": 8224.27,
+      "missing_nav_marks": 0,
+      "end_cash": 17020.66
+    },
+    "REVERSE|False|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "TIME": 12,
+        "STRUCTURE": 6,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 1995.92,
+      "missing_nav_marks": 0,
+      "end_cash": 23847.81
+    },
+    "REVERSE|False|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 20,
+      "filled_orders": 80,
+      "exit_reasons": {
+        "TIME": 12,
+        "STRUCTURE": 6,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 3235.62,
+      "missing_nav_marks": 0,
+      "end_cash": 22084.37
+    },
+    "REVERSE|False|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 3,
+        "TIME": 10,
+        "STRUCTURE": 8
+      },
+      "sampled_marked_drawdown": 4257.8,
+      "missing_nav_marks": 0,
+      "end_cash": 20852.14
+    },
+    "REVERSE|False|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 3,
+        "TIME": 10,
+        "STRUCTURE": 8
+      },
+      "sampled_marked_drawdown": 5118.43,
+      "missing_nav_marks": 0,
+      "end_cash": 19936.29
+    },
+    "HOLD6|True|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "TIME": 5,
+        "TAKE_HALF_CREDIT": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1688.26,
+      "missing_nav_marks": 0,
+      "end_cash": 23509.3
+    },
+    "HOLD6|True|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "TIME": 5,
+        "TAKE_HALF_CREDIT": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 2260.03,
+      "missing_nav_marks": 0,
+      "end_cash": 22882.5
+    },
+    "HOLD6|True|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "TIME": 5,
+        "TAKE_HALF_CREDIT": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1688.26,
+      "missing_nav_marks": 0,
+      "end_cash": 23509.3
+    },
+    "HOLD6|True|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "TIME": 5,
+        "TAKE_HALF_CREDIT": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 2260.03,
+      "missing_nav_marks": 0,
+      "end_cash": 22882.5
+    },
+    "HOLD6|True|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "TIME": 17,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1406.89,
+      "missing_nav_marks": 0,
+      "end_cash": 24949.46
+    },
+    "HOLD6|True|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 10,
+      "filled_orders": 40,
+      "exit_reasons": {
+        "STRUCTURE": 2,
+        "TIME": 8
+      },
+      "sampled_marked_drawdown": 1636.51,
+      "missing_nav_marks": 0,
+      "end_cash": 23491.67
+    },
+    "HOLD6|False|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 44,
+      "filled_orders": 176,
+      "exit_reasons": {
+        "TIME": 33,
+        "TAKE_HALF_CREDIT": 4,
+        "STRUCTURE": 7
+      },
+      "sampled_marked_drawdown": 4205.08,
+      "missing_nav_marks": 0,
+      "end_cash": 22259.86
+    },
+    "HOLD6|False|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 44,
+      "filled_orders": 176,
+      "exit_reasons": {
+        "TIME": 34,
+        "TAKE_HALF_CREDIT": 3,
+        "STRUCTURE": 7
+      },
+      "sampled_marked_drawdown": 6261.08,
+      "missing_nav_marks": 0,
+      "end_cash": 19782.38
+    },
+    "HOLD6|False|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "TIME": 16,
+        "TAKE_HALF_CREDIT": 2,
+        "STRUCTURE": 3
+      },
+      "sampled_marked_drawdown": 3205.14,
+      "missing_nav_marks": 0,
+      "end_cash": 22310.4
+    },
+    "HOLD6|False|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "TIME": 16,
+        "TAKE_HALF_CREDIT": 2,
+        "STRUCTURE": 3
+      },
+      "sampled_marked_drawdown": 4462.0,
+      "missing_nav_marks": 0,
+      "end_cash": 20816.47
+    },
+    "HOLD6|False|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "TIME": 17,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1406.89,
+      "missing_nav_marks": 0,
+      "end_cash": 24949.46
+    },
+    "HOLD6|False|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "TIME": 18,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2007.92,
+      "missing_nav_marks": 0,
+      "end_cash": 23965.91
+    },
+    "HOLD10|True|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2239.12,
+      "missing_nav_marks": 0,
+      "end_cash": 23095.86
+    },
+    "HOLD10|True|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2764.77,
+      "missing_nav_marks": 0,
+      "end_cash": 22456.08
+    },
+    "HOLD10|True|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2239.12,
+      "missing_nav_marks": 0,
+      "end_cash": 23095.86
+    },
+    "HOLD10|True|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2764.77,
+      "missing_nav_marks": 0,
+      "end_cash": 22456.08
+    },
+    "HOLD10|True|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "CREDIT_STOP": 1,
+        "TIME": 13,
+        "TAKE_HALF_CREDIT": 5
+      },
+      "sampled_marked_drawdown": 1251.02,
+      "missing_nav_marks": 0,
+      "end_cash": 24959.97
+    },
+    "HOLD10|True|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "TIME": 14,
+        "TAKE_HALF_CREDIT": 5
+      },
+      "sampled_marked_drawdown": 1651.17,
+      "missing_nav_marks": 0,
+      "end_cash": 24158.59
+    },
+    "HOLD10|False|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 44,
+      "filled_orders": 176,
+      "exit_reasons": {
+        "STRUCTURE": 11,
+        "TIME": 24,
+        "TAKE_HALF_CREDIT": 8,
+        "CREDIT_STOP": 1
+      },
+      "sampled_marked_drawdown": 4494.69,
+      "missing_nav_marks": 0,
+      "end_cash": 21906.46
+    },
+    "HOLD10|False|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 44,
+      "filled_orders": 176,
+      "exit_reasons": {
+        "STRUCTURE": 11,
+        "TIME": 25,
+        "TAKE_HALF_CREDIT": 8
+      },
+      "sampled_marked_drawdown": 6353.01,
+      "missing_nav_marks": 0,
+      "end_cash": 19604.7
+    },
+    "HOLD10|False|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STRUCTURE": 7,
+        "TIME": 11,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 3553.01,
+      "missing_nav_marks": 0,
+      "end_cash": 21946.49
+    },
+    "HOLD10|False|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STRUCTURE": 7,
+        "TIME": 11,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 4813.07,
+      "missing_nav_marks": 0,
+      "end_cash": 20446.11
+    },
+    "HOLD10|False|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "CREDIT_STOP": 1,
+        "TIME": 13,
+        "TAKE_HALF_CREDIT": 5
+      },
+      "sampled_marked_drawdown": 1251.02,
+      "missing_nav_marks": 0,
+      "end_cash": 24959.97
+    },
+    "HOLD10|False|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "TIME": 14,
+        "TAKE_HALF_CREDIT": 5
+      },
+      "sampled_marked_drawdown": 1651.17,
+      "missing_nav_marks": 0,
+      "end_cash": 24158.59
+    },
+    "WIDTH100|True|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 358.63,
+      "missing_nav_marks": 0,
+      "end_cash": 24785.16
+    },
+    "WIDTH100|True|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 420.39,
+      "missing_nav_marks": 0,
+      "end_cash": 24645.5
+    },
+    "WIDTH100|True|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 358.63,
+      "missing_nav_marks": 0,
+      "end_cash": 24785.16
+    },
+    "WIDTH100|True|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 420.39,
+      "missing_nav_marks": 0,
+      "end_cash": 24645.5
+    },
+    "WIDTH100|True|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 0,
+      "filled_orders": 0,
+      "exit_reasons": {},
+      "sampled_marked_drawdown": 0.0,
+      "missing_nav_marks": 0,
+      "end_cash": 25000.0
+    },
+    "WIDTH100|True|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 0,
+      "filled_orders": 0,
+      "exit_reasons": {},
+      "sampled_marked_drawdown": 0.0,
+      "missing_nav_marks": 0,
+      "end_cash": 25000.0
+    },
+    "WIDTH100|False|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 358.63,
+      "missing_nav_marks": 0,
+      "end_cash": 24785.16
+    },
+    "WIDTH100|False|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 420.39,
+      "missing_nav_marks": 0,
+      "end_cash": 24645.5
+    },
+    "WIDTH100|False|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 358.63,
+      "missing_nav_marks": 0,
+      "end_cash": 24785.16
+    },
+    "WIDTH100|False|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 420.39,
+      "missing_nav_marks": 0,
+      "end_cash": 24645.5
+    },
+    "WIDTH100|False|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 0,
+      "filled_orders": 0,
+      "exit_reasons": {},
+      "sampled_marked_drawdown": 0.0,
+      "missing_nav_marks": 0,
+      "end_cash": 25000.0
+    },
+    "WIDTH100|False|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 0,
+      "filled_orders": 0,
+      "exit_reasons": {},
+      "sampled_marked_drawdown": 0.0,
+      "missing_nav_marks": 0,
+      "end_cash": 25000.0
+    },
+    "EXTRA_FRICTION|True|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2595.8,
+      "missing_nav_marks": 0,
+      "end_cash": 22612.05
+    },
+    "EXTRA_FRICTION|True|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 8,
+      "filled_orders": 32,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1897.41,
+      "missing_nav_marks": 0,
+      "end_cash": 23258.49
+    },
+    "EXTRA_FRICTION|True|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2595.8,
+      "missing_nav_marks": 0,
+      "end_cash": 22612.05
+    },
+    "EXTRA_FRICTION|True|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 8,
+      "filled_orders": 32,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1897.41,
+      "missing_nav_marks": 0,
+      "end_cash": 23258.49
+    },
+    "EXTRA_FRICTION|True|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 22,
+      "filled_orders": 88,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "CREDIT_STOP": 1,
+        "TIME": 13,
+        "TAKE_HALF_CREDIT": 4
+      },
+      "sampled_marked_drawdown": 1501.87,
+      "missing_nav_marks": 0,
+      "end_cash": 24682.99
+    },
+    "EXTRA_FRICTION|True|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 19,
+      "filled_orders": 76,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 13,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 1291.69,
+      "missing_nav_marks": 0,
+      "end_cash": 24607.66
+    },
+    "EXTRA_FRICTION|False|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 43,
+      "filled_orders": 172,
+      "exit_reasons": {
+        "STRUCTURE": 11,
+        "TIME": 24,
+        "TAKE_HALF_CREDIT": 7,
+        "CREDIT_STOP": 1
+      },
+      "sampled_marked_drawdown": 6472.01,
+      "missing_nav_marks": 0,
+      "end_cash": 19854.29
+    },
+    "EXTRA_FRICTION|False|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 34,
+      "filled_orders": 136,
+      "exit_reasons": {
+        "STRUCTURE": 9,
+        "TIME": 19,
+        "TAKE_HALF_CREDIT": 6
+      },
+      "sampled_marked_drawdown": 4960.88,
+      "missing_nav_marks": 0,
+      "end_cash": 21037.7
+    },
+    "EXTRA_FRICTION|False|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STRUCTURE": 7,
+        "TIME": 11,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 5036.55,
+      "missing_nav_marks": 0,
+      "end_cash": 20171.3
+    },
+    "EXTRA_FRICTION|False|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 15,
+      "filled_orders": 60,
+      "exit_reasons": {
+        "STRUCTURE": 6,
+        "TIME": 6,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 3987.54,
+      "missing_nav_marks": 0,
+      "end_cash": 21430.04
+    },
+    "EXTRA_FRICTION|False|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 22,
+      "filled_orders": 88,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "CREDIT_STOP": 1,
+        "TIME": 13,
+        "TAKE_HALF_CREDIT": 4
+      },
+      "sampled_marked_drawdown": 1501.87,
+      "missing_nav_marks": 0,
+      "end_cash": 24682.99
+    },
+    "EXTRA_FRICTION|False|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 19,
+      "filled_orders": 76,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 13,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 1291.69,
+      "missing_nav_marks": 0,
+      "end_cash": 24607.66
+    }
+  },
+  "mismatches": 0,
+  "selection": false
+}

@@ -277,8 +277,104 @@ def connected(now: Optional[datetime] = None) -> bool:
 
 
 def disconnect() -> None:
+    """The login ends: in memory and its stored copy (a dead or ended token is never restored)."""
     global _session
     _session = None
+    _forget_stored_session()
+
+
+# ---------------------------------------------------------------------------
+# [N04-C] the session survives a restart
+# ---------------------------------------------------------------------------
+# Nov 2: the 07:02 login was lost by the 08:59 restart and the partner logged in again at 09:06; any restart in
+# the session left the watch off until a new login. The session is stored as the owner's Kite token is
+# (token_lifecycle._persist_kite_token: same data volume, an atomic write) and restored once at startup, only while
+# it has not expired and only for PARTNER_KITE_USER_ID. Reads stay on the read-only allowlist.
+
+def _session_path() -> str:
+    import os
+    return os.path.join(os.path.dirname(settings.DB_PATH), "partner_kite_session.json")
+
+
+def _store_session(session: _Session) -> bool:
+    """Atomic write (temp file, fsync, replace), owner-only where the system allows it. False when it failed:
+    the login still works in memory, and a restart then asks for it again (as before)."""
+    import json
+    import os
+    path = _session_path()
+    tmp = f"{path}.tmp"
+    payload = {"access_token": session.access_token, "account": session.account,
+               "user": settings.PARTNER_KITE_USER_ID.strip().upper(), "login_at": session.login_at.isoformat(),
+               "expires_at": session.expires_at.isoformat()}
+    try:
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(payload, fh)
+            fh.flush()
+            os.fsync(fh.fileno())
+        try:
+            os.chmod(tmp, 0o600)
+        except OSError:
+            pass
+        os.replace(tmp, path)
+        return True
+    except OSError as exc:
+        logger.warning("partner_zerodha_session_store_failed err=%s", type(exc).__name__)
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        return False
+
+
+def _forget_stored_session() -> None:
+    import os
+    try:
+        os.remove(_session_path())
+    except FileNotFoundError:
+        pass
+    except OSError as exc:
+        logger.warning("partner_zerodha_session_forget_failed err=%s", type(exc).__name__)
+
+
+def restore_session(now: Optional[datetime] = None) -> bool:
+    """At startup: the stored login, while it has not expired and is the partner's own. True when restored."""
+    import json
+    global _session
+    now = (now or datetime.now(IST)).astimezone(IST)
+    if _session is not None or not configured():
+        return False
+    try:
+        with open(_session_path(), encoding="utf-8") as fh:
+            stored = json.load(fh)
+        token, expires = str(stored.get("access_token") or ""), datetime.fromisoformat(stored["expires_at"])
+        login_at = datetime.fromisoformat(stored["login_at"])
+        user = str(stored.get("user") or "")
+    except FileNotFoundError:
+        return False
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        logger.warning("partner_zerodha_session_unreadable err=%s", type(exc).__name__)
+        _forget_stored_session()
+        return False
+    if not token or user != settings.PARTNER_KITE_USER_ID.strip().upper() or now >= expires:
+        _forget_stored_session()
+        return False
+    global _restored_at
+    _session = _Session(access_token=token, account=str(stored.get("account") or mask_account(user)),
+                        login_at=login_at.astimezone(IST), expires_at=expires.astimezone(IST))
+    _restored_at = now
+    logger.info("partner_zerodha_session_restored account=%s login=%s expires=%s", _session.account,
+                _session.login_at.isoformat(), _session.expires_at.isoformat())
+    return True
+
+
+_restored_at: Optional[datetime] = None
+
+
+def take_restored() -> Optional[datetime]:
+    """When the stored login was restored by this process (once; None after it was taken, or if none was)."""
+    global _restored_at
+    at, _restored_at = _restored_at, None
+    return at
 
 
 def allowed(method: str, path: str) -> bool:
@@ -335,6 +431,7 @@ async def create_session(request_token: str, now: Optional[datetime] = None) -> 
         raise BrokerError("wrong_account")
     _session = _Session(access_token=token, account=mask_account(user_id), login_at=now,
                         expires_at=next_expiry(now))
+    _store_session(_session)              # [N04-C] a restart keeps the watch
     logger.info("partner_zerodha_login account=%s expires=%s", _session.account, _session.expires_at.isoformat())
     return {"account": _session.account, "login_at": now.isoformat(), "expires_at": _session.expires_at.isoformat()}
 
@@ -778,6 +875,10 @@ async def init_partner_broker_db(db_path: str) -> None:
         for column, declaration in _ORDER_HISTORY_COLS:
             if column not in present:
                 await db.execute(f"ALTER TABLE partner_orders ADD COLUMN {column} {declaration}")
+        # [N05-A1] When the day's positions were last read (a failed read leaves the last good one).
+        days = {row[1] for row in await (await db.execute("PRAGMA table_info(partner_broker_days)")).fetchall()}
+        if "positions_read_at" not in days:
+            await db.execute("ALTER TABLE partner_broker_days ADD COLUMN positions_read_at TEXT")
         await db.commit()
 
 
@@ -925,11 +1026,11 @@ async def broker_days(db_path: str, first_day: str, last_day: str) -> dict:
     await init_partner_broker_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         rows = await (await db.execute(
-            "SELECT session_date, synced_at, complete, option_orders, other_orders, stops_known "
+            "SELECT session_date, synced_at, complete, option_orders, other_orders, stops_known, positions_read_at "
             "FROM partner_broker_days WHERE session_date>=? AND session_date<=?", (first_day, last_day))).fetchall()
     return {day: {"synced_at": synced_at, "complete": bool(complete), "option_orders": n, "other_orders": other,
-                  "stops_known": bool(stops_known)}
-            for day, synced_at, complete, n, other, stops_known in rows}
+                  "stops_known": bool(stops_known), "positions_read_at": positions_at}
+            for day, synced_at, complete, n, other, stops_known, positions_at in rows}
 
 
 async def _day_cards(db_path: str, first_day: str, last_day: str) -> list:
@@ -1010,14 +1111,24 @@ async def _sync_fills(now: datetime, db_path: str) -> tuple[dict, list]:
             day_reports = [r for r in reports if r["session_date"] == day]
             other = counts["other_orders"] if day == today else 0
             complete = _complete(day, now)
+            # [N05-B1] An earlier day read again (a morning book still holding yesterday's orders, its trades
+            # already gone) can only add to what was stored: Oct 27's row was rewritten at 07:35 on Oct 28 as 0
+            # option orders, with its 55 still stored. Today's row is replaced as the day's fills grow.
+            past = int(day < today)
             await db.execute(
                 "INSERT INTO partner_broker_days(session_date,synced_at,complete,option_orders,other_orders,account,"
                 "stops_known) VALUES(?,?,?,?,?,?,?) ON CONFLICT(session_date) DO UPDATE SET "
                 "synced_at=excluded.synced_at, complete=MAX(partner_broker_days.complete, excluded.complete), "
-                "option_orders=excluded.option_orders, other_orders=excluded.other_orders, "
-                "account=excluded.account, stops_known=excluded.stops_known",
+                "option_orders=CASE WHEN ? THEN MAX(partner_broker_days.option_orders, excluded.option_orders) "
+                "ELSE excluded.option_orders END, "
+                "other_orders=CASE WHEN ? THEN MAX(partner_broker_days.other_orders, excluded.other_orders) "
+                "ELSE excluded.other_orders END, "
+                "account=CASE WHEN ? THEN COALESCE(partner_broker_days.account, excluded.account) "
+                "ELSE excluded.account END, "
+                "stops_known=CASE WHEN ? THEN MAX(partner_broker_days.stops_known, excluded.stops_known) "
+                "ELSE excluded.stops_known END",
                 (day, now.isoformat(), int(complete), len(day_reports), other,
-                 _session.account if _session else None, int(stops_known)))
+                 _session.account if _session else None, int(stops_known), past, past, past, past))
             result_days[day] = {"option_orders": len(day_reports), "complete": complete, "stops_known": stops_known}
         await db.commit()
     logger.info("partner_zerodha_synced days=%s option_orders=%d other=%d unfilled=%d on_card=%d",
@@ -1073,10 +1184,18 @@ async def _read_details(db_path: str, orders: list, now: datetime) -> dict:
                 positions = option_positions(await _read("/portfolio/positions"))
                 await store_positions(db_path, day, positions, now)
                 out["positions"] = len(positions)
+                async with aiosqlite.connect(db_path) as db:
+                    await db.execute("UPDATE partner_broker_days SET positions_read_at=? WHERE session_date=?",
+                                     (now.isoformat(), day))
+                    await db.commit()
             except BrokerError as exc:
                 if exc.code in ("TokenException", "not_connected"):
                     raise
                 logger.warning("partner_zerodha_positions_unavailable code=%s", exc.code)
+                async with aiosqlite.connect(db_path) as db:      # [N05-A1] tried and not read (a good read stays)
+                    await db.execute("UPDATE partner_broker_days SET positions_read_at=COALESCE(positions_read_at, "
+                                     "'FAILED') WHERE session_date=?", (day,))
+                    await db.commit()
             try:
                 account = account_row(await _read("/user/margins/equity"))
                 if account is not None:

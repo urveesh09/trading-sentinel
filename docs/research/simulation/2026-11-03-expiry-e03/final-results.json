@@ -1,0 +1,3447 @@
+{
+  "candidate": {
+    "setup": "PULLBACK",
+    "look": 10,
+    "efficiency": 0.7,
+    "stretch": 4.0,
+    "premium_low": 5.0,
+    "premium_high": 20.0,
+    "option_rise": 0.0,
+    "stop": 0.4,
+    "arm": 0.4,
+    "keep": 0.6,
+    "target": 1.0,
+    "hold": 8,
+    "start": 780,
+    "end": 900,
+    "slots": 2,
+    "underlying_stop": 2.0,
+    "reach": 1.0,
+    "max_lots": 3,
+    "split": true,
+    "runner_floor": 1.0,
+    "runner_keep": 0.5,
+    "hero_target": 9.0
+  },
+  "rules": {
+    "E02_R3|2024|ordinary": {
+      "summary": {
+        "net": 3513.77,
+        "without_best": 2200.82,
+        "worst": -568.26,
+        "drawdown": 921.96,
+        "trades": 20,
+        "profit_factor": 2.3828,
+        "wins": 7,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          1472.85,
+          862.85,
+          1197.59,
+          -19.52
+        ],
+        "first_half": 2335.7,
+        "second_half": 1178.07,
+        "unresolved": 0,
+        "fees": 987.48
+      },
+      "days": [
+        {
+          "day": "2024-01-11",
+          "net": -262.48,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-01-11-21550-PE",
+              "entry": 7.7,
+              "lots": 1,
+              "peak": 10.65,
+              "net": -262.48,
+              "exits": [
+                [
+                  "STOP",
+                  4.4,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "net": 1312.95,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-02-22-22100-CE",
+              "entry": 14.45,
+              "lots": 1,
+              "peak": 35.1,
+              "net": 1312.95,
+              "exits": [
+                [
+                  "TARGET",
+                  35.45,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "net": -259.1,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-02-29-22050-CE",
+              "entry": 6.85,
+              "lots": 1,
+              "peak": 10.6,
+              "net": -259.1,
+              "exits": [
+                [
+                  "STOP",
+                  3.6,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "net": 681.48,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-03-28-22450-PE",
+              "entry": 7.6,
+              "lots": 1,
+              "peak": 17.25,
+              "net": 681.48,
+              "exits": [
+                [
+                  "TARGET",
+                  18.85,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "net": -568.26,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-04-04-22650-CE",
+              "entry": 13.4,
+              "lots": 1,
+              "peak": 13.4,
+              "net": -568.26,
+              "exits": [
+                [
+                  "STOP",
+                  5.4,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "net": -353.7,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-04-25-22700-CE",
+              "entry": 10.3,
+              "lots": 1,
+              "peak": 10.3,
+              "net": -353.7,
+              "exits": [
+                [
+                  "STOP",
+                  5.6,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "net": 1244.26,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-05-09-22000-PE",
+              "entry": 18.15,
+              "lots": 1,
+              "peak": 37.65,
+              "net": 1244.26,
+              "exits": [
+                [
+                  "TARGET",
+                  38.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "net": -435.3,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-05-23-22950-CE",
+              "entry": 13.55,
+              "lots": 1,
+              "peak": 13.55,
+              "net": -435.3,
+              "exits": [
+                [
+                  "STOP",
+                  7.6,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "net": -68.36,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-06-20-23700-CE",
+              "entry": 11.0,
+              "lots": 1,
+              "peak": 15.1,
+              "net": -68.36,
+              "exits": [
+                [
+                  "TIME",
+                  10.7,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "net": 1044.21,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-06-27-24000-CE",
+              "entry": 11.25,
+              "lots": 1,
+              "peak": 27.75,
+              "net": 1044.21,
+              "exits": [
+                [
+                  "TARGET",
+                  28.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "net": 602.47,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-07-18-24800-CE",
+              "entry": 16.3,
+              "lots": 1,
+              "peak": 24.4,
+              "net": -182.71,
+              "exits": [
+                [
+                  "STOP",
+                  14.25,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2024-07-18-24850-CE",
+              "entry": 8.25,
+              "lots": 1,
+              "peak": 22.05,
+              "net": 785.18,
+              "exits": [
+                [
+                  "TARGET",
+                  21.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "net": 1016.64,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-08-08-24050-PE",
+              "entry": 17.85,
+              "lots": 1,
+              "peak": 38.0,
+              "net": 1267.02,
+              "exits": [
+                [
+                  "TARGET",
+                  38.15,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2024-08-08-24300-CE",
+              "entry": 13.45,
+              "lots": 1,
+              "peak": 14.95,
+              "net": -250.38,
+              "exits": [
+                [
+                  "TIME",
+                  10.35,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "net": -162.06,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-08-14-24100-PE",
+              "entry": 8.65,
+              "lots": 1,
+              "peak": 8.65,
+              "net": -162.06,
+              "exits": [
+                [
+                  "TIME",
+                  6.9,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "net": 152.84,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-08-22-24800-PE",
+              "entry": 7.0,
+              "lots": 1,
+              "peak": 11.9,
+              "net": 152.84,
+              "exits": [
+                [
+                  "TIME",
+                  10.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "net": -61.8,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-09-05-25150-PE",
+              "entry": 10.5,
+              "lots": 1,
+              "peak": 10.5,
+              "net": -61.8,
+              "exits": [
+                [
+                  "TIME",
+                  10.3,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "net": -350.5,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-09-12-25350-CE",
+              "entry": 10.55,
+              "lots": 1,
+              "peak": 10.55,
+              "net": -350.5,
+              "exits": [
+                [
+                  "STOP",
+                  5.9,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "net": -19.52,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-10-31-24250-CE",
+              "entry": 8.4,
+              "lots": 1,
+              "peak": 9.3,
+              "net": -184.74,
+              "exits": [
+                [
+                  "STRUCTURE",
+                  6.3,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2024-10-31-24200-PE",
+              "entry": 10.8,
+              "lots": 1,
+              "peak": 16.35,
+              "net": 165.22,
+              "exits": [
+                [
+                  "TIME",
+                  14.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "E02_R3|2024|adverse": {
+      "summary": {
+        "net": 3234.28,
+        "without_best": 1963.53,
+        "worst": -432.06,
+        "drawdown": 805.26,
+        "trades": 20,
+        "profit_factor": 2.2792,
+        "wins": 7,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          1388.44,
+          885.36,
+          1018.96,
+          -58.48
+        ],
+        "first_half": 2273.8,
+        "second_half": 960.48,
+        "unresolved": 0,
+        "fees": 987.47
+      },
+      "days": []
+    },
+    "E02_R3|2024|catastrophe": {
+      "summary": {
+        "net": -2867.5,
+        "without_best": -2867.5,
+        "worst": -632.82,
+        "drawdown": 2867.5,
+        "trades": 9,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 9,
+        "losing_streak": 9,
+        "quarters": [
+          -632.82,
+          -1526.63,
+          -442.11,
+          -265.94
+        ],
+        "first_half": -2159.45,
+        "second_half": -708.05,
+        "unresolved": 0,
+        "fees": 436.5
+      },
+      "days": []
+    },
+    "E02_R3|2025|ordinary": {
+      "summary": {
+        "net": 3386.58,
+        "without_best": 2184.26,
+        "worst": -550.44,
+        "drawdown": 568.81,
+        "trades": 21,
+        "profit_factor": 2.9005,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -568.81,
+          875.15,
+          2255.22,
+          825.02
+        ],
+        "first_half": 306.34,
+        "second_half": 3080.24,
+        "unresolved": 0,
+        "fees": 1043.17
+      },
+      "days": [
+        {
+          "day": "2025-01-02",
+          "net": -125.96,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-01-02-24250-CE",
+              "entry": 5.9,
+              "lots": 1,
+              "peak": 9.15,
+              "net": -125.96,
+              "exits": [
+                [
+                  "STOP",
+                  4.7,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "net": -324.96,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-02-06-23600-CE",
+              "entry": 13.25,
+              "lots": 1,
+              "peak": 13.25,
+              "net": -324.96,
+              "exits": [
+                [
+                  "TIME",
+                  9.0,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "net": 177.15,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-02-13-23000-PE",
+              "entry": 17.6,
+              "lots": 1,
+              "peak": 25.2,
+              "net": 177.15,
+              "exits": [
+                [
+                  "TIME",
+                  21.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "net": -295.04,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-03-06-22550-CE",
+              "entry": 8.55,
+              "lots": 1,
+              "peak": 8.55,
+              "net": -295.04,
+              "exits": [
+                [
+                  "STOP",
+                  4.75,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "net": 761.22,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-04-17-23850-CE",
+              "entry": 16.35,
+              "lots": 1,
+              "peak": 28.1,
+              "net": 761.22,
+              "exits": [
+                [
+                  "TIME",
+                  28.85,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "net": -162.96,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-05-22-24450-PE",
+              "entry": 14.45,
+              "lots": 1,
+              "peak": 14.95,
+              "net": -162.96,
+              "exits": [
+                [
+                  "TIME",
+                  12.7,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "net": 276.89,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-06-12-25100-CE",
+              "entry": 15.1,
+              "lots": 1,
+              "peak": 15.1,
+              "net": -182.52,
+              "exits": [
+                [
+                  "TIME",
+                  13.05,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2025-06-12-24850-PE",
+              "entry": 17.25,
+              "lots": 1,
+              "peak": 24.55,
+              "net": 459.41,
+              "exits": [
+                [
+                  "TIME",
+                  25.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "net": 145.3,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-07-03-25450-PE",
+              "entry": 13.8,
+              "lots": 1,
+              "peak": 17.05,
+              "net": 145.3,
+              "exits": [
+                [
+                  "TIME",
+                  16.8,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "net": 1202.32,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-08-07-24350-PE",
+              "entry": 13.4,
+              "lots": 1,
+              "peak": 26.6,
+              "net": 602.73,
+              "exits": [
+                [
+                  "TIME",
+                  23.45,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2025-08-07-24450-CE",
+              "entry": 12.75,
+              "lots": 1,
+              "peak": 22.3,
+              "net": 599.59,
+              "exits": [
+                [
+                  "TIME",
+                  22.75,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "net": 117.44,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-08-21-25100-PE",
+              "entry": 5.15,
+              "lots": 1,
+              "peak": 7.65,
+              "net": 117.44,
+              "exits": [
+                [
+                  "TIME",
+                  7.7,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-08-28",
+          "net": -182.11,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-08-28-24500-PE",
+              "entry": 12.45,
+              "lots": 1,
+              "peak": 18.0,
+              "net": -182.11,
+              "exits": [
+                [
+                  "STOP",
+                  10.4,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "net": 972.27,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-09-02-24550-PE",
+              "entry": 15.05,
+              "lots": 1,
+              "peak": 30.1,
+              "net": 972.27,
+              "exits": [
+                [
+                  "TARGET",
+                  30.8,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "net": 258.45,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-10-14-25150-CE",
+              "entry": 16.25,
+              "lots": 1,
+              "peak": 24.0,
+              "net": 258.45,
+              "exits": [
+                [
+                  "TIME",
+                  21.0,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "net": -550.44,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-11-11-25650-CE",
+              "entry": 15.75,
+              "lots": 1,
+              "peak": 16.85,
+              "net": 15.25,
+              "exits": [
+                [
+                  "TIME",
+                  16.75,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2025-11-11-25700-CE",
+              "entry": 17.7,
+              "lots": 1,
+              "peak": 17.7,
+              "net": -565.69,
+              "exits": [
+                [
+                  "STOP",
+                  9.75,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "net": 245.78,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-11-25-25950-PE",
+              "entry": 14.25,
+              "lots": 1,
+              "peak": 18.5,
+              "net": 245.78,
+              "exits": [
+                [
+                  "TIME",
+                  18.8,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "net": -140.43,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-12-09-25800-PE",
+              "entry": 15.6,
+              "lots": 1,
+              "peak": 17.3,
+              "net": -140.43,
+              "exits": [
+                [
+                  "TIME",
+                  14.2,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "net": 320.97,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-12-16-25950-CE",
+              "entry": 10.5,
+              "lots": 1,
+              "peak": 16.95,
+              "net": 320.97,
+              "exits": [
+                [
+                  "TIME",
+                  16.2,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "net": 690.69,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-12-30-25950-CE",
+              "entry": 10.95,
+              "lots": 1,
+              "peak": 22.65,
+              "net": 690.69,
+              "exits": [
+                [
+                  "TARGET",
+                  22.35,
+                  1
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "E02_R3|2025|adverse": {
+      "summary": {
+        "net": 3025.85,
+        "without_best": 1888.47,
+        "worst": -537.55,
+        "drawdown": 643.52,
+        "trades": 21,
+        "profit_factor": 2.6017,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -643.52,
+          742.01,
+          2245.3,
+          682.06
+        ],
+        "first_half": 98.49,
+        "second_half": 2927.36,
+        "unresolved": 0,
+        "fees": 1043.15
+      },
+      "days": []
+    },
+    "E02_R3|2025|catastrophe": {
+      "summary": {
+        "net": -898.83,
+        "without_best": -1478.39,
+        "worst": -646.89,
+        "drawdown": 1151.6,
+        "trades": 9,
+        "profit_factor": 0.6022,
+        "wins": 4,
+        "loss_days": 5,
+        "losing_streak": 2,
+        "quarters": [
+          -383.46,
+          -25.6,
+          661.83,
+          -1151.6
+        ],
+        "first_half": -409.06,
+        "second_half": -489.77,
+        "unresolved": 0,
+        "fees": 443.83
+      },
+      "days": []
+    },
+    "E02_2LOT|2024|ordinary": {
+      "summary": {
+        "net": 4595.27,
+        "without_best": 3160.43,
+        "worst": -568.26,
+        "drawdown": 921.96,
+        "trades": 20,
+        "profit_factor": 2.4268,
+        "wins": 7,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          1774.34,
+          862.85,
+          2115.12,
+          -157.04
+        ],
+        "first_half": 2637.19,
+        "second_half": 1958.08,
+        "unresolved": 0,
+        "fees": 997.98
+      },
+      "days": [
+        {
+          "day": "2024-01-11",
+          "net": -477.75,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-01-11-21550-PE",
+              "entry": 7.7,
+              "lots": 2,
+              "peak": 10.65,
+              "net": -477.75,
+              "exits": [
+                [
+                  "STOP",
+                  4.4,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "net": 1312.95,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-02-22-22100-CE",
+              "entry": 14.45,
+              "lots": 1,
+              "peak": 35.1,
+              "net": 1312.95,
+              "exits": [
+                [
+                  "TARGET",
+                  35.45,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "net": -471.0,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-02-29-22050-CE",
+              "entry": 6.85,
+              "lots": 2,
+              "peak": 10.6,
+              "net": -471.0,
+              "exits": [
+                [
+                  "STOP",
+                  3.6,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "net": 1410.14,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-03-28-22450-PE",
+              "entry": 7.6,
+              "lots": 2,
+              "peak": 17.25,
+              "net": 1410.14,
+              "exits": [
+                [
+                  "TARGET",
+                  18.85,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "net": -568.26,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-04-04-22650-CE",
+              "entry": 13.4,
+              "lots": 1,
+              "peak": 13.4,
+              "net": -568.26,
+              "exits": [
+                [
+                  "STOP",
+                  5.4,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "net": -353.7,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-04-25-22700-CE",
+              "entry": 10.3,
+              "lots": 1,
+              "peak": 10.3,
+              "net": -353.7,
+              "exits": [
+                [
+                  "STOP",
+                  5.6,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "net": 1244.26,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-05-09-22000-PE",
+              "entry": 18.15,
+              "lots": 1,
+              "peak": 37.65,
+              "net": 1244.26,
+              "exits": [
+                [
+                  "TARGET",
+                  38.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "net": -435.3,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-05-23-22950-CE",
+              "entry": 13.55,
+              "lots": 1,
+              "peak": 13.55,
+              "net": -435.3,
+              "exits": [
+                [
+                  "STOP",
+                  7.6,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "net": -68.36,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-06-20-23700-CE",
+              "entry": 11.0,
+              "lots": 1,
+              "peak": 15.1,
+              "net": -68.36,
+              "exits": [
+                [
+                  "TIME",
+                  10.7,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "net": 1044.21,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-06-27-24000-CE",
+              "entry": 11.25,
+              "lots": 1,
+              "peak": 27.75,
+              "net": 1044.21,
+              "exits": [
+                [
+                  "TARGET",
+                  28.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "net": 1434.84,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-07-18-24800-CE",
+              "entry": 16.3,
+              "lots": 1,
+              "peak": 24.4,
+              "net": -182.71,
+              "exits": [
+                [
+                  "STOP",
+                  14.25,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2024-07-18-24850-CE",
+              "entry": 8.25,
+              "lots": 2,
+              "peak": 22.05,
+              "net": 1617.55,
+              "exits": [
+                [
+                  "TARGET",
+                  21.1,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "net": 1016.64,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-08-08-24050-PE",
+              "entry": 17.85,
+              "lots": 1,
+              "peak": 38.0,
+              "net": 1267.02,
+              "exits": [
+                [
+                  "TARGET",
+                  38.15,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2024-08-08-24300-CE",
+              "entry": 13.45,
+              "lots": 1,
+              "peak": 14.95,
+              "net": -250.38,
+              "exits": [
+                [
+                  "TIME",
+                  10.35,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "net": -276.93,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-08-14-24100-PE",
+              "entry": 8.65,
+              "lots": 2,
+              "peak": 8.65,
+              "net": -276.93,
+              "exits": [
+                [
+                  "TIME",
+                  6.9,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "net": 352.87,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-08-22-24800-PE",
+              "entry": 7.0,
+              "lots": 2,
+              "peak": 11.9,
+              "net": 352.87,
+              "exits": [
+                [
+                  "TIME",
+                  10.1,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "net": -61.8,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-09-05-25150-PE",
+              "entry": 10.5,
+              "lots": 1,
+              "peak": 10.5,
+              "net": -61.8,
+              "exits": [
+                [
+                  "TIME",
+                  10.3,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "net": -350.5,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-09-12-25350-CE",
+              "entry": 10.55,
+              "lots": 1,
+              "peak": 10.55,
+              "net": -350.5,
+              "exits": [
+                [
+                  "STOP",
+                  5.9,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "net": -157.04,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-10-31-24250-CE",
+              "entry": 8.4,
+              "lots": 2,
+              "peak": 9.3,
+              "net": -322.26,
+              "exits": [
+                [
+                  "STRUCTURE",
+                  6.3,
+                  2
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2024-10-31-24200-PE",
+              "entry": 10.8,
+              "lots": 1,
+              "peak": 16.35,
+              "net": 165.22,
+              "exits": [
+                [
+                  "TIME",
+                  14.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "E02_2LOT|2024|adverse": {
+      "summary": {
+        "net": 4202.14,
+        "without_best": 2837.43,
+        "worst": -497.25,
+        "drawdown": 805.26,
+        "trades": 20,
+        "profit_factor": 2.2916,
+        "wins": 7,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          1647.71,
+          885.36,
+          1878.08,
+          -209.01
+        ],
+        "first_half": 2533.07,
+        "second_half": 1669.07,
+        "unresolved": 0,
+        "fees": 997.86
+      },
+      "days": []
+    },
+    "E02_2LOT|2024|catastrophe": {
+      "summary": {
+        "net": -2651.38,
+        "without_best": -2651.38,
+        "worst": -632.82,
+        "drawdown": 2651.38,
+        "trades": 8,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 8,
+        "losing_streak": 8,
+        "quarters": [
+          -632.82,
+          -1526.63,
+          -491.93,
+          0
+        ],
+        "first_half": -2159.45,
+        "second_half": -491.93,
+        "unresolved": 0,
+        "fees": 389.38
+      },
+      "days": []
+    },
+    "E02_2LOT|2025|ordinary": {
+      "summary": {
+        "net": 3224.61,
+        "without_best": 2022.29,
+        "worst": -550.44,
+        "drawdown": 895.42,
+        "trades": 21,
+        "profit_factor": 2.5293,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -895.42,
+          875.15,
+          2419.86,
+          825.02
+        ],
+        "first_half": -20.27,
+        "second_half": 3244.88,
+        "unresolved": 0,
+        "fees": 1045.89
+      },
+      "days": [
+        {
+          "day": "2025-01-02",
+          "net": -204.72,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-01-02-24250-CE",
+              "entry": 5.9,
+              "lots": 2,
+              "peak": 9.15,
+              "net": -204.72,
+              "exits": [
+                [
+                  "STOP",
+                  4.7,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "net": -324.96,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-02-06-23600-CE",
+              "entry": 13.25,
+              "lots": 1,
+              "peak": 13.25,
+              "net": -324.96,
+              "exits": [
+                [
+                  "TIME",
+                  9.0,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "net": 177.15,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-02-13-23000-PE",
+              "entry": 17.6,
+              "lots": 1,
+              "peak": 25.2,
+              "net": 177.15,
+              "exits": [
+                [
+                  "TIME",
+                  21.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "net": -542.89,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-03-06-22550-CE",
+              "entry": 8.55,
+              "lots": 2,
+              "peak": 8.55,
+              "net": -542.89,
+              "exits": [
+                [
+                  "STOP",
+                  4.75,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "net": 761.22,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-04-17-23850-CE",
+              "entry": 16.35,
+              "lots": 1,
+              "peak": 28.1,
+              "net": 761.22,
+              "exits": [
+                [
+                  "TIME",
+                  28.85,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "net": -162.96,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-05-22-24450-PE",
+              "entry": 14.45,
+              "lots": 1,
+              "peak": 14.95,
+              "net": -162.96,
+              "exits": [
+                [
+                  "TIME",
+                  12.7,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "net": 276.89,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-06-12-25100-CE",
+              "entry": 15.1,
+              "lots": 1,
+              "peak": 15.1,
+              "net": -182.52,
+              "exits": [
+                [
+                  "TIME",
+                  13.05,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2025-06-12-24850-PE",
+              "entry": 17.25,
+              "lots": 1,
+              "peak": 24.55,
+              "net": 459.41,
+              "exits": [
+                [
+                  "TIME",
+                  25.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "net": 145.3,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-07-03-25450-PE",
+              "entry": 13.8,
+              "lots": 1,
+              "peak": 17.05,
+              "net": 145.3,
+              "exits": [
+                [
+                  "TIME",
+                  16.8,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "net": 1202.32,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-08-07-24350-PE",
+              "entry": 13.4,
+              "lots": 1,
+              "peak": 26.6,
+              "net": 602.73,
+              "exits": [
+                [
+                  "TIME",
+                  23.45,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2025-08-07-24450-CE",
+              "entry": 12.75,
+              "lots": 1,
+              "peak": 22.3,
+              "net": 599.59,
+              "exits": [
+                [
+                  "TIME",
+                  22.75,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "net": 282.08,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-08-21-25100-PE",
+              "entry": 5.15,
+              "lots": 2,
+              "peak": 7.65,
+              "net": 282.08,
+              "exits": [
+                [
+                  "TIME",
+                  7.7,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-08-28",
+          "net": -182.11,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-08-28-24500-PE",
+              "entry": 12.45,
+              "lots": 1,
+              "peak": 18.0,
+              "net": -182.11,
+              "exits": [
+                [
+                  "STOP",
+                  10.4,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "net": 972.27,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-09-02-24550-PE",
+              "entry": 15.05,
+              "lots": 1,
+              "peak": 30.1,
+              "net": 972.27,
+              "exits": [
+                [
+                  "TARGET",
+                  30.8,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "net": 258.45,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-10-14-25150-CE",
+              "entry": 16.25,
+              "lots": 1,
+              "peak": 24.0,
+              "net": 258.45,
+              "exits": [
+                [
+                  "TIME",
+                  21.0,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "net": -550.44,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-11-11-25650-CE",
+              "entry": 15.75,
+              "lots": 1,
+              "peak": 16.85,
+              "net": 15.25,
+              "exits": [
+                [
+                  "TIME",
+                  16.75,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2025-11-11-25700-CE",
+              "entry": 17.7,
+              "lots": 1,
+              "peak": 17.7,
+              "net": -565.69,
+              "exits": [
+                [
+                  "STOP",
+                  9.75,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "net": 245.78,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-11-25-25950-PE",
+              "entry": 14.25,
+              "lots": 1,
+              "peak": 18.5,
+              "net": 245.78,
+              "exits": [
+                [
+                  "TIME",
+                  18.8,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "net": -140.43,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-12-09-25800-PE",
+              "entry": 15.6,
+              "lots": 1,
+              "peak": 17.3,
+              "net": -140.43,
+              "exits": [
+                [
+                  "TIME",
+                  14.2,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "net": 320.97,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-12-16-25950-CE",
+              "entry": 10.5,
+              "lots": 1,
+              "peak": 16.95,
+              "net": 320.97,
+              "exits": [
+                [
+                  "TIME",
+                  16.2,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "net": 690.69,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-12-30-25950-CE",
+              "entry": 10.95,
+              "lots": 1,
+              "peak": 22.65,
+              "net": 690.69,
+              "exits": [
+                [
+                  "TARGET",
+                  22.35,
+                  1
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "E02_2LOT|2025|adverse": {
+      "summary": {
+        "net": 2831.4,
+        "without_best": 1694.02,
+        "worst": -562.38,
+        "drawdown": 989.61,
+        "trades": 21,
+        "profit_factor": 2.2667,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -989.61,
+          742.01,
+          2396.94,
+          682.06
+        ],
+        "first_half": -247.6,
+        "second_half": 3079.0,
+        "unresolved": 0,
+        "fees": 1045.85
+      },
+      "days": []
+    },
+    "E02_2LOT|2025|catastrophe": {
+      "summary": {
+        "net": -760.14,
+        "without_best": -1339.7,
+        "worst": -646.89,
+        "drawdown": 1151.6,
+        "trades": 9,
+        "profit_factor": 0.6636,
+        "wins": 4,
+        "loss_days": 5,
+        "losing_streak": 2,
+        "quarters": [
+          -383.46,
+          -25.6,
+          800.52,
+          -1151.6
+        ],
+        "first_half": -409.06,
+        "second_half": -351.08,
+        "unresolved": 0,
+        "fees": 444.89
+      },
+      "days": []
+    },
+    "E03|2024|ordinary": {
+      "summary": {
+        "net": 8567.1,
+        "without_best": 2717.14,
+        "worst": -568.26,
+        "drawdown": 921.96,
+        "trades": 20,
+        "profit_factor": 3.6601,
+        "wins": 7,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          6214.16,
+          862.85,
+          1647.13,
+          -157.04
+        ],
+        "first_half": 7077.01,
+        "second_half": 1490.09,
+        "unresolved": 0,
+        "fees": 1052.9
+      },
+      "days": [
+        {
+          "day": "2024-01-11",
+          "net": -477.75,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-01-11-21550-PE",
+              "entry": 7.7,
+              "lots": 2,
+              "peak": 10.65,
+              "net": -477.75,
+              "exits": [
+                [
+                  "STOP",
+                  4.4,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "net": 1312.95,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-02-22-22100-CE",
+              "entry": 14.45,
+              "lots": 1,
+              "peak": 35.1,
+              "net": 1312.95,
+              "exits": [
+                [
+                  "TARGET",
+                  35.45,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "net": -471.0,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-02-29-22050-CE",
+              "entry": 6.85,
+              "lots": 2,
+              "peak": 10.6,
+              "net": -471.0,
+              "exits": [
+                [
+                  "STOP",
+                  3.6,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "net": 5849.96,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-03-28-22450-PE",
+              "entry": 7.6,
+              "lots": 2,
+              "peak": 86.7,
+              "net": 5849.96,
+              "exits": [
+                [
+                  "TARGET_BASE",
+                  18.85,
+                  1
+                ],
+                [
+                  "HERO_TARGET",
+                  87.65,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "net": -568.26,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-04-04-22650-CE",
+              "entry": 13.4,
+              "lots": 1,
+              "peak": 13.4,
+              "net": -568.26,
+              "exits": [
+                [
+                  "STOP",
+                  5.4,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "net": -353.7,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-04-25-22700-CE",
+              "entry": 10.3,
+              "lots": 1,
+              "peak": 10.3,
+              "net": -353.7,
+              "exits": [
+                [
+                  "STOP",
+                  5.6,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "net": 1244.26,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-05-09-22000-PE",
+              "entry": 18.15,
+              "lots": 1,
+              "peak": 37.65,
+              "net": 1244.26,
+              "exits": [
+                [
+                  "TARGET",
+                  38.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "net": -435.3,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-05-23-22950-CE",
+              "entry": 13.55,
+              "lots": 1,
+              "peak": 13.55,
+              "net": -435.3,
+              "exits": [
+                [
+                  "STOP",
+                  7.6,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "net": -68.36,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-06-20-23700-CE",
+              "entry": 11.0,
+              "lots": 1,
+              "peak": 15.1,
+              "net": -68.36,
+              "exits": [
+                [
+                  "TIME",
+                  10.7,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "net": 1044.21,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-06-27-24000-CE",
+              "entry": 11.25,
+              "lots": 1,
+              "peak": 27.75,
+              "net": 1044.21,
+              "exits": [
+                [
+                  "TARGET",
+                  28.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "net": 966.85,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-07-18-24800-CE",
+              "entry": 16.3,
+              "lots": 1,
+              "peak": 24.4,
+              "net": -182.71,
+              "exits": [
+                [
+                  "STOP",
+                  14.25,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2024-07-18-24850-CE",
+              "entry": 8.25,
+              "lots": 2,
+              "peak": 29.25,
+              "net": 1149.56,
+              "exits": [
+                [
+                  "TARGET_BASE",
+                  21.1,
+                  1
+                ],
+                [
+                  "RUNNER_TRAIL",
+                  14.25,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "net": 1016.64,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-08-08-24050-PE",
+              "entry": 17.85,
+              "lots": 1,
+              "peak": 38.0,
+              "net": 1267.02,
+              "exits": [
+                [
+                  "TARGET",
+                  38.15,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2024-08-08-24300-CE",
+              "entry": 13.45,
+              "lots": 1,
+              "peak": 14.95,
+              "net": -250.38,
+              "exits": [
+                [
+                  "TIME",
+                  10.35,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "net": -276.93,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-08-14-24100-PE",
+              "entry": 8.65,
+              "lots": 2,
+              "peak": 8.65,
+              "net": -276.93,
+              "exits": [
+                [
+                  "TIME",
+                  6.9,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "net": 352.87,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-08-22-24800-PE",
+              "entry": 7.0,
+              "lots": 2,
+              "peak": 11.9,
+              "net": 352.87,
+              "exits": [
+                [
+                  "TIME",
+                  10.1,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "net": -61.8,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-09-05-25150-PE",
+              "entry": 10.5,
+              "lots": 1,
+              "peak": 10.5,
+              "net": -61.8,
+              "exits": [
+                [
+                  "TIME",
+                  10.3,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "net": -350.5,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-09-12-25350-CE",
+              "entry": 10.55,
+              "lots": 1,
+              "peak": 10.55,
+              "net": -350.5,
+              "exits": [
+                [
+                  "STOP",
+                  5.9,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "net": -157.04,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2024-10-31-24250-CE",
+              "entry": 8.4,
+              "lots": 2,
+              "peak": 9.3,
+              "net": -322.26,
+              "exits": [
+                [
+                  "STRUCTURE",
+                  6.3,
+                  2
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2024-10-31-24200-PE",
+              "entry": 10.8,
+              "lots": 1,
+              "peak": 16.35,
+              "net": 165.22,
+              "exits": [
+                [
+                  "TIME",
+                  14.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "E03|2024|adverse": {
+      "summary": {
+        "net": 8131.78,
+        "without_best": 2375.92,
+        "worst": -497.25,
+        "drawdown": 805.26,
+        "trades": 20,
+        "profit_factor": 3.4995,
+        "wins": 7,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          6038.86,
+          885.36,
+          1416.57,
+          -209.01
+        ],
+        "first_half": 6924.22,
+        "second_half": 1207.56,
+        "unresolved": 0,
+        "fees": 1052.72
+      },
+      "days": []
+    },
+    "E03|2024|catastrophe": {
+      "summary": {
+        "net": -2651.38,
+        "without_best": -2651.38,
+        "worst": -632.82,
+        "drawdown": 2651.38,
+        "trades": 8,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 8,
+        "losing_streak": 8,
+        "quarters": [
+          -632.82,
+          -1526.63,
+          -491.93,
+          0
+        ],
+        "first_half": -2159.45,
+        "second_half": -491.93,
+        "unresolved": 0,
+        "fees": 389.38
+      },
+      "days": []
+    },
+    "E03|2025|ordinary": {
+      "summary": {
+        "net": 3389.25,
+        "without_best": 2186.93,
+        "worst": -550.44,
+        "drawdown": 895.42,
+        "trades": 21,
+        "profit_factor": 2.6074,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -895.42,
+          875.15,
+          2584.5,
+          825.02
+        ],
+        "first_half": -20.27,
+        "second_half": 3409.52,
+        "unresolved": 0,
+        "fees": 1047.0
+      },
+      "days": [
+        {
+          "day": "2025-01-02",
+          "net": -204.72,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-01-02-24250-CE",
+              "entry": 5.9,
+              "lots": 2,
+              "peak": 9.15,
+              "net": -204.72,
+              "exits": [
+                [
+                  "STOP",
+                  4.7,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "net": -324.96,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-02-06-23600-CE",
+              "entry": 13.25,
+              "lots": 1,
+              "peak": 13.25,
+              "net": -324.96,
+              "exits": [
+                [
+                  "TIME",
+                  9.0,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "net": 177.15,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-02-13-23000-PE",
+              "entry": 17.6,
+              "lots": 1,
+              "peak": 25.2,
+              "net": 177.15,
+              "exits": [
+                [
+                  "TIME",
+                  21.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "net": -542.89,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-03-06-22550-CE",
+              "entry": 8.55,
+              "lots": 2,
+              "peak": 8.55,
+              "net": -542.89,
+              "exits": [
+                [
+                  "STOP",
+                  4.75,
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "net": 761.22,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-04-17-23850-CE",
+              "entry": 16.35,
+              "lots": 1,
+              "peak": 28.1,
+              "net": 761.22,
+              "exits": [
+                [
+                  "TIME",
+                  28.85,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "net": -162.96,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-05-22-24450-PE",
+              "entry": 14.45,
+              "lots": 1,
+              "peak": 14.95,
+              "net": -162.96,
+              "exits": [
+                [
+                  "TIME",
+                  12.7,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "net": 276.89,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-06-12-25100-CE",
+              "entry": 15.1,
+              "lots": 1,
+              "peak": 15.1,
+              "net": -182.52,
+              "exits": [
+                [
+                  "TIME",
+                  13.05,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2025-06-12-24850-PE",
+              "entry": 17.25,
+              "lots": 1,
+              "peak": 24.55,
+              "net": 459.41,
+              "exits": [
+                [
+                  "TIME",
+                  25.1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "net": 145.3,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-07-03-25450-PE",
+              "entry": 13.8,
+              "lots": 1,
+              "peak": 17.05,
+              "net": 145.3,
+              "exits": [
+                [
+                  "TIME",
+                  16.8,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "net": 1202.32,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-08-07-24350-PE",
+              "entry": 13.4,
+              "lots": 1,
+              "peak": 26.6,
+              "net": 602.73,
+              "exits": [
+                [
+                  "TIME",
+                  23.45,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2025-08-07-24450-CE",
+              "entry": 12.75,
+              "lots": 1,
+              "peak": 22.3,
+              "net": 599.59,
+              "exits": [
+                [
+                  "TIME",
+                  22.75,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "net": 446.72,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-08-21-25100-PE",
+              "entry": 5.15,
+              "lots": 3,
+              "peak": 7.65,
+              "net": 446.72,
+              "exits": [
+                [
+                  "TIME",
+                  7.7,
+                  3
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-08-28",
+          "net": -182.11,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-08-28-24500-PE",
+              "entry": 12.45,
+              "lots": 1,
+              "peak": 18.0,
+              "net": -182.11,
+              "exits": [
+                [
+                  "STOP",
+                  10.4,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "net": 972.27,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-09-02-24550-PE",
+              "entry": 15.05,
+              "lots": 1,
+              "peak": 30.1,
+              "net": 972.27,
+              "exits": [
+                [
+                  "TARGET",
+                  30.8,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "net": 258.45,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-10-14-25150-CE",
+              "entry": 16.25,
+              "lots": 1,
+              "peak": 24.0,
+              "net": 258.45,
+              "exits": [
+                [
+                  "TIME",
+                  21.0,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "net": -550.44,
+          "trades": 2,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-11-11-25650-CE",
+              "entry": 15.75,
+              "lots": 1,
+              "peak": 16.85,
+              "net": 15.25,
+              "exits": [
+                [
+                  "TIME",
+                  16.75,
+                  1
+                ]
+              ]
+            },
+            {
+              "symbol": "NIFTY-2025-11-11-25700-CE",
+              "entry": 17.7,
+              "lots": 1,
+              "peak": 17.7,
+              "net": -565.69,
+              "exits": [
+                [
+                  "STOP",
+                  9.75,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "net": 245.78,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-11-25-25950-PE",
+              "entry": 14.25,
+              "lots": 1,
+              "peak": 18.5,
+              "net": 245.78,
+              "exits": [
+                [
+                  "TIME",
+                  18.8,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "net": -140.43,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-12-09-25800-PE",
+              "entry": 15.6,
+              "lots": 1,
+              "peak": 17.3,
+              "net": -140.43,
+              "exits": [
+                [
+                  "TIME",
+                  14.2,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "net": 320.97,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-12-16-25950-CE",
+              "entry": 10.5,
+              "lots": 1,
+              "peak": 16.95,
+              "net": 320.97,
+              "exits": [
+                [
+                  "TIME",
+                  16.2,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "net": 690.69,
+          "trades": 1,
+          "positions": [
+            {
+              "symbol": "NIFTY-2025-12-30-25950-CE",
+              "entry": 10.95,
+              "lots": 1,
+              "peak": 22.65,
+              "net": 690.69,
+              "exits": [
+                [
+                  "TARGET",
+                  22.35,
+                  1
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "E03|2025|adverse": {
+      "summary": {
+        "net": 2983.05,
+        "without_best": 1845.67,
+        "worst": -562.38,
+        "drawdown": 989.61,
+        "trades": 21,
+        "profit_factor": 2.3345,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -989.61,
+          742.01,
+          2548.59,
+          682.06
+        ],
+        "first_half": -247.6,
+        "second_half": 3230.65,
+        "unresolved": 0,
+        "fees": 1046.95
+      },
+      "days": []
+    },
+    "E03|2025|catastrophe": {
+      "summary": {
+        "net": -621.47,
+        "without_best": -1201.03,
+        "worst": -646.89,
+        "drawdown": 1151.6,
+        "trades": 9,
+        "profit_factor": 0.725,
+        "wins": 4,
+        "loss_days": 5,
+        "losing_streak": 2,
+        "quarters": [
+          -383.46,
+          -25.6,
+          939.19,
+          -1151.6
+        ],
+        "first_half": -409.06,
+        "second_half": -212.41,
+        "unresolved": 0,
+        "fees": 445.97
+      },
+      "days": []
+    }
+  },
+  "neighbours": {
+    "K40|2024|ordinary": {
+      "net": 8245.97,
+      "without_best": 2396.01,
+      "worst": -568.26,
+      "drawdown": 921.96,
+      "trades": 20,
+      "profit_factor": 3.5604,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        6214.16,
+        862.85,
+        1326.0,
+        -157.04
+      ]
+    },
+    "K40|2024|adverse": {
+      "net": 7817.13,
+      "without_best": 2061.27,
+      "worst": -497.25,
+      "drawdown": 805.26,
+      "trades": 20,
+      "profit_factor": 3.4027,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        6038.86,
+        885.36,
+        1101.92,
+        -209.01
+      ]
+    },
+    "K40|2025|ordinary": {
+      "net": 3389.25,
+      "without_best": 2186.93,
+      "worst": -550.44,
+      "drawdown": 895.42,
+      "trades": 21,
+      "profit_factor": 2.6074,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -895.42,
+        875.15,
+        2584.5,
+        825.02
+      ]
+    },
+    "K40|2025|adverse": {
+      "net": 2983.05,
+      "without_best": 1845.67,
+      "worst": -562.38,
+      "drawdown": 989.61,
+      "trades": 21,
+      "profit_factor": 2.3345,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -989.61,
+        742.01,
+        2548.59,
+        682.06
+      ]
+    },
+    "K60|2024|ordinary": {
+      "net": 8414.64,
+      "without_best": 2564.68,
+      "worst": -568.26,
+      "drawdown": 921.96,
+      "trades": 20,
+      "profit_factor": 3.6127,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        6214.16,
+        862.85,
+        1494.67,
+        -157.04
+      ]
+    },
+    "K60|2024|adverse": {
+      "net": 7979.32,
+      "without_best": 2223.46,
+      "worst": -497.25,
+      "drawdown": 805.26,
+      "trades": 20,
+      "profit_factor": 3.4526,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        6038.86,
+        885.36,
+        1264.11,
+        -209.01
+      ]
+    },
+    "K60|2025|ordinary": {
+      "net": 3389.25,
+      "without_best": 2186.93,
+      "worst": -550.44,
+      "drawdown": 895.42,
+      "trades": 21,
+      "profit_factor": 2.6074,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -895.42,
+        875.15,
+        2584.5,
+        825.02
+      ]
+    },
+    "K60|2025|adverse": {
+      "net": 2983.05,
+      "without_best": 1845.67,
+      "worst": -562.38,
+      "drawdown": 989.61,
+      "trades": 21,
+      "profit_factor": 2.3345,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -989.61,
+        742.01,
+        2548.59,
+        682.06
+      ]
+    },
+    "F12|2024|ordinary": {
+      "net": 8567.1,
+      "without_best": 2717.14,
+      "worst": -568.26,
+      "drawdown": 921.96,
+      "trades": 20,
+      "profit_factor": 3.6601,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        6214.16,
+        862.85,
+        1647.13,
+        -157.04
+      ]
+    },
+    "F12|2024|adverse": {
+      "net": 8131.78,
+      "without_best": 2375.92,
+      "worst": -497.25,
+      "drawdown": 805.26,
+      "trades": 20,
+      "profit_factor": 3.4995,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        6038.86,
+        885.36,
+        1416.57,
+        -209.01
+      ]
+    },
+    "F12|2025|ordinary": {
+      "net": 3389.25,
+      "without_best": 2186.93,
+      "worst": -550.44,
+      "drawdown": 895.42,
+      "trades": 21,
+      "profit_factor": 2.6074,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -895.42,
+        875.15,
+        2584.5,
+        825.02
+      ]
+    },
+    "F12|2025|adverse": {
+      "net": 2983.05,
+      "without_best": 1845.67,
+      "worst": -562.38,
+      "drawdown": 989.61,
+      "trades": 21,
+      "profit_factor": 2.3345,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -989.61,
+        742.01,
+        2548.59,
+        682.06
+      ]
+    },
+    "T4|2024|ordinary": {
+      "net": 6335.39,
+      "without_best": 2717.14,
+      "worst": -568.26,
+      "drawdown": 921.96,
+      "trades": 20,
+      "profit_factor": 2.9671,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        3982.45,
+        862.85,
+        1647.13,
+        -157.04
+      ]
+    },
+    "T4|2024|adverse": {
+      "net": 5922.78,
+      "without_best": 2375.92,
+      "worst": -497.25,
+      "drawdown": 805.26,
+      "trades": 20,
+      "profit_factor": 2.8205,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        3829.86,
+        885.36,
+        1416.57,
+        -209.01
+      ]
+    },
+    "T4|2025|ordinary": {
+      "net": 3389.25,
+      "without_best": 2186.93,
+      "worst": -550.44,
+      "drawdown": 895.42,
+      "trades": 21,
+      "profit_factor": 2.6074,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -895.42,
+        875.15,
+        2584.5,
+        825.02
+      ]
+    },
+    "T4|2025|adverse": {
+      "net": 2983.05,
+      "without_best": 1845.67,
+      "worst": -562.38,
+      "drawdown": 989.61,
+      "trades": 21,
+      "profit_factor": 2.3345,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -989.61,
+        742.01,
+        2548.59,
+        682.06
+      ]
+    },
+    "TNONE|2024|ordinary": {
+      "net": 10808.54,
+      "without_best": 2717.14,
+      "worst": -568.26,
+      "drawdown": 921.96,
+      "trades": 20,
+      "profit_factor": 4.356,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        8455.6,
+        862.85,
+        1647.13,
+        -157.04
+      ]
+    },
+    "TNONE|2024|adverse": {
+      "net": 10324.56,
+      "without_best": 2375.92,
+      "worst": -497.25,
+      "drawdown": 805.26,
+      "trades": 20,
+      "profit_factor": 4.1734,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        8231.64,
+        885.36,
+        1416.57,
+        -209.01
+      ]
+    },
+    "TNONE|2025|ordinary": {
+      "net": 3389.25,
+      "without_best": 2186.93,
+      "worst": -550.44,
+      "drawdown": 895.42,
+      "trades": 21,
+      "profit_factor": 2.6074,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -895.42,
+        875.15,
+        2584.5,
+        825.02
+      ]
+    },
+    "TNONE|2025|adverse": {
+      "net": 2983.05,
+      "without_best": 1845.67,
+      "worst": -562.38,
+      "drawdown": 989.61,
+      "trades": 21,
+      "profit_factor": 2.3345,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -989.61,
+        742.01,
+        2548.59,
+        682.06
+      ]
+    },
+    "L2|2024|ordinary": {
+      "net": 8567.1,
+      "without_best": 2717.14,
+      "worst": -568.26,
+      "drawdown": 921.96,
+      "trades": 20,
+      "profit_factor": 3.6601,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        6214.16,
+        862.85,
+        1647.13,
+        -157.04
+      ]
+    },
+    "L2|2024|adverse": {
+      "net": 8131.78,
+      "without_best": 2375.92,
+      "worst": -497.25,
+      "drawdown": 805.26,
+      "trades": 20,
+      "profit_factor": 3.4995,
+      "wins": 7,
+      "loss_days": 10,
+      "quarters": [
+        6038.86,
+        885.36,
+        1416.57,
+        -209.01
+      ]
+    },
+    "L2|2025|ordinary": {
+      "net": 3224.61,
+      "without_best": 2022.29,
+      "worst": -550.44,
+      "drawdown": 895.42,
+      "trades": 21,
+      "profit_factor": 2.5293,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -895.42,
+        875.15,
+        2419.86,
+        825.02
+      ]
+    },
+    "L2|2025|adverse": {
+      "net": 2831.4,
+      "without_best": 1694.02,
+      "worst": -562.38,
+      "drawdown": 989.61,
+      "trades": 21,
+      "profit_factor": 2.2667,
+      "wins": 11,
+      "loss_days": 7,
+      "quarters": [
+        -989.61,
+        742.01,
+        2396.94,
+        682.06
+      ]
+    }
+  },
+  "random": {
+    "E02_R3|2024": {
+      "actual": 3513.77,
+      "seeds": 40,
+      "mean": -1192.86,
+      "p95": 2079.48,
+      "share_at_or_above": 0.025
+    },
+    "E02_R3|2025": {
+      "actual": 3386.58,
+      "seeds": 40,
+      "mean": -1127.43,
+      "p95": 1560.88,
+      "share_at_or_above": 0.025
+    },
+    "E03|2024": {
+      "actual": 8567.1,
+      "seeds": 40,
+      "mean": -833.9,
+      "p95": 3259.02,
+      "share_at_or_above": 0.0
+    },
+    "E03|2025": {
+      "actual": 3389.25,
+      "seeds": 40,
+      "mean": -996.85,
+      "p95": 2812.11,
+      "share_at_or_above": 0.05
+    }
+  },
+  "native": {
+    "E02_R3|ordinary": {
+      "sessions": [
+        "2026-10-06",
+        "2026-10-13",
+        "2026-10-19",
+        "2026-10-27"
+      ],
+      "summary": {
+        "net": 93.54,
+        "without_best": 0.0,
+        "worst": 0,
+        "drawdown": 0.0,
+        "trades": 1,
+        "profit_factor": 99.0,
+        "wins": 1,
+        "loss_days": 0,
+        "quarters": [
+          0,
+          0,
+          0,
+          93.54
+        ]
+      }
+    },
+    "E02_R3|adverse": {
+      "sessions": [
+        "2026-10-06",
+        "2026-10-13",
+        "2026-10-19",
+        "2026-10-27"
+      ],
+      "summary": {
+        "net": 64.32,
+        "without_best": 0.0,
+        "worst": 0,
+        "drawdown": 0.0,
+        "trades": 1,
+        "profit_factor": 99.0,
+        "wins": 1,
+        "loss_days": 0,
+        "quarters": [
+          0,
+          0,
+          0,
+          64.32
+        ]
+      }
+    },
+    "E03|ordinary": {
+      "sessions": [
+        "2026-10-06",
+        "2026-10-13",
+        "2026-10-19",
+        "2026-10-27"
+      ],
+      "summary": {
+        "net": 93.54,
+        "without_best": 0.0,
+        "worst": 0,
+        "drawdown": 0.0,
+        "trades": 1,
+        "profit_factor": 99.0,
+        "wins": 1,
+        "loss_days": 0,
+        "quarters": [
+          0,
+          0,
+          0,
+          93.54
+        ]
+      }
+    },
+    "E03|adverse": {
+      "sessions": [
+        "2026-10-06",
+        "2026-10-13",
+        "2026-10-19",
+        "2026-10-27"
+      ],
+      "summary": {
+        "net": 64.32,
+        "without_best": 0.0,
+        "worst": 0,
+        "drawdown": 0.0,
+        "trades": 1,
+        "profit_factor": 99.0,
+        "wins": 1,
+        "loss_days": 0,
+        "quarters": [
+          0,
+          0,
+          0,
+          64.32
+        ]
+      }
+    }
+  }
+}

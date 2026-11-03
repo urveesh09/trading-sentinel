@@ -1,0 +1,212 @@
+{
+  "permutation_ex_hero": {
+    "pe_tickets": 17,
+    "ce_tickets": 23,
+    "pe_mean": 280.99,
+    "ce_mean": 78.26,
+    "observed_difference": 202.72,
+    "one_sided_p": 0.1251,
+    "hero": [
+      -1,
+      5849.96,
+      "2024-03-28"
+    ]
+  },
+  "E032_candidate": {
+    "E031": {
+      "2024|ordinary": {
+        "net": 8897.97,
+        "without_best": 3048.01,
+        "worst": -477.75,
+        "drawdown": 691.65,
+        "trades": 20
+      },
+      "2024|adverse": {
+        "net": 8271.27,
+        "without_best": 2515.41,
+        "worst": -497.25,
+        "drawdown": 730.65,
+        "trades": 20
+      },
+      "2024|catastrophe": {
+        "net": -2583.27,
+        "without_best": -2583.27,
+        "worst": -632.82,
+        "drawdown": 2583.27,
+        "trades": 8
+      },
+      "2025|ordinary": {
+        "net": 3528.74,
+        "without_best": 2326.42,
+        "worst": -478.01,
+        "drawdown": 830.54,
+        "trades": 21
+      },
+      "2025|adverse": {
+        "net": 3226.33,
+        "without_best": 2088.95,
+        "worst": -537.55,
+        "drawdown": 746.33,
+        "trades": 21
+      },
+      "2025|catastrophe": {
+        "net": -673.37,
+        "without_best": -1252.93,
+        "worst": -646.89,
+        "drawdown": 1151.6,
+        "trades": 9
+      },
+      "both|ordinary": {
+        "net": 12426.71,
+        "without_best": 6576.75,
+        "worst": -478.01,
+        "drawdown": 1373.93,
+        "trades": 41
+      },
+      "both|adverse": {
+        "net": 11497.6,
+        "without_best": 5741.74,
+        "worst": -537.55,
+        "drawdown": 1387.14,
+        "trades": 41
+      },
+      "both|catastrophe": {
+        "net": -3234.08,
+        "without_best": -3813.64,
+        "worst": -646.89,
+        "drawdown": 3234.08,
+        "trades": 15
+      }
+    },
+    "PUT2": {
+      "2024|ordinary": {
+        "net": 15580.74,
+        "without_best": 3810.02,
+        "worst": -646.98,
+        "drawdown": 691.65,
+        "trades": 19
+      },
+      "2024|adverse": {
+        "net": 14629.39,
+        "without_best": 3046.86,
+        "worst": -669.72,
+        "drawdown": 730.65,
+        "trades": 19
+      },
+      "2024|catastrophe": {
+        "net": -2582.43,
+        "without_best": -2582.43,
+        "worst": -632.82,
+        "drawdown": 2582.43,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 5936.81,
+        "without_best": 4084.55,
+        "worst": -478.01,
+        "drawdown": 606.19,
+        "trades": 20
+      },
+      "2025|adverse": {
+        "net": 5371.36,
+        "without_best": 3616.52,
+        "worst": -537.55,
+        "drawdown": 557.7,
+        "trades": 20
+      },
+      "2025|catastrophe": {
+        "net": -1056.03,
+        "without_best": -1840.92,
+        "worst": -1200.76,
+        "drawdown": 1561.91,
+        "trades": 9
+      },
+      "both|ordinary": {
+        "net": 21517.55,
+        "without_best": 9746.83,
+        "worst": -646.98,
+        "drawdown": 753.91,
+        "trades": 39
+      },
+      "both|adverse": {
+        "net": 20000.75,
+        "without_best": 8418.22,
+        "worst": -669.72,
+        "drawdown": 906.78,
+        "trades": 39
+      },
+      "both|catastrophe": {
+        "net": -3638.46,
+        "without_best": -4423.35,
+        "worst": -1200.76,
+        "drawdown": 3638.46,
+        "trades": 16
+      }
+    },
+    "E032": {
+      "2024|ordinary": {
+        "net": 15580.74,
+        "without_best": 3810.02,
+        "worst": -646.98,
+        "drawdown": 691.65,
+        "trades": 19
+      },
+      "2024|adverse": {
+        "net": 14629.39,
+        "without_best": 3046.86,
+        "worst": -669.72,
+        "drawdown": 730.65,
+        "trades": 19
+      },
+      "2024|catastrophe": {
+        "net": -2582.43,
+        "without_best": -2582.43,
+        "worst": -632.82,
+        "drawdown": 2582.43,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 5936.81,
+        "without_best": 4084.55,
+        "worst": -478.01,
+        "drawdown": 606.19,
+        "trades": 20
+      },
+      "2025|adverse": {
+        "net": 5371.36,
+        "without_best": 3616.52,
+        "worst": -537.55,
+        "drawdown": 557.7,
+        "trades": 20
+      },
+      "2025|catastrophe": {
+        "net": 144.73,
+        "without_best": -640.16,
+        "worst": -823.99,
+        "drawdown": 1019.51,
+        "trades": 8
+      },
+      "both|ordinary": {
+        "net": 21517.55,
+        "without_best": 9746.83,
+        "worst": -646.98,
+        "drawdown": 753.91,
+        "trades": 39
+      },
+      "both|adverse": {
+        "net": 20000.75,
+        "without_best": 8418.22,
+        "worst": -669.72,
+        "drawdown": 906.78,
+        "trades": 39
+      },
+      "both|catastrophe": {
+        "net": -2437.7,
+        "without_best": -3222.59,
+        "worst": -823.99,
+        "drawdown": 3431.79,
+        "trades": 15
+      }
+    }
+  }
+}

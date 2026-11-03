@@ -1,0 +1,9 @@
+{
+  "pinned_source_commit": "65cccb72d3902488c2ad51980c5e655b25bc2a6d",
+  "source_files_checked": 854,
+  "helper_unmodified": true,
+  "receipt_and_money_mismatches": 0,
+  "moving_checkout_note": "Original guard also binds Git HEAD; later doc commits require pinned verification",
+  "financial_qualification": false,
+  "report_original_preserved": true
+}

@@ -203,3 +203,50 @@ async def test_instruments_not_ready(monkeypatch):
         _Kite(pd.DataFrame()), SPEC, "REGIME_1_NORMAL", NOW,
     )
     assert out.error == "instruments_not_ready"
+
+
+# ---------------------------------------------------------------------------
+# [N05-S1] SENSEX participation from NIFTY futures, as the shipped paper book
+# ---------------------------------------------------------------------------
+
+class _BookFor(_Book):
+    def __init__(self, name, token):
+        self.name, self.token = name, token
+
+    def front_future(self, today):
+        return Contract(token=self.token, tradingsymbol=f"{self.name}FUT", name=self.name,
+                        expiry=date(2026, 7, 30), strike=0.0, instrument_type="FUT", lot_size=20)
+
+
+class _KiteByToken:
+    def __init__(self, frames, fail=()):
+        self.frames, self.fail, self.calls = frames, set(fail), []
+
+    async def get_intraday_by_token(self, token, frm, to, interval="5minute"):
+        self.calls.append(token)
+        if token in self.fail:
+            raise RuntimeError("provider down")
+        return self.frames[token]
+
+
+THIN_LONG = [(hm, o, h, lo, c, 100) for hm, o, h, lo, c, _v in LONG_ROWS]      # the break on its usual volume
+
+
+@pytest.mark.asyncio
+async def test_sensex_reads_participation_from_nifty_futures(monkeypatch):
+    """The shipped paper book measures SENSEX's RVOL on NIFTY futures (SENSEX futures trade ~8 contracts a bar);
+    the partner scan measured it on SENSEX's own volume."""
+    books = {"SENSEX": _BookFor("SENSEX", 800), "NIFTY": _BookFor("NIFTY", 900)}
+    monkeypatch.setattr(scan_mod, "get_instruments_for", lambda name: books[name])
+    sensex = UnderlyingSpec("SENSEX", "BFO", rvol_source="NIFTY")
+    kite = _KiteByToken({800: _frame(THIN_LONG), 900: _frame(LONG_ROWS)})
+    out = await scan_mod.observe_underlying(kite, sensex, "REGIME_1_NORMAL", NOW)
+    assert kite.calls == [800, 900] and out.sig.direction == FnoDirection.LONG     # NIFTY's 3x volume on the bar
+    own = await scan_mod.observe_underlying(_KiteByToken({800: _frame(THIN_LONG)}),
+                                            UnderlyingSpec("SENSEX", "BFO"), "REGIME_1_NORMAL", NOW)
+    assert own.sig.direction is None and own.sig.reject_reason == "rvol_below_min"   # its own thin volume
+    # The NIFTY frame unavailable: the levels stay (cards keep being managed), no entry fires.
+    down = await scan_mod.observe_underlying(_KiteByToken({800: _frame(LONG_ROWS)}, fail={900}), sensex,
+                                             "REGIME_1_NORMAL", NOW)
+    assert down.error == "" and down.sig.bar_ts and down.sig.close > 0
+    assert down.sig.direction is None and down.sig.reject_reason == "rvol_source_unavailable"

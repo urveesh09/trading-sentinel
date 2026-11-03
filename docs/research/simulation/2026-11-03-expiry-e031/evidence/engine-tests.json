@@ -1,0 +1,12 @@
+{
+  "command": [
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\python-engine\\winvenv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "python-engine/tests",
+    "-q"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 696.8,
+  "log": "_local/full-engine-suite.log"
+}

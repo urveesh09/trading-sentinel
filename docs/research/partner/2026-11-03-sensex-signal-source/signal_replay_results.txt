@@ -1,0 +1,11 @@
+days 210
+first signals per direction-day: both 100 (same bar 58 ) | only futures 28 | only index 26
+futures minus index first-signal time, minutes: median 0.0 mean -1.4
+both (futures time)    +30m: n=100 mean   14.3 pts  median   16.1  share>0 0.53
+both (futures time)    +60m: n= 94 mean   18.2 pts  median    3.7  share>0 0.52
+both (index time)      +30m: n=100 mean   13.5 pts  median   20.2  share>0 0.57
+both (index time)      +60m: n= 94 mean   -8.8 pts  median   -7.4  share>0 0.48
+futures only           +30m: n= 28 mean   -5.7 pts  median    8.2  share>0 0.50
+futures only           +60m: n= 27 mean  -24.7 pts  median  -18.5  share>0 0.44
+index only             +30m: n= 26 mean  -41.8 pts  median  -42.2  share>0 0.42
+index only             +60m: n= 25 mean  -60.6 pts  median  -95.8  share>0 0.28

@@ -1,0 +1,598 @@
+{
+  "fit2024_test2025|7": {
+    "e031_test": {
+      "ordinary": 3528.74,
+      "adverse": 3226.33
+    },
+    "top5": [
+      {
+        "fit_score": 3568.5,
+        "genes": {
+          "arm": 0.3,
+          "chase": 0.08,
+          "efficiency": 0.7,
+          "hero_target": 4.0,
+          "hold": 8,
+          "keep": 0.7,
+          "lock_arm": 0.0,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 25.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.25,
+          "runner_floor": 1.2,
+          "runner_keep": 0.5,
+          "stop": 0.3,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 1.5
+        },
+        "test": {
+          "ordinary": 1749.51,
+          "adverse": 1181.19
+        }
+      },
+      {
+        "fit_score": 3016.93,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 9.0,
+          "hold": 8,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 2310.69,
+          "adverse": 1914.28
+        }
+      },
+      {
+        "fit_score": 3016.93,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 9.0,
+          "hold": 8,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 25.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 2310.69,
+          "adverse": 1914.28
+        }
+      },
+      {
+        "fit_score": 3016.93,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 9.0,
+          "hold": 8,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.3,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 2086.87,
+          "adverse": 1726.14
+        }
+      },
+      {
+        "fit_score": 3016.93,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 9.0,
+          "hold": 8,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 4,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 2310.69,
+          "adverse": 1914.28
+        }
+      }
+    ],
+    "evaluated": 166
+  },
+  "fit2024_test2025|29": {
+    "e031_test": {
+      "ordinary": 3528.74,
+      "adverse": 3226.33
+    },
+    "top5": [
+      {
+        "fit_score": 3192.09,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 4.0,
+          "hold": 8,
+          "keep": 0.5,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 1.5
+        },
+        "test": {
+          "ordinary": 2291.23,
+          "adverse": 1894.81
+        }
+      },
+      {
+        "fit_score": 3192.09,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 4.0,
+          "hold": 8,
+          "keep": 0.5,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 2,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 1.5
+        },
+        "test": {
+          "ordinary": 2126.59,
+          "adverse": 1743.16
+        }
+      },
+      {
+        "fit_score": 3192.09,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.06,
+          "efficiency": 0.7,
+          "hero_target": 4.0,
+          "hold": 8,
+          "keep": 0.5,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 1.5
+        },
+        "test": {
+          "ordinary": 2291.23,
+          "adverse": 1894.81
+        }
+      },
+      {
+        "fit_score": 3192.09,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 0.0,
+          "hold": 8,
+          "keep": 0.5,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 25.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 1.5
+        },
+        "test": {
+          "ordinary": 2291.23,
+          "adverse": 1894.81
+        }
+      },
+      {
+        "fit_score": 3192.09,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 0.0,
+          "hold": 8,
+          "keep": 0.5,
+          "lock_arm": 0.0,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 3.0,
+          "target": 1.0,
+          "underlying_stop": 1.5
+        },
+        "test": {
+          "ordinary": 1921.44,
+          "adverse": 1310.93
+        }
+      }
+    ],
+    "evaluated": 170
+  },
+  "fit2025_test2024|7": {
+    "e031_test": {
+      "ordinary": 8897.97,
+      "adverse": 8271.27
+    },
+    "top5": [
+      {
+        "fit_score": 2402.05,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 4.0,
+          "hold": 10,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.2,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 4.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 2871.97,
+          "adverse": 5679.51
+        }
+      },
+      {
+        "fit_score": 2402.05,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 9.0,
+          "hold": 10,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.2,
+          "max_lots": 3,
+          "premium_high": 25.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 4.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 2871.97,
+          "adverse": 7888.51
+        }
+      },
+      {
+        "fit_score": 2319.14,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 9.0,
+          "hold": 10,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 4.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 8498.99,
+          "adverse": 7888.51
+        }
+      },
+      {
+        "fit_score": 2319.14,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 4.0,
+          "hold": 10,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 4.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 6267.28,
+          "adverse": 5679.51
+        }
+      },
+      {
+        "fit_score": 2319.14,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 9.0,
+          "hold": 10,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 25.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 4.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 8498.99,
+          "adverse": 7888.51
+        }
+      }
+    ],
+    "evaluated": 171
+  },
+  "fit2025_test2024|29": {
+    "e031_test": {
+      "ordinary": 8897.97,
+      "adverse": 8271.27
+    },
+    "top5": [
+      {
+        "fit_score": 2319.14,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 4.0,
+          "hold": 10,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.6,
+          "stop": 0.35,
+          "stretch": 4.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 6114.82,
+          "adverse": 5527.05
+        }
+      },
+      {
+        "fit_score": 2319.14,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 0.0,
+          "hold": 10,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 25.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.6,
+          "stop": 0.35,
+          "stretch": 4.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 10587.97,
+          "adverse": 9928.83
+        }
+      },
+      {
+        "fit_score": 2319.14,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.08,
+          "efficiency": 0.7,
+          "hero_target": 4.0,
+          "hold": 10,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.6,
+          "stop": 0.35,
+          "stretch": 4.0,
+          "target": 1.0,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 6114.82,
+          "adverse": 5527.05
+        }
+      },
+      {
+        "fit_score": 2319.14,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 0.0,
+          "hold": 10,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.1,
+          "max_lots": 3,
+          "premium_high": 25.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.6,
+          "stop": 0.35,
+          "stretch": 4.0,
+          "target": 1.0,
+          "underlying_stop": 1.5
+        },
+        "test": {
+          "ordinary": 10870.16,
+          "adverse": 10188.34
+        }
+      },
+      {
+        "fit_score": 2246.05,
+        "genes": {
+          "arm": 0.4,
+          "chase": 0.1,
+          "efficiency": 0.7,
+          "hero_target": 4.0,
+          "hold": 8,
+          "keep": 0.6,
+          "lock_arm": 0.5,
+          "lock_floor": 1.2,
+          "max_lots": 3,
+          "premium_high": 20.0,
+          "premium_low": 5.0,
+          "reach": 1.0,
+          "roll_share": 0.0,
+          "runner_floor": 1.0,
+          "runner_keep": 0.5,
+          "stop": 0.35,
+          "stretch": 5.0,
+          "target": 1.5,
+          "underlying_stop": 2.0
+        },
+        "test": {
+          "ordinary": 2580.03,
+          "adverse": 6302.32
+        }
+      }
+    ],
+    "evaluated": 170
+  }
+}

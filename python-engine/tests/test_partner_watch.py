@@ -671,6 +671,9 @@ async def test_a_buy_gets_its_plan_then_no_stop_then_a_lowered_and_a_removed_sto
     async with aiosqlite.connect(db) as conn:
         looks = await (await conn.execute("SELECT bid, ask, ltp, fut FROM partner_watch_looks")).fetchall()
     assert len(looks) >= 3 and looks[0] == (75.0, 75.1, 75.05, 22534.7)                # shadow looks recorded
+    async with aiosqlite.connect(db) as conn:
+        clocks = await (await conn.execute("SELECT quote_at, fut_quote_at FROM partner_watch_looks")).fetchall()
+    assert all(fut_at is not None for _q, fut_at in clocks)                # [N05-P3] the future's own clock too
     # Each message keeps when the broker event happened, when it was seen and when Telegram acknowledged it.
     plan_row = next(r for r in await _messages(db) if r[1] == "PLAN")
     assert plan_row[2:5] == (1, 1, "acknowledged") and plan_row[5] == D(11, 29, 17).isoformat()
@@ -985,6 +988,52 @@ async def test_a_plan_that_failed_is_started_again(watch, kite, monkeypatch):
     assert watch == []                                     # the first plan failed
     await pw.watch_tick(D(11, 0, 10), market=market)
     assert [m["kind"] for m in watch] == ["watch_plan"] and len(calls) == 2
+
+
+@pytest.mark.asyncio
+async def test_a_buy_after_the_close_warning_time_gets_its_plan_before_the_close_note(watch, kite):
+    """[N05-C2] Nov 2, 15:30: the CLOSE note for a new buy went out 0.7 s before its PLAN."""
+    await _login()
+    market = _market(D(15, 30))
+    await pw.watch_tick(D(15, 29, 55), market=market)
+    kite["orders"] = [_o("101", "BUY", D(15, 30, 0), average_price=75.05)]
+    for at in (D(15, 30, 5), D(15, 30, 10), D(15, 30, 15)):
+        await pw.watch_tick(at, market=market)
+    kinds = [m["kind"] for m in watch if m["kind"] in ("watch_plan", "watch_close")]
+    assert kinds == ["watch_plan", "watch_close"]
+    assert [m for m in watch if m["kind"] == "watch_close"][0]["text"].startswith("⏳ 9 minutes to the 15:40 close")
+
+
+@pytest.mark.asyncio
+async def test_a_restart_keeps_the_login_and_says_the_watch_is_back(watch, kite, monkeypatch):
+    """[N04-C] Nov 2: the 07:02 login was lost by the 08:59 restart (the partner logged in again at 09:06), and a
+    restart in the session left the watch off until a new login. The login is stored and restored at startup."""
+    import os
+    await _login(D(9, 5))
+    await pw.on_login(D(9, 5))
+    path = zerodha._session_path()
+    assert os.path.exists(path)
+    zerodha._session = None                                # a restart: memory gone, the stored login kept
+    pw.reset()
+    assert zerodha.restore_session(D(10, 0)) is True and zerodha.connected(D(10, 0))
+    await pw.watch_tick(D(10, 0), market=_market(D(10, 0)))
+    assert [m["kind"] for m in watch].count("watch_reconnect") == 0
+    assert watch[-1]["kind"] == "watch_watch_on" and watch[-1]["text"] == pw.RESTORED_TEXT
+    await pw.watch_tick(D(10, 0, 5), market=_market(D(10, 0)))
+    assert [m["text"] for m in watch].count(pw.RESTORED_TEXT) == 1                  # said once
+    # Never restored: when expired, for another account, or after the login ended.
+    zerodha._session = None
+    assert zerodha.restore_session(D(10, 0) + timedelta(days=1)) is False and not os.path.exists(path)
+    await zerodha.create_session("reqtok12", D(9, 5))
+    zerodha._session = None
+    user = settings.PARTNER_KITE_USER_ID
+    monkeypatch.setattr(settings, "PARTNER_KITE_USER_ID", "ZZ9999")
+    assert zerodha.restore_session(D(10, 0)) is False and not os.path.exists(path)
+    monkeypatch.setattr(settings, "PARTNER_KITE_USER_ID", user)
+    await zerodha.create_session("reqtok12", D(9, 5))
+    zerodha.disconnect()
+    assert not os.path.exists(path) and zerodha.restore_session(D(10, 0)) is False
+    zerodha.take_restored()
 
 
 @pytest.mark.asyncio
@@ -2699,8 +2748,10 @@ def test_a_run_shown_as_20_percent_always_has_the_chased_spike_warning():
 
 
 def test_the_quiet_answer_fits_the_button_answer():
-    assert len(pw.QUIET_TOAST) <= 190 and "10% of your cash" in pw.QUIET_TOAST
-    assert "each time the day's loss passes another 10% of your cash" in pw.WATCH_ON_TEXT
+    assert len(pw.QUIET_TOAST) <= 190 and "10% of cash lost or given back" in pw.QUIET_TOAST
+    # [N04-B] The day's giveback from its best is told too.
+    assert "each time the day's loss, or what it gives back from its best, passes another 10% of your cash" in (
+        pw.WATCH_ON_TEXT)
 
 
 @pytest.mark.asyncio
@@ -2739,6 +2790,34 @@ async def test_the_day_so_far_is_told_once_a_step_even_on_a_quiet_day(watch, kit
     rows = [r for r in await _messages(db) if r[1] == "DAY"]
     assert [(r[0], r[4]) for r in rows] == [("day:2026-10-23:1", "acknowledged"), ("day:2026-10-23:2", "acknowledged")]
     assert rows[0][5] == D(10, 15).isoformat()                        # the event: the sale that crossed the step
+
+
+@pytest.mark.asyncio
+async def test_the_day_giving_back_its_best_is_told_once_a_step(watch, kite):
+    """[N04-B] Nov 2 went from +₹12,921 at 12:20 to −₹1,669 at 13:28 (51% of the cash) with no message: the DAY
+    steps counted only a loss under zero. A step of what the day gives back from its best is now told once, on a
+    quiet day too, while the day is still up."""
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(10, 0))
+    await pw.watch_tick(D(9, 59, 55), market=market)
+    await pw.handle_button(db, "watch:quiet:20261023", D(9, 59, 58))
+    kite["orders"] = [_o("101", "BUY", D(10, 0), average_price=80.0), _o("102", "SELL", D(10, 5), average_price=100.0)]
+    await pw.watch_tick(D(10, 5, 5), market=market)
+    kite["orders"] += [_o("103", "BUY", D(10, 10), average_price=80.0), _o("104", "SELL", D(10, 15), average_price=72.0)]
+    await pw.watch_tick(D(10, 15, 5), market=market)
+    assert [m["kind"] for m in watch] == []                           # under one step (₹753.67) given back
+    kite["orders"] += [_o("105", "BUY", D(10, 20), average_price=80.0), _o("106", "SELL", D(10, 25), average_price=75.0)]
+    await pw.watch_tick(D(10, 25, 5), market=market)
+    assert [m["kind"] for m in watch] == ["watch_day"]
+    first = watch[-1]["text"].splitlines()[0]
+    assert first.startswith("📉 Today so far: +₹") and "under today's best (+₹1," in first and "at 10:05)" in first
+    assert first.endswith("of your ₹7,537 cash given back.")
+    for at in (D(10, 25, 10), D(10, 25, 30)):
+        await pw.watch_tick(at, market=market)
+    assert len(watch) == 1                                            # once a step
+    rows = [r for r in await _messages(db) if r[1] == "DAY"]
+    assert [r[0] for r in rows] == ["day:2026-10-23:gb:100500:1"]
 
 
 @pytest.mark.asyncio

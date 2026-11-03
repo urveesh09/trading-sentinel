@@ -1,0 +1,112 @@
+{
+  "space": {
+    "setup": [
+      "BOX",
+      "BREAK",
+      "RETEST",
+      "PULLBACK",
+      "FADE"
+    ],
+    "look": [
+      5,
+      10,
+      20,
+      30
+    ],
+    "efficiency": [
+      0.0,
+      0.3,
+      0.5,
+      0.7
+    ],
+    "stretch": [
+      1.5,
+      2.5,
+      4.0
+    ],
+    "premium_low": [
+      2.0,
+      5.0,
+      10.0
+    ],
+    "premium_high": [
+      10.0,
+      20.0,
+      35.0
+    ],
+    "option_rise": [
+      0.0,
+      1.0,
+      1.2
+    ],
+    "stop": [
+      0.2,
+      0.3,
+      0.4
+    ],
+    "arm": [
+      0.4,
+      1.0,
+      2.0
+    ],
+    "keep": [
+      0.5,
+      0.6,
+      0.75
+    ],
+    "target": [
+      1.0,
+      2.0,
+      4.0,
+      9.0
+    ],
+    "hold": [
+      8,
+      15,
+      30,
+      60
+    ],
+    "start": [
+      780,
+      810
+    ],
+    "end": [
+      870,
+      900
+    ],
+    "slots": [
+      1,
+      2
+    ],
+    "underlying_stop": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "reach": [
+      0.0,
+      1.0,
+      2.0,
+      3.0
+    ]
+  },
+  "seeds": [
+    11,
+    37,
+    101
+  ],
+  "population": 48,
+  "generations": 5,
+  "execution": {
+    "ordinary": "next-open + p75 half spread",
+    "adverse": "next-open + double half spread + max(one tick,1% premium)",
+    "catastrophe": "next bar worst high/low, double spread; separately reported"
+  },
+  "source_sha": {
+    "data.py": "b9d9895ae45309f4b82d0fe34d0796c421cc4ac90be0e739f98928343ac4d295",
+    "e02_lab.py": "746fab3fcdcba0fb7ca14c1b42bfcb50b572b53a19b19ce95395664f8cfde7b4",
+    "search.py": "daabe28ee31760ab3769464e1248ea3d0ed269690f8f4d048b5ba2867c5fa1a9"
+  },
+  "through_month": 12,
+  "year2024_opened": false
+}

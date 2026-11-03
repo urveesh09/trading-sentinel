@@ -1,0 +1,13 @@
+{
+  "scope": "Recorded-chain NIFTY 2024/2025 normalized minute model; no unified expiry-book/account profit",
+  "lot": 65,
+  "starting_cash": 25000,
+  "daily_original_reserve": 2500,
+  "max_lots": 1,
+  "max_trades_per_day": 2,
+  "costs": "Current native NFO schedule, not historical tax reconstruction",
+  "fills": "Next open plus frozen half-spread; adverse double spread plus max(0.05,1% premium); severe high/low separate",
+  "qualification": "Original two frozen candidates failed; R3 joint fit on now-seen years; forward evidence unavailable",
+  "paper_flag": false,
+  "production_deployed": false
+}

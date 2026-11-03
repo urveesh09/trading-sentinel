@@ -1,0 +1,1570 @@
+{
+  "histories": 108,
+  "runs": {
+    "ledger-results.json|E031|continuous|ordinary": {
+      "long_positions": 41,
+      "credit_positions": 0,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STOP": 9,
+        "TARGET": 6,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 21,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1838.85,
+      "missing_nav_marks": 0,
+      "end_cash": 37426.71
+    },
+    "ledger-results.json|E031|continuous|adverse": {
+      "long_positions": 41,
+      "credit_positions": 0,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STOP": 10,
+        "TARGET": 6,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 20,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1935.17,
+      "missing_nav_marks": 0,
+      "end_cash": 36497.6
+    },
+    "ledger-results.json|E031|continuous|catastrophe": {
+      "long_positions": 15,
+      "credit_positions": 0,
+      "filled_orders": 30,
+      "exit_reasons": {
+        "STOP": 8,
+        "TIME": 7
+      },
+      "sampled_marked_drawdown": 3278.11,
+      "missing_nav_marks": 0,
+      "end_cash": 21765.92
+    },
+    "ledger-results.json|E031|2024|ordinary": {
+      "long_positions": 20,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "STOP": 6,
+        "TARGET": 4,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 6,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1084.18,
+      "missing_nav_marks": 0,
+      "end_cash": 33897.97
+    },
+    "ledger-results.json|E031|2024|adverse": {
+      "long_positions": 20,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "STOP": 6,
+        "TARGET": 4,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 6,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1103.68,
+      "missing_nav_marks": 0,
+      "end_cash": 33271.27
+    },
+    "ledger-results.json|E031|2024|catastrophe": {
+      "long_positions": 8,
+      "credit_positions": 0,
+      "filled_orders": 16,
+      "exit_reasons": {
+        "STOP": 5,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 2683.82,
+      "missing_nav_marks": 0,
+      "end_cash": 22416.73
+    },
+    "ledger-results.json|E031|2025|ordinary": {
+      "long_positions": 21,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "TIME": 15,
+        "STOP": 3,
+        "TARGET": 2
+      },
+      "sampled_marked_drawdown": 1434.58,
+      "missing_nav_marks": 0,
+      "end_cash": 28528.74
+    },
+    "ledger-results.json|E031|2025|adverse": {
+      "long_positions": 21,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "STOP": 4,
+        "TIME": 14,
+        "TARGET": 2
+      },
+      "sampled_marked_drawdown": 1353.63,
+      "missing_nav_marks": 0,
+      "end_cash": 28226.33
+    },
+    "ledger-results.json|E031|2025|catastrophe": {
+      "long_positions": 9,
+      "credit_positions": 0,
+      "filled_orders": 18,
+      "exit_reasons": {
+        "STOP": 3,
+        "TIME": 6
+      },
+      "sampled_marked_drawdown": 1209.99,
+      "missing_nav_marks": 0,
+      "end_cash": 24326.63
+    },
+    "ledger-results.json|NET_RISK_LEDGER|continuous|ordinary": {
+      "long_positions": 41,
+      "credit_positions": 0,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STOP": 9,
+        "TARGET": 6,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 21,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1838.85,
+      "missing_nav_marks": 0,
+      "end_cash": 37426.71
+    },
+    "ledger-results.json|NET_RISK_LEDGER|continuous|adverse": {
+      "long_positions": 41,
+      "credit_positions": 0,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STOP": 10,
+        "TARGET": 6,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 20,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1935.17,
+      "missing_nav_marks": 0,
+      "end_cash": 36497.6
+    },
+    "ledger-results.json|NET_RISK_LEDGER|continuous|catastrophe": {
+      "long_positions": 14,
+      "credit_positions": 0,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STOP": 8,
+        "TIME": 6
+      },
+      "sampled_marked_drawdown": 3599.64,
+      "missing_nav_marks": 0,
+      "end_cash": 21400.36
+    },
+    "ledger-results.json|NET_RISK_LEDGER|2024|ordinary": {
+      "long_positions": 20,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "STOP": 6,
+        "TARGET": 4,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 6,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1084.18,
+      "missing_nav_marks": 0,
+      "end_cash": 33897.97
+    },
+    "ledger-results.json|NET_RISK_LEDGER|2024|adverse": {
+      "long_positions": 20,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "STOP": 6,
+        "TARGET": 4,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 6,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1103.68,
+      "missing_nav_marks": 0,
+      "end_cash": 33271.27
+    },
+    "ledger-results.json|NET_RISK_LEDGER|2024|catastrophe": {
+      "long_positions": 8,
+      "credit_positions": 0,
+      "filled_orders": 16,
+      "exit_reasons": {
+        "STOP": 5,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 2683.82,
+      "missing_nav_marks": 0,
+      "end_cash": 22416.73
+    },
+    "ledger-results.json|NET_RISK_LEDGER|2025|ordinary": {
+      "long_positions": 21,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "TIME": 15,
+        "STOP": 3,
+        "TARGET": 2
+      },
+      "sampled_marked_drawdown": 1434.58,
+      "missing_nav_marks": 0,
+      "end_cash": 28528.74
+    },
+    "ledger-results.json|NET_RISK_LEDGER|2025|adverse": {
+      "long_positions": 21,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "STOP": 4,
+        "TIME": 14,
+        "TARGET": 2
+      },
+      "sampled_marked_drawdown": 1353.63,
+      "missing_nav_marks": 0,
+      "end_cash": 28226.33
+    },
+    "ledger-results.json|NET_RISK_LEDGER|2025|catastrophe": {
+      "long_positions": 9,
+      "credit_positions": 0,
+      "filled_orders": 18,
+      "exit_reasons": {
+        "STOP": 3,
+        "TIME": 6
+      },
+      "sampled_marked_drawdown": 1209.99,
+      "missing_nav_marks": 0,
+      "end_cash": 24326.63
+    },
+    "ledger-results.json|PROFIT_REENTRY|continuous|ordinary": {
+      "long_positions": 41,
+      "credit_positions": 0,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STOP": 9,
+        "TARGET": 6,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 21,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1838.85,
+      "missing_nav_marks": 0,
+      "end_cash": 37426.71
+    },
+    "ledger-results.json|PROFIT_REENTRY|continuous|adverse": {
+      "long_positions": 41,
+      "credit_positions": 0,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STOP": 10,
+        "TARGET": 6,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 20,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1935.17,
+      "missing_nav_marks": 0,
+      "end_cash": 36497.6
+    },
+    "ledger-results.json|PROFIT_REENTRY|continuous|catastrophe": {
+      "long_positions": 15,
+      "credit_positions": 0,
+      "filled_orders": 30,
+      "exit_reasons": {
+        "STOP": 8,
+        "TIME": 7
+      },
+      "sampled_marked_drawdown": 3278.11,
+      "missing_nav_marks": 0,
+      "end_cash": 21765.92
+    },
+    "ledger-results.json|PROFIT_REENTRY|2024|ordinary": {
+      "long_positions": 20,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "STOP": 6,
+        "TARGET": 4,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 6,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1084.18,
+      "missing_nav_marks": 0,
+      "end_cash": 33897.97
+    },
+    "ledger-results.json|PROFIT_REENTRY|2024|adverse": {
+      "long_positions": 20,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "STOP": 6,
+        "TARGET": 4,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 6,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1103.68,
+      "missing_nav_marks": 0,
+      "end_cash": 33271.27
+    },
+    "ledger-results.json|PROFIT_REENTRY|2024|catastrophe": {
+      "long_positions": 8,
+      "credit_positions": 0,
+      "filled_orders": 16,
+      "exit_reasons": {
+        "STOP": 5,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 2683.82,
+      "missing_nav_marks": 0,
+      "end_cash": 22416.73
+    },
+    "ledger-results.json|PROFIT_REENTRY|2025|ordinary": {
+      "long_positions": 21,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "TIME": 15,
+        "STOP": 3,
+        "TARGET": 2
+      },
+      "sampled_marked_drawdown": 1434.58,
+      "missing_nav_marks": 0,
+      "end_cash": 28528.74
+    },
+    "ledger-results.json|PROFIT_REENTRY|2025|adverse": {
+      "long_positions": 21,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "STOP": 4,
+        "TIME": 14,
+        "TARGET": 2
+      },
+      "sampled_marked_drawdown": 1353.63,
+      "missing_nav_marks": 0,
+      "end_cash": 28226.33
+    },
+    "ledger-results.json|PROFIT_REENTRY|2025|catastrophe": {
+      "long_positions": 9,
+      "credit_positions": 0,
+      "filled_orders": 18,
+      "exit_reasons": {
+        "STOP": 3,
+        "TIME": 6
+      },
+      "sampled_marked_drawdown": 1209.99,
+      "missing_nav_marks": 0,
+      "end_cash": 24326.63
+    },
+    "credit-results.json|CREDIT_8M|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2033.98,
+      "missing_nav_marks": 0,
+      "end_cash": 23245.31
+    },
+    "credit-results.json|CREDIT_8M|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2618.59,
+      "missing_nav_marks": 0,
+      "end_cash": 22602.26
+    },
+    "credit-results.json|CREDIT_8M|continuous|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "TIME": 4,
+        "STRUCTURE": 2,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 1511.22,
+      "missing_nav_marks": 0,
+      "end_cash": 23488.78
+    },
+    "credit-results.json|CREDIT_8M|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2033.98,
+      "missing_nav_marks": 0,
+      "end_cash": 23245.31
+    },
+    "credit-results.json|CREDIT_8M|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TIME": 3,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 2618.59,
+      "missing_nav_marks": 0,
+      "end_cash": 22602.26
+    },
+    "credit-results.json|CREDIT_8M|2024|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 181.71,
+      "missing_nav_marks": 0,
+      "end_cash": 24886.8
+    },
+    "credit-results.json|CREDIT_8M|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "CREDIT_STOP": 1,
+        "TIME": 14,
+        "TAKE_HALF_CREDIT": 4
+      },
+      "sampled_marked_drawdown": 1003.42,
+      "missing_nav_marks": 0,
+      "end_cash": 25622.98
+    },
+    "credit-results.json|CREDIT_8M|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "TIME": 15,
+        "TAKE_HALF_CREDIT": 4
+      },
+      "sampled_marked_drawdown": 1457.42,
+      "missing_nav_marks": 0,
+      "end_cash": 24805.37
+    },
+    "credit-results.json|CREDIT_8M|2025|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "TIME": 3,
+        "STRUCTURE": 2,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1630.91,
+      "missing_nav_marks": 0,
+      "end_cash": 23674.91
+    },
+    "credit-results.json|CREDIT_TREND|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 5,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 2512.75,
+      "missing_nav_marks": 0,
+      "end_cash": 22851.68
+    },
+    "credit-results.json|CREDIT_TREND|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 5,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 3107.08,
+      "missing_nav_marks": 0,
+      "end_cash": 22205.4
+    },
+    "credit-results.json|CREDIT_TREND|continuous|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 8,
+      "filled_orders": 32,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 6,
+        "STRUCTURE": 2
+      },
+      "sampled_marked_drawdown": 1004.74,
+      "missing_nav_marks": 0,
+      "end_cash": 24414.5
+    },
+    "credit-results.json|CREDIT_TREND|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 5,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 2512.75,
+      "missing_nav_marks": 0,
+      "end_cash": 22851.68
+    },
+    "credit-results.json|CREDIT_TREND|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "STRUCTURE": 5,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 3107.08,
+      "missing_nav_marks": 0,
+      "end_cash": 22205.4
+    },
+    "credit-results.json|CREDIT_TREND|2024|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 181.71,
+      "missing_nav_marks": 0,
+      "end_cash": 25056.4
+    },
+    "credit-results.json|CREDIT_TREND|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 8,
+      "filled_orders": 32,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "CREDIT_STOP": 1,
+        "TAKE_HALF_CREDIT": 4
+      },
+      "sampled_marked_drawdown": 1573.57,
+      "missing_nav_marks": 0,
+      "end_cash": 23658.55
+    },
+    "credit-results.json|CREDIT_TREND|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 8,
+      "filled_orders": 32,
+      "exit_reasons": {
+        "STRUCTURE": 3,
+        "TAKE_HALF_CREDIT": 5
+      },
+      "sampled_marked_drawdown": 1735.94,
+      "missing_nav_marks": 0,
+      "end_cash": 23558.74
+    },
+    "credit-results.json|CREDIT_TREND|2025|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 5,
+        "STRUCTURE": 2
+      },
+      "sampled_marked_drawdown": 1004.74,
+      "missing_nav_marks": 0,
+      "end_cash": 24358.1
+    },
+    "hybrid-results.json|E031|continuous|ordinary": {
+      "long_positions": 41,
+      "credit_positions": 0,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STOP": 9,
+        "TARGET": 6,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 21,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1838.85,
+      "missing_nav_marks": 0,
+      "end_cash": 37426.71
+    },
+    "hybrid-results.json|E031|continuous|adverse": {
+      "long_positions": 41,
+      "credit_positions": 0,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STOP": 10,
+        "TARGET": 6,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 20,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1935.17,
+      "missing_nav_marks": 0,
+      "end_cash": 36497.6
+    },
+    "hybrid-results.json|E031|continuous|catastrophe": {
+      "long_positions": 15,
+      "credit_positions": 0,
+      "filled_orders": 30,
+      "exit_reasons": {
+        "STOP": 8,
+        "TIME": 7
+      },
+      "sampled_marked_drawdown": 3278.11,
+      "missing_nav_marks": 0,
+      "end_cash": 21765.92
+    },
+    "hybrid-results.json|E031|2024|ordinary": {
+      "long_positions": 20,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "STOP": 6,
+        "TARGET": 4,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 6,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1084.18,
+      "missing_nav_marks": 0,
+      "end_cash": 33897.97
+    },
+    "hybrid-results.json|E031|2024|adverse": {
+      "long_positions": 20,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "STOP": 6,
+        "TARGET": 4,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TIME": 6,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1103.68,
+      "missing_nav_marks": 0,
+      "end_cash": 33271.27
+    },
+    "hybrid-results.json|E031|2024|catastrophe": {
+      "long_positions": 8,
+      "credit_positions": 0,
+      "filled_orders": 16,
+      "exit_reasons": {
+        "STOP": 5,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 2683.82,
+      "missing_nav_marks": 0,
+      "end_cash": 22416.73
+    },
+    "hybrid-results.json|E031|2025|ordinary": {
+      "long_positions": 21,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "TIME": 15,
+        "STOP": 3,
+        "TARGET": 2
+      },
+      "sampled_marked_drawdown": 1434.58,
+      "missing_nav_marks": 0,
+      "end_cash": 28528.74
+    },
+    "hybrid-results.json|E031|2025|adverse": {
+      "long_positions": 21,
+      "credit_positions": 0,
+      "filled_orders": 42,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "STOP": 4,
+        "TIME": 14,
+        "TARGET": 2
+      },
+      "sampled_marked_drawdown": 1353.63,
+      "missing_nav_marks": 0,
+      "end_cash": 28226.33
+    },
+    "hybrid-results.json|E031|2025|catastrophe": {
+      "long_positions": 9,
+      "credit_positions": 0,
+      "filled_orders": 18,
+      "exit_reasons": {
+        "STOP": 3,
+        "TIME": 6
+      },
+      "sampled_marked_drawdown": 1209.99,
+      "missing_nav_marks": 0,
+      "end_cash": 24326.63
+    },
+    "hybrid-results.json|HYBRID_8M|continuous|ordinary": {
+      "long_positions": 14,
+      "credit_positions": 28,
+      "filled_orders": 142,
+      "exit_reasons": {
+        "STOP": 3,
+        "TIME": 27,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TAKE_HALF_CREDIT": 5,
+        "STRUCTURE": 2,
+        "RUNNER_TRAIL": 1,
+        "CREDIT_STOP": 1
+      },
+      "sampled_marked_drawdown": 1741.67,
+      "missing_nav_marks": 0,
+      "end_cash": 32105.6
+    },
+    "hybrid-results.json|HYBRID_8M|continuous|adverse": {
+      "long_positions": 16,
+      "credit_positions": 25,
+      "filled_orders": 134,
+      "exit_reasons": {
+        "STOP": 3,
+        "TIME": 27,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TAKE_HALF_CREDIT": 4,
+        "STRUCTURE": 2,
+        "TARGET": 1,
+        "RUNNER_TRAIL": 1
+      },
+      "sampled_marked_drawdown": 1875.02,
+      "missing_nav_marks": 0,
+      "end_cash": 31307.66
+    },
+    "hybrid-results.json|HYBRID_8M|continuous|catastrophe": {
+      "long_positions": 2,
+      "credit_positions": 4,
+      "filled_orders": 20,
+      "exit_reasons": {
+        "TIME": 4,
+        "TAKE_HALF_CREDIT": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1080.58,
+      "missing_nav_marks": 0,
+      "end_cash": 24575.16
+    },
+    "hybrid-results.json|HYBRID_8M|2024|ordinary": {
+      "long_positions": 8,
+      "credit_positions": 13,
+      "filled_orders": 70,
+      "exit_reasons": {
+        "STOP": 1,
+        "TIME": 12,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TAKE_HALF_CREDIT": 3,
+        "STRUCTURE": 2,
+        "RUNNER_TRAIL": 1
+      },
+      "sampled_marked_drawdown": 1467.4,
+      "missing_nav_marks": 0,
+      "end_cash": 30418.28
+    },
+    "hybrid-results.json|HYBRID_8M|2024|adverse": {
+      "long_positions": 10,
+      "credit_positions": 11,
+      "filled_orders": 66,
+      "exit_reasons": {
+        "STOP": 1,
+        "TIME": 12,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TAKE_HALF_CREDIT": 2,
+        "STRUCTURE": 2,
+        "TARGET": 1,
+        "RUNNER_TRAIL": 1
+      },
+      "sampled_marked_drawdown": 1875.02,
+      "missing_nav_marks": 0,
+      "end_cash": 30008.91
+    },
+    "hybrid-results.json|HYBRID_8M|2024|catastrophe": {
+      "long_positions": 1,
+      "credit_positions": 1,
+      "filled_orders": 6,
+      "exit_reasons": {
+        "TIME": 2
+      },
+      "sampled_marked_drawdown": 849.93,
+      "missing_nav_marks": 0,
+      "end_cash": 24739.97
+    },
+    "hybrid-results.json|HYBRID_8M|2025|ordinary": {
+      "long_positions": 6,
+      "credit_positions": 15,
+      "filled_orders": 72,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "CREDIT_STOP": 1,
+        "TIME": 15,
+        "STOP": 2,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1144.96,
+      "missing_nav_marks": 0,
+      "end_cash": 26687.32
+    },
+    "hybrid-results.json|HYBRID_8M|2025|adverse": {
+      "long_positions": 6,
+      "credit_positions": 14,
+      "filled_orders": 68,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "TIME": 15,
+        "STOP": 2,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 896.57,
+      "missing_nav_marks": 0,
+      "end_cash": 26298.75
+    },
+    "hybrid-results.json|HYBRID_8M|2025|catastrophe": {
+      "long_positions": 1,
+      "credit_positions": 3,
+      "filled_orders": 14,
+      "exit_reasons": {
+        "TIME": 2,
+        "TAKE_HALF_CREDIT": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 781.24,
+      "missing_nav_marks": 0,
+      "end_cash": 24835.19
+    },
+    "hybrid-results.json|HYBRID_TREND|continuous|ordinary": {
+      "long_positions": 16,
+      "credit_positions": 26,
+      "filled_orders": 138,
+      "exit_reasons": {
+        "STOP": 3,
+        "TAKE_HALF_CREDIT": 19,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "STRUCTURE": 7,
+        "RUNNER_TRAIL": 1,
+        "TIME": 8,
+        "CREDIT_STOP": 1
+      },
+      "sampled_marked_drawdown": 2397.96,
+      "missing_nav_marks": 0,
+      "end_cash": 33394.84
+    },
+    "hybrid-results.json|HYBRID_TREND|continuous|adverse": {
+      "long_positions": 17,
+      "credit_positions": 24,
+      "filled_orders": 132,
+      "exit_reasons": {
+        "STOP": 3,
+        "TAKE_HALF_CREDIT": 18,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "STRUCTURE": 7,
+        "RUNNER_TRAIL": 1,
+        "TIME": 9
+      },
+      "sampled_marked_drawdown": 2513.76,
+      "missing_nav_marks": 0,
+      "end_cash": 32213.81
+    },
+    "hybrid-results.json|HYBRID_TREND|continuous|catastrophe": {
+      "long_positions": 2,
+      "credit_positions": 4,
+      "filled_orders": 20,
+      "exit_reasons": {
+        "TIME": 2,
+        "TAKE_HALF_CREDIT": 3,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 849.93,
+      "missing_nav_marks": 0,
+      "end_cash": 24878.37
+    },
+    "hybrid-results.json|HYBRID_TREND|2024|ordinary": {
+      "long_positions": 8,
+      "credit_positions": 13,
+      "filled_orders": 70,
+      "exit_reasons": {
+        "STOP": 1,
+        "TAKE_HALF_CREDIT": 10,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "STRUCTURE": 4,
+        "RUNNER_TRAIL": 1,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 1383.32,
+      "missing_nav_marks": 0,
+      "end_cash": 32131.73
+    },
+    "hybrid-results.json|HYBRID_TREND|2024|adverse": {
+      "long_positions": 8,
+      "credit_positions": 13,
+      "filled_orders": 70,
+      "exit_reasons": {
+        "STOP": 1,
+        "TAKE_HALF_CREDIT": 10,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "STRUCTURE": 4,
+        "RUNNER_TRAIL": 1,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 1682.03,
+      "missing_nav_marks": 0,
+      "end_cash": 31115.42
+    },
+    "hybrid-results.json|HYBRID_TREND|2024|catastrophe": {
+      "long_positions": 1,
+      "credit_positions": 1,
+      "filled_orders": 6,
+      "exit_reasons": {
+        "TIME": 1,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 849.93,
+      "missing_nav_marks": 0,
+      "end_cash": 24909.57
+    },
+    "hybrid-results.json|HYBRID_TREND|2025|ordinary": {
+      "long_positions": 8,
+      "credit_positions": 13,
+      "filled_orders": 68,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "CREDIT_STOP": 1,
+        "TAKE_HALF_CREDIT": 8,
+        "STOP": 2,
+        "STRUCTURE": 4,
+        "TIME": 5
+      },
+      "sampled_marked_drawdown": 2387.13,
+      "missing_nav_marks": 0,
+      "end_cash": 25711.76
+    },
+    "hybrid-results.json|HYBRID_TREND|2025|adverse": {
+      "long_positions": 9,
+      "credit_positions": 11,
+      "filled_orders": 62,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "TAKE_HALF_CREDIT": 8,
+        "STOP": 2,
+        "STRUCTURE": 3,
+        "TIME": 6
+      },
+      "sampled_marked_drawdown": 2248.65,
+      "missing_nav_marks": 0,
+      "end_cash": 26098.39
+    },
+    "hybrid-results.json|HYBRID_TREND|2025|catastrophe": {
+      "long_positions": 1,
+      "credit_positions": 3,
+      "filled_orders": 14,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 2,
+        "TIME": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 781.24,
+      "missing_nav_marks": 0,
+      "end_cash": 24968.8
+    },
+    "unbraked-results.json|HYBRID_8M|continuous|ordinary": {
+      "long_positions": 14,
+      "credit_positions": 28,
+      "filled_orders": 142,
+      "exit_reasons": {
+        "STOP": 3,
+        "TIME": 27,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TAKE_HALF_CREDIT": 5,
+        "STRUCTURE": 2,
+        "RUNNER_TRAIL": 1,
+        "CREDIT_STOP": 1
+      },
+      "sampled_marked_drawdown": 1741.67,
+      "missing_nav_marks": 0,
+      "end_cash": 32105.6
+    },
+    "unbraked-results.json|HYBRID_8M|continuous|adverse": {
+      "long_positions": 14,
+      "credit_positions": 27,
+      "filled_orders": 138,
+      "exit_reasons": {
+        "STOP": 3,
+        "TIME": 27,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TAKE_HALF_CREDIT": 5,
+        "STRUCTURE": 2,
+        "RUNNER_TRAIL": 1
+      },
+      "sampled_marked_drawdown": 2019.47,
+      "missing_nav_marks": 0,
+      "end_cash": 30535.0
+    },
+    "unbraked-results.json|HYBRID_8M|continuous|catastrophe": {
+      "long_positions": 2,
+      "credit_positions": 4,
+      "filled_orders": 20,
+      "exit_reasons": {
+        "TIME": 4,
+        "TAKE_HALF_CREDIT": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 1080.58,
+      "missing_nav_marks": 0,
+      "end_cash": 24575.16
+    },
+    "unbraked-results.json|HYBRID_8M|2024|ordinary": {
+      "long_positions": 8,
+      "credit_positions": 13,
+      "filled_orders": 70,
+      "exit_reasons": {
+        "STOP": 1,
+        "TIME": 12,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TAKE_HALF_CREDIT": 3,
+        "STRUCTURE": 2,
+        "RUNNER_TRAIL": 1
+      },
+      "sampled_marked_drawdown": 1467.4,
+      "missing_nav_marks": 0,
+      "end_cash": 30418.28
+    },
+    "unbraked-results.json|HYBRID_8M|2024|adverse": {
+      "long_positions": 8,
+      "credit_positions": 13,
+      "filled_orders": 70,
+      "exit_reasons": {
+        "STOP": 1,
+        "TIME": 12,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "TAKE_HALF_CREDIT": 3,
+        "STRUCTURE": 2,
+        "RUNNER_TRAIL": 1
+      },
+      "sampled_marked_drawdown": 2019.47,
+      "missing_nav_marks": 0,
+      "end_cash": 29236.25
+    },
+    "unbraked-results.json|HYBRID_8M|2024|catastrophe": {
+      "long_positions": 1,
+      "credit_positions": 1,
+      "filled_orders": 6,
+      "exit_reasons": {
+        "TIME": 2
+      },
+      "sampled_marked_drawdown": 849.93,
+      "missing_nav_marks": 0,
+      "end_cash": 24739.97
+    },
+    "unbraked-results.json|HYBRID_8M|2025|ordinary": {
+      "long_positions": 6,
+      "credit_positions": 15,
+      "filled_orders": 72,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "CREDIT_STOP": 1,
+        "TIME": 15,
+        "STOP": 2,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1144.96,
+      "missing_nav_marks": 0,
+      "end_cash": 26687.32
+    },
+    "unbraked-results.json|HYBRID_8M|2025|adverse": {
+      "long_positions": 6,
+      "credit_positions": 14,
+      "filled_orders": 68,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "TIME": 15,
+        "STOP": 2,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 896.57,
+      "missing_nav_marks": 0,
+      "end_cash": 26298.75
+    },
+    "unbraked-results.json|HYBRID_8M|2025|catastrophe": {
+      "long_positions": 1,
+      "credit_positions": 3,
+      "filled_orders": 14,
+      "exit_reasons": {
+        "TIME": 2,
+        "TAKE_HALF_CREDIT": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 781.24,
+      "missing_nav_marks": 0,
+      "end_cash": 24835.19
+    },
+    "unbraked-results.json|HYBRID_TREND|continuous|ordinary": {
+      "long_positions": 14,
+      "credit_positions": 28,
+      "filled_orders": 142,
+      "exit_reasons": {
+        "STOP": 3,
+        "TAKE_HALF_CREDIT": 19,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "STRUCTURE": 9,
+        "RUNNER_TRAIL": 1,
+        "TIME": 6,
+        "CREDIT_STOP": 1
+      },
+      "sampled_marked_drawdown": 2658.98,
+      "missing_nav_marks": 0,
+      "end_cash": 32486.1
+    },
+    "unbraked-results.json|HYBRID_TREND|continuous|adverse": {
+      "long_positions": 14,
+      "credit_positions": 27,
+      "filled_orders": 138,
+      "exit_reasons": {
+        "STOP": 3,
+        "TAKE_HALF_CREDIT": 19,
+        "TRAIL": 2,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "STRUCTURE": 9,
+        "RUNNER_TRAIL": 1,
+        "TIME": 6
+      },
+      "sampled_marked_drawdown": 3005.32,
+      "missing_nav_marks": 0,
+      "end_cash": 31025.99
+    },
+    "unbraked-results.json|HYBRID_TREND|continuous|catastrophe": {
+      "long_positions": 2,
+      "credit_positions": 4,
+      "filled_orders": 20,
+      "exit_reasons": {
+        "TIME": 2,
+        "TAKE_HALF_CREDIT": 3,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 849.93,
+      "missing_nav_marks": 0,
+      "end_cash": 24878.37
+    },
+    "unbraked-results.json|HYBRID_TREND|2024|ordinary": {
+      "long_positions": 8,
+      "credit_positions": 13,
+      "filled_orders": 70,
+      "exit_reasons": {
+        "STOP": 1,
+        "TAKE_HALF_CREDIT": 10,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "STRUCTURE": 4,
+        "RUNNER_TRAIL": 1,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 1383.32,
+      "missing_nav_marks": 0,
+      "end_cash": 32131.73
+    },
+    "unbraked-results.json|HYBRID_TREND|2024|adverse": {
+      "long_positions": 8,
+      "credit_positions": 13,
+      "filled_orders": 70,
+      "exit_reasons": {
+        "STOP": 1,
+        "TAKE_HALF_CREDIT": 10,
+        "TRAIL": 1,
+        "TARGET_BASE": 2,
+        "HERO_TARGET": 1,
+        "STRUCTURE": 4,
+        "RUNNER_TRAIL": 1,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 1682.03,
+      "missing_nav_marks": 0,
+      "end_cash": 31115.42
+    },
+    "unbraked-results.json|HYBRID_TREND|2024|catastrophe": {
+      "long_positions": 1,
+      "credit_positions": 1,
+      "filled_orders": 6,
+      "exit_reasons": {
+        "TIME": 1,
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 849.93,
+      "missing_nav_marks": 0,
+      "end_cash": 24909.57
+    },
+    "unbraked-results.json|HYBRID_TREND|2025|ordinary": {
+      "long_positions": 6,
+      "credit_positions": 15,
+      "filled_orders": 72,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "CREDIT_STOP": 1,
+        "TAKE_HALF_CREDIT": 9,
+        "STOP": 2,
+        "STRUCTURE": 5,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 2516.07,
+      "missing_nav_marks": 0,
+      "end_cash": 25354.37
+    },
+    "unbraked-results.json|HYBRID_TREND|2025|adverse": {
+      "long_positions": 6,
+      "credit_positions": 14,
+      "filled_orders": 68,
+      "exit_reasons": {
+        "TRAIL": 1,
+        "TAKE_HALF_CREDIT": 9,
+        "STOP": 2,
+        "STRUCTURE": 5,
+        "TIME": 3
+      },
+      "sampled_marked_drawdown": 2740.21,
+      "missing_nav_marks": 0,
+      "end_cash": 24910.57
+    },
+    "unbraked-results.json|HYBRID_TREND|2025|catastrophe": {
+      "long_positions": 1,
+      "credit_positions": 3,
+      "filled_orders": 14,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 2,
+        "TIME": 1,
+        "STRUCTURE": 1
+      },
+      "sampled_marked_drawdown": 781.24,
+      "missing_nav_marks": 0,
+      "end_cash": 24968.8
+    },
+    "unbraked-results.json|CREDIT_8M|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 44,
+      "filled_orders": 176,
+      "exit_reasons": {
+        "STRUCTURE": 11,
+        "TIME": 25,
+        "TAKE_HALF_CREDIT": 7,
+        "CREDIT_STOP": 1
+      },
+      "sampled_marked_drawdown": 4447.2,
+      "missing_nav_marks": 0,
+      "end_cash": 22369.36
+    },
+    "unbraked-results.json|CREDIT_8M|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 44,
+      "filled_orders": 176,
+      "exit_reasons": {
+        "STRUCTURE": 11,
+        "TIME": 26,
+        "TAKE_HALF_CREDIT": 7
+      },
+      "sampled_marked_drawdown": 6372.39,
+      "missing_nav_marks": 0,
+      "end_cash": 20038.35
+    },
+    "unbraked-results.json|CREDIT_8M|continuous|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 8,
+      "filled_orders": 32,
+      "exit_reasons": {
+        "TIME": 4,
+        "STRUCTURE": 2,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1744.11,
+      "missing_nav_marks": 0,
+      "end_cash": 23561.71
+    },
+    "unbraked-results.json|CREDIT_8M|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STRUCTURE": 7,
+        "TIME": 11,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 3697.43,
+      "missing_nav_marks": 0,
+      "end_cash": 21746.38
+    },
+    "unbraked-results.json|CREDIT_8M|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STRUCTURE": 7,
+        "TIME": 11,
+        "TAKE_HALF_CREDIT": 3
+      },
+      "sampled_marked_drawdown": 4987.87,
+      "missing_nav_marks": 0,
+      "end_cash": 20232.98
+    },
+    "unbraked-results.json|CREDIT_8M|2024|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TIME": 1
+      },
+      "sampled_marked_drawdown": 181.71,
+      "missing_nav_marks": 0,
+      "end_cash": 24886.8
+    },
+    "unbraked-results.json|CREDIT_8M|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "CREDIT_STOP": 1,
+        "TIME": 14,
+        "TAKE_HALF_CREDIT": 4
+      },
+      "sampled_marked_drawdown": 1003.42,
+      "missing_nav_marks": 0,
+      "end_cash": 25622.98
+    },
+    "unbraked-results.json|CREDIT_8M|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 4,
+        "TIME": 15,
+        "TAKE_HALF_CREDIT": 4
+      },
+      "sampled_marked_drawdown": 1457.42,
+      "missing_nav_marks": 0,
+      "end_cash": 24805.37
+    },
+    "unbraked-results.json|CREDIT_8M|2025|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "TIME": 3,
+        "STRUCTURE": 2,
+        "TAKE_HALF_CREDIT": 2
+      },
+      "sampled_marked_drawdown": 1630.91,
+      "missing_nav_marks": 0,
+      "end_cash": 23674.91
+    },
+    "unbraked-results.json|CREDIT_TREND|continuous|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 44,
+      "filled_orders": 176,
+      "exit_reasons": {
+        "STRUCTURE": 20,
+        "TAKE_HALF_CREDIT": 23,
+        "CREDIT_STOP": 1
+      },
+      "sampled_marked_drawdown": 3808.68,
+      "missing_nav_marks": 0,
+      "end_cash": 23503.01
+    },
+    "unbraked-results.json|CREDIT_TREND|continuous|adverse": {
+      "long_positions": 0,
+      "credit_positions": 44,
+      "filled_orders": 176,
+      "exit_reasons": {
+        "STRUCTURE": 20,
+        "TAKE_HALF_CREDIT": 24
+      },
+      "sampled_marked_drawdown": 5428.3,
+      "missing_nav_marks": 0,
+      "end_cash": 21432.09
+    },
+    "unbraked-results.json|CREDIT_TREND|continuous|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 8,
+      "filled_orders": 32,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 6,
+        "STRUCTURE": 2
+      },
+      "sampled_marked_drawdown": 1004.74,
+      "missing_nav_marks": 0,
+      "end_cash": 24414.5
+    },
+    "unbraked-results.json|CREDIT_TREND|2024|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STRUCTURE": 11,
+        "TAKE_HALF_CREDIT": 10
+      },
+      "sampled_marked_drawdown": 2601.13,
+      "missing_nav_marks": 0,
+      "end_cash": 23936.39
+    },
+    "unbraked-results.json|CREDIT_TREND|2024|adverse": {
+      "long_positions": 0,
+      "credit_positions": 21,
+      "filled_orders": 84,
+      "exit_reasons": {
+        "STRUCTURE": 11,
+        "TAKE_HALF_CREDIT": 10
+      },
+      "sampled_marked_drawdown": 3340.92,
+      "missing_nav_marks": 0,
+      "end_cash": 22572.47
+    },
+    "unbraked-results.json|CREDIT_TREND|2024|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 1,
+      "filled_orders": 4,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 1
+      },
+      "sampled_marked_drawdown": 181.71,
+      "missing_nav_marks": 0,
+      "end_cash": 25056.4
+    },
+    "unbraked-results.json|CREDIT_TREND|2025|ordinary": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 9,
+        "CREDIT_STOP": 1,
+        "TAKE_HALF_CREDIT": 13
+      },
+      "sampled_marked_drawdown": 2612.76,
+      "missing_nav_marks": 0,
+      "end_cash": 24566.62
+    },
+    "unbraked-results.json|CREDIT_TREND|2025|adverse": {
+      "long_positions": 0,
+      "credit_positions": 23,
+      "filled_orders": 92,
+      "exit_reasons": {
+        "STRUCTURE": 9,
+        "TAKE_HALF_CREDIT": 14
+      },
+      "sampled_marked_drawdown": 2982.97,
+      "missing_nav_marks": 0,
+      "end_cash": 23859.62
+    },
+    "unbraked-results.json|CREDIT_TREND|2025|catastrophe": {
+      "long_positions": 0,
+      "credit_positions": 7,
+      "filled_orders": 28,
+      "exit_reasons": {
+        "TAKE_HALF_CREDIT": 5,
+        "STRUCTURE": 2
+      },
+      "sampled_marked_drawdown": 1004.74,
+      "missing_nav_marks": 0,
+      "end_cash": 24358.1
+    }
+  },
+  "distinct_actual_prefixes": 54,
+  "native_long_positions": 1037,
+  "credit_positions": 991,
+  "financial_action_mismatches": 0,
+  "network_attempts": [],
+  "qualification": false,
+  "marked_basis": "Complete-bar estimated liquidation NAV with fees; missing marks omitted/counts; not intrabar/depth broker NAV"
+}

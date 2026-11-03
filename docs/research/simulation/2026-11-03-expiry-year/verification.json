@@ -1,0 +1,125 @@
+{
+  "freeze_commit": "99d3de3",
+  "freeze_documentation_receipt": "4caa79c",
+  "source_and_data_guard": "PASS",
+  "commands": [
+    {
+      "command": "study.py snapshot",
+      "exit": 0
+    },
+    {
+      "command": "study.py parity (initial)",
+      "exit": 1,
+      "explanation": "Six record-only failed-break index/line annotations; money/clock already matched; initial artifact retained"
+    },
+    {
+      "command": "study.py parity (economic event contract)",
+      "exit": 0,
+      "legs": 42,
+      "mismatches": 0
+    },
+    {
+      "command": "pytest test_study.py -q",
+      "exit": 0,
+      "passed": 12
+    },
+    {
+      "command": "study.py run --group development",
+      "exit": 0
+    },
+    {
+      "command": "study.py run --group development --candidates",
+      "exit": 0
+    },
+    {
+      "command": "minutes.py snapshot (2025 SQL only)",
+      "exit": 0
+    },
+    {
+      "command": "study.py freeze; commit 99d3de3; study.py verify",
+      "exit": 0
+    },
+    {
+      "command": "study.py run --group validation --candidates",
+      "exit": 0
+    },
+    {
+      "command": "study.py run --group test2025 --candidates",
+      "exit": 0
+    },
+    {
+      "command": "minutes.py run",
+      "exit": 0
+    },
+    {
+      "command": "analyze.py",
+      "exit": 0,
+      "positions": 4032,
+      "execution_events": 7967,
+      "errors": 0
+    },
+    {
+      "command": "pytest test_expiry_paper.py test_expiry_e01.py test_expiry_e011.py test_study.py -q",
+      "exit": 0,
+      "passed": 139,
+      "seconds": 197.42
+    },
+    {
+      "command": "simulation_evidence.py report; verify",
+      "exit": 0,
+      "validation": "EVIDENCE_CHECKS_PASSED"
+    },
+    {
+      "command": "python scripts/build_system_code_atlas.py",
+      "exit": 0,
+      "runtime_modules": 294,
+      "diff": false
+    },
+    {
+      "command": "Post-commit stock simulation_evidence.py verify in moving Dev checkout",
+      "exit": 2,
+      "explanation": "HEAD-only mismatch after committing evidence; all 850 policy source files unchanged; original report retained"
+    },
+    {
+      "command": "verify_archive.py initial sparse-checkout check",
+      "exit": 1,
+      "explanation": "Git for Windows converted LF to CRLF; all differences were newline-only; exact frozen bytes restored in pinned Dev copy only"
+    },
+    {
+      "command": "verify_archive.py with exact frozen newline bytes",
+      "exit": 0,
+      "unchanged_policy_source_files": 850,
+      "receipts_and_money_identical": true,
+      "helper_changed": false
+    },
+    {
+      "command": "git push origin HEAD:codex/production-correction-hedge-p0 at 22a19f4",
+      "exit": 0
+    }
+  ],
+  "production_checkout_unchanged": "06bed07e05a32bc4394aff7ba70990faa745a8ec",
+  "production_tracked_diff": false,
+  "runtime_source_diff": false,
+  "owner_existing_document_text_preserved": true,
+  "api_calls": 0,
+  "pre2025_prices_read": false,
+  "scope": "Offline research only; no config/schema/capital/notification/deployment changes; no full engine-suite rerun",
+  "environment_limits": [
+    "OHLC does not establish bid/ask/depth or native auction fills",
+    "Current normalized lot sizes/fees, not dated historical execution",
+    "Ten-second opening-ATM panel is not the entry book",
+    "Only five SENSEX 2025 sessions pass the complete afternoon-grid requirement",
+    "No genuinely untouched remainder in the scored 2025/2026 windows"
+  ],
+  "result_artifact_sha256": {
+    "results-development-candidates.json": "b95fe98ca0a6e17aadc95429be38e734bd91e22859b5aa5f582247ead4a8d132",
+    "results-development.json": "af5b510302a3519b3cc6e3e2f9974a43319fbe1b2f4ba733182b3fc7d7e70d96",
+    "results-minute2025.json": "6e16ec1d5d16eaeb0b77e143ea906f82655e3f07239c3e3d4e4603cccf7bd5df",
+    "results-test2025.json": "9b8a63104a4c50575b635424852a3dc309a2df17bf7619445024b1f267ebdcf6",
+    "results-validation.json": "bf44f0dba72a44813aa27cd4408bb5d30bbe3a888e22fc99124b10d3e1298ad2"
+  },
+  "status_at_receipt": "Score/report commit 22a19f4 pushed on codex/production-correction-hedge-p0; final verification-only receipt follows; no runtime changes or deployment.",
+  "documentation_check_correction": "Initial post-freeze doc check found the checklist lacked a direct plan path; fixed in 4caa79c before scoring; recheck passed.",
+  "results_commit": "22a19f4",
+  "archive_verification": "PASS in exact pinned source checkout; original moving-HEAD helper rejection is retained explicitly"
+}

@@ -1016,6 +1016,29 @@ def register_penny_scheduler_jobs(scheduler):
             await xp.run_expiry_tick(_main.kite)
         except Exception as exc:
             logger.error("expiry_paper_tick_failed err=%s", type(exc).__name__, exc_info=True)
+        # E02 and E03 observe the archive after the primary tick, each with its own
+        # cash and DB. No provider calls, messages or shared ledger/capital. A
+        # disabled variant's open leg still exits.
+        try:
+            import expiry_e02
+            variants = ((expiry_e02.E02, settings.EXPIRY_E02_SHADOW_ENABLED),
+                        (expiry_e02.E03, settings.EXPIRY_E03_SHADOW_ENABLED),
+                        (expiry_e02.E031, settings.EXPIRY_E031_SHADOW_ENABLED),
+                        (expiry_e02.E032, settings.EXPIRY_E032_SHADOW_ENABLED))
+        except Exception as exc:
+            logger.error("expiry_e02_shadow_failed err=%s", type(exc).__name__, exc_info=True)
+            variants = ()
+        for variant, enabled in variants:
+            try:
+                if enabled or expiry_e02.has_open_book(settings.DB_PATH, variant):
+                    result = await asyncio.to_thread(expiry_e02.run_tick, settings.DB_PATH,
+                                                     enabled=enabled, variant=variant)
+                    # expiry-v5: the main ticket's buys and sells go to the expiry outbox (owner notices).
+                    if variant.play == settings.EXPIRY_MAIN_STRATEGY and isinstance(result, dict) and result.get("notices"):
+                        import expiry_paper
+                        expiry_paper.queue_notices(settings.DB_PATH, result["notices"], datetime.now(expiry_paper.IST))
+            except Exception as exc:
+                logger.error("expiry_%s_shadow_failed err=%s", variant.name, type(exc).__name__, exc_info=True)
 
     async def _run_expiry_paper_flush_safe():
         if not settings.EXPIRY_PAPER_ENABLED:
@@ -1591,9 +1614,15 @@ def register_partner_scheduler_jobs(scheduler):
         id="partner_scan_tick",
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )
+    # [N05-T1] Cards and their exit/target updates come from completed 5-minute bars, so the tick runs on the
+    # bar-close grid (8 s after each close, as fno_bar_close_tick does at 3 s, and again at 38 s for a candle
+    # that came late or a send that failed). Before, every 2 minutes at :50: the 13 cards delivered Sep-Nov
+    # went out 53-136 s after their bar (median 112), and Nov 2's "EXIT now" 50 s after it. Its provider calls
+    # are in the normal lane: trading reads (management lane) are admitted ahead of them, so the quarter-hour
+    # bursts the old offset avoided cannot be delayed by it. 24 runs an hour (was 30).
     scheduler.add_job(
         _run_partner_manual_advisory_tick_safe, "cron",
-        minute="*/2", second=50,
+        minute="*/5", second="8,38",
         id="partner_manual_advisory_tick",
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )

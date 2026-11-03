@@ -1,0 +1,64 @@
+{
+  "years": {
+    "2025": {
+      "rows": [
+        [
+          "future",
+          19875,
+          53,
+          "2025-01-02 09:15:00",
+          "2025-12-30 15:29:00"
+        ],
+        [
+          "index",
+          19875,
+          53,
+          "2025-01-02 09:15:00",
+          "2025-12-30 15:29:00"
+        ],
+        [
+          "option",
+          623448,
+          53,
+          "2025-01-02 09:15:00",
+          "2025-12-30 15:29:00"
+        ]
+      ],
+      "sha256": "32cc03107ecc20625bf1bfad7c5f48358f98bddb12e3c00664d32246a98dfae1",
+      "role": "development_seen",
+      "prices_printed": false
+    },
+    "2024": {
+      "rows": [
+        [
+          "future",
+          19499,
+          52,
+          "2024-01-04 09:15:00",
+          "2024-12-26 15:29:00"
+        ],
+        [
+          "index",
+          19500,
+          52,
+          "2024-01-04 09:15:00",
+          "2024-12-26 15:29:00"
+        ],
+        [
+          "option",
+          637414,
+          52,
+          "2024-01-04 09:15:00",
+          "2024-12-26 15:29:00"
+        ]
+      ],
+      "sha256": "ac38844416ccdebb1223f01e44fead2d94bc668253d5364d0eb524e792250009",
+      "role": "reserved_expiry_path_exam",
+      "prices_printed": false
+    }
+  },
+  "source": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-02-expiry-e02\\_local\\data.sqlite",
+  "source_writes": 0,
+  "api_calls": 0,
+  "year2023_read": false
+}

@@ -1,0 +1,13 @@
+{
+  "head": "ff34d6b78378215236b80c8317628a8c01a284b0",
+  "files": {
+    "HYBRID.md": "9f69842fba7dd5e76c8fda9ae9669e1c44b998ab3b1e36f9ca25001cd7fbcb39",
+    "hybrid_lab.py": "b125dc334a31109b45468bf2f0c8882498907a44654f9a02d07010a800088913",
+    "hybrid_single.py": "eea29a1ebd446278c77663cfe5b27e0ca1b518f8260f973799e645a91138bdc0",
+    "hybrid_study.py": "7bf18e7c06308bcd0fc2406a74395d4a1aad749779d4d699812d4883f891d0db",
+    "test_hybrid.py": "d0fa2e97c25c075bf137bc7d517b08e0859a1596c836c2ebd95695ab8fc23126"
+  },
+  "parent": "6a1ee47d82e1d9bae0d596539fad97f37dc86c98c5869ad6cd329bed73826ad0",
+  "classification": "SEEN_FULL_ELIGIBILITY_PAYOFF_ITERATION",
+  "api_calls": 0
+}

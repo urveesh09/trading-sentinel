@@ -44,11 +44,11 @@ or breakeven.
 """
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from statistics import median
 from typing import Optional
 
-from partner_coach import REENTRY_WINDOW_MIN, _amt, _dt, _rs
+from partner_coach import IST, REENTRY_WINDOW_MIN, _amt, _dt, _rs
 
 # When two mistakes cost the same, the one earlier here is the lesson. The
 # order follows the damage they do to a manual option buyer: revenge and
@@ -408,6 +408,9 @@ def day_review(view: dict, day: str, today: Optional[str] = None) -> dict:
                      + ("trades after that are not in this review." if past else "later trades are not here yet."))
     if zerodha_day and zerodha_day.get("complete") and not zerodha_day.get("stops_known"):
         notes.append("Stop orders could not be read for this day, so the stop-loss checks are off.")
+    positions_note = _positions_note(day, zerodha_day)
+    if positions_note:
+        notes.append(positions_note)
     if row["cards"]:
         notes.append("The card's results use 5-minute prices; a quick touch between them can be missed.")
     if row.get("carried_in"):
@@ -651,3 +654,24 @@ def render_note(review: dict) -> Optional[str]:
     if any(t["estimated"] for t in review["trades"]) and len(lines) < 6:
         lines.append("≈ prices came from your taps; reply to a card with your price to correct.")
     return "\n".join(lines[:6])
+
+
+def _positions_note(day: str, zerodha_day: Optional[dict]) -> Optional[str]:
+    """[N05-A1] A day read after the close whose open positions were not read after it (Nov 2: the 15:50 positions
+    read failed): the review cannot confirm that nothing was still held. Rows from before this was recorded say
+    nothing, as before."""
+    if not zerodha_day or not zerodha_day.get("complete"):
+        return None
+    read = zerodha_day.get("positions_read_at")
+    if not read:
+        return None
+    from partner_broker_sync import CLOSE_MIN
+    close = IST.localize(datetime.fromisoformat(day) + timedelta(minutes=CLOSE_MIN))
+    if read == "FAILED":
+        return ("Open positions could not be read from Zerodha for this day: whether anything was still held is not "
+                "confirmed here.")
+    at = _dt(read)
+    if at is None or at >= close:
+        return None
+    return (f"Open positions were last read at {at.astimezone(IST):%H:%M}, before the close: whether anything was "
+            f"still held at the close is not confirmed here.")

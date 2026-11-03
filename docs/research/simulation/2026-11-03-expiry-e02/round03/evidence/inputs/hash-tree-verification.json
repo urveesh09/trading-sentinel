@@ -1,0 +1,15 @@
+{
+  "raw_files_sha256": {
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\_local\\2025.sqlite": "32cc03107ecc20625bf1bfad7c5f48358f98bddb12e3c00664d32246a98dfae1",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\_local\\2024.sqlite": "ac38844416ccdebb1223f01e44fead2d94bc668253d5364d0eb524e792250009"
+  },
+  "source_files_checked": 15,
+  "mismatches": 0,
+  "native_commit": "3deaad0",
+  "initial_untouched_freeze": "f2b95cd",
+  "initial_untouched_verdict": "FAILED",
+  "current_r3_status": "BOTH YEARS SEEN; joint fit only",
+  "helper_wrapper_timing": "Prepared after scoring; no new untouched claim",
+  "production_writes": 0,
+  "api_calls": 0
+}

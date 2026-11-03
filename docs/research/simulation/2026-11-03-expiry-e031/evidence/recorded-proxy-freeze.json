@@ -1,0 +1,53 @@
+{
+  "classification": "IN_SAMPLE_SEEN_2024_2025",
+  "year2023_read": false,
+  "api_calls": 0,
+  "code": {
+    "lab.py": "8602a773461a1ad09f88e84fa8403563e01d856d2a428435e7a5730b618224b6",
+    "study.py": "5ef20437aecf7e974045b868079190d5c15af7854b542bcbf56b0ed086d1fc10",
+    "PLAN.md": "09a1280f4e6aafc76c5c01009c30d588e303d339cef4db89fdc2dcc05d241b7c"
+  },
+  "status": "Five dates already inspected by E03; NOT fresh E031 forward evidence",
+  "source": {
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-02-expiry-e01\\_local\\export\\expiry.sqlite": "5f7e7323bcb08c1273e5cafceca6465b315486cd09a299157c789609d6ba00e0",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e03\\_local\\native-extra.sqlite": "d292b0e34691fae3d2f99ec4eba666a31ce97c76d7d066e13631f1c493ce26f0"
+  },
+  "adapter_sha256": "8df4c2b15fe1f3edda5507514352d25022ac309f02b9336eeb83256980c3ad5d",
+  "rule": {
+    "setup": "PULLBACK",
+    "look": 10,
+    "efficiency": 0.7,
+    "stretch": 4.0,
+    "premium_low": 5.0,
+    "premium_high": 20.0,
+    "option_rise": 0.0,
+    "stop": 0.35,
+    "arm": 0.4,
+    "keep": 0.6,
+    "target": 1.0,
+    "hold": 8,
+    "start": 780,
+    "end": 900,
+    "slots": 2,
+    "underlying_stop": 2.0,
+    "reach": 1.0,
+    "max_lots": 3,
+    "bank_mult": 0.0,
+    "runner_keep": 0.5,
+    "runner_arm": 1.0,
+    "hold_armed": false,
+    "ivrv_max": 0.0,
+    "split": true,
+    "runner_floor": 1.0,
+    "hero_target": 9.0,
+    "solo_runner": false,
+    "chase": 0.1,
+    "stall_minutes": 0,
+    "stall_gain": 0.0,
+    "extend_minutes": 0,
+    "extend_gain": 0.2,
+    "lock_arm": 0.5,
+    "lock_floor": 1.1,
+    "confirmation": "none"
+  }
+}

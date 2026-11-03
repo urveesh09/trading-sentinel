@@ -1,0 +1,25 @@
+{
+  "classification": "SEEN_DEVELOPMENT_NO_QUALIFICATION",
+  "own_cash": 25000,
+  "lot": 65,
+  "ticket": 1250,
+  "day_original_reserve": 2500,
+  "slots": 2,
+  "drawdown_brakes": [
+    1500,
+    3000,
+    4000
+  ],
+  "ordinary_adverse_severe": "Inherited completed-bar/next-open or severe high-low model with spread and 20% volume proxy",
+  "pack_model": "Explicit simultaneous legs; net-debit reserve, gross-long own-cash check, not atomic execution or margin proof",
+  "quote_model": "EVALUATOR conditional next-snapshot fixed-horizon marks, never a portfolio or summed strategy PnL",
+  "before_scoring_commits": {
+    "round1": "120acde",
+    "round2": "ee8b147",
+    "round3": "bd3653b",
+    "micro": "15ed70b"
+  },
+  "selected_candidate": null,
+  "enabled": false,
+  "deployed": false
+}

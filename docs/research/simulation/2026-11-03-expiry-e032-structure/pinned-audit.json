@@ -1,0 +1,8 @@
+{
+  "pinned_source_commit": "9950a6ca2743c28e19c69ff44a0bb61207573bfd",
+  "source_files_checked": 854,
+  "helper_unmodified": true,
+  "receipt_and_money_mismatches": 0,
+  "financial_qualification": false,
+  "moving_checkout_note": "Original guard binds HEAD; later docs require this pinned verification; original report/request/guard unmodified"
+}

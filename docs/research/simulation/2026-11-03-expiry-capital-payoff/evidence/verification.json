@@ -1,0 +1,43 @@
+{
+  "python": "3.11.9",
+  "numpy": "1.26.4",
+  "offline": true,
+  "network_attempts": [],
+  "commands": [
+    {
+      "command": "python -m pytest python-engine/tests/test_expiry_e02.py python-engine/tests/test_expiry_e03.py python-engine/tests/test_expiry_e031.py <run>/test_ledger.py <run>/test_credit.py <run>/test_hybrid.py -q",
+      "exit_code": 0,
+      "result": "49 passed in 4.57s"
+    },
+    {
+      "command": "python scripts/build_system_code_atlas.py; git diff --exit-code -- docs/SYSTEM_CODE_ATLAS.md",
+      "exit_code": 0,
+      "result": "295 modules; atlas byte-equivalent"
+    },
+    {
+      "command": "python -m py_compile / compileall of new research files",
+      "exit_code": 0
+    },
+    {
+      "command": "python payoff_audit.py",
+      "exit_code": 1,
+      "result": "Temporary prefix id cache collision; retained, corrected in frozen v2"
+    },
+    {
+      "command": "python payoff_audit_v2.py",
+      "exit_code": 0,
+      "result": "108 exact histories, 54 uncached prefixes, 1037 native long replays, 991 credit positions"
+    },
+    {
+      "command": "python package_report.py diagnostic_audit",
+      "exit_code": 0,
+      "result": "60 additional diagnostic histories exact; cash/native fee identities checked"
+    }
+  ],
+  "full_engine_suite_rerun": false,
+  "reason": "No native source changed; focused policies and admission/accounting changes checked",
+  "source_changes": "Research only; current fees/lot normalized; native settings/schema/flags/actual capital unchanged",
+  "production_edited": false,
+  "download_calls": 0,
+  "year2023_read": false
+}

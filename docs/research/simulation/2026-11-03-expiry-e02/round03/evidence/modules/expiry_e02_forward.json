@@ -1,0 +1,37 @@
+{
+  "module": "expiry_e02_forward",
+  "start": "2024-01-01",
+  "end": "2025-12-31",
+  "status": "UNAVAILABLE",
+  "fidelity": "NONE",
+  "population": "SHADOW",
+  "coverage": "UNAVAILABLE",
+  "reason": "Dev research shadow is disabled and not deployed; no new forward trade evidence establishes profitability",
+  "metrics": {
+    "closed_trades": null,
+    "signals": null,
+    "unresolved": null,
+    "filled_fee_pnl": null,
+    "assumed_pnl": null,
+    "modeled_net": null
+  },
+  "daily_results": [],
+  "inputs": [
+    "inputs/candidate.json",
+    "inputs/forward-freeze.json",
+    "inputs/initial-final-freeze.json",
+    "inputs/dataset.json",
+    "inputs/engine-suite-result.json",
+    "inputs/hash-tree-verification.json",
+    "inputs/configuration.json"
+  ],
+  "artifacts": [
+    "ANALYSIS.md",
+    "paper-parity.json"
+  ],
+  "assumptions": [],
+  "limitations": [
+    "No claim of zero actual profit; forward performance is unavailable, not zero",
+    "NIFTY-only prototype; original multi-index qualification remains separate"
+  ]
+}

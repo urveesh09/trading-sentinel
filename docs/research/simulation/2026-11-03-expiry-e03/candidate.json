@@ -1,0 +1,21 @@
+{
+  "version": "expiry-e03-v1",
+  "play": "E03",
+  "built_on": "expiry-e02-r3-v1 (signal, strike band, reach, stops, idle clock, cash book and brakes unchanged)",
+  "changes": {
+    "max_lots": 3,
+    "max_distance_points": 200,
+    "split_at_target": "at E02's 2x sale, sell all but half the lots (3 lots: sell 2; 2 lots: sell 1; 1 lot: sell it, as E02)",
+    "runner": {"floor_multiple_of_entry": 1.0, "keep_share_of_peak": 0.5, "sell_at_gain": 9.0, "idle_clock": false, "index_stop": false, "flat": "15:28"}
+  },
+  "unchanged_limits": {"per_ticket_reserve": 1250, "per_day_reserve": 2500, "tickets_per_day": 2, "starting_cash": 25000,
+                       "brakes": "half allowance from Rs 1,500 drawdown, quarter from Rs 3,000, none from Rs 4,000"},
+  "lab_rule": {"setup": "PULLBACK", "look": 10, "efficiency": 0.7, "stretch": 4.0, "premium_low": 5.0, "premium_high": 20.0,
+               "option_rise": 0.0, "stop": 0.4, "arm": 0.4, "keep": 0.6, "target": 1.0, "hold": 8, "start": 780, "end": 900,
+               "slots": 2, "underlying_stop": 2.0, "reach": 1.0, "max_lots": 3, "split": true, "runner_floor": 1.0,
+               "runner_keep": 0.5, "hero_target": 9.0},
+  "eligibility": "RESEARCH_ONLY: chosen on seen 2024/2025 NIFTY; forward paired paper evidence required",
+  "forward_minimum": "20 closed new E03 tickets, compared ticket by ticket with E02 on the same entries",
+  "enable_nifty": false,
+  "enable_sensex": false
+}

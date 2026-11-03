@@ -1,0 +1,33 @@
+{
+  "version": "expiry-e02-r3-v1",
+  "source_sha256": {
+    "python-engine\\expiry_e02.py": "0c36bf20a40f52c2377fea3abe1a5e3b3d547982826764199eb544bc3cc794bd",
+    "python-engine\\expiry_paper.py": "b2931a15084d981786ddc186b006f9db5a861eabf91dcaa6e6c0b9de0e0676dd",
+    "python-engine\\config.py": "19d0cdea00de475f60a941fd05c12d81b66f399ced372db2136201e346525db4",
+    "python-engine\\scheduler_setup.py": "f3c36564a2988501989cdb3da40861dc3dd58eac3cc263f0e1c4034cce7adccc",
+    "python-engine\\tests\\test_expiry_e02.py": "d05de3b301426158569cc6004fa297fd1240145910d60e26bd710f2225ff21a6",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\final_audit.py": "b80b2d181d988e9bed39347d1ccb40ca7eeefc993d49b94c2747b561f20ab906",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\genome.py": "840bebb5b600cc18e953195968c72c96a3513d30c692cf83715b71a445e43d0d",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\iterate.py": "0510211567ccc3c5a5ca15ab77e9b222d7d84c5f854a41acdfd829772fb6b549",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\paper_parity.py": "aeb752813f992e657676899fa1b3b8e69f21c67ed47dd08f64a6f845d4cd1749",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\report_metrics.py": "f3042dc26bd41f68f7058cf4995cd6e3ad9eb73b438575d74f679c854539a925",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\candidate.json": "4b28485f6cf1acf18ebbd3c36c5dd443a23aaaacabc108fcd022ba027ffe610d",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\PLAN.md": "b6fc82bd1cf32407470fca182b83e530b1d7e488a20fc863e3bf0af5e84267cb",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\IMPLEMENTATION_PLAN.md": "54f01cac6c1c0877ddd04def716908fbce31e5c002374174c20b149e82cfbb88",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\candidate-audit.json": "b3d00bdfe1c7359b607ec96a5c7cececb5084746281b6e93b93e5840e3aeb94b",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\round03\\paper-parity.json": "c27ddd02258a04278222ce15e2d4b10074bf955a76aad5f89988b8fd2d738983"
+  },
+  "dataset_sha256": {
+    "2025": "32cc03107ecc20625bf1bfad7c5f48358f98bddb12e3c00664d32246a98dfae1",
+    "2024": "ac38844416ccdebb1223f01e44fead2d94bc668253d5364d0eb524e792250009"
+  },
+  "prior_exam_freeze": "f2b95cd",
+  "prior_exam_result": "FAILED for both original finalists; immutable exam-2024.json",
+  "fit_status": "RESEARCH_ONLY_JOINT_FIT; both years seen before final R3 choice",
+  "genome_evaluations": 2746,
+  "default_enabled": false,
+  "deployed": false,
+  "forward_trades": 0,
+  "scope": "NIFTY only, independent paper shadow; no real orders or messages",
+  "commit_before_native_adapter": "8011209485b86131c44b5c3180b9399c58fd5914"
+}

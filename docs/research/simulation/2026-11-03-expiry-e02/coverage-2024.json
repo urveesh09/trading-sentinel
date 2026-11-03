@@ -1,0 +1,366 @@
+[
+  {
+    "day": "2024-01-04",
+    "contracts": 27,
+    "invalid_rows": 1,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-01-11",
+    "contracts": 29,
+    "invalid_rows": 2,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-01-18",
+    "contracts": 33,
+    "invalid_rows": 2,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-01-25",
+    "contracts": 33,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-02-01",
+    "contracts": 29,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-02-08",
+    "contracts": 37,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-02-15",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-02-22",
+    "contracts": 39,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-02-29",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-03-07",
+    "contracts": 27,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-03-14",
+    "contracts": 35,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-03-21",
+    "contracts": 29,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-03-28",
+    "contracts": 37,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-04-04",
+    "contracts": 35,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-04-10",
+    "contracts": 27,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-04-18",
+    "contracts": 37,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-04-25",
+    "contracts": 35,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-05-02",
+    "contracts": 29,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-05-09",
+    "contracts": 39,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-05-16",
+    "contracts": 37,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-05-23",
+    "contracts": 39,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-05-30",
+    "contracts": 35,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-06-06",
+    "contracts": 35,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-06-13",
+    "contracts": 27,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-06-20",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-06-27",
+    "contracts": 33,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-07-04",
+    "contracts": 29,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-07-11",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-07-18",
+    "contracts": 35,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-07-25",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-08-01",
+    "contracts": 27,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-08-08",
+    "contracts": 33,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-08-14",
+    "contracts": 25,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-08-22",
+    "contracts": 27,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-08-29",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-09-05",
+    "contracts": 29,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-09-12",
+    "contracts": 43,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-09-19",
+    "contracts": 33,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-09-26",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-10-03",
+    "contracts": 39,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-10-10",
+    "contracts": 29,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-10-17",
+    "contracts": 35,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-10-24",
+    "contracts": 29,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-10-31",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-11-07",
+    "contracts": 37,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-11-14",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-11-21",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-11-28",
+    "contracts": 41,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-12-05",
+    "contracts": 47,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-12-12",
+    "contracts": 29,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  },
+  {
+    "day": "2024-12-19",
+    "contracts": 29,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 374
+  },
+  {
+    "day": "2024-12-26",
+    "contracts": 31,
+    "invalid_rows": 0,
+    "index_points": 375,
+    "future_points": 375
+  }
+]

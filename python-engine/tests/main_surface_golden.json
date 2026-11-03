@@ -154,7 +154,7 @@
       "func": "_run_partner_manual_advisory_tick_safe",
       "id": "partner_manual_advisory_tick",
       "kwargs": [],
-      "trigger": "cron[minute='*/2', second='50']"
+      "trigger": "cron[minute='*/5', second='8,38']"
     },
     {
       "func": "_run_partner_morning_brief_safe",

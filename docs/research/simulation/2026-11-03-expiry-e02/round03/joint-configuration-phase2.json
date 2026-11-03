@@ -1,0 +1,106 @@
+{
+  "population": 64,
+  "generations": 7,
+  "seeds": [
+    23,
+    71,
+    193
+  ],
+  "space": {
+    "setup": [
+      "BOX",
+      "BREAK",
+      "RETEST",
+      "PULLBACK",
+      "FADE"
+    ],
+    "look": [
+      5,
+      10,
+      20,
+      30
+    ],
+    "efficiency": [
+      0.0,
+      0.3,
+      0.5,
+      0.7
+    ],
+    "stretch": [
+      1.5,
+      2.5,
+      4.0
+    ],
+    "premium_low": [
+      2.0,
+      5.0,
+      10.0
+    ],
+    "premium_high": [
+      10.0,
+      20.0,
+      35.0
+    ],
+    "option_rise": [
+      0.0,
+      1.0,
+      1.2
+    ],
+    "stop": [
+      0.2,
+      0.3,
+      0.4
+    ],
+    "arm": [
+      0.4,
+      1.0,
+      2.0
+    ],
+    "keep": [
+      0.5,
+      0.6,
+      0.75
+    ],
+    "target": [
+      1.0,
+      2.0,
+      4.0,
+      9.0
+    ],
+    "hold": [
+      8,
+      15,
+      30,
+      60
+    ],
+    "start": [
+      780,
+      810
+    ],
+    "end": [
+      870,
+      900
+    ],
+    "slots": [
+      1,
+      2
+    ],
+    "underlying_stop": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "reach": [
+      0.0,
+      1.0,
+      2.0,
+      3.0
+    ]
+  },
+  "risk": "One lot, unchanged own cash/reserve/brakes; no refills or year-specific rules",
+  "year2024_status": "NOW SEEN after failed f2b95cd exam",
+  "source_sha": {
+    "iterate.py": "0510211567ccc3c5a5ca15ab77e9b222d7d84c5f854a41acdfd829772fb6b549",
+    "genome.py": "840bebb5b600cc18e953195968c72c96a3513d30c692cf83715b71a445e43d0d"
+  }
+}

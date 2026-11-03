@@ -1,0 +1,8 @@
+{
+  "command": "python payoff_audit.py",
+  "exit_code": 1,
+  "error": "IndexError: index 338 is out of bounds for axis 0 with size 302",
+  "cause": "Old pure-signal memoizer keys by id(t). Temporary prefix objects can reuse freed ids. Full scored tapes remain alive and do not collide.",
+  "correction": "Use uncached original signal function on rebuilt prefixes; compare entire prefix and cached full signal.",
+  "primary_scores_changed": false
+}

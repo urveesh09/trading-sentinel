@@ -302,6 +302,38 @@ async def test_rereads_refresh_the_same_report_and_mark_the_day(kite):
 
 
 @pytest.mark.asyncio
+async def test_an_earlier_day_read_again_never_loses_what_was_stored(kite):
+    """[N05-B1] Oct 27's row was rewritten at 07:35 on Oct 28 (the book still held part of yesterday) as 0 option
+    orders, with its 55 still stored."""
+    db = settings.DB_PATH
+    await _seed(db)
+    await zerodha.create_session("reqtok12", T(12, 0))
+    kite["orders"] = [_order("O1", "BUY", 40, T(12, 9, 5)), _order("O2", "SELL", 40, T(13, 5), order_type="MARKET")]
+    kite["trades"] = [_trade("O1", 40, 518.0, T(12, 9, 10)), _trade("O2", 40, 530.0, T(13, 5, 2))]
+    await zerodha.sync_book(T(15, 45))
+    before = (await zerodha.broker_days(db, "2026-10-19", "2026-10-19"))["2026-10-19"]
+    assert before["option_orders"] == 2 and before["stops_known"] is True
+    # The next morning, before the open: part of yesterday's book, its trades gone, the GTT list unreadable.
+    await zerodha.create_session("reqtok12", T(7, 30, day=20))
+    kite["orders"], kite["trades"] = [_order("O2", "SELL", 40, T(13, 5), order_type="MARKET")], []
+    fake = zerodha._kite_call
+
+    async def no_gtts(method, path, **kwargs):
+        if path == "/gtt/triggers":
+            raise zerodha.BrokerError("NetworkException", "timeout")
+        return await fake(method, path, **kwargs)
+
+    zerodha._kite_call = no_gtts
+    try:
+        await zerodha.sync_book(T(7, 35, day=20))
+    finally:
+        zerodha._kite_call = fake
+    after = (await zerodha.broker_days(db, "2026-10-19", "2026-10-20"))
+    assert after["2026-10-19"]["option_orders"] == 2 and after["2026-10-19"]["stops_known"] is True
+    assert "2026-10-20" not in after                       # before the open an empty book says nothing
+
+
+@pytest.mark.asyncio
 async def test_a_refused_trade_book_falls_back_to_order_averages(kite, monkeypatch):
     db = settings.DB_PATH
     await _seed(db)
@@ -620,3 +652,34 @@ def test_session_route_maps_errors_without_details(kite, monkeypatch):
     status = client.get("/partner/broker/status").json()
     assert status == {"configured": True, "connected": False, "account": None, "login_at": None,
                       "expires_at": None, "read_only": True}
+
+
+@pytest.mark.asyncio
+async def test_the_day_records_whether_its_positions_were_read(kite, monkeypatch):
+    """[N05-A1] Nov 2: the 15:50 positions read failed and nothing said so; the review could not tell it apart from
+    a day with nothing held."""
+    import partner_lessons as pl
+    db = settings.DB_PATH
+    await _seed(db)
+    await zerodha.create_session("reqtok12", T(12, 0))
+    kite["orders"] = [_order("O1", "BUY", 40, T(12, 9, 5))]
+    kite["trades"] = [_trade("O1", 40, 518.0, T(12, 9, 10))]
+    fake = zerodha._kite_call
+
+    async def no_positions(method, path, **kwargs):
+        if path == "/portfolio/positions":
+            raise zerodha.BrokerError("NetworkException", "timeout")
+        return await fake(method, path, **kwargs)
+
+    monkeypatch.setattr(zerodha, "_kite_call", no_positions)
+    await zerodha.sync_book(T(15, 50))
+    day = (await zerodha.broker_days(db, "2026-10-19", "2026-10-19"))["2026-10-19"]
+    assert day["positions_read_at"] == "FAILED"
+    assert pl._positions_note("2026-10-19", day).startswith("Open positions could not be read from Zerodha")
+    monkeypatch.setattr(zerodha, "_kite_call", fake)
+    await zerodha.sync_book(T(15, 55))                        # a later good read replaces the mark
+    day = (await zerodha.broker_days(db, "2026-10-19", "2026-10-19"))["2026-10-19"]
+    assert day["positions_read_at"].startswith("2026-10-19T15:55") and pl._positions_note("2026-10-19", day) is None
+    assert pl._positions_note("2026-10-19", dict(day, positions_read_at="2026-10-19T12:30:00+05:30")).startswith(
+        "Open positions were last read at 12:30, before the close")
+    assert pl._positions_note("2026-10-19", dict(day, positions_read_at=None)) is None      # an older row: as before

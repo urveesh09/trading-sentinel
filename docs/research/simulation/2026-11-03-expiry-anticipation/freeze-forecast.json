@@ -1,0 +1,38 @@
+{
+  "head": "83fdf76722c8dda6bf07c0bc2f5e76da9b0744b3",
+  "files": {
+    "PRECURSORS.md": "195d57248c1cab7ea628e6e6ff927fc231e6c1e1d327ea71503de8971d1033a0",
+    "precursor.py": "5ff97b12e59685e2816745256d16cc8add0039dca8b8b2429a82cdab8fe6aefc",
+    "precursor_day.py": "fcbea78040e2663aea37e66a2e77ad766e9bb7addcbd04b7f757d9e506e0dfd7",
+    "forecast_study.py": "e7134dcbcbb0370d32b56906eae410e9fb19529be3a3d8514833ee9cd34abf60",
+    "test_precursor.py": "1b2cfd04ca616e3e28a176bf12e6e68073bca3d969398e8181d6c08ce4a144c2"
+  },
+  "parent": "6ecd6ba2c80165f3329720cc38ce082b0e964999d94998fc06d760476cfda879",
+  "classification": "SEEN_YEARS_FIXED_MODELS_NOT_INDEPENDENT_VALIDATION",
+  "features": [
+    "spot3",
+    "spot10",
+    "future3",
+    "basis3",
+    "efficiency10",
+    "option_momentum3",
+    "option_acceleration",
+    "relative_volume",
+    "oi_fraction5",
+    "moneyness20",
+    "minutes_left",
+    "fees_fraction",
+    "synthetic_basis",
+    "noise_ratio",
+    "log_premium",
+    "direction"
+  ],
+  "targets": [
+    2,
+    5
+  ],
+  "regularization": 1.0,
+  "training_weight": "one per expiry day",
+  "api_calls": 0,
+  "year2023_read": false
+}

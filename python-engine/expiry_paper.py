@@ -1,5 +1,10 @@
 """Expiry-day paper book: three pre-registered plays on the weekly index expiry.
 
+Since expiry-v5 (owner order, 2026-11-03) the main paper ticket is E03.2 when
+``settings.EXPIRY_MAIN_STRATEGY`` is "E032": its own book in ``expiry_e02``, its notices
+queued here by the scheduler (``queue_notices``), its result in the day summary and owner
+rule; A, B and C below keep trading as shadows without Telegram trades.
+
 Broker-free. It never imports an executor or places an order. Design, rules and
 the reasoning behind them: docs/2026-10-05-expiry-day-paper-book.md.
 
@@ -244,6 +249,15 @@ PAIRED_WITH = {"AL": "A", "BH": "B", "BL": "B", "BR": "B", "CH": "C", "CI": "C",
 # lines split a play's record there (Oct 19 audit X-3: "C 4/5" merged v1's
 # held ticket with v2's failed-break sale).
 RULE_SINCE = {"A": 1, "B": 3, "C": 4}
+# expiry-v5 (owner order, 2026-11-03): with settings.EXPIRY_MAIN_STRATEGY == "E032" a new day records
+# state["main"] = "E032": E03.2 (expiry_e02.E032, its own paper book) is the main ticket, its notices are
+# queued by the scheduler, the day summary and owner rule read its book, and A, B and C keep trading as
+# shadows without Telegram trades. Days without the key were begun with A, B and C as the main book.
+MAIN_E032 = "E032"
+
+
+def e032_main(state: dict) -> bool:
+    return state.get("main") == MAIN_E032
 # Plays that close on a failed break, with how far back inside the box (as a
 # share of its width) the index must be: A's test, or CI's box edge.
 STRUCTURE_BACK = {"A": FAIL_BACK_WIDTH, "AL": FAIL_BACK_WIDTH, "C": FAIL_BACK_WIDTH, "CX": FAIL_BACK_WIDTH,
@@ -433,6 +447,16 @@ def notice_parts(message: str) -> list[str]:
     if current:
         parts.append(current)
     return [f"[part {i}/{len(parts)}] {part}" for i, part in enumerate(parts, 1)]
+
+
+def queue_notices(db_path: str, notices: list, now: datetime) -> int:
+    """Queue (key, text) owner notices from the main E03.2 book in this outbox (sent by the usual flush)."""
+    if not notices:
+        return 0
+    with _store(expiry_db_path(db_path)) as conn:
+        for key, text in notices:
+            _notice(conn, key, text, now)
+    return len(notices)
 
 
 def _notice(conn, key: str, message: str, now: datetime) -> None:
@@ -698,7 +722,8 @@ def new_day_state() -> dict:
             "context": CONTEXT_VERSION, "box": None, "box_samples": [], "box_status": "BUILDING",
             "pending": None, "armed": {"UP": True, "DOWN": True}, "signals": [],
             "trades": {play: 0 for play in MAIN_PLAYS + SHADOW_PLAYS}, "last_spot": None,
-            "summary_queued": False}
+            "summary_queued": False,
+            "main": MAIN_E032 if settings.EXPIRY_MAIN_STRATEGY == MAIN_E032 else "ABC"}
 
 
 def e01_entry_enabled(state: dict) -> bool:
@@ -1612,6 +1637,13 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
             return
     chain = _chain(book, started.date(), anchor)
     held = [book.by_symbol.get(pos["symbol"]) for pos in positions]
+    # One separately funded E02 research leg may move beyond ATM +/-8 before
+    # its exit. Keep its quote in this same batch, without an extra API call.
+    try:
+        from expiry_e02 import held_contracts
+        held.extend(held_contracts(settings.DB_PATH, book))
+    except Exception as exc:
+        logger.warning("expiry_e02_held_quote_unavailable err=%s", type(exc).__name__)
     contracts = {c.token: c for c in [*chain.values(), *(c for c in held if c is not None)]}
     raw, timing = await _fetch(kite, underlying, exchange, list(contracts.values()), future)
     timings.append(timing)
@@ -1642,7 +1674,7 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
     schedule = fee_schedule(exchange)
 
     def notify(pos: dict, text: str) -> None:
-        if pos["play"] not in MAIN_PLAYS:                # shadow plays report only in the summary
+        if pos["play"] not in MAIN_PLAYS or e032_main(state):    # shadow plays report only in the summary
             return
         _notice(conn, f"{day}:{underlying}:{pos['id']}:{now.isoformat()}", f"{label} {pos['play']}: {text}", now)
 
@@ -2016,11 +2048,16 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
                 lines.append(f"    entry {clock(entry_ts)}: {_path_text(mark, clock)}, finished Rs {finished:+,.2f}")
         return total_filled, total_assumed, total_fees
 
+    main_e032 = e032_main(state)
+    if main_e032:
+        from expiry_e02 import summary_lines as e032_lines
+        lines += e032_lines(settings.DB_PATH, day, underlying)
+        lines.append("  A, B and C, the main book until expiry-v5, now shadows (no Telegram trades):")
     if RULES_VERSION in state.get("rules", ""):
         lines.append("  C's rule (expiry-v4, E01.1): a 25% premium stop, just enough lots sold at 3x to take the ticket's "
                      "cost back, a 60% floor from 3x; gaps or missing bids can lose more, up to the full funded ticket.")
     day_filled, day_assumed, day_fees = section(MAIN_PLAYS)
-    lines.append(f"  day: filled net Rs {day_filled:+,.2f} + assumed Rs {day_assumed:+,.2f} = whole modeled "
+    lines.append(f"  {'A+B+C ' if main_e032 else ''}day: filled net Rs {day_filled:+,.2f} + assumed Rs {day_assumed:+,.2f} = whole modeled "
                  f"Rs {day_filled + day_assumed:+,.2f} (fees Rs {day_fees:,.2f})")
     lines.append(f"  shadow plays ({state.get('shadow', SHADOW_VERSION)}, frozen, no Telegram trades):")
     if (state.get("e01") or {}).get("version") == E01_VERSION:
@@ -2040,7 +2077,7 @@ def format_day_summary(conn, day: str, underlying: str, state: dict) -> str:
     shadow = [r for r in totals if r[0] in SHADOW_PLAYS + RETIRED_PLAYS]
     expiries = conn.execute("SELECT COUNT(*) FROM expiry_paper_days WHERE underlying=?", (underlying,)).fetchone()[0]
     if main:
-        lines.append(f"  {underlying} to date over {expiries} expiries, filled: " + ", ".join(
+        lines.append(f"  {underlying} to date over {expiries} expiries, filled{' (A, B and C)' if main_e032 else ''}: " + ", ".join(
             f"{r[0]} Rs {r[1]:+,.2f}" for r in main))
         if any(r[2] for r in main):
             lines.append("  assumed settlements, kept apart: " + ", ".join(
@@ -2067,7 +2104,18 @@ def owner_rule_lines(conn, through: str) -> list[str]:
     whole = {(r[0], r[1], r[2]): r[3] for r in conn.execute(
         "SELECT day, underlying, play, SUM(net_pnl + COALESCE(assumed_pnl, 0)) FROM expiry_paper_positions "
         "WHERE day <= ? AND status != 'OPEN' GROUP BY day, underlying, play", (through,))}
-    results = [sum(whole.get((d, u, play), 0.0) for play in MAIN_PLAYS) for d, u in days]
+    mains = {}
+    for d, u, raw in conn.execute("SELECT day, underlying, state FROM expiry_paper_days WHERE day <= ?", (through,)):
+        try:
+            mains[(d, u)] = json.loads(raw).get("main")
+        except (TypeError, ValueError, AttributeError):
+            mains[(d, u)] = None
+    e032 = {}
+    if any(m == MAIN_E032 for m in mains.values()):
+        from expiry_e02 import day_results
+        e032 = day_results(settings.DB_PATH)
+    results = [e032.get((d, u), 0.0) if mains.get((d, u)) == MAIN_E032
+               else sum(whole.get((d, u, play), 0.0) for play in MAIN_PLAYS) for d, u in days]
     lost = sum(result < 0 for result in results)
     streak = 0
     for result in reversed(results):
@@ -2088,6 +2136,9 @@ def owner_rule_lines(conn, through: str) -> list[str]:
             text += f"; since expiry-v{since} {sum(value < 0 for value in current)}/{len(current)}"
             text += f" Rs {sum(current):+,.0f}" if current else ""
         per_play.append(text + ")")
+    if e032:
+        values = [v for (d, u), v in e032.items() if d <= through]
+        per_play.insert(0, f"E032 (main) {sum(v < 0 for v in values)}/{len(values)} (Rs {sum(values):+,.0f})")
     met = len(results) >= OWNER_REVIEW_EXPIRIES and lost == len(results)
     verdict = "RULE MET: every expiry lost, stop expiry-day F&O" if met else \
         f"{max(0, OWNER_REVIEW_EXPIRIES - len(results))} expiries left to observe"

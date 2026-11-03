@@ -1,0 +1,35 @@
+{
+  "source": {
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\audit.py": "6c5e69d66041b5fe92d8516ba34eb7401a467b40bdd4212b6fe9d62d0ad78314",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\baseline.py": "20deda651c1d47cb0281f1e6ea441843e9038747e8e5d3a2660dd3f09609395d",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\data.py": "b9d9895ae45309f4b82d0fe34d0796c421cc4ac90be0e739f98928343ac4d295",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\e02_lab.py": "6d4d29907fe950b954564ba22224a848dfff8fc23fabac199cf9ccc21ae14ba3",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\search.py": "f0204cd2f01785c3958ec01b339a0720b152f6371e05d29e590d65161cbb8616",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\select_finalists.py": "f42376980c38ec57502c42f8ff4a6503d652e7313c67a1c051a90b50d3ac82d3",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\test_e02.py": "de95ab9a6ff55b330a97cbbbdffa4d03e6397b3588ee023131b3ffefafd6d28f",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\PLAN.md": "ff1e3344332fd908316ac16a0558fb1e10aa7ddcd2b8deb20d5c9022db2df2e3",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\dataset.json": "80c5c7a4e39abb19c85a1d2c70af993653b9d24ee14bd1e0e40987b3e1b8fbc3",
+    "docs\\research\\simulation\\2026-11-03-expiry-e02\\finalists.json": "24e4a55c05ea63edd5d6cb4a373c19169cda353015c97c1cad3bbe783a015a2b"
+  },
+  "data": {
+    "2025": "32cc03107ecc20625bf1bfad7c5f48358f98bddb12e3c00664d32246a98dfae1",
+    "2024": "ac38844416ccdebb1223f01e44fead2d94bc668253d5364d0eb524e792250009"
+  },
+  "fees": {
+    "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01",
+    "effective_date": "2026-04-01",
+    "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+    "rates": {
+      "brokerage_flat_per_order": 20.0,
+      "stt_sell_pct": 0.0015,
+      "exchange_pct": 0.0003553,
+      "sebi_pct": 1e-06,
+      "stamp_duty_buy_pct": 3e-05,
+      "ipft_pct": 1e-09,
+      "gst_pct": 0.18
+    }
+  },
+  "head": "76c6b0b1b3edb7ebf270e2ab4a870cb85967ce12",
+  "year2024_scored": false,
+  "acceptance": "PLAN.md profit/ex-best/PF/activity/worst/DD/quarter/unresolved tests; same-cash E011 comparison; ordinary and adverse; no later retuning can reuse 2024 as untouched"
+}

@@ -1,0 +1,4 @@
+python -m pytest tests ../scripts -q -p no:cacheprovider  (python-engine, Dev venv, Nov 3 2026, after the E03.2 engine change)
+6411 passed, 4 skipped, 53 warnings in 742.35s (0:12:22)
+PYTEST_EXIT=0
+The logged 'simulated DB outage' error is the existing deliberately broken Penny writer fixture (test_penny_risk.py), retained.

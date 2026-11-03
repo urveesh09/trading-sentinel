@@ -1,0 +1,47 @@
+{
+  "head": "b5e83e404b8e17a8030e28a331c9cf4d9ea73f54",
+  "written_before_scoring": true,
+  "arms": {
+    "E031": {},
+    "PUT2": {
+      "put_mult": 2.0
+    },
+    "PE_ONLY": {
+      "call_mult": 0.0
+    },
+    "ALIGN_WEEK": {
+      "align": "WEEK"
+    },
+    "ALIGN_DAY": {
+      "align": "DAY"
+    },
+    "ALIGN_WEEK2": {
+      "align": "WEEK",
+      "align_mode": "size"
+    },
+    "ALIGN_DAY2": {
+      "align": "DAY",
+      "align_mode": "size"
+    },
+    "DELTA15": {
+      "delta_target": 0.15
+    },
+    "DELTA25": {
+      "delta_target": 0.25
+    },
+    "DELTA35": {
+      "delta_target": 0.35
+    }
+  },
+  "files": {
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-round8\\round8.py": "769fd7f8885d74182b6e57d50ced8aac5cd0e50a8b8725b1ac967fc21a9cecdc",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-round8\\PLAN.md": "45344fadd9e1b1ef935e99752af45e656c447e86ca252648559515af2e661829",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-round8\\r8_lab.py": "b03a8384aba2d7508cc33b82e09a7a34b75896a24ff1071fa454d61471716d51",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e031\\lab.py": "8602a773461a1ad09f88e84fa8403563e01d856d2a428435e7a5730b618224b6",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e03\\e03_lab.py": "7cce48426f27e2771179aea72b279edbcc3a63bf2ce9d704d5a10625288f8b38",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e02\\e02_lab.py": "6d4d29907fe950b954564ba22224a848dfff8fc23fabac199cf9ccc21ae14ba3",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-auction\\auction.py": "42ac8f87c04cefd1857b95f88e8aff16eeceebdb2bfbc66be2c994a91a21a5d9",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-02-expiry-e01\\_local\\export\\expiry.sqlite": "5f7e7323bcb08c1273e5cafceca6465b315486cd09a299157c789609d6ba00e0",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e03\\_local\\native-extra.sqlite": "d292b0e34691fae3d2f99ec4eba666a31ce97c76d7d066e13631f1c493ce26f0"
+  }
+}
