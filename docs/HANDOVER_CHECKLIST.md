@@ -1,3 +1,7 @@
+## November 3 — E03.2 evidence packaged and reverified (Dev only)
+
+Research 9950a6c pushed; evidence/docs a397ce3 verified. Stock receipt replay matches 854 pinned source files and original money. Post-packaging explicit-file verification again passes 55 checks; README avoids recursive collection of frozen source copies/pinned checkout. No source strategy, result, freeze or original helper guard changed. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; completed STATUS.md. E03.1 unchanged/off; no winning E03.2, deployment or download. Final docs push follows immediately.
+
 ## November 3 — E03.2 second investigation pushed; no winning replacement
 
 Research **9950a6c**, pushed and remote-verified; evidence/docs receipt follows in this commit. Six new primary mechanisms rejected. Fast quote-pressure prediction loses after spread/fees (30s midpoint +3.09 vs net -49.28, 298 overlapping events/four seen days; not portfolio profit). 55 focused checks, 63 exact book histories / 1,287 repeated records; unchanged atlas/runtime. Stock helper checks 24 receipts with invalid butterfly orphan claims and null evaluator PnL; pinned verification matches 854 source files. Report docs/EXPIRY_RESEARCH_E032_STRUCTURE.md; frozen plan docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; STATUS.md and completion-receipt.json record final work. No qualification, enable, download, migration or deployment. E03.1, original owner bytes, 2023, future exam and Production 06bed07 unchanged. Future independent execution/data work is separate.

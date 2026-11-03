@@ -48,7 +48,7 @@ round2.py verify          # reclaim and value-check frozen sources
 round3.py verify          # vertical and butterfly frozen sources
 micro.py verify           # quote-evaluator v2; v1 is retained superseded draft
 structure_checkpoint.py verify
-python -m pytest <this-directory> python-engine/tests/test_expiry_e02.py python-engine/tests/test_expiry_e03.py python-engine/tests/test_expiry_e031.py -q
+python -m pytest <this-directory>/test_mechanisms.py <this-directory>/test_structural.py <this-directory>/test_payoff.py <this-directory>/test_micro.py python-engine/tests/test_expiry_e02.py python-engine/tests/test_expiry_e03.py python-engine/tests/test_expiry_e031.py -q
 ```
 
 Original score commands (immutable files already exist):
@@ -62,6 +62,11 @@ audit.py
 micro_diagnostics.py
 finish.py
 ```
+
+Use those four explicit research test files. After evidence packaging, this
+directory also contains copied frozen test sources and an ignored pinned
+checkout; recursively collecting the entire study directory is not the
+intended test scope. The original `finish.py` ran before those copies existed.
 
 `build_loop.py` materializes one asserted order-state hook into the inherited
 E03.1 loop; `mechanism_day.py` is inspectable. Round 2 uses the same loop with

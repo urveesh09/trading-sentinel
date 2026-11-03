@@ -1,0 +1,19 @@
+{
+  "command": [
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\python-engine\\winvenv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "docs\\research\\simulation\\2026-11-03-expiry-e032-structure\\test_mechanisms.py",
+    "docs\\research\\simulation\\2026-11-03-expiry-e032-structure\\test_structural.py",
+    "docs\\research\\simulation\\2026-11-03-expiry-e032-structure\\test_payoff.py",
+    "docs\\research\\simulation\\2026-11-03-expiry-e032-structure\\test_micro.py",
+    "python-engine\\tests\\test_expiry_e02.py",
+    "python-engine\\tests\\test_expiry_e03.py",
+    "python-engine\\tests\\test_expiry_e031.py",
+    "-q"
+  ],
+  "exit_code": 0,
+  "output": ".......................................................                  [100%]\r\n55 passed in 5.86s\r\n",
+  "scope": "Explicit test files avoid copied evidence and pinned checkout collection",
+  "runtime_changed": false
+}
