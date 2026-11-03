@@ -1,0 +1,33 @@
+{
+  "head": "f34ceb9c918c0e26ca535cd23225664293837d39",
+  "files": {
+    "CREDIT.md": "c6a409749e1abacfd7be5231b81dc959973947943938bf3ce6677342cfce2847",
+    "credit_lab.py": "6420e0b90e22c40bf392b903006e1268558416807d00f261dc15f62ea9d7bd25",
+    "credit_study.py": "53dcdf9f5153e5b47813397ab73b2aa11ce6d8d5a2bc864225d25da0fd2c3c5b",
+    "test_credit.py": "b660b22b4e43816a6134669c39132774b53fec056370d9d0c7b0d29ce6703d6a"
+  },
+  "parent": "f6147b6c6de1cd318b8832e8d7fbfab1057c633b9ea00759390b22daf15033ab",
+  "arms": {
+    "CREDIT_8M": {
+      "name": "CREDIT_8M",
+      "hold": 8,
+      "side": 1,
+      "width": 50,
+      "flat": 914,
+      "stop": 2.0,
+      "take": 0.5
+    },
+    "CREDIT_TREND": {
+      "name": "CREDIT_TREND",
+      "hold": 0,
+      "side": 1,
+      "width": 50,
+      "flat": 914,
+      "stop": 2.0,
+      "take": 0.5
+    }
+  },
+  "classification": "SEEN_LEGACY_YEARS_MARGIN_ATOMIC_EXECUTION_UNQUALIFIED",
+  "api_calls": 0,
+  "year2023_read": false
+}

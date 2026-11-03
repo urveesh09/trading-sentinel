@@ -1,4 +1,4 @@
-# Completed scoring and validation; evidence packaging follows
+# Complete — Dev research pushed, no strategy promotion
 
 Dev-only expiry capital/payoff investigation. No engine, configuration, schema,
 paper switch, actual capital, Production or download change.
@@ -18,8 +18,18 @@ paper switch, actual capital, Production or download change.
   991 credit positions reconcile; 54 actual prefixes rebuilt uncached. Additional
   60 diagnostic histories exact and independently reconciled.
 - 49 focused tests pass; new Python compiles; atlas regenerated and unchanged.
-- Report: docs/EXPIRY_RESEARCH_CAPITAL_PAYOFF.md. Remaining packaging only:
-  source/report commit, sealed skill receipts/pinned verification, verified push.
+- Research/report source de0b72bd695d34b0f9f345d7175d6c306175bfb7 pushed to the
+  existing branch and GitHub head independently checked.
+- Report: docs/EXPIRY_RESEARCH_CAPITAL_PAYOFF.md. Thirty-four stock skill receipts
+  pass: 33 independent scenario books, SENSEX unavailable. All supported outcomes
+  are PARTIAL/BAR_LIFECYCLE. No system-profit or fresh-qualification claim.
+- Pinned source verification checks 854 files and exact original receipts/money.
+  The sealed guard binds de0b72b; after later evidence/docs commits run
+  verify_capital_evidence.py, rather than rewriting the original freeze/report.
+- This completion/evidence commit is verified and pushed immediately after
+  creation; its own identity is Git history, not a self-referential SHA inside it.
+- No study work remains. Future evidence work: preserved family exam and new
+  executable paper tickets; they are not retroactively passed by this study.
 
 Owner documentation suffixes and all old study/source/data hashes remain bound
 by ledger_guard.py. No change to the original fresh-data E03-family exam.

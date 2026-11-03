@@ -1,0 +1,164 @@
+{
+  "classification": "SEEN_2024_2025_NO_QUALIFICATION",
+  "own_cash": 25000,
+  "normalized_lot": 65,
+  "native_fee_snapshot": {
+    "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01",
+    "effective_date": "2026-04-01",
+    "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+    "rates": {
+      "brokerage_flat_per_order": 20.0,
+      "stt_sell_pct": 0.0015,
+      "exchange_pct": 0.0003553,
+      "sebi_pct": 1e-06,
+      "stamp_duty_buy_pct": 3e-05,
+      "ipft_pct": 1e-09,
+      "gst_pct": 0.18
+    }
+  },
+  "native_fees": "Current normalized schedule; not actual historical tax/lot returns",
+  "observed_dev_switches": {
+    "EXPIRY_E02_SHADOW_ENABLED": false,
+    "EXPIRY_E03_SHADOW_ENABLED": false,
+    "EXPIRY_E031_SHADOW_ENABLED": false
+  },
+  "baseline_ticket": 1250,
+  "baseline_day": 2500,
+  "credit_day": 5000,
+  "brakes": [
+    1500,
+    3000,
+    4000
+  ],
+  "slots": "Original 2; ledger alternatives may repeat causally",
+  "credit_cash": "Full width plus one point and fee buffer 500; actual broker SPAN/ELM and atomic basket fills unavailable",
+  "universe": "105 selected NIFTY expiry days in 2024/2025; 4-step strike limit; no SENSEX/full 2026-chain qualification",
+  "fill_basis": "Completed-bar decisions, next executable bar, estimated spread and 20% bar-volume proxy; separate ordinary/adverse/severe",
+  "cash_basis": "Each arm own cash; continuous book separately from reset-year experiments; no shared Sentinel profit",
+  "residual_basis": "Short unclosed halts future; fully funded unsold long hedge conservative zero lower bound with assumed writeoff separate",
+  "before_score_commits": [
+    "f34ceb9",
+    "ff34d6b",
+    "2d0fe98",
+    "698a128"
+  ],
+  "primary_verdicts": {
+    "primary": {
+      "NET_RISK_LEDGER": {
+        "checks": {
+          "positive_each_year": true,
+          "beats_each_year": false,
+          "beats_continuous": false,
+          "positive_ex_best_each_year": true,
+          "positive_increment_ex_largest": false,
+          "severe_drawdown_within_research_limit": true,
+          "ordinary_drawdown_within_research_limit": true,
+          "no_unresolved": true
+        },
+        "increment": 0.0,
+        "increment_ex_largest": 0.0,
+        "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+        "native_candidate": false,
+        "margin_execution_qualified": false,
+        "credit_margin_required": false
+      },
+      "PROFIT_REENTRY": {
+        "checks": {
+          "positive_each_year": true,
+          "beats_each_year": false,
+          "beats_continuous": false,
+          "positive_ex_best_each_year": true,
+          "positive_increment_ex_largest": false,
+          "severe_drawdown_within_research_limit": true,
+          "ordinary_drawdown_within_research_limit": true,
+          "no_unresolved": true
+        },
+        "increment": 0.0,
+        "increment_ex_largest": 0.0,
+        "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+        "native_candidate": false,
+        "margin_execution_qualified": false,
+        "credit_margin_required": false
+      },
+      "CREDIT_8M": {
+        "checks": {
+          "positive_each_year": false,
+          "beats_each_year": false,
+          "beats_continuous": false,
+          "positive_ex_best_each_year": false,
+          "positive_increment_ex_largest": false,
+          "severe_drawdown_within_research_limit": true,
+          "ordinary_drawdown_within_research_limit": true,
+          "no_unresolved": true
+        },
+        "increment": -14181.4,
+        "increment_ex_largest": -14659.41,
+        "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+        "native_candidate": false,
+        "margin_execution_qualified": false,
+        "credit_margin_required": true
+      },
+      "CREDIT_TREND": {
+        "checks": {
+          "positive_each_year": false,
+          "beats_each_year": false,
+          "beats_continuous": false,
+          "positive_ex_best_each_year": false,
+          "positive_increment_ex_largest": false,
+          "severe_drawdown_within_research_limit": true,
+          "ordinary_drawdown_within_research_limit": true,
+          "no_unresolved": true
+        },
+        "increment": -14575.03,
+        "increment_ex_largest": -15053.04,
+        "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+        "native_candidate": false,
+        "margin_execution_qualified": false,
+        "credit_margin_required": true
+      },
+      "HYBRID_8M": {
+        "checks": {
+          "positive_each_year": true,
+          "beats_each_year": false,
+          "beats_continuous": false,
+          "positive_ex_best_each_year": false,
+          "positive_increment_ex_largest": false,
+          "severe_drawdown_within_research_limit": true,
+          "ordinary_drawdown_within_research_limit": true,
+          "no_unresolved": true
+        },
+        "increment": -5321.11,
+        "increment_ex_largest": -5923.52,
+        "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+        "native_candidate": false,
+        "margin_execution_qualified": false,
+        "credit_margin_required": true
+      },
+      "HYBRID_TREND": {
+        "checks": {
+          "positive_each_year": true,
+          "beats_each_year": false,
+          "beats_continuous": false,
+          "positive_ex_best_each_year": false,
+          "positive_increment_ex_largest": false,
+          "severe_drawdown_within_research_limit": true,
+          "ordinary_drawdown_within_research_limit": true,
+          "no_unresolved": true
+        },
+        "increment": -4031.87,
+        "increment_ex_largest": -4643.23,
+        "primary_verdict": "REJECTED_NO_IMPROVEMENT",
+        "native_candidate": false,
+        "margin_execution_qualified": false,
+        "credit_margin_required": true
+      }
+    },
+    "selected_candidate": null,
+    "qualification": false,
+    "protected_exam_read": false
+  },
+  "enabled": false,
+  "deployed": false,
+  "runtime_changed": false,
+  "selected_candidate": null
+}
