@@ -1,4 +1,4 @@
-## November 3 — N05 partner correctness (commit `this commit`, Dev, pushed, not deployed)
+## November 3 — N05 partner correctness (commit `60336db`, Dev, pushed, not deployed)
 
 - [x] N05-T1 card tick on the bar-close grid (:08 and :38 after each 5-minute close).
 - [x] N05-S1 SENSEX participation from NIFTY futures in the partner scan; index-bar source tested, not adopted.

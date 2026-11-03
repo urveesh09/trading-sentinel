@@ -1,4 +1,4 @@
-## November 3 — N05 partner correctness: bar-aligned cards, SENSEX participation, honest money and clocks, frozen protection score (actual behavior, Dev, pushed, not deployed, commit `this commit`)
+## November 3 — N05 partner correctness: bar-aligned cards, SENSEX participation, honest money and clocks, frozen protection score (actual behavior, Dev, pushed, not deployed, commit `60336db`)
 
 Owner (Nov 3): fix everything left from the two Nov 2 audits except the outage, correctness first, Dev only.
 

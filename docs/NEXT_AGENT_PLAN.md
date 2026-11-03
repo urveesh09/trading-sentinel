@@ -1,4 +1,4 @@
-## November 3 — N05 partner correctness (done, Dev, pushed, not deployed, commit `this commit`)
+## November 3 — N05 partner correctness (done, Dev, pushed, not deployed, commit `60336db`)
 
 - Problem: the remaining audit items except the outage (owner, Nov 3: correctness first, Dev only).
 - Files: `python-engine/scheduler_setup.py`, `fno_signal_scan.py`, `partner_coach.py`, `partner_manual_advisory.py`,
