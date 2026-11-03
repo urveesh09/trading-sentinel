@@ -390,7 +390,9 @@ def refusal_plain(order: dict, orders: list) -> Optional[str]:
         return None
     need, have = (float(value.replace(",", "")) for value in found.groups())
     if order["transaction_type"] == "BUY":
-        return f"the buy needed {_amt(need)} and your account had {_amt(have)}."
+        # [N03-R1] Zerodha's "margin required" is its whole margin check, not this buy's price: on Nov 2 a buy of
+        # 65 at about ₹164 (≈₹10,700) was refused as "required 28,601", with ₹17,811 already in open trades.
+        return f"the margin check needed {_amt(need)} and your account had {_amt(have)}."
     same = [o for o in orders if o["exchange"] == order["exchange"] and o["tradingsymbol"] == order["tradingsymbol"]
             and o["order_id"] != order["order_id"]]
     held = _filled_by(same, "BUY", at) - _filled_by(same, "SELL", at)

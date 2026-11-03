@@ -336,16 +336,25 @@ def test_the_plan_message_reads_plainly():
     assert "🎯 Already above the target zone ₹115.2 (price ₹116.1)." in above
 
 
-def test_a_stop_moved_down_is_told_first_then_only_under_the_plan_or_off_the_buy_price():
+def test_every_stop_moved_down_is_told_with_its_reason():
+    """[N03-L1] Every move down is told (owner, Oct 24: never rate-limited). Before, a later move above the plan
+    stop returned None and was dropped: Nov 2, 310 -> 300 -> 290 -> 280 on SENSEX 75800 CE, no message."""
     trip = pw.Trip("1", "NFO", SYMBOL, "NRML", D(11, 29, 17), bought=65, buy_value=65 * 75.05)
     plan = pw.Plan(entry=75.05, qty=65, stop=57.85, stop_basis="INDEX")
-    # Oct 23, NIFTY 22300 PE: 68 -> 65 (first), 65 -> 60 (within the plan), 75 -> 70 (off the buy price),
+    # Oct 23, NIFTY 22300 PE: 68 -> 65 (first), 65 -> 60 (again, above the plan), 75 -> 70 (off the buy price),
     # 60 -> 55 (under the plan stop).
     assert pw.lowered_reason(trip, 68.0, 65.0, plan, first=True) == "FIRST"
-    assert pw.lowered_reason(trip, 65.0, 60.0, plan, first=False) is None
+    assert pw.lowered_reason(trip, 65.0, 60.0, plan, first=False) == "AGAIN"
     assert pw.lowered_reason(trip, 75.0, 70.0, plan, first=False) == "GUARD"      # 75 is within 0.5% of 75.05
     assert pw.lowered_reason(trip, 60.0, 55.0, plan, first=False) == "BELOW_PLAN"
-    assert pw.lowered_reason(trip, 65.0, 60.0, None, first=False) is None
+    assert pw.lowered_reason(trip, 65.0, 60.0, None, first=False) == "AGAIN"
+    assert pw.lowered_text(trip, 65.0, 60.0, "AGAIN", plan).endswith(
+        "Moved down again: each move adds to the loss if it is hit.")
+    # Nov 2 shape: entry 326.15, plan stop 270.20, already told once; each of 310 -> 300 -> 290 -> 280 is told.
+    sx = pw.Trip("2", "BFO", "SENSEX26N0575800CE", "NRML", D(10, 37, 32), bought=40, buy_value=40 * 326.15)
+    sx_plan = pw.Plan(entry=326.15, qty=40, stop=270.2, stop_basis="INDEX")
+    assert [pw.lowered_reason(sx, old, new, sx_plan, first=False)
+            for old, new in ((310, 300), (300, 290), (290, 280))] == ["AGAIN", "AGAIN", "AGAIN"]
     assert pw.lowered_text(trip, 75.0, 70.0, "GUARD", plan).endswith(
         "It was guarding your buy price; now this trade can end in a loss.")
     assert pw.lowered_text(trip, 60.0, 55.0, "BELOW_PLAN", plan).endswith(
@@ -645,11 +654,15 @@ async def test_a_buy_gets_its_plan_then_no_stop_then_a_lowered_and_a_removed_sto
     assert len(watch) == count + 1                                                   # told once
     kite["orders"][-1] = _o("201", "SELL", D(11, 44, 33), order_type="SL", status="TRIGGER PENDING", trigger_price=60.0)
     await pw.watch_tick(D(11, 44, 40), market=market)
-    assert len(watch) == count + 1                       # 65 -> 60 stays above the plan stop: the review keeps it
+    # [N03-L1] 65 -> 60 stays above the plan stop and is told too (it was dropped before).
+    assert len(watch) == count + 2 and watch[-1]["kind"] == "watch_lowered"
+    assert "you moved your stop down ₹65 → ₹60" in watch[-1]["text"]
+    await pw.watch_tick(D(11, 44, 45), market=market)
+    assert len(watch) == count + 2                                                   # told once
     # Cancelled with nothing in its place: told after the 20 s grace.
     kite["orders"][-1] = _o("201", "SELL", D(12, 0), order_type="SL", status="CANCELLED", trigger_price=60.0)
     await pw.watch_tick(D(12, 0, 5), market=market)
-    assert len(watch) == count + 1
+    assert len(watch) == count + 2
     await pw.watch_tick(D(12, 0, 30), market=market)
     assert watch[-1]["kind"] == "watch_removed" and "your stop at ₹60 is cancelled" in watch[-1]["text"]
     # 15:20 with the option still held.
@@ -728,8 +741,9 @@ async def test_a_refusal_is_explained_and_quiet_keeps_only_the_loss_alarms(watch
 
 @pytest.mark.asyncio
 async def test_a_buy_refused_for_funds_says_its_share_of_the_cash(watch, kite):
-    """[O26c] Oct 26: five buys refused for funds, one needing ₹17,244 on ₹17,218: all of the account in one trade.
-    The refusal now says so, beside the partner's usual share (when known); it goes on a quiet day too."""
+    """[O26c] A buy refused for funds says what share of the cash it was, beside the usual share; it goes on a
+    quiet day too. [N03-R1] Zerodha's "margin required" is its whole check (open trades included), so it is never
+    said to be this buy's price: a market order has no share; a limit order's share is its own price."""
     db = settings.DB_PATH
     await _login()
     market = _market(D(11, 36))
@@ -740,14 +754,30 @@ async def test_a_buy_refused_for_funds_says_its_share_of_the_cash(watch, kite):
                          filled_quantity=0, average_price=0)]
     await pw.watch_tick(D(11, 36, 50), market=market)
     assert watch[-1]["kind"] == "watch_refused"
-    assert watch[-1]["text"] == ("❗ Zerodha refused your buy order on NIFTY 22300 PE: the buy needed ₹7,790 and your "
-                                 "account had ₹7,537. That is more than all of your ₹7,537 cash in one trade.")
+    assert watch[-1]["text"] == ("❗ Zerodha refused your buy order on NIFTY 22300 PE: the margin check needed ₹7,790 "
+                                 "and your account had ₹7,537.")
     row = {"transaction_type": "BUY", "tradingsymbol": SYMBOL, "exchange": "NFO", "order_id": "1",
-           "placed_at": D(11, 0).isoformat(), "status_message": need.replace("7790.40", "6029.36")}
+           "placed_at": D(11, 0).isoformat(), "status_message": need.replace("7790.40", "6029.36"),
+           "price": 92.75, "quantity": 65}
     assert pw.refused_text(row, [row], None, cash=7536.7, usual=0.42).endswith(
-        "That is 80% of your ₹7,537 cash in one trade; your usual is 42%.")
+        "This buy alone was about ₹6,029, 80% of your ₹7,537 cash; your usual is 42%.")
     assert "your cash" not in pw.refused_text(row | {"status_message": "RMS: blocked"}, [row], None, cash=7536.7)
     assert "your cash" not in pw.refused_text(row, [row], None)                       # no cash known: as before
+    assert "your cash" not in pw.refused_text(row | {"price": 0}, [row], None, cash=7536.7)   # a market order
+
+
+def test_a_refusal_never_calls_zerodhas_whole_margin_check_this_buy_alone():
+    """[N03-R1] Nov 2, 09:44: a buy of 65 NIFTY 23200 CE at about ₹164 (≈₹10,700, 37% of the cash) was refused as
+    "Margin required: 28601.00. Margin available: 28528.80" with ₹17,811 already in open trades, and was told
+    "That is more than all of your ₹28,529 cash in one trade"."""
+    need = "Insufficient funds. Margin required: 28601.00. Margin available: 28528.80. Check orderbook for open orders."
+    row = {"transaction_type": "BUY", "tradingsymbol": "NIFTY26N0323200CE", "exchange": "NFO", "order_id": "1",
+           "placed_at": D(9, 44, 53).isoformat(), "status_message": need, "price": 0, "quantity": 65}
+    text = pw.refused_text(row, [row], None, cash=28528.8, usual=0.27, in_trades=17811.2)
+    assert text == ("❗ Zerodha refused your buy order on NIFTY 23200 CE: the margin check needed ₹28,601 and your "
+                    "account had ₹28,529. That figure is not this buy alone: it also counts your open trades (about "
+                    "₹17,811 paid for them).")
+    assert "in one trade" not in text and "more than all" not in text
 
 
 @pytest.mark.asyncio
@@ -2123,7 +2153,8 @@ def test_stops_moved_together_say_each_move_and_why():
     assert pw.moves_reason(trip, below, plan, first=False) == "BELOW_PLAN"
     assert pw.moved_text(trip, below, "BELOW_PLAN", plan).endswith(
         "₹75 and ₹70 are under your plan stop ₹80: the loss can now be bigger than planned.")
-    assert pw.moves_reason(trip, [dict(guard[1], new=82.0)], plan, first=False) is None   # within the plan, not first
+    # [N03-L1] Within the plan and not the first: still told, as AGAIN.
+    assert pw.moves_reason(trip, [dict(guard[1], new=82.0)], plan, first=False) == "AGAIN"
     # A stop for all 130 moved with another: only 130 are counted, so it is told as the one move.
     big = [dict(guard[0], old=95.0, units=130), guard[1]]
     assert pw.moved_text(trip, big, "FIRST", plan).startswith("⚠️ NIFTY 22300 PE: you moved your stop down ₹95 → ₹90.")
@@ -3031,9 +3062,10 @@ async def test_money_added_during_the_day_is_cash_from_the_next_refresh(watch, k
     assert pw._state.cash == 57536.7
     need = "Insufficient funds. Margin required: 7790.40. Margin available: 7536.70. Check orderbook for open orders."
     kite["orders"] = [_o("101", "BUY", D(10, 5, 3), status="REJECTED", status_message=need, filled_quantity=0,
-                         average_price=0)]
+                         average_price=0, order_type="LIMIT", price=120.0)]
     await pw.watch_tick(D(10, 5, 8), market=market)
-    assert watch[-1]["text"].endswith("That is 14% of your ₹57,537 cash in one trade.")
+    # [N03-R1] The share is the buy's own price (65 x 120 = 7,800) on the refreshed cash.
+    assert watch[-1]["text"].endswith("This buy alone was about ₹7,800, 14% of your ₹57,537 cash.")
     kite["unreadable"] = ("/user/margins/equity",)
     await pw.watch_tick(D(10, 10, 5), market=market)
     assert (pw._state.cash, pw._state.cash_at) == (57536.7, D(10, 10, 5))     # kept; tried at the next refresh

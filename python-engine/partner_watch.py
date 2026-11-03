@@ -960,10 +960,45 @@ def option_swing(bars: list, bought_at: datetime) -> tuple[Optional[float], Opti
     return swing, low if low and low > 0 else None
 
 
+FORWARD_GAP_MAX = 0.02      # [N03-P1] a parity forward more than 2% from the future is a bad read
+
+
+def option_forward(fut: float, *, now: datetime, expiry: Optional[date], fut_expiry: Optional[date] = None,
+                   forward: Optional[float] = None) -> tuple:
+    """[N03-P1] The option's own forward when the front future is at ``fut``, as (a function from a future level
+    to the option's forward, basis): PARITY from ``forward`` (the twin options' put-call parity at ``fut``),
+    else CARRY (the future's level carried back from its expiry to the option's), else FUTURE (as before).
+
+    Nov 2: plans priced weekly options off the monthly future (75,711 for an option whose own forward was about
+    75,370), so a call's stop came out ₹5-16 too low and its target 10-20% too high (SENSEX 75800 CE: stop
+    270.20 and target 450.35, about 283 and 424 on the option's own forward)."""
+    from fno_chain import RISK_FREE_RATE, years_to_expiry
+    if forward and fut and abs(fut - forward) <= FORWARD_GAP_MAX * fut:
+        gap = fut - forward
+        return (lambda level: level - gap), "PARITY"
+    if fut_expiry is not None and expiry is not None and fut_expiry > expiry:
+        carry = years_to_expiry(fut_expiry, now) - years_to_expiry(expiry, now)
+        if carry > 0:
+            ratio = math.exp(-RISK_FREE_RATE * carry)
+            return (lambda level: level * ratio), "CARRY"
+    return (lambda level: level), "FUTURE"
+
+
+def parity_forward(call_mid: Optional[float], put_mid: Optional[float], strike: float, years: float) -> Optional[float]:
+    """[N03-P1] F = K + (C - P) e^(rT) from the call and put of one strike and expiry (None without both)."""
+    from fno_chain import RISK_FREE_RATE
+    if not call_mid or not put_mid or call_mid <= 0 or put_mid <= 0 or years <= 0 or strike <= 0:
+        return None
+    return strike + (call_mid - put_mid) * math.exp(RISK_FREE_RATE * years)
+
+
 def build_plan(*, entry: float, qty: int, exchange: str, opt_type: str, strike: float, expiry: Optional[date],
                now: datetime, bought_at: datetime, cash: Optional[float], option_bars: Optional[list],
-               fut_bars: Optional[pd.DataFrame], fut_price: Optional[float], option_mid: Optional[float]) -> Plan:
-    """The plan for one buy from the system's own readings (see the module doc)."""
+               fut_bars: Optional[pd.DataFrame], fut_price: Optional[float], option_mid: Optional[float],
+               fut_expiry: Optional[date] = None, forward: Optional[float] = None) -> Plan:
+    """The plan for one buy from the system's own readings (see the module doc). [N03-P1] The levels stay on
+    the front future (what the message names); the option is priced on its own expiry's forward at each level
+    (``option_forward``: ``forward`` is the twin options' parity forward at the future's price now)."""
     import options_math as om
     from fno_chain import RISK_FREE_RATE, years_to_expiry
     from fno_engine_mom import SESSION_OPEN_MIN, wilder_atr
@@ -997,10 +1032,15 @@ def build_plan(*, entry: float, qty: int, exchange: str, opt_type: str, strike: 
     price_now = option_mid or entry
     if plan.fut and plan.atr and expiry is not None:
         years = years_to_expiry(expiry, now.astimezone(IST))
-        plan.iv = om.implied_vol(price_now, plan.fut, strike, years, RISK_FREE_RATE, is_call) if years > 0 else None
+        own, basis = option_forward(plan.fut, now=now.astimezone(IST), expiry=expiry, fut_expiry=fut_expiry,
+                                    forward=forward)
+        fwd = own(plan.fut)
+        logger.info("partner_watch_plan_forward basis=%s fut=%.2f forward=%.2f strike=%.0f", basis, plan.fut, fwd,
+                    strike)
+        plan.iv = om.implied_vol(price_now, fwd, strike, years, RISK_FREE_RATE, is_call) if years > 0 else None
         if plan.iv:
-            plan.delta = round(om.delta(plan.fut, strike, years, plan.iv, RISK_FREE_RATE, is_call), 3)
-            plan.theta_day = round(om.theta(plan.fut, strike, years, plan.iv, RISK_FREE_RATE, is_call), 2)
+            plan.delta = round(om.delta(fwd, strike, years, plan.iv, RISK_FREE_RATE, is_call), 3)
+            plan.theta_day = round(om.theta(fwd, strike, years, plan.iv, RISK_FREE_RATE, is_call), 2)
             room = settings.FNO_STOP_ATR_MULT * plan.atr
             vol_stop = plan.fut - room if is_call else plan.fut + room
             if plan.range_edge is not None:
@@ -1010,9 +1050,10 @@ def build_plan(*, entry: float, qty: int, exchange: str, opt_type: str, strike: 
             r_points = abs(plan.fut - index_stop)
             target_index = plan.fut + settings.FNO_TARGET_R * r_points * (1 if is_call else -1)
             plan.stop_index, plan.target_index = round(index_stop, 1), round(target_index, 1)
-            plan.index_stop_option = _floor_tick(om.black76_price(index_stop, strike, years, plan.iv, RISK_FREE_RATE,
-                                                                  is_call))
-            plan.target = _round_tick(om.black76_price(target_index, strike, years, plan.iv, RISK_FREE_RATE, is_call))
+            plan.index_stop_option = _floor_tick(om.black76_price(own(index_stop), strike, years, plan.iv,
+                                                                  RISK_FREE_RATE, is_call))
+            plan.target = _round_tick(om.black76_price(own(target_index), strike, years, plan.iv, RISK_FREE_RATE,
+                                                       is_call))
             if plan.index_stop_option < entry:      # a jump since the fill can price it above the buy: no stop then
                 plan.stop, plan.stop_basis = plan.index_stop_option, "INDEX"
     if plan.swing and (plan.stop is None or entry - plan.stop < plan.swing):
@@ -1598,16 +1639,21 @@ def product_text(symbol: str, product: str, exits: list, held: list, basis: str 
 
 
 def lowered_reason(trip, old: float, new: float, plan: Optional[Plan], first: bool) -> Optional[str]:
-    """Why a stop moved down is worth a message now: FIRST in this trade,
-    BELOW_PLAN (under the plan's stop), GUARD (it guarded the buy price and
-    no longer does); None: still within the plan, already told once."""
+    """Why a stop moved down is worth a message now: GUARD (it guarded the
+    buy price and no longer does), BELOW_PLAN (under the plan's stop), FIRST
+    in this trade, else AGAIN.
+
+    [N03-L1] Every stop moved down is told (owner, Oct 24: a stop lowered is
+    never rate-limited; WATCH_ON promises it). Before, a later move above the
+    plan stop was dropped as "within the plan": Nov 2, 310 → 300 → 290 → 280
+    on SENSEX 75800 CE, no message, and the trade sold at 280."""
     entry = trip.entry or 0.0
     guard = entry * (1 - GUARD_TOLERANCE)
     if entry and old >= guard > new:
         return "GUARD"
     if plan is not None and plan.stop is not None and new < plan.stop - 1e-9:
         return "BELOW_PLAN"
-    return "FIRST" if first else None
+    return "FIRST" if first else "AGAIN"
 
 
 def _rest_note(cover: Optional[Cover], stop_id, rest: int) -> str:
@@ -1642,15 +1688,22 @@ def lowered_text(trip, old: float, new: float, reason: str = "FIRST", plan: Opti
     else:
         line = (f"⚠️ {name}: you moved your stop down {_px(old)} → {_px(new)}. If it is hit: "
                 f"{_signed(after)} instead of {_signed(before)}.")
-    return line + _lowered_why(reason, plan, units if part else None)
+    return line + _lowered_why(reason, plan, units if part else None, after=after)
 
 
-def _lowered_why(reason: str, plan: Optional[Plan], units: Optional[int] = None) -> str:
+def _lowered_why(reason: str, plan: Optional[Plan], units: Optional[int] = None, *,
+                 after: Optional[float] = None) -> str:
+    """[N03-L2] ``after``: the result at the new stop. A stop still above the buy price gives back profit; it
+    does not add to a loss (Nov 2: "+₹2,003 instead of +₹2,522 ... adds to the loss")."""
     if reason == "GUARD":
         return (f" It was guarding your buy price; now those {units} can end in a loss." if units else
                 " It was guarding your buy price; now this trade can end in a loss.")
     if reason == "BELOW_PLAN" and plan is not None and plan.stop is not None:
         return f" That is under your plan stop {_px(plan.stop)}: the loss can now be bigger than planned."
+    if after is not None and after >= 0:
+        return " A stop moved down gives back profit it had kept for you."
+    if reason == "AGAIN":
+        return " Moved down again: each move adds to the loss if it is hit."
     return " A stop moved down adds to the loss you chose when you placed it."
 
 
@@ -1660,7 +1713,7 @@ def moves_reason(trip, moves: list, plan: Optional[Plan], first: bool) -> Option
     read is judged as one change, so a move is never dropped because another
     in the same read was looked at first. ``moves``: {"old", "new"}."""
     reasons = {lowered_reason(trip, m["old"], m["new"], plan, first) for m in moves}
-    return next((r for r in ("GUARD", "BELOW_PLAN", "FIRST") if r in reasons), None)
+    return next((r for r in ("GUARD", "BELOW_PLAN", "FIRST", "AGAIN") if r in reasons), None)
 
 
 def _held_moves(trip, moves: list) -> list:
@@ -1674,7 +1727,7 @@ def _held_moves(trip, moves: list) -> list:
     return used
 
 
-def _moves_why(reason: str, plan: Optional[Plan], used: list, trip) -> str:
+def _moves_why(reason: str, plan: Optional[Plan], used: list, trip, *, after: Optional[float] = None) -> str:
     """[O24g] ``_lowered_why`` for several moves: which of them gave up the buy price, or went under the plan stop."""
     held = trip.open_qty
     if reason == "GUARD":
@@ -1689,6 +1742,8 @@ def _moves_why(reason: str, plan: Optional[Plan], used: list, trip) -> str:
         below = [m for m, _u in used if m["new"] < plan.stop - 1e-9]
         return (f" {_triggers([{'trigger': m['new']} for m in below])} {'are' if len(below) > 1 else 'is'} under your "
                 f"plan stop {_px(plan.stop)}: the loss can now be bigger than planned.")
+    if after is not None and after >= 0:
+        return " Stops moved down give back profit they had kept for you."
     return " Stops moved down add to the loss you chose when you placed them."
 
 
@@ -1713,7 +1768,7 @@ def moved_text(trip, moves: list, reason: str = "FIRST", plan: Optional[Plan] = 
             f"hit, {on}: {_signed(after)} instead of {_signed(before)}.")
     if qty < held:
         line += _rest_note(cover, [m["id"] for m, _u in used], held - qty)
-    return line + _moves_why(reason, plan, used, trip)
+    return line + _moves_why(reason, plan, used, trip, after=after)
 
 
 def _average_trigger(stops: list) -> float:
@@ -1734,7 +1789,7 @@ def changed_text(trip, gone: list, added: list, reason: str = "FIRST", plan: Opt
     new = f"new ones at {_triggers(added)}" if len(added) > 1 else f"a new one at {_triggers(added)}"
     return (f"⚠️ {_name(trip)}: your stops changed: {_triggers(gone)} cancelled, {new}. If they are "
             f"hit, {on}: about {_signed(after)} instead of about {_signed(before)}."
-            + _lowered_why(reason, plan, qty if qty < held else None))
+            + _lowered_why(reason, plan, qty if qty < held else None, after=after))
 
 
 def removed_text(holding, why: dict, plan: Optional[Plan], quote: Optional[dict] = None,
@@ -1819,11 +1874,22 @@ def added_text(holding, *, added: int, added_px: float, first_px: Optional[float
     return line + covers
 
 
+def _order_value(row: dict) -> Optional[float]:
+    """[N03-R1] What a priced buy order costs (its limit price x quantity); None for a market order (no price)."""
+    price = zerodha._num(row.get("price")) or 0.0
+    qty = int(zerodha._num(row.get("quantity")) or 0)
+    return round(price * qty, 2) if price > 0 and qty > 0 else None
+
+
 def refused_text(row: dict, rows: list, still_open: Optional[int], *, cash: Optional[float] = None,
-                 usual: Optional[float] = None, unprotected: str = "") -> str:
-    """[O26c] A buy refused for funds also says what share of the day's cash it was, and the usual share (Oct 26:
-    five buys refused, one for ₹17,244 on ₹17,218: the whole account in one trade). [O29] ``unprotected``: for a
-    refused stop, what the trade has now (``_b_refused``)."""
+                 usual: Optional[float] = None, unprotected: str = "", in_trades: Optional[float] = None) -> str:
+    """[O26c] A buy refused for funds also says what share of the day's cash it was, and the usual share.
+    [O29] ``unprotected``: for a refused stop, what the trade has now (``_b_refused``).
+
+    [N03-R1] Zerodha's "margin required" is its whole check, not this buy's price: it also counts the open
+    trades (``in_trades``: what was paid for what is held now). Nov 2: five buys of 37-61% of the cash were each
+    told "more than all of your cash in one trade". The share is said only for a priced (limit) order, from its
+    own price; a market order has none."""
     from partner_insights import _MARGIN, refusal_plain
     side = "buy" if row["transaction_type"] == "BUY" else "sell"
     why = refusal_plain(row, rows) or (row.get("status_message") or "no reason given").strip()
@@ -1832,24 +1898,39 @@ def refused_text(row: dict, rows: list, still_open: Optional[int], *, cash: Opti
         line += "."
     if side == "sell" and still_open:
         line += f" The trade ({still_open}) is still open.{unprotected}"
-    found = _MARGIN.search(str(row.get("status_message") or "")) if side == "buy" and cash else None
+    found = _MARGIN.search(str(row.get("status_message") or "")) if side == "buy" else None
     if found:
-        need = float(found.group(1).replace(",", ""))
-        line += (f" That is more than all of your {_amt(cash)} cash in one trade" if need > cash else
-                 f" That is {need / cash:.0%} of your {_amt(cash)} cash in one trade")
-        line += f"; your usual is {usual:.0%}." if usual else "."
+        if in_trades and in_trades > 0:
+            line += (f" That figure is not this buy alone: it also counts your open trades (about "
+                     f"{_amt(in_trades)} paid for them).")
+        own = _order_value(row)
+        if own and cash:
+            line += f" This buy alone was about {_amt(own)}, {own / cash:.0%} of your {_amt(cash)} cash"
+            line += f"; your usual is {usual:.0%}." if usual else "."
     return line
 
 
+def _to_close(now: Optional[datetime]) -> str:
+    """[N03-C1] The time left to the derivatives close, counted when the message is built (Nov 2: a CLOSE sent
+    at 15:30 still said "20 minutes"). Without ``now``, the 20 minutes of the first warning."""
+    from partner_broker_sync import CLOSE_MIN
+    close = f"{CLOSE_MIN // 60}:{CLOSE_MIN % 60:02d}"
+    if now is None:
+        return f"20 minutes to the {close} close"
+    local = now.astimezone(IST)
+    left = CLOSE_MIN * 60 - (local.hour * 3600 + local.minute * 60 + local.second)
+    minutes = max(left // 60, 0)
+    if minutes < 1:
+        return f"Under a minute to the {close} close"
+    return f"{minutes} minute{'s' if minutes != 1 else ''} to the {close} close"
+
+
 def close_text(trip, *, expiry_today: bool, theta_day: Optional[float], expires_next: Optional[date] = None,
-               value: Optional[float] = None) -> str:
+               value: Optional[float] = None, now: Optional[datetime] = None) -> str:
     """[O29] ``expires_next``: the option expires on the next weekday's close, said instead of a day's decay; the
     decay of one day is never more than what the option is worth now (``value``). Oct 28: "time decay is about
     ₹46,725 a day" on 380 of a SENSEX put worth about ₹42,000 and expiring the next day."""
-    from partner_broker_sync import CLOSE_MIN
-    close = f"{CLOSE_MIN // 60}:{CLOSE_MIN % 60:02d}"
-    line = (f"⏳ 20 minutes to the {close} close and you still hold {_name(trip)} "
-            f"({trip.open_qty}).")
+    line = f"⏳ {_to_close(now)} and you still hold {_name(trip)} ({trip.open_qty})."
     if expiry_today:
         line += (" It expires today: after the close it is settled in cash at its in-the-money value, "
                  "and an option out of the money ends at zero.")
@@ -3552,7 +3633,9 @@ async def _lowered(db_path: str, day: str, holding: Holding, moves: list, now: d
         return None
     plain = sorted(({"id": m["id"], "old": m["old"], "new": m["new"], "units": m["units"]} for m in moves),
                    key=lambda m: m["id"])
-    key = "lowered:" + "+".join(f"{m['id']}@{m['new']:.2f}" for m in plain)
+    # [N03-L1] The move's old level is in the key: the same stop moved down to a level it already had once
+    # (145 → 140, up to 150, down to 140 again) is a new move, told again.
+    key = "lowered:" + "+".join(f"{m['id']}@{m['old']:.2f}>{m['new']:.2f}" for m in plain)
     at = min((t for t in (_dt(m.get("at")) for m in moves) if t is not None), default=None)
     return key, "LOWERED", holding, {"episode": episode, "moves": plain, "first": first, "reason": reason}, at, episode
 
@@ -3823,8 +3906,13 @@ async def _market_plan(trip: Trip, now: datetime, market: Market, size: Optional
     ``inputs`` (when given) gets each quote's freshness: option, future."""
     contract = contract_of(trip.exchange, trip.tradingsymbol)
     option_bars, fut_bars, fut_price, quote, fut_quote = None, None, None, None, None
+    future, twin, twin_quote = None, None, None
     if contract is not None:
         future = contract.front_future(now.date())
+        # [N03-P1] The same strike's other option prices the option's own forward (put-call parity).
+        symbol = trip.tradingsymbol
+        if symbol.endswith(("CE", "PE")):
+            twin = contract_of(trip.exchange, symbol[:-2] + ("PE" if symbol.endswith("CE") else "CE"))
         try:
             frame = await market.candles(contract, "minute", trip.first_at - timedelta(minutes=SWING_LOOKBACK_MIN + 5),
                                          now)
@@ -3834,14 +3922,23 @@ async def _market_plan(trip: Trip, now: datetime, market: Market, size: Optional
             if future is not None:
                 start = (now - timedelta(days=FUTURE_BARS_DAYS)).replace(hour=9, minute=15, second=0, microsecond=0)
                 fut_bars = await market.candles(future, "5minute", start, now)
-            quotes = await _quotes(market, [c for c in (contract, future) if c is not None], now)
+            quotes = await _quotes(market, [c for c in (contract, future, twin) if c is not None], now)
             quote = quotes.get(contract.tradingsymbol)
             fut_quote = quotes.get(future.tradingsymbol) if future is not None else None
+            twin_quote = quotes.get(twin.tradingsymbol) if twin is not None else None
         except Exception as exc:          # the plan says less, it never fails the tick
             logger.warning("partner_watch_market_failed err=%s", type(exc).__name__)
     option_state, fut_state = quote_freshness(quote, now), quote_freshness(fut_quote, now)
     if fut_state == "FRESH":
         fut_price = fut_quote.get("ltp")
+    forward = None
+    expiry = getattr(contract, "expiry", None) if contract is not None else None
+    if expiry is not None and option_state == "FRESH" and quote_freshness(twin_quote, now) == "FRESH":
+        from fno_chain import years_to_expiry
+        mine, other = _mid(quote), _mid(twin_quote)
+        call, put = (mine, other) if trip.tradingsymbol.endswith("CE") else (other, mine)
+        forward = parity_forward(call, put, float(getattr(contract, "strike", 0.0) or 0.0),
+                                 years_to_expiry(expiry, now.astimezone(IST)))
     if inputs is not None:
         inputs.update(option=option_state, future=fut_state)
     lot = int(getattr(contract, "lot_size", 0) or 0)
@@ -3852,18 +3949,20 @@ async def _market_plan(trip: Trip, now: datetime, market: Market, size: Optional
             return None, quote, lot
         size = (size[0], float(ask))
     plan = _plan_of(trip, contract, now, size=size, option_bars=option_bars, fut_bars=fut_bars, fut_price=fut_price,
-                    mid=_mid(quote) if option_state == "FRESH" else None)
+                    mid=_mid(quote) if option_state == "FRESH" else None,
+                    fut_expiry=getattr(future, "expiry", None) if future is not None else None, forward=forward)
     return plan, quote, lot
 
 
 def _plan_of(trip: Trip, contract, now: datetime, *, size: Optional[tuple] = None, option_bars=None, fut_bars=None,
-             fut_price=None, mid=None) -> Plan:
+             fut_price=None, mid=None, fut_expiry=None, forward=None) -> Plan:
     qty, entry = size or (trip.open_qty, trip.entry)
     return build_plan(entry=round(entry, 2), qty=qty, exchange=trip.exchange,
                       opt_type=getattr(contract, "instrument_type", None) or trip.tradingsymbol[-2:],
                       strike=float(getattr(contract, "strike", 0.0) or 0.0),
                       expiry=getattr(contract, "expiry", None), now=now, bought_at=trip.first_at, cash=_state.cash,
-                      option_bars=option_bars, fut_bars=fut_bars, fut_price=fut_price, option_mid=mid)
+                      option_bars=option_bars, fut_bars=fut_bars, fut_price=fut_price, option_mid=mid,
+                      fut_expiry=fut_expiry, forward=forward)
 
 
 async def _plan_job(db_path: str, day: str, trip: Trip, trips: list, now: datetime, market: Market, *,
@@ -4117,8 +4216,11 @@ async def _b_refused(db_path: str, context: dict, view: View, now: datetime):
             quote = await _price_now(holding, now)
             if quote_freshness(quote, now) == "FRESH":
                 unprotected += _sell_now(holding, quote, _state.cash)
+    in_trades = None
+    if row["transaction_type"] == "BUY":
+        in_trades = round(sum((h.entry or 0.0) * h.open_qty for h in view.holdings if h.open_qty > 0), 2)
     return (refused_text(row, view.rows, sum(h.qty for h in same) or None, cash=_state.cash, usual=usual,
-                         unprotected=unprotected), "explained Zerodha's refusal", None)
+                         unprotected=unprotected, in_trades=in_trades), "explained Zerodha's refusal", None)
 
 
 async def _b_close(db_path: str, context: dict, view: View, now: datetime):
@@ -4137,7 +4239,7 @@ async def _b_close(db_path: str, context: dict, view: View, now: datetime):
         value = price * holding.open_qty if price else None
     expires_next = expiry if expiry is not None and expiry == _next_weekday(now.date()) else None
     return (close_text(holding, expiry_today=expiry_today, theta_day=plan.theta_day if plan else None,
-                       expires_next=expires_next, value=value), "20 minutes to the close", None)
+                       expires_next=expires_next, value=value, now=now), _to_close(now).lower(), None)
 
 
 async def _b_excess(db_path: str, context: dict, view: View, now: datetime):

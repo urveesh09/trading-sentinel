@@ -65,3 +65,5 @@ NIFTY only unless SENSEX is also downloaded. Expiry weekdays, lot sizes and the 
 ## Added after this was written: the owner made E01.1 the main ticket
 
 On the night of November 2 the owner made E01.1 the main C on paper (expiry-v4), before this exam ran. The arms and tests above don't change. In this exam, "C" still means the main book's old ticket, which now runs as shadow `CL`. Test 1's "E01.1 is dropped" now means the result goes to the owner, since going back is their decision.
+
+On November 3 the owner answered "Yes yes" when asked whether the next download could take the shape above. I read that as approval. The job still goes through the download skill and agent, and this exam's rules don't change.

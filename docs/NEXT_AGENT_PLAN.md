@@ -1,10 +1,45 @@
-## November 2 night — EDGE exit job crash found at the deploy; fixed in Dev
+## November 3 — N03 partner fixes from the two Nov 2 audits (done, Dev, pushed, PR open, not deployed, commit `b9b0d2c`)
+
+- Problem: the partner's 10:36 SENSEX 75800 CE complaint; two audits plus my check of the Nov 2 evidence.
+  Fixed now (most critical, low risk): P1 plan pricing on the option's own forward; L1 every stop lowered
+  told; L2 profit-stop wording; R1 refusal text; E1 card updates name their card; K1/K2 coach honesty; C1
+  close countdown.
+- Files: `python-engine/partner_watch.py`, `partner_buyer.py`, `partner_coach.py`, `partner_insights.py`;
+  tests `tests/test_nov03_partner_fixes.py` (new), `test_partner_watch.py`, `test_partner_coach.py`,
+  `test_partner_buyer.py`, `test_partner_stop_reading.py`.
+- Contracts: no schema, setting or stored-format change (plan JSON fields unchanged, so a rollback reads
+  today's rows). LOWERED keys now `lowered:<id>@<old>><new>`. Partner wording changed as above, on the
+  owner's Nov 3 instruction to fix the critical findings.
+- Acceptance (first session after deploy):
+  - `partner_watch_plan_forward basis=PARITY` on most plans; CE plan IV near the card's IV, not ~5-13%;
+  - no `partner_watch_lowered_within_plan` log lines; one LOWERED per move down;
+  - no REFUSED text with "in one trade" for a market order;
+  - card EXIT/target/square-off lines carry "(HH:MM card, bought by HH:MM)";
+  - the 15:50 coach never says "gave no stop"; CLOSE minutes match the send time.
+- Rollout: merge to `evolve/smart-strategies`, rebuild the engine image. A restart drops the partner's
+  login (in memory): they log in again (RECONNECT prompt). Rollback: revert the commit.
+- Remaining:
+  - [ ] SENSEX signal source: the future trades a median of 8 contracts per 5-minute bar (NIFTY ~518); the
+    10:36 BUY fired on 26, the 11:40 EXIT on 2. Use the index or the parity forward; check the SENSEX paper
+    book, which reads the same bars (`fno_orchestrator._fetch_futures_bars`).
+  - [ ] Watch uptime: store the partner's session (encrypted) so a restart keeps the watch; a dead-man alert
+    from outside the engine (Oct 30: engine down 9.7 hours in session, no alert, no orders recorded).
+  - [ ] One plan authority: a buy of a card's option within its window gets the card's stop/target (or the
+    plan says how it differs).
+  - [ ] DAY giveback from the day's best (owner decision on thresholds; Nov 2 gave back 51% of cash silently).
+  - [ ] Score the Oct 24 profit-protection rule on the 171 recorded trips before any message goes live.
+  - [ ] OI pulse walls against the option's own forward; "held" only when the price is above the support.
+  - [ ] Card timing: 13 delivered cards 53-136 s after the bar close (2-minute job at :50).
+  - [ ] Coach counterfactuals: price effect vs whole-trade skip (₹102 vs ₹1,943), no "FOMO" label.
+  - [ ] Fee order counts in added-position risk; stored detection/enqueue clocks; margin vs equity labels.
+
+## November 2 night — EDGE exit job crash found at the deploy; fixed and deployed (Production c227c23)
 
 **Problem.** `_kite_daily_bars_after` read a `date` column, but `kite_client.get_historical` indexes its frame by date. The exit job raised KeyError the first time a holding reached its hold limit (AVONMORE, entered Oct 30), and that stops the job for every holding after it in the loop. It also fetched from the entry day, while `simulate_position`'s contract is bars from the day after. Older than this release; the test stub had a `date` column, so nothing caught it.
 
 **Files.** `python-engine/penny_edge_orchestrator.py`, `tests/test_penny_edge_deferred_fixes.py` (the stub now has the real client's shape, and a new test reproduces the crash). **Acceptance.** EDGE tests 88 passed, 1 skipped. Whole suite not rerun for this one function.
 
-**Rollout.** Pushed in Dev, not merged, not deployed. Production stays 39b8d81 until the owner's next deploy. Until then EDGE paper's AVONMORE stays open past its limit, the 15:15 job logs this error, and a hold-limit exit can't run. The job's crash is caught, so nothing else stops. No real money: the live EDGE channel is halted.
+**Rollout.** Deployed on the owner's go-ahead: Production c227c23, PR #128, 00:03 IST Nov 3. The restart's catch-up skipped because it's before 15:15, so AVONMORE's first real run of this path is the 15:15 job on Nov 3. No real money: the live EDGE channel is halted. Note for later: the job's age check counts calendar days and the simulator's hold counts trading bars, so a weekend holding exits as `eod_data_ended` before its third bar. Left as it is.
 
 ## November 2 night — One release: N11T second lot, E01.1 as the main expiry ticket, a fresh Rs 2,50,000 for the paper book
 
@@ -23,7 +58,7 @@ Owner's order: "Deploy right now, the tolerance and this also make it go in as m
 
 **Remaining.**
 1. Watch Nov 3, a NIFTY expiry: expiry-v4 rows from 12:59, the risk alert saying full size, `fno_n11_second_lot` if one qualifies.
-2. The next download's shape is still the owner's: `EXAM_YEAR.md`.
+2. The next download's shape: the owner answered "Yes yes" on Nov 3, read as approving `EXAM_YEAR.md`'s shape. The download agent needs that table; it goes through the download skill as usual.
 3. `EXAM_YEAR.md`'s arms stand as written. Its test 1 now decides whether C goes back to an older rule, and that decision is the owner's.
 4. Forward count: at least 20 new paired tickets, five per index: CL, CE01 and CE011R against C.
 5. The deploy took no full data backup (the runbook's stop-everything capture). It changes no stored data.

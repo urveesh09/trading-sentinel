@@ -142,12 +142,21 @@ def test_updates_are_one_line_actions():
     stop = pb.render_buyer_update(view, "INVALIDATION", underlying="NIFTY", observed_fut=22470.0,
                                   observed_at=at, management_deadline=candidate.management_deadline)
     assert stop.startswith("🛑 EXIT NIFTY 22550 CE now") and "NIFTY ≈22,41" in stop and "13:50" in stop
+    # [N03-E1] Each update names its card and buy window, so it is never read as being about a later buy.
+    tag = f" ({pb._hhmm(view['quote_at'])} card, bought by {pb._hhmm(view['fill_by'])})"
+    assert stop.startswith(f"🛑 EXIT NIFTY 22550 CE now{tag}: stop level hit")
     target = pb.render_buyer_update(view, "TARGET_ZONE", underlying="NIFTY", observed_fut=22633.0,
                                     observed_at=at, management_deadline=candidate.management_deadline)
+    assert target.startswith(f"🎯 NIFTY 22550 CE{tag}: target reached")
     assert "target reached" in target and "move SL to your entry price" in target
     reminder = pb.render_buyer_update(view, "SESSION_EXIT_REMINDER", underlying="NIFTY", observed_fut=0.0,
                                       observed_at=at, management_deadline=candidate.management_deadline)
-    assert reminder == "⏰ NIFTY 22550 CE: square off by 15:15. No overnight hold."
+    assert reminder == f"⏰ NIFTY 22550 CE{tag}: square off by 15:15. No overnight hold."
+    # A stored view without its times (older rows) keeps the old wording.
+    bare = {k: v for k, v in view.items() if k not in ("quote_at", "fill_by")}
+    assert pb.render_buyer_update(bare, "SESSION_EXIT_REMINDER", underlying="NIFTY", observed_fut=0.0,
+                                  observed_at=at, management_deadline=candidate.management_deadline) == (
+        "⏰ NIFTY 22550 CE: square off by 15:15. No overnight hold.")
     assert all("\n" not in text for text in (stop, target, reminder))
 
 
@@ -281,4 +290,5 @@ async def test_session_reminder_uses_buyer_wording_for_a_live_idea(store, monkey
                          (stored["advisory_id"],))
         await db.commit()
     reminders = await run_intraday_session_lifecycle(store, now=NOW.replace(hour=15, minute=10, second=5))
-    assert [r["rendered_update"] for r in reminders] == ["⏰ NIFTY 22550 CE: square off by 15:15. No overnight hold."]
+    tag = f" ({pb._hhmm(_view['quote_at'])} card, bought by {pb._hhmm(_view['fill_by'])})"      # [N03-E1]
+    assert [r["rendered_update"] for r in reminders] == [f"⏰ NIFTY 22550 CE{tag}: square off by 15:15. No overnight hold."]

@@ -1,6 +1,48 @@
-## November 2 night — Deployed as Production 39b8d81; EDGE exit fix Dev only
+## November 3 — Partner fixes from the two Nov 2 audits (actual behavior, Dev, pushed, PR open, not deployed, commit `b9b0d2c`)
 
-The section below this one is live in Production (PR #127). In Dev only, until the next deploy: `penny_edge_orchestrator._kite_daily_bars_after` reads the real client's date index and passes the simulator bars from the day after entry, as its contract says.
+Source: Production `docs/2026-11-02-partner-system-deep-audit.md`, a second auditor's review of it, and a
+check against the code and the Nov 2 evidence (`docs/audit-evidence/2026-11-02-partner/`).
+
+- **Plan pricing (N03-P1).** `partner_watch.build_plan` priced a weekly option off the front (monthly)
+  future: Nov 2, SENSEX 75800 CE (5 Nov) at 329.30 with the Nov 26 future at 75,711 read IV 13% (the card,
+  on the chain's parity, 16.8%), delta 0.46, plan stop 270.20 and target 450.35; repriced on the option's own
+  forward about 283 and 424. NIFTY 23300 CE: plan stop 64.45 when the future later reached the plan's stop
+  level the bid was 78.20 (about 80 repriced). Now the levels stay on the future (what the message names)
+  and the option is priced on its own expiry's forward (`option_forward`): PARITY from the same strike's
+  other option (`parity_forward`, both quotes fresh, within 2% of the future), else CARRY from the future's
+  expiry, else as before. Calls: higher stop premium, lower target; puts the other way. Each plan logs
+  `partner_watch_plan_forward basis=... fut=... forward=...`. One extra quote per plan.
+- **Every stop moved down is told (N03-L1).** `lowered_reason` returned None for a later move above the plan
+  stop (Nov 2: 310 → 300 → 290 → 280, no message; 6 of 25 moves that day). Now such a move is `AGAIN`
+  ("Moved down again: each move adds to the loss if it is hit."), as WATCH_ON promises and the owner's
+  Oct 24 rule requires. The LOWERED key carries the old level too, so a stop moved down to a level it had
+  before is told again.
+- **Profit stops (N03-L2).** A stop moved down that still sells at a profit says "gives back profit it had
+  kept for you", not "adds to the loss" (Nov 2: "+₹2,003 instead of +₹2,522 ... adds to the loss").
+- **Refusals (N03-R1).** Zerodha's "Margin required" is its whole check (open trades counted), not the
+  buy's price: Nov 2, five buys of 37-61% of the cash were told "more than all of your cash in one trade".
+  Now: "the margin check needed ₹X and your account had ₹Y", plus "That figure is not this buy alone: it
+  also counts your open trades (about ₹Z paid for them)" when trades are open; a share of the cash only for
+  a priced (limit) order, from its own price. `refusal_plain` (also in the review) says "the margin check".
+- **Card updates name their card (N03-E1).** `partner_buyer.render_buyer_update`: "🛑 EXIT SENSEX 75800 CE
+  now (10:36 card, bought by 10:46): stop level hit ...", the same tag on the target and square-off lines
+  (`card_tag`; a stored view without its times keeps the old wording). Nov 2: the 10:36 card's EXIT came at
+  11:40 while a new buy of the option (11:37, after the card's buy window) had its own plan.
+- **Coach (N03-K1/K2).** An off-card trade says "No card was sent for this trade ..." instead of "the
+  system gave no stop, target or exit time" (false for 42 of Nov 2's 44 trades: the trade watch sends a
+  plan). "Exited with the card" needs the sale at or after a message exit (within 10 min); the premium-SL
+  exit keeps its ±10 min window. Nov 2: sold 11:36, the EXIT came 11:40, and it said "Exited with the card".
+- **Close countdown (N03-C1).** CLOSE says the minutes left when it is built (Nov 2 15:30: "20 minutes").
+- **Not changed (open, see the plan):** SENSEX signals read a future that barely trades (median 8
+  contracts per 5-minute bar); the partner's login is held in memory only and the watch cannot report its
+  own outage (Oct 30: down 9.7 hours from about 10:52); card and plan still give two sets of levels (now
+  priced alike); the DAY alarm counts only below zero (Nov 2: +12,921 to -1,669, no message); profit
+  protection unscored; OI pulse "support held" against the monthly future; cards 53-136 s after the bar;
+  coach counterfactuals (whole-trade skip as the lesson); fee order counts; timing provenance.
+
+## November 3 — Deployed as Production c227c23, with the EDGE exit fix
+
+The section below this one is live in Production (PR #127, 39b8d81). Also live (PR #128): `penny_edge_orchestrator._kite_daily_bars_after` reads the real client's date index and passes the simulator bars from the day after entry, as its contract says.
 
 ## November 2 night — Paper book fresh start, expiry-v4, N11T (one release)
 
