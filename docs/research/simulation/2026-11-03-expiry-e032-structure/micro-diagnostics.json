@@ -1,0 +1,1015 @@
+{
+  "classification": "EVALUATOR_NOT_PORTFOLIO",
+  "fixed_diagnostics": {
+    "strict_age_2_seconds": {
+      "summaries": {
+        "all|PRESSURE|30": {
+          "decisions": 202,
+          "measured": 191,
+          "statuses": {
+            "MEASURED": 191,
+            "NO_ENTRY": 11
+          },
+          "mean_net": -46.2,
+          "median_net": -49.11,
+          "positive_fraction": 0.1466,
+          "mean_midpoint": 6.18,
+          "mean_fees": 48.64,
+          "mean_spread_depth": 3.74,
+          "mean_fee_fraction": 0.0923,
+          "mean_missing_full_loss_bound": null
+        },
+        "all|PRESSURE|120": {
+          "decisions": 202,
+          "measured": 189,
+          "statuses": {
+            "MEASURED": 189,
+            "EXIT_UNAVAILABLE": 2,
+            "NO_ENTRY": 11
+          },
+          "mean_net": -60.4,
+          "median_net": -61.1,
+          "positive_fraction": 0.2116,
+          "mean_midpoint": -8.02,
+          "mean_fees": 48.6,
+          "mean_spread_depth": 3.77,
+          "mean_fee_fraction": 0.0927,
+          "mean_missing_full_loss_bound": -1086.05
+        },
+        "all|CONTROL|30": {
+          "decisions": 2204,
+          "measured": 1964,
+          "statuses": {
+            "MEASURED": 1964,
+            "NO_ENTRY": 229,
+            "EXIT_UNAVAILABLE": 11
+          },
+          "mean_net": -57.97,
+          "median_net": -57.81,
+          "positive_fraction": 0.1421,
+          "mean_midpoint": -5.38,
+          "mean_fees": 48.78,
+          "mean_spread_depth": 3.81,
+          "mean_fee_fraction": 0.0833,
+          "mean_missing_full_loss_bound": -690.11
+        },
+        "all|CONTROL|120": {
+          "decisions": 2204,
+          "measured": 1947,
+          "statuses": {
+            "MEASURED": 1947,
+            "NO_ENTRY": 229,
+            "EXIT_UNAVAILABLE": 28
+          },
+          "mean_net": -59.5,
+          "median_net": -67.62,
+          "positive_fraction": 0.2183,
+          "mean_midpoint": -6.9,
+          "mean_fees": 48.78,
+          "mean_spread_depth": 3.82,
+          "mean_fee_fraction": 0.0833,
+          "mean_missing_full_loss_bound": -663.47
+        },
+        "2026-10-06|PRESSURE|30": {
+          "decisions": 0,
+          "measured": 0,
+          "statuses": {},
+          "mean_net": null,
+          "median_net": null,
+          "positive_fraction": null,
+          "mean_midpoint": null,
+          "mean_fees": null,
+          "mean_spread_depth": null,
+          "mean_fee_fraction": null,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-06|PRESSURE|120": {
+          "decisions": 0,
+          "measured": 0,
+          "statuses": {},
+          "mean_net": null,
+          "median_net": null,
+          "positive_fraction": null,
+          "mean_midpoint": null,
+          "mean_fees": null,
+          "mean_spread_depth": null,
+          "mean_fee_fraction": null,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-06|CONTROL|30": {
+          "decisions": 0,
+          "measured": 0,
+          "statuses": {},
+          "mean_net": null,
+          "median_net": null,
+          "positive_fraction": null,
+          "mean_midpoint": null,
+          "mean_fees": null,
+          "mean_spread_depth": null,
+          "mean_fee_fraction": null,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-06|CONTROL|120": {
+          "decisions": 0,
+          "measured": 0,
+          "statuses": {},
+          "mean_net": null,
+          "median_net": null,
+          "positive_fraction": null,
+          "mean_midpoint": null,
+          "mean_fees": null,
+          "mean_spread_depth": null,
+          "mean_fee_fraction": null,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-13|PRESSURE|30": {
+          "decisions": 38,
+          "measured": 35,
+          "statuses": {
+            "MEASURED": 35,
+            "NO_ENTRY": 3
+          },
+          "mean_net": -30.66,
+          "median_net": -51.48,
+          "positive_fraction": 0.2,
+          "mean_midpoint": 21.73,
+          "mean_fees": 48.67,
+          "mean_spread_depth": 3.71,
+          "mean_fee_fraction": 0.0933,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-13|PRESSURE|120": {
+          "decisions": 38,
+          "measured": 33,
+          "statuses": {
+            "MEASURED": 33,
+            "EXIT_UNAVAILABLE": 2,
+            "NO_ENTRY": 3
+          },
+          "mean_net": -37.17,
+          "median_net": -52.29,
+          "positive_fraction": 0.2727,
+          "mean_midpoint": 15.17,
+          "mean_fees": 48.59,
+          "mean_spread_depth": 3.74,
+          "mean_fee_fraction": 0.096,
+          "mean_missing_full_loss_bound": -1086.05
+        },
+        "2026-10-13|CONTROL|30": {
+          "decisions": 435,
+          "measured": 377,
+          "statuses": {
+            "MEASURED": 377,
+            "NO_ENTRY": 54,
+            "EXIT_UNAVAILABLE": 4
+          },
+          "mean_net": -52.0,
+          "median_net": -55.64,
+          "positive_fraction": 0.1698,
+          "mean_midpoint": 0.56,
+          "mean_fees": 48.79,
+          "mean_spread_depth": 3.78,
+          "mean_fee_fraction": 0.0845,
+          "mean_missing_full_loss_bound": -697.49
+        },
+        "2026-10-13|CONTROL|120": {
+          "decisions": 435,
+          "measured": 376,
+          "statuses": {
+            "MEASURED": 376,
+            "NO_ENTRY": 54,
+            "EXIT_UNAVAILABLE": 5
+          },
+          "mean_net": -42.81,
+          "median_net": -61.5,
+          "positive_fraction": 0.2739,
+          "mean_midpoint": 9.79,
+          "mean_fees": 48.8,
+          "mean_spread_depth": 3.8,
+          "mean_fee_fraction": 0.0848,
+          "mean_missing_full_loss_bound": -880.22
+        },
+        "2026-10-19|PRESSURE|30": {
+          "decisions": 70,
+          "measured": 67,
+          "statuses": {
+            "MEASURED": 67,
+            "NO_ENTRY": 3
+          },
+          "mean_net": -49.84,
+          "median_net": -49.17,
+          "positive_fraction": 0.1493,
+          "mean_midpoint": 2.62,
+          "mean_fees": 48.67,
+          "mean_spread_depth": 3.78,
+          "mean_fee_fraction": 0.0904,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-19|PRESSURE|120": {
+          "decisions": 70,
+          "measured": 67,
+          "statuses": {
+            "MEASURED": 67,
+            "NO_ENTRY": 3
+          },
+          "mean_net": -77.05,
+          "median_net": -67.56,
+          "positive_fraction": 0.1642,
+          "mean_midpoint": -24.57,
+          "mean_fees": 48.62,
+          "mean_spread_depth": 3.86,
+          "mean_fee_fraction": 0.0904,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-19|CONTROL|30": {
+          "decisions": 550,
+          "measured": 505,
+          "statuses": {
+            "MEASURED": 505,
+            "NO_ENTRY": 45
+          },
+          "mean_net": -62.4,
+          "median_net": -61.03,
+          "positive_fraction": 0.1267,
+          "mean_midpoint": -9.86,
+          "mean_fees": 48.78,
+          "mean_spread_depth": 3.76,
+          "mean_fee_fraction": 0.0841,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-19|CONTROL|120": {
+          "decisions": 550,
+          "measured": 500,
+          "statuses": {
+            "MEASURED": 500,
+            "NO_ENTRY": 45,
+            "EXIT_UNAVAILABLE": 5
+          },
+          "mean_net": -69.1,
+          "median_net": -72.53,
+          "positive_fraction": 0.172,
+          "mean_midpoint": -16.57,
+          "mean_fees": 48.77,
+          "mean_spread_depth": 3.77,
+          "mean_fee_fraction": 0.0839,
+          "mean_missing_full_loss_bound": -577.19
+        },
+        "2026-10-27|PRESSURE|30": {
+          "decisions": 39,
+          "measured": 38,
+          "statuses": {
+            "MEASURED": 38,
+            "NO_ENTRY": 1
+          },
+          "mean_net": -24.64,
+          "median_net": -41.75,
+          "positive_fraction": 0.2368,
+          "mean_midpoint": 27.71,
+          "mean_fees": 48.59,
+          "mean_spread_depth": 3.76,
+          "mean_fee_fraction": 0.0985,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-27|PRESSURE|120": {
+          "decisions": 39,
+          "measured": 38,
+          "statuses": {
+            "MEASURED": 38,
+            "NO_ENTRY": 1
+          },
+          "mean_net": -28.83,
+          "median_net": -43.73,
+          "positive_fraction": 0.2895,
+          "mean_midpoint": 23.65,
+          "mean_fees": 48.58,
+          "mean_spread_depth": 3.89,
+          "mean_fee_fraction": 0.0985,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-27|CONTROL|30": {
+          "decisions": 570,
+          "measured": 493,
+          "statuses": {
+            "MEASURED": 493,
+            "NO_ENTRY": 70,
+            "EXIT_UNAVAILABLE": 7
+          },
+          "mean_net": -56.43,
+          "median_net": -61.31,
+          "positive_fraction": 0.1623,
+          "mean_midpoint": -3.89,
+          "mean_fees": 48.75,
+          "mean_spread_depth": 3.79,
+          "mean_fee_fraction": 0.0843,
+          "mean_missing_full_loss_bound": -685.88
+        },
+        "2026-10-27|CONTROL|120": {
+          "decisions": 570,
+          "measured": 485,
+          "statuses": {
+            "MEASURED": 485,
+            "NO_ENTRY": 70,
+            "EXIT_UNAVAILABLE": 15
+          },
+          "mean_net": -50.5,
+          "median_net": -74.12,
+          "positive_fraction": 0.2536,
+          "mean_midpoint": 2.08,
+          "mean_fees": 48.76,
+          "mean_spread_depth": 3.81,
+          "mean_fee_fraction": 0.0841,
+          "mean_missing_full_loss_bound": -620.32
+        },
+        "2026-11-03|PRESSURE|30": {
+          "decisions": 55,
+          "measured": 51,
+          "statuses": {
+            "MEASURED": 51,
+            "NO_ENTRY": 4
+          },
+          "mean_net": -68.16,
+          "median_net": -54.62,
+          "positive_fraction": 0.0392,
+          "mean_midpoint": -15.87,
+          "mean_fees": 48.6,
+          "mean_spread_depth": 3.7,
+          "mean_fee_fraction": 0.0895,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-11-03|PRESSURE|120": {
+          "decisions": 55,
+          "measured": 51,
+          "statuses": {
+            "MEASURED": 51,
+            "NO_ENTRY": 4
+          },
+          "mean_net": -77.07,
+          "median_net": -71.32,
+          "positive_fraction": 0.1765,
+          "mean_midpoint": -24.88,
+          "mean_fees": 48.58,
+          "mean_spread_depth": 3.6,
+          "mean_fee_fraction": 0.0895,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-11-03|CONTROL|30": {
+          "decisions": 649,
+          "measured": 589,
+          "statuses": {
+            "MEASURED": 589,
+            "NO_ENTRY": 60
+          },
+          "mean_net": -59.29,
+          "median_net": -53.13,
+          "positive_fraction": 0.1205,
+          "mean_midpoint": -6.58,
+          "mean_fees": 48.82,
+          "mean_spread_depth": 3.89,
+          "mean_fee_fraction": 0.0811,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-11-03|CONTROL|120": {
+          "decisions": 649,
+          "measured": 586,
+          "statuses": {
+            "MEASURED": 586,
+            "NO_ENTRY": 60,
+            "EXIT_UNAVAILABLE": 3
+          },
+          "mean_net": -69.48,
+          "median_net": -58.2,
+          "positive_fraction": 0.1928,
+          "mean_midpoint": -16.81,
+          "mean_fees": 48.8,
+          "mean_spread_depth": 3.87,
+          "mean_fee_fraction": 0.0811,
+          "mean_missing_full_loss_bound": -661.72
+        }
+      },
+      "audit": [
+        {
+          "day": "2026-10-06",
+          "snapshots": 876,
+          "counts": {
+            "leg_observations": 29784,
+            "compact_no_five_level_proof": 29784
+          },
+          "snapshot_gap_seconds": {
+            "p50": 10.0006,
+            "p95": 19.9954,
+            "max": 39.6632
+          },
+          "quote_age_seconds": null,
+          "request_wait_plus_transport_seconds": null
+        },
+        {
+          "day": "2026-10-13",
+          "snapshots": 966,
+          "counts": {
+            "leg_observations": 32844,
+            "valid_five_level": 25930,
+            "invalid_stale_or_wide": 6914,
+            "eligible_control": 473,
+            "new_pressure": 38
+          },
+          "snapshot_gap_seconds": {
+            "p50": 10.0107,
+            "p95": 10.2116,
+            "max": 12.2408
+          },
+          "quote_age_seconds": {
+            "p50": 1.0824,
+            "p95": 1.3245,
+            "max": 1.9192
+          },
+          "request_wait_plus_transport_seconds": {
+            "p50": 0.0741,
+            "p95": 0.361,
+            "max": 2.3055
+          }
+        },
+        {
+          "day": "2026-10-19",
+          "snapshots": 966,
+          "counts": {
+            "leg_observations": 32844,
+            "valid_five_level": 28339,
+            "invalid_stale_or_wide": 4505,
+            "eligible_control": 620,
+            "new_pressure": 70
+          },
+          "snapshot_gap_seconds": {
+            "p50": 10.007,
+            "p95": 10.9381,
+            "max": 12.162
+          },
+          "quote_age_seconds": {
+            "p50": 1.0787,
+            "p95": 1.3414,
+            "max": 1.9957
+          },
+          "request_wait_plus_transport_seconds": {
+            "p50": 0.0767,
+            "p95": 0.3769,
+            "max": 1.9247
+          }
+        },
+        {
+          "day": "2026-10-27",
+          "snapshots": 966,
+          "counts": {
+            "leg_observations": 32844,
+            "valid_five_level": 27664,
+            "invalid_stale_or_wide": 5180,
+            "eligible_control": 609,
+            "new_pressure": 39
+          },
+          "snapshot_gap_seconds": {
+            "p50": 9.9997,
+            "p95": 11.8771,
+            "max": 12.4877
+          },
+          "quote_age_seconds": {
+            "p50": 1.0798,
+            "p95": 1.3774,
+            "max": 1.9963
+          },
+          "request_wait_plus_transport_seconds": {
+            "p50": 0.0716,
+            "p95": 0.7426,
+            "max": 2.4064
+          }
+        },
+        {
+          "day": "2026-11-03",
+          "snapshots": 966,
+          "counts": {
+            "leg_observations": 32844,
+            "valid_five_level": 27561,
+            "invalid_stale_or_wide": 5283,
+            "eligible_control": 704,
+            "new_pressure": 55
+          },
+          "snapshot_gap_seconds": {
+            "p50": 10.0106,
+            "p95": 10.2065,
+            "max": 12.7044
+          },
+          "quote_age_seconds": {
+            "p50": 1.0793,
+            "p95": 1.3356,
+            "max": 1.8678
+          },
+          "request_wait_plus_transport_seconds": {
+            "p50": 0.0681,
+            "p95": 0.3514,
+            "max": 3.0295
+          }
+        }
+      ]
+    },
+    "entry_one_additional_snapshot": {
+      "summaries": {
+        "all|PRESSURE|30": {
+          "decisions": 315,
+          "measured": 285,
+          "statuses": {
+            "MEASURED": 285,
+            "NO_ENTRY": 30
+          },
+          "mean_net": -51.62,
+          "median_net": -54.52,
+          "positive_fraction": 0.1263,
+          "mean_midpoint": 0.7,
+          "mean_fees": 48.63,
+          "mean_spread_depth": 3.68,
+          "mean_fee_fraction": 0.0917,
+          "mean_missing_full_loss_bound": null
+        },
+        "all|PRESSURE|120": {
+          "decisions": 315,
+          "measured": 285,
+          "statuses": {
+            "MEASURED": 285,
+            "NO_ENTRY": 30
+          },
+          "mean_net": -59.98,
+          "median_net": -64.86,
+          "positive_fraction": 0.2035,
+          "mean_midpoint": -7.7,
+          "mean_fees": 48.61,
+          "mean_spread_depth": 3.67,
+          "mean_fee_fraction": 0.0917,
+          "mean_missing_full_loss_bound": null
+        },
+        "all|CONTROL|30": {
+          "decisions": 3017,
+          "measured": 2628,
+          "statuses": {
+            "MEASURED": 2628,
+            "NO_ENTRY": 389
+          },
+          "mean_net": -54.68,
+          "median_net": -56.19,
+          "positive_fraction": 0.1533,
+          "mean_midpoint": -2.13,
+          "mean_fees": 48.76,
+          "mean_spread_depth": 3.79,
+          "mean_fee_fraction": 0.0853,
+          "mean_missing_full_loss_bound": null
+        },
+        "all|CONTROL|120": {
+          "decisions": 3017,
+          "measured": 2628,
+          "statuses": {
+            "MEASURED": 2628,
+            "NO_ENTRY": 389
+          },
+          "mean_net": -55.26,
+          "median_net": -64.37,
+          "positive_fraction": 0.2218,
+          "mean_midpoint": -2.69,
+          "mean_fees": 48.76,
+          "mean_spread_depth": 3.81,
+          "mean_fee_fraction": 0.0853,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-06|PRESSURE|30": {
+          "decisions": 0,
+          "measured": 0,
+          "statuses": {},
+          "mean_net": null,
+          "median_net": null,
+          "positive_fraction": null,
+          "mean_midpoint": null,
+          "mean_fees": null,
+          "mean_spread_depth": null,
+          "mean_fee_fraction": null,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-06|PRESSURE|120": {
+          "decisions": 0,
+          "measured": 0,
+          "statuses": {},
+          "mean_net": null,
+          "median_net": null,
+          "positive_fraction": null,
+          "mean_midpoint": null,
+          "mean_fees": null,
+          "mean_spread_depth": null,
+          "mean_fee_fraction": null,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-06|CONTROL|30": {
+          "decisions": 0,
+          "measured": 0,
+          "statuses": {},
+          "mean_net": null,
+          "median_net": null,
+          "positive_fraction": null,
+          "mean_midpoint": null,
+          "mean_fees": null,
+          "mean_spread_depth": null,
+          "mean_fee_fraction": null,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-06|CONTROL|120": {
+          "decisions": 0,
+          "measured": 0,
+          "statuses": {},
+          "mean_net": null,
+          "median_net": null,
+          "positive_fraction": null,
+          "mean_midpoint": null,
+          "mean_fees": null,
+          "mean_spread_depth": null,
+          "mean_fee_fraction": null,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-13|PRESSURE|30": {
+          "decisions": 56,
+          "measured": 50,
+          "statuses": {
+            "MEASURED": 50,
+            "NO_ENTRY": 6
+          },
+          "mean_net": -35.6,
+          "median_net": -53.81,
+          "positive_fraction": 0.18,
+          "mean_midpoint": 16.84,
+          "mean_fees": 48.67,
+          "mean_spread_depth": 3.77,
+          "mean_fee_fraction": 0.0935,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-13|PRESSURE|120": {
+          "decisions": 56,
+          "measured": 50,
+          "statuses": {
+            "MEASURED": 50,
+            "NO_ENTRY": 6
+          },
+          "mean_net": -38.26,
+          "median_net": -51.2,
+          "positive_fraction": 0.26,
+          "mean_midpoint": 14.1,
+          "mean_fees": 48.66,
+          "mean_spread_depth": 3.71,
+          "mean_fee_fraction": 0.0935,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-13|CONTROL|30": {
+          "decisions": 612,
+          "measured": 521,
+          "statuses": {
+            "MEASURED": 521,
+            "NO_ENTRY": 91
+          },
+          "mean_net": -53.67,
+          "median_net": -55.34,
+          "positive_fraction": 0.1536,
+          "mean_midpoint": -1.11,
+          "mean_fees": 48.77,
+          "mean_spread_depth": 3.79,
+          "mean_fee_fraction": 0.0852,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-13|CONTROL|120": {
+          "decisions": 612,
+          "measured": 521,
+          "statuses": {
+            "MEASURED": 521,
+            "NO_ENTRY": 91
+          },
+          "mean_net": -49.05,
+          "median_net": -64.38,
+          "positive_fraction": 0.238,
+          "mean_midpoint": 3.52,
+          "mean_fees": 48.78,
+          "mean_spread_depth": 3.79,
+          "mean_fee_fraction": 0.0852,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-19|PRESSURE|30": {
+          "decisions": 117,
+          "measured": 107,
+          "statuses": {
+            "MEASURED": 107,
+            "NO_ENTRY": 10
+          },
+          "mean_net": -56.41,
+          "median_net": -57.97,
+          "positive_fraction": 0.1308,
+          "mean_midpoint": -3.99,
+          "mean_fees": 48.7,
+          "mean_spread_depth": 3.72,
+          "mean_fee_fraction": 0.0878,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-19|PRESSURE|120": {
+          "decisions": 117,
+          "measured": 107,
+          "statuses": {
+            "MEASURED": 107,
+            "NO_ENTRY": 10
+          },
+          "mean_net": -73.21,
+          "median_net": -70.76,
+          "positive_fraction": 0.1776,
+          "mean_midpoint": -20.81,
+          "mean_fees": 48.66,
+          "mean_spread_depth": 3.74,
+          "mean_fee_fraction": 0.0878,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-19|CONTROL|30": {
+          "decisions": 820,
+          "measured": 739,
+          "statuses": {
+            "MEASURED": 739,
+            "NO_ENTRY": 81
+          },
+          "mean_net": -53.65,
+          "median_net": -54.95,
+          "positive_fraction": 0.1691,
+          "mean_midpoint": -1.12,
+          "mean_fees": 48.77,
+          "mean_spread_depth": 3.76,
+          "mean_fee_fraction": 0.0858,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-19|CONTROL|120": {
+          "decisions": 820,
+          "measured": 739,
+          "statuses": {
+            "MEASURED": 739,
+            "NO_ENTRY": 81
+          },
+          "mean_net": -59.11,
+          "median_net": -65.31,
+          "positive_fraction": 0.1894,
+          "mean_midpoint": -6.58,
+          "mean_fees": 48.76,
+          "mean_spread_depth": 3.76,
+          "mean_fee_fraction": 0.0858,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-27|PRESSURE|30": {
+          "decisions": 67,
+          "measured": 58,
+          "statuses": {
+            "MEASURED": 58,
+            "NO_ENTRY": 9
+          },
+          "mean_net": -50.08,
+          "median_net": -48.06,
+          "positive_fraction": 0.1034,
+          "mean_midpoint": 2.16,
+          "mean_fees": 48.51,
+          "mean_spread_depth": 3.73,
+          "mean_fee_fraction": 0.0989,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-27|PRESSURE|120": {
+          "decisions": 67,
+          "measured": 58,
+          "statuses": {
+            "MEASURED": 58,
+            "NO_ENTRY": 9
+          },
+          "mean_net": -61.99,
+          "median_net": -69.55,
+          "positive_fraction": 0.1552,
+          "mean_midpoint": -9.81,
+          "mean_fees": 48.49,
+          "mean_spread_depth": 3.7,
+          "mean_fee_fraction": 0.0988,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-27|CONTROL|30": {
+          "decisions": 798,
+          "measured": 678,
+          "statuses": {
+            "MEASURED": 678,
+            "NO_ENTRY": 120
+          },
+          "mean_net": -50.4,
+          "median_net": -58.58,
+          "positive_fraction": 0.177,
+          "mean_midpoint": 2.05,
+          "mean_fees": 48.69,
+          "mean_spread_depth": 3.75,
+          "mean_fee_fraction": 0.0887,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-10-27|CONTROL|120": {
+          "decisions": 798,
+          "measured": 678,
+          "statuses": {
+            "MEASURED": 678,
+            "NO_ENTRY": 120
+          },
+          "mean_net": -49.33,
+          "median_net": -68.59,
+          "positive_fraction": 0.2537,
+          "mean_midpoint": 3.16,
+          "mean_fees": 48.69,
+          "mean_spread_depth": 3.79,
+          "mean_fee_fraction": 0.0887,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-11-03|PRESSURE|30": {
+          "decisions": 75,
+          "measured": 70,
+          "statuses": {
+            "MEASURED": 70,
+            "NO_ENTRY": 5
+          },
+          "mean_net": -57.0,
+          "median_net": -54.77,
+          "positive_fraction": 0.1,
+          "mean_midpoint": -4.88,
+          "mean_fees": 48.6,
+          "mean_spread_depth": 3.53,
+          "mean_fee_fraction": 0.0904,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-11-03|PRESSURE|120": {
+          "decisions": 75,
+          "measured": 70,
+          "statuses": {
+            "MEASURED": 70,
+            "NO_ENTRY": 5
+          },
+          "mean_net": -53.62,
+          "median_net": -64.59,
+          "positive_fraction": 0.2429,
+          "mean_midpoint": -1.49,
+          "mean_fees": 48.6,
+          "mean_spread_depth": 3.53,
+          "mean_fee_fraction": 0.0904,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-11-03|CONTROL|30": {
+          "decisions": 787,
+          "measured": 690,
+          "statuses": {
+            "MEASURED": 690,
+            "NO_ENTRY": 97
+          },
+          "mean_net": -60.75,
+          "median_net": -55.95,
+          "positive_fraction": 0.113,
+          "mean_midpoint": -8.07,
+          "mean_fees": 48.81,
+          "mean_spread_depth": 3.87,
+          "mean_fee_fraction": 0.0817,
+          "mean_missing_full_loss_bound": null
+        },
+        "2026-11-03|CONTROL|120": {
+          "decisions": 787,
+          "measured": 690,
+          "statuses": {
+            "MEASURED": 690,
+            "NO_ENTRY": 97
+          },
+          "mean_net": -61.66,
+          "median_net": -57.76,
+          "positive_fraction": 0.213,
+          "mean_midpoint": -8.95,
+          "mean_fees": 48.81,
+          "mean_spread_depth": 3.89,
+          "mean_fee_fraction": 0.0817,
+          "mean_missing_full_loss_bound": null
+        }
+      },
+      "audit": [
+        {
+          "day": "2026-10-06",
+          "snapshots": 876,
+          "counts": {
+            "leg_observations": 29784,
+            "compact_no_five_level_proof": 29784
+          },
+          "snapshot_gap_seconds": {
+            "p50": 10.0006,
+            "p95": 19.9954,
+            "max": 39.6632
+          },
+          "quote_age_seconds": null,
+          "request_wait_plus_transport_seconds": null
+        },
+        {
+          "day": "2026-10-13",
+          "snapshots": 966,
+          "counts": {
+            "leg_observations": 32844,
+            "valid_five_level": 27904,
+            "invalid_stale_or_wide": 4940,
+            "eligible_control": 668,
+            "new_pressure": 56
+          },
+          "snapshot_gap_seconds": {
+            "p50": 10.0107,
+            "p95": 10.2116,
+            "max": 12.2408
+          },
+          "quote_age_seconds": {
+            "p50": 1.0853,
+            "p95": 2.0672,
+            "max": 12.0812
+          },
+          "request_wait_plus_transport_seconds": {
+            "p50": 0.0741,
+            "p95": 0.361,
+            "max": 2.3055
+          }
+        },
+        {
+          "day": "2026-10-19",
+          "snapshots": 966,
+          "counts": {
+            "leg_observations": 32844,
+            "valid_five_level": 29655,
+            "eligible_control": 937,
+            "new_pressure": 117,
+            "invalid_stale_or_wide": 3189
+          },
+          "snapshot_gap_seconds": {
+            "p50": 10.007,
+            "p95": 10.9381,
+            "max": 12.162
+          },
+          "quote_age_seconds": {
+            "p50": 1.0808,
+            "p95": 1.596,
+            "max": 11.0684
+          },
+          "request_wait_plus_transport_seconds": {
+            "p50": 0.0767,
+            "p95": 0.3769,
+            "max": 1.9247
+          }
+        },
+        {
+          "day": "2026-10-27",
+          "snapshots": 966,
+          "counts": {
+            "leg_observations": 32844,
+            "valid_five_level": 29574,
+            "eligible_control": 865,
+            "new_pressure": 67,
+            "invalid_stale_or_wide": 3270
+          },
+          "snapshot_gap_seconds": {
+            "p50": 9.9997,
+            "p95": 11.8771,
+            "max": 12.4877
+          },
+          "quote_age_seconds": {
+            "p50": 1.0834,
+            "p95": 2.0486,
+            "max": 10.0784
+          },
+          "request_wait_plus_transport_seconds": {
+            "p50": 0.0716,
+            "p95": 0.7426,
+            "max": 2.4064
+          }
+        },
+        {
+          "day": "2026-11-03",
+          "snapshots": 966,
+          "counts": {
+            "leg_observations": 32844,
+            "valid_five_level": 29170,
+            "eligible_control": 862,
+            "new_pressure": 75,
+            "invalid_stale_or_wide": 3674
+          },
+          "snapshot_gap_seconds": {
+            "p50": 10.0106,
+            "p95": 10.2065,
+            "max": 12.7044
+          },
+          "quote_age_seconds": {
+            "p50": 1.0814,
+            "p95": 2.0437,
+            "max": 11.0896
+          },
+          "request_wait_plus_transport_seconds": {
+            "p50": 0.0681,
+            "p95": 0.3514,
+            "max": 3.0295
+          }
+        }
+      ]
+    }
+  },
+  "no_new_optimum_selected": true,
+  "limitations": [
+    "Only four five-level recorded days",
+    "Overlapping events, not independent trades",
+    "No queue or subsecond inference"
+  ]
+}
