@@ -1,3 +1,7 @@
+## November 3 — E03.2 information/execution investigation (Dev only)
+
+Owner reopens research beyond the failed first E03.2 search. Plan: `docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md`. Distinct option-price leadership and patient-entry mechanisms, frozen before scoring; 2024/2025 remain seen, 2023 and the future exam protected. No engine, flag, Production, download or capital change. Baseline/parity first; accept failures.
+
 ## November 3 — E03.2 search (commit `c5d8a74`, Dev, pushed, research only)
 
 - [x] Morning 09:30-13:00 frozen test (`68db264`): FAIL in both years, worse than random entries.
