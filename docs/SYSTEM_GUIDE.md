@@ -1,3 +1,11 @@
+## November 3 — E01.1 freeze commit receipt (`99d3de3`, Dev only)
+
+Frozen plan: `docs/research/simulation/2026-11-03-expiry-year/PLAN.md`.
+Source, inputs and two candidates are committed before validation. 12 tests
+passed; 42 archived legs match. Atlas regenerated with no diff. No runtime,
+configuration, schema, Production or deployment change. Existing owner working
+changes remain unstaged. Next: score the frozen validation and 2025 windows once.
+
 ## November 3 — E01.1 new-history study, frozen before validation (Dev research only)
 
 `docs/research/simulation/2026-11-03-expiry-year/PLAN.md` owns this study. New
