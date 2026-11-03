@@ -1,3 +1,7 @@
+## November 3 — modest-risk gains fail risk-scaled test; anticipation model frozen
+
+Sizing freeze 83fdf76 reproduces E03.1; 25% extra reserve adds only about 9% ordinary profit and worsens severe loss. RUNNER25/SCALE25 not accepted. Before any target labels or fit, freeze two causal forecasts (executable 2x/5x before stop/time) using fixed price/volume/OI/futures features, day-weighted regularized models, cross-year and past-only quarterly books. Ten focused checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; PRECURSORS.md and STATUS.md. No engine/config/schema/Production/download; 2023/future exam protected. Next: score, audit and report.
+
 ## November 3 — expiry anticipation / modest-risk study (Dev research)
 
 Owner authorizes a little more research risk, not extreme risk or deployment. Fixed 25% extra reserve tests a second-lot runner against an equal-budget sizing control; a separate frozen study will test pre-move price/volume/OI/futures features. Plan: `docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md`. 2024/2025 seen, 2023/future exam protected. Baseline first, preserve failures. No engine/flag/schema/Production/download or live capital change.
