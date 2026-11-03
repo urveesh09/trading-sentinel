@@ -937,6 +937,8 @@ class Settings(BaseSettings):
     # The shadows on the main ticket since expiry-v4, E01.1: CL (C's old rule) and CE011R (no sale at 3x).
     # Off blocks new copies only; open legs keep their exits, and it doesn't change the main C.
     EXPIRY_E011_SHADOW_ENABLED:      bool  = True
+    # Joint-fitted E02 incubator. Research-only, separate cash/DB, no real orders.
+    EXPIRY_E02_SHADOW_ENABLED:       bool  = False
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3

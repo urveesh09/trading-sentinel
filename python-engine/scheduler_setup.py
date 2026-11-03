@@ -1016,6 +1016,15 @@ def register_penny_scheduler_jobs(scheduler):
             await xp.run_expiry_tick(_main.kite)
         except Exception as exc:
             logger.error("expiry_paper_tick_failed err=%s", type(exc).__name__, exc_info=True)
+        # E02 observes the archive after the primary tick. No provider calls,
+        # messages or shared ledger/capital. A disabled open leg still exits.
+        try:
+            import expiry_e02
+            if settings.EXPIRY_E02_SHADOW_ENABLED or expiry_e02.has_open_book(settings.DB_PATH):
+                await asyncio.to_thread(expiry_e02.run_tick, settings.DB_PATH,
+                                        enabled=settings.EXPIRY_E02_SHADOW_ENABLED)
+        except Exception as exc:
+            logger.error("expiry_e02_shadow_failed err=%s", type(exc).__name__, exc_info=True)
 
     async def _run_expiry_paper_flush_safe():
         if not settings.EXPIRY_PAPER_ENABLED:

@@ -1,0 +1,5522 @@
+{
+  "unique_trials": 663,
+  "leaders": [
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.2,
+        "arm": 0.4,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 0.5,
+        "reach": 3.0
+      },
+      "key": "6aef6fdd3f37",
+      "score": -1971.6,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 378.84,
+            "without_best": -460.31,
+            "worst": -523.17,
+            "drawdown": 781.71,
+            "trades": 16,
+            "profit_factor": 1.1478,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -430.67,
+              139.29,
+              145.68,
+              524.54
+            ],
+            "first_half": -291.38,
+            "second_half": 670.22,
+            "unresolved": 0,
+            "fees": 784.66
+          },
+          "adverse": {
+            "net": -267.1,
+            "without_best": -1024.96,
+            "worst": -545.91,
+            "drawdown": 955.42,
+            "trades": 16,
+            "profit_factor": 0.9029,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -537.85,
+              58.1,
+              67.73,
+              144.92
+            ],
+            "first_half": -479.75,
+            "second_half": 212.65,
+            "unresolved": 0,
+            "fees": 783.85
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 3342.94,
+            "without_best": 1766.82,
+            "worst": -383.78,
+            "drawdown": 651.19,
+            "trades": 18,
+            "profit_factor": 2.7245,
+            "wins": 7,
+            "loss_days": 11,
+            "losing_streak": 4,
+            "quarters": [
+              -518.45,
+              1517.1,
+              2787.93,
+              -443.64
+            ],
+            "first_half": 998.65,
+            "second_half": 2344.29,
+            "unresolved": 0,
+            "fees": 891.81
+          },
+          "adverse": {
+            "net": 2875.38,
+            "without_best": 1341.46,
+            "worst": -413.02,
+            "drawdown": 738.88,
+            "trades": 18,
+            "profit_factor": 2.3099,
+            "wins": 7,
+            "loss_days": 11,
+            "losing_streak": 4,
+            "quarters": [
+              -602.87,
+              1396.98,
+              2632.08,
+              -550.81
+            ],
+            "first_half": 794.11,
+            "second_half": 2081.27,
+            "unresolved": 0,
+            "fees": 891.37
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.2,
+        "arm": 1.0,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 780,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 0.5,
+        "reach": 3.0
+      },
+      "key": "64c5c823e350",
+      "score": -1971.6,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 378.84,
+            "without_best": -460.31,
+            "worst": -523.17,
+            "drawdown": 781.71,
+            "trades": 16,
+            "profit_factor": 1.1478,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -430.67,
+              139.29,
+              145.68,
+              524.54
+            ],
+            "first_half": -291.38,
+            "second_half": 670.22,
+            "unresolved": 0,
+            "fees": 784.66
+          },
+          "adverse": {
+            "net": -267.1,
+            "without_best": -1024.96,
+            "worst": -545.91,
+            "drawdown": 955.42,
+            "trades": 16,
+            "profit_factor": 0.9029,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -537.85,
+              58.1,
+              67.73,
+              144.92
+            ],
+            "first_half": -479.75,
+            "second_half": 212.65,
+            "unresolved": 0,
+            "fees": 783.85
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 4131.18,
+            "without_best": 2555.06,
+            "worst": -383.78,
+            "drawdown": 651.19,
+            "trades": 18,
+            "profit_factor": 3.1912,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 3,
+            "quarters": [
+              -265.43,
+              2075.03,
+              2765.22,
+              -443.64
+            ],
+            "first_half": 1809.6,
+            "second_half": 2321.58,
+            "unresolved": 0,
+            "fees": 893.32
+          },
+          "adverse": {
+            "net": 3657.12,
+            "without_best": 2123.2,
+            "worst": -413.02,
+            "drawdown": 738.88,
+            "trades": 18,
+            "profit_factor": 2.7364,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 3,
+            "quarters": [
+              -349.87,
+              1948.42,
+              2609.38,
+              -550.81
+            ],
+            "first_half": 1598.55,
+            "second_half": 2058.57,
+            "unresolved": 0,
+            "fees": 892.88
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "PULLBACK",
+        "look": 10,
+        "efficiency": 0.7,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 20.0,
+        "option_rise": 0.0,
+        "stop": 0.2,
+        "arm": 0.4,
+        "keep": 0.6,
+        "target": 1.0,
+        "hold": 15,
+        "start": 780,
+        "end": 900,
+        "slots": 2,
+        "underlying_stop": 2.0,
+        "reach": 2.0
+      },
+      "key": "32fa15e633a0",
+      "score": -2064.98,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 1612.76,
+            "without_best": 586.39,
+            "worst": -337.99,
+            "drawdown": 557.58,
+            "trades": 16,
+            "profit_factor": 2.1224,
+            "wins": 5,
+            "loss_days": 7,
+            "losing_streak": 3,
+            "quarters": [
+              159.9,
+              368.68,
+              1071.26,
+              12.92
+            ],
+            "first_half": 528.58,
+            "second_half": 1084.18,
+            "unresolved": 0,
+            "fees": 785.74
+          },
+          "adverse": {
+            "net": 1336.67,
+            "without_best": 355.8,
+            "worst": -357.47,
+            "drawdown": 586.94,
+            "trades": 16,
+            "profit_factor": 1.873,
+            "wins": 4,
+            "loss_days": 8,
+            "losing_streak": 4,
+            "quarters": [
+              117.69,
+              277.77,
+              967.25,
+              -26.04
+            ],
+            "first_half": 395.46,
+            "second_half": 941.21,
+            "unresolved": 0,
+            "fees": 785.58
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 1980.55,
+            "without_best": -263.02,
+            "worst": -556.93,
+            "drawdown": 1275.58,
+            "trades": 19,
+            "profit_factor": 1.8409,
+            "wins": 7,
+            "loss_days": 9,
+            "losing_streak": 3,
+            "quarters": [
+              -653.17,
+              528.07,
+              2175.0,
+              -69.35
+            ],
+            "first_half": -125.1,
+            "second_half": 2105.65,
+            "unresolved": 0,
+            "fees": 941.2
+          },
+          "adverse": {
+            "net": -170.61,
+            "without_best": -828.83,
+            "worst": -615.4,
+            "drawdown": 1444.46,
+            "trades": 19,
+            "profit_factor": 0.9334,
+            "wins": 7,
+            "loss_days": 9,
+            "losing_streak": 3,
+            "quarters": [
+              -727.84,
+              394.93,
+              384.29,
+              -221.99
+            ],
+            "first_half": -332.91,
+            "second_half": 162.3,
+            "unresolved": 0,
+            "fees": 937.61
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 0.4,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 0.5,
+        "reach": 3.0
+      },
+      "key": "93d210934080",
+      "score": -2171.1,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 239.36,
+            "without_best": -599.79,
+            "worst": -523.17,
+            "drawdown": 877.37,
+            "trades": 16,
+            "profit_factor": 1.0886,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -430.67,
+              -0.19,
+              145.68,
+              524.54
+            ],
+            "first_half": -430.86,
+            "second_half": 670.22,
+            "unresolved": 0,
+            "fees": 784.39
+          },
+          "adverse": {
+            "net": -400.1,
+            "without_best": -1157.96,
+            "worst": -545.91,
+            "drawdown": 1088.42,
+            "trades": 16,
+            "profit_factor": 0.8613,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -537.85,
+              -74.9,
+              67.73,
+              144.92
+            ],
+            "first_half": -612.75,
+            "second_half": 212.65,
+            "unresolved": 0,
+            "fees": 783.6
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 3342.94,
+            "without_best": 1766.82,
+            "worst": -383.78,
+            "drawdown": 651.19,
+            "trades": 18,
+            "profit_factor": 2.7245,
+            "wins": 7,
+            "loss_days": 11,
+            "losing_streak": 4,
+            "quarters": [
+              -518.45,
+              1517.1,
+              2787.93,
+              -443.64
+            ],
+            "first_half": 998.65,
+            "second_half": 2344.29,
+            "unresolved": 0,
+            "fees": 891.81
+          },
+          "adverse": {
+            "net": 2875.38,
+            "without_best": 1341.46,
+            "worst": -413.02,
+            "drawdown": 738.88,
+            "trades": 18,
+            "profit_factor": 2.3099,
+            "wins": 7,
+            "loss_days": 11,
+            "losing_streak": 4,
+            "quarters": [
+              -602.87,
+              1396.98,
+              2632.08,
+              -550.81
+            ],
+            "first_half": 794.11,
+            "second_half": 2081.27,
+            "unresolved": 0,
+            "fees": 891.37
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.4,
+        "arm": 0.4,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 0.5,
+        "reach": 3.0
+      },
+      "key": "a8f580b217ba",
+      "score": -2248.95,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 187.46,
+            "without_best": -651.69,
+            "worst": -523.17,
+            "drawdown": 919.43,
+            "trades": 16,
+            "profit_factor": 1.0681,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -430.67,
+              -0.19,
+              93.78,
+              524.54
+            ],
+            "first_half": -430.86,
+            "second_half": 618.32,
+            "unresolved": 0,
+            "fees": 784.29
+          },
+          "adverse": {
+            "net": -452.0,
+            "without_best": -1209.86,
+            "worst": -545.91,
+            "drawdown": 1140.32,
+            "trades": 16,
+            "profit_factor": 0.8461,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -537.85,
+              -74.9,
+              15.83,
+              144.92
+            ],
+            "first_half": -612.75,
+            "second_half": 160.75,
+            "unresolved": 0,
+            "fees": 783.5
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 3342.94,
+            "without_best": 1766.82,
+            "worst": -383.78,
+            "drawdown": 651.19,
+            "trades": 18,
+            "profit_factor": 2.7245,
+            "wins": 7,
+            "loss_days": 11,
+            "losing_streak": 4,
+            "quarters": [
+              -518.45,
+              1517.1,
+              2787.93,
+              -443.64
+            ],
+            "first_half": 998.65,
+            "second_half": 2344.29,
+            "unresolved": 0,
+            "fees": 891.81
+          },
+          "adverse": {
+            "net": 2875.38,
+            "without_best": 1341.46,
+            "worst": -413.02,
+            "drawdown": 738.88,
+            "trades": 18,
+            "profit_factor": 2.3099,
+            "wins": 7,
+            "loss_days": 11,
+            "losing_streak": 4,
+            "quarters": [
+              -602.87,
+              1396.98,
+              2632.08,
+              -550.81
+            ],
+            "first_half": 794.11,
+            "second_half": 2081.27,
+            "unresolved": 0,
+            "fees": 891.37
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.4,
+        "arm": 0.4,
+        "keep": 0.5,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 0.5,
+        "reach": 3.0
+      },
+      "key": "8ef5f63d1b4f",
+      "score": -2248.95,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 187.46,
+            "without_best": -651.69,
+            "worst": -523.17,
+            "drawdown": 919.43,
+            "trades": 16,
+            "profit_factor": 1.0681,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -430.67,
+              -0.19,
+              93.78,
+              524.54
+            ],
+            "first_half": -430.86,
+            "second_half": 618.32,
+            "unresolved": 0,
+            "fees": 784.29
+          },
+          "adverse": {
+            "net": -452.0,
+            "without_best": -1209.86,
+            "worst": -545.91,
+            "drawdown": 1140.32,
+            "trades": 16,
+            "profit_factor": 0.8461,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -537.85,
+              -74.9,
+              15.83,
+              144.92
+            ],
+            "first_half": -612.75,
+            "second_half": 160.75,
+            "unresolved": 0,
+            "fees": 783.5
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 4131.18,
+            "without_best": 2555.06,
+            "worst": -383.78,
+            "drawdown": 651.19,
+            "trades": 18,
+            "profit_factor": 3.1912,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 3,
+            "quarters": [
+              -265.43,
+              2075.03,
+              2765.22,
+              -443.64
+            ],
+            "first_half": 1809.6,
+            "second_half": 2321.58,
+            "unresolved": 0,
+            "fees": 893.32
+          },
+          "adverse": {
+            "net": 3657.12,
+            "without_best": 2123.2,
+            "worst": -413.02,
+            "drawdown": 738.88,
+            "trades": 18,
+            "profit_factor": 2.7364,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 3,
+            "quarters": [
+              -349.87,
+              1948.42,
+              2609.38,
+              -550.81
+            ],
+            "first_half": 1598.55,
+            "second_half": 2058.57,
+            "unresolved": 0,
+            "fees": 892.88
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "PULLBACK",
+        "look": 10,
+        "efficiency": 0.7,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 20.0,
+        "option_rise": 0.0,
+        "stop": 0.4,
+        "arm": 1.0,
+        "keep": 0.6,
+        "target": 1.0,
+        "hold": 8,
+        "start": 780,
+        "end": 870,
+        "slots": 2,
+        "underlying_stop": 0.5,
+        "reach": 0.0
+      },
+      "key": "3143fc9ad534",
+      "score": -2383.39,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 382.57,
+            "without_best": -634.07,
+            "worst": -337.99,
+            "drawdown": 986.67,
+            "trades": 14,
+            "profit_factor": 1.2502,
+            "wins": 4,
+            "loss_days": 7,
+            "losing_streak": 4,
+            "quarters": [
+              -262.48,
+              -724.19,
+              1310.91,
+              58.33
+            ],
+            "first_half": -986.67,
+            "second_half": 1369.24,
+            "unresolved": 0,
+            "fees": 686.68
+          },
+          "adverse": {
+            "net": 77.3,
+            "without_best": -867.89,
+            "worst": -357.47,
+            "drawdown": 1051.61,
+            "trades": 14,
+            "profit_factor": 1.047,
+            "wins": 4,
+            "loss_days": 7,
+            "losing_streak": 4,
+            "quarters": [
+              -272.22,
+              -779.39,
+              1109.54,
+              19.37
+            ],
+            "first_half": -1051.61,
+            "second_half": 1128.91,
+            "unresolved": 0,
+            "fees": 686.45
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 569.81,
+            "without_best": -120.88,
+            "worst": -270.0,
+            "drawdown": 532.41,
+            "trades": 16,
+            "profit_factor": 1.4147,
+            "wins": 7,
+            "loss_days": 6,
+            "losing_streak": 2,
+            "quarters": [
+              -18.06,
+              -237.46,
+              144.42,
+              680.91
+            ],
+            "first_half": -255.52,
+            "second_half": 825.33,
+            "unresolved": 0,
+            "fees": 791.94
+          },
+          "adverse": {
+            "net": 118.39,
+            "without_best": -539.83,
+            "worst": -329.95,
+            "drawdown": 649.32,
+            "trades": 16,
+            "profit_factor": 1.075,
+            "wins": 6,
+            "loss_days": 7,
+            "losing_streak": 2,
+            "quarters": [
+              -79.76,
+              -360.86,
+              8.0,
+              551.01
+            ],
+            "first_half": -440.62,
+            "second_half": 559.01,
+            "unresolved": 0,
+            "fees": 791.61
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "PULLBACK",
+        "look": 10,
+        "efficiency": 0.7,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 20.0,
+        "option_rise": 0.0,
+        "stop": 0.4,
+        "arm": 1.0,
+        "keep": 0.5,
+        "target": 1.0,
+        "hold": 8,
+        "start": 780,
+        "end": 870,
+        "slots": 2,
+        "underlying_stop": 0.5,
+        "reach": 0.0
+      },
+      "key": "d7b3315cd380",
+      "score": -2383.39,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 382.57,
+            "without_best": -634.07,
+            "worst": -337.99,
+            "drawdown": 986.67,
+            "trades": 14,
+            "profit_factor": 1.2502,
+            "wins": 4,
+            "loss_days": 7,
+            "losing_streak": 4,
+            "quarters": [
+              -262.48,
+              -724.19,
+              1310.91,
+              58.33
+            ],
+            "first_half": -986.67,
+            "second_half": 1369.24,
+            "unresolved": 0,
+            "fees": 686.68
+          },
+          "adverse": {
+            "net": 77.3,
+            "without_best": -867.89,
+            "worst": -357.47,
+            "drawdown": 1051.61,
+            "trades": 14,
+            "profit_factor": 1.047,
+            "wins": 4,
+            "loss_days": 7,
+            "losing_streak": 4,
+            "quarters": [
+              -272.22,
+              -779.39,
+              1109.54,
+              19.37
+            ],
+            "first_half": -1051.61,
+            "second_half": 1128.91,
+            "unresolved": 0,
+            "fees": 686.45
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 569.81,
+            "without_best": -120.88,
+            "worst": -270.0,
+            "drawdown": 532.41,
+            "trades": 16,
+            "profit_factor": 1.4147,
+            "wins": 7,
+            "loss_days": 6,
+            "losing_streak": 2,
+            "quarters": [
+              -18.06,
+              -237.46,
+              144.42,
+              680.91
+            ],
+            "first_half": -255.52,
+            "second_half": 825.33,
+            "unresolved": 0,
+            "fees": 791.94
+          },
+          "adverse": {
+            "net": 118.39,
+            "without_best": -539.83,
+            "worst": -329.95,
+            "drawdown": 649.32,
+            "trades": 16,
+            "profit_factor": 1.075,
+            "wins": 6,
+            "loss_days": 7,
+            "losing_streak": 2,
+            "quarters": [
+              -79.76,
+              -360.86,
+              8.0,
+              551.01
+            ],
+            "first_half": -440.62,
+            "second_half": 559.01,
+            "unresolved": 0,
+            "fees": 791.61
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "PULLBACK",
+        "look": 10,
+        "efficiency": 0.7,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 10.0,
+        "option_rise": 0.0,
+        "stop": 0.2,
+        "arm": 1.0,
+        "keep": 0.6,
+        "target": 1.0,
+        "hold": 8,
+        "start": 780,
+        "end": 900,
+        "slots": 2,
+        "underlying_stop": 2.0,
+        "reach": 2.0
+      },
+      "key": "5f256e0b3872",
+      "score": -2394.62,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 328.55,
+            "without_best": -375.96,
+            "worst": -317.84,
+            "drawdown": 595.73,
+            "trades": 13,
+            "profit_factor": 1.2186,
+            "wins": 4,
+            "loss_days": 7,
+            "losing_streak": 3,
+            "quarters": [
+              159.9,
+              -595.73,
+              949.12,
+              -184.74
+            ],
+            "first_half": -435.83,
+            "second_half": 764.38,
+            "unresolved": 0,
+            "fees": 630.2
+          },
+          "adverse": {
+            "net": 188.88,
+            "without_best": -476.67,
+            "worst": -327.58,
+            "drawdown": 628.2,
+            "trades": 13,
+            "profit_factor": 1.1227,
+            "wins": 4,
+            "loss_days": 7,
+            "losing_streak": 3,
+            "quarters": [
+              117.69,
+              -628.2,
+              897.11,
+              -197.72
+            ],
+            "first_half": -510.51,
+            "second_half": 699.39,
+            "unresolved": 0,
+            "fees": 630.12
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": -713.39,
+            "without_best": -970.05,
+            "worst": -262.61,
+            "drawdown": 713.39,
+            "trades": 17,
+            "profit_factor": 0.3871,
+            "wins": 6,
+            "loss_days": 7,
+            "losing_streak": 4,
+            "quarters": [
+              -582.36,
+              75.75,
+              -10.46,
+              -196.32
+            ],
+            "first_half": -506.61,
+            "second_half": -206.78,
+            "unresolved": 0,
+            "fees": 820.64
+          },
+          "adverse": {
+            "net": -1129.01,
+            "without_best": -1366.19,
+            "worst": -280.98,
+            "drawdown": 1129.01,
+            "trades": 16,
+            "profit_factor": 0.2413,
+            "wins": 4,
+            "loss_days": 9,
+            "losing_streak": 4,
+            "quarters": [
+              -627.84,
+              14.04,
+              -286.41,
+              -228.8
+            ],
+            "first_half": -613.8,
+            "second_half": -515.21,
+            "unresolved": 0,
+            "fees": 771.51
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 5.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.2,
+        "arm": 0.4,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 0.5,
+        "reach": 3.0
+      },
+      "key": "27f227f0c7ea",
+      "score": -2497.05,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 723.23,
+            "without_best": -115.92,
+            "worst": -523.17,
+            "drawdown": 698.41,
+            "trades": 13,
+            "profit_factor": 1.326,
+            "wins": 4,
+            "loss_days": 9,
+            "losing_streak": 3,
+            "quarters": [
+              -430.67,
+              348.25,
+              145.68,
+              659.97
+            ],
+            "first_half": -82.42,
+            "second_half": 805.65,
+            "unresolved": 0,
+            "fees": 641.77
+          },
+          "adverse": {
+            "net": 96.8,
+            "without_best": -661.06,
+            "worst": -545.91,
+            "drawdown": 734.14,
+            "trades": 13,
+            "profit_factor": 1.0405,
+            "wins": 4,
+            "loss_days": 9,
+            "losing_streak": 3,
+            "quarters": [
+              -537.85,
+              280.06,
+              67.73,
+              286.86
+            ],
+            "first_half": -257.79,
+            "second_half": 354.59,
+            "unresolved": 0,
+            "fees": 640.95
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 2632.87,
+            "without_best": 1056.75,
+            "worst": -383.78,
+            "drawdown": 691.18,
+            "trades": 18,
+            "profit_factor": 2.1316,
+            "wins": 6,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -518.45,
+              807.03,
+              2787.93,
+              -443.64
+            ],
+            "first_half": 288.58,
+            "second_half": 2344.29,
+            "unresolved": 0,
+            "fees": 893.38
+          },
+          "adverse": {
+            "net": 2136.06,
+            "without_best": 602.14,
+            "worst": -413.02,
+            "drawdown": 801.58,
+            "trades": 18,
+            "profit_factor": 1.8146,
+            "wins": 6,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -602.87,
+              657.66,
+              2632.08,
+              -550.81
+            ],
+            "first_half": 54.79,
+            "second_half": 2081.27,
+            "unresolved": 0,
+            "fees": 892.94
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 5.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.2,
+        "arm": 0.4,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 780,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 0.5,
+        "reach": 3.0
+      },
+      "key": "5dad80b5f17c",
+      "score": -2497.05,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 723.23,
+            "without_best": -115.92,
+            "worst": -523.17,
+            "drawdown": 698.41,
+            "trades": 13,
+            "profit_factor": 1.326,
+            "wins": 4,
+            "loss_days": 9,
+            "losing_streak": 3,
+            "quarters": [
+              -430.67,
+              348.25,
+              145.68,
+              659.97
+            ],
+            "first_half": -82.42,
+            "second_half": 805.65,
+            "unresolved": 0,
+            "fees": 641.77
+          },
+          "adverse": {
+            "net": 96.8,
+            "without_best": -661.06,
+            "worst": -545.91,
+            "drawdown": 734.14,
+            "trades": 13,
+            "profit_factor": 1.0405,
+            "wins": 4,
+            "loss_days": 9,
+            "losing_streak": 3,
+            "quarters": [
+              -537.85,
+              280.06,
+              67.73,
+              286.86
+            ],
+            "first_half": -257.79,
+            "second_half": 354.59,
+            "unresolved": 0,
+            "fees": 640.95
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 2632.87,
+            "without_best": 1056.75,
+            "worst": -383.78,
+            "drawdown": 691.18,
+            "trades": 18,
+            "profit_factor": 2.1316,
+            "wins": 6,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -518.45,
+              807.03,
+              2787.93,
+              -443.64
+            ],
+            "first_half": 288.58,
+            "second_half": 2344.29,
+            "unresolved": 0,
+            "fees": 893.38
+          },
+          "adverse": {
+            "net": 2136.06,
+            "without_best": 602.14,
+            "worst": -413.02,
+            "drawdown": 801.58,
+            "trades": 18,
+            "profit_factor": 1.8146,
+            "wins": 6,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -602.87,
+              657.66,
+              2632.08,
+              -550.81
+            ],
+            "first_half": 54.79,
+            "second_half": 2081.27,
+            "unresolved": 0,
+            "fees": 892.94
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "PULLBACK",
+        "look": 10,
+        "efficiency": 0.7,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 10.0,
+        "option_rise": 0.0,
+        "stop": 0.2,
+        "arm": 1.0,
+        "keep": 0.6,
+        "target": 1.0,
+        "hold": 15,
+        "start": 780,
+        "end": 900,
+        "slots": 2,
+        "underlying_stop": 2.0,
+        "reach": 2.0
+      },
+      "key": "f16ce9ef7cb0",
+      "score": -2582.17,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -44.5,
+            "without_best": -725.98,
+            "worst": -317.84,
+            "drawdown": 573.03,
+            "trades": 13,
+            "profit_factor": 0.973,
+            "wins": 3,
+            "loss_days": 8,
+            "losing_streak": 3,
+            "quarters": [
+              159.9,
+              -573.03,
+              553.37,
+              -184.74
+            ],
+            "first_half": -413.13,
+            "second_half": 368.63,
+            "unresolved": 0,
+            "fees": 629.5
+          },
+          "adverse": {
+            "net": -167.93,
+            "without_best": -826.68,
+            "worst": -327.58,
+            "drawdown": 605.49,
+            "trades": 13,
+            "profit_factor": 0.9011,
+            "wins": 3,
+            "loss_days": 8,
+            "losing_streak": 3,
+            "quarters": [
+              117.69,
+              -605.49,
+              517.59,
+              -197.72
+            ],
+            "first_half": -487.8,
+            "second_half": 319.87,
+            "unresolved": 0,
+            "fees": 629.43
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": -664.73,
+            "without_best": -872.73,
+            "worst": -262.61,
+            "drawdown": 664.73,
+            "trades": 17,
+            "profit_factor": 0.4986,
+            "wins": 5,
+            "loss_days": 8,
+            "losing_streak": 4,
+            "quarters": [
+              -650.48,
+              46.55,
+              294.47,
+              -355.27
+            ],
+            "first_half": -603.93,
+            "second_half": -60.8,
+            "unresolved": 0,
+            "fees": 820.73
+          },
+          "adverse": {
+            "net": -1096.55,
+            "without_best": -1324.14,
+            "worst": -280.98,
+            "drawdown": 1096.55,
+            "trades": 16,
+            "profit_factor": 0.3328,
+            "wins": 3,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -695.96,
+              -15.14,
+              2.29,
+              -387.74
+            ],
+            "first_half": -711.1,
+            "second_half": -385.45,
+            "unresolved": 0,
+            "fees": 771.55
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "PULLBACK",
+        "look": 10,
+        "efficiency": 0.7,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 10.0,
+        "option_rise": 0.0,
+        "stop": 0.3,
+        "arm": 1.0,
+        "keep": 0.6,
+        "target": 1.0,
+        "hold": 15,
+        "start": 780,
+        "end": 900,
+        "slots": 2,
+        "underlying_stop": 2.0,
+        "reach": 2.0
+      },
+      "key": "82c602973ffb",
+      "score": -2650.28,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -99.64,
+            "without_best": -781.12,
+            "worst": -317.84,
+            "drawdown": 573.03,
+            "trades": 13,
+            "profit_factor": 0.9392,
+            "wins": 3,
+            "loss_days": 8,
+            "losing_streak": 3,
+            "quarters": [
+              159.9,
+              -573.03,
+              498.23,
+              -184.74
+            ],
+            "first_half": -413.13,
+            "second_half": 313.49,
+            "unresolved": 0,
+            "fees": 629.39
+          },
+          "adverse": {
+            "net": -236.04,
+            "without_best": -894.79,
+            "worst": -327.58,
+            "drawdown": 605.49,
+            "trades": 13,
+            "profit_factor": 0.8635,
+            "wins": 3,
+            "loss_days": 8,
+            "losing_streak": 3,
+            "quarters": [
+              117.69,
+              -605.49,
+              449.48,
+              -197.72
+            ],
+            "first_half": -487.8,
+            "second_half": 251.76,
+            "unresolved": 0,
+            "fees": 629.29
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": -369.54,
+            "without_best": -577.54,
+            "worst": -310.85,
+            "drawdown": 860.51,
+            "trades": 17,
+            "profit_factor": 0.6835,
+            "wins": 6,
+            "loss_days": 7,
+            "losing_streak": 4,
+            "quarters": [
+              -835.37,
+              27.08,
+              537.76,
+              -99.01
+            ],
+            "first_half": -808.29,
+            "second_half": 438.75,
+            "unresolved": 0,
+            "fees": 821.29
+          },
+          "adverse": {
+            "net": -464.03,
+            "without_best": -691.62,
+            "worst": -320.6,
+            "drawdown": 935.21,
+            "trades": 16,
+            "profit_factor": 0.6313,
+            "wins": 6,
+            "loss_days": 7,
+            "losing_streak": 4,
+            "quarters": [
+              -880.85,
+              -34.6,
+              586.15,
+              -134.73
+            ],
+            "first_half": -915.45,
+            "second_half": 451.42,
+            "unresolved": 0,
+            "fees": 772.78
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 10.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 1.0,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "a8c5f9a2175f",
+      "score": -2772.83,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -1042.9,
+            "without_best": -1383.75,
+            "worst": -343.91,
+            "drawdown": 1285.14,
+            "trades": 16,
+            "profit_factor": 0.5166,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -529.58,
+              -234.52,
+              -306.35,
+              27.55
+            ],
+            "first_half": -764.1,
+            "second_half": -278.8,
+            "unresolved": 0,
+            "fees": 769.9
+          },
+          "adverse": {
+            "net": -1234.51,
+            "without_best": -1555.88,
+            "worst": -356.9,
+            "drawdown": 1449.09,
+            "trades": 16,
+            "profit_factor": 0.4588,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -584.8,
+              -279.98,
+              -348.58,
+              -21.15
+            ],
+            "first_half": -864.78,
+            "second_half": -369.73,
+            "unresolved": 0,
+            "fees": 769.76
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 2162.93,
+            "without_best": 1432.8,
+            "worst": -194.13,
+            "drawdown": 321.92,
+            "trades": 18,
+            "profit_factor": 2.8357,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -280.75,
+              962.68,
+              1478.89,
+              2.11
+            ],
+            "first_half": 681.93,
+            "second_half": 1481.0,
+            "unresolved": 0,
+            "fees": 872.57
+          },
+          "adverse": {
+            "net": 1916.15,
+            "without_best": 1208.75,
+            "worst": -203.88,
+            "drawdown": 360.9,
+            "trades": 18,
+            "profit_factor": 2.502,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -313.24,
+              888.02,
+              1384.72,
+              -43.35
+            ],
+            "first_half": 574.78,
+            "second_half": 1341.37,
+            "unresolved": 0,
+            "fees": 872.35
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 0.4,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "5a512436f025",
+      "score": -2883.11,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -169.35,
+            "without_best": -1008.5,
+            "worst": -523.17,
+            "drawdown": 1159.46,
+            "trades": 16,
+            "profit_factor": 0.9456,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -716.12,
+              -0.19,
+              12.69,
+              534.27
+            ],
+            "first_half": -716.31,
+            "second_half": 546.96,
+            "unresolved": 0,
+            "fees": 783.6
+          },
+          "adverse": {
+            "net": -818.55,
+            "without_best": -1576.41,
+            "worst": -545.91,
+            "drawdown": 1390.09,
+            "trades": 16,
+            "profit_factor": 0.7522,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -823.3,
+              -74.9,
+              -65.27,
+              144.92
+            ],
+            "first_half": -898.2,
+            "second_half": 79.65,
+            "unresolved": 0,
+            "fees": 782.8
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 3488.91,
+            "without_best": 1912.79,
+            "worst": -734.56,
+            "drawdown": 851.15,
+            "trades": 18,
+            "profit_factor": 2.6508,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -518.45,
+              1517.1,
+              2421.39,
+              68.87
+            ],
+            "first_half": 998.65,
+            "second_half": 2490.26,
+            "unresolved": 0,
+            "fees": 892.09
+          },
+          "adverse": {
+            "net": 3024.6,
+            "without_best": 1490.68,
+            "worst": -757.3,
+            "drawdown": 886.88,
+            "trades": 18,
+            "profit_factor": 2.2939,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -602.87,
+              1396.98,
+              2272.03,
+              -41.54
+            ],
+            "first_half": 794.11,
+            "second_half": 2230.49,
+            "unresolved": 0,
+            "fees": 891.65
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 1.0,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "40c067650012",
+      "score": -2883.11,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -169.35,
+            "without_best": -1008.5,
+            "worst": -523.17,
+            "drawdown": 1159.46,
+            "trades": 16,
+            "profit_factor": 0.9456,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -716.12,
+              -0.19,
+              12.69,
+              534.27
+            ],
+            "first_half": -716.31,
+            "second_half": 546.96,
+            "unresolved": 0,
+            "fees": 783.6
+          },
+          "adverse": {
+            "net": -818.55,
+            "without_best": -1576.41,
+            "worst": -545.91,
+            "drawdown": 1390.09,
+            "trades": 16,
+            "profit_factor": 0.7522,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -823.3,
+              -74.9,
+              -65.27,
+              144.92
+            ],
+            "first_half": -898.2,
+            "second_half": 79.65,
+            "unresolved": 0,
+            "fees": 782.8
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 4183.08,
+            "without_best": 2606.96,
+            "worst": -734.56,
+            "drawdown": 873.86,
+            "trades": 18,
+            "profit_factor": 2.9416,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -359.5,
+              2075.03,
+              2398.68,
+              68.87
+            ],
+            "first_half": 1715.53,
+            "second_half": 2467.55,
+            "unresolved": 0,
+            "fees": 893.42
+          },
+          "adverse": {
+            "net": 3712.28,
+            "without_best": 2178.36,
+            "worst": -757.3,
+            "drawdown": 909.58,
+            "trades": 18,
+            "profit_factor": 2.5846,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -443.93,
+              1948.42,
+              2249.33,
+              -41.54
+            ],
+            "first_half": 1504.49,
+            "second_half": 2207.79,
+            "unresolved": 0,
+            "fees": 892.97
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 0.4,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 780,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "720182fc1850",
+      "score": -2883.11,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -169.35,
+            "without_best": -1008.5,
+            "worst": -523.17,
+            "drawdown": 1159.46,
+            "trades": 16,
+            "profit_factor": 0.9456,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -716.12,
+              -0.19,
+              12.69,
+              534.27
+            ],
+            "first_half": -716.31,
+            "second_half": 546.96,
+            "unresolved": 0,
+            "fees": 783.6
+          },
+          "adverse": {
+            "net": -818.55,
+            "without_best": -1576.41,
+            "worst": -545.91,
+            "drawdown": 1390.09,
+            "trades": 16,
+            "profit_factor": 0.7522,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -823.3,
+              -74.9,
+              -65.27,
+              144.92
+            ],
+            "first_half": -898.2,
+            "second_half": 79.65,
+            "unresolved": 0,
+            "fees": 782.8
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 3488.91,
+            "without_best": 1912.79,
+            "worst": -734.56,
+            "drawdown": 851.15,
+            "trades": 18,
+            "profit_factor": 2.6508,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -518.45,
+              1517.1,
+              2421.39,
+              68.87
+            ],
+            "first_half": 998.65,
+            "second_half": 2490.26,
+            "unresolved": 0,
+            "fees": 892.09
+          },
+          "adverse": {
+            "net": 3024.6,
+            "without_best": 1490.68,
+            "worst": -757.3,
+            "drawdown": 886.88,
+            "trades": 18,
+            "profit_factor": 2.2939,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -602.87,
+              1396.98,
+              2272.03,
+              -41.54
+            ],
+            "first_half": 794.11,
+            "second_half": 2230.49,
+            "unresolved": 0,
+            "fees": 891.65
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 0.4,
+        "keep": 0.6,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "f04010ecd3ae",
+      "score": -2883.11,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -169.35,
+            "without_best": -1008.5,
+            "worst": -523.17,
+            "drawdown": 1159.46,
+            "trades": 16,
+            "profit_factor": 0.9456,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -716.12,
+              -0.19,
+              12.69,
+              534.27
+            ],
+            "first_half": -716.31,
+            "second_half": 546.96,
+            "unresolved": 0,
+            "fees": 783.6
+          },
+          "adverse": {
+            "net": -818.55,
+            "without_best": -1576.41,
+            "worst": -545.91,
+            "drawdown": 1390.09,
+            "trades": 16,
+            "profit_factor": 0.7522,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -823.3,
+              -74.9,
+              -65.27,
+              144.92
+            ],
+            "first_half": -898.2,
+            "second_half": 79.65,
+            "unresolved": 0,
+            "fees": 782.8
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 4299.86,
+            "without_best": 2723.74,
+            "worst": -734.56,
+            "drawdown": 851.15,
+            "trades": 18,
+            "profit_factor": 3.1102,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -265.43,
+              2075.03,
+              2421.39,
+              68.87
+            ],
+            "first_half": 1809.6,
+            "second_half": 2490.26,
+            "unresolved": 0,
+            "fees": 893.64
+          },
+          "adverse": {
+            "net": 3829.04,
+            "without_best": 2295.12,
+            "worst": -757.3,
+            "drawdown": 886.88,
+            "trades": 18,
+            "profit_factor": 2.7201,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -349.87,
+              1948.42,
+              2272.03,
+              -41.54
+            ],
+            "first_half": 1598.55,
+            "second_half": 2230.49,
+            "unresolved": 0,
+            "fees": 893.21
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 1.0,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 780,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "dc62a99dfb47",
+      "score": -2883.11,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -169.35,
+            "without_best": -1008.5,
+            "worst": -523.17,
+            "drawdown": 1159.46,
+            "trades": 16,
+            "profit_factor": 0.9456,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -716.12,
+              -0.19,
+              12.69,
+              534.27
+            ],
+            "first_half": -716.31,
+            "second_half": 546.96,
+            "unresolved": 0,
+            "fees": 783.6
+          },
+          "adverse": {
+            "net": -818.55,
+            "without_best": -1576.41,
+            "worst": -545.91,
+            "drawdown": 1390.09,
+            "trades": 16,
+            "profit_factor": 0.7522,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -823.3,
+              -74.9,
+              -65.27,
+              144.92
+            ],
+            "first_half": -898.2,
+            "second_half": 79.65,
+            "unresolved": 0,
+            "fees": 782.8
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 4183.08,
+            "without_best": 2606.96,
+            "worst": -734.56,
+            "drawdown": 873.86,
+            "trades": 18,
+            "profit_factor": 2.9416,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -359.5,
+              2075.03,
+              2398.68,
+              68.87
+            ],
+            "first_half": 1715.53,
+            "second_half": 2467.55,
+            "unresolved": 0,
+            "fees": 893.42
+          },
+          "adverse": {
+            "net": 3712.28,
+            "without_best": 2178.36,
+            "worst": -757.3,
+            "drawdown": 909.58,
+            "trades": 18,
+            "profit_factor": 2.5846,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -443.93,
+              1948.42,
+              2249.33,
+              -41.54
+            ],
+            "first_half": 1504.49,
+            "second_half": 2207.79,
+            "unresolved": 0,
+            "fees": 892.97
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 10.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 1.0,
+        "keep": 0.75,
+        "target": 2.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "154e18982793",
+      "score": -2972.31,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -1175.89,
+            "without_best": -1516.74,
+            "worst": -343.91,
+            "drawdown": 1418.13,
+            "trades": 16,
+            "profit_factor": 0.455,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -529.58,
+              -234.52,
+              -439.34,
+              27.55
+            ],
+            "first_half": -764.1,
+            "second_half": -411.79,
+            "unresolved": 0,
+            "fees": 769.64
+          },
+          "adverse": {
+            "net": -1367.5,
+            "without_best": -1688.87,
+            "worst": -356.9,
+            "drawdown": 1582.08,
+            "trades": 16,
+            "profit_factor": 0.4005,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -584.8,
+              -279.98,
+              -481.57,
+              -21.15
+            ],
+            "first_half": -864.78,
+            "second_half": -502.72,
+            "unresolved": 0,
+            "fees": 769.5
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 2338.1,
+            "without_best": 1484.7,
+            "worst": -194.13,
+            "drawdown": 321.92,
+            "trades": 18,
+            "profit_factor": 2.9843,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -280.75,
+              962.68,
+              1654.06,
+              2.11
+            ],
+            "first_half": 681.93,
+            "second_half": 1656.17,
+            "unresolved": 0,
+            "fees": 872.9
+          },
+          "adverse": {
+            "net": 2162.68,
+            "without_best": 1335.26,
+            "worst": -203.88,
+            "drawdown": 360.9,
+            "trades": 18,
+            "profit_factor": 2.6952,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -313.24,
+              888.02,
+              1631.25,
+              -43.35
+            ],
+            "first_half": 574.78,
+            "second_half": 1587.9,
+            "unresolved": 0,
+            "fees": 872.82
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "PULLBACK",
+        "look": 10,
+        "efficiency": 0.7,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 20.0,
+        "option_rise": 0.0,
+        "stop": 0.4,
+        "arm": 1.0,
+        "keep": 0.6,
+        "target": 9.0,
+        "hold": 8,
+        "start": 780,
+        "end": 870,
+        "slots": 2,
+        "underlying_stop": 0.5,
+        "reach": 0.0
+      },
+      "key": "c2a9e0e74813",
+      "score": -2973.75,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -314.85,
+            "without_best": -1230.93,
+            "worst": -337.99,
+            "drawdown": 986.67,
+            "trades": 14,
+            "profit_factor": 0.7941,
+            "wins": 4,
+            "loss_days": 7,
+            "losing_streak": 4,
+            "quarters": [
+              -262.48,
+              -724.19,
+              613.49,
+              58.33
+            ],
+            "first_half": -986.67,
+            "second_half": 671.82,
+            "unresolved": 0,
+            "fees": 685.35
+          },
+          "adverse": {
+            "net": -613.61,
+            "without_best": -1458.25,
+            "worst": -357.47,
+            "drawdown": 1051.61,
+            "trades": 14,
+            "profit_factor": 0.6272,
+            "wins": 4,
+            "loss_days": 7,
+            "losing_streak": 4,
+            "quarters": [
+              -272.22,
+              -779.39,
+              418.63,
+              19.37
+            ],
+            "first_half": -1051.61,
+            "second_half": 438.0,
+            "unresolved": 0,
+            "fees": 685.11
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 1043.4,
+            "without_best": -120.88,
+            "worst": -270.0,
+            "drawdown": 532.41,
+            "trades": 16,
+            "profit_factor": 1.7594,
+            "wins": 7,
+            "loss_days": 6,
+            "losing_streak": 2,
+            "quarters": [
+              -18.06,
+              -237.46,
+              144.42,
+              1154.5
+            ],
+            "first_half": -255.52,
+            "second_half": 1298.92,
+            "unresolved": 0,
+            "fees": 792.85
+          },
+          "adverse": {
+            "net": 588.73,
+            "without_best": -539.83,
+            "worst": -329.95,
+            "drawdown": 649.32,
+            "trades": 16,
+            "profit_factor": 1.3728,
+            "wins": 6,
+            "loss_days": 7,
+            "losing_streak": 2,
+            "quarters": [
+              -79.76,
+              -360.86,
+              8.0,
+              1021.35
+            ],
+            "first_half": -440.62,
+            "second_half": 1029.35,
+            "unresolved": 0,
+            "fees": 792.52
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.4,
+        "arm": 0.4,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "79e2bf8fe358",
+      "score": -2980.39,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -276.4,
+            "without_best": -1115.55,
+            "worst": -523.17,
+            "drawdown": 1266.51,
+            "trades": 16,
+            "profit_factor": 0.9141,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -716.12,
+              -16.41,
+              -78.14,
+              534.27
+            ],
+            "first_half": -732.53,
+            "second_half": 456.13,
+            "unresolved": 0,
+            "fees": 783.4
+          },
+          "adverse": {
+            "net": -883.41,
+            "without_best": -1641.27,
+            "worst": -545.91,
+            "drawdown": 1454.95,
+            "trades": 16,
+            "profit_factor": 0.7377,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -823.3,
+              -91.12,
+              -123.65,
+              154.66
+            ],
+            "first_half": -914.42,
+            "second_half": 31.01,
+            "unresolved": 0,
+            "fees": 782.66
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 3488.91,
+            "without_best": 1912.79,
+            "worst": -734.56,
+            "drawdown": 851.15,
+            "trades": 18,
+            "profit_factor": 2.6508,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -518.45,
+              1517.1,
+              2421.39,
+              68.87
+            ],
+            "first_half": 998.65,
+            "second_half": 2490.26,
+            "unresolved": 0,
+            "fees": 892.09
+          },
+          "adverse": {
+            "net": 3024.6,
+            "without_best": 1490.68,
+            "worst": -757.3,
+            "drawdown": 886.88,
+            "trades": 18,
+            "profit_factor": 2.2939,
+            "wins": 8,
+            "loss_days": 10,
+            "losing_streak": 4,
+            "quarters": [
+              -602.87,
+              1396.98,
+              2272.03,
+              -41.54
+            ],
+            "first_half": 794.11,
+            "second_half": 2230.49,
+            "unresolved": 0,
+            "fees": 891.65
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.4,
+        "arm": 1.0,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "41c1e82973c7",
+      "score": -2980.39,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -276.4,
+            "without_best": -1115.55,
+            "worst": -523.17,
+            "drawdown": 1266.51,
+            "trades": 16,
+            "profit_factor": 0.9141,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -716.12,
+              -16.41,
+              -78.14,
+              534.27
+            ],
+            "first_half": -732.53,
+            "second_half": 456.13,
+            "unresolved": 0,
+            "fees": 783.4
+          },
+          "adverse": {
+            "net": -883.41,
+            "without_best": -1641.27,
+            "worst": -545.91,
+            "drawdown": 1454.95,
+            "trades": 16,
+            "profit_factor": 0.7377,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -823.3,
+              -91.12,
+              -123.65,
+              154.66
+            ],
+            "first_half": -914.42,
+            "second_half": 31.01,
+            "unresolved": 0,
+            "fees": 782.66
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 4183.08,
+            "without_best": 2606.96,
+            "worst": -734.56,
+            "drawdown": 873.86,
+            "trades": 18,
+            "profit_factor": 2.9416,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -359.5,
+              2075.03,
+              2398.68,
+              68.87
+            ],
+            "first_half": 1715.53,
+            "second_half": 2467.55,
+            "unresolved": 0,
+            "fees": 893.42
+          },
+          "adverse": {
+            "net": 3712.28,
+            "without_best": 2178.36,
+            "worst": -757.3,
+            "drawdown": 909.58,
+            "trades": 18,
+            "profit_factor": 2.5846,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -443.93,
+              1948.42,
+              2249.33,
+              -41.54
+            ],
+            "first_half": 1504.49,
+            "second_half": 2207.79,
+            "unresolved": 0,
+            "fees": 892.97
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 10.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 1.0,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 2,
+        "underlying_stop": 0.5,
+        "reach": 3.0
+      },
+      "key": "ac533a2b2623",
+      "score": -2982.93,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -1201.35,
+            "without_best": -1483.96,
+            "worst": -308.17,
+            "drawdown": 1435.4,
+            "trades": 18,
+            "profit_factor": 0.342,
+            "wins": 3,
+            "loss_days": 13,
+            "losing_streak": 8,
+            "quarters": [
+              -542.12,
+              -234.52,
+              -442.53,
+              17.82
+            ],
+            "first_half": -776.64,
+            "second_half": -424.71,
+            "unresolved": 0,
+            "fees": 866.6
+          },
+          "adverse": {
+            "net": -1405.97,
+            "without_best": -1669.11,
+            "worst": -321.16,
+            "drawdown": 1620.55,
+            "trades": 18,
+            "profit_factor": 0.2835,
+            "wins": 3,
+            "loss_days": 13,
+            "losing_streak": 8,
+            "quarters": [
+              -607.1,
+              -279.98,
+              -497.74,
+              -21.15
+            ],
+            "first_half": -887.08,
+            "second_half": -518.89,
+            "unresolved": 0,
+            "fees": 866.47
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 2222.89,
+            "without_best": 1232.54,
+            "worst": -291.12,
+            "drawdown": 464.34,
+            "trades": 21,
+            "profit_factor": 2.4593,
+            "wins": 7,
+            "loss_days": 11,
+            "losing_streak": 4,
+            "quarters": [
+              -261.29,
+              962.68,
+              1778.29,
+              -256.79
+            ],
+            "first_half": 701.39,
+            "second_half": 1521.5,
+            "unresolved": 0,
+            "fees": 1017.36
+          },
+          "adverse": {
+            "net": 1265.51,
+            "without_best": 558.11,
+            "worst": -313.85,
+            "drawdown": 699.0,
+            "trades": 21,
+            "profit_factor": 1.7685,
+            "wins": 7,
+            "loss_days": 11,
+            "losing_streak": 4,
+            "quarters": [
+              -293.78,
+              888.02,
+              980.04,
+              -308.77
+            ],
+            "first_half": 594.24,
+            "second_half": 671.27,
+            "unresolved": 0,
+            "fees": 1015.99
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 2.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.2,
+        "arm": 0.4,
+        "keep": 0.6,
+        "target": 2.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 3.0
+      },
+      "key": "e7402e62c933",
+      "score": -3052.77,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -905.69,
+            "without_best": -1702.51,
+            "worst": -523.17,
+            "drawdown": 1584.4,
+            "trades": 16,
+            "profit_factor": 0.6919,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -716.12,
+              139.29,
+              -542.0,
+              213.14
+            ],
+            "first_half": -576.83,
+            "second_half": -328.86,
+            "unresolved": 0,
+            "fees": 782.19
+          },
+          "adverse": {
+            "net": -922.34,
+            "without_best": -1680.2,
+            "worst": -545.91,
+            "drawdown": 1610.66,
+            "trades": 16,
+            "profit_factor": 0.6725,
+            "wins": 4,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -537.85,
+              58.1,
+              -587.51,
+              144.92
+            ],
+            "first_half": -479.75,
+            "second_half": -442.59,
+            "unresolved": 0,
+            "fees": 782.59
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 6233.14,
+            "without_best": 3629.25,
+            "worst": -383.78,
+            "drawdown": 484.61,
+            "trades": 18,
+            "profit_factor": 4.7299,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -265.43,
+              2075.03,
+              4354.67,
+              68.87
+            ],
+            "first_half": 1809.6,
+            "second_half": 4423.54,
+            "unresolved": 0,
+            "fees": 897.36
+          },
+          "adverse": {
+            "net": 5733.12,
+            "without_best": 3187.64,
+            "worst": -413.02,
+            "drawdown": 526.83,
+            "trades": 18,
+            "profit_factor": 4.0724,
+            "wins": 9,
+            "loss_days": 9,
+            "losing_streak": 2,
+            "quarters": [
+              -349.87,
+              1948.42,
+              4176.11,
+              -41.54
+            ],
+            "first_half": 1598.55,
+            "second_half": 4134.57,
+            "unresolved": 0,
+            "fees": 896.88
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BOX",
+        "look": 20,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 5.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 0.4,
+        "keep": 0.75,
+        "target": 1.0,
+        "hold": 30,
+        "start": 810,
+        "end": 870,
+        "slots": 2,
+        "underlying_stop": 0.5,
+        "reach": 3.0
+      },
+      "key": "27d725a496a7",
+      "score": -3067.97,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 1573.16,
+            "without_best": -128.67,
+            "worst": -523.17,
+            "drawdown": 754.47,
+            "trades": 14,
+            "profit_factor": 1.6671,
+            "wins": 4,
+            "loss_days": 9,
+            "losing_streak": 3,
+            "quarters": [
+              474.34,
+              562.34,
+              -123.49,
+              659.97
+            ],
+            "first_half": 1036.68,
+            "second_half": 536.48,
+            "unresolved": 0,
+            "fees": 692.09
+          },
+          "adverse": {
+            "net": 28.71,
+            "without_best": -1624.42,
+            "worst": -545.91,
+            "drawdown": 1272.67,
+            "trades": 14,
+            "profit_factor": 1.0114,
+            "wins": 4,
+            "loss_days": 9,
+            "losing_streak": 3,
+            "quarters": [
+              357.42,
+              -118.93,
+              -214.43,
+              4.65
+            ],
+            "first_half": 238.49,
+            "second_half": -209.78,
+            "unresolved": 0,
+            "fees": 689.54
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 2606.94,
+            "without_best": 202.15,
+            "worst": -712.64,
+            "drawdown": 1415.76,
+            "trades": 25,
+            "profit_factor": 1.7429,
+            "wins": 6,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -1045.5,
+              -176.13,
+              3922.94,
+              -94.37
+            ],
+            "first_half": -1221.63,
+            "second_half": 3828.57,
+            "unresolved": 0,
+            "fees": 1237.81
+          },
+          "adverse": {
+            "net": 489.49,
+            "without_best": -1044.43,
+            "worst": -771.09,
+            "drawdown": 1746.99,
+            "trades": 25,
+            "profit_factor": 1.1243,
+            "wins": 6,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -1185.12,
+              -357.99,
+              2269.85,
+              -237.25
+            ],
+            "first_half": -1543.11,
+            "second_half": 2032.6,
+            "unresolved": 0,
+            "fees": 1233.01
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "RETEST",
+        "look": 10,
+        "efficiency": 0.5,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 10.0,
+        "option_rise": 1.2,
+        "stop": 0.2,
+        "arm": 2.0,
+        "keep": 0.6,
+        "target": 4.0,
+        "hold": 15,
+        "start": 810,
+        "end": 870,
+        "slots": 2,
+        "underlying_stop": 2.0,
+        "reach": 0.0
+      },
+      "key": "a8f961f533ea",
+      "score": -3098.75,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": -696.98,
+            "without_best": -1715.81,
+            "worst": -434.73,
+            "drawdown": 1470.72,
+            "trades": 16,
+            "profit_factor": 0.7421,
+            "wins": 2,
+            "loss_days": 13,
+            "losing_streak": 8,
+            "quarters": [
+              -108.31,
+              -995.16,
+              863.52,
+              -457.03
+            ],
+            "first_half": -1103.47,
+            "second_half": 406.49,
+            "unresolved": 0,
+            "fees": 774.98
+          },
+          "adverse": {
+            "net": -648.47,
+            "without_best": -1641.34,
+            "worst": -467.21,
+            "drawdown": 1311.79,
+            "trades": 15,
+            "profit_factor": 0.7508,
+            "wins": 2,
+            "loss_days": 12,
+            "losing_streak": 7,
+            "quarters": [
+              -208.99,
+              -800.51,
+              824.58,
+              -463.55
+            ],
+            "first_half": -1009.5,
+            "second_half": 361.03,
+            "unresolved": 0,
+            "fees": 726.47
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 1207.93,
+            "without_best": -690.08,
+            "worst": -343.9,
+            "drawdown": 1269.16,
+            "trades": 18,
+            "profit_factor": 1.4774,
+            "wins": 5,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -737.88,
+              -99.54,
+              1519.7,
+              525.65
+            ],
+            "first_half": -837.42,
+            "second_half": 2045.35,
+            "unresolved": 0,
+            "fees": 875.32
+          },
+          "adverse": {
+            "net": 925.42,
+            "without_best": -936.9,
+            "worst": -356.88,
+            "drawdown": 1421.78,
+            "trades": 18,
+            "profit_factor": 1.3466,
+            "wins": 5,
+            "loss_days": 12,
+            "losing_streak": 4,
+            "quarters": [
+              -812.59,
+              -196.93,
+              1464.49,
+              470.45
+            ],
+            "first_half": -1009.52,
+            "second_half": 1934.94,
+            "unresolved": 0,
+            "fees": 875.08
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "BREAK",
+        "look": 20,
+        "efficiency": 0.3,
+        "stretch": 4.0,
+        "premium_low": 10.0,
+        "premium_high": 20.0,
+        "option_rise": 1.2,
+        "stop": 0.3,
+        "arm": 1.0,
+        "keep": 0.75,
+        "target": 2.0,
+        "hold": 30,
+        "start": 780,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 1.0,
+        "reach": 2.0
+      },
+      "key": "ca346638fce2",
+      "score": -3098.97,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 3364.66,
+            "without_best": 819.01,
+            "worst": -604.46,
+            "drawdown": 2544.3,
+            "trades": 29,
+            "profit_factor": 1.5113,
+            "wins": 7,
+            "loss_days": 22,
+            "losing_streak": 5,
+            "quarters": [
+              2073.98,
+              131.59,
+              -862.4,
+              2021.49
+            ],
+            "first_half": 2205.57,
+            "second_half": 1159.09,
+            "unresolved": 0,
+            "fees": 1438.84
+          },
+          "adverse": {
+            "net": 2556.02,
+            "without_best": 65.55,
+            "worst": -627.2,
+            "drawdown": 2826.39,
+            "trades": 29,
+            "profit_factor": 1.36,
+            "wins": 7,
+            "loss_days": 22,
+            "losing_streak": 5,
+            "quarters": [
+              1820.67,
+              -144.44,
+              -1011.8,
+              1891.59
+            ],
+            "first_half": 1676.23,
+            "second_half": 879.79,
+            "unresolved": 0,
+            "fees": 1438.23
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": 1450.39,
+            "without_best": -689.54,
+            "worst": -504.38,
+            "drawdown": 3067.92,
+            "trades": 18,
+            "profit_factor": 1.3044,
+            "wins": 4,
+            "loss_days": 14,
+            "losing_streak": 9,
+            "quarters": [
+              3126.37,
+              -708.12,
+              -967.86,
+              0
+            ],
+            "first_half": 2418.25,
+            "second_half": -967.86,
+            "unresolved": 0,
+            "fees": 892.86
+          },
+          "adverse": {
+            "net": 1193.95,
+            "without_best": -894.05,
+            "worst": -533.61,
+            "drawdown": 3006.22,
+            "trades": 17,
+            "profit_factor": 1.2466,
+            "wins": 4,
+            "loss_days": 13,
+            "losing_streak": 8,
+            "quarters": [
+              2957.56,
+              -1003.62,
+              -759.99,
+              0
+            ],
+            "first_half": 1953.94,
+            "second_half": -759.99,
+            "unresolved": 0,
+            "fees": 843.8
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "FADE",
+        "look": 20,
+        "efficiency": 0.3,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 10.0,
+        "option_rise": 1.0,
+        "stop": 0.4,
+        "arm": 1.0,
+        "keep": 0.5,
+        "target": 2.0,
+        "hold": 15,
+        "start": 810,
+        "end": 870,
+        "slots": 2,
+        "underlying_stop": 1.0,
+        "reach": 2.0
+      },
+      "key": "a9b12a4ac497",
+      "score": -3182.93,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 2655.46,
+            "without_best": -361.23,
+            "worst": -528.61,
+            "drawdown": 1429.23,
+            "trades": 24,
+            "profit_factor": 1.8469,
+            "wins": 5,
+            "loss_days": 17,
+            "losing_streak": 6,
+            "quarters": [
+              741.94,
+              -1429.23,
+              908.9,
+              2433.85
+            ],
+            "first_half": -687.29,
+            "second_half": 3342.75,
+            "unresolved": 0,
+            "fees": 1169.79
+          },
+          "adverse": {
+            "net": 2269.08,
+            "without_best": -695.69,
+            "worst": -554.59,
+            "drawdown": 1500.69,
+            "trades": 24,
+            "profit_factor": 1.6722,
+            "wins": 5,
+            "loss_days": 17,
+            "losing_streak": 6,
+            "quarters": [
+              595.84,
+              -1500.69,
+              840.71,
+              2333.22
+            ],
+            "first_half": -904.85,
+            "second_half": 3173.93,
+            "unresolved": 0,
+            "fees": 1169.42
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": -1208.7,
+            "without_best": -1575.86,
+            "worst": -418.06,
+            "drawdown": 1825.57,
+            "trades": 15,
+            "profit_factor": 0.3379,
+            "wins": 2,
+            "loss_days": 10,
+            "losing_streak": 10,
+            "quarters": [
+              -478.64,
+              -466.79,
+              -511.19,
+              247.92
+            ],
+            "first_half": -945.43,
+            "second_half": -263.27,
+            "unresolved": 0,
+            "fees": 724.45
+          },
+          "adverse": {
+            "net": -1400.28,
+            "without_best": -1731.73,
+            "worst": -440.8,
+            "drawdown": 1961.97,
+            "trades": 15,
+            "profit_factor": 0.2863,
+            "wins": 2,
+            "loss_days": 10,
+            "losing_streak": 10,
+            "quarters": [
+              -527.33,
+              -502.51,
+              -540.42,
+              169.98
+            ],
+            "first_half": -1029.84,
+            "second_half": -370.44,
+            "unresolved": 0,
+            "fees": 724.28
+          }
+        }
+      }
+    },
+    {
+      "rule": {
+        "setup": "FADE",
+        "look": 20,
+        "efficiency": 0.3,
+        "stretch": 2.5,
+        "premium_low": 5.0,
+        "premium_high": 10.0,
+        "option_rise": 1.0,
+        "stop": 0.4,
+        "arm": 1.0,
+        "keep": 0.75,
+        "target": 2.0,
+        "hold": 15,
+        "start": 810,
+        "end": 870,
+        "slots": 2,
+        "underlying_stop": 1.0,
+        "reach": 2.0
+      },
+      "key": "5b6cdfe7851b",
+      "score": -3182.93,
+      "years": {
+        "2024": {
+          "ordinary": {
+            "net": 2554.9,
+            "without_best": -461.79,
+            "worst": -528.61,
+            "drawdown": 1435.61,
+            "trades": 24,
+            "profit_factor": 1.8149,
+            "wins": 5,
+            "loss_days": 17,
+            "losing_streak": 6,
+            "quarters": [
+              641.38,
+              -1429.23,
+              908.9,
+              2433.85
+            ],
+            "first_half": -787.85,
+            "second_half": 3342.75,
+            "unresolved": 0,
+            "fees": 1169.6
+          },
+          "adverse": {
+            "net": 2168.53,
+            "without_best": -796.24,
+            "worst": -554.59,
+            "drawdown": 1546.04,
+            "trades": 24,
+            "profit_factor": 1.6424,
+            "wins": 5,
+            "loss_days": 17,
+            "losing_streak": 6,
+            "quarters": [
+              495.29,
+              -1500.69,
+              840.71,
+              2333.22
+            ],
+            "first_half": -1005.4,
+            "second_half": 3173.93,
+            "unresolved": 0,
+            "fees": 1169.22
+          }
+        },
+        "2025": {
+          "ordinary": {
+            "net": -1208.7,
+            "without_best": -1575.86,
+            "worst": -418.06,
+            "drawdown": 1825.57,
+            "trades": 15,
+            "profit_factor": 0.3379,
+            "wins": 2,
+            "loss_days": 10,
+            "losing_streak": 10,
+            "quarters": [
+              -478.64,
+              -466.79,
+              -511.19,
+              247.92
+            ],
+            "first_half": -945.43,
+            "second_half": -263.27,
+            "unresolved": 0,
+            "fees": 724.45
+          },
+          "adverse": {
+            "net": -1400.28,
+            "without_best": -1731.73,
+            "worst": -440.8,
+            "drawdown": 1961.97,
+            "trades": 15,
+            "profit_factor": 0.2863,
+            "wins": 2,
+            "loss_days": 10,
+            "losing_streak": 10,
+            "quarters": [
+              -527.33,
+              -502.51,
+              -540.42,
+              169.98
+            ],
+            "first_half": -1029.84,
+            "second_half": -370.44,
+            "unresolved": 0,
+            "fees": 724.28
+          }
+        }
+      }
+    }
+  ],
+  "history": [
+    {
+      "seed": 23,
+      "generation": 0,
+      "leader": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 20,
+          "efficiency": 0.3,
+          "stretch": 4.0,
+          "premium_low": 10.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.3,
+          "arm": 2.0,
+          "keep": 0.75,
+          "target": 2.0,
+          "hold": 30,
+          "start": 810,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 1.0,
+          "reach": 2.0
+        },
+        "key": "d33b2484eee5",
+        "score": -4836.47,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 635.86,
+              "without_best": -1643.22,
+              "worst": -441.36,
+              "drawdown": 3001.39,
+              "trades": 17,
+              "profit_factor": 1.1487,
+              "wins": 3,
+              "loss_days": 14,
+              "losing_streak": 10,
+              "quarters": [
+                3195.89,
+                -1922.85,
+                -637.18,
+                0
+              ],
+              "first_half": 1273.04,
+              "second_half": -637.18,
+              "unresolved": 0,
+              "fees": 839.64
+            },
+            "adverse": {
+              "net": 203.86,
+              "without_best": -2016.79,
+              "worst": -457.61,
+              "drawdown": 3199.57,
+              "trades": 17,
+              "profit_factor": 1.0448,
+              "wins": 3,
+              "loss_days": 14,
+              "losing_streak": 10,
+              "quarters": [
+                2945.82,
+                -2039.8,
+                -702.16,
+                0
+              ],
+              "first_half": 906.02,
+              "second_half": -702.16,
+              "unresolved": 0,
+              "fees": 839.39
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 1164.37,
+              "without_best": -1309.81,
+              "worst": -542.77,
+              "drawdown": 2333.34,
+              "trades": 19,
+              "profit_factor": 1.2337,
+              "wins": 5,
+              "loss_days": 13,
+              "losing_streak": 6,
+              "quarters": [
+                -786.78,
+                789.94,
+                2304.96,
+                -1143.75
+              ],
+              "first_half": 3.16,
+              "second_half": 1161.21,
+              "unresolved": 0,
+              "fees": 941.63
+            },
+            "adverse": {
+              "net": 644.74,
+              "without_best": -1774.26,
+              "worst": -565.52,
+              "drawdown": 2473.04,
+              "trades": 19,
+              "profit_factor": 1.1219,
+              "wins": 5,
+              "loss_days": 13,
+              "losing_streak": 6,
+              "quarters": [
+                -835.5,
+                598.35,
+                2093.86,
+                -1211.97
+              ],
+              "first_half": -237.15,
+              "second_half": 881.89,
+              "unresolved": 0,
+              "fees": 941.26
+            }
+          }
+        }
+      },
+      "unique": 48
+    },
+    {
+      "seed": 23,
+      "generation": 1,
+      "leader": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 20,
+          "efficiency": 0.3,
+          "stretch": 4.0,
+          "premium_low": 10.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.3,
+          "arm": 2.0,
+          "keep": 0.75,
+          "target": 2.0,
+          "hold": 30,
+          "start": 810,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 1.0,
+          "reach": 2.0
+        },
+        "key": "d33b2484eee5",
+        "score": -4836.47,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 635.86,
+              "without_best": -1643.22,
+              "worst": -441.36,
+              "drawdown": 3001.39,
+              "trades": 17,
+              "profit_factor": 1.1487,
+              "wins": 3,
+              "loss_days": 14,
+              "losing_streak": 10,
+              "quarters": [
+                3195.89,
+                -1922.85,
+                -637.18,
+                0
+              ],
+              "first_half": 1273.04,
+              "second_half": -637.18,
+              "unresolved": 0,
+              "fees": 839.64
+            },
+            "adverse": {
+              "net": 203.86,
+              "without_best": -2016.79,
+              "worst": -457.61,
+              "drawdown": 3199.57,
+              "trades": 17,
+              "profit_factor": 1.0448,
+              "wins": 3,
+              "loss_days": 14,
+              "losing_streak": 10,
+              "quarters": [
+                2945.82,
+                -2039.8,
+                -702.16,
+                0
+              ],
+              "first_half": 906.02,
+              "second_half": -702.16,
+              "unresolved": 0,
+              "fees": 839.39
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 1164.37,
+              "without_best": -1309.81,
+              "worst": -542.77,
+              "drawdown": 2333.34,
+              "trades": 19,
+              "profit_factor": 1.2337,
+              "wins": 5,
+              "loss_days": 13,
+              "losing_streak": 6,
+              "quarters": [
+                -786.78,
+                789.94,
+                2304.96,
+                -1143.75
+              ],
+              "first_half": 3.16,
+              "second_half": 1161.21,
+              "unresolved": 0,
+              "fees": 941.63
+            },
+            "adverse": {
+              "net": 644.74,
+              "without_best": -1774.26,
+              "worst": -565.52,
+              "drawdown": 2473.04,
+              "trades": 19,
+              "profit_factor": 1.1219,
+              "wins": 5,
+              "loss_days": 13,
+              "losing_streak": 6,
+              "quarters": [
+                -835.5,
+                598.35,
+                2093.86,
+                -1211.97
+              ],
+              "first_half": -237.15,
+              "second_half": 881.89,
+              "unresolved": 0,
+              "fees": 941.26
+            }
+          }
+        }
+      },
+      "unique": 82
+    },
+    {
+      "seed": 23,
+      "generation": 2,
+      "leader": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 20,
+          "efficiency": 0.3,
+          "stretch": 4.0,
+          "premium_low": 2.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.3,
+          "arm": 2.0,
+          "keep": 0.75,
+          "target": 2.0,
+          "hold": 30,
+          "start": 810,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 1.0,
+          "reach": 2.0
+        },
+        "key": "6b2efcf147d1",
+        "score": -4060.38,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 2267.56,
+              "without_best": -11.52,
+              "worst": -571.02,
+              "drawdown": 2233.41,
+              "trades": 35,
+              "profit_factor": 1.3334,
+              "wins": 7,
+              "loss_days": 25,
+              "losing_streak": 5,
+              "quarters": [
+                3291.45,
+                -1493.11,
+                -494.03,
+                963.25
+              ],
+              "first_half": 1798.34,
+              "second_half": 469.22,
+              "unresolved": 0,
+              "fees": 1716.94
+            },
+            "adverse": {
+              "net": 1540.11,
+              "without_best": -680.54,
+              "worst": -603.51,
+              "drawdown": 2600.42,
+              "trades": 35,
+              "profit_factor": 1.2132,
+              "wins": 7,
+              "loss_days": 25,
+              "losing_streak": 5,
+              "quarters": [
+                3044.64,
+                -1700.95,
+                -643.45,
+                839.87
+              ],
+              "first_half": 1343.69,
+              "second_half": 196.42,
+              "unresolved": 0,
+              "fees": 1716.39
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 980.89,
+              "without_best": -1493.29,
+              "worst": -734.39,
+              "drawdown": 2054.07,
+              "trades": 28,
+              "profit_factor": 1.167,
+              "wins": 6,
+              "loss_days": 18,
+              "losing_streak": 8,
+              "quarters": [
+                -1312.79,
+                789.94,
+                1883.71,
+                -379.97
+              ],
+              "first_half": -522.85,
+              "second_half": 1503.74,
+              "unresolved": 0,
+              "fees": 1375.36
+            },
+            "adverse": {
+              "net": 354.11,
+              "without_best": -2064.89,
+              "worst": -776.63,
+              "drawdown": 2190.5,
+              "trades": 28,
+              "profit_factor": 1.0567,
+              "wins": 6,
+              "loss_days": 18,
+              "losing_streak": 8,
+              "quarters": [
+                -1400.49,
+                598.35,
+                1649.88,
+                -493.63
+              ],
+              "first_half": -802.14,
+              "second_half": 1156.25,
+              "unresolved": 0,
+              "fees": 1374.89
+            }
+          }
+        }
+      },
+      "unique": 118
+    },
+    {
+      "seed": 23,
+      "generation": 3,
+      "leader": {
+        "rule": {
+          "setup": "RETEST",
+          "look": 10,
+          "efficiency": 0.5,
+          "stretch": 1.5,
+          "premium_low": 2.0,
+          "premium_high": 10.0,
+          "option_rise": 1.0,
+          "stop": 0.2,
+          "arm": 2.0,
+          "keep": 0.6,
+          "target": 9.0,
+          "hold": 15,
+          "start": 780,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 2.0,
+          "reach": 0.0
+        },
+        "key": "d6959b3aef22",
+        "score": -3760.35,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": -1734.04,
+              "without_best": -1734.04,
+              "worst": -220.32,
+              "drawdown": 1734.04,
+              "trades": 14,
+              "profit_factor": 0.0,
+              "wins": 0,
+              "loss_days": 13,
+              "losing_streak": 13,
+              "quarters": [
+                -612.59,
+                -187.88,
+                -404.21,
+                -529.36
+              ],
+              "first_half": -800.47,
+              "second_half": -933.57,
+              "unresolved": 0,
+              "fees": 671.29
+            },
+            "adverse": {
+              "net": -1857.46,
+              "without_best": -1857.46,
+              "worst": -233.3,
+              "drawdown": 1857.46,
+              "trades": 14,
+              "profit_factor": 0.0,
+              "wins": 0,
+              "loss_days": 13,
+              "losing_streak": 13,
+              "quarters": [
+                -648.32,
+                -200.87,
+                -456.16,
+                -552.11
+              ],
+              "first_half": -849.19,
+              "second_half": -1008.27,
+              "unresolved": 0,
+              "fees": 671.21
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": -1613.25,
+              "without_best": -2044.99,
+              "worst": -414.23,
+              "drawdown": 1613.25,
+              "trades": 21,
+              "profit_factor": 0.3197,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 5,
+              "quarters": [
+                -731.43,
+                -110.4,
+                -211.86,
+                -559.56
+              ],
+              "first_half": -841.83,
+              "second_half": -771.42,
+              "unresolved": 0,
+              "fees": 1012.0
+            },
+            "adverse": {
+              "net": -1821.14,
+              "without_best": -2233.4,
+              "worst": -388.31,
+              "drawdown": 1821.14,
+              "trades": 21,
+              "profit_factor": 0.2764,
+              "wins": 3,
+              "loss_days": 13,
+              "losing_streak": 5,
+              "quarters": [
+                -809.39,
+                -217.56,
+                -234.58,
+                -559.61
+              ],
+              "first_half": -1026.95,
+              "second_half": -794.19,
+              "unresolved": 0,
+              "fees": 1011.89
+            }
+          }
+        }
+      },
+      "unique": 152
+    },
+    {
+      "seed": 23,
+      "generation": 4,
+      "leader": {
+        "rule": {
+          "setup": "BREAK",
+          "look": 20,
+          "efficiency": 0.3,
+          "stretch": 4.0,
+          "premium_low": 10.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.3,
+          "arm": 1.0,
+          "keep": 0.75,
+          "target": 2.0,
+          "hold": 30,
+          "start": 780,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 1.0,
+          "reach": 2.0
+        },
+        "key": "ca346638fce2",
+        "score": -3098.97,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 3364.66,
+              "without_best": 819.01,
+              "worst": -604.46,
+              "drawdown": 2544.3,
+              "trades": 29,
+              "profit_factor": 1.5113,
+              "wins": 7,
+              "loss_days": 22,
+              "losing_streak": 5,
+              "quarters": [
+                2073.98,
+                131.59,
+                -862.4,
+                2021.49
+              ],
+              "first_half": 2205.57,
+              "second_half": 1159.09,
+              "unresolved": 0,
+              "fees": 1438.84
+            },
+            "adverse": {
+              "net": 2556.02,
+              "without_best": 65.55,
+              "worst": -627.2,
+              "drawdown": 2826.39,
+              "trades": 29,
+              "profit_factor": 1.36,
+              "wins": 7,
+              "loss_days": 22,
+              "losing_streak": 5,
+              "quarters": [
+                1820.67,
+                -144.44,
+                -1011.8,
+                1891.59
+              ],
+              "first_half": 1676.23,
+              "second_half": 879.79,
+              "unresolved": 0,
+              "fees": 1438.23
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 1450.39,
+              "without_best": -689.54,
+              "worst": -504.38,
+              "drawdown": 3067.92,
+              "trades": 18,
+              "profit_factor": 1.3044,
+              "wins": 4,
+              "loss_days": 14,
+              "losing_streak": 9,
+              "quarters": [
+                3126.37,
+                -708.12,
+                -967.86,
+                0
+              ],
+              "first_half": 2418.25,
+              "second_half": -967.86,
+              "unresolved": 0,
+              "fees": 892.86
+            },
+            "adverse": {
+              "net": 1193.95,
+              "without_best": -894.05,
+              "worst": -533.61,
+              "drawdown": 3006.22,
+              "trades": 17,
+              "profit_factor": 1.2466,
+              "wins": 4,
+              "loss_days": 13,
+              "losing_streak": 8,
+              "quarters": [
+                2957.56,
+                -1003.62,
+                -759.99,
+                0
+              ],
+              "first_half": 1953.94,
+              "second_half": -759.99,
+              "unresolved": 0,
+              "fees": 843.8
+            }
+          }
+        }
+      },
+      "unique": 189
+    },
+    {
+      "seed": 23,
+      "generation": 5,
+      "leader": {
+        "rule": {
+          "setup": "RETEST",
+          "look": 10,
+          "efficiency": 0.5,
+          "stretch": 2.5,
+          "premium_low": 5.0,
+          "premium_high": 10.0,
+          "option_rise": 1.2,
+          "stop": 0.2,
+          "arm": 2.0,
+          "keep": 0.6,
+          "target": 4.0,
+          "hold": 15,
+          "start": 810,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 2.0,
+          "reach": 0.0
+        },
+        "key": "a8f961f533ea",
+        "score": -3098.75,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": -696.98,
+              "without_best": -1715.81,
+              "worst": -434.73,
+              "drawdown": 1470.72,
+              "trades": 16,
+              "profit_factor": 0.7421,
+              "wins": 2,
+              "loss_days": 13,
+              "losing_streak": 8,
+              "quarters": [
+                -108.31,
+                -995.16,
+                863.52,
+                -457.03
+              ],
+              "first_half": -1103.47,
+              "second_half": 406.49,
+              "unresolved": 0,
+              "fees": 774.98
+            },
+            "adverse": {
+              "net": -648.47,
+              "without_best": -1641.34,
+              "worst": -467.21,
+              "drawdown": 1311.79,
+              "trades": 15,
+              "profit_factor": 0.7508,
+              "wins": 2,
+              "loss_days": 12,
+              "losing_streak": 7,
+              "quarters": [
+                -208.99,
+                -800.51,
+                824.58,
+                -463.55
+              ],
+              "first_half": -1009.5,
+              "second_half": 361.03,
+              "unresolved": 0,
+              "fees": 726.47
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 1207.93,
+              "without_best": -690.08,
+              "worst": -343.9,
+              "drawdown": 1269.16,
+              "trades": 18,
+              "profit_factor": 1.4774,
+              "wins": 5,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -737.88,
+                -99.54,
+                1519.7,
+                525.65
+              ],
+              "first_half": -837.42,
+              "second_half": 2045.35,
+              "unresolved": 0,
+              "fees": 875.32
+            },
+            "adverse": {
+              "net": 925.42,
+              "without_best": -936.9,
+              "worst": -356.88,
+              "drawdown": 1421.78,
+              "trades": 18,
+              "profit_factor": 1.3466,
+              "wins": 5,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -812.59,
+                -196.93,
+                1464.49,
+                470.45
+              ],
+              "first_half": -1009.52,
+              "second_half": 1934.94,
+              "unresolved": 0,
+              "fees": 875.08
+            }
+          }
+        }
+      },
+      "unique": 224
+    },
+    {
+      "seed": 71,
+      "generation": 0,
+      "leader": {
+        "rule": {
+          "setup": "BOX",
+          "look": 20,
+          "efficiency": 0.5,
+          "stretch": 4.0,
+          "premium_low": 2.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.3,
+          "arm": 0.4,
+          "keep": 0.75,
+          "target": 1.0,
+          "hold": 8,
+          "start": 810,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 1.0,
+          "reach": 3.0
+        },
+        "key": "5a512436f025",
+        "score": -2883.11,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": -169.35,
+              "without_best": -1008.5,
+              "worst": -523.17,
+              "drawdown": 1159.46,
+              "trades": 16,
+              "profit_factor": 0.9456,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -716.12,
+                -0.19,
+                12.69,
+                534.27
+              ],
+              "first_half": -716.31,
+              "second_half": 546.96,
+              "unresolved": 0,
+              "fees": 783.6
+            },
+            "adverse": {
+              "net": -818.55,
+              "without_best": -1576.41,
+              "worst": -545.91,
+              "drawdown": 1390.09,
+              "trades": 16,
+              "profit_factor": 0.7522,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -823.3,
+                -74.9,
+                -65.27,
+                144.92
+              ],
+              "first_half": -898.2,
+              "second_half": 79.65,
+              "unresolved": 0,
+              "fees": 782.8
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 3488.91,
+              "without_best": 1912.79,
+              "worst": -734.56,
+              "drawdown": 851.15,
+              "trades": 18,
+              "profit_factor": 2.6508,
+              "wins": 8,
+              "loss_days": 10,
+              "losing_streak": 4,
+              "quarters": [
+                -518.45,
+                1517.1,
+                2421.39,
+                68.87
+              ],
+              "first_half": 998.65,
+              "second_half": 2490.26,
+              "unresolved": 0,
+              "fees": 892.09
+            },
+            "adverse": {
+              "net": 3024.6,
+              "without_best": 1490.68,
+              "worst": -757.3,
+              "drawdown": 886.88,
+              "trades": 18,
+              "profit_factor": 2.2939,
+              "wins": 8,
+              "loss_days": 10,
+              "losing_streak": 4,
+              "quarters": [
+                -602.87,
+                1396.98,
+                2272.03,
+                -41.54
+              ],
+              "first_half": 794.11,
+              "second_half": 2230.49,
+              "unresolved": 0,
+              "fees": 891.65
+            }
+          }
+        }
+      },
+      "unique": 272
+    },
+    {
+      "seed": 71,
+      "generation": 1,
+      "leader": {
+        "rule": {
+          "setup": "BOX",
+          "look": 20,
+          "efficiency": 0.5,
+          "stretch": 4.0,
+          "premium_low": 2.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.3,
+          "arm": 0.4,
+          "keep": 0.75,
+          "target": 1.0,
+          "hold": 8,
+          "start": 810,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 1.0,
+          "reach": 3.0
+        },
+        "key": "5a512436f025",
+        "score": -2883.11,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": -169.35,
+              "without_best": -1008.5,
+              "worst": -523.17,
+              "drawdown": 1159.46,
+              "trades": 16,
+              "profit_factor": 0.9456,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -716.12,
+                -0.19,
+                12.69,
+                534.27
+              ],
+              "first_half": -716.31,
+              "second_half": 546.96,
+              "unresolved": 0,
+              "fees": 783.6
+            },
+            "adverse": {
+              "net": -818.55,
+              "without_best": -1576.41,
+              "worst": -545.91,
+              "drawdown": 1390.09,
+              "trades": 16,
+              "profit_factor": 0.7522,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -823.3,
+                -74.9,
+                -65.27,
+                144.92
+              ],
+              "first_half": -898.2,
+              "second_half": 79.65,
+              "unresolved": 0,
+              "fees": 782.8
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 3488.91,
+              "without_best": 1912.79,
+              "worst": -734.56,
+              "drawdown": 851.15,
+              "trades": 18,
+              "profit_factor": 2.6508,
+              "wins": 8,
+              "loss_days": 10,
+              "losing_streak": 4,
+              "quarters": [
+                -518.45,
+                1517.1,
+                2421.39,
+                68.87
+              ],
+              "first_half": 998.65,
+              "second_half": 2490.26,
+              "unresolved": 0,
+              "fees": 892.09
+            },
+            "adverse": {
+              "net": 3024.6,
+              "without_best": 1490.68,
+              "worst": -757.3,
+              "drawdown": 886.88,
+              "trades": 18,
+              "profit_factor": 2.2939,
+              "wins": 8,
+              "loss_days": 10,
+              "losing_streak": 4,
+              "quarters": [
+                -602.87,
+                1396.98,
+                2272.03,
+                -41.54
+              ],
+              "first_half": 794.11,
+              "second_half": 2230.49,
+              "unresolved": 0,
+              "fees": 891.65
+            }
+          }
+        }
+      },
+      "unique": 307
+    },
+    {
+      "seed": 71,
+      "generation": 2,
+      "leader": {
+        "rule": {
+          "setup": "BOX",
+          "look": 20,
+          "efficiency": 0.5,
+          "stretch": 4.0,
+          "premium_low": 2.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.3,
+          "arm": 0.4,
+          "keep": 0.75,
+          "target": 1.0,
+          "hold": 8,
+          "start": 810,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 0.5,
+          "reach": 3.0
+        },
+        "key": "93d210934080",
+        "score": -2171.1,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 239.36,
+              "without_best": -599.79,
+              "worst": -523.17,
+              "drawdown": 877.37,
+              "trades": 16,
+              "profit_factor": 1.0886,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -430.67,
+                -0.19,
+                145.68,
+                524.54
+              ],
+              "first_half": -430.86,
+              "second_half": 670.22,
+              "unresolved": 0,
+              "fees": 784.39
+            },
+            "adverse": {
+              "net": -400.1,
+              "without_best": -1157.96,
+              "worst": -545.91,
+              "drawdown": 1088.42,
+              "trades": 16,
+              "profit_factor": 0.8613,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -537.85,
+                -74.9,
+                67.73,
+                144.92
+              ],
+              "first_half": -612.75,
+              "second_half": 212.65,
+              "unresolved": 0,
+              "fees": 783.6
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 3342.94,
+              "without_best": 1766.82,
+              "worst": -383.78,
+              "drawdown": 651.19,
+              "trades": 18,
+              "profit_factor": 2.7245,
+              "wins": 7,
+              "loss_days": 11,
+              "losing_streak": 4,
+              "quarters": [
+                -518.45,
+                1517.1,
+                2787.93,
+                -443.64
+              ],
+              "first_half": 998.65,
+              "second_half": 2344.29,
+              "unresolved": 0,
+              "fees": 891.81
+            },
+            "adverse": {
+              "net": 2875.38,
+              "without_best": 1341.46,
+              "worst": -413.02,
+              "drawdown": 738.88,
+              "trades": 18,
+              "profit_factor": 2.3099,
+              "wins": 7,
+              "loss_days": 11,
+              "losing_streak": 4,
+              "quarters": [
+                -602.87,
+                1396.98,
+                2632.08,
+                -550.81
+              ],
+              "first_half": 794.11,
+              "second_half": 2081.27,
+              "unresolved": 0,
+              "fees": 891.37
+            }
+          }
+        }
+      },
+      "unique": 336
+    },
+    {
+      "seed": 71,
+      "generation": 3,
+      "leader": {
+        "rule": {
+          "setup": "BOX",
+          "look": 20,
+          "efficiency": 0.5,
+          "stretch": 4.0,
+          "premium_low": 2.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.2,
+          "arm": 0.4,
+          "keep": 0.75,
+          "target": 1.0,
+          "hold": 8,
+          "start": 810,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 0.5,
+          "reach": 3.0
+        },
+        "key": "6aef6fdd3f37",
+        "score": -1971.6,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 378.84,
+              "without_best": -460.31,
+              "worst": -523.17,
+              "drawdown": 781.71,
+              "trades": 16,
+              "profit_factor": 1.1478,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -430.67,
+                139.29,
+                145.68,
+                524.54
+              ],
+              "first_half": -291.38,
+              "second_half": 670.22,
+              "unresolved": 0,
+              "fees": 784.66
+            },
+            "adverse": {
+              "net": -267.1,
+              "without_best": -1024.96,
+              "worst": -545.91,
+              "drawdown": 955.42,
+              "trades": 16,
+              "profit_factor": 0.9029,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -537.85,
+                58.1,
+                67.73,
+                144.92
+              ],
+              "first_half": -479.75,
+              "second_half": 212.65,
+              "unresolved": 0,
+              "fees": 783.85
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 3342.94,
+              "without_best": 1766.82,
+              "worst": -383.78,
+              "drawdown": 651.19,
+              "trades": 18,
+              "profit_factor": 2.7245,
+              "wins": 7,
+              "loss_days": 11,
+              "losing_streak": 4,
+              "quarters": [
+                -518.45,
+                1517.1,
+                2787.93,
+                -443.64
+              ],
+              "first_half": 998.65,
+              "second_half": 2344.29,
+              "unresolved": 0,
+              "fees": 891.81
+            },
+            "adverse": {
+              "net": 2875.38,
+              "without_best": 1341.46,
+              "worst": -413.02,
+              "drawdown": 738.88,
+              "trades": 18,
+              "profit_factor": 2.3099,
+              "wins": 7,
+              "loss_days": 11,
+              "losing_streak": 4,
+              "quarters": [
+                -602.87,
+                1396.98,
+                2632.08,
+                -550.81
+              ],
+              "first_half": 794.11,
+              "second_half": 2081.27,
+              "unresolved": 0,
+              "fees": 891.37
+            }
+          }
+        }
+      },
+      "unique": 371
+    },
+    {
+      "seed": 71,
+      "generation": 4,
+      "leader": {
+        "rule": {
+          "setup": "BOX",
+          "look": 20,
+          "efficiency": 0.5,
+          "stretch": 4.0,
+          "premium_low": 2.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.2,
+          "arm": 0.4,
+          "keep": 0.75,
+          "target": 1.0,
+          "hold": 8,
+          "start": 810,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 0.5,
+          "reach": 3.0
+        },
+        "key": "6aef6fdd3f37",
+        "score": -1971.6,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 378.84,
+              "without_best": -460.31,
+              "worst": -523.17,
+              "drawdown": 781.71,
+              "trades": 16,
+              "profit_factor": 1.1478,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -430.67,
+                139.29,
+                145.68,
+                524.54
+              ],
+              "first_half": -291.38,
+              "second_half": 670.22,
+              "unresolved": 0,
+              "fees": 784.66
+            },
+            "adverse": {
+              "net": -267.1,
+              "without_best": -1024.96,
+              "worst": -545.91,
+              "drawdown": 955.42,
+              "trades": 16,
+              "profit_factor": 0.9029,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -537.85,
+                58.1,
+                67.73,
+                144.92
+              ],
+              "first_half": -479.75,
+              "second_half": 212.65,
+              "unresolved": 0,
+              "fees": 783.85
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 3342.94,
+              "without_best": 1766.82,
+              "worst": -383.78,
+              "drawdown": 651.19,
+              "trades": 18,
+              "profit_factor": 2.7245,
+              "wins": 7,
+              "loss_days": 11,
+              "losing_streak": 4,
+              "quarters": [
+                -518.45,
+                1517.1,
+                2787.93,
+                -443.64
+              ],
+              "first_half": 998.65,
+              "second_half": 2344.29,
+              "unresolved": 0,
+              "fees": 891.81
+            },
+            "adverse": {
+              "net": 2875.38,
+              "without_best": 1341.46,
+              "worst": -413.02,
+              "drawdown": 738.88,
+              "trades": 18,
+              "profit_factor": 2.3099,
+              "wins": 7,
+              "loss_days": 11,
+              "losing_streak": 4,
+              "quarters": [
+                -602.87,
+                1396.98,
+                2632.08,
+                -550.81
+              ],
+              "first_half": 794.11,
+              "second_half": 2081.27,
+              "unresolved": 0,
+              "fees": 891.37
+            }
+          }
+        }
+      },
+      "unique": 402
+    },
+    {
+      "seed": 71,
+      "generation": 5,
+      "leader": {
+        "rule": {
+          "setup": "BOX",
+          "look": 20,
+          "efficiency": 0.5,
+          "stretch": 4.0,
+          "premium_low": 2.0,
+          "premium_high": 20.0,
+          "option_rise": 1.2,
+          "stop": 0.2,
+          "arm": 0.4,
+          "keep": 0.75,
+          "target": 1.0,
+          "hold": 8,
+          "start": 810,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 0.5,
+          "reach": 3.0
+        },
+        "key": "6aef6fdd3f37",
+        "score": -1971.6,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 378.84,
+              "without_best": -460.31,
+              "worst": -523.17,
+              "drawdown": 781.71,
+              "trades": 16,
+              "profit_factor": 1.1478,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -430.67,
+                139.29,
+                145.68,
+                524.54
+              ],
+              "first_half": -291.38,
+              "second_half": 670.22,
+              "unresolved": 0,
+              "fees": 784.66
+            },
+            "adverse": {
+              "net": -267.1,
+              "without_best": -1024.96,
+              "worst": -545.91,
+              "drawdown": 955.42,
+              "trades": 16,
+              "profit_factor": 0.9029,
+              "wins": 4,
+              "loss_days": 12,
+              "losing_streak": 4,
+              "quarters": [
+                -537.85,
+                58.1,
+                67.73,
+                144.92
+              ],
+              "first_half": -479.75,
+              "second_half": 212.65,
+              "unresolved": 0,
+              "fees": 783.85
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 3342.94,
+              "without_best": 1766.82,
+              "worst": -383.78,
+              "drawdown": 651.19,
+              "trades": 18,
+              "profit_factor": 2.7245,
+              "wins": 7,
+              "loss_days": 11,
+              "losing_streak": 4,
+              "quarters": [
+                -518.45,
+                1517.1,
+                2787.93,
+                -443.64
+              ],
+              "first_half": 998.65,
+              "second_half": 2344.29,
+              "unresolved": 0,
+              "fees": 891.81
+            },
+            "adverse": {
+              "net": 2875.38,
+              "without_best": 1341.46,
+              "worst": -413.02,
+              "drawdown": 738.88,
+              "trades": 18,
+              "profit_factor": 2.3099,
+              "wins": 7,
+              "loss_days": 11,
+              "losing_streak": 4,
+              "quarters": [
+                -602.87,
+                1396.98,
+                2632.08,
+                -550.81
+              ],
+              "first_half": 794.11,
+              "second_half": 2081.27,
+              "unresolved": 0,
+              "fees": 891.37
+            }
+          }
+        }
+      },
+      "unique": 433
+    },
+    {
+      "seed": 193,
+      "generation": 0,
+      "leader": {
+        "rule": {
+          "setup": "FADE",
+          "look": 20,
+          "efficiency": 0.7,
+          "stretch": 2.5,
+          "premium_low": 5.0,
+          "premium_high": 10.0,
+          "option_rise": 1.0,
+          "stop": 0.4,
+          "arm": 1.0,
+          "keep": 0.5,
+          "target": 2.0,
+          "hold": 15,
+          "start": 810,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 1.0,
+          "reach": 1.0
+        },
+        "key": "b858d323d9c4",
+        "score": -3645.26,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 2521.27,
+              "without_best": -495.42,
+              "worst": -486.39,
+              "drawdown": 1295.07,
+              "trades": 22,
+              "profit_factor": 1.845,
+              "wins": 4,
+              "loss_days": 16,
+              "losing_streak": 6,
+              "quarters": [
+                608.15,
+                -1089.08,
+                792.15,
+                2210.05
+              ],
+              "first_half": -480.93,
+              "second_half": 3002.2,
+              "unresolved": 0,
+              "fees": 1073.23
+            },
+            "adverse": {
+              "net": 2164.12,
+              "without_best": -800.65,
+              "worst": -509.13,
+              "drawdown": 1502.92,
+              "trades": 22,
+              "profit_factor": 1.6733,
+              "wins": 4,
+              "loss_days": 16,
+              "losing_streak": 6,
+              "quarters": [
+                491.28,
+                -1150.8,
+                723.97,
+                2099.67
+              ],
+              "first_half": -659.52,
+              "second_half": 2823.64,
+              "unresolved": 0,
+              "fees": 1072.88
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": -1227.85,
+              "without_best": -1756.78,
+              "worst": -291.4,
+              "drawdown": 2006.49,
+              "trades": 15,
+              "profit_factor": 0.3881,
+              "wins": 2,
+              "loss_days": 11,
+              "losing_streak": 11,
+              "quarters": [
+                -821.6,
+                -459.81,
+                -271.36,
+                324.92
+              ],
+              "first_half": -1281.41,
+              "second_half": 53.56,
+              "unresolved": 0,
+              "fees": 724.1
+            },
+            "adverse": {
+              "net": -1416.2,
+              "without_best": -1922.41,
+              "worst": -317.36,
+              "drawdown": 2152.65,
+              "trades": 15,
+              "profit_factor": 0.3421,
+              "wins": 2,
+              "loss_days": 11,
+              "losing_streak": 11,
+              "quarters": [
+                -893.04,
+                -492.29,
+                -287.61,
+                256.74
+              ],
+              "first_half": -1385.33,
+              "second_half": -30.87,
+              "unresolved": 0,
+              "fees": 723.95
+            }
+          }
+        }
+      },
+      "unique": 481
+    },
+    {
+      "seed": 193,
+      "generation": 1,
+      "leader": {
+        "rule": {
+          "setup": "FADE",
+          "look": 20,
+          "efficiency": 0.3,
+          "stretch": 4.0,
+          "premium_low": 5.0,
+          "premium_high": 10.0,
+          "option_rise": 1.0,
+          "stop": 0.2,
+          "arm": 0.4,
+          "keep": 0.6,
+          "target": 1.0,
+          "hold": 8,
+          "start": 780,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 2.0,
+          "reach": 1.0
+        },
+        "key": "a088c0628165",
+        "score": -3470.24,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 2002.84,
+              "without_best": -1013.85,
+              "worst": -269.24,
+              "drawdown": 1047.36,
+              "trades": 22,
+              "profit_factor": 1.8542,
+              "wins": 6,
+              "loss_days": 16,
+              "losing_streak": 5,
+              "quarters": [
+                -66.7,
+                -939.85,
+                208.42,
+                2800.97
+              ],
+              "first_half": -1006.55,
+              "second_half": 3009.39,
+              "unresolved": 0,
+              "fees": 1071.66
+            },
+            "adverse": {
+              "net": 1717.02,
+              "without_best": -1247.75,
+              "worst": -282.22,
+              "drawdown": 1255.27,
+              "trades": 22,
+              "profit_factor": 1.6911,
+              "wins": 6,
+              "loss_days": 16,
+              "losing_streak": 5,
+              "quarters": [
+                -89.51,
+                -1001.56,
+                143.48,
+                2664.61
+              ],
+              "first_half": -1091.07,
+              "second_half": 2808.09,
+              "unresolved": 0,
+              "fees": 1071.48
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": -1237.83,
+              "without_best": -1656.22,
+              "worst": -226.88,
+              "drawdown": 1656.22,
+              "trades": 15,
+              "profit_factor": 0.2863,
+              "wins": 2,
+              "loss_days": 13,
+              "losing_streak": 11,
+              "quarters": [
+                -614.18,
+                -298.11,
+                -209.73,
+                -115.81
+              ],
+              "first_half": -912.29,
+              "second_half": -325.54,
+              "unresolved": 0,
+              "fees": 724.33
+            },
+            "adverse": {
+              "net": -1542.97,
+              "without_best": -1938.64,
+              "worst": -239.88,
+              "drawdown": 1938.64,
+              "trades": 15,
+              "profit_factor": 0.23,
+              "wins": 2,
+              "loss_days": 13,
+              "losing_streak": 11,
+              "quarters": [
+                -724.55,
+                -398.69,
+                -229.23,
+                -190.5
+              ],
+              "first_half": -1123.24,
+              "second_half": -419.73,
+              "unresolved": 0,
+              "fees": 723.97
+            }
+          }
+        }
+      },
+      "unique": 516
+    },
+    {
+      "seed": 193,
+      "generation": 2,
+      "leader": {
+        "rule": {
+          "setup": "FADE",
+          "look": 20,
+          "efficiency": 0.3,
+          "stretch": 2.5,
+          "premium_low": 5.0,
+          "premium_high": 10.0,
+          "option_rise": 1.0,
+          "stop": 0.4,
+          "arm": 1.0,
+          "keep": 0.5,
+          "target": 2.0,
+          "hold": 15,
+          "start": 810,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 1.0,
+          "reach": 2.0
+        },
+        "key": "a9b12a4ac497",
+        "score": -3182.93,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 2655.46,
+              "without_best": -361.23,
+              "worst": -528.61,
+              "drawdown": 1429.23,
+              "trades": 24,
+              "profit_factor": 1.8469,
+              "wins": 5,
+              "loss_days": 17,
+              "losing_streak": 6,
+              "quarters": [
+                741.94,
+                -1429.23,
+                908.9,
+                2433.85
+              ],
+              "first_half": -687.29,
+              "second_half": 3342.75,
+              "unresolved": 0,
+              "fees": 1169.79
+            },
+            "adverse": {
+              "net": 2269.08,
+              "without_best": -695.69,
+              "worst": -554.59,
+              "drawdown": 1500.69,
+              "trades": 24,
+              "profit_factor": 1.6722,
+              "wins": 5,
+              "loss_days": 17,
+              "losing_streak": 6,
+              "quarters": [
+                595.84,
+                -1500.69,
+                840.71,
+                2333.22
+              ],
+              "first_half": -904.85,
+              "second_half": 3173.93,
+              "unresolved": 0,
+              "fees": 1169.42
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": -1208.7,
+              "without_best": -1575.86,
+              "worst": -418.06,
+              "drawdown": 1825.57,
+              "trades": 15,
+              "profit_factor": 0.3379,
+              "wins": 2,
+              "loss_days": 10,
+              "losing_streak": 10,
+              "quarters": [
+                -478.64,
+                -466.79,
+                -511.19,
+                247.92
+              ],
+              "first_half": -945.43,
+              "second_half": -263.27,
+              "unresolved": 0,
+              "fees": 724.45
+            },
+            "adverse": {
+              "net": -1400.28,
+              "without_best": -1731.73,
+              "worst": -440.8,
+              "drawdown": 1961.97,
+              "trades": 15,
+              "profit_factor": 0.2863,
+              "wins": 2,
+              "loss_days": 10,
+              "losing_streak": 10,
+              "quarters": [
+                -527.33,
+                -502.51,
+                -540.42,
+                169.98
+              ],
+              "first_half": -1029.84,
+              "second_half": -370.44,
+              "unresolved": 0,
+              "fees": 724.28
+            }
+          }
+        }
+      },
+      "unique": 550
+    },
+    {
+      "seed": 193,
+      "generation": 3,
+      "leader": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 10,
+          "efficiency": 0.7,
+          "stretch": 2.5,
+          "premium_low": 5.0,
+          "premium_high": 20.0,
+          "option_rise": 0.0,
+          "stop": 0.4,
+          "arm": 1.0,
+          "keep": 0.6,
+          "target": 1.0,
+          "hold": 8,
+          "start": 780,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 0.5,
+          "reach": 0.0
+        },
+        "key": "3143fc9ad534",
+        "score": -2383.39,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 382.57,
+              "without_best": -634.07,
+              "worst": -337.99,
+              "drawdown": 986.67,
+              "trades": 14,
+              "profit_factor": 1.2502,
+              "wins": 4,
+              "loss_days": 7,
+              "losing_streak": 4,
+              "quarters": [
+                -262.48,
+                -724.19,
+                1310.91,
+                58.33
+              ],
+              "first_half": -986.67,
+              "second_half": 1369.24,
+              "unresolved": 0,
+              "fees": 686.68
+            },
+            "adverse": {
+              "net": 77.3,
+              "without_best": -867.89,
+              "worst": -357.47,
+              "drawdown": 1051.61,
+              "trades": 14,
+              "profit_factor": 1.047,
+              "wins": 4,
+              "loss_days": 7,
+              "losing_streak": 4,
+              "quarters": [
+                -272.22,
+                -779.39,
+                1109.54,
+                19.37
+              ],
+              "first_half": -1051.61,
+              "second_half": 1128.91,
+              "unresolved": 0,
+              "fees": 686.45
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 569.81,
+              "without_best": -120.88,
+              "worst": -270.0,
+              "drawdown": 532.41,
+              "trades": 16,
+              "profit_factor": 1.4147,
+              "wins": 7,
+              "loss_days": 6,
+              "losing_streak": 2,
+              "quarters": [
+                -18.06,
+                -237.46,
+                144.42,
+                680.91
+              ],
+              "first_half": -255.52,
+              "second_half": 825.33,
+              "unresolved": 0,
+              "fees": 791.94
+            },
+            "adverse": {
+              "net": 118.39,
+              "without_best": -539.83,
+              "worst": -329.95,
+              "drawdown": 649.32,
+              "trades": 16,
+              "profit_factor": 1.075,
+              "wins": 6,
+              "loss_days": 7,
+              "losing_streak": 2,
+              "quarters": [
+                -79.76,
+                -360.86,
+                8.0,
+                551.01
+              ],
+              "first_half": -440.62,
+              "second_half": 559.01,
+              "unresolved": 0,
+              "fees": 791.61
+            }
+          }
+        }
+      },
+      "unique": 587
+    },
+    {
+      "seed": 193,
+      "generation": 4,
+      "leader": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 10,
+          "efficiency": 0.7,
+          "stretch": 2.5,
+          "premium_low": 5.0,
+          "premium_high": 20.0,
+          "option_rise": 0.0,
+          "stop": 0.4,
+          "arm": 1.0,
+          "keep": 0.6,
+          "target": 1.0,
+          "hold": 8,
+          "start": 780,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 0.5,
+          "reach": 0.0
+        },
+        "key": "3143fc9ad534",
+        "score": -2383.39,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 382.57,
+              "without_best": -634.07,
+              "worst": -337.99,
+              "drawdown": 986.67,
+              "trades": 14,
+              "profit_factor": 1.2502,
+              "wins": 4,
+              "loss_days": 7,
+              "losing_streak": 4,
+              "quarters": [
+                -262.48,
+                -724.19,
+                1310.91,
+                58.33
+              ],
+              "first_half": -986.67,
+              "second_half": 1369.24,
+              "unresolved": 0,
+              "fees": 686.68
+            },
+            "adverse": {
+              "net": 77.3,
+              "without_best": -867.89,
+              "worst": -357.47,
+              "drawdown": 1051.61,
+              "trades": 14,
+              "profit_factor": 1.047,
+              "wins": 4,
+              "loss_days": 7,
+              "losing_streak": 4,
+              "quarters": [
+                -272.22,
+                -779.39,
+                1109.54,
+                19.37
+              ],
+              "first_half": -1051.61,
+              "second_half": 1128.91,
+              "unresolved": 0,
+              "fees": 686.45
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 569.81,
+              "without_best": -120.88,
+              "worst": -270.0,
+              "drawdown": 532.41,
+              "trades": 16,
+              "profit_factor": 1.4147,
+              "wins": 7,
+              "loss_days": 6,
+              "losing_streak": 2,
+              "quarters": [
+                -18.06,
+                -237.46,
+                144.42,
+                680.91
+              ],
+              "first_half": -255.52,
+              "second_half": 825.33,
+              "unresolved": 0,
+              "fees": 791.94
+            },
+            "adverse": {
+              "net": 118.39,
+              "without_best": -539.83,
+              "worst": -329.95,
+              "drawdown": 649.32,
+              "trades": 16,
+              "profit_factor": 1.075,
+              "wins": 6,
+              "loss_days": 7,
+              "losing_streak": 2,
+              "quarters": [
+                -79.76,
+                -360.86,
+                8.0,
+                551.01
+              ],
+              "first_half": -440.62,
+              "second_half": 559.01,
+              "unresolved": 0,
+              "fees": 791.61
+            }
+          }
+        }
+      },
+      "unique": 625
+    },
+    {
+      "seed": 193,
+      "generation": 5,
+      "leader": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 10,
+          "efficiency": 0.7,
+          "stretch": 2.5,
+          "premium_low": 5.0,
+          "premium_high": 20.0,
+          "option_rise": 0.0,
+          "stop": 0.2,
+          "arm": 0.4,
+          "keep": 0.6,
+          "target": 1.0,
+          "hold": 15,
+          "start": 780,
+          "end": 900,
+          "slots": 2,
+          "underlying_stop": 2.0,
+          "reach": 2.0
+        },
+        "key": "32fa15e633a0",
+        "score": -2064.98,
+        "years": {
+          "2024": {
+            "ordinary": {
+              "net": 1612.76,
+              "without_best": 586.39,
+              "worst": -337.99,
+              "drawdown": 557.58,
+              "trades": 16,
+              "profit_factor": 2.1224,
+              "wins": 5,
+              "loss_days": 7,
+              "losing_streak": 3,
+              "quarters": [
+                159.9,
+                368.68,
+                1071.26,
+                12.92
+              ],
+              "first_half": 528.58,
+              "second_half": 1084.18,
+              "unresolved": 0,
+              "fees": 785.74
+            },
+            "adverse": {
+              "net": 1336.67,
+              "without_best": 355.8,
+              "worst": -357.47,
+              "drawdown": 586.94,
+              "trades": 16,
+              "profit_factor": 1.873,
+              "wins": 4,
+              "loss_days": 8,
+              "losing_streak": 4,
+              "quarters": [
+                117.69,
+                277.77,
+                967.25,
+                -26.04
+              ],
+              "first_half": 395.46,
+              "second_half": 941.21,
+              "unresolved": 0,
+              "fees": 785.58
+            }
+          },
+          "2025": {
+            "ordinary": {
+              "net": 1980.55,
+              "without_best": -263.02,
+              "worst": -556.93,
+              "drawdown": 1275.58,
+              "trades": 19,
+              "profit_factor": 1.8409,
+              "wins": 7,
+              "loss_days": 9,
+              "losing_streak": 3,
+              "quarters": [
+                -653.17,
+                528.07,
+                2175.0,
+                -69.35
+              ],
+              "first_half": -125.1,
+              "second_half": 2105.65,
+              "unresolved": 0,
+              "fees": 941.2
+            },
+            "adverse": {
+              "net": -170.61,
+              "without_best": -828.83,
+              "worst": -615.4,
+              "drawdown": 1444.46,
+              "trades": 19,
+              "profit_factor": 0.9334,
+              "wins": 7,
+              "loss_days": 9,
+              "losing_streak": 3,
+              "quarters": [
+                -727.84,
+                394.93,
+                384.29,
+                -221.99
+              ],
+              "first_half": -332.91,
+              "second_half": 162.3,
+              "unresolved": 0,
+              "fees": 937.61
+            }
+          }
+        }
+      },
+      "unique": 663
+    }
+  ],
+  "selection_status": "JOINT IN-SAMPLE; prior failed exam preserved; no untouched claim"
+}

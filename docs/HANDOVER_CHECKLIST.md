@@ -1,3 +1,24 @@
+## November 3 — E02 R3 paper incubator built (Dev, disabled, not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E02.md`; contracts/acceptance:
+`docs/research/simulation/2026-11-03-expiry-e02/round03/IMPLEMENTATION_PLAN.md`.
+The original f2b95cd untouched exam FAILED. Authorized later joint fitting
+(R3, both years seen) found a one-lot strong-trend pullback: +Rs 6,328.74 ordinary,
++Rs 5,669.02 adverse across 2024/2025, worst day -Rs 591 adverse, realized drawdown
+about Rs 1,500, sampled marked drawdown about Rs 1,750. Severe high/low execution
+LOSES Rs 3,219; no qualification or guaranteed-profit claim. 2,746 genome
+candidate evaluations plus retained neighbour/stress checks; 22/27 final coarse
+neighbours remain positive. Source/candidate hashes in round03/forward-freeze.json.
+New expiry_e02.py reads existing tick evidence, no provider/order/message client;
+separate cash/state DB. EXPIRY_E02_SHADOW_ENABLED defaults false; off still
+manages open legs. At most one held token joins the existing quote batch (no
+extra request). NIFTY lot65 only; SENSEX unqualified. Native money/policies of
+A/B/C unchanged (AST proof); no N11 or Production changes. 39 focused checks
+pass, 172 expiry/scheduler tests pass, pure signals match 39,375 bars. Full
+engine suite is RUNNING; its result is not assumed here. Atlas:295 modules.
+Next: finish verification/report receipts, push Dev; collect new forward paper
+evidence only through a separate GitHub promotion/enable decision.
+
 ## November 3 — E02 reserved exam failed; authorized iterations continue
 
 Freeze `f2b95cd` was scored once on 2024 and both candidates failed. CORE

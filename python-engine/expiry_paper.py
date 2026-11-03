@@ -1612,6 +1612,13 @@ async def _tick_underlying(kite, conn, book, underlying: str, exchange: str, sta
             return
     chain = _chain(book, started.date(), anchor)
     held = [book.by_symbol.get(pos["symbol"]) for pos in positions]
+    # One separately funded E02 research leg may move beyond ATM +/-8 before
+    # its exit. Keep its quote in this same batch, without an extra API call.
+    try:
+        from expiry_e02 import held_contracts
+        held.extend(held_contracts(settings.DB_PATH, book))
+    except Exception as exc:
+        logger.warning("expiry_e02_held_quote_unavailable err=%s", type(exc).__name__)
     contracts = {c.token: c for c in [*chain.values(), *(c for c in held if c is not None)]}
     raw, timing = await _fetch(kite, underlying, exchange, list(contracts.values()), future)
     timings.append(timing)
