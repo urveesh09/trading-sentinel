@@ -1,0 +1,7 @@
+{
+  "E03S_L3": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0},
+  "E03S_L4": {"max_lots": 4, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0},
+  "E03_SOLO_F18": {"max_lots": 1, "split": true, "solo_runner": true, "runner_floor": 1.8, "runner_keep": 0.5, "hero_target": 9.0},
+  "E03_SOLO_F15": {"max_lots": 1, "split": true, "solo_runner": true, "runner_floor": 1.5, "runner_keep": 0.5, "hero_target": 9.0},
+  "E03S_L2_SOLO_F18": {"max_lots": 2, "split": true, "solo_runner": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0}
+}

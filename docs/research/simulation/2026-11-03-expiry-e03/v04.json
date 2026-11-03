@@ -1,0 +1,11 @@
+{
+  "N_K40": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.4, "hero_target": 9.0},
+  "N_K60": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.6, "hero_target": 9.0},
+  "N_F12": {"max_lots": 3, "split": true, "runner_floor": 1.2, "runner_keep": 0.5, "hero_target": 9.0},
+  "N_T4": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 4.0},
+  "N_TNONE": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 0.0},
+  "N_TGT15": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0, "target": 0.5},
+  "N_TGT3X": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0, "target": 2.0},
+  "N_IVRV15": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0, "ivrv_max": 1.5},
+  "N_IVRV12": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0, "ivrv_max": 1.2}
+}

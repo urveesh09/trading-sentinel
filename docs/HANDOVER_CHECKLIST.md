@@ -1,3 +1,18 @@
+## November 3 — E03 (commit `E03_COMMIT`, Dev, pushed, not deployed)
+
+- [x] Hero search on seen NIFTY 2024/2025: census, ticket surface, E02.1 runs, kicker,
+  open-interest wall break, bigger ticket, volatility filters; every entry-side hero
+  idea rejected and recorded (`trials-explore.csv`, 34 book runs).
+- [x] E03 = E02 R3 entry + up to 3 lots in Rs 1,250 + 200-point cap + half sold at 2x,
+  runner floor at cost, 50% keep, 10x: +11,956 / +11,115 in-sample (E02 +6,901 /
+  +6,260 on the same cap), worst day unchanged, severe fills -3,273.
+- [x] E01.1 on NIFTY 2024: -9,012 over 46 tickets (rules frozen before 2024 opened).
+- [x] Paper variant in `expiry_e02.py`, flag `EXPIRY_E03_SHADOW_ENABLED=false`, own DB
+  and cash; 29 E02/E03 tests pass; lab-paper parity 82 positions, 0 mismatches; full
+  suite 6,110 passed, 4 skipped, 0 failed (661.8 s; run before a one-line status-version fix, after which the 29 E02/E03 tests pass).
+- [ ] Deployed: no. Owner decides merge/rebuild and enabling E03 with E02.
+- [ ] Forward: 20 closed E03 tickets paired with E02 before any promotion.
+
 ## November 3 — E02 completion receipt (source 3deaad0 pushed; not deployed)
 
 Report: `docs/EXPIRY_RESEARCH_E02.md`; detailed commands/results and limitations:

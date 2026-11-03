@@ -1,0 +1,7 @@
+{
+  "R3_REPRO": {},
+  "E021_RUN_HOLD": {"target": 9.0, "hold_armed": true},
+  "E021_RUN_K50": {"target": 9.0, "hold_armed": true, "runner_keep": 0.5, "runner_arm": 1.0},
+  "E021_2LOT_BANK": {"target": 9.0, "hold_armed": true, "runner_keep": 0.5, "runner_arm": 1.0, "max_lots": 2, "bank_mult": 2.0},
+  "E021_3LOT_CHEAP": {"target": 9.0, "hold_armed": true, "runner_keep": 0.5, "runner_arm": 1.0, "max_lots": 3, "bank_mult": 2.0, "premium_low": 3.0, "premium_high": 10.0}
+}

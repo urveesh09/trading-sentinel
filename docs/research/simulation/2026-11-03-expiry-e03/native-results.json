@@ -1,0 +1,258 @@
+{
+  "E02_R3_ordinary": {
+    "summary": {
+      "net": 93.54,
+      "without_best": 0.0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 1,
+      "profit_factor": 99.0,
+      "wins": 1,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        93.54
+      ]
+    },
+    "days": [
+      {
+        "day": "2026-10-06",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-13",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-19",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-27",
+        "net": 93.54,
+        "trades": 1,
+        "positions": [
+          {
+            "symbol": "NIFTY-2026-10-27-22600-PE",
+            "entry": 12.85,
+            "lots": 1,
+            "peak": 17.95,
+            "net": 93.54,
+            "exits": [
+              [
+                "TIME",
+                15.05
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "day": "2026-11-03",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      }
+    ]
+  },
+  "E02_R3_adverse": {
+    "summary": {
+      "net": 64.32,
+      "without_best": 0.0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 1,
+      "profit_factor": 99.0,
+      "wins": 1,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        64.32
+      ]
+    },
+    "days": [
+      {
+        "day": "2026-10-06",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-13",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-19",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-27",
+        "net": 64.32,
+        "trades": 1,
+        "positions": [
+          {
+            "symbol": "NIFTY-2026-10-27-22600-PE",
+            "entry": 13.05,
+            "lots": 1,
+            "peak": 17.95,
+            "net": 64.32,
+            "exits": [
+              [
+                "TIME",
+                14.8
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "day": "2026-11-03",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      }
+    ]
+  },
+  "E03_ordinary": {
+    "summary": {
+      "net": 93.54,
+      "without_best": 0.0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 1,
+      "profit_factor": 99.0,
+      "wins": 1,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        93.54
+      ]
+    },
+    "days": [
+      {
+        "day": "2026-10-06",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-13",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-19",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-27",
+        "net": 93.54,
+        "trades": 1,
+        "positions": [
+          {
+            "symbol": "NIFTY-2026-10-27-22600-PE",
+            "entry": 12.85,
+            "lots": 1,
+            "peak": 17.95,
+            "net": 93.54,
+            "exits": [
+              [
+                "TIME",
+                15.05
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "day": "2026-11-03",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      }
+    ]
+  },
+  "E03_adverse": {
+    "summary": {
+      "net": 64.32,
+      "without_best": 0.0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 1,
+      "profit_factor": 99.0,
+      "wins": 1,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        64.32
+      ]
+    },
+    "days": [
+      {
+        "day": "2026-10-06",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-13",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-19",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      },
+      {
+        "day": "2026-10-27",
+        "net": 64.32,
+        "trades": 1,
+        "positions": [
+          {
+            "symbol": "NIFTY-2026-10-27-22600-PE",
+            "entry": 13.05,
+            "lots": 1,
+            "peak": 17.95,
+            "net": 64.32,
+            "exits": [
+              [
+                "TIME",
+                14.8
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "day": "2026-11-03",
+        "net": 0,
+        "trades": 0,
+        "positions": []
+      }
+    ]
+  }
+}

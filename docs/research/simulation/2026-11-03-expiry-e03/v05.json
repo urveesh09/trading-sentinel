@@ -1,0 +1,5 @@
+{
+  "E03": {"max_lots": 3, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0},
+  "E03_ONE_BIG": {"max_lots": 10, "slots": 1, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0},
+  "E03_TWO_FULL": {"max_lots": 10, "split": true, "runner_floor": 1.0, "runner_keep": 0.5, "hero_target": 9.0}
+}

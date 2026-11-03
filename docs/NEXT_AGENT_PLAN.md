@@ -1,3 +1,26 @@
+## November 3 — E03 zero-to-hero search and E02 runner variant (done, Dev commit `E03_COMMIT`, pushed, not deployed)
+
+- Problem: the owner finds E02 R3's returns too small and wants the expiry
+  zero-to-hero move caught with bounded risk; also E01.1 tested on new data.
+- Files: `python-engine/expiry_e02.py`, `config.py`, `scheduler_setup.py`,
+  `tests/test_expiry_e03.py`; study `docs/research/simulation/2026-11-03-expiry-e03/`;
+  report `docs/EXPIRY_RESEARCH_E03.md`.
+- Contracts: E02 unchanged (one lot, 400-point allowance, `.expiry-e02.db`). E03:
+  `Variant('expiry-e03-v1','E03','.expiry-e03.db',max_lots=3,max_distance=200,split=True)`;
+  frozen `e02_policy` adds split/runner fields; `TARGET_BASE` one-shot partial sale;
+  `RUNNER_TRAIL`, `HERO_TARGET`; `EXPIRY_E03_SHADOW_ENABLED=false`. No schema change in
+  existing stores; a new separate DB is created only when enabled.
+- Acceptance (met in Dev): E02 tests unchanged and passing; E03 positive both seen
+  years and fill levels, ex-best positive, worst day = E02, all runner neighbours >= E02,
+  random entries lose with E03's exits; lab-paper parity zero mismatches.
+- Rollout: owner's decision — merge, rebuild, enable E03 together with E02 for paired
+  forward evidence. Rollback: flag false (open legs still exit) or revert.
+- Remaining:
+  - [ ] Forward: 20 closed E03 tickets, paired with E02 entries, before any promotion.
+  - [ ] Whether E03/E02 should replace C (E01.1) as the expiry ticket: owner's call
+    after forward evidence (E01.1 about -29,650 over 99 NIFTY expiries in proxy).
+  - [ ] SENSEX full-chain study; an untouched full-chain expiry exam (2023 protected).
+
 ## November 3 — E02 completion receipt (source 3deaad0 pushed; not deployed)
 
 Report: `docs/EXPIRY_RESEARCH_E02.md`; detailed commands/results and limitations:

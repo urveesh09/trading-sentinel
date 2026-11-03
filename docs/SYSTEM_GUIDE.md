@@ -1,3 +1,32 @@
+## November 3 — E03: E02's entry with a free runner (Dev commit `E03_COMMIT`, pushed, not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E03.md`; record:
+`docs/research/simulation/2026-11-03-expiry-e03/README.md`.
+- Owner order: beyond E02, catch the zero-to-hero move with bounded risk; test E01.1
+  on the new data. Hero-entry ideas (holding E02's ticket, a kicker, the open-interest
+  "gamma blast", one bigger ticket, volatility filters) all lost or failed ex-best on
+  seen 2024/2025 and are rejected; cheap OTM tickets held lose in both years.
+- E03 (`expiry-e03-v1`, play `E03`): E02 R3's signal, band, reach, stops, idle clock,
+  cash and brakes unchanged; up to 3 lots inside the same Rs 1,250; strikes <= 200
+  points; at E02's 2x sale all but half the lots sell (`TARGET_BASE`, latches nothing);
+  the runner's floor is cost, keeps 50% of peak, `HERO_TARGET` at 10x, flat 15:28, no
+  idle or index stop. In-sample 2024+2025: +11,956 ordinary / +11,115 adverse
+  (E02 on the same four-strike pick +6,901 / +6,260), severe fills -3,273, worst day
+  -568 (= E02); the extra is mostly one 11.5x runner (2024-03-28).
+- E02's lab allowed strikes up to 400 points, beyond the download's guaranteed four
+  steps (look-ahead on one losing 2024 trade); E03 caps at 200; E02's code unchanged.
+- E01.1 on NIFTY 2024 (frozen before 2024 was opened): -9,012 ordinary over 46
+  tickets; with 2025 about -29,650 over 99 NIFTY expiries. Nov 3, its first Production
+  day as C: -700.92 (25% stop).
+- Code: `expiry_e02.py` `Variant` (E02 unchanged, E03 new), `policy_for`, `sell_base`,
+  `_lots`; own DB `<DB_PATH>.expiry-e03.db`, cash Rs 25,000;
+  `EXPIRY_E03_SHADOW_ENABLED=false`; scheduler runs each variant after the primary
+  tick; both open legs stay in the existing quote batch. No order, message, ledger,
+  schema or `.env` change.
+- Verification: `tests/test_expiry_e02.py` + `test_expiry_e03.py` 29 passed; lab-paper
+  exit parity 82 positions, 0 mismatches; full engine suite 6,110 passed, 4 skipped, 0 failed (661.8 s; run before a one-line status-version fix, after which the 29 E02/E03 tests pass). Atlas
+  regenerated. Tests show mechanics, not profit.
+
 ## November 3 — E02 completion receipt (source 3deaad0 pushed; not deployed)
 
 Report: `docs/EXPIRY_RESEARCH_E02.md`; detailed commands/results and limitations:

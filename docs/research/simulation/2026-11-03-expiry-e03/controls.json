@@ -1,0 +1,90 @@
+{
+  "E02_R3_2024": {
+    "actual": 2942.16,
+    "random_mean": -1168.53,
+    "random_p95": 2079.48,
+    "share_random_at_or_above": 0.025
+  },
+  "E02_R3_2025": {
+    "actual": 3386.58,
+    "random_mean": -1127.43,
+    "random_p95": 1560.88,
+    "share_random_at_or_above": 0.025
+  },
+  "E02_R3_2024_catastrophe": {
+    "net": -2867.5,
+    "without_best": -2867.5,
+    "worst": -632.82,
+    "drawdown": 2867.5,
+    "trades": 9,
+    "profit_factor": 0.0,
+    "wins": 0,
+    "loss_days": 9,
+    "quarters": [
+      -632.82,
+      -1526.63,
+      -442.11,
+      -265.94
+    ]
+  },
+  "E02_R3_2025_catastrophe": {
+    "net": -898.83,
+    "without_best": -1478.39,
+    "worst": -646.89,
+    "drawdown": 1151.6,
+    "trades": 9,
+    "profit_factor": 0.6022,
+    "wins": 4,
+    "loss_days": 5,
+    "quarters": [
+      -383.46,
+      -25.6,
+      661.83,
+      -1151.6
+    ]
+  },
+  "E03_2024": {
+    "actual": 7995.49,
+    "random_mean": -814.19,
+    "random_p95": 3259.02,
+    "share_random_at_or_above": 0.0
+  },
+  "E03_2025": {
+    "actual": 3389.25,
+    "random_mean": -996.85,
+    "random_p95": 2812.11,
+    "share_random_at_or_above": 0.05
+  },
+  "E03_2024_catastrophe": {
+    "net": -2651.38,
+    "without_best": -2651.38,
+    "worst": -632.82,
+    "drawdown": 2651.38,
+    "trades": 8,
+    "profit_factor": 0.0,
+    "wins": 0,
+    "loss_days": 8,
+    "quarters": [
+      -632.82,
+      -1526.63,
+      -491.93,
+      0
+    ]
+  },
+  "E03_2025_catastrophe": {
+    "net": -621.47,
+    "without_best": -1201.03,
+    "worst": -646.89,
+    "drawdown": 1151.6,
+    "trades": 9,
+    "profit_factor": 0.725,
+    "wins": 4,
+    "loss_days": 5,
+    "quarters": [
+      -383.46,
+      -25.6,
+      939.19,
+      -1151.6
+    ]
+  }
+}

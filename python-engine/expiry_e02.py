@@ -1,10 +1,16 @@
-"""E02 R3 research shadow: one-lot trend pullbacks, disabled by default.
+"""E02 R3 and E03 research shadows: trend pullbacks, disabled by default.
 
 Joint-fitted on already-seen 2024/2025, NOT qualified by an untouched test.
 Reads the existing expiry quote archive only: no provider, broker, order or
 notification client. Separate cash/state DB, never the operational ledger.
 Live bars are sampled from ten-second observations, a distinct forward data
 basis from historical exchange minute OHLC. Gaps refuse signals.
+
+E03 (docs/EXPIRY_RESEARCH_E03.md) takes E02's signal, strike rule and stops and
+changes only what a winner does: up to three lots inside the same Rs 1,250, strikes
+within four steps, and at E02's 2x sale all but half the lots are sold; the rest
+run on a floor at the ticket's cost, keep half the peak and are sold at 10x. Each
+variant has its own cash, state DB and flag; E02's own behaviour is unchanged.
 """
 from __future__ import annotations
 
@@ -34,7 +40,31 @@ class Reading:
     efficiency:float
 
 
-def path_for(db_path):return str(db_path)+'.expiry-e02.db'
+@dataclass(frozen=True)
+class Variant:
+    """One separately funded shadow on E02's signal."""
+    version:str
+    play:str
+    suffix:str
+    max_lots:int=1
+    max_distance:float=400.
+    split:bool=False
+    name:str='e02'
+
+
+E02=Variant(VERSION,'E02R3','.expiry-e02.db')
+E03=Variant('expiry-e03-v1','E03','.expiry-e03.db',max_lots=3,max_distance=200.,split=True,name='e03')
+VARIANTS=(E02,E03)
+
+
+def policy_for(variant):
+    """Frozen on each position at entry, so a later code change never alters an open ticket's exits."""
+    frozen=dict(stop=.4,arm=.4,keep=.6,target=1.,hold=480)
+    if variant.split:frozen.update(split=True,runner_floor=1.,runner_keep=.5,hero_target=9.)
+    return frozen
+
+
+def path_for(db_path,variant=E02):return str(db_path)+variant.suffix
 
 
 def signal(bars:list[dict])->Optional[Reading]:
@@ -74,14 +104,23 @@ def policy():
 
 
 def action(pos,bid,spot,now):
-    broken=spot is not None and pos['direction']*(spot-pos['underlying_stop'])<0
     frozen=pos.get('e02_policy',dict(stop=.4,arm=.4,keep=.6,target=1.,hold=480))
+    if frozen.get('split') and pos.get('runner'):
+        # E03's free runner: no idle or index stop; a floor at cost, half the peak kept, sold at 10x.
+        pos['peak']=max(pos['peak'],bid)
+        pos['stop']=round(max(pos['stop'],pos['entry_price']*frozen['runner_floor'],pos['peak']*frozen['runner_keep']),2)
+        if bid<=pos['stop']:return pos['lots_open'],'RUNNER_TRAIL'
+        if bid>=pos['entry_price']*(1+frozen['hero_target']):return pos['lots_open'],'HERO_TARGET'
+        return None
+    broken=spot is not None and pos['direction']*(spot-pos['underlying_stop'])<0
     exits=EP.ExitPolicy(hard_stop=frozen['stop'],bank_at=None,bank_stop=None,trails=((frozen['arm'],frozen['keep']),),late=None,time_stop=None,flat_at=time(15,28))
     native=EP.manage_position(pos,exits,bid,now,structure_broken=broken)
     if native:
         lots,reason=native
         return lots,'STRUCTURE' if reason=='FAILED_BREAK' else reason
-    if bid>=pos['entry_price']*(1+frozen['target']):return pos['lots_open'],'TARGET'
+    if bid>=pos['entry_price']*(1+frozen['target']):
+        if frozen.get('split') and pos['lots_open']>=2:return pos['lots_open']-pos['lots_open']//2,'TARGET_BASE'
+        return pos['lots_open'],'TARGET'
     if (now-datetime.fromisoformat(pos['entry_ts'])).total_seconds()>=frozen['hold']:return pos['lots_open'],'TIME'
     return None
 
@@ -102,8 +141,33 @@ def logged_quote(raw):
     except (TypeError,ValueError,KeyError):return None
 
 
-def plan(reading,legs,book,now,budget,cash):
-    """Nearest observed OTM strike within a causal move allowance; one lot."""
+def sell_base(pos,quote,lots,now):
+    """E03's one-shot partial sale at 2x: what the fresh bids fill now, nothing latched; the rest runs."""
+    if quote is None or not quote.fresh(now):return None
+    filled,price=EP.walk(quote.bids,lots,pos['lot_size'])
+    if not filled:return None
+    event=EP._sell(pos,filled,price,'TARGET_BASE',now)
+    frozen=pos['e02_policy']
+    pos['runner']=True
+    pos['stop']=round(max(pos['entry_price']*frozen['runner_floor'],pos['peak']*frozen['runner_keep']),2)
+    return event
+
+
+def _lots(q,room,most,schedule):
+    """The most lots (up to ``most``) the visible asks fill whole, with a fee-inclusive limit inside ``room``."""
+    order=EP.order_fee(schedule);rate=(EP.buy_charges(100,1,schedule)-order)/100
+    for lots in range(most,0,-1):
+        filled,ask=EP.walk(q.asks,lots,LOT)
+        if filled!=lots:continue
+        # No future-based sizing: this cap is fixed before any later quote.
+        cap=min(ask*1.10,(room-(1+lots)*order)/(lots*LOT*(1+rate)))
+        limit=math.floor(round(cap/.05,6))*.05
+        if limit>=ask and EP.worst_case_loss(limit,lots,LOT,schedule)<=room+.001:return lots,round(limit,2)
+    return 0,None
+
+
+def plan(reading,legs,book,now,budget,cash,variant=E02):
+    """Nearest observed OTM strike within a causal move allowance; E02 one lot, E03 up to three."""
     expected=reading.atr*math.sqrt(max(1,930-reading.minute))
     candidates=[];schedule=EP.fee_schedule('NFO')
     for symbol,raw in legs.items():
@@ -111,24 +175,20 @@ def plan(reading,legs,book,now,budget,cash):
         if contract is None or contract.underlying!='NIFTY' or contract.expiry!=now.date() or contract.lot_size!=LOT:continue
         if contract.instrument_type!=('CE' if reading.direction==1 else 'PE'):continue
         distance=reading.direction*(contract.strike-reading.spot)
-        if not 0<distance<=min(400,expected):continue
+        if not 0<distance<=min(variant.max_distance,expected):continue
         q=logged_quote(raw)
         if q is None or not q.fresh(now) or not q.spread_ok(.10) or not 5<=q.ask<=20:continue
-        filled,ask=EP.walk(q.asks,1,LOT)
-        if filled!=1:continue
-        # No future-based sizing: this cap is fixed before any later quote.
-        cap=min(ask*1.10,(min(budget,cash)-2*EP.order_fee(schedule))/(LOT*(1+(EP.buy_charges(100,1,schedule)-EP.order_fee(schedule))/100)))
-        limit=math.floor(round(cap/.05,6))*.05
-        if limit<ask or EP.worst_case_loss(limit,1,LOT,schedule)>min(budget,cash)+.001:continue
-        candidates.append((distance,symbol,round(limit,2)))
+        lots,limit=_lots(q,min(budget,cash),variant.max_lots,schedule)
+        if not lots:continue
+        candidates.append((distance,symbol,limit,lots))
     if not candidates:return None
-    _,symbol,limit=min(candidates)
-    return dict(symbol=symbol,limit=limit,at=now.isoformat(),expires=(now+timedelta(minutes=1)).isoformat(),
+    _,symbol,limit,lots=min(candidates)
+    return dict(symbol=symbol,limit=limit,lots=lots,at=now.isoformat(),expires=(now+timedelta(minutes=1)).isoformat(),
                 direction=reading.direction,underlying_stop=reading.spot-reading.direction*2*reading.atr)
 
 
-def _new_state(now):
-    return dict(version=VERSION,qualification=QUALIFICATION,basis='SAMPLED_10S_FORWARD',cash=START_CASH,peak=START_CASH,
+def _new_state(now,variant=E02):
+    return dict(version=variant.version,qualification=QUALIFICATION,basis='SAMPLED_10S_FORWARD',cash=START_CASH,peak=START_CASH,
                 activation=now.isoformat(),watermark=None,bars=[],building=None,day=None,position=None,pending=None,last_close=None,last_decided=None)
 
 
@@ -162,8 +222,8 @@ def _sample(state,row):
     return completed
 
 
-def has_open_book(db_path):
-    path=Path(path_for(db_path))
+def has_open_book(db_path,variant=E02):
+    path=Path(path_for(db_path,variant))
     if not path.exists():return False
     with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=1)) as c:
         r=c.execute('SELECT payload FROM e02_state WHERE id=1').fetchone()
@@ -171,22 +231,25 @@ def has_open_book(db_path):
 
 
 def held_contracts(db_path,book):
-    """Keep the one open research leg in the primary's existing quote batch."""
-    path=Path(path_for(db_path))
-    if not path.exists():return []
-    with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=1)) as c:
-        row=c.execute('SELECT payload FROM e02_state WHERE id=1').fetchone()
-    p=json.loads(row[0]).get('position') if row else None
-    if not p or p.get('status')!='OPEN':return []
-    contract=book.by_symbol.get(p['symbol'])
-    return [contract] if contract is not None else []
+    """Keep each variant's one open research leg in the primary's existing quote batch."""
+    held=[]
+    for variant in VARIANTS:
+        path=Path(path_for(db_path,variant))
+        if not path.exists():continue
+        with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=1)) as c:
+            row=c.execute('SELECT payload FROM e02_state WHERE id=1').fetchone()
+        p=json.loads(row[0]).get('position') if row else None
+        if not p or p.get('status')!='OPEN':continue
+        contract=book.by_symbol.get(p['symbol'])
+        if contract is not None and contract not in held:held.append(contract)
+    return held
 
 
-def run_tick(db_path,*,enabled=False,now=None,book=None):
+def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
     """Incremental read-only source, separate transactional paper state, no network."""
     now=now or datetime.now(EP.IST)
     if now.tzinfo is None:raise ValueError('Timezone-aware E02 clock required')
-    destination=Path(path_for(db_path));source=Path(str(db_path)+'.expiry-paper.db')
+    destination=Path(path_for(db_path,variant));source=Path(str(db_path)+'.expiry-paper.db')
     if not enabled and not destination.exists():return {'status':'DISABLED'}
     if not source.exists():return {'status':'NO_SOURCE'}
     with closing(sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True,timeout=1)) as src:
@@ -201,8 +264,8 @@ def run_tick(db_path,*,enabled=False,now=None,book=None):
             with dst:
                 dst.execute('BEGIN IMMEDIATE')
                 saved=dst.execute('SELECT payload FROM e02_state WHERE id=1').fetchone()
-                state=json.loads(saved[0]) if saved else _new_state(now)
-                if state['version']!=VERSION:raise ValueError('Unknown E02 state version')
+                state=json.loads(saved[0]) if saved else _new_state(now,variant)
+                if state['version']!=variant.version:raise ValueError('Unknown E02 state version')
                 if not state.get('day') or state['day']['date']!=now.date().isoformat():
                     if state['position']:return {'status':'UNRESOLVED_PRIOR_DAY'}
                     dd=state['peak']-state['cash'];scale=0 if dd>=4000 else .25 if dd>=3000 else .5 if dd>=1500 else 1
@@ -231,7 +294,8 @@ def run_tick(db_path,*,enabled=False,now=None,book=None):
                         decision_time=datetime.fromisoformat(completed['end'])
                         if close_q and close_q.bid and close_q.fresh(decision_time):
                             sell=action(position,close_q.bid,completed['s'][3],decision_time)
-                            if sell:event=EP._try_exit(position,q,*sell,now)
+                            if sell and sell[1]=='TARGET_BASE':event=sell_base(position,q,sell[0],now)
+                            elif sell:event=EP._try_exit(position,q,*sell,now)
                     if now.time()>=time(15,28) and position['status']=='OPEN':event=EP._try_exit(position,q,position['lots_open'],'FLAT_TIME',now)
                     _save_position(dst,position)
                     if position['status']=='CLOSED':
@@ -246,7 +310,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None):
                             if book is None:
                                 from fno_underlyings import get_instruments_for
                                 book=get_instruments_for('NIFTY')
-                            state['pending']=plan(reading,state.get('last_bar_legs',{}),book,datetime.fromisoformat(completed['end']),min(1250.,day['budget']-day['spent']),state['cash'])
+                            state['pending']=plan(reading,state.get('last_bar_legs',{}),book,datetime.fromisoformat(completed['end']),min(1250.,day['budget']-day['spent']),state['cash'],variant)
                     pending=state['pending']
                     if pending:
                         if now>datetime.fromisoformat(pending['expires']) or now.time()>=time(15,0) or day['trades']>=MAX_TRADES:state['pending']=None
@@ -257,14 +321,14 @@ def run_tick(db_path,*,enabled=False,now=None,book=None):
                             q=logged_quote(legs.get(pending['symbol']))
                             con=book.by_symbol.get(pending['symbol']) if book else None
                             if con and con.expiry==now.date() and con.lot_size==LOT and q and q.fresh(now) and q.spread_ok(.10):
-                                lots,price=EP.walk(q.asks,1,LOT)
+                                lots,price=EP.walk(q.asks,pending.get('lots',1),LOT)
                                 schedule=EP.fee_schedule('NFO')
-                                risk=EP.worst_case_loss(price,1,LOT,schedule) if lots else math.inf
+                                risk=EP.worst_case_loss(price,lots,LOT,schedule) if lots else math.inf
                                 if lots and price<=pending['limit'] and risk<=min(1250.,day['budget']-day['spent'],state['cash']):
-                                    p=EP._new_position(now.date().isoformat(),'NIFTY','E02R3','NFO',con,price,1,now,schedule)
-                                    p.update(stop=round(price*.6,2),direction=pending['direction'],underlying_stop=pending['underlying_stop'],e02_version=VERSION,data_basis='SAMPLED_10S_FORWARD',e02_policy=dict(stop=.4,arm=.4,keep=.6,target=1.,hold=480))
+                                    p=EP._new_position(now.date().isoformat(),'NIFTY',variant.play,'NFO',con,price,lots,now,schedule)
+                                    p.update(stop=round(price*.6,2),direction=pending['direction'],underlying_stop=pending['underlying_stop'],e02_version=variant.version,data_basis='SAMPLED_10S_FORWARD',e02_policy=policy_for(variant))
                                     _save_position(dst,p);state['position']=p;day['spent']=round(day['spent']+risk,2);day['trades']+=1;state['pending']=None
                 if not enabled:state['pending']=None
                 if state['day']['spent']>state['day']['budget']+.01:raise ValueError('E02 daily reserve exceeded')
                 _store(dst,state)
-                return dict(status='OPEN' if state['position'] else 'OBSERVING',version=VERSION,qualification=QUALIFICATION,cash=state['cash'],day=state['day'],event=event)
+                return dict(status='OPEN' if state['position'] else 'OBSERVING',version=variant.version,qualification=QUALIFICATION,cash=state['cash'],day=state['day'],event=event)
