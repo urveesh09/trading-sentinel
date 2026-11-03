@@ -1,4 +1,4 @@
-## November 3 — closing-auction and seller study: nothing tradeable (Dev research, commit `AUCTION_COMMIT`, pushed, no runtime change)
+## November 3 — closing-auction and seller study: nothing tradeable (Dev research, commit `dd1daa9`, pushed, no runtime change)
 
 Report: `docs/EXPIRY_RESEARCH_AUCTION.md`; record: `docs/research/simulation/2026-11-03-expiry-auction/`.
 - Auction (since Aug 3, 2026 options settle at the closing auction; Kite's index frozen 15:15-15:29):

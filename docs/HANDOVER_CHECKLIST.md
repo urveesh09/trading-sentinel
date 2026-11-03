@@ -1,4 +1,4 @@
-## November 3 — closing-auction and seller study (commit `AUCTION_COMMIT`, Dev, pushed, research only)
+## November 3 — closing-auction and seller study (commit `dd1daa9`, Dev, pushed, research only)
 
 - [x] Auction drift frozen (`b7c90bd`, v2 `bd2a31d`), scored: H1 86% as frozen / 60% corrected, H2 fail, trade fail.
 - [x] Breeze history shows an indicative auction index from 15:20 (8 days); Kite's stays frozen. Recorded.

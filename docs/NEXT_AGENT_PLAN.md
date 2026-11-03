@@ -1,4 +1,4 @@
-## November 3 — closing-auction and seller study done: no candidate (commit `AUCTION_COMMIT`, Dev, pushed)
+## November 3 — closing-auction and seller study done: no candidate (commit `dd1daa9`, Dev, pushed)
 
 - Problem: owner asked for a different, micro-level angle after two failed E03.2 searches.
 - Done: auction drift frozen test failed (H2, trade); auction strangle overpriced (B/BH re-valued);
