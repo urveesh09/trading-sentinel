@@ -93,3 +93,36 @@ def test_book_brake_cannot_create_negative_cash():
     result=E.run_year(tapes,E.Rule(look=5,stretch=20.,hold=8))
     assert all(d['cash_after']>=0 for d in result['days'])
     assert any(d['scale']<1 for d in result['days'])
+
+
+def test_native_controller_and_cashflow_match_the_fast_replay():
+    from audit import native_audit
+    t=toy();t.q[20:,0,:4]=25.
+    r=E.Rule(look=5,stretch=20.,hold=15)
+    for scenario in ('ordinary','adverse','catastrophe'):
+        row=E.run_day(t,r,scenario,details=True)
+        assert native_audit(t,r,row,scenario)==row['trades']
+
+
+def test_reach_gate_uses_current_atr_and_time_remaining_only():
+    t=toy();r=E.Rule(look=5,stretch=20.,reach=.1)
+    assert E.choose(t,10,1,r,2500,25000) is None
+    t.q[11:,:,1]*=100
+    assert E.choose(t,10,1,r,2500,25000) is None
+    assert E.choose(t,10,1,replace(r,reach=0.),2500,25000) is not None
+
+
+def test_lot_size_sensitivity_changes_actual_reserve_and_quantity_consistently():
+    original=E.LOT
+    try:
+        E.LOT=25
+        assert E.reserve(10.,2)==10*50+E.fee(10.,50,True)+2*E.ORDER
+        out=E.run_day(toy(),E.Rule(look=5,stretch=20.,hold=8),details=True)
+        for p in out['positions']:
+            assert abs(p['reserve']-D.EP.worst_case_loss(p['entry'],p['lots'],25,E.FEE))<.01
+    finally:E.LOT=original
+
+
+def test_flat_days_do_not_hide_a_losing_streak():
+    rows=[dict(day=f'2025-01-{i+1:02d}',net=v,trades=int(v!=0),fees=0,unresolved=0) for i,v in enumerate([-1,0,-1,0,-1,2])]
+    assert E.summary(rows)['losing_streak']==3

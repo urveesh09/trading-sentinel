@@ -1,0 +1,2662 @@
+{
+  "wf1": {
+    "rule": {
+      "setup": "PULLBACK",
+      "look": 20,
+      "efficiency": 0.0,
+      "stretch": 4.0,
+      "premium_low": 10.0,
+      "premium_high": 35.0,
+      "option_rise": 0.0,
+      "stop": 0.3,
+      "arm": 1.0,
+      "keep": 0.5,
+      "target": 9.0,
+      "hold": 8,
+      "start": 810,
+      "end": 870,
+      "slots": 2,
+      "underlying_stop": 2.0,
+      "reach": 0.0
+    },
+    "training_leader": {
+      "key": "28bf2ac25ed2",
+      "rule": {
+        "setup": "PULLBACK",
+        "look": 20,
+        "efficiency": 0.0,
+        "stretch": 4.0,
+        "premium_low": 10.0,
+        "premium_high": 35.0,
+        "option_rise": 0.0,
+        "stop": 0.3,
+        "arm": 1.0,
+        "keep": 0.5,
+        "target": 9.0,
+        "hold": 8,
+        "start": 810,
+        "end": 870,
+        "slots": 2,
+        "underlying_stop": 2.0,
+        "reach": 0.0
+      },
+      "score": 2963.35,
+      "ordinary": {
+        "net": 6654.71,
+        "without_best": 4424.32,
+        "worst": -711.47,
+        "drawdown": 990.51,
+        "trades": 34,
+        "profit_factor": 2.9606,
+        "wins": 10,
+        "loss_days": 9,
+        "losing_streak": 2,
+        "quarters": [
+          4198.73,
+          2455.98,
+          0,
+          0
+        ],
+        "first_half": 6654.71,
+        "second_half": 0,
+        "unresolved": 0,
+        "fees": 1691.29
+      },
+      "adverse": {
+        "net": 5680.56,
+        "without_best": 3534.59,
+        "worst": -750.46,
+        "drawdown": 1042.49,
+        "trades": 34,
+        "profit_factor": 2.5033,
+        "wins": 9,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          3753.87,
+          1926.69,
+          0,
+          0
+        ],
+        "first_half": 5680.56,
+        "second_half": 0,
+        "unresolved": 0,
+        "fees": 1690.44
+      }
+    },
+    "held_months": [
+      7,
+      8,
+      9
+    ],
+    "held": {
+      "ordinary": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 20,
+          "efficiency": 0.0,
+          "stretch": 4.0,
+          "premium_low": 10.0,
+          "premium_high": 35.0,
+          "option_rise": 0.0,
+          "stop": 0.3,
+          "arm": 1.0,
+          "keep": 0.5,
+          "target": 9.0,
+          "hold": 8,
+          "start": 810,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 2.0,
+          "reach": 0.0
+        },
+        "scenario": "ordinary",
+        "summary": {
+          "net": -3312.75,
+          "without_best": -3312.75,
+          "worst": -719.03,
+          "drawdown": 3312.75,
+          "trades": 13,
+          "profit_factor": 0.0,
+          "wins": 0,
+          "loss_days": 10,
+          "losing_streak": 10,
+          "quarters": [
+            0,
+            0,
+            -3312.75,
+            0
+          ],
+          "first_half": 0,
+          "second_half": -3312.75,
+          "unresolved": 0,
+          "fees": 634.75
+        },
+        "days": [
+          {
+            "day": "2025-07-03",
+            "net": -92.1,
+            "trades": 1,
+            "spent": 1198.22,
+            "fees": 49.85,
+            "unresolved": 0,
+            "rejected": 1,
+            "positions": [
+              {
+                "day": "2025-07-03",
+                "j": 13,
+                "symbol": "NIFTY-2025-07-03-25450-PE",
+                "direction": -1,
+                "entry_i": 289,
+                "decision_i": 288,
+                "entry": 17.7,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1198.22,
+                "peak": 22.8,
+                "stop": 12.39,
+                "net": -92.1,
+                "fees": 49.85,
+                "underlying_stop": 25527.055,
+                "events": [
+                  {
+                    "i": 289,
+                    "decision_i": 288,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 17.7,
+                    "fees": 24.12
+                  },
+                  {
+                    "i": 298,
+                    "decision_i": 297,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 17.05,
+                    "fees": 25.73
+                  }
+                ],
+                "exit_i": 298
+              }
+            ],
+            "marked_worst": -143.99999999999997,
+            "cash_after": 24907.9,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-07-10",
+            "net": -214.51,
+            "trades": 2,
+            "spent": 1502.28,
+            "fees": 97.51,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-07-10",
+                "j": 14,
+                "symbol": "NIFTY-2025-07-10-25450-CE",
+                "direction": 1,
+                "entry_i": 259,
+                "decision_i": 258,
+                "entry": 10.35,
+                "lots": 1,
+                "open": 0,
+                "reserve": 720.25,
+                "peak": 10.35,
+                "stop": 7.24,
+                "net": -210.98,
+                "fees": 48.48,
+                "underlying_stop": 25381.305,
+                "events": [
+                  {
+                    "i": 259,
+                    "decision_i": 258,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 10.35,
+                    "fees": 23.9
+                  },
+                  {
+                    "i": 268,
+                    "decision_i": 267,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 7.85,
+                    "fees": 24.58
+                  }
+                ],
+                "exit_i": 268
+              },
+              {
+                "day": "2025-07-10",
+                "j": 11,
+                "symbol": "NIFTY-2025-07-10-25350-PE",
+                "direction": -1,
+                "entry_i": 277,
+                "decision_i": 276,
+                "entry": 11.3,
+                "lots": 1,
+                "open": 0,
+                "reserve": 782.03,
+                "peak": 18.2,
+                "stop": 7.91,
+                "net": -3.53,
+                "fees": 49.03,
+                "underlying_stop": 25395.1,
+                "events": [
+                  {
+                    "i": 277,
+                    "decision_i": 276,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.3,
+                    "fees": 23.93
+                  },
+                  {
+                    "i": 286,
+                    "decision_i": 285,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 12.0,
+                    "fees": 25.1
+                  }
+                ],
+                "exit_i": 286
+              }
+            ],
+            "marked_worst": -240.46000000000006,
+            "cash_after": 24693.39,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-07-17",
+            "net": -496.83,
+            "trades": 2,
+            "spent": 1547.8,
+            "fees": 97.08,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-07-17",
+                "j": 12,
+                "symbol": "NIFTY-2025-07-17-25200-CE",
+                "direction": 1,
+                "entry_i": 267,
+                "decision_i": 266,
+                "entry": 11.25,
+                "lots": 1,
+                "open": 0,
+                "reserve": 778.78,
+                "peak": 11.85,
+                "stop": 7.87,
+                "net": -214.37,
+                "fees": 48.62,
+                "underlying_stop": 25161.160000000003,
+                "events": [
+                  {
+                    "i": 267,
+                    "decision_i": 266,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.25,
+                    "fees": 23.93
+                  },
+                  {
+                    "i": 276,
+                    "decision_i": 275,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 8.7,
+                    "fees": 24.69
+                  }
+                ],
+                "exit_i": 276
+              },
+              {
+                "day": "2025-07-17",
+                "j": 12,
+                "symbol": "NIFTY-2025-07-17-25200-CE",
+                "direction": 1,
+                "entry_i": 282,
+                "decision_i": 281,
+                "entry": 11.1,
+                "lots": 1,
+                "open": 0,
+                "reserve": 769.02,
+                "peak": 11.9,
+                "stop": 7.77,
+                "net": -282.46,
+                "fees": 48.46,
+                "underlying_stop": 25168.515,
+                "events": [
+                  {
+                    "i": 282,
+                    "decision_i": 281,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.1,
+                    "fees": 23.92
+                  },
+                  {
+                    "i": 290,
+                    "decision_i": 289,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 7.5,
+                    "fees": 24.54
+                  }
+                ],
+                "exit_i": 290
+              }
+            ],
+            "marked_worst": -493.58000000000004,
+            "cash_after": 24196.56,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-07-24",
+            "net": -298.81,
+            "trades": 1,
+            "spent": 824.3,
+            "fees": 48.56,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-07-24",
+                "j": 12,
+                "symbol": "NIFTY-2025-07-24-25100-CE",
+                "direction": 1,
+                "entry_i": 309,
+                "decision_i": 308,
+                "entry": 11.95,
+                "lots": 1,
+                "open": 0,
+                "reserve": 824.3,
+                "peak": 11.95,
+                "stop": 8.36,
+                "net": -298.81,
+                "fees": 48.56,
+                "underlying_stop": 25072.96,
+                "events": [
+                  {
+                    "i": 309,
+                    "decision_i": 308,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.95,
+                    "fees": 23.95
+                  },
+                  {
+                    "i": 314,
+                    "decision_i": 313,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 8.1,
+                    "fees": 24.61
+                  }
+                ],
+                "exit_i": 314
+              }
+            ],
+            "marked_worst": -282.59,
+            "cash_after": 23897.75,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-07-31",
+            "net": -719.03,
+            "trades": 2,
+            "spent": 2230.62,
+            "fees": 98.28,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-07-31",
+                "j": 24,
+                "symbol": "NIFTY-2025-07-31-25000-CE",
+                "direction": 1,
+                "entry_i": 270,
+                "decision_i": 269,
+                "entry": 15.25,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1038.9,
+                "peak": 15.8,
+                "stop": 10.67,
+                "net": -315.54,
+                "fees": 49.04,
+                "underlying_stop": 24903.15,
+                "events": [
+                  {
+                    "i": 270,
+                    "decision_i": 269,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 15.25,
+                    "fees": 24.05
+                  },
+                  {
+                    "i": 279,
+                    "decision_i": 278,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 11.15,
+                    "fees": 24.99
+                  }
+                ],
+                "exit_i": 279
+              },
+              {
+                "day": "2025-07-31",
+                "j": 21,
+                "symbol": "NIFTY-2025-07-31-24900-PE",
+                "direction": -1,
+                "entry_i": 290,
+                "decision_i": 289,
+                "entry": 17.6,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1191.72,
+                "peak": 17.6,
+                "stop": 12.32,
+                "net": -403.49,
+                "fees": 49.24,
+                "underlying_stop": 24937.435,
+                "events": [
+                  {
+                    "i": 290,
+                    "decision_i": 289,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 17.6,
+                    "fees": 24.12
+                  },
+                  {
+                    "i": 292,
+                    "decision_i": 291,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 12.15,
+                    "fees": 25.12
+                  }
+                ],
+                "exit_i": 292
+              }
+            ],
+            "marked_worst": -732.0000000000001,
+            "cash_after": 23178.72,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-08-07",
+            "net": -139.83,
+            "trades": 1,
+            "spent": 811.29,
+            "fees": 48.83,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-08-07",
+                "j": 9,
+                "symbol": "NIFTY-2025-08-07-24300-PE",
+                "direction": -1,
+                "entry_i": 258,
+                "decision_i": 257,
+                "entry": 11.75,
+                "lots": 1,
+                "open": 0,
+                "reserve": 811.29,
+                "peak": 15.35,
+                "stop": 8.22,
+                "net": -139.83,
+                "fees": 48.83,
+                "underlying_stop": 24376.115,
+                "events": [
+                  {
+                    "i": 258,
+                    "decision_i": 257,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.75,
+                    "fees": 23.94
+                  },
+                  {
+                    "i": 267,
+                    "decision_i": 266,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 10.35,
+                    "fees": 24.89
+                  }
+                ],
+                "exit_i": 267
+              }
+            ],
+            "marked_worst": -156.05,
+            "cash_after": 23038.89,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-08-14",
+            "net": -390.17,
+            "trades": 1,
+            "spent": 1048.65,
+            "fees": 48.92,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-08-14",
+                "j": 11,
+                "symbol": "NIFTY-2025-08-14-24600-PE",
+                "direction": -1,
+                "entry_i": 258,
+                "decision_i": 257,
+                "entry": 15.4,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1048.65,
+                "peak": 15.55,
+                "stop": 10.78,
+                "net": -390.17,
+                "fees": 48.92,
+                "underlying_stop": 24643.77,
+                "events": [
+                  {
+                    "i": 258,
+                    "decision_i": 257,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 15.4,
+                    "fees": 24.05
+                  },
+                  {
+                    "i": 264,
+                    "decision_i": 263,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 10.15,
+                    "fees": 24.87
+                  }
+                ],
+                "exit_i": 264
+              }
+            ],
+            "marked_worst": -383.68,
+            "cash_after": 22648.72,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-08-21",
+            "net": -373.66,
+            "trades": 1,
+            "spent": 925.1,
+            "fees": 48.66,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-08-21",
+                "j": 12,
+                "symbol": "NIFTY-2025-08-21-25150-CE",
+                "direction": 1,
+                "entry_i": 306,
+                "decision_i": 305,
+                "entry": 13.5,
+                "lots": 1,
+                "open": 0,
+                "reserve": 925.1,
+                "peak": 13.5,
+                "stop": 9.45,
+                "net": -373.66,
+                "fees": 48.66,
+                "underlying_stop": 25125.339999999997,
+                "events": [
+                  {
+                    "i": 306,
+                    "decision_i": 305,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 13.5,
+                    "fees": 24.0
+                  },
+                  {
+                    "i": 308,
+                    "decision_i": 307,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 8.5,
+                    "fees": 24.66
+                  }
+                ],
+                "exit_i": 308
+              }
+            ],
+            "marked_worst": -337.97999999999996,
+            "cash_after": 22275.06,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-08-28",
+            "net": -250.24,
+            "trades": 1,
+            "spent": 860.07,
+            "fees": 48.74,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-08-28",
+                "j": 14,
+                "symbol": "NIFTY-2025-08-28-24600-CE",
+                "direction": 1,
+                "entry_i": 255,
+                "decision_i": 254,
+                "entry": 12.5,
+                "lots": 1,
+                "open": 0,
+                "reserve": 860.07,
+                "peak": 12.5,
+                "stop": 8.75,
+                "net": -250.24,
+                "fees": 48.74,
+                "underlying_stop": 24543.655,
+                "events": [
+                  {
+                    "i": 255,
+                    "decision_i": 254,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 12.5,
+                    "fees": 23.97
+                  },
+                  {
+                    "i": 259,
+                    "decision_i": 258,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 9.4,
+                    "fees": 24.77
+                  }
+                ],
+                "exit_i": 259
+              }
+            ],
+            "marked_worst": -247.00000000000006,
+            "cash_after": 22024.82,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-09-02",
+            "net": -337.57,
+            "trades": 1,
+            "spent": 752.77,
+            "fees": 48.32,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-09-02",
+                "j": 15,
+                "symbol": "NIFTY-2025-09-02-24650-PE",
+                "direction": -1,
+                "entry_i": 255,
+                "decision_i": 254,
+                "entry": 10.85,
+                "lots": 1,
+                "open": 0,
+                "reserve": 752.77,
+                "peak": 10.85,
+                "stop": 7.59,
+                "net": -337.57,
+                "fees": 48.32,
+                "underlying_stop": 24704.835,
+                "events": [
+                  {
+                    "i": 255,
+                    "decision_i": 254,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 10.85,
+                    "fees": 23.92
+                  },
+                  {
+                    "i": 258,
+                    "decision_i": 257,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 6.4,
+                    "fees": 24.4
+                  }
+                ],
+                "exit_i": 258
+              }
+            ],
+            "marked_worst": -321.34999999999997,
+            "cash_after": 21687.25,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-09-09",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21687.25,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-09-16",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21687.25,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-09-23",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21687.25,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-09-30",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21687.25,
+            "scale": 0.25
+          }
+        ]
+      },
+      "adverse": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 20,
+          "efficiency": 0.0,
+          "stretch": 4.0,
+          "premium_low": 10.0,
+          "premium_high": 35.0,
+          "option_rise": 0.0,
+          "stop": 0.3,
+          "arm": 1.0,
+          "keep": 0.5,
+          "target": 9.0,
+          "hold": 8,
+          "start": 810,
+          "end": 870,
+          "slots": 2,
+          "underlying_stop": 2.0,
+          "reach": 0.0
+        },
+        "scenario": "adverse",
+        "summary": {
+          "net": -3039.96,
+          "without_best": -3039.96,
+          "worst": -777.48,
+          "drawdown": 3039.96,
+          "trades": 11,
+          "profit_factor": 0.0,
+          "wins": 0,
+          "loss_days": 8,
+          "losing_streak": 8,
+          "quarters": [
+            0,
+            0,
+            -3039.96,
+            0
+          ],
+          "first_half": 0,
+          "second_half": -3039.96,
+          "unresolved": 0,
+          "fees": 537.46
+        },
+        "days": [
+          {
+            "day": "2025-07-03",
+            "net": -124.58,
+            "trades": 1,
+            "spent": 1214.48,
+            "fees": 49.83,
+            "unresolved": 0,
+            "rejected": 1,
+            "positions": [
+              {
+                "day": "2025-07-03",
+                "j": 13,
+                "symbol": "NIFTY-2025-07-03-25450-PE",
+                "direction": -1,
+                "entry_i": 289,
+                "decision_i": 288,
+                "entry": 17.95,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1214.48,
+                "peak": 22.8,
+                "stop": 12.56,
+                "net": -124.58,
+                "fees": 49.83,
+                "underlying_stop": 25527.055,
+                "events": [
+                  {
+                    "i": 289,
+                    "decision_i": 288,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 17.95,
+                    "fees": 24.13
+                  },
+                  {
+                    "i": 298,
+                    "decision_i": 297,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 16.8,
+                    "fees": 25.7
+                  }
+                ],
+                "exit_i": 298
+              }
+            ],
+            "marked_worst": -160.25999999999996,
+            "cash_after": 24875.42,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-07-10",
+            "net": -259.99,
+            "trades": 2,
+            "spent": 1528.3,
+            "fees": 97.49,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-07-10",
+                "j": 14,
+                "symbol": "NIFTY-2025-07-10-25450-CE",
+                "direction": 1,
+                "entry_i": 259,
+                "decision_i": 258,
+                "entry": 10.55,
+                "lots": 1,
+                "open": 0,
+                "reserve": 733.26,
+                "peak": 10.55,
+                "stop": 7.38,
+                "net": -230.48,
+                "fees": 48.48,
+                "underlying_stop": 25381.305,
+                "events": [
+                  {
+                    "i": 259,
+                    "decision_i": 258,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 10.55,
+                    "fees": 23.91
+                  },
+                  {
+                    "i": 268,
+                    "decision_i": 267,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 7.75,
+                    "fees": 24.57
+                  }
+                ],
+                "exit_i": 268
+              },
+              {
+                "day": "2025-07-10",
+                "j": 11,
+                "symbol": "NIFTY-2025-07-10-25350-PE",
+                "direction": -1,
+                "entry_i": 277,
+                "decision_i": 276,
+                "entry": 11.5,
+                "lots": 1,
+                "open": 0,
+                "reserve": 795.04,
+                "peak": 18.2,
+                "stop": 8.05,
+                "net": -29.51,
+                "fees": 49.01,
+                "underlying_stop": 25395.1,
+                "events": [
+                  {
+                    "i": 277,
+                    "decision_i": 276,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.5,
+                    "fees": 23.94
+                  },
+                  {
+                    "i": 286,
+                    "decision_i": 285,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 11.8,
+                    "fees": 25.07
+                  }
+                ],
+                "exit_i": 286
+              }
+            ],
+            "marked_worst": -272.97,
+            "cash_after": 24615.43,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-07-17",
+            "net": -581.23,
+            "trades": 2,
+            "spent": 1573.82,
+            "fees": 96.98,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-07-17",
+                "j": 12,
+                "symbol": "NIFTY-2025-07-17-25200-CE",
+                "direction": 1,
+                "entry_i": 267,
+                "decision_i": 266,
+                "entry": 11.45,
+                "lots": 1,
+                "open": 0,
+                "reserve": 791.79,
+                "peak": 11.85,
+                "stop": 8.01,
+                "net": -279.28,
+                "fees": 48.53,
+                "underlying_stop": 25161.160000000003,
+                "events": [
+                  {
+                    "i": 267,
+                    "decision_i": 266,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.45,
+                    "fees": 23.94
+                  },
+                  {
+                    "i": 273,
+                    "decision_i": 272,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 7.9,
+                    "fees": 24.59
+                  }
+                ],
+                "exit_i": 273
+              },
+              {
+                "day": "2025-07-17",
+                "j": 12,
+                "symbol": "NIFTY-2025-07-17-25200-CE",
+                "direction": 1,
+                "entry_i": 282,
+                "decision_i": 281,
+                "entry": 11.3,
+                "lots": 1,
+                "open": 0,
+                "reserve": 782.03,
+                "peak": 11.9,
+                "stop": 7.91,
+                "net": -301.95,
+                "fees": 48.45,
+                "underlying_stop": 25168.515,
+                "events": [
+                  {
+                    "i": 282,
+                    "decision_i": 281,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.3,
+                    "fees": 23.93
+                  },
+                  {
+                    "i": 290,
+                    "decision_i": 289,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 7.4,
+                    "fees": 24.52
+                  }
+                ],
+                "exit_i": 290
+              }
+            ],
+            "marked_worst": -571.5,
+            "cash_after": 24034.2,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-07-24",
+            "net": -318.31,
+            "trades": 1,
+            "spent": 837.31,
+            "fees": 48.56,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-07-24",
+                "j": 12,
+                "symbol": "NIFTY-2025-07-24-25100-CE",
+                "direction": 1,
+                "entry_i": 309,
+                "decision_i": 308,
+                "entry": 12.15,
+                "lots": 1,
+                "open": 0,
+                "reserve": 837.31,
+                "peak": 12.15,
+                "stop": 8.5,
+                "net": -318.31,
+                "fees": 48.56,
+                "underlying_stop": 25072.96,
+                "events": [
+                  {
+                    "i": 309,
+                    "decision_i": 308,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 12.15,
+                    "fees": 23.96
+                  },
+                  {
+                    "i": 314,
+                    "decision_i": 313,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 8.0,
+                    "fees": 24.6
+                  }
+                ],
+                "exit_i": 314
+              }
+            ],
+            "marked_worst": -295.6,
+            "cash_after": 23715.89,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-07-31",
+            "net": -777.48,
+            "trades": 2,
+            "spent": 2263.12,
+            "fees": 98.23,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-07-31",
+                "j": 24,
+                "symbol": "NIFTY-2025-07-31-25000-CE",
+                "direction": 1,
+                "entry_i": 270,
+                "decision_i": 269,
+                "entry": 15.5,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1055.15,
+                "peak": 15.8,
+                "stop": 10.85,
+                "net": -344.77,
+                "fees": 49.02,
+                "underlying_stop": 24903.15,
+                "events": [
+                  {
+                    "i": 270,
+                    "decision_i": 269,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 15.5,
+                    "fees": 24.05
+                  },
+                  {
+                    "i": 279,
+                    "decision_i": 278,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 10.95,
+                    "fees": 24.97
+                  }
+                ],
+                "exit_i": 279
+              },
+              {
+                "day": "2025-07-31",
+                "j": 21,
+                "symbol": "NIFTY-2025-07-31-24900-PE",
+                "direction": -1,
+                "entry_i": 290,
+                "decision_i": 289,
+                "entry": 17.85,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1207.97,
+                "peak": 17.85,
+                "stop": 12.5,
+                "net": -432.71,
+                "fees": 49.21,
+                "underlying_stop": 24937.435,
+                "events": [
+                  {
+                    "i": 290,
+                    "decision_i": 289,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 17.85,
+                    "fees": 24.12
+                  },
+                  {
+                    "i": 292,
+                    "decision_i": 291,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 11.95,
+                    "fees": 25.09
+                  }
+                ],
+                "exit_i": 292
+              }
+            ],
+            "marked_worst": -777.48,
+            "cash_after": 22938.41,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-08-07",
+            "net": -165.82,
+            "trades": 1,
+            "spent": 824.3,
+            "fees": 48.82,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-08-07",
+                "j": 9,
+                "symbol": "NIFTY-2025-08-07-24300-PE",
+                "direction": -1,
+                "entry_i": 258,
+                "decision_i": 257,
+                "entry": 11.95,
+                "lots": 1,
+                "open": 0,
+                "reserve": 824.3,
+                "peak": 15.35,
+                "stop": 8.36,
+                "net": -165.82,
+                "fees": 48.82,
+                "underlying_stop": 24376.115,
+                "events": [
+                  {
+                    "i": 258,
+                    "decision_i": 257,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.95,
+                    "fees": 23.95
+                  },
+                  {
+                    "i": 267,
+                    "decision_i": 266,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 10.15,
+                    "fees": 24.87
+                  }
+                ],
+                "exit_i": 267
+              }
+            ],
+            "marked_worst": -169.05999999999995,
+            "cash_after": 22772.59,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-08-14",
+            "net": -419.4,
+            "trades": 1,
+            "spent": 1064.91,
+            "fees": 48.9,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-08-14",
+                "j": 11,
+                "symbol": "NIFTY-2025-08-14-24600-PE",
+                "direction": -1,
+                "entry_i": 258,
+                "decision_i": 257,
+                "entry": 15.65,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1064.91,
+                "peak": 15.65,
+                "stop": 10.96,
+                "net": -419.4,
+                "fees": 48.9,
+                "underlying_stop": 24643.77,
+                "events": [
+                  {
+                    "i": 258,
+                    "decision_i": 257,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 15.65,
+                    "fees": 24.06
+                  },
+                  {
+                    "i": 264,
+                    "decision_i": 263,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 9.95,
+                    "fees": 24.84
+                  }
+                ],
+                "exit_i": 264
+              }
+            ],
+            "marked_worst": -399.94,
+            "cash_after": 22353.19,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-08-21",
+            "net": -393.15,
+            "trades": 1,
+            "spent": 938.1,
+            "fees": 48.65,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-08-21",
+                "j": 12,
+                "symbol": "NIFTY-2025-08-21-25150-CE",
+                "direction": 1,
+                "entry_i": 306,
+                "decision_i": 305,
+                "entry": 13.7,
+                "lots": 1,
+                "open": 0,
+                "reserve": 938.1,
+                "peak": 13.7,
+                "stop": 9.59,
+                "net": -393.15,
+                "fees": 48.65,
+                "underlying_stop": 25125.339999999997,
+                "events": [
+                  {
+                    "i": 306,
+                    "decision_i": 305,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 13.7,
+                    "fees": 24.0
+                  },
+                  {
+                    "i": 308,
+                    "decision_i": 307,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 1,
+                    "price": 8.4,
+                    "fees": 24.65
+                  }
+                ],
+                "exit_i": 308
+              }
+            ],
+            "marked_worst": -350.9799999999999,
+            "cash_after": 21960.04,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-08-28",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21960.04,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-09-02",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21960.04,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-09-09",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21960.04,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-09-16",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21960.04,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-09-23",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21960.04,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-09-30",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21960.04,
+            "scale": 0.25
+          }
+        ]
+      }
+    },
+    "limitation": "Fresh seeded fitting uses only prior months; family design and all 2025 market regimes were already seen, so diagnostic only"
+  },
+  "wf2": {
+    "rule": {
+      "setup": "PULLBACK",
+      "look": 5,
+      "efficiency": 0.5,
+      "stretch": 4.0,
+      "premium_low": 10.0,
+      "premium_high": 35.0,
+      "option_rise": 1.0,
+      "stop": 0.4,
+      "arm": 2.0,
+      "keep": 0.6,
+      "target": 1.0,
+      "hold": 15,
+      "start": 810,
+      "end": 870,
+      "slots": 1,
+      "underlying_stop": 0.5,
+      "reach": 2.0
+    },
+    "training_leader": {
+      "key": "d2490c2f9ae0",
+      "rule": {
+        "setup": "PULLBACK",
+        "look": 5,
+        "efficiency": 0.5,
+        "stretch": 4.0,
+        "premium_low": 10.0,
+        "premium_high": 35.0,
+        "option_rise": 1.0,
+        "stop": 0.4,
+        "arm": 2.0,
+        "keep": 0.6,
+        "target": 1.0,
+        "hold": 15,
+        "start": 810,
+        "end": 870,
+        "slots": 1,
+        "underlying_stop": 0.5,
+        "reach": 2.0
+      },
+      "score": 3892.47,
+      "ordinary": {
+        "net": 10244.61,
+        "without_best": 5924.11,
+        "worst": -769.21,
+        "drawdown": 1135.43,
+        "trades": 27,
+        "profit_factor": 2.9074,
+        "wins": 13,
+        "loss_days": 14,
+        "losing_streak": 4,
+        "quarters": [
+          986.57,
+          5488.53,
+          3769.51,
+          0
+        ],
+        "first_half": 6475.1,
+        "second_half": 3769.51,
+        "unresolved": 0,
+        "fees": 1422.89
+      },
+      "adverse": {
+        "net": 8955.06,
+        "without_best": 4738.43,
+        "worst": -814.69,
+        "drawdown": 1291.92,
+        "trades": 27,
+        "profit_factor": 2.4691,
+        "wins": 12,
+        "loss_days": 15,
+        "losing_streak": 4,
+        "quarters": [
+          752.76,
+          4878.05,
+          3324.25,
+          0
+        ],
+        "first_half": 5630.81,
+        "second_half": 3324.25,
+        "unresolved": 0,
+        "fees": 1422.19
+      }
+    },
+    "held_months": [
+      10,
+      11,
+      12
+    ],
+    "held": {
+      "ordinary": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 5,
+          "efficiency": 0.5,
+          "stretch": 4.0,
+          "premium_low": 10.0,
+          "premium_high": 35.0,
+          "option_rise": 1.0,
+          "stop": 0.4,
+          "arm": 2.0,
+          "keep": 0.6,
+          "target": 1.0,
+          "hold": 15,
+          "start": 810,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 0.5,
+          "reach": 2.0
+        },
+        "scenario": "ordinary",
+        "summary": {
+          "net": -3028.93,
+          "without_best": -3119.25,
+          "worst": -928.45,
+          "drawdown": 3028.93,
+          "trades": 10,
+          "profit_factor": 0.029,
+          "wins": 1,
+          "loss_days": 9,
+          "losing_streak": 5,
+          "quarters": [
+            0,
+            0,
+            0,
+            -3028.93
+          ],
+          "first_half": 0,
+          "second_half": -3028.93,
+          "unresolved": 0,
+          "fees": 493.93
+        },
+        "days": [
+          {
+            "day": "2025-10-07",
+            "net": -928.45,
+            "trades": 1,
+            "spent": 2386.68,
+            "fees": 50.95,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-10-07",
+                "j": 16,
+                "symbol": "NIFTY-2025-10-07-25250-CE",
+                "direction": 1,
+                "entry_i": 269,
+                "decision_i": 268,
+                "entry": 11.75,
+                "lots": 3,
+                "open": 0,
+                "reserve": 2386.68,
+                "peak": 14.8,
+                "stop": 7.05,
+                "net": -928.45,
+                "fees": 50.95,
+                "underlying_stop": 25202.695,
+                "events": [
+                  {
+                    "i": 269,
+                    "decision_i": 268,
+                    "side": "BUY",
+                    "lots": 3,
+                    "price": 11.75,
+                    "fees": 24.63
+                  },
+                  {
+                    "i": 278,
+                    "decision_i": 277,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 3,
+                    "price": 7.25,
+                    "fees": 26.32
+                  }
+                ],
+                "exit_i": 278
+              }
+            ],
+            "marked_worst": -967.3700000000001,
+            "cash_after": 24071.55,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-10-14",
+            "net": -590.73,
+            "trades": 1,
+            "spent": 2210.26,
+            "fees": 51.23,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-10-14",
+                "j": 12,
+                "symbol": "NIFTY-2025-10-14-25150-CE",
+                "direction": 1,
+                "entry_i": 285,
+                "decision_i": 284,
+                "entry": 16.45,
+                "lots": 2,
+                "open": 0,
+                "reserve": 2210.26,
+                "peak": 18.55,
+                "stop": 9.87,
+                "net": -590.73,
+                "fees": 51.23,
+                "underlying_stop": 25118.41,
+                "events": [
+                  {
+                    "i": 285,
+                    "decision_i": 284,
+                    "side": "BUY",
+                    "lots": 2,
+                    "price": 16.45,
+                    "fees": 24.56
+                  },
+                  {
+                    "i": 288,
+                    "decision_i": 287,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 2,
+                    "price": 12.3,
+                    "fees": 26.67
+                  }
+                ],
+                "exit_i": 288
+              }
+            ],
+            "marked_worst": -577.7599999999999,
+            "cash_after": 23480.82,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-10-20",
+            "net": -224.54,
+            "trades": 1,
+            "spent": 967.36,
+            "fees": 49.04,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-10-20",
+                "j": 13,
+                "symbol": "NIFTY-2025-10-20-25850-PE",
+                "direction": -1,
+                "entry_i": 264,
+                "decision_i": 263,
+                "entry": 14.15,
+                "lots": 1,
+                "open": 0,
+                "reserve": 967.36,
+                "peak": 14.15,
+                "stop": 8.49,
+                "net": -224.54,
+                "fees": 49.04,
+                "underlying_stop": 25878.615,
+                "events": [
+                  {
+                    "i": 264,
+                    "decision_i": 263,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 14.15,
+                    "fees": 24.01
+                  },
+                  {
+                    "i": 265,
+                    "decision_i": 264,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 11.45,
+                    "fees": 25.03
+                  }
+                ],
+                "exit_i": 265
+              }
+            ],
+            "marked_worst": -214.81000000000006,
+            "cash_after": 23256.28,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-10-28",
+            "net": -305.15,
+            "trades": 1,
+            "spent": 762.52,
+            "fees": 48.4,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-10-28",
+                "j": 9,
+                "symbol": "NIFTY-2025-10-28-25800-PE",
+                "direction": -1,
+                "entry_i": 272,
+                "decision_i": 271,
+                "entry": 11.0,
+                "lots": 1,
+                "open": 0,
+                "reserve": 762.52,
+                "peak": 11.0,
+                "stop": 6.6,
+                "net": -305.15,
+                "fees": 48.4,
+                "underlying_stop": 25879.5,
+                "events": [
+                  {
+                    "i": 272,
+                    "decision_i": 271,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.0,
+                    "fees": 23.92
+                  },
+                  {
+                    "i": 274,
+                    "decision_i": 273,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 7.05,
+                    "fees": 24.48
+                  }
+                ],
+                "exit_i": 274
+              }
+            ],
+            "marked_worst": -305.15000000000003,
+            "cash_after": 22951.13,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-11-04",
+            "net": 90.32,
+            "trades": 1,
+            "spent": 876.32,
+            "fees": 49.43,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-11-04",
+                "j": 11,
+                "symbol": "NIFTY-2025-11-04-25600-PE",
+                "direction": -1,
+                "entry_i": 296,
+                "decision_i": 295,
+                "entry": 12.75,
+                "lots": 1,
+                "open": 0,
+                "reserve": 876.32,
+                "peak": 21.15,
+                "stop": 7.65,
+                "net": 90.32,
+                "fees": 49.43,
+                "underlying_stop": 25638.785,
+                "events": [
+                  {
+                    "i": 296,
+                    "decision_i": 295,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 12.75,
+                    "fees": 23.97
+                  },
+                  {
+                    "i": 312,
+                    "decision_i": 311,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 14.9,
+                    "fees": 25.46
+                  }
+                ],
+                "exit_i": 312
+              }
+            ],
+            "marked_worst": -146.47,
+            "cash_after": 23041.45,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-11-11",
+            "net": -283.48,
+            "trades": 1,
+            "spent": 1198.22,
+            "fees": 49.48,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-11-11",
+                "j": 18,
+                "symbol": "NIFTY-2025-11-11-25700-CE",
+                "direction": 1,
+                "entry_i": 279,
+                "decision_i": 278,
+                "entry": 17.7,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1198.22,
+                "peak": 17.7,
+                "stop": 10.62,
+                "net": -283.48,
+                "fees": 49.48,
+                "underlying_stop": 25666.775,
+                "events": [
+                  {
+                    "i": 279,
+                    "decision_i": 278,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 17.7,
+                    "fees": 24.12
+                  },
+                  {
+                    "i": 281,
+                    "decision_i": 280,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 14.1,
+                    "fees": 25.36
+                  }
+                ],
+                "exit_i": 281
+              }
+            ],
+            "marked_worst": -283.47999999999996,
+            "cash_after": 22757.97,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-11-18",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 22757.97,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-11-25",
+            "net": -331.61,
+            "trades": 1,
+            "spent": 973.87,
+            "fees": 48.86,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-11-25",
+                "j": 13,
+                "symbol": "NIFTY-2025-11-25-25950-PE",
+                "direction": -1,
+                "entry_i": 313,
+                "decision_i": 312,
+                "entry": 14.25,
+                "lots": 1,
+                "open": 0,
+                "reserve": 973.87,
+                "peak": 14.25,
+                "stop": 8.55,
+                "net": -331.61,
+                "fees": 48.86,
+                "underlying_stop": 25980.66,
+                "events": [
+                  {
+                    "i": 313,
+                    "decision_i": 312,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 14.25,
+                    "fees": 24.02
+                  },
+                  {
+                    "i": 314,
+                    "decision_i": 313,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 9.9,
+                    "fees": 24.84
+                  }
+                ],
+                "exit_i": 314
+              }
+            ],
+            "marked_worst": -318.63,
+            "cash_after": 22426.36,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-12-02",
+            "net": -185.29,
+            "trades": 1,
+            "spent": 830.8,
+            "fees": 48.79,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-12-02",
+                "j": 14,
+                "symbol": "NIFTY-2025-12-02-26100-CE",
+                "direction": 1,
+                "entry_i": 277,
+                "decision_i": 276,
+                "entry": 12.05,
+                "lots": 1,
+                "open": 0,
+                "reserve": 830.8,
+                "peak": 12.05,
+                "stop": 7.23,
+                "net": -185.29,
+                "fees": 48.79,
+                "underlying_stop": 26044.684999999998,
+                "events": [
+                  {
+                    "i": 277,
+                    "decision_i": 276,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 12.05,
+                    "fees": 23.95
+                  },
+                  {
+                    "i": 279,
+                    "decision_i": 278,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 9.95,
+                    "fees": 24.84
+                  }
+                ],
+                "exit_i": 279
+              }
+            ],
+            "marked_worst": -195.01999999999998,
+            "cash_after": 22241.07,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-12-09",
+            "net": -221.18,
+            "trades": 1,
+            "spent": 918.59,
+            "fees": 48.93,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-12-09",
+                "j": 18,
+                "symbol": "NIFTY-2025-12-09-25950-CE",
+                "direction": 1,
+                "entry_i": 268,
+                "decision_i": 267,
+                "entry": 13.4,
+                "lots": 1,
+                "open": 0,
+                "reserve": 918.59,
+                "peak": 13.4,
+                "stop": 8.04,
+                "net": -221.18,
+                "fees": 48.93,
+                "underlying_stop": 25892.12,
+                "events": [
+                  {
+                    "i": 268,
+                    "decision_i": 267,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 13.4,
+                    "fees": 23.99
+                  },
+                  {
+                    "i": 270,
+                    "decision_i": 269,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 10.75,
+                    "fees": 24.94
+                  }
+                ],
+                "exit_i": 270
+              }
+            ],
+            "marked_worst": -234.15999999999997,
+            "cash_after": 22019.89,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-12-16",
+            "net": -48.82,
+            "trades": 1,
+            "spent": 730.01,
+            "fees": 48.82,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-12-16",
+                "j": 14,
+                "symbol": "NIFTY-2025-12-16-25950-CE",
+                "direction": 1,
+                "entry_i": 265,
+                "decision_i": 264,
+                "entry": 10.5,
+                "lots": 1,
+                "open": 0,
+                "reserve": 730.01,
+                "peak": 13.0,
+                "stop": 6.3,
+                "net": -48.82,
+                "fees": 48.82,
+                "underlying_stop": 25905.305,
+                "events": [
+                  {
+                    "i": 265,
+                    "decision_i": 264,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 10.5,
+                    "fees": 23.91
+                  },
+                  {
+                    "i": 268,
+                    "decision_i": 267,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 10.5,
+                    "fees": 24.91
+                  }
+                ],
+                "exit_i": 268
+              }
+            ],
+            "marked_worst": -55.309999999999974,
+            "cash_after": 21971.07,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-12-23",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21971.07,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-12-30",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21971.07,
+            "scale": 0.25
+          }
+        ]
+      },
+      "adverse": {
+        "rule": {
+          "setup": "PULLBACK",
+          "look": 5,
+          "efficiency": 0.5,
+          "stretch": 4.0,
+          "premium_low": 10.0,
+          "premium_high": 35.0,
+          "option_rise": 1.0,
+          "stop": 0.4,
+          "arm": 2.0,
+          "keep": 0.6,
+          "target": 1.0,
+          "hold": 15,
+          "start": 810,
+          "end": 870,
+          "slots": 1,
+          "underlying_stop": 0.5,
+          "reach": 2.0
+        },
+        "scenario": "adverse",
+        "summary": {
+          "net": -3018.8,
+          "without_best": -3083.14,
+          "worst": -986.93,
+          "drawdown": 3018.8,
+          "trades": 8,
+          "profit_factor": 0.0209,
+          "wins": 1,
+          "loss_days": 7,
+          "losing_streak": 4,
+          "quarters": [
+            0,
+            0,
+            0,
+            -3018.8
+          ],
+          "first_half": 0,
+          "second_half": -3018.8,
+          "unresolved": 0,
+          "fees": 396.05
+        },
+        "days": [
+          {
+            "day": "2025-10-07",
+            "net": -986.93,
+            "trades": 1,
+            "spent": 2425.7,
+            "fees": 50.93,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-10-07",
+                "j": 16,
+                "symbol": "NIFTY-2025-10-07-25250-CE",
+                "direction": 1,
+                "entry_i": 269,
+                "decision_i": 268,
+                "entry": 11.95,
+                "lots": 3,
+                "open": 0,
+                "reserve": 2425.7,
+                "peak": 14.8,
+                "stop": 7.17,
+                "net": -986.93,
+                "fees": 50.93,
+                "underlying_stop": 25202.695,
+                "events": [
+                  {
+                    "i": 269,
+                    "decision_i": 268,
+                    "side": "BUY",
+                    "lots": 3,
+                    "price": 11.95,
+                    "fees": 24.65
+                  },
+                  {
+                    "i": 278,
+                    "decision_i": 277,
+                    "side": "SELL",
+                    "reason": "STOP",
+                    "lots": 3,
+                    "price": 7.15,
+                    "fees": 26.28
+                  }
+                ],
+                "exit_i": 278
+              }
+            ],
+            "marked_worst": -1006.39,
+            "cash_after": 24013.07,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-10-14",
+            "net": -649.2,
+            "trades": 1,
+            "spent": 2242.78,
+            "fees": 51.2,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-10-14",
+                "j": 12,
+                "symbol": "NIFTY-2025-10-14-25150-CE",
+                "direction": 1,
+                "entry_i": 285,
+                "decision_i": 284,
+                "entry": 16.7,
+                "lots": 2,
+                "open": 0,
+                "reserve": 2242.78,
+                "peak": 18.55,
+                "stop": 10.02,
+                "net": -649.2,
+                "fees": 51.2,
+                "underlying_stop": 25118.41,
+                "events": [
+                  {
+                    "i": 285,
+                    "decision_i": 284,
+                    "side": "BUY",
+                    "lots": 2,
+                    "price": 16.7,
+                    "fees": 24.58
+                  },
+                  {
+                    "i": 288,
+                    "decision_i": 287,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 2,
+                    "price": 12.1,
+                    "fees": 26.62
+                  }
+                ],
+                "exit_i": 288
+              }
+            ],
+            "marked_worst": -610.28,
+            "cash_after": 23363.87,
+            "scale": 1.0
+          },
+          {
+            "day": "2025-10-20",
+            "net": -250.52,
+            "trades": 1,
+            "spent": 980.37,
+            "fees": 49.02,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-10-20",
+                "j": 13,
+                "symbol": "NIFTY-2025-10-20-25850-PE",
+                "direction": -1,
+                "entry_i": 264,
+                "decision_i": 263,
+                "entry": 14.35,
+                "lots": 1,
+                "open": 0,
+                "reserve": 980.37,
+                "peak": 14.35,
+                "stop": 8.61,
+                "net": -250.52,
+                "fees": 49.02,
+                "underlying_stop": 25878.615,
+                "events": [
+                  {
+                    "i": 264,
+                    "decision_i": 263,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 14.35,
+                    "fees": 24.02
+                  },
+                  {
+                    "i": 265,
+                    "decision_i": 264,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 11.25,
+                    "fees": 25.0
+                  }
+                ],
+                "exit_i": 265
+              }
+            ],
+            "marked_worst": -227.82000000000002,
+            "cash_after": 23113.35,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-10-28",
+            "net": -324.65,
+            "trades": 1,
+            "spent": 775.53,
+            "fees": 48.4,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-10-28",
+                "j": 9,
+                "symbol": "NIFTY-2025-10-28-25800-PE",
+                "direction": -1,
+                "entry_i": 272,
+                "decision_i": 271,
+                "entry": 11.2,
+                "lots": 1,
+                "open": 0,
+                "reserve": 775.53,
+                "peak": 11.2,
+                "stop": 6.72,
+                "net": -324.65,
+                "fees": 48.4,
+                "underlying_stop": 25879.5,
+                "events": [
+                  {
+                    "i": 272,
+                    "decision_i": 271,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 11.2,
+                    "fees": 23.93
+                  },
+                  {
+                    "i": 274,
+                    "decision_i": 273,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 6.95,
+                    "fees": 24.47
+                  }
+                ],
+                "exit_i": 274
+              }
+            ],
+            "marked_worst": -318.15999999999997,
+            "cash_after": 22788.7,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-11-04",
+            "net": 64.34,
+            "trades": 1,
+            "spent": 889.33,
+            "fees": 49.41,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-11-04",
+                "j": 11,
+                "symbol": "NIFTY-2025-11-04-25600-PE",
+                "direction": -1,
+                "entry_i": 296,
+                "decision_i": 295,
+                "entry": 12.95,
+                "lots": 1,
+                "open": 0,
+                "reserve": 889.33,
+                "peak": 21.15,
+                "stop": 7.77,
+                "net": 64.34,
+                "fees": 49.41,
+                "underlying_stop": 25638.785,
+                "events": [
+                  {
+                    "i": 296,
+                    "decision_i": 295,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 12.95,
+                    "fees": 23.98
+                  },
+                  {
+                    "i": 312,
+                    "decision_i": 311,
+                    "side": "SELL",
+                    "reason": "TIME",
+                    "lots": 1,
+                    "price": 14.7,
+                    "fees": 25.43
+                  }
+                ],
+                "exit_i": 312
+              }
+            ],
+            "marked_worst": -159.47999999999996,
+            "cash_after": 22853.04,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-11-11",
+            "net": -312.72,
+            "trades": 1,
+            "spent": 1214.48,
+            "fees": 49.47,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-11-11",
+                "j": 18,
+                "symbol": "NIFTY-2025-11-11-25700-CE",
+                "direction": 1,
+                "entry_i": 279,
+                "decision_i": 278,
+                "entry": 17.95,
+                "lots": 1,
+                "open": 0,
+                "reserve": 1214.48,
+                "peak": 17.95,
+                "stop": 10.77,
+                "net": -312.72,
+                "fees": 49.47,
+                "underlying_stop": 25666.775,
+                "events": [
+                  {
+                    "i": 279,
+                    "decision_i": 278,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 17.95,
+                    "fees": 24.13
+                  },
+                  {
+                    "i": 281,
+                    "decision_i": 280,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 13.9,
+                    "fees": 25.34
+                  }
+                ],
+                "exit_i": 281
+              }
+            ],
+            "marked_worst": -299.74,
+            "cash_after": 22540.32,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-11-18",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 22540.32,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-11-25",
+            "net": -351.09,
+            "trades": 1,
+            "spent": 986.87,
+            "fees": 48.84,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-11-25",
+                "j": 13,
+                "symbol": "NIFTY-2025-11-25-25950-PE",
+                "direction": -1,
+                "entry_i": 313,
+                "decision_i": 312,
+                "entry": 14.45,
+                "lots": 1,
+                "open": 0,
+                "reserve": 986.87,
+                "peak": 14.45,
+                "stop": 8.67,
+                "net": -351.09,
+                "fees": 48.84,
+                "underlying_stop": 25980.66,
+                "events": [
+                  {
+                    "i": 313,
+                    "decision_i": 312,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 14.45,
+                    "fees": 24.02
+                  },
+                  {
+                    "i": 314,
+                    "decision_i": 313,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 9.8,
+                    "fees": 24.82
+                  }
+                ],
+                "exit_i": 314
+              }
+            ],
+            "marked_worst": -331.63,
+            "cash_after": 22189.23,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-12-02",
+            "net": -208.03,
+            "trades": 1,
+            "spent": 843.81,
+            "fees": 48.78,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [
+              {
+                "day": "2025-12-02",
+                "j": 14,
+                "symbol": "NIFTY-2025-12-02-26100-CE",
+                "direction": 1,
+                "entry_i": 277,
+                "decision_i": 276,
+                "entry": 12.25,
+                "lots": 1,
+                "open": 0,
+                "reserve": 843.81,
+                "peak": 12.25,
+                "stop": 7.35,
+                "net": -208.03,
+                "fees": 48.78,
+                "underlying_stop": 26044.684999999998,
+                "events": [
+                  {
+                    "i": 277,
+                    "decision_i": 276,
+                    "side": "BUY",
+                    "lots": 1,
+                    "price": 12.25,
+                    "fees": 23.96
+                  },
+                  {
+                    "i": 279,
+                    "decision_i": 278,
+                    "side": "SELL",
+                    "reason": "STRUCTURE",
+                    "lots": 1,
+                    "price": 9.8,
+                    "fees": 24.82
+                  }
+                ],
+                "exit_i": 279
+              }
+            ],
+            "marked_worst": -208.02999999999994,
+            "cash_after": 21981.2,
+            "scale": 0.5
+          },
+          {
+            "day": "2025-12-09",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21981.2,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-12-16",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21981.2,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-12-23",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21981.2,
+            "scale": 0.25
+          },
+          {
+            "day": "2025-12-30",
+            "net": 0,
+            "trades": 0,
+            "spent": 0.0,
+            "fees": 0,
+            "unresolved": 0,
+            "rejected": 0,
+            "positions": [],
+            "marked_worst": 0.0,
+            "cash_after": 21981.2,
+            "scale": 0.25
+          }
+        ]
+      }
+    },
+    "limitation": "Fresh seeded fitting uses only prior months; family design and all 2025 market regimes were already seen, so diagnostic only"
+  }
+}

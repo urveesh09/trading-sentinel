@@ -2,6 +2,8 @@
 from __future__ import annotations
 from dataclasses import dataclass,asdict
 from datetime import time
+from dataclasses import replace
+from types import SimpleNamespace
 import hashlib,json,math
 import numpy as np
 import data as D
@@ -18,7 +20,9 @@ def up(x):return round(math.ceil(round(x/.05,6))*.05,2)
 def down(x):return round(math.floor(round(x/.05,6))*.05,2)
 def half(x):return .025 if x<10 else .05 if x<50 else .1 if x<100 else .525
 def fee(price,qty,buy):return round(ORDER+price*qty*(BUY_RATE if buy else SELL_RATE),2)
-def reserve(price,lots,lot=LOT):return price*lots*lot+fee(price,lots*lot,True)+lots*ORDER
+def reserve(price,lots,lot=None):
+    lot=LOT if lot is None else lot
+    return price*lots*lot+fee(price,lots*lot,True)+lots*ORDER
 
 
 @dataclass(frozen=True)
@@ -39,6 +43,7 @@ class Rule:
     end:int=900
     slots:int=1
     underlying_stop:float=1.
+    reach:float=0.              # max OTM distance / (causal ATR * sqrt(minutes left)); 0 disables
 
     @property
     def key(self):return hashlib.sha256(json.dumps(asdict(self),sort_keys=True).encode()).hexdigest()[:12]
@@ -46,6 +51,19 @@ class Rule:
 
 def directions(t,rule):
     """Every reading is based on the completed current bar and earlier bars."""
+    if rule.setup=='E011':
+        state=EP.new_day_state();out=np.zeros(t.n,dtype=np.int8)
+        saved=EP.CONFIRM_MAX_GAP_SEC
+        try:
+            EP.CONFIRM_MAX_GAP_SEC=65.
+            for i in range(t.n):
+                spot=float(t.close[i]) if np.isfinite(t.close[i]) else None
+                fut=float(t.f[i,3]) if np.isfinite(t.f[i,3]) else None
+                EP.update_box(state,t.now[i].time(),spot,fut)
+                d=EP.breakout_signal(state,t.now[i],spot,fut)
+                if d:out[i]=1 if d=='UP' else -1
+        finally:EP.CONFIRM_MAX_GAP_SEC=saved
+        return out
     feat=t.features[rule.look];out=np.zeros(t.n,dtype=np.int8)
     waiting=None
     first=max(rule.look+1,int(np.searchsorted(t.minute,rule.start-5)))
@@ -94,13 +112,18 @@ def executable(t,i,j,side,scenario,lots):
     return (min(lots,capacity),price) if price>0 else (0,None)
 
 
-def choose(t,i,d,rule,budget,cash,lot=LOT):
+def choose(t,i,d,rule,budget,cash,lot=None):
+    lot=LOT if lot is None else lot
     if not np.isfinite(t.close[i]):return None
     asks=t.q[i,:,3]
     valid=(t.kinds==d)&(d*(t.strikes-t.close[i])>0)&(np.abs(t.strikes-t.close[i])<=400)
-    valid&=np.isfinite(asks)&(asks>=rule.premium_low)&(asks<=rule.premium_high)
+    valid&=np.isfinite(asks)&(asks>=rule.premium_low)&(asks<=rule.premium_high) if rule.setup!='E011' else np.isfinite(asks)
     for j in sorted(np.flatnonzero(valid),key=lambda j:d*t.strikes[j]):
         row=t.q[i,j];ask=up(float(row[3])+half(float(row[3])))
+        if rule.reach:
+            expected=t.features[rule.look][i,4]*math.sqrt(max(1,930-t.minute[i]))
+            if not np.isfinite(expected) or expected<=0 or abs(t.strikes[j]-t.close[i])>rule.reach*expected:continue
+        if rule.setup=='E011' and not t.close[i]*.00004<=ask<=t.close[i]*.0003:continue
         if rule.option_rise:
             old=t.q[i-5,j,3] if i>=5 else np.nan
             if not np.isfinite(old) or old<=0 or ask/old<rule.option_rise:continue
@@ -122,9 +145,13 @@ def run_day(t,rule,scenario='ordinary',cash=START_CASH,budget=BUDGET,details=Fal
                 cost=fee(price,filled*LOT,False);gross=round((price-pos['entry'])*filled*LOT,2)
                 pos['net']=round(pos['net']+gross-cost,2);pos['fees']=round(pos['fees']+cost,2);pos['open']-=filled
                 pos['events'].append(dict(i=i,decision_i=decided,side='SELL',reason=reason,lots=filled,price=price,fees=cost))
+                if 'native' in pos:
+                    EP._sell(pos['native'],filled,price,reason,t.now[i])
+                    assert abs(pos['native']['net_pnl']-pos['net'])<.03
                 if not pos['open']:
                     cash=round(cash+pos['net'],2);pos['exit_i']=i;positions.append(pos);pos=None;pending_exit=None;next_i=i+5
-                else:pending_exit=(pos['open'],reason,decided)
+                else:pending_exit=(pos['open'],reason,decided) if reason!='BANK_HALF' else None
+            elif reason=='BANK_HALF':pending_exit=None
             if pending_exit:continue
         if pending_entry:
             j,lots,limit,decision,sign,atr,room=pending_entry;pending_entry=None
@@ -135,11 +162,21 @@ def run_day(t,rule,scenario='ordinary',cash=START_CASH,budget=BUDGET,details=Fal
             pos=dict(day=t.day,j=j,symbol=t.symbols[j],direction=sign,entry_i=i,decision_i=decision,entry=price,lots=filled,open=filled,
                      reserve=round(risk,2),peak=price,stop=round(price*(1-rule.stop),2),net=-fee(price,filled*LOT,True),fees=fee(price,filled*LOT,True),
                      underlying_stop=float(t.close[decision]-sign*atr*rule.underlying_stop),events=[dict(i=i,decision_i=decision,side='BUY',lots=filled,price=price,fees=fee(price,filled*LOT,True))])
+            if rule.setup=='E011':
+                con=SimpleNamespace(tradingsymbol=t.symbols[j],token=j+1,strike=float(t.strikes[j]),instrument_type='CE' if sign==1 else 'PE',lot_size=LOT)
+                pos['native']=EP._new_position(t.day,'NIFTY','C','NFO',con,price,filled,t.now[i],FEE)
         if pos:
             row=t.q[i,pos['j']]
-            bid=down(float(row[3])-half(float(row[3]))) if np.isfinite(row[3]) else None
+            bid=down(float(row[3])-half(float(row[3]))) if np.isfinite(row[3]) and np.isfinite(row[4]) and row[4]*.2>=LOT else None
             reason=None
             if t.minute[i]>=928:reason='FLAT_TIME'
+            elif bid is not None and bid>0 and rule.setup=='E011':
+                box=t.box;line=box[0]-.25*(box[0]-box[1]) if pos['direction']==1 else box[1]+.25*(box[0]-box[1])
+                broken=bool(np.isfinite(t.close[i]) and pos['direction']*(t.close[i]-line)<0)
+                action=EP.manage_position(pos['native'],replace(EP.POLICIES['C'],flat_at=time(15,28)),bid,t.now[i],structure_broken=broken)
+                pos['peak']=pos['native']['peak'];pos['stop']=pos['native']['stop']
+                if action and i<t.n-1:pending_exit=(*action,i)
+                continue
             elif bid is not None and bid>0:
                 pos['peak']=max(pos['peak'],bid)
                 gain=pos['peak']/pos['entry']-1
@@ -175,7 +212,9 @@ def summary(days):
     values=[d['net'] for d in days];curve=peak=dd=0.;streak=longest=0
     for v in values:
         curve+=v;peak=max(peak,curve);dd=max(dd,peak-curve)
-        streak=streak+1 if v<0 else 0;longest=max(longest,streak)
+        if v<0:streak+=1
+        elif v>0:streak=0
+        longest=max(longest,streak)
     gains=sum(v for v in values if v>0);loss=-sum(v for v in values if v<0)
     qs=[sum(d['net'] for d in days if (int(d['day'][5:7])-1)//3==q) for q in range(4)]
     return dict(net=round(sum(values),2),without_best=round(sum(values)-max(values,default=0),2),worst=round(min(values,default=0),2),
@@ -212,4 +251,6 @@ def score(ordinary,adverse):
         v-=max(0,15-s['trades'])*500
         v-=max(0,-1250-s['worst'])*2
         scores.append(v)
-    return round(min(scores),2)
+    r=ordinary['rule']
+    complexity=50*sum((r['efficiency']>0,r['option_rise']>0,r['underlying_stop']>0,r.get('reach',0)>0))
+    return round(min(scores)-complexity,2)

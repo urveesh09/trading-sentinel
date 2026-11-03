@@ -1,3 +1,19 @@
+## November 3 — E02 final candidate freeze (Dev research; 2024 exam next)
+
+Plan: `docs/research/simulation/2026-11-03-expiry-e02/PLAN.md`; implementation
+receipt `76c6b0b`. Source/data/fees and the two finalists are bound in
+`freeze-final.json` before any 2024 strategy score. 2023 stays protected.
+Round 01/02 and two chronological fits recorded 1,122 rule evaluations (including
+cross-round duplicates). CORE and RUNNER use the same causal 10-minute breakout
+entry, 20% premium stop and 15-minute hold; take 2x versus seek 3x with a floor.
+2025 development CORE +Rs 18,882 ordinary / +Rs 17,003 adverse, RUNNER +Rs 22,178 /
++Rs 20,265. Both have 22/23 positive coarse neighbours. Native-money/controller
+and fixed-entry friction checks pass; 18 research tests pass. Broader 2025
+chronological genome fits LOST on later quarters: retained as selection-decay
+warnings, not hidden by the fitted finalists. No automatic adaptive trader.
+Next: committed freeze, one 2024 exam, accept its verdict, then only a supported
+Dev paper candidate. No strategy/config/schema/N11/Production/deployment change.
+
 ## November 3 — E02 iterative development authorized (Dev research, active)
 
 Owner authorized multiple improvement/search iterations after E01.1's negative

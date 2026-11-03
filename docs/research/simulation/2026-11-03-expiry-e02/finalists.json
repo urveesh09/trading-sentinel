@@ -1,0 +1,40 @@
+{
+  "E02_CORE": {
+    "setup": "BREAK",
+    "look": 10,
+    "efficiency": 0.5,
+    "stretch": 4.0,
+    "premium_low": 10.0,
+    "premium_high": 20.0,
+    "option_rise": 0.0,
+    "stop": 0.2,
+    "arm": 1.0,
+    "keep": 0.6,
+    "target": 1.0,
+    "hold": 15,
+    "start": 810,
+    "end": 870,
+    "slots": 1,
+    "underlying_stop": 2.0,
+    "reach": 0.0
+  },
+  "E02_RUNNER": {
+    "setup": "BREAK",
+    "look": 10,
+    "efficiency": 0.5,
+    "stretch": 4.0,
+    "premium_low": 10.0,
+    "premium_high": 20.0,
+    "option_rise": 0.0,
+    "stop": 0.2,
+    "arm": 1.0,
+    "keep": 0.75,
+    "target": 2.0,
+    "hold": 15,
+    "start": 810,
+    "end": 870,
+    "slots": 1,
+    "underlying_stop": 2.0,
+    "reach": 0.0
+  }
+}

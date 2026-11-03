@@ -9,7 +9,7 @@ SPACE={
  'look':(5,10,20,30),'efficiency':(0.,.3,.5,.7),'stretch':(1.5,2.5,4.),
  'premium_low':(2.,5.,10.),'premium_high':(10.,20.,35.),'option_rise':(0.,1.,1.2),
  'stop':(.2,.3,.4),'arm':(.4,1.,2.),'keep':(.5,.6,.75),'target':(1.,2.,4.,9.),
- 'hold':(8,15,30,60),'start':(780,810),'end':(870,900),'slots':(1,2),'underlying_stop':(.5,1.,2.)}
+ 'hold':(8,15,30,60),'start':(780,810),'end':(870,900),'slots':(1,2),'underlying_stop':(.5,1.,2.),'reach':(0.,1.,2.,3.)}
 
 
 def random_rule(rng):
@@ -30,21 +30,21 @@ def evaluate(tapes,r):
     return dict(key=r.key,rule=asdict(r),score=E.score(a,b),ordinary=a['summary'],adverse=b['summary'])
 
 
-def genome(label,population=48,generations=5,seeds=(11,37,101)):
-    tapes=D.load_year(2025)
+def genome(label,population=48,generations=5,seeds=(11,37,101),through=12):
+    tapes=[t for t in D.load_year(2025) if int(t.day[5:7])<=through]
     out=D.HERE/f'round-{label}.json';assert not out.exists()
     ledger_path=D.HERE/f'trials-{label}.csv';assert not ledger_path.exists()
     cache={};runs=[]
     # Every round records its exact family before scoring starts.
     D.dump(D.HERE/f'round-{label}-configuration.json',dict(space=SPACE,seeds=seeds,population=population,generations=generations,
            execution=dict(ordinary='next-open + p75 half spread',adverse='next-open + double half spread + max(one tick,1% premium)',catastrophe='next bar worst high/low, double spread; separately reported'),
-           source_sha={p.name:D.sha(p) for p in (D.HERE/'data.py',D.HERE/'e02_lab.py',D.HERE/'search.py')},year2024_opened=False))
+           source_sha={p.name:D.sha(p) for p in (D.HERE/'data.py',D.HERE/'e02_lab.py',D.HERE/'search.py')},through_month=through,year2024_opened=False))
     with ledger_path.open('w',newline='',encoding='utf-8') as f:
         writer=csv.writer(f);writer.writerow(['id','score','ordinary_net','adverse_net','ordinary_ex_best','adverse_ex_best','ordinary_trades','adverse_trades','rule_json'])
         for seed in seeds:
             rng=random.Random(seed)
             pop=[random_rule(rng) for _ in range(population)]
-            if label!='01':
+            if label in ('02','03'):
                 previous=json.loads((D.HERE/'round-01.json').read_text())
                 parents=[E.Rule(**x['rule']) for x in previous['leaders'][:8]]
                 pop=parents+[mutate(rng.choice(parents),rng,3) for _ in range(population-len(parents))]
@@ -91,19 +91,39 @@ def exam():
     verify_freeze();out=D.HERE/'exam-2024.json';assert not out.exists()
     rules=json.loads((D.HERE/'finalists.json').read_text())
     tapes=D.load_year(2024,exam=True)
-    results={}
+    from audit import evaluate_finalist
+    results={};audits={};stress={}
+    baseline={s:E.run_year(tapes,E.Rule(setup='E011'),s,True) for s in ('ordinary','adverse')}
     for name,params in rules.items():
         r=E.Rule(**params)
-        results[name]={s:E.run_year(tapes,r,s,True) for s in ('ordinary','adverse','catastrophe')}
+        checked=evaluate_finalist(tapes,r)
+        results[name]=checked['results'];audits[name]={k:v for k,v in checked.items() if k!='results'}
+        stress[name]={}
+        saved=E.LOT
+        try:
+            for lot in (25,50,75):
+                E.LOT=lot
+                stress[name][str(lot)]={s:E.run_year(tapes,r,s)['summary'] for s in ('ordinary','adverse')}
+        finally:E.LOT=saved
         print('FINAL_EXAM',name,{s:v['summary'] for s,v in results[name].items()},flush=True)
-    D.dump(out,dict(results=results,verdict={n:{s:E.qualifies(v['summary']) for s,v in row.items()} for n,row in results.items()},
+    verdict={}
+    for name,row in results.items():
+        checks={s:E.qualifies(v['summary']) for s,v in row.items() if s in ('ordinary','adverse')}
+        for s in ('ordinary','adverse'):
+            a=row[s]['summary'];b=baseline[s]['summary']
+            checks[s]['beats_same_cash_E011']=a['net']>b['net']+.01
+            checks[s]['worst_vs_same_cash_E011']=a['worst']>=b['worst']-.01
+            checks[s]['drawdown_vs_same_cash_E011']=a['drawdown']<=b['drawdown']+.01
+        checks['fixed_entry_stress']={'positive':row['fixed_entry_stress']['summary']['net']>0,'without_best_positive':row['fixed_entry_stress']['summary']['without_best']>0}
+        verdict[name]=dict(checks=checks,passed=all(all(c.values()) for c in checks.values()))
+    D.dump(out,dict(results=results,verdict=verdict,native_audit=audits,lot_sensitivity=stress,baseline=baseline,
                    source_freeze='freeze-final.json',no_retuning=True))
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('command',choices=('genome','freeze','verify','exam'));p.add_argument('--round',default='01');p.add_argument('--population',type=int,default=48);p.add_argument('--generations',type=int,default=5)
+    p=argparse.ArgumentParser();p.add_argument('command',choices=('genome','freeze','verify','exam'));p.add_argument('--round',default='01');p.add_argument('--population',type=int,default=48);p.add_argument('--generations',type=int,default=5);p.add_argument('--through-month',type=int,default=12)
     a=p.parse_args()
-    if a.command=='genome':genome(a.round,a.population,a.generations)
+    if a.command=='genome':genome(a.round,a.population,a.generations,through=a.through_month)
     elif a.command=='freeze':freeze()
     elif a.command=='verify':verify_freeze()
     else:exam()

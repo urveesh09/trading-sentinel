@@ -71,7 +71,11 @@ profit factor >=1.2, at least15 trades/year, ordinary AND adverse, in both 2025
 development and the 2024 final exam. Both halves of each year must be reported;
 at least two quarters must be positive. Final daily loss must be no worse than
 Rs1,250 and cumulative realized drawdown no worse than Rs5,000, and both no
-worse than the same-cash E01.1 control. Hard full-premium reserve remains
+worse than the same-cash E01.1 control, with higher net than that control in
+both execution scenarios. The fixed-contract/entry/exit-clock 1% plus one-tick
+extra friction check must also have positive net and ex-best net. At least80%
+of the registered coarse development neighbours must remain positive under
+ordinary and adverse fills. Hard full-premium reserve remains
 Rs2,500/day. Report worst trade/day, marked and realized drawdown, losing streak,
 cash exhaustion/brakes, fees, unresolved exposure and best-day concentration.
 These are eligibility criteria for broker-free paper evaluation, not a guarantee
@@ -102,3 +106,32 @@ disable/remove the isolated research/shadow without rewriting old records.
 Remaining: source/coverage audit and baseline; replay/features; measured rounds;
 final candidate freeze; 2024 exam; independent financial/causal audit; justified
 Dev shadow if supported; final report, commits and handover.
+
+## Pre-exam development receipt (no 2024 strategy outcome read)
+
+Implementation/round01 commit76c6b0b. Archived E01.1 control:106 full position /
+event records equal. Round01 290 unique genomes; round02 476, plus fresh
+chronological fits181 and175 (1,122 evaluated rule instances across the four
+ledgers, with cross-round duplicates and neutral genes disclosed).
+
+The optional causal strike-reach filter did not justify added complexity in
+the selected family. Two simple BREAK finalists keep it and option-rise off:
+CORE takes the whole ticket at2x, RUNNER seeks3x with a75% floor from2x. Both
+use a10-minute index/future high/low break, directional efficiency>=0.5,
+stretch<=4 ATR, quote premium10-20,13:30-14:30,20% premium stop, underlying
+stop2 ATR,15-minute maximum hold, one original full-premium ticket/day.
+
+2025 development: CORE ordinary/adverse +18,882.20/+17,002.84, worst day
+-792.19/-830.85, drawdown3,001.29/3,155.21; RUNNER +22,177.83/+20,264.55.
+22 of23 registered nearby settings stay positive for both. Fixed-entry friction
+and lot25/50/75 sensitivity remain positive. Native money/controller auditing
+matches prices, clocks and quantities; initial STRUCTURE vs FAILED_BREAK reason
+annotation mismatch is retained. No financial correction was required.
+
+Important failure retained: fresh seeded fitting on earlier2025months chose
+pullbacks that then lost -3,312.75/-3,039.96 onQ3 and -3,028.93/-3,018.80 onQ4.
+This is evidence of genome selection decay. Full-year positive totals and a
+stable neighbourhood do not erase it. Finalists are fixed hypotheses, not an
+automatically trusted adaptive/genome-selected trader. Test them once on2024;
+only a candidate passing the frozen criteria can enter broker-free paper
+evaluation, and no result here authorizes a main-rule swap or deployment.
