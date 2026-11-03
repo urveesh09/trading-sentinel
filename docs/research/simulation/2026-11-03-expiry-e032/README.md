@@ -84,8 +84,10 @@ Any E03.1 paper ticket already shows it: compare its fill to its decision ask.
   drawdown <= 2,500, random control beaten, not confined to one setting. **No candidate met it.**
 - Rollout / rollback: none, no runtime change. Docs only.
 - Remaining (owner's decisions): (1) a fresh, untouched test: NIFTY 2026 same-day-expiry chains are not
-  in the database; a new Breeze target needs your word (about 31 requests an expiry, as for 2024/2025);
-  SENSEX same-day chains likewise; NIFTY 2023 stays the protected exam. (2) Forward paper: switch on E03 /
+  in the database. The download shape the owner approved for E01.1's exam (`EXAM_YEAR.md`, 18 legs around
+  the 13:00 ATM) can also test the E03 family on days that stay within about 100 points of 13:00; its rules
+  are frozen now in [EXAM_E03_FAMILY.md](EXAM_E03_FAMILY.md). SENSEX needs its own download; NIFTY 2023
+  stays the protected exam. (2) Forward paper: switch on E03 /
   E03.1 after merge and rebuild. (3) Size: only after forward evidence, at the same percentage risk.
 
 ## Commands (from this folder, Dev venv `../../../../python-engine/winvenv/Scripts/python.exe`)

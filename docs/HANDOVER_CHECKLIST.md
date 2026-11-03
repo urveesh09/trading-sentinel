@@ -6,7 +6,8 @@
   rejected; ledgers `trials.csv`, `genome-trials.csv`, `diagnostics.json`.
 - [x] Learning: 7-8% buy limit cuts the severe-fill loss by about a quarter, normal fills unchanged.
 - [x] No runtime, config, schema or Production change; atlas unchanged; 2023 not opened; no download.
-- [ ] Owner: fresh 2026 same-day-expiry chains (new Breeze target), forward paper for E03/E03.1.
+- [x] E03-family exam rules frozen before the data exists: `EXAM_E03_FAMILY.md` (approved E01.1 download shape).
+- [ ] Owner: the exam download (through the download skill), forward paper for E03/E03.1.
 
 ## November 3 — E03.1 source pushed; disabled / not deployed
 

@@ -6,9 +6,10 @@
   and a 677-setting leave-one-year-out genome failed. Report `docs/EXPIRY_RESEARCH_E032.md`.
 - Kept as learning: 7-8% buy limit (severe -2,486 vs -3,234, normal fills unchanged), to be frozen
   into whichever variant the owner promotes. No runtime variant: it would not differ in normal fills.
-- Next, owner decisions only: (1) download NIFTY (and SENSEX) 2026 same-day-expiry chains as an
-  untouched exam for E03/E03.1 (new Breeze target, about 31 requests per expiry); (2) merge, rebuild
-  and enable E03/E03.1 paper shadows; (3) size at the same percentage risk only after forward tickets.
+- Next, owner decisions only: (1) the approved E01.1 exam download (`EXAM_YEAR.md` shape) also tests
+  the E03 family on days within about 100 points of 13:00; rules frozen in
+  `docs/research/simulation/2026-11-03-expiry-e032/EXAM_E03_FAMILY.md` before the data exists;
+  (2) merge, rebuild and enable E03/E03.1 paper shadows; (3) size at the same percentage risk only after forward tickets.
   No more in-sample rounds on the 2024/2025 afternoons.
 
 ## November 3 — E03.1 source pushed; disabled / not deployed

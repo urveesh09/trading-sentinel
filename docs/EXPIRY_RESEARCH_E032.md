@@ -51,9 +51,11 @@ have refused it.
 
 ## What happens next (your decisions)
 
-1. **A fresh test.** The database has no 2026 expiry-day option chains, for NIFTY or SENSEX. A new
-   download (about 31 requests per expiry, as for 2024/2025) would give an untouched exam for E03 and
-   E03.1. It needs your word. NIFTY 2023 stays the protected exam.
+1. **A fresh test.** The database has no 2026 expiry-day option chains, for NIFTY or SENSEX. The
+   download you already approved for E01.1's exam (13:00-15:30, 18 legs around the 13:00 strike) can
+   also test E03 and E03.1 on days that stay within about 100 points of 13:00. Their rules for it are
+   frozen now, before the data exists: [EXAM_E03_FAMILY.md](research/simulation/2026-11-03-expiry-e032/EXAM_E03_FAMILY.md).
+   The download itself goes through the download skill. NIFTY 2023 stays the protected exam.
 2. **Forward paper.** Merge, rebuild, and switch on E03 and E03.1 to collect real paper tickets.
 3. **Size.** Only after forward evidence, and at the same percentage risk.
 

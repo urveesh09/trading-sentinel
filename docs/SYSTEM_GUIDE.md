@@ -13,8 +13,8 @@ Report: `docs/EXPIRY_RESEARCH_E032.md`; record and plan: `docs/research/simulati
 - No engine, config, `.env`, schema, Production, N11/N11T, A/B/C, E02, E03 or E03.1 change; atlas
   unchanged (no `python-engine` source touched). No download; NIFTY 2023 not opened. Verification:
   `e032_lab.py` reproduces E03 and E03.1 day by day at all three fill levels; both freezes verify.
-- Remaining (owner): a fresh exam needs NIFTY/SENSEX 2026 same-day-expiry chains (not in the
-  database; new Breeze target needs the owner's word); forward paper for E03/E03.1; size only after.
+- Remaining (owner): the approved E01.1 exam download also tests the E03 family; its rules are frozen in
+  `EXAM_E03_FAMILY.md` before the data exists; forward paper for E03/E03.1; size only after.
 
 ## November 3 — E03.1 source pushed; disabled / not deployed
 
