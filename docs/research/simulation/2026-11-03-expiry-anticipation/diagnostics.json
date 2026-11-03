@@ -1,0 +1,2442 @@
+{
+  "matched_control_native_audit": {
+    "ordinary": {
+      "native_position_replays": 37,
+      "native_exit_slices": 38,
+      "end_cash": 31212.55,
+      "sampled_marked_drawdown": 1838.85,
+      "exit_reasons": {
+        "STOP": 8,
+        "TARGET": 5,
+        "TIME": 21,
+        "TARGET_BASE": 1,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1,
+        "TRAIL": 1
+      },
+      "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+    },
+    "adverse": {
+      "native_position_replays": 37,
+      "native_exit_slices": 38,
+      "end_cash": 30458.74,
+      "sampled_marked_drawdown": 1935.17,
+      "exit_reasons": {
+        "STOP": 9,
+        "TARGET": 5,
+        "TIME": 20,
+        "TARGET_BASE": 1,
+        "RUNNER_TRAIL": 1,
+        "STRUCTURE": 1,
+        "TRAIL": 1
+      },
+      "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+    },
+    "catastrophe": {
+      "native_position_replays": 16,
+      "native_exit_slices": 16,
+      "end_cash": 22376.18,
+      "sampled_marked_drawdown": 2639.03,
+      "exit_reasons": {
+        "STOP": 7,
+        "TIME": 9
+      },
+      "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+    }
+  },
+  "coarse_budget_neighbours": {
+    "scale|0.2|continuous|ordinary": {
+      "summary": {
+        "net": 11322.72,
+        "without_best": 5472.76,
+        "worst": -682.9,
+        "drawdown": 1532.18,
+        "trades": 40,
+        "profit_factor": 3.043,
+        "wins": 18,
+        "loss_days": 16,
+        "losing_streak": 2,
+        "quarters": [
+          5092.96,
+          740.86,
+          4165.7,
+          1323.2
+        ],
+        "first_half": 5833.82,
+        "second_half": 5488.9,
+        "unresolved": 0,
+        "fees": 2060.78
+      },
+      "audit": {
+        "native_position_replays": 40,
+        "native_exit_slices": 42,
+        "end_cash": 36322.72,
+        "sampled_marked_drawdown": 2113.87,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 5,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.2|continuous|adverse": {
+      "summary": {
+        "net": 10051.49,
+        "without_best": 4295.63,
+        "worst": -712.14,
+        "drawdown": 1845.28,
+        "trades": 39,
+        "profit_factor": 2.6555,
+        "wins": 18,
+        "loss_days": 16,
+        "losing_streak": 3,
+        "quarters": [
+          5089.42,
+          481.03,
+          3808.29,
+          672.75
+        ],
+        "first_half": 5570.45,
+        "second_half": 4481.04,
+        "unresolved": 0,
+        "fees": 2009.26
+      },
+      "audit": {
+        "native_position_replays": 39,
+        "native_exit_slices": 41,
+        "end_cash": 35051.49,
+        "sampled_marked_drawdown": 2482.16,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 5,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 19,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.2|continuous|catastrophe": {
+      "summary": {
+        "net": -2927.93,
+        "without_best": -3507.49,
+        "worst": -803.11,
+        "drawdown": 2927.93,
+        "trades": 15,
+        "profit_factor": 0.3587,
+        "wins": 4,
+        "loss_days": 11,
+        "losing_streak": 7,
+        "quarters": [
+          -409.41,
+          -1888.02,
+          521.1,
+          -1151.6
+        ],
+        "first_half": -2297.43,
+        "second_half": -630.5,
+        "unresolved": 0,
+        "fees": 740.68
+      },
+      "audit": {
+        "native_position_replays": 15,
+        "native_exit_slices": 15,
+        "end_cash": 22072.07,
+        "sampled_marked_drawdown": 2943.14,
+        "exit_reasons": {
+          "STOP": 7,
+          "TIME": 8
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.2|2024|ordinary": {
+      "summary": {
+        "net": 7504.56,
+        "without_best": 1654.6,
+        "worst": -682.9,
+        "drawdown": 949.5,
+        "trades": 19,
+        "profit_factor": 3.1476,
+        "wins": 7,
+        "loss_days": 9,
+        "losing_streak": 2,
+        "quarters": [
+          6002.26,
+          -134.29,
+          1581.2,
+          55.39
+        ],
+        "first_half": 5867.97,
+        "second_half": 1636.59,
+        "unresolved": 0,
+        "fees": 1010.44
+      },
+      "audit": {
+        "native_position_replays": 19,
+        "native_exit_slices": 21,
+        "end_cash": 32504.56,
+        "sampled_marked_drawdown": 1362.38,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.2|2024|adverse": {
+      "summary": {
+        "net": 6467.69,
+        "without_best": 711.83,
+        "worst": -712.14,
+        "drawdown": 1117.48,
+        "trades": 18,
+        "profit_factor": 2.5815,
+        "wins": 6,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          5817.22,
+          -260.98,
+          1259.7,
+          -348.25
+        ],
+        "first_half": 5556.24,
+        "second_half": 911.45,
+        "unresolved": 0,
+        "fees": 958.56
+      },
+      "audit": {
+        "native_position_replays": 18,
+        "native_exit_slices": 20,
+        "end_cash": 31467.69,
+        "sampled_marked_drawdown": 1506.73,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 5,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.2|2024|catastrophe": {
+      "summary": {
+        "net": -2254.56,
+        "without_best": -2254.56,
+        "worst": -803.11,
+        "drawdown": 2254.56,
+        "trades": 6,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 6,
+        "losing_streak": 6,
+        "quarters": [
+          0,
+          -1836.47,
+          -418.09,
+          0
+        ],
+        "first_half": -1836.47,
+        "second_half": -418.09,
+        "unresolved": 0,
+        "fees": 294.81
+      },
+      "audit": {
+        "native_position_replays": 6,
+        "native_exit_slices": 6,
+        "end_cash": 22745.44,
+        "sampled_marked_drawdown": 2455.67,
+        "exit_reasons": {
+          "STOP": 4,
+          "TIME": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.2|2025|ordinary": {
+      "summary": {
+        "net": 3818.16,
+        "without_best": 2615.84,
+        "worst": -478.01,
+        "drawdown": 909.3,
+        "trades": 21,
+        "profit_factor": 2.8645,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -909.3,
+          875.15,
+          2584.5,
+          1267.81
+        ],
+        "first_half": -34.15,
+        "second_half": 3852.31,
+        "unresolved": 0,
+        "fees": 1050.34
+      },
+      "audit": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28818.16,
+        "sampled_marked_drawdown": 1723.27,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.2|2025|adverse": {
+      "summary": {
+        "net": 3583.8,
+        "without_best": 2446.42,
+        "worst": -537.55,
+        "drawdown": 736.21,
+        "trades": 21,
+        "profit_factor": 2.8083,
+        "wins": 12,
+        "loss_days": 6,
+        "losing_streak": 1,
+        "quarters": [
+          -727.8,
+          742.01,
+          2548.59,
+          1021.0
+        ],
+        "first_half": 14.21,
+        "second_half": 3569.59,
+        "unresolved": 0,
+        "fees": 1050.7
+      },
+      "audit": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28583.8,
+        "sampled_marked_drawdown": 1538.52,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.2|2025|catastrophe": {
+      "summary": {
+        "net": -673.37,
+        "without_best": -1252.93,
+        "worst": -646.89,
+        "drawdown": 1151.6,
+        "trades": 9,
+        "profit_factor": 0.7087,
+        "wins": 4,
+        "loss_days": 5,
+        "losing_streak": 2,
+        "quarters": [
+          -409.41,
+          -51.55,
+          939.19,
+          -1151.6
+        ],
+        "first_half": -460.96,
+        "second_half": -212.41,
+        "unresolved": 0,
+        "fees": 445.87
+      },
+      "audit": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.3|continuous|ordinary": {
+      "summary": {
+        "net": 14165.63,
+        "without_best": 7587.0,
+        "worst": -682.9,
+        "drawdown": 1532.18,
+        "trades": 41,
+        "profit_factor": 3.5463,
+        "wins": 19,
+        "loss_days": 16,
+        "losing_streak": 2,
+        "quarters": [
+          5821.63,
+          2478.16,
+          4165.7,
+          1700.14
+        ],
+        "first_half": 8299.79,
+        "second_half": 5865.84,
+        "unresolved": 0,
+        "fees": 2168.87
+      },
+      "audit": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 39165.63,
+        "sampled_marked_drawdown": 2113.87,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.3|continuous|adverse": {
+      "summary": {
+        "net": 13073.99,
+        "without_best": 6612.18,
+        "worst": -712.14,
+        "drawdown": 1519.59,
+        "trades": 41,
+        "profit_factor": 3.2569,
+        "wins": 19,
+        "loss_days": 16,
+        "losing_streak": 3,
+        "quarters": [
+          5795.37,
+          2124.17,
+          3808.29,
+          1346.16
+        ],
+        "first_half": 7919.54,
+        "second_half": 5154.45,
+        "unresolved": 0,
+        "fees": 2168.51
+      },
+      "audit": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 38073.99,
+        "sampled_marked_drawdown": 2156.47,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.3|continuous|catastrophe": {
+      "summary": {
+        "net": -4073.38,
+        "without_best": -4073.38,
+        "worst": -1218.45,
+        "drawdown": 4073.38,
+        "trades": 10,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 10,
+        "losing_streak": 10,
+        "quarters": [
+          -1432.12,
+          -1664.16,
+          -711.16,
+          -265.94
+        ],
+        "first_half": -3096.28,
+        "second_half": -977.1,
+        "unresolved": 0,
+        "fees": 485.38
+      },
+      "audit": {
+        "native_position_replays": 10,
+        "native_exit_slices": 10,
+        "end_cash": 20926.62,
+        "sampled_marked_drawdown": 4076.63,
+        "exit_reasons": {
+          "STOP": 6,
+          "TIME": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.3|2024|ordinary": {
+      "summary": {
+        "net": 9970.53,
+        "without_best": 3391.9,
+        "worst": -682.9,
+        "drawdown": 949.5,
+        "trades": 20,
+        "profit_factor": 3.8361,
+        "wins": 8,
+        "loss_days": 9,
+        "losing_streak": 2,
+        "quarters": [
+          6730.93,
+          1603.01,
+          1581.2,
+          55.39
+        ],
+        "first_half": 8333.94,
+        "second_half": 1636.59,
+        "unresolved": 0,
+        "fees": 1092.47
+      },
+      "audit": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 34970.53,
+        "sampled_marked_drawdown": 2044.63,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.3|2024|adverse": {
+      "summary": {
+        "net": 9142.47,
+        "without_best": 2680.66,
+        "worst": -712.14,
+        "drawdown": 1007.98,
+        "trades": 20,
+        "profit_factor": 3.399,
+        "wins": 7,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          6523.17,
+          1382.16,
+          1259.7,
+          -22.56
+        ],
+        "first_half": 7905.33,
+        "second_half": 1237.14,
+        "unresolved": 0,
+        "fees": 1091.78
+      },
+      "audit": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 34142.47,
+        "sampled_marked_drawdown": 2080.34,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.3|2024|catastrophe": {
+      "summary": {
+        "net": -3859.71,
+        "without_best": -3859.71,
+        "worst": -1218.45,
+        "drawdown": 3859.71,
+        "trades": 9,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 9,
+        "losing_streak": 9,
+        "quarters": [
+          -1218.45,
+          -1664.16,
+          -711.16,
+          -265.94
+        ],
+        "first_half": -2882.61,
+        "second_half": -977.1,
+        "unresolved": 0,
+        "fees": 437.46
+      },
+      "audit": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 21140.29,
+        "sampled_marked_drawdown": 3859.71,
+        "exit_reasons": {
+          "STOP": 5,
+          "TIME": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.3|2025|ordinary": {
+      "summary": {
+        "net": 4195.1,
+        "without_best": 2992.78,
+        "worst": -478.01,
+        "drawdown": 909.3,
+        "trades": 21,
+        "profit_factor": 3.0486,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -909.3,
+          875.15,
+          2584.5,
+          1644.75
+        ],
+        "first_half": -34.15,
+        "second_half": 4229.25,
+        "unresolved": 0,
+        "fees": 1076.4
+      },
+      "audit": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 29195.1,
+        "sampled_marked_drawdown": 1723.27,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.3|2025|adverse": {
+      "summary": {
+        "net": 3931.52,
+        "without_best": 2794.14,
+        "worst": -537.55,
+        "drawdown": 736.21,
+        "trades": 21,
+        "profit_factor": 2.9837,
+        "wins": 12,
+        "loss_days": 6,
+        "losing_streak": 1,
+        "quarters": [
+          -727.8,
+          742.01,
+          2548.59,
+          1368.72
+        ],
+        "first_half": 14.21,
+        "second_half": 3917.31,
+        "unresolved": 0,
+        "fees": 1076.73
+      },
+      "audit": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 28931.52,
+        "sampled_marked_drawdown": 1538.52,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "scale|0.3|2025|catastrophe": {
+      "summary": {
+        "net": -673.37,
+        "without_best": -1252.93,
+        "worst": -646.89,
+        "drawdown": 1151.6,
+        "trades": 9,
+        "profit_factor": 0.7087,
+        "wins": 4,
+        "loss_days": 5,
+        "losing_streak": 2,
+        "quarters": [
+          -409.41,
+          -51.55,
+          939.19,
+          -1151.6
+        ],
+        "first_half": -460.96,
+        "second_half": -212.41,
+        "unresolved": 0,
+        "fees": 445.87
+      },
+      "audit": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.2|continuous|ordinary": {
+      "summary": {
+        "net": 11413.34,
+        "without_best": 5563.38,
+        "worst": -601.89,
+        "drawdown": 1453.42,
+        "trades": 40,
+        "profit_factor": 3.1733,
+        "wins": 18,
+        "loss_days": 16,
+        "losing_streak": 2,
+        "quarters": [
+          5383.62,
+          740.86,
+          3965.66,
+          1323.2
+        ],
+        "first_half": 6124.48,
+        "second_half": 5288.86,
+        "unresolved": 0,
+        "fees": 2057.91
+      },
+      "audit": {
+        "native_position_replays": 40,
+        "native_exit_slices": 42,
+        "end_cash": 36413.34,
+        "sampled_marked_drawdown": 1918.34,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 5,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.2|continuous|adverse": {
+      "summary": {
+        "net": 10074.04,
+        "without_best": 4318.18,
+        "worst": -640.88,
+        "drawdown": 1863.81,
+        "trades": 39,
+        "profit_factor": 2.7191,
+        "wins": 17,
+        "loss_days": 17,
+        "losing_streak": 5,
+        "quarters": [
+          5292.53,
+          481.03,
+          3627.73,
+          672.75
+        ],
+        "first_half": 5773.56,
+        "second_half": 4300.48,
+        "unresolved": 0,
+        "fees": 2006.21
+      },
+      "audit": {
+        "native_position_replays": 39,
+        "native_exit_slices": 41,
+        "end_cash": 35074.04,
+        "sampled_marked_drawdown": 2411.84,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 5,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 19,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.2|continuous|catastrophe": {
+      "summary": {
+        "net": -3074.76,
+        "without_best": -3654.32,
+        "worst": -803.11,
+        "drawdown": 3074.76,
+        "trades": 16,
+        "profit_factor": 0.3476,
+        "wins": 4,
+        "loss_days": 12,
+        "losing_streak": 8,
+        "quarters": [
+          -409.41,
+          -1888.02,
+          374.27,
+          -1151.6
+        ],
+        "first_half": -2297.43,
+        "second_half": -777.33,
+        "unresolved": 0,
+        "fees": 790.01
+      },
+      "audit": {
+        "native_position_replays": 16,
+        "native_exit_slices": 16,
+        "end_cash": 21925.24,
+        "sampled_marked_drawdown": 3089.97,
+        "exit_reasons": {
+          "STOP": 7,
+          "TIME": 9
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.2|2024|ordinary": {
+      "summary": {
+        "net": 7516.42,
+        "without_best": 1666.46,
+        "worst": -601.89,
+        "drawdown": 949.5,
+        "trades": 19,
+        "profit_factor": 3.2898,
+        "wins": 7,
+        "loss_days": 9,
+        "losing_streak": 2,
+        "quarters": [
+          6214.16,
+          -134.29,
+          1381.16,
+          55.39
+        ],
+        "first_half": 6079.87,
+        "second_half": 1436.55,
+        "unresolved": 0,
+        "fees": 1008.33
+      },
+      "audit": {
+        "native_position_replays": 19,
+        "native_exit_slices": 21,
+        "end_cash": 32516.42,
+        "sampled_marked_drawdown": 1234.08,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.2|2024|adverse": {
+      "summary": {
+        "net": 6508.77,
+        "without_best": 752.91,
+        "worst": -640.88,
+        "drawdown": 1117.48,
+        "trades": 18,
+        "profit_factor": 2.6828,
+        "wins": 6,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          6038.86,
+          -260.98,
+          1079.14,
+          -348.25
+        ],
+        "first_half": 5777.88,
+        "second_half": 730.89,
+        "unresolved": 0,
+        "fees": 956.48
+      },
+      "audit": {
+        "native_position_replays": 18,
+        "native_exit_slices": 20,
+        "end_cash": 31508.77,
+        "sampled_marked_drawdown": 1417.88,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 5,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.2|2024|catastrophe": {
+      "summary": {
+        "net": -2401.39,
+        "without_best": -2401.39,
+        "worst": -803.11,
+        "drawdown": 2401.39,
+        "trades": 7,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 7,
+        "losing_streak": 7,
+        "quarters": [
+          0,
+          -1836.47,
+          -564.92,
+          0
+        ],
+        "first_half": -1836.47,
+        "second_half": -564.92,
+        "unresolved": 0,
+        "fees": 344.14
+      },
+      "audit": {
+        "native_position_replays": 7,
+        "native_exit_slices": 7,
+        "end_cash": 22598.61,
+        "sampled_marked_drawdown": 2602.5,
+        "exit_reasons": {
+          "STOP": 4,
+          "TIME": 3
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.2|2025|ordinary": {
+      "summary": {
+        "net": 3896.92,
+        "without_best": 2694.6,
+        "worst": -478.01,
+        "drawdown": 830.54,
+        "trades": 21,
+        "profit_factor": 2.9791,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -830.54,
+          875.15,
+          2584.5,
+          1267.81
+        ],
+        "first_half": 44.61,
+        "second_half": 3852.31,
+        "unresolved": 0,
+        "fees": 1049.58
+      },
+      "audit": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28896.92,
+        "sampled_marked_drawdown": 1434.58,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.2|2025|adverse": {
+      "summary": {
+        "net": 3565.27,
+        "without_best": 2427.89,
+        "worst": -537.55,
+        "drawdown": 746.33,
+        "trades": 21,
+        "profit_factor": 2.7898,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -746.33,
+          742.01,
+          2548.59,
+          1021.0
+        ],
+        "first_half": -4.32,
+        "second_half": 3569.59,
+        "unresolved": 0,
+        "fees": 1049.73
+      },
+      "audit": {
+        "native_position_replays": 21,
+        "native_exit_slices": 21,
+        "end_cash": 28565.27,
+        "sampled_marked_drawdown": 1353.63,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 2
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.2|2025|catastrophe": {
+      "summary": {
+        "net": -673.37,
+        "without_best": -1252.93,
+        "worst": -646.89,
+        "drawdown": 1151.6,
+        "trades": 9,
+        "profit_factor": 0.7087,
+        "wins": 4,
+        "loss_days": 5,
+        "losing_streak": 2,
+        "quarters": [
+          -409.41,
+          -51.55,
+          939.19,
+          -1151.6
+        ],
+        "first_half": -460.96,
+        "second_half": -212.41,
+        "unresolved": 0,
+        "fees": 445.87
+      },
+      "audit": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.3|continuous|ordinary": {
+      "summary": {
+        "net": 13527.58,
+        "without_best": 7677.62,
+        "worst": -601.89,
+        "drawdown": 1453.42,
+        "trades": 41,
+        "profit_factor": 3.5656,
+        "wins": 19,
+        "loss_days": 16,
+        "losing_streak": 2,
+        "quarters": [
+          5383.62,
+          2478.16,
+          3965.66,
+          1700.14
+        ],
+        "first_half": 7861.78,
+        "second_half": 5665.8,
+        "unresolved": 0,
+        "fees": 2163.42
+      },
+      "audit": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 38527.58,
+        "sampled_marked_drawdown": 2044.63,
+        "exit_reasons": {
+          "STOP": 9,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 21,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.3|continuous|adverse": {
+      "summary": {
+        "net": 12390.59,
+        "without_best": 6634.73,
+        "worst": -640.88,
+        "drawdown": 1538.12,
+        "trades": 41,
+        "profit_factor": 3.22,
+        "wins": 18,
+        "loss_days": 17,
+        "losing_streak": 5,
+        "quarters": [
+          5292.53,
+          2124.17,
+          3627.73,
+          1346.16
+        ],
+        "first_half": 7416.7,
+        "second_half": 4973.89,
+        "unresolved": 0,
+        "fees": 2162.91
+      },
+      "audit": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 37390.59,
+        "sampled_marked_drawdown": 2086.15,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.3|continuous|catastrophe": {
+      "summary": {
+        "net": -4073.38,
+        "without_best": -4073.38,
+        "worst": -1218.45,
+        "drawdown": 4073.38,
+        "trades": 10,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 10,
+        "losing_streak": 10,
+        "quarters": [
+          -1432.12,
+          -1664.16,
+          -711.16,
+          -265.94
+        ],
+        "first_half": -3096.28,
+        "second_half": -977.1,
+        "unresolved": 0,
+        "fees": 485.38
+      },
+      "audit": {
+        "native_position_replays": 10,
+        "native_exit_slices": 10,
+        "end_cash": 20926.62,
+        "sampled_marked_drawdown": 4076.63,
+        "exit_reasons": {
+          "STOP": 6,
+          "TIME": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.3|2024|ordinary": {
+      "summary": {
+        "net": 9253.72,
+        "without_best": 3403.76,
+        "worst": -601.89,
+        "drawdown": 949.5,
+        "trades": 20,
+        "profit_factor": 3.8011,
+        "wins": 8,
+        "loss_days": 9,
+        "losing_streak": 2,
+        "quarters": [
+          6214.16,
+          1603.01,
+          1381.16,
+          55.39
+        ],
+        "first_half": 7817.17,
+        "second_half": 1436.55,
+        "unresolved": 0,
+        "fees": 1087.78
+      },
+      "audit": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 34253.72,
+        "sampled_marked_drawdown": 2044.63,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.3|2024|adverse": {
+      "summary": {
+        "net": 8477.6,
+        "without_best": 2721.74,
+        "worst": -640.88,
+        "drawdown": 1007.98,
+        "trades": 20,
+        "profit_factor": 3.3619,
+        "wins": 7,
+        "loss_days": 10,
+        "losing_streak": 3,
+        "quarters": [
+          6038.86,
+          1382.16,
+          1079.14,
+          -22.56
+        ],
+        "first_half": 7421.02,
+        "second_half": 1056.58,
+        "unresolved": 0,
+        "fees": 1087.15
+      },
+      "audit": {
+        "native_position_replays": 20,
+        "native_exit_slices": 23,
+        "end_cash": 33477.6,
+        "sampled_marked_drawdown": 2080.34,
+        "exit_reasons": {
+          "STOP": 6,
+          "TARGET": 3,
+          "TRAIL": 1,
+          "TARGET_BASE": 3,
+          "HERO_TARGET": 1,
+          "TIME": 6,
+          "RUNNER_TRAIL": 2,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.3|2024|catastrophe": {
+      "summary": {
+        "net": -3859.71,
+        "without_best": -3859.71,
+        "worst": -1218.45,
+        "drawdown": 3859.71,
+        "trades": 9,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 9,
+        "losing_streak": 9,
+        "quarters": [
+          -1218.45,
+          -1664.16,
+          -711.16,
+          -265.94
+        ],
+        "first_half": -2882.61,
+        "second_half": -977.1,
+        "unresolved": 0,
+        "fees": 437.46
+      },
+      "audit": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 21140.29,
+        "sampled_marked_drawdown": 3859.71,
+        "exit_reasons": {
+          "STOP": 5,
+          "TIME": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.3|2025|ordinary": {
+      "summary": {
+        "net": 4273.86,
+        "without_best": 3071.54,
+        "worst": -478.01,
+        "drawdown": 830.54,
+        "trades": 21,
+        "profit_factor": 3.1706,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -830.54,
+          875.15,
+          2584.5,
+          1644.75
+        ],
+        "first_half": 44.61,
+        "second_half": 4229.25,
+        "unresolved": 0,
+        "fees": 1075.64
+      },
+      "audit": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 29273.86,
+        "sampled_marked_drawdown": 1434.58,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "TIME": 15,
+          "STOP": 3,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.3|2025|adverse": {
+      "summary": {
+        "net": 3912.99,
+        "without_best": 2775.61,
+        "worst": -537.55,
+        "drawdown": 746.33,
+        "trades": 21,
+        "profit_factor": 2.9644,
+        "wins": 11,
+        "loss_days": 7,
+        "losing_streak": 2,
+        "quarters": [
+          -746.33,
+          742.01,
+          2548.59,
+          1368.72
+        ],
+        "first_half": -4.32,
+        "second_half": 3917.31,
+        "unresolved": 0,
+        "fees": 1075.76
+      },
+      "audit": {
+        "native_position_replays": 21,
+        "native_exit_slices": 22,
+        "end_cash": 28912.99,
+        "sampled_marked_drawdown": 1353.63,
+        "exit_reasons": {
+          "TRAIL": 1,
+          "STOP": 4,
+          "TIME": 14,
+          "TARGET": 1,
+          "TARGET_BASE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "runner|0.3|2025|catastrophe": {
+      "summary": {
+        "net": -673.37,
+        "without_best": -1252.93,
+        "worst": -646.89,
+        "drawdown": 1151.6,
+        "trades": 9,
+        "profit_factor": 0.7087,
+        "wins": 4,
+        "loss_days": 5,
+        "losing_streak": 2,
+        "quarters": [
+          -409.41,
+          -51.55,
+          939.19,
+          -1151.6
+        ],
+        "first_half": -460.96,
+        "second_half": -212.41,
+        "unresolved": 0,
+        "fees": 445.87
+      },
+      "audit": {
+        "native_position_replays": 9,
+        "native_exit_slices": 9,
+        "end_cash": 24326.63,
+        "sampled_marked_drawdown": 1209.99,
+        "exit_reasons": {
+          "STOP": 3,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    }
+  },
+  "fixed_one_percent_plus_tick": {
+    "E031|ordinary": {
+      "summary": {
+        "net": 11364.46,
+        "without_best": 5611.85,
+        "worst": -537.55,
+        "drawdown": 1441.1,
+        "trades": 41,
+        "profit_factor": 3.1854,
+        "wins": 18,
+        "loss_days": 17,
+        "losing_streak": 5,
+        "quarters": [
+          5234.1,
+          1757.13,
+          3913.17,
+          460.06
+        ],
+        "first_half": 6991.23,
+        "second_half": 4373.23,
+        "unresolved": 0,
+        "fees": 2100.29
+      },
+      "audit": {
+        "native_position_replays": 41,
+        "native_exit_slices": 43,
+        "end_cash": 36364.46,
+        "sampled_marked_drawdown": 2000.13,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 6,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "E031|adverse": {
+      "summary": {
+        "net": 9113.34,
+        "without_best": 3454.84,
+        "worst": -599.25,
+        "drawdown": 1911.78,
+        "trades": 40,
+        "profit_factor": 2.5528,
+        "wins": 17,
+        "loss_days": 17,
+        "losing_streak": 5,
+        "quarters": [
+          4747.24,
+          308.27,
+          3465.08,
+          592.75
+        ],
+        "first_half": 5055.51,
+        "second_half": 4057.83,
+        "unresolved": 0,
+        "fees": 2047.16
+      },
+      "audit": {
+        "native_position_replays": 40,
+        "native_exit_slices": 42,
+        "end_cash": 34113.34,
+        "sampled_marked_drawdown": 2526.67,
+        "exit_reasons": {
+          "STOP": 12,
+          "TARGET": 5,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "E031|catastrophe": {
+      "summary": {
+        "net": -3286.08,
+        "without_best": -3451.89,
+        "worst": -652.32,
+        "drawdown": 3330.02,
+        "trades": 13,
+        "profit_factor": 0.0853,
+        "wins": 3,
+        "loss_days": 10,
+        "losing_streak": 8,
+        "quarters": [
+          -1084.46,
+          -1848.48,
+          -256.37,
+          -96.77
+        ],
+        "first_half": -2932.94,
+        "second_half": -353.14,
+        "unresolved": 0,
+        "fees": 630.83
+      },
+      "audit": {
+        "native_position_replays": 13,
+        "native_exit_slices": 13,
+        "end_cash": 21713.92,
+        "sampled_marked_drawdown": 3501.34,
+        "exit_reasons": {
+          "STOP": 7,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "SCALE25|ordinary": {
+      "summary": {
+        "net": 12259.3,
+        "without_best": 6506.69,
+        "worst": -731.62,
+        "drawdown": 1574.78,
+        "trades": 41,
+        "profit_factor": 3.0953,
+        "wins": 18,
+        "loss_days": 17,
+        "losing_streak": 5,
+        "quarters": [
+          5018.0,
+          2158.33,
+          3749.8,
+          1333.17
+        ],
+        "first_half": 7176.33,
+        "second_half": 5082.97,
+        "unresolved": 0,
+        "fees": 2164.2
+      },
+      "audit": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 37259.3,
+        "sampled_marked_drawdown": 2211.66,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "SCALE25|adverse": {
+      "summary": {
+        "net": 6214.44,
+        "without_best": 555.94,
+        "worst": -760.86,
+        "drawdown": 2722.9,
+        "trades": 36,
+        "profit_factor": 1.8608,
+        "wins": 14,
+        "loss_days": 19,
+        "losing_streak": 5,
+        "quarters": [
+          4404.62,
+          -1349.33,
+          1777.73,
+          1381.42
+        ],
+        "first_half": 3055.29,
+        "second_half": 3159.15,
+        "unresolved": 0,
+        "fees": 1855.31
+      },
+      "audit": {
+        "native_position_replays": 36,
+        "native_exit_slices": 38,
+        "end_cash": 31214.44,
+        "sampled_marked_drawdown": 3051.66,
+        "exit_reasons": {
+          "STOP": 13,
+          "TARGET": 3,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 17,
+          "STRUCTURE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "SCALE25|catastrophe": {
+      "summary": {
+        "net": -2742.84,
+        "without_best": -3283.44,
+        "worst": -848.59,
+        "drawdown": 3024.08,
+        "trades": 12,
+        "profit_factor": 0.2306,
+        "wins": 3,
+        "loss_days": 9,
+        "losing_streak": 7,
+        "quarters": [
+          -432.14,
+          -2099.14,
+          -301.61,
+          90.05
+        ],
+        "first_half": -2531.28,
+        "second_half": -211.56,
+        "unresolved": 0,
+        "fees": 591.34
+      },
+      "audit": {
+        "native_position_replays": 12,
+        "native_exit_slices": 12,
+        "end_cash": 22257.16,
+        "sampled_marked_drawdown": 3274.04,
+        "exit_reasons": {
+          "STOP": 6,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "RUNNER25|ordinary": {
+      "summary": {
+        "net": 12298.1,
+        "without_best": 6545.49,
+        "worst": -647.37,
+        "drawdown": 1595.32,
+        "trades": 41,
+        "profit_factor": 3.1825,
+        "wins": 18,
+        "loss_days": 17,
+        "losing_streak": 5,
+        "quarters": [
+          5234.1,
+          2158.33,
+          3572.5,
+          1333.17
+        ],
+        "first_half": 7392.43,
+        "second_half": 4905.67,
+        "unresolved": 0,
+        "fees": 2161.15
+      },
+      "audit": {
+        "native_position_replays": 41,
+        "native_exit_slices": 45,
+        "end_cash": 37298.1,
+        "sampled_marked_drawdown": 2154.35,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 4,
+          "TRAIL": 2,
+          "TARGET_BASE": 4,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 3,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "RUNNER25|adverse": {
+      "summary": {
+        "net": 6014.56,
+        "without_best": 356.06,
+        "worst": -686.35,
+        "drawdown": 3053.41,
+        "trades": 35,
+        "profit_factor": 1.8705,
+        "wins": 15,
+        "loss_days": 18,
+        "losing_streak": 5,
+        "quarters": [
+          4747.24,
+          -1457.05,
+          1616.67,
+          1107.7
+        ],
+        "first_half": 3290.19,
+        "second_half": 2724.37,
+        "unresolved": 0,
+        "fees": 1798.44
+      },
+      "audit": {
+        "native_position_replays": 35,
+        "native_exit_slices": 37,
+        "end_cash": 31014.56,
+        "sampled_marked_drawdown": 3280.47,
+        "exit_reasons": {
+          "STOP": 13,
+          "TARGET": 3,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 16,
+          "STRUCTURE": 1,
+          "RUNNER_TRAIL": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "RUNNER25|catastrophe": {
+      "summary": {
+        "net": -2742.84,
+        "without_best": -3283.44,
+        "worst": -848.59,
+        "drawdown": 3024.08,
+        "trades": 12,
+        "profit_factor": 0.2306,
+        "wins": 3,
+        "loss_days": 9,
+        "losing_streak": 7,
+        "quarters": [
+          -432.14,
+          -2099.14,
+          -301.61,
+          90.05
+        ],
+        "first_half": -2531.28,
+        "second_half": -211.56,
+        "unresolved": 0,
+        "fees": 591.34
+      },
+      "audit": {
+        "native_position_replays": 12,
+        "native_exit_slices": 12,
+        "end_cash": 22257.16,
+        "sampled_marked_drawdown": 3274.04,
+        "exit_reasons": {
+          "STOP": 6,
+          "TIME": 6
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "SMART_RUNNER25|ordinary": {
+      "summary": {
+        "net": 11403.31,
+        "without_best": 5650.7,
+        "worst": -647.37,
+        "drawdown": 1741.19,
+        "trades": 41,
+        "profit_factor": 3.0733,
+        "wins": 18,
+        "loss_days": 17,
+        "losing_streak": 5,
+        "quarters": [
+          5234.1,
+          1757.13,
+          3613.08,
+          799.0
+        ],
+        "first_half": 6991.23,
+        "second_half": 4412.08,
+        "unresolved": 0,
+        "fees": 2103.69
+      },
+      "audit": {
+        "native_position_replays": 41,
+        "native_exit_slices": 43,
+        "end_cash": 36403.31,
+        "sampled_marked_drawdown": 2300.22,
+        "exit_reasons": {
+          "STOP": 10,
+          "TARGET": 6,
+          "TRAIL": 2,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 20,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "SMART_RUNNER25|adverse": {
+      "summary": {
+        "net": 8006.28,
+        "without_best": 2347.78,
+        "worst": -686.35,
+        "drawdown": 2231.35,
+        "trades": 39,
+        "profit_factor": 2.2452,
+        "wins": 16,
+        "loss_days": 18,
+        "losing_streak": 5,
+        "quarters": [
+          4747.24,
+          -76.46,
+          2433.03,
+          902.47
+        ],
+        "first_half": 4670.78,
+        "second_half": 3335.5,
+        "unresolved": 0,
+        "fees": 1997.22
+      },
+      "audit": {
+        "native_position_replays": 39,
+        "native_exit_slices": 41,
+        "end_cash": 33006.28,
+        "sampled_marked_drawdown": 2846.24,
+        "exit_reasons": {
+          "STOP": 13,
+          "TARGET": 5,
+          "TARGET_BASE": 2,
+          "HERO_TARGET": 1,
+          "TIME": 18,
+          "RUNNER_TRAIL": 1,
+          "STRUCTURE": 1
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    },
+    "SMART_RUNNER25|catastrophe": {
+      "summary": {
+        "net": -3235.6,
+        "without_best": -3426.79,
+        "worst": -652.32,
+        "drawdown": 3330.02,
+        "trades": 12,
+        "profit_factor": 0.0994,
+        "wins": 2,
+        "loss_days": 10,
+        "losing_streak": 8,
+        "quarters": [
+          -1084.46,
+          -1848.48,
+          -205.89,
+          -96.77
+        ],
+        "first_half": -2932.94,
+        "second_half": -302.66,
+        "unresolved": 0,
+        "fees": 583.6
+      },
+      "audit": {
+        "native_position_replays": 12,
+        "native_exit_slices": 12,
+        "end_cash": 21764.4,
+        "sampled_marked_drawdown": 3579.98,
+        "exit_reasons": {
+          "STOP": 7,
+          "TIME": 5
+        },
+        "marked_basis": "Complete-bar model bid marks and native fees; missing/insufficient marks omitted, not intrabar/depth broker NAV"
+      }
+    }
+  },
+  "concentration": {
+    "SCALE25|ordinary": {
+      "increment": 1031.4,
+      "increment_without_best": 317.16,
+      "increment_without_best_two": -59.78,
+      "improved_days": 5,
+      "worsened_days": 5,
+      "actual_reserve_ratio": 1.158177957445228,
+      "changed": [
+        {
+          "day": "2024-02-29",
+          "increment": -211.9
+        },
+        {
+          "day": "2024-04-25",
+          "increment": -257.85
+        },
+        {
+          "day": "2024-06-27",
+          "increment": 714.24
+        },
+        {
+          "day": "2024-08-22",
+          "increment": 200.04
+        },
+        {
+          "day": "2024-09-05",
+          "increment": -14.58
+        },
+        {
+          "day": "2024-09-12",
+          "increment": -277.34
+        },
+        {
+          "day": "2024-10-31",
+          "increment": 212.43
+        },
+        {
+          "day": "2025-01-02",
+          "increment": -78.76
+        },
+        {
+          "day": "2025-12-16",
+          "increment": 368.18
+        },
+        {
+          "day": "2025-12-30",
+          "increment": 376.94
+        }
+      ]
+    },
+    "SCALE25|adverse": {
+      "increment": 917.58,
+      "increment_without_best": 235.8,
+      "increment_without_best_two": -111.92,
+      "improved_days": 6,
+      "worsened_days": 4,
+      "actual_reserve_ratio": 1.158654949515073,
+      "changed": [
+        {
+          "day": "2024-02-29",
+          "increment": -221.64
+        },
+        {
+          "day": "2024-04-25",
+          "increment": -277.33
+        },
+        {
+          "day": "2024-06-27",
+          "increment": 681.78
+        },
+        {
+          "day": "2024-08-22",
+          "increment": 180.56
+        },
+        {
+          "day": "2024-09-05",
+          "increment": -40.58
+        },
+        {
+          "day": "2024-09-12",
+          "increment": -296.85
+        },
+        {
+          "day": "2024-10-31",
+          "increment": 186.45
+        },
+        {
+          "day": "2025-01-02",
+          "increment": 18.53
+        },
+        {
+          "day": "2025-12-16",
+          "increment": 338.94
+        },
+        {
+          "day": "2025-12-30",
+          "increment": 347.72
+        }
+      ]
+    },
+    "SCALE25|catastrophe": {
+      "increment": -896.59,
+      "increment_without_best": -1543.48,
+      "increment_without_best_two": -1979.07,
+      "improved_days": 6,
+      "worsened_days": 7,
+      "actual_reserve_ratio": 0.6563462317522643,
+      "changed": [
+        {
+          "day": "2024-02-29",
+          "increment": -585.63
+        },
+        {
+          "day": "2024-04-25",
+          "increment": -377.95
+        },
+        {
+          "day": "2024-07-18",
+          "increment": 115.02
+        },
+        {
+          "day": "2024-08-08",
+          "increment": -269.05
+        },
+        {
+          "day": "2024-08-22",
+          "increment": 49.82
+        },
+        {
+          "day": "2024-10-31",
+          "increment": -265.94
+        },
+        {
+          "day": "2025-02-06",
+          "increment": 195.74
+        },
+        {
+          "day": "2025-04-17",
+          "increment": -579.56
+        },
+        {
+          "day": "2025-05-22",
+          "increment": 435.59
+        },
+        {
+          "day": "2025-06-12",
+          "increment": 195.52
+        },
+        {
+          "day": "2025-08-07",
+          "increment": -88.2
+        },
+        {
+          "day": "2025-08-21",
+          "increment": -368.84
+        },
+        {
+          "day": "2025-11-11",
+          "increment": 646.89
+        }
+      ]
+    },
+    "RUNNER25|ordinary": {
+      "increment": 1122.02,
+      "increment_without_best": 407.78,
+      "increment_without_best_two": 30.84,
+      "improved_days": 4,
+      "worsened_days": 3,
+      "actual_reserve_ratio": 1.1246214705354325,
+      "changed": [
+        {
+          "day": "2024-04-25",
+          "increment": -257.85
+        },
+        {
+          "day": "2024-06-27",
+          "increment": 714.24
+        },
+        {
+          "day": "2024-09-05",
+          "increment": -14.58
+        },
+        {
+          "day": "2024-09-12",
+          "increment": -277.34
+        },
+        {
+          "day": "2024-10-31",
+          "increment": 212.43
+        },
+        {
+          "day": "2025-12-16",
+          "increment": 368.18
+        },
+        {
+          "day": "2025-12-30",
+          "increment": 376.94
+        }
+      ]
+    },
+    "RUNNER25|adverse": {
+      "increment": 940.13,
+      "increment_without_best": 258.35,
+      "increment_without_best_two": -89.37,
+      "improved_days": 4,
+      "worsened_days": 3,
+      "actual_reserve_ratio": 1.1250936307642125,
+      "changed": [
+        {
+          "day": "2024-04-25",
+          "increment": -277.33
+        },
+        {
+          "day": "2024-06-27",
+          "increment": 681.78
+        },
+        {
+          "day": "2024-09-05",
+          "increment": -40.58
+        },
+        {
+          "day": "2024-09-12",
+          "increment": -296.85
+        },
+        {
+          "day": "2024-10-31",
+          "increment": 186.45
+        },
+        {
+          "day": "2025-12-16",
+          "increment": 338.94
+        },
+        {
+          "day": "2025-12-30",
+          "increment": 347.72
+        }
+      ]
+    },
+    "RUNNER25|catastrophe": {
+      "increment": -896.59,
+      "increment_without_best": -1543.48,
+      "increment_without_best_two": -1979.07,
+      "improved_days": 6,
+      "worsened_days": 7,
+      "actual_reserve_ratio": 0.6563462317522643,
+      "changed": [
+        {
+          "day": "2024-02-29",
+          "increment": -585.63
+        },
+        {
+          "day": "2024-04-25",
+          "increment": -377.95
+        },
+        {
+          "day": "2024-07-18",
+          "increment": 115.02
+        },
+        {
+          "day": "2024-08-08",
+          "increment": -269.05
+        },
+        {
+          "day": "2024-08-22",
+          "increment": 49.82
+        },
+        {
+          "day": "2024-10-31",
+          "increment": -265.94
+        },
+        {
+          "day": "2025-02-06",
+          "increment": 195.74
+        },
+        {
+          "day": "2025-04-17",
+          "increment": -579.56
+        },
+        {
+          "day": "2025-05-22",
+          "increment": 435.59
+        },
+        {
+          "day": "2025-06-12",
+          "increment": 195.52
+        },
+        {
+          "day": "2025-08-07",
+          "increment": -88.2
+        },
+        {
+          "day": "2025-08-21",
+          "increment": -368.84
+        },
+        {
+          "day": "2025-11-11",
+          "increment": 646.89
+        }
+      ]
+    },
+    "CLOCK_RUNNER25|ordinary": {
+      "increment": 1122.02,
+      "increment_without_best": 407.78,
+      "increment_without_best_two": 30.84,
+      "improved_days": 4,
+      "worsened_days": 3,
+      "actual_reserve_ratio": 1.1246214705354325,
+      "changed": [
+        {
+          "day": "2024-04-25",
+          "increment": -257.85
+        },
+        {
+          "day": "2024-06-27",
+          "increment": 714.24
+        },
+        {
+          "day": "2024-09-05",
+          "increment": -14.58
+        },
+        {
+          "day": "2024-09-12",
+          "increment": -277.34
+        },
+        {
+          "day": "2024-10-31",
+          "increment": 212.43
+        },
+        {
+          "day": "2025-12-16",
+          "increment": 368.18
+        },
+        {
+          "day": "2025-12-30",
+          "increment": 376.94
+        }
+      ]
+    },
+    "CLOCK_RUNNER25|adverse": {
+      "increment": 940.13,
+      "increment_without_best": 258.35,
+      "increment_without_best_two": -89.37,
+      "improved_days": 4,
+      "worsened_days": 3,
+      "actual_reserve_ratio": 1.1250936307642125,
+      "changed": [
+        {
+          "day": "2024-04-25",
+          "increment": -277.33
+        },
+        {
+          "day": "2024-06-27",
+          "increment": 681.78
+        },
+        {
+          "day": "2024-09-05",
+          "increment": -40.58
+        },
+        {
+          "day": "2024-09-12",
+          "increment": -296.85
+        },
+        {
+          "day": "2024-10-31",
+          "increment": 186.45
+        },
+        {
+          "day": "2025-12-16",
+          "increment": 338.94
+        },
+        {
+          "day": "2025-12-30",
+          "increment": 347.72
+        }
+      ]
+    },
+    "CLOCK_RUNNER25|catastrophe": {
+      "increment": 26.18,
+      "increment_without_best": -543.42,
+      "increment_without_best_two": -739.16,
+      "improved_days": 5,
+      "worsened_days": 5,
+      "actual_reserve_ratio": 0.900406953191176,
+      "changed": [
+        {
+          "day": "2024-04-25",
+          "increment": -377.95
+        },
+        {
+          "day": "2024-09-05",
+          "increment": -72.99
+        },
+        {
+          "day": "2024-10-31",
+          "increment": -265.94
+        },
+        {
+          "day": "2025-02-06",
+          "increment": 195.74
+        },
+        {
+          "day": "2025-04-17",
+          "increment": -391.02
+        },
+        {
+          "day": "2025-05-22",
+          "increment": 176.48
+        },
+        {
+          "day": "2025-06-12",
+          "increment": 195.52
+        },
+        {
+          "day": "2025-08-07",
+          "increment": 135.41
+        },
+        {
+          "day": "2025-08-21",
+          "increment": -138.67
+        },
+        {
+          "day": "2025-11-11",
+          "increment": 569.6
+        }
+      ]
+    },
+    "SMART_RUNNER25|ordinary": {
+      "increment": 90.84,
+      "increment_without_best": -277.34,
+      "increment_without_best_two": -277.34,
+      "improved_days": 1,
+      "worsened_days": 1,
+      "actual_reserve_ratio": 1.0350655284059604,
+      "changed": [
+        {
+          "day": "2024-09-12",
+          "increment": -277.34
+        },
+        {
+          "day": "2025-12-16",
+          "increment": 368.18
+        }
+      ]
+    },
+    "SMART_RUNNER25|adverse": {
+      "increment": 42.09,
+      "increment_without_best": -296.85,
+      "increment_without_best_two": -296.85,
+      "improved_days": 1,
+      "worsened_days": 1,
+      "actual_reserve_ratio": 1.0352083412681437,
+      "changed": [
+        {
+          "day": "2024-09-12",
+          "increment": -296.85
+        },
+        {
+          "day": "2025-12-16",
+          "increment": 338.94
+        }
+      ]
+    },
+    "SMART_RUNNER25|catastrophe": {
+      "increment": 135.41,
+      "increment_without_best": 0.0,
+      "increment_without_best_two": 0.0,
+      "improved_days": 1,
+      "worsened_days": 0,
+      "actual_reserve_ratio": 1.026541903572066,
+      "changed": [
+        {
+          "day": "2025-08-07",
+          "increment": 135.41
+        }
+      ]
+    }
+  },
+  "factor_descriptions": {
+    "option_momentum3|train2024|test2025": {
+      "direction": "high",
+      "training_feature_threshold": 0.12405264866997882,
+      "rows": 1966,
+      "expiry_days": 53,
+      "hero_hits": 26,
+      "hero_fraction": 0.013224821973550356,
+      "mean_bounded_adverse_return": -0.12996380367082253,
+      "population_hero_fraction": 0.0146325946347153,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    },
+    "relative_volume|train2024|test2025": {
+      "direction": "high",
+      "training_feature_threshold": 0.5336497871867386,
+      "rows": 2152,
+      "expiry_days": 53,
+      "hero_hits": 38,
+      "hero_fraction": 0.017657992565055763,
+      "mean_bounded_adverse_return": -0.1219594368636956,
+      "population_hero_fraction": 0.0146325946347153,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    },
+    "basis3|train2024|test2025": {
+      "direction": "high",
+      "training_feature_threshold": 0.30616839261606177,
+      "rows": 2483,
+      "expiry_days": 53,
+      "hero_hits": 34,
+      "hero_fraction": 0.01369311316955296,
+      "mean_bounded_adverse_return": -0.14033885311592761,
+      "population_hero_fraction": 0.0146325946347153,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    },
+    "oi_fraction5|train2024|test2025": {
+      "direction": "low",
+      "training_feature_threshold": 0.00011972975284358163,
+      "rows": 2166,
+      "expiry_days": 53,
+      "hero_hits": 21,
+      "hero_fraction": 0.009695290858725761,
+      "mean_bounded_adverse_return": -0.1744394779714689,
+      "population_hero_fraction": 0.0146325946347153,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    },
+    "moneyness20|train2024|test2025": {
+      "direction": "low",
+      "training_feature_threshold": 0.4335071203705382,
+      "rows": 2093,
+      "expiry_days": 53,
+      "hero_hits": 43,
+      "hero_fraction": 0.020544672718585764,
+      "mean_bounded_adverse_return": -0.14914224855548847,
+      "population_hero_fraction": 0.0146325946347153,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    },
+    "option_momentum3|train2025|test2024": {
+      "direction": "high",
+      "training_feature_threshold": 0.12945806723688677,
+      "rows": 1801,
+      "expiry_days": 52,
+      "hero_hits": 53,
+      "hero_fraction": 0.029428095502498614,
+      "mean_bounded_adverse_return": -0.12916473659577338,
+      "population_hero_fraction": 0.019345874305258658,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    },
+    "relative_volume|train2025|test2024": {
+      "direction": "high",
+      "training_feature_threshold": 0.5776563995050289,
+      "rows": 1646,
+      "expiry_days": 52,
+      "hero_hits": 39,
+      "hero_fraction": 0.023693803159173753,
+      "mean_bounded_adverse_return": -0.167651045997339,
+      "population_hero_fraction": 0.019345874305258658,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    },
+    "basis3|train2025|test2024": {
+      "direction": "high",
+      "training_feature_threshold": 0.41231732776587887,
+      "rows": 1295,
+      "expiry_days": 52,
+      "hero_hits": 22,
+      "hero_fraction": 0.01698841698841699,
+      "mean_bounded_adverse_return": -0.16382885594634508,
+      "population_hero_fraction": 0.019345874305258658,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    },
+    "oi_fraction5|train2025|test2024": {
+      "direction": "low",
+      "training_feature_threshold": -0.0033234034289315643,
+      "rows": 1538,
+      "expiry_days": 52,
+      "hero_hits": 49,
+      "hero_fraction": 0.03185955786736021,
+      "mean_bounded_adverse_return": -0.0719093801677142,
+      "population_hero_fraction": 0.019345874305258658,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    },
+    "moneyness20|train2025|test2024": {
+      "direction": "low",
+      "training_feature_threshold": 0.39414383503466766,
+      "rows": 1692,
+      "expiry_days": 50,
+      "hero_hits": 36,
+      "hero_fraction": 0.02127659574468085,
+      "mean_bounded_adverse_return": -0.22045535415207873,
+      "population_hero_fraction": 0.019345874305258658,
+      "caveat": "Descriptive overlapping examples, fixed feature-only quantiles; neither independent evidence nor summed portfolio PnL"
+    }
+  },
+  "no_new_strategy_selected": true
+}

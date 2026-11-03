@@ -1,3 +1,7 @@
+## November 3 — expiry anticipation study complete: no accepted candidate (Dev research)
+
+Five frozen rounds/nine primary hypotheses reject extra-risk and predictor-based replacements. A 25% reserve allowance adds about 9% ordinary profit, but severe loss rises from 3,234 to 4,131; forecasts and nonlinear combinations do not supply consistent after-cost heroes. Report docs/EXPIRY_RESEARCH_ANTICIPATION.md; plan docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; STATUS.md. All 111 saved histories / 1,580 repeated native positions / 1,654 sale slices match; 37,574 labels and 210 prefix rebuilds exact; 53 focused checks pass; atlas identical. No engine/config/schema/flag/Production/download or actual risk change; 2023/future exam preserved. Remaining packaging: source commit, sealed/pinned receipts and verified push.
+
 ## November 3 — forecast-gated risk allocation fails; nonlinear factor check frozen
 
 SMART_RUNNER25 adds only 90.84 ordinary / 42.09 adverse over two seen years, worsens drawdown and underperforms 2024. No native candidate. One final fixed nonlinear check tests interactions missed by linear models: shallow 64-tree day-bootstrap forests, 6-day leaf support, training-only splits, fixed shrinkage and 2x/5x monetary targets; no grid or best-seed selection. Sixteen focused checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; FOREST.md. No engine/config/schema/Production/download; 2023/future exam unchanged. Next: forest score, final audits/report/push.
