@@ -1,4 +1,4 @@
-## November 3 — expiry-v5: E03.2 is the main expiry paper ticket, NIFTY and SENSEX (commit `71857c0`, Dev, pushed; deployment recorded in the next commit)
+## November 3 — expiry-v5: E03.2 is the main expiry paper ticket, NIFTY and SENSEX (commit `71857c0`, Dev, pushed, release PR #130 open and clean; NOT deployed: the merge was blocked by the permission system, awaiting the owner)
 
 Owner order (Nov 3, 22:50 IST): make E03.2 the main expiry strategy, run it on SENSEX this Thursday on paper, deploy now.
 - `settings.EXPIRY_MAIN_STRATEGY="E032"` (default) and `EXPIRY_E032_SHADOW_ENABLED=True` (default). A new expiry day

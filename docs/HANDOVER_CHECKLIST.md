@@ -1,4 +1,4 @@
-## November 3 — expiry-v5: E03.2 main on NIFTY and SENSEX (commit `71857c0`, Dev, pushed; deployment recorded in the next commit)
+## November 3 — expiry-v5: E03.2 main on NIFTY and SENSEX (commit `71857c0`, Dev, pushed, release PR #130 open and clean; NOT deployed: the merge was blocked by the permission system, awaiting the owner)
 
 - [x] E03.2 main: notices, summary, owner rule; A/B/C shadows without Telegram trades; SENSEX lot 20 / BFO.
 - [x] Tests: 5 new + E032 default; full suite 6,415 passed, 4 skipped, 1 failed (13 min 31 s): tests/test_kite_client.py::TestRateLimiter::test_management_priority_is_bounded_and_normal_work_is_fair, a timing test of an untouched module, passes alone 3 of 3 and passed in the round-8 full run; atlas regenerated.
