@@ -1,3 +1,15 @@
+## November 3 — N03 partner fixes (commit `this commit`, Dev, pushed, not deployed)
+
+- [x] N03-P1 plan priced on the option's own forward (parity, else carry); levels unchanged.
+- [x] N03-L1 every stop moved down told (AGAIN); key carries the old level.
+- [x] N03-L2 a stop still in profit "gives back profit".
+- [x] N03-R1 refusal: Zerodha's whole margin check, open trades named; share only from a limit price.
+- [x] N03-E1 card EXIT/target/square-off name their card and buy window.
+- [x] N03-K1/K2 coach: no "gave no stop"; "Exited with the card" only at/after a message exit.
+- [x] N03-C1 close countdown from the send time.
+- [x] Tests: full suite 6,350 passed, 4 skipped, 0 failed (745 s); partner files 333 passed
+- [ ] Deployed (merge + engine rebuild; the partner logs in again) and verified on the next session.
+
 ## November 3 — Rollout receipt (Production c227c23, PR #128)
 
 - The owner's go-ahead ("ship that too"). PR #128 merged 18:31 UTC Nov 2 (00:01 IST) as c227c23: the EDGE exit fix and docs only.

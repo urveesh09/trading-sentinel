@@ -127,7 +127,7 @@ def test_merge_takes_sl_stops_from_the_stored_book_and_gtts_from_the_read():
 @pytest.mark.parametrize("refused, others, expected", [
     (_row("R1", "BUY", "REJECTED", "LIMIT", placed=T(11, 12, 9), qty=65,
           message="Insufficient funds. Margin required: 8118.50. Margin available: 7536.70. Check orderbook for open orders."),
-     [], "the buy needed ₹8,118 and your account had ₹7,537."),
+     [], "the margin check needed ₹8,118 and your account had ₹7,537."),
     (_row("R2", "SELL", "REJECTED", "SL", trigger=95.0, placed=T(13, 54, 39), qty=65,
           message="Insufficient funds. Margin required: 159586.95. Margin available: 7536.70. Check orderbook for open orders."),
      [_row("B2", "BUY", "COMPLETE", "MARKET", placed=T(13, 53, 41), qty=65),

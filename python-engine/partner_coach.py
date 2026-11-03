@@ -818,8 +818,13 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
     _stop_checks(out, trade, card, stops, qty, exchange)
     if entry is not None and not skip_reasons:
         positives.append(_positive("BOUGHT_IN_LIMIT", f"Paid {_px(first_px)} with the limit at {_px(limit)}."))
-    if (same_entry and last_sell and exit_px is not None
-            and abs((last_sell - same_entry["exit_at_dt"]).total_seconds()) <= EARLY_EXIT_MIN * 60):
+    # [N03-K2] A sale is "with the card" only once the card had said to sell: at or after a message exit (Nov 2:
+    # sold 11:36, the card's EXIT came 11:40, and the review said "Exited with the card"). The premium SL
+    # stands from the buy, and its 5-minute print lags the real fall, so a sale near it may come first.
+    gap = (last_sell - same_entry["exit_at_dt"]).total_seconds() if same_entry and last_sell else None
+    with_card = gap is not None and (abs(gap) <= EARLY_EXIT_MIN * 60 if same_entry["reason"] == "STOP"
+                                     else 0 <= gap <= EARLY_EXIT_MIN * 60)
+    if with_card and exit_px is not None:
         positives.append(_positive("EXITED_WITH_CARD", f"Sold at {_hhmm(last_sell)} with the card's "
                                                        f"{same_entry['exit_at']} exit."))
     elif (same_entry and same_entry["reason"] == "STOP" and last_sell and exit_px is not None and sl
@@ -839,21 +844,21 @@ def _off_card_plan(trade: dict, stops: Optional[list]) -> str:
     """[O24d] What the order book shows of the partner's own plan for a trade
     without a card. A trade the system sent no card for can still have had
     its stop: say what Zerodha shows, not that there was none."""
+    # [N03-K1] "No card" is not "no guidance": the trade watch sends its own plan (stop and target) after a buy.
+    # Before, this said "the system gave no stop, target or exit time", false for 42 of Nov 2's 44 trades.
     first = trade.get("first_buy_at")
     if not trade["buys"] or first is None or stops is None:
-        return ("Without a card the system gave no stop, target or exit time for this trade; any plan of your own "
-                "is not on record here.")
+        return "No card was sent for this trade; your own stop is not on record here."
     if not stops:
-        return ("Without a card the system gave no stop, target or exit time, and no stop order was placed, so "
-                "nothing limited the loss except a decision in the moment.")
+        return ("No card was sent for this trade, and no stop order was placed, so nothing limited the loss "
+                "except a decision in the moment.")
     stop = stops[0]
     kind = "a GTT" if stop["kind"] == "GTT" else "an SL order"
     after = max((stop["placed_dt"] - first).total_seconds() / 60, 0)
     when = (f"{after:.0f} min after the buy" if stop.get("placed_exact", True) else
             f"within {after:.0f} min of the buy")
-    return (f"Without a card the system gave no stop, target or exit time; the plan was your own, with {kind} at "
-            f"{_px(float(stop['trigger_price']))} {when}. The card rule is about which trades to take, not about "
-            f"whether your stop was good.")
+    return (f"No card was sent for this trade; your stop was {kind} at {_px(float(stop['trigger_price']))} {when}. "
+            f"The card rule is about which trades to take, not about whether your stop was good.")
 
 
 def analyse_off_card(trade: dict, stops: Optional[list] = None) -> dict:

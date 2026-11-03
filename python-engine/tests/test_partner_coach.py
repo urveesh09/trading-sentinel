@@ -153,6 +153,15 @@ def test_waiting_is_offered_when_the_price_came_back_and_a_lucky_chase_is_still_
                                  f"this result.")
 
 
+def test_a_sale_before_the_cards_exit_message_is_not_with_the_card():
+    """[N03-K2] Nov 2: sold 11:36, the card's EXIT came 11:40, and the review said "Exited with the card"."""
+    card = _card(updates=[("INVALIDATION", T(13, 0))])
+    before = _item(_view([card], [_rep("BUY", T(12, 12), 518.0), _rep("SELL", T(12, 56), 585.0)]))
+    assert "EXITED_WITH_CARD" not in [p["code"] for p in before["positives"]]
+    after = _item(_view([card], [_rep("BUY", T(12, 12), 518.0), _rep("SELL", T(13, 4), 595.0)]))
+    assert "EXITED_WITH_CARD" in [p["code"] for p in after["positives"]]
+
+
 def test_a_late_entry_that_made_money_is_still_a_lesson():
     card = _card(updates=[("TARGET_ZONE", T(13, 0))])
     item = _item(_view([card], [_rep("BUY", T(12, 25), 520.0), _rep("SELL", T(13, 3), 598.0)]))
@@ -410,8 +419,8 @@ def test_off_card_trades_get_the_stop_check_too():
     assert _flags(item)["NO_STOP_ORDER"]["better"] == ("Decide the stop before buying and place the SL order right "
                                                         "after the buy fills.")
     assert _flags(item)["OFF_CARD"]["why"].startswith(
-        "Without a card the system gave no stop, target or exit time, and no stop order was placed, so nothing "
-        "limited the loss except a decision in the moment.")
+        "No card was sent for this trade, and no stop order was placed, so nothing limited the loss except a "
+        "decision in the moment.")
 
 
 def test_an_off_card_trade_with_its_own_stop_is_not_said_to_have_none():
@@ -421,15 +430,16 @@ def test_an_off_card_trade_with_its_own_stop_is_not_said_to_have_none():
     reports = [_zr("BUY", T(13, 5), 100.0, **OFF), _zr("SELL", T(13, 40), 80.0, **OFF)]
     own = [_stop(90.0, "TRIGGERED", T(13, 6), T(13, 40), symbol=OFF["tradingsymbol"]) | {"exchange": "NFO"}]
     [item] = _view([], reports, stops=own, stops_known_days=KNOWN)["days"][0]["off_card"]
+    # [N03-K1] "No card" is not "no guidance": the trade watch sends its own plan, so the review never says the
+    # system gave no stop or target (false for 42 of Nov 2's 44 trades).
     assert _flags(item)["OFF_CARD"]["why"] == (
-        "Without a card the system gave no stop, target or exit time; the plan was your own, with an SL order at ₹90 "
-        "1 min after the buy. The card rule is about which trades to take, not about whether your stop was good.")
+        "No card was sent for this trade; your stop was an SL order at ₹90 1 min after the buy. The card rule is "
+        "about which trades to take, not about whether your stop was good.")
     assert "STOP_PLACED" in [p["code"] for p in item["positives"]]
     # Stops not known for the day: nothing is claimed either way.
     [unknown] = _view([], reports, stops=own, stops_known_days=frozenset())["days"][0]["off_card"]
-    assert _flags(unknown)["OFF_CARD"]["why"] == (
-        "Without a card the system gave no stop, target or exit time for this trade; any plan of your own is not on "
-        "record here.")
+    assert _flags(unknown)["OFF_CARD"]["why"] == "No card was sent for this trade; your own stop is not on record here."
+    assert "gave no stop" not in _flags(item)["OFF_CARD"]["why"] + _flags(unknown)["OFF_CARD"]["why"]
 
 
 # ---------------------------------------------------------------------------

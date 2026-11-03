@@ -316,18 +316,34 @@ def render_buyer_card(label: str, view: dict, *, underlying: str, direction: str
     return "\n".join(lines)
 
 
+def card_tag(view: dict) -> str:
+    """[N03-E1] Which card an update is about: its time and its buy window ("10:36 card, bought by 10:46").
+    Nov 2: the 10:36 card's "EXIT ... now" came at 11:40, while a new buy of the same option made at 11:37
+    (after the card's 10:46 skip-after) had its own plan. "" when the stored view has no times."""
+    try:
+        made = _hhmm(view["quote_at"]) if view.get("quote_at") else None
+        fill = _hhmm(view["fill_by"]) if view.get("fill_by") else None
+    except (TypeError, ValueError):
+        return ""
+    if made and fill:
+        return f" ({made} card, bought by {fill})"
+    return f" ({made} card)" if made else ""
+
+
 def render_buyer_update(view: dict, event_type: str, *, underlying: str, observed_fut: float,
                         observed_at: datetime, management_deadline) -> str:
-    """One line per lifecycle event, phrased as the action to take."""
+    """One line per lifecycle event, phrased as the action to take. [N03-E1] Each names its card
+    (``card_tag``), so it is never read as being about a later buy of the same option."""
     name = _option_name(underlying, view)
+    tag = card_tag(view)
     if event_type not in ("INVALIDATION", "TARGET_ZONE"):
-        return f"⏰ {name}: square off by {_hhmm(management_deadline)}. No overnight hold."
+        return f"⏰ {name}{tag}: square off by {_hhmm(management_deadline)}. No overnight hold."
     offset = view.get("fut_to_index_offset")
     level = observed_fut - offset if offset is not None else observed_fut
     seen = f"{level_label(underlying, level, view['level_basis'])} at {_hhmm(observed_at)}"
     if event_type == "INVALIDATION":
-        return f"🛑 EXIT {name} now: stop level hit ({seen}). Idea closed."
-    return (f"🎯 {name}: target reached ({seen}). Book profit; on anything you keep, "
+        return f"🛑 EXIT {name} now{tag}: stop level hit ({seen}). Idea closed."
+    return (f"🎯 {name}{tag}: target reached ({seen}). Book profit; on anything you keep, "
             "move SL to your entry price.")
 
 
