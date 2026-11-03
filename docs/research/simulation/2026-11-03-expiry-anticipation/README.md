@@ -58,6 +58,10 @@ Eight unresolved **training-label** outcomes remain conservative non-hits and
 full-premium loss labels, not missing profitable trades or accepted settlement.
 Actual funded portfolio histories have unresolved zero. Overlapping example
 returns/precision are EVALUATOR diagnostics and may never be summed as PnL.
+`hit` denotes a completed TARGET-reason exit after its bid trigger, not a
+guarantee the later execution achieved exactly 2x/5x. Financial outcomes use
+the actual later prices and fees. Different fill scenarios can refuse different
+entries and change brakes, so they are not monotone bounds on identical trades.
 Current fees, clipping of training tails and strong day-level model regularization
 are assumptions; actual funded-book gains/losses are never clipped.
 

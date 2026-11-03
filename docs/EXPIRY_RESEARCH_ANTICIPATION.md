@@ -72,6 +72,11 @@ completed exit: they remain explicit conservative non-hits/full-premium training
 losses, not removed losers or invented settlements. No-entry attempts remain
 represented. Funded portfolio experiments have no unresolved positions.
 
+Here a target hit means the completed bid reached the target and the pending
+sale subsequently filled. The final fill can be below or above that multiple.
+Every money table and return-model label uses the actual modelled execution
+price and fees, never a guaranteed sale at the trigger.
+
 The 16 causal features include option momentum/acceleration, relative traded
 volume, OI changes, index/future movement, basis changes, directional efficiency,
 distance/noise, minutes left, fee hurdle and option-implied forward. Training
