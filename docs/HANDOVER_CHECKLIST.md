@@ -1,3 +1,13 @@
+## November 3 — E01.1 new-history study (freeze checkpoint, Dev only)
+
+- [x] Read inherited E01.1 and frozen EXAM_YEAR; verify expiry-v4 source and Production checkout 06bed07.
+- [x] Preserve existing owner changes; snapshot only selected read-only evidence, no API calls or pre-2025 prices.
+- [x] Coverage: 100/110 complete paired afternoon grids; minute C proxy separately scoped.
+- [x] Archived parity 42 legs, zero mismatches; 12 research tests pass.
+- [x] Exactly two candidate mechanisms registered; no holdout outcomes inspected before freeze.
+- [ ] Commit freeze, score once, audit and record final status/results.
+- [ ] Runtime improvement: only if supported; no promotion or deployment authorized here.
+
 ## November 3 — N05 partner correctness (commit `60336db`, Dev, pushed, not deployed)
 
 - [x] N05-T1 card tick on the bar-close grid (:08 and :38 after each 5-minute close).

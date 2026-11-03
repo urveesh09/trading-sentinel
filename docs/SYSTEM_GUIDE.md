@@ -1,3 +1,16 @@
+## November 3 — E01.1 new-history study, frozen before validation (Dev research only)
+
+`docs/research/simulation/2026-11-03-expiry-year/PLAN.md` owns this study. New
+opening-ATM evidence supports paired exits, not the full expiry book. 100/110
+dates have complete paired afternoon grids; ten remain unavailable. Jan-Jun
+2026 development is seen; other new outcomes stay sealed until the committed
+freeze. Two bounded candidates: inherited eight-minute idle exit and half-gain
+floor from +40%. A separate NIFTY 2025 recorded-chain minute C proxy is explicit
+about coarse confirmations, current normalized lots/fees and early flat time.
+Inherited economics/events: 42 legs, zero mismatches. Research tests: 12 passed.
+No runtime/config/schema changes, N11 edits, API calls or deployment. Production
+06bed07 already includes expiry-v4 on paper; it is read-only in this task.
+
 ## November 3 — N05 partner correctness: bar-aligned cards, SENSEX participation, honest money and clocks, frozen protection score (actual behavior, Dev, pushed, not deployed, commit `60336db`)
 
 Owner (Nov 3): fix everything left from the two Nov 2 audits except the outage, correctness first, Dev only.

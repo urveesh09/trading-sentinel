@@ -1,3 +1,17 @@
+## November 3 — E01.1 new-history exam and bounded improvement (active, Dev only)
+
+- Problem/plan/contracts/acceptance: `docs/research/simulation/2026-11-03-expiry-year/PLAN.md`.
+- Inputs: 110 opening-ATM dates, 100 eligible afternoon grids, ten unavailable;
+  NIFTY 2025 wider minute archive selected separately. Pre-2025 prices excluded.
+- Baseline: archived 42 E01/E011/E011R legs, zero economic/event mismatches;
+  initial context-only discrepancies retained. Tests: 12 passed.
+- Development Jan-Jun 2026 only: E011 loses less than E01; idle-eight-minute
+  improves development loss, +40% half-gain floor worsens it. No parameter search.
+- Next: commit source/input/candidate freeze, score validation and 2025 once,
+  audit money/causality/coverage, retain failed arms and publish the verdict.
+- Rollout/rollback: isolated research; no runtime/config/schema or Production
+  changes. Promotion requires separate evidence and GitHub deployment approval.
+
 ## November 3 — N05 partner correctness (done, Dev, pushed, not deployed, commit `60336db`)
 
 - Problem: the remaining audit items except the outage (owner, Nov 3: correctness first, Dev only).

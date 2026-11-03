@@ -1,0 +1,28 @@
+{
+  "counts": [
+    [
+      "future",
+      19875,
+      53,
+      "2025-01-02 09:15:00",
+      "2025-12-30 15:29:00"
+    ],
+    [
+      "index",
+      19875,
+      53,
+      "2025-01-02 09:15:00",
+      "2025-12-30 15:29:00"
+    ],
+    [
+      "option",
+      623448,
+      53,
+      "2025-01-02 09:15:00",
+      "2025-12-30 15:29:00"
+    ]
+  ],
+  "sha256": "46f7992b3c1ade95f18c42d126aa2c5ea0db75427bccf674c839482d70a11458",
+  "source": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-02-expiry-e02\\_local\\data.sqlite",
+  "scope": "NIFTY 2025 only; current normalized lot65/fees; recorded chain, minute timing proxy; A/B not scored"
+}
