@@ -1,4 +1,4 @@
-## November 3 — N03 partner fixes (commit `this commit`, Dev, pushed, not deployed)
+## November 3 — N03 partner fixes (commit `b9b0d2c`, Dev, pushed, PR open, not deployed)
 
 - [x] N03-P1 plan priced on the option's own forward (parity, else carry); levels unchanged.
 - [x] N03-L1 every stop moved down told (AGAIN); key carries the old level.

@@ -1,4 +1,4 @@
-## November 3 — N03 partner fixes from the two Nov 2 audits (done, Dev, pushed, not deployed, commit `this commit`)
+## November 3 — N03 partner fixes from the two Nov 2 audits (done, Dev, pushed, PR open, not deployed, commit `b9b0d2c`)
 
 - Problem: the partner's 10:36 SENSEX 75800 CE complaint; two audits plus my check of the Nov 2 evidence.
   Fixed now (most critical, low risk): P1 plan pricing on the option's own forward; L1 every stop lowered
