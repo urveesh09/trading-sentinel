@@ -1,0 +1,3006 @@
+{
+  "freeze_head": "374384f24535a860add55a8c33a2af4bcd3bb77c",
+  "arms": {
+    "M_E02|2024|ordinary": {
+      "net": -3135.69,
+      "without_best": -3704.59,
+      "worst": -585.92,
+      "drawdown": 3704.59,
+      "trades": 22,
+      "profit_factor": 0.1691,
+      "wins": 2,
+      "loss_days": 13,
+      "quarters": [
+        -497.49,
+        -2080.96,
+        -557.24,
+        0
+      ],
+      "first_half": -2578.45,
+      "second_half": -557.24,
+      "fees": 1078.44,
+      "unresolved": 0
+    },
+    "M_E02|2024|adverse": {
+      "net": -3240.38,
+      "without_best": -3741.08,
+      "worst": -604.94,
+      "drawdown": 3741.08,
+      "trades": 21,
+      "profit_factor": 0.1349,
+      "wins": 2,
+      "loss_days": 13,
+      "quarters": [
+        -793.05,
+        -1851.13,
+        -596.2,
+        0
+      ],
+      "first_half": -2644.18,
+      "second_half": -596.2,
+      "fees": 1030.38,
+      "unresolved": 0
+    },
+    "M_E02|2024|catastrophe": {
+      "net": -3809.52,
+      "without_best": -4097.04,
+      "worst": -676.44,
+      "drawdown": 3809.52,
+      "trades": 14,
+      "profit_factor": 0.0702,
+      "wins": 1,
+      "loss_days": 10,
+      "quarters": [
+        -1348.12,
+        -1803.46,
+        -657.94,
+        0
+      ],
+      "first_half": -3151.58,
+      "second_half": -657.94,
+      "fees": 683.02,
+      "unresolved": 0
+    },
+    "M_E02|2025|ordinary": {
+      "net": -3539.3,
+      "without_best": -3591.35,
+      "worst": -424.71,
+      "drawdown": 3539.3,
+      "trades": 24,
+      "profit_factor": 0.0145,
+      "wins": 1,
+      "loss_days": 18,
+      "quarters": [
+        -1786.35,
+        -1300.46,
+        -368.81,
+        -83.68
+      ],
+      "first_half": -3086.81,
+      "second_half": -452.49,
+      "fees": 1173.3,
+      "unresolved": 0
+    },
+    "M_E02|2025|adverse": {
+      "net": -3690.36,
+      "without_best": -3722.94,
+      "worst": -399.35,
+      "drawdown": 3690.36,
+      "trades": 21,
+      "profit_factor": 0.0088,
+      "wins": 1,
+      "loss_days": 17,
+      "quarters": [
+        -2051.34,
+        -1118.32,
+        -427.27,
+        -93.43
+      ],
+      "first_half": -3169.66,
+      "second_half": -520.7,
+      "fees": 1025.36,
+      "unresolved": 0
+    },
+    "M_E02|2025|catastrophe": {
+      "net": -3745.55,
+      "without_best": -3774.88,
+      "worst": -545.5,
+      "drawdown": 3745.55,
+      "trades": 16,
+      "profit_factor": 0.0078,
+      "wins": 1,
+      "loss_days": 13,
+      "quarters": [
+        -2090.84,
+        -1020.44,
+        -521.4,
+        -112.87
+      ],
+      "first_half": -3111.28,
+      "second_half": -634.27,
+      "fees": 778.3,
+      "unresolved": 0
+    },
+    "M_E02|both|ordinary": {
+      "net": -3533.08,
+      "without_best": -4101.98,
+      "worst": -585.92,
+      "drawdown": 4101.98,
+      "trades": 27,
+      "profit_factor": 0.153,
+      "wins": 2,
+      "loss_days": 18,
+      "quarters": [
+        -700.41,
+        -2275.43,
+        -557.24,
+        0
+      ],
+      "first_half": -2975.84,
+      "second_half": -557.24,
+      "fees": 1319.83,
+      "unresolved": 0
+    },
+    "M_E02|both|adverse": {
+      "net": -3673.6,
+      "without_best": -4174.3,
+      "worst": -604.94,
+      "drawdown": 4174.3,
+      "trades": 25,
+      "profit_factor": 0.1209,
+      "wins": 2,
+      "loss_days": 17,
+      "quarters": [
+        -1018.81,
+        -2058.59,
+        -596.2,
+        0
+      ],
+      "first_half": -3077.4,
+      "second_half": -596.2,
+      "fees": 1223.1,
+      "unresolved": 0
+    },
+    "M_E02|both|catastrophe": {
+      "net": -4042.21,
+      "without_best": -4329.73,
+      "worst": -676.44,
+      "drawdown": 4042.21,
+      "trades": 16,
+      "profit_factor": 0.0664,
+      "wins": 1,
+      "loss_days": 12,
+      "quarters": [
+        -1580.81,
+        -1803.46,
+        -657.94,
+        0
+      ],
+      "first_half": -3384.27,
+      "second_half": -657.94,
+      "fees": 779.21,
+      "unresolved": 0
+    },
+    "M_E03|2024|ordinary": {
+      "net": -3221.19,
+      "without_best": -3790.09,
+      "worst": -585.92,
+      "drawdown": 3790.09,
+      "trades": 22,
+      "profit_factor": 0.1654,
+      "wins": 2,
+      "loss_days": 13,
+      "quarters": [
+        -582.99,
+        -2080.96,
+        -557.24,
+        0
+      ],
+      "first_half": -2663.95,
+      "second_half": -557.24,
+      "fees": 1079.44,
+      "unresolved": 0
+    },
+    "M_E03|2024|adverse": {
+      "net": -3256.81,
+      "without_best": -3757.51,
+      "worst": -604.94,
+      "drawdown": 3757.51,
+      "trades": 21,
+      "profit_factor": 0.1343,
+      "wins": 2,
+      "loss_days": 13,
+      "quarters": [
+        -891.55,
+        -1769.06,
+        -596.2,
+        0
+      ],
+      "first_half": -2660.61,
+      "second_half": -596.2,
+      "fees": 1030.56,
+      "unresolved": 0
+    },
+    "M_E03|2024|catastrophe": {
+      "net": -3842.2,
+      "without_best": -4129.72,
+      "worst": -676.44,
+      "drawdown": 3842.2,
+      "trades": 14,
+      "profit_factor": 0.0696,
+      "wins": 1,
+      "loss_days": 10,
+      "quarters": [
+        -1462.85,
+        -1721.41,
+        -657.94,
+        0
+      ],
+      "first_half": -3184.26,
+      "second_half": -657.94,
+      "fees": 683.2,
+      "unresolved": 0
+    },
+    "M_E03|2025|ordinary": {
+      "net": -3504.97,
+      "without_best": -3557.02,
+      "worst": -424.71,
+      "drawdown": 3504.97,
+      "trades": 24,
+      "profit_factor": 0.0205,
+      "wins": 2,
+      "loss_days": 17,
+      "quarters": [
+        -1752.02,
+        -1300.46,
+        -368.81,
+        -83.68
+      ],
+      "first_half": -3052.48,
+      "second_half": -452.49,
+      "fees": 1174.72,
+      "unresolved": 0
+    },
+    "M_E03|2025|adverse": {
+      "net": -3669.03,
+      "without_best": -3701.61,
+      "worst": -399.35,
+      "drawdown": 3669.03,
+      "trades": 21,
+      "profit_factor": 0.0088,
+      "wins": 1,
+      "loss_days": 17,
+      "quarters": [
+        -2030.01,
+        -1118.32,
+        -427.27,
+        -93.43
+      ],
+      "first_half": -3148.33,
+      "second_half": -520.7,
+      "fees": 1026.78,
+      "unresolved": 0
+    },
+    "M_E03|2025|catastrophe": {
+      "net": -3745.55,
+      "without_best": -3774.88,
+      "worst": -545.5,
+      "drawdown": 3745.55,
+      "trades": 16,
+      "profit_factor": 0.0078,
+      "wins": 1,
+      "loss_days": 13,
+      "quarters": [
+        -2090.84,
+        -1020.44,
+        -521.4,
+        -112.87
+      ],
+      "first_half": -3111.28,
+      "second_half": -634.27,
+      "fees": 778.3,
+      "unresolved": 0
+    },
+    "M_E03|both|ordinary": {
+      "net": -3618.58,
+      "without_best": -4187.48,
+      "worst": -585.92,
+      "drawdown": 4187.48,
+      "trades": 27,
+      "profit_factor": 0.15,
+      "wins": 2,
+      "loss_days": 18,
+      "quarters": [
+        -785.91,
+        -2275.43,
+        -557.24,
+        0
+      ],
+      "first_half": -3061.34,
+      "second_half": -557.24,
+      "fees": 1320.83,
+      "unresolved": 0
+    },
+    "M_E03|both|adverse": {
+      "net": -3690.03,
+      "without_best": -4190.73,
+      "worst": -604.94,
+      "drawdown": 4190.73,
+      "trades": 25,
+      "profit_factor": 0.1204,
+      "wins": 2,
+      "loss_days": 17,
+      "quarters": [
+        -1117.31,
+        -1976.52,
+        -596.2,
+        0
+      ],
+      "first_half": -3093.83,
+      "second_half": -596.2,
+      "fees": 1223.28,
+      "unresolved": 0
+    },
+    "M_E03|both|catastrophe": {
+      "net": -4074.89,
+      "without_best": -4362.41,
+      "worst": -676.44,
+      "drawdown": 4074.89,
+      "trades": 16,
+      "profit_factor": 0.0659,
+      "wins": 1,
+      "loss_days": 12,
+      "quarters": [
+        -1695.54,
+        -1721.41,
+        -657.94,
+        0
+      ],
+      "first_half": -3416.95,
+      "second_half": -657.94,
+      "fees": 779.39,
+      "unresolved": 0
+    },
+    "M_E031|2024|ordinary": {
+      "net": -3256.87,
+      "without_best": -3825.77,
+      "worst": -585.92,
+      "drawdown": 3825.77,
+      "trades": 22,
+      "profit_factor": 0.1639,
+      "wins": 2,
+      "loss_days": 13,
+      "quarters": [
+        -582.99,
+        -2116.64,
+        -557.24,
+        0
+      ],
+      "first_half": -2699.63,
+      "second_half": -557.24,
+      "fees": 1079.37,
+      "unresolved": 0
+    },
+    "M_E031|2024|adverse": {
+      "net": -3302.23,
+      "without_best": -3802.93,
+      "worst": -604.94,
+      "drawdown": 3802.93,
+      "trades": 21,
+      "profit_factor": 0.1327,
+      "wins": 2,
+      "loss_days": 13,
+      "quarters": [
+        -891.55,
+        -1798.26,
+        -612.42,
+        0
+      ],
+      "first_half": -2689.81,
+      "second_half": -612.42,
+      "fees": 1030.48,
+      "unresolved": 0
+    },
+    "M_E031|2024|catastrophe": {
+      "net": -3745.85,
+      "without_best": -4033.37,
+      "worst": -676.44,
+      "drawdown": 3745.85,
+      "trades": 14,
+      "profit_factor": 0.0713,
+      "wins": 1,
+      "loss_days": 10,
+      "quarters": [
+        -1268.23,
+        -1803.46,
+        -674.16,
+        0
+      ],
+      "first_half": -3071.69,
+      "second_half": -674.16,
+      "fees": 684.35,
+      "unresolved": 0
+    },
+    "M_E031|2025|ordinary": {
+      "net": -3667.84,
+      "without_best": -3719.95,
+      "worst": -461.68,
+      "drawdown": 3667.84,
+      "trades": 26,
+      "profit_factor": 0.0331,
+      "wins": 3,
+      "loss_days": 17,
+      "quarters": [
+        -1674.17,
+        -1541.18,
+        -368.81,
+        -83.68
+      ],
+      "first_half": -3215.35,
+      "second_half": -452.49,
+      "fees": 1272.59,
+      "unresolved": 0
+    },
+    "M_E031|2025|adverse": {
+      "net": -3705.93,
+      "without_best": -3738.51,
+      "worst": -399.35,
+      "drawdown": 3705.93,
+      "trades": 22,
+      "profit_factor": 0.0087,
+      "wins": 1,
+      "loss_days": 18,
+      "quarters": [
+        -1952.15,
+        -1233.08,
+        -427.27,
+        -93.43
+      ],
+      "first_half": -3185.23,
+      "second_half": -520.7,
+      "fees": 1076.68,
+      "unresolved": 0
+    },
+    "M_E031|2025|catastrophe": {
+      "net": -3661.21,
+      "without_best": -3690.54,
+      "worst": -461.16,
+      "drawdown": 3661.21,
+      "trades": 16,
+      "profit_factor": 0.0079,
+      "wins": 1,
+      "loss_days": 13,
+      "quarters": [
+        -2006.5,
+        -1020.44,
+        -521.4,
+        -112.87
+      ],
+      "first_half": -3026.94,
+      "second_half": -634.27,
+      "fees": 778.46,
+      "unresolved": 0
+    },
+    "M_E031|both|ordinary": {
+      "net": -3434.4,
+      "without_best": -4003.3,
+      "worst": -585.92,
+      "drawdown": 4003.3,
+      "trades": 24,
+      "profit_factor": 0.1567,
+      "wins": 2,
+      "loss_days": 15,
+      "quarters": [
+        -760.52,
+        -2116.64,
+        -557.24,
+        0
+      ],
+      "first_half": -2877.16,
+      "second_half": -557.24,
+      "fees": 1175.65,
+      "unresolved": 0
+    },
+    "M_E031|both|adverse": {
+      "net": -3502.49,
+      "without_best": -4003.19,
+      "worst": -604.94,
+      "drawdown": 4003.19,
+      "trades": 23,
+      "profit_factor": 0.1261,
+      "wins": 2,
+      "loss_days": 15,
+      "quarters": [
+        -1091.81,
+        -1798.26,
+        -612.42,
+        0
+      ],
+      "first_half": -2890.07,
+      "second_half": -612.42,
+      "fees": 1126.74,
+      "unresolved": 0
+    },
+    "M_E031|both|catastrophe": {
+      "net": -4017.0,
+      "without_best": -4304.52,
+      "worst": -676.44,
+      "drawdown": 4017.0,
+      "trades": 17,
+      "profit_factor": 0.0668,
+      "wins": 1,
+      "loss_days": 13,
+      "quarters": [
+        -1539.38,
+        -1803.46,
+        -674.16,
+        0
+      ],
+      "first_half": -3342.84,
+      "second_half": -674.16,
+      "fees": 828.75,
+      "unresolved": 0
+    }
+  },
+  "random": {
+    "2024": {
+      "actual": -3221.19,
+      "median": -2562.84,
+      "mean": -1990.04,
+      "p95": 1114.21,
+      "share_at_or_above": 0.75
+    },
+    "2025": {
+      "actual": -3504.97,
+      "median": -2549.85,
+      "mean": -2233.48,
+      "p95": 1040.02,
+      "share_at_or_above": 0.825
+    }
+  },
+  "tickets": {
+    "M_E02|ordinary": [
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21150-PE",
+        "entry_minute": 597,
+        "entry": 14.0,
+        "lots": 1,
+        "peak": 18.8,
+        "net": -172.62,
+        "exits": [
+          [
+            "TIME",
+            12.1,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21500-CE",
+        "entry_minute": 714,
+        "entry": 17.9,
+        "lots": 1,
+        "peak": 35.25,
+        "net": 741.52,
+        "exits": [
+          [
+            "TIME",
+            30.1,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-21850-PE",
+        "entry_minute": 579,
+        "entry": 16.65,
+        "lots": 1,
+        "peak": 22.7,
+        "net": 329.75,
+        "exits": [
+          [
+            "TIME",
+            22.5,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-22050-CE",
+        "entry_minute": 633,
+        "entry": 15.3,
+        "lots": 1,
+        "peak": 15.3,
+        "net": -438.81,
+        "exits": [
+          [
+            "TIME",
+            9.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-15",
+        "symbol": "NIFTY-2024-02-15-22050-CE",
+        "entry_minute": 616,
+        "entry": 11.35,
+        "lots": 1,
+        "peak": 11.7,
+        "net": -97.6,
+        "exits": [
+          [
+            "TIME",
+            10.6,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22200-CE",
+        "entry_minute": 588,
+        "entry": 14.6,
+        "lots": 1,
+        "peak": 14.6,
+        "net": -399.78,
+        "exits": [
+          [
+            "STRUCTURE",
+            9.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22050-CE",
+        "entry_minute": 723,
+        "entry": 14.3,
+        "lots": 1,
+        "peak": 14.35,
+        "net": -159.69,
+        "exits": [
+          [
+            "TIME",
+            12.6,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22200-CE",
+        "entry_minute": 603,
+        "entry": 15.15,
+        "lots": 1,
+        "peak": 15.15,
+        "net": -334.98,
+        "exits": [
+          [
+            "TIME",
+            10.75,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22250-CE",
+        "entry_minute": 700,
+        "entry": 16.2,
+        "lots": 1,
+        "peak": 25.2,
+        "net": 404.43,
+        "exits": [
+          [
+            "TIME",
+            23.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22450-CE",
+        "entry_minute": 596,
+        "entry": 10.85,
+        "lots": 1,
+        "peak": 10.85,
+        "net": -237.01,
+        "exits": [
+          [
+            "TIME",
+            7.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22500-CE",
+        "entry_minute": 648,
+        "entry": 7.55,
+        "lots": 1,
+        "peak": 7.75,
+        "net": -132.7,
+        "exits": [
+          [
+            "TIME",
+            6.25,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22300-PE",
+        "entry_minute": 576,
+        "entry": 13.75,
+        "lots": 1,
+        "peak": 18.2,
+        "net": -130.41,
+        "exits": [
+          [
+            "TIME",
+            12.5,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22550-CE",
+        "entry_minute": 679,
+        "entry": 11.25,
+        "lots": 1,
+        "peak": 11.35,
+        "net": -175.44,
+        "exits": [
+          [
+            "TIME",
+            9.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-10",
+        "symbol": "NIFTY-2024-04-10-22800-CE",
+        "entry_minute": 575,
+        "entry": 18.05,
+        "lots": 1,
+        "peak": 18.05,
+        "net": -108.37,
+        "exits": [
+          [
+            "TIME",
+            17.15,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-10",
+        "symbol": "NIFTY-2024-04-10-22600-PE",
+        "entry_minute": 686,
+        "entry": 14.1,
+        "lots": 1,
+        "peak": 14.1,
+        "net": -477.55,
+        "exits": [
+          [
+            "STOP",
+            7.5,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-18",
+        "symbol": "NIFTY-2024-04-18-22350-CE",
+        "entry_minute": 676,
+        "entry": 14.8,
+        "lots": 1,
+        "peak": 17.3,
+        "net": -334.93,
+        "exits": [
+          [
+            "TIME",
+            10.4,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-02",
+        "symbol": "NIFTY-2024-05-02-22800-CE",
+        "entry_minute": 697,
+        "entry": 13.3,
+        "lots": 1,
+        "peak": 13.95,
+        "net": -357.41,
+        "exits": [
+          [
+            "TIME",
+            8.55,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-09",
+        "symbol": "NIFTY-2024-05-09-21950-PE",
+        "entry_minute": 777,
+        "entry": 16.25,
+        "lots": 1,
+        "peak": 20.8,
+        "net": -393.55,
+        "exits": [
+          [
+            "TIME",
+            10.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22350-CE",
+        "entry_minute": 765,
+        "entry": 6.2,
+        "lots": 1,
+        "peak": 6.35,
+        "net": -103.3,
+        "exits": [
+          [
+            "TIME",
+            5.35,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-04",
+        "symbol": "NIFTY-2024-07-04-24400-CE",
+        "entry_minute": 773,
+        "entry": 7.45,
+        "lots": 1,
+        "peak": 7.45,
+        "net": -148.91,
+        "exits": [
+          [
+            "TIME",
+            5.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-11",
+        "symbol": "NIFTY-2024-07-11-24100-PE",
+        "entry_minute": 624,
+        "entry": 8.05,
+        "lots": 1,
+        "peak": 8.55,
+        "net": -187.93,
+        "exits": [
+          [
+            "TIME",
+            5.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-18",
+        "symbol": "NIFTY-2024-07-18-24800-CE",
+        "entry_minute": 595,
+        "entry": 8.35,
+        "lots": 1,
+        "peak": 8.35,
+        "net": -220.4,
+        "exits": [
+          [
+            "TIME",
+            5.7,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-16",
+        "symbol": "NIFTY-2025-01-16-23400-CE",
+        "entry_minute": 708,
+        "entry": 6.1,
+        "lots": 1,
+        "peak": 6.1,
+        "net": -122.75,
+        "exits": [
+          [
+            "TIME",
+            4.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-23",
+        "symbol": "NIFTY-2025-01-23-23100-PE",
+        "entry_minute": 658,
+        "entry": 7.05,
+        "lots": 1,
+        "peak": 7.05,
+        "net": -54.78,
+        "exits": [
+          [
+            "TIME",
+            6.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-02-27",
+        "symbol": "NIFTY-2025-02-27-22550-CE",
+        "entry_minute": 767,
+        "entry": 8.8,
+        "lots": 1,
+        "peak": 9.85,
+        "net": -12.88,
+        "exits": [
+          [
+            "TIME",
+            9.35,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-03-20",
+        "symbol": "NIFTY-2025-03-20-23200-CE",
+        "entry_minute": 623,
+        "entry": 6.4,
+        "lots": 1,
+        "peak": 6.9,
+        "net": -12.51,
+        "exits": [
+          [
+            "TIME",
+            6.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-04-03",
+        "symbol": "NIFTY-2025-04-03-23400-CE",
+        "entry_minute": 629,
+        "entry": 8.45,
+        "lots": 1,
+        "peak": 8.45,
+        "net": -194.47,
+        "exits": [
+          [
+            "STRUCTURE",
+            6.2,
+            1
+          ]
+        ]
+      }
+    ],
+    "M_E02|adverse": [
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21150-PE",
+        "entry_minute": 597,
+        "entry": 14.2,
+        "lots": 1,
+        "peak": 18.8,
+        "net": -198.61,
+        "exits": [
+          [
+            "TIME",
+            11.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21500-CE",
+        "entry_minute": 714,
+        "entry": 18.15,
+        "lots": 1,
+        "peak": 35.25,
+        "net": 699.31,
+        "exits": [
+          [
+            "TIME",
+            29.7,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-21850-PE",
+        "entry_minute": 579,
+        "entry": 16.9,
+        "lots": 1,
+        "peak": 22.7,
+        "net": 294.04,
+        "exits": [
+          [
+            "TIME",
+            22.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-22050-CE",
+        "entry_minute": 633,
+        "entry": 15.55,
+        "lots": 1,
+        "peak": 15.55,
+        "net": -461.56,
+        "exits": [
+          [
+            "TIME",
+            9.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-15",
+        "symbol": "NIFTY-2024-02-15-22050-CE",
+        "entry_minute": 616,
+        "entry": 11.55,
+        "lots": 1,
+        "peak": 11.7,
+        "net": -123.59,
+        "exits": [
+          [
+            "TIME",
+            10.4,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22200-CE",
+        "entry_minute": 588,
+        "entry": 14.8,
+        "lots": 1,
+        "peak": 14.8,
+        "net": -419.27,
+        "exits": [
+          [
+            "STRUCTURE",
+            9.1,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22050-CE",
+        "entry_minute": 723,
+        "entry": 14.5,
+        "lots": 1,
+        "peak": 14.5,
+        "net": -185.67,
+        "exits": [
+          [
+            "TIME",
+            12.4,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22200-CE",
+        "entry_minute": 603,
+        "entry": 15.4,
+        "lots": 1,
+        "peak": 15.4,
+        "net": -364.22,
+        "exits": [
+          [
+            "TIME",
+            10.55,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22250-CE",
+        "entry_minute": 700,
+        "entry": 16.45,
+        "lots": 1,
+        "peak": 25.2,
+        "net": 368.71,
+        "exits": [
+          [
+            "TIME",
+            22.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22450-CE",
+        "entry_minute": 596,
+        "entry": 11.05,
+        "lots": 1,
+        "peak": 11.05,
+        "net": -256.5,
+        "exits": [
+          [
+            "TIME",
+            7.85,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22500-CE",
+        "entry_minute": 648,
+        "entry": 7.65,
+        "lots": 1,
+        "peak": 7.75,
+        "net": -145.69,
+        "exits": [
+          [
+            "TIME",
+            6.15,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22300-PE",
+        "entry_minute": 576,
+        "entry": 13.95,
+        "lots": 1,
+        "peak": 18.2,
+        "net": -156.4,
+        "exits": [
+          [
+            "TIME",
+            12.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22550-CE",
+        "entry_minute": 679,
+        "entry": 11.45,
+        "lots": 1,
+        "peak": 11.45,
+        "net": -194.94,
+        "exits": [
+          [
+            "TIME",
+            9.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-10",
+        "symbol": "NIFTY-2024-04-10-22800-CE",
+        "entry_minute": 575,
+        "entry": 18.3,
+        "lots": 1,
+        "peak": 18.3,
+        "net": -140.85,
+        "exits": [
+          [
+            "TIME",
+            16.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-18",
+        "symbol": "NIFTY-2024-04-18-22350-CE",
+        "entry_minute": 676,
+        "entry": 15.0,
+        "lots": 1,
+        "peak": 17.3,
+        "net": -360.91,
+        "exits": [
+          [
+            "TIME",
+            10.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-02",
+        "symbol": "NIFTY-2024-05-02-22800-CE",
+        "entry_minute": 697,
+        "entry": 13.5,
+        "lots": 1,
+        "peak": 13.95,
+        "net": -376.9,
+        "exits": [
+          [
+            "TIME",
+            8.45,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-09",
+        "symbol": "NIFTY-2024-05-09-21950-PE",
+        "entry_minute": 777,
+        "entry": 16.5,
+        "lots": 1,
+        "peak": 20.8,
+        "net": -422.77,
+        "exits": [
+          [
+            "TIME",
+            10.75,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22300-CE",
+        "entry_minute": 765,
+        "entry": 12.6,
+        "lots": 1,
+        "peak": 12.9,
+        "net": -198.36,
+        "exits": [
+          [
+            "TIME",
+            10.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-04",
+        "symbol": "NIFTY-2024-07-04-24400-CE",
+        "entry_minute": 773,
+        "entry": 7.55,
+        "lots": 1,
+        "peak": 7.55,
+        "net": -161.89,
+        "exits": [
+          [
+            "TIME",
+            5.8,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-11",
+        "symbol": "NIFTY-2024-07-11-24100-PE",
+        "entry_minute": 624,
+        "entry": 8.15,
+        "lots": 1,
+        "peak": 8.55,
+        "net": -200.91,
+        "exits": [
+          [
+            "TIME",
+            5.8,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-18",
+        "symbol": "NIFTY-2024-07-18-24800-CE",
+        "entry_minute": 595,
+        "entry": 8.45,
+        "lots": 1,
+        "peak": 8.45,
+        "net": -233.4,
+        "exits": [
+          [
+            "TIME",
+            5.6,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-16",
+        "symbol": "NIFTY-2025-01-16-23400-CE",
+        "entry_minute": 708,
+        "entry": 6.2,
+        "lots": 1,
+        "peak": 6.2,
+        "net": -132.49,
+        "exits": [
+          [
+            "TIME",
+            4.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-23",
+        "symbol": "NIFTY-2025-01-23-23100-PE",
+        "entry_minute": 658,
+        "entry": 7.15,
+        "lots": 1,
+        "peak": 7.15,
+        "net": -67.77,
+        "exits": [
+          [
+            "TIME",
+            6.85,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-03-20",
+        "symbol": "NIFTY-2025-03-20-23200-CE",
+        "entry_minute": 623,
+        "entry": 6.5,
+        "lots": 1,
+        "peak": 6.9,
+        "net": -25.5,
+        "exits": [
+          [
+            "TIME",
+            6.85,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-04-03",
+        "symbol": "NIFTY-2025-04-03-23400-CE",
+        "entry_minute": 629,
+        "entry": 8.55,
+        "lots": 1,
+        "peak": 8.55,
+        "net": -207.46,
+        "exits": [
+          [
+            "STRUCTURE",
+            6.1,
+            1
+          ]
+        ]
+      }
+    ],
+    "M_E03|ordinary": [
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21150-PE",
+        "entry_minute": 597,
+        "entry": 14.0,
+        "lots": 1,
+        "peak": 18.8,
+        "net": -172.62,
+        "exits": [
+          [
+            "TIME",
+            12.1,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21500-CE",
+        "entry_minute": 714,
+        "entry": 17.9,
+        "lots": 1,
+        "peak": 35.25,
+        "net": 741.52,
+        "exits": [
+          [
+            "TIME",
+            30.1,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-21850-PE",
+        "entry_minute": 579,
+        "entry": 16.65,
+        "lots": 1,
+        "peak": 22.7,
+        "net": 329.75,
+        "exits": [
+          [
+            "TIME",
+            22.5,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-22050-CE",
+        "entry_minute": 633,
+        "entry": 15.3,
+        "lots": 1,
+        "peak": 15.3,
+        "net": -438.81,
+        "exits": [
+          [
+            "TIME",
+            9.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-15",
+        "symbol": "NIFTY-2024-02-15-22050-CE",
+        "entry_minute": 616,
+        "entry": 11.35,
+        "lots": 1,
+        "peak": 11.7,
+        "net": -97.6,
+        "exits": [
+          [
+            "TIME",
+            10.6,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22200-CE",
+        "entry_minute": 588,
+        "entry": 14.6,
+        "lots": 1,
+        "peak": 14.6,
+        "net": -399.78,
+        "exits": [
+          [
+            "STRUCTURE",
+            9.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22050-CE",
+        "entry_minute": 723,
+        "entry": 14.3,
+        "lots": 1,
+        "peak": 14.35,
+        "net": -159.69,
+        "exits": [
+          [
+            "TIME",
+            12.6,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22200-CE",
+        "entry_minute": 603,
+        "entry": 15.15,
+        "lots": 1,
+        "peak": 15.15,
+        "net": -334.98,
+        "exits": [
+          [
+            "TIME",
+            10.75,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22250-CE",
+        "entry_minute": 700,
+        "entry": 16.2,
+        "lots": 1,
+        "peak": 25.2,
+        "net": 404.43,
+        "exits": [
+          [
+            "TIME",
+            23.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22450-CE",
+        "entry_minute": 596,
+        "entry": 10.85,
+        "lots": 1,
+        "peak": 10.85,
+        "net": -237.01,
+        "exits": [
+          [
+            "TIME",
+            7.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22500-CE",
+        "entry_minute": 648,
+        "entry": 7.55,
+        "lots": 2,
+        "peak": 7.75,
+        "net": -218.2,
+        "exits": [
+          [
+            "TIME",
+            6.25,
+            2
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22300-PE",
+        "entry_minute": 576,
+        "entry": 13.75,
+        "lots": 1,
+        "peak": 18.2,
+        "net": -130.41,
+        "exits": [
+          [
+            "TIME",
+            12.5,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22550-CE",
+        "entry_minute": 679,
+        "entry": 11.25,
+        "lots": 1,
+        "peak": 11.35,
+        "net": -175.44,
+        "exits": [
+          [
+            "TIME",
+            9.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-10",
+        "symbol": "NIFTY-2024-04-10-22800-CE",
+        "entry_minute": 575,
+        "entry": 18.05,
+        "lots": 1,
+        "peak": 18.05,
+        "net": -108.37,
+        "exits": [
+          [
+            "TIME",
+            17.15,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-10",
+        "symbol": "NIFTY-2024-04-10-22600-PE",
+        "entry_minute": 686,
+        "entry": 14.1,
+        "lots": 1,
+        "peak": 14.1,
+        "net": -477.55,
+        "exits": [
+          [
+            "STOP",
+            7.5,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-18",
+        "symbol": "NIFTY-2024-04-18-22350-CE",
+        "entry_minute": 676,
+        "entry": 14.8,
+        "lots": 1,
+        "peak": 17.3,
+        "net": -334.93,
+        "exits": [
+          [
+            "TIME",
+            10.4,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-02",
+        "symbol": "NIFTY-2024-05-02-22800-CE",
+        "entry_minute": 697,
+        "entry": 13.3,
+        "lots": 1,
+        "peak": 13.95,
+        "net": -357.41,
+        "exits": [
+          [
+            "TIME",
+            8.55,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-09",
+        "symbol": "NIFTY-2024-05-09-21950-PE",
+        "entry_minute": 777,
+        "entry": 16.25,
+        "lots": 1,
+        "peak": 20.8,
+        "net": -393.55,
+        "exits": [
+          [
+            "TIME",
+            10.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22350-CE",
+        "entry_minute": 765,
+        "entry": 6.2,
+        "lots": 1,
+        "peak": 6.35,
+        "net": -103.3,
+        "exits": [
+          [
+            "TIME",
+            5.35,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-04",
+        "symbol": "NIFTY-2024-07-04-24400-CE",
+        "entry_minute": 773,
+        "entry": 7.45,
+        "lots": 1,
+        "peak": 7.45,
+        "net": -148.91,
+        "exits": [
+          [
+            "TIME",
+            5.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-11",
+        "symbol": "NIFTY-2024-07-11-24100-PE",
+        "entry_minute": 624,
+        "entry": 8.05,
+        "lots": 1,
+        "peak": 8.55,
+        "net": -187.93,
+        "exits": [
+          [
+            "TIME",
+            5.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-18",
+        "symbol": "NIFTY-2024-07-18-24800-CE",
+        "entry_minute": 595,
+        "entry": 8.35,
+        "lots": 1,
+        "peak": 8.35,
+        "net": -220.4,
+        "exits": [
+          [
+            "TIME",
+            5.7,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-16",
+        "symbol": "NIFTY-2025-01-16-23400-CE",
+        "entry_minute": 708,
+        "entry": 6.1,
+        "lots": 1,
+        "peak": 6.1,
+        "net": -122.75,
+        "exits": [
+          [
+            "TIME",
+            4.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-23",
+        "symbol": "NIFTY-2025-01-23-23100-PE",
+        "entry_minute": 658,
+        "entry": 7.05,
+        "lots": 1,
+        "peak": 7.05,
+        "net": -54.78,
+        "exits": [
+          [
+            "TIME",
+            6.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-02-27",
+        "symbol": "NIFTY-2025-02-27-22550-CE",
+        "entry_minute": 767,
+        "entry": 8.8,
+        "lots": 1,
+        "peak": 9.85,
+        "net": -12.88,
+        "exits": [
+          [
+            "TIME",
+            9.35,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-03-20",
+        "symbol": "NIFTY-2025-03-20-23200-CE",
+        "entry_minute": 623,
+        "entry": 6.4,
+        "lots": 1,
+        "peak": 6.9,
+        "net": -12.51,
+        "exits": [
+          [
+            "TIME",
+            6.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-04-03",
+        "symbol": "NIFTY-2025-04-03-23400-CE",
+        "entry_minute": 629,
+        "entry": 8.45,
+        "lots": 1,
+        "peak": 8.45,
+        "net": -194.47,
+        "exits": [
+          [
+            "STRUCTURE",
+            6.2,
+            1
+          ]
+        ]
+      }
+    ],
+    "M_E03|adverse": [
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21150-PE",
+        "entry_minute": 597,
+        "entry": 14.2,
+        "lots": 1,
+        "peak": 18.8,
+        "net": -198.61,
+        "exits": [
+          [
+            "TIME",
+            11.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21500-CE",
+        "entry_minute": 714,
+        "entry": 18.15,
+        "lots": 1,
+        "peak": 35.25,
+        "net": 699.31,
+        "exits": [
+          [
+            "TIME",
+            29.7,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-21850-PE",
+        "entry_minute": 579,
+        "entry": 16.9,
+        "lots": 1,
+        "peak": 22.7,
+        "net": 294.04,
+        "exits": [
+          [
+            "TIME",
+            22.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-22050-CE",
+        "entry_minute": 633,
+        "entry": 15.55,
+        "lots": 1,
+        "peak": 15.55,
+        "net": -461.56,
+        "exits": [
+          [
+            "TIME",
+            9.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-15",
+        "symbol": "NIFTY-2024-02-15-22050-CE",
+        "entry_minute": 616,
+        "entry": 11.55,
+        "lots": 1,
+        "peak": 11.7,
+        "net": -123.59,
+        "exits": [
+          [
+            "TIME",
+            10.4,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22200-CE",
+        "entry_minute": 588,
+        "entry": 14.8,
+        "lots": 1,
+        "peak": 14.8,
+        "net": -419.27,
+        "exits": [
+          [
+            "STRUCTURE",
+            9.1,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22050-CE",
+        "entry_minute": 723,
+        "entry": 14.5,
+        "lots": 1,
+        "peak": 14.5,
+        "net": -185.67,
+        "exits": [
+          [
+            "TIME",
+            12.4,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22200-CE",
+        "entry_minute": 603,
+        "entry": 15.4,
+        "lots": 1,
+        "peak": 15.4,
+        "net": -364.22,
+        "exits": [
+          [
+            "TIME",
+            10.55,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22250-CE",
+        "entry_minute": 700,
+        "entry": 16.45,
+        "lots": 1,
+        "peak": 25.2,
+        "net": 368.71,
+        "exits": [
+          [
+            "TIME",
+            22.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22450-CE",
+        "entry_minute": 596,
+        "entry": 11.05,
+        "lots": 1,
+        "peak": 11.05,
+        "net": -256.5,
+        "exits": [
+          [
+            "TIME",
+            7.85,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22500-CE",
+        "entry_minute": 648,
+        "entry": 7.65,
+        "lots": 2,
+        "peak": 7.75,
+        "net": -244.19,
+        "exits": [
+          [
+            "TIME",
+            6.15,
+            2
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22300-PE",
+        "entry_minute": 576,
+        "entry": 13.95,
+        "lots": 1,
+        "peak": 18.2,
+        "net": -156.4,
+        "exits": [
+          [
+            "TIME",
+            12.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22550-CE",
+        "entry_minute": 679,
+        "entry": 11.45,
+        "lots": 1,
+        "peak": 11.45,
+        "net": -194.94,
+        "exits": [
+          [
+            "TIME",
+            9.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-10",
+        "symbol": "NIFTY-2024-04-10-22800-CE",
+        "entry_minute": 575,
+        "entry": 18.3,
+        "lots": 1,
+        "peak": 18.3,
+        "net": -140.85,
+        "exits": [
+          [
+            "TIME",
+            16.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-18",
+        "symbol": "NIFTY-2024-04-18-22350-CE",
+        "entry_minute": 676,
+        "entry": 15.0,
+        "lots": 1,
+        "peak": 17.3,
+        "net": -360.91,
+        "exits": [
+          [
+            "TIME",
+            10.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-02",
+        "symbol": "NIFTY-2024-05-02-22800-CE",
+        "entry_minute": 697,
+        "entry": 13.5,
+        "lots": 1,
+        "peak": 13.95,
+        "net": -376.9,
+        "exits": [
+          [
+            "TIME",
+            8.45,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-09",
+        "symbol": "NIFTY-2024-05-09-21950-PE",
+        "entry_minute": 777,
+        "entry": 16.5,
+        "lots": 1,
+        "peak": 20.8,
+        "net": -422.77,
+        "exits": [
+          [
+            "TIME",
+            10.75,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22350-CE",
+        "entry_minute": 765,
+        "entry": 6.3,
+        "lots": 1,
+        "peak": 6.35,
+        "net": -116.29,
+        "exits": [
+          [
+            "TIME",
+            5.25,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-04",
+        "symbol": "NIFTY-2024-07-04-24400-CE",
+        "entry_minute": 773,
+        "entry": 7.55,
+        "lots": 1,
+        "peak": 7.55,
+        "net": -161.89,
+        "exits": [
+          [
+            "TIME",
+            5.8,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-11",
+        "symbol": "NIFTY-2024-07-11-24100-PE",
+        "entry_minute": 624,
+        "entry": 8.15,
+        "lots": 1,
+        "peak": 8.55,
+        "net": -200.91,
+        "exits": [
+          [
+            "TIME",
+            5.8,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-18",
+        "symbol": "NIFTY-2024-07-18-24800-CE",
+        "entry_minute": 595,
+        "entry": 8.45,
+        "lots": 1,
+        "peak": 8.45,
+        "net": -233.4,
+        "exits": [
+          [
+            "TIME",
+            5.6,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-16",
+        "symbol": "NIFTY-2025-01-16-23400-CE",
+        "entry_minute": 708,
+        "entry": 6.2,
+        "lots": 1,
+        "peak": 6.2,
+        "net": -132.49,
+        "exits": [
+          [
+            "TIME",
+            4.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-23",
+        "symbol": "NIFTY-2025-01-23-23100-PE",
+        "entry_minute": 658,
+        "entry": 7.15,
+        "lots": 1,
+        "peak": 7.15,
+        "net": -67.77,
+        "exits": [
+          [
+            "TIME",
+            6.85,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-03-20",
+        "symbol": "NIFTY-2025-03-20-23200-CE",
+        "entry_minute": 623,
+        "entry": 6.5,
+        "lots": 1,
+        "peak": 6.9,
+        "net": -25.5,
+        "exits": [
+          [
+            "TIME",
+            6.85,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-04-03",
+        "symbol": "NIFTY-2025-04-03-23400-CE",
+        "entry_minute": 629,
+        "entry": 8.55,
+        "lots": 1,
+        "peak": 8.55,
+        "net": -207.46,
+        "exits": [
+          [
+            "STRUCTURE",
+            6.1,
+            1
+          ]
+        ]
+      }
+    ],
+    "M_E031|ordinary": [
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21150-PE",
+        "entry_minute": 597,
+        "entry": 14.0,
+        "lots": 1,
+        "peak": 18.8,
+        "net": -172.62,
+        "exits": [
+          [
+            "TIME",
+            12.1,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21500-CE",
+        "entry_minute": 714,
+        "entry": 17.9,
+        "lots": 1,
+        "peak": 35.25,
+        "net": 741.52,
+        "exits": [
+          [
+            "TIME",
+            30.1,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-21850-PE",
+        "entry_minute": 579,
+        "entry": 16.65,
+        "lots": 1,
+        "peak": 22.7,
+        "net": 329.75,
+        "exits": [
+          [
+            "TIME",
+            22.5,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-22050-CE",
+        "entry_minute": 633,
+        "entry": 15.3,
+        "lots": 1,
+        "peak": 15.3,
+        "net": -438.81,
+        "exits": [
+          [
+            "STOP",
+            9.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-15",
+        "symbol": "NIFTY-2024-02-15-22050-CE",
+        "entry_minute": 616,
+        "entry": 11.35,
+        "lots": 1,
+        "peak": 11.7,
+        "net": -97.6,
+        "exits": [
+          [
+            "TIME",
+            10.6,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22200-CE",
+        "entry_minute": 588,
+        "entry": 14.6,
+        "lots": 1,
+        "peak": 14.6,
+        "net": -399.78,
+        "exits": [
+          [
+            "STOP",
+            9.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22050-CE",
+        "entry_minute": 723,
+        "entry": 14.3,
+        "lots": 1,
+        "peak": 14.35,
+        "net": -159.69,
+        "exits": [
+          [
+            "TIME",
+            12.6,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22200-CE",
+        "entry_minute": 603,
+        "entry": 15.15,
+        "lots": 1,
+        "peak": 15.15,
+        "net": -334.98,
+        "exits": [
+          [
+            "TIME",
+            10.75,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22250-CE",
+        "entry_minute": 700,
+        "entry": 16.2,
+        "lots": 1,
+        "peak": 25.2,
+        "net": 404.43,
+        "exits": [
+          [
+            "TIME",
+            23.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22450-CE",
+        "entry_minute": 596,
+        "entry": 10.85,
+        "lots": 1,
+        "peak": 10.85,
+        "net": -237.01,
+        "exits": [
+          [
+            "TIME",
+            7.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22500-CE",
+        "entry_minute": 648,
+        "entry": 7.55,
+        "lots": 2,
+        "peak": 7.75,
+        "net": -218.2,
+        "exits": [
+          [
+            "TIME",
+            6.25,
+            2
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22300-PE",
+        "entry_minute": 576,
+        "entry": 13.75,
+        "lots": 1,
+        "peak": 18.2,
+        "net": -130.41,
+        "exits": [
+          [
+            "TIME",
+            12.5,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22550-CE",
+        "entry_minute": 679,
+        "entry": 11.25,
+        "lots": 1,
+        "peak": 11.35,
+        "net": -175.44,
+        "exits": [
+          [
+            "TIME",
+            9.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-10",
+        "symbol": "NIFTY-2024-04-10-22800-CE",
+        "entry_minute": 575,
+        "entry": 18.05,
+        "lots": 1,
+        "peak": 18.05,
+        "net": -108.37,
+        "exits": [
+          [
+            "TIME",
+            17.15,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-10",
+        "symbol": "NIFTY-2024-04-10-22600-PE",
+        "entry_minute": 686,
+        "entry": 14.1,
+        "lots": 1,
+        "peak": 14.1,
+        "net": -477.55,
+        "exits": [
+          [
+            "STOP",
+            7.5,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-18",
+        "symbol": "NIFTY-2024-04-18-22350-CE",
+        "entry_minute": 676,
+        "entry": 14.8,
+        "lots": 1,
+        "peak": 17.3,
+        "net": -370.61,
+        "exits": [
+          [
+            "STOP",
+            9.85,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-02",
+        "symbol": "NIFTY-2024-05-02-22800-CE",
+        "entry_minute": 697,
+        "entry": 13.3,
+        "lots": 1,
+        "peak": 13.95,
+        "net": -357.41,
+        "exits": [
+          [
+            "STOP",
+            8.55,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-09",
+        "symbol": "NIFTY-2024-05-09-21950-PE",
+        "entry_minute": 777,
+        "entry": 16.25,
+        "lots": 1,
+        "peak": 20.8,
+        "net": -393.55,
+        "exits": [
+          [
+            "TIME",
+            10.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22350-CE",
+        "entry_minute": 765,
+        "entry": 6.2,
+        "lots": 1,
+        "peak": 6.35,
+        "net": -103.3,
+        "exits": [
+          [
+            "TIME",
+            5.35,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-04",
+        "symbol": "NIFTY-2024-07-04-24400-CE",
+        "entry_minute": 773,
+        "entry": 7.45,
+        "lots": 1,
+        "peak": 7.45,
+        "net": -148.91,
+        "exits": [
+          [
+            "TIME",
+            5.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-11",
+        "symbol": "NIFTY-2024-07-11-24100-PE",
+        "entry_minute": 624,
+        "entry": 8.05,
+        "lots": 1,
+        "peak": 8.55,
+        "net": -187.93,
+        "exits": [
+          [
+            "TIME",
+            5.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-18",
+        "symbol": "NIFTY-2024-07-18-24800-CE",
+        "entry_minute": 595,
+        "entry": 8.35,
+        "lots": 1,
+        "peak": 8.35,
+        "net": -220.4,
+        "exits": [
+          [
+            "TIME",
+            5.7,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-16",
+        "symbol": "NIFTY-2025-01-16-23400-CE",
+        "entry_minute": 708,
+        "entry": 6.1,
+        "lots": 1,
+        "peak": 6.1,
+        "net": -122.75,
+        "exits": [
+          [
+            "TIME",
+            4.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-23",
+        "symbol": "NIFTY-2025-01-23-23100-PE",
+        "entry_minute": 658,
+        "entry": 7.05,
+        "lots": 1,
+        "peak": 7.05,
+        "net": -54.78,
+        "exits": [
+          [
+            "TIME",
+            6.95,
+            1
+          ]
+        ]
+      }
+    ],
+    "M_E031|adverse": [
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21150-PE",
+        "entry_minute": 597,
+        "entry": 14.2,
+        "lots": 1,
+        "peak": 18.8,
+        "net": -198.61,
+        "exits": [
+          [
+            "TIME",
+            11.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-01-18",
+        "symbol": "NIFTY-2024-01-18-21500-CE",
+        "entry_minute": 714,
+        "entry": 18.15,
+        "lots": 1,
+        "peak": 35.25,
+        "net": 699.31,
+        "exits": [
+          [
+            "TIME",
+            29.7,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-21850-PE",
+        "entry_minute": 579,
+        "entry": 16.9,
+        "lots": 1,
+        "peak": 22.7,
+        "net": 294.04,
+        "exits": [
+          [
+            "TIME",
+            22.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-08",
+        "symbol": "NIFTY-2024-02-08-22050-CE",
+        "entry_minute": 633,
+        "entry": 15.55,
+        "lots": 1,
+        "peak": 15.55,
+        "net": -461.56,
+        "exits": [
+          [
+            "STOP",
+            9.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-15",
+        "symbol": "NIFTY-2024-02-15-22050-CE",
+        "entry_minute": 616,
+        "entry": 11.55,
+        "lots": 1,
+        "peak": 11.7,
+        "net": -123.59,
+        "exits": [
+          [
+            "TIME",
+            10.4,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22200-CE",
+        "entry_minute": 588,
+        "entry": 14.8,
+        "lots": 1,
+        "peak": 14.8,
+        "net": -419.27,
+        "exits": [
+          [
+            "STOP",
+            9.1,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "symbol": "NIFTY-2024-02-22-22050-CE",
+        "entry_minute": 723,
+        "entry": 14.5,
+        "lots": 1,
+        "peak": 14.5,
+        "net": -185.67,
+        "exits": [
+          [
+            "TIME",
+            12.4,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22200-CE",
+        "entry_minute": 603,
+        "entry": 15.4,
+        "lots": 1,
+        "peak": 15.4,
+        "net": -364.22,
+        "exits": [
+          [
+            "TIME",
+            10.55,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-14",
+        "symbol": "NIFTY-2024-03-14-22250-CE",
+        "entry_minute": 700,
+        "entry": 16.45,
+        "lots": 1,
+        "peak": 25.2,
+        "net": 368.71,
+        "exits": [
+          [
+            "TIME",
+            22.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22450-CE",
+        "entry_minute": 596,
+        "entry": 11.05,
+        "lots": 1,
+        "peak": 11.05,
+        "net": -256.5,
+        "exits": [
+          [
+            "TIME",
+            7.85,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22500-CE",
+        "entry_minute": 648,
+        "entry": 7.65,
+        "lots": 2,
+        "peak": 7.75,
+        "net": -244.19,
+        "exits": [
+          [
+            "TIME",
+            6.15,
+            2
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22300-PE",
+        "entry_minute": 576,
+        "entry": 13.95,
+        "lots": 1,
+        "peak": 18.2,
+        "net": -156.4,
+        "exits": [
+          [
+            "TIME",
+            12.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "symbol": "NIFTY-2024-04-04-22550-CE",
+        "entry_minute": 679,
+        "entry": 11.45,
+        "lots": 1,
+        "peak": 11.45,
+        "net": -194.94,
+        "exits": [
+          [
+            "TIME",
+            9.2,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-10",
+        "symbol": "NIFTY-2024-04-10-22800-CE",
+        "entry_minute": 575,
+        "entry": 18.3,
+        "lots": 1,
+        "peak": 18.3,
+        "net": -140.85,
+        "exits": [
+          [
+            "TIME",
+            16.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-04-18",
+        "symbol": "NIFTY-2024-04-18-22350-CE",
+        "entry_minute": 676,
+        "entry": 15.0,
+        "lots": 1,
+        "peak": 17.3,
+        "net": -390.11,
+        "exits": [
+          [
+            "STOP",
+            9.75,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-02",
+        "symbol": "NIFTY-2024-05-02-22800-CE",
+        "entry_minute": 697,
+        "entry": 13.5,
+        "lots": 1,
+        "peak": 13.95,
+        "net": -376.9,
+        "exits": [
+          [
+            "STOP",
+            8.45,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-09",
+        "symbol": "NIFTY-2024-05-09-21950-PE",
+        "entry_minute": 777,
+        "entry": 16.5,
+        "lots": 1,
+        "peak": 20.8,
+        "net": -422.77,
+        "exits": [
+          [
+            "TIME",
+            10.75,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22350-CE",
+        "entry_minute": 765,
+        "entry": 6.3,
+        "lots": 1,
+        "peak": 6.35,
+        "net": -116.29,
+        "exits": [
+          [
+            "TIME",
+            5.25,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-04",
+        "symbol": "NIFTY-2024-07-04-24400-CE",
+        "entry_minute": 773,
+        "entry": 7.55,
+        "lots": 1,
+        "peak": 7.55,
+        "net": -161.89,
+        "exits": [
+          [
+            "TIME",
+            5.8,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-11",
+        "symbol": "NIFTY-2024-07-11-24100-PE",
+        "entry_minute": 624,
+        "entry": 8.15,
+        "lots": 1,
+        "peak": 8.55,
+        "net": -200.91,
+        "exits": [
+          [
+            "TIME",
+            5.8,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-07-18",
+        "symbol": "NIFTY-2024-07-18-24800-CE",
+        "entry_minute": 595,
+        "entry": 8.45,
+        "lots": 1,
+        "peak": 8.45,
+        "net": -249.62,
+        "exits": [
+          [
+            "STOP",
+            5.35,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-16",
+        "symbol": "NIFTY-2025-01-16-23400-CE",
+        "entry_minute": 708,
+        "entry": 6.2,
+        "lots": 1,
+        "peak": 6.2,
+        "net": -132.49,
+        "exits": [
+          [
+            "TIME",
+            4.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2025-01-23",
+        "symbol": "NIFTY-2025-01-23-23100-PE",
+        "entry_minute": 658,
+        "entry": 7.15,
+        "lots": 1,
+        "peak": 7.15,
+        "net": -67.77,
+        "exits": [
+          [
+            "TIME",
+            6.85,
+            1
+          ]
+        ]
+      }
+    ]
+  },
+  "verdict": {
+    "checks": {
+      "positive_ordinary_2024": false,
+      "positive_adverse_2024": false,
+      "ex_best_ordinary_2024": false,
+      "worst_day_2024": true,
+      "beats_random_median_2024": false,
+      "positive_ordinary_2025": false,
+      "positive_adverse_2025": false,
+      "ex_best_ordinary_2025": false,
+      "worst_day_2025": true,
+      "beats_random_median_2025": false
+    },
+    "passed": false
+  }
+}
