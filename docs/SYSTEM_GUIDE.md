@@ -1,4 +1,4 @@
-## November 3 — two-sided expiry book and E03.1 risk dial (Dev research, commit `DIAL_COMMIT`, pushed, no runtime change)
+## November 3 — two-sided expiry book and E03.1 risk dial (Dev research, commit `b34e259`, pushed, no runtime change)
 
 Report: `docs/EXPIRY_RESEARCH_AUCTION.md` (round 2); record: `docs/research/simulation/2026-11-03-expiry-auction/`.
 - Two-sided (`TWOSIDED_PLAN.md`, frozen `140baeb`): the iron-butterfly seller only on quiet afternoons

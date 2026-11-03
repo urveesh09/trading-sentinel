@@ -1,4 +1,4 @@
-## November 3 — two-sided book failed; E03.1 size stays 1x by the frozen dial (commit `DIAL_COMMIT`, Dev, pushed)
+## November 3 — two-sided book failed; E03.1 size stays 1x by the frozen dial (commit `b34e259`, Dev, pushed)
 
 - Done: quiet-day seller failed its plateau; risk dial recommends 1x (2x is the efficient next step,
   never 1.5x). Records in `docs/research/simulation/2026-11-03-expiry-auction/`.

@@ -1,4 +1,4 @@
-## November 3 — two-sided book and risk dial (commit `DIAL_COMMIT`, Dev, pushed, research only)
+## November 3 — two-sided book and risk dial (commit `b34e259`, Dev, pushed, research only)
 
 - [x] Two-sided quiet-day seller frozen (`140baeb`) and failed (2 / 0 of 20 arms).
 - [x] Risk dial frozen (`06fb77f`): 1x recommended; 2x the next efficient step after fresh evidence.
