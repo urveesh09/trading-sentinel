@@ -1,4 +1,4 @@
-## November 3 — expiry-v5 E03.2 main, NIFTY + SENSEX (commit `V5_COMMIT`, Dev, pushed; deployment recorded in the next commit)
+## November 3 — expiry-v5 E03.2 main, NIFTY + SENSEX (commit `71857c0`, Dev, pushed; deployment recorded in the next commit)
 
 - Done: E03.2 main paper ticket with owner notices, summary and owner-rule tally; A/B/C shadows; SENSEX support.
 - Next: SENSEX Thursday Nov 5 and NIFTY Tuesday Nov 10 are the first live paper days; read the day summary's
