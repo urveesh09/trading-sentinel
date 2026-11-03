@@ -1,3 +1,7 @@
+## November 3 — E03.2 payoff combinations rejected; quote-level test frozen
+
+Verticals earn less and lose in 2025; butterflies lose with an unresolved pack. Six primary mechanisms now rejected. A fixed 30/120-second displayed-imbalance evaluator is frozen on the five already-seen 2026 NIFTY recordings before return scoring; actual next-quote ask/bid depth and native fees, unavailable exits retained. EVALUATOR only, not portfolio profit. Eighteen research checks pass. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; MICRO.md. No engine/config/schema/Production change or download; atlas unchanged. Remaining: evaluator, forensic reconciliation and final report.
+
 ## November 3 — E03.2 structural entries rejected; payoff tests frozen (Dev research)
 
 Reclaim loses; VALUE_CHECK earns 6,293 ordinary / 5,643 adverse versus E03.1 12,427 / 11,498. Round 3 tests equal-budget debit verticals and butterflies with all leg costs, explicit simultaneous-pack assumption and own-cash gross-long checks. Fourteen focused research tests pass. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; payoff contract ROUND3.md. No engine/config/schema or Production change; atlas unchanged; 2023 protected. Remaining: payoff scores, microstructure data audit, report.

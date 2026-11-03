@@ -1,0 +1,31 @@
+{
+  "head": "bd3653b435fded186e5ad0fd77cd39ee37b553dd",
+  "sources": {
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-02-expiry-e01\\_local\\export\\expiry.sqlite": "5f7e7323bcb08c1273e5cafceca6465b315486cd09a299157c789609d6ba00e0",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e03\\_local\\native-extra.sqlite": "d292b0e34691fae3d2f99ec4eba666a31ce97c76d7d066e13631f1c493ce26f0"
+  },
+  "files": {
+    "MICRO.md": "041b4ad68377ca19ba10f901de2eba2d54a06f1e7316eae097e68f547c13acb6",
+    "micro.py": "30cb2907a50c76b26b27710c0bb41c1f99fa36bd46d79c4677c9f596bee52995",
+    "test_micro.py": "6bdf3a66e9077a5f99c83c2485de1ff4cdcc248ba3a581cefb07f51a680ee3de"
+  },
+  "horizon_seconds": [
+    30,
+    120
+  ],
+  "dates": [
+    "2026-10-06",
+    "2026-10-13",
+    "2026-10-19",
+    "2026-10-27",
+    "2026-11-03"
+  ],
+  "classification": "SEEN_QUOTE_EVALUATOR_ONLY",
+  "engine_sha256": {
+    "expiry_e02.py": "2fb14a544e50478fa0e5289865630d1eb1df49652475bdbfd9453a23a7e198e1",
+    "expiry_paper.py": "b2931a15084d981786ddc186b006f9db5a861eabf91dcaa6e6c0b9de0e0676dd",
+    "cost_schedules.py": "7cc67993b9ec2673eb6944cb1635bb1e32479074c0276bcf02cb96b41387c9cd"
+  },
+  "api_calls": 0,
+  "year2023_read": false
+}
