@@ -1,3 +1,7 @@
+## November 3 — payoff comparisons fail; independent audit frozen
+
+Hybrid8 earns 7,105.60 and hybridtrend 8,394.84 ordinary versus E03.1 12,426.71; no improvement candidate. Freeze fixed reversed-direction/coarse/friction controls and independent native/cash/prefix audit. A pre-commit audit draft counted tickets across days; corrected to within-day ordinal before any diagnostic/audit score; draft retained. Twelve checks pass. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; DIAGNOSTICS.md. No native/config/schema/Production/download; old evidence and owner edits preserved. Next: audit and final report.
+
 ## November 3 — full ticket eligibility hybrid frozen before scoring
 
 Protected credit-only loses in 2024; no promotion. Freeze the hybrid retaining the original affordable ticket check and multi-lot E03.1 runners, plus unbraked controls to distinguish payoff from inherited cash brakes. Twelve mechanical checks pass. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; HYBRID.md and STATUS.md. Next: score, causal/accounting audits and final report. No native/config/schema/Production/download or actual risk change; owner and previous evidence preserved.

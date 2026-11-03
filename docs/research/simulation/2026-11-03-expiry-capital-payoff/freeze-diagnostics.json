@@ -1,0 +1,9 @@
+{
+  "files": {
+    "DIAGNOSTICS.md": "25de7fe311768b610e9124fc7040e713809ef5948661ab9b9b648a34e9452db1",
+    "payoff_diagnostics.py": "4bd2f40a0323e6f74ad553fbb1675d1249744754fafcc9df8239d94dd0a31b77",
+    "payoff_audit.py": "fc0d1b930acc2a2baa8f857ddd1be2ff032f9045ab1c15f27f6081f326307109"
+  },
+  "parent": "25b1c15e0b40dd3fd157f5b03b481c2e52531ee7aac201813d6b31967b413f6c",
+  "classification": "SEEN_DIAGNOSTICS_NO_SELECTION"
+}
