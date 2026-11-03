@@ -1,0 +1,31 @@
+{
+  "research_commit": "9950a6ca2743c28e19c69ff44a0bb61207573bfd",
+  "source_pushed": true,
+  "remote_verified_sha": "9950a6ca2743c28e19c69ff44a0bb61207573bfd",
+  "final_evidence_docs_commit": "The Git commit containing completion-receipt.json; verify remote after push",
+  "branch": "codex/production-correction-hedge-p0",
+  "selected_e032": null,
+  "qualification": false,
+  "runtime_changed": false,
+  "enabled": false,
+  "deployed": false,
+  "production_head": "06bed07e05a32bc4394aff7ba70990faa745a8ec",
+  "owner_original_bytes_preserved": true,
+  "year2023_read": false,
+  "api_calls": 0,
+  "focused_tests_passed": 55,
+  "histories_replayed": 63,
+  "repeated_position_records": 1287,
+  "pinned_source_files": 854,
+  "stock_receipts": 24,
+  "caveat": "Two orphan butterfly portfolio claims INVALID; quote marks EVALUATOR with no portfolio PnL; other bar models PARTIAL",
+  "post_commit_checks": [
+    "structure_checkpoint.py verify",
+    "verify_structure_evidence.py",
+    "run_study.py verify",
+    "round2.py verify",
+    "round3.py verify",
+    "micro.py verify",
+    "git ls-remote"
+  ]
+}

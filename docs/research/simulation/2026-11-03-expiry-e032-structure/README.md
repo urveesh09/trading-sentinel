@@ -103,3 +103,5 @@ cash drawdown and explicit unresolved exposure, not that incomplete statistic.
 
 No migration, rollback action, deployment or enable was needed. Stop this
 research directory to roll back the experiment; existing strategies are intact.
+
+Research **9950a6c**, pushed/remote verified. Stock report: [evidence/REPORT.md](evidence/REPORT.md). After later commits, `verify_structure_evidence.py` rechecks original source/receipts against pinned 9950a6c; the original moving-HEAD guard remains intact. [completion-receipt.json](completion-receipt.json).

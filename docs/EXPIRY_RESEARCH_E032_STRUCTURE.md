@@ -163,3 +163,5 @@ Technical record and reproducible commands:
 [verification](research/simulation/2026-11-03-expiry-e032-structure/verification.json),
 [daily results](research/simulation/2026-11-03-expiry-e032-structure/daily-results.csv).
 Commit/push and sealed-report receipts follow in the study status record.
+
+Research **9950a6c** is pushed and remote-verified on the same Dev branch. No deployment or flag change. [Sealed report](research/simulation/2026-11-03-expiry-e032-structure/evidence/REPORT.md); [pinned verification](research/simulation/2026-11-03-expiry-e032-structure/pinned-audit.json); [completion receipt](research/simulation/2026-11-03-expiry-e032-structure/completion-receipt.json). After documentation changes HEAD, run `verify_structure_evidence.py`; it checks the original source commit without relaxing or rewriting the helper guard, request or report.

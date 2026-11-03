@@ -1,0 +1,38 @@
+{
+  "focused_command": [
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\python-engine\\winvenv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e032-structure",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\python-engine\\tests\\test_expiry_e02.py",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\python-engine\\tests\\test_expiry_e03.py",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\python-engine\\tests\\test_expiry_e031.py",
+    "-q"
+  ],
+  "focused_exit_code": 0,
+  "focused_output": ".......................................................                  [100%]\r\n55 passed in 4.35s\r\n",
+  "elapsed_seconds": 9.01,
+  "focused_log_sha256": "89fbac7f24f34a7a5f031e893d39a4cf66486f49203920508d4531a2b27ea380",
+  "full_engine_suite": "Not rerun: no engine, scheduler, settings or runtime source changed",
+  "atlas_exit_code": 0,
+  "atlas_sha256": "e831fe791b8ce6c31a8e3cbafeba56aa47bd81f626c7c6d94c1612b393413375",
+  "atlas_unchanged": true,
+  "full_histories_replayed": 63,
+  "repeated_position_records": 1287,
+  "native_money_and_causal_clock_mismatches": 0,
+  "network_attempts": [],
+  "year2023_read": false,
+  "api_calls": 0,
+  "qualification": false,
+  "deployed": false,
+  "enabled": false,
+  "pre_score_test_failures": [
+    "Initial research test asserted a literal absent from the inherited loop; replaced with behavioral fill/expiry tests before round-one freeze.",
+    "Initial micro test generated invalid negative-price depth; retained uncommitted draft freeze, corrected before committed v2 freeze/first score."
+  ],
+  "tooling_failures": [
+    "Initial checkpoint import name collided with inherited helper; renamed before round-one freeze.",
+    "Initial archive schema probe asked for quotes_json; corrected to actual quotes column; no return scored.",
+    "Audit first compared JSON list legs to in-memory tuples; full canonicalized histories then match, financial results unchanged."
+  ]
+}
