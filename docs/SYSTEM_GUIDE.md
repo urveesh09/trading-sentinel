@@ -1,3 +1,7 @@
+## November 3 — capital ledgers fail to add ordinary fills; directional credit frozen
+
+Ledger freeze f34ceb9 reproduces 99 baseline histories; both cash-reuse arms equal ordinary/adverse E03.1 at 41 tickets, NET worsens severe. Next frozen round changes payoff on the same trend cue: protected opposite-side 50-point credit vertical, eight-minute or thesis/15:14 hold. Includes both leg fees/capacity, own-cash model, explicit margin/atomic execution limits and conservative paid-long residual accounting. Nine checks pass. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; CREDIT.md. No engine/config/schema/Production/download; old evidence/2023/future exam preserved. Next: credit score and audits.
+
 ## November 3 — capital reuse / directional payoff study (Dev research)
 
 Owner broadens research risk authority; no live risk or deployment follows. Test returned-cash turnover versus a funded daily loss ledger, and profit-only repeated original E03.1 entries. Separate protected directional-credit payoff round follows. Plan: `docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md`. Baseline first; 2024/2025 remain seen, 2023/future exam protected. No native/config/schema/Production/provider/download change. Earlier work/owner bytes preserved.
