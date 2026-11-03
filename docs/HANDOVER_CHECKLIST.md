@@ -1,3 +1,7 @@
+## November 3 — capital reuse / directional payoff study (Dev research)
+
+Owner broadens research risk authority; no live risk or deployment follows. Test returned-cash turnover versus a funded daily loss ledger, and profit-only repeated original E03.1 entries. Separate protected directional-credit payoff round follows. Plan: `docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md`. Baseline first; 2024/2025 remain seen, 2023/future exam protected. No native/config/schema/Production/provider/download change. Earlier work/owner bytes preserved.
+
 ## November 3 — two-sided book and risk dial (commit `b34e259`, Dev, pushed, research only)
 
 - [x] Two-sided quiet-day seller frozen (`140baeb`) and failed (2 / 0 of 20 arms).
