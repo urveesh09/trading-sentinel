@@ -698,6 +698,26 @@ def resolve_advisory_expiry(book: FnoInstruments, today) -> Optional[object]:
     return next((expiry for expiry in book.option_expiries if expiry > today), None)
 
 
+CHAIN_FORWARD_GAP_MAX = 0.02   # [N04-H] a parity forward more than 2% from the future is a bad read
+
+
+def chain_atms(snapshot: ChainSnapshot, book: FnoInstruments) -> list:
+    """[N04-H] The at-the-money strike of the snapshot's own expiry, first from its put-call parity forward
+    (when sane), then the front future's (the old reference, used only when the chain has no legs at the
+    first). Nov 2: the SENSEX card's "ATM" 75800 CE came from the monthly future (75,787) with the index near
+    75,410, so a call was carded about four strikes out of the money (and a put would have been four strikes in
+    it); the card's own premiums were already priced on the parity forward."""
+    forward = snapshot.forward
+    parity = getattr(snapshot, "parity_forward", None)
+    out = []
+    if parity and forward and parity > 0 and abs(parity - forward) <= CHAIN_FORWARD_GAP_MAX * forward:
+        out.append(book.atm_strike(parity))
+    fut_atm = book.atm_strike(forward)
+    if fut_atm not in out:
+        out.append(fut_atm)
+    return out
+
+
 def build_directional_debit_spread(
     snapshot: ChainSnapshot, book: FnoInstruments, direction: FnoDirection,
     now: datetime, *, evidence: StrategyEvidence = StrategyEvidence.RESEARCH_ONLY,
@@ -726,17 +746,22 @@ def build_directional_debit_spread(
     # from the current book; no weekday or holiday assumption is encoded.
     if snapshot.expiry <= now.date() or snapshot.expiry not in book.option_expiries or snapshot.lot_size <= 0:
         return None
-    atm = book.atm_strike(snapshot.forward)
-    if atm <= 0 or book.strike_step <= 0:
+    if book.strike_step <= 0:
         return None
     opt = OptionType.CE if direction == FnoDirection.LONG else OptionType.PE
-    long_strike = atm
-    short_strike = atm + width_steps * book.strike_step if opt == OptionType.CE else atm - width_steps * book.strike_step
-    long_contract = book.option(snapshot.expiry, long_strike, opt)
-    short_contract = book.option(snapshot.expiry, short_strike, opt)
-    long_quote = snapshot.quote(long_strike, opt)
-    short_quote = snapshot.quote(short_strike, opt)
-    if not all((long_contract, short_contract, long_quote, short_quote)):
+    for atm in chain_atms(snapshot, book):
+        if atm <= 0:
+            continue
+        long_strike = atm
+        short_strike = (atm + width_steps * book.strike_step if opt == OptionType.CE
+                        else atm - width_steps * book.strike_step)
+        long_contract = book.option(snapshot.expiry, long_strike, opt)
+        short_contract = book.option(snapshot.expiry, short_strike, opt)
+        long_quote = snapshot.quote(long_strike, opt)
+        short_quote = snapshot.quote(short_strike, opt)
+        if all((long_contract, short_contract, long_quote, short_quote)):
+            break
+    else:
         return None
     if long_contract != long_quote.contract or short_contract != short_quote.contract:
         return None
@@ -803,7 +828,7 @@ def build_conditional_index_protective_put(
         or snapshot.expiry <= now.date() or not exposure_assumption.strip() or coverage_units <= 0
     ):
         return None
-    strike = book.atm_strike(snapshot.forward) - book.strike_step
+    strike = chain_atms(snapshot, book)[0] - book.strike_step
     contract = book.option(snapshot.expiry, strike, OptionType.PE)
     quote = snapshot.quote(strike, OptionType.PE)
     if contract is None or quote is None or contract != quote.contract or contract.lot_size <= 0:

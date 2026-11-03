@@ -1,3 +1,15 @@
+## November 3 — N04 partner fixes (commit `this commit`, Dev, pushed, not deployed)
+
+- [x] N04-A a carded buy in the window takes the card's stop/target; other buys told they are not the card's.
+- [x] N04-B DAY giveback from the day's best, once a 10% step, while up.
+- [x] N04-C the partner's login stored and restored at startup; "restarted and is on again".
+- [x] N04-D OI walls around the chain's parity forward (partner paths).
+- [x] N04-G every buy order costed in the loss at the stop.
+- [x] N04-H card strike at the parity forward's ATM.
+- [x] Research: arm B scored (8 of 166, +₹5,463, mixed): not enabled.
+- [x] Tests: full suite 6,360 passed, 4 skipped, 0 failed (763 s); N03/N04 file 17 passed
+- [ ] Deployed and verified on the next session.
+
 ## November 3 — N03 partner fixes (commit `b9b0d2c`, deployed as Production 06bed07, PR #129)
 
 - [x] N03-P1 plan priced on the option's own forward (parity, else carry); levels unchanged.

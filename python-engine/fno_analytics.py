@@ -119,17 +119,24 @@ def iv_rv_read(iv: Optional[float], rv: Optional[float]) -> str:
     return "FAIR"
 
 
-def oi_walls(snap: ChainSnapshot) -> Tuple[Optional[float], Optional[float]]:
+def oi_walls(snap: ChainSnapshot, reference: Optional[float] = None) -> Tuple[Optional[float], Optional[float]]:
     """(support, resistance): the max-PE-OI strike at/below the forward
     and the max-CE-OI strike at/above it. Heavy writer concentration
     behaves as a magnet/barrier intraday -- exactly the level an index
-    option buyer wants marked on their chart."""
+    option buyer wants marked on their chart.
+
+    [N04-D] ``reference``: the level the walls are found around (default
+    ``snap.forward``, the front future). For the chain's own (weekly) strikes
+    the partner's messages pass its parity forward: Nov 2, NIFTY's monthly
+    future sat ~82 points over the index, so "support 23,300 held" was told
+    with NIFTY at ≈23,259."""
+    level = reference if reference and reference > 0 else snap.forward
     support, sup_oi = None, 0
     resistance, res_oi = None, 0
     for (strike, ot), q in snap.quotes.items():
-        if ot == "PE" and strike <= snap.forward and q.oi > sup_oi:
+        if ot == "PE" and strike <= level and q.oi > sup_oi:
             support, sup_oi = strike, q.oi
-        if ot == "CE" and strike >= snap.forward and q.oi > res_oi:
+        if ot == "CE" and strike >= level and q.oi > res_oi:
             resistance, res_oi = strike, q.oi
     return support, resistance
 

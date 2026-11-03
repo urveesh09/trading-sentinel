@@ -1448,6 +1448,12 @@ def _pulse_blocked(state: dict, now: datetime) -> bool:
     return attempt_ago is not None and attempt_ago < timedelta(minutes=PULSE_RETRY_MIN)
 
 
+def _partner_walls(snap):
+    """[N04-D] OI walls around the chain's own forward (its put-call parity), not the monthly future: the
+    walls are told beside the index level, and a weekly's strikes price off its own expiry."""
+    return fno_analytics.oi_walls(snap, reference=getattr(snap, "parity_forward", None))
+
+
 async def _buyer_flow_pulse(spec, snap, pcr: Optional[float], iv: Optional[float],
                             now: datetime, day_iso: str, metrics: dict) -> None:
     """[O12-PB 2026-10-12] One short OI-flow message per index instead of
@@ -1492,7 +1498,7 @@ async def _buyer_flow_pulse(spec, snap, pcr: Optional[float], iv: Optional[float
         buildup = fno_analytics.classify_buildup(
             snap.forward - open_row["fut_ltp"], (snap.fut_quote.oi or 0) - open_row["fut_oi"])
         votes += _BUILDUP_VOTES.get(buildup, 0)
-    support, resistance = fno_analytics.oi_walls(snap)
+    support, resistance = _partner_walls(snap)
     if support is not None and resistance is not None:
         prev = _last_walls_reported.get(name)
         if prev is None:
@@ -1674,7 +1680,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                 )
 
             # --- OI wall migration --------------------------------------
-            support, resistance = fno_analytics.oi_walls(snap)
+            support, resistance = _partner_walls(snap)
             prev_walls = _last_walls_reported.get(spec.name)
             if support is not None and resistance is not None:
                 if prev_walls is None:
@@ -1938,7 +1944,7 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
                 pcr = fno_analytics.compute_pcr(snap)
                 max_pain = fno_analytics.compute_max_pain(snap)
                 iv = fno_analytics.atm_iv(snap, now)
-                support, resistance = fno_analytics.oi_walls(snap)
+                support, resistance = _partner_walls(snap)
                 skew = fno_analytics.atm_iv_skew(snap, now)
                 await fno_oi_store.persist_snapshot(
                     settings.DB_PATH, spec.name, snap, pcr, max_pain, iv,

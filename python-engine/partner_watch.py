@@ -533,10 +533,19 @@ def _round_tick(value: float) -> float:
     return round(round(value / TICK) * TICK, 2)
 
 
+def _closing_orders(holding) -> int:
+    """[N04-G] The orders a sale at a stop completes: the trade's buy orders and that one sale (at least 2)."""
+    trip = holding if isinstance(holding, Trip) else getattr(holding, "trip", None)
+    buys = len(trip.buys) if trip is not None and trip.buys else (trip.buy_orders if trip is not None else 1)
+    return max(int(buys) + 1, 2)
+
+
 def _result_for(holding, price: float, qty: int) -> float:
-    """The result after charges if ``qty`` of the holding sold at ``price`` (``holding``: a Trip or a Holding)."""
+    """The result after charges if ``qty`` of the holding sold at ``price`` (``holding``: a Trip or a Holding).
+    [N04-G] Charged for every buy order of the trade (Nov 2: an added buy was left out, ₹23.60)."""
     from partner_coach import round_trip_costs
-    return round((price - holding.entry) * qty - round_trip_costs(holding.entry, price, qty, holding.exchange), 2)
+    return round((price - holding.entry) * qty - round_trip_costs(holding.entry, price, qty, holding.exchange,
+                                                                  orders=_closing_orders(holding)), 2)
 
 
 def _result_at(holding, price: float) -> float:
@@ -1070,12 +1079,15 @@ def build_plan(*, entry: float, qty: int, exchange: str, opt_type: str, strike: 
     return plan
 
 
-def revised(plan: Plan, *, entry: float, qty: int, exchange: str) -> Plan:
-    """[O24c] The same plan levels for a new size and average: the loss at the stop moves with them."""
+def revised(plan: Plan, *, entry: float, qty: int, exchange: str, orders: int = 2) -> Plan:
+    """[O24c] The same plan levels for a new size and average: the loss at the stop moves with them. [N04-G]
+    ``orders``: the buy orders made plus the sale at the stop (Nov 2: two buys and a sale were costed as two
+    orders, ₹23.60 short)."""
     from partner_coach import round_trip_costs
     out = replace(plan, entry=entry, qty=qty)
     if plan.stop is not None:
-        out.loss = round((entry - plan.stop) * qty + round_trip_costs(entry, plan.stop, qty, exchange), 2)
+        out.loss = round((entry - plan.stop) * qty + round_trip_costs(entry, plan.stop, qty, exchange,
+                                                                      orders=max(orders, 2)), 2)
     else:
         out.loss = round(entry * qty, 2)
     out.loss_pct = round(out.loss / plan.cash, 4) if plan.cash else None
@@ -1371,22 +1383,146 @@ def _no_level_line(position, plan: Plan, cover: Optional[Cover], share: str) -> 
     return f"At risk: the whole {_amt(plan.loss)} you paid{share}. Decide your stop and place it now."
 
 
+# ---------------------------------------------------------------------------
+# [N04-A] the card behind a buy: one plan for the trade
+# ---------------------------------------------------------------------------
+# Nov 2 (both audits, high): the 10:36 card said SL 272.60 / target ≈360-423, the trade watch's plan for the
+# partner's 10:37 buy of the same option said 270.20 / 450.35, and nothing said which one applied. A buy of a
+# card's option inside its buy window now gets the card's stop and target as its plan; any other buy of a carded
+# option is told plainly that it is not that card's trade.
+CARD_FILL_GRACE = timedelta(seconds=60)     # a buy placed by the skip-after time can fill a little after it
+
+
+async def card_for(db_path: str, day: str, trip) -> Optional[dict]:
+    """The latest card delivered on ``day`` for this option before its first buy, with what closed it (an
+    exit or target message delivered before the buy), as plain values for a message context. None: no card."""
+    from partner_coach import CARD_KIND, UPDATE_KIND
+    first = trip.first_at
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            sent = await (await db.execute(
+                "SELECT kind, dedup_key, sent_at FROM partner_hedge_messages WHERE kind IN (?,?) AND delivered=1",
+                (CARD_KIND, UPDATE_KIND))).fetchall()
+            delivered = {(kind, key): _dt(at) for kind, key, at in sent}
+            keys = [key for (kind, key), at in delivered.items()
+                    if kind == CARD_KIND and at is not None and at <= first]
+            if not keys:
+                return None
+            marks = ",".join("?" * len(keys))
+            ideas = await (await db.execute(
+                f"SELECT advisory_id, underlying, payload FROM partner_advisory_ideas WHERE advisory_id IN ({marks})",
+                keys)).fetchall()
+            found = []
+            for advisory_id, underlying, payload_json in ideas:
+                try:
+                    payload = json.loads(payload_json)
+                except (TypeError, ValueError):
+                    continue
+                view = payload.get("buyer_view") or {}
+                if view.get("symbol") != trip.tradingsymbol or str(payload.get("session_date") or day) != day:
+                    continue
+                found.append((delivered[(CARD_KIND, advisory_id)], advisory_id, underlying, payload, view))
+            if not found:
+                return None
+            at, advisory_id, underlying, payload, view = max(found, key=lambda f: f[0])
+            updates = await (await db.execute(
+                "SELECT update_id, event_type FROM partner_advisory_updates WHERE advisory_id=?",
+                (advisory_id,))).fetchall()
+    except aiosqlite.OperationalError:              # no card tables (the watch alone): no card
+        return None
+    closes = sorted((delivered[(UPDATE_KIND, uid)], event) for uid, event in updates
+                    if event in ("INVALIDATION", "TARGET_ZONE") and delivered.get((UPDATE_KIND, uid)) is not None)
+    basis = view.get("level_basis") or "FUTURES"
+    index = basis == "INDEX"
+    made = _dt(view.get("quote_at")) or at
+    return {"advisory_id": advisory_id, "underlying": underlying, "at": made.astimezone(IST).strftime("%H:%M"),
+            "delivered_at": at.isoformat(), "fill_by": view.get("fill_by"), "buy_limit": view.get("buy_limit"),
+            "sl": view.get("sl_premium"), "target_low": view.get("target_premium_low"),
+            "target": view.get("target_premium"), "basis": basis,
+            "stop_level": view.get("invalidation_index") if index else payload.get("invalidation_level"),
+            "target_level": view.get("target_index") if index else payload.get("target_level"),
+            "closed": {"event": closes[0][1], "at": closes[0][0].isoformat()} if closes else None}
+
+
+def card_relation(card: Optional[dict], trip) -> Optional[str]:
+    """How a buy stands to the card on its option: ON_CARD (inside the card's buy window, the card still open
+    and its stop under the price), AFTER_CLOSE (the card's exit or target message came first), AFTER_WINDOW
+    (bought after the skip-after time), UNDER_STOP (bought at or under the card's stop: its idea had failed),
+    None without a card or a card without a premium stop."""
+    if not card:
+        return None
+    closed = card.get("closed")
+    if closed and (_dt(closed.get("at")) or trip.first_at) <= trip.first_at:
+        return "AFTER_CLOSE"
+    fill_by = _dt(card.get("fill_by"))
+    if fill_by is not None and trip.first_at > fill_by + CARD_FILL_GRACE:
+        return "AFTER_WINDOW"
+    sl = card.get("sl")
+    if not sl:
+        return None                    # a card without a premium stop has no plan to adopt or compare
+    if (trip.entry or 0.0) <= float(sl):
+        return "UNDER_STOP"
+    return "ON_CARD"
+
+
+def adopt_card(plan: Plan, card: dict, exchange: str) -> Plan:
+    """The card's stop and target as the plan (``stop_basis`` CARD); the loss at the stop for what is held."""
+    from partner_coach import round_trip_costs
+    stop = float(card["sl"])
+    out = replace(plan, stop=stop, stop_basis="CARD",
+                  target=float(card["target"]) if card.get("target") else plan.target)
+    out.loss = round((plan.entry - stop) * plan.qty + round_trip_costs(plan.entry, stop, plan.qty, exchange), 2)
+    out.loss_pct = round(out.loss / plan.cash, 4) if plan.cash else None
+    return out
+
+
+def _card_level(card: dict, key: str) -> str:
+    from partner_buyer import level_label
+    value = card.get(key)
+    return level_label(card.get("underlying") or "", float(value), card.get("basis") or "FUTURES") if value else ""
+
+
+def _card_note(card: dict, relation: str) -> str:
+    """Why this buy is not the card's trade."""
+    if relation == "AFTER_CLOSE":
+        closed = card["closed"]
+        what = "stop level hit" if closed["event"] == "INVALIDATION" else "target reached"
+        when = (_dt(closed["at"]) or datetime.now(IST)).astimezone(IST).strftime("%H:%M")
+        return f"• Not the {card['at']} card's trade: that card closed at {when} ({what}). This plan is for your own buy."
+    if relation == "AFTER_WINDOW":
+        fill = _dt(card.get("fill_by"))
+        ended = f" ended {fill.astimezone(IST):%H:%M}" if fill else " has ended"
+        return f"• Not the {card['at']} card's trade: its buy window{ended}. This plan is for your own buy."
+    return (f"• Not the {card['at']} card's trade: you bought at or under its stop {_px(float(card['sl']))}, so its "
+            f"idea had already failed. This plan is for your own buy.")
+
+
 def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tuple] = None,
               cover: Optional[Cover] = None, after_loss: Optional[dict] = None, day_line: Optional[str] = None,
               usual: Optional[float] = None, quote: Optional[dict] = None, now: Optional[datetime] = None,
-              set_at: Optional[datetime] = None) -> str:
+              set_at: Optional[datetime] = None, card: Optional[dict] = None,
+              card_relation_: Optional[str] = None) -> str:
     """The PLAN message. ``position``: what is held now (a Holding; a Trip
     in the pure tests), with ``plan`` for that size. ``bought``: (qty, price)
     of the buy the plan is for (the plan's own by default). ``quote``: the
     option's price read just before sending; a stop the price is already
     under is never offered as a stop. [O24d] ``cover``: what already
-    protects the units (``stop_advice``)."""
+    protects the units (``stop_advice``). [N04-A] ``card``/``card_relation_``: the card on this option and how
+    the buy stands to it (``card_relation``); a CARD plan says the card's stop and target."""
     from partner_insights import USUAL_SIZE_MULT
     name = _name(position)
     future = _future_of(position.tradingsymbol)
     bought_qty, bought_px = bought or (plan.qty, plan.entry)
     size = f"{lots} lot{'s' if lots != 1 else ''} ({bought_qty})" if lots else f"{bought_qty}"
     lines = [f"🟢 You bought {name} · {size} at {_px(bought_px)}"]
+    on_card = card is not None and plan.stop_basis == "CARD"
+    if on_card:
+        lines[0] += f" on the {card['at']} card"
+        limit = card.get("buy_limit")
+        if limit and bought_px > float(limit) + 1e-9:
+            lines.append(f"⚠️ You paid {_px(bought_px)}; the card said buy up to {_px(float(limit))}.")
+    elif card is not None and card_relation_:
+        lines.append(_card_note(card, card_relation_))
     held = _held_line(position, bought_qty)
     if held:
         lines.append(held)
@@ -1395,6 +1531,10 @@ def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tup
     if stop_now == "CROSSED":
         lines.append(f"🛑 The price ({_px(quote['ltp'])}) is already under the plan stop {_px(plan.stop)}, the level "
                      f"where this trade is wrong.{_sell_now(position, quote, plan.cash)}")
+    elif on_card:
+        level = _card_level(card, "stop_level")
+        lines.append(f"🛑 The card's stop {_px(plan.stop)}" + (f" (or exit if {level} breaks)" if level else "")
+                     + f". If it sells there: about −{_amt(plan.loss)} with charges{share}.")
     elif plan.stop_basis == "INDEX":
         lines.append(f"🛑 Plan stop {_px(plan.stop)} ({future} {plan.stop_index:,.0f}). If it sells there: about "
                      f"−{_amt(plan.loss)} with charges{share}.")
@@ -1409,14 +1549,20 @@ def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tup
     if usual and plan.cash and paid / plan.cash > USUAL_SIZE_MULT * usual:
         lines.append(f"⚠️ {_amt(paid)} in this trade, {paid / plan.cash:.0%} of your cash: much bigger than your "
                      f"usual {usual:.0%}.")
-    if plan.target is not None and plan.target_index is not None:
+    if on_card and card.get("target"):
+        low, high = card.get("target_low"), float(card["target"])
+        # As the card shows it: a modelled range in whole rupees, never read as a quote.
+        zone = f"≈₹{float(low):,.0f}–{high:,.0f}" if low else f"≈₹{high:,.0f}"
+        level = _card_level(card, "target_level")
+        lines.append(f"🎯 The card's target: option {zone}" + (f" ({level})" if level else "") + ".")
+    elif plan.target is not None and plan.target_index is not None:
         ltp = (quote or {}).get("ltp")
         if ltp and ltp >= plan.target:
             lines.append(f"🎯 Already above the target zone {_px(plan.target)} (price {_px(ltp)}).")
         else:
             lines.append(f"🎯 Target zone {_px(plan.target)} ({future} {plan.target_index:,.0f}).")
     facts = []
-    if plan.stop_basis in ("INDEX", "SWING") and plan.swing:
+    if plan.stop_basis in ("INDEX", "SWING", "CARD") and plan.swing:
         facts.append(f"normal 5-min swing {_px(plan.swing)}")
     if plan.run_pct is not None and plan.run_from:
         facts.append(f"up {_pct_down(plan.run_pct)} in the 15 min before you bought (from {_px(plan.run_from)})"
@@ -1960,7 +2106,8 @@ def _next_weekday(day: date) -> date:
 WATCH_ON_TEXT = ("✅ Trade watch on until {close}. I'll message you when a buy has no stop or only part of it is "
                  "covered, when a stop is moved down or cancelled, when a stop fires and does not sell, when "
                  "Zerodha refuses an order, when sell orders could sell more than you hold, each time the day's "
-                 f"loss passes another {DAY_STEP:.0%} of your cash, and before the close; "
+                 f"loss, or what it gives back from its best, passes another {DAY_STEP:.0%} of your cash, and "
+                 "before the close; "
                  "and if I cannot read your account for a while. Messages only: nothing is ever placed, changed "
                  "or cancelled for you. Before a buy you can send me, for example: check 22300 pe.")
 PROMPT_TEXT = ("🌅 Good morning. Log in to Zerodha to switch on today's trade watch: I'll message you when a buy "
@@ -1968,9 +2115,12 @@ PROMPT_TEXT = ("🌅 Good morning. Log in to Zerodha to switch on today's trade 
                "order. Messages only: nothing is ever placed for you.")
 RECONNECT_TEXT = ("🔌 The trade watch stopped (the system restarted) and needs your Zerodha login again. "
                   "Your orders are untouched.")
+# [N04-C] A restart in the session that kept the login (partner_broker_sync.restore_session).
+RESTORED_TEXT = ("🔌 The trade watch restarted and is on again; your login was kept. Changes you made while it was "
+                 "off are not told one by one: check your stops in Zerodha.")
 # A button's answer is cut at 190 characters (partner_fill_capture._answer; Telegram allows 200).
 QUIET_TOAST = ("Quiet for today. Still sent: a stop moved down, cancelled or not selling; a refused order; sell "
-               f"orders over what you hold; a buy far bigger than usual; each {DAY_STEP:.0%} of your cash lost.")
+               f"orders over what you hold; a buy far bigger than usual; each {DAY_STEP:.0%} of cash lost or given back.")
 # [O24f] The watch cannot see part of the book (``_health``), and then can again.
 BLIND_TEXT = {
     "orders": ("⚠️ The trade watch cannot read your Zerodha orders since {since} (it tries every 5 s). Until it can, "
@@ -2927,6 +3077,11 @@ async def _watch_tick(now: Optional[datetime] = None, *, market: Optional[Market
         await _reconnect_prompt(db_path, day, now)
         _flush()
         return {"status": "SKIPPED", "reason": "not_connected"}
+    # [N04-C] A restart in the session kept the login: say the watch is back and what it could not see.
+    restored = zerodha.take_restored()
+    if (restored is not None and restored.astimezone(IST).date() == now.date()
+            and OPEN_MIN <= restored.astimezone(IST).hour * 60 + restored.astimezone(IST).minute <= zerodha.CLOSE_MIN):
+        await _say(db_path, f"on:{day}:restored:{restored.isoformat()}", day, "WATCH_ON", RESTORED_TEXT, now)
     login = zerodha.status(now).get("login_at")
     if login != _state.login_at:
         reset()
@@ -3104,6 +3259,12 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     so_far = day_so_far(trips, _state.cash)
     if so_far is not None and so_far["step"] > 0:
         out.append((f"day:{day}:{so_far['step']}", "DAY", None, {"step": so_far["step"]}, so_far["at"], None))
+    # [N04-B] Once each time the day gives back another DAY_STEP of the cash from its best (while still up); a new
+    # best starts the steps again (its time is in the key).
+    if so_far is not None and so_far["giveback"] > 0 and so_far["best_at"] is not None:
+        best = so_far["best_at"].astimezone(IST).strftime("%H%M%S")
+        out.append((f"day:{day}:gb:{best}:{so_far['giveback']}", "DAY", None,
+                    {"giveback": so_far["giveback"], "best_at": so_far["best_at"].isoformat()}, so_far["at"], None))
     # The view every message is built from; then the outbox goes.
     _state.view = View(day=day, at=now, rows=rows, trips=trips, holdings=holdings, covers=covers,
                        gtts=_state.gtts if _gtts_fresh(now, GTT_REFRESH) else None, positions=_state.positions,
@@ -3823,6 +3984,16 @@ def day_so_far(trips: list, cash: Optional[float]) -> Optional[dict]:
         return None
     every = closed + held
     net = round(sum(r for _, r in every), 2)
+    # [N04-B] The day's best so far (its running result after each closed trade) and what has been given back
+    # from it, in DAY_STEPs of the cash, while the day is still up (under zero the loss steps tell it). Nov 2:
+    # +₹12,921 at 12:20 to −₹1,669 at 13:28, 51% of the cash given back, and no message.
+    running, best, best_at = 0.0, 0.0, None
+    for t, r in sorted(every, key=lambda tr: tr[0].closed_at):
+        running += r
+        if running > best + 1e-9:
+            best, best_at = running, t.closed_at
+    given = round(best - net, 2) if best > 0 else 0.0
+    giveback = math.floor(given / (DAY_STEP * cash) + 1e-9) if net >= 0 and given > 0 else 0
     won = [r for _, r in closed if r > 0]
     lost = [r for _, r in closed if r < 0]
     quick = [r for t, r in closed if _after_loss(t, trips) is not None]
@@ -3834,6 +4005,7 @@ def day_so_far(trips: list, cash: Optional[float]) -> Optional[dict]:
             "orders": sum(t.buy_orders + t.sell_orders for t, _ in every),
             "open": sum(1 for t in trips if t.open_qty), "at": max(t.closed_at for t, _ in every),
             "step": math.floor(-net / (DAY_STEP * cash) + 1e-9) if net < 0 else 0, "share": max(-net, 0.0) / cash,
+            "best": round(best, 2), "best_at": best_at, "given": given, "giveback": giveback,
             "check": _check_example(latest.tradingsymbol)}
 
 
@@ -3846,11 +4018,19 @@ def _check_example(symbol: str) -> Optional[str]:
     return f"check {index}{parsed['strike']:g} {parsed['opt_type'].lower()}"
 
 
-def day_text(day: dict, cash: float) -> str:
-    """[O26] The DAY message: the day's closed trades as numbers, and the check before the next buy."""
+def day_text(day: dict, cash: float, *, giveback: bool = False) -> str:
+    """[O26] The DAY message: the day's closed trades as numbers, and the check before the next buy. [N04-B]
+    ``giveback``: told for what the day gave back from its best (the day still up)."""
     from partner_coach import REENTRY_WINDOW_MIN
-    lines = [f"📉 Today so far: {_signed(day['net'])} after charges, {_pct_down(day['share'])} of your "
-             f"{_amt(cash)} cash."]
+    if giveback:
+        best_at = _dt(day.get("best_at"))
+        when = f" at {best_at.astimezone(IST):%H:%M}" if best_at else ""
+        lines = [f"📉 Today so far: {_signed(day['net'])} after charges, {_amt(day['given'])} under today's best "
+                 f"({_signed(day['best'])}{when}): {_pct_down(day['given'] / cash)} of your {_amt(cash)} cash "
+                 f"given back."]
+    else:
+        lines = [f"📉 Today so far: {_signed(day['net'])} after charges, {_pct_down(day['share'])} of your "
+                 f"{_amt(cash)} cash."]
     parts = ([f"{day['won']} won {_signed(day['won_sum'])}"] if day["won"] else []) + (
         [f"{day['lost']} lost {_signed(day['lost_sum'])}"] if day["lost"] else [])
     if day["closed"]:
@@ -3982,6 +4162,13 @@ async def _plan_job(db_path: str, day: str, trip: Trip, trips: list, now: dateti
         plan, lot = _plan_of(trip, None, now, size=size), 0
     if owner is not _state:
         return 0                      # a new day or login started meanwhile
+    # [N04-A] A buy of a card's option inside its buy window takes the card's stop and target: one plan.
+    card = await card_for(db_path, day, trip) if size is None else None
+    relation = card_relation(card, trip)
+    if relation == "ON_CARD":
+        plan = adopt_card(plan, card, trip.exchange)
+    if owner is not _state:
+        return 0
     item = None
     if announce:
         bought = int(trip.bought)
@@ -3992,7 +4179,7 @@ async def _plan_job(db_path: str, day: str, trip: Trip, trips: list, now: dateti
             return 0
         episode = _episode(day, trip)
         context = {"episode": episode, "lots": lots, "bought": bought, "bought_px": round(trip.entry, 2),
-                   "after_loss": after, "day_line": line, "usual": usual}
+                   "after_loss": after, "day_line": line, "usual": usual, "card": card, "card_relation": relation}
         item = (f"plan:{episode}", "PLAN", trip, context, trip.first_at, episode)
     # [O24e] Version 1 and its PLAN message in one transaction: a failed write leaves neither, and the plan
     # (still missing) is started again on the next tick.
@@ -4023,7 +4210,8 @@ async def _revise(db_path: str, day: str, trip: Trip, meta: dict, holdings: list
         return
     holding = next((h for h in holdings if h.position_key == trip.key), None)
     current = holding if holding is not None and holding.entry else trip
-    plan = revised(meta["plan"], entry=round(current.entry, 2), qty=current.open_qty, exchange=trip.exchange)
+    plan = revised(meta["plan"], entry=round(current.entry, 2), qty=current.open_qty, exchange=trip.exchange,
+                   orders=len(trip.buys) + 1)
     first_new = min(trip.buys[i]["at"] for i in new_ids) if new_ids else None
     item = None
     if reason == "ADDED" and holding is not None and now - first_new <= PLAN_STALE:
@@ -4094,7 +4282,9 @@ def _current(plan: Optional[Plan], holding) -> Optional[Plan]:
     entry = round(holding.entry, 2)
     if plan.qty == holding.open_qty and abs(plan.entry - entry) < 1e-9:
         return plan
-    return revised(plan, entry=entry, qty=holding.open_qty, exchange=holding.exchange)
+    trip = getattr(holding, "trip", None)
+    orders = len(trip.buys) + 1 if trip is not None and trip.buys else 2
+    return revised(plan, entry=entry, qty=holding.open_qty, exchange=holding.exchange, orders=orders)
 
 
 async def _b_plan(db_path: str, context: dict, view: View, now: datetime):
@@ -4109,7 +4299,8 @@ async def _b_plan(db_path: str, context: dict, view: View, now: datetime):
     quote = await _price_now(holding, now)
     text = plan_text(holding, plan, lots=context.get("lots"), bought=(context["bought"], context["bought_px"]),
                      cover=cover, after_loss=context.get("after_loss"), day_line=context.get("day_line"),
-                     usual=context.get("usual"), quote=quote, now=now, set_at=set_at)
+                     usual=context.get("usual"), quote=quote, now=now, set_at=set_at, card=context.get("card"),
+                     card_relation_=context.get("card_relation"))
     return text, plan_summary(plan, quote, cover, now), quiet_keyboard(view.day)
 
 
@@ -4365,7 +4556,16 @@ async def _b_day(db_path: str, context: dict, view: View, now: datetime):
     """[O26] From the latest read: not sent when the day is no longer at that step (back above it, or past the
     next one, whose own message tells it)."""
     so_far = day_so_far(view.trips, _state.cash)
-    if so_far is None or so_far["step"] != context.get("step"):
+    if so_far is None:
+        return None
+    if context.get("giveback"):
+        # [N04-B] Still at that step from the same best (a new best or a further step has its own message).
+        best_at = so_far["best_at"].isoformat() if so_far["best_at"] is not None else None
+        if so_far["giveback"] != context["giveback"] or best_at != context.get("best_at"):
+            return None
+        return (day_text(so_far, _state.cash, giveback=True),
+                f"day so far {_signed(so_far['net'])}, {_amt(so_far['given'])} under its best", None)
+    if so_far["step"] != context.get("step"):
         return None
     return day_text(so_far, _state.cash), f"day so far {_signed(so_far['net'])}", None
 

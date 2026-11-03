@@ -277,8 +277,104 @@ def connected(now: Optional[datetime] = None) -> bool:
 
 
 def disconnect() -> None:
+    """The login ends: in memory and its stored copy (a dead or ended token is never restored)."""
     global _session
     _session = None
+    _forget_stored_session()
+
+
+# ---------------------------------------------------------------------------
+# [N04-C] the session survives a restart
+# ---------------------------------------------------------------------------
+# Nov 2: the 07:02 login was lost by the 08:59 restart and the partner logged in again at 09:06; any restart in
+# the session left the watch off until a new login. The session is stored as the owner's Kite token is
+# (token_lifecycle._persist_kite_token: same data volume, an atomic write) and restored once at startup, only while
+# it has not expired and only for PARTNER_KITE_USER_ID. Reads stay on the read-only allowlist.
+
+def _session_path() -> str:
+    import os
+    return os.path.join(os.path.dirname(settings.DB_PATH), "partner_kite_session.json")
+
+
+def _store_session(session: _Session) -> bool:
+    """Atomic write (temp file, fsync, replace), owner-only where the system allows it. False when it failed:
+    the login still works in memory, and a restart then asks for it again (as before)."""
+    import json
+    import os
+    path = _session_path()
+    tmp = f"{path}.tmp"
+    payload = {"access_token": session.access_token, "account": session.account,
+               "user": settings.PARTNER_KITE_USER_ID.strip().upper(), "login_at": session.login_at.isoformat(),
+               "expires_at": session.expires_at.isoformat()}
+    try:
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(payload, fh)
+            fh.flush()
+            os.fsync(fh.fileno())
+        try:
+            os.chmod(tmp, 0o600)
+        except OSError:
+            pass
+        os.replace(tmp, path)
+        return True
+    except OSError as exc:
+        logger.warning("partner_zerodha_session_store_failed err=%s", type(exc).__name__)
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        return False
+
+
+def _forget_stored_session() -> None:
+    import os
+    try:
+        os.remove(_session_path())
+    except FileNotFoundError:
+        pass
+    except OSError as exc:
+        logger.warning("partner_zerodha_session_forget_failed err=%s", type(exc).__name__)
+
+
+def restore_session(now: Optional[datetime] = None) -> bool:
+    """At startup: the stored login, while it has not expired and is the partner's own. True when restored."""
+    import json
+    global _session
+    now = (now or datetime.now(IST)).astimezone(IST)
+    if _session is not None or not configured():
+        return False
+    try:
+        with open(_session_path(), encoding="utf-8") as fh:
+            stored = json.load(fh)
+        token, expires = str(stored.get("access_token") or ""), datetime.fromisoformat(stored["expires_at"])
+        login_at = datetime.fromisoformat(stored["login_at"])
+        user = str(stored.get("user") or "")
+    except FileNotFoundError:
+        return False
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        logger.warning("partner_zerodha_session_unreadable err=%s", type(exc).__name__)
+        _forget_stored_session()
+        return False
+    if not token or user != settings.PARTNER_KITE_USER_ID.strip().upper() or now >= expires:
+        _forget_stored_session()
+        return False
+    global _restored_at
+    _session = _Session(access_token=token, account=str(stored.get("account") or mask_account(user)),
+                        login_at=login_at.astimezone(IST), expires_at=expires.astimezone(IST))
+    _restored_at = now
+    logger.info("partner_zerodha_session_restored account=%s login=%s expires=%s", _session.account,
+                _session.login_at.isoformat(), _session.expires_at.isoformat())
+    return True
+
+
+_restored_at: Optional[datetime] = None
+
+
+def take_restored() -> Optional[datetime]:
+    """When the stored login was restored by this process (once; None after it was taken, or if none was)."""
+    global _restored_at
+    at, _restored_at = _restored_at, None
+    return at
 
 
 def allowed(method: str, path: str) -> bool:
@@ -335,6 +431,7 @@ async def create_session(request_token: str, now: Optional[datetime] = None) -> 
         raise BrokerError("wrong_account")
     _session = _Session(access_token=token, account=mask_account(user_id), login_at=now,
                         expires_at=next_expiry(now))
+    _store_session(_session)              # [N04-C] a restart keeps the watch
     logger.info("partner_zerodha_login account=%s expires=%s", _session.account, _session.expires_at.isoformat())
     return {"account": _session.account, "login_at": now.isoformat(), "expires_at": _session.expires_at.isoformat()}
 

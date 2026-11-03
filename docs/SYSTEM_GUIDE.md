@@ -1,3 +1,45 @@
+## November 3 — N04 partner fixes: one plan for a carded buy, day giveback, the login survives a restart, card strike at its own expiry (actual behavior, Dev, pushed, not deployed, commit `this commit`)
+
+Follows N03 (Production 06bed07). Source: the two Nov 2 partner audits and the Nov 3 check.
+
+- **One plan for a carded buy (N04-A).** `partner_watch.card_for` reads the latest card delivered today for
+  the option before its first buy, with any exit/target message delivered before it; `card_relation`:
+  ON_CARD (inside the card's buy window + 60 s, card open, price above its stop), AFTER_CLOSE,
+  AFTER_WINDOW, UNDER_STOP. ON_CARD: the plan adopts the card's stop and target (`adopt_card`,
+  `stop_basis` CARD) and the PLAN says "on the 10:36 card", "The card's stop ₹272.6 (or exit if SENSEX
+  ≈75,284 breaks)", "The card's target: option ≈₹360–423 (SENSEX ≈75,654)", and "You paid ₹329.3; the card
+  said buy up to ₹324.2" when above the limit. Otherwise the plan is the watch's own and says "Not the
+  10:36 card's trade: its buy window ended 10:46" (or "that card closed at 11:40 (stop level hit)", or
+  "bought at or under its stop"). Nov 2: card 272.60 / ≈360-423 and plan 270.20 / 450.35 on one buy.
+- **Day giveback (N04-B).** `day_so_far` keeps the day's best (running result after each closed trade) and
+  `giveback` = DAY_STEPs (10%) of the cash given back from it while the day is still up; a DAY message
+  ("📉 Today so far: +₹8,457 after charges, ₹4,464 under today's best (+₹12,921 at 12:20): 15% of your
+  ₹28,529 cash given back.") goes once a step (key `day:<day>:gb:<best time>:<step>`, a new best restarts
+  the steps), on a quiet day too. Under zero the loss steps tell it, as before. Nov 2 would have had three
+  (12:32, 12:54, 13:19) instead of none. WATCH_ON and the quiet answer say so.
+- **The login survives a restart (N04-C).** `partner_broker_sync` stores the session like the owner's token
+  (`partner_kite_session.json` beside the DB, atomic write, 0600 where possible) and `main` restores it at
+  startup (`restore_session`) only while unexpired and for PARTNER_KITE_USER_ID; `disconnect` (logout, a
+  dead token, expiry) deletes it. A restart inside the session then says "🔌 The trade watch restarted and is
+  on again; your login was kept. Changes you made while it was off are not told one by one: check your stops
+  in Zerodha." (once). Reads stay on the read-only allowlist.
+- **OI walls (N04-D).** `fno_analytics.oi_walls(snap, reference=...)`; the partner's pulses, alerts and brief
+  (`partner_orchestrator._partner_walls`) find walls around the chain's parity forward, not the monthly
+  future (Nov 2: "support 23,300 held" with NIFTY ≈23,259). The owner's other callers are unchanged.
+- **Every buy order costed (N04-G).** `_result_for` and `revised` charge each buy order of the trade plus the
+  sale (Nov 2 ADDED: ₹23.60 short).
+- **Card strike at its own expiry (N04-H).** `partner_manual_advisory.chain_atms`: the card's long leg is at
+  the parity forward's strike when the parity is sane (within 2% of the future), the future's only when the
+  chain has no legs there. Nov 2: "ATM" 75800 CE came from the monthly future 75,787 with the index ≈75,410,
+  about four strikes out of the money for a call (a put would have been four strikes in it). Cards now cost
+  more per lot on SENSEX (an at-the-money premium) and carry a higher delta.
+- **Research: arm B profit protection scored** (`docs/research/partner/2026-11-03-arm-b-score/`): frozen Oct 24,
+  166 trips Oct 27 - Nov 2: fires on 8 (20 s reaction), 5 better and 3 worse, +₹5,463 overall, negative on
+  two of five days, would not have armed on the 10:36 trade. Under the 20-trade bar: not enabled, not tuned.
+- **Not changed:** card timing (needs a check of the quarter-hour Kite bursts the off-grid schedule avoids);
+  SENSEX signal source (needs the index's bars from the archive; the same bars feed the paper book); an
+  off-host dead-man alert (owner infrastructure); coach counterfactual wording ("FOMO" is the owner's design).
+
 ## November 3 — Partner fixes from the two Nov 2 audits (actual behavior, deployed as Production 06bed07, PR #129, commit `b9b0d2c`)
 
 Source: Production `docs/2026-11-02-partner-system-deep-audit.md`, a second auditor's review of it, and a

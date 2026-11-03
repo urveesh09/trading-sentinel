@@ -1,3 +1,34 @@
+## November 3 — N04 partner fixes (done, Dev, pushed, not deployed, commit `this commit`)
+
+- Problem: the Nov 2 audits' remaining high items after N03: two plans for one buy; no day-giveback alert
+  (51% of cash given back silently); a restart drops the partner's login; OI walls off the monthly future;
+  fee order counts; and (found Nov 3) the card's strike picked off the monthly future.
+- Files: `python-engine/partner_watch.py`, `partner_broker_sync.py`, `main.py`, `fno_analytics.py`,
+  `partner_orchestrator.py`, `partner_manual_advisory.py`; tests `tests/test_nov03_partner_fixes.py`,
+  `tests/test_partner_watch.py`; research `docs/research/partner/2026-11-03-arm-b-score/`.
+- Contracts: no schema or setting change. New file on the data volume: `partner_kite_session.json`
+  (the partner's read-only session; deleted at logout/expiry). Plan JSON unchanged in shape; `stop_basis`
+  may be `CARD` (an older build reading it shows the no-level line for that day's plans only). DAY keys
+  add `day:<day>:gb:<HHMMSS>:<step>`. Card strikes move to the parity ATM (card content change).
+- Acceptance (first session after deploy):
+  - a buy of a card's option in its window: PLAN "on the HH:MM card" with the card's stop/target;
+  - a later buy of it: "Not the HH:MM card's trade ...";
+  - a day that gives back 10% of the cash from its best while up: one DAY "under today's best" per step;
+  - an engine restart in the session: no RECONNECT, one "restarted and is on again";
+  - `partner_zerodha_session_restored` in the startup log after a restart;
+  - pulses never name a support above the printed index;
+  - card strikes: SENSEX/NIFTY card strike = round(parity forward) (compare the card's index level).
+- Rollout: merge to `evolve/smart-strategies`, rebuild; the partner logs in once more (the first stored
+  login is made at that login). Rollback: revert; delete `partner_kite_session.json` if wanted.
+- Remaining:
+  - [ ] Card timing: bar-aligned card/exit scan (13 cards 53-136 s late) after checking the Kite limiter at
+    the quarter hours.
+  - [ ] SENSEX signal source (future trades ~8 contracts per 5 min): index or parity bars; check the paper book.
+  - [ ] Off-host dead-man alert for the watch (Oct 30: host down 9.7 h in session).
+  - [ ] Profit protection: freeze a new candidate (e.g. arm at P + W) and score it forward from Nov 4; arm B
+    stays off (8 of 166).
+  - [ ] Coach: say the price effect beside the whole-trade skip (₹102 vs ₹1,943).
+
 ## November 3 — N03 partner fixes from the two Nov 2 audits (done, deployed as Production 06bed07, PR #129, commit `b9b0d2c`)
 
 - Problem: the partner's 10:36 SENSEX 75800 CE complaint; two audits plus my check of the Nov 2 evidence.
