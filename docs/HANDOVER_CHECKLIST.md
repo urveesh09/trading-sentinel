@@ -1,3 +1,7 @@
+## November 3 — prefix-audit cache defect retained and corrected
+
+Original audit completed financial replay but failed on temporary prefix cache id reuse (exit 1). Original audit/source and error retained; v2 bypasses the old id-keyed memoizer only for temporary prefixes and compares uncached/cached full signals. Strategy scores and native source unchanged. Sixty fixed payoff diagnostic runs complete; no candidate selected. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; freeze-audit-v2.json. Next: corrected independent audit, report and sealed receipts. No native/config/schema/Production/download or owner changes.
+
 ## November 3 — payoff comparisons fail; independent audit frozen
 
 Hybrid8 earns 7,105.60 and hybridtrend 8,394.84 ordinary versus E03.1 12,426.71; no improvement candidate. Freeze fixed reversed-direction/coarse/friction controls and independent native/cash/prefix audit. A pre-commit audit draft counted tickets across days; corrected to within-day ordinal before any diagnostic/audit score; draft retained. Twelve checks pass. Plan: docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; DIAGNOSTICS.md. No native/config/schema/Production/download; old evidence and owner edits preserved. Next: audit and final report.
