@@ -1,3 +1,9 @@
+## November 3 — expiry-v5: E03.2 main on NIFTY and SENSEX (commit `V5_COMMIT`, Dev, pushed; deployment recorded in the next commit)
+
+- [x] E03.2 main: notices, summary, owner rule; A/B/C shadows without Telegram trades; SENSEX lot 20 / BFO.
+- [x] Tests: 5 new + E032 default; full suite 6,415 passed, 4 skipped, 1 failed (13 min 31 s): tests/test_kite_client.py::TestRateLimiter::test_management_priority_is_bounded_and_normal_work_is_fair, a timing test of an untouched module, passes alone 3 of 3 and passed in the round-8 full run; atlas regenerated.
+- [ ] First live paper days: SENSEX Nov 5, NIFTY Nov 10. Check the summary's MAIN E03.2 lines.
+
 ## November 3 — E03.2 puts at 2x (commit `e102cfb`, Dev, pushed, not deployed)
 
 - [x] Round 8 frozen (`f55034b`) and scored: PUT2 pass; alignment, delta and IV-slope fail; auction hold narrowly fails.

@@ -22,7 +22,7 @@ def position(variant,entry_at,lots=2,entry=8.):
 
 def test_defaults_off_separate_identity_and_older_variants_keep_their_settings(tmp_path):
     from config import Settings
-    assert Settings().EXPIRY_E032_SHADOW_ENABLED is False
+    assert Settings().EXPIRY_E032_SHADOW_ENABLED is True and Settings().EXPIRY_MAIN_STRATEGY=='E032'          # the main expiry ticket since expiry-v5
     base=tmp_path/'app.db'
     assert X.run_tick(base,now=stamp(),variant=X.E032)=={'status':'DISABLED'}
     assert not list(tmp_path.iterdir())

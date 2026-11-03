@@ -1,3 +1,17 @@
+## November 3 — expiry-v5: E03.2 is the main expiry paper ticket, NIFTY and SENSEX (commit `V5_COMMIT`, Dev, pushed; deployment recorded in the next commit)
+
+Owner order (Nov 3, 22:50 IST): make E03.2 the main expiry strategy, run it on SENSEX this Thursday on paper, deploy now.
+- `settings.EXPIRY_MAIN_STRATEGY="E032"` (default) and `EXPIRY_E032_SHADOW_ENABLED=True` (default). A new expiry day
+  records `state["main"]="E032"`: A/B/C send no Telegram trades (`notify`), the day summary starts with
+  `expiry_e02.summary_lines` ("MAIN E03.2 (expiry-v5)") and lists A+B+C as shadows, and `owner_rule_lines`
+  counts E03.2's day result (`expiry_e02.day_results`) on E032 days and A+B+C before. `"ABC"` restores expiry-v4.
+- `expiry_e02`: `UNDERLYINGS` (NIFTY lot 65 NFO Rs 5-20; SENSEX lot 20 BFO Rs 16.25-65, four 100-point strikes),
+  `Variant.underlyings` (E032: NIFTY and SENSEX; the others NIFTY only, unchanged), `run_tick` follows the index
+  with ticks today and returns `notices` (entry/exit texts); the scheduler queues the main variant's notices
+  with `expiry_paper.queue_notices`. SENSEX has no E03 history: a forward paper test.
+- Tests: `tests/test_expiry_main_e032.py` (5) and the E032 default; `conftest` pins `EXPIRY_MAIN_STRATEGY="ABC"` for
+  the A/B/C tests. Full suite 6,415 passed, 4 skipped, 1 failed (13 min 31 s): tests/test_kite_client.py::TestRateLimiter::test_management_priority_is_bounded_and_normal_work_is_fair, a timing test of an untouched module, passes alone 3 of 3 and passed in the round-8 full run. Atlas regenerated. No `.env`, schema migration or real-money change.
+
 ## November 3 — E03.2: put tickets at twice the reserve (Dev commit `e102cfb`, pushed, disabled, not deployed)
 
 Report: `docs/EXPIRY_RESEARCH_E032_PUTS.md`; record: `docs/research/simulation/2026-11-03-expiry-round8/`

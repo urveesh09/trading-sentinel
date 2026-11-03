@@ -1,3 +1,10 @@
+## November 3 — expiry-v5 E03.2 main, NIFTY + SENSEX (commit `V5_COMMIT`, Dev, pushed; deployment recorded in the next commit)
+
+- Done: E03.2 main paper ticket with owner notices, summary and owner-rule tally; A/B/C shadows; SENSEX support.
+- Next: SENSEX Thursday Nov 5 and NIFTY Tuesday Nov 10 are the first live paper days; read the day summary's
+  "MAIN E03.2" lines and the shadows. Owner's download tomorrow feeds the frozen exam
+  (`EXAM_E03_FAMILY.md` + `2026-11-03-expiry-round8/EXAM_E032_ADDENDUM.md`). Rollback: `EXPIRY_MAIN_STRATEGY="ABC"`.
+
 ## November 3 — E03.2 (puts at 2x) built, disabled (commit `e102cfb`, Dev, pushed, not deployed)
 
 - Problem: owner wanted an E03.2 that earns much more with risk that pays for itself.

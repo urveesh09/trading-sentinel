@@ -1,5 +1,16 @@
 # Expiry-day paper book (`expiry-v1`), October 5, 2026
 
+> **expiry-v5 (owner order, November 3, 2026): E03.2 is the main paper ticket.** With
+> `EXPIRY_MAIN_STRATEGY="E032"` (the default) every new expiry day records `main: E032`:
+> E03.2 (`expiry_e02.E032`, its own Rs 25,000 paper book: E03.1's afternoon trend pullback,
+> put tickets at twice the reserve, an 8% buy limit, everything sold from 15:14) trades NIFTY
+> and SENSEX, its buys and sells are queued as owner notices in this book's outbox, and the day
+> summary and the owner's stop-rule tally read its result. **A, B and C keep trading on paper as
+> shadows, without Telegram trades.** Days begun before expiry-v5 keep A+B+C as their main result.
+> SENSEX has no E03 history: lot 20, 100-point strikes, Rs 16.25-65 a unit (the same rupees a lot as
+> NIFTY's Rs 5-20). Rollback: `EXPIRY_MAIN_STRATEGY="ABC"` restores the earlier book. Research:
+> `docs/EXPIRY_RESEARCH_E032_PUTS.md`.
+
 **Status:** Dev, paper only and broker-free. The owner asked for it on October 5 with
 a ₹2,500 budget and plays A, B and C on Tuesdays (NIFTY) and Thursdays (SENSEX).
 It goes live in Production only after the PR is merged and the images are rebuilt.

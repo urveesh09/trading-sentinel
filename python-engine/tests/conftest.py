@@ -92,6 +92,9 @@ def patch_settings(monkeypatch, tmp_path):
     # [F11] Production's fresh start is a dated fact about its ledger. Tests write their own dates, so the whole
     # history counts unless a test sets a start (tests/test_fno_book_start.py).
     monkeypatch.setattr(settings, "FNO_PAPER_BOOK_START", "")
+    # [expiry-v5] Production's expiry main ticket is E03.2. The A/B/C expiry tests describe that book as it
+    # was; tests of the E03.2 main set it themselves (tests/test_expiry_main_e032.py).
+    monkeypatch.setattr(settings, "EXPIRY_MAIN_STRATEGY", "ABC")
     for name in ("TELEGRAM_BOT_TOKEN", "PARTNER_TELEGRAM_BOT_TOKEN"):        # [O26c] never the real bots
         monkeypatch.setattr(settings, name, f"test-{name.lower()}")
     for name in ("TELEGRAM_CHAT_ID", "PARTNER_TELEGRAM_CHAT_ID"):

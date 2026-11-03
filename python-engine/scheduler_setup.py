@@ -1031,8 +1031,12 @@ def register_penny_scheduler_jobs(scheduler):
         for variant, enabled in variants:
             try:
                 if enabled or expiry_e02.has_open_book(settings.DB_PATH, variant):
-                    await asyncio.to_thread(expiry_e02.run_tick, settings.DB_PATH,
-                                            enabled=enabled, variant=variant)
+                    result = await asyncio.to_thread(expiry_e02.run_tick, settings.DB_PATH,
+                                                     enabled=enabled, variant=variant)
+                    # expiry-v5: the main ticket's buys and sells go to the expiry outbox (owner notices).
+                    if variant.play == settings.EXPIRY_MAIN_STRATEGY and isinstance(result, dict) and result.get("notices"):
+                        import expiry_paper
+                        expiry_paper.queue_notices(settings.DB_PATH, result["notices"], datetime.now(expiry_paper.IST))
             except Exception as exc:
                 logger.error("expiry_%s_shadow_failed err=%s", variant.name, type(exc).__name__, exc_info=True)
 

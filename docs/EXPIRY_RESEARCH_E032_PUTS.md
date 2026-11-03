@@ -1,7 +1,8 @@
 # E03.2 — the edge is in the puts
 
-November 3, 2026. **Built in Dev as a disabled paper variant beside E03.1. Not deployed. Both test years
-were already seen, so the figures are in-sample.**
+November 3, 2026. **The owner made E03.2 the expiry book's main paper ticket (expiry-v5), on NIFTY and,
+as a forward paper test, SENSEX. Paper only, no real orders. Both test years were already seen, so the
+figures are in-sample; SENSEX has no E03 history at all.**
 
 ## What we found
 
@@ -50,14 +51,18 @@ drawdown is smaller and bad fills cost less. The most it can reserve in one day 
 ## In the engine
 
 A fourth variant beside E02, E03 and E03.1: its own cash, database and switch,
-`EXPIRY_E032_SHADOW_ENABLED`, off. E02, E03 and E03.1 behave exactly as before. The engine matches the
+`EXPIRY_E032_SHADOW_ENABLED` (on since expiry-v5). E02, E03 and E03.1 behave exactly as before.
+Since expiry-v5 (`EXPIRY_MAIN_STRATEGY="E032"`) it is the main ticket: its buys and sells reach you
+as messages, the expiry summary and your stop-rule tally use it, and A, B and C keep trading on
+paper as shadows without trade messages. On SENSEX it keeps the same rupees a lot (lot 20, Rs 16.25-65
+a unit) and four 100-point strikes. The engine matches the
 research lab on all 78 positions and 78 entry sizes, zero mismatches.
 
-## What happens next (your decisions)
+## What happens next
 
-1. Merge, rebuild, and switch on E03.2 beside E03.1, so every ticket is compared on paper.
-2. The frozen exam on the approved download now includes E03.2 and a direct test of the put advantage.
-3. After 20 forward tickets and the exam: the calculation says puts could go to 3x within the same risk
-   limits (+Rs 34,165 in the model). That is a later decision, on fresh data only.
+1. Every NIFTY Tuesday and SENSEX Thursday, E03.2 trades on paper as the main ticket; compare it with
+   E03.1 (still a separate paper book when switched on) and with A, B and C in the summary.
+2. The frozen exam on the coming download includes E03.2 and a direct test of the put advantage.
+3. After 20 forward tickets and the exam: puts at 3x are the next size question, on fresh data only.
 
 Technical record: [research/simulation/2026-11-03-expiry-round8/README.md](research/simulation/2026-11-03-expiry-round8/README.md).

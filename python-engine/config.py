@@ -944,8 +944,12 @@ class Settings(BaseSettings):
     # E03.1 defensive experiment; fitted, unqualified, independently funded paper only.
     EXPIRY_E031_SHADOW_ENABLED:      bool  = False
     # E03.2: E03.1 with put tickets at twice the reserve, an 8% buy limit and every leg sold from 15:14.
-    # Fitted on seen 2024/2025, unqualified, independently funded paper only; no real orders.
-    EXPIRY_E032_SHADOW_ENABLED:      bool  = False
+    # Fitted on seen NIFTY 2024/2025, unqualified, independently funded paper only; no real orders.
+    # On (owner order, Nov 3): it is the expiry book's main paper ticket, on NIFTY and SENSEX.
+    EXPIRY_E032_SHADOW_ENABLED:      bool  = True
+    # Which strategy is the expiry book's main ticket: "E032" (expiry-v5: E03.2's notices and summary,
+    # A, B and C trade on as shadows without Telegram trades) or "ABC" (the book until expiry-v4).
+    EXPIRY_MAIN_STRATEGY:            str   = "E032"
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3

@@ -19,7 +19,13 @@ small fitted improvement is not financial qualification; stops can gap.
 E03.2 (docs/EXPIRY_RESEARCH_E032_PUTS.md) is E03.1 with three changes: a put ticket gets twice
 the reserve (Rs 2,500, up to six lots; calls unchanged, day reserve up to Rs 5,000), the buy limit
 is 8% above the decision ask instead of 10%, and every leg is sold from 15:14, before the closing
-auction freezes the index. Fitted on seen 2024/2025, disabled, not qualified.
+auction freezes the index. Fitted on seen 2024/2025, not qualified.
+
+Since expiry-v5 (owner order, 2026-11-03) E03.2 is the expiry book's MAIN paper ticket when
+``EXPIRY_MAIN_STRATEGY`` is "E032": it runs on NIFTY and, untested there, on SENSEX (lot 20,
+100-point strikes, the same rupee band per lot), its buys and sells become owner notices through
+the expiry outbox (queued by the scheduler; this module still sends nothing), and the expiry day
+summary and owner rule read its book. NIFTY figures only; SENSEX is a forward paper test.
 """
 from __future__ import annotations
 
@@ -38,6 +44,10 @@ START_CASH=25000.0
 DAY_CEILING=2500.0
 MAX_TRADES=2
 LOT=65
+# Per underlying: lot, exchange, Rs band per unit (E02's Rs 5-20 on NIFTY = Rs 325-1,300 a lot; SENSEX keeps the
+# same rupees a lot) and the strike-distance scale (four steps: NIFTY 50 points, SENSEX 100).
+UNDERLYINGS={'NIFTY':dict(lot=65,exchange='NFO',band=(5.,20.),scale=1.),
+             'SENSEX':dict(lot=20,exchange='BFO',band=(16.25,65.),scale=2.)}
 
 
 @dataclass(frozen=True)
@@ -65,13 +75,14 @@ class Variant:
     put_mult:float=1.          # a put ticket's reserve and lot cap, as a multiple of the call's
     chase:float=.10            # most paid above the decision ask
     flat:time=time(15,28)      # every open leg is sold from this time
+    underlyings:tuple=('NIFTY',)
 
 
 E02=Variant(VERSION,'E02R3','.expiry-e02.db')
 E03=Variant('expiry-e03-v1','E03','.expiry-e03.db',max_lots=3,max_distance=200.,split=True,name='e03')
 E031=Variant('expiry-e031-v1','E031','.expiry-e031.db',max_lots=3,max_distance=200.,split=True,name='e031',initial_stop=.35,lock_arm=.5,lock_floor=1.1)
 E032=Variant('expiry-e032-v1','E032','.expiry-e032.db',max_lots=3,max_distance=200.,split=True,name='e032',initial_stop=.35,lock_arm=.5,lock_floor=1.1,
-             put_mult=2.,chase=.08,flat=time(15,14))
+             put_mult=2.,chase=.08,flat=time(15,14),underlyings=('NIFTY','SENSEX'))
 VARIANTS=(E02,E03,E031,E032)
 
 
@@ -189,32 +200,33 @@ def sell_base(pos,quote,lots,now):
     return event
 
 
-def _lots(q,room,most,schedule,chase=.10):
+def _lots(q,room,most,schedule,chase=.10,lot=LOT):
     """The most lots (up to ``most``) the visible asks fill whole, with a fee-inclusive limit inside ``room``."""
     order=EP.order_fee(schedule);rate=(EP.buy_charges(100,1,schedule)-order)/100
     for lots in range(most,0,-1):
-        filled,ask=EP.walk(q.asks,lots,LOT)
+        filled,ask=EP.walk(q.asks,lots,lot)
         if filled!=lots:continue
         # No future-based sizing: this cap is fixed before any later quote.
-        cap=min(ask*(1+chase),(room-(1+lots)*order)/(lots*LOT*(1+rate)))
+        cap=min(ask*(1+chase),(room-(1+lots)*order)/(lots*lot*(1+rate)))
         limit=math.floor(round(cap/.05,6))*.05
-        if limit>=ask and EP.worst_case_loss(limit,lots,LOT,schedule)<=room+.001:return lots,round(limit,2)
+        if limit>=ask and EP.worst_case_loss(limit,lots,lot,schedule)<=room+.001:return lots,round(limit,2)
     return 0,None
 
 
-def plan(reading,legs,book,now,budget,cash,variant=E02):
+def plan(reading,legs,book,now,budget,cash,variant=E02,underlying='NIFTY'):
     """Nearest observed OTM strike within a causal move allowance; E02 one lot, E03 up to three."""
     expected=reading.atr*math.sqrt(max(1,930-reading.minute))
-    candidates=[];schedule=EP.fee_schedule('NFO')
+    spec=UNDERLYINGS[underlying];lo,hi=spec['band']
+    candidates=[];schedule=EP.fee_schedule(spec['exchange'])
     for symbol,raw in legs.items():
         contract=book.by_symbol.get(symbol)
-        if contract is None or contract.underlying!='NIFTY' or contract.expiry!=now.date() or contract.lot_size!=LOT:continue
+        if contract is None or contract.underlying!=underlying or contract.expiry!=now.date() or contract.lot_size!=spec['lot']:continue
         if contract.instrument_type!=('CE' if reading.direction==1 else 'PE'):continue
         distance=reading.direction*(contract.strike-reading.spot)
-        if not 0<distance<=min(variant.max_distance,expected):continue
+        if not 0<distance<=min(variant.max_distance*spec['scale'],expected):continue
         q=logged_quote(raw)
-        if q is None or not q.fresh(now) or not q.spread_ok(.10) or not 5<=q.ask<=20:continue
-        lots,limit=_lots(q,min(budget,cash),int(round(variant.max_lots*ticket_scale(variant,reading.direction))),schedule,variant.chase)
+        if q is None or not q.fresh(now) or not q.spread_ok(.10) or not lo<=q.ask<=hi:continue
+        lots,limit=_lots(q,min(budget,cash),int(round(variant.max_lots*ticket_scale(variant,reading.direction))),schedule,variant.chase,spec['lot'])
         if not lots:continue
         candidates.append((distance,symbol,limit,lots))
     if not candidates:return None
@@ -281,6 +293,65 @@ def held_contracts(db_path,book):
     return held
 
 
+def label(variant):return {'E032':'E03.2'}.get(variant.play,variant.play)
+
+
+def _lots_text(n):return f"{n} lot{'s' if n!=1 else ''}"
+
+
+def entry_text(variant,p,risk):
+    """The owner notice for a paper buy (text only; the scheduler queues it in the expiry outbox)."""
+    frozen=p.get('e02_policy') or {}
+    after='half the lots are sold and the rest run on a floor at cost' if p['lots']>=2 else 'it is sold'
+    return (f"Expiry paper {p['underlying']} {label(variant)} (main): bought {_lots_text(p['lots'])} {p['symbol']} at Rs {p['entry_price']:.2f} "
+            f"({'put' if p['direction']<0 else 'call'} ticket, Rs {risk:,.2f} reserved with fees). Stop Rs {p['stop']:.2f}, index stop "
+            f"{p['underlying_stop']:,.2f}; at 2x (Rs {2*p['entry_price']:.2f}) {after}; everything is sold from {frozen.get('flat','15:28')}. "
+            "Paper only; a stop is a trigger, not a guaranteed price.")
+
+
+def exit_text(variant,p,event):
+    text=(f"Expiry paper {p['underlying']} {label(variant)} (main): sold {_lots_text(event['lots'])} {p['symbol']} at Rs {event['price']:.2f} "
+          f"({event['action']})")
+    text+=f"; ticket closed, net Rs {p['net_pnl']:+,.2f} after fees" if p['status']=='CLOSED' else f"; {_lots_text(p['lots_open'])} still running"
+    return text+". Paper only."
+
+
+def positions(db_path,variant=None):
+    """Every saved position of a variant's own book (read-only), oldest first."""
+    path=Path(path_for(db_path,variant or E032))
+    if not path.exists():return []
+    with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=1)) as c:
+        try:return [json.loads(r[0]) for r in c.execute('SELECT payload FROM e02_positions ORDER BY id')]
+        except sqlite3.OperationalError:return []
+
+
+def day_results(db_path,variant=None):
+    """{(day, underlying): net after fees} of the closed tickets, for the expiry book's owner rule."""
+    out={}
+    for p in positions(db_path,variant):
+        if p.get('status')=='CLOSED':
+            key=(p['day'],p.get('underlying','NIFTY'));out[key]=round(out.get(key,0.)+p['net_pnl'],2)
+    return out
+
+
+def summary_lines(db_path,day,underlying,variant=None):
+    """The main ticket's part of the expiry day summary: today's tickets and this underlying's record."""
+    variant=variant or E032;name=label(variant);mine=[p for p in positions(db_path,variant) if p.get('underlying','NIFTY')==underlying]
+    lines=[f"  MAIN {name} (expiry-v5): E03.1's afternoon trend pullback, a put ticket at twice the reserve (Rs 2,500), an 8% buy limit, "
+           f"everything sold from 15:14; own Rs 25,000 paper book, fitted on seen NIFTY 2024/2025"
+           +(", untested on SENSEX until now" if underlying=='SENSEX' else "")]
+    today=[p for p in mine if p['day']==day]
+    if not today:lines.append(f"  {name}: no trade")
+    for p in today:
+        sold=', '.join(f"{e['action']} {e['lots']} at {e['price']:.2f}" for e in p.get('_events',[])[1:] if e.get('price') is not None)
+        lines.append(f"  {name}: {_lots_text(p['lots'])} {p['symbol']} bought {p['entry_price']:.2f}, {p['status']}"
+                     +(f", net Rs {p['net_pnl']:+,.2f} after fees Rs {p['costs']:,.2f}" if p['status']=='CLOSED' else '')+(f" ({sold})" if sold else ''))
+    closed=[p for p in mine if p.get('status')=='CLOSED']
+    net=round(sum(p['net_pnl'] for p in today if p.get('status')=='CLOSED'),2)
+    lines.append(f"  main day: {name} filled net Rs {net:+,.2f}; {underlying} to date {len(closed)} tickets, Rs {sum(p['net_pnl'] for p in closed):+,.2f}")
+    return lines
+
+
 def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
     """Incremental read-only source, separate transactional paper state, no network."""
     now=now or datetime.now(EP.IST)
@@ -290,8 +361,12 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
     if not source.exists():return {'status':'NO_SOURCE'}
     with closing(sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True,timeout=1)) as src:
         src.row_factory=sqlite3.Row
-        latest=src.execute("SELECT * FROM expiry_paper_ticks WHERE day=? AND underlying='NIFTY' ORDER BY ts DESC LIMIT 1",(now.date().isoformat(),)).fetchone()
-        if latest is None:return {'status':'NO_NIFTY_SOURCE'}
+        latest=underlying=None
+        for name in variant.underlyings:        # NIFTY expires on Tuesdays, SENSEX on Thursdays
+            row=src.execute("SELECT * FROM expiry_paper_ticks WHERE day=? AND underlying=? ORDER BY ts DESC LIMIT 1",(now.date().isoformat(),name)).fetchone()
+            if row is not None and (latest is None or row['ts']>latest['ts']):latest,underlying=row,name
+        if latest is None:return {'status':'NO_NIFTY_SOURCE' if variant.underlyings==('NIFTY',) else 'NO_EXPIRY_SOURCE'}
+        spec=UNDERLYINGS[underlying];notes=[]
         observed=datetime.fromisoformat(latest['ts'])
         if not -5<=(now-observed).total_seconds()<=20:return {'status':'STALE_SOURCE'}
         with closing(sqlite3.connect(destination,timeout=1)) as dst:
@@ -313,7 +388,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                     if not all(math.isfinite(p[k]) for k in ('net_pnl','gross','costs')) or abs(p['gross']-p['costs']-p['net_pnl'])>.02:raise ValueError('E02 malformed close')
                     expected=round(expected+p['net_pnl'],2);peak=max(peak,expected)
                 if not all(math.isfinite(state[k]) for k in ('cash','peak')) or abs(state['cash']-expected)>.01 or abs(state['peak']-peak)>.01 or state['cash']<0:raise ValueError('E02 cash journal mismatch')
-                rows=src.execute("SELECT * FROM expiry_paper_ticks WHERE day=? AND underlying='NIFTY' AND ts>? ORDER BY ts",(now.date().isoformat(),state['watermark'] or '')).fetchall()
+                rows=src.execute("SELECT * FROM expiry_paper_ticks WHERE day=? AND underlying=? AND ts>? ORDER BY ts",(now.date().isoformat(),underlying,state['watermark'] or '')).fetchall()
                 completed=None
                 for row in rows:
                     bar=_sample(state,row)
@@ -334,6 +409,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                             elif sell:event=EP._try_exit(position,q,*sell,now)
                     if now.time()>=flat_time(position) and position['status']=='OPEN':event=EP._try_exit(position,q,position['lots_open'],'FLAT_TIME',now)
                     _save_position(dst,position)
+                    if event:notes.append((f"{position['day']}:{position['underlying']}:{variant.play}:{position['id']}:{event['ts']}:{event['action']}",exit_text(variant,position,event)))
                     if position['status']=='CLOSED':
                         state['cash']=round(state['cash']+position['net_pnl'],2);state['peak']=max(state['peak'],state['cash']);state['last_close']=now.isoformat();state['position']=None
                 if enabled and not state['position']:
@@ -345,26 +421,28 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                         if reading and datetime.fromisoformat(completed['end'])>datetime.fromisoformat(state['activation']) and cool and day['trades']<MAX_TRADES:
                             if book is None:
                                 from fno_underlyings import get_instruments_for
-                                book=get_instruments_for('NIFTY')
-                            state['pending']=plan(reading,state.get('last_bar_legs',{}),book,datetime.fromisoformat(completed['end']),min(1250.*ticket_scale(variant,reading.direction),day['budget']-day['spent']),state['cash'],variant)
+                                book=get_instruments_for(underlying)
+                            state['pending']=plan(reading,state.get('last_bar_legs',{}),book,datetime.fromisoformat(completed['end']),min(1250.*ticket_scale(variant,reading.direction),day['budget']-day['spent']),state['cash'],variant,underlying)
                     pending=state['pending']
                     if pending:
                         if now>datetime.fromisoformat(pending['expires']) or now.time()>=time(15,0) or day['trades']>=MAX_TRADES:state['pending']=None
                         else:
                             if book is None:
                                 from fno_underlyings import get_instruments_for
-                                book=get_instruments_for('NIFTY')
+                                book=get_instruments_for(underlying)
                             q=logged_quote(legs.get(pending['symbol']))
                             con=book.by_symbol.get(pending['symbol']) if book else None
-                            if con and con.expiry==now.date() and con.lot_size==LOT and q and q.fresh(now) and q.spread_ok(.10):
-                                lots,price=EP.walk(q.asks,pending.get('lots',1),LOT)
-                                schedule=EP.fee_schedule('NFO')
-                                risk=EP.worst_case_loss(price,lots,LOT,schedule) if lots else math.inf
+                            if con and con.underlying==underlying and con.expiry==now.date() and con.lot_size==spec['lot'] and q and q.fresh(now) and q.spread_ok(.10):
+                                lots,price=EP.walk(q.asks,pending.get('lots',1),spec['lot'])
+                                schedule=EP.fee_schedule(spec['exchange'])
+                                risk=EP.worst_case_loss(price,lots,spec['lot'],schedule) if lots else math.inf
                                 if lots and price<=pending['limit'] and risk<=min(1250.*ticket_scale(variant,pending['direction']),day['budget']-day['spent'],state['cash']):
-                                    p=EP._new_position(now.date().isoformat(),'NIFTY',variant.play,'NFO',con,price,lots,now,schedule)
+                                    p=EP._new_position(now.date().isoformat(),underlying,variant.play,spec['exchange'],con,price,lots,now,schedule)
                                     p.update(stop=round(price*(1-variant.initial_stop),2),direction=pending['direction'],underlying_stop=pending['underlying_stop'],e02_version=variant.version,data_basis='SAMPLED_10S_FORWARD',e02_policy=policy_for(variant))
                                     _save_position(dst,p);state['position']=p;day['spent']=round(day['spent']+risk,2);day['trades']+=1;state['pending']=None
+                                    notes.append((f"{p['day']}:{underlying}:{variant.play}:{p['id']}:BUY",entry_text(variant,p,risk)))
                 if not enabled:state['pending']=None
                 if state['day']['spent']>state['day']['budget']+.01:raise ValueError('E02 daily reserve exceeded')
                 _store(dst,state)
-                return dict(status='OPEN' if state['position'] else 'OBSERVING',version=variant.version,qualification=QUALIFICATION,cash=state['cash'],day=state['day'],event=event)
+                return dict(status='OPEN' if state['position'] else 'OBSERVING',version=variant.version,qualification=QUALIFICATION,cash=state['cash'],day=state['day'],event=event,
+                            underlying=underlying,notices=notes)
