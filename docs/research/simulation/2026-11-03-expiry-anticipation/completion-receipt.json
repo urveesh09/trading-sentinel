@@ -1,0 +1,32 @@
+{
+  "research_commit": "22f8845ffc40ec027beca968589db69f30a0f42e",
+  "source_pushed": true,
+  "remote_verified_sha": "22f8845ffc40ec027beca968589db69f30a0f42e",
+  "final_evidence_docs_commit": "Git commit containing this receipt; remote checked after push",
+  "branch": "codex/production-correction-hedge-p0",
+  "selected_candidate": null,
+  "qualification": false,
+  "focused_passed": 53,
+  "book_histories": 111,
+  "repeated_native_positions": 1580,
+  "native_sale_slices": 1654,
+  "labels_recomputed": 37574,
+  "prefix_rebuilds": 210,
+  "stock_receipts": 38,
+  "pinned_source_files": 854,
+  "runtime_changed": false,
+  "enabled": false,
+  "deployed": false,
+  "actual_risk_changed": false,
+  "year2023_read": false,
+  "api_download_calls": 0,
+  "production_head": "06bed07e05a32bc4394aff7ba70990faa745a8ec",
+  "original_owner_bytes_preserved": true,
+  "original_future_exam_preserved": true,
+  "verification": [
+    "guard.py verify",
+    "forest_study.py verify",
+    "verify_anticipation_evidence.py",
+    "git ls-remote"
+  ]
+}

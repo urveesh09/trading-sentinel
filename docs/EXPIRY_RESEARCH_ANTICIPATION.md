@@ -202,3 +202,5 @@ The auction remains separate. The current cash-close framework changed in
 [verification](research/simulation/2026-11-03-expiry-anticipation/verification.json),
 [all decisions](research/simulation/2026-11-03-expiry-anticipation/decisions.json).
 The study status records commit/push and sealed evidence receipts.
+
+Research **22f8845** pushed/remote-verified on the same Dev branch. [Sealed evidence report](research/simulation/2026-11-03-expiry-anticipation/evidence/REPORT.md); [pinned source verification](research/simulation/2026-11-03-expiry-anticipation/pinned-audit.json); [completion receipt](research/simulation/2026-11-03-expiry-anticipation/completion-receipt.json). After later docs change HEAD, run `verify_anticipation_evidence.py`; it preserves and verifies the original source/request/report/guard rather than weakening it.

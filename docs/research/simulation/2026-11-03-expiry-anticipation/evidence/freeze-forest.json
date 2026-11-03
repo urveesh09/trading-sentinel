@@ -1,0 +1,15 @@
+{
+  "head": "8b78a4050d722de1e330db2a406e46e6d99d3b17",
+  "files": {
+    "FOREST.md": "3055aac71100a256c24e0bb2cd75b773345f9f8234361ae8ae7fdf47a10bd1e1",
+    "forest.py": "6213e5238fac95627318a0e5b5c9d375ece26b222cc26eda70bbb98b887758d1",
+    "forest_study.py": "19f5dd945d5595b000b7f28ddb5da9c2866ae82910258c75e61c09fcdae13e62",
+    "test_forest.py": "230e1f149917550e8c6d99a45ed21e8375d2a5874511c482ab30333d880adae1"
+  },
+  "parents": {
+    "freeze-smart.json": "a698757ea20c73863a9b359d0803b00c6dfc31c9dcee964d0de188082b5fd99c",
+    "smart-results.json": "923c398106d7f653d951959be2e6e22ad643dfa19b534c9b864d06ebc189258f"
+  },
+  "classification": "SEEN_FIXED_NONLINEAR_CHECK",
+  "api_calls": 0
+}

@@ -1,0 +1,177 @@
+{
+  "qualification": false,
+  "selected_candidate": null,
+  "primary_arms": {
+    "SCALE25": {
+      "criteria": {
+        "ordinary_continuous_better": true,
+        "ordinary_increment_without_best": true,
+        "ordinary_worst_limit": true,
+        "ordinary_dd_limit": true,
+        "ordinary_resolved": true,
+        "2024_ordinary_risk_adjusted_better": false,
+        "2024_ordinary_ex_best_positive": true,
+        "2025_ordinary_risk_adjusted_better": false,
+        "2025_ordinary_ex_best_positive": true,
+        "adverse_continuous_better": true,
+        "adverse_increment_without_best": true,
+        "adverse_worst_limit": true,
+        "adverse_dd_limit": true,
+        "adverse_resolved": true,
+        "2024_adverse_risk_adjusted_better": false,
+        "2024_adverse_ex_best_positive": true,
+        "2025_adverse_risk_adjusted_better": false,
+        "2025_adverse_ex_best_positive": true
+      },
+      "accepted": false
+    },
+    "RUNNER25": {
+      "criteria": {
+        "ordinary_continuous_better": true,
+        "ordinary_increment_without_best": true,
+        "ordinary_worst_limit": true,
+        "ordinary_dd_limit": true,
+        "ordinary_resolved": true,
+        "2024_ordinary_risk_adjusted_better": false,
+        "2024_ordinary_ex_best_positive": true,
+        "2025_ordinary_risk_adjusted_better": false,
+        "2025_ordinary_ex_best_positive": true,
+        "adverse_continuous_better": true,
+        "adverse_increment_without_best": true,
+        "adverse_worst_limit": true,
+        "adverse_dd_limit": true,
+        "adverse_resolved": true,
+        "2024_adverse_risk_adjusted_better": false,
+        "2024_adverse_ex_best_positive": true,
+        "2025_adverse_risk_adjusted_better": false,
+        "2025_adverse_ex_best_positive": true
+      },
+      "accepted": false
+    },
+    "SMART_RUNNER25": {
+      "criteria": {
+        "ordinary_continuous_better": true,
+        "ordinary_increment_without_best": false,
+        "ordinary_worst_limit": true,
+        "ordinary_dd_limit": true,
+        "ordinary_resolved": true,
+        "2024_ordinary_risk_adjusted_better": false,
+        "2024_ordinary_ex_best_positive": true,
+        "2025_ordinary_risk_adjusted_better": false,
+        "2025_ordinary_ex_best_positive": true,
+        "adverse_continuous_better": true,
+        "adverse_increment_without_best": false,
+        "adverse_worst_limit": true,
+        "adverse_dd_limit": true,
+        "adverse_resolved": true,
+        "2024_adverse_risk_adjusted_better": false,
+        "2024_adverse_ex_best_positive": true,
+        "2025_adverse_risk_adjusted_better": false,
+        "2025_adverse_ex_best_positive": true
+      },
+      "accepted": false
+    },
+    "PROB_2": {
+      "criteria": {
+        "ordinary_causal_better": false,
+        "ordinary_ex_best_positive": false,
+        "ordinary_worst_limit": true,
+        "ordinary_dd_limit": true,
+        "ordinary_resolved": true,
+        "ordinary_year_transfer_better": false,
+        "adverse_causal_better": false,
+        "adverse_ex_best_positive": false,
+        "adverse_worst_limit": true,
+        "adverse_dd_limit": true,
+        "adverse_resolved": true,
+        "adverse_year_transfer_better": false
+      },
+      "accepted": false
+    },
+    "PROB_5": {
+      "criteria": {
+        "ordinary_causal_better": false,
+        "ordinary_ex_best_positive": false,
+        "ordinary_worst_limit": true,
+        "ordinary_dd_limit": true,
+        "ordinary_resolved": true,
+        "ordinary_year_transfer_better": false,
+        "adverse_causal_better": false,
+        "adverse_ex_best_positive": false,
+        "adverse_worst_limit": true,
+        "adverse_dd_limit": true,
+        "adverse_resolved": true,
+        "adverse_year_transfer_better": false
+      },
+      "accepted": false
+    },
+    "RETURN_2": {
+      "criteria": {
+        "ordinary_causal_better": false,
+        "ordinary_ex_best_positive": false,
+        "ordinary_worst_limit": false,
+        "ordinary_dd_limit": false,
+        "ordinary_resolved": true,
+        "ordinary_year_transfer_better": false,
+        "adverse_causal_better": false,
+        "adverse_ex_best_positive": false,
+        "adverse_worst_limit": false,
+        "adverse_dd_limit": false,
+        "adverse_resolved": true,
+        "adverse_year_transfer_better": false
+      },
+      "accepted": false
+    },
+    "RETURN_5": {
+      "criteria": {
+        "ordinary_causal_better": false,
+        "ordinary_ex_best_positive": false,
+        "ordinary_worst_limit": true,
+        "ordinary_dd_limit": false,
+        "ordinary_resolved": true,
+        "ordinary_year_transfer_better": true,
+        "adverse_causal_better": false,
+        "adverse_ex_best_positive": false,
+        "adverse_worst_limit": false,
+        "adverse_dd_limit": false,
+        "adverse_resolved": true,
+        "adverse_year_transfer_better": true
+      },
+      "accepted": false
+    },
+    "FOREST_2": {
+      "criteria": {
+        "ordinary_causal_better": false,
+        "ordinary_ex_best_positive": false,
+        "ordinary_worst_limit": true,
+        "ordinary_dd_limit": true,
+        "ordinary_resolved": true,
+        "ordinary_year_transfer_better": false,
+        "adverse_causal_better": false,
+        "adverse_ex_best_positive": false,
+        "adverse_worst_limit": true,
+        "adverse_dd_limit": true,
+        "adverse_resolved": true,
+        "adverse_year_transfer_better": false
+      },
+      "accepted": false
+    },
+    "FOREST_5": {
+      "criteria": {
+        "ordinary_causal_better": false,
+        "ordinary_ex_best_positive": false,
+        "ordinary_worst_limit": true,
+        "ordinary_dd_limit": true,
+        "ordinary_resolved": true,
+        "ordinary_year_transfer_better": false,
+        "adverse_causal_better": false,
+        "adverse_ex_best_positive": false,
+        "adverse_worst_limit": true,
+        "adverse_dd_limit": true,
+        "adverse_resolved": true,
+        "adverse_year_transfer_better": false
+      },
+      "accepted": false
+    }
+  }
+}

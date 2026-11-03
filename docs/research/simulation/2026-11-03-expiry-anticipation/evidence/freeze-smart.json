@@ -1,0 +1,17 @@
+{
+  "head": "0b77af6e3977dfb9a375e526ca837af2b8e5aa0d",
+  "files": {
+    "SMART.md": "a45be4b3084b7b78f10b75cbf7a75bbca3426224038026224bec7bb075597e03",
+    "smart_lab.py": "473b86a8a749ba33ec59aad8f8441d4a251dd660322ed0892e478d4f20bdb1d6",
+    "smart_day.py": "bafb3d2c2a7c1ab648c41eb733539c824377455b60689af219a72cdcb7a6533c",
+    "smart_study.py": "889f88497a315053d97787cfa0fc25491acbe328c1b82272332021f78ca8884b",
+    "test_smart.py": "0d1dddfbec4d35ebe52d41288e0a3161a211add847aa453431e4a159da70351d"
+  },
+  "parents": {
+    "freeze-return.json": "f01c3485f3420352073ce39552dc0cd82111731f82f667cb43a458b475d01b64",
+    "return-results.json": "2a1c156efe47615c79de566217a0d99c8fb57b37eba5a51f3c5a0022b48ea9ae",
+    "return-predictions.json": "69f36cc546ff22da83563f6234e3a90b96b9d7232c8513ebf156768d6c956b39"
+  },
+  "classification": "SEEN_ITERATION_FIXED_PAST_QUARTER_FORECAST",
+  "api_calls": 0
+}

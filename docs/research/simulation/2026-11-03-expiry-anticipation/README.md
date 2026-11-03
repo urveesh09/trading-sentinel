@@ -106,3 +106,5 @@ Staging shared docs uses only new prefixes + original HEAD tails. Original
 owner working tails are preserved byte-for-byte in `_local/*.initial`; never
 stage them wholesale. Runtime rollback/migration is unnecessary: isolated
 research has no enabled book. No failed model gets the original future exam.
+
+Research **22f8845**, pushed and remote-verified. [evidence/REPORT.md](evidence/REPORT.md) records 38 partial/unavailable receipts. `verify_anticipation_evidence.py` checks the same original source and money against its pinned commit after later documentation moves HEAD. No original guard is relaxed. Commit/push packet: [completion-receipt.json](completion-receipt.json).
