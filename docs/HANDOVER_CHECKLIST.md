@@ -1,3 +1,7 @@
+## November 3 — forecast-gated risk allocation fails; nonlinear factor check frozen
+
+SMART_RUNNER25 adds only 90.84 ordinary / 42.09 adverse over two seen years, worsens drawdown and underperforms 2024. No native candidate. One final fixed nonlinear check tests interactions missed by linear models: shallow 64-tree day-bootstrap forests, 6-day leaf support, training-only splits, fixed shrinkage and 2x/5x monetary targets; no grid or best-seed selection. Sixteen focused checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; FOREST.md. No engine/config/schema/Production/download; 2023/future exam unchanged. Next: forest score, final audits/report/push.
+
 ## November 3 — standalone return models fail risk/causal tests; selective allocation frozen
 
 HERO_RETURN trained on 2024 earns 3,642 / 3,483 in 2025 but drawdown exceeds 3,500; backwards-year and causal tests lose. DOUBLE_RETURN loses. Keep all failures. New SMART_RUNNER25 consults only the existing past-quarter forecast to allocate a second lot on unchanged E03.1 entries; no retraining/threshold change. Clock-matched extra-lot control included, same 25% reserve ceiling and original risk-scaled acceptance. Fifteen research checks pass. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; SMART.md. No engine/config/schema/Production/download; protected exam unchanged. Next: final score and audits.
