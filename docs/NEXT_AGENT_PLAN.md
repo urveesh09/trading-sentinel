@@ -1,3 +1,7 @@
+## November 3 — expiry anticipation / modest-risk study (Dev research)
+
+Owner authorizes a little more research risk, not extreme risk or deployment. Fixed 25% extra reserve tests a second-lot runner against an equal-budget sizing control; a separate frozen study will test pre-move price/volume/OI/futures features. Plan: `docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md`. 2024/2025 seen, 2023/future exam protected. Baseline first, preserve failures. No engine/flag/schema/Production/download or live capital change.
+
 ## November 3 — closing-auction and seller study done: no candidate (commit `dd1daa9`, Dev, pushed)
 
 - Problem: owner asked for a different, micro-level angle after two failed E03.2 searches.
