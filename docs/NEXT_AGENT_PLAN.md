@@ -1,4 +1,4 @@
-## November 3 — E03 zero-to-hero search and E02 runner variant (done, Dev commit `E03_COMMIT`, pushed, not deployed)
+## November 3 — E03 zero-to-hero search and E02 runner variant (done, Dev commit `d85a690`, pushed, not deployed)
 
 - Problem: the owner finds E02 R3's returns too small and wants the expiry
   zero-to-hero move caught with bounded risk; also E01.1 tested on new data.

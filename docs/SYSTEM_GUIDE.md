@@ -1,4 +1,4 @@
-## November 3 — E03: E02's entry with a free runner (Dev commit `E03_COMMIT`, pushed, not deployed)
+## November 3 — E03: E02's entry with a free runner (Dev commit `d85a690`, pushed, not deployed)
 
 Report: `docs/EXPIRY_RESEARCH_E03.md`; record:
 `docs/research/simulation/2026-11-03-expiry-e03/README.md`.

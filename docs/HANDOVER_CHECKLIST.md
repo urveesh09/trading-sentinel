@@ -1,4 +1,4 @@
-## November 3 — E03 (commit `E03_COMMIT`, Dev, pushed, not deployed)
+## November 3 — E03 (commit `d85a690`, Dev, pushed, not deployed)
 
 - [x] Hero search on seen NIFTY 2024/2025: census, ticket surface, E02.1 runs, kicker,
   open-interest wall break, bigger ticket, volatility filters; every entry-side hero
