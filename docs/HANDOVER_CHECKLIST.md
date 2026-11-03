@@ -1,4 +1,4 @@
-## November 3 — E03.2 puts at 2x (commit `E032P_COMMIT`, Dev, pushed, not deployed)
+## November 3 — E03.2 puts at 2x (commit `e102cfb`, Dev, pushed, not deployed)
 
 - [x] Round 8 frozen (`f55034b`) and scored: PUT2 pass; alignment, delta and IV-slope fail; auction hold narrowly fails.
 - [x] `expiry_e02.E032` disabled variant, own DB/cash/flag; E02/E03/E03.1 unchanged.

@@ -1,4 +1,4 @@
-## November 3 — E03.2 (puts at 2x) built, disabled (commit `E032P_COMMIT`, Dev, pushed, not deployed)
+## November 3 — E03.2 (puts at 2x) built, disabled (commit `e102cfb`, Dev, pushed, not deployed)
 
 - Problem: owner wanted an E03.2 that earns much more with risk that pays for itself.
 - Done: round 8 (frozen `f55034b`): PUT2 passed; E03.2 = PUT2 + 8% buy limit + sold from 15:14, engine

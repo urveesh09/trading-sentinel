@@ -1,4 +1,4 @@
-## November 3 — E03.2: put tickets at twice the reserve (Dev commit `E032P_COMMIT`, pushed, disabled, not deployed)
+## November 3 — E03.2: put tickets at twice the reserve (Dev commit `e102cfb`, pushed, disabled, not deployed)
 
 Report: `docs/EXPIRY_RESEARCH_E032_PUTS.md`; record: `docs/research/simulation/2026-11-03-expiry-round8/`
 (plan frozen `f55034b` before scoring).
