@@ -1,4 +1,4 @@
-## November 3 — Partner fixes from the two Nov 2 audits (actual behavior, Dev, pushed, PR open, not deployed, commit `b9b0d2c`)
+## November 3 — Partner fixes from the two Nov 2 audits (actual behavior, deployed as Production 06bed07, PR #129, commit `b9b0d2c`)
 
 Source: Production `docs/2026-11-02-partner-system-deep-audit.md`, a second auditor's review of it, and a
 check against the code and the Nov 2 evidence (`docs/audit-evidence/2026-11-02-partner/`).

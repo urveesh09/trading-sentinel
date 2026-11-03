@@ -1,4 +1,4 @@
-## November 3 — N03 partner fixes (commit `b9b0d2c`, Dev, pushed, PR open, not deployed)
+## November 3 — N03 partner fixes (commit `b9b0d2c`, deployed as Production 06bed07, PR #129)
 
 - [x] N03-P1 plan priced on the option's own forward (parity, else carry); levels unchanged.
 - [x] N03-L1 every stop moved down told (AGAIN); key carries the old level.
@@ -8,7 +8,8 @@
 - [x] N03-K1/K2 coach: no "gave no stop"; "Exited with the card" only at/after a message exit.
 - [x] N03-C1 close countdown from the send time.
 - [x] Tests: full suite 6,350 passed, 4 skipped, 0 failed (745 s); partner files 333 passed
-- [ ] Deployed (merge + engine rebuild; the partner logs in again) and verified on the next session.
+- [x] Deployed Nov 3 08:47 IST: PR #129 merged (06bed07), Production fast-forwarded, release stamped (SENTINEL_RELEASE_SHA 06bed07, build 2026-11-03T03:15:20Z), python-engine, node-gateway and agent built one at a time and recreated, nginx restarted; all healthy; `scripts/verify_deployment.py --expected-sha 06bed07…` exit 0 (receipt in sentinel-operations/release-receipts). `.env` untouched, no data backup (as before). The restart dropped the partner's 08:08 login; the 09:00 prompt asks again.
+- [ ] Verify the acceptance lines on today's session (plan_forward basis, LOWERED per move, REFUSED wording, card tag, coach, CLOSE).
 
 ## November 3 — Rollout receipt (Production c227c23, PR #128)
 
