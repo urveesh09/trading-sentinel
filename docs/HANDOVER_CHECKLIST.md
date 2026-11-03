@@ -1,3 +1,7 @@
+## November 3 — E03.2 structural entries rejected; payoff tests frozen (Dev research)
+
+Reclaim loses; VALUE_CHECK earns 6,293 ordinary / 5,643 adverse versus E03.1 12,427 / 11,498. Round 3 tests equal-budget debit verticals and butterflies with all leg costs, explicit simultaneous-pack assumption and own-cash gross-long checks. Fourteen focused research tests pass. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md; payoff contract ROUND3.md. No engine/config/schema or Production change; atlas unchanged; 2023 protected. Remaining: payoff scores, microstructure data audit, report.
+
 ## November 3 — E03.2 round one rejected; new structural tests frozen (Dev research)
 
 PATIENT earns less at normal/adverse fills, despite improving the severe model; OPTION_LED loses and halts. E03.1 baseline reproduces all daily events. Round two freezes failed-auction reclaim and fee-aware valuation hypotheses in ROUND2.md before scoring. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md. Ten focused research tests pass. No engine/config/schema/Production change; atlas unchanged; 2023/future exam protected. Remaining: structural score, audits and report.
