@@ -1,3 +1,13 @@
+## November 3 — E03.2 (puts at 2x) built, disabled (commit `E032P_COMMIT`, Dev, pushed, not deployed)
+
+- Problem: owner wanted an E03.2 that earns much more with risk that pays for itself.
+- Done: round 8 (frozen `f55034b`): PUT2 passed; E03.2 = PUT2 + 8% buy limit + sold from 15:14, engine
+  variant `E032`, flag off. Report `docs/EXPIRY_RESEARCH_E032_PUTS.md`.
+- Next, owner decisions only: merge/rebuild and enable `EXPIRY_E032_SHADOW_ENABLED` beside
+  `EXPIRY_E031_SHADOW_ENABLED` for paired tickets; the frozen exam with
+  `2026-11-03-expiry-round8/EXAM_E032_ADDENDUM.md`; after 20 forward tickets, puts at 3x is the next size
+  question, on fresh data only.
+
 ## November 3 — capital/payoff study pushed; sealed evidence complete
 
 Source/report de0b72b pushed and remote verified. Six primary alternatives rejected; no E03.2 candidate. 49 tests, 108 primary/control plus 60 diagnostic exact histories; native/cash audit and 54 uncached prefixes pass. Thirty-four stock receipts and pinned 854-source verification pass. Report docs/EXPIRY_RESEARCH_CAPITAL_PAYOFF.md; plan docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; completed STATUS.md and completion-receipt.json. No native/config/schema/flag/actual capital/Production/download or 2023/fresh-exam change. Owner bytes and old evidence preserved. This final evidence/docs commit is post-verified/pushed after creation; original sealed guard stays pinned to source de0b72b.

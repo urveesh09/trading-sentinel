@@ -19,7 +19,7 @@ def test_defaults_off_separate_identity_and_no_db_when_disabled(tmp_path):
     base=tmp_path/'app.db'
     assert X.run_tick(base,now=stamp(),variant=X.E031)=={'status':'DISABLED'}
     assert not list(tmp_path.iterdir())
-    assert len({X.path_for(base,v) for v in X.VARIANTS})==3
+    assert len({X.path_for(base,v) for v in X.VARIANTS})==len(X.VARIANTS)
     assert X.E031.version=='expiry-e031-v1' and X.E031.play=='E031'
 
 def test_initial_stop_and_peak_lock_boundaries():

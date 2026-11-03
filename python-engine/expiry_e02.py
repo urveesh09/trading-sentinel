@@ -15,6 +15,11 @@ variant has its own cash, state DB and flag; E02's own behaviour is unchanged.
 E03.1 (docs/EXPIRY_RESEARCH_E031.md) is a disabled defensive experiment: E03
 with a 35% initial stop and a 1.1x trigger floor after a 50% peak gain. The
 small fitted improvement is not financial qualification; stops can gap.
+
+E03.2 (docs/EXPIRY_RESEARCH_E032_PUTS.md) is E03.1 with three changes: a put ticket gets twice
+the reserve (Rs 2,500, up to six lots; calls unchanged, day reserve up to Rs 5,000), the buy limit
+is 8% above the decision ask instead of 10%, and every leg is sold from 15:14, before the closing
+auction freezes the index. Fitted on seen 2024/2025, disabled, not qualified.
 """
 from __future__ import annotations
 
@@ -57,12 +62,31 @@ class Variant:
     initial_stop:float=.4
     lock_arm:float=0.
     lock_floor:float=1.
+    put_mult:float=1.          # a put ticket's reserve and lot cap, as a multiple of the call's
+    chase:float=.10            # most paid above the decision ask
+    flat:time=time(15,28)      # every open leg is sold from this time
 
 
 E02=Variant(VERSION,'E02R3','.expiry-e02.db')
 E03=Variant('expiry-e03-v1','E03','.expiry-e03.db',max_lots=3,max_distance=200.,split=True,name='e03')
 E031=Variant('expiry-e031-v1','E031','.expiry-e031.db',max_lots=3,max_distance=200.,split=True,name='e031',initial_stop=.35,lock_arm=.5,lock_floor=1.1)
-VARIANTS=(E02,E03,E031)
+E032=Variant('expiry-e032-v1','E032','.expiry-e032.db',max_lots=3,max_distance=200.,split=True,name='e032',initial_stop=.35,lock_arm=.5,lock_floor=1.1,
+             put_mult=2.,chase=.08,flat=time(15,14))
+VARIANTS=(E02,E03,E031,E032)
+
+
+def ticket_scale(variant,direction):
+    """A put ticket (direction -1) is ``put_mult`` times a call's Rs 1,250 reserve and lot cap."""
+    return variant.put_mult if direction<0 else 1.
+
+
+def day_scale(variant):return max(1.,variant.put_mult)
+
+
+def flat_time(position):
+    """The sell-everything time frozen on the position at entry (15:28 for E02, E03 and E03.1)."""
+    frozen=position.get('e02_policy') or {}
+    return time.fromisoformat(frozen['flat']) if frozen.get('flat') else time(15,28)
 
 
 def policy_for(variant):
@@ -70,6 +94,7 @@ def policy_for(variant):
     frozen=dict(stop=variant.initial_stop,arm=.4,keep=.6,target=1.,hold=480)
     if variant.split:frozen.update(split=True,runner_floor=1.,runner_keep=.5,hero_target=9.)
     if variant.lock_arm:frozen.update(lock_arm=variant.lock_arm,lock_floor=variant.lock_floor)
+    if variant.flat!=time(15,28):frozen.update(flat=variant.flat.strftime('%H:%M'))
     return frozen
 
 
@@ -124,7 +149,7 @@ def action(pos,bid,spot,now):
     broken=spot is not None and pos['direction']*(spot-pos['underlying_stop'])<0
     if frozen.get('lock_arm') and max(pos['peak'],bid)>=pos['entry_price']*(1+frozen['lock_arm']):
         pos['stop']=max(pos['stop'],round(pos['entry_price']*frozen['lock_floor'],2))
-    exits=EP.ExitPolicy(hard_stop=frozen['stop'],bank_at=None,bank_stop=None,trails=((frozen['arm'],frozen['keep']),),late=None,time_stop=None,flat_at=time(15,28))
+    exits=EP.ExitPolicy(hard_stop=frozen['stop'],bank_at=None,bank_stop=None,trails=((frozen['arm'],frozen['keep']),),late=None,time_stop=None,flat_at=flat_time(pos))
     native=EP.manage_position(pos,exits,bid,now,structure_broken=broken)
     if native:
         lots,reason=native
@@ -164,14 +189,14 @@ def sell_base(pos,quote,lots,now):
     return event
 
 
-def _lots(q,room,most,schedule):
+def _lots(q,room,most,schedule,chase=.10):
     """The most lots (up to ``most``) the visible asks fill whole, with a fee-inclusive limit inside ``room``."""
     order=EP.order_fee(schedule);rate=(EP.buy_charges(100,1,schedule)-order)/100
     for lots in range(most,0,-1):
         filled,ask=EP.walk(q.asks,lots,LOT)
         if filled!=lots:continue
         # No future-based sizing: this cap is fixed before any later quote.
-        cap=min(ask*1.10,(room-(1+lots)*order)/(lots*LOT*(1+rate)))
+        cap=min(ask*(1+chase),(room-(1+lots)*order)/(lots*LOT*(1+rate)))
         limit=math.floor(round(cap/.05,6))*.05
         if limit>=ask and EP.worst_case_loss(limit,lots,LOT,schedule)<=room+.001:return lots,round(limit,2)
     return 0,None
@@ -189,7 +214,7 @@ def plan(reading,legs,book,now,budget,cash,variant=E02):
         if not 0<distance<=min(variant.max_distance,expected):continue
         q=logged_quote(raw)
         if q is None or not q.fresh(now) or not q.spread_ok(.10) or not 5<=q.ask<=20:continue
-        lots,limit=_lots(q,min(budget,cash),variant.max_lots,schedule)
+        lots,limit=_lots(q,min(budget,cash),int(round(variant.max_lots*ticket_scale(variant,reading.direction))),schedule,variant.chase)
         if not lots:continue
         candidates.append((distance,symbol,limit,lots))
     if not candidates:return None
@@ -280,7 +305,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                 if not state.get('day') or state['day']['date']!=now.date().isoformat():
                     if state['position']:return {'status':'UNRESOLVED_PRIOR_DAY'}
                     dd=state['peak']-state['cash'];scale=0 if dd>=4000 else .25 if dd>=3000 else .5 if dd>=1500 else 1
-                    state.update(day=dict(date=now.date().isoformat(),budget=min(DAY_CEILING*scale,state['cash']),spent=0.,trades=0),bars=[],building=None,pending=None,last_decided=None)
+                    state.update(day=dict(date=now.date().isoformat(),budget=min(DAY_CEILING*day_scale(variant)*scale,state['cash']),spent=0.,trades=0),bars=[],building=None,pending=None,last_decided=None)
                 # Reconcile realized cash from immutable closed records before risk admission.
                 closed=[json.loads(r[0]) for r in dst.execute("SELECT payload FROM e02_positions WHERE status='CLOSED' ORDER BY id")]
                 expected=peak=START_CASH
@@ -307,7 +332,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                             sell=action(position,close_q.bid,completed['s'][3],decision_time)
                             if sell and sell[1]=='TARGET_BASE':event=sell_base(position,q,sell[0],now)
                             elif sell:event=EP._try_exit(position,q,*sell,now)
-                    if now.time()>=time(15,28) and position['status']=='OPEN':event=EP._try_exit(position,q,position['lots_open'],'FLAT_TIME',now)
+                    if now.time()>=flat_time(position) and position['status']=='OPEN':event=EP._try_exit(position,q,position['lots_open'],'FLAT_TIME',now)
                     _save_position(dst,position)
                     if position['status']=='CLOSED':
                         state['cash']=round(state['cash']+position['net_pnl'],2);state['peak']=max(state['peak'],state['cash']);state['last_close']=now.isoformat();state['position']=None
@@ -321,7 +346,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                             if book is None:
                                 from fno_underlyings import get_instruments_for
                                 book=get_instruments_for('NIFTY')
-                            state['pending']=plan(reading,state.get('last_bar_legs',{}),book,datetime.fromisoformat(completed['end']),min(1250.,day['budget']-day['spent']),state['cash'],variant)
+                            state['pending']=plan(reading,state.get('last_bar_legs',{}),book,datetime.fromisoformat(completed['end']),min(1250.*ticket_scale(variant,reading.direction),day['budget']-day['spent']),state['cash'],variant)
                     pending=state['pending']
                     if pending:
                         if now>datetime.fromisoformat(pending['expires']) or now.time()>=time(15,0) or day['trades']>=MAX_TRADES:state['pending']=None
@@ -335,7 +360,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                                 lots,price=EP.walk(q.asks,pending.get('lots',1),LOT)
                                 schedule=EP.fee_schedule('NFO')
                                 risk=EP.worst_case_loss(price,lots,LOT,schedule) if lots else math.inf
-                                if lots and price<=pending['limit'] and risk<=min(1250.,day['budget']-day['spent'],state['cash']):
+                                if lots and price<=pending['limit'] and risk<=min(1250.*ticket_scale(variant,pending['direction']),day['budget']-day['spent'],state['cash']):
                                     p=EP._new_position(now.date().isoformat(),'NIFTY',variant.play,'NFO',con,price,lots,now,schedule)
                                     p.update(stop=round(price*(1-variant.initial_stop),2),direction=pending['direction'],underlying_stop=pending['underlying_stop'],e02_version=variant.version,data_basis='SAMPLED_10S_FORWARD',e02_policy=policy_for(variant))
                                     _save_position(dst,p);state['position']=p;day['spent']=round(day['spent']+risk,2);day['trades']+=1;state['pending']=None

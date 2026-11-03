@@ -1,3 +1,19 @@
+## November 3 — E03.2: put tickets at twice the reserve (Dev commit `E032P_COMMIT`, pushed, disabled, not deployed)
+
+Report: `docs/EXPIRY_RESEARCH_E032_PUTS.md`; record: `docs/research/simulation/2026-11-03-expiry-round8/`
+(plan frozen `f55034b` before scoring).
+- Finding: E03.1's calls 23 tickets +1,800, puts 18 tickets +10,627; puts positive in all 8 quarters; same in
+  E02/E03; random entries show no gap (signal-specific, like the F&O study's calls/puts). Ex-hero
+  permutation p = 0.125. Week/day alignment, delta strikes and the IV-slope mechanism failed.
+- `expiry_e02.E032` (`expiry-e032-v1`, play `E032`, `<DB_PATH>.expiry-e032.db`, Rs 25,000): E03.1 with a put
+  ticket at Rs 2,500 / 6 lots (`ticket_scale`), day reserve Rs 5,000 (`day_scale`), buy limit 8%
+  (`Variant.chase`), every leg sold from 15:14 (`Variant.flat`, frozen per ticket, `flat_time`). E02, E03 and
+  E03.1 defaults unchanged. `EXPIRY_E032_SHADOW_ENABLED=false`; scheduler runs it like E03.1.
+- In-sample 2024-2025 continuous: +21,518 ordinary / +20,001 adverse / -2,438 severe, worst day -647,
+  drawdown 754 (E03.1 +12,427 / +11,498 / -3,234, -478, 1,374).
+- Verification: parity 78 positions + 78 sizing checks, 0 mismatches; focused 43 passed; full suite
+  6,411 passed, 4 skipped, 0 failed (742 s, exit 0). Atlas regenerated (295 modules). No `.env`, schema or Production change.
+
 ## November 3 — capital/payoff study pushed; sealed evidence complete
 
 Source/report de0b72b pushed and remote verified. Six primary alternatives rejected; no E03.2 candidate. 49 tests, 108 primary/control plus 60 diagnostic exact histories; native/cash audit and 54 uncached prefixes pass. Thirty-four stock receipts and pinned 854-source verification pass. Report docs/EXPIRY_RESEARCH_CAPITAL_PAYOFF.md; plan docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; completed STATUS.md and completion-receipt.json. No native/config/schema/flag/actual capital/Production/download or 2023/fresh-exam change. Owner bytes and old evidence preserved. This final evidence/docs commit is post-verified/pushed after creation; original sealed guard stays pinned to source de0b72b.

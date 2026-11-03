@@ -1,0 +1,353 @@
+{
+  "hero": {
+    "day": "2024-03-28",
+    "net": 5849.96,
+    "sides": [
+      [
+        "PE",
+        "NIFTY-2024-03-28-22450-PE",
+        5849.96
+      ]
+    ]
+  },
+  "arms": {
+    "E031": {
+      "2024|ordinary": {
+        "net": 8897.97,
+        "without_best": 3048.01,
+        "worst": -477.75,
+        "drawdown": 691.65
+      },
+      "2024|adverse": {
+        "net": 8271.27,
+        "without_best": 2515.41,
+        "worst": -497.25,
+        "drawdown": 730.65
+      },
+      "2024|catastrophe": {
+        "net": -2583.27,
+        "without_best": -2583.27,
+        "worst": -632.82,
+        "drawdown": 2583.27
+      },
+      "2025|ordinary": {
+        "net": 3528.74,
+        "without_best": 2326.42,
+        "worst": -478.01,
+        "drawdown": 830.54
+      },
+      "2025|adverse": {
+        "net": 3226.33,
+        "without_best": 2088.95,
+        "worst": -537.55,
+        "drawdown": 746.33
+      },
+      "2025|catastrophe": {
+        "net": -673.37,
+        "without_best": -1252.93,
+        "worst": -646.89,
+        "drawdown": 1151.6
+      },
+      "both|ordinary": {
+        "net": 12426.71,
+        "without_best": 6576.75,
+        "worst": -478.01,
+        "drawdown": 1373.93
+      }
+    },
+    "PUT2": {
+      "2024|ordinary": {
+        "net": 15580.74,
+        "without_best": 3810.02,
+        "worst": -646.98,
+        "drawdown": 691.65
+      },
+      "2024|adverse": {
+        "net": 14629.39,
+        "without_best": 3046.86,
+        "worst": -669.72,
+        "drawdown": 730.65
+      },
+      "2024|catastrophe": {
+        "net": -2582.43,
+        "without_best": -2582.43,
+        "worst": -632.82,
+        "drawdown": 2582.43
+      },
+      "2025|ordinary": {
+        "net": 5936.81,
+        "without_best": 4084.55,
+        "worst": -478.01,
+        "drawdown": 606.19
+      },
+      "2025|adverse": {
+        "net": 5371.36,
+        "without_best": 3616.52,
+        "worst": -537.55,
+        "drawdown": 557.7
+      },
+      "2025|catastrophe": {
+        "net": -1056.03,
+        "without_best": -1840.92,
+        "worst": -1200.76,
+        "drawdown": 1561.91
+      },
+      "both|ordinary": {
+        "net": 21517.55,
+        "without_best": 9746.83,
+        "worst": -646.98,
+        "drawdown": 753.91
+      }
+    },
+    "PE_ONLY": {
+      "2024|ordinary": {
+        "net": 8062.85,
+        "without_best": 2212.89,
+        "worst": -477.75,
+        "drawdown": 477.75
+      },
+      "2024|adverse": {
+        "net": 7741.45,
+        "without_best": 1985.59,
+        "worst": -497.25,
+        "drawdown": 497.25
+      },
+      "2024|catastrophe": {
+        "net": -267.03,
+        "without_best": -267.03,
+        "worst": -146.83,
+        "drawdown": 267.03
+      },
+      "2025|ordinary": {
+        "net": 2563.86,
+        "without_best": 1591.59,
+        "worst": -182.11,
+        "drawdown": 182.11
+      },
+      "2025|adverse": {
+        "net": 2401.31,
+        "without_best": 1305.82,
+        "worst": -208.09,
+        "drawdown": 208.09
+      },
+      "2025|catastrophe": {
+        "net": -571.46,
+        "without_best": -940.3,
+        "worst": -623.98,
+        "drawdown": 623.98
+      },
+      "both|ordinary": {
+        "net": 10626.71,
+        "without_best": 4776.75,
+        "worst": -477.75,
+        "drawdown": 477.75
+      }
+    },
+    "PE2_ONLY": {
+      "2024|ordinary": {
+        "net": 14495.24,
+        "without_best": 2724.52,
+        "worst": -646.98,
+        "drawdown": 646.98
+      },
+      "2024|adverse": {
+        "net": 13823.2,
+        "without_best": 2240.67,
+        "worst": -669.72,
+        "drawdown": 669.72
+      },
+      "2024|catastrophe": {
+        "net": -266.19,
+        "without_best": -266.19,
+        "worst": -266.19,
+        "drawdown": 266.19
+      },
+      "2025|ordinary": {
+        "net": 4971.93,
+        "without_best": 3719.26,
+        "worst": -278.72,
+        "drawdown": 278.72
+      },
+      "2025|adverse": {
+        "net": 4546.34,
+        "without_best": 3358.62,
+        "worst": -330.68,
+        "drawdown": 330.68
+      },
+      "2025|catastrophe": {
+        "net": -954.12,
+        "without_best": -1739.01,
+        "worst": -1200.76,
+        "drawdown": 1200.76
+      },
+      "both|ordinary": {
+        "net": 19467.17,
+        "without_best": 7696.45,
+        "worst": -646.98,
+        "drawdown": 646.98
+      }
+    }
+  },
+  "quarters": {
+    "2024Q1|CE": {
+      "tickets": 2,
+      "net": 841.95
+    },
+    "2024Q1|PE": {
+      "tickets": 2,
+      "net": 5372.21
+    },
+    "2024Q2|CE": {
+      "tickets": 5,
+      "net": -76.49
+    },
+    "2024Q2|PE": {
+      "tickets": 1,
+      "net": 1244.26
+    },
+    "2024Q3|CE": {
+      "tickets": 4,
+      "net": 391.92
+    },
+    "2024Q3|PE": {
+      "tickets": 4,
+      "net": 1281.16
+    },
+    "2024Q4|CE": {
+      "tickets": 1,
+      "net": -322.26
+    },
+    "2024Q4|PE": {
+      "tickets": 1,
+      "net": 165.22
+    },
+    "2025Q1|CE": {
+      "tickets": 3,
+      "net": -1007.69
+    },
+    "2025Q1|PE": {
+      "tickets": 1,
+      "net": 177.15
+    },
+    "2025Q2|CE": {
+      "tickets": 2,
+      "net": 578.7
+    },
+    "2025Q2|PE": {
+      "tickets": 2,
+      "net": 296.45
+    },
+    "2025Q3|CE": {
+      "tickets": 1,
+      "net": 599.59
+    },
+    "2025Q3|PE": {
+      "tickets": 5,
+      "net": 1984.91
+    },
+    "2025Q4|CE": {
+      "tickets": 5,
+      "net": 794.28
+    },
+    "2025Q4|PE": {
+      "tickets": 2,
+      "net": 105.35
+    }
+  },
+  "variants": {
+    "E02": {
+      "2024": {
+        "CE": {
+          "tickets": 12,
+          "net": 489.29
+        },
+        "PE": {
+          "tickets": 8,
+          "net": 3024.48
+        }
+      },
+      "2025": {
+        "CE": {
+          "tickets": 11,
+          "net": 1152.0
+        },
+        "PE": {
+          "tickets": 10,
+          "net": 2234.58
+        }
+      }
+    },
+    "E03": {
+      "2024": {
+        "CE": {
+          "tickets": 12,
+          "net": 504.25
+        },
+        "PE": {
+          "tickets": 8,
+          "net": 8062.85
+        }
+      },
+      "2025": {
+        "CE": {
+          "tickets": 11,
+          "net": 825.39
+        },
+        "PE": {
+          "tickets": 10,
+          "net": 2563.86
+        }
+      }
+    }
+  },
+  "random": {
+    "2024": {
+      "CE_mean": 439.91,
+      "PE_mean": -1194.3,
+      "PE_beats_CE_share": 0.225
+    },
+    "2025": {
+      "CE_mean": -631.75,
+      "PE_mean": -357.72,
+      "PE_beats_CE_share": 0.55
+    }
+  },
+  "flipped": {
+    "2024": {
+      "CE_mean": -419.86,
+      "PE_mean": -215.38,
+      "PE_beats_CE_share": 1.0
+    },
+    "2025": {
+      "CE_mean": -2247.87,
+      "PE_mean": -777.4,
+      "PE_beats_CE_share": 1.0
+    }
+  },
+  "flat": {
+    "E031|928": {
+      "2024|ordinary": 8897.97,
+      "2024|adverse": 8271.27,
+      "2025|ordinary": 3528.74,
+      "2025|adverse": 3226.33
+    },
+    "E031|914": {
+      "2024|ordinary": 8897.97,
+      "2024|adverse": 8271.27,
+      "2025|ordinary": 3528.74,
+      "2025|adverse": 3226.33
+    },
+    "PUT2|928": {
+      "2024|ordinary": 15580.74,
+      "2024|adverse": 14629.39,
+      "2025|ordinary": 5936.81,
+      "2025|adverse": 5371.36
+    },
+    "PUT2|914": {
+      "2024|ordinary": 15580.74,
+      "2024|adverse": 14629.39,
+      "2025|ordinary": 5936.81,
+      "2025|adverse": 5371.36
+    }
+  }
+}

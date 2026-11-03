@@ -1,0 +1,282 @@
+{
+  "E031": {
+    "ordinary": {
+      "net": 12426.71,
+      "worst": -478.01,
+      "drawdown": 1373.93,
+      "y2024": 8897.97,
+      "y2025": 3528.74
+    },
+    "adverse": {
+      "net": 11497.6,
+      "worst": -537.55,
+      "drawdown": 1387.14,
+      "y2024": 8271.27,
+      "y2025": 3226.33
+    },
+    "skeptical": {
+      "loss_year_chance": 0.2706,
+      "year_p5": -1992.87,
+      "year_median": 1276.98,
+      "drawdown_p95": 2994.62,
+      "median_log_growth": 0.04982
+    },
+    "catastrophe": {
+      "net": -3234.08,
+      "worst": -646.89,
+      "drawdown": 3234.08,
+      "y2024": -2583.27,
+      "y2025": -650.81
+    },
+    "passes_risk_plan": {
+      "loss_year": true,
+      "drawdown": true,
+      "severe": true
+    }
+  },
+  "PE_ONLY": {
+    "ordinary": {
+      "net": 10626.71,
+      "worst": -477.75,
+      "drawdown": 477.75,
+      "y2024": 8062.85,
+      "y2025": 2563.86
+    },
+    "adverse": {
+      "net": 10142.76,
+      "worst": -497.25,
+      "drawdown": 497.25,
+      "y2024": 7741.45,
+      "y2025": 2401.31
+    },
+    "skeptical": {
+      "loss_year_chance": 0.2046,
+      "year_p5": -952.84,
+      "year_median": 1178.91,
+      "drawdown_p95": 1400.03,
+      "median_log_growth": 0.04608
+    },
+    "catastrophe": {
+      "net": -838.49,
+      "worst": -623.98,
+      "drawdown": 838.49,
+      "y2024": -267.03,
+      "y2025": -571.46
+    },
+    "passes_risk_plan": {
+      "loss_year": true,
+      "drawdown": true,
+      "severe": true
+    }
+  },
+  "PUT2": {
+    "ordinary": {
+      "net": 21517.55,
+      "worst": -646.98,
+      "drawdown": 753.91,
+      "y2024": 15580.74,
+      "y2025": 5936.81
+    },
+    "adverse": {
+      "net": 20000.75,
+      "worst": -669.72,
+      "drawdown": 906.78,
+      "y2024": 14629.39,
+      "y2025": 5371.36
+    },
+    "skeptical": {
+      "loss_year_chance": 0.2194,
+      "year_p5": -1955.27,
+      "year_median": 1976.76,
+      "drawdown_p95": 3234.96,
+      "median_log_growth": 0.0761
+    },
+    "catastrophe": {
+      "net": -3638.46,
+      "worst": -1200.76,
+      "drawdown": 3638.46,
+      "y2024": -2582.43,
+      "y2025": -1056.03
+    },
+    "passes_risk_plan": {
+      "loss_year": true,
+      "drawdown": true,
+      "severe": true
+    }
+  },
+  "PE2_ONLY": {
+    "ordinary": {
+      "net": 19467.17,
+      "worst": -646.98,
+      "drawdown": 646.98,
+      "y2024": 14495.24,
+      "y2025": 4971.93
+    },
+    "adverse": {
+      "net": 18369.54,
+      "worst": -669.72,
+      "drawdown": 669.72,
+      "y2024": 13823.2,
+      "y2025": 4546.34
+    },
+    "skeptical": {
+      "loss_year_chance": 0.1722,
+      "year_p5": -1148.06,
+      "year_median": 1785.73,
+      "drawdown_p95": 2001.66,
+      "median_log_growth": 0.06899
+    },
+    "catastrophe": {
+      "net": -1220.31,
+      "worst": -1200.76,
+      "drawdown": 1220.31,
+      "y2024": -266.19,
+      "y2025": -954.12
+    },
+    "passes_risk_plan": {
+      "loss_year": true,
+      "drawdown": true,
+      "severe": true
+    }
+  },
+  "PUT3": {
+    "ordinary": {
+      "net": 34165.2,
+      "worst": -1246.76,
+      "drawdown": 1246.76,
+      "y2024": 24802.08,
+      "y2025": 9363.12
+    },
+    "adverse": {
+      "net": 31341.03,
+      "worst": -1292.25,
+      "drawdown": 1292.25,
+      "y2024": 23451.38,
+      "y2025": 7889.65
+    },
+    "skeptical": {
+      "loss_year_chance": 0.1895,
+      "year_p5": -2531.13,
+      "year_median": 3274.09,
+      "drawdown_p95": 4358.54,
+      "median_log_growth": 0.12307
+    },
+    "catastrophe": {
+      "net": -4166.55,
+      "worst": -1212.39,
+      "drawdown": 4166.55,
+      "y2024": -3124.31,
+      "y2025": -1042.24
+    },
+    "passes_risk_plan": {
+      "loss_year": true,
+      "drawdown": true,
+      "severe": true
+    }
+  },
+  "PE3_ONLY": {
+    "ordinary": {
+      "net": 32114.82,
+      "worst": -1246.76,
+      "drawdown": 1246.76,
+      "y2024": 23716.58,
+      "y2025": 8398.24
+    },
+    "adverse": {
+      "net": 29709.82,
+      "worst": -1292.25,
+      "drawdown": 1292.25,
+      "y2024": 22645.19,
+      "y2025": 7064.63
+    },
+    "skeptical": {
+      "loss_year_chance": 0.1782,
+      "year_p5": -2088.4,
+      "year_median": 3107.16,
+      "drawdown_p95": 3563.32,
+      "median_log_growth": 0.11715
+    },
+    "catastrophe": {
+      "net": -2144.87,
+      "worst": -1777.54,
+      "drawdown": 2144.87,
+      "y2024": -808.07,
+      "y2025": -1336.8
+    },
+    "passes_risk_plan": {
+      "loss_year": true,
+      "drawdown": true,
+      "severe": true
+    }
+  },
+  "PUT4": {
+    "ordinary": {
+      "net": 42686.15,
+      "worst": -1846.54,
+      "drawdown": 1846.54,
+      "y2024": 30638.68,
+      "y2025": 12047.47
+    },
+    "adverse": {
+      "net": 40240.63,
+      "worst": -1914.77,
+      "drawdown": 1914.77,
+      "y2024": 29275.07,
+      "y2025": 10965.56
+    },
+    "skeptical": {
+      "loss_year_chance": 0.1668,
+      "year_p5": -2638.6,
+      "year_median": 4167.3,
+      "drawdown_p95": 5065.69,
+      "median_log_growth": 0.15417
+    },
+    "catastrophe": {
+      "net": -2647.7,
+      "worst": -2354.32,
+      "drawdown": 2725.65,
+      "y2024": -2316.24,
+      "y2025": -331.46
+    },
+    "passes_risk_plan": {
+      "loss_year": true,
+      "drawdown": false,
+      "severe": true
+    }
+  },
+  "PE4_ONLY": {
+    "ordinary": {
+      "net": 40635.77,
+      "worst": -1846.54,
+      "drawdown": 1846.54,
+      "y2024": 29553.18,
+      "y2025": 11082.59
+    },
+    "adverse": {
+      "net": 38609.42,
+      "worst": -1914.77,
+      "drawdown": 1914.77,
+      "y2024": 28468.88,
+      "y2025": 10140.54
+    },
+    "skeptical": {
+      "loss_year_chance": 0.1613,
+      "year_p5": -2397.95,
+      "year_median": 4036.38,
+      "drawdown_p95": 4512.12,
+      "median_log_growth": 0.14967
+    },
+    "catastrophe": {
+      "net": -229.55,
+      "worst": -2354.32,
+      "drawdown": 2354.32,
+      "y2024": 0,
+      "y2025": -229.55
+    },
+    "passes_risk_plan": {
+      "loss_year": true,
+      "drawdown": true,
+      "severe": true
+    }
+  }
+}

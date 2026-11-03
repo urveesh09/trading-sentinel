@@ -943,6 +943,9 @@ class Settings(BaseSettings):
     EXPIRY_E03_SHADOW_ENABLED:       bool  = False
     # E03.1 defensive experiment; fitted, unqualified, independently funded paper only.
     EXPIRY_E031_SHADOW_ENABLED:      bool  = False
+    # E03.2: E03.1 with put tickets at twice the reserve, an 8% buy limit and every leg sold from 15:14.
+    # Fitted on seen 2024/2025, unqualified, independently funded paper only; no real orders.
+    EXPIRY_E032_SHADOW_ENABLED:      bool  = False
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3

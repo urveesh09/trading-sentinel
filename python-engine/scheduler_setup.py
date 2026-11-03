@@ -1023,7 +1023,8 @@ def register_penny_scheduler_jobs(scheduler):
             import expiry_e02
             variants = ((expiry_e02.E02, settings.EXPIRY_E02_SHADOW_ENABLED),
                         (expiry_e02.E03, settings.EXPIRY_E03_SHADOW_ENABLED),
-                        (expiry_e02.E031, settings.EXPIRY_E031_SHADOW_ENABLED))
+                        (expiry_e02.E031, settings.EXPIRY_E031_SHADOW_ENABLED),
+                        (expiry_e02.E032, settings.EXPIRY_E032_SHADOW_ENABLED))
         except Exception as exc:
             logger.error("expiry_e02_shadow_failed err=%s", type(exc).__name__, exc_info=True)
             variants = ()

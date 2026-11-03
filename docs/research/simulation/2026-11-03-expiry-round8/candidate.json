@@ -1,0 +1,27 @@
+{
+  "version": "expiry-e032-v1",
+  "play": "E032",
+  "native_suffix": ".expiry-e032.db",
+  "built_on": "expiry-e031-v1 (E02 R3 signal, four-strike pick, E03 runner, E03.1 35% stop and 1.1x floor after a 50% peak gain)",
+  "changes_from_e031": {
+    "put_ticket_reserve_multiple": 2.0,
+    "put_ticket_max_lots": 6,
+    "call_ticket": "unchanged (Rs 1,250, up to 3 lots)",
+    "day_reserve": "up to Rs 5,000 (twice E03.1's), braked as E03.1",
+    "buy_limit_above_decision_ask": 0.08,
+    "sell_everything_from": "15:14 (before the closing auction freezes the index; E03.1: 15:28)"
+  },
+  "lab_rule": {"base": "r8_lab.E031", "put_mult": 2.0, "call_mult": 1.0, "chase": 0.08, "flat": 914},
+  "evidence": {
+    "frozen_test": "round 8 PLAN.md X1b PUT2, frozen f55034b before scoring: passed",
+    "continuous_2024_2025": {"ordinary": 21517.55, "adverse": 20000.75, "severe": -2437.70, "worst_day": -646.98, "drawdown": 753.91},
+    "e031_same_book": {"ordinary": 12426.71, "adverse": 11497.60, "severe": -3234.08, "worst_day": -478.01, "drawdown": 1373.93},
+    "permutation_put_minus_call_ex_hero_one_sided_p": 0.1251,
+    "paper_parity": "78 positions, 78 sizing checks, 0 mismatches"
+  },
+  "eligibility": "RESEARCH_ONLY: both years seen; forward paired paper evidence and the frozen E03-family exam required",
+  "flag": "EXPIRY_E032_SHADOW_ENABLED",
+  "enabled": false,
+  "deployed": false,
+  "enable_sensex": false
+}

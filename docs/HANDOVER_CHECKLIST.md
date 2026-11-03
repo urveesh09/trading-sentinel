@@ -1,3 +1,10 @@
+## November 3 — E03.2 puts at 2x (commit `E032P_COMMIT`, Dev, pushed, not deployed)
+
+- [x] Round 8 frozen (`f55034b`) and scored: PUT2 pass; alignment, delta and IV-slope fail; auction hold narrowly fails.
+- [x] `expiry_e02.E032` disabled variant, own DB/cash/flag; E02/E03/E03.1 unchanged.
+- [x] Parity 78 positions + 78 sizing, 0 mismatches; focused 43 passed; full suite 6,411 passed, 4 skipped, 0 failed (742 s, exit 0); atlas regenerated.
+- [ ] Deployed: no. Owner: merge/rebuild, enable E032 beside E031, exam download, 20 forward tickets.
+
 ## November 3 — capital/payoff study pushed; sealed evidence complete
 
 Source/report de0b72b pushed and remote verified. Six primary alternatives rejected; no E03.2 candidate. 49 tests, 108 primary/control plus 60 diagnostic exact histories; native/cash audit and 54 uncached prefixes pass. Thirty-four stock receipts and pinned 854-source verification pass. Report docs/EXPIRY_RESEARCH_CAPITAL_PAYOFF.md; plan docs/research/simulation/2026-11-03-expiry-capital-payoff/PLAN.md; completed STATUS.md and completion-receipt.json. No native/config/schema/flag/actual capital/Production/download or 2023/fresh-exam change. Owner bytes and old evidence preserved. This final evidence/docs commit is post-verified/pushed after creation; original sealed guard stays pinned to source de0b72b.
