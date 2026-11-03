@@ -1,3 +1,16 @@
+## November 3 — E03.2 search done: no candidate; E03.1 stays the expiry lead (commit `E032_COMMIT`, Dev, pushed)
+
+- Problem: owner asked for an E03.2 well beyond E03/E03.1, or the learning. Plan:
+  `docs/research/simulation/2026-11-03-expiry-e032/PLAN.md` (written before the morning was scored).
+- Done: two frozen slice tests failed (morning `68db264`, late `2494709`); six in-sample directions
+  and a 677-setting leave-one-year-out genome failed. Report `docs/EXPIRY_RESEARCH_E032.md`.
+- Kept as learning: 7-8% buy limit (severe -2,486 vs -3,234, normal fills unchanged), to be frozen
+  into whichever variant the owner promotes. No runtime variant: it would not differ in normal fills.
+- Next, owner decisions only: (1) download NIFTY (and SENSEX) 2026 same-day-expiry chains as an
+  untouched exam for E03/E03.1 (new Breeze target, about 31 requests per expiry); (2) merge, rebuild
+  and enable E03/E03.1 paper shadows; (3) size at the same percentage risk only after forward tickets.
+  No more in-sample rounds on the 2024/2025 afternoons.
+
 ## November 3 — E03.1 source pushed; disabled / not deployed
 
 Implementation **65cccb7**, pushed and remote-verified on the same Dev branch; finalists frozen at 0c7f414. Report: `docs/EXPIRY_RESEARCH_E031.md`; plan/contracts: `docs/research/simulation/2026-11-03-expiry-e031/PLAN.md`. Small defensive fitted improvement, severe losses retained; no qualification. 6,118 engine tests passed / 4 skipped, 43 focused checks passed. Stock evidence helper verifies four partial shadow modules; pinned checkout verifies 854 source files and identical receipts/money. Later doc commits change HEAD, so use study `verify_evidence.py`; original guard/request/report are preserved. All 17 forward source/config hashes, owner original bytes and Production 06bed07 verified unchanged. No .env edit, existing-store migration, activation, orders or deployment. Remaining: new paired forward paper and execution evidence, then separate GitHub promotion review. No C/N11/primary-rule changes; 2023 protected.

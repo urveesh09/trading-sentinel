@@ -1,3 +1,21 @@
+## November 3 — E03.2 search: no rule beats E03.1 (Dev research, commit `E032_COMMIT`, pushed, no runtime change)
+
+Report: `docs/EXPIRY_RESEARCH_E032.md`; record and plan: `docs/research/simulation/2026-11-03-expiry-e032/`.
+- Frozen tests on never-scored slices of the 2024/2025 NIFTY expiry chains: mornings 09:30-13:00
+  (freeze `68db264`) lose in both years (E03 -3,221 / -3,505, worse than random entries); 15:00-15:15
+  (freeze `2494709`) gives 3 tickets in 2024, none in 2025. E02's edge lives only in 13:00-15:00.
+- In-sample, all rejected: house-money roll (144), earned ticket (6), near-the-money instrument (24),
+  two-/three-lot strike preference (8), leave-one-year-out genome (677: picks lose to E03.1 on the
+  unseen year; 85% / 99.7% of settings positive there). Reversed signal loses.
+- Learning kept, not shipped: a 7-8% buy limit (E03/E03.1 use 10%) leaves ordinary and adverse
+  unchanged and cuts E03.1's severe-fill loss from -3,234 to -2,486; record it for whichever variant
+  is promoted. The whole book keeps its per-rupee result to 4x (Rs 1,00,000, model only).
+- No engine, config, `.env`, schema, Production, N11/N11T, A/B/C, E02, E03 or E03.1 change; atlas
+  unchanged (no `python-engine` source touched). No download; NIFTY 2023 not opened. Verification:
+  `e032_lab.py` reproduces E03 and E03.1 day by day at all three fill levels; both freezes verify.
+- Remaining (owner): a fresh exam needs NIFTY/SENSEX 2026 same-day-expiry chains (not in the
+  database; new Breeze target needs the owner's word); forward paper for E03/E03.1; size only after.
+
 ## November 3 — E03.1 source pushed; disabled / not deployed
 
 Implementation **65cccb7**, pushed and remote-verified on the same Dev branch; finalists frozen at 0c7f414. Report: `docs/EXPIRY_RESEARCH_E031.md`; plan/contracts: `docs/research/simulation/2026-11-03-expiry-e031/PLAN.md`. Small defensive fitted improvement, severe losses retained; no qualification. 6,118 engine tests passed / 4 skipped, 43 focused checks passed. Stock evidence helper verifies four partial shadow modules; pinned checkout verifies 854 source files and identical receipts/money. Later doc commits change HEAD, so use study `verify_evidence.py`; original guard/request/report are preserved. All 17 forward source/config hashes, owner original bytes and Production 06bed07 verified unchanged. No .env edit, existing-store migration, activation, orders or deployment. Remaining: new paired forward paper and execution evidence, then separate GitHub promotion review. No C/N11/primary-rule changes; 2023 protected.

@@ -1,0 +1,878 @@
+{
+  "freeze_head": "68db264d437f144431cd2bd8ca3045875f394a5a",
+  "arms": {
+    "L_E02|2024|ordinary": {
+      "net": 1536.13,
+      "without_best": -470.41,
+      "worst": -343.46,
+      "drawdown": 470.41,
+      "trades": 3,
+      "profit_factor": 4.2655,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        2006.54,
+        -126.95,
+        0,
+        -343.46
+      ],
+      "first_half": 1879.59,
+      "second_half": -343.46,
+      "fees": 150.62,
+      "unresolved": 0
+    },
+    "L_E02|2024|adverse": {
+      "net": 1445.21,
+      "without_best": -506.15,
+      "worst": -353.21,
+      "drawdown": 506.15,
+      "trades": 3,
+      "profit_factor": 3.8553,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        1951.36,
+        -152.94,
+        0,
+        -353.21
+      ],
+      "first_half": 1798.42,
+      "second_half": -353.21,
+      "fees": 150.54,
+      "unresolved": 0
+    },
+    "L_E02|2024|catastrophe": {
+      "net": -421.39,
+      "without_best": -421.39,
+      "worst": -421.39,
+      "drawdown": 421.39,
+      "trades": 1,
+      "profit_factor": 0.0,
+      "wins": 0,
+      "loss_days": 1,
+      "quarters": [
+        0,
+        0,
+        0,
+        -421.39
+      ],
+      "first_half": 0,
+      "second_half": -421.39,
+      "fees": 47.64,
+      "unresolved": 0
+    },
+    "L_E02|2025|ordinary": {
+      "net": 0,
+      "without_best": 0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 0,
+      "profit_factor": 99.0,
+      "wins": 0,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_half": 0,
+      "second_half": 0,
+      "fees": 0,
+      "unresolved": 0
+    },
+    "L_E02|2025|adverse": {
+      "net": 0,
+      "without_best": 0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 0,
+      "profit_factor": 99.0,
+      "wins": 0,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_half": 0,
+      "second_half": 0,
+      "fees": 0,
+      "unresolved": 0
+    },
+    "L_E02|2025|catastrophe": {
+      "net": 0,
+      "without_best": 0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 0,
+      "profit_factor": 99.0,
+      "wins": 0,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_half": 0,
+      "second_half": 0,
+      "fees": 0,
+      "unresolved": 0
+    },
+    "L_E02|both|ordinary": {
+      "net": 1536.13,
+      "without_best": -470.41,
+      "worst": -343.46,
+      "drawdown": 470.41,
+      "trades": 3,
+      "profit_factor": 4.2655,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        2006.54,
+        -126.95,
+        0,
+        -343.46
+      ],
+      "first_half": 1879.59,
+      "second_half": -343.46,
+      "fees": 150.62,
+      "unresolved": 0
+    },
+    "L_E02|both|adverse": {
+      "net": 1445.21,
+      "without_best": -506.15,
+      "worst": -353.21,
+      "drawdown": 506.15,
+      "trades": 3,
+      "profit_factor": 3.8553,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        1951.36,
+        -152.94,
+        0,
+        -353.21
+      ],
+      "first_half": 1798.42,
+      "second_half": -353.21,
+      "fees": 150.54,
+      "unresolved": 0
+    },
+    "L_E02|both|catastrophe": {
+      "net": -421.39,
+      "without_best": -421.39,
+      "worst": -421.39,
+      "drawdown": 421.39,
+      "trades": 1,
+      "profit_factor": 0.0,
+      "wins": 0,
+      "loss_days": 1,
+      "quarters": [
+        0,
+        0,
+        0,
+        -421.39
+      ],
+      "first_half": 0,
+      "second_half": -421.39,
+      "fees": 47.64,
+      "unresolved": 0
+    },
+    "L_E03|2024|ordinary": {
+      "net": 1239.87,
+      "without_best": -766.67,
+      "worst": -639.72,
+      "drawdown": 766.67,
+      "trades": 3,
+      "profit_factor": 2.6172,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        2006.54,
+        -126.95,
+        0,
+        -639.72
+      ],
+      "first_half": 1879.59,
+      "second_half": -639.72,
+      "fees": 151.13,
+      "unresolved": 0
+    },
+    "L_E03|2024|adverse": {
+      "net": 1139.2,
+      "without_best": -812.16,
+      "worst": -659.22,
+      "drawdown": 812.16,
+      "trades": 3,
+      "profit_factor": 2.4027,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        1951.36,
+        -152.94,
+        0,
+        -659.22
+      ],
+      "first_half": 1798.42,
+      "second_half": -659.22,
+      "fees": 151.05,
+      "unresolved": 0
+    },
+    "L_E03|2024|catastrophe": {
+      "net": -795.58,
+      "without_best": -795.58,
+      "worst": -795.58,
+      "drawdown": 795.58,
+      "trades": 1,
+      "profit_factor": 0.0,
+      "wins": 0,
+      "loss_days": 1,
+      "quarters": [
+        0,
+        0,
+        0,
+        -795.58
+      ],
+      "first_half": 0,
+      "second_half": -795.58,
+      "fees": 48.08,
+      "unresolved": 0
+    },
+    "L_E03|2025|ordinary": {
+      "net": 0,
+      "without_best": 0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 0,
+      "profit_factor": 99.0,
+      "wins": 0,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_half": 0,
+      "second_half": 0,
+      "fees": 0,
+      "unresolved": 0
+    },
+    "L_E03|2025|adverse": {
+      "net": 0,
+      "without_best": 0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 0,
+      "profit_factor": 99.0,
+      "wins": 0,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_half": 0,
+      "second_half": 0,
+      "fees": 0,
+      "unresolved": 0
+    },
+    "L_E03|2025|catastrophe": {
+      "net": 0,
+      "without_best": 0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 0,
+      "profit_factor": 99.0,
+      "wins": 0,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_half": 0,
+      "second_half": 0,
+      "fees": 0,
+      "unresolved": 0
+    },
+    "L_E03|both|ordinary": {
+      "net": 1239.87,
+      "without_best": -766.67,
+      "worst": -639.72,
+      "drawdown": 766.67,
+      "trades": 3,
+      "profit_factor": 2.6172,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        2006.54,
+        -126.95,
+        0,
+        -639.72
+      ],
+      "first_half": 1879.59,
+      "second_half": -639.72,
+      "fees": 151.13,
+      "unresolved": 0
+    },
+    "L_E03|both|adverse": {
+      "net": 1139.2,
+      "without_best": -812.16,
+      "worst": -659.22,
+      "drawdown": 812.16,
+      "trades": 3,
+      "profit_factor": 2.4027,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        1951.36,
+        -152.94,
+        0,
+        -659.22
+      ],
+      "first_half": 1798.42,
+      "second_half": -659.22,
+      "fees": 151.05,
+      "unresolved": 0
+    },
+    "L_E03|both|catastrophe": {
+      "net": -795.58,
+      "without_best": -795.58,
+      "worst": -795.58,
+      "drawdown": 795.58,
+      "trades": 1,
+      "profit_factor": 0.0,
+      "wins": 0,
+      "loss_days": 1,
+      "quarters": [
+        0,
+        0,
+        0,
+        -795.58
+      ],
+      "first_half": 0,
+      "second_half": -795.58,
+      "fees": 48.08,
+      "unresolved": 0
+    },
+    "L_E031|2024|ordinary": {
+      "net": 1505.86,
+      "without_best": -500.68,
+      "worst": -373.73,
+      "drawdown": 500.68,
+      "trades": 3,
+      "profit_factor": 4.0076,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        2006.54,
+        -126.95,
+        0,
+        -373.73
+      ],
+      "first_half": 1879.59,
+      "second_half": -373.73,
+      "fees": 151.64,
+      "unresolved": 0
+    },
+    "L_E031|2024|adverse": {
+      "net": 1405.19,
+      "without_best": -546.17,
+      "worst": -393.23,
+      "drawdown": 546.17,
+      "trades": 3,
+      "profit_factor": 3.5728,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        1951.36,
+        -152.94,
+        0,
+        -393.23
+      ],
+      "first_half": 1798.42,
+      "second_half": -393.23,
+      "fees": 151.56,
+      "unresolved": 0
+    },
+    "L_E031|2024|catastrophe": {
+      "net": -795.58,
+      "without_best": -795.58,
+      "worst": -795.58,
+      "drawdown": 795.58,
+      "trades": 1,
+      "profit_factor": 0.0,
+      "wins": 0,
+      "loss_days": 1,
+      "quarters": [
+        0,
+        0,
+        0,
+        -795.58
+      ],
+      "first_half": 0,
+      "second_half": -795.58,
+      "fees": 48.08,
+      "unresolved": 0
+    },
+    "L_E031|2025|ordinary": {
+      "net": 0,
+      "without_best": 0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 0,
+      "profit_factor": 99.0,
+      "wins": 0,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_half": 0,
+      "second_half": 0,
+      "fees": 0,
+      "unresolved": 0
+    },
+    "L_E031|2025|adverse": {
+      "net": 0,
+      "without_best": 0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 0,
+      "profit_factor": 99.0,
+      "wins": 0,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_half": 0,
+      "second_half": 0,
+      "fees": 0,
+      "unresolved": 0
+    },
+    "L_E031|2025|catastrophe": {
+      "net": 0,
+      "without_best": 0,
+      "worst": 0,
+      "drawdown": 0.0,
+      "trades": 0,
+      "profit_factor": 99.0,
+      "wins": 0,
+      "loss_days": 0,
+      "quarters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "first_half": 0,
+      "second_half": 0,
+      "fees": 0,
+      "unresolved": 0
+    },
+    "L_E031|both|ordinary": {
+      "net": 1505.86,
+      "without_best": -500.68,
+      "worst": -373.73,
+      "drawdown": 500.68,
+      "trades": 3,
+      "profit_factor": 4.0076,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        2006.54,
+        -126.95,
+        0,
+        -373.73
+      ],
+      "first_half": 1879.59,
+      "second_half": -373.73,
+      "fees": 151.64,
+      "unresolved": 0
+    },
+    "L_E031|both|adverse": {
+      "net": 1405.19,
+      "without_best": -546.17,
+      "worst": -393.23,
+      "drawdown": 546.17,
+      "trades": 3,
+      "profit_factor": 3.5728,
+      "wins": 1,
+      "loss_days": 2,
+      "quarters": [
+        1951.36,
+        -152.94,
+        0,
+        -393.23
+      ],
+      "first_half": 1798.42,
+      "second_half": -393.23,
+      "fees": 151.56,
+      "unresolved": 0
+    },
+    "L_E031|both|catastrophe": {
+      "net": -795.58,
+      "without_best": -795.58,
+      "worst": -795.58,
+      "drawdown": 795.58,
+      "trades": 1,
+      "profit_factor": 0.0,
+      "wins": 0,
+      "loss_days": 1,
+      "quarters": [
+        0,
+        0,
+        0,
+        -795.58
+      ],
+      "first_half": 0,
+      "second_half": -795.58,
+      "fees": 48.08,
+      "unresolved": 0
+    }
+  },
+  "random": {
+    "2024": {
+      "actual": 1239.87,
+      "median": 319.54,
+      "mean": 362.02,
+      "p95": 4652.13,
+      "share_at_or_above": 0.35
+    },
+    "2025": {
+      "actual": 0,
+      "median": 0.0,
+      "mean": -36.33,
+      "p95": 686.42,
+      "share_at_or_above": 0.675
+    }
+  },
+  "tickets": {
+    "L_E02|ordinary": [
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22350-PE",
+        "entry_minute": 908,
+        "entry": 18.2,
+        "lots": 1,
+        "peak": 44.35,
+        "net": 2006.54,
+        "exits": [
+          [
+            "TARGET",
+            49.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22400-CE",
+        "entry_minute": 906,
+        "entry": 12.35,
+        "lots": 1,
+        "peak": 19.2,
+        "net": -126.95,
+        "exits": [
+          [
+            "STOP",
+            11.15,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-12-05",
+        "symbol": "NIFTY-2024-12-05-24750-CE",
+        "entry_minute": 910,
+        "entry": 7.0,
+        "lots": 1,
+        "peak": 7.55,
+        "net": -343.46,
+        "exits": [
+          [
+            "STOP",
+            2.45,
+            1
+          ]
+        ]
+      }
+    ],
+    "L_E02|adverse": [
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22350-PE",
+        "entry_minute": 908,
+        "entry": 18.45,
+        "lots": 1,
+        "peak": 44.35,
+        "net": 1951.36,
+        "exits": [
+          [
+            "TARGET",
+            49.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22400-CE",
+        "entry_minute": 906,
+        "entry": 12.55,
+        "lots": 1,
+        "peak": 19.2,
+        "net": -152.94,
+        "exits": [
+          [
+            "STOP",
+            10.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-12-05",
+        "symbol": "NIFTY-2024-12-05-24750-CE",
+        "entry_minute": 910,
+        "entry": 7.1,
+        "lots": 1,
+        "peak": 7.55,
+        "net": -353.21,
+        "exits": [
+          [
+            "STOP",
+            2.4,
+            1
+          ]
+        ]
+      }
+    ],
+    "L_E03|ordinary": [
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22350-PE",
+        "entry_minute": 908,
+        "entry": 18.2,
+        "lots": 1,
+        "peak": 44.35,
+        "net": 2006.54,
+        "exits": [
+          [
+            "TARGET",
+            49.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22400-CE",
+        "entry_minute": 906,
+        "entry": 12.35,
+        "lots": 1,
+        "peak": 19.2,
+        "net": -126.95,
+        "exits": [
+          [
+            "STOP",
+            11.15,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-12-05",
+        "symbol": "NIFTY-2024-12-05-24750-CE",
+        "entry_minute": 910,
+        "entry": 7.0,
+        "lots": 2,
+        "peak": 7.55,
+        "net": -639.72,
+        "exits": [
+          [
+            "STOP",
+            2.45,
+            2
+          ]
+        ]
+      }
+    ],
+    "L_E03|adverse": [
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22350-PE",
+        "entry_minute": 908,
+        "entry": 18.45,
+        "lots": 1,
+        "peak": 44.35,
+        "net": 1951.36,
+        "exits": [
+          [
+            "TARGET",
+            49.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22400-CE",
+        "entry_minute": 906,
+        "entry": 12.55,
+        "lots": 1,
+        "peak": 19.2,
+        "net": -152.94,
+        "exits": [
+          [
+            "STOP",
+            10.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-12-05",
+        "symbol": "NIFTY-2024-12-05-24750-CE",
+        "entry_minute": 910,
+        "entry": 7.1,
+        "lots": 2,
+        "peak": 7.55,
+        "net": -659.22,
+        "exits": [
+          [
+            "STOP",
+            2.4,
+            2
+          ]
+        ]
+      }
+    ],
+    "L_E031|ordinary": [
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22350-PE",
+        "entry_minute": 908,
+        "entry": 18.2,
+        "lots": 1,
+        "peak": 44.35,
+        "net": 2006.54,
+        "exits": [
+          [
+            "TARGET",
+            49.9,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22400-CE",
+        "entry_minute": 906,
+        "entry": 12.35,
+        "lots": 1,
+        "peak": 19.2,
+        "net": -126.95,
+        "exits": [
+          [
+            "TRAIL",
+            11.15,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-12-05",
+        "symbol": "NIFTY-2024-12-05-24750-CE",
+        "entry_minute": 910,
+        "entry": 7.0,
+        "lots": 2,
+        "peak": 7.55,
+        "net": -373.73,
+        "exits": [
+          [
+            "STOP",
+            4.5,
+            2
+          ]
+        ]
+      }
+    ],
+    "L_E031|adverse": [
+      {
+        "day": "2024-03-28",
+        "symbol": "NIFTY-2024-03-28-22350-PE",
+        "entry_minute": 908,
+        "entry": 18.45,
+        "lots": 1,
+        "peak": 44.35,
+        "net": 1951.36,
+        "exits": [
+          [
+            "TARGET",
+            49.3,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-05-16",
+        "symbol": "NIFTY-2024-05-16-22400-CE",
+        "entry_minute": 906,
+        "entry": 12.55,
+        "lots": 1,
+        "peak": 19.2,
+        "net": -152.94,
+        "exits": [
+          [
+            "TRAIL",
+            10.95,
+            1
+          ]
+        ]
+      },
+      {
+        "day": "2024-12-05",
+        "symbol": "NIFTY-2024-12-05-24750-CE",
+        "entry_minute": 910,
+        "entry": 7.1,
+        "lots": 2,
+        "peak": 7.55,
+        "net": -393.23,
+        "exits": [
+          [
+            "STOP",
+            4.45,
+            2
+          ]
+        ]
+      }
+    ]
+  },
+  "verdict": {
+    "checks": {
+      "positive_ordinary_2024": true,
+      "positive_adverse_2024": true,
+      "ex_best_ordinary_2024": false,
+      "worst_day_2024": true,
+      "beats_random_median_2024": true,
+      "positive_ordinary_2025": false,
+      "positive_adverse_2025": false,
+      "ex_best_ordinary_2025": false,
+      "worst_day_2025": true,
+      "beats_random_median_2025": false
+    },
+    "passed": false
+  }
+}

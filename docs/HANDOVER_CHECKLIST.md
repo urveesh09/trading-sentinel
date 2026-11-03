@@ -1,3 +1,13 @@
+## November 3 — E03.2 search (commit `E032_COMMIT`, Dev, pushed, research only)
+
+- [x] Morning 09:30-13:00 frozen test (`68db264`): FAIL in both years, worse than random entries.
+- [x] Late 15:00-15:15 frozen test (`2494709`): FAIL (3 tickets in 2024, none in 2025).
+- [x] In-sample: roll 144, earned ticket 6, near-the-money 24, lot preference 8, genome 677: all
+  rejected; ledgers `trials.csv`, `genome-trials.csv`, `diagnostics.json`.
+- [x] Learning: 7-8% buy limit cuts the severe-fill loss by about a quarter, normal fills unchanged.
+- [x] No runtime, config, schema or Production change; atlas unchanged; 2023 not opened; no download.
+- [ ] Owner: fresh 2026 same-day-expiry chains (new Breeze target), forward paper for E03/E03.1.
+
 ## November 3 — E03.1 source pushed; disabled / not deployed
 
 Implementation **65cccb7**, pushed and remote-verified on the same Dev branch; finalists frozen at 0c7f414. Report: `docs/EXPIRY_RESEARCH_E031.md`; plan/contracts: `docs/research/simulation/2026-11-03-expiry-e031/PLAN.md`. Small defensive fitted improvement, severe losses retained; no qualification. 6,118 engine tests passed / 4 skipped, 43 focused checks passed. Stock evidence helper verifies four partial shadow modules; pinned checkout verifies 854 source files and identical receipts/money. Later doc commits change HEAD, so use study `verify_evidence.py`; original guard/request/report are preserved. All 17 forward source/config hashes, owner original bytes and Production 06bed07 verified unchanged. No .env edit, existing-store migration, activation, orders or deployment. Remaining: new paired forward paper and execution evidence, then separate GitHub promotion review. No C/N11/primary-rule changes; 2023 protected.
