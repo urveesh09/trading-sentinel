@@ -1,0 +1,20 @@
+{
+  "original_helper_current_checkout_errors": [
+    "Policy source or Git SHA changed after freeze"
+  ],
+  "pinned_helper_verified": true,
+  "pinned_helper_errors": [],
+  "pinned_source_commit": "4caa79cec3f19c5bd2489dfb1eff13e4a8d938d3",
+  "pinned_checkout": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-year\\_local\\audit-checkout",
+  "pinned_report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-year\\_local\\audit-checkout\\docs\\research\\simulation\\2026-11-03-expiry-year\\evidence\\REPORT.md",
+  "current_and_pinned_runtime_source_hashes_match": true,
+  "unchanged_source_files": 850,
+  "candidate_input_freeze": "99d3de3",
+  "candidate_and_raw_data_guard": "PASS",
+  "original_report_sha256": "49fd735a6ac2e41273594c40f224b477c1cd5d804ee1dd69a0cb2083d807fd3f",
+  "pinned_report_sha256": "23198e55717f2e7254ba16d9bdd9165477136fb34d898456e2a3f46d8d11681c",
+  "receipts_and_money_identical": true,
+  "helper_changed": false,
+  "newline_equivalent_files_restored": 726,
+  "limitation": "Pinned receipt is a post-score archive verification, not a new untouched strategy exam. Original report and its moving-HEAD failure are preserved."
+}

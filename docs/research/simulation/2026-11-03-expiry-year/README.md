@@ -11,6 +11,8 @@ at `65a11f1`. Source/input/candidate freeze: **`99d3de3`**; documentation receip
 checkout is `06bed07`, and the earlier release receipt already records E01.1 as
 paper main C. This task did not change or deploy Production, touch N11/N11T,
 call Breeze/Kite, change capital/settings/schema or send a message.
+Completed scores/report were committed and pushed as **`22a19f4`**. The following
+verification receipt adds no strategy or result change.
 
 ## What was actually available
 
@@ -215,6 +217,18 @@ Snapshot/freeze commands must not be used to re-seal these now-seen windows as
 untouched. Detailed command status and final verification live in
 `verification.json`; the skill-format report is under `evidence/`.
 
+**Archive verification after committing the report:** the stock evidence helper
+also pins the checkout's Git HEAD. Its moving-checkout check therefore fails
+after `22a19f4` saves the report, despite all 850 runtime source hashes matching.
+The original report and this HEAD-only failure are retained. `verify_archive.py`
+runs the unmodified helper in an isolated sparse Dev worktree pinned to
+`4caa79c`, restores only Git-for-Windows newline-equivalent snapshot bytes, and
+verifies identical receipt/money values with zero errors. It also rechecks every
+candidate/input hash against the actual pre-score freeze. No original request,
+freeze, report or guard is edited. The proof is [pinned-audit.json](pinned-audit.json).
+Run `verify_archive.py` for an after-commit check; its pinned local report is
+under `_local/audit-checkout/docs/research/simulation/2026-11-03-expiry-year/evidence/`.
+
 ## What should change next
 
 **Keep E01.1 as paper main, with its current shadows; no additional trading-rule
@@ -234,4 +248,6 @@ comparison, not permission to find a better threshold on 2025/2026. N11's lesson
 is to test when a trade deserves admission; copying its filters into expiry
 without an expiry-specific exam would merely create another untested rule.
 All 2025/2026 outcomes opened here are now seen forever. Keep 2023 protected and
-use genuinely new full-chain/forward paired tickets for the next decision.
+use genuinely new full-chain/forward paired tickets for the next decision. The
+forward bar remains at least 20 new paired tickets, with five per index; the
+overlapping conditional panel cannot satisfy that requirement.

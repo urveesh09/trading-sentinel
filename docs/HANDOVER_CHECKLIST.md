@@ -1,3 +1,16 @@
+## November 3 — E01.1 research commit and archive verification receipt
+
+Scores/report pushed as `22a19f4`; pre-score freeze `99d3de3`, documentation
+receipt `4caa79c`. Report and continuation: `docs/research/simulation/2026-11-03-expiry-year/README.md`.
+Both proposed new exits failed; the paper rule stays unchanged. The final audit
+checks 139 passing expiry/research tests and 4,032 comparison records. The stock
+helper's moving-checkout check flags the new report commit itself (HEAD changed,
+all 850 policy source hashes unchanged). `verify_archive.py` verifies the same
+receipt/money with the unmodified helper at pinned `4caa79c`; proof in
+`pinned-audit.json`. Original report/failure retained, no guard relaxed. This
+receipt changes no strategy, configuration, schema, N11, Production or capital;
+no deployment. Owner working changes remain unstaged and preserved.
+
 ## November 3 — E01.1 new-history completion
 
 - [x] Freeze `99d3de3` before validation/2025 results; report: `docs/research/simulation/2026-11-03-expiry-year/README.md`.

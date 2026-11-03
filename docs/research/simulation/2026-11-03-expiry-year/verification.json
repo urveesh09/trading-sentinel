@@ -74,6 +74,27 @@
       "exit": 0,
       "runtime_modules": 294,
       "diff": false
+    },
+    {
+      "command": "Post-commit stock simulation_evidence.py verify in moving Dev checkout",
+      "exit": 2,
+      "explanation": "HEAD-only mismatch after committing evidence; all 850 policy source files unchanged; original report retained"
+    },
+    {
+      "command": "verify_archive.py initial sparse-checkout check",
+      "exit": 1,
+      "explanation": "Git for Windows converted LF to CRLF; all differences were newline-only; exact frozen bytes restored in pinned Dev copy only"
+    },
+    {
+      "command": "verify_archive.py with exact frozen newline bytes",
+      "exit": 0,
+      "unchanged_policy_source_files": 850,
+      "receipts_and_money_identical": true,
+      "helper_changed": false
+    },
+    {
+      "command": "git push origin HEAD:codex/production-correction-hedge-p0 at 22a19f4",
+      "exit": 0
     }
   ],
   "production_checkout_unchanged": "06bed07e05a32bc4394aff7ba70990faa745a8ec",
@@ -97,6 +118,8 @@
     "results-test2025.json": "9b8a63104a4c50575b635424852a3dc309a2df17bf7619445024b1f267ebdcf6",
     "results-validation.json": "bf44f0dba72a44813aa27cd4408bb5d30bbe3a888e22fc99124b10d3e1298ad2"
   },
-  "status_at_receipt": "Research source freeze committed locally; completed score/report commit pending; no push or deployment in this task yet",
-  "documentation_check_correction": "Initial post-freeze doc check found the checklist lacked a direct plan path; fixed in 4caa79c before scoring; recheck passed."
+  "status_at_receipt": "Score/report commit 22a19f4 pushed on codex/production-correction-hedge-p0; final verification-only receipt follows; no runtime changes or deployment.",
+  "documentation_check_correction": "Initial post-freeze doc check found the checklist lacked a direct plan path; fixed in 4caa79c before scoring; recheck passed.",
+  "results_commit": "22a19f4",
+  "archive_verification": "PASS in exact pinned source checkout; original moving-HEAD helper rejection is retained explicitly"
 }
