@@ -70,6 +70,32 @@ About the stories of Rs 20 lakh becoming Rs 10 crore in a day: the auction does 
 (SENSEX +346 points on October 15, -357 on September 3), and someone holding the right cheap ticket wins
 hugely. On average, those tickets lose, and nobody hears from the people who held the wrong ones.
 
+## Round 2: buy on trend, sell when quiet? And how much risk is worth it?
+
+**Two-sided book:** sell premium only on afternoons with no trend, and let E03.1 buy the trend. Failed.
+Across 20 settings it was positive in both years in at most 2. In 2025 even the quiet afternoons moved more
+than the options had priced, so the seller lost anyway. Added to E03.1 it raised profit but multiplied the
+worst drawdown about eight times.
+
+**The risk dial**, by calculation on the same Rs 25,000:
+
+| Size | 2-year profit | Worst day | Bad fills | Chance of a losing year (skeptical) |
+|---|---:|---:|---:|---:|
+| 1x (E03.1) | +12,427 | -478 | -3,234 | 27% |
+| 1.5x | +13,634 | -726 | -4,702 | 33% |
+| 2x | +23,371 | -1,107 | -7,175 | 32% |
+| 4x | +49,591 | -2,166 | -15,410 | 28% |
+
+"Skeptical" removes the best day and halves the average day, because the two years helped build the rule.
+By the limits fixed in advance (a losing-year chance of at most 30%, a bad-case drawdown of at most Rs 5,000,
+bad fills costing at most Rs 6,250), **the size stays 1x for now**. Two things to know:
+
+- **Never 1.5x.** Lot sizes round so badly that 50% more risk buys 10% more profit. The other agent's
+  extra lot fell into the same trap. The efficient step up is 2x.
+- **Doubling becomes worth it once the edge is proven on fresh data.** The plan: after the frozen exam on
+  the approved download and 20 new paper tickets, run the same calculation on that data only. If 2x passes,
+  that is the sizing proposal.
+
 ## What happens next (your decisions)
 
 1. The E03-family exam already frozen for the approved download stays the fair test of the buyer's edge.

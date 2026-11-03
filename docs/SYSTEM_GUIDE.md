@@ -1,3 +1,16 @@
+## November 3 — two-sided expiry book and E03.1 risk dial (Dev research, commit `DIAL_COMMIT`, pushed, no runtime change)
+
+Report: `docs/EXPIRY_RESEARCH_AUCTION.md` (round 2); record: `docs/research/simulation/2026-11-03-expiry-auction/`.
+- Two-sided (`TWOSIDED_PLAN.md`, frozen `140baeb`): the iron-butterfly seller only on quiet afternoons
+  (no E03.1 signal since 13:00, or 30-min efficiency < 0.3), 20-arm plateau: 2 / 0 of 20 arms positive in
+  both years. Failed; adding the central arm to E03.1 lifts the drawdown from 1,374 to 11,749.
+- Risk dial (`RISK_PLAN.md`, frozen `06fb77f`): E03.1 at 1-4x on the same Rs 25,000 with scaled brakes,
+  exact replays plus a skeptical bootstrap. Recommended 1x: no larger size meets loss-year <= 30%,
+  skeptical p95 drawdown <= 5,000, severe >= -6,250. 2x: +23,371 / severe -7,175; 1.5x is a lot-rounding
+  cliff (+13,634). Next size step, after the frozen exam and 20 forward tickets, is 2x if the same
+  calculation on fresh data passes.
+- No engine, config, `.env`, schema, Production, N11/N11T, A/B/C/D or E-variant change; atlas unchanged.
+
 ## November 3 — anticipation research/evidence remote-verified; trigger disclosure clarified
 
 Source 22f8845 and evidence 23e94d9 pushed/remote verified. Report clarifies that target labels count filled exits after a 2x/5x bid trigger, while final prices may differ; all cash/return models use actual later fills and fees. No strategy, label, score, freeze or original sealed receipt changed. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; completed STATUS.md. 53 tests, 111 histories, 1,580 repeated native positions, 37,574 labels and 210 prefixes verified; 38 receipts/854 pinned sources. No native config/schema/flag/actual risk/Production or download change; final docs push follows.

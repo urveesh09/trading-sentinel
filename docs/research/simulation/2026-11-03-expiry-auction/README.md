@@ -63,6 +63,43 @@ held to 15:28 or stopped when the cost to close reaches 1.5x or 2x the credit. 1
   to 14:15. Whether selling paid depended on the year's afternoon regime, not on a stable edge.
 - On the 9 Production days, closing after the auction (+7,473) beat closing at 15:14 (+2,701).
 
+## Round 2 (same day): the two-sided book and the risk dial
+
+After the other agent's anticipation study (`82d8283`: 16 pre-move features, calibrated forecasts and an
+extra-lot test, nothing robust), the owner allowed more risk if the extra money covers it.
+
+**Two-sided book** ([TWOSIDED_PLAN.md](TWOSIDED_PLAN.md), frozen `140baeb`, `twosided-results.json`): the
+seller only on afternoons with no trend at the decision (`NOSIG`: E03.1's signal has not fired since
+13:00; `LOWEFF`: 30-minute efficiency below 0.3), on a strict 20-arm plateau. **Failed:** positive in both
+years in 2 of 20 arms (`NOSIG`) and 0 of 20 (`LOWEFF`); 2025's quiet afternoons lose for the seller too, so
+the seller's year depends on how afternoons moved against their price, not on a visible trend. Added to
+E03.1 day by day, the central arm raises the ordinary sum to +35,046 but the drawdown from 1,374 to 11,749
+(day correlation -0.23).
+
+**Risk dial** ([RISK_PLAN.md](RISK_PLAN.md), frozen `06fb77f`, `riskdial-results.json`): E03.1 at size `k`
+on the same Rs 25,000, exact replays, brakes scaled with `k`, then a skeptical bootstrap (best day removed,
+half the average day subtracted; 20,000 years of 52 expiries in blocks of four).
+
+| k | Ordinary | Adverse | Severe | Worst day | Drawdown | Skeptical loss-year chance | Skeptical p95 drawdown |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | +12,427 | +11,498 | -3,234 | -478 | 1,374 | 27.1% | 2,995 |
+| 1.5 | +13,634 | +12,942 | -4,702 | -726 | 2,242 | 33.2% | 4,335 |
+| 2 | +23,371 | +21,351 | -7,175 | -1,107 | 2,529 | 32.1% | 5,764 |
+| 2.5 | +25,965 | +24,710 | -9,523 | -1,319 | 3,396 | 31.8% | 7,633 |
+| 3 | +33,814 | +30,112 | -9,680 | -1,531 | 3,961 | 35.9% | 9,561 |
+| 4 | +49,591 | +45,308 | -15,410 | -2,166 | 5,249 | 28.0% | 11,089 |
+
+**Recommended by the frozen rule: 1x.** No larger size meets all three limits. Ordinary profit per rupee of
+worst day is highest at 1x (26.0) and lowest at 1.5x (18.8): lot rounding makes 1.5x a cliff (the other
+agent's +25% extra lot sits on the same cliff); 2x is the efficient next step (21.1). Even at 1x the
+skeptical median year is only +1,277 with a 27% chance of a losing year: the edge is thin once its seen-data
+optimism is removed.
+
+**The path to more size (a plan, not a rule change):** after the frozen E03-family exam
+(`2026-11-03-expiry-e032/EXAM_E03_FAMILY.md`) and at least 20 closed forward E03.1 paper tickets, rerun
+`riskdial.py`'s calculation on that fresh data only, unskeptical, with the same three limits; the largest
+passing `k` (skipping 1.5x) becomes the owner's sizing proposal.
+
 ## What this says
 
 On expiry day the price already carries what the market knows: the auction's direction within minutes of
@@ -85,4 +122,6 @@ python auction.py score      # refuses unless freeze-v2.json is committed and ev
 python corrected.py          # post-score diagnostic, frozen level read at 15:15
 python seller.py score       # refuses unless freeze-seller.json is committed and every hash matches
 python seller_diag.py        # in-sample neighbourhood
+python twosided.py score     # refuses unless freeze-twosided.json is committed and every hash matches
+python riskdial.py score     # refuses unless freeze-riskdial.json is committed and every hash matches
 ```

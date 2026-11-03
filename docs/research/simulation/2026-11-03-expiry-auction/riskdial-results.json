@@ -1,0 +1,318 @@
+{
+  "freeze_head": "140baeb17ccb0392843c6175a4a198d68a60c110",
+  "sizes": {
+    "1.0": {
+      "ordinary": {
+        "net": 12426.71,
+        "worst_day": -478.01,
+        "drawdown": 1373.93,
+        "tickets": 41,
+        "braked_days": 0,
+        "year_2024": 8897.97,
+        "year_2025": 3528.74
+      },
+      "adverse": {
+        "net": 11497.6,
+        "worst_day": -537.55,
+        "drawdown": 1387.14,
+        "tickets": 41,
+        "braked_days": 0,
+        "year_2024": 8271.27,
+        "year_2025": 3226.33
+      },
+      "skeptical": {
+        "loss_year_chance": 0.2706,
+        "year_p5": -1992.87,
+        "year_median": 1276.98,
+        "drawdown_p95": 2994.62,
+        "median_log_growth": 0.04982
+      },
+      "plain_adverse": {
+        "loss_year_chance": 0.0415,
+        "year_p5": 195.68,
+        "year_median": 4910.06,
+        "drawdown_p95": 1879.18,
+        "median_log_growth": 0.17932
+      },
+      "catastrophe": {
+        "net": -3234.08,
+        "worst_day": -646.89,
+        "drawdown": 3234.08,
+        "tickets": 15,
+        "braked_days": 88,
+        "year_2024": -2583.27,
+        "year_2025": -650.81
+      },
+      "per_rupee": {
+        "net_per_worst_day": 26.0,
+        "net_per_drawdown": 9.04
+      },
+      "passes": {
+        "loss_year": true,
+        "drawdown": true,
+        "severe": true
+      }
+    },
+    "1.5": {
+      "ordinary": {
+        "net": 13633.61,
+        "worst_day": -726.03,
+        "drawdown": 2241.66,
+        "tickets": 43,
+        "braked_days": 0,
+        "year_2024": 8684.01,
+        "year_2025": 4949.6
+      },
+      "adverse": {
+        "net": 12942.26,
+        "worst_day": -765.02,
+        "drawdown": 2206.42,
+        "tickets": 42,
+        "braked_days": 0,
+        "year_2024": 8324.51,
+        "year_2025": 4617.75
+      },
+      "skeptical": {
+        "loss_year_chance": 0.3318,
+        "year_p5": -3195.02,
+        "year_median": 1259.59,
+        "drawdown_p95": 4334.63,
+        "median_log_growth": 0.04916
+      },
+      "plain_adverse": {
+        "loss_year_chance": 0.0724,
+        "year_p5": -514.55,
+        "year_median": 5644.52,
+        "drawdown_p95": 2873.96,
+        "median_log_growth": 0.20358
+      },
+      "catastrophe": {
+        "net": -4702.33,
+        "worst_day": -1218.45,
+        "drawdown": 4817.14,
+        "tickets": 15,
+        "braked_days": 84,
+        "year_2024": -4817.14,
+        "year_2025": 114.81
+      },
+      "per_rupee": {
+        "net_per_worst_day": 18.78,
+        "net_per_drawdown": 6.08
+      },
+      "passes": {
+        "loss_year": false,
+        "drawdown": true,
+        "severe": true
+      }
+    },
+    "2.0": {
+      "ordinary": {
+        "net": 23371.41,
+        "worst_day": -1106.7,
+        "drawdown": 2528.52,
+        "tickets": 40,
+        "braked_days": 0,
+        "year_2024": 15284.17,
+        "year_2025": 8087.24
+      },
+      "adverse": {
+        "net": 21350.83,
+        "worst_day": -1155.44,
+        "drawdown": 2529.14,
+        "tickets": 40,
+        "braked_days": 0,
+        "year_2024": 13930.06,
+        "year_2025": 7420.77
+      },
+      "skeptical": {
+        "loss_year_chance": 0.3211,
+        "year_p5": -4149.51,
+        "year_median": 1831.91,
+        "drawdown_p95": 5763.64,
+        "median_log_growth": 0.07072
+      },
+      "plain_adverse": {
+        "loss_year_chance": 0.0622,
+        "year_p5": -382.57,
+        "year_median": 8538.04,
+        "drawdown_p95": 3742.36,
+        "median_log_growth": 0.2938
+      },
+      "catastrophe": {
+        "net": -7174.97,
+        "worst_day": -1804.08,
+        "drawdown": 7174.97,
+        "tickets": 18,
+        "braked_days": 88,
+        "year_2024": -6501.6,
+        "year_2025": -673.37
+      },
+      "per_rupee": {
+        "net_per_worst_day": 21.12,
+        "net_per_drawdown": 9.24
+      },
+      "passes": {
+        "loss_year": false,
+        "drawdown": false,
+        "severe": false
+      }
+    },
+    "2.5": {
+      "ordinary": {
+        "net": 25964.53,
+        "worst_day": -1318.6,
+        "drawdown": 3396.25,
+        "tickets": 41,
+        "braked_days": 0,
+        "year_2024": 15409.07,
+        "year_2025": 10555.46
+      },
+      "adverse": {
+        "net": 24710.06,
+        "worst_day": -1377.08,
+        "drawdown": 3348.38,
+        "tickets": 40,
+        "braked_days": 0,
+        "year_2024": 14840.9,
+        "year_2025": 9869.16
+      },
+      "skeptical": {
+        "loss_year_chance": 0.3177,
+        "year_p5": -5623.49,
+        "year_median": 2430.04,
+        "drawdown_p95": 7633.27,
+        "median_log_growth": 0.09276
+      },
+      "plain_adverse": {
+        "loss_year_chance": 0.0642,
+        "year_p5": -584.68,
+        "year_median": 10589.23,
+        "drawdown_p95": 4998.48,
+        "median_log_growth": 0.35317
+      },
+      "catastrophe": {
+        "net": -9523.13,
+        "worst_day": -2389.7,
+        "drawdown": 9523.13,
+        "tickets": 18,
+        "braked_days": 88,
+        "year_2024": -8988.44,
+        "year_2025": -534.69
+      },
+      "per_rupee": {
+        "net_per_worst_day": 19.69,
+        "net_per_drawdown": 7.65
+      },
+      "passes": {
+        "loss_year": false,
+        "drawdown": false,
+        "severe": false
+      }
+    },
+    "3.0": {
+      "ordinary": {
+        "net": 33814.15,
+        "worst_day": -1530.5,
+        "drawdown": 3960.86,
+        "tickets": 40,
+        "braked_days": 0,
+        "year_2024": 20495.42,
+        "year_2025": 13318.73
+      },
+      "adverse": {
+        "net": 30112.29,
+        "worst_day": -1598.72,
+        "drawdown": 3997.57,
+        "tickets": 39,
+        "braked_days": 0,
+        "year_2024": 18517.8,
+        "year_2025": 11594.49
+      },
+      "skeptical": {
+        "loss_year_chance": 0.3594,
+        "year_p5": -7190.31,
+        "year_median": 2221.33,
+        "drawdown_p95": 9560.93,
+        "median_log_growth": 0.08513
+      },
+      "plain_adverse": {
+        "loss_year_chance": 0.0921,
+        "year_p5": -1983.22,
+        "year_median": 11961.22,
+        "drawdown_p95": 6633.15,
+        "median_log_growth": 0.39099
+      },
+      "catastrophe": {
+        "net": -9680.49,
+        "worst_day": -1936.98,
+        "drawdown": 9718.33,
+        "tickets": 17,
+        "braked_days": 79,
+        "year_2024": -8170.76,
+        "year_2025": -1509.73
+      },
+      "per_rupee": {
+        "net_per_worst_day": 22.09,
+        "net_per_drawdown": 8.54
+      },
+      "passes": {
+        "loss_year": false,
+        "drawdown": false,
+        "severe": false
+      }
+    },
+    "4.0": {
+      "ordinary": {
+        "net": 49591.42,
+        "worst_day": -2166.2,
+        "drawdown": 5249.13,
+        "tickets": 40,
+        "braked_days": 0,
+        "year_2024": 31335.58,
+        "year_2025": 18255.84
+      },
+      "adverse": {
+        "net": 45307.76,
+        "worst_day": -2263.66,
+        "drawdown": 3552.97,
+        "tickets": 37,
+        "braked_days": 0,
+        "year_2024": 30908.27,
+        "year_2025": 14399.49
+      },
+      "skeptical": {
+        "loss_year_chance": 0.2797,
+        "year_p5": -7562.85,
+        "year_median": 4576.79,
+        "drawdown_p95": 11088.96,
+        "median_log_growth": 0.16811
+      },
+      "plain_adverse": {
+        "loss_year_chance": 0.0403,
+        "year_p5": 836.75,
+        "year_median": 18777.98,
+        "drawdown_p95": 6984.76,
+        "median_log_growth": 0.56026
+      },
+      "catastrophe": {
+        "net": -15409.62,
+        "worst_day": -3560.95,
+        "drawdown": 15409.62,
+        "tickets": 18,
+        "braked_days": 88,
+        "year_2024": -14487.68,
+        "year_2025": -921.94
+      },
+      "per_rupee": {
+        "net_per_worst_day": 22.89,
+        "net_per_drawdown": 9.45
+      },
+      "passes": {
+        "loss_year": true,
+        "drawdown": false,
+        "severe": false
+      }
+    }
+  },
+  "recommended_k": 1.0
+}

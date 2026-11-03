@@ -1,3 +1,10 @@
+## November 3 — two-sided book failed; E03.1 size stays 1x by the frozen dial (commit `DIAL_COMMIT`, Dev, pushed)
+
+- Done: quiet-day seller failed its plateau; risk dial recommends 1x (2x is the efficient next step,
+  never 1.5x). Records in `docs/research/simulation/2026-11-03-expiry-auction/`.
+- Next, owner decisions only: the frozen E03-family exam download; forward E03/E03.1 paper; then rerun
+  `riskdial.py`'s calculation on the fresh data only, and propose the largest passing size.
+
 ## November 3 — anticipation research/evidence remote-verified; trigger disclosure clarified
 
 Source 22f8845 and evidence 23e94d9 pushed/remote verified. Report clarifies that target labels count filled exits after a 2x/5x bid trigger, while final prices may differ; all cash/return models use actual later fills and fees. No strategy, label, score, freeze or original sealed receipt changed. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; completed STATUS.md. 53 tests, 111 histories, 1,580 repeated native positions, 37,574 labels and 210 prefixes verified; 38 receipts/854 pinned sources. No native config/schema/flag/actual risk/Production or download change; final docs push follows.

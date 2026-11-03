@@ -1,3 +1,10 @@
+## November 3 — two-sided book and risk dial (commit `DIAL_COMMIT`, Dev, pushed, research only)
+
+- [x] Two-sided quiet-day seller frozen (`140baeb`) and failed (2 / 0 of 20 arms).
+- [x] Risk dial frozen (`06fb77f`): 1x recommended; 2x the next efficient step after fresh evidence.
+- [x] No runtime, config, schema or Production change; atlas unchanged; no download; 2023 not opened.
+- [ ] Owner: exam download, forward paper, then the fresh-data sizing rerun.
+
 ## November 3 — anticipation research/evidence remote-verified; trigger disclosure clarified
 
 Source 22f8845 and evidence 23e94d9 pushed/remote verified. Report clarifies that target labels count filled exits after a 2x/5x bid trigger, while final prices may differ; all cash/return models use actual later fills and fees. No strategy, label, score, freeze or original sealed receipt changed. Plan: docs/research/simulation/2026-11-03-expiry-anticipation/PLAN.md; completed STATUS.md. 53 tests, 111 histories, 1,580 repeated native positions, 37,574 labels and 210 prefixes verified; 38 receipts/854 pinned sources. No native config/schema/flag/actual risk/Production or download change; final docs push follows.
