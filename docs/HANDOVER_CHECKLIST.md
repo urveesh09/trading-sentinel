@@ -1,4 +1,4 @@
-## November 3 — N04 partner fixes (commit `this commit`, Dev, pushed, not deployed)
+## November 3 — N04 partner fixes (commit `d395433`, Dev, pushed, PR open, not deployed)
 
 - [x] N04-A a carded buy in the window takes the card's stop/target; other buys told they are not the card's.
 - [x] N04-B DAY giveback from the day's best, once a 10% step, while up.

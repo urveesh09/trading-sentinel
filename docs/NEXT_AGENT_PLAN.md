@@ -1,4 +1,4 @@
-## November 3 — N04 partner fixes (done, Dev, pushed, not deployed, commit `this commit`)
+## November 3 — N04 partner fixes (done, Dev, pushed, PR open, not deployed, commit `d395433`)
 
 - Problem: the Nov 2 audits' remaining high items after N03: two plans for one buy; no day-giveback alert
   (51% of cash given back silently); a restart drops the partner's login; OI walls off the monthly future;

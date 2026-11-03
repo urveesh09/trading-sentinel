@@ -1,4 +1,4 @@
-## November 3 — N04 partner fixes: one plan for a carded buy, day giveback, the login survives a restart, card strike at its own expiry (actual behavior, Dev, pushed, not deployed, commit `this commit`)
+## November 3 — N04 partner fixes: one plan for a carded buy, day giveback, the login survives a restart, card strike at its own expiry (actual behavior, Dev, pushed, PR open, not deployed, commit `d395433`)
 
 Follows N03 (Production 06bed07). Source: the two Nov 2 partner audits and the Nov 3 check.
 
