@@ -1,4 +1,4 @@
-## November 3 — E03.2 search: no rule beats E03.1 (Dev research, commit `E032_COMMIT`, pushed, no runtime change)
+## November 3 — E03.2 search: no rule beats E03.1 (Dev research, commit `c5d8a74`, pushed, no runtime change)
 
 Report: `docs/EXPIRY_RESEARCH_E032.md`; record and plan: `docs/research/simulation/2026-11-03-expiry-e032/`.
 - Frozen tests on never-scored slices of the 2024/2025 NIFTY expiry chains: mornings 09:30-13:00

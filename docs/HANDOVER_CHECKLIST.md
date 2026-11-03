@@ -1,4 +1,4 @@
-## November 3 — E03.2 search (commit `E032_COMMIT`, Dev, pushed, research only)
+## November 3 — E03.2 search (commit `c5d8a74`, Dev, pushed, research only)
 
 - [x] Morning 09:30-13:00 frozen test (`68db264`): FAIL in both years, worse than random entries.
 - [x] Late 15:00-15:15 frozen test (`2494709`): FAIL (3 tickets in 2024, none in 2025).

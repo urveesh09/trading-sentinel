@@ -1,4 +1,4 @@
-## November 3 — E03.2 search done: no candidate; E03.1 stays the expiry lead (commit `E032_COMMIT`, Dev, pushed)
+## November 3 — E03.2 search done: no candidate; E03.1 stays the expiry lead (commit `c5d8a74`, Dev, pushed)
 
 - Problem: owner asked for an E03.2 well beyond E03/E03.1, or the learning. Plan:
   `docs/research/simulation/2026-11-03-expiry-e032/PLAN.md` (written before the morning was scored).
