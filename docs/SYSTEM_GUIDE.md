@@ -1,3 +1,11 @@
+## November 3 — E03.1 finalists frozen before execution stress (Dev only)
+
+99 E03 position/event histories reproduce exactly across both seen years and all three fill scenarios. Six causal mechanism tests pass. Mechanism sweep and 149 new genome combinations retained; two finalists frozen in inalists-freeze.json. The defensive rule tightens stop to 35% and adds a 1.1x trigger floor after a 50% gain; the trend extension finalist has larger but less uniform fitted gains. No qualification, new download, native code/config/schema change or deployment. Next: frozen robustness, selection-decay and uncertainty checks; accept failures. Commands: study.py baseline/sweep/genome, pytest test_lab.py (6 passed), atlas (295 modules). Plan: docs/research/simulation/2026-11-03-expiry-e031/PLAN.md.
+
+## November 3 — E03.1 investigation (Dev research, active)
+
+Owner authorizes bounded iterations beyond E03. Plan/contracts/acceptance: `docs/research/simulation/2026-11-03-expiry-e031/PLAN.md`. 2024/2025 are seen development; 2023 remains protected. Baseline parity first, loss diagnosis, entry/exit mechanism sweeps, bounded combinations and finalist stress. No extra risk, activation, Production/N11/A/B/C changes or downloads. A failed investigation finishes as learning rather than a forced promotion.
+
 ## November 3 — E03: E02's entry with a free runner (Dev commit `d85a690`, pushed, not deployed)
 
 Report: `docs/EXPIRY_RESEARCH_E03.md`; record:

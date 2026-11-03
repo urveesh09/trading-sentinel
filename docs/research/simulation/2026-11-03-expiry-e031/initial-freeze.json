@@ -1,0 +1,46 @@
+{
+  "start_head": "0a6d46ecfcb759469b7f03269d2d2e7edcb94871",
+  "owner_originals": {
+    "SYSTEM_GUIDE.md": "51f7cfc10cfd5972f827b9297e55df21dd5eb48b1acd77a9fd1a50ae40bbdd19",
+    "NEXT_AGENT_PLAN.md": "1fbcff645f2a7a91f746ce2b686d0faf7f1895ff343f3312119e4c479973a64b",
+    "HANDOVER_CHECKLIST.md": "6a290b929895892ece1663d9ca3b07e48e07c3d7067d5d145794e93aac61fcf2"
+  },
+  "inputs": {
+    "docs/research/simulation/2026-11-03-expiry-e03/census.py": "3bea8946f2a204181183b44056b3858f41bf7c2486578850e40a01d5f05f67d8",
+    "docs/research/simulation/2026-11-03-expiry-e03/controls.py": "1cfbdde56b1dd10d9482f99345468d5a1622b48d8733a345df03df5d153a7fff",
+    "docs/research/simulation/2026-11-03-expiry-e03/e011_2024.py": "938d82425f700e9075f2bce50d3a139eb5999f41b1b884909966777f153f30ae",
+    "docs/research/simulation/2026-11-03-expiry-e03/e03_lab.py": "7cce48426f27e2771179aea72b279edbcc3a63bf2ce9d704d5a10625288f8b38",
+    "docs/research/simulation/2026-11-03-expiry-e03/explore.py": "796b30cbcacd83d06cca8c0f1b5e597abf176b29bb606105c37e2b017208edf1",
+    "docs/research/simulation/2026-11-03-expiry-e03/final.py": "2760668d0234f01789438df8ac61b0ee058b13da2e04bebccbe3e50725fcd6c8",
+    "docs/research/simulation/2026-11-03-expiry-e03/gamma.py": "9632f1a82a2aa1497f29d467e8c0fc1e54f1c7bf91f2d3e691b4d63abde29bb6",
+    "docs/research/simulation/2026-11-03-expiry-e03/kicker.py": "0482259ada6eeda62463896fb867068ddd7645499d3a673a042b872cdb73df69",
+    "docs/research/simulation/2026-11-03-expiry-e03/native.py": "8df4c2b15fe1f3edda5507514352d25022ac309f02b9336eeb83256980c3ad5d",
+    "docs/research/simulation/2026-11-03-expiry-e03/parity.py": "230cacdde331eba01bf6e60b39a0d322e17f93ef280fbba510aa48bf0fdfee6b",
+    "docs/research/simulation/2026-11-03-expiry-e03/slice.py": "67fe961236bea342a4f4a1f88bc916f5ad52e1d7b38dad506d970150bf545dbd",
+    "docs/research/simulation/2026-11-03-expiry-e03/slice2.py": "43f64ad999ad14d976d5a3f091bbfdbe999875390b0232e7a6bd42483d7ef20c",
+    "docs/research/simulation/2026-11-03-expiry-e03/surface.py": "f6b861deb7fadb3ad623542cfb2c75ba1c4a6a5ba8e9fedbadd27ddf5c62abd8",
+    "docs/research/simulation/2026-11-03-expiry-e03/candidate.json": "50e3253cb1a100350d012d821fd27bb3b5d2653a219ee6cf10c0970c3c211e34",
+    "docs/research/simulation/2026-11-03-expiry-e03/final-results.json": "670903ceea61ff2fb107fb74ccc97d49c938f9a13ec670cfc7802766ee74a523",
+    "docs/research/simulation/2026-11-03-expiry-e03/paper-parity.json": "6f3efbd06bf47d5f5488687309e921cc94e57544c53a0f9946335c3171a6b7c5",
+    "python-engine/expiry_e02.py": "892daa503d52a54dfcc7d9cb408a3410b53030c990225b22de01cb7a48a6801f",
+    "python-engine/expiry_paper.py": "b2931a15084d981786ddc186b006f9db5a861eabf91dcaa6e6c0b9de0e0676dd"
+  },
+  "datasets": {
+    "2024": {
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e02\\_local\\2024.sqlite",
+      "sha256": "ac38844416ccdebb1223f01e44fead2d94bc668253d5364d0eb524e792250009"
+    },
+    "2025": {
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-03-expiry-e02\\_local\\2025.sqlite",
+      "sha256": "32cc03107ecc20625bf1bfad7c5f48358f98bddb12e3c00664d32246a98dfae1"
+    }
+  },
+  "production": {
+    "head": "06bed07e05a32bc4394aff7ba70990faa745a8ec",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "api_calls": 0,
+  "year2023_read": false,
+  "qualification": "SEEN_2024_2025_ONLY",
+  "plan_sha256": "09a1280f4e6aafc76c5c01009c30d588e303d339cef4db89fdc2dcc05d241b7c"
+}

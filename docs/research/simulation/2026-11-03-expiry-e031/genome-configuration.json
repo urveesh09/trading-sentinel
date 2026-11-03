@@ -1,0 +1,83 @@
+{
+  "classification": "IN_SAMPLE_SEEN_2024_2025",
+  "year2023_read": false,
+  "api_calls": 0,
+  "code": {
+    "lab.py": "8602a773461a1ad09f88e84fa8403563e01d856d2a428435e7a5730b618224b6",
+    "study.py": "5ef20437aecf7e974045b868079190d5c15af7854b542bcbf56b0ed086d1fc10",
+    "PLAN.md": "09a1280f4e6aafc76c5c01009c30d588e303d339cef4db89fdc2dcc05d241b7c"
+  },
+  "space": {
+    "chase": [
+      0.0,
+      0.01,
+      0.025,
+      0.05,
+      0.1
+    ],
+    "stop": [
+      0.25,
+      0.3,
+      0.35,
+      0.4
+    ],
+    "arm": [
+      0.3,
+      0.4,
+      0.5
+    ],
+    "keep": [
+      0.5,
+      0.6,
+      0.7
+    ],
+    "hold": [
+      6,
+      8,
+      10
+    ],
+    "stall_minutes": [
+      0,
+      3,
+      4,
+      5
+    ],
+    "stall_gain": [
+      -0.1,
+      0.0,
+      0.1
+    ],
+    "extend_minutes": [
+      0,
+      4,
+      8
+    ],
+    "extend_gain": [
+      0.0,
+      0.1,
+      0.25
+    ],
+    "lock_arm": [
+      0.0,
+      0.5,
+      1.0
+    ],
+    "lock_floor": [
+      1.0,
+      1.1
+    ],
+    "confirmation": [
+      "none",
+      "trend20",
+      "future2"
+    ]
+  },
+  "seeds": [
+    31,
+    137
+  ],
+  "max_new_unique": 400,
+  "population": 32,
+  "generations": 7,
+  "objective": "worst seen-year/scenario incremental ex-best, penalized for worse DD/day"
+}
