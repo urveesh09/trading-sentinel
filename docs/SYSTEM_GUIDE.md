@@ -1,3 +1,7 @@
+## November 3 — E03.2 round one rejected; new structural tests frozen (Dev research)
+
+PATIENT earns less at normal/adverse fills, despite improving the severe model; OPTION_LED loses and halts. E03.1 baseline reproduces all daily events. Round two freezes failed-auction reclaim and fee-aware valuation hypotheses in ROUND2.md before scoring. Plan: docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md. Ten focused research tests pass. No engine/config/schema/Production change; atlas unchanged; 2023/future exam protected. Remaining: structural score, audits and report.
+
 ## November 3 — E03.2 information/execution investigation (Dev only)
 
 Owner reopens research beyond the failed first E03.2 search. Plan: `docs/research/simulation/2026-11-03-expiry-e032-structure/PLAN.md`. Distinct option-price leadership and patient-entry mechanisms, frozen before scoring; 2024/2025 remain seen, 2023 and the future exam protected. No engine, flag, Production, download or capital change. Baseline/parity first; accept failures.
