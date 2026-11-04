@@ -13,6 +13,11 @@ ROUNDS = {
         v.Policy("NIGHTALL_HI", depth=None, rank="night_hi20"), v.Policy("NIGHTALL_CAP", depth=None, rank="night", cap_kappa=.001)],
     3: [v.Policy("V2"), v.Policy("V2_HI", rank="strength_hi20"), v.Policy("V2_Q4", night_min=.004),
         v.Policy("ALL_HI", depth=None, rank="strength_hi20"), v.Policy("CAPRANK", depth=None, rank="night_cap")],
+    4: [v.Policy("V2"), v.Policy("V2_HI", rank="strength_hi20"),
+        v.Policy("V2_HI_F3N", rank="strength_hi20", filler="F3", filler_order="night"),
+        v.Policy("V2_HI_F3L", rank="strength_hi20", filler="F3", filler_order="value"),
+        v.Policy("F3_ONLY_HI", rank="strength_hi20", filler="F3", filler_order="night", edge_pool=False),
+        v.Policy("V2_HI_F5L", rank="strength_hi20", filler="F5", filler_order="value")],
 }
 def run(rnd, extra=None):
     P = v.load_days()

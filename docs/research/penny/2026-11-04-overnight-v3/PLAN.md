@@ -90,3 +90,25 @@ of ten seeds (20261104 … 20261113)** in development and in the sealed check. A
 - **ALL_HI**: every candidate, shipped strength order, 20-day-high names first.
 - **CAPRANK**: every candidate, ranked by night mean × the share of a half ticket that 0.1% of the
   day's share volume covers (a capacity-aware expected-rupee order).
+
+## Round 3 result
+
+**V2_HI** is the first arm better than v2 in all four panels on both full-fill and robust net,
+by small margins (M1 +1 to +2%; robust 5.9k vs 3.3k, 20.4k vs 20.3k, 57.4k vs 56.3k, 5.7k vs 4.6k).
+V2_Q4 trades ideal profit for robustness (M1 −5 to −15%, robust better in three of four).
+ALL_HI and CAPRANK are not consistent. Lesson: ranking inside the pool moves results by a few
+percent while the fill model moves them several-fold.
+
+Utilisation check (`_local/slots.py`): v2 has zero or one position on 20–33% of nights and uses
+73–84% of its capital. A plain overnight rule on all band stocks (`_local/fill_rules.py`;
+F3 = up ≥ 5%, close in the upper half of the range, ≥ 2× the 20-day median volume, night mean ≥ 0.1%)
+nets +1.22% / +0.87% / +0.79% per candidate (2019–22, 2023–26, Kite) and exists on ~95% of nights.
+
+## Round 4 arms (declared before scoring; round 1 was re-pricing only, so this is the third arm round)
+
+Fillers are band names (Rs 5–55) not already in the EDGE pool, with causal features rebuilt from
+the day tables (`v3sim.filler_table`), the same realism refusal, and no stop/strength.
+- **V2_HI_F3N**: V2_HI, then F3 fillers by night mean for any empty slot.
+- **V2_HI_F3L**: V2_HI, then F3 fillers by today's traded value (liquidity first).
+- **F3_ONLY_HI**: no EDGE pool; F3 names only, 20-day-high names first, then night mean.
+- **V2_HI_F5L**: V2_HI, then F5 fillers (night mean ≥ 0.5% and up ≥ 2%) by traded value.

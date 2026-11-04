@@ -45,6 +45,9 @@ class Policy:
     night_min: float = .001
     rank: str = "strength"          # strength (shipped order) | night (shrunk 60-night mean)
     min_day_value: float = 0.0      # Rs traded today; 0 = off
+    filler: str = ""                # "" | F3 | F5: non-EDGE overnight names used after the EDGE pool
+    filler_order: str = "night"     # night | value (today's traded value, liquidity first)
+    edge_pool: bool = True          # False = fillers only (no EDGE candidates)
     cap_kappa: float = 0.0          # decision-time capacity rule: reserve at most this share of today's
                                     # share volume; a name below a quarter ticket is skipped (slot kept)
     extra: dict = field(default_factory=dict, hash=False, compare=False)
@@ -72,7 +75,85 @@ def _u(*parts) -> float:
     return int.from_bytes(hashlib.sha256("|".join(map(str, parts)).encode()).digest()[:8], "big") / 2 ** 64
 
 
-def pool(day, p: Policy) -> list:
+@dataclass
+class Filler:
+    """A non-EDGE overnight candidate built from causal daily features (no stop, no strength)."""
+    ticker: str
+    close: float
+    f: dict
+    kind: str = "FILL"
+    stop: float = 0.0
+
+
+def filler_table(days):
+    """date -> list of Filler for every band ticker (5 <= close <= 55), features from that day and earlier only.
+
+    Mirrors lab._causal_features: 60 nights including today's open night (clipped +-5%, shrunk by
+    n/(n+20)), rvol against the median of the prior 20 sessions' volume, 20-session high incl. today."""
+    from collections import deque
+    import statistics as st
+    nights, vols, highs, out = {}, {}, {}, {}
+    for d in days:
+        today = []
+        for t, b in d.bar.items():
+            if t == "NIFTYBEES" or t.endswith(("-SM", "-ST")) or b["volume"] <= 0:
+                continue
+            pc = d.prev_close.get(t)
+            nq = nights.setdefault(t, deque(maxlen=60)); vq = vols.setdefault(t, deque(maxlen=20)); hq = highs.setdefault(t, deque(maxlen=20))
+            prior_vol = list(vq)
+            if pc and pc > 0:
+                nq.append(max(-.05, min(.05, b["open"] / pc - 1)))
+            vq.append(b["volume"]); hq.append(b["high"])
+            if not pc or pc <= 0 or len(prior_vol) < 20 or len(nq) < 20 or not 5 <= b["close"] <= 55:
+                continue
+            med = st.median(prior_vol)
+            h, l, c = b["high"], b["low"], b["close"]
+            f = {"ret": c / pc - 1, "clv": (c - l) / (h - l) if h > l else .5, "rvol": b["volume"] / med if med > 0 else 0.,
+                 "night_mean": sum(nq) / len(nq) * len(nq) / (len(nq) + 20), "near_hi20": c / max(hq) - 1,
+                 "tv": c * b["volume"], "from_high": c / h - 1}
+            today.append(Filler(t, c, f))
+        out[d.date] = today
+    return out
+
+
+FILL_RULES = {
+    "F3": lambda f: f["ret"] >= .05 and f["clv"] >= .5 and f["rvol"] >= 2 and f["night_mean"] >= .001,
+    "F5": lambda f: f["night_mean"] >= .005 and f["ret"] >= .02,
+}
+_FILL_CACHE = {}
+
+
+def fillers(days, day, p):
+    key = id(days)
+    if key not in _FILL_CACHE:
+        _FILL_CACHE[key] = filler_table(days)
+    rule = FILL_RULES[p.filler]
+    out = []
+    for c in _FILL_CACHE[key].get(day.date, []):
+        f = c.f
+        if f["from_high"] >= -.001 and f["ret"] >= .019:          # the shipped realism refusal
+            continue
+        if rule(f):
+            out.append(c)
+    if p.filler_order == "value":
+        out.sort(key=lambda c: -c.f["tv"])
+    else:
+        out.sort(key=lambda c: -c.f["night_mean"])
+    return out
+
+
+def pool(day, p: Policy, days=None) -> list:
+    base = _edge_pool(day, p) if p.edge_pool else []
+    if not p.filler:
+        return base
+    seen = {c.ticker for c in base}
+    extra = [c for c in fillers(days, day, p) if c.ticker not in seen]
+    if not p.edge_pool and p.rank == "strength_hi20":
+        extra.sort(key=lambda c: -(c.f.get("near_hi20", -1) > -.01))
+    return base + extra
+
+
+def _edge_pool(day, p: Policy) -> list:
     src = day.cands if p.depth is None else day.cands[:p.depth]
     src = [c for c in src if c.f.get("night_mean", 0) >= p.night_min]
     out = []
@@ -140,7 +221,7 @@ def simulate(days, p: Policy, fm: FillModel, *, start, end, bankroll=25000., see
         if d.date <= end:
             risk_capital = min(bankroll, bankroll + realized)
             entered = 0
-            for c in pool(d, p):
+            for c in pool(d, p, days):
                 if entered >= p.slots:
                     break
                 if c.ticker in held or c.ticker.split("-")[0] in {x.split("-")[0] for x in held}:
