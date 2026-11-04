@@ -1,29 +1,28 @@
-# Overnight enrichment status
+# Overnight enrichment — completed November4,2026
 
-Research complete; focused engineering verification passed; final whole suite running. Dev only, no push
-or deployment. Frozen rounds:4d95c71,a8976d1; older check:a4cf227.
+Research/engineering work complete, Dev only. Not pushed/deployed; Production
+unchanged. Cost-aware route is research-only and NOT QUALIFIED. No new route
+in any runtime P&L book. All existing strategies and owner work preserved.
 
-Best conditional candidate is V3_COST_ROUTE, not a qualified replacement.
-Older full-fill net124211 vs127735 V2; 50%-winning-close-fill net24366 vs20056.
-Four-model arithmetic robustness passes; full-fill improvement fails.
-Additional seeds/correlated fills and severe combined costs retain negative
-cases, while daily final-candle candidates cannot justify early entry.
-See REPORT.md and qualification.json. No native strategy/P&L book change.
+- Frozen development rounds4d95c71/a8976d1; older finalists a4cf227.
+- Best conditional route retains97.2% of older ideal v2 profit and improves
+  the50%-winning-fill net by21.5%; larger seen panel improves18.1% there.
+- No full-fill superiority; seed/cost/correlated-fill negatives and final-day
+  candidate/15:20 clock mismatch block qualification. See REPORT.md and
+  qualification.json. No tuning after older opening.
+- Evidence implementation c0f2fc3; explicit calendar-wrapper correction
+  3c54914. New flag EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED defaults false.
+  Captures actual entry inputs and strict15:49/15:51/16:03 capacity evidence
+  only when enabled. No fills/orders/P&L, no existing schema migration.
+- Final full suite6174 passed,4 skipped,53 warnings,713.72s,exit0.
+  Focused/calendar/source/surface78 passed,1 warning,13.06s. Initial failed
+  calendar-contract run preserved and corrected in source, no exemption.
+- Sixty primary full ledgers reconciled and hashed;30 actual-panel parity
+  closes match; frozen source/data hashes verified; atlas298 modules.
+- Zero Breeze/broker-order/live-quote calls during research. Production
+  tracked state unchanged at5e30ce0; existing untracked owner files preserved.
 
-New default-off EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED archives actual
-15:20 picks/quotes/night estimates and separate15:49,15:51,16:03 observations.
-API execution_evidence adds strict capacity-only answers and retains missing
-observations as UNKNOWN; never claims own fills. Old probe/book/ON_V2/shadows
-remain unchanged. Independent sibling store, no existing-schema migration.
-
-Mechanics:60 primary artifacts reconcile,30 actual-panel legacy parity
-trades match. Focused final calendar/source/book/V2/surface tests:78 passed,1 existing
-warning,13.06s. Full-suite initial6171 passed/1 calendar-contract failure,
-now corrected; final whole suite running (see VERIFICATION.md). Full suite running; record exact result before completion.
-Owner bytes preserved; Production tracked state remains unchanged at5e30ce0.
-Zero Breeze/order/live quote calls during research.
-
-Remaining research qualification: forward observed15:20 candidate comparison
-with a frozen own-cash paper ledger and missing/partial fills; broker session
-eligibility and separately authorized real fill proof. No claim these future
-observations or real-money proof already exist.
+Remaining qualification (not claimed complete): review/enable the Dev evidence
+collector, freeze an actual15:20-input own-cash forward paper comparison,
+verify broker/stock eligibility and separately authorized real order fills.
+More daily-data tuning cannot establish those fills. Rollback new flag=false.

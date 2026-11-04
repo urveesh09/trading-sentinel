@@ -106,7 +106,7 @@ not general profitability. Fixed-rule diagnostics retained after the opening:
   proxy: real 15:20 picks may differ. No claim of executable early-entry profit.
 - Daily open need not be an opening-auction trade. Post-close queue priority,
   broker admission, stock eligibility, partial fills and next-morning auction
-  fills remain unobserved. No volume total proves our own fill.
+  fills remain unobserved. No volume total proves our own fill. The broker quote packet timestamp is an exchange timestamp, not the request time.
 
 Final status is `RESEARCH_ONLY_NOT_QUALIFIED` in `qualification.json`.
 The clock limitation blocks promotion regardless of numerical pass rules.
@@ -132,7 +132,7 @@ Oct 21 shadows and original probe. Flag
 - Only later volume at a conservative 1% participation is compared with one
   hypotheticalRs 12.5 k ticket. Every answer says `actual_fill=UNKNOWN`; no order
   or aggregate portfolio is implied. Missing/stale/reset/cross-day evidence
-  stays `UNKNOWN`. Even `CAPACITY_PROXY_MET` is not an order fill.
+  stays `UNKNOWN`. Even `CAPACITY_PROXY_MET` is not an order fill. A stopped after-market packet clock may therefore remain UNKNOWN even though raw observations are archived.
 - `GET /experiments/edge-overnight` gains an additive `execution_evidence`
   field. A missing store is not created by reading it. Damaged evidence cannot
   break the older comparison. Existing book/shadow/P&L and probe rows stay
@@ -144,7 +144,8 @@ order submission 09:00-09:05. The earlier 15:32-to 16:03 volume delta can includ
 CAS matching/late reports on eligible names; it is not isolated post-close
 volume or proof of fills. The new API caveat preserves the older result while
 making that limitation explicit. Sources: [Zerodha dated bulletin](https://zerodha.com/marketintel/bulletin/439989/introduction-of-closing-auction-session-cas-in-the-equity-cash-segment-and-certain-modifications-in-the-pre-open-auction-session),
-[broker session guide](https://support.zerodha.com/category/trading-and-markets/trading-faqs/market-sessions/articles/what-are-pre-market-and-post-market-sessions-and-orders).
+[broker session guide](https://support.zerodha.com/category/trading-and-markets/trading-faqs/market-sessions/articles/what-are-pre-market-and-post-market-sessions-and-orders),
+[Kite quote fields](https://kite.trade/docs/connect/v3/market-quotes/).
 
 ## Production reality and coverage
 
@@ -175,7 +176,9 @@ result files,`older-results.json`, `older-verdict.json`, `qualification.json`
 and `production-readonly.json`. Sixty primary result artifacts reconcile net,
 fees, quantity, funded daily cash and flat ending equity. No profit reinvestment.
 
-Engineering tests verify mechanics, not profitable strategies. New collector
+Final entire engine suite: **6,174 passed, 4 skipped, zero failures** (713.72s);
+78 focused/calendar/source/surface tests passed. Engineering tests verify
+mechanics, not profitable strategies. Source commit `3c54914`. New collector
 remains disabled; no process restarted, no extra live quote request or order
 was made. Smart/daytime EDGE, V2 and existing books remain unchanged. New code
 is local Dev commits only, not pushed or deployed; owner working changes and

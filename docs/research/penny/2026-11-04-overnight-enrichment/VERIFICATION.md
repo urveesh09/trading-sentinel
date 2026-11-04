@@ -1,3 +1,19 @@
+# Final verification — completed
+
+Final code commit **3c54914194ad2eeeaebcbbb51dac4ff92c01afe1**. Entire engine
+suite: **6174 passed,4 skipped,0 failed,53 warnings in713.72s,exit0**.
+All ten final source/contract hashes remained unchanged throughout the run.
+Full-suite-result.json binds its log and source; existing test-mock shutdown
+logging error is retained and explained there. No warnings suppressed.
+
+Focused calendar/source/book/V2/surface:78 passed,1 Starlette deprecation
+warning,13.06s. Financial audit:60 primary artifacts reconcile;30 actual-panel
+legacy-control closes match. Results hash manifest and each original source/
+data freeze verified. Atlas298 modules. Owner doc bytes preserved; Production
+tracked diff empty at5e30ce0. No push/deployment/order or dependency change.
+
+The following chronological records preserve intermediate results/failures.
+
 # Verification and release state
 
 - Windows scientific runtime:Python3.11.9 existing winvenv. No dependency
@@ -49,3 +65,14 @@ warning,13.06s,exit0. No guard test/allowlist was weakened. Final whole-suite
 run uses the ten bound files in final-suite-source.json; no source edit is
 permitted during that run. Golden changes are exactly three new default-off
 quote jobs (15:49/15:51/16:03), preserving all prior jobs and routes.
+
+Final code correction commit3c54914194ad2eeeaebcbbb51dac4ff92c01afe1.
+Immediate post-commit docs/plan/atlas review completed by the commit helper.
+Read-only independent review confirms the protocol is intentionally strict:
+provider timestamps are exchange packet clocks (Kite official quote docs),
+so a non-updating post-market packet can remain UNKNOWN; all raw observed
+values are preserved. No request timestamp is substituted for exchange time.
+Results manifest binds all60 primary full ledgers; per-day dated curves,
+trades and intents are retained under_local. Both round source/data hashes
+verified against their committed freezes, allowing original Windows line
+endings. No source changed during the final entire-suite run.

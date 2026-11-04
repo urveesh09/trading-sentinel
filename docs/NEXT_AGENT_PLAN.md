@@ -1,3 +1,17 @@
+## November 4 - Overnight enrichment: finalize-enrichment-verdict-and-verification (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-overnight-enrichment/STATUS.md`.
+Current plan: `docs/research/penny/2026-11-04-overnight-enrichment/PLAN.md`.
+Fixed Rs25k; immutable round/exam freezes, full failures and coverage.
+Preserve V2/book/old shadows, owner changes and reserved history.
+Research route is conditional, not qualified or added to any P&L book.
+New overnight_execution_evidence.py archives actual entry inputs and
+collects 15:49/15:51/16:03 capacity snapshots; GET comparison adds
+execution_evidence. Actual fills remain UNKNOWN. Separate sibling store.
+EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED defaults false; rollback false.
+Book/ON_V2/old probe preserved; zero Breeze/order calls;
+Production read-only; no push/deployment or capital change.
+
 ## November 4 - Overnight enrichment: expose-calendar-gates-for-three-new-evidence-jobs (Dev only)
 
 Study/status: `docs/research/penny/2026-11-04-overnight-enrichment/STATUS.md`.
