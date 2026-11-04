@@ -1,3 +1,14 @@
+## November 4 - Smart V3: commit identity bac0add (Dev only)
+
+Smart V3 implementation commit `bac0add` (research commits 1bfd7ee, 254cb1b, fca4623 [exam frozen],
+2924b1a [exam opened once, PASS]). Full suite on that source: 6,192 passed, 4 skipped, 0 failed (661 s,
+exit 0); an earlier run caught the three new cron handlers without their own trading-day gate (fixed
+before commit). Atlas regenerated and consistent with HEAD (299 modules). Dev only: branch
+codex/production-correction-hedge-p0 not pushed, not deployed; Production unchanged. New settings
+PENNY_SMART_V3_ENABLED (default true, paper only) and PENNY_SMART_V3_BANKROLL (2000); new sibling
+store, no migration of existing stores. Owner calls: push/PR to evolve/smart-strategies, deploy,
+retiring Classic MIS/CNC, any real auction order.
+
 ## November 4 - Penny intraday: Smart V3 (opening-auction reversal) paper book; Classic MIS/CNC diagnostics (Dev only)
 
 Study: `docs/research/penny/2026-11-04-intraday/` (PLAN.md, REPORT.md). Owner asked for Smart, then
