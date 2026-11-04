@@ -1,3 +1,25 @@
+## November 4 - Rollout receipt (Production 18ed87d, PR #131)
+
+- The owner's order: "commit push all and deploy ... go deploy it all". PR #131 merged the whole Dev branch at
+  `8a0c37e` (44 commits) as `18ed87d` at 14:21 UTC (19:51 IST). It carries:
+  - N06 and N06b partner advice;
+  - the other agent's committed penny and EDGE work: overnight v2/v3 shadows, the post-close probe, Smart V3 and
+    Classic shadows, research freezes.
+  - Their uncommitted files were not shipped.
+- **Before merge:** the whole engine suite on a clean checkout of `8a0c37e`: 3,196 + 3,036 passed, 4 skipped,
+  `pytest_exit=0` each. No gateway, agent or compose changes.
+- **Deploy:** Production fast-forwarded and the release stamped. python-engine, node-gateway and agent were built
+  one at a time and recreated; nginx restarted. `.env` untouched. No full data backup, as on earlier deploys.
+- **Verification:** `scripts/verify_deployment.py` exit 0, verified_at 2026-11-04T14:29:44Z, receipt in
+  `sentinel-operations/release-receipts/`. Local and public `/api/health` 200. No error lines in the engine log
+  since start. `partner_sentinel.py` is in the image and `PARTNER_SENTINEL_ADVICE_ENABLED` defaults true, with no
+  `.env` override.
+- [ ] Nov 5 (SENSEX expiry), read-only:
+  - the partner's watch-on message carries their two records and the SENSEX expiry line;
+  - PLAN messages carry the 📏 size line;
+  - any SENTINEL / SENTINEL_EXIT rows were sent;
+  - no `partner_sentinel_*_failed` lines in the engine log.
+
 ## November 4 - N06b: partner size advice with freedom; the full Dev branch goes to Production (owner's order)
 
 Owner: "add what you think is best honestly don't do extreme conservative we need them to have freedom ... commit
