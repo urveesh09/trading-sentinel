@@ -168,6 +168,8 @@ class Policy:
     exit: str = "close"             # close | next_open
     eq_only: bool = False
     skip_band: bool = False         # skip auction prices on a circuit-band level (lower circuit)
+    cap_filter: float = 0.0         # skip names whose cap_filter x 20-day median volume < a quarter of the ticket
+    hist_ok: bool = False           # skip names whose own shrunk gap-down history is < 0 after 3+ such days
     extra: tuple = ()
 
 
@@ -215,6 +217,8 @@ def eligible(c: Cand, p: Policy) -> bool:
         return False
     if p.skip_band and c.at_band:
         return False
+    if p.hist_ok and c.hist_n >= 3 and c.hist_rev < 0:
+        return False
     return True
 
 
@@ -253,6 +257,9 @@ def simulate(panel: dict, p: Policy, fm: Fill, *, start, end, bankroll=25000.0, 
             if entered >= p.slots:
                 break
             budget = cap / p.slots
+            if p.cap_filter and p.cap_filter * c.med_vol20 < 0.25 * (budget // c.open):
+                out["CAP_FILTERED"] += 1
+                continue      # causal: the 20-day median volume is known before the auction
             entry = c.open * (1 + fm.entry_bps / 1e4)
             intraday = p.exit == "close"
             locked = False

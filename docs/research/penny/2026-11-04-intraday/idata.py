@@ -43,6 +43,9 @@ class Day:
     next_date: str | None = None
     day_open: float | None = None    # official daily open (auction) from the daily bar
     day_close: float | None = None   # official daily close
+    day_low: float | None = None
+    next_low: float | None = None
+    next_close: float | None = None
 
 
 def _minute(dt: str) -> int:
@@ -97,7 +100,8 @@ def build(minute_path: Path, daily_path: Path, start: str, end: str, min_bars: i
         nxt = rows[i + 1] if i + 1 < len(rows) else None
         bars.sort()
         days.append(Day(t, d, bars, prev_close, med(vols), med(vals), prior,
-                        nxt[1] if nxt else None, nxt[0] if nxt else None, rows[i][1], rows[i][4]))
+                        nxt[1] if nxt else None, nxt[0] if nxt else None, rows[i][1], rows[i][4],
+                        rows[i][3], nxt[3] if nxt else None, nxt[4] if nxt else None))
     return days
 
 

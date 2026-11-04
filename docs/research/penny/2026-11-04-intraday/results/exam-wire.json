@@ -1,0 +1,3716 @@
+{
+ "mode": "wire (seen development data)",
+ "minute": {
+  "S1_THIN_close": {
+   "summary": {
+    "n": 36,
+    "net": 684.05,
+    "ex_best": 459.74,
+    "dd": 175.07,
+    "pf": 2.475,
+    "win": 0.472,
+    "mean": 19.001,
+    "days": 36
+   },
+   "months": {
+    "2026-08": 243.16,
+    "2026-09": 60.19,
+    "2026-10": 437.3,
+    "2026-11": -56.61
+   },
+   "outcomes": {
+    "FILLED": 34,
+    "SKIP_THIN": 29,
+    "LOCKED": 2
+   },
+   "trades": [
+    {
+     "date": "2026-08-10",
+     "ticker": "OLAELEC",
+     "net": -29.6433,
+     "gap": -0.0298,
+     "entry": 39.13,
+     "exit": 38.59,
+     "qty": 51,
+     "locked": false,
+     "ret": -0.0138
+    },
+    {
+     "date": "2026-08-11",
+     "ticker": "SILVERCASE",
+     "net": 53.144,
+     "gap": -0.0201,
+     "entry": 22.92,
+     "exit": 23.57,
+     "qty": 85,
+     "locked": false,
+     "ret": 0.0284
+    },
+    {
+     "date": "2026-08-12",
+     "ticker": "PRIMO",
+     "net": 37.7141,
+     "gap": -0.0238,
+     "entry": 23.81,
+     "exit": 24.29,
+     "qty": 83,
+     "locked": false,
+     "ret": 0.0202
+    },
+    {
+     "date": "2026-08-13",
+     "ticker": "GROWWSLVR",
+     "net": 10.2059,
+     "gap": -0.0255,
+     "entry": 22.52,
+     "exit": 22.66,
+     "qty": 88,
+     "locked": false,
+     "ret": 0.0062
+    },
+    {
+     "date": "2026-08-14",
+     "ticker": "SILVER1",
+     "net": 41.5291,
+     "gap": -0.0201,
+     "entry": 21.95,
+     "exit": 22.43,
+     "qty": 91,
+     "locked": false,
+     "ret": 0.0219
+    },
+    {
+     "date": "2026-08-17",
+     "ticker": "SILVERCASE",
+     "net": 71.7888,
+     "gap": -0.0252,
+     "entry": 22.86,
+     "exit": 23.71,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0372
+    },
+    {
+     "date": "2026-08-18",
+     "ticker": "TATAGOLD",
+     "net": 50.2841,
+     "gap": -0.0256,
+     "entry": 14.47,
+     "exit": 14.85,
+     "qty": 138,
+     "locked": false,
+     "ret": 0.0263
+    },
+    {
+     "date": "2026-08-20",
+     "ticker": "PLAZACABLE",
+     "net": 158.9241,
+     "gap": -0.0323,
+     "entry": 48.25,
+     "exit": 52.18,
+     "qty": 41,
+     "locked": false,
+     "ret": 0.0815
+    },
+    {
+     "date": "2026-08-25",
+     "ticker": "TAKE",
+     "net": -142.3405,
+     "gap": -0.0374,
+     "entry": 19.05,
+     "exit": 17.87,
+     "qty": 104,
+     "locked": true,
+     "ret": -0.0619
+    },
+    {
+     "date": "2026-08-26",
+     "ticker": "TAKE",
+     "net": -2.1082,
+     "gap": -0.05,
+     "entry": 17.87,
+     "exit": 17.87,
+     "qty": 111,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-27",
+     "ticker": "TAKE",
+     "net": -2.1115,
+     "gap": -0.0498,
+     "entry": 16.98,
+     "exit": 16.98,
+     "qty": 117,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-28",
+     "ticker": "TAKE",
+     "net": -2.1099,
+     "gap": -0.0495,
+     "entry": 16.14,
+     "exit": 16.14,
+     "qty": 123,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-31",
+     "ticker": "TAKE",
+     "net": -2.1195,
+     "gap": -0.0496,
+     "entry": 15.34,
+     "exit": 15.34,
+     "qty": 130,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-01",
+     "ticker": "TAKE",
+     "net": -2.1229,
+     "gap": -0.0495,
+     "entry": 14.58,
+     "exit": 14.58,
+     "qty": 137,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-02",
+     "ticker": "TATSILV",
+     "net": 30.9946,
+     "gap": -0.0254,
+     "entry": 21.52,
+     "exit": 21.88,
+     "qty": 92,
+     "locked": false,
+     "ret": 0.0167
+    },
+    {
+     "date": "2026-09-04",
+     "ticker": "SYNCOMF",
+     "net": -35.3419,
+     "gap": -0.0201,
+     "entry": 20.93,
+     "exit": 20.58,
+     "qty": 95,
+     "locked": false,
+     "ret": -0.0167
+    },
+    {
+     "date": "2026-09-07",
+     "ticker": "SYNCOMF",
+     "net": 16.6851,
+     "gap": -0.0243,
+     "entry": 20.08,
+     "exit": 20.27,
+     "qty": 99,
+     "locked": false,
+     "ret": 0.0095
+    },
+    {
+     "date": "2026-09-09",
+     "ticker": "ATL",
+     "net": -34.4935,
+     "gap": -0.0201,
+     "entry": 25.3,
+     "exit": 24.89,
+     "qty": 79,
+     "locked": false,
+     "ret": -0.0162
+    },
+    {
+     "date": "2026-09-11",
+     "ticker": "SILVERCASE",
+     "net": 6.5788,
+     "gap": -0.0354,
+     "entry": 22.88,
+     "exit": 22.98,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0044
+    },
+    {
+     "date": "2026-09-17",
+     "ticker": "SIGACHI",
+     "net": 123.8087,
+     "gap": -0.1149,
+     "entry": 27.58,
+     "exit": 29.33,
+     "qty": 72,
+     "locked": false,
+     "ret": 0.0635
+    },
+    {
+     "date": "2026-09-21",
+     "ticker": "METAL",
+     "net": 44.6444,
+     "gap": -0.0251,
+     "entry": 12.82,
+     "exit": 13.12,
+     "qty": 156,
+     "locked": false,
+     "ret": 0.0234
+    },
+    {
+     "date": "2026-09-24",
+     "ticker": "MCLEODRUSS",
+     "net": -86.3311,
+     "gap": -0.0233,
+     "entry": 46.1,
+     "exit": 44.55,
+     "qty": 43,
+     "locked": true,
+     "ret": -0.0336
+    },
+    {
+     "date": "2026-09-28",
+     "ticker": "TAKE",
+     "net": -2.1149,
+     "gap": -0.0496,
+     "entry": 14.74,
+     "exit": 14.74,
+     "qty": 135,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-29",
+     "ticker": "TAKE",
+     "net": -2.1144,
+     "gap": -0.0495,
+     "entry": 14.01,
+     "exit": 14.01,
+     "qty": 142,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-01",
+     "ticker": "TAKE",
+     "net": -2.1242,
+     "gap": -0.0496,
+     "entry": 12.65,
+     "exit": 12.65,
+     "qty": 158,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-08",
+     "ticker": "DHANBANK",
+     "net": 38.1655,
+     "gap": -0.0253,
+     "entry": 32.0,
+     "exit": 32.65,
+     "qty": 62,
+     "locked": false,
+     "ret": 0.0203
+    },
+    {
+     "date": "2026-10-15",
+     "ticker": "SILVERCASE",
+     "net": -0.2094,
+     "gap": -0.0284,
+     "entry": 20.88,
+     "exit": 20.9,
+     "qty": 95,
+     "locked": false,
+     "ret": 0.001
+    },
+    {
+     "date": "2026-10-19",
+     "ticker": "DWARKESH",
+     "net": -54.4401,
+     "gap": -0.0254,
+     "entry": 45.2,
+     "exit": 44.01,
+     "qty": 44,
+     "locked": false,
+     "ret": -0.0263
+    },
+    {
+     "date": "2026-10-22",
+     "ticker": "STLNETWORK",
+     "net": -2.0876,
+     "gap": -0.05,
+     "entry": 37.06,
+     "exit": 37.06,
+     "qty": 53,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-23",
+     "ticker": "SILVERCASE",
+     "net": -3.1279,
+     "gap": -0.0328,
+     "entry": 19.45,
+     "exit": 19.44,
+     "qty": 102,
+     "locked": false,
+     "ret": -0.0005
+    },
+    {
+     "date": "2026-10-26",
+     "ticker": "STLNETWORK",
+     "net": 45.6618,
+     "gap": -0.05,
+     "entry": 33.45,
+     "exit": 34.26,
+     "qty": 59,
+     "locked": false,
+     "ret": 0.0242
+    },
+    {
+     "date": "2026-10-27",
+     "ticker": "ATL",
+     "net": 71.7895,
+     "gap": -0.0226,
+     "entry": 23.39,
+     "exit": 24.26,
+     "qty": 85,
+     "locked": false,
+     "ret": 0.0372
+    },
+    {
+     "date": "2026-10-28",
+     "ticker": "VISL",
+     "net": -2.1171,
+     "gap": -0.0497,
+     "entry": 26.56,
+     "exit": 26.56,
+     "qty": 75,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-29",
+     "ticker": "KOTYARK",
+     "net": 224.3071,
+     "gap": -0.0272,
+     "entry": 33.61,
+     "exit": 37.45,
+     "qty": 59,
+     "locked": false,
+     "ret": 0.1143
+    },
+    {
+     "date": "2026-10-30",
+     "ticker": "STLNETWORK",
+     "net": 121.4873,
+     "gap": -0.0229,
+     "entry": 35.05,
+     "exit": 37.22,
+     "qty": 57,
+     "locked": false,
+     "ret": 0.0619
+    },
+    {
+     "date": "2026-11-03",
+     "ticker": "PRIMO",
+     "net": -56.609,
+     "gap": -0.0297,
+     "entry": 21.26,
+     "exit": 20.68,
+     "qty": 94,
+     "locked": false,
+     "ret": -0.0273
+    }
+   ]
+  },
+  "S1_THIN_1515": {
+   "summary": {
+    "n": 36,
+    "net": 218.96,
+    "ex_best": 71.92,
+    "dd": 238.28,
+    "pf": 1.372,
+    "win": 0.472,
+    "mean": 6.082,
+    "days": 36
+   },
+   "months": {
+    "2026-08": 218.61,
+    "2026-09": 23.21,
+    "2026-10": 56.41,
+    "2026-11": -79.27
+   },
+   "outcomes": {
+    "FILLED": 34,
+    "SKIP_THIN": 29,
+    "LOCKED": 2
+   },
+   "trades": [
+    {
+     "date": "2026-08-10",
+     "ticker": "OLAELEC",
+     "net": 5.0947,
+     "gap": -0.0298,
+     "entry": 39.13,
+     "exit": 39.2716,
+     "qty": 51,
+     "locked": false,
+     "ret": 0.0036
+    },
+    {
+     "date": "2026-08-11",
+     "ticker": "SILVERCASE",
+     "net": 49.2712,
+     "gap": -0.0201,
+     "entry": 22.92,
+     "exit": 23.5111,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0258
+    },
+    {
+     "date": "2026-08-12",
+     "ticker": "PRIMO",
+     "net": 32.6771,
+     "gap": -0.0238,
+     "entry": 23.81,
+     "exit": 24.2293,
+     "qty": 83,
+     "locked": false,
+     "ret": 0.0176
+    },
+    {
+     "date": "2026-08-13",
+     "ticker": "GROWWSLVR",
+     "net": 4.3466,
+     "gap": -0.0255,
+     "entry": 22.52,
+     "exit": 22.5934,
+     "qty": 88,
+     "locked": false,
+     "ret": 0.0033
+    },
+    {
+     "date": "2026-08-14",
+     "ticker": "SILVER1",
+     "net": 36.4295,
+     "gap": -0.0201,
+     "entry": 21.95,
+     "exit": 22.3739,
+     "qty": 91,
+     "locked": false,
+     "ret": 0.0193
+    },
+    {
+     "date": "2026-08-17",
+     "ticker": "SILVERCASE",
+     "net": 69.2371,
+     "gap": -0.0252,
+     "entry": 22.86,
+     "exit": 23.6806,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0359
+    },
+    {
+     "date": "2026-08-18",
+     "ticker": "TATAGOLD",
+     "net": 45.1641,
+     "gap": -0.0256,
+     "entry": 14.47,
+     "exit": 14.8129,
+     "qty": 138,
+     "locked": false,
+     "ret": 0.0237
+    },
+    {
+     "date": "2026-08-20",
+     "ticker": "PLAZACABLE",
+     "net": 147.0398,
+     "gap": -0.0323,
+     "entry": 48.25,
+     "exit": 51.89,
+     "qty": 41,
+     "locked": false,
+     "ret": 0.0754
+    },
+    {
+     "date": "2026-08-25",
+     "ticker": "TAKE",
+     "net": -142.3405,
+     "gap": -0.0374,
+     "entry": 19.05,
+     "exit": 17.87,
+     "qty": 104,
+     "locked": true,
+     "ret": -0.0619
+    },
+    {
+     "date": "2026-08-26",
+     "ticker": "TAKE",
+     "net": -7.0639,
+     "gap": -0.05,
+     "entry": 17.87,
+     "exit": 17.8253,
+     "qty": 111,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-08-27",
+     "ticker": "TAKE",
+     "net": -7.0749,
+     "gap": -0.0498,
+     "entry": 16.98,
+     "exit": 16.9376,
+     "qty": 117,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-08-28",
+     "ticker": "TAKE",
+     "net": -7.0698,
+     "gap": -0.0495,
+     "entry": 16.14,
+     "exit": 16.0997,
+     "qty": 123,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-08-31",
+     "ticker": "TAKE",
+     "net": -7.1018,
+     "gap": -0.0496,
+     "entry": 15.34,
+     "exit": 15.3017,
+     "qty": 130,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-09-01",
+     "ticker": "TAKE",
+     "net": -7.1133,
+     "gap": -0.0495,
+     "entry": 14.58,
+     "exit": 14.5436,
+     "qty": 137,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-09-02",
+     "ticker": "TATSILV",
+     "net": 26.8825,
+     "gap": -0.0254,
+     "entry": 21.52,
+     "exit": 21.8353,
+     "qty": 92,
+     "locked": false,
+     "ret": 0.0147
+    },
+    {
+     "date": "2026-09-04",
+     "ticker": "SYNCOMF",
+     "net": -66.743,
+     "gap": -0.0201,
+     "entry": 20.93,
+     "exit": 20.2493,
+     "qty": 95,
+     "locked": false,
+     "ret": -0.0325
+    },
+    {
+     "date": "2026-09-07",
+     "ticker": "SYNCOMF",
+     "net": 7.724,
+     "gap": -0.0243,
+     "entry": 20.08,
+     "exit": 20.1794,
+     "qty": 99,
+     "locked": false,
+     "ret": 0.005
+    },
+    {
+     "date": "2026-09-09",
+     "ticker": "ATL",
+     "net": -28.3808,
+     "gap": -0.0201,
+     "entry": 25.3,
+     "exit": 24.9674,
+     "qty": 79,
+     "locked": false,
+     "ret": -0.0131
+    },
+    {
+     "date": "2026-09-11",
+     "ticker": "SILVERCASE",
+     "net": 5.053,
+     "gap": -0.0354,
+     "entry": 22.88,
+     "exit": 22.9625,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0036
+    },
+    {
+     "date": "2026-09-17",
+     "ticker": "SIGACHI",
+     "net": 143.6536,
+     "gap": -0.1149,
+     "entry": 27.58,
+     "exit": 29.6058,
+     "qty": 72,
+     "locked": false,
+     "ret": 0.0735
+    },
+    {
+     "date": "2026-09-21",
+     "ticker": "METAL",
+     "net": 42.6411,
+     "gap": -0.0251,
+     "entry": 12.82,
+     "exit": 13.1072,
+     "qty": 156,
+     "locked": false,
+     "ret": 0.0224
+    },
+    {
+     "date": "2026-09-24",
+     "ticker": "MCLEODRUSS",
+     "net": -86.3311,
+     "gap": -0.0233,
+     "entry": 46.1,
+     "exit": 44.55,
+     "qty": 43,
+     "locked": true,
+     "ret": -0.0336
+    },
+    {
+     "date": "2026-09-28",
+     "ticker": "TAKE",
+     "net": -7.0864,
+     "gap": -0.0496,
+     "entry": 14.74,
+     "exit": 14.7032,
+     "qty": 135,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-09-29",
+     "ticker": "TAKE",
+     "net": -7.0847,
+     "gap": -0.0495,
+     "entry": 14.01,
+     "exit": 13.975,
+     "qty": 142,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-10-01",
+     "ticker": "TAKE",
+     "net": -7.1178,
+     "gap": -0.0496,
+     "entry": 12.65,
+     "exit": 12.6184,
+     "qty": 158,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-10-08",
+     "ticker": "DHANBANK",
+     "net": 31.872,
+     "gap": -0.0253,
+     "entry": 32.0,
+     "exit": 32.5484,
+     "qty": 62,
+     "locked": false,
+     "ret": 0.0171
+    },
+    {
+     "date": "2026-10-15",
+     "ticker": "SILVERCASE",
+     "net": -8.958,
+     "gap": -0.0284,
+     "entry": 20.88,
+     "exit": 20.8079,
+     "qty": 95,
+     "locked": false,
+     "ret": -0.0035
+    },
+    {
+     "date": "2026-10-19",
+     "ticker": "DWARKESH",
+     "net": -55.7692,
+     "gap": -0.0254,
+     "entry": 45.2,
+     "exit": 43.9798,
+     "qty": 44,
+     "locked": false,
+     "ret": -0.027
+    },
+    {
+     "date": "2026-10-22",
+     "ticker": "STLNETWORK",
+     "net": -6.9948,
+     "gap": -0.05,
+     "entry": 37.06,
+     "exit": 36.9674,
+     "qty": 53,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-10-23",
+     "ticker": "SILVERCASE",
+     "net": -6.0483,
+     "gap": -0.0328,
+     "entry": 19.45,
+     "exit": 19.4114,
+     "qty": 102,
+     "locked": false,
+     "ret": -0.002
+    },
+    {
+     "date": "2026-10-26",
+     "ticker": "STLNETWORK",
+     "net": 32.9658,
+     "gap": -0.05,
+     "entry": 33.45,
+     "exit": 34.0447,
+     "qty": 59,
+     "locked": false,
+     "ret": 0.0178
+    },
+    {
+     "date": "2026-10-27",
+     "ticker": "ATL",
+     "net": 70.027,
+     "gap": -0.0226,
+     "entry": 23.39,
+     "exit": 24.2393,
+     "qty": 85,
+     "locked": false,
+     "ret": 0.0363
+    },
+    {
+     "date": "2026-10-28",
+     "ticker": "VISL",
+     "net": -7.0939,
+     "gap": -0.0497,
+     "entry": 26.56,
+     "exit": 26.4936,
+     "qty": 75,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-10-29",
+     "ticker": "KOTYARK",
+     "net": -44.7033,
+     "gap": -0.0272,
+     "entry": 33.61,
+     "exit": 32.8876,
+     "qty": 59,
+     "locked": false,
+     "ret": -0.0215
+    },
+    {
+     "date": "2026-10-30",
+     "ticker": "STLNETWORK",
+     "net": 58.2294,
+     "gap": -0.0229,
+     "entry": 35.05,
+     "exit": 36.1095,
+     "qty": 57,
+     "locked": false,
+     "ret": 0.0302
+    },
+    {
+     "date": "2026-11-03",
+     "ticker": "PRIMO",
+     "net": -79.2697,
+     "gap": -0.0297,
+     "entry": 21.26,
+     "exit": 20.4388,
+     "qty": 94,
+     "locked": false,
+     "ret": -0.0386
+    }
+   ]
+  },
+  "S1_THIN_close_c915": {
+   "summary": {
+    "n": 30,
+    "net": 229.15,
+    "ex_best": 105.34,
+    "dd": 153.92,
+    "pf": 1.538,
+    "win": 0.433,
+    "mean": 7.638,
+    "days": 30
+   },
+   "months": {
+    "2026-08": 48.64,
+    "2026-09": 95.91,
+    "2026-10": 141.21,
+    "2026-11": -56.61
+   },
+   "outcomes": {
+    "FILLED": 28,
+    "SKIP_THIN": 29,
+    "CAPACITY_OR_DUST": 6,
+    "LOCKED": 2
+   },
+   "trades": [
+    {
+     "date": "2026-08-10",
+     "ticker": "OLAELEC",
+     "net": -29.6433,
+     "gap": -0.0298,
+     "entry": 39.13,
+     "exit": 38.59,
+     "qty": 51,
+     "locked": false,
+     "ret": -0.0138
+    },
+    {
+     "date": "2026-08-11",
+     "ticker": "SILVERCASE",
+     "net": 53.144,
+     "gap": -0.0201,
+     "entry": 22.92,
+     "exit": 23.57,
+     "qty": 85,
+     "locked": false,
+     "ret": 0.0284
+    },
+    {
+     "date": "2026-08-13",
+     "ticker": "GROWWSLVR",
+     "net": 10.2059,
+     "gap": -0.0255,
+     "entry": 22.52,
+     "exit": 22.66,
+     "qty": 88,
+     "locked": false,
+     "ret": 0.0062
+    },
+    {
+     "date": "2026-08-14",
+     "ticker": "SILVER1",
+     "net": 41.5291,
+     "gap": -0.0201,
+     "entry": 21.95,
+     "exit": 22.43,
+     "qty": 91,
+     "locked": false,
+     "ret": 0.0219
+    },
+    {
+     "date": "2026-08-17",
+     "ticker": "SILVERCASE",
+     "net": 71.7888,
+     "gap": -0.0252,
+     "entry": 22.86,
+     "exit": 23.71,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0372
+    },
+    {
+     "date": "2026-08-18",
+     "ticker": "TATAGOLD",
+     "net": 50.2841,
+     "gap": -0.0256,
+     "entry": 14.47,
+     "exit": 14.85,
+     "qty": 138,
+     "locked": false,
+     "ret": 0.0263
+    },
+    {
+     "date": "2026-08-25",
+     "ticker": "TAKE",
+     "net": -142.3405,
+     "gap": -0.0374,
+     "entry": 19.05,
+     "exit": 17.87,
+     "qty": 104,
+     "locked": true,
+     "ret": -0.0619
+    },
+    {
+     "date": "2026-08-26",
+     "ticker": "TAKE",
+     "net": -2.1082,
+     "gap": -0.05,
+     "entry": 17.87,
+     "exit": 17.87,
+     "qty": 111,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-27",
+     "ticker": "TAKE",
+     "net": -2.1115,
+     "gap": -0.0498,
+     "entry": 16.98,
+     "exit": 16.98,
+     "qty": 117,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-28",
+     "ticker": "TAKE",
+     "net": -2.1099,
+     "gap": -0.0495,
+     "entry": 16.14,
+     "exit": 16.14,
+     "qty": 123,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-01",
+     "ticker": "TAKE",
+     "net": -0.8988,
+     "gap": -0.0495,
+     "entry": 14.58,
+     "exit": 14.58,
+     "qty": 58,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-02",
+     "ticker": "TATSILV",
+     "net": 30.9946,
+     "gap": -0.0254,
+     "entry": 21.52,
+     "exit": 21.88,
+     "qty": 92,
+     "locked": false,
+     "ret": 0.0167
+    },
+    {
+     "date": "2026-09-04",
+     "ticker": "SYNCOMF",
+     "net": -35.3419,
+     "gap": -0.0201,
+     "entry": 20.93,
+     "exit": 20.58,
+     "qty": 95,
+     "locked": false,
+     "ret": -0.0167
+    },
+    {
+     "date": "2026-09-07",
+     "ticker": "SYNCOMF",
+     "net": 16.6851,
+     "gap": -0.0243,
+     "entry": 20.08,
+     "exit": 20.27,
+     "qty": 99,
+     "locked": false,
+     "ret": 0.0095
+    },
+    {
+     "date": "2026-09-11",
+     "ticker": "SILVERCASE",
+     "net": 6.5788,
+     "gap": -0.0354,
+     "entry": 22.88,
+     "exit": 22.98,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0044
+    },
+    {
+     "date": "2026-09-17",
+     "ticker": "SIGACHI",
+     "net": 123.8087,
+     "gap": -0.1149,
+     "entry": 27.58,
+     "exit": 29.33,
+     "qty": 72,
+     "locked": false,
+     "ret": 0.0635
+    },
+    {
+     "date": "2026-09-21",
+     "ticker": "METAL",
+     "net": 44.6444,
+     "gap": -0.0251,
+     "entry": 12.82,
+     "exit": 13.12,
+     "qty": 156,
+     "locked": false,
+     "ret": 0.0234
+    },
+    {
+     "date": "2026-09-24",
+     "ticker": "MCLEODRUSS",
+     "net": -86.3311,
+     "gap": -0.0233,
+     "entry": 46.1,
+     "exit": 44.55,
+     "qty": 43,
+     "locked": true,
+     "ret": -0.0336
+    },
+    {
+     "date": "2026-09-28",
+     "ticker": "TAKE",
+     "net": -2.1149,
+     "gap": -0.0496,
+     "entry": 14.74,
+     "exit": 14.74,
+     "qty": 135,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-29",
+     "ticker": "TAKE",
+     "net": -2.1144,
+     "gap": -0.0495,
+     "entry": 14.01,
+     "exit": 14.01,
+     "qty": 142,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-01",
+     "ticker": "TAKE",
+     "net": -2.1242,
+     "gap": -0.0496,
+     "entry": 12.65,
+     "exit": 12.65,
+     "qty": 158,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-08",
+     "ticker": "DHANBANK",
+     "net": 38.1655,
+     "gap": -0.0253,
+     "entry": 32.0,
+     "exit": 32.65,
+     "qty": 62,
+     "locked": false,
+     "ret": 0.0203
+    },
+    {
+     "date": "2026-10-15",
+     "ticker": "SILVERCASE",
+     "net": -0.2094,
+     "gap": -0.0284,
+     "entry": 20.88,
+     "exit": 20.9,
+     "qty": 95,
+     "locked": false,
+     "ret": 0.001
+    },
+    {
+     "date": "2026-10-19",
+     "ticker": "DWARKESH",
+     "net": -54.4401,
+     "gap": -0.0254,
+     "entry": 45.2,
+     "exit": 44.01,
+     "qty": 44,
+     "locked": false,
+     "ret": -0.0263
+    },
+    {
+     "date": "2026-10-22",
+     "ticker": "STLNETWORK",
+     "net": -2.0876,
+     "gap": -0.05,
+     "entry": 37.06,
+     "exit": 37.06,
+     "qty": 53,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-23",
+     "ticker": "SILVERCASE",
+     "net": -3.1279,
+     "gap": -0.0328,
+     "entry": 19.45,
+     "exit": 19.44,
+     "qty": 102,
+     "locked": false,
+     "ret": -0.0005
+    },
+    {
+     "date": "2026-10-26",
+     "ticker": "STLNETWORK",
+     "net": 45.6618,
+     "gap": -0.05,
+     "entry": 33.45,
+     "exit": 34.26,
+     "qty": 59,
+     "locked": false,
+     "ret": 0.0242
+    },
+    {
+     "date": "2026-10-28",
+     "ticker": "VISL",
+     "net": -2.1171,
+     "gap": -0.0497,
+     "entry": 26.56,
+     "exit": 26.56,
+     "qty": 75,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-30",
+     "ticker": "STLNETWORK",
+     "net": 121.4873,
+     "gap": -0.0229,
+     "entry": 35.05,
+     "exit": 37.22,
+     "qty": 57,
+     "locked": false,
+     "ret": 0.0619
+    },
+    {
+     "date": "2026-11-03",
+     "ticker": "PRIMO",
+     "net": -56.609,
+     "gap": -0.0297,
+     "entry": 21.26,
+     "exit": 20.68,
+     "qty": 94,
+     "locked": false,
+     "ret": -0.0273
+    }
+   ]
+  },
+  "S1_THIN_1515_c915": {
+   "summary": {
+    "n": 30,
+    "net": 53.51,
+    "ex_best": -90.15,
+    "dd": 206.42,
+    "pf": 1.106,
+    "win": 0.467,
+    "mean": 1.784,
+    "days": 30
+   },
+   "months": {
+    "2026-08": 45.99,
+    "2026-09": 55.7,
+    "2026-10": 31.09,
+    "2026-11": -79.27
+   },
+   "outcomes": {
+    "FILLED": 28,
+    "SKIP_THIN": 29,
+    "CAPACITY_OR_DUST": 6,
+    "LOCKED": 2
+   },
+   "trades": [
+    {
+     "date": "2026-08-10",
+     "ticker": "OLAELEC",
+     "net": 5.0947,
+     "gap": -0.0298,
+     "entry": 39.13,
+     "exit": 39.2716,
+     "qty": 51,
+     "locked": false,
+     "ret": 0.0036
+    },
+    {
+     "date": "2026-08-11",
+     "ticker": "SILVERCASE",
+     "net": 49.2712,
+     "gap": -0.0201,
+     "entry": 22.92,
+     "exit": 23.5111,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0258
+    },
+    {
+     "date": "2026-08-13",
+     "ticker": "GROWWSLVR",
+     "net": 4.3466,
+     "gap": -0.0255,
+     "entry": 22.52,
+     "exit": 22.5934,
+     "qty": 88,
+     "locked": false,
+     "ret": 0.0033
+    },
+    {
+     "date": "2026-08-14",
+     "ticker": "SILVER1",
+     "net": 36.4295,
+     "gap": -0.0201,
+     "entry": 21.95,
+     "exit": 22.3739,
+     "qty": 91,
+     "locked": false,
+     "ret": 0.0193
+    },
+    {
+     "date": "2026-08-17",
+     "ticker": "SILVERCASE",
+     "net": 69.2371,
+     "gap": -0.0252,
+     "entry": 22.86,
+     "exit": 23.6806,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0359
+    },
+    {
+     "date": "2026-08-18",
+     "ticker": "TATAGOLD",
+     "net": 45.1641,
+     "gap": -0.0256,
+     "entry": 14.47,
+     "exit": 14.8129,
+     "qty": 138,
+     "locked": false,
+     "ret": 0.0237
+    },
+    {
+     "date": "2026-08-25",
+     "ticker": "TAKE",
+     "net": -142.3405,
+     "gap": -0.0374,
+     "entry": 19.05,
+     "exit": 17.87,
+     "qty": 104,
+     "locked": true,
+     "ret": -0.0619
+    },
+    {
+     "date": "2026-08-26",
+     "ticker": "TAKE",
+     "net": -7.0639,
+     "gap": -0.05,
+     "entry": 17.87,
+     "exit": 17.8253,
+     "qty": 111,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-08-27",
+     "ticker": "TAKE",
+     "net": -7.0749,
+     "gap": -0.0498,
+     "entry": 16.98,
+     "exit": 16.9376,
+     "qty": 117,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-08-28",
+     "ticker": "TAKE",
+     "net": -7.0698,
+     "gap": -0.0495,
+     "entry": 16.14,
+     "exit": 16.0997,
+     "qty": 123,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-09-01",
+     "ticker": "TAKE",
+     "net": -3.0115,
+     "gap": -0.0495,
+     "entry": 14.58,
+     "exit": 14.5436,
+     "qty": 58,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-09-02",
+     "ticker": "TATSILV",
+     "net": 26.8825,
+     "gap": -0.0254,
+     "entry": 21.52,
+     "exit": 21.8353,
+     "qty": 92,
+     "locked": false,
+     "ret": 0.0147
+    },
+    {
+     "date": "2026-09-04",
+     "ticker": "SYNCOMF",
+     "net": -66.743,
+     "gap": -0.0201,
+     "entry": 20.93,
+     "exit": 20.2493,
+     "qty": 95,
+     "locked": false,
+     "ret": -0.0325
+    },
+    {
+     "date": "2026-09-07",
+     "ticker": "SYNCOMF",
+     "net": 7.724,
+     "gap": -0.0243,
+     "entry": 20.08,
+     "exit": 20.1794,
+     "qty": 99,
+     "locked": false,
+     "ret": 0.005
+    },
+    {
+     "date": "2026-09-11",
+     "ticker": "SILVERCASE",
+     "net": 5.053,
+     "gap": -0.0354,
+     "entry": 22.88,
+     "exit": 22.9625,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0036
+    },
+    {
+     "date": "2026-09-17",
+     "ticker": "SIGACHI",
+     "net": 143.6536,
+     "gap": -0.1149,
+     "entry": 27.58,
+     "exit": 29.6058,
+     "qty": 72,
+     "locked": false,
+     "ret": 0.0735
+    },
+    {
+     "date": "2026-09-21",
+     "ticker": "METAL",
+     "net": 42.6411,
+     "gap": -0.0251,
+     "entry": 12.82,
+     "exit": 13.1072,
+     "qty": 156,
+     "locked": false,
+     "ret": 0.0224
+    },
+    {
+     "date": "2026-09-24",
+     "ticker": "MCLEODRUSS",
+     "net": -86.3311,
+     "gap": -0.0233,
+     "entry": 46.1,
+     "exit": 44.55,
+     "qty": 43,
+     "locked": true,
+     "ret": -0.0336
+    },
+    {
+     "date": "2026-09-28",
+     "ticker": "TAKE",
+     "net": -7.0864,
+     "gap": -0.0496,
+     "entry": 14.74,
+     "exit": 14.7032,
+     "qty": 135,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-09-29",
+     "ticker": "TAKE",
+     "net": -7.0847,
+     "gap": -0.0495,
+     "entry": 14.01,
+     "exit": 13.975,
+     "qty": 142,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-10-01",
+     "ticker": "TAKE",
+     "net": -7.1178,
+     "gap": -0.0496,
+     "entry": 12.65,
+     "exit": 12.6184,
+     "qty": 158,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-10-08",
+     "ticker": "DHANBANK",
+     "net": 31.872,
+     "gap": -0.0253,
+     "entry": 32.0,
+     "exit": 32.5484,
+     "qty": 62,
+     "locked": false,
+     "ret": 0.0171
+    },
+    {
+     "date": "2026-10-15",
+     "ticker": "SILVERCASE",
+     "net": -8.958,
+     "gap": -0.0284,
+     "entry": 20.88,
+     "exit": 20.8079,
+     "qty": 95,
+     "locked": false,
+     "ret": -0.0035
+    },
+    {
+     "date": "2026-10-19",
+     "ticker": "DWARKESH",
+     "net": -55.7692,
+     "gap": -0.0254,
+     "entry": 45.2,
+     "exit": 43.9798,
+     "qty": 44,
+     "locked": false,
+     "ret": -0.027
+    },
+    {
+     "date": "2026-10-22",
+     "ticker": "STLNETWORK",
+     "net": -6.9948,
+     "gap": -0.05,
+     "entry": 37.06,
+     "exit": 36.9674,
+     "qty": 53,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-10-23",
+     "ticker": "SILVERCASE",
+     "net": -6.0483,
+     "gap": -0.0328,
+     "entry": 19.45,
+     "exit": 19.4114,
+     "qty": 102,
+     "locked": false,
+     "ret": -0.002
+    },
+    {
+     "date": "2026-10-26",
+     "ticker": "STLNETWORK",
+     "net": 32.9658,
+     "gap": -0.05,
+     "entry": 33.45,
+     "exit": 34.0447,
+     "qty": 59,
+     "locked": false,
+     "ret": 0.0178
+    },
+    {
+     "date": "2026-10-28",
+     "ticker": "VISL",
+     "net": -7.0939,
+     "gap": -0.0497,
+     "entry": 26.56,
+     "exit": 26.4936,
+     "qty": 75,
+     "locked": false,
+     "ret": -0.0025
+    },
+    {
+     "date": "2026-10-30",
+     "ticker": "STLNETWORK",
+     "net": 58.2294,
+     "gap": -0.0229,
+     "entry": 35.05,
+     "exit": 36.1095,
+     "qty": 57,
+     "locked": false,
+     "ret": 0.0302
+    },
+    {
+     "date": "2026-11-03",
+     "ticker": "PRIMO",
+     "net": -79.2697,
+     "gap": -0.0297,
+     "entry": 21.26,
+     "exit": 20.4388,
+     "qty": 94,
+     "locked": false,
+     "ret": -0.0386
+    }
+   ]
+  },
+  "S1_THIN_close_c915_25": {
+   "summary": {
+    "n": 35,
+    "net": 196.76,
+    "ex_best": 72.95,
+    "dd": 157.83,
+    "pf": 1.378,
+    "win": 0.429,
+    "mean": 5.622,
+    "days": 35
+   },
+   "months": {
+    "2026-08": -0.25,
+    "2026-09": 88.76,
+    "2026-10": 164.86,
+    "2026-11": -56.61
+   },
+   "outcomes": {
+    "FILLED": 33,
+    "SKIP_THIN": 25,
+    "CAPACITY_OR_DUST": 3,
+    "LOCKED": 2
+   },
+   "trades": [
+    {
+     "date": "2026-08-10",
+     "ticker": "OLAELEC",
+     "net": -29.6433,
+     "gap": -0.0298,
+     "entry": 39.13,
+     "exit": 38.59,
+     "qty": 51,
+     "locked": false,
+     "ret": -0.0138
+    },
+    {
+     "date": "2026-08-11",
+     "ticker": "SILVERCASE",
+     "net": 53.144,
+     "gap": -0.0201,
+     "entry": 22.92,
+     "exit": 23.57,
+     "qty": 85,
+     "locked": false,
+     "ret": 0.0284
+    },
+    {
+     "date": "2026-08-13",
+     "ticker": "GROWWSLVR",
+     "net": 10.2059,
+     "gap": -0.0255,
+     "entry": 22.52,
+     "exit": 22.66,
+     "qty": 88,
+     "locked": false,
+     "ret": 0.0062
+    },
+    {
+     "date": "2026-08-14",
+     "ticker": "SILVER1",
+     "net": 41.5291,
+     "gap": -0.0201,
+     "entry": 21.95,
+     "exit": 22.43,
+     "qty": 91,
+     "locked": false,
+     "ret": 0.0219
+    },
+    {
+     "date": "2026-08-17",
+     "ticker": "PRIMO",
+     "net": -73.3989,
+     "gap": -0.0574,
+     "entry": 24.15,
+     "exit": 23.28,
+     "qty": 82,
+     "locked": false,
+     "ret": -0.036
+    },
+    {
+     "date": "2026-08-18",
+     "ticker": "TATAGOLD",
+     "net": 50.2841,
+     "gap": -0.0256,
+     "entry": 14.47,
+     "exit": 14.85,
+     "qty": 138,
+     "locked": false,
+     "ret": 0.0263
+    },
+    {
+     "date": "2026-08-20",
+     "ticker": "PLAZACABLE",
+     "net": 96.905,
+     "gap": -0.0323,
+     "entry": 48.25,
+     "exit": 52.18,
+     "qty": 25,
+     "locked": false,
+     "ret": 0.0815
+    },
+    {
+     "date": "2026-08-25",
+     "ticker": "TAKE",
+     "net": -142.3405,
+     "gap": -0.0374,
+     "entry": 19.05,
+     "exit": 17.87,
+     "qty": 104,
+     "locked": true,
+     "ret": -0.0619
+    },
+    {
+     "date": "2026-08-26",
+     "ticker": "TAKE",
+     "net": -2.1082,
+     "gap": -0.05,
+     "entry": 17.87,
+     "exit": 17.87,
+     "qty": 111,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-27",
+     "ticker": "TAKE",
+     "net": -2.1115,
+     "gap": -0.0498,
+     "entry": 16.98,
+     "exit": 16.98,
+     "qty": 117,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-28",
+     "ticker": "TAKE",
+     "net": -2.1099,
+     "gap": -0.0495,
+     "entry": 16.14,
+     "exit": 16.14,
+     "qty": 123,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-31",
+     "ticker": "TAKE",
+     "net": -0.6032,
+     "gap": -0.0496,
+     "entry": 15.34,
+     "exit": 15.34,
+     "qty": 37,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-01",
+     "ticker": "TAKE",
+     "net": -2.1229,
+     "gap": -0.0495,
+     "entry": 14.58,
+     "exit": 14.58,
+     "qty": 137,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-02",
+     "ticker": "TATSILV",
+     "net": 30.9946,
+     "gap": -0.0254,
+     "entry": 21.52,
+     "exit": 21.88,
+     "qty": 92,
+     "locked": false,
+     "ret": 0.0167
+    },
+    {
+     "date": "2026-09-04",
+     "ticker": "SYNCOMF",
+     "net": -35.3419,
+     "gap": -0.0201,
+     "entry": 20.93,
+     "exit": 20.58,
+     "qty": 95,
+     "locked": false,
+     "ret": -0.0167
+    },
+    {
+     "date": "2026-09-07",
+     "ticker": "SYNCOMF",
+     "net": 16.6851,
+     "gap": -0.0243,
+     "entry": 20.08,
+     "exit": 20.27,
+     "qty": 99,
+     "locked": false,
+     "ret": 0.0095
+    },
+    {
+     "date": "2026-09-09",
+     "ticker": "ATL",
+     "net": -18.7749,
+     "gap": -0.0201,
+     "entry": 25.3,
+     "exit": 24.89,
+     "qty": 43,
+     "locked": false,
+     "ret": -0.0162
+    },
+    {
+     "date": "2026-09-11",
+     "ticker": "SILVERCASE",
+     "net": 6.5788,
+     "gap": -0.0354,
+     "entry": 22.88,
+     "exit": 22.98,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.0044
+    },
+    {
+     "date": "2026-09-17",
+     "ticker": "SIGACHI",
+     "net": 123.8087,
+     "gap": -0.1149,
+     "entry": 27.58,
+     "exit": 29.33,
+     "qty": 72,
+     "locked": false,
+     "ret": 0.0635
+    },
+    {
+     "date": "2026-09-21",
+     "ticker": "METAL",
+     "net": 44.6444,
+     "gap": -0.0251,
+     "entry": 12.82,
+     "exit": 13.12,
+     "qty": 156,
+     "locked": false,
+     "ret": 0.0234
+    },
+    {
+     "date": "2026-09-24",
+     "ticker": "MCLEODRUSS",
+     "net": -86.3311,
+     "gap": -0.0233,
+     "entry": 46.1,
+     "exit": 44.55,
+     "qty": 43,
+     "locked": true,
+     "ret": -0.0336
+    },
+    {
+     "date": "2026-09-28",
+     "ticker": "TAKE",
+     "net": -2.1149,
+     "gap": -0.0496,
+     "entry": 14.74,
+     "exit": 14.74,
+     "qty": 135,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-29",
+     "ticker": "TAKE",
+     "net": -2.1144,
+     "gap": -0.0495,
+     "entry": 14.01,
+     "exit": 14.01,
+     "qty": 142,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-30",
+     "ticker": "KOHINOOR",
+     "net": 12.8437,
+     "gap": -0.0207,
+     "entry": 30.35,
+     "exit": 30.58,
+     "qty": 65,
+     "locked": false,
+     "ret": 0.0076
+    },
+    {
+     "date": "2026-10-01",
+     "ticker": "TAKE",
+     "net": -2.1242,
+     "gap": -0.0496,
+     "entry": 12.65,
+     "exit": 12.65,
+     "qty": 158,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-08",
+     "ticker": "DHANBANK",
+     "net": 38.1655,
+     "gap": -0.0253,
+     "entry": 32.0,
+     "exit": 32.65,
+     "qty": 62,
+     "locked": false,
+     "ret": 0.0203
+    },
+    {
+     "date": "2026-10-15",
+     "ticker": "SILVERCASE",
+     "net": -0.2094,
+     "gap": -0.0284,
+     "entry": 20.88,
+     "exit": 20.9,
+     "qty": 95,
+     "locked": false,
+     "ret": 0.001
+    },
+    {
+     "date": "2026-10-19",
+     "ticker": "DWARKESH",
+     "net": -54.4401,
+     "gap": -0.0254,
+     "entry": 45.2,
+     "exit": 44.01,
+     "qty": 44,
+     "locked": false,
+     "ret": -0.0263
+    },
+    {
+     "date": "2026-10-22",
+     "ticker": "STLNETWORK",
+     "net": -2.0876,
+     "gap": -0.05,
+     "entry": 37.06,
+     "exit": 37.06,
+     "qty": 53,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-23",
+     "ticker": "SILVERCASE",
+     "net": -3.1279,
+     "gap": -0.0328,
+     "entry": 19.45,
+     "exit": 19.44,
+     "qty": 102,
+     "locked": false,
+     "ret": -0.0005
+    },
+    {
+     "date": "2026-10-26",
+     "ticker": "STLNETWORK",
+     "net": 45.6618,
+     "gap": -0.05,
+     "entry": 33.45,
+     "exit": 34.26,
+     "qty": 59,
+     "locked": false,
+     "ret": 0.0242
+    },
+    {
+     "date": "2026-10-27",
+     "ticker": "ATL",
+     "net": 23.6483,
+     "gap": -0.0226,
+     "entry": 23.39,
+     "exit": 24.26,
+     "qty": 28,
+     "locked": false,
+     "ret": 0.0372
+    },
+    {
+     "date": "2026-10-28",
+     "ticker": "VISL",
+     "net": -2.1171,
+     "gap": -0.0497,
+     "entry": 26.56,
+     "exit": 26.56,
+     "qty": 75,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-30",
+     "ticker": "STLNETWORK",
+     "net": 121.4873,
+     "gap": -0.0229,
+     "entry": 35.05,
+     "exit": 37.22,
+     "qty": 57,
+     "locked": false,
+     "ret": 0.0619
+    },
+    {
+     "date": "2026-11-03",
+     "ticker": "PRIMO",
+     "net": -56.609,
+     "gap": -0.0297,
+     "entry": 21.26,
+     "exit": 20.68,
+     "qty": 94,
+     "locked": false,
+     "ret": -0.0273
+    }
+   ]
+  },
+  "S1_THIN_close_e50": {
+   "summary": {
+    "n": 30,
+    "net": -73.18,
+    "ex_best": -182.32,
+    "dd": 270.76,
+    "pf": 0.875,
+    "win": 0.4,
+    "mean": -2.439,
+    "days": 30
+   },
+   "months": {
+    "2026-08": -49.89,
+    "2026-09": -2.22,
+    "2026-10": 44.82,
+    "2026-11": -65.9
+   },
+   "outcomes": {
+    "FILLED": 28,
+    "SKIP_THIN": 29,
+    "CAPACITY_OR_DUST": 6,
+    "LOCKED": 2
+   },
+   "trades": [
+    {
+     "date": "2026-08-10",
+     "ticker": "OLAELEC",
+     "net": -38.8487,
+     "gap": -0.0298,
+     "entry": 39.3256,
+     "exit": 38.59,
+     "qty": 50,
+     "locked": false,
+     "ret": -0.0187
+    },
+    {
+     "date": "2026-08-11",
+     "ticker": "SILVERCASE",
+     "net": 43.3989,
+     "gap": -0.0201,
+     "entry": 23.0346,
+     "exit": 23.57,
+     "qty": 85,
+     "locked": false,
+     "ret": 0.0232
+    },
+    {
+     "date": "2026-08-13",
+     "ticker": "GROWWSLVR",
+     "net": 0.2929,
+     "gap": -0.0255,
+     "entry": 22.6326,
+     "exit": 22.66,
+     "qty": 88,
+     "locked": false,
+     "ret": 0.0012
+    },
+    {
+     "date": "2026-08-14",
+     "ticker": "SILVER1",
+     "net": 31.191,
+     "gap": -0.0201,
+     "entry": 22.0597,
+     "exit": 22.43,
+     "qty": 90,
+     "locked": false,
+     "ret": 0.0168
+    },
+    {
+     "date": "2026-08-17",
+     "ticker": "SILVERCASE",
+     "net": 61.8405,
+     "gap": -0.0252,
+     "entry": 22.9743,
+     "exit": 23.71,
+     "qty": 87,
+     "locked": false,
+     "ret": 0.032
+    },
+    {
+     "date": "2026-08-18",
+     "ticker": "TATAGOLD",
+     "net": 40.0036,
+     "gap": -0.0256,
+     "entry": 14.5423,
+     "exit": 14.85,
+     "qty": 137,
+     "locked": false,
+     "ret": 0.0212
+    },
+    {
+     "date": "2026-08-25",
+     "ticker": "TAKE",
+     "net": -152.2583,
+     "gap": -0.0374,
+     "entry": 19.1452,
+     "exit": 17.87,
+     "qty": 104,
+     "locked": true,
+     "ret": -0.0666
+    },
+    {
+     "date": "2026-08-26",
+     "ticker": "TAKE",
+     "net": -11.9218,
+     "gap": -0.05,
+     "entry": 17.9594,
+     "exit": 17.87,
+     "qty": 110,
+     "locked": false,
+     "ret": -0.005
+    },
+    {
+     "date": "2026-08-27",
+     "ticker": "TAKE",
+     "net": -11.843,
+     "gap": -0.0498,
+     "entry": 17.0649,
+     "exit": 16.98,
+     "qty": 115,
+     "locked": false,
+     "ret": -0.005
+    },
+    {
+     "date": "2026-08-28",
+     "ticker": "TAKE",
+     "net": -11.7465,
+     "gap": -0.0495,
+     "entry": 16.2207,
+     "exit": 16.14,
+     "qty": 120,
+     "locked": false,
+     "ret": -0.005
+    },
+    {
+     "date": "2026-09-01",
+     "ticker": "TAKE",
+     "net": -5.1287,
+     "gap": -0.0495,
+     "entry": 14.6529,
+     "exit": 14.58,
+     "qty": 58,
+     "locked": false,
+     "ret": -0.005
+    },
+    {
+     "date": "2026-09-02",
+     "ticker": "TATSILV",
+     "net": 20.4034,
+     "gap": -0.0254,
+     "entry": 21.6276,
+     "exit": 21.88,
+     "qty": 89,
+     "locked": false,
+     "ret": 0.0117
+    },
+    {
+     "date": "2026-09-04",
+     "ticker": "SYNCOMF",
+     "net": -44.3345,
+     "gap": -0.0201,
+     "entry": 21.0346,
+     "exit": 20.58,
+     "qty": 93,
+     "locked": false,
+     "ret": -0.0216
+    },
+    {
+     "date": "2026-09-07",
+     "ticker": "SYNCOMF",
+     "net": 6.469,
+     "gap": -0.0243,
+     "entry": 20.1804,
+     "exit": 20.27,
+     "qty": 95,
+     "locked": false,
+     "ret": 0.0044
+    },
+    {
+     "date": "2026-09-11",
+     "ticker": "SILVERCASE",
+     "net": -3.2229,
+     "gap": -0.0354,
+     "entry": 22.9944,
+     "exit": 22.98,
+     "qty": 83,
+     "locked": false,
+     "ret": -0.0006
+    },
+    {
+     "date": "2026-09-17",
+     "ticker": "SIGACHI",
+     "net": 109.1309,
+     "gap": -0.1149,
+     "entry": 27.7179,
+     "exit": 29.33,
+     "qty": 69,
+     "locked": false,
+     "ret": 0.0582
+    },
+    {
+     "date": "2026-09-21",
+     "ticker": "METAL",
+     "net": 34.4186,
+     "gap": -0.0251,
+     "entry": 12.8841,
+     "exit": 13.12,
+     "qty": 155,
+     "locked": false,
+     "ret": 0.0183
+    },
+    {
+     "date": "2026-09-24",
+     "ticker": "MCLEODRUSS",
+     "net": -96.2544,
+     "gap": -0.0233,
+     "entry": 46.3305,
+     "exit": 44.55,
+     "qty": 43,
+     "locked": true,
+     "ret": -0.0384
+    },
+    {
+     "date": "2026-09-28",
+     "ticker": "TAKE",
+     "net": -11.8898,
+     "gap": -0.0496,
+     "entry": 14.8137,
+     "exit": 14.74,
+     "qty": 133,
+     "locked": false,
+     "ret": -0.005
+    },
+    {
+     "date": "2026-09-29",
+     "ticker": "TAKE",
+     "net": -11.8107,
+     "gap": -0.0495,
+     "entry": 14.08,
+     "exit": 14.01,
+     "qty": 139,
+     "locked": false,
+     "ret": -0.005
+    },
+    {
+     "date": "2026-10-01",
+     "ticker": "TAKE",
+     "net": -11.7383,
+     "gap": -0.0496,
+     "entry": 12.7132,
+     "exit": 12.65,
+     "qty": 153,
+     "locked": false,
+     "ret": -0.005
+    },
+    {
+     "date": "2026-10-08",
+     "ticker": "DHANBANK",
+     "net": 27.3303,
+     "gap": -0.0253,
+     "entry": 32.16,
+     "exit": 32.65,
+     "qty": 60,
+     "locked": false,
+     "ret": 0.0152
+    },
+    {
+     "date": "2026-10-15",
+     "ticker": "SILVERCASE",
+     "net": -9.9183,
+     "gap": -0.0284,
+     "entry": 20.9844,
+     "exit": 20.9,
+     "qty": 93,
+     "locked": false,
+     "ret": -0.004
+    },
+    {
+     "date": "2026-10-19",
+     "ticker": "DWARKESH",
+     "net": -62.925,
+     "gap": -0.0254,
+     "entry": 45.426,
+     "exit": 44.01,
+     "qty": 43,
+     "locked": false,
+     "ret": -0.0312
+    },
+    {
+     "date": "2026-10-22",
+     "ticker": "STLNETWORK",
+     "net": -11.2383,
+     "gap": -0.05,
+     "entry": 37.2453,
+     "exit": 37.06,
+     "qty": 50,
+     "locked": false,
+     "ret": -0.005
+    },
+    {
+     "date": "2026-10-23",
+     "ticker": "SILVERCASE",
+     "net": -12.2838,
+     "gap": -0.0328,
+     "entry": 19.5472,
+     "exit": 19.44,
+     "qty": 96,
+     "locked": false,
+     "ret": -0.0055
+    },
+    {
+     "date": "2026-10-26",
+     "ticker": "STLNETWORK",
+     "net": 33.3634,
+     "gap": -0.05,
+     "entry": 33.6172,
+     "exit": 34.26,
+     "qty": 55,
+     "locked": false,
+     "ret": 0.0191
+    },
+    {
+     "date": "2026-10-28",
+     "ticker": "VISL",
+     "net": -11.437,
+     "gap": -0.0497,
+     "entry": 26.6928,
+     "exit": 26.56,
+     "qty": 71,
+     "locked": false,
+     "ret": -0.005
+    },
+    {
+     "date": "2026-10-30",
+     "ticker": "STLNETWORK",
+     "net": 103.6698,
+     "gap": -0.0229,
+     "entry": 35.2252,
+     "exit": 37.22,
+     "qty": 53,
+     "locked": false,
+     "ret": 0.0566
+    },
+    {
+     "date": "2026-11-03",
+     "ticker": "PRIMO",
+     "net": -65.8968,
+     "gap": -0.0297,
+     "entry": 21.3663,
+     "exit": 20.68,
+     "qty": 93,
+     "locked": false,
+     "ret": -0.0321
+    }
+   ]
+  },
+  "S1_close": {
+   "summary": {
+    "n": 49,
+    "net": 910.07,
+    "ex_best": 685.76,
+    "dd": 152.91,
+    "pf": 2.323,
+    "win": 0.49,
+    "mean": 18.573,
+    "days": 49
+   },
+   "months": {
+    "2026-08": 50.36,
+    "2026-09": 308.39,
+    "2026-10": 564.09,
+    "2026-11": -12.77
+   },
+   "outcomes": {
+    "FILLED": 48,
+    "LOCKED": 1
+   },
+   "trades": [
+    {
+     "date": "2026-08-10",
+     "ticker": "OLAELEC",
+     "net": -29.6433,
+     "gap": -0.0298,
+     "entry": 39.13,
+     "exit": 38.59,
+     "qty": 51,
+     "locked": false,
+     "ret": -0.0138
+    },
+    {
+     "date": "2026-08-11",
+     "ticker": "VAISHALI",
+     "net": 39.5376,
+     "gap": -0.0244,
+     "entry": 8.01,
+     "exit": 8.18,
+     "qty": 245,
+     "locked": false,
+     "ret": 0.0212
+    },
+    {
+     "date": "2026-08-12",
+     "ticker": "PRIMO",
+     "net": 37.7141,
+     "gap": -0.0238,
+     "entry": 23.81,
+     "exit": 24.29,
+     "qty": 83,
+     "locked": false,
+     "ret": 0.0202
+    },
+    {
+     "date": "2026-08-13",
+     "ticker": "ATLANTAA",
+     "net": -35.3849,
+     "gap": -0.0491,
+     "entry": 40.06,
+     "exit": 39.38,
+     "qty": 49,
+     "locked": false,
+     "ret": -0.017
+    },
+    {
+     "date": "2026-08-14",
+     "ticker": "SILVER1",
+     "net": 41.5291,
+     "gap": -0.0201,
+     "entry": 21.95,
+     "exit": 22.43,
+     "qty": 91,
+     "locked": false,
+     "ret": 0.0219
+    },
+    {
+     "date": "2026-08-17",
+     "ticker": "PRIMO",
+     "net": -73.3989,
+     "gap": -0.0574,
+     "entry": 24.15,
+     "exit": 23.28,
+     "qty": 82,
+     "locked": false,
+     "ret": -0.036
+    },
+    {
+     "date": "2026-08-18",
+     "ticker": "PLAZACABLE",
+     "net": 27.537,
+     "gap": -0.0368,
+     "entry": 51.6,
+     "exit": 52.38,
+     "qty": 38,
+     "locked": false,
+     "ret": 0.0151
+    },
+    {
+     "date": "2026-08-19",
+     "ticker": "SUMIT",
+     "net": 34.3343,
+     "gap": -0.0388,
+     "entry": 52.55,
+     "exit": 53.51,
+     "qty": 38,
+     "locked": false,
+     "ret": 0.0183
+    },
+    {
+     "date": "2026-08-20",
+     "ticker": "PLAZACABLE",
+     "net": 158.9241,
+     "gap": -0.0323,
+     "entry": 48.25,
+     "exit": 52.18,
+     "qty": 41,
+     "locked": false,
+     "ret": 0.0815
+    },
+    {
+     "date": "2026-08-25",
+     "ticker": "TAKE",
+     "net": -142.3405,
+     "gap": -0.0374,
+     "entry": 19.05,
+     "exit": 17.87,
+     "qty": 104,
+     "locked": true,
+     "ret": -0.0619
+    },
+    {
+     "date": "2026-08-26",
+     "ticker": "TAKE",
+     "net": -2.1082,
+     "gap": -0.05,
+     "entry": 17.87,
+     "exit": 17.87,
+     "qty": 111,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-27",
+     "ticker": "TAKE",
+     "net": -2.1115,
+     "gap": -0.0498,
+     "entry": 16.98,
+     "exit": 16.98,
+     "qty": 117,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-28",
+     "ticker": "TAKE",
+     "net": -2.1099,
+     "gap": -0.0495,
+     "entry": 16.14,
+     "exit": 16.14,
+     "qty": 123,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-31",
+     "ticker": "TAKE",
+     "net": -2.1195,
+     "gap": -0.0496,
+     "entry": 15.34,
+     "exit": 15.34,
+     "qty": 130,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-01",
+     "ticker": "TAKE",
+     "net": -2.1229,
+     "gap": -0.0495,
+     "entry": 14.58,
+     "exit": 14.58,
+     "qty": 137,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-02",
+     "ticker": "TATSILV",
+     "net": 30.9946,
+     "gap": -0.0254,
+     "entry": 21.52,
+     "exit": 21.88,
+     "qty": 92,
+     "locked": false,
+     "ret": 0.0167
+    },
+    {
+     "date": "2026-09-03",
+     "ticker": "MMWL",
+     "net": 39.8994,
+     "gap": -0.0248,
+     "entry": 13.78,
+     "exit": 14.07,
+     "qty": 145,
+     "locked": false,
+     "ret": 0.021
+    },
+    {
+     "date": "2026-09-04",
+     "ticker": "SYNCOMF",
+     "net": -35.3419,
+     "gap": -0.0201,
+     "entry": 20.93,
+     "exit": 20.58,
+     "qty": 95,
+     "locked": false,
+     "ret": -0.0167
+    },
+    {
+     "date": "2026-09-07",
+     "ticker": "SYNCOMF",
+     "net": 16.6851,
+     "gap": -0.0243,
+     "entry": 20.08,
+     "exit": 20.27,
+     "qty": 99,
+     "locked": false,
+     "ret": 0.0095
+    },
+    {
+     "date": "2026-09-09",
+     "ticker": "ATL",
+     "net": -34.4935,
+     "gap": -0.0201,
+     "entry": 25.3,
+     "exit": 24.89,
+     "qty": 79,
+     "locked": false,
+     "ret": -0.0162
+    },
+    {
+     "date": "2026-09-10",
+     "ticker": "DBEIL",
+     "net": 14.8486,
+     "gap": -0.0222,
+     "entry": 7.05,
+     "exit": 7.11,
+     "qty": 283,
+     "locked": false,
+     "ret": 0.0085
+    },
+    {
+     "date": "2026-09-11",
+     "ticker": "VAISHALI",
+     "net": 131.4413,
+     "gap": -0.0408,
+     "entry": 8.22,
+     "exit": 8.77,
+     "qty": 243,
+     "locked": false,
+     "ret": 0.0669
+    },
+    {
+     "date": "2026-09-15",
+     "ticker": "HINDCON",
+     "net": 44.2897,
+     "gap": -0.0369,
+     "entry": 23.2,
+     "exit": 23.74,
+     "qty": 86,
+     "locked": false,
+     "ret": 0.0233
+    },
+    {
+     "date": "2026-09-16",
+     "ticker": "VAISHALI",
+     "net": -6.6945,
+     "gap": -0.0355,
+     "entry": 8.7,
+     "exit": 8.68,
+     "qty": 229,
+     "locked": false,
+     "ret": -0.0023
+    },
+    {
+     "date": "2026-09-17",
+     "ticker": "SIGACHI",
+     "net": 123.8087,
+     "gap": -0.1149,
+     "entry": 27.58,
+     "exit": 29.33,
+     "qty": 72,
+     "locked": false,
+     "ret": 0.0635
+    },
+    {
+     "date": "2026-09-21",
+     "ticker": "SUMIT",
+     "net": 96.11,
+     "gap": -0.0451,
+     "entry": 47.2,
+     "exit": 49.54,
+     "qty": 42,
+     "locked": false,
+     "ret": 0.0496
+    },
+    {
+     "date": "2026-09-23",
+     "ticker": "OPTIFIN",
+     "net": -54.576,
+     "gap": -0.0491,
+     "entry": 15.88,
+     "exit": 15.46,
+     "qty": 125,
+     "locked": false,
+     "ret": -0.0264
+    },
+    {
+     "date": "2026-09-24",
+     "ticker": "SBGLP",
+     "net": -65.0701,
+     "gap": -0.0276,
+     "entry": 23.64,
+     "exit": 22.89,
+     "qty": 84,
+     "locked": false,
+     "ret": -0.0317
+    },
+    {
+     "date": "2026-09-28",
+     "ticker": "TAKE",
+     "net": -2.1149,
+     "gap": -0.0496,
+     "entry": 14.74,
+     "exit": 14.74,
+     "qty": 135,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-29",
+     "ticker": "TAKE",
+     "net": -2.1144,
+     "gap": -0.0495,
+     "entry": 14.01,
+     "exit": 14.01,
+     "qty": 142,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-30",
+     "ticker": "KOHINOOR",
+     "net": 12.8437,
+     "gap": -0.0207,
+     "entry": 30.35,
+     "exit": 30.58,
+     "qty": 65,
+     "locked": false,
+     "ret": 0.0076
+    },
+    {
+     "date": "2026-10-01",
+     "ticker": "TAKE",
+     "net": -2.1242,
+     "gap": -0.0496,
+     "entry": 12.65,
+     "exit": 12.65,
+     "qty": 158,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-06",
+     "ticker": "OPTIFIN",
+     "net": 23.065,
+     "gap": -0.0286,
+     "entry": 14.24,
+     "exit": 14.42,
+     "qty": 140,
+     "locked": false,
+     "ret": 0.0126
+    },
+    {
+     "date": "2026-10-08",
+     "ticker": "DHANBANK",
+     "net": 38.1655,
+     "gap": -0.0253,
+     "entry": 32.0,
+     "exit": 32.65,
+     "qty": 62,
+     "locked": false,
+     "ret": 0.0203
+    },
+    {
+     "date": "2026-10-09",
+     "ticker": "CLEDUCATE",
+     "net": 107.296,
+     "gap": -0.0313,
+     "entry": 48.28,
+     "exit": 50.95,
+     "qty": 41,
+     "locked": false,
+     "ret": 0.0553
+    },
+    {
+     "date": "2026-10-12",
+     "ticker": "OPTIFIN",
+     "net": -12.1871,
+     "gap": -0.0254,
+     "entry": 13.81,
+     "exit": 13.74,
+     "qty": 144,
+     "locked": false,
+     "ret": -0.0051
+    },
+    {
+     "date": "2026-10-14",
+     "ticker": "OPTIFIN",
+     "net": -35.3476,
+     "gap": -0.0285,
+     "entry": 14.99,
+     "exit": 14.74,
+     "qty": 133,
+     "locked": false,
+     "ret": -0.0167
+    },
+    {
+     "date": "2026-10-15",
+     "ticker": "SILVERCASE",
+     "net": -0.2094,
+     "gap": -0.0284,
+     "entry": 20.88,
+     "exit": 20.9,
+     "qty": 95,
+     "locked": false,
+     "ret": 0.001
+    },
+    {
+     "date": "2026-10-19",
+     "ticker": "SUMIT",
+     "net": 61.636,
+     "gap": -0.0488,
+     "entry": 45.4,
+     "exit": 46.85,
+     "qty": 44,
+     "locked": false,
+     "ret": 0.0319
+    },
+    {
+     "date": "2026-10-21",
+     "ticker": "AVONMORE",
+     "net": -74.9727,
+     "gap": -0.0307,
+     "entry": 12.31,
+     "exit": 11.86,
+     "qty": 162,
+     "locked": false,
+     "ret": -0.0366
+    },
+    {
+     "date": "2026-10-22",
+     "ticker": "STLNETWORK",
+     "net": -2.0876,
+     "gap": -0.05,
+     "entry": 37.06,
+     "exit": 37.06,
+     "qty": 53,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-23",
+     "ticker": "OPTIFIN",
+     "net": 166.7565,
+     "gap": -0.0823,
+     "entry": 15.5,
+     "exit": 16.81,
+     "qty": 129,
+     "locked": false,
+     "ret": 0.0845
+    },
+    {
+     "date": "2026-10-26",
+     "ticker": "STLNETWORK",
+     "net": 45.6618,
+     "gap": -0.05,
+     "entry": 33.45,
+     "exit": 34.26,
+     "qty": 59,
+     "locked": false,
+     "ret": 0.0242
+    },
+    {
+     "date": "2026-10-27",
+     "ticker": "NECCLTD",
+     "net": -10.3742,
+     "gap": -0.0287,
+     "entry": 16.9,
+     "exit": 16.83,
+     "qty": 118,
+     "locked": false,
+     "ret": -0.0041
+    },
+    {
+     "date": "2026-10-28",
+     "ticker": "VISL",
+     "net": -2.1171,
+     "gap": -0.0497,
+     "entry": 26.56,
+     "exit": 26.56,
+     "qty": 75,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-29",
+     "ticker": "KOTYARK",
+     "net": 224.3071,
+     "gap": -0.0272,
+     "entry": 33.61,
+     "exit": 37.45,
+     "qty": 59,
+     "locked": false,
+     "ret": 0.1143
+    },
+    {
+     "date": "2026-10-30",
+     "ticker": "MMWL",
+     "net": 36.6201,
+     "gap": -0.0399,
+     "entry": 19.51,
+     "exit": 19.89,
+     "qty": 102,
+     "locked": false,
+     "ret": 0.0195
+    },
+    {
+     "date": "2026-11-02",
+     "ticker": "JISLJALEQS",
+     "net": 43.8385,
+     "gap": -0.0393,
+     "entry": 27.35,
+     "exit": 27.98,
+     "qty": 73,
+     "locked": false,
+     "ret": 0.023
+    },
+    {
+     "date": "2026-11-03",
+     "ticker": "PRIMO",
+     "net": -56.609,
+     "gap": -0.0297,
+     "entry": 21.26,
+     "exit": 20.68,
+     "qty": 94,
+     "locked": false,
+     "ret": -0.0273
+    }
+   ]
+  },
+  "S2_THIN_close_c915": {
+   "summary": {
+    "n": 51,
+    "net": 222.07,
+    "ex_best": 159.03,
+    "dd": 68.05,
+    "pf": 1.605,
+    "win": 0.51,
+    "mean": 4.354,
+    "days": 34
+   },
+   "months": {
+    "2026-08": 52.16,
+    "2026-09": 45.7,
+    "2026-10": 132.01,
+    "2026-11": -7.8
+   },
+   "outcomes": {
+    "FILLED": 48,
+    "SKIP_THIN": 48,
+    "CAPACITY_OR_DUST": 5,
+    "LOCKED": 3
+   },
+   "trades": [
+    {
+     "date": "2026-08-10",
+     "ticker": "OLAELEC",
+     "net": -14.531,
+     "gap": -0.0298,
+     "entry": 39.13,
+     "exit": 38.59,
+     "qty": 25,
+     "locked": false,
+     "ret": -0.0138
+    },
+    {
+     "date": "2026-08-11",
+     "ticker": "SILVERCASE",
+     "net": 26.8846,
+     "gap": -0.0201,
+     "entry": 22.92,
+     "exit": 23.57,
+     "qty": 43,
+     "locked": false,
+     "ret": 0.0284
+    },
+    {
+     "date": "2026-08-13",
+     "ticker": "GROWWSLVR",
+     "net": 5.1029,
+     "gap": -0.0255,
+     "entry": 22.52,
+     "exit": 22.66,
+     "qty": 44,
+     "locked": false,
+     "ret": 0.0062
+    },
+    {
+     "date": "2026-08-14",
+     "ticker": "SILVER1",
+     "net": 20.5364,
+     "gap": -0.0201,
+     "entry": 21.95,
+     "exit": 22.43,
+     "qty": 45,
+     "locked": false,
+     "ret": 0.0219
+    },
+    {
+     "date": "2026-08-17",
+     "ticker": "PRIMO",
+     "net": -36.6995,
+     "gap": -0.0574,
+     "entry": 24.15,
+     "exit": 23.28,
+     "qty": 41,
+     "locked": false,
+     "ret": -0.036
+    },
+    {
+     "date": "2026-08-17",
+     "ticker": "SILVERCASE",
+     "net": 35.4818,
+     "gap": -0.0252,
+     "entry": 22.86,
+     "exit": 23.71,
+     "qty": 43,
+     "locked": false,
+     "ret": 0.0372
+    },
+    {
+     "date": "2026-08-18",
+     "ticker": "TATAGOLD",
+     "net": 25.142,
+     "gap": -0.0256,
+     "entry": 14.47,
+     "exit": 14.85,
+     "qty": 69,
+     "locked": false,
+     "ret": 0.0263
+    },
+    {
+     "date": "2026-08-18",
+     "ticker": "SILVER1",
+     "net": 14.682,
+     "gap": -0.0251,
+     "entry": 22.12,
+     "exit": 22.47,
+     "qty": 45,
+     "locked": false,
+     "ret": 0.0158
+    },
+    {
+     "date": "2026-08-20",
+     "ticker": "PLAZACABLE",
+     "net": 38.762,
+     "gap": -0.0323,
+     "entry": 48.25,
+     "exit": 52.18,
+     "qty": 10,
+     "locked": false,
+     "ret": 0.0815
+    },
+    {
+     "date": "2026-08-25",
+     "ticker": "TAKE",
+     "net": -78.8402,
+     "gap": -0.0374,
+     "entry": 19.05,
+     "exit": 17.87,
+     "qty": 52,
+     "locked": true,
+     "ret": -0.0619
+    },
+    {
+     "date": "2026-08-25",
+     "ticker": "GROWWSLVR",
+     "net": 11.8337,
+     "gap": -0.0253,
+     "entry": 23.15,
+     "exit": 23.45,
+     "qty": 43,
+     "locked": false,
+     "ret": 0.013
+    },
+    {
+     "date": "2026-08-26",
+     "ticker": "TAKE",
+     "net": -1.0446,
+     "gap": -0.05,
+     "entry": 17.87,
+     "exit": 17.87,
+     "qty": 55,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-27",
+     "ticker": "TAKE",
+     "net": -1.0467,
+     "gap": -0.0498,
+     "entry": 16.98,
+     "exit": 16.98,
+     "qty": 58,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-27",
+     "ticker": "SILVER1",
+     "net": 7.1237,
+     "gap": -0.0252,
+     "entry": 22.78,
+     "exit": 22.97,
+     "qty": 43,
+     "locked": false,
+     "ret": 0.0083
+    },
+    {
+     "date": "2026-08-28",
+     "ticker": "TAKE",
+     "net": -1.0464,
+     "gap": -0.0495,
+     "entry": 16.14,
+     "exit": 16.14,
+     "qty": 61,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-08-31",
+     "ticker": "GROWWSLVR",
+     "net": -0.1844,
+     "gap": -0.0318,
+     "entry": 22.84,
+     "exit": 22.86,
+     "qty": 43,
+     "locked": false,
+     "ret": 0.0009
+    },
+    {
+     "date": "2026-09-01",
+     "ticker": "TAKE",
+     "net": -0.8988,
+     "gap": -0.0495,
+     "entry": 14.58,
+     "exit": 14.58,
+     "qty": 58,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-02",
+     "ticker": "TATSILV",
+     "net": 15.4973,
+     "gap": -0.0254,
+     "entry": 21.52,
+     "exit": 21.88,
+     "qty": 46,
+     "locked": false,
+     "ret": 0.0167
+    },
+    {
+     "date": "2026-09-02",
+     "ticker": "TATAGOLD",
+     "net": 10.6694,
+     "gap": -0.0251,
+     "entry": 14.36,
+     "exit": 14.53,
+     "qty": 69,
+     "locked": false,
+     "ret": 0.0118
+    },
+    {
+     "date": "2026-09-04",
+     "ticker": "SYNCOMF",
+     "net": -17.4849,
+     "gap": -0.0201,
+     "entry": 20.93,
+     "exit": 20.58,
+     "qty": 47,
+     "locked": false,
+     "ret": -0.0167
+    },
+    {
+     "date": "2026-09-07",
+     "ticker": "SYNCOMF",
+     "net": 8.2583,
+     "gap": -0.0243,
+     "entry": 20.08,
+     "exit": 20.27,
+     "qty": 49,
+     "locked": false,
+     "ret": 0.0095
+    },
+    {
+     "date": "2026-09-09",
+     "ticker": "ATL",
+     "net": -7.4226,
+     "gap": -0.0201,
+     "entry": 25.3,
+     "exit": 24.89,
+     "qty": 17,
+     "locked": false,
+     "ret": -0.0162
+    },
+    {
+     "date": "2026-09-11",
+     "ticker": "SILVERCASE",
+     "net": 3.2516,
+     "gap": -0.0354,
+     "entry": 22.88,
+     "exit": 22.98,
+     "qty": 43,
+     "locked": false,
+     "ret": 0.0044
+    },
+    {
+     "date": "2026-09-11",
+     "ticker": "GROWWSLVR",
+     "net": 2.0896,
+     "gap": -0.0345,
+     "entry": 22.13,
+     "exit": 22.2,
+     "qty": 45,
+     "locked": false,
+     "ret": 0.0032
+    },
+    {
+     "date": "2026-09-17",
+     "ticker": "SIGACHI",
+     "net": 61.9043,
+     "gap": -0.1149,
+     "entry": 27.58,
+     "exit": 29.33,
+     "qty": 36,
+     "locked": false,
+     "ret": 0.0635
+    },
+    {
+     "date": "2026-09-17",
+     "ticker": "GAYAPROJ",
+     "net": -20.7175,
+     "gap": -0.0302,
+     "entry": 24.1,
+     "exit": 23.62,
+     "qty": 41,
+     "locked": false,
+     "ret": -0.0199
+    },
+    {
+     "date": "2026-09-21",
+     "ticker": "METAL",
+     "net": 22.3222,
+     "gap": -0.0251,
+     "entry": 12.82,
+     "exit": 13.12,
+     "qty": 78,
+     "locked": false,
+     "ret": 0.0234
+    },
+    {
+     "date": "2026-09-24",
+     "ticker": "MCLEODRUSS",
+     "net": -50.0101,
+     "gap": -0.0233,
+     "entry": 46.1,
+     "exit": 44.55,
+     "qty": 21,
+     "locked": true,
+     "ret": -0.0336
+    },
+    {
+     "date": "2026-09-28",
+     "ticker": "TAKE",
+     "net": -1.0496,
+     "gap": -0.0496,
+     "entry": 14.74,
+     "exit": 14.74,
+     "qty": 67,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-28",
+     "ticker": "DSFCL",
+     "net": 20.1957,
+     "gap": -0.0495,
+     "entry": 29.55,
+     "exit": 30.5,
+     "qty": 22,
+     "locked": false,
+     "ret": 0.0321
+    },
+    {
+     "date": "2026-09-29",
+     "ticker": "TAKE",
+     "net": -1.0572,
+     "gap": -0.0495,
+     "entry": 14.01,
+     "exit": 14.01,
+     "qty": 71,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-09-29",
+     "ticker": "STLNETWORK",
+     "net": 0.1558,
+     "gap": -0.0204,
+     "entry": 51.0,
+     "exit": 51.93,
+     "qty": 19,
+     "locked": true,
+     "ret": 0.0182
+    },
+    {
+     "date": "2026-10-01",
+     "ticker": "TAKE",
+     "net": -1.0621,
+     "gap": -0.0496,
+     "entry": 12.65,
+     "exit": 12.65,
+     "qty": 79,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-01",
+     "ticker": "AFIL",
+     "net": 16.99,
+     "gap": -0.0265,
+     "entry": 7.72,
+     "exit": 7.86,
+     "qty": 129,
+     "locked": false,
+     "ret": 0.0181
+    },
+    {
+     "date": "2026-10-08",
+     "ticker": "DHANBANK",
+     "net": 19.0828,
+     "gap": -0.0253,
+     "entry": 32.0,
+     "exit": 32.65,
+     "qty": 31,
+     "locked": false,
+     "ret": 0.0203
+    },
+    {
+     "date": "2026-10-08",
+     "ticker": "STEELXIND",
+     "net": -34.5142,
+     "gap": -0.0202,
+     "entry": 10.68,
+     "exit": 10.32,
+     "qty": 93,
+     "locked": false,
+     "ret": -0.0337
+    },
+    {
+     "date": "2026-10-15",
+     "ticker": "SILVERCASE",
+     "net": -0.1036,
+     "gap": -0.0284,
+     "entry": 20.88,
+     "exit": 20.9,
+     "qty": 47,
+     "locked": false,
+     "ret": 0.001
+    },
+    {
+     "date": "2026-10-15",
+     "ticker": "GROWWSLVR",
+     "net": -0.0752,
+     "gap": -0.026,
+     "entry": 20.25,
+     "exit": 20.27,
+     "qty": 49,
+     "locked": false,
+     "ret": 0.001
+    },
+    {
+     "date": "2026-10-19",
+     "ticker": "DWARKESH",
+     "net": -27.2201,
+     "gap": -0.0254,
+     "entry": 45.2,
+     "exit": 44.01,
+     "qty": 22,
+     "locked": false,
+     "ret": -0.0263
+    },
+    {
+     "date": "2026-10-22",
+     "ticker": "STLNETWORK",
+     "net": -1.0241,
+     "gap": -0.05,
+     "entry": 37.06,
+     "exit": 37.06,
+     "qty": 26,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-22",
+     "ticker": "DHANBANK",
+     "net": 63.0433,
+     "gap": -0.0205,
+     "entry": 34.8,
+     "exit": 37.09,
+     "qty": 28,
+     "locked": false,
+     "ret": 0.0658
+    },
+    {
+     "date": "2026-10-23",
+     "ticker": "SILVERCASE",
+     "net": -1.5639,
+     "gap": -0.0328,
+     "entry": 19.45,
+     "exit": 19.44,
+     "qty": 51,
+     "locked": false,
+     "ret": -0.0005
+    },
+    {
+     "date": "2026-10-23",
+     "ticker": "TATSILV",
+     "net": -1.583,
+     "gap": -0.0316,
+     "entry": 18.7,
+     "exit": 18.69,
+     "qty": 53,
+     "locked": false,
+     "ret": -0.0005
+    },
+    {
+     "date": "2026-10-26",
+     "ticker": "STLNETWORK",
+     "net": 22.444,
+     "gap": -0.05,
+     "entry": 33.45,
+     "exit": 34.26,
+     "qty": 29,
+     "locked": false,
+     "ret": 0.0242
+    },
+    {
+     "date": "2026-10-27",
+     "ticker": "ATL",
+     "net": 9.2904,
+     "gap": -0.0226,
+     "entry": 23.39,
+     "exit": 24.26,
+     "qty": 11,
+     "locked": false,
+     "ret": 0.0372
+    },
+    {
+     "date": "2026-10-27",
+     "ticker": "KOTYARK",
+     "net": 48.2041,
+     "gap": -0.0208,
+     "entry": 32.0,
+     "exit": 33.59,
+     "qty": 31,
+     "locked": false,
+     "ret": 0.0497
+    },
+    {
+     "date": "2026-10-28",
+     "ticker": "VISL",
+     "net": -1.0444,
+     "gap": -0.0497,
+     "entry": 26.56,
+     "exit": 26.56,
+     "qty": 37,
+     "locked": false,
+     "ret": 0.0
+    },
+    {
+     "date": "2026-10-28",
+     "ticker": "ATLANTAA",
+     "net": -38.5281,
+     "gap": -0.0348,
+     "entry": 33.0,
+     "exit": 31.75,
+     "qty": 30,
+     "locked": false,
+     "ret": -0.0379
+    },
+    {
+     "date": "2026-10-30",
+     "ticker": "STLNETWORK",
+     "net": 59.678,
+     "gap": -0.0229,
+     "entry": 35.05,
+     "exit": 37.22,
+     "qty": 28,
+     "locked": false,
+     "ret": 0.0619
+    },
+    {
+     "date": "2026-11-03",
+     "ticker": "PRIMO",
+     "net": -28.3045,
+     "gap": -0.0297,
+     "entry": 21.26,
+     "exit": 20.68,
+     "qty": 47,
+     "locked": false,
+     "ret": -0.0273
+    },
+    {
+     "date": "2026-11-03",
+     "ticker": "SPENCERS",
+     "net": 20.5036,
+     "gap": -0.022,
+     "entry": 20.02,
+     "exit": 20.46,
+     "qty": 49,
+     "locked": false,
+     "ret": 0.022
+    }
+   ]
+  }
+ },
+ "smart": {
+  "V1": {
+   "summary": {
+    "closed": 25,
+    "net": -38.0665,
+    "ex_best": -45.1369,
+    "fees": 9.9406,
+    "drawdown": 45.6888,
+    "wins": 6,
+    "profit_factor": 0.3384,
+    "final_equity": 1961.9335,
+    "unresolved": 0,
+    "exit_reasons": {
+     "SMART_PAPER_STOP": 11,
+     "SMART_THESIS_FAILED": 8,
+     "SMART_SESSION_DEADLINE": 1,
+     "SMART_THESIS_STALLED": 4,
+     "SMART_EOD_LOSS_CUT": 1
+    }
+   },
+   "months": {
+    "2026-09": -38.04
+   },
+   "unresolved": 0,
+   "events": {
+    "SETUP": 18311,
+    "ENTRY_FILLED": 25,
+    "ENTRY_EXPIRED": 48,
+    "ENTRY_HALTED": 920,
+    "STOP_RAISED": 17,
+    "EXIT_FILLED": 25,
+    "OBSERVATION_UNAVAILABLE": 1,
+    "EXIT_PENDING": 1
+   },
+   "seconds": 4.2
+  },
+  "V2": {
+   "summary": {
+    "closed": 24,
+    "net": 7.1345,
+    "ex_best": -11.245,
+    "fees": 7.2528,
+    "drawdown": 32.3041,
+    "wins": 6,
+    "profit_factor": 1.1785,
+    "final_equity": 2007.1345,
+    "unresolved": 0,
+    "exit_reasons": {
+     "SMART_PAPER_STOP": 6,
+     "SMART_THESIS_FAILED": 8,
+     "SMART_EOD_LOSS_CUT": 2,
+     "SMART_THESIS_STALLED": 6,
+     "SMART_PAPER_TRAIL": 1,
+     "SMART_SESSION_DEADLINE": 1
+    }
+   },
+   "months": {
+    "2026-09": 7.13
+   },
+   "unresolved": 0,
+   "events": {
+    "SETUP": 18110,
+    "ENTRY_EXPIRED": 45,
+    "ENTRY_FILLED": 24,
+    "ENTRY_HALTED": 941,
+    "STOP_RAISED": 22,
+    "EXIT_FILLED": 24,
+    "EXIT_PENDING": 11,
+    "OBSERVATION_UNAVAILABLE": 1
+   },
+   "seconds": 4.2
+  }
+ },
+ "daily": {
+  "S1@2000": {
+   "M1": {
+    "net": 3069.76,
+    "dd": 135.24,
+    "n": 64,
+    "ex_best": 2630.67,
+    "pf": 11.517,
+    "win": 0.453,
+    "mean": 47.965,
+    "days": 64
+   },
+   "years": {
+    "2026": 3069.76
+   },
+   "M2": {
+    "net": 2371.39,
+    "dd": 145.76,
+    "n": 54
+   },
+   "M3": {
+    "net": 1579.48,
+    "dd": 145.76,
+    "n": 46
+   },
+   "M4": {
+    "net": 1035.59,
+    "dd": 153.46,
+    "n": 45
+   },
+   "M5": {
+    "net": 2378.36,
+    "dd": 135.24,
+    "n": 63
+   },
+   "M6": {
+    "net": 1225.41,
+    "dd": 143.92,
+    "n": 46
+   },
+   "M7": {
+    "net": 1750.4,
+    "dd": 334.53,
+    "n": 64
+   },
+   "M8": {
+    "net": 1107.48,
+    "dd": 470.63,
+    "n": 64
+   },
+   "robust": 1035.59
+  },
+  "OAR_GAP@25000": {
+   "M1": {
+    "net": 26691.42,
+    "dd": 1180.5,
+    "n": 128,
+    "ex_best": 23951.49,
+    "pf": 4.634,
+    "win": 0.391,
+    "mean": 208.527,
+    "days": 64
+   },
+   "years": {
+    "2026": 26691.42
+   },
+   "M2": {
+    "net": 19961.54,
+    "dd": 1392.01,
+    "n": 111
+   },
+   "M3": {
+    "net": 11542.3,
+    "dd": 2207.23,
+    "n": 101
+   },
+   "M4": {
+    "net": 7299.61,
+    "dd": 3544.89,
+    "n": 101
+   },
+   "M5": {
+    "net": 10554.6,
+    "dd": 887.04,
+    "n": 66
+   },
+   "M6": {
+    "net": 5635.27,
+    "dd": 1102.15,
+    "n": 54
+   },
+   "M7": {
+    "net": 10424.73,
+    "dd": 2047.64,
+    "n": 128
+   },
+   "M8": {
+    "net": 2248.65,
+    "dd": 2791.41,
+    "n": 128
+   },
+   "robust": 2248.65
+  },
+  "OAR_GAP_3@25000": {
+   "M1": {
+    "net": 24002.26,
+    "dd": 976.0,
+    "n": 192,
+    "ex_best": 22175.64,
+    "pf": 4.152,
+    "win": 0.406,
+    "mean": 125.012,
+    "days": 64
+   },
+   "years": {
+    "2026": 24002.26
+   },
+   "M2": {
+    "net": 17291.8,
+    "dd": 993.71,
+    "n": 166
+   },
+   "M3": {
+    "net": 9031.74,
+    "dd": 1669.56,
+    "n": 150
+   },
+   "M4": {
+    "net": 6126.89,
+    "dd": 3436.71,
+    "n": 150
+   },
+   "M5": {
+    "net": 7890.75,
+    "dd": 957.1,
+    "n": 111
+   },
+   "M6": {
+    "net": 3031.79,
+    "dd": 1410.46,
+    "n": 91
+   },
+   "M7": {
+    "net": 7817.91,
+    "dd": 1805.46,
+    "n": 192
+   },
+   "M8": {
+    "net": -278.15,
+    "dd": 2886.43,
+    "n": 192
+   },
+   "robust": -278.15
+  }
+ },
+ "verdict_shape": {
+  "checks": {
+   "1_capped_close_positive": true,
+   "2_capped_1515_positive": true,
+   "3_beats_v1_v2": true,
+   "4_months": false,
+   "5_drawdown": true,
+   "6_daily_robust": true
+  },
+  "pass": false
+ },
+ "seconds": 14.6
+}

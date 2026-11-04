@@ -13,6 +13,10 @@ ROUNDS = {
         P("OAR_RANDOM", rank="random", extra=("r1",)), P("OAR_GAP3", gap_max=-0.03),
         P("OAR_MID", gap_min=-0.10), P("OAR_GAP_1", slots=1), P("OAR_GAP_3", slots=3),
         P("OAR_NIGHT", exit="next_open")],
+    2: [P("OAR_CAP", cap_filter=0.001), P("OAR_CAP4", slots=4, cap_filter=0.001), P("OAR_NOBAND", skip_band=True),
+        P("OAR_CAP_NOBAND", cap_filter=0.001, skip_band=True), P("OAR_HIST_CAP", rank="hist", cap_filter=0.001),
+        P("OAR_CAP_HISTOK", cap_filter=0.001, hist_ok=True)],
+    "2s": [P("S1", slots=1), P("S2", slots=2), P("S1_CAP", slots=1, cap_filter=0.001), P("S2_CAP", slots=2, cap_filter=0.001)],
 }
 
 
@@ -32,4 +36,5 @@ def run(n, bankroll=25000.0):
 
 
 if __name__ == "__main__":
-    run(int(sys.argv[1]), float(sys.argv[2]) if len(sys.argv) > 2 else 25000.0)
+    k = sys.argv[1]
+    run(int(k) if k.isdigit() else k, float(sys.argv[2]) if len(sys.argv) > 2 else 25000.0)

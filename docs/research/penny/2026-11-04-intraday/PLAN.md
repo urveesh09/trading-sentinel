@@ -105,3 +105,34 @@ auction prices on a circuit-band level), OAR_CAP_NOBAND, OAR_HIST_CAP (own-histo
 capacity filter), OAR_CAP_HISTOK (OAR_CAP, skipping names whose own shrunk history is below zero
 after 3+ gap-down days). Smart's native Rs 2,000 book: OAR_GAP at one and two slots (S1, S2).
 Read as round 1.
+
+### Round 2 result (`results/round2.json`, `results/round2s-2000.json`)
+
+Rs 25,000: the capacity filter, four slots, skipping circuit-band opens and own-history order
+change M1 a lot and the robust net a little; none beats OAR_GAP's robust net in every panel
+(OAR_GAP 75.9k / 19.4k / 12.0k / 38.1k / 2.2k; OAR_CAP 94.8k / 3.8k / 5.0k / 17.3k / 1.0k).
+Rs 2,000 (Smart's book): S1 (one slot, deepest gap) M1 72.3k / 50.8k / 44.3k / 28.6k / 3.1k,
+robust 22.4k / 11.2k / 9.5k / 6.2k / 1.0k, positive under every model in every panel.
+
+### Minute-level development (`minute_oar.py`, `results/minute-dev.json`; seen data)
+
+Production's own Kite minutes (Jul 30 - Nov 3; the 09:15 candle carries the opening match) at
+Rs 2,000, one slot: uncapped +1,107 (close exit) / +588 (15:15 last trade -25 bp). With capacity =
+10% of that day's 09:15 candle, +229 / +17: on 20 of 53 days the deepest gap was too thin for even
+Rs 2,000. Skipping names whose prior-20-session median 09:15 candle x 10% cannot take a quarter of
+the ticket (causal) gives +229 / +54 from Aug 10 (S1_THIN). +50 bp entry on top of that capacity
+turns it negative (-73): the capped edge is about Rs 7.6 a trade. Same-dates Smart replays on the
+Yahoo minutes (Sep 7 - 18, 30 names): V1 -38, V2 +7.
+
+## Sealed exam (frozen in `exam-freeze.json` by `scripts/exam.py freeze`, opened once by `run`)
+
+Primary S1_THIN (one slot, Rs 2,000, gap <= -2% deepest first, EQ only, thin-auction skip, buy at the
+official open, sell at the official close, lock rule). Pass = all of:
+1. capped close (10% of the 09:15 candle): closes >= 30, net > 0, ex-best > 0;
+2. capped 15:15 exit (-25 bp): net > 0;
+3. both capped versions beat Smart V1 and V2 replayed by `run_smart` (10 bp spread, same 89 names,
+   same dates, Rs 2,000);
+4. capped close positive in >= 4 of 7 months; 5. its drawdown <= Rs 500;
+6. Jan-Jul daily Yahoo band universe, S1 at Rs 2,000: robust (min M1-M8) > 0.
+Reported, not pass: uncapped, 25% capacity, +50 bp entry, two slots, Rs 25,000 daily OAR_GAP/OAR_GAP_3.
+Wiring run on seen data (`results/exam-wire.json`, 15 s) replays all arms.
