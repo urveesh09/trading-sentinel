@@ -1504,6 +1504,9 @@ class Settings(BaseSettings):
     # partner's own record on the warnings the frozen score supports, and the Sentinel's main F&O and expiry
     # paper trades sent as they happen. Messages only. False: the watch as before N06.
     PARTNER_SENTINEL_ADVICE_ENABLED: bool = True
+    # [N06c] BROKEN: one message when a trade's price goes under its plan stop with no stop of the partner's own at
+    # or above it, with what selling all or half gives now. False: never sent.
+    PARTNER_WATCH_BROKEN_ENABLED: bool = True
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True

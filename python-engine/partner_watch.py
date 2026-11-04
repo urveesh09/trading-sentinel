@@ -48,15 +48,20 @@ How it runs
 What it sends (live, loss first)
   PLAN      right after a buy fills: the stop that the system's own readings
             give, the loss if it sells there (with charges, against the day's
-            cash), the target zone, and three facts: the option's normal
-            5-minute swing, its rise in the 15 minutes before the buy, and
-            the future's 5-minute trend. Also, when they apply: a buy within
-            30 minutes of a losing exit, a bigger size after that loss, and
-            from the 5th trade the day's trades and charges. [O24d] Its last
-            line starts from the stops already in place (``stop_advice``).
+            cash) and the target zone. [N06c] No facts line any more (the swing,
+            the run, the trend; the check keeps them). Also, when they apply: a
+            buy much bigger than usual, a buy within 30 minutes of a losing exit
+            (each one line, with the partner's record when supported), a bigger
+            size after that loss, and from the 5th trade the day's trades and
+            charges. [O24d] Its last line starts from the stops already in place
+            (``stop_advice``).
   ADDED     a new buy order on a trade already open: the new size and
             average, and the loss at the plan stop now and before.
   NO_STOP   120 s after the buy with nothing protecting it.
+  BROKEN    [N06c] the price is read under the plan stop after being read over it, and no stop of the partner's
+            own rests at or above the plan stop (that one sells by itself; UNFILLED tells it if it does not).
+            Once a trade, from 120 s after the buy (before that NO_STOP and the PLAN say it). What selling all now
+            gives against the bids, and half when two lots or more are held: choices, never an order.
   PARTIAL   stops cover only part of what is held, for 20 s, 120 s after
             the buy (a stop of another product is named).
   REMOVED   units that were covered are not any more, for 20 s: a stop
@@ -96,19 +101,8 @@ What it sends (live, loss first)
             (60 s), the positions while the overnight list is unknown
             (120 s), the GTTs while a holding's protection is unknown
             (120 s). BACK when that read works again.
-  SIZE      [O26] on a Quiet day only: a muted PLAN or ADDED whose trade is
-            much bigger than the partner's usual (the PLAN's size warning:
-            over 1.5x their usual share of cash), or a buy bigger than the
-            losing trade just before it, still warns (``size_reasons``): the
-            size, the loss just before, the plan in one line. Rare by
-            construction; owner's decision, Oct 26. Only while held.
-  "Quiet today" (a button on PLAN and NO_STOP) mutes PLAN, ADDED, NO_STOP,
-  PARTIAL and CLOSE. LOWERED, REMOVED, UNFILLED, REFUSED, EXCESS, ORPHAN,
-  PRODUCT, DAY, SIZE, BLIND and BACK always go, because those are the moments
-  a loss grows (or the watch cannot see it). [O26] A buy's other warnings
-  (after a loss, a chased spike) stay muted with its PLAN: on Oct 26 they
-  would have been on 20 of 21 buys, so a message each would be noise, and
-  DAY tells the pattern once a step instead.
+  [N06c 2026-11-04] No "Quiet today" button any more (owner: an accidental tap would silence the watch; the
+  partner can mute the chat in Telegram). A tap on one in an old message changes nothing (``handle_button``).
 
 [O26] Every trade is stored when it changes (``partner_watch_trips``): its
 fills and result after charges, and what a check would have warned about at
@@ -336,7 +330,6 @@ COUNT_FROM_TRADE = 5
 DAY_STEP = 0.10
 FUTURE_BARS_DAYS = 21                      # as the F&O engine (fno_orchestrator.RVOL_FETCH_CALENDAR_DAYS)
 TICK = 0.05
-QUIET_KEEPS = ("LOWERED", "REMOVED", "UNFILLED", "REFUSED", "EXCESS", "ORPHAN", "PRODUCT", "DAY", "SIZE")
 # [N06] SENTINEL / SENTINEL_EXIT: the Sentinel's own main trades as advice (partner_sentinel), fixed texts.
 ALWAYS_SENT = ("WATCH_ON", "PROMPT", "RECONNECT", "BLIND", "BACK", "CHECK", "SENTINEL", "SENTINEL_EXIT")
 GUARD_TOLERANCE = 0.005                    # a stop within 0.5% under the buy price still guards it
@@ -347,14 +340,14 @@ WAITING = ("TRIGGER PENDING", "MODIFY PENDING", "MODIFY VALIDATION PENDING", "VA
 COVERED = ("FULL", "PARTIAL")
 # How long a message is still worth sending again after a failed send (seconds).
 LIFETIME_SEC = {"PLAN": 180, "ADDED": 180, "NO_STOP": 900, "PARTIAL": 900, "REMOVED": 900, "UNFILLED": 120,
-                "LOWERED": 120, "REFUSED": 300, "CLOSE": 1200, "WATCH_ON": 600, "PROMPT": 1800, "RECONNECT": 1800,
+                "LOWERED": 120, "REFUSED": 300, "BROKEN": 120, "CLOSE": 1200, "WATCH_ON": 600, "PROMPT": 1800, "RECONNECT": 1800,
                 "EXCESS": 900, "ORPHAN": 900, "PRODUCT": 900, "BLIND": 600, "BACK": 300, "CHECK": 120, "DAY": 600,
-                "SIZE": 180, "SENTINEL": 120, "SENTINEL_EXIT": 900}
+                "SENTINEL": 120, "SENTINEL_EXIT": 900}
 MAX_ATTEMPTS = 4
 RETRY_GAP = timedelta(seconds=10)
 # [O24d] The outbox sends the most urgent first.
-PRIORITY = {"UNFILLED": 0, "REMOVED": 1, "LOWERED": 1, "REFUSED": 1, "EXCESS": 1, "ORPHAN": 1, "PRODUCT": 1,
-            "BLIND": 1, "CHECK": 1, "NO_STOP": 2, "PARTIAL": 2, "DAY": 2, "SIZE": 2, "ADDED": 3,
+PRIORITY = {"UNFILLED": 0, "BROKEN": 1, "REMOVED": 1, "LOWERED": 1, "REFUSED": 1, "EXCESS": 1, "ORPHAN": 1, "PRODUCT": 1,
+            "BLIND": 1, "CHECK": 1, "NO_STOP": 2, "PARTIAL": 2, "DAY": 2, "ADDED": 3,
             "PLAN": 3, "CLOSE": 4, "BACK": 4, "WATCH_ON": 5, "PROMPT": 5, "RECONNECT": 5, "SENTINEL": 2,
             "SENTINEL_EXIT": 2}
 SENT, DONE, RETRY, MUTED, WAIT, LATER = "SENT", "DONE", "RETRY", "MUTED", "WAIT", "LATER"
@@ -1340,8 +1333,7 @@ def stop_advice(position, plan: Optional[Plan], cover: Optional[Cover], quote: O
     if cover is not None and cover.state == "UNKNOWN":
         return "Your GTTs could not be read. If you have no stop yet: " + (order if fresh else unsure)
     if fresh:
-        return (f"Place an SL sell now: trigger {_px(plan.stop)}, limit a little under it{_checked(quote)}. In a fast "
-                f"fall an SL order can trigger and still not fill.")
+        return f"Place an SL sell now: trigger {_px(plan.stop)}, limit a little under it{_checked(quote)}."
     return _upper(unsure)
 
 
@@ -1519,7 +1511,8 @@ def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tup
               cover: Optional[Cover] = None, after_loss: Optional[dict] = None, day_line: Optional[str] = None,
               usual: Optional[float] = None, quote: Optional[dict] = None, now: Optional[datetime] = None,
               set_at: Optional[datetime] = None, card: Optional[dict] = None,
-              card_relation_: Optional[str] = None, size_note: str = "", notes: Optional[list] = None) -> str:
+              card_relation_: Optional[str] = None, size_note: str = "", size_tail: str = "",
+              after_tail: str = "") -> str:
     """The PLAN message. ``position``: what is held now (a Holding; a Trip
     in the pure tests), with ``plan`` for that size. ``bought``: (qty, price)
     of the buy the plan is for (the plan's own by default). ``quote``: the
@@ -1527,8 +1520,10 @@ def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tup
     under is never offered as a stop. [O24d] ``cover``: what already
     protects the units (``stop_advice``). [N04-A] ``card``/``card_relation_``: the card on this option and how
     the buy stands to it (``card_relation``); a CARD plan says the card's stop and target. [N06] ``size_note``: the
-    Sentinel's size for this buy (partner_sentinel.size_line), after the stop; ``notes``: the partner's own record
-    and the Sentinel's rule on what the warnings above found, before the stop advice."""
+    loss at the stop for 1 and 2 lots (partner_sentinel.size_line), after the stop. [N06c] ``size_tail`` and
+    ``after_tail`` end the size and after-loss warning lines (the partner's own record, the Sentinel's rule), so
+    each warning is one line. No facts line (the swing, the run, the trend): owner, Nov 4, "long long paragraph
+    with market on reading is impossible"; the check, which the partner asks for, keeps them."""
     from partner_insights import USUAL_SIZE_MULT
     name = _name(position)
     future = _future_of(position.tradingsymbol)
@@ -1561,16 +1556,14 @@ def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tup
         lines.append(f"🛑 Plan stop {_px(plan.stop)} ({future} {plan.stop_index:,.0f}). If it sells there: about "
                      f"−{_amt(plan.loss)} with charges{share}.")
     elif plan.stop_basis == "SWING":
-        inside = (f"The futures stop ({plan.stop_index:,.0f} → {_px(plan.index_stop_option)}) sits inside that "
-                  f"swing. " if plan.stop_index is not None and plan.index_stop_option is not None else "")
         lines.append(f"🛑 Plan stop {_px(plan.stop)}: one normal 5-minute swing ({_px(plan.swing)}) under your "
-                     f"price. {inside}If it sells there: about −{_amt(plan.loss)} with charges{share}.")
+                     f"price. If it sells there: about −{_amt(plan.loss)} with charges{share}.")
     else:
         lines.append("🛑 " + _no_level_line(position, plan, cover, share))
     paid = bought_px * bought_qty
     if usual and plan.cash and paid / plan.cash > USUAL_SIZE_MULT * usual:
         lines.append(f"⚠️ {_amt(paid)} in this trade, {paid / plan.cash:.0%} of your cash: much bigger than your "
-                     f"usual {usual:.0%}.")
+                     f"usual {usual:.0%}." + size_tail)
     if size_note:
         lines.append(size_note)
     if on_card and card.get("target"):
@@ -1585,27 +1578,14 @@ def plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tup
             lines.append(f"🎯 Already above the target zone {_px(plan.target)} (price {_px(ltp)}).")
         else:
             lines.append(f"🎯 Target zone {_px(plan.target)} ({future} {plan.target_index:,.0f}).")
-    facts = []
-    if plan.stop_basis in ("INDEX", "SWING", "CARD") and plan.swing:
-        facts.append(f"normal 5-min swing {_px(plan.swing)}")
-    if plan.run_pct is not None and plan.run_from:
-        facts.append(f"up {_pct_down(plan.run_pct)} in the 15 min before you bought (from {_px(plan.run_from)})"
-                     if plan.run_pct >= 0 else
-                     f"down {_pct_down(plan.run_pct)} in the 15 min before you bought")
-    if plan.trend:
-        facts.append(f"the {future}'s 5-min trend is with you" if plan.trend == "WITH" else
-                     f"the {future}'s 5-min trend is against you")
-    if facts:
-        lines.append("• " + "; ".join(facts) + ".")
     if after_loss:
         line = (f"⚠️ Your last trade closed −{_amt(after_loss['loss'])} at {after_loss['at']}, "
                 f"{after_loss['minutes']} min before this buy.")
         if after_loss.get("bigger"):
             line += f" This is {after_loss['bigger']}."
-        lines.append(line)
+        lines.append(line + after_tail)
     if day_line:
         lines.append(day_line)
-    lines.extend(n for n in notes or () if n)
     advice = stop_advice(position, plan, cover, quote, now=now, set_at=set_at)
     if advice:
         lines.append(advice)
@@ -1668,6 +1648,43 @@ def _product_note(cover: Optional[Cover], holding) -> str:
     stop = cover.other_product[0]
     return (f" Your stop for {stop['units']} is {stop.get('product') or 'another product'} and these are "
             f"{holding.product}: it would not sell them.")
+
+
+def _sell_units(holding, quote: Optional[dict], units: int) -> Optional[tuple]:
+    """[N06c] Selling ``units`` of the holding now into the bids: (result after charges, whether the bids shown
+    take them all). None without a price."""
+    average, taken, _best, low, sized = exit_fill(quote, units)
+    if not average or holding.entry is None or not units:
+        return None
+    price = average if taken >= units else (average * taken + low * (units - taken)) / units
+    return _result_for(holding, price, units), (not sized or taken >= units)
+
+
+def broken_text(holding, plan: Plan, quote: dict, cover: Optional[Cover], lot: int,
+                cash: Optional[float] = None) -> str:
+    """[N06c] BROKEN, two lines: where the price is against the plan stop, then what selling all (and half, when
+    two lots or more are held) gives now, against the bids' sizes. Choices; the partner decides."""
+    qty = holding.open_qty
+    lines = [f"⛔ {_name(holding)} ({qty}) is under its plan stop {_px(plan.stop)}: {_px(quote['ltp'])} now."]
+    choices = []
+    whole = _sell_units(holding, quote, qty)
+    if whole is not None:
+        result, full = whole
+        share = _share(-result, cash) if result < 0 else ""
+        choices.append(f"Sell all now {_signed(result)}{'' if full else ' or worse'}{share}")
+        half = (qty // lot // 2) * lot if lot else 0
+        if half >= lot > 0:
+            part = _sell_units(holding, quote, half)
+            if part is not None:
+                n = half // lot
+                choices.append(f"sell {n} lot{'s' if n != 1 else ''} ({half}) {_signed(part[0])}"
+                               f"{'' if part[1] else ' or worse'}")
+    choices.append("or hold: your call.")
+    line = " · ".join(choices)
+    if cover is not None and cover.stops:
+        line += f" Your SL at {_triggers(cover.stops)} is lower."
+    lines.append(line)
+    return "\n".join(lines)
 
 
 def no_stop_text(holding, plan: Optional[Plan], quote: Optional[dict] = None, cover: Optional[Cover] = None,
@@ -2131,13 +2148,11 @@ def _next_weekday(day: date) -> date:
     return day
 
 
-WATCH_ON_TEXT = ("✅ Trade watch on until {close}. I'll message you when a buy has no stop or only part of it is "
-                 "covered, when a stop is moved down or cancelled, when a stop fires and does not sell, when "
-                 "Zerodha refuses an order, when sell orders could sell more than you hold, each time the day's "
-                 f"loss, or what it gives back from its best, passes another {DAY_STEP:.0%} of your cash, and "
-                 "before the close; "
-                 "and if I cannot read your account for a while. Messages only: nothing is ever placed, changed "
-                 "or cancelled for you. Before a buy you can send me, for example: check 22300 pe.")
+# [N06c] Short: what it watches, and the one thing to send. Owner: "long long paragraph with market on reading is
+# impossible".
+WATCH_ON_TEXT = ("✅ Trade watch on until {close}: stops missing, moved or not selling, refused orders, a trade "
+                 f"under its plan stop, and each {DAY_STEP:.0%} of cash the day loses or gives back. Messages only: "
+                 "nothing is placed for you.\n🔎 Before a buy, send the option, e.g. 76700 ce.")
 PROMPT_TEXT = ("🌅 Good morning. Log in to Zerodha to switch on today's trade watch: I'll message you when a buy "
                "has no stop, when a stop is moved down, cancelled or does not sell, and when Zerodha refuses an "
                "order. Messages only: nothing is ever placed for you.")
@@ -2147,8 +2162,8 @@ RECONNECT_TEXT = ("🔌 The trade watch stopped (the system restarted) and needs
 RESTORED_TEXT = ("🔌 The trade watch restarted and is on again; your login was kept. Changes you made while it was "
                  "off are not told one by one: check your stops in Zerodha.")
 # A button's answer is cut at 190 characters (partner_fill_capture._answer; Telegram allows 200).
-QUIET_TOAST = ("Quiet for today. Still sent: a stop moved down, cancelled or not selling; a refused order; sell "
-               f"orders over what you hold; a buy far bigger than usual; each {DAY_STEP:.0%} of cash lost or given back.")
+# [N06c] The answer to a tap on an old "Quiet today" button: the button is gone and nothing is muted.
+QUIET_GONE = "Quiet was removed: every watch message keeps coming. To silence the chat, mute it in Telegram."
 # [O24f] The watch cannot see part of the book (``_health``), and then can again.
 BLIND_TEXT = {
     "orders": ("⚠️ The trade watch cannot read your Zerodha orders since {since} (it tries every 5 s). Until it can, "
@@ -2161,11 +2176,6 @@ BLIND_TEXT = {
 READ_NAMES = {"orders": "Zerodha orders", "positions": "Zerodha positions", "gtts": "GTTs"}
 BACK_TEXT = ("✅ The trade watch can read your {what} again (it could not from {since} to {now}). It checks what "
              "changed meanwhile now.")
-
-
-def quiet_keyboard(day: str) -> dict:
-    data = f"{QUIET_PREFIX}:quiet:{day.replace('-', '')}"
-    return {"inline_keyboard": [[{"text": "🔕 Quiet today", "callback_data": data}]]}
 
 
 def login_keyboard(label: str) -> Optional[dict]:
@@ -2362,11 +2372,6 @@ async def _set_state(db_path: str, key: str, value: str, now: datetime) -> None:
         await db.commit()
 
 
-async def quiet(db_path: str, day: str) -> bool:
-    await init_partner_watch_db(db_path)
-    return (await _get_state(db_path, f"quiet:{day}")) == "1"
-
-
 @dataclass
 class _Entry:
     """[O24d] One message in the outbox, as read for sending."""
@@ -2519,7 +2524,7 @@ async def _close(db_path: str, key: str, outcome: str) -> None:
 
 
 async def _deliver(db_path: str, entry: _Entry, now: datetime) -> str:
-    """[O24d] One message: expired (past LIFETIME_SEC), muted (quiet today),
+    """[O24d] One message: expired (past LIFETIME_SEC),
     WAIT (no fresh book read to build it from), superseded (no longer true:
     not sent), or sent with the text built now. Telegram's own outcome is
     kept; a provably unsent one is tried again RETRY_GAP later, rebuilt."""
@@ -2530,11 +2535,6 @@ async def _deliver(db_path: str, entry: _Entry, now: datetime) -> str:
         return DONE
     if entry.outcome != QUEUED and last is not None and now - last < RETRY_GAP:
         return LATER
-    if (entry.kind not in QUIET_KEEPS and entry.kind not in ALWAYS_SENT
-            and await quiet(db_path, now.date().isoformat())):
-        await _size_through_quiet(db_path, entry, now)
-        await _close(db_path, entry.key, "muted")
-        return MUTED
     if entry.kind == "CHECK":
         # [O25M] A check's prices are current for QUOTE_FRESH after they were read. Past that (a retry, a slow first
         # send, a restart) the text is never sent: it is worked out again beside the sender. The row stays due
@@ -2653,7 +2653,7 @@ async def _build(db_path: str, entry: _Entry, now: datetime, view=None):
     return await builder(db_path, context, view, now) if builder else None
 
 
-_QUOTED = ("PLAN", "ADDED", "NO_STOP", "PARTIAL", "REMOVED", "UNFILLED", "SIZE")
+_QUOTED = ("PLAN", "ADDED", "NO_STOP", "PARTIAL", "REMOVED", "UNFILLED", "BROKEN")
 
 
 async def _prefetch(entries: list, now: datetime) -> None:
@@ -2866,6 +2866,7 @@ class _State:
     detected_by: Optional[str] = None                 # [O24g] the tick now running: poll | stream
     blind: dict = field(default_factory=dict)         # [O24f] read -> the failure the partner was told of (BLIND)
     trip_sigs: dict = field(default_factory=dict)     # [O26] trip key -> what its stored row was written from
+    above: set = field(default_factory=set)           # [N06c] episodes whose price was read over their plan stop
 
 
 _state = _State()
@@ -3258,6 +3259,11 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     for holding in holdings:
         covers[holding.hkey] = await _guard(db_path, day, holding, rows, now, deadline, seeded, out,
                                             moves.get(holding.hkey))
+    # 2b. [N06c] A trade under its plan stop with no stop of its own at or above it (BROKEN), once a trade.
+    for holding in holdings:
+        item = _broken_item(day, holding, covers.get(holding.hkey), now)
+        if item is not None:
+            out.append(item)
     found: list = []
     _exits(day, rows, _state.gtts if _gtts_fresh(now, GTT_REFRESH) else None, holdings, now, found)
     if _state.gtts_at != now and any(_counts_gtt(item) for item in found):
@@ -4265,7 +4271,6 @@ async def _revise(db_path: str, day: str, trip: Trip, meta: dict, holdings: list
         context = {"episode": episode, "added": added,
                    "added_px": round(sum(trip.buys[i]["value"] for i in new_ids) / added, 4),
                    "first_px": round(first["value"] / first["qty"], 4), "loss_before": loss_before,
-                   # [O26] for the size warning that still goes on a quiet day (``size_reasons``)
                    "held_value": round(current.entry * current.open_qty, 2),
                    "usual": await _usual_share(db_path, trip, trips or [trip], now)}
         item = (f"added:{episode}:{new_ids[-1]}", "ADDED", holding, context, first_new, episode)
@@ -4346,15 +4351,16 @@ async def _b_plan(db_path: str, context: dict, view: View, now: datetime):
     plan = _current(plan, holding)
     cover = view.covers.get(holding.hkey)
     quote = await _price_now(holding, now)
-    size_note, notes = await _sentinel_notes(db_path, view.day, plan, lot=context.get("lot"),
+    size_note, size_tail, after_tail = await _sentinel_notes(db_path, view.day, plan, lot=context.get("lot"),
                                              exchange=holding.exchange, bought=context["bought"],
                                              bought_px=context["bought_px"], lots=context.get("lots"),
                                              usual=context.get("usual"), after_loss=context.get("after_loss"))
     text = plan_text(holding, plan, lots=context.get("lots"), bought=(context["bought"], context["bought_px"]),
                      cover=cover, after_loss=context.get("after_loss"), day_line=context.get("day_line"),
                      usual=context.get("usual"), quote=quote, now=now, set_at=set_at, card=context.get("card"),
-                     card_relation_=context.get("card_relation"), size_note=size_note, notes=notes)
-    return text, plan_summary(plan, quote, cover, now), quiet_keyboard(view.day)
+                     card_relation_=context.get("card_relation"), size_note=size_note, size_tail=size_tail,
+                     after_tail=after_tail)
+    return text, plan_summary(plan, quote, cover, now), None
 
 
 async def _b_added(db_path: str, context: dict, view: View, now: datetime):
@@ -4369,7 +4375,57 @@ async def _b_added(db_path: str, context: dict, view: View, now: datetime):
                       cover=view.covers.get(holding.hkey), now=now, rule=_sentinel_rule("ADD"))
     summary = (f"you added {added}: the plan stop now costs about −{_amt(-_result_at(holding, plan.stop))}"
                if plan is not None and plan.stop is not None else f"you added {added}")
-    return text, summary, quiet_keyboard(view.day)
+    return text, summary, None
+
+
+def _own_stop_covers(cover: Optional[Cover], plan: Plan) -> bool:
+    """[N06c] The partner's own stops cover every unit at or above the plan stop: they sell by themselves."""
+    return (cover is not None and cover.state == "FULL" and bool(cover.stops)
+            and min(s["trigger"] for s in cover.stops) >= plan.stop - 1e-9)
+
+
+def _broken_item(day: str, holding, cover: Optional[Cover], now: datetime) -> Optional[tuple]:
+    """[N06c] The BROKEN outbox item when this read sees the trade's price under its plan stop for the first time
+    after seeing it over (``_state.above``), from NO_STOP_AFTER past the buy, with no stop of the partner's own at
+    or above the plan stop; None otherwise. Only a fresh quote counts (``level_state``)."""
+    if not getattr(settings, "PARTNER_WATCH_BROKEN_ENABLED", True):
+        return None
+    trip = getattr(holding, "trip", None)
+    if not holding.open_qty or not holding.position_key or trip is None or trip.carried:
+        return None
+    meta = _state.planned.get(holding.position_key)
+    plan = meta["plan"] if meta is not None else None
+    if plan is None or plan.stop is None:
+        return None
+    episode = _episode(day, holding)
+    state = level_state(plan.stop, _state.quotes.get(holding.tradingsymbol), now)
+    if state == "VALID":
+        _state.above.add(episode)
+        return None
+    if (state != "CROSSED" or episode not in _state.above or now - trip.first_at < NO_STOP_AFTER
+            or _own_stop_covers(cover, plan)):
+        return None
+    return (f"broken:{episode}", "BROKEN", holding, {"episode": episode}, now, episode)
+
+
+async def _b_broken(db_path: str, context: dict, view: View, now: datetime):
+    """[N06c] Only while still true at send: held, still under the plan stop on a fresh price, no stop of its own
+    at or above it."""
+    holding = view.holding(context.get("episode"))
+    if holding is None or not holding.open_qty:
+        return None
+    plan, _set_at = await _plan_for(db_path, holding, view.day)
+    plan = _current(plan, holding)
+    if plan is None or plan.stop is None:
+        return None
+    quote = await _price_now(holding, now)
+    cover = view.covers.get(holding.hkey)
+    if level_state(plan.stop, quote, now) != "CROSSED" or _own_stop_covers(cover, plan):
+        return None
+    contract = contract_of(holding.exchange, holding.tradingsymbol)
+    lot = int(getattr(contract, "lot_size", 0) or 0)
+    return (broken_text(holding, plan, quote, cover, lot, _state.cash),
+            f"under the plan stop {_px(plan.stop)}", None)
 
 
 async def _b_cover(kind: str, db_path: str, context: dict, view: View, now: datetime):
@@ -4389,10 +4445,10 @@ async def _b_cover(kind: str, db_path: str, context: dict, view: View, now: date
     quote = await _price_now(holding, now)
     if kind == "NO_STOP":
         return (no_stop_text(holding, plan, quote, cover, set_at, now=now), "no stop order yet",
-                quiet_keyboard(view.day))
+                None)
     if kind == "PARTIAL":
         return (partial_text(holding, cover, plan, quote, set_at, now=now),
-                f"a stop covered {cover.covered + cover.exiting} of {holding.qty}", quiet_keyboard(view.day))
+                f"a stop covered {cover.covered + cover.exiting} of {holding.qty}", None)
     why = context.get("why") or {}
     summary = "stop sold part, the rest has none" if why.get("kind") == "SOLD" else "stop gone, nothing in its place"
     return removed_text(holding, why, plan, quote, set_at, now=now), summary, None
@@ -4529,82 +4585,6 @@ async def _b_product(db_path: str, context: dict, view: View, now: datetime):
             f"{product} sell orders on {same[0].product} units", None)
 
 
-QUIET_SIZE_NOTE = "🔕 Quiet is on: this one is sent because of the size."
-
-
-def size_reasons(kind: str, context: dict, cash: Optional[float]) -> dict:
-    """[O26] Why a muted PLAN or ADDED still warns (owner, Oct 26): the money in the trade is much more than the
-    partner usually puts in (more than partner_insights.USUAL_SIZE_MULT, 1.5x, their usual share of cash: the
-    PLAN's own size warning), or a buy bigger than the losing trade just before it (the PLAN's "bigger" after a
-    loss). Empty when neither."""
-    from partner_insights import USUAL_SIZE_MULT
-    out: dict = {}
-    usual = context.get("usual")
-    if kind == "PLAN":
-        paid = float(context.get("bought_px") or 0) * int(context.get("bought") or 0)
-    elif kind == "ADDED":
-        paid = float(context.get("held_value") or 0)
-        out["added"] = True
-    else:
-        return {}
-    if usual and cash and paid and paid / cash > USUAL_SIZE_MULT * usual:
-        out.update(paid=round(paid, 2), share=round(paid / cash, 4), usual=usual)
-    after = context.get("after_loss") if kind == "PLAN" else None
-    if after and after.get("bigger"):
-        out["after_loss"] = after
-    return out if ("share" in out or "after_loss" in out) else {}
-
-
-async def _size_through_quiet(db_path: str, entry: _Entry, now: datetime) -> None:
-    """[O26] A PLAN or ADDED muted by "Quiet today" leaves its size warning in the outbox as SIZE, when it has
-    one (``size_reasons``). On a day without Quiet the PLAN itself carries it."""
-    if entry.kind not in ("PLAN", "ADDED"):
-        return
-    try:
-        context = json.loads(entry.context or "null")
-    except ValueError:
-        return
-    if not isinstance(context, dict):
-        return
-    why = size_reasons(entry.kind, context, _state.cash)
-    if not why:
-        return
-    episode = context.get("episode")
-    subject = _state.view.holding(episode) if _state.view is not None and episode else None
-    await _enqueue(db_path, f"size:{entry.key}", now.date().isoformat(), "SIZE", subject, now,
-                   context={"episode": episode, **why}, event_at=_dt(entry.event_at), episode=episode)
-
-
-def size_text(holding, why: dict, plan: Optional[Plan], quote: Optional[dict], cover: Optional[Cover],
-              now: datetime) -> str:
-    """[O26] The SIZE message: the size against the usual, the losing trade just before when this buy is bigger,
-    the plan in one line (``plan_summary``: never a stop to place against an old or crossed price)."""
-    name, lines = _name(holding), []
-    if why.get("share") is not None:
-        lines.append(f"⚠️ {name}: {_amt(why['paid'])} in this trade{' now' if why.get('added') else ''}, "
-                     f"{why['share']:.0%} of your cash: much bigger than your usual {why['usual']:.0%}.")
-    after = why.get("after_loss")
-    if after:
-        lead = "Your" if lines else f"{name}: your"
-        lines.append(f"⚠️ {lead} last trade closed −{_amt(after['loss'])} at {after['at']}, "
-                     f"{after['minutes']} min before this buy. This is {after['bigger']}.")
-    if plan is not None:
-        lines.append(f"🛑 {_upper(plan_summary(plan, quote, cover, now))}.")
-    lines.append(QUIET_SIZE_NOTE)
-    return "\n".join(lines)
-
-
-async def _b_size(db_path: str, context: dict, view: View, now: datetime):
-    """[O26] Only while the trade is held: sold meanwhile, its size no longer matters."""
-    holding = view.holding(context.get("episode"))
-    if holding is None:
-        return None
-    plan, _set_at = await _plan_for(db_path, holding, view.day)
-    plan = _current(plan, holding)
-    text = size_text(holding, context, plan, await _price_now(holding, now), view.covers.get(holding.hkey), now)
-    return text, "a much bigger size than usual, on a quiet day", None
-
-
 async def _b_day(db_path: str, context: dict, view: View, now: datetime):
     """[O26] From the latest read: not sent when the day is no longer at that step (back above it, or past the
     next one, whose own message tells it)."""
@@ -4654,26 +4634,21 @@ async def _sentinel_records(db_path: str, day: str) -> dict:
 
 async def _sentinel_notes(db_path: str, day: str, plan: Optional[Plan], *, lot: Optional[int], exchange: str,
                           bought: Optional[int], bought_px: Optional[float], lots: Optional[int],
-                          usual: Optional[float], after_loss: Optional[dict], verb: str = "bought") -> tuple:
-    """(size line, notes) for a PLAN or a check: the size the Sentinel's rule gives this buy at the plan stop, and,
-    for the warnings that apply, the Sentinel's rule and the partner's own record (only where the frozen score
-    supports the warning). ("", []) when off or without a plan stop."""
+                          usual: Optional[float], after_loss: Optional[dict]) -> tuple:
+    """(size line, size tail, after-loss tail) for a PLAN or a check. The size line: the loss at the plan stop for
+    1 and 2 lots. The tails end the size warning and the after-loss warning lines: the partner's own record on
+    that warning (only while the frozen score supports it) and, after a loss, the Sentinel's own rule. The text
+    decides whether each warning line appears; the tails go only on a line that does. ("", "", "") when off."""
     if not _sentinel_on() or plan is None:
-        return "", []
+        return "", "", ""
     import partner_sentinel as ps
-    from partner_insights import USUAL_SIZE_MULT
     size_note = ""
     if plan.stop is not None and plan.stop_basis in ("INDEX", "SWING", "CARD") and lot:
-        size_note = ps.size_line(ps.size_advice(plan.entry, plan.stop, lot, plan.cash, exchange or "NFO"),
-                                 usual=usual, entry=plan.entry, bought_lots=lots, verb=verb)
+        size_note = ps.size_line(ps.size_advice(plan.entry, plan.stop, lot, plan.cash, exchange or "NFO"))
     recs = await _sentinel_records(db_path, day)
-    notes = []
-    paid = float(bought_px or 0.0) * float(bought or 0)
-    if usual and plan.cash and paid / plan.cash > USUAL_SIZE_MULT * usual:
-        notes.append(ps.record_line(recs, "UNUSUAL_SIZE"))
-    if after_loss:
-        notes.extend((ps.AFTER_LOSS_RULE, ps.record_line(recs, "AFTER_LOSS")))
-    return size_note, [n for n in notes if n]
+    size_tail = ps.record_tail(recs, "UNUSUAL_SIZE")
+    after_tail = (ps.record_tail(recs, "AFTER_LOSS") + " " + ps.AFTER_LOSS_RULE) if after_loss else ""
+    return size_note, size_tail, after_tail
 
 
 async def _sentinel_items(db_path: str, day: str, now: datetime, holdings: list) -> list:
@@ -4719,15 +4694,15 @@ async def _sentinel_items(db_path: str, day: str, now: datetime, holdings: list)
 _BUILDERS = {
     "PLAN": _b_plan, "ADDED": _b_added, "UNFILLED": _b_unfilled, "LOWERED": _b_lowered, "REFUSED": _b_refused,
     "CLOSE": _b_close, "EXCESS": _b_excess, "ORPHAN": _b_orphan, "PRODUCT": _b_product, "DAY": _b_day,
-    "SIZE": _b_size,
     "NO_STOP": lambda *args: _b_cover("NO_STOP", *args),
+    "BROKEN": lambda *args: _b_broken(*args),
     "PARTIAL": lambda *args: _b_cover("PARTIAL", *args),
     "REMOVED": lambda *args: _b_cover("REMOVED", *args),
 }
 
 
 # ---------------------------------------------------------------------------
-# login, morning prompt, reconnect, the quiet button
+# login, morning prompt, reconnect, an old quiet button
 # ---------------------------------------------------------------------------
 
 async def _say(db_path: str, key: str, day: str, kind: str, text: str, now: datetime, *,
@@ -4756,9 +4731,8 @@ CHECK_WORDS = ("check", "chk")
 CHECK_DEADLINE_SEC = 12.0                  # the check's market reads (the inbox waits for it)
 CHECK_REFRESHES = 1                        # [O25M] times a check not sent while current is worked out again
 MAX_CHECK_LOTS = 50
-CHECK_HELP = ("🔎 To check an option before you buy, send for example: check 22300 pe. With your price and lots: "
-              "check sensex 81000 ce 120 2 lots. I reply with the plan stop, the loss if it sells there, the "
-              "target zone and anything that stands out. A check, not a tip.")
+CHECK_HELP = ("🔎 Before a buy, send the option, e.g. 76700 ce. With your price and lots: 76700 ce 120 2 lots. "
+              "I reply with its stop, the loss there and its target.")
 CHECK_NOTE = "A check, not a tip: whether to buy is your call."
 
 
@@ -4766,10 +4740,14 @@ def parse_check(text: str) -> Optional[dict]:
     """A check request: "check 22300 pe", "chk nifty 22300pe 75.5 x2",
     "check sensex 81000 ce 120 2 lots". None when the message is not a check.
     The fields not given are None; "unclear" when a word or number could
-    not be read (the reply is then the help)."""
+    not be read (the reply is then the help).
+    [N06c] Also the option alone, without "check": "76700 ce", "sensex 76700ce 120 2 lots". Such a message is a
+    check only when every word reads and it names a strike and CE or PE; anything else ("b 22300 pe 75", "ok",
+    "75.5") is not one, so other chat and trade reports go on as before."""
     words = re.sub(r"(?<=\d),(?=\d)", "", str(text or "")).strip().lower().replace(",", " ").split()
-    if not words or words[0].lstrip("/").split("@", 1)[0] not in CHECK_WORDS:
+    if not words:
         return None
+    bare = words[0].lstrip("/").split("@", 1)[0] not in CHECK_WORDS
     try:
         from fno_underlyings import SPECS
         names = set(SPECS)
@@ -4777,7 +4755,7 @@ def parse_check(text: str) -> Optional[dict]:
         names = {"NIFTY", "SENSEX"}
     out = {"underlying": None, "strike": None, "opt_type": None, "price": None, "lots": None, "unclear": False}
     numbers: list = []
-    for word in words[1:]:
+    for word in (words if bare else words[1:]):
         if word.upper() in names:
             out["underlying"] = word.upper()
         elif re.fullmatch(r"\d{4,6}(ce|pe)", word):
@@ -4803,15 +4781,35 @@ def parse_check(text: str) -> Optional[dict]:
             out["unclear"] = True
     if out["lots"] is not None and not 1 <= out["lots"] <= MAX_CHECK_LOTS:
         out["unclear"] = True
+    if bare and (out["unclear"] or out["strike"] is None or out["opt_type"] is None):
+        return None
     return out
+
+
+def infer_underlying(strike: float, opt_type: str, today: date) -> Optional[str]:
+    """[N06c] The index a check without one is about: the one whose nearest expiry lists this strike (NIFTY's are
+    near 24,000 in 50s, SENSEX's near 77,000 in 100s, so one at most matches). None when none or several do."""
+    from fno_models import OptionType
+    from fno_underlyings import SPECS, get_instruments_for
+    kind = OptionType(opt_type)
+    found = []
+    for name in sorted(SPECS):
+        try:
+            book = get_instruments_for(name)
+            expiry = book.nearest_option_expiry(today)
+            if expiry is not None and book.option(expiry, strike, kind) is not None:
+                found.append(name)
+        except Exception:             # an index without an instrument list cannot be the one
+            continue
+    return found[0] if len(found) == 1 else None
 
 
 def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[dict], *, lots: int, qty: int,
                given: Optional[float], future: str, opt_type: str, after_loss: Optional[dict] = None,
                day_line: Optional[str] = None, usual: Optional[float] = None, expires_today: bool = False,
                price_note: Optional[str] = None, future_live: bool = True,
-               refreshed_at: Optional[datetime] = None, size_note: str = "", notes: Optional[list] = None,
-               spike_warn: bool = True, sentinel_line: str = "") -> str:
+               refreshed_at: Optional[datetime] = None, size_note: str = "", size_tail: str = "",
+               after_tail: str = "", spike_warn: bool = True, sentinel_line: str = "") -> str:
     """[O24h] The reply to a check: the plan for this option bought now, at
     the price the partner gave or the ask just read, then only the facts
     that stand out. Never "buy" or "don't buy".
@@ -4819,8 +4817,8 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
     then says why there is no live price, and the levels are worked from the
     price given. ``future_live``: whether the future's price was current.
     ``refreshed_at``: the prices were read again, the first answer late.
-    [N06] ``size_note``: the Sentinel's size for it; ``notes``: its rule and the partner's own record on the
-    warnings that apply; ``spike_warn`` False: the chased-spike warning is left out (its frozen score does not
+    [N06] ``size_note``: the loss at the stop for 1 and 2 lots; [N06c] ``size_tail``/``after_tail`` end the size and
+    after-loss warning lines (the partner's record, the Sentinel's rule); ``spike_warn`` False: the chased-spike warning is left out (its frozen score does not
     support it, partner_watch_score: the run stays among the facts); ``sentinel_line``: what the Sentinel holds."""
     from partner_insights import SPIKE_RUN_PCT, USUAL_SIZE_MULT
     state = quote_freshness(quote)
@@ -4876,14 +4874,13 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
                 f"{after_loss['minutes']} min ago.")
         if after_loss.get("bigger"):
             line += f" This would be {after_loss['bigger']}."
-        lines.append(line)
+        lines.append(line + after_tail)
     paid = plan.entry * qty
     if usual and plan.cash and paid / plan.cash > USUAL_SIZE_MULT * usual:
         lines.append(f"⚠️ {_amt(paid)} is {paid / plan.cash:.0%} of your cash: much bigger than your usual "
-                     f"{usual:.0%}.")
+                     f"{usual:.0%}." + size_tail)
     if day_line:
         lines.append(day_line.replace("Trade ", "This would be trade ", 1))
-    lines.extend(n for n in notes or () if n)
     if sentinel_line:
         lines.append(sentinel_line)
     if expires_today:
@@ -4954,7 +4951,8 @@ async def _check_reply(parsed: dict, now: datetime, market: Market, db_path: Opt
     another expiry)."""
     from fno_models import OptionType
     from fno_underlyings import SPECS, get_instruments_for
-    name = (pin or {}).get("underlying") or parsed["underlying"] or "NIFTY"
+    name = ((pin or {}).get("underlying") or parsed["underlying"]
+            or infer_underlying(parsed["strike"], parsed["opt_type"], now.date()) or "NIFTY")
     spec = SPECS.get(name)
     if spec is None:
         return f"🔎 I can check {', '.join(sorted(SPECS))} options.", None
@@ -4990,13 +4988,14 @@ async def _check_reply(parsed: dict, now: datetime, market: Market, db_path: Opt
     usual = await _usual_share(db_path, trip, trips, now) if db_path and view is not None else None
     after_loss = _after_loss(trip, trips) if view is not None else None
     # [N06] The Sentinel's size, its rule and the partner's record on what applies, and what the Sentinel holds.
-    size_note, notes, spike_warn, sentinel_line = "", [], True, ""
+    size_note, size_tail, after_tail, spike_warn, sentinel_line = "", "", "", True, ""
     if db_path and _sentinel_on():
         import partner_sentinel as ps
         day = now.date().isoformat()
-        size_note, notes = await _sentinel_notes(db_path, day, plan, lot=int(raw.lot_size or 0), exchange=spec.segment,
+        size_note, size_tail, after_tail = await _sentinel_notes(db_path, day, plan, lot=int(raw.lot_size or 0),
+                                                                 exchange=spec.segment,
                                                  bought=qty, bought_px=plan.entry, lots=lots, usual=usual,
-                                                 after_loss=after_loss, verb="asked about")
+                                                 after_loss=after_loss)
         spike_warn = not ps.refuted(await _sentinel_records(db_path, day), "CHASED_SPIKE")
         try:
             sentinel_line = await asyncio.to_thread(ps.open_line, db_path, day, name)
@@ -5008,7 +5007,8 @@ async def _check_reply(parsed: dict, now: datetime, market: Market, db_path: Opt
                       day_line=_day_line(trip, [*trips, trip]) if view is not None else None, usual=usual,
                       expires_today=expiry == now.date(), price_note=note or None,
                       future_live=inputs.get("future") == "FRESH", refreshed_at=now if refreshed else None,
-                      size_note=size_note, notes=notes, spike_warn=spike_warn, sentinel_line=sentinel_line)
+                      size_note=size_note, size_tail=size_tail, after_tail=after_tail, spike_warn=spike_warn,
+                      sentinel_line=sentinel_line)
     evidence = {"contract": {"underlying": name, "exchange": spec.segment, "tradingsymbol": raw.tradingsymbol,
                              "expiry": expiry.isoformat() if expiry else None},
                 "read_at": now.isoformat(), "valid_until": (now + QUOTE_FRESH).isoformat()}
@@ -5091,7 +5091,7 @@ async def answer_check(db_path: str, text: str, now: datetime, *, key: str, aske
     """[O24h] Answer a check from the partner's chat (partner_fill_capture
     calls this before reading a message as a trade report). "not_check" when
     the message is not one (or the watch is off); the reply goes through the
-    outbox (kind CHECK, sent even when quiet: the partner asked for it).
+    outbox (kind CHECK).
     [O25M] The request, the option and expiry worked out and until when its
     prices are current are kept with it: a reply not sent by then is worked
     out again (``_refresh_check``), never sent with old prices."""
@@ -5152,9 +5152,7 @@ async def _morning_lines(db_path: str, day: str, now: datetime) -> list:
         from fno_underlyings import get_instruments_for
         for name in ("NIFTY", "SENSEX"):
             if get_instruments_for(name).is_expiry_day(now.date()):
-                lines.append(f"⏳ {name} options of today's expiry: their time value falls fastest today and they "
-                             f"settle at the close. The Sentinel's expiry ticket, if it buys one, comes in the "
-                             f"afternoon.")
+                lines.append(f"⏳ {name} expires today: its options lose time value fastest and settle at the close.")
     except Exception as exc:          # no instrument list: the expiry line is left out
         logger.warning("partner_sentinel_expiry_check_failed err=%s", type(exc).__name__)
     return ps.morning_lines(await _sentinel_records(db_path, day)) + lines
@@ -5191,21 +5189,17 @@ async def _reconnect_prompt(db_path: str, day: str, now: datetime) -> None:
 
 
 async def handle_button(db_path: str, data: str, now: datetime) -> Optional[str]:
-    """The quiet button (``watch:quiet:YYYYMMDD``): the toast, or None when not ours."""
+    """[N06c] A tap on an old "Quiet today" button (``watch:quiet:YYYYMMDD``): it changes nothing now, and the
+    answer says so; None when the button is not the watch's."""
     parts = str(data or "").split(":")
-    if len(parts) != 3 or parts[0] != QUIET_PREFIX or parts[1] != "quiet" or not parts[2].isdigit():
+    if len(parts) != 3 or parts[0] != QUIET_PREFIX or parts[1] != "quiet":
         return None
-    day = f"{parts[2][:4]}-{parts[2][4:6]}-{parts[2][6:]}"
-    if day != now.astimezone(IST).date().isoformat():
-        return "That was for an earlier day."
-    await init_partner_watch_db(db_path)
-    await _set_state(db_path, f"quiet:{day}", "1", now)
-    logger.info("partner_watch_quiet day=%s", day)
-    return QUIET_TOAST
+    logger.info("partner_watch_old_quiet_tap data=%s", data)
+    return QUIET_GONE
 
 
 async def watch_status(now: Optional[datetime] = None) -> dict:
-    """For the review page: is the watch on now, and quiet? [O24f] ``unread``:
+    """For the review page: is the watch on now? [N06c] ``quiet`` is always False (no quiet any more). [O24f] ``unread``:
     the reads failing now, each since when (a lasting one is also told on
     Telegram: BLIND)."""
     now = (now or datetime.now(IST)).astimezone(IST)
@@ -5213,7 +5207,7 @@ async def watch_status(now: Optional[datetime] = None) -> dict:
     on = enabled() and zerodha.connected(now) and OPEN_MIN - 15 <= minute < zerodha.CLOSE_MIN
     close = f"{zerodha.CLOSE_MIN // 60}:{zerodha.CLOSE_MIN % 60:02d}"
     return {"on": bool(on), "until": close,
-            "quiet": await quiet(settings.DB_PATH, now.date().isoformat()) if on else False,
+            "quiet": False,
             "unread": {read: since.isoformat() for read, since in sorted(_state.unread.items())} if on else {},
             "stream": _stream_state() if on else None}
 

@@ -3,36 +3,33 @@ places, changes or cancels an order, and nothing is decided for the partner.
 
 Owner's order (Nov 4): the partner lost Rs 51,869 in a day while the watch's messages arrived on time; make the
 advice better so that "they follow the trades of the sentinel", with the Sentinel's own strategies, and "no matter
-what still we will not take any action on behalf of the partner. Only advice."
+what still we will not take any action on behalf of the partner. Only advice." [N06c, Nov 4 night] "long long
+paragraph with market on reading is impossible": every line here is short and concrete, or it is not sent.
 
 What the stored days showed (Production, Oct 27 - Nov 4, read-only, partner_watch_score's frozen rule v2):
   - buys much bigger than the partner's usual share of cash: 57 trades, -Rs 38,024 (UNUSUAL_SIZE: SUPPORTED);
-    the rest, 175 trades, -Rs 2,130: about even before the big ones;
+    the rest, 175 trades, -Rs 2,130;
   - buys within 30 minutes of a losing exit: 143 trades, -Rs 31,721 (AFTER_LOSS: SUPPORTED);
-  - buys after a 20% run in 15 minutes: 96 trades, +Rs 49,703 (CHASED_SPIKE: NOT_SUPPORTED: the warning was wrong
-    for this partner, so the check no longer raises it while its verdict says so);
-  - the same trades sized by the Sentinel's rule (at most 2% of cash lost at the plan stop, at least one lot):
-    -Rs 11,942 instead of -Rs 40,154, worst day -Rs 16,218 instead of -Rs 51,869. Smaller losses, not a profit.
-  - the Sentinel's own F&O paper trades on those days, one lot each: 11 trades, -Rs 7,706. It is not a money
-    printer either: its edge in years of replays is small and it loses on many days. Every message says so.
+  - buys after a 20% run in 15 minutes: 96 trades, +Rs 49,703 (CHASED_SPIKE: NOT_SUPPORTED, so the check leaves
+    that warning out while its verdict says so);
+  - the Sentinel's own F&O paper trades on those days, one lot each: 11 trades, -Rs 7,706. Every message says it
+    is paper and its record.
 
-So the advice is the Sentinel's discipline, in the partner's own rupees:
-  - the size its rule gives for a buy (``size_advice``): ``settings.FNO_MAX_RISK_PCT`` of the day's cash lost at
-    the plan stop, the Sentinel's own per-trade limit. One lot that already loses more is said as such;
-  - after a losing trade the Sentinel takes one lot at most for the rest of the day (fno_n11.lot_ceiling), and it
-    adds lots only to a trade already up by a full stop (fno_n11 earned lot), never to a falling one;
-  - the partner's own record on a warning, shown only while partner_watch_score's frozen verdict SUPPORTS it
-    (``records``): their numbers, not a rule;
-  - the Sentinel's own main trades as it takes them (``sentinel_trades``): the F&O paper main book (source
-    FNO_PAPER, the N11 book) and, with EXPIRY_MAIN_STRATEGY "E032", the expiry book's main ticket; each with its
-    stop, target, the size its rule gives the partner's cash, and its own recent record.
+What the partner gets:
+  - ``size_line``: the loss at the plan stop for 1 lot and for 2 lots, in rupees and as a share of the day's cash,
+    and the most the Sentinel risks on a trade (``settings.FNO_MAX_RISK_PCT``, 2%). Choices, not a limit (owner:
+    "we need them to have freedom");
+  - after a losing trade the Sentinel's own rule (one lot, fno_n11.lot_ceiling); on adding under the first buy,
+    its rule on adding (fno_n11 earned lot: only to a trade up a full stop);
+  - the partner's own record on a warning, only while partner_watch_score's frozen verdict SUPPORTS it;
+  - the Sentinel's own main trades as it takes them (``events``): the F&O paper main book (source FNO_PAPER) and,
+    with EXPIRY_MAIN_STRATEGY "E032", the expiry book's main ticket; a buy only while it is fresh and still open.
 
 Pure helpers and read-only readers; partner_watch sends the messages (kinds SENTINEL and SENTINEL_EXIT).
 """
 from __future__ import annotations
 
 import json
-import math
 import sqlite3
 from contextlib import closing
 from datetime import date, datetime, timedelta
@@ -47,16 +44,16 @@ IST = pytz.timezone("Asia/Kolkata")
 FNO_SOURCE = "FNO_PAPER"
 EARNED_LOT = "N11_ADD"                     # the earned lot is its own position: told with its parent, not as a trade
 RECORD_TRADES = 20                         # the Sentinel's record line: its last closed main-book trades
-FRESH_BUY = timedelta(minutes=5)           # a Sentinel buy older than this when first seen is not offered
+FRESH_BUY = timedelta(minutes=2)           # [N06c] a Sentinel buy older than this when first seen is not offered
 FRESH_SELL = timedelta(minutes=30)         # a sale is told while this recent (only for a buy that was told)
+MOST_LOTS = 50                             # the size search never looks past this many lots
 REASONS = {
-    "underlying_stop": "its stop level", "premium_backstop": "its 25% backstop", "trail_stop": "its trailing stop",
-    "profit_lock": "its profit lock", "time_stop": "its time limit", "hard_flat_1510": "its 15:10 close",
-    "target": "its target",
+    "underlying_stop": "stop level", "premium_backstop": "25% backstop", "trail_stop": "trailing stop",
+    "profit_lock": "profit lock", "time_stop": "time limit", "hard_flat_1510": "15:10 close", "target": "target",
     # the expiry ticket's own actions (expiry_e02.action, expiry_paper.manage_position)
-    "STOP": "its stop", "HARD_STOP": "its stop", "STRUCTURE": "its index stop", "TARGET": "its target (2x)",
-    "TARGET_BASE": "its 2x sale (the rest runs)", "RUNNER_TRAIL": "its runner's floor", "HERO_TARGET": "its 10x target",
-    "TIME": "its time limit", "FLAT": "its 15:14 sale", "TRAIL": "its trailing stop",
+    "STOP": "stop", "HARD_STOP": "stop", "STRUCTURE": "index stop", "TARGET": "2x target",
+    "TARGET_BASE": "2x sale, the rest runs", "RUNNER_TRAIL": "runner's floor", "HERO_TARGET": "10x target",
+    "TIME": "time limit", "FLAT": "15:14 sale", "TRAIL": "trailing stop",
 }
 
 
@@ -104,76 +101,44 @@ def _costs(entry: float, exit_: float, qty: int, exchange: str) -> float:
 
 
 # ---------------------------------------------------------------------------
-# size: the Sentinel's rule in the partner's rupees
+# size: concrete choices in the partner's rupees
 # ---------------------------------------------------------------------------
+
+def loss_at(entry: float, stop: float, qty: int, exchange: str) -> float:
+    """What ``qty`` bought at ``entry`` loses if sold at ``stop``, with that quantity's own round-trip charges."""
+    return round((entry - stop) * qty + _costs(entry, stop, qty, exchange), 2)
+
 
 def size_advice(entry: Optional[float], stop: Optional[float], lot: Optional[int], cash: Optional[float],
                 exchange: str = "NFO", *, most: Optional[int] = None) -> Optional[dict]:
-    """The lots the Sentinel's rule allows for a buy at ``entry`` with its stop at ``stop``: at most ``risk_share()``
-    of ``cash`` lost at the stop, charges included; ``most`` caps it (the Sentinel's own lots on its own trade).
-    ``lots`` 0: even one lot loses more. None without a price, a stop under it, a lot size or the cash."""
+    """The loss at ``stop`` for one and for two lots (each with its own charges), and ``lots``: the most lots whose
+    loss stays within ``risk_share()`` of ``cash`` (0 when one lot is already over; ``most`` caps it). None without
+    a price, a stop under it, a lot size or the cash."""
     if not entry or stop is None or not lot or not cash or cash <= 0 or stop >= entry:
         return None
-    per_lot = round((entry - stop) * lot + _costs(entry, stop, lot, exchange), 2)
     budget = round(risk_share() * cash, 2)
-    lots = int(budget // per_lot) if per_lot > 0 else 0
-    if most is not None:
-        lots = min(lots, int(most))
-    return {"lots": lots, "lot": int(lot), "per_lot": per_lot, "budget": budget, "cash": float(cash),
-            "share": per_lot / cash}
+    one, two = loss_at(entry, stop, lot, exchange), loss_at(entry, stop, 2 * lot, exchange)
+    lots = 0
+    for n in range(1, int(most or MOST_LOTS) + 1):
+        if loss_at(entry, stop, n * lot, exchange) > budget:
+            break
+        lots = n
+    return {"lots": lots, "lot": int(lot), "one": one, "two": two, "budget": budget, "cash": float(cash)}
 
 
-def usual_lots(entry: Optional[float], lot: Optional[int], cash: Optional[float], usual: Optional[float]) -> Optional[int]:
-    """[N06b] The lots the partner's own usual share of cash buys at ``entry`` (at least one); None without a usual."""
-    if not entry or not lot or not cash or not usual or usual <= 0:
-        return None
-    return max(1, int((usual * cash) // (entry * lot)))
-
-
-def _sentinel_part(advice: dict) -> str:
-    rule = f"The Sentinel's own rule (at most {risk_share():.0%} of cash lost at the stop)"
-    if advice["lots"] >= 1:
-        return f"{rule} would take {_lots(advice['lots'])}."
-    return f"{rule} would take less than one lot here: one lot is {_share(advice['share'])} of your cash at the stop."
-
-
-def size_line(advice: Optional[dict], *, usual: Optional[float] = None, entry: Optional[float] = None,
-              bought_lots: Optional[int] = None, stop_name: str = "the plan stop", verb: str = "bought") -> str:
-    """One line on size; "" without advice. [N06b, owner: "don't do extreme conservative, we need them to have
-    freedom"] It leads with the partner's own usual size (``usual``, their share of cash; their usual-size buys
-    were about even, Oct 27 - Nov 4) and what that loses at the stop, then the Sentinel's own 2% rule as a
-    reference. ``bought_lots`` over the usual is said ("You bought 5 lots", for a check "You asked about 5 lots")."""
+def size_line(advice: Optional[dict], *, stop_name: str = "the plan stop") -> str:
+    """[N06c] One line of choices: "📏 At the plan stop: 1 lot −₹2,048 (2.5%) · 2 lots −₹4,096 (5.1%). The
+    Sentinel risks at most 2% (₹1,609)." "" without advice. The partner's own size is in the stop line above it."""
     if not advice:
         return ""
-    n = usual_lots(entry, advice["lot"], advice["cash"], usual)
-    if n is not None:
-        line = (f"📏 Your usual size here: about {_lots(n)} ({n * advice['lot']}), {usual:.0%} of your cash; at "
-                f"{stop_name} about −{_amt(n * advice['per_lot'])} ({_share(n * advice['share'])} of your cash). "
-                + _sentinel_part(advice))
-        more = bought_lots is not None and bought_lots > n
-    else:
-        line = (f"📏 One lot ({advice['lot']}) loses about {_amt(advice['per_lot'])} at {stop_name}, "
-                f"{_share(advice['share'])} of your cash. " + _sentinel_part(advice))
-        more = bought_lots is not None and bought_lots > max(1, advice["lots"])
-    if more:
-        line += f" You {verb} {_lots(bought_lots)}."
-    return line
+    cash = advice["cash"]
+    return (f"📏 At {stop_name}: 1 lot −{_amt(advice['one'])} ({_share(advice['one'] / cash)}) · 2 lots "
+            f"−{_amt(advice['two'])} ({_share(advice['two'] / cash)}). The Sentinel risks at most "
+            f"{risk_share():.0%} ({_amt(advice['budget'])}).")
 
 
-def follow_line(advice: Optional[dict]) -> str:
-    """For one of the Sentinel's own trades: what a lot loses at its stop for the partner's cash, and the lots its
-    rule would take; "" without advice. The numbers, not a limit: how many to take is the partner's call."""
-    if not advice:
-        return ""
-    line = (f"📏 For your {_amt(advice['cash'])} cash: each lot ({advice['lot']}) loses about "
-            f"{_amt(advice['per_lot'])} at its stop, {_share(advice['share'])} of your cash. ")
-    if advice["lots"] >= 1:
-        return line + f"Its own rule would take {_lots(advice['lots'])} for you."
-    return line + f"Its own rule ({risk_share():.0%} a trade) would take less than one lot for you."
-
-
-AFTER_LOSS_RULE = "After a losing trade the Sentinel itself takes one lot at most for the rest of the day."
-ADD_RULE = "The Sentinel adds a lot only to a trade already up by a full stop, never to a falling one."
+AFTER_LOSS_RULE = "The Sentinel takes 1 lot after a loss."
+ADD_RULE = "The Sentinel adds only to a trade already up a full stop."
 
 
 # ---------------------------------------------------------------------------
@@ -192,7 +157,7 @@ def records(db_path: str, day: str) -> dict:
     import partner_watch_score as score
     try:
         before = (date.fromisoformat(day) - timedelta(days=1)).isoformat()
-        first, _last, trades = score.load(db_path, None, before)
+        _first, _last, trades = score.load(db_path, None, before)
         scored = score.score(trades) if trades else {"warnings": {}, "days": []}
     except (sqlite3.Error, ValueError):
         scored = {"warnings": {}, "days": []}
@@ -220,23 +185,40 @@ def record_line(recs: dict, warning: str) -> str:
     """The partner's own numbers on one warning, while its frozen verdict supports it; "" otherwise."""
     if not supported(recs, warning):
         return ""
-    data = recs[warning]
-    w, u = data["warned"], data["unwarned"]
+    w, u = recs[warning]["warned"], recs[warning]["unwarned"]
     if warning == "UNUSUAL_SIZE":
-        return (f"📊 Your record{_since(recs, warning)}: buys much bigger than your usual, {w['n']} trades, "
-                f"{_signed(w['total'])}; your usual size, {u['n']} trades, {_signed(u['total'])}.")
+        return (f"📊 Your oversized buys{_since(recs, warning)}: {_signed(w['total'])} ({w['n']}); usual size "
+                f"{_signed(u['total'])} ({u['n']}).")
     if warning == "AFTER_LOSS":
-        return (f"📊 Your record{_since(recs, warning)}: buys within 30 min of a losing exit, {w['n']} trades, "
-                f"{_signed(w['total'])}; your other buys, {u['n']} trades, {_signed(u['total'])}.")
+        return f"📊 Your buys within 30 min of a loss{_since(recs, warning)}: {_signed(w['total'])} ({w['n']})."
     return ""
 
 
+def record_tail(recs: dict, warning: str) -> str:
+    """[N06c] The partner's own record as the end of that warning's line (" Since 27 Oct such buys: −₹38,024 (57);
+    usual size −₹2,130 (175)."), while its frozen verdict supports it; "" otherwise."""
+    if not supported(recs, warning):
+        return ""
+    w, u = recs[warning]["warned"], recs[warning]["unwarned"]
+    since = _since(recs, warning).replace(" since", "Since", 1) if _since(recs, warning) else "So far"
+    tail = f" {since} such buys: {_signed(w['total'])} ({w['n']})"
+    if warning == "UNUSUAL_SIZE":
+        tail += f"; usual size {_signed(u['total'])} ({u['n']})"
+    return tail + "."
+
+
 def morning_lines(recs: dict) -> list:
-    """For the watch-on message: the partner's supported records, then what the Sentinel will send."""
-    lines = [line for line in (record_line(recs, "UNUSUAL_SIZE"), record_line(recs, "AFTER_LOSS")) if line]
-    lines.append(f"🤖 The Sentinel's own trades come here as it takes them (paper; usually 0–3 a day), with the size "
-                 f"its rule gives your cash: at most {risk_share():.0%} of it lost at the stop. Each plan below also "
-                 f"says the Sentinel's size. It can lose too: following it is your call.")
+    """For the watch-on message: one line of the partner's supported records, and what the Sentinel will send."""
+    parts = []
+    if supported(recs, "UNUSUAL_SIZE"):
+        w, u = recs["UNUSUAL_SIZE"]["warned"], recs["UNUSUAL_SIZE"]["unwarned"]
+        parts += [f"usual size {_signed(u['total'])} ({u['n']})", f"oversized {_signed(w['total'])} ({w['n']})"]
+    if supported(recs, "AFTER_LOSS"):
+        w = recs["AFTER_LOSS"]["warned"]
+        parts.append(f"within 30 min of a loss {_signed(w['total'])} ({w['n']})")
+    since = _since(recs, "UNUSUAL_SIZE") or _since(recs, "AFTER_LOSS")
+    lines = [f"📊 Your buys{since}: " + " · ".join(parts) + "."] if parts else []
+    lines.append("🤖 The Sentinel's own trades (paper) come here as it takes them.")
     return lines
 
 
@@ -318,53 +300,46 @@ def _option_name(symbol: str) -> str:
     return f"{parsed['underlying']} {parsed['strike']:g} {parsed['opt_type']}"
 
 
-def _future_name(underlying: str) -> str:
-    return f"{underlying} future"
-
-
 def record_text(record: Optional[dict]) -> str:
     if not record:
-        return "It has no closed paper trades to show yet."
-    return (f"Its last {record['n']} paper trades: {record['won']} won, {_signed(record['per_lot'])} a lot after "
-            f"charges. It loses on many days; its edge in years of replays is small.")
+        return "📊 Its record: no closed paper trades yet."
+    return (f"📊 Its last {record['n']} paper trades: {record['won']} won, {_signed(record['per_lot'])} a lot. "
+            f"It loses often.")
 
 
 def fno_buy_text(trade: dict, cash: Optional[float], record: Optional[dict], exchange: str) -> str:
-    """The partner's message for the Sentinel's F&O buy."""
+    """The partner's message for the Sentinel's F&O buy: four short lines."""
     name = _option_name(trade["tradingsymbol"])
     entry = float(trade["entry_premium"])
     expiry = trade.get("expiry")
     when = f" ({date.fromisoformat(str(expiry)[:10]):%d %b})" if expiry else ""
-    lines = [f"🤖 The Sentinel's own trade (paper, not a tip): bought {name}{when} at {_px(entry)} at "
-             f"{_hhmm(trade['entry_time'])}."]
+    lines = [f"🤖 Sentinel bought {name}{when} at {_px(entry)}, {_when(trade['entry_time']):%H:%M:%S} (paper)."]
     stop = option_stop(trade)
-    future = _future_name(trade.get("underlying") or "")
-    stop_bits = []
+    underlying = trade.get("underlying") or ""
+    bits = []
     if trade.get("stop_underlying"):
-        stop_bits.append(f"{future} {float(trade['stop_underlying']):,.0f}")
-    if stop is not None:
-        stop_bits.append(f"about {_px(stop)} on the option")
-    target = (f" 🎯 Its target: {future} {float(trade['target_underlying']):,.0f}."
-              if trade.get("target_underlying") else "")
-    lines.append(f"🛑 Its stop: {', '.join(stop_bits) or 'not known'}.{target}")
-    line = follow_line(size_advice(entry, stop, trade.get("lot_size"), cash, exchange))
+        bits.append(f"🛑 Stop {underlying} fut {float(trade['stop_underlying']):,.0f}"
+                    + (f" (option ≈{_px(stop)})" if stop is not None else ""))
+    elif stop is not None:
+        bits.append(f"🛑 Stop option ≈{_px(stop)}")
+    if trade.get("target_underlying"):
+        bits.append(f"🎯 target fut {float(trade['target_underlying']):,.0f}")
+    if bits:
+        lines.append(" · ".join(bits) + ".")
+    line = size_line(size_advice(entry, stop, trade.get("lot_size"), cash, exchange), stop_name="its stop")
     if line:
         lines.append(line)
-    lines.append(f"📊 {record_text(record)}")
-    lines.append("I'll tell you when it sells. Whether to follow is your call.")
+    lines.append(record_text(record) + " Your call.")
     return "\n".join(lines)
 
 
-def fno_sell_text(trade: dict, held_qty: int = 0) -> str:
+def fno_sell_text(trade: dict) -> str:
     name = _option_name(trade["tradingsymbol"])
     lots = max(1, int(trade.get("initial_lots") or trade.get("lots") or 1))
     per_lot = float(trade.get("pnl") or 0.0) / lots
-    reason = REASONS.get(str(trade.get("exit_reason") or ""), str(trade.get("exit_reason") or "its exit").replace("_", " "))
-    line = (f"🤖 The Sentinel sold its {name} at {_px(float(trade['exit_premium']))} at {_hhmm(trade['exit_time'])} "
-            f"({reason}): {_signed(per_lot)} a lot after charges (paper).")
-    if held_qty:
-        line += f" You still hold {held_qty} of it."
-    return line
+    reason = REASONS.get(str(trade.get("exit_reason") or ""), str(trade.get("exit_reason") or "exit").replace("_", " "))
+    return (f"🤖 Sentinel sold {name} at {_px(float(trade['exit_premium']))}, {_hhmm(trade['exit_time'])} ({reason}): "
+            f"{_signed(per_lot)} a lot (paper).")
 
 
 def expiry_record(db_path: str, before: str, underlying: str) -> Optional[dict]:
@@ -384,53 +359,51 @@ def expiry_record(db_path: str, before: str, underlying: str) -> Optional[dict]:
 def expiry_buy_text(p: dict, cash: Optional[float], record: Optional[dict]) -> str:
     name = _option_name(p["symbol"])
     entry, lot = float(p["entry_price"]), int(p["lot_size"])
-    policy = p.get("e02_policy") or {}
-    flat = policy.get("flat", "15:28")
-    lines = [f"🤖 The Sentinel's expiry ticket (paper, not a tip): bought {name} (expires today) at {_px(entry)} at "
-             f"{_hhmm(p['entry_ts'])}."]
-    index = (f" or {p.get('underlying', '')} {float(p['underlying_stop']):,.0f}" if p.get("underlying_stop") else "")
-    lines.append(f"🛑 Its stop {_px(float(p['stop']))}{index}. At 2x ({_px(2 * entry)}) it sells part and lets the "
-                 f"rest run; it sells everything from {flat}.")
-    line = follow_line(size_advice(entry, float(p["stop"]), lot, cash, p.get("exchange") or "NFO", most=int(p["lots"])))
+    flat = (p.get("e02_policy") or {}).get("flat", "15:28")
+    lines = [f"🤖 Sentinel's expiry ticket: bought {name} (expires today) at {_px(entry)}, "
+             f"{_when(p['entry_ts']):%H:%M:%S} (paper)."]
+    index = f" or {p.get('underlying', '')} {float(p['underlying_stop']):,.0f}" if p.get("underlying_stop") else ""
+    at_two = (f"sells half at 2x ({_px(2 * entry)})" if int(p.get("lots") or 1) >= 2   # expiry_e02.entry_text
+              else f"sells at 2x ({_px(2 * entry)})")
+    lines.append(f"🛑 Stop {_px(float(p['stop']))}{index} · {at_two} · all from {flat}.")
+    line = size_line(size_advice(entry, float(p["stop"]), lot, cash, p.get("exchange") or "NFO"), stop_name="its stop")
     if line:
-        lines.append(line + f" If the price jumps through the stop, a lot can lose all of its {_amt(entry * lot)}.")
+        lines.append(line + f" A jump can take a lot's whole {_amt(entry * lot)}.")
     if record:
-        lines.append(f"📊 Its {p.get('underlying', '')} expiry tickets so far: {record['n']}, {record['won']} won, "
-                     f"{_signed(record['net'])}.")
+        lines.append(f"📊 Its {p.get('underlying', '')} expiry tickets: {record['n']}, {record['won']} won, "
+                     f"{_signed(record['net'])}. Most lose a little; a few pay big. Your call.")
     else:
-        lines.append(f"📊 Its first {p.get('underlying', '')} expiry ticket on paper: no record yet.")
-    lines.append("An expiry ticket loses its small stake on most days and pays several times it on a few. "
-                 "Whether to follow is your call.")
+        lines.append(f"📊 Its first {p.get('underlying', '')} ticket: no record yet. Most lose a little; a few pay big. "
+                     f"Your call.")
     return "\n".join(lines)
 
 
 def expiry_sell_text(p: dict, event: dict) -> str:
     name = _option_name(p["symbol"])
-    reason = REASONS.get(str(event.get("action") or ""), str(event.get("action") or "its exit").replace("_", " ").lower())
-    line = (f"🤖 The Sentinel's expiry ticket: sold {_lots(int(event['lots']))} of {name} at "
-            f"{_px(float(event['price']))} at {_hhmm(event['ts'])} ({reason})")
+    reason = REASONS.get(str(event.get("action") or ""), str(event.get("action") or "exit").replace("_", " ").lower())
+    line = (f"🤖 Sentinel's expiry ticket: sold {_lots(int(event['lots']))} of {name} at {_px(float(event['price']))}, "
+            f"{_hhmm(event['ts'])} ({reason})")
     if p.get("status") == "CLOSED":
-        line += f"; the ticket closed {_signed(float(p['net_pnl']))} after charges (paper)."
-    else:
-        line += f"; {_lots(int(p.get('lots_open') or 0))} still running (paper)."
-    return line
+        return line + f"; closed {_signed(float(p['net_pnl']))} (paper)."
+    return line + f"; {_lots(int(p.get('lots_open') or 0))} still running (paper)."
 
 
 def open_line(db_path: str, day: str, underlying: str) -> str:
-    """For a check: what the Sentinel's main book holds on this index now ("" when nothing is known)."""
+    """For a check: what the Sentinel's main book holds on this index now."""
     trades = [t for t in fno_trades(db_path, day) if (t.get("underlying") or "") == underlying]
     opened = [t for t in trades if t.get("status") == "OPEN"]
     if opened:
         t = opened[-1]
-        return (f"🤖 The Sentinel now holds {_option_name(t['tradingsymbol'])} (paper, bought "
-                f"{_hhmm(t['entry_time'])} at {_px(float(t['entry_premium']))}).")
-    return f"🤖 The Sentinel holds nothing on {underlying} now ({len(trades)} trade{'s' if len(trades) != 1 else ''} today)."
+        return (f"🤖 Sentinel now: holds {_option_name(t['tradingsymbol'])} (bought {_hhmm(t['entry_time'])} at "
+                f"{_px(float(t['entry_premium']))}).")
+    return f"🤖 Sentinel now: nothing on {underlying} ({len(trades)} trade{'s' if len(trades) != 1 else ''} today)."
 
 
 def events(db_path: str, day: str, now: datetime) -> list:
-    """The Sentinel's trades to tell now: [(key, kind, build, at, symbol)], ``build(cash)`` making the text. Buys only
-    while FRESH_BUY recent; a sale (key ``...:sell`` or the expiry event's index) for any buy, while FRESH_SELL
-    recent. The caller sends a sale only after its buy was told."""
+    """The Sentinel's trades to tell now: [(key, kind, build, at, symbol)], ``build(cash)`` making the text.
+    [N06c] A buy only while FRESH_BUY recent and still open (a trade already closed is never offered: the audit's
+    case, reproduced in tests); a sale (key ``...:sell`` or the expiry event's index) while FRESH_SELL recent. The
+    caller sends a sale only after its buy was told."""
     out = []
     before = day
     record = None
@@ -439,7 +412,7 @@ def events(db_path: str, day: str, now: datetime) -> list:
             continue                  # an odd row says nothing (and never stops the others)
         entered = _when(trade["entry_time"])
         key = f"sentinel:{day}:fno:{trade['id']}"
-        if timedelta(0) <= now - entered <= FRESH_BUY:
+        if trade.get("status") == "OPEN" and timedelta(0) <= now - entered <= FRESH_BUY:
             if record is None:
                 record = fno_record(db_path, before) or {}
             exchange = "BFO" if str(trade["tradingsymbol"]).startswith("SENSEX") else "NFO"
@@ -456,7 +429,7 @@ def events(db_path: str, day: str, now: datetime) -> list:
             continue
         key = f"sentinel:{day}:exp:{p.get('id')}"
         entered = _when(p["entry_ts"])
-        if timedelta(0) <= now - entered <= FRESH_BUY:
+        if p.get("status") == "OPEN" and timedelta(0) <= now - entered <= FRESH_BUY:
             rec = expiry_record(db_path, before, p.get("underlying", "NIFTY"))
             out.append((f"{key}:buy", "SENTINEL", (lambda cash, q=p, r=rec: expiry_buy_text(q, cash, r)), entered,
                         p["symbol"]))

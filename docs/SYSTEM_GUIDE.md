@@ -1,3 +1,33 @@
+## November 4 night - N06c: no Quiet, short messages, choices in rupees, BROKEN, the check by the option alone (Dev only)
+
+Owner, after the audit of N06/N06b:
+- "remove the quiet today button itself and the explaination thing";
+- "long long paragraph with market on reading is impossible: if with concrete the explaination is consice and
+  direct its good else" drop it;
+- build the auditor's ideas only where they help the partner, with "absolute correctness and precision".
+
+Doc: `docs/PARTNER_SENTINEL_ADVICE_N06.md`, section "What the partner now gets (N06c)".
+
+- **Quiet is gone:**
+  - no button, no muting, no SIZE message;
+  - a tap on an old button is answered `QUIET_GONE` and changes nothing;
+  - `watch_status` quiet is always False.
+- **The option alone is a check:** "76700 ce", "sensex 76700ce 120 2 lots" (`parse_check`; any other word: not a
+  check). Without an index, `infer_underlying` takes the one whose nearest expiry lists the strike.
+- **`size_line`:** the loss at the plan stop for 1 and 2 lots, each with its own charges, and the Sentinel's 2%.
+- **Records** join their warning lines (`record_tail`).
+- **The PLAN is shorter:** no facts line, a shorter SWING stop line, no "fast fall" sentence. The watch-on text is
+  two lines.
+- **BROKEN (new kind):**
+  - once a trade, the first fresh read under the plan stop after one over it, from 120 s past the buy;
+  - only when no stop of the partner's own rests at or over the plan stop;
+  - it says what selling all and half (whole lots) gives against the bids, "or hold: your call";
+  - switch `PARTNER_WATCH_BROKEN_ENABLED` (default true).
+- **The Sentinel's trades:** a buy only while open and at most 2 min old (the audit's closed-trade case, fixed and
+  tested); four short lines.
+- **Tests:** test_partner_sentinel 16; partner 280; the whole suite 3,199 + 3,036 passed, 4 skipped,
+  `pytest_exit=0` each. Not deployed: the owner will have it checked first.
+
 ## November 4 - Partner assistance review (read-only, no runtime changes)
 
 Report: `docs/research/partner/2026-11-04-assistance-review/REPORT.md`;
