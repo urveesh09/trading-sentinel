@@ -1,4 +1,4 @@
-## November 4 — Penny overnight v2: ON_V2 shadow and post-close probe (actual behavior, Dev only, not pushed or deployed)
+## November 4 — Penny overnight v2: ON_V2 shadow and post-close probe (actual behavior, Dev commit `3c3b05c`, not pushed, not deployed)
 
 Report: `docs/research/penny/2026-11-04-overnight-v2/REPORT.md` (plan frozen `6532f15`, exam frozen `f11a16a`).
 - Finding: penny-band stocks drift up overnight (+0.45–0.50% close to open) and down by day (−0.50%);
@@ -26,7 +26,8 @@ Report: `docs/research/penny/2026-11-04-overnight-v2/REPORT.md` (plan frozen `65
   matched the ranking; compounding as the primary metric was a planning mistake). The EV model (thin-name
   bounce) and the genome search (fails walk-forward) were rejected. Post-close fill availability is unknown.
 - Tests: `tests/test_overnight_v2.py` (6); oct21 shadow config expectation and scheduler goldens updated
-  (two probe jobs). Rollback: `EDGE_OVERNIGHT_POSTCLOSE_PROBE_ENABLED=false`, `EDGE_OVERNIGHT_SHADOWS_ENABLED=false`.
+  (two probe jobs, each with its own trading-day gate). Full suite 6,147 passed, 4 skipped, 0 failed
+  (683 s, exit 0); an earlier run caught the probe handlers missing their own gate (fixed before commit). Rollback: `EDGE_OVERNIGHT_POSTCLOSE_PROBE_ENABLED=false`, `EDGE_OVERNIGHT_SHADOWS_ENABLED=false`.
 
 ## November 4 — Penny iterative research complete (evidence-complete, Dev only)
 

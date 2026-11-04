@@ -4,7 +4,8 @@
 - [x] Lab parity with the shipped overnight replay: 175 closes, 0 mismatches.
 - [x] Runtime `night_means` parity with the research feature: 400 cases, 0 mismatches.
 - [x] Focused tests: `tests/test_overnight_v2.py`, overnight paper, oct21 shadows, scheduler goldens.
-- [ ] Full suite result and commit identity: see the commit that records them.
+- [x] Full suite 6,147 passed, 4 skipped, 0 failed (683 s, exit 0); implementation commit `3c3b05c`
+      (on top of the other agent's unpushed `e0ad826` and this study's `6532f15`, `f11a16a`).
 - [ ] Push branch; owner opens the PR and deploys (paper only).
 - [ ] Forward: 20+ ON_V2 closes; read `GET /experiments/edge-overnight` (`book_same_nights`,
       `postclose_probe.covers_ticket_share`, `entry_basis_counts`).

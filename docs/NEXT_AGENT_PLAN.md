@@ -1,4 +1,4 @@
-## November 4 — Penny overnight v2 (slice OV2: Dev commit pending push, not deployed)
+## November 4 — Penny overnight v2 (slice OV2: Dev commit `3c3b05c` on `codex/production-correction-hedge-p0`, not pushed, not deployed)
 
 - **Problem.** The owner asked for a much better Penny strategy. Evidence: the edge is overnight
   (EDGE picks +1.3% close to open), the costs of the current execution take it (15:20 ask ~0.36%,
@@ -8,7 +8,7 @@
   `run_postclose_probe`, `postclose_probe_summary`, comparison fields), `scheduler_setup.py` (two probe
   jobs), `config.py` (`EDGE_OVERNIGHT_POSTCLOSE_PROBE_ENABLED`), tests and goldens. Store gains the
   `edge_overnight_postclose_probe` table and three shadow columns (additive `ALTER TABLE`; no migration).
-- **Acceptance checks.** Focused overnight/shadow/surface tests pass; full suite; night-screen parity
+- **Acceptance checks.** Focused overnight/shadow/surface tests pass; full suite 6,147 passed, 4 skipped, 0 failed; night-screen parity
   with the research feature (400 real cases, 0 mismatches); lab parity with the shipped replay (175
   closes, 0 mismatches). Forward: after 20+ ON_V2 closes compare ON_V2 net with `book_same_nights`, and
   read `postclose_probe.covers_ticket_share` before any real-money step.
