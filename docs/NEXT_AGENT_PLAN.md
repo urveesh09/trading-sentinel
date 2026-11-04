@@ -1,3 +1,12 @@
+## November 4 - Overnight v3: commit identity ca2d9b3 (Dev only)
+
+ON_V3 implementation commit `ca2d9b3` (research commits d05a2ca, b57a603, 4455793, 601c140,
+f28993f). Full suite on that source: 6,182 passed, 4 skipped, exit 0. Atlas regenerated and
+consistent with HEAD (298 modules). Dev only: branch codex/production-correction-hedge-p0 not
+pushed (25 local commits, including the other agents' e0ad826 and enrichment chains), not deployed;
+Production unchanged. New flag EDGE_OVERNIGHT_V3_SHADOW_ENABLED defaults true (paper shadow only);
+no migration. Owner calls: push/PR to evolve/smart-strategies, deploy, any real post-close order test.
+
 ## November 4 - Overnight v3: ON_V3 paper shadow and sealed 2011-14 check (Dev only)
 
 Study: `docs/research/penny/2026-11-04-overnight-v3/` (PLAN.md, REPORT.md; simulator `v3sim.py`
