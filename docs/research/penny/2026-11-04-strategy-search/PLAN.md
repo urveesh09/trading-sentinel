@@ -89,9 +89,20 @@ The primary Rs 100,000 net gain is about 14%, below the additional 20%
 material-improvement hurdle. No wholesale Penny replacement or qualification.
 Detailed fixed stress/size results are in `basis-v2/validation-results.json`.
 
-All eight Smart training arms have been rerun after the rollover correction;
-all six candidates remain negative. Final Smart validation and frozen
-non-selection overnight attribution/prefix diagnostics remain to run. A
-classic CNC reference, final financial audit/report and evidence sealing also
-remain. Original exploratory scores/corrections are preserved. No Production,
-native runtime binding, schema, actual capital, login or Breeze change.
+All eight Smart training arms were rerun after the rollover correction. Final
+Smart validation rejects both finalists: best -Rs 52.17 vs V2 -Rs 85.31, still
+negative. All six development candidates remain negative. The CNC reference
+records 144 evaluations and no accepted entries. Non-selection controls show
+that G05's gain is largely concentration; native moderate friction loses Rs 35,
+2025 underperforms the incumbent, and the descriptive difference interval
+includes zero. Thus no broad, robust replacement or promotion is established.
+
+Research work is complete: `REPORT.md`, `candidate.json`, `FORWARD_EXAM.md`, all
+87 score artifacts, 119 passing focused tests, exact real-input incumbent/cache
+parity, 20 causal prefixes, 39,040 repeated closed-trade financial identities,
+28 flat Smart cash reconciliations and 891 sealed evidence files. Final
+packaging/consistency verification records commit identity and environment in
+`verification.json` and the local completion receipt. Original exploratory
+scores/corrections are preserved. No Production/native runtime binding, schema,
+actual capital, login, Breeze use, push or deployment. Future execution-grade
+paper evidence is a separate exam, not unfinished historical scoring here.

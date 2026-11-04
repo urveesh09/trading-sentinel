@@ -1,0 +1,30 @@
+{
+  "result": "PASS",
+  "scores": 87,
+  "repeated_closed_trade_identities_checked": 39040,
+  "flat_smart_cash_books_checked": 28,
+  "sealed_artifacts": 891,
+  "tests": {
+    "passed": 119,
+    "failed": 0,
+    "warning": "existing Starlette lifespan deprecation",
+    "exit_code": 0
+  },
+  "real_data_baseline_parity": "EXACT",
+  "real_data_prefix_checks": 20,
+  "breeze_calls": 0,
+  "broker_api_calls": 0,
+  "Production_tracked_status": "clean",
+  "native_strategy_config_schema_capital_changes": false,
+  "pushed": false,
+  "deployed": false,
+  "python": "3.11.9",
+  "packages": {
+    "pandas": "2.2.1",
+    "numpy": "1.26.4",
+    "pydantic": "2.6.3",
+    "aiosqlite": "0.21.0"
+  },
+  "verification_script_sha256": "d169d7ec53cfe9847c7d9b53e5ff31796aabc205551b5f15caa87e72987c2e6e",
+  "git_head": "0cc9df6042e459aecc66580be4fb13afdd3a37d5"
+}

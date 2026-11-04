@@ -1,3 +1,19 @@
+## November 4 — Penny iterative research complete (evidence-complete, Dev only)
+
+Report: `docs/research/penny/2026-11-04-strategy-search/REPORT.md`. Three
+rounds, 20 candidate configurations including a 12-genome population;
+87 score artifacts, 119 focused tests passed, exact real-data baseline
+parity, 20 causal prefixes and 891 sealed evidence artifacts. No robust
+replacement promoted. G05 at native Rs25k: net 18,096.96 vs 14,465.31,
+drawdown 2,583.14 vs 2,135.90; concentration drives much of the gain,
+2025 trails incumbent and moderate execution stress removes profit.
+Smart best -52.17 vs V2 -85.31, still losing; fewer trades rather than
+better per-trade expectancy. Conditional bar proxies, not untouched
+qualification. Active plan/evidence retain every failure and correction.
+No native strategy/config/schema/capital/Production/Breeze change;
+committed locally, not pushed or deployed. Any fresh execution exam is
+defined in FORWARD_EXAM.md, with no job or collector enabled.
+
 ## November 4 — Penny research cnc-reference-diagnostics-frozen (Dev only, not deployed)
 
 Study: `docs/research/penny/2026-11-04-strategy-search/PLAN.md`. Three
